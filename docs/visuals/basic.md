@@ -1,8 +1,14 @@
 # Basic Visual
 
-The **basic** visual in Datoviz provides direct access to low-level GPU rendering using core Vulkan primitives. It offers high performance and flexibility while keeping the API simple.
+The **basic** visual in Datoviz provides direct access to low-level GPU rendering using core Vulkan primitives.
 
-This visual is well suited for rendering large-scale data as points, thin aliased lines, or uniformly colored triangles, offering precise control over topology with minimal overhead.
+This visual is well suited for rendering large-scale data as points, thin **non-antialiased** lines, or triangles, with one color per vertex.
+
+![Basic visual with `line_strip` topology](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/basic.png)
+
+!!! note
+
+    Crude antialiasing techniques may be added in a future version. In the meantime, these visuals are heavily aliased but remain highly efficient.
 
 ---
 
@@ -19,9 +25,9 @@ This visual is well suited for rendering large-scale data as points, thin aliase
 ## When to use
 
 Use the basic visual when you need:
+
 - Large-scale, uniform visual primitives
 - Full control over rendering topology
-- Efficient rendering of dense geometry
 - Minimal overhead and high performance
 
 ---
@@ -34,77 +40,13 @@ Use the basic visual when you need:
 |------------|------------------|---------------------------------------------|
 | `position` | `(N, 3) float32` | Vertex positions in NDC                     |
 | `color`    | `(N, 4) uint8`   | RGBA color per vertex                       |
-| `group`    | `(N,) float32`   | Group ID used to separate primitives        |
+| `group`    | `(N,) float32`   | Group ID used to separate primitives (`line_strip` and `triangle_strip`) |
 
 ### Uniform
 
 | Attribute | Type   | Description                     |
 |-----------|--------|---------------------------------|
 | `size`    | `float`  | Pixel size for `point` topology |
-
----
-
-## Topologies
-
-### Points
-
-Renders one dot per vertex. Useful for unstyled scatter plots or debugging positions.
-
-```python
-visual = app.basic('point', position=position, color=color)
-```
-
----
-
-### Line Strip
-
-Connects vertices into a continuous path: `A-B-C-D` becomes a single polyline.
-
-```python
-visual = app.basic('line_strip', position=position, color=color)
-```
-
-You can also use the `group` attribute to draw multiple line strips in one call:
-
-```python
-visual = app.basic('line_strip', position=position, color=color, group=group)
-```
-
----
-
-### Line List
-
-Each pair of vertices forms a separate segment: `A-B`, `C-D`, `E-F`, etc.
-
-```python
-visual = app.basic('line_list', position=position, color=color)
-```
-
-Requires an even number of vertices. `group` can be used to organize or segment the data but does not affect topology.
-
----
-
-### Triangle List
-
-Each group of 3 vertices forms a triangle: `A-B-C`, `D-E-F`, etc.
-
-```python
-visual = app.basic('triangle_list', position=position, color=color)
-```
-
-Useful for rendering arbitrary meshes or flat surfaces. No lighting or shading is applied.
-
----
-
-### Triangle Strip
-
-Renders connected triangles using a strip pattern: `A-B-C`, `B-C-D`, `C-D-E`, etc.
-
-```python
-visual = app.basic('triangle_strip', position=position, color=color)
-```
-
-More efficient than `triangle_list` when rendering continuous surfaces.
 
 ---
 
@@ -125,10 +67,100 @@ This approach is memory-efficient and avoids multiple draw calls.
 
 ---
 
-## Example
+## Topologies
+
+Here, we show the different primitive topologies for the **Basic** visual using the same set of positions, colors, and groups.
+
+The 2D points follow the pattern `sin(dt * i) + dy`, where `dy` is positive if `i` is odd and negative if `i` is even. The points therefore alternate between the lower and upper sine curves. The points are split in two groups with equal size (the `group` is 0 if `i < N/2` and 1 if `i >= N/2`).
+
+### Points
+
+Renders one dot per vertex. Similar to the [**Pixel**](pixel.md) visual.
 
 ```python
---8<-- "examples/visuals/basic.py"
+visual = app.basic('point_list', position=position, color=color, size=5)
+```
+
+<figure markdown="span">
+![Basic visual, `point_list` topology](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_point_list.png)
+</figure>
+
+---
+
+### Line list
+
+Each pair of vertices forms a separate segment: `A-B`, `C-D`, `E-F`, etc.
+
+```python
+visual = app.basic('line_list', position=position, color=color)
+```
+
+<figure markdown="span">
+![Basic visual, `line_list` topology](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_line_list.png)
+</figure>
+
+---
+
+### Line strip
+
+Connects vertices into a continuous path: `A-B-C-D` becomes a single polyline.
+
+```python
+visual = app.basic('line_strip', position=position, color=color, group=group)
+```
+
+!!! note
+
+    The optional `group` attribute can be used to draw multiple line strips in one call, which is best for performance. Note the gap in the middle, corresponding to the transition between the two groups.
+
+<figure markdown="span">
+![Basic visual, `line_strip` topology](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_line_strip.png)
+</figure>
+
+---
+
+### Triangle list
+
+Each group of 3 vertices forms a triangle: `A-B-C`, `D-E-F`, etc.
+
+```python
+visual = app.basic('triangle_list', position=position, color=color)
+```
+
+<figure markdown="span">
+![Basic visual, `triangle_list` topology](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_triangle_list.png)
+</figure>
+
+---
+
+### Triangle strip
+
+Renders connected triangles using a strip pattern: `A-B-C`, `B-C-D`, `C-D-E`, etc.
+
+```python
+visual = app.basic('triangle_strip', position=position, color=color, group=group)
+```
+
+!!! note
+
+    The optional `group` attribute can be used to draw multiple triangle strips in one call, which is best for performance. Note the gap in the middle, corresponding to the transition between the two groups.
+
+<figure markdown="span">
+![Basic visual, `triangle_strip` topology](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_triangle_strip.png)
+</figure>
+
+---
+
+## Example
+
+This example displays a GUI to change the topology of the **Basic** visual.
+
+<figure markdown="span">
+![Basic topology widget](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_topology.png)
+</figure>
+
+```python
+--8<-- "examples/features/basic_topology.py:14:"
 ```
 
 ---
