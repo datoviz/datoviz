@@ -34,11 +34,7 @@ The function name determines the event type:
 
 ---
 
-## Mouse event example
-
-```python
---8<-- "examples/features/mouse.py"
-```
+## Mouse events
 
 Mouse events include actions like move, click, drag, and scroll:
 
@@ -59,13 +55,27 @@ def on_mouse(ev):
         print(f'wheel scroll {ev.wheel()}')
 ```
 
----
+### Mouse event properties
 
-## Keyboard event example
+| Method             | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `ev.mouse_event()` | Current mouse event name                     |
+| `ev.pos()`         | Current mouse position `(x, y)`              |
+| `ev.press_pos()`   | Mouse press position during a drag           |
+| `ev.button()`      | Raw button enum (int)                        |
+| `ev.button_name()` | Button name: `'left'`, `'right'`, `'middle'` |
+| `ev.wheel()`       | Vertical wheel scroll amount (float)         |
+
+
+### Example
 
 ```python
---8<-- "examples/features/keyboard.py"
+--8<-- "examples/features/mouse.py:13:"
 ```
+
+---
+
+## Keyboard events
 
 Keyboard callbacks receive key presses and releases:
 
@@ -80,6 +90,21 @@ Each event contains:
 * `key()`: the integer key code
 * `key_name()`: the name of the key (e.g. `'Escape'`, `'A'`)
 * `key_event()`: `'press'` or `'release'`
+
+### Keyboard event properties
+
+| Method          | Description                             |
+| --------------- | --------------------------------------- |
+| `ev.key_event()`| Current keyboard event name             |
+| `ev.key()`      | Raw key code enum (int)                 |
+| `ev.key_name()` | Key name string, e.g. `'a'`, `'Escape'` |
+
+
+### Example
+
+```python
+--8<-- "examples/features/keyboard.py:13:"
+```
 
 ---
 
