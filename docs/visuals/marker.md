@@ -103,13 +103,13 @@ The following predefined marker shapes, implemented on the GPU, are supported wh
 
 A bitmap texture with the marker to render.
 
-### SDF (Signed Distance Field)
+### SDF
 
-Encodes the distance from the marker's outline in a single channel. This allows for resolution-independent rendering with crisp edges and efficient antialiasing.
+The SDF mode (Signed Distance Field) encodes the distance from the marker's outline in a single channel. This allows for resolution-independent rendering with crisp edges and efficient antialiasing.
 
-### MSDF (Multi-channel Signed Distance Field)
+### MSDF
 
-Encodes distance separately in RGB channels, enabling sharper rendering of complex shapes (e.g. icons) with fewer artifacts.
+The MSDF mode (Multi-channel Signed Distance Field) encodes distance separately in RGB channels, enabling sharper rendering of complex shapes (e.g. icons) with fewer artifacts.
 
 !!! warning
 
@@ -138,7 +138,7 @@ These aspects are customized with the following properties:
 ## Example
 
 ```python
---8<-- "examples/visuals/marker.py"
+--8<-- "examples/visuals/marker.py:14:"
 ```
 
 ---
