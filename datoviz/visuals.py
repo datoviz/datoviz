@@ -947,26 +947,29 @@ class Segment(Visual):
         """
         self.shift[offset:] = array
 
-    def set_cap(self, initial: int, terminal: int) -> None:
+    def set_cap(self, initial: str, terminal: str) -> None:
         """
-        Set the cap of line segments.
+        Set the cap of line segments:
 
-        The two arrays are enumerations of integers with the following correspondance.
-
-        - `round` = 1
-        - `triangle_in` = 2
-        - `triangle_out` = 3
-        - `square` = 4
-        - `butt` = 5
+        - `round`
+        - `triangle_in`
+        - `triangle_out`
+        - `square`
+        - `butt`
 
         Parameters
         ----------
-        initial : int
+        initial : str
             The initial cap.
-        terminal : int
+        terminal : str
             The terminal cap.
 
         """
+        prop_info = PROPS[self.visual_name].get('cap', {})
+        enum_prefix = prop_info['enum']
+        enum_prefix = enum_prefix.replace('DVZ_', '')
+        initial = to_enum(f'{enum_prefix}_{initial}')
+        terminal = to_enum(f'{enum_prefix}_{terminal}')
         dvz.segment_cap(self.c_visual, initial, terminal)
 
 

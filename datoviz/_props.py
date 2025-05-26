@@ -53,7 +53,7 @@ PROPS = {
         'shift': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
         'linewidth': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
-        'cap': {'type': np.ndarray, 'dtype': np.int32, 'shape': (-1,)},
+        'cap': {'type': 'enum', 'enum': 'DVZ_CAP'},
     },
     'path': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
