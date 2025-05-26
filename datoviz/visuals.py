@@ -409,7 +409,9 @@ class Prop:
         np.ndarray
             The prepared data.
         """
-        if not isinstance(value, np.ndarray):
+        if isinstance(value, list):
+            return self.prepare_data(np.asanyarray(value), size)
+        elif not isinstance(value, np.ndarray):
             return prepare_data_scalar(self.name, self.dtype, size, value)
         else:
             return prepare_data_array(self.name, self.dtype, self.shape, value)

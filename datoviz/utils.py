@@ -339,6 +339,8 @@ def get_size(idx: slice | int, value: np.ndarray, total_size: int = 0) -> int:
     int
         The size of the slice or array.
     """
+    if isinstance(value, list):
+        return len(value)
     if isinstance(value, np.ndarray):
         return value.shape[0]
     elif isinstance(idx, slice):
