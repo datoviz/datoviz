@@ -18,6 +18,7 @@ import faulthandler
 import os
 import pathlib
 import platform
+from collections.abc import Iterable
 from ctypes import POINTER as P_  # noqa
 from ctypes import byref  # noqa
 from enum import IntEnum
@@ -103,7 +104,7 @@ class CtypesEnum(IntEnum):
 class CStringArrayType:
     @classmethod
     def from_param(cls, value):
-        if not isinstance(value, list):
+        if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
             raise TypeError("Expected a list of strings")
 
         encoded = [s.encode("utf-8") for s in value]
@@ -3639,7 +3640,7 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
-title : np.ndarray[char]
+title : str
     the GUI dialog title
 flags : int
     the GUI dialog flags (unused at the moment)
@@ -3985,6 +3986,24 @@ panel_visual.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+panel_remove = dvz.dvz_panel_remove
+panel_remove.__doc__ = """
+Remove a visual from a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+visual : DvzVisual*
+    the visual
+"""
+panel_remove.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+]
+
+
+# -------------------------------------------------------------------------------------------------
 panel_destroy = dvz.dvz_panel_destroy
 panel_destroy.__doc__ = """
 Destroy a panel.
@@ -4270,7 +4289,7 @@ type : DvzShaderType
     the shader type
 size : DvzSize
     the size, in bytes, of the SPIR-V buffer
-buffer : np.ndarray[char]
+buffer : str
     a pointer to the SPIR-V buffer
 """
 visual_spirv.argtypes = [
@@ -4290,7 +4309,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-name : np.ndarray[char]
+name : str
     the built-in resource name of the shader (_vert and _frag are appended)
 """
 visual_shader.argtypes = [
@@ -4948,7 +4967,7 @@ cmap : DvzColormap
     the colormap
 value : uint8_t
     the value
-color : tuple[int, int, int, int] (out parameter)
+color : Out[tuple[int, int, int, int]] (out parameter)
     the fetched color
 """
 colormap.argtypes = [
@@ -4969,7 +4988,7 @@ cmap : DvzColormap
     the colormap
 value : uint8_t
     the value
-color : cvec4 (out parameter)
+color : Out[cvec4] (out parameter)
     the fetched color
 """
 colormap_8bit.argtypes = [
@@ -4994,7 +5013,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-color : tuple[int, int, int, int] (out parameter)
+color : Out[tuple[int, int, int, int]] (out parameter)
     the fetched color
 """
 colormap_scale.argtypes = [
@@ -5023,7 +5042,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-out : Out[DvzColor*] (out parameter)
+out : Out[tuple[int, int, int, int]] (out parameter)
     (array) the fetched colors
 """
 colormap_array.argtypes = [
@@ -5043,7 +5062,7 @@ Generate an SDF from an SVG path.
 
 Parameters
 ----------
-svg_path : np.ndarray[char]
+svg_path : str
     the SVG path
 width : int
     the width of the generated SDF, in pixels
@@ -5070,7 +5089,7 @@ Generate a multichannel SDF from an SVG path.
 
 Parameters
 ----------
-svg_path : np.ndarray[char]
+svg_path : str
     the SVG path
 width : int
     the width of the generated SDF, in pixels
@@ -5201,7 +5220,7 @@ pos : np.ndarray[vec3]
     array of vec3 positions
 index : DvzIndex*
     pos array of uint32_t indices
-normal : np.ndarray[vec3] (out parameter)
+normal : Out[tuple[float, float, float]] (out parameter)
     (array) the vec3 normals (to be overwritten by this function)
 """
 compute_normals.argtypes = [
@@ -5449,7 +5468,7 @@ shape : DvzShape*
     the shape
 flags : int
     the rescaling flags
-out_scale : tuple[float, float, float] (out parameter)
+out_scale : Out[tuple[float, float, float]] (out parameter)
     the computed scaling factors
 
 Returns
@@ -5905,7 +5924,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-file_path : np.ndarray[char]
+file_path : str
     the path to the .obj file
 """
 shape_obj.argtypes = [
@@ -5959,7 +5978,7 @@ Parameters
 ----------
 font_size : float
     the font size
-af : Out[DvzAtlasFont*] (out parameter)
+af : Out[DvzAtlasFont] (out parameter)
     the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
 """
 atlas_font.argtypes = [
@@ -5992,7 +6011,7 @@ Parameters
 ----------
 ttf_size : long
     size in bytes of a TTF font raw buffer
-ttf_bytes : np.ndarray[char]
+ttf_bytes : str
     TTF font raw buffer
 
 Returns
@@ -6058,7 +6077,7 @@ Parameters
 ----------
 font : DvzFont*
     the font
-string : np.ndarray[char]
+string : str
     the ASCII string
 xywh : np.ndarray[vec4]
     the returned array of (x,y,w,h) shifts
@@ -6088,7 +6107,7 @@ xywh : np.ndarray[vec4]
     an array of (x,y,w,h) shifts, returned by dvz_font_layout()
 flags : int
     the font flags
-out_size : tuple[int, int] (out parameter)
+out_size : Out[tuple[int, int]] (out parameter)
     the number of bytes in the returned image
 
 Returns
@@ -6122,7 +6141,7 @@ length : int
     the number of Unicode codepoints
 codepoints : np.ndarray[uint32_t]
     the Unicode codepoints
-size : tuple[int, int, int] (out parameter)
+size : Out[tuple[int, int, int]] (out parameter)
     the generated texture size
 
 Returns
@@ -6221,7 +6240,7 @@ angle : float
     the initial angle
 t : float
     the normalized value
-out : tuple[float, float] (out parameter)
+out : Out[tuple[float, float]] (out parameter)
     the 2D position
 """
 circular_2D.argtypes = [
@@ -6252,7 +6271,7 @@ angle : float
     the initial angle
 t : float
     the normalized value
-out : tuple[float, float, float] (out parameter)
+out : Out[tuple[float, float, float]] (out parameter)
     the 3D position
 """
 circular_3D.argtypes = [
@@ -6306,7 +6325,7 @@ p1 : tuple[float, float]
     the second point
 t : float
     the normalized value
-out : tuple[float, float] (out parameter)
+out : Out[tuple[float, float]] (out parameter)
     the interpolated point
 """
 interpolate_2D.argtypes = [
@@ -6330,7 +6349,7 @@ p1 : tuple[float, float, float]
     the second point
 t : float
     the normalized value
-out : tuple[float, float, float] (out parameter)
+out : Out[tuple[float, float, float]] (out parameter)
     the interpolated point
 """
 interpolate_3D.argtypes = [
@@ -6458,7 +6477,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-out_angles : tuple[float, float, float] (out parameter)
+out_angles : Out[tuple[float, float, float]] (out parameter)
     the arcball angles
 """
 arcball_angles.argtypes = [
@@ -6497,7 +6516,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-model : mat4 (out parameter)
+model : Out[mat4] (out parameter)
     the model
 """
 arcball_model.argtypes = [
@@ -6713,7 +6732,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : tuple[float, float, float] (out parameter)
+pos : Out[tuple[float, float, float]] (out parameter)
     the pos
 """
 camera_get_position.argtypes = [
@@ -6749,7 +6768,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-lookat : tuple[float, float, float] (out parameter)
+lookat : Out[tuple[float, float, float]] (out parameter)
     the lookat position
 """
 camera_get_lookat.argtypes = [
@@ -6785,7 +6804,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-up : tuple[float, float, float] (out parameter)
+up : Out[tuple[float, float, float]] (out parameter)
     the up vector
 """
 camera_get_up.argtypes = [
@@ -6821,9 +6840,9 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-view : mat4 (out parameter)
+view : Out[mat4] (out parameter)
     the view matrix
-proj : mat4 (out parameter)
+proj : Out[mat4] (out parameter)
     the proj matrix
 """
 camera_viewproj.argtypes = [
@@ -7093,7 +7112,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-extent : Out[DvzBox*] (out parameter)
+extent : Out[DvzBox] (out parameter)
     the extent box in normalized coordinates
 """
 panzoom_extent.argtypes = [
@@ -7149,13 +7168,13 @@ pz : DvzPanzoom*
     the panzoom
 ref : DvzRef*
     the ref
-xmin : np.ndarray[double] (out parameter)
+xmin : Out[float] (out parameter)
     xmin
-xmax : np.ndarray[double] (out parameter)
+xmax : Out[float] (out parameter)
     xmax
-ymin : np.ndarray[double] (out parameter)
+ymin : Out[float] (out parameter)
     ymin
-ymax : np.ndarray[double] (out parameter)
+ymax : Out[float] (out parameter)
     ymax
 """
 panzoom_bounds.argtypes = [
@@ -7521,9 +7540,9 @@ ref : DvzRef*
     the reference frame
 dim : DvzDim
     the dimension axis
-vmin : np.ndarray[double] (out parameter)
+vmin : Out[float] (out parameter)
     the minimum value
-vmax : np.ndarray[double] (out parameter)
+vmax : Out[float] (out parameter)
     the maximum value
 """
 ref_get.argtypes = [
@@ -7615,7 +7634,7 @@ count : int
     the number of positions
 pos : np.ndarray[double]
     the 1D positions
-pos_tr : np.ndarray[vec3] (out parameter)
+pos_tr : Out[tuple[float, float, float]] (out parameter)
     (array) the transformed positions
 """
 ref_normalize_1D.argtypes = [
@@ -7640,7 +7659,7 @@ count : int
     the number of positions
 pos : np.ndarray[dvec2]
     the 2D positions
-pos_tr : np.ndarray[vec3] (out parameter)
+pos_tr : Out[tuple[float, float, float]] (out parameter)
     (array) the transformed 3D positions
 """
 ref_normalize_2D.argtypes = [
@@ -7664,7 +7683,7 @@ count : int
     the number of positions
 pos : np.ndarray[dvec2]
     the 2D positions
-pos_tr : np.ndarray[dvec2] (out parameter)
+pos_tr : Out[dvec2] (out parameter)
     (array) the transformed 2D positions
 """
 ref_normalize_polygon.argtypes = [
@@ -7688,7 +7707,7 @@ count : int
     the number of positions
 pos : np.ndarray[dvec3]
     the 3D positions
-pos_tr : np.ndarray[vec3] (out parameter)
+pos_tr : Out[tuple[float, float, float]] (out parameter)
     (array) the transformed positions
 """
 ref_normalize_3D.argtypes = [
@@ -7710,7 +7729,7 @@ ref : DvzRef*
     the reference frame
 pos_tr : tuple[float, float, float]
     the 3D position in normalized device coordinates
-pos : np.ndarray[dvec3] (out parameter)
+pos : Out[dvec3] (out parameter)
     the original position
 """
 ref_inverse.argtypes = [
@@ -7995,7 +8014,7 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the ID of the canvas
-filename : np.ndarray[char]
+filename : str
     the path to the PNG file with the screenshot
 """
 app_screenshot.argtypes = [
@@ -8018,9 +8037,9 @@ canvas_id : DvzId
     the ID of the canvas
 count : int
     number of frames
-seconds : np.ndarray[uint64_t] (out parameter)
+seconds : Out[int] (out parameter)
     (array) a buffer holding at least `count` uint64_t values (seconds)
-nanoseconds : np.ndarray[uint64_t] (out parameter)
+nanoseconds : Out[int] (out parameter)
     (array) a buffer holding at least `count` uint64_t values (nanoseconds)
 """
 app_timestamps.argtypes = [
@@ -8069,7 +8088,7 @@ Get the current time.
 
 Parameters
 ----------
-time : Out[DvzTime*] (out parameter)
+time : Out[DvzTime] (out parameter)
     fill a structure with seconds and nanoseconds integers
 """
 time.argtypes = [
@@ -8103,11 +8122,11 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the canvas id
-x : np.ndarray[double] (out parameter)
+x : Out[float] (out parameter)
     a pointer to the mouse x position
-y : np.ndarray[double] (out parameter)
+y : Out[float] (out parameter)
     a pointer to the mouse y position
-button : Out[DvzMouseButton*] (out parameter)
+button : Out[DvzMouseButton] (out parameter)
     a pointer to the pressed button
 """
 app_mouse.argtypes = [
@@ -8130,7 +8149,7 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the canvas id
-key : Out[DvzKeyCode*] (out parameter)
+key : Out[DvzKeyCode] (out parameter)
     a pointer to the last pressed key
 """
 app_keyboard.argtypes = [
@@ -8168,7 +8187,7 @@ visual : DvzVisual*
     the visual
 binding_idx : int
     the binding index of the dat that is being used as vertex buffer
-offset : Out[DvzSize*] (out parameter)
+offset : Out[DvzSize] (out parameter)
     the offset, in bytes, of the dat, within the buffer containing that dat
 
 Returns
@@ -8196,7 +8215,7 @@ rd : DvzRenderer*
     the renderer
 visual : DvzVisual*
     the visual
-offset : Out[DvzSize*] (out parameter)
+offset : Out[DvzSize] (out parameter)
     the offset, in bytes, of the dat, within the buffer containing that dat
 
 Returns
@@ -8225,7 +8244,7 @@ visual : DvzVisual*
     the visual
 slot_idx : int
     the slot index of the dat
-offset : Out[DvzSize*] (out parameter)
+offset : Out[DvzSize] (out parameter)
     the offset, in bytes, of the dat, within the buffer containing that dat
 
 Returns
@@ -8255,7 +8274,7 @@ visual : DvzVisual*
     the visual
 slot_idx : int
     the slot index of the tex
-offset : Out[DvzSize*] (out parameter)
+offset : Out[DvzSize] (out parameter)
     the offset, in bytes, of the tex's staging dat, within the buffer containing
 
 Returns
@@ -8564,7 +8583,7 @@ Start a new dialog.
 
 Parameters
 ----------
-title : np.ndarray[char]
+title : str
     the dialog title
 flags : int
     the flags
@@ -8582,7 +8601,7 @@ Add a text item in a dialog.
 
 Parameters
 ----------
-fmt : np.ndarray[char]
+fmt : str
     the format string
 """
 gui_text.argtypes = [
@@ -8597,11 +8616,11 @@ Add a text box in a dialog.
 
 Parameters
 ----------
-label : np.ndarray[char]
+label : str
     the label
 str_len : int
     the size of the str buffer
-str : np.ndarray[char]
+str : str
     the modified string
 flags : int
     the flags
@@ -8627,13 +8646,13 @@ Add a slider.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : np.ndarray[float] (out parameter)
+value : Out[float] (out parameter)
     the pointer to the value
 
 Returns
@@ -8657,13 +8676,13 @@ Add a slider with 2 values.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : tuple[float, float] (out parameter)
+value : Out[tuple[float, float]] (out parameter)
     the pointer to the value
 
 Returns
@@ -8687,13 +8706,13 @@ Add a slider with 3 values.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : tuple[float, float, float] (out parameter)
+value : Out[tuple[float, float, float]] (out parameter)
     the pointer to the value
 
 Returns
@@ -8717,13 +8736,13 @@ Add a slider with 4 values.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : tuple[float, float, float, float] (out parameter)
+value : Out[tuple[float, float, float, float]] (out parameter)
     the pointer to the value
 
 Returns
@@ -8747,7 +8766,7 @@ Add a button.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the button name
 width : float
     the button width
@@ -8774,9 +8793,9 @@ Add a checkbox.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the button name
-checked : np.ndarray[bool] (out parameter)
+checked : Out[bool] (out parameter)
     whether the checkbox is checked
 
 Returns
@@ -8798,13 +8817,13 @@ Add a dropdown menu.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the menu name
 count : int
     the number of menu items
-items : np.ndarray[char*]
+items : list[str]
     the item labels
-selected : np.ndarray[uint32_t] (out parameter)
+selected : Out[int] (out parameter)
     a pointer to the selected index
 flags : int
     the dropdown menu flags
@@ -8836,7 +8855,7 @@ width : float
     the widget width
 height : float
     the widget height
-fmt : np.ndarray[char]
+fmt : str
     the format string
 """
 gui_progress.argtypes = [
@@ -8875,7 +8894,7 @@ Add a color picker
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the widget name
 color : tuple[float, float, float]
     the color
@@ -8901,7 +8920,7 @@ Start a new tree node.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the widget name
 
 Returns
@@ -8945,7 +8964,7 @@ Close the current tree node.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the widget name
 
 Returns
@@ -8965,13 +8984,13 @@ Display a table with selectable rows.
 
 Parameters
 ----------
-name : np.ndarray[char]
+name : str
     the widget name
 row_count : int
     the number of rows
 column_count : int
     the number of columns
-labels : np.ndarray[char*]
+labels : list[str]
     all cell labels
 selected : np.ndarray[bool]
     a pointer to an array of boolean indicated which rows are selected
@@ -9007,9 +9026,9 @@ Parameters
 ----------
 count : int
     the number of rows
-ids : np.ndarray[char*]
+ids : list[str]
     short id of each row
-labels : np.ndarray[char*]
+labels : list[str]
     full label of each row
 levels : np.ndarray[uint32_t]
     a positive integer indicate
@@ -9216,7 +9235,7 @@ n : int
     the number of values
 values : np.ndarray[double]
     an array of double numbers
-min_max : dvec2 (out parameter)
+min_max : Out[dvec2] (out parameter)
     the min and max values
 """
 range.argtypes = [
@@ -9237,7 +9256,7 @@ point_count : int
     the number of points
 polygon : np.ndarray[dvec2]
     the polygon 2D positions
-out_index_count : np.ndarray[uint32_t] (out parameter)
+out_index_count : Out[int] (out parameter)
     the computed index count
 
 Returns
@@ -9701,7 +9720,7 @@ view : mat4
     the view matrix
 proj : mat4
     the projection matrix
-mvp : Out[DvzMVP*] (out parameter)
+mvp : Out[DvzMVP] (out parameter)
     the MVP structure
 """
 mvp.argtypes = [
@@ -9719,7 +9738,7 @@ Return a default DvzMVP struct
 
 Parameters
 ----------
-mvp : Out[DvzMVP*] (out parameter)
+mvp : Out[DvzMVP] (out parameter)
     the DvzMVP struct
 """
 mvp_default.argtypes = [
@@ -9738,7 +9757,7 @@ width : int
     the viewport width, in framebuffer pixels
 height : int
     the viewport height, in framebuffer pixels
-viewport : Out[DvzViewport*] (out parameter)
+viewport : Out[DvzViewport] (out parameter)
     the viewport
 """
 viewport_default.argtypes = [
@@ -9805,7 +9824,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-desc : np.ndarray[char]
+desc : str
     the description
 """
 batch_desc.argtypes = [
@@ -9881,7 +9900,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-filename : np.ndarray[char]
+filename : str
     the YAML filename
 """
 batch_yaml.argtypes = [
@@ -9899,7 +9918,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-filename : np.ndarray[char]
+filename : str
     the dump filename
 
 Returns
@@ -9922,7 +9941,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-filename : np.ndarray[char]
+filename : str
     the dump filename
 """
 batch_load.argtypes = [
@@ -9994,7 +10013,7 @@ Parameters
 ----------
 rqr : DvzRequester*
     the requester
-count : np.ndarray[uint32_t] (out parameter)
+count : Out[int] (out parameter)
     pointer to the number of requests, set by this function
 
 Returns
@@ -10473,7 +10492,7 @@ batch : DvzBatch*
     the batch
 shader_type : DvzShaderType
     the shader type
-code : np.ndarray[char]
+code : str
     an ASCII string with the GLSL code
 
 Returns
@@ -10502,7 +10521,7 @@ shader_type : DvzShaderType
     the shader type
 size : DvzSize
     the size in bytes of the SPIR-V buffer
-buffer : np.ndarray[char]
+buffer : str
     pointer to a buffer with the SPIR-V bytecode
 
 Returns
@@ -12752,7 +12771,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-string : np.ndarray[char]
+string : str
     the characters
 """
 glyph_ascii.argtypes = [
@@ -12802,7 +12821,7 @@ visual : DvzVisual*
     the visual
 string_count : int
     the number of strings
-strings : np.ndarray[char*]
+strings : list[str]
     the strings
 positions : np.ndarray[vec3]
     the positions of each string
@@ -12943,7 +12962,7 @@ visual : DvzVisual*
     the visual
 first : int
     the first item
-text : np.ndarray[char]
+text : str
     the ASCII test (string length without the null terminal byte = number of glyphs)
 flags : int
     the upload flags
@@ -13007,7 +13026,7 @@ color : tuple[int, int, int, int]
     the text color
 size : float
     the glyph size
-text : np.ndarray[char]
+text : str
     the text, can contain `\n` new lines
 """
 monoglyph_textarea.argtypes = [
