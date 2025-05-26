@@ -61,6 +61,7 @@ void main()
 
     if (SPHERE_LIGHTING > 0)
     {
+        pos.y = -pos.y;
         out_color = lighting(pos, in_color, normal, in_cam_pos, light, material);
     }
     else
