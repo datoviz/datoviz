@@ -13,6 +13,7 @@ import faulthandler
 import os
 import pathlib
 import platform
+from collections.abc import Iterable
 from ctypes import POINTER as P_  # noqa
 from ctypes import byref  # noqa
 from enum import IntEnum
@@ -98,7 +99,7 @@ class CtypesEnum(IntEnum):
 class CStringArrayType:
     @classmethod
     def from_param(cls, value):
-        if not isinstance(value, list):
+        if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
             raise TypeError("Expected a list of strings")
 
         encoded = [s.encode("utf-8") for s in value]

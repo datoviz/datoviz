@@ -265,6 +265,9 @@ def map_python_type(arg):
     arg = arg.copy()
     d = arg['dtype']
 
+    if arg.pop('out', False):
+        arg['dtype'] = arg['dtype'].replace('*', '')
+        return f'Out[{map_python_type(arg)}]'
     if '*' not in d:
         if 'int64_t' in d or 'int32_t' in d or 'int16_t' in d:
             return 'int'
@@ -275,10 +278,12 @@ def map_python_type(arg):
     else:
         if d == 'void*':
             return 'np.ndarray'
+        elif d == 'char*':
+            return 'str'
+        elif d == 'char**':
+            return 'list[str]'
         elif d[0] != 'D':
             return f'np.ndarray[{arg["dtype"][:-1]}]'
-        elif arg.pop('out', False):
-            return f'Out[{map_python_type(arg)}]'
     return d
 
 
