@@ -1,6 +1,6 @@
 # Shape Collections
 
-The `ShapeCollection` is a utility that lets you build complex 2D or 3D geometry by combining predefined shapes, custom meshes, and transformed objects. These collections are typically used with `app.mesh_shape()` to create a mesh visual.
+The `ShapeCollection` is a utility that lets you build complex 2D or 3D geometry by combining predefined shapes, custom meshes, and transformed objects. These collections are typically used with `app.mesh()` to create a mesh visual.
 
 ---
 
@@ -10,7 +10,7 @@ The `ShapeCollection` is a utility that lets you build complex 2D or 3D geometry
 - Transform each shape independently (offset, scale, 4×4 matrix)
 - Load shapes from `.obj` files
 - Generate surfaces from height maps or triangulated polygons
-- Export to a single GPU mesh with lighting, textures, contours, or isolines
+- Use in a mesh visual with lighting, textures, contours, or isolines
 
 ---
 
@@ -19,7 +19,7 @@ The `ShapeCollection` is a utility that lets you build complex 2D or 3D geometry
 ```python
 sc = dvz.ShapeCollection()
 sc.add_cube(offset=(0, 0, 0), scale=1.0)
-visual = app.mesh_shape(sc, lighting=True)
+visual = app.mesh(sc, lighting=True)
 ```
 
 After use, destroy the shape collection to free resources:
@@ -46,8 +46,8 @@ sc.destroy()
 | Icosahedron  | `add_icosahedron()`  | Platonic solid                        |
 | Cone         | `add_cone()`         | Cone with cap                         |
 | Cylinder     | `add_cylinder()`     | Cylinder with caps                    |
-| Arrow            | `add_arrow()`       | Cylinder + cone composite, total length = 1     |
-| Torus            | `add_torus()`       | Donut shape with tubular cross-section          |
+| Arrow        | `add_arrow()`        | Cylinder + cone composite             |
+| Torus        | `add_torus()`        | Donut shape with tubular cross-section|
 
 
 ---
@@ -57,7 +57,7 @@ sc.destroy()
 ### Polygon
 
 ```python
-sc.add_polygon(points, contour='wire', indexing='auto')
+sc.add_polygon(points, contour='full')
 ```
 
 * `points`: Nx2 array of polygon vertices
@@ -100,7 +100,7 @@ Each shape can be transformed individually:
 
 ## Colors
 
-Each basic shape accepts a `color` argument.
+Each basic shape accepts a uniform `color` argument for the shape.
 
 ---
 
@@ -109,13 +109,12 @@ Each basic shape accepts a `color` argument.
 After building your collection, use:
 
 ```python
-visual = app.mesh_shape(sc, lighting=True, contour=True)
+visual = app.mesh(sc, lighting=True, contour=True)
 ```
 
-And optionally:
+And after you're done using it:
 
 ```python
-sc.merge()     # Optional: flattens internal shape list
 sc.destroy()   # Frees memory
 ```
 
@@ -124,7 +123,7 @@ sc.destroy()   # Frees memory
 ## Example
 
 ```python
---8<-- "examples/features/shapes.py"
+--8<-- "examples/features/shapes.py:14:"
 ```
 
 ---
@@ -135,10 +134,8 @@ The ShapeCollection system is a powerful way to build reusable geometry for the 
 
 * ✔️ Add and transform 2D/3D primitives
 * ✔️ Generate and combine triangulated surfaces
-* ✔️ Apply contours, colors, lighting
-* ❌ Limited support for UVs and textures (for now)
 
 See also:
 
-* [Mesh](../visuals/mesh.md) for rendering options
-* [Volume](../visuals/volume.md) for dense scalar fields
+* [**Mesh**](../visuals/mesh.md) for rendering options
+* [**Volume**](../visuals/volume.md) for dense scalar fields

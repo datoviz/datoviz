@@ -15,9 +15,7 @@ These modes are attached to a panel and control the panel's internal transformat
 
 ---
 
-## 2D Interactivity
-
-### `panel.panzoom()`
+## Pan and Zoom Interactivity
 
 Adds standard 2D pan and zoom behavior to a panel. This is the most common interactivity used for 2D plots.
 
@@ -36,8 +34,6 @@ panzoom = panel.panzoom(fixed='y')  # lock vertical movement
 
 ## Orthographic Interactivity
 
-### `panel.ortho()`
-
 Adds a basic orthographic projection controller. Similar to panzoom, but with fixed scale and behavior suited for 2D rendering.
 
 ```python
@@ -53,8 +49,6 @@ This is useful for pixel-perfect rendering or interfaces that require fixed-size
 ---
 
 ## Arcball Interactivity (3D)
-
-### `panel.arcball()`
 
 Enables 3D rotation using an arcball-style controller. The arcball rotates the model around a virtual sphere.
 
@@ -72,15 +66,13 @@ Once active, you can control it via:
 
 ```python
 arcball.set((x, y, z))    # set rotation angles
-angles = arcball.get()             # get current rotation
+angles = arcball.get()    # get current rotation
 arcball.reset()           # reset to initial state
 ```
 
 ---
 
 ## Camera Interactivity (3D)
-
-### `panel.camera()`
 
 Adds a full 3D camera with position, target (look-at), and up vector.
 
@@ -97,6 +89,10 @@ camera = panel.camera(
     initial_up=(0, 0, 1)
 )
 ```
+
+!!! note
+
+    The camera is automatically added when using an arcball.
 
 To control it manually:
 
