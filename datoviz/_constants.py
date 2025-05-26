@@ -52,6 +52,7 @@ DEFAULT_IMAGE_RESCALE = None
 DEFAULT_IMAGE_BORDER = False
 
 VOLUME_MODES = ('colormap', 'rgba')
+TOPOLOGY_OPTIONS = ('point_list', 'line_list', 'line_strip', 'triangle_list', 'triangle_strip')
 
 NDC = (-1.0, +1.0)
 

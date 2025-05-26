@@ -367,8 +367,8 @@ class App:
         Parameters
         ----------
         topology : str
-            Topology type: `point_list`, `line_list`, `line_strip`, `triangle_list`,
-            `triangle_strip`, `triangle_fan`.
+            Topology type: `point_list`, `line_list`, `line_strip`,
+            `triangle_list`, `triangle_strip`.
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -377,8 +377,10 @@ class App:
         vs.Basic
             The created basic visual instance.
         """
+        if topology not in cst.TOPOLOGY_OPTIONS:
+            raise ValueError(f'Topology must be one of {cst.TOPOLOGY_OPTIONS} and not {topology}')
         c_topology = to_enum(f'primitive_topology_{topology}')
-        assert c_topology
+        assert c_topology is not None
         c_visual = dvz.basic(self.c_batch, c_topology, 0)
         return self._visual(cls=vs.Basic, c_visual=c_visual, **kwargs)
 
@@ -663,10 +665,11 @@ class App:
             **kwargs,
         )
 
-    def sphere(self,
-               textured: tp.Optional[bool] = None,
-               lighting: tp.Optional[bool] = None,
-               **kwargs,
+    def sphere(
+        self,
+        textured: tp.Optional[bool] = None,
+        lighting: tp.Optional[bool] = None,
+        **kwargs,
     ) -> vs.Sphere:
         """
         Create a sphere visual.
@@ -685,10 +688,7 @@ class App:
         vs.Sphere
             The created sphere visual instance.
         """
-
-        c_flags = sphere_flags(
-            textured=textured, lighting=lighting
-        )
+        c_flags = sphere_flags(textured=textured, lighting=lighting)
         return self._visual(dvz.sphere, vs.Sphere, c_flags=c_flags, **kwargs)
 
     def volume(self, mode: str = 'colormap', **kwargs) -> vs.Volume:

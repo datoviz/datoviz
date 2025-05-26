@@ -10,3 +10,4 @@ from ._ctypes import *  # noqa
 from ._app import App  # noqa
 from .shape_collection import ShapeCollection, merge_shapes  # noqa
 from .utils import to_byte, key_name, from_enum, to_enum, cmap  # noqa
+from ._constants import TOPOLOGY_OPTIONS  # noqa
