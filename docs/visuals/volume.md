@@ -32,7 +32,7 @@ Use the volume visual when:
 
 ## Attributes
 
-### Per-volume
+### Per-item
 
 | Attribute     | Type             | Description                                           |
 |---------------|------------------|-------------------------------------------------------|

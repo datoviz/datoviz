@@ -28,6 +28,8 @@ Use the point visual when:
 
 ## Attributes
 
+### Per-item
+
 | Attribute | Type           | Description                      |
 |-----------|----------------|----------------------------------|
 | `position` | `(N, 3) float32` | 3D positions in NDC space       |

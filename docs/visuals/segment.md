@@ -32,7 +32,7 @@ Use the segment visual when:
 
 ## Attributes
 
-### Per-segment
+### Per-item
 
 | Attribute   | Type             | Description                              |
 |-------------|------------------|------------------------------------------|
@@ -41,8 +41,7 @@ Use the segment visual when:
 | `linewidth` | `(N,) float32`   | Line thickness in pixels                 |
 | `shift`     | `(N, 4) float32` | Pixel offset applied to both endpoints   |
 
-
-### Uniform
+### Per-visual (uniform)
 
 | Attribute   | Type        | Description                             |
 |-------------|-------------|-----------------------------------------|

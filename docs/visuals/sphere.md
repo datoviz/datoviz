@@ -1,6 +1,6 @@
 # Sphere Visual
 
-The **sphere** visual renders 3D spheres using GPU impostors — efficient 2D quads that simulate shaded spheres in the fragment shader using raymarching. This allows rendering of thousands of spheres with realistic lighting and minimal geometry overhead.
+The **Sphere** visual renders 3D spheres using GPU impostors — efficient 2D quads that simulate shaded spheres in the fragment shader using raymarching. This allows rendering of thousands of spheres with realistic lighting and minimal geometry overhead.
 
 <figure markdown="span">
 ![Sphere visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/sphere.png)
@@ -28,7 +28,7 @@ Use the sphere visual when:
 
 ## Attributes
 
-### Per-sphere
+### Per-item
 
 | Attribute  | Type             | Description                              |
 |------------|------------------|------------------------------------------|
@@ -36,7 +36,7 @@ Use the sphere visual when:
 | `color`    | `(N, 4) uint8`   | RGBA color                               |
 | `size`     | `(N,) float32`   | Diameter in NDC units                    |
 
-### Uniform
+### Per-visual (uniform)
 
 | Attribute       | Type   | Description                                            |
 |------------------|--------|--------------------------------------------------------|
@@ -81,6 +81,6 @@ The sphere visual provides efficient, realistic rendering of many shaded spheres
 
 See also:
 
-* [Point](point.md) for flat, 2D discs
-* [Marker](marker.md) for symbolic shapes with borders
-* [Mesh](mesh.md) for full 3D geometry
+* [**Point**](point.md) for flat, 2D discs
+* [**Marker**](marker.md) for symbolic shapes with borders
+* [**Mesh**](mesh.md) for full 3D geometry

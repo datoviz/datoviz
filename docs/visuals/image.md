@@ -36,8 +36,15 @@ Each item in the visual is a single image. Multiple images can be efficiently di
 
     Currently, all images in a given visual must share the same texture image, though they can use different texture coordinates.
 
+### Options
 
-### Per-image
+| Option        | Type     | Description                                        |
+|---------------|----------|----------------------------------------------------|
+| `unit`        | `enum`   | Unit of the image size                             |
+| `mode`        | `enum`   | Color mode                                         |
+| `rescale`     | `enum`   | Rescale mode                                       |
+
+### Per-item
 
 | Attribute     | Type                 | Description                                      |
 |---------------|----------------------|--------------------------------------------------|
@@ -47,13 +54,10 @@ Each item in the visual is a single image. Multiple images can be efficiently di
 | `texcoords`   | `(N, 4) float32`     | Texture coordinates (default is `(0, 0, 1, 1)`)  |
 | `facecolor`   | `(N, 4) uint8`       | Fill color (used in `fill` mode)                |
 
-### Uniform
+### Per-visual (uniform)
 
 | Attribute     | Type     | Description                                        |
 |---------------|----------|----------------------------------------------------|
-| `unit`        | `enum`   | Unit of the image size                             |
-| `mode`        | `enum`   | Color mode                                         |
-| `rescale`     | `enum`   | Rescale mode                                       |
 | `border`      | `bool`   | Show or hide a border around the image             |
 | `edgecolor`   | `cvec4`  | Color of the border edge                           |
 | `linewidth`   | `float`  | Width of the border in pixels                      |

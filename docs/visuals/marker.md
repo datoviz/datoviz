@@ -35,7 +35,15 @@ Use the marker visual when:
 
 ## Attributes
 
-### Per-vertex
+### Options
+
+| Option      | Type     | Description                                          |
+|-------------|----------|------------------------------------------------------|
+| `shape`     | enum     | Marker shape (only used when `mode='code'`)          |
+| `mode`      | enum     | Rendering mode (`code`, `bitmap`, `sdf`, `msdf`)     |
+| `aspect`    | enum     | Aspect ratio behavior                                |
+
+### Per-item
 
 | Attribute  | Type             | Description                          |
 |------------|------------------|--------------------------------------|
@@ -44,13 +52,10 @@ Use the marker visual when:
 | `size`     | `(N,) float32`   | Diameter in framebuffer pixels       |
 | `angle`    | `(N,) float32`   | Rotation angle in radians            |
 
-### Uniform
+### Per-visual (uniform)
 
-| Attribute   | Type     | Description                                           |
-|-------------|----------|-------------------------------------------------------|
-| `shape`     | enum     | Marker shape (only used when `mode='code'`)          |
-| `mode`      | enum     | Rendering mode (`code`, `bitmap`, `sdf`, `msdf`)     |
-| `aspect`    | enum     | Aspect ratio behavior                                |
+| Attribute   | Type     | Description                                          |
+|-------------|----------|------------------------------------------------------|
 | `linewidth` | float    | Outline width in pixels                              |
 | `edgecolor` | cvec4    | Outline color (applied uniformly)                    |
 | `tex_scale` | float    | Global scaling factor for all markers                |

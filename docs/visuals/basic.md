@@ -36,7 +36,7 @@ Use the basic visual when you need:
 
 ## Attributes
 
-### Per-vertex
+### Per-item
 
 | Attribute  | Type             | Description                                 |
 |------------|------------------|---------------------------------------------|
@@ -44,7 +44,7 @@ Use the basic visual when you need:
 | `color`    | `(N, 4) uint8`   | RGBA color per vertex                       |
 | `group`    | `(N,) float32`   | Group ID used to separate primitives (`line_strip` and `triangle_strip`) |
 
-### Uniform
+### Per-visual (uniform)
 
 | Attribute | Type   | Description                     |
 |-----------|--------|---------------------------------|

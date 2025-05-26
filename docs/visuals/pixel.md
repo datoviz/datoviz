@@ -31,14 +31,14 @@ Use the pixel visual when:
 
 ## Attributes
 
-### Per-vertex
+### Per-item
 
 | Attribute  | Type             | Description                     |
 |------------|------------------|---------------------------------|
 | `position` | `(N, 3) float32` | 3D positions in NDC             |
 | `color`    | `(N, 4) uint8`   | RGBA color per pixel            |
 
-### Uniform
+### Per-visual (uniform)
 
 | Attribute | Type  | Description                                 |
 |-----------|-------|---------------------------------------------|

@@ -1,6 +1,6 @@
 # Glyph Visual
 
-The **glyph** visual provides low-level, high-performance text rendering using individual positioned glyphs. It supports fine control over placement, scaling, color, and layout — ideal for custom labeling, annotations, or scientific overlays where flexibility matters.
+The **Glyph** visual provides low-level, high-performance text rendering using individual positioned glyphs. It supports fine control over placement, scaling, color, and layout — ideal for custom labeling, annotations, or scientific overlays where flexibility matters.
 
 This visual operates at the glyph level and can render multiple strings using groups of glyphs.
 
@@ -35,7 +35,7 @@ Use the glyph visual when:
 
 ## Attributes
 
-### Per-glyph
+### Per-item
 
 | Attribute     | Type               | Description                                           |
 |----------------|--------------------|-------------------------------------------------------|
@@ -49,7 +49,7 @@ Use the glyph visual when:
 | `angle`        | `(N,) float32`     | Rotation angle (radians) per glyph                   |
 | `color`        | `(N, 4) uint8`     | Glyph fill color                                     |
 
-### Uniform
+### Per-visual (uniform)
 
 | Attribute   | Type    | Description                       |
 |-------------|---------|-----------------------------------|

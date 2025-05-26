@@ -39,7 +39,7 @@ Use the path visual when:
 
 ## Attributes
 
-### Per-vertex
+### Per-item
 
 | Attribute   | Type             | Description                          |
 |-------------|------------------|--------------------------------------|
@@ -47,7 +47,7 @@ Use the path visual when:
 | `color`     | `(N, 4) uint8`   | RGBA color per vertex                |
 | `linewidth` | `(N,) float32`   | Line thickness in pixels             |
 
-### Uniform
+### Per-visual (uniform)
 
 | Attribute | Type | Description                                   |
 |-----------|------|-----------------------------------------------|
@@ -57,7 +57,7 @@ Use the path visual when:
 Cap and join styles are defined by enums from the Vulkan line rendering system.
 
 
-### Cap types
+## Cap types
 
 Each path endpoint can be rendered with a custom **cap** style:
 
@@ -70,7 +70,7 @@ Each path endpoint can be rendered with a custom **cap** style:
 | `butt`         | ![cap_butt](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/segment_butt.png)    |
 
 
-### Joint styles
+## Joint styles
 
 | Cap Name       |
 |----------------|
