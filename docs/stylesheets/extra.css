@@ -23,6 +23,10 @@ img[alt^="marker aspect"] {
     width: 64px;
 }
 
+img[alt^="cap_"] {
+    width: 48px;
+}
+
 img[alt*=gpuopen] {
     width: 512px;
 }
