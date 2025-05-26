@@ -2,6 +2,10 @@
 
 The **sphere** visual renders 3D spheres using GPU impostors — efficient 2D quads that simulate shaded spheres in the fragment shader using raymarching. This allows rendering of thousands of spheres with realistic lighting and minimal geometry overhead.
 
+<figure markdown="span">
+![Sphere visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/sphere.png)
+</figure>
+
 ---
 
 ## Overview
@@ -61,7 +65,7 @@ Lighting support will be improved soon, with proper material support.
 ## Example
 
 ```python
---8<-- "examples/visuals/sphere.py"
+--8<-- "examples/visuals/sphere.py:14:"
 ```
 
 ---

@@ -2,9 +2,9 @@
 
 The **volume** visual displays 3D scalar fields using ray-based volume rendering. It supports NDC-aligned bounding boxes, axis permutation, basic colormapping, and limited transfer functions.
 
-!!! warning
-
-    Volume rendering is currently a basic implementation. It is neither highly efficient nor visually polished yet. Slicing, advanced transfer functions, and performance improvements are planned for future versions.
+<figure markdown="span">
+![Volume visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/volume.png)
+</figure>
 
 ---
 
@@ -14,6 +14,10 @@ The **volume** visual displays 3D scalar fields using ray-based volume rendering
 - Basic support for colormapping and transfer functions
 - Texture-based rendering with customizable axis permutation
 - Useful for initial previews of volumetric data
+
+!!! warning
+
+    Volume rendering is currently a basic implementation. It is neither highly efficient nor visually polished yet. Slicing, advanced transfer functions, and performance improvements are planned for future versions.
 
 ---
 
@@ -103,7 +107,7 @@ More expressive transfer functions (e.g. opacity maps, histograms) are planned.
 ## Example
 
 ```python
---8<-- "examples/visuals/volume.py"
+--8<-- "examples/visuals/volume.py:16:"
 ```
 
 ---

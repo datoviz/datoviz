@@ -6,6 +6,10 @@ This visual operates at the glyph level and can render multiple strings using gr
 
 This visual is currently implemented with multichannel signed distance fields
 
+<figure markdown="span">
+![Glyph visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/glyph.png)
+</figure>
+
 ---
 
 ## Overview
@@ -93,14 +97,6 @@ This provides an efficient way to define structured text and then refine it per 
 
 ---
 
-## Example
-
-```python
---8<-- "examples/visuals/glyph.py"
-```
-
----
-
 ## Font and MSDF Rendering
 
 Datoviz uses **MSDF (Multi-channel Signed Distance Field)** rendering for high-quality, scalable glyph rendering. A pre-generated MSDF glyph atlas is bundled with the library.
@@ -111,6 +107,14 @@ Datoviz uses **MSDF (Multi-channel Signed Distance Field)** rendering for high-q
 
 ```python
 visual = app.glyph(font_size=30)
+```
+
+---
+
+## Example
+
+```python
+--8<-- "examples/visuals/glyph.py:15:"
 ```
 
 ---

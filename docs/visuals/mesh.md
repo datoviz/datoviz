@@ -2,6 +2,10 @@
 
 The **mesh** visual renders 3D surfaces composed of triangles. It supports flat shading, lighting, texturing, contours, and experimental isolines, making it a powerful and flexible tool for scientific surface visualization.
 
+<figure markdown="span">
+![Mesh visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/mesh.png)
+</figure>
+
 ---
 
 ## Overview
@@ -119,7 +123,7 @@ This feature is still in development and may change in future versions.
 ## Example
 
 ```python
---8<-- "examples/visuals/mesh.py"
+--8<-- "examples/visuals/mesh.py:15:"
 ```
 
 ---
