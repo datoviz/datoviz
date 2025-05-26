@@ -19,18 +19,18 @@ Start here if you're new to Datoviz:
 
 Each visual primitive has its own page with examples and documentation:
 
-- [Overview](visuals.md)
-- [Basic](../visuals/basic.md) — raw Vulkan primitives (points, line strips, triangles) with uniform color and no custom shaders
-- [Pixel](../visuals/pixel.md) — individual pixels with position, color, and size (squares)
-- [Point](../visuals/point.md) — sized, colored antialiased discs without borders
-- [Marker](../visuals/marker.md) — symbols with optional borders, using built-in shapes, SVGs, or bitmap images
-- [Segment](../visuals/segment.md) — variable-width line segments with optional caps
-- [Path](../visuals/path.md) — continuous polylines
-- [Image](../visuals/image.md) — RGB or single-channel images with optional colormaps
-- [Glyph](../visuals/glyph.md) — glyph-based text rendering
-- [Mesh](../visuals/mesh.md) — 3D triangle meshes with optional lighting (flat, basic, or advanced), textures, contours, or experimental isolines
-- [Volume](../visuals/volume.md) — basic volume rendering of dense 3D voxel data
-- [Slice](../visuals/slice.md) — 2D orthogonal slices through 3D volumes
+- 🧭 [Overview](visuals.md)
+- 🔺 [Basic](../visuals/basic.md) — raw Vulkan primitives (points, line strips, triangles) with uniform color and no custom shaders
+- 🟦 [Pixel](../visuals/pixel.md) — individual pixels with position, color, and size (squares)
+- ⚪ [Point](../visuals/point.md) — sized, colored antialiased discs without borders
+- ✳️ [Marker](../visuals/marker.md) — symbols with optional borders, using built-in shapes, SVGs, or bitmap images
+- ➖ [Segment](../visuals/segment.md) — variable-width line segments with optional caps
+- ➰ [Path](../visuals/path.md) — continuous polylines
+- 🖼️ [Image](../visuals/image.md) — RGB or single-channel images with optional colormaps
+- 🔤 [Glyph](../visuals/glyph.md) — glyph-based text rendering
+- 🧊 [Mesh](../visuals/mesh.md) — 3D triangle meshes with optional lighting (flat, basic, or advanced), textures, contours, or experimental isolines
+- 🌫️ [Volume](../visuals/volume.md) — basic volume rendering of dense 3D voxel data
+- 🪓 [Slice](../visuals/slice.md) — 2D orthogonal slices through 3D volumes
 
 ### 3. **Advanced Topics**
 
