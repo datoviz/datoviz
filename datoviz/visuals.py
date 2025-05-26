@@ -1206,8 +1206,7 @@ class Glyph(Visual):
 
         Warnings:
         --------
-        .. warning::
-            This is not implemented yet.
+        This is not implemented yet.
 
         """
         self.axis[offset:] = array
@@ -1971,8 +1970,7 @@ class Volume(Visual):
 
         Warnings:
         --------
-        .. warning::
-            This is not implemented yet.
+        This is not implemented yet.
         """
         self.slice = value
 

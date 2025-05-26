@@ -728,8 +728,7 @@ class ShapeCollection:
 
         Warnings:
         --------
-        .. warning::
-            Polygon contour is still experimental, it may not work well in some instances.
+        Polygon contour is still experimental, it may not work well in some instances.
 
         """
         assert points.ndim == 2

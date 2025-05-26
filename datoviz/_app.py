@@ -66,8 +66,8 @@ class App:
 
         Warnings
         --------
-        .. warning::
-            The `background` parameter is likely to change in future versions.
+
+        The `background` parameter is likely to change in future versions.
         """
         if offscreen:
             c_flags |= dvz.APP_FLAGS_OFFSCREEN
@@ -113,9 +113,8 @@ class App:
 
         Warnings
         --------
-        .. warning::
-            The `gui` parameter *must* be `True` when a GUI is used in the figure, and *must* be
-            `False` otherwise. This may change in versions.
+        The `gui` parameter *must* be `True` when a GUI is used in the figure, and *must* be
+        `False` otherwise. This may change in versions.
         """
         if gui:
             c_flags |= dvz.CANVAS_FLAGS_IMGUI

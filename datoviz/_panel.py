@@ -284,8 +284,7 @@ class Panel:
 
         Warnings
         --------
-        .. warning::
-            This functionality is still experimental.
+        This functionality is still experimental.
 
         """
         title = title or 'Panel'
