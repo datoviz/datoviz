@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-24.04 80.031 454.208 446.368" xmlns:bx="https://boxy-svg.com">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-28.141 80.031 458.309 344.532" xmlns:bx="https://boxy-svg.com">
   <defs>
     <bx:export>
       <bx:file format="svg" path="Sans titre.svg"/>
@@ -7,13 +7,13 @@
     <bx:grid x="-200.39" y="100.887" width="100" height="100"/>
     <style bx:fonts="Noto Sans">@import url(https://fonts.googleapis.com/css2?family=Noto+Sans%3Aital%2Cwght%400%2C100..900%3B1%2C100..900&amp;display=swap);</style>
   </defs>
-  <rect x="-0.39" y="100.887" width="400" height="400" style="stroke: rgb(0, 0, 0); stroke-width: 2px; fill-opacity: 0.2; paint-order: fill; fill: rgb(128, 128, 128);"/>
-  <path d="M 0 299.5 H 380 L 378 292 L 400 300 L 378 308 L 380 300.5 H 0 V 299.5 Z" bx:shape="arrow 0 292 400 16 1 22 2 1@12b86ed5" style="stroke: rgb(0, 0, 0);"/>
-  <path d="M 100 399.5 H 480 L 478 392 L 500 400 L 478 408 L 480 400.5 H 100 V 399.5 Z" bx:shape="arrow 100 392 400 16 1 22 2 1@1fe8e284" style="stroke: rgb(0, 0, 0);" transform="matrix(-0.000001, -1, 1, -0.000001, -199.999885, 600.000221)"/>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="361.713" y="333.83">x</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="167.789" y="142.807">y</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="9.745" y="280.618">-1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="353.759" y="280.618">+1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="209.815" y="492.595">-1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="209.815" y="142.807">+1</text>
+  <rect x="-0.39" y="100.887" width="400" height="300" style="stroke: rgb(0, 0, 0); stroke-width: 2px; fill-opacity: 0.2; paint-order: fill; fill: rgb(128, 128, 128);"/>
+  <path d="M -0.39 250.974 H 379.61 L 377.61 243.474 L 399.61 251.474 L 377.61 259.474 L 379.61 251.974 H -0.39 V 250.974 Z" bx:shape="arrow -0.39 243.474 400 16 1 22 2 1@0b2d6f2a" style="stroke: rgb(0, 0, 0);"/>
+  <path d="M 75.222 399.5 H 361.065 L 359.56 392 L 376.109 400 L 359.56 408 L 361.065 400.5 H 75.222 V 399.5 Z" bx:shape="arrow 75.222 392 300.887 16 1 16.549 1.504 1@38c2c065" style="stroke: rgb(0, 0, 0);" transform="matrix(-0.000001, -1, 1, -0.000001, -199.999997, 476.109215)"/>
+  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="375.523" y="230.276">x</text>
+  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="167.789" y="135.807">y</text>
+  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="8.61" y="292.002">-1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="343.924" y="292.002">+1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="209.815" y="392.002">-1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="209.815" y="135.807">+1</text>
 </svg>
