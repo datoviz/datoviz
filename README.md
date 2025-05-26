@@ -201,3 +201,7 @@ Datoviz is supported by:
 - Khronos Group (2025). [Datoviz: Ultra-fast, high-performance GPU scientific visualization library built on Vulkan](https://www.khronos.org/blog/datoviz-ultra-fast-high-performance-gpu-scientific-visualization-library-built-on-vulkan)
 - Rossant, C. & Rougier, N. (2021). [Datoviz: A GPU Scientific Visualization Library Based on Vulkan](https://ieeexplore.ieee.org/document/9500108). *2021 IEEE Visualization Conference (VIS)*.
 - Rossant, C. (2015). [A compiler for data visualization](https://cyrille.rossant.net/compiler-data-visualization/)
+- Campagnola, L., Klein, A., Larson, E., Rossant, C., & Rougier, N. P. (2015, July). [VisPy: harnessing the GPU for fast, high-level visualization.](https://inria.hal.science/hal-01208191/) In Proceedings of the 14th Python in Science Conference.
+- Rougier, N. P. (2014). [Antialiased 2d grid, marker, and arrow shaders.](https://hal.science/hal-01081592/) Journal of Computer Graphics Techniques, 3(4), 52.
+- Rougier, N. P. (2013). [Shader-based antialiased dashed stroked polylines.](https://inria.hal.science/hal-00907326/) Journal of Computer Graphics Techniques, 2(2), 91-107.
+- Rougier, N. P. (2013). [Higher quality 2D text rendering.](https://inria.hal.science/hal-00821839/) Journal of Computer Graphics Techniques, 2(1), 50-64.
