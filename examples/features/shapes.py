@@ -36,7 +36,7 @@ figure = app.figure()
 panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(-1, -0.1, -0.25))
 
-visual = app.mesh_shape(sc, lighting=True)
+visual = app.mesh(sc, lighting=True)
 
 panel.add(visual)
 

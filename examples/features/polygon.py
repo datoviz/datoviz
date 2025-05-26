@@ -42,7 +42,7 @@ figure = app.figure()
 panel = figure.panel(background=True)
 ortho = panel.ortho()
 
-visual = app.mesh_shape(sc, linewidth=15, edgecolor=(255, 255, 255, 200))
+visual = app.mesh(sc, linewidth=15, edgecolor=(255, 255, 255, 200))
 panel.add(visual)
 
 app.run()

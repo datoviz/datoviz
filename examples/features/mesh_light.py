@@ -58,7 +58,7 @@ panel = figure.panel(background=True)
 # panel.margins(0, 0, 0, 400)
 
 arcball = panel.arcball(initial=(0.35, 0, 0))
-visual = app.mesh_shape(sc, lighting=True)
+visual = app.mesh(sc, lighting=True)
 visual.clip('outer')
 panel.add(visual)
 
