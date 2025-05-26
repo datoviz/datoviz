@@ -4,7 +4,7 @@ The **glyph** visual provides low-level, high-performance text rendering using i
 
 This visual operates at the glyph level and can render multiple strings using groups of glyphs.
 
-This visual is currently implemented with multichannel signed distance fields
+This visual is currently implemented with multichannel signed distance fields.
 
 <figure markdown="span">
 ![Glyph visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/glyph.png)
@@ -26,6 +26,7 @@ This visual is currently implemented with multichannel signed distance fields
 ## When to use
 
 Use the glyph visual when:
+
 - You want fine-grained control over text rendering (e.g. per-character styling)
 - You need rotated, scaled, or colored strings at arbitrary 3D positions
 - You’re rendering structured labels, not paragraphs
@@ -79,7 +80,7 @@ visual.set_strings(
     strings=['Hello', 'World'],
     string_pos=positions,      # (M, 3) array of anchor points
     scales=scales,             # (M,) array of scale factors
-    color=(255, 255, 255, 255),  # RGBA
+    color=(255, 255, 255, 255),# RGBA
     anchor=(0, 0),             # center anchor
     offset=(0, 0)              # optional pixel offset
 )
