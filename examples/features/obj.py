@@ -22,7 +22,6 @@ file_path = ROOT_DIR / 'data/mesh/bunny.obj'
 
 linewidth = 0.1
 edgecolor = (0, 0, 0, 96)
-# light_params = (0.25, 0.75, 0.9, 64.0)
 
 sc = dvz.ShapeCollection()
 sc.add_obj(file_path, contour='full')
@@ -31,7 +30,7 @@ app = dvz.App()
 figure = app.figure()
 panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(0.35, 0, 0))
-# camera = panel.camera(initial=(0, 0, 3))
+camera = panel.camera(initial=(0, 0, 3))
 
 visual = app.mesh_shape(sc, lighting=True, linewidth=linewidth, edgecolor=edgecolor)
 
