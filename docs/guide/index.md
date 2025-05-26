@@ -29,6 +29,7 @@ Each visual primitive has its own page with examples and documentation:
 - 🖼️ [Image](../visuals/image.md) — RGB or single-channel images with optional colormaps
 - 🔤 [Glyph](../visuals/glyph.md) — glyph-based text rendering
 - 🧊 [Mesh](../visuals/mesh.md) — 3D triangle meshes with optional lighting (flat, basic, or advanced), textures, contours, or experimental isolines
+- 🔮 [Sphere](../visuals/sphere.md) — 3D spheres with customizable lighting and materials
 - 🌫️ [Volume](../visuals/volume.md) — basic volume rendering of dense 3D voxel data
 - 🪓 [Slice](../visuals/slice.md) — 2D orthogonal slices through 3D volumes
 
