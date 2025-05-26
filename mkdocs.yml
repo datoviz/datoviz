@@ -87,6 +87,7 @@ nav:
       - Sphere: 'visuals/sphere.md'
       - Volume: 'visuals/volume.md'
       - Slice: 'visuals/slice.md'
+    - Texture: 'guide/texture.md'
     - Interactivity: 'guide/interactivity.md'
 
   - Advanced:
