@@ -1,12 +1,10 @@
 # Colormaps
 
-Datoviz natively includes a collection of common colormaps (continuous) and color palettes (discrete).
-They come from:
+Datoviz includes a built-in collection of common colormaps (continuous) and color palettes (discrete), sourced from Matplotlib, Bokeh, Colorcet, and [Kenneth Moreland's color advice page](https://www.kennethmoreland.com/color-advice/).
 
-* matplotlib
-* bokeh
-* colorcet
-* [Kenneth Moreland's page](https://www.kennethmoreland.com/color-advice/)
+!!! note
+
+    Colormaps and palettes are internally stored in a 256×256 texture. Each one is located by the row and column of its first element, though this detail can be ignored in most cases.
 
 | Name | Row, Col | Colormap |
 | ---- | ---- | ---- |

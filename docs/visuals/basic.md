@@ -4,7 +4,9 @@ The **basic** visual in Datoviz provides direct access to low-level GPU renderin
 
 This visual is well suited for rendering large-scale data as points, thin **non-antialiased** lines, or triangles, with one color per vertex.
 
+<figure markdown="span">
 ![Basic visual with `line_strip` topology](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/basic.png)
+</figure>
 
 !!! note
 

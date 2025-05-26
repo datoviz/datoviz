@@ -13,7 +13,7 @@ This guide is structured into three levels:
 Start here if you're new to Datoviz:
 
 - 📌 [Quickstart](../quickstart.md) — create your first scatter plot in just a few lines of code
-- 📐 [Layout and Axes](common.md) — learn how figures, panels, and axes structure your visual scene
+- 📐 [Main Concepts](common.md) — learn how figures, panels, and axes structure your visual scene
 
 ### 2. **Visuals**
 
@@ -49,7 +49,7 @@ Explore these pages to customize behavior or build more complex apps:
 ## Where to go next
 
 - Start with the [Quickstart](../quickstart.md) to render your first plot
-- Then read [Layout and Axes](common.md) to understand how visuals are positioned and transformed
+- Then read [Main Concepts](common.md) to understand how visuals are positioned and transformed
 - Or explore the [Gallery](../gallery/index.md) to see what’s possible
 
 Need full technical details? Visit the [API Reference](../reference/api_py.md).

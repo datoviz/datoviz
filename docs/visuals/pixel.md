@@ -4,7 +4,9 @@ The **Pixel** visual renders individual square-shaped pixels at arbitrary positi
 
 This visual is ideal for raster-style plots or large-scale point clouds, where millions of points can be displayed efficiently with minimal styling.
 
+<figure markdown="span">
 ![Pixel visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/pixel.png)
+</figure>
 
 ---
 

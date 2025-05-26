@@ -1,4 +1,4 @@
-# Layout and Axes
+# Main Concepts
 
 This page explains how figures, panels, and axes define the visual layout in Datoviz. It also covers how to properly position data in Normalized Device Coordinates (NDC), which all visuals require.
 
@@ -18,7 +18,7 @@ panel = figure.panel((50, 50), (700, 500))
 * Customizing this behavior (e.g. fixed-size panels) will be documented soon.
 
 <figure markdown="span">
-![](../images/panel.svg){ width="300" }
+![Figure and panel](../images/panel.svg){ width="300" }
 </figure>
 
 If you omit position and size, the panel fills the entire figure:
@@ -41,7 +41,9 @@ To use it, enable GUI support when creating the figure with `figure = app.figure
 panel.gui('Panel name')
 ```
 
-![Screenshot](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/gui_panel.png)
+<figure markdown="span">
+![Panel GUI](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/gui_panel.png)
+</figure>
 
 ---
 
@@ -54,7 +56,7 @@ axes = panel.axes((xmin, xmax), (ymin, ymax))
 ```
 
 <figure markdown="span">
-![](https://raw.githubusercontent.com/datoviz/data/main/gallery/features/axes.png){ width="600" }
+![2D axes](https://raw.githubusercontent.com/datoviz/data/main/gallery/features/axes.png){ width="600" }
 </figure>
 
 This uses a pan-and-zoom interaction pattern with the mouse. It should not be used on panels with 3D data (arcball), as 3D axes are not yet supported.
@@ -71,7 +73,9 @@ This:
 
 All visuals in Datoviz expect their `position` input in **3D Normalized Device Coordinates (NDC)** — a 3D coordinate system where all values lie in the range `[-1, +1]` on each axis.
 
-![](../images/cds2.svg)
+<figure markdown="span">
+![Coordinate system](../images/cds2.svg)
+</figure>
 
 The position is always an `(N, 3)` array with `x, y, z` components in NDC.
 
@@ -102,6 +106,21 @@ This does two things:
 * Ensures that ticks, labels, and interactivity match the transformed coordinates.
 
 This approach keeps your data in its original units while making it compatible with the NDC rendering model.
+
+---
+
+## Colors
+
+Datoviz includes built-in support for [colormaps](../reference/colormaps.md).
+
+Most visuals and functions expect colors in `cvec4` format: four `uint8` integers in the 0–255 range representing the RGBA channels (red, green, blue, alpha).
+
+The `dvz.cmap()` function generates an `(N, 4)` array of `uint8` RGBA values using one of the built-in colormaps. For example:
+
+```python
+color = dvz.cmap('hsv', np.linspace(-1, 1, 100), vmin=-1, vmax=+1)
+# color is an (100, 4) array
+```
 
 ---
 

@@ -72,7 +72,7 @@ nav:
   - Learn:
     - Overview: 'guide/index.md'
     - Quickstart: 'quickstart.md'
-    - Layout and Axes: 'guide/common.md'
+    - Main Concepts: 'guide/common.md'
     - Visuals:
       - Overview: 'guide/visuals.md'
       - Basic: 'visuals/basic.md'

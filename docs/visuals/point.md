@@ -1,6 +1,10 @@
 # Point Visual
 
-The **point** visual renders circular, filled discs at 2D or 3D positions. It provides a simple and efficient way to visualize large sets of unstyled points — ideal for scatter plots, dot maps, or other markerless datasets.
+The **Point** visual renders circular, borderless filled discs at 2D or 3D positions. It provides a simple and efficient way to visualize large sets of unstyled points.
+
+<figure markdown="span">
+![Point visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/point.png)
+</figure>
 
 ---
 
@@ -15,9 +19,10 @@ The **point** visual renders circular, filled discs at 2D or 3D positions. It pr
 ## When to use
 
 Use the point visual when:
+
 - You need basic, fast scatter plots with custom colors and sizes
-- You don’t need symbolic shapes or outlines (use [Marker](marker.md) for that)
-- You want simple 3D point clouds with minimal overhead (but more overhead than [Pixel](pixel.md))
+- You don’t need symbolic shapes or outlines (use [**Marker**](marker.md) for that)
+- You want simple 3D point clouds with minimal overhead (but more overhead than [**Pixel**](pixel.md))
 
 ---
 
@@ -36,7 +41,7 @@ All attributes are per-vertex and required.
 ## Example
 
 ```python
---8<-- "examples/visuals/point.py"
+--8<-- "examples/visuals/point.py:13:"
 ```
 
 ---
@@ -47,4 +52,4 @@ The point visual is the fastest way to render a large number of colored, sized c
 
 * ✔️ Efficient for scatter plots and point clouds
 * ✔️ Fully GPU-accelerated
-* ❌ No support for borders, shapes, or textures (use [Marker](marker.md) instead)
+* ❌ No support for borders, shapes, or textures (use [**Marker**](marker.md) instead)

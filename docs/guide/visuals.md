@@ -4,6 +4,10 @@ High-performance rendering in Datoviz is based on the concept of **visuals** —
 
 Datoviz is designed to render millions of visual items at interactive framerates, assuming items in a visual share the same transformation (e.g., coordinate space). This makes the grouping and batching model crucial to understand.
 
+!!! note
+
+    Some visuals overlap in functionality, each offering different trade-offs in flexibility and performance. Try out similar visuals to find the one that best suits your needs.
+
 ---
 
 ## Available visuals
