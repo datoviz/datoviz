@@ -203,6 +203,10 @@ void main()
     {
         out_color = lighting(in_pos, color, normal, in_cam_pos, light, material);
     }
+    else if (length(normal) > 0)
+    {
+        out_color.rgb *= (0.2 + 0.8 * normal.z);
+    }
 
     // Stroke.
     if (MESH_CONTOUR > 0)
