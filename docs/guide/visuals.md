@@ -107,19 +107,6 @@ Basic volume rendering for dense 3D scalar fields (RGBA or single-channel with c
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 ## Data model: items and groups
@@ -176,5 +163,22 @@ Visuals must then be added to a panel:
 ```python
 panel.add(visual)
 ```
+
+
+---
+
+## Enabling depth testing
+
+In 3D visualizations, you can control whether visual elements are rendered with or without depth testing:
+
+```python
+visual.set_data(..., depth_test=True)
+```
+
+* `depth_test=True`: Items respect the 3D depth buffer (closer points appear in front)
+* `depth_test=False`: Items are rendered in the order they are submitted
+
+
+---
 
 For more details, see each visual's documentation page.
