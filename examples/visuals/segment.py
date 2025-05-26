@@ -47,7 +47,7 @@ visual = app.segment()
 visual.set_position(initial, terminal)
 visual.set_color(color)
 visual.set_linewidth(linewidth)
-visual.set_cap(dvz.CAP_ROUND, dvz.CAP_ROUND)
+visual.set_cap('round', 'round')
 panel.add(visual)
 
 app.run()
