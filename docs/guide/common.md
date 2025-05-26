@@ -29,27 +29,35 @@ panel = figure.panel()
 
 ### GUI panels
 
-There is experimental support for GUI panels: instead of a fixed region of the figure, a GUI panel has a top bar and can be resized, moved with mouse drag, and docked to a side of the window or to another GUI panel. This is using Dear ImGui under the hood.
+!!! warning
 
-To use this, you need to activate GUI support in the figure when creating the figure with `figure = app.figure(gui=True)`. Then, just do this on each panel you want to wrap in a GUI dialog:
+    This feature is experimental and may not work reliably yet.
+
+Experimental support for GUI panels is available: instead of occupying a fixed region of the figure, a GUI panel includes a top bar and can be resized, dragged with the mouse, and docked to the window edge or to another panel. This is implemented using Dear ImGui.
+
+To use it, enable GUI support when creating the figure with `figure = app.figure(gui=True)`. Then, for each panel you want to wrap in a GUI window, simply do:
 
 ```python
 panel.gui('Panel name')
 ```
 
-![GUI panels](https://github.com/user-attachments/assets/642bfdbc-bf83-4767-98fc-470a592cf245)
-
-
+![Screenshot](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/gui_panel.png)
 
 ---
 
 ## Axes (2D only)
 
-Datoviz currently supports **2D axes only** (3D views have no axes for now). You can add axes to a panel using:
+Axes for 2D data can be added to any panel as follows:
 
 ```python
 axes = panel.axes((xmin, xmax), (ymin, ymax))
 ```
+
+<figure markdown="span">
+![](https://raw.githubusercontent.com/datoviz/data/main/gallery/features/axes.png){ width="600" }
+</figure>
+
+This uses a pan-and-zoom interaction pattern with the mouse. It should not be used on panels with 3D data (arcball), as 3D axes are not yet supported.
 
 This:
 
