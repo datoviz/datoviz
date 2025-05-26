@@ -556,6 +556,7 @@ def mesh_flags(
 def sphere_flags(
     textured: bool = None,
     lighting: bool = None,
+    size_pixels: bool = None,
 ) -> int:
     """
     Compute the C mesh flags based on the given options.
@@ -566,6 +567,8 @@ def sphere_flags(
         Whether to use a texture for the sphere.
     lighting : bool
         Whether lighting is enabled.
+    size_pixels : bool
+        Whether to specify the sphere size in pixels rather than NDC.
 
     Returns
     -------
@@ -578,6 +581,8 @@ def sphere_flags(
         c_flags |= dvz.SPHERE_FLAGS_TEXTURED
     if lighting:
         c_flags |= dvz.SPHERE_FLAGS_LIGHTING
+    if size_pixels:
+        c_flags |= dvz.SPHERE_FLAGS_SIZE_PIXELS
     return c_flags
 
 

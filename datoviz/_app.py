@@ -609,6 +609,7 @@ class App:
         self,
         textured: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
+        size_pixels: tp.Optional[bool] = None,
         **kwargs,
     ) -> vs.Sphere:
         """
@@ -620,6 +621,8 @@ class App:
             Whether to use a texture for the sphere.
         lighting : bool
             Whether lighting is enabled.
+        size_pixels : bool
+            Whether to specify the sphere size in pixels rather than NDC.
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -628,7 +631,7 @@ class App:
         vs.Sphere
             The created sphere visual instance.
         """
-        c_flags = sphere_flags(textured=textured, lighting=lighting)
+        c_flags = sphere_flags(textured=textured, lighting=lighting, size_pixels=size_pixels)
         return self._visual(dvz.sphere, vs.Sphere, c_flags=c_flags, **kwargs)
 
     def volume(self, mode: str = 'colormap', **kwargs) -> vs.Volume:
@@ -638,7 +641,7 @@ class App:
         Parameters
         ----------
         mode : str, optional
-            Volume mode ('colormap', 'mip', etc.), by default 'colormap'.
+            Volume mode ('rgba', 'colormap'), by default 'colormap'.
         **kwargs
             Additional keyword arguments for the visual.
 
