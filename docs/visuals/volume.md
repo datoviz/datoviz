@@ -24,6 +24,7 @@ The **volume** visual displays 3D scalar fields using ray-based volume rendering
 ## When to use
 
 Use the volume visual when:
+
 - You want to visualize 3D data like MRI, CT, simulations
 - You need a fast volumetric rendering preview
 - You are working within NDC and want basic shading support
@@ -32,12 +33,23 @@ Use the volume visual when:
 
 ## Attributes
 
+### Options
+
+| Option        | Type     | Description                                        |
+|---------------|----------|----------------------------------------------------|
+| `mode`    | `enum`   | Color mode             |
+
 ### Per-item
 
 | Attribute     | Type             | Description                                           |
 |---------------|------------------|-------------------------------------------------------|
 | `bounds`      | 3 × `(2,) float` | Bounding box in NDC: `xlim`, `ylim`, `zlim`          |
 | `texcoords`   | 2 × `(3,) float` | UVW texture coordinates at volume corners            |
+
+### Per-visual (uniform)
+
+| Attribute     | Type             | Description                                           |
+|---------------|------------------|-------------------------------------------------------|
 | `permutation` | `(3,) int`       | Axis order of the 3D volume texture (default `(0,1,2)`) |
 | `slice`       | `int`            | Slice index (**not implemented yet**)                |
 | `transfer`    | `vec4`           | Transfer function parameters (limited)               |
@@ -58,7 +70,7 @@ Supported modes:
 | Mode       | Description                                     |
 | ---------- | ----------------------------------------------- |
 | `colormap` | Apply a colormap to a single-channel 3D texture |
-| `mip`      | Maximum intensity projection (**planned**)      |
+| `rgba`     | Use a 4D texture (RGBA channels for each voxel) |
 
 ---
 
@@ -82,7 +94,7 @@ This maps the 3D texture onto the NDC bounding box.
 
 ## Axis permutation
 
-To reorder the axes of the 3D texture (e.g. for `ZYX`-ordered data), set:
+To reorder the axes of the 3D texture (e.g. for `wvu`-ordered data), set:
 
 ```python
 visual.set_permutation((2, 1, 0))  # wvu

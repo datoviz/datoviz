@@ -12,7 +12,7 @@ The **Sphere** visual renders 3D spheres using GPU impostors — efficient 2D qu
 
 - Each sphere is a screen-aligned quad rendered as a shaded 3D sphere
 - Positions are in 3D NDC space
-- Sizes are specified in **NDC units** (not pixels)
+- Sizes are specified in NDC units or pixels
 - Lighting parameters are customizable per visual (light support will be improved in a future version)
 
 ---
@@ -20,6 +20,7 @@ The **Sphere** visual renders 3D spheres using GPU impostors — efficient 2D qu
 ## When to use
 
 Use the sphere visual when:
+
 - You want efficient rendering of thousands of 3D spheres
 - You don't need true mesh geometry (no collisions or wireframes)
 - You want adjustable lighting and shading
@@ -28,37 +29,37 @@ Use the sphere visual when:
 
 ## Attributes
 
+### Options
+
+| Option        | Type     | Description                                        |
+|---------------|----------|----------------------------------------------------|
+| `textured`    | `bool`   | Whether to use a texture for rendering             |
+| `lighting`    | `bool`   | Whether to use lighting                            |
+| `size_pixels` | `bool`   | Whether to specify sphere size in pixels           |
+
 ### Per-item
 
 | Attribute  | Type             | Description                              |
 |------------|------------------|------------------------------------------|
 | `position` | `(N, 3) float32` | Center of the sphere (in NDC)            |
 | `color`    | `(N, 4) uint8`   | RGBA color                               |
-| `size`     | `(N,) float32`   | Diameter in NDC units                    |
+| `size`     | `(N,) float32`   | Diameter in NDC or pixels                |
 
 ### Per-visual (uniform)
 
-| Attribute       | Type   | Description                                            |
-|------------------|--------|--------------------------------------------------------|
-| `light_pos`      | `vec3` | Position of the light source                          |
-| `light_params`   | `vec4` | Lighting parameters (diffuse, ambient, specular, shininess) |
+| Attribute      | Type     | Description                                    |
+| -------------- | -------- | ---------------------------------------------- |
+| `light_pos`    | `vec4`   | Light position/direction                       |
+| `light_color`  | `cvec4`  | Light color                                    |
+| `material_params` | `vec4`| Material parameters                            |
+| `shine`        | `float`  | Shine value                                    |
+| `emit`         | `float`  | Emission value                                 |
 
 ---
 
 ## Lighting
 
-Spheres are shaded in 3D using basic lighting calculations. You can adjust:
-
-- **`light_pos`**: position of the light in world space
-- **`light_params`**: a tuple of floats controlling:
-  - Diffuse strength
-  - Ambient strength
-  - Specular strength
-  - Shininess (exponent)
-
-These parameters control how the spheres react to light, giving the impression of 3D volume.
-
-Lighting support will be improved soon, with proper material support.
+The lighting system is the same as in the [**Mesh**](mesh.md) visual.
 
 ---
 
