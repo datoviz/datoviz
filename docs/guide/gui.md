@@ -36,6 +36,10 @@ if dvz.gui_checkbox('Check me', checked):
 
 ## Common Widgets
 
+!!! note
+
+    You'll find the full list of GUI functions in the [API reference](../reference/api_c.md#gui-functions).
+
 ### Buttons
 
 ```python
@@ -99,7 +103,7 @@ dvz.gui_colorpicker('Color', color, 0)
 ## Example
 
 ```python
---8<-- "examples/features/gui.py"
+--8<-- "examples/features/gui.py:17:"
 ```
 
 This example demonstrates several widgets including a button, tree, table, color picker, and slider.

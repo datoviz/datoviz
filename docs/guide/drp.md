@@ -2,6 +2,8 @@
 
 The **Datoviz Rendering Protocol (DRP)** is a low-level specification intended to describe and execute GPU rendering pipelines in a backend-agnostic way. It is inspired by WebGPU and Vulkan, and is designed to serve as a foundation for flexible, portable, high-performance graphics in scientific applications.
 
+The Datoviz Scene API, which includes everything documented on this website, is entirely based on DRP.
+
 ---
 
 ## Status
@@ -25,15 +27,6 @@ DRP is designed to:
 - Enable fully dynamic shader graphs and GPU computation workflows
 
 In the long term, it will serve as the backend for custom shaders and rendering pipelines.
-
----
-
-## Roadmap
-
-- ✅ C API foundations (in progress)
-- 🔲 Runtime SPIR-V compilation integration
-- 🔲 Python bindings and visual-level integration
-- 🔲 Shader graph and custom pipeline definition API
 
 ---
 
