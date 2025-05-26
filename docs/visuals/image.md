@@ -1,6 +1,10 @@
 # Image Visual
 
-The **image** visual displays 2D textures (images) anchored at a position in 3D space. It supports flexible anchoring, sizing in pixels or NDC, rescaling behavior, borders, and color mapping for single-channel data.
+The **Image** visual displays 2D colored or single-channel images (with colormaps) anchored at a position in 3D space. It supports flexible anchoring, sizing in pixels or normalized device coordinates (NDC), rescaling behavior, and optional square or rounded borders.
+
+<figure markdown="span">
+![Image visual](https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/image.png)
+</figure>
 
 ---
 
@@ -17,6 +21,7 @@ The **image** visual displays 2D textures (images) anchored at a position in 3D 
 ## When to use
 
 Use the image visual when:
+
 - You need to overlay 2D raster data (e.g. camera frames, microscope images)
 - You want precise control over alignment and size
 - You need to visualize single-channel arrays with a colormap
@@ -25,7 +30,11 @@ Use the image visual when:
 
 ## Attributes
 
-Each item in the visual is a single image. Multiple images can be efficiently displayed at different positions in the same visual. Currently, all images in a given visual must share the same texture image, though they can use different texture coordinates.
+Each item in the visual is a single image. Multiple images can be efficiently displayed at different positions in the same visual.
+
+!!! warning
+
+    Currently, all images in a given visual must share the same texture image, though they can use different texture coordinates.
 
 
 ### Per-image
@@ -40,14 +49,65 @@ Each item in the visual is a single image. Multiple images can be efficiently di
 
 ### Uniform
 
-| Attribute     | Type         | Description                                         |
-|---------------|--------------|-----------------------------------------------------|
-| `edgecolor`   | `cvec4`      | Color of the border edge                           |
-| `linewidth`   | `float`      | Width of the border in pixels                      |
-| `radius`      | `float`      | Border corner radius (for rounded edges)           |
-| `colormap`    | enum         | Colormap used in `colormap` mode                   |
-| `permutation` | `ivec2`      | Axis swizzle for texture sampling (e.g. `(1, 0)`)  |
-| `texture`     | texture      | Texture object (RGBA or single-channel)            |
+| Attribute     | Type     | Description                                        |
+|---------------|----------|----------------------------------------------------|
+| `unit`        | `enum`   | Unit of the image size                             |
+| `mode`        | `enum`   | Color mode                                         |
+| `rescale`     | `enum`   | Rescale mode                                       |
+| `border`      | `bool`   | Show or hide a border around the image             |
+| `edgecolor`   | `cvec4`  | Color of the border edge                           |
+| `linewidth`   | `float`  | Width of the border in pixels                      |
+| `radius`      | `float`  | Border corner radius (for rounded edges)           |
+| `colormap`    | `enum`   | Colormap used in `colormap` mode                   |
+| `permutation` | `ivec2`  | Axis swizzle for texture sampling (e.g. `(1, 0)`)  |
+| `texture`     | texture  | Texture object (RGBA or single-channel)            |
+
+---
+
+## Image unit
+
+Use the `unit` attribute to specify the unit in which the image sizes are expressed:
+
+| Unit    | Description                                |
+|---------|--------------------------------------------|
+| `pixels` *(default)* | Size is in framebuffer pixels |
+| `ndc`    | Size is relative to panel NDC coordinates |
+
+---
+
+## Color mode
+
+Use the `mode` attribute to define how the image is rendered:
+
+| Mode       | Description                                      |
+|------------|--------------------------------------------------|
+| `rgba` *(default)* | Full RGBA image                         |
+| `colormap` | Single-channel image with a colormap            |
+| `fill`     | Fill with uniform `facecolor` (no texture needed) |
+
+---
+
+## Rescale mode
+
+Use the `rescale` attribute to define how the image is resized:
+
+| Mode         | Description                                     |
+|--------------|-------------------------------------------------|
+| `None` *(default)* | Fixed size, no scaling                    |
+| `rescale`    | Image scales with pan-zoom                      |
+| `keep_ratio` | Image scales while maintaining its aspect ratio |
+
+---
+
+## Border
+
+Use the `border` attribute to indicate whether a border should be shown. If enabled, the following attributes can be used to customize the image border:
+
+| Attribute   | Description                                   |
+|-------------|-----------------------------------------------|
+| `edgecolor` | Color of the border                           |
+| `linewidth` | Thickness in pixels                           |
+| `radius`    | Corner rounding radius                        |
 
 ---
 
@@ -55,58 +115,30 @@ Each item in the visual is a single image. Multiple images can be efficiently di
 
 The `anchor` attribute defines which part of the image rectangle is attached to the `position` coordinate in NDC space.
 
-The anchor is specified as a 2D vector in the range `[-1, +1]`:
-
-- `[-1, -1]` — bottom-left corner
-- `[0, 0]` — center of the image
-- `[+1, +1]` — top-right corner
-
-For example, setting `anchor = [0, 0]` will center the image at the given `position`.
-Setting `anchor = [-1, +1]` will attach the top-left corner to the anchor position.
-
-This allows precise placement of the image relative to your coordinate system.
+The anchor is specified as a 2D vector in the range `[-1, +1]`.
 
 ![Image title](../images/anchor.svg){ width="500" }
 /// caption
 Image anchor point
 ///
 
----
+Here are a few examples:
 
-## Keyword Options
+| Anchor     | Description          |
+|------------|----------------------|
+| `[-1, -1]` | bottom-left corner   |
+| `[0, 0]`   | center of the image  |
+| `[+1, +1]` | top-right corner     |
 
-When creating an image visual, several options influence its behavior:
+This allows precise placement of the image relative to your coordinate system.
 
-### `unit`
-Specifies how the image `size` is interpreted:
+!!! info
 
-- `pixels` *(default)* — size is in framebuffer pixels
-- `ndc` — size is relative to panel NDC coordinates
-
-### `mode`
-Specifies how image data is interpreted:
-
-- `rgba` *(default)* — full RGBA image
-- `colormap` — single-channel image with a colormap
-- `fill` — fill with uniform `facecolor` (no texture needed)
-
-### `rescale`
-Controls how the image behaves when zooming or resizing:
-
-- `None` *(default)* — fixed size, no scaling
-- `rescale` — image scales with panel zoom
-- `keep_ratio` — image scales while maintaining its aspect ratio
-
-### `border`
-Enable a border around the image. When `True`, the following attributes are used:
-
-- `edgecolor`: color of the border
-- `linewidth`: thickness in pixels
-- `radius`: corner rounding radius
+    The [anchor feature example](../gallery/features/anchor.md) illustrates how the behavior of the anchor in the **Image** visual.
 
 ---
 
-## Texture Swizzling
+## Texture swizzling
 
 The `permutation` attribute controls how texture axes are interpreted.
 For example, `(0, 1)` is the default (UV); `(1, 0)` uses VU instead.
@@ -118,7 +150,7 @@ This can be useful when image data is stored with flipped or transposed axes.
 ## Example
 
 ```python
---8<-- "examples/visuals/image.py"
+--8<-- "examples/visuals/image.py:15:"
 ```
 
 ---
@@ -133,5 +165,5 @@ The image visual provides flexible placement and styling of 2D textures.
 
 See also:
 
-* [Pixel](pixel.md): for sparse or point-based raster plots
-* [Volume](volume.md): for 3D scalar field visualization
+* [**Pixel**](pixel.md): for sparse or point-based raster plots
+* [**Volume**](volume.md): for 3D scalar field visualization
