@@ -870,36 +870,32 @@ bool dvz_gui_dropdown(
 {
     ANN(name);
     if (count == 0 || items == NULL)
-    {
         return false;
-    }
-    uint32_t selected_idx = 0;
-    if (selected != NULL)
-        selected_idx = *selected;
 
+    uint32_t selected_idx = (selected != NULL) ? *selected : 0;
     const char* value = items[selected_idx];
-    bool is_selected = false;
+    bool changed = false;
+
     if (ImGui::BeginCombo(name, value, flags))
     {
         for (uint32_t n = 0; n < count; n++)
         {
-            if (selected != NULL)
+            bool is_selected = (selected != NULL && *selected == n);
+            if (ImGui::Selectable(items[n], is_selected))
             {
-                is_selected = (*selected == n);
-                if (ImGui::Selectable(items[n], is_selected))
+                if (selected != NULL && *selected != n)
                 {
                     *selected = n;
+                    changed = true;
                 }
             }
             if (is_selected)
-            {
                 ImGui::SetItemDefaultFocus();
-            }
         }
         ImGui::EndCombo();
-        return true;
     }
-    return false;
+
+    return changed;
 }
 
 
