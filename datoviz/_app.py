@@ -535,42 +535,9 @@ class App:
         )
         return self._visual(dvz.image, vs.Image, c_flags=c_flags, **kwargs)
 
-    def _mesh(
-        self,
-        c_visual,
-        vertex_count: tp.Optional[int] = None,
-        index_count: tp.Optional[int] = None,
-        **kwargs,
-    ) -> vs.Mesh:
-        """
-        Create a mesh visual.
-
-        Parameters
-        ----------
-        c_visual : optional
-            Visual instance, by default None.
-        vertex_count : int, optional
-            Number of vertices, by default None.
-        index_count : int, optional
-            Number of indices, by default None.
-        **kwargs
-            Additional keyword arguments for the visual.
-
-        Returns
-        -------
-        vs.Mesh
-            The created mesh visual instance.
-        """
-        return self._visual(
-            c_visual=c_visual,
-            cls=vs.Mesh,
-            vertex_count=vertex_count,
-            index_count=index_count,
-            **kwargs,
-        )
-
     def mesh(
         self,
+        shape: ShapeCollection = None,
         indexed: tp.Optional[bool] = None,
         textured: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
@@ -583,6 +550,8 @@ class App:
 
         Parameters
         ----------
+        shape : ShapeCollection, optional
+            Create a mesh from a shape collection.
         indexed : bool
             Whether the mesh is indexed.
         textured : bool
@@ -601,67 +570,38 @@ class App:
         vs.Mesh
             The created mesh visual instance.
         """
-        c_flags = mesh_flags(
-            indexed=indexed, textured=textured, lighting=lighting, contour=contour, isoline=isoline
-        )
-        return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
-
-    def mesh_shape(
-        self,
-        shape: ShapeCollection,
-        indexed: tp.Optional[bool] = None,
-        textured: tp.Optional[bool] = None,
-        lighting: tp.Optional[bool] = None,
-        contour: tp.Optional[bool] = None,
-        isoline: tp.Optional[bool] = None,
-        **kwargs,
-    ) -> vs.Mesh:
-        """
-        Create a mesh visual from a shape collection.
-
-        Parameters
-        ----------
-        shape : ShapeCollection
-            Shape collection.
-        indexed : bool
-            Whether the mesh is indexed.
-        textured : bool
-            Whether to use a texture for the mesh.
-        lighting : bool
-            Whether lighting is enabled.
-        contour : bool
-            Whether contour is enabled.
-        isoline : bool
-            Whether to show isolines.
-        **kwargs
-            Additional keyword arguments for the visual.
-
-        Returns
-        -------
-        vs.Mesh
-            The created mesh visual instance.
-        """
-        if not shape.c_merged:
-            shape.merge()
-        c_merged = shape.c_merged
-
-        # Allocate the visual with the right number of vertices and indices.
-        nv = dvz.shape_vertex_count(c_merged)
-        ni = dvz.shape_index_count(c_merged)
-        if ni == 0:
-            indexed = False
-
         # Force contour flag.
         if kwargs.get('linewidth', None) is not None or kwargs.get('edgecolor', None) is not None:
             contour = True
 
+        if shape:
+            if not shape.c_merged:
+                shape.merge()
+            c_merged = shape.c_merged
+
+            # Allocate the visual with the right number of vertices and indices.
+            nv = dvz.shape_vertex_count(c_merged)
+            ni = dvz.shape_index_count(c_merged)
+            if ni == 0:
+                indexed = False
+
         c_flags = mesh_flags(
             indexed=indexed, textured=textured, lighting=lighting, contour=contour, isoline=isoline
         )
-        return self._mesh(
-            dvz.mesh_shape(self.c_batch, c_merged, c_flags),
-            vertex_count=nv,
-            index_count=ni,
+
+        # Initialization with a ShapeCollection
+        if shape:
+            c_visual = dvz.mesh_shape(self.c_batch, c_merged, c_flags)
+            kwargs['vertex_count'] = nv
+            kwargs['index_count'] = ni
+
+        # Initialization with raw position, color etc.
+        else:
+            c_visual = dvz.mesh(self.c_batch, c_flags)
+
+        return self._visual(
+            c_visual=c_visual,
+            cls=vs.Mesh,
             **kwargs,
         )
 
