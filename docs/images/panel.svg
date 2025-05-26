@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-28.141 80.031 458.309 344.532" xmlns:bx="https://boxy-svg.com">
+  <defs>
+    <bx:export>
+      <bx:file format="svg" path="Sans titre.svg"/>
+    </bx:export>
+    <bx:grid x="-200.39" y="100.887" width="100" height="100"/>
+    <style bx:fonts="Roboto">@import url(https://fonts.googleapis.com/css2?family=Roboto%3Aital%2Cwght%400%2C100%3B0%2C300%3B0%2C400%3B0%2C500%3B0%2C700%3B0%2C900%3B1%2C100%3B1%2C300%3B1%2C400%3B1%2C500%3B1%2C700%3B1%2C900&amp;display=swap);</style>
+  </defs>
+  <rect x="-0.39" y="100.887" width="400" height="300" style="stroke: rgb(0, 0, 0); stroke-width: 2px; fill-opacity: 0.2; paint-order: fill; fill: none;"/>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="307.61" y="386.002">Figure</text>
+  <rect x="33.783" y="129.592" width="175.823" height="148.954" style="stroke: rgb(0, 0, 0); stroke-width: 2px; fill-opacity: 0.2; paint-order: fill; fill: none;"/>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="127.661" y="264.815">Panel</text>
+</svg>

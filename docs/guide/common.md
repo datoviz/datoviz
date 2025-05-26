@@ -17,11 +17,29 @@ panel = figure.panel((50, 50), (700, 500))
 * Panels automatically resize **proportionally** when the figure window is resized.
 * Customizing this behavior (e.g. fixed-size panels) will be documented soon.
 
+<figure markdown="span">
+![](../images/panel.svg){ width="300" }
+</figure>
+
 If you omit position and size, the panel fills the entire figure:
 
 ```python
 panel = figure.panel()
 ```
+
+### GUI panels
+
+There is experimental support for GUI panels: instead of a fixed region of the figure, a GUI panel has a top bar and can be resized, moved with mouse drag, and docked to a side of the window or to another GUI panel. This is using Dear ImGui under the hood.
+
+To use this, you need to activate GUI support in the figure when creating the figure with `figure = app.figure(gui=True)`. Then, just do this on each panel you want to wrap in a GUI dialog:
+
+```python
+panel.gui('Panel name')
+```
+
+![GUI panels](https://github.com/user-attachments/assets/642bfdbc-bf83-4767-98fc-470a592cf245)
+
+
 
 ---
 

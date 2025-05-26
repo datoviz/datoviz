@@ -5,18 +5,18 @@
       <bx:file format="svg" path="Sans titre.svg"/>
     </bx:export>
     <bx:grid x="-200.39" y="100.887" width="100" height="100"/>
-    <style bx:fonts="Noto Sans">@import url(https://fonts.googleapis.com/css2?family=Noto+Sans%3Aital%2Cwght%400%2C100..900%3B1%2C100..900&amp;display=swap);</style>
+    <style bx:fonts="Roboto">@import url(https://fonts.googleapis.com/css2?family=Roboto%3Aital%2Cwght%400%2C100%3B0%2C300%3B0%2C400%3B0%2C500%3B0%2C700%3B0%2C900%3B1%2C100%3B1%2C300%3B1%2C400%3B1%2C500%3B1%2C700%3B1%2C900&amp;display=swap);</style>
   </defs>
   <path d="M 0 299.5 H 380 L 378 292 L 400 300 L 378 308 L 380 300.5 H 0 V 299.5 Z" bx:shape="arrow 0 292 400 16 1 22 2 1@12b86ed5" style="stroke: rgb(0, 0, 0);"/>
   <path d="M 100 399.5 H 480 L 478 392 L 500 400 L 478 408 L 480 400.5 H 100 V 399.5 Z" bx:shape="arrow 100 392 400 16 1 22 2 1@1fe8e284" style="stroke: rgb(0, 0, 0);" transform="matrix(-0.000001, -1, 1, -0.000001, -199.999885, 600.000221)"/>
   <path d="M 181.866 263.627 H 528.097 L 526.097 256.127 L 548.097 264.127 L 526.097 272.127 L 528.097 264.627 H 181.866 V 263.627 Z" bx:shape="arrow 181.866 256.127 366.231 16 1 22 2 1@ab098af3" style="stroke: rgb(0, 0, 0);" transform="matrix(-0.837719, 0.546101, -0.546101, -0.837719, 650.764074, 321.946643)"/>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="349.079" y="324.076">x</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="210.43" y="157.347">y</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; font-weight: 700; white-space: pre;" x="88.61" y="398.898">z</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="-0.39" y="292.595">-1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="399.61" y="292.595">+1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="209.354" y="501.348">-1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="209.815" y="117.15">+1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="366.442" y="206.059">-1</text>
-  <text style="fill: rgb(51, 51, 51); font-family: &quot;Noto Sans&quot;; font-size: 28px; white-space: pre;" x="12.65" y="412.439">+1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; font-weight: 700; white-space: pre;" x="349.079" y="324.076">x</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; font-weight: 700; white-space: pre;" x="213.43" y="157.347">y</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; font-weight: 700; white-space: pre;" x="88.61" y="398.898">z</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="-33.911" y="310.482">-1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="412.083" y="310.482">+1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="190.983" y="528.313">-1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="186.909" y="91.691">+1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="364.442" y="204.059">-1</text>
+  <text style="fill: rgb(51, 51, 51); font-family: Roboto; font-size: 28px; white-space: pre;" x="8.65" y="412.439">+1</text>
 </svg>
