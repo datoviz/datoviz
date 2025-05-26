@@ -73,6 +73,18 @@ class Panel:
         assert visual
         dvz.panel_visual(self.c_panel, visual.c_visual, 0)
 
+    def remove(self, visual: Visual) -> None:
+        """
+        Remove a visual from the panel.
+
+        Parameters
+        ----------
+        visual : Visual
+            The visual to remove.
+        """
+        assert visual
+        dvz.panel_remove(self.c_panel, visual.c_visual)
+
     def update(self) -> None:
         """
         Update the panel.
