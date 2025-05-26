@@ -11,15 +11,11 @@ tags:
 
 """
 
-from pathlib import Path
-
 import numpy as np
 
 import datoviz as dvz
 
-CURDIR = Path(__file__).resolve().parent.parent.parent
-file_path = CURDIR / 'data/misc/lidar.npz'
-data = np.load(CURDIR / 'data/misc/lidar.npz')
+data = np.load(dvz.download_data('misc/lidar.npz'))
 pos, color = data['pos'], data['color']
 print(f'Loaded LIDAR data with {len(pos)} points.')
 N = pos.shape[0]
