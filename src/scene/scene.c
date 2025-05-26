@@ -857,6 +857,20 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags)
 
 
 
+void dvz_panel_remove(DvzPanel* panel, DvzVisual* visual)
+{
+    ANN(panel);
+    ANN(panel->view);
+    ANN(panel->figure);
+    ANN(panel->figure->viewset);
+    ANN(visual);
+
+    dvz_view_remove(panel->view, visual);
+    dvz_atomic_set(panel->figure->viewset->status, (int)DVZ_BUILD_DIRTY);
+}
+
+
+
 /*************************************************************************************************/
 /*  Camera                                                                                       */
 /*************************************************************************************************/

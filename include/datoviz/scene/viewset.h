@@ -107,6 +107,13 @@ void dvz_viewset_clear(DvzViewset* viewset);
 /**
  *
  */
+void dvz_view_remove(DvzView* view, DvzVisual* visual);
+
+
+
+/**
+ *
+ */
 void dvz_viewset_build(DvzViewset* viewset);
 
 

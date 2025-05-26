@@ -737,6 +737,16 @@ DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags);
 
 
 /**
+ * Remove a visual from a panel.
+ *
+ * @param panel the panel
+ * @param visual the visual
+ */
+DVZ_EXPORT void dvz_panel_remove(DvzPanel* panel, DvzVisual* visual);
+
+
+
+/**
  * Destroy a panel.
  *
  * @param panel the panel

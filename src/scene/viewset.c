@@ -286,6 +286,15 @@ void dvz_view_add(
 
 
 
+void dvz_view_remove(DvzView* view, DvzVisual* visual)
+{
+    ANN(view);
+    ANN(visual);
+    dvz_list_remove_pointer(view->visuals, (const void*)visual);
+}
+
+
+
 DvzMouseEvent
 dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseReference ref)
 {
