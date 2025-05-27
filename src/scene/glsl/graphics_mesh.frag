@@ -183,6 +183,12 @@ void main()
 
     vec3 normal = normalize(in_normal);
 
+    // DEBUG: there are no cases where the normal can be unset.
+    if (length(normal) < 1e-6) {
+        out_color = vec4(1, 0, 0, 1);
+        return;
+    }
+
     // Texture.
     vec4 color = vec4(0);
     if (MESH_TEXTURED > 0)
@@ -198,12 +204,13 @@ void main()
 
     out_color = color;
 
+
     // Lighting.
     if (MESH_LIGHTING > 0)
     {
         out_color = lighting(in_pos, color, normal, in_cam_pos, light, material);
     }
-    else if (length(normal) > 0)
+    else
     {
         out_color.rgb *= (0.2 + 0.8 * normal.z);
     }

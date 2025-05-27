@@ -67,6 +67,34 @@ static inline void normalize_vec3(float* v)
 
 
 
+static bool _all_vertices_2D(uint32_t vertex_count, vec3* pos)
+{
+    ASSERT(vertex_count > 0);
+    ANN(pos);
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        if (pos[i][2] != 0.0f)
+            return false;
+    }
+    return true;
+}
+
+
+
+static void _default_normals(uint32_t vertex_count, vec3* normal)
+{
+    ASSERT(vertex_count > 0);
+    ANN(normal);
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        normal[i][0] = 0.0f;
+        normal[i][1] = 0.0f;
+        normal[i][2] = 1.0f;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Polyhedrons                                                                                  */
 /*************************************************************************************************/
@@ -238,6 +266,14 @@ void dvz_compute_normals(
 {
     ANN(pos);
     ANN(normal);
+
+    // Fast track for 2D data, if the z component of pos is always zero, just set the normals to
+    // (0, 0, 1).
+    if (_all_vertices_2D(vertex_count, pos))
+    {
+        _default_normals(vertex_count, normal);
+        return;
+    }
 
     DvzIndex i0, i1, i2;
     vec3 u, v, n;
@@ -1308,6 +1344,10 @@ void dvz_shape_polygon(DvzShape* shape, uint32_t count, const dvec2* points, Dvz
         shape->color[i][2] = color[2];
         shape->color[i][3] = color[3];
     }
+
+    // Initialize normal to (0, 0, 1).
+    shape->normal = (vec3*)calloc(count, sizeof(vec3));
+    _default_normals(count, shape->normal);
 }
 
 
