@@ -89,7 +89,7 @@ To test the `.deb` package in an isolated Docker container:
 just testdeb
 ```
 
-To build a `manylinux` wheel (using `manylinux_2_28_x86_64`, based on AlmaLinux 8):
+To build a `manylinux` wheel (using `manylinux_2_34_x86_64`, based on AlmaLinux 8):
 
 ```bash
 # Build Datoviz in the manylinux container.
@@ -274,7 +274,7 @@ Refer to the Testing workflow for more information about the building process, w
 
 For improved compatibility with Linux Python wheels uploaded to PyPI, it is necessary to build Datoviz on a particular Linux distribution based on [AlmaLinux](https://en.wikipedia.org/wiki/AlmaLinux) (based on Red Hat Enterprise Linux, REHL).
 
-There is a custom Docker image [`rossant/datoviz_manylinux`](https://hub.docker.com/repository/docker/rossant/datoviz_manylinux/) based on `quay.io/pypa/manylinux_2_28_x86_64` (see the [Dockerfile](https://github.com/datoviz/datoviz/blob/main/docker/Dockerfile_manylinux)) with all build dependencies.
+There is a custom Docker image [`rossant/datoviz_manylinux`](https://hub.docker.com/repository/docker/rossant/datoviz_manylinux/) based on `quay.io/pypa/manylinux_2_34_x86_64` (see the [Dockerfile](https://github.com/datoviz/datoviz/blob/main/docker/Dockerfile_manylinux)) with all build dependencies.
 It also has Swiftshader compiled for this platform.
 
 #### macOS notes
