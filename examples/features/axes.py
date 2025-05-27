@@ -8,6 +8,8 @@ tags:
   - point
   - axes
   - mouse
+in_gallery: true
+make_screenshot: true
 ---
 
 """

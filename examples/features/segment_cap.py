@@ -7,6 +7,8 @@ Show the different cap of the segment visual.
 tags:
   - segment
   - cap
+in_gallery: false
+make_screenshot: false
 ---
 
 """

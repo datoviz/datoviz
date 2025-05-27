@@ -13,7 +13,8 @@ tags:
   - anchor
   - texture
   - gui
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

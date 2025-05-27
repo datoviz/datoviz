@@ -8,6 +8,8 @@ tags:
   - image
   - panzoom
   - texture
+in_gallery: true
+make_screenshot: true
 ---
 
 """

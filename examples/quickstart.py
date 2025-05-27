@@ -9,6 +9,8 @@ tags:
   - point
   - scatter
   - quickstart
+in_gallery: false
+make_screenshot: false
 ---
 
 """

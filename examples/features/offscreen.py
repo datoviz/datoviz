@@ -8,7 +8,8 @@ NOTE: the API for this feature may change in an upcoming version.
 ---
 tags:
   - offscreen
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

@@ -7,6 +7,8 @@ the Pixel visual.
 tags:
   - pixel
   - panzoom
+in_gallery: true
+make_screenshot: true
 ---
 
 """

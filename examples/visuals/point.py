@@ -7,6 +7,8 @@ Show the point visual.
 tags:
   - point
   - panzoom
+in_gallery: true
+make_screenshot: true
 ---
 
 """

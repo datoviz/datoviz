@@ -9,7 +9,8 @@ tags:
   - table
   - tree
   - widgets
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

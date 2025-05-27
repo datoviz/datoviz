@@ -6,6 +6,8 @@ Show how to manipulate an arcball.
 ---
 tags:
   - arcball
+in_gallery: true
+make_screenshot: false
 ---
 
 """

@@ -6,7 +6,8 @@ Show how to react to keyboard events.
 ---
 tags:
   - keyboard
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

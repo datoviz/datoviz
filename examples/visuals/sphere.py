@@ -7,6 +7,8 @@ Show the sphere visual.
 tags:
   - sphere
   - arcball
+in_gallery: true
+make_screenshot: true
 ---
 
 """
@@ -53,7 +55,7 @@ visual = app.sphere(
     color=color,
     size=size,
     lighting=True,
-    shine=.8,
+    shine=0.8,
 )
 panel.add(visual)
 

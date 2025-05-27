@@ -7,6 +7,8 @@ Show the path visual.
 tags:
   - path
   - panzoom
+in_gallery: true
+make_screenshot: true
 ---
 
 """

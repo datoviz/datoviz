@@ -6,7 +6,8 @@ Show how to fix a visual in the panel on one or several axes.
 ---
 tags:
   - fixed
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

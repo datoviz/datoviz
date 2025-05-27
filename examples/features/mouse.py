@@ -6,7 +6,8 @@ Show how to react to mouse events.
 ---
 tags:
   - mouse
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

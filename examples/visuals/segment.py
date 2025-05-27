@@ -8,6 +8,8 @@ tags:
   - segment
   - colormap
   - panzoom
+in_gallery: true
+make_screenshot: true
 ---
 
 """

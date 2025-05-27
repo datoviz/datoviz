@@ -8,6 +8,8 @@ tags:
   - mesh
   - shape
   - arcball
+in_gallery: true
+make_screenshot: true
 ---
 
 """

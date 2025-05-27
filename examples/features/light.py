@@ -8,6 +8,8 @@ tags:
   - sphere
   - light
   - gui
+in_gallery: true
+make_screenshot: true
 ---
 
 """

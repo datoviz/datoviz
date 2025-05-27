@@ -7,6 +7,8 @@ Show how to create several panels.
 tags:
   - panel
   - clip
+in_gallery: true
+make_screenshot: true
 ---
 
 """

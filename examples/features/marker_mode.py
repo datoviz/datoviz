@@ -6,6 +6,8 @@ Show the different rendering modes of the marker visual.
 ---
 tags:
   - marker
+in_gallery: false
+make_screenshot: false
 ---
 
 """

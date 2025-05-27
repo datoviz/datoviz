@@ -7,6 +7,8 @@ Show the basic visual with line strip topology and groups.
 tags:
   - basic
   - panzoom
+in_gallery: true
+make_screenshot: true
 ---
 
 """

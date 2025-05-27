@@ -9,6 +9,8 @@ tags:
   - shape
   - obj
   - arcball
+in_gallery: true
+make_screenshot: true
 ---
 
 """

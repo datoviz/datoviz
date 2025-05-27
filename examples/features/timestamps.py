@@ -9,7 +9,8 @@ setups).
 tags:
   - timer
   - timestamps
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

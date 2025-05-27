@@ -8,6 +8,8 @@ tags:
   - colormap
   - polygon
   - ortho
+in_gallery: true
+make_screenshot: true
 ---
 
 """

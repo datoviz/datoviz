@@ -6,7 +6,8 @@ Show how to create a GUI panel.
 ---
 tags:
   - gui_panel
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

@@ -7,6 +7,8 @@ Data origin: https://lidarpayload.com/sample-data/, RESEPI-M2X-100m10ms-FOV90-On
 tags:
   - pixel
   - arcball
+in_gallery: true
+make_screenshot: true
 ---
 
 """

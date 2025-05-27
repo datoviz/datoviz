@@ -5,6 +5,8 @@
 tags:
   - sphere
   - arcball
+in_gallery: true
+make_screenshot: true
 ---
 
 """

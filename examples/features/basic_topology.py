@@ -8,6 +8,8 @@ tags:
   - basic
   - topology
   - gui
+in_gallery: false
+make_screenshot: false
 ---
 
 """

@@ -6,6 +6,8 @@ Show a 3D mesh.
 tags:
   - mesh
   - arcball
+in_gallery: true
+make_screenshot: true
 ---
 
 """

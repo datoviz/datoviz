@@ -7,6 +7,8 @@ Show how to manipulate a camera.
 tags:
   - camera
   - keyboard
+in_gallery: true
+make_screenshot: false
 ---
 
 """

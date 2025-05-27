@@ -48,11 +48,16 @@ def extract_metadata(script_path):
         r'^\s*[ru]?["\']{3}.*?["\']{3}', '', content, count=1, flags=re.DOTALL
     ).lstrip()
 
+    in_gallery = True
+    if 'in_gallery: false' in content:
+        in_gallery = False
+
     return {
         'title': title_line,
         'description': description,
         'tags': tags,
         'code': dedent(code_body).rstrip(),
+        'in_gallery': in_gallery,
     }
 
 
@@ -126,6 +131,9 @@ def main():
             name = script_path.stem
             output_path = output_dir / f'{name}.md'
             metadata = extract_metadata(script_path)
+            # Skip examples not in the gallery
+            if not metadata['in_gallery']:
+                continue
             generate_example_page(category, script_path, output_path)
             all_pages.setdefault(category, []).append((name, metadata['title']))
     index_path = GALLERY_DIR / 'index.md'

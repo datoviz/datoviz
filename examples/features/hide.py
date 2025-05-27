@@ -7,7 +7,8 @@ Show how to show/hide a visual.
 tags:
   - gui
   - show
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """

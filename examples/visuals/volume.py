@@ -9,6 +9,8 @@ tags:
   - arcball
   - camera
   - texture
+in_gallery: true
+make_screenshot: true
 ---
 
 """

@@ -1,5 +1,5 @@
 """
-# Mesh Light example
+# Mesh light example
 
 Show how to manipulate advanced mesh lights.
 
@@ -7,7 +7,8 @@ Show how to manipulate advanced mesh lights.
 tags:
   - mesh
   - light
-skip: true
+in_gallery: true
+make_screenshot: true
 ---
 
 """

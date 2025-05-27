@@ -9,7 +9,8 @@ NOTE: experimental, the API will change.
 tags:
   - offscreen
   - video
-skip: true
+in_gallery: true
+make_screenshot: false
 ---
 
 """
