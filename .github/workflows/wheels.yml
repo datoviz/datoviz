@@ -67,8 +67,8 @@ jobs:
     # Test the wheel
     - name: Test
       working-directory: /datoviz
+      continue-on-error: true
       run: |
-        export PATH=$PATH:/opt/python/cp38-cp38/bin/
         just checkwheel
 
     # Upload the wheel

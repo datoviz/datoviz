@@ -23,7 +23,11 @@ Release checklist from a Linux development machine:
         * `just clean release api`: rebuild in release mode.
         * `just test`: run the C testing suite.
         * `just pytest`: run the Python testing suite.
-        * `just act test-linux`: **on Linux only**, simulate the GitHub Actions tests locally.
+    * **On Linux only**:
+        * `just act test-linux`: simulate the GitHub Actions tests locally.
+        * `just wheel`: build the wheel
+        * `just checkwheel`: check the wheel
+        * `just testwheel`: check the wheel
 3. **Version bump.**
     * `version=x.y.z`: set up the new version.
     * `just bump $version`: bump the codebase to the new version.
