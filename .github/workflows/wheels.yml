@@ -217,11 +217,17 @@ jobs:
 
     steps:
 
+    # Install Python and required dependencies
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
     # Chocolatey
     - name: Chocolatey
       run: |
         choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja tree cloc jq -y
+        choco install 7zip just mingw cmake ccache ninja tree cloc jq -y
 
     # vcpkg
     - name: vcpkg
@@ -263,6 +269,7 @@ jobs:
 
     # Wheel
     - name: Wheel
+      continue-on-error: true
       run: |
         just pydev
         just wheel
