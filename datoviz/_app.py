@@ -354,12 +354,22 @@ class App:
         """
         c_visual = c_visual or fn(self.c_batch, c_flags)
         visual = cls(c_visual)
-        visual.set_data(**kwargs)
+        kwargs_f = {k: v for k, v in kwargs.items() if v is not None}
+        visual.set_data(**kwargs_f)
         if fixed is not None:
             visual.fixed(fixed)
         return visual
 
-    def basic(self, topology: str, **kwargs) -> vs.Basic:
+    def basic(
+        self,
+        topology: str,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        group: np.ndarray = None,
+        size: float = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Basic:
         """
         Create a basic visual.
 
@@ -368,8 +378,18 @@ class App:
         topology : str
             Topology type: `point_list`, `line_list`, `line_strip`,
             `triangle_list`, `triangle_strip`.
-        **kwargs
-            Additional keyword arguments for the visual.
+        position : ndarray
+            Point 3D positions in normalized device coordinates.
+        color : ndarray
+            Point RGBA colors in range 0–255.
+        group : ndarray
+            Group indices of all points (optional).
+        size : float
+            Point size in pixels, when using the `point_list` topology.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
@@ -381,89 +401,286 @@ class App:
         c_topology = to_enum(f'primitive_topology_{topology}')
         assert c_topology is not None
         c_visual = dvz.basic(self.c_batch, c_topology, 0)
-        return self._visual(cls=vs.Basic, c_visual=c_visual, **kwargs)
+        return self._visual(
+            cls=vs.Basic,
+            c_visual=c_visual,
+            position=position,
+            color=color,
+            group=group,
+            size=size,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def pixel(self, **kwargs) -> vs.Pixel:
+    def pixel(
+        self,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        size: float = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Pixel:
         """
         Create a pixel visual.
 
         Parameters
         ----------
-        **kwargs
-            Additional keyword arguments for the visual.
+        position : ndarray
+            Point 3D positions in normalized device coordinates.
+        color : ndarray
+            Point RGBA colors in range 0–255.
+        size : float
+            Point size in pixels, when using the `point_list` topology.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Pixel
             The created pixel visual instance.
         """
-        return self._visual(dvz.pixel, vs.Pixel, **kwargs)
+        return self._visual(
+            dvz.pixel,
+            vs.Pixel,
+            position=position,
+            color=color,
+            size=size,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def point(self, **kwargs) -> vs.Point:
+    def point(
+        self,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        size: np.ndarray = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Point:
         """
         Create a point visual.
 
         Parameters
         ----------
-        **kwargs
-            Additional keyword arguments for the visual.
+        position : ndarray
+            Point 3D positions in normalized device coordinates.
+        color : ndarray
+            Point RGBA colors in range 0–255.
+        size : ndarray
+            Point size in pixels.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Point
             The created point visual instance.
         """
-        return self._visual(dvz.point, vs.Point, **kwargs)
+        return self._visual(
+            dvz.point,
+            vs.Point,
+            position=position,
+            color=color,
+            size=size,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def marker(self, **kwargs) -> vs.Marker:
+    def marker(
+        self,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        size: np.ndarray = None,
+        angle: np.ndarray = None,
+        edgecolor: tuple[int, int, int, int] = None,
+        linewidth: float = None,
+        tex_scale: float = None,
+        mode: str = None,
+        aspect: str = None,
+        shape: str = None,
+        texture: tp.Optional[Texture] = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Marker:
         """
         Create a marker visual.
 
         Parameters
         ----------
-        **kwargs
-            Additional keyword arguments for the visual.
+        position : ndarray
+            Marker 3D positions in normalized device coordinates.
+        color : ndarray
+            Marker RGBA colors in range 0–255.
+        size : ndarray
+            Marker size in pixels.
+        angle : ndarray
+            Marker rotation angle in radians.
+        edgecolor : cvec4
+            Marker edge color in RGBA format.
+        linewidth : float
+            Marker edge line width in pixels.
+        tex_scale : float
+            Marker texture scale.
+        mode : str, optional
+            Marker mode, one of `code`, `bitmap`, `sdf`, `msdf`.
+        aspect : str, optional
+            Marker aspect, one of `fill`, `stroke`, `outline`.
+        shape : str, optional
+            Marker shape, when using the `code` mode, one of `disc`, `asterisk`, etc.
+            See the documentation for the full list.
+        texture : Texture, optional
+            Texture for the marker when using another mode than `code`.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Marker
             The created marker visual instance.
         """
-        return self._visual(dvz.marker, vs.Marker, **kwargs)
+        return self._visual(
+            dvz.marker,
+            vs.Marker,
+            position=position,
+            color=color,
+            size=size,
+            angle=angle,
+            edgecolor=edgecolor,
+            linewidth=linewidth,
+            tex_scale=tex_scale,
+            mode=mode,
+            aspect=aspect,
+            shape=shape,
+            texture=texture,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def segment(self, **kwargs) -> vs.Segment:
+    def segment(
+        self,
+        initial: np.ndarray = None,
+        terminal: np.ndarray = None,
+        shift: np.ndarray = None,
+        color: np.ndarray = None,
+        linewidth: np.ndarray = None,
+        cap: str = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Segment:
         """
         Create a segment visual.
 
         Parameters
         ----------
-        **kwargs
-            Additional keyword arguments for the visual.
+        initial : ndarray
+            3D positions of the initial end of each segment, in normalized device coordinates.
+        terminal : ndarray
+            3D positions of the terminal end of each segment, in normalized device coordinates.
+        color : ndarray
+            Segment RGBA colors in range 0–255.
+        shift : ndarray, optional
+            Shift vector for each segment, in pixels. Each row of this 2D array contains the pixel
+            shift of the initial and terminal end of each segment (x0,y0,x1,y1), in framebuffer
+            coordinates.
+        linewidth : ndarray, optional
+            Line width for each segment, in pixels.
+        cap : str, optional
+            Cap style for the segment, one of `butt`, `round`, `square`, `triangle_in`,
+            `triangle_out`.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Segment
             The created segment visual instance.
         """
-        return self._visual(dvz.segment, vs.Segment, **kwargs)
+        return self._visual(
+            dvz.segment,
+            vs.Segment,
+            position=(initial, terminal),
+            shift=shift,
+            color=color,
+            linewidth=linewidth,
+            cap=cap,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def path(self, **kwargs) -> vs.Path:
+    def path(
+        self,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        linewidth: np.ndarray = None,
+        cap: str = None,
+        join: str = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Path:
         """
         Create a path visual.
 
         Parameters
         ----------
-        **kwargs
-            Additional keyword arguments for the visual.
+        position : ndarray, or list of ndarray
+            An array of positions, or a list of arrays representing the positions of the paths.
+        color : ndarray
+            Point RGBA colors in range 0–255.
+        linewidth : ndarray
+            Uniform or varying line width for each path point.
+        cap : str, optional
+            Cap style for all paths, one of `butt`, `round`, `square`, `triangle_in`,
+            `triangle_out`.
+        join : str, optional
+            Join style for all paths, one of `square`, `round`.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Path
             The created path visual instance.
         """
-        return self._visual(dvz.path, vs.Path, **kwargs)
+        return self._visual(
+            dvz.path,
+            vs.Path,
+            position=position,
+            color=color,
+            linewidth=linewidth,
+            cap=cap,
+            join=join,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def glyph(self, font_size: int = cst.DEFAULT_FONT_SIZE, **kwargs) -> vs.Glyph:
+    def glyph(
+        self,
+        font_size: int = cst.DEFAULT_FONT_SIZE,
+        position: np.ndarray = None,
+        axis: np.ndarray = None,
+        size: np.ndarray = None,
+        anchor: np.ndarray = None,
+        shift: np.ndarray = None,
+        texcoords: np.ndarray = None,
+        group_size: np.ndarray = None,
+        scale: np.ndarray = None,
+        angle: np.ndarray = None,
+        color: np.ndarray = None,
+        bgcolor: tp.Optional[tuple[int, int, int, int]] = None,
+        texture: tp.Optional[Texture] = None,
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Glyph:
         """
         Create a glyph visual.
 
@@ -471,8 +688,36 @@ class App:
         ----------
         font_size : int, optional
             Font size for the glyph, by default cst.DEFAULT_FONT_SIZE.
-        **kwargs
-            Additional keyword arguments for the visual.
+        position : ndarray
+            Glyph 3D positions in normalized device coordinates.
+        axis : ndarray, optional
+            Glyph axes in 3D space, used for rotation (not implemented yet).
+        size : ndarray, optional
+            Glyph sizes in pixels, each row contains the width and height of each glyph.
+        anchor : ndarray, optional
+            Glyph anchor points in pixels, each row contains the x and y anchor of each glyph.
+        shift : ndarray, optional
+            Glyph shifts in pixels, each row contains the x and y shift of each glyph.
+        texcoords : ndarray, optional
+            Glyph texture coordinates, each row contains the u0,v0,u1,v1 coordinates of each glyph
+            within the font atlas texture.
+        group_size : ndarray, optional
+            Glyph group sizes, each row contains the width and height of the string
+            (i.e., the group of glyphs) the glyph belongs to.
+        scale : ndarray, optional
+            Glyph scales, each row contains the scale factor for each glyph.
+        angle : ndarray, optional
+            Glyph rotation angles in radians, each row contains the angle for each glyph.
+        color : ndarray
+            Glyph RGBA colors in range 0–255.
+        bgcolor : tuple[int, int, int, int], optional
+            Background color for the glyph, in RGBA format.
+        texture : Texture, optional
+            Texture for the glyph, typically a font atlas texture.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
@@ -481,50 +726,104 @@ class App:
         """
         c_visual = dvz.glyph(self.c_batch, 0)
         visual = vs.Glyph(c_visual, font_size=font_size)
-        visual.set_data(**kwargs)
+        visual.set_data(
+            position=position,
+            axis=axis,
+            size=size,
+            anchor=anchor,
+            shift=shift,
+            texcoords=texcoords,
+            group_size=group_size,
+            scale=scale,
+            angle=angle,
+            color=color,
+            bgcolor=bgcolor,
+            texture=texture,
+            depth_test=depth_test,
+            cull=cull,
+        )
         return visual
 
     def image(
         self,
+        position: np.ndarray = None,
+        size: np.ndarray = None,
+        anchor: np.ndarray = None,
+        texcoords: np.ndarray = None,
+        facecolor: np.ndarray = None,
+        edgecolor: tp.Optional[tuple[int, int, int, int]] = None,
+        permutation: tuple[int, int] = None,
+        linewidth: float = None,
+        radius: float = None,
+        colormap: tp.Optional[str] = None,
+        texture: tp.Optional[Texture] = None,
         unit: str = None,
         mode: str = None,
         rescale: str = None,
         border: bool = None,
-        **kwargs,
+        depth_test: bool = None,
+        cull: str = None,
     ) -> vs.Image:
         """
         Create an image visual.
 
         Parameters
         ----------
+        position : ndarray
+            Image 3D positions in normalized device coordinates.
+        size : ndarray
+            Image sizes in pixels or NDC, each row contains the width and height of each image.
+        anchor : ndarray
+            Image anchor in normalized coordinates.
+        texcoords : ndarray
+            Image texture coordinates, each row contains the u0,v0,u1,v1 coordinates of each image
+            within the texture.
+        facecolor : ndarray
+            Image face colors in RGBA format, each row contains the RGBA color of each image.
+        edgecolor : tuple[int, int, int, int], optional
+            Image edge color in RGBA format, used for the border.
+        permutation : tuple[int, int], optional
+            Permutation of the image texture coordinates, e.g., (0, 1) for normal orientation.
+        linewidth : float, optional
+            Line width for the image border, in pixels.
+        radius : float, optional
+            Radius for the image border, in pixels, or 0 for a square border.
+        colormap : str, optional
+            Colormap to apply to the image, when using the `colormap` mode.
+        texture : Texture, optional
+            Texture for the image, typically a 2D texture containing the image data.
         unit : str, optional
             Specifies the unit for the image size. Can be:
+
             - `pixels` (default): Image size is specified in pixels.
             - `ndc`: Image size depends on the normalized device coordinates (NDC) of the panel.
         mode : str, optional
             Specifies the image mode. Can be:
+
             - `rgba` (default): RGBA image mode.
             - `colormap`: Single-channel image with a colormap applied.
             - `fill`: Uniform color fill mode.
         rescale : str, optional
             Specifies how the image should be rescaled with transformations. Can be:
+
             - `None` (default): No rescaling.
             - `rescale`: Rescale the image with the panel size.
             - `keep_ratio`: Rescale the image while maintaining its aspect ratio.
         border : bool, optional
             Indicates whether to display a border around the image. Defaults to `False`.
-
-        **kwargs
-            Additional keyword arguments for the visual.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Image
             The created image visual instance.
         """
-        if kwargs.get('linewidth', 0) or kwargs.get('radius', 0) or kwargs.get('edgecolor', 0):
+        if linewidth is not None or radius is not None or edgecolor is not None:
             border = True
-        if kwargs.get('colormap', None) is not None:
+        if colormap is not None:
             mode = 'colormap'
         c_flags = image_flags(
             unit=unit,
@@ -532,17 +831,50 @@ class App:
             rescale=rescale,
             border=border,
         )
-        return self._visual(dvz.image, vs.Image, c_flags=c_flags, **kwargs)
+        return self._visual(
+            dvz.image,
+            vs.Image,
+            c_flags=c_flags,
+            position=position,
+            size=size,
+            anchor=anchor,
+            texcoords=texcoords,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            permutation=permutation,
+            linewidth=linewidth,
+            radius=radius,
+            colormap=colormap,
+            texture=texture,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
     def mesh(
         self,
         shape: ShapeCollection = None,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        texcoords: np.ndarray = None,
+        normal: np.ndarray = None,
+        isoline: np.ndarray = None,
+        left: np.ndarray = None,
+        right: np.ndarray = None,
+        contour: np.ndarray | bool = None,
+        index: np.ndarray = None,
+        light_pos: tuple[float, float, float, float] = None,
+        light_color: tuple[int, int, int, int] = None,
+        material_params: tuple[float, float, float] = None,
+        shine: float = None,
+        emit: float = None,
+        edgecolor: tp.Optional[tuple[int, int, int, int]] = None,
+        linewidth: float = None,
+        density: int = None,
+        texture: tp.Optional[Texture] = None,
         indexed: tp.Optional[bool] = None,
-        textured: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
-        contour: tp.Optional[bool] = None,
-        isoline: tp.Optional[bool] = None,
-        **kwargs,
+        depth_test: bool = None,
+        cull: str = None,
     ) -> vs.Mesh:
         """
         Create a mesh visual.
@@ -551,27 +883,78 @@ class App:
         ----------
         shape : ShapeCollection, optional
             Create a mesh from a shape collection.
-        indexed : bool
-            Whether the mesh is indexed.
-        textured : bool
-            Whether to use a texture for the mesh.
+        position : ndarray
+            Vertex 3D positions in normalized device coordinates.
+        color : ndarray
+            Vertex RGBA colors in range 0–255.
+        texcoords : ndarray
+            Vertex texture coordinates, each row contains the u0,v0,u1,v1 coordinates of each
+            vertex within the texture.
+        normal : ndarray
+            Vertex normals in normalized device coordinates.
+        isoline : ndarray, optional
+            Scalar field, one value per vertex, is showing isolines.
+        left : ndarray, optional
+            Left values for contours (not documented yet).
+        right : ndarray, optional
+            Right values for contours (not documented yet).
+        contour : ndarray or bool, optional
+            Contour values for the mesh (not documented yet), or a boolean indicating whether to
+            use contours.
+        index : ndarray, optional
+            Vertex indices for indexed meshes (three integers per triangle).
+        light_pos : tuple[float, float, float, float], optional
+            Light position in normalized device coordinates, in the form (x, y, z, w).
+            If `w` is 0, the light is directional; if `w` is 1, the light is positional.
+        light_color : tuple[int, int, int, int], optional
+            Light color in RGBA format, in the form (r, g, b, a).
+        material_params : tuple[float, float, float], optional
+            Material ambient parameters for the mesh, in the form (r, g, b).
+            For diffuse, specular, and exponent, use `Mesh.set_material_params()`.
+        shine : float, optional
+            Material shine factor for the mesh, in the range [0, 1].
+        emit : float, optional
+            Material emission factor for the mesh, in the range [0, 1].
+        edgecolor : tuple[int, int, int, int], optional
+            Edge color for the mesh, in RGBA format, when showing contours or isolines.
+        linewidth : float, optional
+            Line width for the mesh edges, in pixels, when showing contours or isolines.
+        density : int, optional
+            Density of isolines, in pixels, when showing isolines.
+        texture : Texture, optional
+            Texture for the mesh, when using textured mesh.
+        indexed : bool, optional
+            Whether the mesh is indexed. If `True`, the mesh will use indices for vertices.
         lighting : bool
             Whether lighting is enabled.
-        contour : bool
-            Whether contour is enabled.
-        isoline : bool
-            Whether to show isolines.
-        **kwargs
-            Additional keyword arguments for the visual.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Mesh
             The created mesh visual instance.
         """
-        # Force contour flag.
-        if kwargs.get('linewidth', None) is not None or kwargs.get('edgecolor', None) is not None:
-            contour = True
+        # has_contour flag.
+        has_contour = False
+        if contour is not None or linewidth is not None or edgecolor is not None:
+            has_contour = True
+
+        # has_isoline flag.
+        has_isoline = False
+        if isoline is not None or density is not None:
+            has_isoline = True
+
+        # has_index flag.
+        if indexed is not None:
+            has_index = indexed
+        else:
+            has_index = True if index is not None else False
+
+        # has_texture flag.
+        has_texture = True if texture is not None else False
 
         if shape:
             if not shape.c_merged:
@@ -582,13 +965,18 @@ class App:
             nv = dvz.shape_vertex_count(c_merged)
             ni = dvz.shape_index_count(c_merged)
             if ni == 0:
-                indexed = False
+                has_index = False
 
         c_flags = mesh_flags(
-            indexed=indexed, textured=textured, lighting=lighting, contour=contour, isoline=isoline
+            indexed=has_index,
+            textured=has_texture,
+            lighting=lighting,
+            contour=has_contour,
+            isoline=has_isoline,
         )
 
         # Initialization with a ShapeCollection
+        kwargs = {}
         if shape:
             c_visual = dvz.mesh_shape(self.c_batch, c_merged, c_flags)
             kwargs['vertex_count'] = nv
@@ -601,48 +989,133 @@ class App:
         return self._visual(
             c_visual=c_visual,
             cls=vs.Mesh,
+            position=position,
+            color=color,
+            texcoords=texcoords,
+            normal=normal,
+            isoline=isoline,
+            # NOTE: these are not properly documented yet, so just skip them for now
+            # left=left,
+            # right=right,
+            # contour=contour,
+            index=index,
+            light_pos=light_pos,
+            light_color=light_color,
+            material_params=material_params,
+            shine=shine,
+            emit=emit,
+            edgecolor=edgecolor,
+            linewidth=linewidth,
+            density=density,
+            texture=texture,
+            depth_test=depth_test,
+            cull=cull,
             **kwargs,
         )
 
     def sphere(
         self,
-        textured: tp.Optional[bool] = None,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        size: np.ndarray = None,
+        light_pos: tp.Optional[tuple[float, float, float, float]] = None,
+        light_color: tp.Optional[tuple[int, int, int, int]] = None,
+        material_params: tp.Optional[tuple[float, float, float]] = None,
+        shine: tp.Optional[float] = None,
+        emit: tp.Optional[float] = None,
+        texture: tp.Optional[Texture] = None,
         lighting: tp.Optional[bool] = None,
         size_pixels: tp.Optional[bool] = None,
-        **kwargs,
+        depth_test: bool = None,
+        cull: str = None,
     ) -> vs.Sphere:
         """
         Create a sphere visual.
 
         Parameters
         ----------
-        textured : bool
-            Whether to use a texture for the sphere.
+        position : ndarray
+            Sphere 3D positions in normalized device coordinates.
+        color : ndarray
+            Sphere RGBA colors in range 0–255.
+        size : ndarray
+            Sphere sizes in pixels or NDC, depending on `size_pixels`.
+        light_pos : tuple[float, float, float, float], optional
+            Light position in normalized device coordinates, in the form (x, y, z, w).
+            If `w` is 0, the light is directional; if `w` is 1, the light is positional.
+        light_color : tuple[int, int, int, int], optional
+            Light color in RGBA format, in the form (r, g, b, a).
+        material_params : tuple[float, float, float], optional
+            Material ambient parameters for the sphere, in the form (r, g, b).
+            For diffuse, specular, and exponent, use `Sphere.set_material_params()`.
+        shine : float, optional
+            Material shine factor for the sphere, in the range [0, 1].
+        emit : float, optional
+            Material emission factor for the sphere, in the range [0, 1].
+        texture : Texture, optional
+            Texture for the sphere, when using a textured sphere.
         lighting : bool
             Whether lighting is enabled.
         size_pixels : bool
             Whether to specify the sphere size in pixels rather than NDC.
-        **kwargs
-            Additional keyword arguments for the visual.
+        depth_test : bool, optional
+            Whether to enable depth testing.
+        cull : str, optional
+            The culling mode, `None`, `front`, or `back`.
 
         Returns
         -------
         vs.Sphere
             The created sphere visual instance.
         """
-        c_flags = sphere_flags(textured=textured, lighting=lighting, size_pixels=size_pixels)
-        return self._visual(dvz.sphere, vs.Sphere, c_flags=c_flags, **kwargs)
+        has_texture = True if texture is not None else False
+        c_flags = sphere_flags(textured=has_texture, lighting=lighting, size_pixels=size_pixels)
+        return self._visual(
+            dvz.sphere,
+            vs.Sphere,
+            c_flags=c_flags,
+            position=position,
+            color=color,
+            size=size,
+            light_pos=light_pos,
+            light_color=light_color,
+            material_params=material_params,
+            shine=shine,
+            emit=emit,
+            texture=texture,
+            depth_test=depth_test,
+            cull=cull,
+        )
 
-    def volume(self, mode: str = 'colormap', **kwargs) -> vs.Volume:
+    def volume(
+        self,
+        bounds: tuple[tuple, tuple, tuple] = None,
+        permutation: tuple[int, int, int] = None,
+        slice: int = None,
+        transfer: tuple[float, float, float, float] = None,
+        texture: tp.Optional[Texture] = None,
+        mode: str = 'colormap',
+        depth_test: bool = None,
+        cull: str = None,
+    ) -> vs.Volume:
         """
         Create a volume visual.
 
         Parameters
         ----------
+        bounds : tuple[tuple, tuple, tuple]
+            Bounds of the volume in normalized device coordinates, as three tuples
+            (xmin, xmax), (ymin, ymax), (zmin, zmax).
+        permutation : tuple[int, int, int], optional
+            Permutation of the volume axes, e.g., (0, 1, 2) for normal orientation.
+        slice : int, optional
+            Slice index to display (not implemented yet).
+        transfer : tuple[float, float, float, float], optional
+            Transfer function parameters for the volume (only the first value is used for now).
+        texture : Texture, optional
+            Texture for the volume, typically a 3D texture containing the volume data.
         mode : str, optional
             Volume mode ('rgba', 'colormap'), by default 'colormap'.
-        **kwargs
-            Additional keyword arguments for the visual.
 
         Returns
         -------
@@ -651,23 +1124,22 @@ class App:
         """
         assert mode in cst.VOLUME_MODES
         c_flags = to_enum(f'volume_flags_{mode}')
-        return self._visual(dvz.volume, vs.Volume, c_flags=c_flags, **kwargs)
+        return self._visual(
+            dvz.volume,
+            vs.Volume,
+            c_flags=c_flags,
+            bounds=bounds,
+            permutation=permutation,
+            slice=slice,
+            transfer=transfer,
+            texture=texture,
+        )
 
-    def slice(self, **kwargs) -> vs.Slice:
-        """
-        Create a slice visual.
-
-        Parameters
-        ----------
-        **kwargs
-            Additional keyword arguments for the visual.
-
-        Returns
-        -------
-        vs.Slice
-            The created slice visual instance.
-        """
-        return self._visual(dvz.slice, vs.Slice, **kwargs)
+    def slice(
+        self,
+    ) -> vs.Slice:
+        """Not implemented yet."""
+        raise NotImplementedError()
 
     # GUI
     # ---------------------------------------------------------------------------------------------

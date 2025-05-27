@@ -45,11 +45,13 @@ figure = app.figure()
 panel = figure.panel()
 panzoom = panel.panzoom()
 
-visual = app.segment()
-visual.set_position(initial, terminal)
-visual.set_color(color)
-visual.set_linewidth(linewidth)
-visual.set_cap('round', 'round')
+visual = app.segment(
+    initial=initial,
+    terminal=terminal,
+    color=color,
+    linewidth=linewidth,
+    cap=('round', 'round'),
+)
 panel.add(visual)
 
 app.run()

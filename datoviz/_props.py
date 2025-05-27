@@ -73,7 +73,7 @@ PROPS = {
         'scale': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
         'angle': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
-        'bgcolor': {'type': vec4},
+        'bgcolor': {'type': cvec4},
         'texture': {'type': 'texture'},
     },
     'image': {

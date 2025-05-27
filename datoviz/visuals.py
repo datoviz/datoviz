@@ -91,9 +91,9 @@ class Visual:
         Parameters
         ----------
         depth_test : bool, optional
-            Whether to enable depth testing, by default None.
+            Whether to enable depth testing.
         cull : str, optional
-            The culling mode, None, `front`, or `back`
+            The culling mode, `None`, `front`, or `back`.
         **kwargs
             Additional data to set.
         """
@@ -106,7 +106,8 @@ class Visual:
         for key, value in kwargs.items():
             fn = getattr(self, f'set_{key}', None)
             if fn:
-                fn(value)
+                if value is not None:
+                    fn(value)
             else:
                 raise ValueError(f"Method '{self.__class__.__name__}.set_{key}' not found")
 
@@ -891,7 +892,9 @@ class Segment(Visual):
         """
         self.set_prop_class('position', SegmentProp)
 
-    def set_position(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0) -> None:
+    def set_position(
+        self, initial: np.ndarray, terminal: np.ndarray = None, offset: int = 0
+    ) -> None:
         """
         Set the position of the line segments.
 
@@ -904,6 +907,9 @@ class Segment(Visual):
         offset : int, optional
             The offset at which to start setting the position, by default 0.
         """
+        if terminal is None:
+            assert isinstance(initial, tuple) and len(initial) == 2
+            initial, terminal = initial
         n = initial.shape[0]
         self.set_count(offset + n)
         self.position[offset:] = initial, terminal
@@ -947,7 +953,7 @@ class Segment(Visual):
         """
         self.shift[offset:] = array
 
-    def set_cap(self, initial: str, terminal: str) -> None:
+    def set_cap(self, initial: str, terminal: str = None) -> None:
         """
         Set the cap of line segments:
 
@@ -965,6 +971,9 @@ class Segment(Visual):
             The terminal cap.
 
         """
+        if terminal is None:
+            assert isinstance(initial, tuple) and len(initial) == 2
+            initial, terminal = initial
         prop_info = PROPS[self.visual_name].get('cap', {})
         enum_prefix = prop_info['enum']
         enum_prefix = enum_prefix.replace('DVZ_', '')
@@ -1008,6 +1017,7 @@ class Path(Visual):
         offset : int, optional
             The offset at which to start setting the position, by default 0.
         """
+        assert position is not None
         if isinstance(position, np.ndarray):
             if position.ndim == 3:
                 position = list(position)
@@ -1920,7 +1930,7 @@ class Volume(Visual):
 
     visual_name = 'volume'
 
-    def set_bounds(self, xlim: tuple, ylim: tuple, zlim: tuple) -> None:
+    def set_bounds(self, xlim: tuple, ylim: tuple = None, zlim: tuple = None) -> None:
         """
         Set the bounds of the volume.
 
@@ -1933,6 +1943,8 @@ class Volume(Visual):
         zlim : tuple
             The z-axis bounds.
         """
+        if ylim is None and zlim is None:
+            xlim, ylim, zlim = xlim
         dvz.volume_bounds(self.c_visual, dvz.vec2(*xlim), dvz.vec2(*ylim), dvz.vec2(*zlim))
 
     def set_texcoords(self, uvw0: tuple, uvw1: tuple) -> None:

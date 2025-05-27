@@ -41,11 +41,10 @@ panel = figure.panel()
 arcball = panel.arcball(initial=(-2.25, 0.65, 1.5))
 camera = panel.camera(initial=(0, 0, 3))
 
-visual = app.volume(mode='rgba', transfer=(0.2, 0, 0, 0))
-visual.set_bounds((-x, +x), (-y, +y), (-z, +z))
-
 texture = app.texture_3D(volume, shape=(W, H, D), interpolation='linear')
-visual.set_texture(texture)
+visual = app.volume(
+    bounds=((-x, +x), (-y, +y), (-z, +z)), texture=texture, mode='rgba', transfer=(0.2, 0, 0, 0)
+)
 panel.add(visual)
 
 app.run()
