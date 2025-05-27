@@ -346,6 +346,12 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
         contour[8][0] |= 4;
     }
     dvz_mesh_contour(visual, 0, 9, (void*)contour, 0);
+
+    vec3 normal[] = {
+        {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+        {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+    };
+    dvz_mesh_normal(visual, 0, 9, (void*)normal, 0);
 }
 
 static inline void _edgecolor_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
@@ -462,6 +468,10 @@ int test_mesh_contour(TstSuite* suite)
     // Stroke.
     dvz_mesh_edgecolor(visual, (DvzColor){WHITE});
     dvz_mesh_linewidth(visual, 20);
+
+    // Normal.
+    vec3 normal[] = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+    dvz_mesh_normal(visual, 0, 3, (void*)normal, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
