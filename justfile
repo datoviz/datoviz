@@ -808,7 +808,7 @@ ctypes:
     @python tools/build_ctypes.py
 #
 
-pytest: && examples
+pytest:
     @pytest tests.py
 #
 
