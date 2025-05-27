@@ -225,12 +225,12 @@ build release="Debug": && bundledeps
 
 [windows]
 [linux]
-release: symbols
+release: headers symbols
     just build "Release" || just build "Release"
 #
 
 [macos]
-release: symbols && bundledeps
+release: headers symbols && bundledeps
     just build "Release" || just build "Release"
 #
 
@@ -1088,7 +1088,7 @@ rpath:
 #
 
 tryimport:
-    python -c "import datoviz"
+    @python -c "import datoviz"
 #
 
 api: headers symbols ctypes doc tryimport # after every API update
