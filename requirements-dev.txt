@@ -9,3 +9,8 @@ twine
 mkdocs-material
 mkdocstrings[python]
 pymdown-extensions
+
+imageio
+matplotlib
+nilearn
+nibabel
