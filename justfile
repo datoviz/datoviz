@@ -1316,7 +1316,7 @@ python *args:
 # Run all Python examples and generate a screenshot in data/gallery/
 examples:
     @echo "Generating screenshots from examples..."
-    @python tools/run_examples.py
+    @python tools/build_screenshots.py
 
 
 # Build the gallery Markdown files

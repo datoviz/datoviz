@@ -21,7 +21,7 @@ def collect_example_scripts():
     return example_scripts
 
 
-def run_examples():
+def build_screenshots():
     example_scripts = collect_example_scripts()
     for script_path in tqdm(example_scripts, desc='Processing examples', unit='script'):
         relative_path = script_path.relative_to(EXAMPLES_DIR)
@@ -40,7 +40,12 @@ def run_examples():
         # Set the environment variable for the screenshot path
         env = os.environ.copy()
         with open(script_path) as f:
-            env['DVZ_CAPTURE_PNG'] = str(png_path) if 'skip: true' not in f.read() else '/dev/null'
+            # NOTE:
+            # Skip files for which we don't want to make a screenshot.
+            if 'make_screenshot: true' not in f.read():
+                continue
+
+            env['DVZ_CAPTURE_PNG'] = str(png_path)
 
         try:
             subprocess.run([sys.executable, str(script_path)], env=env, check=True)
@@ -50,4 +55,4 @@ def run_examples():
 
 
 if __name__ == '__main__':
-    run_examples()
+    build_screenshots()
