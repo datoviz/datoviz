@@ -247,7 +247,8 @@ manylinux release="Release":
     # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
     rsync -a -v \
         --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
-        --exclude "__pycache__" --exclude "Dockerfile" \
+        --exclude "__pycache__" --exclude "Dockerfile" --exclude "data/mesh" \
+        --exclude "data/misc" --exclude "data/volumes" --exclude "data/gallery" \
         bin cli cmake data datoviz external include libs src tests tools \
         *.toml *.json *.txt *.map *.md *.cff \
         CMakeLists.txt *.map "$BUILD_DIR/"
