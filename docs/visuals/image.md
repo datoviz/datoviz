@@ -154,7 +154,7 @@ This can be useful when image data is stored with flipped or transposed axes.
 ## Example
 
 ```python
---8<-- "examples/visuals/image.py:15:"
+--8<-- "cleaned/visuals/image.py"
 ```
 
 ---

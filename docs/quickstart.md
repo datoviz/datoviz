@@ -19,5 +19,5 @@ The following script generates 1,000 randomly positioned, colored, and sized poi
 ## Example code
 
 ```python
---8<-- "examples/quickstart.py:15:"
+--8<-- "cleaned/quickstart.py"
 ```

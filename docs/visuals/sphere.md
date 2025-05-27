@@ -66,7 +66,7 @@ The lighting system is the same as in the [**Mesh**](mesh.md) visual.
 ## Example
 
 ```python
---8<-- "examples/visuals/sphere.py:14:"
+--8<-- "cleaned/visuals/sphere.py"
 ```
 
 ---

@@ -70,7 +70,7 @@ def on_mouse(ev):
 ### Example
 
 ```python
---8<-- "examples/features/mouse.py:13:"
+--8<-- "cleaned/features/mouse.py"
 ```
 
 ---
@@ -103,7 +103,7 @@ Each event contains:
 ### Example
 
 ```python
---8<-- "examples/features/keyboard.py:13:"
+--8<-- "cleaned/features/keyboard.py"
 ```
 
 ---

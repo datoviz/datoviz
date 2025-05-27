@@ -171,7 +171,7 @@ This feature is still in development and may change in future versions.
 ## Example
 
 ```python
---8<-- "examples/visuals/mesh.py:15:"
+--8<-- "cleaned/visuals/mesh.py"
 ```
 
 ---

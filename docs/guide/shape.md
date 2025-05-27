@@ -123,7 +123,7 @@ sc.destroy()   # Frees memory
 ## Example
 
 ```python
---8<-- "examples/features/shapes.py:14:"
+--8<-- "cleaned/features/shapes.py"
 ```
 
 ---

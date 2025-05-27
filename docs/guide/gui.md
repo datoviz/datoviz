@@ -103,7 +103,7 @@ dvz.gui_colorpicker('Color', color, 0)
 ## Example
 
 ```python
---8<-- "examples/features/gui.py:17:"
+--8<-- "cleaned/features/gui.py"
 ```
 
 This example demonstrates several widgets including a button, tree, table, color picker, and slider.

@@ -43,7 +43,7 @@ All attributes are per-vertex and required.
 ## Example
 
 ```python
---8<-- "examples/visuals/point.py:13:"
+--8<-- "cleaned/visuals/point.py"
 ```
 
 ---

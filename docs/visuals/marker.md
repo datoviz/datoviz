@@ -143,7 +143,7 @@ These aspects are customized with the following properties:
 ## Example
 
 ```python
---8<-- "examples/visuals/marker.py:14:"
+--8<-- "cleaned/visuals/marker.py"
 ```
 
 ---

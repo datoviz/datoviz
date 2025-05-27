@@ -61,7 +61,7 @@ visual = app.pixel(position=position, color=color, size=5)
 ## Example
 
 ```python
---8<-- "examples/visuals/pixel.py:14:"
+--8<-- "cleaned/visuals/pixel.py"
 ```
 
 ---

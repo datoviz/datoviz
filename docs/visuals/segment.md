@@ -68,7 +68,7 @@ Use `visual.set_cap(initial, terminal)` to set cap styles.
 ## Example
 
 ```python
---8<-- "examples/visuals/segment.py:15:"
+--8<-- "cleaned/visuals/segment.py"
 ```
 
 ---

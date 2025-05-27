@@ -119,7 +119,7 @@ More expressive transfer functions (e.g. opacity maps, histograms) are planned.
 ## Example
 
 ```python
---8<-- "examples/visuals/volume.py:16:"
+--8<-- "cleaned/visuals/volume.py"
 ```
 
 ---

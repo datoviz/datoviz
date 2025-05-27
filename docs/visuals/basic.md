@@ -153,7 +153,7 @@ visual = app.basic('triangle_strip', position=position, color=color, group=group
 
 ---
 
-## Example
+### Dynamic topology change
 
 This example displays a GUI to change the topology of the **Basic** visual.
 
@@ -161,8 +161,22 @@ This example displays a GUI to change the topology of the **Basic** visual.
 ![Basic topology widget](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/basic_topology.png)
 </figure>
 
+!!! warning
+
+    Changing visual options dynamically is not fully supported yet, so we use a workaround that involves deleting and recreating the visual. This will be improved in Datoviz v0.4.
+
+??? source
+
+    ```python
+    --8<-- "cleaned/features/basic_topology.py"
+    ```
+
+---
+
+## Example
+
 ```python
---8<-- "examples/features/basic_topology.py:14:"
+--8<-- "cleaned/visuals/pixel.py"
 ```
 
 ---

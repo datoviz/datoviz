@@ -41,8 +41,6 @@
 ---
 
 
-# Visuals
-
 ::: datoviz.visuals.Basic
 
 ---

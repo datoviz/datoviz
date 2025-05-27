@@ -115,7 +115,7 @@ visual = app.glyph(font_size=30)
 ## Example
 
 ```python
---8<-- "examples/visuals/glyph.py:15:"
+--8<-- "cleaned/visuals/glyph.py"
 ```
 
 ---

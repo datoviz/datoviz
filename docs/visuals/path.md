@@ -103,7 +103,7 @@ For very large paths (e.g. time series with millions of points), you may prefer 
 ## Example
 
 ```python
---8<-- "examples/visuals/path.py:14:"
+--8<-- "cleaned/visuals/path.py"
 ```
 
 ---
