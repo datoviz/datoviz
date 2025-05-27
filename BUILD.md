@@ -13,7 +13,7 @@ If precompiled pip wheels are unavailable or not working on your system—or if 
 
 Versions of the various dependencies, including the bundled ones.
 
-* **Datoviz v0.2.3**
+* **Datoviz v0.3.0**
     * cglm: `v0.9.4`
     * Dear ImGui: `v1.91.7-docking`
     * fpng: `v1.0.6`
