@@ -4,7 +4,7 @@
 
 Work in progress.
 
-### Ongoing developments [planned for v0.4.0, late 2025?]
+### Ongoing developments [planned for v0.4.0, late 2025/early 2026?]
 
 * Internal backend-related refactoring to better support Qt and offscreen rendering.
 * Better support for compute shaders.
@@ -14,7 +14,7 @@ Work in progress.
 
 ---
 
-## v0.3.0 (2025-05-XX) [LATEST RELEASE]
+## v0.3.0 (2025-05-27) [LATEST RELEASE]
 
 ### Python API
 
@@ -31,6 +31,14 @@ Work in progress.
 * Introduced axis rendering and layout within panels.
 
 
+### Documentation
+
+* Significantly improved the Python documentation, particularly the visual components.
+* Added documentation for the new Python API.
+* Added a gallery.
+* Improved the documentation website based on mkdocs-material.
+
+
 ### Shapes
 
 * Added support for new 2D and 3D shapes:
@@ -42,7 +50,7 @@ Work in progress.
 
 * Reorganized examples into categories: `visuals`, `features`, `showcase`.
 * Added many new examples demonstrating the new Pythonic API, visuals, and features.
-* Added histogram and shape rendering examples.
+* Added a utility function `download_data()` to download example data.
 
 
 ### Visuals
@@ -50,6 +58,7 @@ Work in progress.
 #### Glyph
 
 * Added `dvz_glyph_strings()` helper.
+
 
 #### Image
 
@@ -59,6 +68,11 @@ Work in progress.
 #### Sphere
 
 * Fixed scaling and lighting in the **sphere visual** ([#84](https://github.com/datoviz/datoviz/pull/84) by @ron-adam).
+
+
+#### Mesh
+
+* More powerful light system in the **mesh visual**, shared with the **sphere visual**, with initial materials support ([#86](https://github.com/datoviz/datoviz/pull/86) by @ron-adam)
 
 
 ### GUI
