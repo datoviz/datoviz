@@ -12,13 +12,10 @@ skip: true
 
 """
 
-from pathlib import Path
-
 import datoviz as dvz
 from datoviz import Out, vec3, vec4
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-file_path = ROOT_DIR / 'data/mesh/bunny.obj'
+file_path = dvz.download_data('mesh/bunny.obj')
 
 light_pos = (
     vec4(0, 0, 5, 1),  # Pos 0  x,y,z

@@ -20,7 +20,8 @@ def is_lfs_pointer(content_bytes: bytes) -> bool:
 
 def download_data(rel_path: str, force_download: bool = False) -> Path:
     """
-    Download a file from the datoviz/data GitHub repo, handling Git LFS if needed.
+    Download a file from the datoviz/data GitHub repo into a local cache directory, handling Git
+    LFS if needed.
 
     Parameters
     ----------

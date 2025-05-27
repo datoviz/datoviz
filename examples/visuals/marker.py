@@ -103,7 +103,7 @@ visual = make_visual(panel)
 visual.set_mode('bitmap')
 visual.set_aspect('filled')
 visual.set_shape('club')
-image = load_texture_rgba(ROOT_DIR / 'data/textures/pushpin.png')
+image = load_texture_rgba(dvz.download_data('textures/pushpin.png'))
 texture = make_texture(image)
 visual.set_texture(texture)  # bitmap textures
 

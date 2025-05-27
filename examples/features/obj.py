@@ -13,12 +13,9 @@ tags:
 
 """
 
-from pathlib import Path
-
 import datoviz as dvz
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-file_path = ROOT_DIR / 'data/mesh/bunny.obj'
+file_path = dvz.download_data('mesh/bunny.obj')
 
 linewidth = 0.1
 edgecolor = (0, 0, 0, 96)
