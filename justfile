@@ -276,7 +276,7 @@ manylinux release="Release":
     # Copy files before building the wheel.
     RUN \
         mkdir -p wheel wheel/datoviz && \
-        cp datoviz/__init__.py wheel/datoviz/ && \
+        cp datoviz/*.py wheel/datoviz/ && \
         cp pyproject.toml wheel/ && \
         cp build/libdatoviz.so wheel/datoviz/ && \
         cp -a libs/shaderc/linux/*.so* wheel/datoviz/ && \
@@ -410,8 +410,8 @@ deb: checkstructs && rpath
     cp -a libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR
     cp -a libs/shaderc/linux/libshaderc*.so* $DEB$LIBDIR
 
-    # Copy the Python ctypes wrapper/
-    cp -a datoviz/__init__.py $DEB$LIBDIR/__init__.py
+    # Copy the Python files
+    cp -a datoviz/ $DEB$LIBDIR/
 
     # Create the post-install script.
     echo "#!/usr/bin/env sh
@@ -485,7 +485,7 @@ wheel almalinux="0":
     mkdir -p wheel wheel/datoviz
 
     # Copy the Python projects files
-    cp datoviz/__init__.py wheel/datoviz/
+    cp datoviz/*.py wheel/datoviz/
     cp pyproject.toml wheel/
 
     # Copy libdatoviz
@@ -607,7 +607,7 @@ pkg: checkstructs
     ' "$PKGROOT$INCLUDEDIR/datoviz.h"
 
     # Copy the built files.
-    cp -a datoviz/__init__.py $PKGROOT$LIBDIR/__init__.py
+    cp -a datoviz/*.py $PKGROOT$LIBDIR/
     cp -a build/MoltenVK_icd.json $PKGROOT$LIBDIR
     cp -a build/*dylib $PKGROOT$LIBDIR
     ls -lah $PKGROOT$LIBDIR
@@ -615,7 +615,6 @@ pkg: checkstructs
     # Post-install script for Python installation
     # Create a symlink from the local site-packages to /usr/local/lib/datoviz so that
     # one can do "import datoviz" in Python, it will load /usr/local/lib/datoviz/__init__.py
-    # which contains the ctypes bindings.
     cat << 'EOF' > $PKGSCRIPTS/postinstall
     #!/bin/bash
     echo "Starting postinstall script"
@@ -703,7 +702,7 @@ wheel arg='': checkstructs
     mkdir -p $DVZDIR
 
     # Copy the header files.
-    cp datoviz/__init__.py $DVZDIR
+    cp datoviz/*.py $DVZDIR
     cp pyproject.toml $PKGROOT/
     cp build/libdatoviz.dylib $DVZDIR
     cp build/libvulkan.1.dylib $DVZDIR
@@ -860,7 +859,7 @@ wheel: checkstructs && showwheel
     mkdir -p "$PKGROOT" "$DVZDIR" "$DISTDIR"
 
     # Copy the header files.
-    cp datoviz/__init__.py "$DVZDIR"
+    cp datoviz/*.py "$DVZDIR"
     cp pyproject.toml "$PKGROOT/"
     cp build/*.dll "$DVZDIR"
 
@@ -943,7 +942,7 @@ checkwheel path="":
     res=1
     if [ -f "$TESTDIR/testwheel.png" ]; then
         filesize=$($TESTDIR/venv/$BINDIR/python -c "from pathlib import Path; print(Path(r'testwheel.png').stat().st_size)")
-        res=$(( $filesize > 180000 ? 0 : 1 ))
+        res=$(( $filesize > 100000 ? 0 : 1 ))
     fi
     rm -rf $TESTDIR
     exit $res

@@ -12,9 +12,6 @@ SPDX-License-Identifier: MIT
 
 from pathlib import Path
 
-import requests
-from platformdirs import user_cache_dir
-
 # -------------------------------------------------------------------------------------------------
 # Constants
 # -------------------------------------------------------------------------------------------------
@@ -56,6 +53,9 @@ def download_data(rel_path: str, force_download: bool = False) -> Path:
     Path
         Local path to the cached or downloaded file.
     """
+    import requests
+    from platformdirs import user_cache_dir
+
     # Resolve local cache path
     cache_dir = Path(user_cache_dir('datoviz')) / 'data'
     file_path = cache_dir / rel_path
