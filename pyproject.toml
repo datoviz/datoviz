@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datoviz"
+requires-python = ">=3.10"
 dependencies = ["numpy", "requests", "platformdirs"]
 version = "0.3.0"
 description = "Datoviz: high-performance rendering for scientific data visualization"
