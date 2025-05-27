@@ -16,13 +16,12 @@ import numpy as np
 
 import datoviz as dvz
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-
 
 def load_data():
     # comes from: https://www.rcsb.org/structure/6QZP
     import MDAnalysis as mda
 
+    ROOT_DIR = Path(__file__).resolve().parent.parent.parent
     files = sorted(glob.glob(str(ROOT_DIR / 'data/misc/molecule/6qzp-pdb-bundle*.pdb')))
     universes = [mda.Universe(f) for f in files]
 
@@ -73,7 +72,7 @@ def load_data():
 
 
 # Load the data
-data = np.load(ROOT_DIR / 'data/misc/molecule/mol.npz')
+data = np.load(dvz.download_data('misc/molecule/mol.npz'))
 position = data['position']
 color = data['color']
 size = data['size']

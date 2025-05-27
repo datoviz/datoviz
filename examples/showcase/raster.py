@@ -11,19 +11,14 @@ tags:
 
 """
 
-from pathlib import Path
-
 import numpy as np
 
 import datoviz as dvz
 
-CURDIR = Path(__file__).resolve().parent.parent.parent
-
 N = 1_000_000  # maximum number of spikes
 
 # Load the data.
-file_path = CURDIR / 'data/misc/raster_1M.npz'
-data = np.load(file_path)
+data = np.load(dvz.download_data('misc/raster_1M.npz'))
 t = data['times'][:N]  # Spike times in seconds
 d = data['depths'][:N]  # Depth in microns
 

@@ -11,8 +11,6 @@ tags:
 
 """
 
-from pathlib import Path
-
 import nibabel as nib
 import numpy as np
 from nilearn import datasets
@@ -22,8 +20,6 @@ import datoviz as dvz
 # -------------------------------------------------------------------------------------------------
 # Brain with scalar field
 # -------------------------------------------------------------------------------------------------
-
-CURDIR = Path(__file__).resolve().parent.parent.parent
 
 fsaverage = datasets.fetch_surf_fsaverage()
 

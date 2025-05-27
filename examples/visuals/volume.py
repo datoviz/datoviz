@@ -14,17 +14,14 @@ tags:
 """
 
 import gzip
-from pathlib import Path
 
 import numpy as np
 
 import datoviz as dvz
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-
 
 def load_mouse_brain():
-    filepath = (ROOT_DIR / 'data/volumes/allen_mouse_brain_rgba.npy.gz').resolve()
+    filepath = dvz.download_data('volumes/allen_mouse_brain_rgba.npy.gz')
     with gzip.open(filepath, 'rb') as f:
         return np.load(f)
 

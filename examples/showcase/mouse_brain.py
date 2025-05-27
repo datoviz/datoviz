@@ -10,14 +10,11 @@ tags:
 
 """
 
-from pathlib import Path
-
 import numpy as np
 
 import datoviz as dvz
 
-CURDIR = Path(__file__).resolve().parent.parent.parent
-data = np.load(CURDIR / 'data/mesh/brain.npz')
+data = np.load(dvz.download_data('mesh/brain.npz'))
 pos = data['pos']
 normal = data['normal']
 color = data['color']
