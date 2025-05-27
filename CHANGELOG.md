@@ -14,7 +14,7 @@ Work in progress.
 
 ---
 
-## v0.3.0 (2025-05-27) [LATEST RELEASE]
+## v0.3.0 (2025-05-28) [LATEST RELEASE]
 
 ### Python API
 
