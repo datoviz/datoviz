@@ -20,9 +20,9 @@
 // All copies of the version numbers in the different files are updated with `just bump $version`
 
 #define DVZ_VERSION_MAJOR 0
-#define DVZ_VERSION_MINOR 2
-#define DVZ_VERSION_PATCH 4
-#define DVZ_VERSION_DEVEL -dev
+#define DVZ_VERSION_MINOR 3
+#define DVZ_VERSION_PATCH 0
+#define DVZ_VERSION_DEVEL
 
 // DVZ_VERSION
 #if DEBUG
