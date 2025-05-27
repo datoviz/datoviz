@@ -8,6 +8,7 @@ theme:
   name: material
   logo: images/logow.png
   features:
+    - content.code.copy
     - content.tabs.link
     - navigation.footer
     - navigation.path
@@ -31,6 +32,7 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - pymdownx.blocks.caption
+  - pymdownx.details
   - pymdownx.tilde
   - pymdownx.highlight
   - pymdownx.snippets:
@@ -112,3 +114,6 @@ nav:
     - Contribution Guidelines: 'discussions/CONTRIBUTING.md'
     - Maintainer Guidelines: 'discussions/MAINTAINERS.md'
     - License: 'discussions/LICENSE.md'
+not_in_nav: |
+  _old/*
+  gallery/*
