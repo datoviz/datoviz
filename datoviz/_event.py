@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from . import _ctypes as dvz
 from .utils import button_name, from_enum, key_name
@@ -122,7 +122,7 @@ class Event:
         if self.is_mouse():
             return button_name(self.button())
 
-    def pos(self) -> Optional[tuple[float, float]]:
+    def pos(self) -> Optional[Tuple[float, float]]:
         """
         Get the position of the mouse event.
 
@@ -134,7 +134,7 @@ class Event:
         if self.is_mouse():
             return tuple(self.c_ev.pos)
 
-    def press_pos(self) -> Optional[tuple[float, float]]:
+    def press_pos(self) -> Optional[Tuple[float, float]]:
         """
         Get the position where the mouse was pressed during a drag event.
 

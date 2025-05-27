@@ -46,16 +46,16 @@ DvzColor = 'cvec4' if DVZ_COLOR_CVEC4 else 'vec4'
 DvzAlpha = 'ctypes.c_uint8' if DVZ_COLOR_CVEC4 else 'ctypes.c_float'
 
 MTYPE_MAPPING = {
-    'vec2': 'tuple[float, float]',
-    'vec3': 'tuple[float, float, float]',
-    'vec4': 'tuple[float, float, float, float]',
-    'ivec2': 'tuple[int, int]',
-    'ivec3': 'tuple[int, int, int]',
-    'ivec4': 'tuple[int, int, int, int]',
-    'uvec2': 'tuple[int, int]',
-    'uvec3': 'tuple[int, int, int]',
-    'uvec4': 'tuple[int, int, int, int]',
-    'DvzColor': 'tuple[int, int, int, int]',
+    'vec2': 'Tuple[float, float]',
+    'vec3': 'Tuple[float, float, float]',
+    'vec4': 'Tuple[float, float, float, float]',
+    'ivec2': 'Tuple[int, int]',
+    'ivec3': 'Tuple[int, int, int]',
+    'ivec4': 'Tuple[int, int, int, int]',
+    'uvec2': 'Tuple[int, int]',
+    'uvec3': 'Tuple[int, int, int]',
+    'uvec4': 'Tuple[int, int, int, int]',
+    'DvzColor': 'Tuple[int, int, int, int]',
 }
 
 
@@ -281,7 +281,7 @@ def map_python_type(arg):
         elif d == 'char*':
             return 'str'
         elif d == 'char**':
-            return 'list[str]'
+            return 'List[str]'
         elif d[0] != 'D':
             return f'np.ndarray[{arg["dtype"][:-1]}]'
     return d

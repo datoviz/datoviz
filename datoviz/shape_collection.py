@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import ctypes
+from typing import List, Tuple
 
 import numpy as np
 
@@ -22,9 +23,9 @@ from .utils import to_enum
 # Types
 # -------------------------------------------------------------------------------------------------
 
-Color = tuple[int, int, int, int]
-Vec4 = tuple[float, float, float, float]
-Mat4 = tuple[float, ...]
+Color = Tuple[int, int, int, int]
+Vec4 = Tuple[float, float, float, float]
+Mat4 = Tuple[float, ...]
 
 DEFAULT_SIZE = 100
 DEFAULT_ARROW_HEAD_LENGTH = 0.3
@@ -42,7 +43,7 @@ WHITE = dvz.cvec4(255, 255, 255, 255)
 
 def _shape_transform(
     c_shape: dvz.Shape,
-    offset: tuple[float, float, float] = None,
+    offset: Tuple[float, float, float] = None,
     scale: float = None,
     transform: Mat4 = None,
 ) -> None:
@@ -73,7 +74,7 @@ def _shape_transform(
     dvz.shape_end(c_shape)
 
 
-def merge_shapes(c_shapes: list[dvz.Shape]) -> dvz.Shape:
+def merge_shapes(c_shapes: List[dvz.Shape]) -> dvz.Shape:
     """
     Merge multiple shapes into a single shape.
 
@@ -154,7 +155,7 @@ class ShapeCollection:
         The merged shape, if applicable.
     """
 
-    c_shapes: list[dvz.Shape] = None
+    c_shapes: List[dvz.Shape] = None
     c_merged: dvz.Shape = None
 
     def __init__(self) -> None:
@@ -167,7 +168,7 @@ class ShapeCollection:
     def add(
         self,
         c_shape: dvz.Shape,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
     ) -> None:
@@ -195,7 +196,7 @@ class ShapeCollection:
         colors: np.ndarray = None,
         texcoords: np.ndarray = None,
         indices: np.ndarray = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
     ):
@@ -236,7 +237,7 @@ class ShapeCollection:
 
     def add_square(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -263,7 +264,7 @@ class ShapeCollection:
     def add_disc(
         self,
         count: int,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -294,7 +295,7 @@ class ShapeCollection:
         count: int,
         angle_start: float,
         angle_stop: float,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -326,7 +327,7 @@ class ShapeCollection:
 
     def add_cube(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -356,7 +357,7 @@ class ShapeCollection:
         self,
         rows: int = None,
         cols: int = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -389,7 +390,7 @@ class ShapeCollection:
     def add_cylinder(
         self,
         count: int = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -419,7 +420,7 @@ class ShapeCollection:
     def add_cone(
         self,
         count: int = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -452,7 +453,7 @@ class ShapeCollection:
         head_length: float = None,
         head_radius: float = None,
         shaft_radius: float = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -495,7 +496,7 @@ class ShapeCollection:
         count_radial: int = None,
         count_tubular: int = None,
         tube_radius: float = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -530,7 +531,7 @@ class ShapeCollection:
 
     def add_tetrahedron(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -563,7 +564,7 @@ class ShapeCollection:
 
     def add_hexahedron(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -596,7 +597,7 @@ class ShapeCollection:
 
     def add_octahedron(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -629,7 +630,7 @@ class ShapeCollection:
 
     def add_dodecahedron(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -662,7 +663,7 @@ class ShapeCollection:
 
     def add_icosahedron(
         self,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -696,7 +697,7 @@ class ShapeCollection:
     def add_polygon(
         self,
         points: np.ndarray,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -748,9 +749,9 @@ class ShapeCollection:
         colors: np.ndarray,
         contour: str = None,
         indexing: str = None,
-        u: tuple[float, float, float] = None,
-        v: tuple[float, float, float] = None,
-        offset: tuple[float, float, float] = None,
+        u: Tuple[float, float, float] = None,
+        v: Tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
     ) -> None:
@@ -799,7 +800,7 @@ class ShapeCollection:
         self,
         file_path: str,
         contour: str = None,
-        offset: tuple[float, float, float] = None,
+        offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
     ) -> None:

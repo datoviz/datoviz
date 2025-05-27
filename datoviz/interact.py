@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from typing import Tuple
+
 from . import _ctypes as dvz
 
 # -------------------------------------------------------------------------------------------------
@@ -115,7 +117,7 @@ class Arcball:
         """
         dvz.arcball_reset(self.c_arcball)
 
-    def set(self, angles: tuple[float, float, float]) -> None:
+    def set(self, angles: Tuple[float, float, float]) -> None:
         """
         Set the angles of the arcball.
 
@@ -127,7 +129,7 @@ class Arcball:
         dvz.arcball_set(self.c_arcball, dvz.vec3(*angles))
         dvz.panel_update(self.c_panel)
 
-    def get(self) -> tuple[float, float, float]:
+    def get(self) -> Tuple[float, float, float]:
         """
         Get the current angles of the arcball.
 
@@ -171,7 +173,7 @@ class Camera:
         self.c_camera = c_camera
         self.c_panel = c_panel
 
-    def position(self) -> tuple[float, float, float]:
+    def position(self) -> Tuple[float, float, float]:
         """
         Get the camera position.
 
@@ -186,9 +188,9 @@ class Camera:
 
     def set(
         self,
-        position: tuple[float, float, float] = None,
-        lookat: tuple[float, float, float] = None,
-        up: tuple[float, float, float] = None,
+        position: Tuple[float, float, float] = None,
+        lookat: Tuple[float, float, float] = None,
+        up: Tuple[float, float, float] = None,
     ) -> None:
         """
         Set the camera parameters.

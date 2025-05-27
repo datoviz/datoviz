@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from typing import Tuple
+
 from . import _ctypes as dvz
 
 # -------------------------------------------------------------------------------------------------
@@ -72,4 +74,4 @@ DTYPE_FORMATS = {
     ('float32', 4): dvz.FORMAT_R32G32B32A32_SFLOAT,
 }
 
-Vec3 = tuple[float, float, float]
+Vec3 = Tuple[float, float, float]

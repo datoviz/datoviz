@@ -18,6 +18,7 @@ from ctypes import POINTER as P_  # noqa
 from ctypes import byref  # noqa
 from enum import IntEnum
 from pathlib import Path
+from typing import Optional
 
 try:
     import numpy as np
@@ -129,7 +130,7 @@ class CStringBuffer:
     """
 
     # -------- allocate an explicit, reusable buffer -----------------
-    def __init__(self, initial: str = "", size: int | None = 64):
+    def __init__(self, initial: str = "", size: Optional[int] = 64):
         if isinstance(initial, Path):
             initial = str(initial)
         if not isinstance(initial, str):

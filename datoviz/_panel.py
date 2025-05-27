@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from typing import Optional
+from typing import Optional, Tuple
 
 from . import _constants as cst
 from . import _ctypes as dvz
@@ -225,7 +225,7 @@ class Panel:
     # Axes
     # ---------------------------------------------------------------------------------------------
 
-    def axes(self, xlim: tuple[float, float] = None, ylim: tuple[float, float] = None):
+    def axes(self, xlim: Tuple[float, float] = None, ylim: Tuple[float, float] = None):
         if self._axes is None:
             xlim = xlim or cst.NDC
             ylim = ylim or cst.NDC

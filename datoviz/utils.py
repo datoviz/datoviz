@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT
 import ctypes
 from collections.abc import Iterable
 from ctypes import c_char_p, c_uint8
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
@@ -82,7 +83,7 @@ def pointer_array(
     return np_array
 
 
-def char_pointer(s: str | list[str]) -> ctypes.POINTER:
+def char_pointer(s: Union[str, List[str]]) -> ctypes.POINTER:
     """
     Convert a string or list of strings to a C char pointer.
 
@@ -144,7 +145,7 @@ def to_cvec4_array(colors):
 # -------------------------------------------------------------------------------------------------
 
 
-def get_version() -> dict[str, str]:
+def get_version() -> Dict[str, str]:
     """
     Get the version information for the library.
 
@@ -169,7 +170,7 @@ def is_enumerable(x) -> bool:
 # -------------------------------------------------------------------------------------------------
 
 
-def from_enum(enum_cls: type, value: int, prettify: bool = True) -> str | None:
+def from_enum(enum_cls: type, value: int, prettify: bool = True) -> Optional[str]:
     """
     Convert an enum value to its string representation.
 
@@ -198,7 +199,7 @@ def from_enum(enum_cls: type, value: int, prettify: bool = True) -> str | None:
     return None
 
 
-def to_enum(enumstr: str | int) -> int:
+def to_enum(enumstr: Union[str, int]) -> int:
     """
     Convert an enum string to its corresponding value.
 
@@ -261,7 +262,9 @@ def button_name(button: int) -> str:
 # -------------------------------------------------------------------------------------------------
 
 
-def cmap(cm: str | int, values: np.ndarray, vmin: float = 0.0, vmax: float = 1.0) -> np.ndarray:
+def cmap(
+    cm: Union[str, int], values: np.ndarray, vmin: float = 0.0, vmax: float = 1.0
+) -> np.ndarray:
     """
     Apply a colormap to an array of values.
 
@@ -324,7 +327,7 @@ def to_byte(arr: np.ndarray, vmin: float = None, vmax: float = None) -> np.ndarr
     return normalized.astype(np.uint8)
 
 
-def get_size(idx: slice | int, value: np.ndarray, total_size: int = 0) -> int:
+def get_size(idx: Union[slice, int], value: np.ndarray, total_size: int = 0) -> int:
     """
     Get the size of a slice or array.
 
@@ -374,7 +377,7 @@ def dtype_to_format(dtype: str, n_channels: int) -> int:
 
 
 def prepare_data_array(
-    name: str, dtype: str, shape: tuple[int, ...], value: np.ndarray
+    name: str, dtype: str, shape: Tuple[int, ...], value: np.ndarray
 ) -> np.ndarray:
     """
     Prepare a data array for use in a visual.
@@ -589,7 +592,7 @@ def sphere_flags(
     return c_flags
 
 
-def get_fixed_params(fixed: bool | str) -> tuple[bool, bool, bool]:
+def get_fixed_params(fixed: Union[bool, str]) -> Tuple[bool, bool, bool]:
     """
     Get the fixed parameters for a visual on all three dimensions.
 

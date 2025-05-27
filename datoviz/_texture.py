@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from typing import Tuple
+
 import numpy as np
 
 from . import _ctypes as dvz
@@ -55,7 +57,7 @@ class Texture:
         self.c_batch = c_batch
         self.ndim = ndim
 
-    def data(self, image: np.ndarray, offset: tuple[int, int, int] = None):
+    def data(self, image: np.ndarray, offset: Tuple[int, int, int] = None):
         """
         Upload an image to the texture with an optional offset.
 
@@ -63,7 +65,7 @@ class Texture:
         ----------
         image : np.ndarray
             The image data to upload.
-        offset : tuple[int, int, int], optional
+        offset : Tuple[int, int, int], optional
             The offset at which to upload the image in the texture. Defaults to (0, 0, 0).
 
         Notes

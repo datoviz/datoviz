@@ -23,6 +23,7 @@ from ctypes import POINTER as P_  # noqa
 from ctypes import byref  # noqa
 from enum import IntEnum
 from pathlib import Path
+from typing import Optional
 
 try:
     import numpy as np
@@ -134,7 +135,7 @@ class CStringBuffer:
     """
 
     # -------- allocate an explicit, reusable buffer -----------------
-    def __init__(self, initial: str = "", size: int | None = 64):
+    def __init__(self, initial: str = "", size: Optional[int] = 64):
         if isinstance(initial, Path):
             initial = str(initial)
         if not isinstance(initial, str):
@@ -3211,7 +3212,7 @@ Parameters
 ----------
 mouse : DvzMouse*
     the mouse
-pos : tuple[float, float]
+pos : Tuple[float, float]
     the cursor position, in pixels
 mods : int
     the keyboard modifier flags
@@ -3274,7 +3275,7 @@ Parameters
 ----------
 mouse : DvzMouse*
     the mouse
-dir : tuple[float, float]
+dir : Tuple[float, float]
     the mouse wheel direction (x, y)
 mods : int
     the keyboard modifier flags
@@ -3795,7 +3796,7 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
-pos : tuple[float, float]
+pos : Tuple[float, float]
     the position
 
 Returns
@@ -3819,7 +3820,7 @@ Parameters
 ----------
 figure : DvzFigure*
     the figure
-pos : tuple[float, float]
+pos : Tuple[float, float]
     the position
 
 Returns
@@ -4496,7 +4497,7 @@ tex : DvzId
     the tex ID
 sampler : DvzId
     the sampler ID
-offset : tuple[int, int, int]
+offset : Tuple[int, int, int]
     the texture offset
 """
 visual_tex.argtypes = [
@@ -4966,7 +4967,7 @@ cmap : DvzColormap
     the colormap
 value : uint8_t
     the value
-color : Out[tuple[int, int, int, int]] (out parameter)
+color : Out[Tuple[int, int, int, int]] (out parameter)
     the fetched color
 """
 colormap.argtypes = [
@@ -5012,7 +5013,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-color : Out[tuple[int, int, int, int]] (out parameter)
+color : Out[Tuple[int, int, int, int]] (out parameter)
     the fetched color
 """
 colormap_scale.argtypes = [
@@ -5041,7 +5042,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-out : Out[tuple[int, int, int, int]] (out parameter)
+out : Out[Tuple[int, int, int, int]] (out parameter)
     (array) the fetched colors
 """
 colormap_array.argtypes = [
@@ -5219,7 +5220,7 @@ pos : np.ndarray[vec3]
     array of vec3 positions
 index : DvzIndex*
     pos array of uint32_t indices
-normal : Out[tuple[float, float, float]] (out parameter)
+normal : Out[Tuple[float, float, float]] (out parameter)
     (array) the vec3 normals (to be overwritten by this function)
 """
 compute_normals.argtypes = [
@@ -5390,7 +5391,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-scale : tuple[float, float, float]
+scale : Tuple[float, float, float]
     the scaling factors
 """
 shape_scale.argtypes = [
@@ -5408,7 +5409,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-translate : tuple[float, float, float]
+translate : Tuple[float, float, float]
     the translation vector
 """
 shape_translate.argtypes = [
@@ -5428,7 +5429,7 @@ shape : DvzShape*
     the shape
 angle : float
     the rotation angle
-axis : tuple[float, float, float]
+axis : Tuple[float, float, float]
     the rotation axis
 """
 shape_rotate.argtypes = [
@@ -5467,7 +5468,7 @@ shape : DvzShape*
     the shape
 flags : int
     the rescaling flags
-out_scale : Out[tuple[float, float, float]] (out parameter)
+out_scale : Out[Tuple[float, float, float]] (out parameter)
     the computed scaling factors
 
 Returns
@@ -5506,7 +5507,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the square color
 """
 shape_square.argtypes = [
@@ -5526,7 +5527,7 @@ shape : DvzShape*
     the shape
 count : int
     the number of points along the disc border
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the disc color
 """
 shape_disc.argtypes = [
@@ -5551,7 +5552,7 @@ angle_start : float
     the initial angle
 angle_stop : float
     the final angle
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the sector color
 """
 shape_sector.argtypes = [
@@ -5576,7 +5577,7 @@ count : int
     the number of bars
 heights : np.ndarray[float]
     the height of each bar
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the sector color
 """
 shape_histogram.argtypes = [
@@ -5600,7 +5601,7 @@ count : int
     the number of points along the polygon border
 points : np.ndarray[dvec2]
     the points 2D coordinates
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the polygon color
 """
 shape_polygon.argtypes = [
@@ -5644,11 +5645,11 @@ heights : np.ndarray[float]
     a pointer to row_count*col_count height values (floats)
 colors : DvzColor*
     a pointer to row_count*col_count color values (DvzColor: cvec4 or vec4)
-o : tuple[float, float, float]
+o : Tuple[float, float, float]
     the origin
-u : tuple[float, float, float]
+u : Tuple[float, float, float]
     the unit vector parallel to each column
-v : tuple[float, float, float]
+v : Tuple[float, float, float]
     the unit vector parallel to each row
 flags : int
     the grid creation flags
@@ -5697,7 +5698,7 @@ rows : int
     the number of rows
 cols : int
     the number of columns
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the sphere color
 """
 shape_sphere.argtypes = [
@@ -5719,7 +5720,7 @@ shape : DvzShape*
     the shape
 count : int
     the number of points along the cylinder border
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the cylinder color
 """
 shape_cylinder.argtypes = [
@@ -5740,7 +5741,7 @@ shape : DvzShape*
     the shape
 count : int
     the number of points along the disc border
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the cone color
 """
 shape_cone.argtypes = [
@@ -5768,7 +5769,7 @@ head_radius : float
     the radius of the head
 shaft_radius : float
     the radius of the shaft
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the arrow color
 """
 shape_arrow.argtypes = [
@@ -5797,7 +5798,7 @@ count_tubular : int
     the number of points in each cross-section
 tube_radius : float
     the radius of the tube.
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the torus color
 """
 shape_torus.argtypes = [
@@ -5818,7 +5819,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the color
 """
 shape_tetrahedron.argtypes = [
@@ -5836,7 +5837,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the color
 """
 shape_hexahedron.argtypes = [
@@ -5854,7 +5855,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the color
 """
 shape_octahedron.argtypes = [
@@ -5872,7 +5873,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the color
 """
 shape_dodecahedron.argtypes = [
@@ -5890,7 +5891,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the color
 """
 shape_icosahedron.argtypes = [
@@ -6106,7 +6107,7 @@ xywh : np.ndarray[vec4]
     an array of (x,y,w,h) shifts, returned by dvz_font_layout()
 flags : int
     the font flags
-out_size : Out[tuple[int, int]] (out parameter)
+out_size : Out[Tuple[int, int]] (out parameter)
     the number of bytes in the returned image
 
 Returns
@@ -6140,7 +6141,7 @@ length : int
     the number of Unicode codepoints
 codepoints : np.ndarray[uint32_t]
     the Unicode codepoints
-size : Out[tuple[int, int, int]] (out parameter)
+size : Out[Tuple[int, int, int]] (out parameter)
     the generated texture size
 
 Returns
@@ -6231,7 +6232,7 @@ Generate a 2D circular motion.
 
 Parameters
 ----------
-center : tuple[float, float]
+center : Tuple[float, float]
     the circle center
 radius : float
     the circle radius
@@ -6239,7 +6240,7 @@ angle : float
     the initial angle
 t : float
     the normalized value
-out : Out[tuple[float, float]] (out parameter)
+out : Out[Tuple[float, float]] (out parameter)
     the 2D position
 """
 circular_2D.argtypes = [
@@ -6258,11 +6259,11 @@ Generate a 3D circular motion.
 
 Parameters
 ----------
-center : tuple[float, float, float]
+center : Tuple[float, float, float]
     the circle center
-u : tuple[float, float, float]
+u : Tuple[float, float, float]
     the first 3D vector defining the plane containing the circle
-v : tuple[float, float, float]
+v : Tuple[float, float, float]
     the second 3D vector defining the plane containing the circle
 radius : float
     the circle radius
@@ -6270,7 +6271,7 @@ angle : float
     the initial angle
 t : float
     the normalized value
-out : Out[tuple[float, float, float]] (out parameter)
+out : Out[Tuple[float, float, float]] (out parameter)
     the 3D position
 """
 circular_3D.argtypes = [
@@ -6318,13 +6319,13 @@ Make a linear interpolation between two 2D points.
 
 Parameters
 ----------
-p0 : tuple[float, float]
+p0 : Tuple[float, float]
     the first point
-p1 : tuple[float, float]
+p1 : Tuple[float, float]
     the second point
 t : float
     the normalized value
-out : Out[tuple[float, float]] (out parameter)
+out : Out[Tuple[float, float]] (out parameter)
     the interpolated point
 """
 interpolate_2D.argtypes = [
@@ -6342,13 +6343,13 @@ Make a linear interpolation between two 3D points.
 
 Parameters
 ----------
-p0 : tuple[float, float, float]
+p0 : Tuple[float, float, float]
     the first point
-p1 : tuple[float, float, float]
+p1 : Tuple[float, float, float]
     the second point
 t : float
     the normalized value
-out : Out[tuple[float, float, float]] (out parameter)
+out : Out[Tuple[float, float, float]] (out parameter)
     the interpolated point
 """
 interpolate_3D.argtypes = [
@@ -6368,7 +6369,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-angles : tuple[float, float, float]
+angles : Tuple[float, float, float]
     the initial angles
 """
 arcball_initial.argtypes = [
@@ -6440,7 +6441,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-constrain : tuple[float, float, float]
+constrain : Tuple[float, float, float]
     the constrain values
 """
 arcball_constrain.argtypes = [
@@ -6458,7 +6459,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-angles : tuple[float, float, float]
+angles : Tuple[float, float, float]
     the angles
 """
 arcball_set.argtypes = [
@@ -6476,7 +6477,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-out_angles : Out[tuple[float, float, float]] (out parameter)
+out_angles : Out[Tuple[float, float, float]] (out parameter)
     the arcball angles
 """
 arcball_angles.argtypes = [
@@ -6494,9 +6495,9 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-cur_pos : tuple[float, float]
+cur_pos : Tuple[float, float]
     the initial position
-last_pos : tuple[float, float]
+last_pos : Tuple[float, float]
     the final position
 """
 arcball_rotate.argtypes = [
@@ -6605,11 +6606,11 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : tuple[float, float, float]
+pos : Tuple[float, float, float]
     the initial position
-lookat : tuple[float, float, float]
+lookat : Tuple[float, float, float]
     the lookat position
-up : tuple[float, float, float]
+up : Tuple[float, float, float]
     the up vector
 """
 camera_initial.argtypes = [
@@ -6713,7 +6714,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : tuple[float, float, float]
+pos : Tuple[float, float, float]
     the pos
 """
 camera_position.argtypes = [
@@ -6731,7 +6732,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : Out[tuple[float, float, float]] (out parameter)
+pos : Out[Tuple[float, float, float]] (out parameter)
     the pos
 """
 camera_get_position.argtypes = [
@@ -6749,7 +6750,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-lookat : tuple[float, float, float]
+lookat : Tuple[float, float, float]
     the lookat position
 """
 camera_lookat.argtypes = [
@@ -6767,7 +6768,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-lookat : Out[tuple[float, float, float]] (out parameter)
+lookat : Out[Tuple[float, float, float]] (out parameter)
     the lookat position
 """
 camera_get_lookat.argtypes = [
@@ -6785,7 +6786,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-up : tuple[float, float, float]
+up : Tuple[float, float, float]
     the up vector
 """
 camera_up.argtypes = [
@@ -6803,7 +6804,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-up : Out[tuple[float, float, float]] (out parameter)
+up : Out[Tuple[float, float, float]] (out parameter)
     the up vector
 """
 camera_get_up.argtypes = [
@@ -6974,7 +6975,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-pan : tuple[float, float]
+pan : Tuple[float, float]
     the pan, in NDC
 """
 panzoom_pan.argtypes = [
@@ -6992,7 +6993,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-zoom : tuple[float, float]
+zoom : Tuple[float, float]
     the zoom, in NDC
 """
 panzoom_zoom.argtypes = [
@@ -7010,9 +7011,9 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-shift_px : tuple[float, float]
+shift_px : Tuple[float, float]
     the shift value, in pixels
-center_px : tuple[float, float]
+center_px : Tuple[float, float]
     the center position, in pixels
 """
 panzoom_pan_shift.argtypes = [
@@ -7031,9 +7032,9 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-shift_px : tuple[float, float]
+shift_px : Tuple[float, float]
     the shift value, in pixels
-center_px : tuple[float, float]
+center_px : Tuple[float, float]
     the center position, in pixels
 """
 panzoom_zoom_shift.argtypes = [
@@ -7067,9 +7068,9 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-dir : tuple[float, float]
+dir : Tuple[float, float]
     the wheel direction
-center_px : tuple[float, float]
+center_px : Tuple[float, float]
     the center position, in pixels
 """
 panzoom_zoom_wheel.argtypes = [
@@ -7336,7 +7337,7 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-pan : tuple[float, float]
+pan : Tuple[float, float]
     the pan, in NDC
 """
 ortho_pan.argtypes = [
@@ -7372,9 +7373,9 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-shift_px : tuple[float, float]
+shift_px : Tuple[float, float]
     the shift value, in pixels
-center_px : tuple[float, float]
+center_px : Tuple[float, float]
     the center position, in pixels
 """
 ortho_pan_shift.argtypes = [
@@ -7393,9 +7394,9 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-shift_px : tuple[float, float]
+shift_px : Tuple[float, float]
     the shift value, in pixels
-center_px : tuple[float, float]
+center_px : Tuple[float, float]
     the center position, in pixels
 """
 ortho_zoom_shift.argtypes = [
@@ -7429,9 +7430,9 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-dir : tuple[float, float]
+dir : Tuple[float, float]
     the wheel direction
-center_px : tuple[float, float]
+center_px : Tuple[float, float]
     the center position, in pixels
 """
 ortho_zoom_wheel.argtypes = [
@@ -7633,7 +7634,7 @@ count : int
     the number of positions
 pos : np.ndarray[double]
     the 1D positions
-pos_tr : Out[tuple[float, float, float]] (out parameter)
+pos_tr : Out[Tuple[float, float, float]] (out parameter)
     (array) the transformed positions
 """
 ref_normalize_1D.argtypes = [
@@ -7658,7 +7659,7 @@ count : int
     the number of positions
 pos : np.ndarray[dvec2]
     the 2D positions
-pos_tr : Out[tuple[float, float, float]] (out parameter)
+pos_tr : Out[Tuple[float, float, float]] (out parameter)
     (array) the transformed 3D positions
 """
 ref_normalize_2D.argtypes = [
@@ -7706,7 +7707,7 @@ count : int
     the number of positions
 pos : np.ndarray[dvec3]
     the 3D positions
-pos_tr : Out[tuple[float, float, float]] (out parameter)
+pos_tr : Out[Tuple[float, float, float]] (out parameter)
     (array) the transformed positions
 """
 ref_normalize_3D.argtypes = [
@@ -7726,7 +7727,7 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-pos_tr : tuple[float, float, float]
+pos_tr : Tuple[float, float, float]
     the 3D position in normalized device coordinates
 pos : Out[dvec3] (out parameter)
     the original position
@@ -8427,9 +8428,9 @@ Set the position of the next GUI dialog.
 
 Parameters
 ----------
-pos : tuple[float, float]
+pos : Tuple[float, float]
     the dialog position
-pivot : tuple[float, float]
+pivot : Tuple[float, float]
     the pivot
 """
 gui_pos.argtypes = [
@@ -8445,9 +8446,9 @@ Set a fixed position for a GUI dialog.
 
 Parameters
 ----------
-pos : tuple[float, float]
+pos : Tuple[float, float]
     the dialog position
-pivot : tuple[float, float]
+pivot : Tuple[float, float]
     the pivot
 """
 gui_fixed.argtypes = [
@@ -8463,7 +8464,7 @@ Get the position and size of the current dialog.
 
 Parameters
 ----------
-viewport : tuple[float, float, float, float]
+viewport : Tuple[float, float, float, float]
     the x, y, w, h values
 """
 gui_viewport.argtypes = [
@@ -8480,7 +8481,7 @@ Parameters
 ----------
 corner : DvzCorner
     which corner
-pad : tuple[float, float]
+pad : Tuple[float, float]
     the pad
 """
 gui_corner.argtypes = [
@@ -8496,7 +8497,7 @@ Set the size of the next GUI dialog.
 
 Parameters
 ----------
-size : tuple[float, float]
+size : Tuple[float, float]
     the size
 """
 gui_size.argtypes = [
@@ -8513,7 +8514,7 @@ Parameters
 ----------
 type : int
     the element type for which to change the color
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the color
 """
 gui_color.argtypes = [
@@ -8681,7 +8682,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : Out[tuple[float, float]] (out parameter)
+value : Out[Tuple[float, float]] (out parameter)
     the pointer to the value
 
 Returns
@@ -8711,7 +8712,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : Out[tuple[float, float, float]] (out parameter)
+value : Out[Tuple[float, float, float]] (out parameter)
     the pointer to the value
 
 Returns
@@ -8741,7 +8742,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : Out[tuple[float, float, float, float]] (out parameter)
+value : Out[Tuple[float, float, float, float]] (out parameter)
     the pointer to the value
 
 Returns
@@ -8820,7 +8821,7 @@ name : str
     the menu name
 count : int
     the number of menu items
-items : list[str]
+items : List[str]
     the item labels
 selected : Out[int] (out parameter)
     a pointer to the selected index
@@ -8895,7 +8896,7 @@ Parameters
 ----------
 name : str
     the widget name
-color : tuple[float, float, float]
+color : Tuple[float, float, float]
     the color
 flags : int
     the widget flags
@@ -8989,7 +8990,7 @@ row_count : int
     the number of rows
 column_count : int
     the number of columns
-labels : list[str]
+labels : List[str]
     all cell labels
 selected : np.ndarray[bool]
     a pointer to an array of boolean indicated which rows are selected
@@ -9025,9 +9026,9 @@ Parameters
 ----------
 count : int
     the number of rows
-ids : list[str]
+ids : List[str]
     short id of each row
-labels : list[str]
+labels : List[str]
     full label of each row
 levels : np.ndarray[uint32_t]
     a positive integer indicate
@@ -9189,7 +9190,7 @@ n : int
     the number of values
 values : np.ndarray[float]
     an array of float numbers
-out_min_max : tuple[float, float]
+out_min_max : Tuple[float, float]
     the min and max
 """
 min_max.argtypes = [
@@ -9206,7 +9207,7 @@ Normalize the array.
 
 Parameters
 ----------
-min_max : tuple[float, float]
+min_max : Tuple[float, float]
     the minimum and maximum values, mapped to 0 and 255, the result will be clipped
 count : int
     the number of values
@@ -9408,7 +9409,7 @@ Parameters
 ----------
 count : int
     the number of positions to generate
-size : tuple[float, float]
+size : Tuple[float, float]
     the size of the band
 
 Returns
@@ -9456,7 +9457,7 @@ Parameters
 ----------
 count : int
     the number of positions to generate
-fixed : tuple[float, float, float]
+fixed : Tuple[float, float, float]
     the position
 
 Returns
@@ -9480,9 +9481,9 @@ Parameters
 ----------
 count : int
     the number of positions to generate
-p0 : tuple[float, float, float]
+p0 : Tuple[float, float, float]
     initial position
-p1 : tuple[float, float, float]
+p1 : Tuple[float, float, float]
     terminal position
 
 Returns
@@ -9633,7 +9634,7 @@ Parameters
 ----------
 count : int
     the number of colors to generate
-mono : tuple[int, int, int, int]
+mono : Tuple[int, int, int, int]
     the color to repeat
 
 Returns
@@ -10317,7 +10318,7 @@ dims : DvzTexDims
     the number of dimensions, 1, 2, or 3
 format : DvzFormat
     the image format
-shape : tuple[int, int, int]
+shape : Tuple[int, int, int]
     the texture shape
 flags : int
     the dat creation flags
@@ -10348,7 +10349,7 @@ batch : DvzBatch*
     the batch
 tex : DvzId
     the tex id
-shape : tuple[int, int, int]
+shape : Tuple[int, int, int]
     the new tex shape
 
 Returns
@@ -10377,9 +10378,9 @@ batch : DvzBatch*
     the batch
 tex : DvzId
     the id of the tex to upload to
-offset : tuple[int, int, int]
+offset : Tuple[int, int, int]
     the offset
-shape : tuple[int, int, int]
+shape : Tuple[int, int, int]
     the shape
 size : DvzSize
     the number of bytes in data to transfer
@@ -11085,7 +11086,7 @@ tex : DvzId
     the id of the tex to bind to the pipe
 sampler : DvzId
     the id of the sampler
-offset : tuple[int, int, int]
+offset : Tuple[int, int, int]
     the offset
 
 Returns
@@ -11139,9 +11140,9 @@ batch : DvzBatch*
     the batch
 canvas_id : DvzId
     the id of the canvas
-offset : tuple[float, float]
+offset : Tuple[float, float]
     the viewport offset, in framebuffer pixels
-shape : tuple[float, float]
+shape : Tuple[float, float]
     the viewport size, in framebuffer pixels
 
 Returns
@@ -11944,7 +11945,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the edge color
 """
 marker_edgecolor.argtypes = [
@@ -12695,7 +12696,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-bgcolor : tuple[int, int, int, int]
+bgcolor : Tuple[int, int, int, int]
     the background color
 """
 glyph_bgcolor.argtypes = [
@@ -12794,7 +12795,7 @@ count : int
     the number of items to update
 values : np.ndarray[vec4]
     the xywh values of each glyph
-offset : tuple[float, float]
+offset : Tuple[float, float]
     the xy offsets of each glyph
 flags : int
     the data update flags
@@ -12820,17 +12821,17 @@ visual : DvzVisual*
     the visual
 string_count : int
     the number of strings
-strings : list[str]
+strings : List[str]
     the strings
 positions : np.ndarray[vec3]
     the positions of each string
 scales : np.ndarray[float]
     the scaling of each string
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the same color for all strings
-offset : tuple[float, float]
+offset : Tuple[float, float]
     the same offset for all strings
-anchor : tuple[float, float]
+anchor : Tuple[float, float]
     the same anchor for all strings
 """
 glyph_strings.argtypes = [
@@ -12983,7 +12984,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-anchor : tuple[float, float]
+anchor : Tuple[float, float]
     the anchor
 """
 monoglyph_anchor.argtypes = [
@@ -13019,9 +13020,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-pos : tuple[float, float, float]
+pos : Tuple[float, float, float]
     the text position
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the text color
 size : float
     the glyph size
@@ -13248,7 +13249,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : tuple[int, int, int, int]
+color : Tuple[int, int, int, int]
     the edge color
 """
 image_edgecolor.argtypes = [
@@ -13266,7 +13267,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-ij : tuple[int, int]
+ij : Tuple[int, int]
     index permutation
 """
 image_permutation.argtypes = [
@@ -13683,7 +13684,7 @@ visual : DvzVisual*
     the mesh
 idx : int
     the light index (0, 1, 2, or 3)
-pos : tuple[float, float, float, float]
+pos : Tuple[float, float, float, float]
     the light position (w=0 indicates it is a direction.)
 """
 mesh_light_pos.argtypes = [
@@ -13704,7 +13705,7 @@ visual : DvzVisual*
     the mesh
 idx : int
     the light index (0, 1, 2, or 3)
-rgba : tuple[int, int, int, int]
+rgba : Tuple[int, int, int, int]
     the light color (a>0 indicates light is on.)
 """
 mesh_light_color.argtypes = [
@@ -13725,7 +13726,7 @@ visual : DvzVisual*
     the mesh
 idx : int
     the material index (0, 1, 2, or 3) for (ambient, diffuse, specular, exponent)
-params : tuple[float, float, float]
+params : Tuple[float, float, float]
     the material parameters (vec3 r, g, b)
 """
 mesh_material_params.argtypes = [
@@ -13781,7 +13782,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the mesh
-rgba : tuple[int, int, int, int]
+rgba : Tuple[int, int, int, int]
     the rgba components
 """
 mesh_edgecolor.argtypes = [
@@ -14005,7 +14006,7 @@ visual : DvzVisual*
     the sphere
 idx : int
     the light index (0, 1, 2, or 3)
-pos : tuple[float, float, float, float]
+pos : Tuple[float, float, float, float]
     the light position (w=0 indicates it is a direction.)
 """
 sphere_light_pos.argtypes = [
@@ -14026,7 +14027,7 @@ visual : DvzVisual*
     the sphere
 idx : int
     the light index (0, 1, 2, or 3)
-rgba : tuple[int, int, int, int]
+rgba : Tuple[int, int, int, int]
     the light color (a>0 indicates light is on.)
 """
 sphere_light_color.argtypes = [
@@ -14047,7 +14048,7 @@ visual : DvzVisual*
     the sphere
 idx : int
     the material index (0, 1, 2, or 3) for (ambient, diffuse, specular, exponent)
-params : tuple[float, float, float]
+params : Tuple[float, float, float]
     the material parameters (vec3 r, g, b)
 """
 sphere_material_params.argtypes = [
@@ -14144,11 +14145,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-xlim : tuple[float, float]
+xlim : Tuple[float, float]
     xmin and xmax
-ylim : tuple[float, float]
+ylim : Tuple[float, float]
     ymin and ymax
-zlim : tuple[float, float]
+zlim : Tuple[float, float]
     zmin and zmax
 """
 volume_bounds.argtypes = [
@@ -14168,9 +14169,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-uvw0 : tuple[float, float, float]
+uvw0 : Tuple[float, float, float]
     coordinates of one of the corner points
-uvw1 : tuple[float, float, float]
+uvw1 : Tuple[float, float, float]
     coordinates of one of the corner points
 """
 volume_texcoords.argtypes = [
@@ -14189,7 +14190,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-ijk : tuple[int, int, int]
+ijk : Tuple[int, int, int]
     index permutation
 """
 volume_permutation.argtypes = [
@@ -14225,7 +14226,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-transfer : tuple[float, float, float, float]
+transfer : Tuple[float, float, float, float]
     transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor
 """
 volume_transfer.argtypes = [

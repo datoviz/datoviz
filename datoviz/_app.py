@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
+from typing import Tuple, Union
 
 import numpy as np
 
@@ -167,7 +168,7 @@ class App:
         self,
         image: tp.Optional[np.ndarray] = None,
         ndim: int = 2,
-        shape: tp.Optional[tuple[int, ...]] = None,
+        shape: tp.Optional[Tuple[int, ...]] = None,
         n_channels: tp.Optional[int] = None,
         dtype: tp.Optional[np.dtype] = None,
         interpolation: tp.Optional[str] = None,
@@ -290,7 +291,7 @@ class App:
     def texture_3D(
         self,
         volume: np.ndarray,
-        shape: tp.Optional[tuple[int, ...]] = None,
+        shape: tp.Optional[Tuple[int, ...]] = None,
         interpolation: tp.Optional[str] = None,
         address_mode: tp.Optional[str] = None,
     ) -> Texture:
@@ -496,7 +497,7 @@ class App:
         color: np.ndarray = None,
         size: np.ndarray = None,
         angle: np.ndarray = None,
-        edgecolor: tuple[int, int, int, int] = None,
+        edgecolor: Tuple[int, int, int, int] = None,
         linewidth: float = None,
         tex_scale: float = None,
         mode: str = None,
@@ -676,7 +677,7 @@ class App:
         scale: np.ndarray = None,
         angle: np.ndarray = None,
         color: np.ndarray = None,
-        bgcolor: tp.Optional[tuple[int, int, int, int]] = None,
+        bgcolor: tp.Optional[Tuple[int, int, int, int]] = None,
         texture: tp.Optional[Texture] = None,
         depth_test: bool = None,
         cull: str = None,
@@ -710,7 +711,7 @@ class App:
             Glyph rotation angles in radians, each row contains the angle for each glyph.
         color : ndarray
             Glyph RGBA colors in range 0–255.
-        bgcolor : tuple[int, int, int, int], optional
+        bgcolor : Tuple[int, int, int, int], optional
             Background color for the glyph, in RGBA format.
         texture : Texture, optional
             Texture for the glyph, typically a font atlas texture.
@@ -751,8 +752,8 @@ class App:
         anchor: np.ndarray = None,
         texcoords: np.ndarray = None,
         facecolor: np.ndarray = None,
-        edgecolor: tp.Optional[tuple[int, int, int, int]] = None,
-        permutation: tuple[int, int] = None,
+        edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
+        permutation: Tuple[int, int] = None,
         linewidth: float = None,
         radius: float = None,
         colormap: tp.Optional[str] = None,
@@ -780,9 +781,9 @@ class App:
             within the texture.
         facecolor : ndarray
             Image face colors in RGBA format, each row contains the RGBA color of each image.
-        edgecolor : tuple[int, int, int, int], optional
+        edgecolor : Tuple[int, int, int, int], optional
             Image edge color in RGBA format, used for the border.
-        permutation : tuple[int, int], optional
+        permutation : Tuple[int, int], optional
             Permutation of the image texture coordinates, e.g., (0, 1) for normal orientation.
         linewidth : float, optional
             Line width for the image border, in pixels.
@@ -860,14 +861,14 @@ class App:
         isoline: np.ndarray = None,
         left: np.ndarray = None,
         right: np.ndarray = None,
-        contour: np.ndarray | bool = None,
+        contour: Union[np.ndarray, bool] = None,
         index: np.ndarray = None,
-        light_pos: tuple[float, float, float, float] = None,
-        light_color: tuple[int, int, int, int] = None,
-        material_params: tuple[float, float, float] = None,
+        light_pos: Tuple[float, float, float, float] = None,
+        light_color: Tuple[int, int, int, int] = None,
+        material_params: Tuple[float, float, float] = None,
         shine: float = None,
         emit: float = None,
-        edgecolor: tp.Optional[tuple[int, int, int, int]] = None,
+        edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
         linewidth: float = None,
         density: int = None,
         texture: tp.Optional[Texture] = None,
@@ -903,19 +904,19 @@ class App:
             use contours.
         index : ndarray, optional
             Vertex indices for indexed meshes (three integers per triangle).
-        light_pos : tuple[float, float, float, float], optional
+        light_pos : Tuple[float, float, float, float], optional
             Light position in normalized device coordinates, in the form (x, y, z, w).
             If `w` is 0, the light is directional; if `w` is 1, the light is positional.
-        light_color : tuple[int, int, int, int], optional
+        light_color : Tuple[int, int, int, int], optional
             Light color in RGBA format, in the form (r, g, b, a).
-        material_params : tuple[float, float, float], optional
+        material_params : Tuple[float, float, float], optional
             Material ambient parameters for the mesh, in the form (r, g, b).
             For diffuse, specular, and exponent, use `Mesh.set_material_params()`.
         shine : float, optional
             Material shine factor for the mesh, in the range [0, 1].
         emit : float, optional
             Material emission factor for the mesh, in the range [0, 1].
-        edgecolor : tuple[int, int, int, int], optional
+        edgecolor : Tuple[int, int, int, int], optional
             Edge color for the mesh, in RGBA format, when showing contours or isolines.
         linewidth : float, optional
             Line width for the mesh edges, in pixels, when showing contours or isolines.
@@ -1018,9 +1019,9 @@ class App:
         position: np.ndarray = None,
         color: np.ndarray = None,
         size: np.ndarray = None,
-        light_pos: tp.Optional[tuple[float, float, float, float]] = None,
-        light_color: tp.Optional[tuple[int, int, int, int]] = None,
-        material_params: tp.Optional[tuple[float, float, float]] = None,
+        light_pos: tp.Optional[Tuple[float, float, float, float]] = None,
+        light_color: tp.Optional[Tuple[int, int, int, int]] = None,
+        material_params: tp.Optional[Tuple[float, float, float]] = None,
         shine: tp.Optional[float] = None,
         emit: tp.Optional[float] = None,
         texture: tp.Optional[Texture] = None,
@@ -1040,12 +1041,12 @@ class App:
             Sphere RGBA colors in range 0–255.
         size : ndarray
             Sphere sizes in pixels or NDC, depending on `size_pixels`.
-        light_pos : tuple[float, float, float, float], optional
+        light_pos : Tuple[float, float, float, float], optional
             Light position in normalized device coordinates, in the form (x, y, z, w).
             If `w` is 0, the light is directional; if `w` is 1, the light is positional.
-        light_color : tuple[int, int, int, int], optional
+        light_color : Tuple[int, int, int, int], optional
             Light color in RGBA format, in the form (r, g, b, a).
-        material_params : tuple[float, float, float], optional
+        material_params : Tuple[float, float, float], optional
             Material ambient parameters for the sphere, in the form (r, g, b).
             For diffuse, specular, and exponent, use `Sphere.set_material_params()`.
         shine : float, optional
@@ -1089,10 +1090,10 @@ class App:
 
     def volume(
         self,
-        bounds: tuple[tuple, tuple, tuple] = None,
-        permutation: tuple[int, int, int] = None,
+        bounds: Tuple[tuple, tuple, tuple] = None,
+        permutation: Tuple[int, int, int] = None,
         slice: int = None,
-        transfer: tuple[float, float, float, float] = None,
+        transfer: Tuple[float, float, float, float] = None,
         texture: tp.Optional[Texture] = None,
         mode: str = 'colormap',
     ) -> vs.Volume:
@@ -1101,14 +1102,14 @@ class App:
 
         Parameters
         ----------
-        bounds : tuple[tuple, tuple, tuple]
+        bounds : Tuple[tuple, tuple, tuple]
             Bounds of the volume in normalized device coordinates, as three tuples
             (xmin, xmax), (ymin, ymax), (zmin, zmax).
-        permutation : tuple[int, int, int], optional
+        permutation : Tuple[int, int, int], optional
             Permutation of the volume axes, e.g., (0, 1, 2) for normal orientation.
         slice : int, optional
             Slice index to display (not implemented yet).
-        transfer : tuple[float, float, float, float], optional
+        transfer : Tuple[float, float, float, float], optional
             Transfer function parameters for the volume (only the first value is used for now).
         texture : Texture, optional
             Texture for the volume, typically a 3D texture containing the volume data.
@@ -1339,7 +1340,7 @@ class App:
         dvz.app_timer(self.c_app, delay, period, max_count)
         return decorator
 
-    def timestamps(self, figure: Figure, count: int) -> tuple[np.ndarray, np.ndarray]:
+    def timestamps(self, figure: Figure, count: int) -> Tuple[np.ndarray, np.ndarray]:
         """
         Get presentation timestamps for the given figure.
 

@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from typing import Tuple
+
 from . import _constants as cst
 from . import _ctypes as dvz
 from ._panel import Panel
@@ -46,13 +48,13 @@ class Figure:
 
     def panel(
         self,
-        offset: tuple[float, float] = None,
-        size: tuple[float, float] = None,
-        background: tuple[
-            tuple[int, int, int, int],
-            tuple[int, int, int, int],
-            tuple[int, int, int, int],
-            tuple[int, int, int, int],
+        offset: Tuple[float, float] = None,
+        size: Tuple[float, float] = None,
+        background: Tuple[
+            Tuple[int, int, int, int],
+            Tuple[int, int, int, int],
+            Tuple[int, int, int, int],
+            Tuple[int, int, int, int],
         ] = None,
     ) -> Panel:
         """

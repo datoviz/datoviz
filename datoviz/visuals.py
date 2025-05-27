@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -358,7 +359,7 @@ class Prop:
         return info.get('dtype', None)
 
     @property
-    def shape(self) -> tp.Optional[tuple[int, ...]]:
+    def shape(self) -> tp.Optional[Tuple[int, ...]]:
         """
         Get the shape of the property.
 
@@ -836,8 +837,8 @@ class SegmentProp(Prop):
     """
 
     def prepare_data(
-        self, value: tuple[np.ndarray, np.ndarray], size: int
-    ) -> tuple[np.ndarray, np.ndarray]:
+        self, value: Tuple[np.ndarray, np.ndarray], size: int
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Prepare data for the segment property.
 
@@ -859,7 +860,7 @@ class SegmentProp(Prop):
         return pinitial, pterminal
 
     def set(
-        self, offset: int, length: int, pvalue: tuple[np.ndarray, np.ndarray], flags: int = 0
+        self, offset: int, length: int, pvalue: Tuple[np.ndarray, np.ndarray], flags: int = 0
     ) -> None:
         """
         Set the segment property value.
@@ -1001,8 +1002,8 @@ class Path(Visual):
 
     def set_position(
         self,
-        position: np.ndarray | list[np.ndarray],
-        groups: int | np.ndarray = 0,
+        position: Union[np.ndarray, List[np.ndarray]],
+        groups: Union[int, np.ndarray] = 0,
         offset: int = 0,
     ) -> None:
         """
@@ -1146,7 +1147,7 @@ class Glyph(Visual):
 
     def set_strings(
         self,
-        strings: list[str],
+        strings: List[str],
         string_pos: np.ndarray = None,
         scales: np.ndarray = None,
         color: tuple = cst.DEFAULT_GLYPH_COLOR,
