@@ -1734,7 +1734,8 @@ class Mesh(Visual):
         value : tuple
             The material light parameters (r, g, b).
         idx : int, optional
-            The index of the material, by default 0.  (0 ambient, 1 diffuse, 2 specular, 3 emission)
+            The index of the material, by default 0.  (0 ambient, 1 diffuse, 2 specular,
+            3 emission)
         """
         value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
         dvz.mesh_material_params(self.c_visual, idx, dvz.vec3(*value))

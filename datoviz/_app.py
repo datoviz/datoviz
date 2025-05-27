@@ -1095,8 +1095,6 @@ class App:
         transfer: tuple[float, float, float, float] = None,
         texture: tp.Optional[Texture] = None,
         mode: str = 'colormap',
-        depth_test: bool = None,
-        cull: str = None,
     ) -> vs.Volume:
         """
         Create a volume visual.

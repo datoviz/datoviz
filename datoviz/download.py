@@ -1,13 +1,34 @@
+"""
+Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for details.
+SPDX-License-Identifier: MIT
+"""
+
+# Data downloader
+
+# -------------------------------------------------------------------------------------------------
+# Imports
+# -------------------------------------------------------------------------------------------------
+
 from pathlib import Path
 
 import requests
 from platformdirs import user_cache_dir
+
+# -------------------------------------------------------------------------------------------------
+# Constants
+# -------------------------------------------------------------------------------------------------
 
 ORG = 'datoviz'
 REPO = 'data'
 BRANCH = 'main'
 RAW_URL_BASE = f'https://raw.githubusercontent.com/{ORG}/{REPO}/{BRANCH}'
 MEDIA_URL_BASE = f'https://media.githubusercontent.com/media/{ORG}/{REPO}/{BRANCH}'
+
+
+# -------------------------------------------------------------------------------------------------
+# Functions
+# -------------------------------------------------------------------------------------------------
 
 
 def is_lfs_pointer(content_bytes: bytes) -> bool:

@@ -131,6 +131,9 @@ from_pointer = pointer_array
 
 
 def to_cvec4_array(colors):
+    """
+    Convert a list of RGBA colors to a C array of cvec4.
+    """
     cvec4 = c_uint8 * 4
     cvec4_array = cvec4 * len(colors)
     return cvec4_array(*(cvec4(*rgba) for rgba in colors))
