@@ -213,6 +213,9 @@ int test_presenter_2(TstSuite* suite)
         req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, 0);
         graphics_id = req.id;
 
+        dvz_set_push(
+            batch, graphics_id, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT, 0, sizeof(float));
+
         // Create the vertex buffer dat.
         req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
         dat_id = req.id;
@@ -252,6 +255,9 @@ int test_presenter_2(TstSuite* suite)
         // Command buffer.
         req = dvz_record_begin(batch, canvas_id);
         req = dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+        req = dvz_record_push(
+            batch, canvas_id, graphics_id, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT, 0,
+            sizeof(float), (float[]){1});
         req = dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
         req = dvz_record_end(batch, canvas_id);
     }

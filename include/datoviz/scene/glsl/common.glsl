@@ -360,12 +360,13 @@ bool clip_viewport(vec2 frag_coords)
     left += 2;
     right -= 2;
 
-    w *= canvas_scale.scale;
-    h *= canvas_scale.scale;
-    top *= canvas_scale.scale;
-    right *= canvas_scale.scale;
-    bottom *= canvas_scale.scale;
-    left *= canvas_scale.scale;
+    float scale = canvas_scale.scale > 0 ? canvas_scale.scale : 1;
+    w *= scale;
+    h *= scale;
+    top *= scale;
+    right *= scale;
+    bottom *= scale;
+    left *= scale;
 
     return (uv.y <= 0 + top || uv.x >= w - right || uv.y >= h - bottom || uv.x <= 0 + left);
 }
@@ -389,12 +390,13 @@ bool clip_viewport(vec2 frag_coords, int coord)
     left += 2;
     right -= 2;
 
-    w *= canvas_scale.scale;
-    h *= canvas_scale.scale;
-    top *= canvas_scale.scale;
-    right *= canvas_scale.scale;
-    bottom *= canvas_scale.scale;
-    left *= canvas_scale.scale;
+    float scale = canvas_scale.scale > 0 ? canvas_scale.scale : 1;
+    w *= scale;
+    h *= scale;
+    top *= scale;
+    right *= scale;
+    bottom *= scale;
+    left *= scale;
 
     // Discard top and right edges.
     // NOTE: extra margin: 10, 30px

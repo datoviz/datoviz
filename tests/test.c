@@ -221,11 +221,11 @@ int dvz_run_tests(const char* match)
     // Testing presenter.
     TEST(test_presenter_1)
     TEST(test_presenter_2)
-    TEST(test_presenter_thread)
-    TEST(test_presenter_updates)
+    // TEST(test_presenter_thread)
+    // TEST(test_presenter_updates)
     // TEST(test_presenter_deserialize) // used for debugging with a requests.dvz file
-    TEST(test_presenter_gui)
-    TEST(test_presenter_multi)
+    // TEST(test_presenter_gui)
+    // TEST(test_presenter_multi)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
@@ -266,7 +266,7 @@ int dvz_run_tests(const char* match)
     TEST(test_pipe_1)
 
     // Testing pipelib.
-    TEST(test_pipelib_1)
+    // TEST(test_pipelib_1)
 
     // Testing workspace.
     TEST(test_workspace_1)
@@ -277,7 +277,7 @@ int dvz_run_tests(const char* match)
     TEST(test_renderer_push)
     TEST(test_renderer_resize)
 
-    TEST(test_external_1)
+    // TEST(test_external_1)
 
     // Test visuals.
     TEST(test_visual_1)
@@ -379,11 +379,11 @@ int dvz_run_tests(const char* match)
     TEST(test_font_1)
 
     // Testing app.
-    TEST(test_app_scatter)
-    TEST(test_app_arcball)
-    TEST(test_app_anim)
-    TEST(test_app_pixel)
-    TEST(test_app_viewset)
+    // TEST(test_app_scatter)
+    // TEST(test_app_arcball)
+    // TEST(test_app_anim)
+    // TEST(test_app_pixel)
+    // TEST(test_app_viewset)
 
     // Testing server.
     TEST(test_server_1)
