@@ -88,7 +88,7 @@ Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on fo
 
 - A supported operating system: Linux, macOS 12+, or Windows 10+
 - A Vulkan-capable GPU (most integrated or dedicated GPUs from the past decade should work)
-- Python 3 and NumPy
+- Python 3, NumPy, requests, platformdirs
 
 ### Install with pip
 

@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datoviz"
-dependencies = ["numpy"]
+dependencies = ["numpy", "requests", "platformdirs"]
 version = "0.3.0"
-description = "A C library for high-performance GPU scientific visualization"
+description = "Datoviz: high-performance rendering for scientific data visualization"
 authors = [
     { name = "Cyrille Rossant", email = "cyrille.rossant@gmail.com" }
 ]
