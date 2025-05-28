@@ -48,14 +48,12 @@ sc.add_obj(file_path)
 
 app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
-figure = app.figure(width=1200, gui=True)
+figure = app.figure(gui=True)
 
-# Create two panels side-by-side.
 panel = figure.panel(background=True)
-# Offset the panel to the right so that is not over the controls.
-# panel.margins(0, 0, 0, 400)
 
 arcball = panel.arcball(initial=(0.35, 0, 0))
+camera = panel.camera(initial=(-0.75, 0, 4), initial_lookat=(-0.75, 0, 0))
 visual = app.mesh(sc, lighting=True)
 visual.clip('outer')
 panel.add(visual)
