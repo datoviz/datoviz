@@ -715,6 +715,19 @@ DVZ_EXPORT void dvz_panel_show(DvzPanel* panel, bool is_visible);
 
 
 /**
+ * Add or remove a link between two panels.
+ *
+ * At all times, the target panel's transform is copied from the source panel's transform.
+ *
+ * @param panel the target panel
+ * @param source the source panel
+ * @param flags the panel link flags: 0 to remove, or a bit field with model, view, projection
+ */
+DVZ_EXPORT void dvz_panel_link(DvzPanel* panel, DvzPanel* source, int flags);
+
+
+
+/**
  * Trigger a panel update.
  *
  * @param panel the panel

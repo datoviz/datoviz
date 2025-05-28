@@ -35,6 +35,7 @@
 typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
+typedef struct DvzPanelLink DvzPanelLink;
 
 // Forward declarations.
 typedef struct DvzApp DvzApp;
@@ -80,10 +81,20 @@ struct DvzScene
 
 
 
+struct DvzPanelLink
+{
+    DvzPanel* target;
+    DvzPanel* source;
+    int flags;
+};
+
+
+
 struct DvzFigure
 {
     DvzScene* scene;
     DvzList* panels;
+    DvzList* links;
     vec2 shape, shape_init; // NOTE: in screen coordinates
     float scale;
     int flags;

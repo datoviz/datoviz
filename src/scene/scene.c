@@ -174,6 +174,9 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     // Panels.
     fig->panels = dvz_list();
 
+    // Links.
+    fig->links = dvz_list();
+
     // Requester.
     DvzBatch* batch = scene->batch;
     ANN(batch);
@@ -196,10 +199,10 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
 
 
 
-DvzId dvz_figure_id(DvzFigure* figure)
+DvzId dvz_figure_id(DvzFigure* fig)
 {
-    ANN(figure);
-    return figure->canvas_id;
+    ANN(fig);
+    return fig->canvas_id;
 }
 
 
@@ -292,12 +295,12 @@ DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id)
 
 
 
-void dvz_figure_update(DvzFigure* figure)
+void dvz_figure_update(DvzFigure* fig)
 {
-    ANN(figure);
-    ANN(figure->viewset);
-    ANN(figure->viewset->status);
-    dvz_atomic_set(figure->viewset->status, (int)DVZ_BUILD_DIRTY);
+    ANN(fig);
+    ANN(fig->viewset);
+    ANN(fig->viewset->status);
+    dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_DIRTY);
 }
 
 
@@ -318,6 +321,17 @@ void dvz_figure_destroy(DvzFigure* fig)
 
     // Destroy the list of panels.
     dvz_list_destroy(fig->panels);
+
+    // Destroy the list of panel links.
+    // Free all panel links.
+    n = dvz_list_count(fig->links);
+    void* pointer = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pointer = dvz_list_get(fig->links, i).p;
+        FREE(pointer);
+    }
+    dvz_list_destroy(fig->links);
 
     // Remove the figure from the scene's figures.
     dvz_list_remove_pointer(fig->scene->figures, fig);
@@ -1022,9 +1036,138 @@ void dvz_panel_show(DvzPanel* panel, bool is_visible)
 
 
 
+static DvzPanelLink* _find_panel_link(DvzFigure* fig, DvzPanel* target, DvzPanel* source)
+{
+    ANN(fig);
+    ANN(target);
+    ANN(source);
+
+    uint32_t n = dvz_list_count(fig->links);
+    DvzPanelLink* link = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        link = dvz_list_get(fig->links, i).p;
+        if (link != NULL)
+        {
+            if (link->source == source && link->target == target)
+            {
+                return link;
+            }
+        }
+    }
+    return NULL;
+}
+
+void dvz_panel_link(DvzPanel* panel, DvzPanel* source, int flags)
+{
+    // The panel's model/view/projection matrices come from the source and they are updated
+    // whenever the source's matrices are updated.
+
+    // Flags:
+    ANN(panel);
+    ANN(source);
+
+    DvzFigure* fig = panel->figure;
+    ANN(fig);
+
+    DvzPanelLink* link = NULL;
+
+    if (flags == 0)
+    {
+        // Remove link.
+        link = _find_panel_link(fig, panel, source);
+        if (link)
+        {
+            dvz_list_remove_pointer(fig->links, link);
+            FREE(link);
+        }
+        else
+        {
+            log_trace("unable to remove non-existing panel link");
+            return;
+        }
+    }
+    ASSERT(flags != 0);
+
+    link = (DvzPanelLink*)calloc(1, sizeof(DvzPanelLink));
+    link->target = panel;
+    link->source = source;
+    link->flags = flags;
+    dvz_list_append(fig->links, (DvzListItem){.p = (void*)link});
+}
+
+
+
+static void _update_linked_panel(DvzPanelLink* link)
+{
+    ANN(link);
+
+    DvzPanel* target = link->target;
+    DvzPanel* source = link->source;
+
+    ANN(target);
+    ANN(source);
+
+    DvzMVP* target_mvp = dvz_transform_mvp(target->transform);
+    DvzMVP* source_mvp = dvz_transform_mvp(source->transform);
+
+    ANN(target_mvp);
+    ANN(source_mvp);
+
+    int flags = link->flags;
+    ASSERT(flags != 0);
+
+    if ((flags & DVZ_PANEL_LINK_FLAGS_MODEL) != 0)
+    {
+        glm_mat4_copy(source_mvp->model, target_mvp->model);
+    }
+
+    if ((flags & DVZ_PANEL_LINK_FLAGS_VIEW) != 0)
+    {
+        glm_mat4_copy(source_mvp->view, target_mvp->view);
+    }
+
+    if ((flags & DVZ_PANEL_LINK_FLAGS_PROJECTION) != 0)
+    {
+        glm_mat4_copy(source_mvp->proj, target_mvp->proj);
+    }
+
+    dvz_transform_update(target->transform);
+}
+
+static void _update_linked_panels(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzFigure* fig = panel->figure;
+    ANN(fig);
+
+    // Go through all panel links, if source matches the updated panel, update the
+    // target panel transform and call transform update on it.
+    uint32_t n = dvz_list_count(fig->links);
+    DvzPanelLink* link = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        link = dvz_list_get(fig->links, i).p;
+        if (link != NULL)
+        {
+            if (link->source == panel)
+            {
+                if (link->target != NULL && link->target->transform != NULL)
+                {
+                    _update_linked_panel(link);
+                }
+            }
+        }
+    }
+}
+
 void dvz_panel_update(DvzPanel* panel)
 {
     ANN(panel);
+
+    DvzFigure* fig = panel->figure;
+    ANN(fig);
 
     if (panel->camera)
         _update_camera(panel);
@@ -1036,8 +1179,14 @@ void dvz_panel_update(DvzPanel* panel)
         _update_arcball(panel);
 
     DvzTransform* tr = panel->transform;
+    if (tr == NULL)
+    {
+        return;
+    }
     ANN(tr);
     dvz_transform_update(tr);
+
+    _update_linked_panels(panel);
 }
 
 
@@ -1390,6 +1539,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         {
             _update_panzoom(panel);
             dvz_transform_update(tr);
+            _update_linked_panels(panel);
 
             // Update the axes if any.
             if (panel->axes != NULL)
@@ -1417,6 +1567,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         {
             _update_ortho(panel);
             dvz_transform_update(tr);
+            _update_linked_panels(panel);
         }
     }
 
@@ -1452,6 +1603,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         }
 
         dvz_transform_update(tr);
+        _update_linked_panels(panel);
     }
 }
 
