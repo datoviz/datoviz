@@ -1,7 +1,7 @@
 """
 # Tiled image grid visual
 
-Split a, image into a grid of smaller images displayed using a single image visual.
+Split an image into a grid of smaller images displayed using a single image visual.
 
 ---
 tags:
