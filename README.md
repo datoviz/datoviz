@@ -2,9 +2,8 @@
 
 [**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
 [**[Usage]**](#-usage) &nbsp;
-[**[User guide]**](docs/userguide.md) &nbsp;
-[**[Examples]**](examples/) &nbsp;
-[**[API reference]**](docs/api.md) &nbsp;
+[**[User guide]**](https://datoviz.org/guide/) &nbsp;
+[**[Gallery]**](https://datoviz.org/gallery/) &nbsp;
 
 <!-- INTRODUCTION -->
 

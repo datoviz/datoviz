@@ -8,7 +8,7 @@
 
  * DATOVIZ PUBLIC API HEADER FILE
  * ==============================
- * 2024-07-01
+ * 2025-05-28
  * Cyrille Rossant
  * cyrille dot rossant at gmail com
 
