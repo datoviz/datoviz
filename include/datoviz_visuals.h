@@ -141,6 +141,19 @@ DVZ_EXPORT void dvz_basic_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 
+/**
+ * Create a basic visual from a DvzShape instance.
+ *
+ * @param batch the batch
+ * @param shape the shape
+ * @param flags the visual creation flags
+ * @returns the visual
+ */
+DVZ_EXPORT
+DvzVisual* dvz_basic_shape(DvzBatch* batch, DvzShape* shape, int flags);
+
+
+
 /*************************************************************************************************/
 /*  Pixel                                                                                        */
 /*************************************************************************************************/

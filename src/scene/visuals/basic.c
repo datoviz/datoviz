@@ -115,3 +115,30 @@ void dvz_basic_size(DvzVisual* visual, float size)
     ANN(visual);
     dvz_visual_param(visual, 2, 0, &size);
 }
+
+
+
+DvzVisual* dvz_basic_shape(DvzBatch* batch, DvzShape* shape, int flags)
+{
+    ANN(batch);
+    ANN(shape);
+    ANN(shape->pos);
+
+    uint32_t vertex_count = shape->vertex_count;
+    uint32_t index_count = shape->index_count;
+    ASSERT(vertex_count > 0);
+
+    // NOTE: set the visual flag to indexed or non-indexed (default) depending on whether the shape
+    // has an index buffer or not.
+    flags |= (index_count > 0 ? DVZ_VISUAL_FLAGS_INDEXED : DVZ_VISUAL_FLAGS_DEFAULT);
+    DvzVisual* visual = dvz_basic(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+
+    dvz_visual_alloc(visual, vertex_count, vertex_count, index_count);
+    dvz_basic_position(visual, 0, vertex_count, shape->pos, 0);
+    if (shape->color != NULL)
+    {
+        dvz_basic_color(visual, 0, vertex_count, shape->color, 0);
+    }
+
+    return visual;
+}
