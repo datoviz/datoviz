@@ -124,6 +124,20 @@ color = dvz.cmap('hsv', np.linspace(-1, 1, 100), vmin=-1, vmax=+1)
 
 ---
 
+## Screenshots
+
+You can save a PNG screenshot of a figure as follows:
+
+```python
+app.screenshot(figure, 'screenshot.png')
+```
+
+!!! warning
+
+    Screenshots currently do not support GUIs. This feature will be available in Datoviz v0.4.
+
+---
+
 ## Summary
 
 * Use `figure()` to create a window, and `panel()` to define drawable regions.
