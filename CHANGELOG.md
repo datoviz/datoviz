@@ -16,6 +16,9 @@ Work in progress.
 
 ## v0.3.0 (2025-05-28) [LATEST RELEASE]
 
+This is a major release featuring interactive 2D axes, a new user-friendly Pythonic API, significantly improved documentation and gallery, many additional examples, and numerous fixes and enhancements.
+
+
 ### Python API
 
 * Introduced a new **Pythonic API** built on top of the raw `ctypes` bindings (`dvz.App`).
