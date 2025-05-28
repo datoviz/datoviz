@@ -69,7 +69,7 @@ This:
 
 ---
 
-## Positioning Data: NDC model
+## Coordinate system
 
 All visuals in Datoviz expect their `position` input in **3D Normalized Device Coordinates (NDC)** — a 3D coordinate system where all values lie in the range `[-1, +1]` on each axis.
 

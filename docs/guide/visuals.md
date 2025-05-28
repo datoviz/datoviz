@@ -12,6 +12,13 @@ Datoviz is designed to render millions of visual items at interactive framerates
 
 ## Available visuals
 
+Here is the list of available visuals.
+
+!!! note
+
+    Additional visuals may be introduced in future versions based on user needs.
+
+
 <div class="grid cards" markdown="1">
 
 <div class="card">
@@ -136,7 +143,7 @@ This model is key to Datoviz's performance: many visual instances are submitted 
 
 ---
 
-## Positioning data: 3D NDC
+## Coordinate system
 
 All visuals expect positions in [**3D Normalized Device Coordinates (NDC)**](common.md#positioning-data-ndc-model), where each axis ranges from `-1` to `+1`.
 
