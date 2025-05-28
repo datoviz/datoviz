@@ -23,23 +23,11 @@ def read(path):
         return f.read()
 
 
-# Hooks
+# Functions
 # -------------------------------------------------------------------------------------------------
 
 
-def on_page_markdown(markdown, page, config, files):
-    name = page.file.name
-    # if name == "index":
-    #     markdown = read("../README.md")
-    #     return re.sub(r'\]\(docs/(.*?)\.md\)', r'](\1.md)', markdown)
-    if name == 'LICENSE':
-        return read('../LICENSE')
-    elif name in ROOT_DOCS:
-        return read(f'../{name}.md')
-    return markdown
-
-
-def on_pre_build(**kwargs):
+def remove_example_docstrings():
     src_root = 'examples'
     dst_root = 'cleaned'
 
@@ -74,3 +62,24 @@ def on_pre_build(**kwargs):
 
             with open(dst_path, 'w') as f:
                 f.write('\n'.join(lines).lstrip() + '\n')
+
+
+# Hooks
+# -------------------------------------------------------------------------------------------------
+
+
+def on_page_markdown(markdown, page, config, files):
+    name = page.file.name
+    # if name == "index":
+    #     markdown = read("../README.md")
+    #     return re.sub(r'\]\(docs/(.*?)\.md\)', r'](\1.md)', markdown)
+    if name == 'LICENSE':
+        return read('../LICENSE')
+    elif name in ROOT_DOCS:
+        return read(f'../{name}.md')
+    return markdown
+
+
+def on_pre_build(**kwargs):
+    # build_gallery()
+    remove_example_docstrings()

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+from operator import itemgetter
 from pathlib import Path
 from textwrap import dedent
 
@@ -59,6 +60,7 @@ def extract_metadata(script_path):
     yaml_raw = yaml_match.group(1).strip() if yaml_match else ''
     metadata = yaml.safe_load(yaml_raw) if yaml_raw else {}
     tags = metadata.get('tags', [])
+    dependencies = metadata.get('dependencies', [])
 
     # Extract description: all lines between title and YAML block
     title_index = next(i for i, line in enumerate(lines) if line.strip().startswith('#'))
@@ -81,6 +83,7 @@ def extract_metadata(script_path):
         'title': title_line,
         'description': description,
         'tags': tags,
+        'dependencies': dependencies,
         'code': dedent(code_body).rstrip(),
         'in_gallery': in_gallery,
     }
@@ -106,12 +109,19 @@ def generate_example_page(category, script_path, output_path):
         screenshot_image = ''
     back_link = f'[← Back to gallery](../index.md#{category})'
 
+    if meta['dependencies']:
+        dependencies = f'**Extra Python dependencies**: {", ".join(meta["dependencies"])}'
+    else:
+        dependencies = ''
+
     md = f"""\
 # {meta['title']}
 
 {meta['description']}
 
 **Tags**: {', '.join(meta['tags'])}
+
+{dependencies}
 
 {screenshot_image}
 
@@ -137,7 +147,7 @@ def generate_index(pages):
         lines.append(f'## {category.capitalize()}\n')
         lines.extend(INTRO[category].splitlines())
         lines.append('<div class="grid cards" markdown="1">\n')
-        for name, title in pages.get(category, []):
+        for name, title in sorted(pages.get(category, []), key=itemgetter(1)):
             screenshot_url = get_screenshot_url(category, name)
             page_url = f'{category}/{name}/'
             lines.append(f"""\
