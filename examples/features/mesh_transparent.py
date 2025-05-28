@@ -1,5 +1,5 @@
 """
-# Transparent mesh example
+# Transparent meshes
 
 Show a transparent 3D mesh.
 

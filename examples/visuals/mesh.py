@@ -1,5 +1,5 @@
 """
-# Mesh visual example
+# Mesh visual
 
 Show the mesh visual with predefined shapes.
 

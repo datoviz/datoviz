@@ -1,5 +1,5 @@
 """
-# Keyboard example
+# Keyboard events
 
 Show how to react to keyboard events.
 

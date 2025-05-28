@@ -1,13 +1,16 @@
 """
 # Basic visual from a ShapeCollection
 
-This example demonstrates how to create a basic visual from a `ShapeCollection` in Datoviz.
+This example demonstrates how to create a **Basic** visual from a `ShapeCollection` in Datoviz.
+
+Compared to the **Mesh** visual, the **Basic** visual is much lighter and more efficient, but it does
+not support lighting, texturing, or wireframes. It only allows a single color per vertex.
 
 ---
 tags:
   - shape
   - arcball
-  - mesh
+  - basic
 in_gallery: true
 make_screenshot: true
 ---

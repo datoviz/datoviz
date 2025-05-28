@@ -1,5 +1,5 @@
 """
-# Timestamps example
+# Canvas presentation timestamps
 
 Show how to retrieve the exact timestamps of the presentation of the last frames to the screen.
 This may be useful in specific use-cases (e.g. hardware synchronization in scientific experimental

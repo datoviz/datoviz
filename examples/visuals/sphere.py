@@ -1,5 +1,5 @@
 """
-# Sphere visual example
+# Sphere visual
 
 Show the sphere visual.
 

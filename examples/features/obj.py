@@ -1,5 +1,5 @@
 """
-# Mesh with OBJ file
+# Mesh visual from an OBJ file
 
 Show the mesh visual with an OBJ file.
 

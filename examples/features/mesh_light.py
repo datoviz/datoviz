@@ -1,5 +1,5 @@
 """
-# Mesh light example
+# Advanced mesh lights
 
 Show how to manipulate advanced mesh lights.
 

@@ -1,5 +1,5 @@
 """
-# Image visual example
+# Image visual
 
 Show the image visual.
 
@@ -8,6 +8,8 @@ tags:
   - image
   - panzoom
   - texture
+dependencies:
+  - imageio
 in_gallery: true
 make_screenshot: true
 ---

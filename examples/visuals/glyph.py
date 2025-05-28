@@ -1,5 +1,5 @@
 """
-# Glyph visual example
+# Glyph visual
 
 Show the glyph visual.
 

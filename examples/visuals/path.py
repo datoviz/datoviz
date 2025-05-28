@@ -1,5 +1,5 @@
 """
-# Path visual example
+# Path visual
 
 Show the path visual.
 

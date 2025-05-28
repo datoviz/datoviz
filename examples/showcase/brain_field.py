@@ -1,12 +1,15 @@
 """
-# Mesh example: scalar field on brain surface
+# Scalar field on 3D brain surface mesh
 
-Show a 3D mesh.
+Show a 3D mesh with a scalar field colored with a colormap.
 
 ---
 tags:
   - mesh
   - arcball
+dependencies:
+  - nibabel
+  - nilearn
 in_gallery: true
 make_screenshot: true
 ---

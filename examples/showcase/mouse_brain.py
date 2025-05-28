@@ -1,7 +1,8 @@
 """
-# Mesh example: mouse brain surface
+# Mouse brain 3D surface mesh
 
 Show a 3D mesh.
+
 ---
 tags:
   - mesh

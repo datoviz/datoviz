@@ -1,5 +1,5 @@
 """
-# Choropleth map example
+# Choropleth map
 
 This example demonstrates how to create a choropleth map using polygons. It loads polygon data
 from a NumPy file, generates a unique color for each polygon, and visualizes them using the

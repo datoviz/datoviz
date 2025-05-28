@@ -1,5 +1,5 @@
 """
-# Arcball example
+# Arcball
 
 Show how to manipulate an arcball.
 

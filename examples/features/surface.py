@@ -1,5 +1,5 @@
 """
-# Surface example
+# Surface plot
 
 Show a rotating surface in 3D.
 

@@ -1,5 +1,5 @@
 """
-# Offscreen example
+# Screenshots and offscreen rendering
 
 Show how to render an offscreen image.
 

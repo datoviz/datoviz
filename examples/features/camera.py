@@ -1,5 +1,5 @@
 """
-# Camera example
+# Camera
 
 Show how to manipulate a camera.
 

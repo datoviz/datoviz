@@ -1,5 +1,5 @@
 """
-# Anchor feature example
+# Image anchor
 
 Show how to use the image anchor. The anchor is a pair (x, y) within [-1, +1]^2 that indicates,
 in normalized coordinates within the image, the position within the image corresponding to the
@@ -13,6 +13,8 @@ tags:
   - anchor
   - texture
   - gui
+dependencies:
+  - imageio
 in_gallery: true
 make_screenshot: false
 ---

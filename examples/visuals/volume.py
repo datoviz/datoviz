@@ -1,5 +1,5 @@
 """
-# Volume example
+# Volume
 
 Show a volume visual with an arcball camera.
 

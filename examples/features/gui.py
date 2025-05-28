@@ -1,5 +1,5 @@
 """
-# GUI example
+# GUI widgets
 
 Show how to create a GUI dialog.
 

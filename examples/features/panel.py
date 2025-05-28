@@ -1,5 +1,5 @@
 """
-# Panel example
+# Panels
 
 Show how to create several panels.
 
