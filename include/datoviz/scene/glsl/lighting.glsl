@@ -183,6 +183,6 @@ vec4 lighting(vec4 pos, vec4 color, vec3 normal, vec4 cam_pos, Light light, Mate
     vec4 total_color = color * (ambient + diffuse) + specular + emission;
 
     total_color = min(total_color/count, 1.0);
-    total_color.a = 1.0;
+    total_color.a = color.a;
     return total_color;
 }
