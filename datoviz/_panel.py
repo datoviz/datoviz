@@ -113,6 +113,32 @@ class Panel:
     def background(self, color0: tuple, color1: tuple, color2: tuple, color3: tuple):
         dvz.panel_background(self.c_panel, to_cvec4_array((color0, color1, color2, color3)))
 
+    def link(
+        self, target: 'Panel', model: bool = False, view: bool = False, projection: bool = False
+    ) -> None:
+        """
+        Link the current panel to another panel.
+
+        Parameters
+        ----------
+        target : Panel
+            The target panel to link to.
+        model : bool, optional
+            Whether to link the model matrix, by default False.
+        view : bool, optional
+            Whether to link the view matrix, by default False.
+        projection : bool, optional
+            Whether to link the projection matrix, by default False.
+        """
+        c_flags = 0
+        if model:
+            c_flags |= dvz.PANEL_LINK_FLAGS_MODEL
+        if view:
+            c_flags |= dvz.PANEL_LINK_FLAGS_VIEW
+        if projection:
+            c_flags |= dvz.PANEL_LINK_FLAGS_PROJECTION
+        dvz.panel_link(target.c_panel, self.c_panel, c_flags)
+
     # Interactivity
     # ---------------------------------------------------------------------------------------------
 
