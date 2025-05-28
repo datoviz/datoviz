@@ -363,11 +363,12 @@ class App:
 
     def basic(
         self,
-        topology: str,
+        topology: str = None,
         position: np.ndarray = None,
         color: np.ndarray = None,
         group: np.ndarray = None,
         size: float = None,
+        shape: ShapeCollection = None,
         depth_test: bool = None,
         cull: str = None,
     ) -> vs.Basic:
@@ -387,6 +388,8 @@ class App:
             Group indices of all points (optional).
         size : float
             Point size in pixels, when using the `point_list` topology.
+        shape : ShapeCollection, optional
+            Create a basic visual from a shape collection.
         depth_test : bool, optional
             Whether to enable depth testing.
         cull : str, optional
@@ -397,11 +400,16 @@ class App:
         vs.Basic
             The created basic visual instance.
         """
-        if topology not in cst.TOPOLOGY_OPTIONS:
+        if not shape and topology not in cst.TOPOLOGY_OPTIONS:
             raise ValueError(f'Topology must be one of {cst.TOPOLOGY_OPTIONS} and not {topology}')
         c_topology = to_enum(f'primitive_topology_{topology}')
         assert c_topology is not None
-        c_visual = dvz.basic(self.c_batch, c_topology, 0)
+        if shape is None:
+            c_visual = dvz.basic(self.c_batch, c_topology, 0)
+        else:
+            if not shape.c_merged:
+                shape.merge()
+            c_visual = dvz.basic_shape(self.c_batch, shape.c_merged, c_topology, 0)
         return self._visual(
             cls=vs.Basic,
             c_visual=c_visual,
@@ -963,8 +971,8 @@ class App:
             c_merged = shape.c_merged
 
             # Allocate the visual with the right number of vertices and indices.
-            nv = dvz.shape_vertex_count(c_merged)
-            ni = dvz.shape_index_count(c_merged)
+            nv = c_merged.vertex_count()
+            ni = c_merged.index_count()
             if ni == 0:
                 has_index = False
 
