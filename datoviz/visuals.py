@@ -1570,7 +1570,13 @@ class Mesh(Visual):
             # Automatic normal computation.
             if compute_normals:
                 normals = np.zeros((nv, 3), dtype=np.float32)
-                dvz.compute_normals(nv, ni, kwargs['position'], kwargs['index'], normals)
+                dvz.compute_normals(
+                    nv,
+                    ni,
+                    kwargs['position'].astype(np.float32),
+                    kwargs['index'].astype(np.uint32),
+                    normals,
+                )
                 kwargs['normal'] = normals
 
         if vertex_count is not None and index_count is not None:

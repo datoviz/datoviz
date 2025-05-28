@@ -971,8 +971,8 @@ class App:
             c_merged = shape.c_merged
 
             # Allocate the visual with the right number of vertices and indices.
-            nv = c_merged.vertex_count()
-            ni = c_merged.index_count()
+            nv = dvz.shape_vertex_count(c_merged)
+            ni = dvz.shape_index_count(c_merged)
             if ni == 0:
                 has_index = False
 
