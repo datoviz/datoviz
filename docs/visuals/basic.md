@@ -73,7 +73,7 @@ This approach is memory-efficient and avoids multiple draw calls.
 
 Here, we show the different primitive topologies for the **Basic** visual using the same set of positions, colors, and groups.
 
-The 2D points follow the pattern `sin(dt * i) + dy`, where `dy` is positive if `i` is odd and negative if `i` is even. The points therefore alternate between the lower and upper sine curves. The points are split in two groups with equal size (the `group` is 0 if `i < N/2` and 1 if `i >= N/2`).
+The 2D points alternate between a lower and upper sine curves. The points are split in two groups with equal size (the `group` is 0 if `i < N/2` and 1 if `i >= N/2`).
 
 ### Points
 

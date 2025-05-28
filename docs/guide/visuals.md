@@ -56,7 +56,7 @@ Line segments with arbitrary width and customizable caps (no arrows nor dashes f
 <a href="../../visuals/path/">
 <img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/path.png" alt="Path" />
 <div class="card-title">➰ <strong>Path</strong></a>:
-Continuous polylines with optional variable thickness, optionally closed (no arrows nor no dashes for now).
+Continuous polylines with optional variable thickness, optionally closed (no arrows nor dashes for now).
 </div>
 </div>
 
@@ -126,11 +126,11 @@ Each visual manages a collection of **items**. The definition of an item depends
 * **Sphere**: 1 item = 1 3D sphere
 * **Volume**: 1 item = the full volume (typically only 1)
 
-Items are grouped into batches that share:
+A given visual instance has many items that share:
 
 * The same **visual type**
+* The same **visual options** (for example, mesh visual with lighting support)
 * The same **data transformation** (specific to a panel)
-* Optional style attributes, either shared (uniform) or per-item
 
 This model is key to Datoviz's performance: many visual instances are submitted in a single GPU draw call, with tight memory layout and no redundant state changes.
 
@@ -181,6 +181,13 @@ visual.set_data(..., depth_test=True)
 
 * `depth_test=True`: Items respect the 3D depth buffer (closer points appear in front)
 * `depth_test=False`: Items are rendered in the order they are submitted
+
+
+## Culling and front face
+
+!!! warning
+
+    This section of the documentation has not been written yet.
 
 
 ---
