@@ -62,7 +62,11 @@ sc.add_polygon(points, contour='full')
 
 * `points`: Nx2 array of polygon vertices
 * Uses **earcut** triangulation internally
-* Contour rendering is experimental
+
+!!! warning
+
+    There may be visual artifacts along the contours of highly irregular polygons, such as those derived from geographical data. These can be addressed with a more robust triangulation algorithm. Improvements are planned for a future release.
+
 
 ### Surface
 
