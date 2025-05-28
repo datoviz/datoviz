@@ -392,6 +392,7 @@ KB = 1024
 DVZ_REQUEST_VERSION = 1
 DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 3
+DVZ_VERSION_PATCH = 1
 
 
 # ===============================================================================
@@ -11511,6 +11512,33 @@ basic_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
 ]
+
+
+# -------------------------------------------------------------------------------------------------
+basic_shape = dvz.dvz_basic_shape
+basic_shape.__doc__ = """
+Create a basic visual from a DvzShape instance.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+shape : DvzShape*
+    the shape
+flags : int
+    the visual creation flags
+
+Returns
+-------
+result : DvzVisual*
+     the visual
+"""
+basic_shape.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_int,  # int flags
+]
+basic_shape.restype = ctypes.POINTER(DvzVisual)
 
 
 # -------------------------------------------------------------------------------------------------

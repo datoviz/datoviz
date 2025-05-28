@@ -392,6 +392,7 @@ dvz_basic_alloc
 dvz_basic_color
 dvz_basic_group
 dvz_basic_position
+dvz_basic_shape
 dvz_basic_size
 dvz_glyph
 dvz_glyph_alloc
