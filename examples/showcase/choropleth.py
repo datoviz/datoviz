@@ -1,6 +1,12 @@
 """
 # Choropleth map example
 
+This example demonstrates how to create a choropleth map using polygons. It loads polygon data
+from a NumPy file, generates a unique color for each polygon, and visualizes them using the
+**Mesh** visual. The polygons are displayed with contours.
+
+A **Basic** visual could also have been used, but it would not support contours.
+
 !!! warning
 
     There may be visual artifacts along the contours of highly irregular polygons, such as those
