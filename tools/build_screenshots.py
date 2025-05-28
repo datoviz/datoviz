@@ -21,12 +21,16 @@ def collect_example_scripts():
     return example_scripts
 
 
-def build_screenshots():
+def build_screenshots(filter=None):
     example_scripts = collect_example_scripts()
     for script_path in tqdm(example_scripts, desc='Processing examples', unit='script'):
         relative_path = script_path.relative_to(EXAMPLES_DIR)
         category = relative_path.parts[0]
         example_name = script_path.stem
+
+        # Skip scripts if filter is provided and doesn't match example_name
+        if filter and filter not in example_name:
+            continue
 
         # Construct the output PNG path
         if category.endswith('.py'):
@@ -55,4 +59,5 @@ def build_screenshots():
 
 
 if __name__ == '__main__':
-    build_screenshots()
+    filter_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    build_screenshots(filter=filter_arg)
