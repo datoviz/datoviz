@@ -11,6 +11,33 @@ DATA_DIR = Path('data')
 CATEGORIES = ['showcase', 'visuals', 'features']
 GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/main/gallery'
 
+INTRO = {
+    'gallery': """The Datoviz gallery shows what the library can do through concrete examples.
+It is divided into three sections.
+
+* The [**showcase**](#showcase) section features polished demos based on real-world data.
+* The [**visuals**](#visuals) section shows one example per visual type.
+* The [**features**](#features) section focuses on specific API features.
+
+""",
+    'showcase': """This section highlights polished demos built on real-world datasets.
+
+""",
+    'visuals': """Each example in this section focuses on a single visual type.
+
+""",
+    'features': """This section isolates individual features of the Datoviz API.
+Each example is designed to demonstrate a specific capability.
+
+!!! warning
+
+    Some examples use GUI elements that are not yet supported in automatic screenshots.
+    As a result, certain screenshots may appear blank. This limitation will be addressed in a
+    future release.
+
+""",
+}
+
 
 def extract_metadata(script_path):
     content = script_path.read_text(encoding='utf-8')
@@ -101,9 +128,14 @@ def generate_example_page(category, script_path, output_path):
 
 
 def generate_index(pages):
-    lines = ['# Gallery\n']
+    lines = [
+        '# Gallery\n',
+        '<!-- WARNING: this file is auto-generated, edit tools/build_gallery.py instead -->\n',
+    ]
+    lines.extend(INTRO['gallery'].splitlines())
     for category in CATEGORIES:
         lines.append(f'## {category.capitalize()}\n')
+        lines.extend(INTRO[category].splitlines())
         lines.append('<div class="grid cards" markdown="1">\n')
         for name, title in pages.get(category, []):
             screenshot_url = get_screenshot_url(category, name)
