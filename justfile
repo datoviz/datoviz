@@ -1314,7 +1314,7 @@ python *args:
 # #
 
 # Run all Python examples and generate a screenshot in data/gallery/
-examples filter="":
+examples filter="": && gallery
     @echo "Generating screenshots from examples..."
     @python tools/build_screenshots.py {{filter}}
 
