@@ -5784,6 +5784,21 @@ shape_arrow.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+shape_guizmo = dvz.dvz_shape_guizmo
+shape_guizmo.__doc__ = """
+Create a 3D guizmo with three arrows on the three axes.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
+shape_guizmo.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
+
+# -------------------------------------------------------------------------------------------------
 shape_torus = dvz.dvz_shape_torus
 shape_torus.__doc__ = """
 Create a torus shape.
