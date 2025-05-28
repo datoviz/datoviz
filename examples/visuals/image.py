@@ -14,8 +14,6 @@ make_screenshot: true
 
 """
 
-from pathlib import Path
-
 import imageio.v3 as iio
 import numpy as np
 
@@ -23,15 +21,13 @@ import datoviz as dvz
 
 
 def load_image():
-    ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-    filepath = ROOT_DIR / 'data/textures/image.png'
+    filepath = dvz.download_data('textures/image.png')
     arr = iio.imread(filepath)
     h, w, _ = arr.shape
     return np.dstack((arr, np.full((h, w), 255))).astype(np.uint8)
 
 
 image = load_image()
-# image = generate_fractal(1024)
 height, width, _ = image.shape
 
 position = np.array([[0, 0, 0]], dtype=np.float32)
