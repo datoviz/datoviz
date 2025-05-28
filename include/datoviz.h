@@ -1725,6 +1725,15 @@ DVZ_EXPORT void dvz_shape_arrow(
 
 
 /**
+ * Create a 3D guizmo with three arrows on the three axes.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_guizmo(DvzShape* shape);
+
+
+
+/**
  * Create a torus shape.
  *
  * The radius of the ring is 0.5.

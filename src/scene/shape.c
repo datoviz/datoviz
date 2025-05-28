@@ -2080,6 +2080,67 @@ void dvz_shape_torus(
 
 
 
+void dvz_shape_guizmo(DvzShape* shape)
+{
+    ANN(shape);
+
+    DvzShape* shapes[3] = {0};
+    float s = 1;
+    vec3 scale = {s, s, s};
+    vec3 t = {0};
+
+    // X axis - red
+    uint32_t count = 32;
+    float head_length = .35;
+    float head_radius = .2;
+    float shaft_radius = .05;
+
+    shapes[0] = dvz_shape();
+    dvz_shape_arrow(
+        shapes[0], count, head_length, head_radius, shaft_radius, (DvzColor){255, 0, 0, 255});
+    dvz_shape_begin(shapes[0], 0, shapes[0]->vertex_count);
+    t[0] = 0.0f;
+    t[1] = 0.5f;
+    t[2] = 0.0f;
+    dvz_shape_translate(shapes[0], t);
+    dvz_shape_scale(shapes[0], scale);
+    dvz_shape_rotate(shapes[0], -M_PI / 2, (vec3){0, 0, 1});
+    dvz_shape_end(shapes[0]);
+
+    // Y axis - green
+    shapes[1] = dvz_shape();
+    dvz_shape_arrow(
+        shapes[1], count, head_length, head_radius, shaft_radius, (DvzColor){0, 255, 0, 255});
+    dvz_shape_begin(shapes[1], 0, shapes[1]->vertex_count);
+    t[0] = 0.0f;
+    t[1] = 0.5f;
+    t[2] = 0.0f;
+    dvz_shape_translate(shapes[1], t);
+    dvz_shape_scale(shapes[1], scale);
+    dvz_shape_end(shapes[1]);
+
+    // Z axis - blue
+    shapes[2] = dvz_shape();
+    dvz_shape_arrow(
+        shapes[2], count, head_length, head_radius, shaft_radius, (DvzColor){0, 0, 255, 255});
+    dvz_shape_begin(shapes[2], 0, shapes[2]->vertex_count);
+    t[0] = 0.0f;
+    t[1] = 0.5f;
+    t[2] = 0.0f;
+    dvz_shape_translate(shapes[2], t);
+    dvz_shape_scale(shapes[2], scale);
+    dvz_shape_rotate(shapes[2], +M_PI / 2, (vec3){1, 0, 0});
+    dvz_shape_end(shapes[2]);
+
+    // Merge all into the provided shape
+    dvz_shape_merge(shape, 3, shapes);
+
+    for (int i = 0; i < 3; i++)
+        dvz_shape_destroy(shapes[i]);
+}
+
+
+
 /*************************************************************************************************/
 /*  Platonic solids                                                                              */
 /*************************************************************************************************/
