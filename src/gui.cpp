@@ -848,6 +848,42 @@ bool dvz_gui_slider_vec4(const char* name, float vmin, float vmax, vec4 value)
 
 
 
+bool dvz_gui_slider_int(const char* name, int vmin, int vmax, int* value)
+{
+    ANN(name);
+    ANN(value);
+    return ImGui::SliderInt(name, value, vmin, vmax, "%d", 0);
+}
+
+
+
+bool dvz_gui_slider_ivec2(const char* name, int vmin, int vmax, ivec2 value)
+{
+    ANN(name);
+    ANN(value);
+    return ImGui::SliderInt2(name, value, vmin, vmax, "%d", 0);
+}
+
+
+
+bool dvz_gui_slider_ivec3(const char* name, int vmin, int vmax, ivec3 value)
+{
+    ANN(name);
+    ANN(value);
+    return ImGui::SliderInt3(name, value, vmin, vmax, "%d", 0);
+}
+
+
+
+bool dvz_gui_slider_ivec4(const char* name, int vmin, int vmax, ivec4 value)
+{
+    ANN(name);
+    ANN(value);
+    return ImGui::SliderInt4(name, value, vmin, vmax, "%d", 0);
+}
+
+
+
 bool dvz_gui_button(const char* name, float width, float height)
 {
     ANN(name);

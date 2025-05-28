@@ -15,8 +15,6 @@
 This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
 visualization.
 
-Datoviz is still an early stage library and the API may change at any time.
-
 **************************************************************************************************/
 
 

@@ -4,21 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-/**************************************************************************************************
-
- * DATOVIZ PUBLIC API HEADER FILE
- * ==============================
- * 2025-05-28
- * Cyrille Rossant
- * cyrille dot rossant at gmail com
-
-This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
-visualization.
-
-Datoviz is still an early stage library and the API may change at any time.
-
-**************************************************************************************************/
-
 
 
 /*************************************************************************************************/

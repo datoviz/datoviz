@@ -285,6 +285,10 @@ dvz_gui_resizing
 dvz_gui_selectable
 dvz_gui_size
 dvz_gui_slider
+dvz_gui_slider_int
+dvz_gui_slider_ivec2
+dvz_gui_slider_ivec3
+dvz_gui_slider_ivec4
 dvz_gui_slider_vec2
 dvz_gui_slider_vec3
 dvz_gui_slider_vec4

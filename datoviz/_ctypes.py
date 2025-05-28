@@ -8761,6 +8761,126 @@ gui_slider_vec4.restype = ctypes.c_bool
 
 
 # -------------------------------------------------------------------------------------------------
+gui_slider_int = dvz.dvz_gui_slider_int
+gui_slider_int.__doc__ = """
+Add an integer slider.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[int] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_int.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    Out,  # out int* value
+]
+gui_slider_int.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_ivec2 = dvz.dvz_gui_slider_ivec2
+gui_slider_ivec2.__doc__ = """
+Add an integer slider with 2 values.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[Tuple[int, int]] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_ivec2.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    ivec2,  # out ivec2 value
+]
+gui_slider_ivec2.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_ivec3 = dvz.dvz_gui_slider_ivec3
+gui_slider_ivec3.__doc__ = """
+Add an integer slider with 3 values.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[Tuple[int, int, int]] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_ivec3.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    ivec3,  # out ivec3 value
+]
+gui_slider_ivec3.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_ivec4 = dvz.dvz_gui_slider_ivec4
+gui_slider_ivec4.__doc__ = """
+Add an integer slider with 4 values.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[Tuple[int, int, int, int]] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_ivec4.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    ivec4,  # out ivec4 value
+]
+gui_slider_ivec4.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
 gui_button = dvz.dvz_gui_button
 gui_button.__doc__ = """
 Add a button.
