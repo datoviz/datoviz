@@ -34,13 +34,12 @@ def extract_metadata(script_path):
     tags = metadata.get('tags', [])
 
     # Extract description: all lines between title and YAML block
-    yaml_start = docstring.find('---')
     title_index = next(i for i, line in enumerate(lines) if line.strip().startswith('#'))
     description_lines = []
     for i in range(title_index + 1, len(lines)):
         if lines[i].strip().startswith('---'):
             break
-        description_lines.append(lines[i].strip())
+        description_lines.append(lines[i].rstrip())
     description = '\n'.join(description_lines).strip()
 
     # Remove docstring from the rest of the code
@@ -51,7 +50,6 @@ def extract_metadata(script_path):
     in_gallery = True
     if 'in_gallery: false' in content:
         in_gallery = False
-
     return {
         'title': title_line,
         'description': description,

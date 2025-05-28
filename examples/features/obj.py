@@ -1,7 +1,7 @@
 """
-# Mesh visual example
+# Mesh with OBJ file
 
-Show the mesh visual with predefined shapes.
+Show the mesh visual with an OBJ file.
 
 ---
 tags:
