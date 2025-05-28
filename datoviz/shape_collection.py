@@ -165,6 +165,34 @@ class ShapeCollection:
         self.c_shapes = []
         self.c_merged = None
 
+    def vertex_count(self) -> int:
+        """
+        Get the total number of vertices in the collection.
+
+        Returns
+        -------
+        int
+            The total vertex count across all shapes in the collection.
+        """
+        if self.c_merged:
+            return dvz.shape_vertex_count(self.c_merged)
+        else:
+            return sum(dvz.shape_vertex_count(s) for s in self.c_shapes)
+
+    def index_count(self) -> int:
+        """
+        Get the total number of indices in the collection.
+
+        Returns
+        -------
+        int
+            The total index count across all shapes in the collection.
+        """
+        if self.c_merged:
+            return dvz.shape_index_count(self.c_merged)
+        else:
+            return sum(dvz.shape_index_count(s) for s in self.c_shapes)
+
     def add(
         self,
         c_shape: dvz.Shape,
