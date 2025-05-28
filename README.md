@@ -86,9 +86,18 @@ Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on fo
 
 ### Requirements
 
-- A supported operating system: Linux, macOS 12+, or Windows 10+
-- A Vulkan-capable GPU (most integrated or dedicated GPUs from the past decade should work)
-- Python 3, NumPy, requests, platformdirs
+* Supported operating systems:
+
+  * **Linux x86\_64** (e.g. Ubuntu 22.04 or later, as the Linux build requires glibc 2.34+)
+  * **macOS 12 or later** (x86\_64 and arm64, i.e. Apple silicon M1–M4)
+  * **Windows 10 or later** (x86\_64)
+* Python environment:
+
+  * Python 3.8+ (64-bit)
+  * NumPy
+  * requests
+  * platformdirs
+* Up-to-date graphics drivers with Vulkan support (most integrated or dedicated GPUs from the last ten years are supported)
 
 ### Install with pip
 
@@ -96,7 +105,9 @@ Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on fo
 pip install datoviz
 ```
 
-This command installs a Python wheel that includes the C library, automatically precompiled for your system.
+This installs a Python wheel that includes the C library, precompiled for your system.
+
+If the installation fails, you may need to [build from source](BUILD.md) or [open an issue](https://github.com/datoviz/datoviz/issues) to request support for your configuration.
 
 
 <!-- DOCUMENTATION -->
