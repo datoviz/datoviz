@@ -522,6 +522,13 @@ class DvzViewFlags(CtypesEnum):
     DVZ_VIEW_FLAGS_NOCLIP = 0x0020
 
 
+class DvzPanelLinkFlags(CtypesEnum):
+    DVZ_PANEL_LINK_FLAGS_NONE = 0x00
+    DVZ_PANEL_LINK_FLAGS_MODEL = 0x01
+    DVZ_PANEL_LINK_FLAGS_VIEW = 0x02
+    DVZ_PANEL_LINK_FLAGS_PROJECTION = 0x04
+
+
 class DvzDatFlags(CtypesEnum):
     DVZ_DAT_FLAGS_NONE = 0x0000
     DVZ_DAT_FLAGS_STANDALONE = 0x0100
@@ -1313,6 +1320,7 @@ MouseButton = DvzMouseButton
 MouseEventType = DvzMouseEventType
 MouseState = DvzMouseState
 Orientation = DvzOrientation
+PanelLinkFlags = DvzPanelLinkFlags
 PanzoomFlags = DvzPanzoomFlags
 PathFlags = DvzPathFlags
 PolygonMode = DvzPolygonMode
@@ -1869,6 +1877,10 @@ ORIENTATION_DEFAULT = 0
 ORIENTATION_DOWN = 3
 ORIENTATION_REVERSE = 2
 ORIENTATION_UP = 1
+PANEL_LINK_FLAGS_MODEL = 0x01
+PANEL_LINK_FLAGS_NONE = 0x00
+PANEL_LINK_FLAGS_PROJECTION = 0x04
+PANEL_LINK_FLAGS_VIEW = 0x02
 PANZOOM_FLAGS_FIXED_X = 0x10
 PANZOOM_FLAGS_FIXED_Y = 0x20
 PANZOOM_FLAGS_KEEP_ASPECT = 0x01
@@ -3947,6 +3959,28 @@ is_visible : bool
 panel_show.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_bool,  # bool is_visible
+]
+
+
+# -------------------------------------------------------------------------------------------------
+panel_link = dvz.dvz_panel_link
+panel_link.__doc__ = """
+Add or remove a link between two panels.
+At all times, the target panel's transform is copied from the source panel's transform.
+
+Parameters
+----------
+panel : DvzPanel*
+    the target panel
+source : DvzPanel*
+    the source panel
+flags : int
+    the panel link flags: 0 to remove, or a bit field with model, view, projection
+"""
+panel_link.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.POINTER(DvzPanel),  # DvzPanel* source
+    ctypes.c_int,  # int flags
 ]
 
 

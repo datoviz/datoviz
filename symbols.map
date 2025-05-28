@@ -88,6 +88,7 @@ dvz_panel_destroy
 dvz_panel_figure
 dvz_panel_flags
 dvz_panel_gui
+dvz_panel_link
 dvz_panel_margins
 dvz_panel_mvp
 dvz_panel_mvpmat
