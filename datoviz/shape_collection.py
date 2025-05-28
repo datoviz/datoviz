@@ -61,6 +61,9 @@ def _shape_transform(
     transform : Mat4, optional
         A 4x4 transformation matrix, by default None.
     """
+    if offset is None and scale is None and transform is None:
+        return
+
     dvz.shape_begin(c_shape, 0, 0)
     if scale is not None:
         dvz.shape_scale(c_shape, dvz.vec3(scale, scale, scale))
@@ -517,6 +520,29 @@ class ShapeCollection:
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_arrow(c_shape, count, head_length, head_radius, shaft_radius, c_color)
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
+    def add_guizmo(
+        self,
+        offset: Tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ) -> None:
+        """
+        Add a guizmo shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
+        c_shape = dvz.shape()
+        dvz.shape_guizmo(c_shape)
+        dvz.shape_unindex(c_shape, 0)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
     def add_torus(
