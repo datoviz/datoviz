@@ -27,7 +27,7 @@ Use the sphere visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Options
 
@@ -47,7 +47,7 @@ Use the sphere visual when:
 
 ### Per-visual (uniform)
 
-| Attribute      | Type     | Description                                    |
+| Parameter      | Type     | Description                                    |
 | -------------- | -------- | ---------------------------------------------- |
 | `light_pos`    | `vec4`   | Light position/direction                       |
 | `light_color`  | `cvec4`  | Light color                                    |

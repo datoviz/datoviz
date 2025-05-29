@@ -31,7 +31,7 @@ Use the volume visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Options
 
@@ -48,7 +48,7 @@ Use the volume visual when:
 
 ### Per-visual (uniform)
 
-| Attribute     | Type             | Description                                           |
+| Parameter     | Type             | Description                                           |
 |---------------|------------------|-------------------------------------------------------|
 | `permutation` | `(3,) int`       | Axis order of the 3D volume texture (default `(0,1,2)`) |
 | `slice`       | `int`            | Slice index (**not implemented yet**)                |

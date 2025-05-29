@@ -37,7 +37,7 @@ Use the path visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Per-item
 
@@ -49,7 +49,7 @@ Use the path visual when:
 
 ### Per-visual (uniform)
 
-| Attribute | Type | Description                                   |
+| Parameter | Type | Description                                   |
 |-----------|------|-----------------------------------------------|
 | `cap`     | enum | Cap style at the start/end of each path       |
 | `join`    | enum | Join style between connected segments         |

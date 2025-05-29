@@ -33,7 +33,7 @@ See [Advanced → Shapes](../guide/shape.md) for more on creating `ShapeCollecti
 
 ---
 
-## Attributes
+## Properties
 
 ### Options
 
@@ -62,7 +62,7 @@ When `indexed=True`, the optional `index` argument is a 1D array of `uint32` val
 
 ### Per-visual (uniform)
 
-| Attribute      | Type     | Description                                    |
+| Parameter      | Type     | Description                                    |
 | -------------- | -------- | ---------------------------------------------- |
 | `light_pos`    | `vec4`   | Light position/direction                       |
 | `light_color`  | `cvec4`  | Light color                                    |

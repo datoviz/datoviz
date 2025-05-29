@@ -33,7 +33,7 @@ Use the glyph visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Per-item
 
@@ -51,7 +51,7 @@ Use the glyph visual when:
 
 ### Per-visual (uniform)
 
-| Attribute   | Type    | Description                       |
+| Parameter   | Type    | Description                       |
 |-------------|---------|-----------------------------------|
 | `bgcolor`   | `vec4`  | Background color behind each glyph |
 | `texture`   | texture | Glyph atlas texture               |

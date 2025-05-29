@@ -29,7 +29,7 @@ Use the pixel visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Per-item
 
@@ -40,7 +40,7 @@ Use the pixel visual when:
 
 ### Per-visual (uniform)
 
-| Attribute | Type  | Description                                 |
+| Parameter | Type  | Description                                 |
 |-----------|-------|---------------------------------------------|
 | `size`    | float | Side length of each pixel in framebuffer pixels |
 

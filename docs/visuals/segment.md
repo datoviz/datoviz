@@ -30,7 +30,7 @@ Use the segment visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Per-item
 
@@ -43,7 +43,7 @@ Use the segment visual when:
 
 ### Per-visual (uniform)
 
-| Attribute   | Type        | Description                             |
+| Parameter   | Type        | Description                             |
 |-------------|-------------|-----------------------------------------|
 | `cap`       | `enum` x 2  | Cap type (for both ends)                |
 

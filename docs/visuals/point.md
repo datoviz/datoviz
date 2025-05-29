@@ -26,7 +26,7 @@ Use the point visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Per-item
 

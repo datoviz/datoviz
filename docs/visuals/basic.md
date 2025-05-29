@@ -34,7 +34,7 @@ Use the basic visual when you need:
 
 ---
 
-## Attributes
+## Properties
 
 ### Per-item
 
@@ -46,7 +46,7 @@ Use the basic visual when you need:
 
 ### Per-visual (uniform)
 
-| Attribute | Type   | Description                     |
+| Parameter | Type   | Description                     |
 |-----------|--------|---------------------------------|
 | `size`    | `float`  | Pixel size for `point` topology |
 
