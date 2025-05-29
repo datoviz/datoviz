@@ -1,7 +1,7 @@
 """
 # Mesh visual from an OBJ file
 
-Show the mesh visual with an OBJ file.
+Show the mesh visual with an OBJ file and a 3D guizmo.
 
 ---
 tags:
