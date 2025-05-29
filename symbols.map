@@ -42,9 +42,11 @@ dvz_easing
 dvz_error_callback
 dvz_figure
 dvz_figure_destroy
+dvz_figure_height
 dvz_figure_id
 dvz_figure_resize
 dvz_figure_update
+dvz_figure_width
 dvz_font
 dvz_font_ascii
 dvz_font_destroy

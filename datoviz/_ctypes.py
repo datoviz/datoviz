@@ -3406,6 +3406,48 @@ figure_resize.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+figure_width = dvz.dvz_figure_width
+figure_width.__doc__ = """
+Return a figure width.
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+
+Returns
+-------
+result : uint32_t
+     the figure width
+"""
+figure_width.argtypes = [
+    ctypes.POINTER(DvzFigure),  # DvzFigure* fig
+]
+figure_width.restype = ctypes.c_uint32
+
+
+# -------------------------------------------------------------------------------------------------
+figure_height = dvz.dvz_figure_height
+figure_height.__doc__ = """
+Return a figure height.
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+
+Returns
+-------
+result : uint32_t
+     the figure height
+"""
+figure_height.argtypes = [
+    ctypes.POINTER(DvzFigure),  # DvzFigure* fig
+]
+figure_height.restype = ctypes.c_uint32
+
+
+# -------------------------------------------------------------------------------------------------
 scene_figure = dvz.dvz_scene_figure
 scene_figure.__doc__ = """
 Get a figure from its id.
