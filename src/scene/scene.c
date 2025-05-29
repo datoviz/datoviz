@@ -1682,10 +1682,10 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
                 }
             }
         }
-
-        // Run the app.
-        dvz_app_run(app, frame_count);
     }
+
+    // Run the app.
+    dvz_app_run(app, frame_count);
 }
 
 

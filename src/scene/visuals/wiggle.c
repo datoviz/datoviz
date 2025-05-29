@@ -16,11 +16,14 @@
 
 #include "scene/visuals/wiggle.h"
 #include "../src/resources_utils.h"
+#include "_cglm.h"
 #include "_map.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "datoviz_types.h"
 #include "fileio.h"
+#include "scene/array.h"
+#include "scene/baker.h"
 #include "scene/graphics.h"
 #include "scene/texture.h"
 #include "scene/viewset.h"
@@ -50,6 +53,41 @@ static void _visual_callback(
 
 
 
+static void _quads(DvzVisual* visual, uint32_t attr_idx, vec4 tl_br)
+{
+    uint32_t first = 0, count = 1;
+
+    // Quad triangulation with 3 triangles = 6 vertices.
+    vec3* positions = (vec3*)calloc(6 * count, sizeof(vec3));
+    float x0 = tl_br[0], y0 = tl_br[1];
+    float x1 = tl_br[2], y1 = tl_br[3];
+    for (uint32_t i = 0; i < count; i++)
+    {
+        positions[6 * i + 0][0] = x0; // top left
+        positions[6 * i + 0][1] = y0;
+
+        positions[6 * i + 1][0] = x0; // bottom left
+        positions[6 * i + 1][1] = y1;
+
+        positions[6 * i + 2][0] = x1; // bottom right
+        positions[6 * i + 2][1] = y1;
+
+        positions[6 * i + 3][0] = x1; // bottom right
+        positions[6 * i + 3][1] = y1;
+
+        positions[6 * i + 4][0] = x1; // top right
+        positions[6 * i + 4][1] = y0;
+
+        positions[6 * i + 5][0] = x0; // top left
+        positions[6 * i + 5][1] = y0;
+    }
+
+    dvz_visual_data(visual, attr_idx, 6 * first, 6 * count, (void*)positions);
+    FREE(positions);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -65,8 +103,7 @@ DvzVisual* dvz_wiggle(DvzBatch* batch, int flags)
     dvz_visual_shader(visual, "graphics_wiggle");
 
     // Vertex attributes.
-    int af = DVZ_ATTR_FLAGS_REPEAT_X6;
-    dvz_visual_attr(visual, 0, FIELD(DvzWiggleVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, af);
+    dvz_visual_attr(visual, 0, FIELD(DvzWiggleVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 1, FIELD(DvzWiggleVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0);
 
     // Vertex stride.
@@ -74,8 +111,8 @@ DvzVisual* dvz_wiggle(DvzBatch* batch, int flags)
 
     // Slots.
     _common_setup(visual);
-    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT); // params
+    dvz_visual_slot(visual, 3, DVZ_SLOT_TEX); // texture
 
 
     // Params.
@@ -89,19 +126,26 @@ DvzVisual* dvz_wiggle(DvzBatch* batch, int flags)
     dvz_params_attr(params, DVZ_WIGGLE_PARAMS_CHANNELS, FIELD(DvzWiggleParams, channels));
     dvz_params_attr(params, DVZ_WIGGLE_PARAMS_SCALE, FIELD(DvzWiggleParams, scale));
 
+    // Default position.
+    dvz_visual_alloc(visual, 1, 6, 0);
+    dvz_wiggle_bounds(visual, (vec2){-1, +1}, (vec2){-1, +1});
+    // uv texture coordinates for the quad.
+    _quads(visual, 1, (vec4){0, 0, 1, 1});
+
+    DvzWiggleVertex* vertices =
+        (DvzWiggleVertex*)visual->baker->vertex_bindings[0].dual.array->data;
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        glm_vec3_print(vertices[i].pos, stdout);
+        glm_vec2_print(vertices[i].uv, stdout);
+    }
+
     // Default permutation.
     dvz_wiggle_xrange(visual, (vec2){0, 1});
     dvz_visual_param(visual, 2, DVZ_WIGGLE_PARAMS_SCALE, (float[]){1});
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
-
-    // Default position.
-    dvz_visual_alloc(visual, 1, 6, 0);
-    dvz_wiggle_bounds(visual, (vec2){-1, +1}, (vec2){-1, +1});
-
-    // uv texture coordinates for the quad.
-    dvz_visual_quads(visual, 1, 0, 1, (vec4[]){{0, 0, 1, 1}});
 
     return visual;
 }
@@ -112,7 +156,7 @@ void dvz_wiggle_bounds(DvzVisual* visual, vec2 xlim, vec2 ylim)
 {
     ANN(visual);
     // Position
-    dvz_visual_quads(visual, 0, 0, 1, (vec4[]){{xlim[0], ylim[0], xlim[1], ylim[1]}});
+    _quads(visual, 0, (vec4){xlim[0], ylim[0], xlim[1], ylim[1]});
 }
 
 
