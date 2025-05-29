@@ -53,33 +53,33 @@ static void _visual_callback(
 
 
 
-static void _quads(DvzVisual* visual, uint32_t attr_idx, vec4 tl_br)
+static void _quads(DvzVisual* visual, uint32_t attr_idx, vec4 tl_br, uint32_t nch)
 {
     uint32_t first = 0, count = 1;
 
     // Quad triangulation with 3 triangles = 6 vertices.
-    vec3* positions = (vec3*)calloc(6 * count, sizeof(vec3));
+    float* positions = (float*)calloc(6 * count, nch * sizeof(float));
     float x0 = tl_br[0], y0 = tl_br[1];
     float x1 = tl_br[2], y1 = tl_br[3];
     for (uint32_t i = 0; i < count; i++)
     {
-        positions[6 * i + 0][0] = x0; // top left
-        positions[6 * i + 0][1] = y0;
+        positions[6 * nch * i + 0 * nch + 0] = x0; // top left
+        positions[6 * nch * i + 0 * nch + 1] = y0;
 
-        positions[6 * i + 1][0] = x0; // bottom left
-        positions[6 * i + 1][1] = y1;
+        positions[6 * nch * i + 1 * nch + 0] = x0; // bottom left
+        positions[6 * nch * i + 1 * nch + 1] = y1;
 
-        positions[6 * i + 2][0] = x1; // bottom right
-        positions[6 * i + 2][1] = y1;
+        positions[6 * nch * i + 2 * nch + 0] = x1; // bottom right
+        positions[6 * nch * i + 2 * nch + 1] = y1;
 
-        positions[6 * i + 3][0] = x1; // bottom right
-        positions[6 * i + 3][1] = y1;
+        positions[6 * nch * i + 3 * nch + 0] = x1; // bottom right
+        positions[6 * nch * i + 3 * nch + 1] = y1;
 
-        positions[6 * i + 4][0] = x1; // top right
-        positions[6 * i + 4][1] = y0;
+        positions[6 * nch * i + 4 * nch + 0] = x1; // top right
+        positions[6 * nch * i + 4 * nch + 1] = y0;
 
-        positions[6 * i + 5][0] = x0; // top left
-        positions[6 * i + 5][1] = y0;
+        positions[6 * nch * i + 5 * nch + 0] = x0; // top left
+        positions[6 * nch * i + 5 * nch + 1] = y0;
     }
 
     dvz_visual_data(visual, attr_idx, 6 * first, 6 * count, (void*)positions);
@@ -128,20 +128,27 @@ DvzVisual* dvz_wiggle(DvzBatch* batch, int flags)
 
     // Default position.
     dvz_visual_alloc(visual, 1, 6, 0);
+
+    // Default bounds.
     dvz_wiggle_bounds(visual, (vec2){-1, +1}, (vec2){-1, +1});
+
     // uv texture coordinates for the quad.
-    _quads(visual, 1, (vec4){0, 0, 1, 1});
+    _quads(visual, 1, (vec4){0, 0, 1, 1}, 2);
 
-    DvzWiggleVertex* vertices =
-        (DvzWiggleVertex*)visual->baker->vertex_bindings[0].dual.array->data;
-    for (uint32_t i = 0; i < 6; i++)
-    {
-        glm_vec3_print(vertices[i].pos, stdout);
-        glm_vec2_print(vertices[i].uv, stdout);
-    }
+    // DEBUG
+    // DvzWiggleVertex* vertices =
+    //     (DvzWiggleVertex*)visual->baker->vertex_bindings[0].dual.array->data;
+    // for (uint32_t i = 0; i < 6; i++)
+    // {
+    //     printf("pos: ");
+    //     glm_vec3_print(vertices[i].pos, stdout);
+    //     printf("uv : ");
+    //     glm_vec2_print(vertices[i].uv, stdout);
+    // }
 
-    // Default permutation.
-    dvz_wiggle_xrange(visual, (vec2){0, 1});
+    // Default range.
+
+    // Default texture scale.
     dvz_visual_param(visual, 2, DVZ_WIGGLE_PARAMS_SCALE, (float[]){1});
 
     // Visual draw callback.
@@ -156,7 +163,7 @@ void dvz_wiggle_bounds(DvzVisual* visual, vec2 xlim, vec2 ylim)
 {
     ANN(visual);
     // Position
-    _quads(visual, 0, (vec4){xlim[0], ylim[0], xlim[1], ylim[1]});
+    _quads(visual, 0, (vec4){xlim[0], ylim[1], xlim[1], ylim[0]}, 3);
 }
 
 
@@ -202,9 +209,14 @@ void dvz_wiggle_texture(DvzVisual* visual, DvzTexture* texture)
     ANN(visual);
     ANN(texture);
 
+    uint32_t channels = texture->shape[1]; // texture height
+
     dvz_texture_create(texture); // only create it if it is not already created
     dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 
     // Number of channels is the texture height (width is number of samples).
-    dvz_visual_param(visual, 2, DVZ_WIGGLE_PARAMS_CHANNELS, &texture->shape[1]);
+    dvz_visual_param(visual, 2, DVZ_WIGGLE_PARAMS_CHANNELS, &channels);
+
+    float m = 2.0 / channels;
+    dvz_wiggle_xrange(visual, (vec2){m, 1 - m});
 }
