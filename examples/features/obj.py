@@ -9,6 +9,7 @@ tags:
   - shape
   - obj
   - arcball
+  - guizmo
 in_gallery: true
 make_screenshot: true
 ---
@@ -34,6 +35,9 @@ camera = panel.camera(initial=(0, 0, 3))
 visual = app.mesh(sc, lighting=True, linewidth=linewidth, edgecolor=edgecolor)
 
 panel.add(visual)
+
+# Add a 3D guizmo.
+panel.guizmo()
 
 app.run()
 app.destroy()
