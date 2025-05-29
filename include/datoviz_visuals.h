@@ -1209,7 +1209,7 @@ dvz_wiggle_color(DvzVisual* visual, DvzColor negative_color, DvzColor positive_c
  * @param visual the visual
  * @param color the edge color
  */
-DVZ_EXPORT void dvz_wiggle_edgecolor(DvzVisual* visual, DvzColor edgecolor);
+DVZ_EXPORT void dvz_wiggle_edgecolor(DvzVisual* visual, DvzColor color);
 
 
 

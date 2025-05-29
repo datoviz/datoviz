@@ -13605,6 +13605,144 @@ image_alloc.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+wiggle = dvz.dvz_wiggle
+wiggle.__doc__ = """
+Create a wiggle visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+result : DvzVisual*
+     the visual
+"""
+wiggle.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_int,  # int flags
+]
+wiggle.restype = ctypes.POINTER(DvzVisual)
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_bounds = dvz.dvz_wiggle_bounds
+wiggle_bounds.__doc__ = """
+Set the wiggle bounds.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+xlim : Tuple[float, float]
+    xmin and xmax
+ylim : Tuple[float, float]
+    ymin and ymax
+"""
+wiggle_bounds.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    vec2,  # vec2 xlim
+    vec2,  # vec2 ylim
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_color = dvz.dvz_wiggle_color
+wiggle_color.__doc__ = """
+Set the color of the negative and positive sections.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+negative_color : Tuple[int, int, int, int]
+    the color of the negative section
+positive_color : Tuple[int, int, int, int]
+    the color of the positive section
+"""
+wiggle_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzColor,  # DvzColor negative_color
+    DvzColor,  # DvzColor positive_color
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_edgecolor = dvz.dvz_wiggle_edgecolor
+wiggle_edgecolor.__doc__ = """
+Set the edge color.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+color : Tuple[int, int, int, int]
+    the edge color
+"""
+wiggle_edgecolor.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzColor,  # DvzColor color
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_xrange = dvz.dvz_wiggle_xrange
+wiggle_xrange.__doc__ = """
+Set the range of the wiggle on the x axis, in normalized coordinates ([0, 1]).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+xrange : Tuple[float, float]
+    the x0 and xl in the quad, the channels will be in the interval [x0, xl]
+"""
+wiggle_xrange.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    vec2,  # vec2 xrange
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_scale = dvz.dvz_wiggle_scale
+wiggle_scale.__doc__ = """
+Set the texture scaling factor.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+scale : float
+    the scaling factor
+"""
+wiggle_scale.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float scale
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_texture = dvz.dvz_wiggle_texture
+wiggle_texture.__doc__ = """
+Assign a texture to an wiggle visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+texture : DvzTexture*
+    the texture
+"""
+wiggle_texture.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+]
+
+
+# -------------------------------------------------------------------------------------------------
 mesh = dvz.dvz_mesh
 mesh.__doc__ = """
 Create a mesh visual.

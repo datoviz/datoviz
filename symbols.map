@@ -526,3 +526,10 @@ dvz_volume_slice
 dvz_volume_texcoords
 dvz_volume_texture
 dvz_volume_transfer
+dvz_wiggle
+dvz_wiggle_bounds
+dvz_wiggle_color
+dvz_wiggle_edgecolor
+dvz_wiggle_scale
+dvz_wiggle_texture
+dvz_wiggle_xrange
