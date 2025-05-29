@@ -76,6 +76,14 @@ User-facing 2D images (RGBA or single-channel with colormap) anchored in world s
 </div>
 
 <div class="card">
+<a href="../../visuals/wiggle/">
+<img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/wiggle.png" alt="Wiggle plot" />
+<div class="card-title">🖼️ <strong>Wiggle plot</strong></a>:
+Wiggle plot for multichannel time series.
+</div>
+</div>
+
+<div class="card">
 <a href="../../visuals/glyph/">
 <img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/glyph.png" alt="Glyph" />
 <div class="card-title">🔤 <strong>Glyph</strong></a>:
@@ -159,7 +167,7 @@ All visuals are created using the `app.visual_name()` functions:
 visual = app.point(position=..., color=..., size=...)
 ```
 
-Attributes can also be set or modified as follows:
+Properties can also be set or modified as follows:
 
 ```python
 visual.set_position(position)
