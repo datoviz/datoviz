@@ -274,6 +274,22 @@ void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
 
 
 
+uint32_t dvz_figure_width(DvzFigure* fig)
+{
+    ANN(fig);
+    return fig->shape[0];
+}
+
+
+
+uint32_t dvz_figure_height(DvzFigure* fig)
+{
+    ANN(fig);
+    return fig->shape[1];
+}
+
+
+
 DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id)
 {
     // Return a figure from a canvas ID.
@@ -1609,30 +1625,6 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
 
 
 
-static inline bool _figure_has_gui_panels(DvzFigure* fig)
-{
-    ANN(fig);
-    ANN(fig->panels);
-
-    // Go through all panels.
-    uint32_t n = dvz_list_count(fig->panels);
-    DvzPanel* panel = NULL;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        panel = (DvzPanel*)dvz_list_get(fig->panels, i).p;
-        ANN(panel);
-        ANN(panel->view);
-
-        // Display the GUI panels for those which have a title.
-        if (panel->gui_title != NULL)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
 {
     ANN(scene);
@@ -1661,22 +1653,39 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
         ANN(scene->figures);
         uint32_t n = dvz_list_count(scene->figures);
         DvzFigure* fig = NULL;
+        bool has_gui_panel = false;
         for (uint32_t i = 0; i < n; i++)
         {
             fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
             ANN(fig);
 
-            // Only register the GUI panels callback if the figure has at least one GUI panel.
-            // NOTE: this will fail if a GUI panel is registered *AFTER* dvz_scene_run() is called.
-            if (_figure_has_gui_panels(fig))
+            // Go through all panels.
+            uint32_t m = dvz_list_count(fig->panels);
+            DvzPanel* panel = NULL;
+            for (uint32_t j = 0; j < m; j++)
             {
-                dvz_app_gui(app, fig->canvas_id, _scene_gui_panels, scene);
+                panel = (DvzPanel*)dvz_list_get(fig->panels, j).p;
+                ANN(panel);
+                ANN(panel->view);
+
+                _update_linked_panels(panel);
+
+                // Only register the GUI panels callback if the figure has at least one GUI panel.
+                // NOTE: this will fail if a GUI panel is registered *AFTER* dvz_scene_run() is
+                // called.
+
+                // Display the GUI panels for those which have a title.
+                if (!has_gui_panel && panel->gui_title != NULL)
+                {
+                    dvz_app_gui(app, fig->canvas_id, _scene_gui_panels, scene);
+                    has_gui_panel = true;
+                }
             }
         }
-    }
 
-    // Run the app.
-    dvz_app_run(app, frame_count);
+        // Run the app.
+        dvz_app_run(app, frame_count);
+    }
 }
 
 
