@@ -397,6 +397,7 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_volume_2)
     TEST_FIXTURE(test_image_1)
     TEST_FIXTURE(test_image_2)
+    TEST_FIXTURE(test_wiggle_1)
     TEST_FIXTURE(test_slice_1)
     TEST_FIXTURE(test_sphere_1)
 

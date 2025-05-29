@@ -25,7 +25,7 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_wiggle_1(TstSuite*);
+int test_wiggle_1(TstSuite* suite, TstItem* tstitem);
 
 // int test_wiggle_2(TstSuite*);
 
