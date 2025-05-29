@@ -93,6 +93,7 @@ void main()
     // NOTE: from pixels to NDC.
     float linewidth = 2.0; // TODO: param
     float lw = .5 * linewidth / viewport.size.x;
+    float scale = params.scale * (params.xrange.y - params.xrange.x) / params.channels;
 
     // DEBUG
     // float v = +0.1;
@@ -101,6 +102,6 @@ void main()
     // out_color = vec4(1, w / 4.0, 0, 1);
 
     out_color = wiggle_color(
-        p, tex, params.channels, params.xrange, params.scale / params.channels, lw, //
+        p, tex, params.channels, params.xrange, scale, lw, //
         params.negative_color, params.positive_color, params.edgecolor);
 }
