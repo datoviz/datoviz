@@ -826,12 +826,9 @@ add_library(datoviz_scene OBJECT
     "src/scene/visuals/basic.c"
     "src/scene/visuals/glyph.c"
     "src/scene/visuals/image.c"
-<<<<<<< HEAD
     "src/scene/visuals/wiggle.c"
     "src/scene/visuals/slice.c"
-=======
     "src/scene/visuals/marker.c"
->>>>>>> cb246d09 (Add independent host tests file)
     "src/scene/visuals/mesh.c"
     "src/scene/visuals/monoglyph.c"
     "src/scene/visuals/path.c"

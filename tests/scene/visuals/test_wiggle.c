@@ -63,7 +63,7 @@ static float* make_wiggle_texture(uint32_t channels, uint32_t samples)
 /*  Wiggle tests                                                                                 */
 /*************************************************************************************************/
 
-int test_wiggle_1(TstSuite* suite)
+int test_wiggle_1(TstSuite* suite, TstItem* item)
 {
     VisualTest vt = visual_test_start("wiggle", VISUAL_TEST_PANZOOM, 0);
 
