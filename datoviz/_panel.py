@@ -10,13 +10,18 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from typing import Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
+
+if TYPE_CHECKING:
+    from ._app import App
+    from ._figure import Figure
 
 from . import _constants as cst
 from . import _ctypes as dvz
 from ._axes import Axes
 from ._constants import Vec3
 from .interact import Arcball, Camera, Ortho, Panzoom
+from .shape_collection import ShapeCollection
 from .utils import to_cvec4_array
 from .visuals import Point, Sphere, Visual
 
@@ -33,20 +38,25 @@ class Panel:
     ----------
     c_panel : dvz.DvzPanel
         The underlying C panel object.
-    c_figure : dvz.DvzFigure, optional
+    figure : Figure, optional
         The figure to which the panel belongs.
     """
 
     c_panel: dvz.DvzPanel = None
-    c_figure: Optional[dvz.DvzFigure] = None
 
     _panzoom: Panzoom = None
     _ortho: Ortho = None
     _arcball: Arcball = None
     _camera: Camera = None
     _axes: Axes = None
+    _app: 'App' = None
+    _figure: 'Figure' = None
 
-    def __init__(self, c_panel: dvz.DvzPanel, c_figure: Optional[dvz.DvzFigure] = None) -> None:
+    def __init__(
+        self,
+        c_panel: dvz.DvzPanel,
+        figure: Optional['Figure'] = None,
+    ) -> None:
         """
         Initialize a Panel instance.
 
@@ -54,12 +64,13 @@ class Panel:
         ----------
         c_panel : dvz.DvzPanel
             The underlying C panel object.
-        c_figure : dvz.DvzFigure, optional
+        figure : Figure, optional
             The figure to which the panel belongs, by default None.
         """
         assert c_panel
         self.c_panel = c_panel
-        self.c_figure = c_figure
+        self._figure = figure
+        self._app = figure._app
 
     def add(self, visual: Visual) -> None:
         """
@@ -293,6 +304,48 @@ class Panel:
         c_visual = dvz.demo_panel_3D(self.c_panel)
         visual = Sphere(c_visual)
         return visual
+
+    def guizmo(self) -> None:
+        """
+        Add a 3D guizmo to a 3D panel with an arcball.
+
+        This function displays at the bottom right of the panel three 3D arrows representing
+        the X (red), Y (green), and Z (blue) axes, which rotate with the arcball.
+
+        !!! warning
+
+            This feature is still experimental. A known issue is that the gizmo may be obscured
+            by other visuals in the scene if they are rendered in front of it. This will be
+            fixed in version 0.4.
+
+        """
+        w, h = self._figure.size()
+        a = 0.25
+        m = 0
+        offset = (w - w * a - m, h - h * a - m)
+        size = (w * a, h * a)
+
+        guizmo_panel = self._figure.panel(offset=offset, size=size)
+        guizmo_panel.camera(initial=(0, 0, 3))
+
+        guizmo_sc = ShapeCollection()
+        guizmo_sc.add_guizmo()
+
+        guizmo_visual = self._app.mesh(guizmo_sc, lighting=True, depth_test=True)
+        guizmo_visual.set_light_pos((2, 2, 5))
+
+        # Diffuse.
+        guizmo_visual.set_material_params((0.5,) * 3, idx=0)
+
+        # Ambient.
+        guizmo_visual.set_material_params((0.1,) * 3, idx=1)
+
+        # Specular.
+        guizmo_visual.set_material_params((0.1,) * 3, idx=2)
+
+        guizmo_panel.add(guizmo_visual)
+
+        self.link(guizmo_panel, model=True)
 
     # GUI
     # ---------------------------------------------------------------------------------------------

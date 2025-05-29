@@ -10,7 +10,10 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from typing import Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
+
+if TYPE_CHECKING:
+    from ._app import App
 
 from . import _constants as cst
 from . import _ctypes as dvz
@@ -33,8 +36,9 @@ class Figure:
     """
 
     c_figure: dvz.DvzFigure = None
+    _app: 'App' = None
 
-    def __init__(self, c_figure: dvz.DvzFigure) -> None:
+    def __init__(self, c_figure: dvz.DvzFigure, app: Optional['App'] = None) -> None:
         """
         Initialize a Figure instance.
 
@@ -42,9 +46,15 @@ class Figure:
         ----------
         c_figure : dvz.DvzFigure
             The underlying C figure object.
+        app : App
+            The App instance.
         """
         assert c_figure
         self.c_figure = c_figure
+        self._app = app
+
+    def size(self):
+        return (dvz.figure_width(self.c_figure), dvz.figure_height(self.c_figure))
 
     def panel(
         self,
@@ -86,7 +96,7 @@ class Figure:
             if background is True:
                 background = cst.DEFAULT_BACKGROUND
             dvz.panel_background(c_panel, to_cvec4_array(background))
-        return Panel(c_panel, c_figure=self.c_figure)
+        return Panel(c_panel, figure=self)
 
     def update(self) -> None:
         """

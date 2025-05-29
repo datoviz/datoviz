@@ -120,7 +120,7 @@ class App:
         if gui:
             c_flags |= dvz.CANVAS_FLAGS_IMGUI
         c_figure = dvz.figure(self.c_scene, width, height, c_flags)
-        return Figure(c_figure)
+        return Figure(c_figure, app=self)
 
     def run(self, frame_count: int = 0) -> None:
         """
