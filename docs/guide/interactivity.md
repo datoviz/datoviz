@@ -70,6 +70,21 @@ angles = arcball.get()    # get current rotation
 arcball.reset()           # reset to initial state
 ```
 
+When using an arcball, you can add a 3D guizmo with:
+
+```python
+panel.guizmo()
+```
+
+<figure markdown="span">
+![3D guizmo](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/guizmo.png){ width="300" }
+</figure>
+
+!!! warning
+
+    This feature is still experimental. A known issue is that the gizmo may be obscured by other visuals in the scene if they are rendered in front of it. This will be fixed in version 0.4.
+
+
 ---
 
 ## Camera Interactivity (3D)
