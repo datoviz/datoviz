@@ -1166,6 +1166,89 @@ DVZ_EXPORT void dvz_image_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 /*************************************************************************************************/
+/*  Wiggle                                                                                       */
+/*************************************************************************************************/
+
+/**
+ * Create a wiggle visual.
+ *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_wiggle(DvzBatch* batch, int flags);
+
+
+
+/**
+ * Set the wiggle bounds.
+ *
+ * @param visual the visual
+ * @param xlim xmin and xmax
+ * @param ylim ymin and ymax
+ */
+DVZ_EXPORT void dvz_wiggle_bounds(DvzVisual* visual, vec2 xlim, vec2 ylim);
+
+
+
+/**
+ * Set the color of the negative and positive sections.
+ *
+ * @param visual the visual
+ * @param negative_color the color of the negative section
+ * @param positive_color the color of the positive section
+ */
+DVZ_EXPORT void
+dvz_wiggle_color(DvzVisual* visual, DvzColor negative_color, DvzColor positive_color);
+
+
+
+/**
+ * Set the edge color.
+ *
+ * @param visual the visual
+ * @param color the edge color
+ */
+DVZ_EXPORT void dvz_wiggle_edgecolor(DvzVisual* visual, DvzColor edgecolor);
+
+
+
+/**
+ * Set the range of the wiggle on the x axis, in normalized coordinates ([0, 1]).
+ *
+ * @param visual the visual
+ * @param xrange the x0 and xl in the quad, the channels will be in the interval [x0, xl]
+ */
+DVZ_EXPORT void dvz_wiggle_xrange(DvzVisual* visual, vec2 xrange);
+
+
+
+/**
+ * Set the texture scaling factor.
+ *
+ * @param visual the visual
+ * @param scale the scaling factor
+ */
+DVZ_EXPORT void dvz_wiggle_scale(DvzVisual* visual, float scale);
+
+
+
+/**
+ * Assign a texture to an wiggle visual.
+ *
+ * @param visual the visual
+ * @param texture the texture
+ */
+DVZ_EXPORT void dvz_wiggle_texture(DvzVisual* visual, DvzTexture* texture);
+
+
+
+// TODO
+// DVZ_EXPORT void dvz_wiggle_swizzle(DvzVisual* visual, int swizzle);
+
+
+
+/*************************************************************************************************/
 /*  Mesh                                                                                         */
 /*************************************************************************************************/
 
