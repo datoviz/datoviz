@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 import numpy as np
 
-from ._ctypes import cvec4, ivec2, ivec3, vec3, vec4
+from ._ctypes import cvec4, ivec2, ivec3, vec2, vec3, vec4
 
 # -------------------------------------------------------------------------------------------------
 # Visual properties
@@ -87,6 +87,12 @@ PROPS = {
         'linewidth': {'type': float},
         'radius': {'type': float},
         'colormap': {'type': 'enum', 'enum': 'DVZ_CMAP'},
+        'texture': {'type': 'texture'},
+    },
+    'wiggle': {
+        'edgecolor': {'type': cvec4},
+        'xrange': {'type': vec2},
+        'scale': {'type': float},
         'texture': {'type': 'texture'},
     },
     'mesh': {

@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -1497,6 +1497,102 @@ class Image(Visual):
             The texture object.
         """
         dvz.image_texture(self.c_visual, texture.c_texture)
+
+
+# -------------------------------------------------------------------------------------------------
+# Wiggle visual
+# -------------------------------------------------------------------------------------------------
+
+
+class Wiggle(Visual):
+    """
+    A visual for displaying a wiggle plot.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'wiggle'.
+    """
+
+    visual_name = 'wiggle'
+
+    def set_bounds(self, xlim: tuple, ylim: tuple = None) -> None:
+        """
+        Set the bounds of the wiggle plot.
+
+        Parameters
+        ----------
+        xlim : tuple
+            The x-axis bounds.
+        ylim : tuple
+            The y-axis bounds.
+        """
+        if ylim is None:
+            xlim, ylim = xlim
+        dvz.wiggle_bounds(self.c_visual, dvz.vec2(*xlim), dvz.vec2(*ylim))
+
+    def set_color(
+        self,
+        negative: Tuple[float, float, float, float],
+        positive: Optional[Tuple[float, float, float, float]] = None,
+    ) -> None:
+        """
+        Set the color of the wiggle plot.
+
+        Parameters
+        ----------
+        negative : tuple
+            The color for negative values.
+        positive : tuple
+            The color for positive values.
+        """
+        if hasattr(negative[0], '__len__'):
+            negative, positive = negative
+        dvz.wiggle_color(self.c_visual, dvz.cvec4(*negative), dvz.cvec4(*positive))
+
+    def set_edgecolor(self, value: Tuple[int, int, int, int]) -> None:
+        """
+        Set the line color.
+
+        Parameters
+        ----------
+        value : tuple
+            The edge color value.
+        """
+        self.edgecolor = value
+
+    def set_xrange(self, xrange: Tuple[float, float]) -> None:
+        """
+        Set the x-axis range of the wiggle plot.
+
+        Parameters
+        ----------
+        xrange : tuple
+            The x-axis range.
+        """
+        self.xrange = xrange
+
+    def set_scale(self, scale: float) -> None:
+        """
+        Set the wiggle scale.
+
+        Parameters
+        ----------
+        scale : float
+            The scale factor for the wiggle plot.
+        """
+        self.scale = scale
+
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the wiggle texture.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
+        dvz.wiggle_texture(self.c_visual, texture.c_texture)
 
 
 # -------------------------------------------------------------------------------------------------

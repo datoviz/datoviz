@@ -859,6 +859,52 @@ class App:
             cull=cull,
         )
 
+    def wiggle(
+        self,
+        bounds: tp.Optional[Tuple[Tuple[float, float], Tuple[float, float]]] = None,
+        negative_color: tp.Optional[Tuple[int, int, int, int]] = None,
+        positive_color: tp.Optional[Tuple[int, int, int, int]] = None,
+        edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
+        xrange: tp.Optional[Tuple[float, float]] = None,
+        scale: tp.Optional[float] = None,
+        texture: tp.Optional[Texture] = None,
+    ) -> vs.Wiggle:
+        """
+        Create a Wiggle visual.
+
+        Parameters
+        ----------
+        bounds : tuple of tuples, optional
+            Bounds for the wiggle plot, in the form ((xmin, xmax), (ymin, ymax)).
+        negative_color : Tuple[int, int, int, int], optional
+            Color for the negative wiggle values, in RGBA format.
+        positive_color : Tuple[int, int, int, int], optional
+            Color for the positive wiggle values, in RGBA format.
+        edgecolor : Tuple[int, int, int, int], optional
+            Line color in RGBA format.
+        xrange : tuple of float, optional
+            Range of the x-axis for the wiggle plot, in the form (x0, xl).
+        scale : float, optional
+            Scale factor for the wiggle plot, applied to the wiggle values.
+        texture : Texture, optional
+            Texture for the wiggle, a 2D texture containing the data.
+
+        Returns
+        -------
+        vs.Wiggle
+            The created wiggle visual instance.
+        """
+        return self._visual(
+            dvz.wiggle,
+            vs.Wiggle,
+            bounds=bounds,
+            color=(negative_color, positive_color),
+            edgecolor=edgecolor,
+            xrange=xrange,
+            scale=scale,
+            texture=texture,
+        )
+
     def mesh(
         self,
         shape: ShapeCollection = None,
@@ -1098,7 +1144,7 @@ class App:
 
     def volume(
         self,
-        bounds: Tuple[tuple, tuple, tuple] = None,
+        bounds: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]] = None,
         permutation: Tuple[int, int, int] = None,
         slice: int = None,
         transfer: Tuple[float, float, float, float] = None,
@@ -1110,7 +1156,7 @@ class App:
 
         Parameters
         ----------
-        bounds : Tuple[tuple, tuple, tuple]
+        bounds : Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
             Bounds of the volume in normalized device coordinates, as three tuples
             (xmin, xmax), (ymin, ymax), (zmin, zmax).
         permutation : Tuple[int, int, int], optional
