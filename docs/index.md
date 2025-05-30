@@ -21,7 +21,7 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 
 <!-- FEATURES -->
 
-## Current features
+## ✨ Current features
 
 * **📊 2D visuals**: antialiased points, markers, line segments, paths, text, images
 * **📈 2D axes**
@@ -33,23 +33,13 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-## What Datoviz is — and isn't
+<!-- API PHILOSOPHY -->
 
-**Datoviz is a relatively low-level visualization library.** It focuses on rendering visual primitives like points, lines, images, and meshes — efficiently and interactively.
+## 🧩 API philosophy
 
-Unlike libraries such as **Matplotlib**, Datoviz does **not** provide high-level plotting functions like `plt.plot()`, `plt.scatter()`, or `plt.imshow()`. Its goal is **not** to replace plotting libraries, but to serve as a powerful rendering backend for scientific graphics.
+Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()`, or `imshow()`. Instead, it exposes flexible visual primitives—markers, images, meshes, and more—that can be added to a scene and customized directly with data. This approach offers fine-grained control and high performance, while remaining concise enough for quick plots.
 
-A higher-level plotting API is being developed as part of **VisPy 2.0**, which will use Datoviz as a rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API.
-
-
-
-## Who is it for?
-
-Datoviz is built for people who need performance, control, and precision:
-
-* **Researchers and analysts** exploring large, complex datasets in real time
-* **Scientists and engineers** creating custom visual interfaces for experiments and simulations
-* **Developers** who want a lightweight, portable alternative to bloated visualization frameworks
+A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
 
 
 ## Get started

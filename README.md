@@ -13,12 +13,6 @@ It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitiv
 
 ![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
-> [!NOTE]
-> Datoviz is a relatively low-level library focused on **rendering graphical primitives** (points, lines, images, etc.).
-> It does **not** provide high-level plotting functions like `plt.plot()` or `plt.imshow()`, but offers a flexible and efficient API for building visualizations.
-> A higher-level plotting layer will be available in **VisPy 2.0**, with Datoviz as the rendering backend via the upcoming **GSP** (Graphics Server Protocol).
-
-
 Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.
 
 Written by one of the original creators of [VisPy](https://vispy.org), a GPU-based Python scientific visualization library, Datoviz aims to serve as the default backend for the upcoming **VisPy 2.0**.
@@ -43,10 +37,13 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-<!-- ### List of visuals
+<!-- API PHILOSOPHY -->
 
-![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png) -->
+## 🧩 API philosophy
 
+Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()`, or `imshow()`. Instead, it exposes flexible visual primitives—markers, images, meshes, and more—that can be added to a scene and customized directly with data. This approach offers fine-grained control and high performance, while remaining concise enough for quick plots.
+
+A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
 
 
 <!-- CURRENT STATUS -->
