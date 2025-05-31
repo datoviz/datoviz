@@ -44,7 +44,7 @@ class Event:
         c_ev : Any
             The underlying C event object.
         event_type : str
-            The type of the event (e.g., 'mouse', 'keyboard').
+            The type of the event (e.g., 'mouse', 'keyboard', 'timer').
         """
         assert c_ev
         self.c_ev = c_ev
@@ -212,3 +212,40 @@ class Event:
         """
         if self.is_keyboard():
             return key_name(self.key())
+
+    # Timer
+    # ---------------------------------------------------------------------------------------------
+
+    def is_timer(self) -> bool:
+        """
+        Return whether the event is a timer event.
+
+        Returns
+        -------
+        bool
+            True if the event is a timer event, False otherwise.
+        """
+        return self.event_type == 'timer'
+
+    def tick(self):
+        """
+        Return the current tick index of a timer event.
+
+        Returns
+        -------
+        int
+            The tick index, starting from 0.
+        """
+        if self.is_timer():
+            return self.c_ev.step_idx
+
+    def time(self):
+        """
+        Return the current time of the event in seconds.
+
+        Returns
+        -------
+        float
+            The time in seconds since the start of the timer.
+        """
+        return self.c_ev.time

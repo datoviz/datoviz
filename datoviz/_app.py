@@ -1372,7 +1372,7 @@ class App:
             @dvz.on_timer
             def on_timer(app, window_id, ev_):
                 ev = ev_.contents
-                fun(ev)
+                fun(Event(ev, 'timer'))
 
             dvz.app_on_timer(self.c_app, on_timer, None)
             self._callbacks.append(on_timer)
