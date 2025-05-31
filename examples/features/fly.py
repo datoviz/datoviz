@@ -1,7 +1,11 @@
 """
 # Fly
 
-Show how to manipulate an arcball.
+Show how to manipulate a fly camera controller.
+
+- Left mouse drag: Look around (yaw/pitch)
+- Right mouse drag: Move the camera left/right and up/down
+- Arrow keys: Move in view direction (up/down) or strafe (left/right)
 
 ---
 tags:
