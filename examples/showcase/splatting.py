@@ -23,6 +23,7 @@ tags:
   - basic
   - splatting
   - fly
+  - orbit
 in_gallery: true
 make_screenshot: true
 ---
@@ -33,29 +34,42 @@ import numpy as np
 
 import datoviz as dvz
 
-data = np.load(dvz.download_data('misc/garden.npz'))
-position = data['position']
-color = data['color']
 
-# Data transformation
-position[:, 0] *= -1
-position[:, 1] *= -1
-position[:, 1] += 0.5
-position[:, 2] -= 1
-angle = -0.5
-rot = np.array(
-    [
-        [1, 0, 0],
-        [0, np.cos(angle), -np.sin(angle)],
-        [0, np.sin(angle), np.cos(angle)],
-    ]
-)
-position = position @ rot
+def load_data(filepath):
+    data = np.load(filepath)
+    position = data['position']
+    color = data['color']
+
+    # Data transformation
+    position[:, 0] *= -1
+    position[:, 1] *= -1
+    position[:, 0] += 0.30
+    position[:, 1] += 0.5
+    position[:, 2] -= 0.5
+    angle = -0.5
+    rot = np.array(
+        [
+            [1, 0, 0],
+            [0, np.cos(angle), -np.sin(angle)],
+            [0, np.sin(angle), np.cos(angle)],
+        ]
+    )
+    position = position @ rot
+
+    return position, color
+
+
+# Use either interactive fly camera or orbit animation
+ORBIT = True
+
+position, color = load_data(dvz.download_data('misc/garden.npz'))
 
 app = dvz.App()
 figure = app.figure()
 panel = figure.panel()
-arcball = panel.fly()
+if not ORBIT:
+    fly = panel.fly()
+camera = panel.camera(initial=(-3, 1, 3))
 
 visual = app.basic(
     'triangle_list',
@@ -64,6 +78,9 @@ visual = app.basic(
     depth_test=True,
 )
 panel.add(visual)
+
+if ORBIT:
+    panel.orbit(period=20)
 
 app.run()
 app.destroy()
