@@ -8346,6 +8346,21 @@ app_timer.restype = ctypes.POINTER(DvzTimerItem)
 
 
 # -------------------------------------------------------------------------------------------------
+app_timer_clear = dvz.dvz_app_timer_clear
+app_timer_clear.__doc__ = """
+Stop and remove all timers.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_timer_clear.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+
+# -------------------------------------------------------------------------------------------------
 app_on_timer = dvz.dvz_app_on_timer
 app_on_timer.__doc__ = """
 Register a timer callback.

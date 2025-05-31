@@ -269,6 +269,7 @@ dvz_app_screenshot
 dvz_app_stop
 dvz_app_submit
 dvz_app_timer
+dvz_app_timer_clear
 dvz_app_timestamps
 dvz_app_wait
 dvz_free
