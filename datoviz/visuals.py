@@ -1907,7 +1907,7 @@ class Mesh(Visual):
         texture : Texture
             The texture object.
         """
-        dvz.image_texture(self.c_visual, texture.c_texture)
+        dvz.mesh_texture(self.c_visual, texture.c_texture)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -2110,7 +2110,7 @@ class Volume(Visual):
         texture : Texture
             The texture object.
         """
-        dvz.image_texture(self.c_visual, texture.c_texture)
+        dvz.volume_texture(self.c_visual, texture.c_texture)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -2176,4 +2176,4 @@ class Slice(Visual):
         texture : Texture
             The texture object.
         """
-        dvz.image_texture(self.c_visual, texture.c_texture)
+        dvz.slice_texture(self.c_visual, texture.c_texture)
