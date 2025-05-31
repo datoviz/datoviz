@@ -1260,6 +1260,15 @@ void dvz_panel_update(DvzPanel* panel)
     if (panel->arcball)
         _update_arcball(panel);
 
+    // Update the axes if any.
+    if (panel->axes != NULL && panel->panzoom != NULL)
+    {
+        DvzRef* ref = dvz_panel_ref(panel);
+        ANN(ref);
+        dvz_axes_resize(panel->axes, panel->view);
+        dvz_axes_update(panel->axes, ref, panel->panzoom, false);
+    }
+
     DvzTransform* tr = panel->transform;
     if (tr == NULL)
     {
