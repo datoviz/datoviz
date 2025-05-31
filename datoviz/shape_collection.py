@@ -170,6 +170,9 @@ class ShapeCollection:
         self.c_shapes = []
         self.c_merged = None
 
+    # Common methods
+    # ---------------------------------------------------------------------------------------------
+
     def vertex_count(self) -> int:
         """
         Get the total number of vertices in the collection.
@@ -222,6 +225,52 @@ class ShapeCollection:
         _shape_transform(c_shape, offset=offset, scale=scale, transform=transform)
         self.c_shapes.append(c_shape)
 
+    def transform(
+        self,
+        offset: Tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ):
+        """
+        Transform the shape collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
+        if self.c_merged:
+            _shape_transform(self.c_merged, offset=offset, scale=scale, transform=transform)
+        else:
+            for s in self.c_shapes:
+                _shape_transform(s, offset=offset, scale=scale, transform=transform)
+
+    def merge(self) -> None:
+        """
+        Merge all shapes in the collection into a single shape.
+        """
+        self.c_merged = merge_shapes(self.c_shapes)
+
+    def destroy(self) -> None:
+        """
+        Destroy all shapes in the collection and release resources.
+        """
+        for c_shape in self.c_shapes:
+            if c_shape:
+                # print("destroy shape", c_shape)
+                dvz.shape_destroy(c_shape)
+
+        if self.c_merged:
+            # print("destroy merged", self.c_merged)
+            dvz.shape_destroy(self.c_merged)
+
+    # Prebuilt shapes
+    # ---------------------------------------------------------------------------------------------
+
     def add_custom(
         self,
         positions: np.ndarray,
@@ -266,6 +315,35 @@ class ShapeCollection:
             indices.size if indices is not None else 0,
             indices,
         )
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
+    def add_obj(
+        self,
+        file_path: str,
+        contour: str = None,
+        offset: Tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ) -> None:
+        """
+        Add a shape from an OBJ file to the collection.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the OBJ file.
+        contour : str, optional
+            The contour type to apply, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
+        c_shape = dvz.shape()
+        dvz.shape_obj(c_shape, file_path)
+        dvz.shape_unindex(c_shape, to_enum(f'contour_{contour}'))
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
     def add_square(
@@ -851,51 +929,3 @@ class ShapeCollection:
             unindex(c_shape, contour=contour, indexing=indexing)
 
         self.add(c_shape, scale=scale, transform=transform)
-
-    def add_obj(
-        self,
-        file_path: str,
-        contour: str = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-    ) -> None:
-        """
-        Add a shape from an OBJ file to the collection.
-
-        Parameters
-        ----------
-        file_path : str
-            The path to the OBJ file.
-        contour : str, optional
-            The contour type to apply, by default None.
-        offset : tuple of float, optional
-            The (x, y, z) offset to apply, by default None.
-        scale : float, optional
-            The scale factor to apply, by default None.
-        transform : Mat4, optional
-            A 4x4 transformation matrix, by default None.
-        """
-        c_shape = dvz.shape()
-        dvz.shape_obj(c_shape, file_path)
-        dvz.shape_unindex(c_shape, to_enum(f'contour_{contour}'))
-        self.add(c_shape, offset=offset, scale=scale, transform=transform)
-
-    def merge(self) -> None:
-        """
-        Merge all shapes in the collection into a single shape.
-        """
-        self.c_merged = merge_shapes(self.c_shapes)
-
-    def destroy(self) -> None:
-        """
-        Destroy all shapes in the collection and release resources.
-        """
-        for c_shape in self.c_shapes:
-            if c_shape:
-                # print("destroy shape", c_shape)
-                dvz.shape_destroy(c_shape)
-
-        if self.c_merged:
-            # print("destroy merged", self.c_merged)
-            dvz.shape_destroy(self.c_merged)
