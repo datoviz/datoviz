@@ -6,6 +6,7 @@ Show how to stop the application while it is running.
 ---
 tags:
   - stop
+  - timer
 in_gallery: true
 make_screenshot: false
 ---

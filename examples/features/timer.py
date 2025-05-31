@@ -19,7 +19,7 @@ color = [255, 255, 255, 255]
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 visual = app.glyph(font_size=84)
 visual.set_strings(['Starting timer...'], color=color)
 panel.add(visual)
