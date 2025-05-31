@@ -1194,23 +1194,6 @@ class App:
         """Not implemented yet."""
         raise NotImplementedError()
 
-    # GUI
-    # ---------------------------------------------------------------------------------------------
-
-    def arcball_gui(self, panel, arcball) -> None:
-        """
-        Attach an arcball GUI to a panel.
-
-        Parameters
-        ----------
-        panel : Panel
-            Panel instance.
-        arcball : Arcball
-            Arcball instance.
-        """
-        c_figure = panel._figure.c_figure
-        dvz.arcball_gui(arcball.c_arcball, self.c_app, dvz.figure_id(c_figure), panel.c_panel)
-
     # Events
     # ---------------------------------------------------------------------------------------------
 
