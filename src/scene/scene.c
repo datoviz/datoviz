@@ -23,6 +23,7 @@
 #include "scene/axes.h"
 #include "scene/baker.h"
 #include "scene/camera.h"
+#include "scene/fly.h"
 #include "scene/graphics.h"
 #include "scene/ortho.h"
 #include "scene/panzoom.h"
@@ -597,6 +598,11 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
         dvz_transform_update(panel->transform);
     }
 
+    if (panel->fly != NULL)
+    {
+        dvz_fly_resize(panel->fly, width, height);
+    }
+
     if (panel->ortho != NULL)
     {
         // NOTE: for the ortho, we also need to update the MVP struct on the GPU because the
@@ -760,9 +766,6 @@ DvzOrtho* dvz_panel_ortho(DvzPanel* panel, int flags)
         return NULL;
     }
 
-    ASSERT(panel->view->shape[0] > 0);
-    ASSERT(panel->view->shape[1] > 0);
-
     log_trace("create a new Ortho instance");
 
     float w = panel->view->shape[0];
@@ -817,6 +820,41 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel, int flags)
     DvzCamera* camera = dvz_panel_camera(panel, DVZ_CAMERA_FLAGS_PERSPECTIVE);
 
     return panel->arcball;
+}
+
+
+
+DvzFly* dvz_panel_fly(DvzPanel* panel, int flags)
+{
+    ANN(panel);
+    ANN(panel->view);
+    ANN(panel->figure);
+
+    DvzScene* scene = panel->figure->scene;
+    ANN(scene);
+
+    if (panel->fly != NULL)
+        return panel->fly;
+
+    if (panel->transform != NULL)
+    {
+        log_error("could not create a fly camera as the panel has already a transform");
+        return NULL;
+    }
+
+    log_trace("create a new Fly camera instance");
+    panel->fly = dvz_fly(flags);
+
+    // Create perspective camera if not exists
+    if (panel->camera == NULL)
+    {
+        panel->camera = dvz_panel_camera(panel, DVZ_CAMERA_FLAGS_PERSPECTIVE);
+    }
+
+    panel->transform = dvz_transform(scene->batch, 0);
+    panel->transform_to_destroy = true;
+
+    return panel->fly;
 }
 
 
@@ -993,6 +1031,7 @@ static void _update_panzoom(DvzPanel* panel)
 }
 
 
+
 static void _update_ortho(DvzPanel* panel)
 {
     ANN(panel);
@@ -1007,6 +1046,7 @@ static void _update_ortho(DvzPanel* panel)
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_ortho_mvp(ortho, mvp);
 }
+
 
 
 static void _update_arcball(DvzPanel* panel)
@@ -1038,6 +1078,32 @@ static void _update_camera(DvzPanel* panel)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_camera_mvp(camera, mvp); // set the model matrix
+}
+
+
+
+static void _update_fly(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzFly* fly = panel->fly;
+    ANN(fly);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+
+    // Get vectors from fly camera
+    vec3 pos = {0}, lookat = {0}, up = {0};
+    dvz_fly_get_position(fly, pos);
+    dvz_fly_get_lookat(fly, lookat);
+    dvz_fly_get_up(fly, up);
+
+    // Update camera
+    dvz_camera_position(panel->camera, pos);
+    dvz_camera_lookat(panel->camera, lookat);
+    dvz_camera_up(panel->camera, up);
+
+    _update_camera(panel);
 }
 
 
@@ -1621,6 +1687,66 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         dvz_transform_update(tr);
         _update_linked_panels(panel);
     }
+
+    // Fly camera
+    DvzFly* fly = panel->fly;
+    if (fly != NULL)
+    {
+        DvzTransform* tr = panel->transform;
+        if (tr == NULL)
+        {
+            log_warn("no transform set in panel");
+            return;
+        }
+
+        // Pass events to fly controller
+        if (dvz_fly_mouse(fly, &mev))
+        {
+            _update_fly(panel);
+            dvz_transform_update(tr);
+            _update_linked_panels(panel);
+        }
+    }
+}
+
+
+
+static void _scene_on_keyboard(DvzApp* app, DvzId window_id, DvzKeyboardEvent* ev)
+{
+    ANN(app);
+
+    DvzScene* scene = (DvzScene*)ev->user_data;
+    ANN(scene);
+
+    DvzFigure* fig = dvz_scene_figure(scene, window_id);
+    ANN(fig);
+
+    // Find active panel (one with focus, or first with fly camera for now)
+    // TODO: add a notion of currently active panel
+    uint32_t n = dvz_list_count(fig->panels);
+    DvzPanel* panel = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        panel = (DvzPanel*)dvz_list_get(fig->panels, i).p;
+        if (panel != NULL && panel->fly != NULL)
+        {
+            DvzTransform* tr = panel->transform;
+            if (tr == NULL)
+            {
+                log_warn("no transform set in panel");
+                return;
+            }
+
+            // Pass keyboard event to fly controller
+            if (dvz_fly_keyboard(panel->fly, ev))
+            {
+                _update_fly(panel);
+                dvz_transform_update(tr);
+                _update_linked_panels(panel);
+            }
+            break;
+        }
+    }
 }
 
 
@@ -1642,6 +1768,7 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
         dvz_app_on_mouse(app, _scene_on_mouse, scene);
         dvz_app_on_resize(app, _scene_onresize, scene);
         dvz_app_on_frame(app, _scene_onframe, scene);
+        dvz_app_on_keyboard(app, _scene_on_keyboard, scene);
 
         // Initial build of the scene.
         // NOTE: this call will mark the scene as dvz_obj_created().
@@ -1668,6 +1795,9 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
                 ANN(panel);
                 ANN(panel->view);
 
+                if (panel->fly)
+                    _update_fly(panel);
+                dvz_transform_update(panel->transform);
                 _update_linked_panels(panel);
 
                 // Only register the GUI panels callback if the figure has at least one GUI panel.

@@ -59,6 +59,7 @@ typedef struct DvzBatch DvzBatch;
 typedef struct DvzBox DvzBox;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzFigure DvzFigure;
+typedef struct DvzFly DvzFly;
 typedef struct DvzFont DvzFont;
 typedef struct DvzKeyboard DvzKeyboard;
 typedef struct DvzMouse DvzMouse;
@@ -721,6 +722,17 @@ DVZ_EXPORT DvzOrtho* dvz_panel_ortho(DvzPanel* panel, int flags);
  * @returns the arcball
  */
 DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel, int flags);
+
+
+
+/**
+ * Set fly interactivity for a panel.
+ *
+ * @param panel the panel
+ * @param flags the flags
+ * @returns the fly
+ */
+DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel, int flags);
 
 
 
@@ -2084,7 +2096,7 @@ DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Arcball                                                                                      */
 /*************************************************************************************************/
 
 /**
@@ -2222,6 +2234,165 @@ DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
  */
 DVZ_EXPORT
 void dvz_arcball_gui(DvzArcball* arcball, DvzApp* app, DvzId canvas_id, DvzPanel* panel);
+
+
+
+/*************************************************************************************************/
+/*  Fly                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Create a fly camera controller.
+ *
+ * @param flags the fly camera controller flags
+ * @returns the fly camera controller
+ */
+DVZ_EXPORT DvzFly* dvz_fly(int flags);
+
+
+
+/**
+ * Reset a fly camera to its initial position and orientation.
+ *
+ * @param fly the fly camera controller
+ */
+DVZ_EXPORT void dvz_fly_reset(DvzFly* fly);
+
+
+
+/**
+ * Inform a fly camera of a panel resize.
+ *
+ * @param fly the fly
+ * @param width the panel width
+ * @param height the panel height
+ */
+DVZ_EXPORT void dvz_fly_resize(DvzFly* fly, float width, float height);
+
+
+
+/**
+ * Set the initial position and orientation of a fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param position the initial position
+ * @param yaw the initial yaw angle (rotation around Y axis)
+ * @param pitch the initial pitch angle (rotation around X axis)
+ * @param roll the initial roll angle (rotation around Z/view axis)
+ */
+DVZ_EXPORT void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll);
+
+
+
+/**
+ * Move the fly camera forward or backward along its view direction.
+ *
+ * @param fly the fly camera controller
+ * @param amount the movement amount (positive for forward, negative for backward)
+ */
+DVZ_EXPORT void dvz_fly_move_forward(DvzFly* fly, float amount);
+
+
+
+/**
+ * Move the fly camera right or left perpendicular to its view direction.
+ *
+ * @param fly the fly camera controller
+ * @param amount the movement amount (positive for right, negative for left)
+ */
+DVZ_EXPORT void dvz_fly_move_right(DvzFly* fly, float amount);
+
+
+
+/**
+ * Move the fly camera up or down along its up vector.
+ *
+ * @param fly the fly camera controller
+ * @param amount the movement amount (positive for up, negative for down)
+ */
+DVZ_EXPORT void dvz_fly_move_up(DvzFly* fly, float amount);
+
+
+
+/**
+ * Rotate the fly camera's view direction (yaw and pitch).
+ *
+ * @param fly the fly camera controller
+ * @param dx the horizontal rotation amount
+ * @param dy the vertical rotation amount
+ */
+DVZ_EXPORT void dvz_fly_rotate(DvzFly* fly, float dx, float dy);
+
+
+
+/**
+ * Roll the fly camera around its view direction.
+ *
+ * @param fly the fly camera controller
+ * @param dx the roll amount
+ */
+DVZ_EXPORT void dvz_fly_roll(DvzFly* fly, float dx);
+
+
+
+/**
+ * Get the current position of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param[out] out_pos the current position
+ */
+DVZ_EXPORT void dvz_fly_get_position(DvzFly* fly, vec3 out_pos);
+
+
+
+/**
+ * Get the current lookat point of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param[out] out_lookat the current lookat point
+ */
+DVZ_EXPORT void dvz_fly_get_lookat(DvzFly* fly, vec3 out_lookat);
+
+
+
+/**
+ * Get the current up vector of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param[out] out_up the current up vector
+ */
+DVZ_EXPORT void dvz_fly_get_up(DvzFly* fly, vec3 out_up);
+
+
+
+/**
+ * Process a mouse event for the fly camera controller.
+ *
+ * @param fly the fly camera controller
+ * @param ev the mouse event
+ * @returns whether the event was handled by the fly camera
+ */
+DVZ_EXPORT bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev);
+
+
+
+/**
+ * Process a keyboard event for the fly camera controller.
+ *
+ * @param fly the fly camera controller
+ * @param ev the keyboard event
+ * @returns whether the event was handled by the fly camera
+ */
+DVZ_EXPORT bool dvz_fly_keyboard(DvzFly* fly, DvzKeyboardEvent* ev);
+
+
+
+/**
+ * Destroy a fly camera controller.
+ *
+ * @param fly the fly camera controller
+ */
+DVZ_EXPORT void dvz_fly_destroy(DvzFly* fly);
 
 
 

@@ -182,6 +182,16 @@ typedef enum
 
 
 
+// Fly flags.
+typedef enum
+{
+    DVZ_FLY_FLAGS_NONE = 0x0000,
+    DVZ_FLY_FLAGS_INVERT_MOUSE = 0x0001,
+    DVZ_FLY_FLAGS_FIXED_UP = 0x0002,
+} DvzFlyFlags;
+
+
+
 // Panzoom flags.
 typedef enum
 {
