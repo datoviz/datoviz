@@ -5,7 +5,7 @@
 [**[User guide]**](https://datoviz.org/guide/) &nbsp;
 [**[Gallery]**](https://datoviz.org/gallery/) &nbsp;
 
-<!-- INTRODUCTION -->
+
 
 **⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
 
@@ -23,7 +23,6 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 > Datoviz is a young library. The API is stabilizing, but breaking changes may still occur as the project evolves with broader usage.
 
 
-<!-- FEATURES -->
 
 ## ✨ Current features
 
@@ -37,7 +36,6 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-<!-- API PHILOSOPHY -->
 
 ## 🧩 API philosophy
 
@@ -46,7 +44,22 @@ Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()
 A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
 
 
-<!-- CURRENT STATUS -->
+
+## 🔍 Comparison with other libraries
+
+### 🐍 Matplotlib
+
+Datoviz is much younger and more focused than Matplotlib. As stated above, it does not provide a high-level plotting API.
+
+While Matplotlib provides an extensive and mature ecosystem, Datoviz offers a modern alternative for performance-critical use cases — rendering millions of points with ease. For quick exploratory plots or static figures, Matplotlib remains the go-to; for responsive, high-performance scientific graphics, Datoviz provides a compelling lower-level option.
+
+### 🧊 VTK
+
+Datoviz is lighter, simpler, and easier to install than VTK. It compiles in seconds, has minimal dependencies, and focuses exclusively on real-time rendering of visual primitives. Unlike VTK, it does not include data file I/O (except minimal test loaders like `.obj`), computational geometry, or data processing.
+
+VTK is a powerful, heavyweight toolkit for 3D visualization, simulation, and scientific computing workflows. In contrast, Datoviz is designed for fast, high-quality 2D and 3D rendering.
+
+
 
 ## 🕐 Current status [May 2025]
 
@@ -54,9 +67,6 @@ A [higher-level plotting interface is under development as part of **VisPy 2.0**
 This release introduces major updates over v0.2, including 2D axes and a new Pythonic API.
 
 
-
-
-<!-- ROADMAP -->
 
 ## 🕐 Roadmap [May 2025]
 
@@ -76,7 +86,6 @@ Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on fo
 * 🌐 WebGPU backend
 
 
-<!-- INSTALLATION -->
 
 ## 🛠️ Installation instructions
 
@@ -106,7 +115,6 @@ This installs a Python wheel that includes the C library, precompiled for your s
 If the installation fails, you may need to [build from source](BUILD.md) or [open an issue](https://github.com/datoviz/datoviz/issues) to request support for your configuration.
 
 
-<!-- DOCUMENTATION -->
 
 ## 🚀 Usage
 
@@ -158,6 +166,7 @@ app.destroy()
 * [**🛠️ Maintainers** instructions](https://datoviz.org/discussions/MAINTAINERS/)
 
 
+
 ## 🕰️ History
 
 Datoviz builds on more than a decade of open-source GPU-based scientific visualization work:
@@ -179,14 +188,17 @@ Datoviz remains closely tied to **VisPy** and is being developed by one of its o
 The long-term vision is to enable high-performance 2D/3D scientific visualization across platforms (desktop, web, cloud) and languages (C/C++, Python, Julia, Rust).
 
 
+
 ## 🤝 Contributing
 
 See the [contributing notes](CONTRIBUTING.md).
 
 
+
 ## 📄 License
 
 See the [MIT license](LICENSE).
+
 
 
 ## 🙏 Credits

@@ -1,7 +1,5 @@
 # Datoviz: high-performance rendering for scientific data visualization
 
-<!-- INTRODUCTION -->
-
 **⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
 
 It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
@@ -19,7 +17,6 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
     Datoviz is a young library. The API is stabilizing, but breaking changes may still occur as the project evolves with broader usage.
 
 
-<!-- FEATURES -->
 
 ## ✨ Current features
 
@@ -33,7 +30,6 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-<!-- API PHILOSOPHY -->
 
 ## 🧩 API philosophy
 
@@ -42,7 +38,8 @@ Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()
 A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
 
 
-## Get started
+
+## 🚀 Get started
 
 - 👉 **[Quickstart guide](quickstart.md)** — create your first scatter plot in a few lines of code
 - 📚 **[Learn](guide/index.md)** — deep dive into visuals, layout, interactivity, and more
@@ -50,7 +47,8 @@ A [higher-level plotting interface is under development as part of **VisPy 2.0**
 - 🧩 **[API Reference](reference/api_py.md)** — full Python and C documentation
 
 
-## Installation
+
+## 🛠️ Installation
 
 Datoviz runs out of the box on all major platforms:
 
@@ -67,6 +65,7 @@ pip install datoviz
 To use the C library directly, see the [build instructions](discussions/BUILD.md).
 
 
-## License
+
+## 📄 License
 
 Datoviz is open source and licensed under the [MIT License](discussions/LICENSE.md).
