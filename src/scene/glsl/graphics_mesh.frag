@@ -12,10 +12,10 @@
 
 // mvp --> slot 0
 // viewport --> slot 1
-#define MESH_SLOT_LIGHT 2
+#define MESH_SLOT_LIGHT    2
 #define MESH_SLOT_MATERIAL 3
-#define MESH_SLOT_CONTOUR 4
-#define MESH_SLOT_TEX 5
+#define MESH_SLOT_CONTOUR  4
+#define MESH_SLOT_TEX      5
 
 layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
@@ -40,26 +40,21 @@ layout(location = 0) out vec4 out_color;
 
 
 // Only used here.
-struct Mesh_Contour {
-    vec4 edgecolor;      /* r, g, b, a */
-    float linewidth;     /* contour line width */
-    int isoline_count;   /* number of isolines */
+struct MeshContour
+{
+    vec4 edgecolor;    /* r, g, b, a */
+    float linewidth;   /* contour line width */
+    int isoline_count; /* number of isolines */
 };
 
 
-layout(std140, binding = MESH_SLOT_LIGHT) uniform u_light {
-    Light light;
-};
+layout(std140, binding = MESH_SLOT_LIGHT) uniform u_light { Light light; };
 
 
-layout(std140, binding = MESH_SLOT_MATERIAL) uniform u_material {
-    Material material;
-};
+layout(std140, binding = MESH_SLOT_MATERIAL) uniform u_material { Material material; };
 
 
-layout(std140, binding = MESH_SLOT_CONTOUR) uniform u_contour {
-    Mesh_Contour contour;
-};
+layout(std140, binding = MESH_SLOT_CONTOUR) uniform u_contour { MeshContour contour; };
 
 
 layout(binding = MESH_SLOT_TEX) uniform sampler2D tex;
@@ -184,7 +179,8 @@ void main()
     vec3 normal = normalize(in_normal);
 
     // DEBUG: there are no cases where the normal can be unset.
-    if (length(normal) < 1e-6) {
+    if (length(normal) < 1e-6)
+    {
         out_color = vec4(1, 0, 0, 1);
         return;
     }
@@ -195,6 +191,8 @@ void main()
     {
         // in this case, in_uvcolor.xy is uv coordinates
         color = texture(tex, in_uvcolor.xy);
+        // uvcolor.a contains the alpha component.
+        color.a *= in_uvcolor.a;
     }
     // Color.
     else
