@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from ._app import App
     from ._figure import Figure
 
+
 from . import _constants as cst
 from . import _ctypes as dvz
 from ._axes import Axes
@@ -221,6 +222,8 @@ class Panel:
                 dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
                 self.update()
             self._arcball = Arcball(c_arcball, self.c_panel)
+        # Also create the camera.
+        self.camera()
         return self._arcball
 
     def camera(
@@ -286,7 +289,39 @@ class Panel:
         if not self._fly:
             c_fly = dvz.panel_fly(self.c_panel, c_flags)
             self._fly = Fly(c_fly, self.c_panel)
+        # Also create the camera.
+        self.camera()
         return self._fly
+
+    def orbit(
+        self,
+        center: Tuple[float, float, float] = (0, 0, 0),
+        axis: Tuple[float, float, float] = (0, 1, 0),
+        period: float = 5.0,
+    ):
+        """
+        Continuously orbits the camera around a fixed center point.
+
+        Parameters
+        ----------
+        center : Tuple[float, float, float]
+            The point around which the camera orbits.
+        axis : Tuple[float, float, float]
+            The axis around which the camera orbits.
+        period : float, optional
+            Duration of one full orbit in seconds.
+        """
+        axis = dvz.vec3(*axis)
+        center = dvz.vec3(*center)
+        pos_init = dvz.vec3(*self._camera.position())
+        pos = dvz.vec3(0)
+
+        self._camera.set(lookat=center)
+
+        @self._app.timer(period=1 / 60, max_count=0)
+        def _orbit_event(ev):
+            dvz.circular_3D(pos_init, center, axis, 1 * ev.time() / period, pos)
+            self._camera.set(position=pos)
 
     # Axes
     # ---------------------------------------------------------------------------------------------
