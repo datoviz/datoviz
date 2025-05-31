@@ -1703,6 +1703,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         if (dvz_fly_mouse(fly, &mev))
         {
             _update_fly(panel);
+            _update_camera(panel);
             dvz_transform_update(tr);
             _update_linked_panels(panel);
         }

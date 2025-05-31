@@ -171,8 +171,8 @@ void dvz_fly_rotate(DvzFly* fly, float dx, float dy)
     }
 
     // Set absolute angles based on displacement from press position
-    fly->yaw = fly->yaw_init + dx;
-    fly->pitch = fly->pitch_init + dy;
+    fly->yaw = fly->yaw + dx;
+    fly->pitch = fly->pitch + dy;
 
     // Constrain pitch to avoid gimbal lock
     fly->pitch = CLIP(fly->pitch, -M_PI_2 + 0.1, M_PI_2 - 0.1);
@@ -230,24 +230,24 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
 
     switch (ev->type)
     {
-    case DVZ_MOUSE_EVENT_PRESS:
-        if (ev->button == DVZ_MOUSE_BUTTON_LEFT || ev->button == DVZ_MOUSE_BUTTON_RIGHT)
-        {
-            // Store initial angles at press
-            fly->yaw_init = fly->yaw;
-            fly->pitch_init = fly->pitch;
-            fly->roll_init = fly->roll;
-            return true;
-        }
-        break;
+        // case DVZ_MOUSE_EVENT_PRESS:
+        //     if (ev->button == DVZ_MOUSE_BUTTON_LEFT || ev->button == DVZ_MOUSE_BUTTON_RIGHT)
+        //     {
+        //         // Store initial angles at press
+        //         fly->yaw_init = fly->yaw;
+        //         fly->pitch_init = fly->pitch;
+        //         fly->roll_init = fly->roll;
+        //         return true;
+        //     }
+        //     break;
 
     case DVZ_MOUSE_EVENT_DRAG:
         if (ev->button == DVZ_MOUSE_BUTTON_LEFT)
         {
             // Calculate the normalized displacement from press position.
-            float dx = DVZ_FLY_MOUSE_SPEED * (ev->pos[0] - ev->content.d.press_pos[0]) /
+            float dx = DVZ_FLY_MOUSE_SPEED * (ev->pos[0] - ev->content.d.last_pos[0]) /
                        fly->viewport_size[0];
-            float dy = DVZ_FLY_MOUSE_SPEED * (ev->pos[1] - ev->content.d.press_pos[1]) /
+            float dy = DVZ_FLY_MOUSE_SPEED * (ev->pos[1] - ev->content.d.last_pos[1]) /
                        fly->viewport_size[1];
 
             // Mouse look (yaw/pitch)
@@ -264,15 +264,7 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
 
             dvz_fly_move_right(fly, dx);
             dvz_fly_move_up(fly, dy);
-            // float roll = fly->roll_init + dx * M_PI;
 
-            // // Normalize roll angle to [-PI, PI]
-            // if (roll > M_PI)
-            //     roll -= 2 * M_PI;
-            // if (roll < -M_PI)
-            //     roll += 2 * M_PI;
-
-            // fly->roll = roll;
             return true;
         }
         break;
