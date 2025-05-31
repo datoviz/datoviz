@@ -6390,27 +6390,21 @@ Generate a 3D circular motion.
 
 Parameters
 ----------
+pos_init : Tuple[float, float, float]
+    the initial position
 center : Tuple[float, float, float]
-    the circle center
-u : Tuple[float, float, float]
-    the first 3D vector defining the plane containing the circle
-v : Tuple[float, float, float]
-    the second 3D vector defining the plane containing the circle
-radius : float
-    the circle radius
-angle : float
-    the initial angle
+    the center position
+axis : Tuple[float, float, float]
+    the axis around which to rotate
 t : float
-    the normalized value
+    the normalized value (1 = full circle)
 out : Out[Tuple[float, float, float]] (out parameter)
     the 3D position
 """
 circular_3D.argtypes = [
+    vec3,  # vec3 pos_init
     vec3,  # vec3 center
-    vec3,  # vec3 u
-    vec3,  # vec3 v
-    ctypes.c_float,  # float radius
-    ctypes.c_float,  # float angle
+    vec3,  # vec3 axis
     ctypes.c_float,  # float t
     vec3,  # out vec3 out
 ]
