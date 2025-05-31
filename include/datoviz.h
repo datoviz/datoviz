@@ -2046,16 +2046,13 @@ DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t,
 /**
  * Generate a 3D circular motion.
  *
- * @param center the circle center
- * @param u the first 3D vector defining the plane containing the circle
- * @param v the second 3D vector defining the plane containing the circle
- * @param radius the circle radius
- * @param angle the initial angle
- * @param t the normalized value
+ * @param pos_init the initial position
+ * @param center the center position
+ * @param axis the axis around which to rotate
+ * @param t the normalized value (1 = full circle)
  * @param[out] out the 3D position
  */
-DVZ_EXPORT void
-dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out);
+DVZ_EXPORT void dvz_circular_3D(vec3 pos_init, vec3 center, vec3 axis, float t, vec3 out);
 
 
 
