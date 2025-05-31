@@ -811,6 +811,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/colormaps.c"
     "src/scene/demo.c"
     "src/scene/dual.c"
+    "src/scene/fly.c"
     "src/scene/font.c"
     "src/scene/geometry.cpp"
     "src/scene/graphics.c"

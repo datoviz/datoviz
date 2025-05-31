@@ -496,6 +496,12 @@ class DvzArcballFlags(CtypesEnum):
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 1
 
 
+class DvzFlyFlags(CtypesEnum):
+    DVZ_FLY_FLAGS_NONE = 0x0000
+    DVZ_FLY_FLAGS_INVERT_MOUSE = 0x0001
+    DVZ_FLY_FLAGS_FIXED_UP = 0x0002
+
+
 class DvzPanzoomFlags(CtypesEnum):
     DVZ_PANZOOM_FLAGS_NONE = 0x00
     DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 0x01
@@ -1300,6 +1306,7 @@ DialogFlags = DvzDialogFlags
 Dim = DvzDim
 Easing = DvzEasing
 Filter = DvzFilter
+FlyFlags = DvzFlyFlags
 FontFlags = DvzFontFlags
 Format = DvzFormat
 FrontFace = DvzFrontFace
@@ -1609,6 +1616,9 @@ EASING_OUT_SINE = 2
 FILTER_CUBIC_IMG = 1000015000
 FILTER_LINEAR = 1
 FILTER_NEAREST = 0
+FLY_FLAGS_FIXED_UP = 0x0002
+FLY_FLAGS_INVERT_MOUSE = 0x0001
+FLY_FLAGS_NONE = 0x0000
 FONT_FLAGS_RGB = 0
 FONT_FLAGS_RGBA = 1
 FORMAT_B8G8R8A8_UNORM = 44
@@ -2053,6 +2063,10 @@ class DvzFifo(ctypes.Structure):
 
 
 class DvzFigure(ctypes.Structure):
+    pass
+
+
+class DvzFly(ctypes.Structure):
     pass
 
 
@@ -3984,6 +3998,30 @@ panel_arcball.argtypes = [
     ctypes.c_int,  # int flags
 ]
 panel_arcball.restype = ctypes.POINTER(DvzArcball)
+
+
+# -------------------------------------------------------------------------------------------------
+panel_fly = dvz.dvz_panel_fly
+panel_fly.__doc__ = """
+Set fly interactivity for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the flags
+
+Returns
+-------
+result : DvzFly*
+     the fly
+"""
+panel_fly.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
+]
+panel_fly.restype = ctypes.POINTER(DvzFly)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -6686,6 +6724,279 @@ arcball_gui.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly = dvz.dvz_fly
+fly.__doc__ = """
+Create a fly camera controller.
+
+Parameters
+----------
+flags : int
+    the fly camera controller flags
+
+Returns
+-------
+result : DvzFly*
+     the fly camera controller
+"""
+fly.argtypes = [
+    ctypes.c_int,  # int flags
+]
+fly.restype = ctypes.POINTER(DvzFly)
+
+
+# -------------------------------------------------------------------------------------------------
+fly_reset = dvz.dvz_fly_reset
+fly_reset.__doc__ = """
+Reset a fly camera to its initial position and orientation.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+"""
+fly_reset.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_initial = dvz.dvz_fly_initial
+fly_initial.__doc__ = """
+Set the initial position and orientation of a fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+position : Tuple[float, float, float]
+    the initial position
+yaw : float
+    the initial yaw angle (rotation around Y axis)
+pitch : float
+    the initial pitch angle (rotation around X axis)
+roll : float
+    the initial roll angle (rotation around Z/view axis)
+"""
+fly_initial.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # vec3 position
+    ctypes.c_float,  # float yaw
+    ctypes.c_float,  # float pitch
+    ctypes.c_float,  # float roll
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_move_forward = dvz.dvz_fly_move_forward
+fly_move_forward.__doc__ = """
+Move the fly camera forward or backward along its view direction.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+amount : float
+    the movement amount (positive for forward, negative for backward)
+"""
+fly_move_forward.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float amount
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_move_right = dvz.dvz_fly_move_right
+fly_move_right.__doc__ = """
+Move the fly camera right or left perpendicular to its view direction.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+amount : float
+    the movement amount (positive for right, negative for left)
+"""
+fly_move_right.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float amount
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_move_up = dvz.dvz_fly_move_up
+fly_move_up.__doc__ = """
+Move the fly camera up or down along its up vector.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+amount : float
+    the movement amount (positive for up, negative for down)
+"""
+fly_move_up.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float amount
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_rotate = dvz.dvz_fly_rotate
+fly_rotate.__doc__ = """
+Rotate the fly camera's view direction (yaw and pitch).
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+dx : float
+    the horizontal rotation amount
+dy : float
+    the vertical rotation amount
+"""
+fly_rotate.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float dx
+    ctypes.c_float,  # float dy
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_roll = dvz.dvz_fly_roll
+fly_roll.__doc__ = """
+Roll the fly camera around its view direction.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+dx : float
+    the roll amount
+"""
+fly_roll.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float dx
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_get_position = dvz.dvz_fly_get_position
+fly_get_position.__doc__ = """
+Get the current position of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+out_pos : Out[Tuple[float, float, float]] (out parameter)
+    the current position
+"""
+fly_get_position.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # out vec3 out_pos
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_get_lookat = dvz.dvz_fly_get_lookat
+fly_get_lookat.__doc__ = """
+Get the current lookat point of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+out_lookat : Out[Tuple[float, float, float]] (out parameter)
+    the current lookat point
+"""
+fly_get_lookat.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # out vec3 out_lookat
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_get_up = dvz.dvz_fly_get_up
+fly_get_up.__doc__ = """
+Get the current up vector of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+out_up : Out[Tuple[float, float, float]] (out parameter)
+    the current up vector
+"""
+fly_get_up.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # out vec3 out_up
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_mouse = dvz.dvz_fly_mouse
+fly_mouse.__doc__ = """
+Process a mouse event for the fly camera controller.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+ev : DvzMouseEvent*
+    the mouse event
+
+Returns
+-------
+result : bool
+     whether the event was handled by the fly camera
+"""
+fly_mouse.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.POINTER(DvzMouseEvent),  # DvzMouseEvent* ev
+]
+fly_mouse.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+fly_keyboard = dvz.dvz_fly_keyboard
+fly_keyboard.__doc__ = """
+Process a keyboard event for the fly camera controller.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+ev : DvzKeyboardEvent*
+    the keyboard event
+
+Returns
+-------
+result : bool
+     whether the event was handled by the fly camera
+"""
+fly_keyboard.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.POINTER(DvzKeyboardEvent),  # DvzKeyboardEvent* ev
+]
+fly_keyboard.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+fly_destroy = dvz.dvz_fly_destroy
+fly_destroy.__doc__ = """
+Destroy a fly camera controller.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+"""
+fly_destroy.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
 ]
 
 
