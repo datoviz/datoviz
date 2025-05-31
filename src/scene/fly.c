@@ -19,10 +19,15 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FLY_LOOK_SPEED  0.5f
-#define DVZ_FLY_MOVE_SPEED  5.0f
-#define DVZ_FLY_WHEEL_SPEED 0.3f
+#define DVZ_FLY_LOOK_SPEED     0.5f
+#define DVZ_FLY_MOVE_SPEED     5.0f
+#define DVZ_FLY_KEYBOARD_SPEED .25f
 
+#if OS_MACOS
+#define DVZ_FLY_WHEEL_SPEED -0.1f
+#else
+#define DVZ_FLY_WHEEL_SPEED 0.3f
+#endif
 
 
 /*************************************************************************************************/
@@ -297,16 +302,16 @@ bool dvz_fly_keyboard(DvzFly* fly, DvzKeyboardEvent* ev)
     switch (ev->key)
     {
     case DVZ_KEY_UP:
-        dvz_fly_move_forward(fly, 1.0f);
+        dvz_fly_move_forward(fly, DVZ_FLY_KEYBOARD_SPEED);
         return true;
     case DVZ_KEY_DOWN:
-        dvz_fly_move_forward(fly, -1.0f);
+        dvz_fly_move_forward(fly, -DVZ_FLY_KEYBOARD_SPEED);
         return true;
     case DVZ_KEY_LEFT:
-        dvz_fly_move_right(fly, -1.0f);
+        dvz_fly_move_right(fly, -DVZ_FLY_KEYBOARD_SPEED);
         return true;
     case DVZ_KEY_RIGHT:
-        dvz_fly_move_right(fly, 1.0f);
+        dvz_fly_move_right(fly, DVZ_FLY_KEYBOARD_SPEED);
         return true;
     default:
         break;
