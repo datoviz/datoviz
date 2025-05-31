@@ -1,5 +1,5 @@
 """
-# Fly
+# Fly camera controller
 
 Show how to manipulate a fly camera controller.
 
