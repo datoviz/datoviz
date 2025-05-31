@@ -49,6 +49,19 @@ class Panzoom:
         self.c_panzoom = c_panzoom
         self.c_panel = c_panel
 
+    def zoom(self, zx: float = 1.0, zy: float = 1.0):
+        """
+        Set the zoom factor.
+
+        Parameters
+        ----------
+        zx : float
+            The zoom factor along the X axis.
+        zy : float
+            The zoom factor along the Y axis.
+        """
+        dvz.panzoom_zoom(self.c_panzoom, dvz.vec2(zx, zy))
+
 
 class Ortho:
     """
