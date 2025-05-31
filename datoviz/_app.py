@@ -149,6 +149,10 @@ class App:
         self.run(1)
         dvz.app_screenshot(self.c_app, figure.figure_id(), png_path)
 
+    def stop(self):
+        """Stop the application."""
+        dvz.app_stop(self.c_app)
+
     def __del__(self) -> None:
         self.destroy()
 
