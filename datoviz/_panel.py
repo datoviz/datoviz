@@ -401,13 +401,6 @@ class Panel:
     def arcball_gui(self) -> None:
         """
         Attach an arcball GUI to a panel.
-
-        Parameters
-        ----------
-        panel : Panel
-            Panel instance.
-        arcball : Arcball
-            Arcball instance.
         """
         c_figure = self._figure.c_figure
         arcball = self._arcball

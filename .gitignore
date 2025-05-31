@@ -89,3 +89,5 @@ notes.md
 docs/gallery/
 api_*.md
 cleaned
+*/benchmarks/*.png
+*/benchmarks/*.json

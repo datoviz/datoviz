@@ -11,7 +11,7 @@
 
 It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
-![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
+[![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
 Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.
 
@@ -49,9 +49,22 @@ A [higher-level plotting interface is under development as part of **VisPy 2.0**
 
 ### 🐍 Matplotlib
 
-Datoviz is much younger and more focused than Matplotlib. As stated above, it does not provide a high-level plotting API.
+**Matplotlib** is the gold standard for static, publication-quality figures, with a mature, feature-rich API. But it's not optimized for interactivity or large datasets.
 
-While Matplotlib provides an extensive and mature ecosystem, Datoviz offers a modern alternative for performance-critical use cases — rendering millions of points with ease. For quick exploratory plots or static figures, Matplotlib remains the go-to; for responsive, high-performance scientific graphics, Datoviz provides a compelling lower-level option.
+**Datoviz**, in contrast, is a younger, GPU-based library designed for fast, interactive visualization. It lacks Matplotlib’s high-level API but excels at rendering millions of points in real time.
+
+Use **Matplotlib** for polished static plots, **Datoviz** for responsive data exploration.
+
+#### Preliminary performance benchmark
+
+The figure below shows a preliminary [**performance benchmark**](https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py) comparing Datoviz and Matplotlib on an interactive 2D scatter plot, with increasing numbers of points and a simulated zoom interaction:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/datoviz/data/master/screenshots/benchmark.png" alt="Datoviz vs Matplotlib benchmark" width="800">
+</p>
+
+In this benchmark, **Datoviz outperforms Matplotlib by a factor of 20× to over 2000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
+
 
 ### 🧊 VTK
 
