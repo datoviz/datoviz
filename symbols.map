@@ -59,6 +59,7 @@ dvz_fly_move_forward
 dvz_fly_move_right
 dvz_fly_move_up
 dvz_fly_reset
+dvz_fly_resize
 dvz_fly_roll
 dvz_fly_rotate
 dvz_font
@@ -265,6 +266,7 @@ dvz_app_on_resize
 dvz_app_on_timer
 dvz_app_run
 dvz_app_screenshot
+dvz_app_stop
 dvz_app_submit
 dvz_app_timer
 dvz_app_timestamps

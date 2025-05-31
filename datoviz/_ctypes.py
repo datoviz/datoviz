@@ -2253,6 +2253,7 @@ class DvzMouseDragEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("press_pos", vec2),
+        ("last_pos", vec2),
         ("shift", vec2),
         ("is_press_valid", ctypes.c_bool),
     ]
@@ -6764,6 +6765,27 @@ fly_reset.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+fly_resize = dvz.dvz_fly_resize
+fly_resize.__doc__ = """
+Inform a fly camera of a panel resize.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly
+width : float
+    the panel width
+height : float
+    the panel height
+"""
+fly_resize.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+]
+
+
+# -------------------------------------------------------------------------------------------------
 fly_initial = dvz.dvz_fly_initial
 fly_initial.__doc__ = """
 Set the initial position and orientation of a fly camera.
@@ -8465,6 +8487,21 @@ app : DvzApp*
     the app
 """
 app_wait.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+
+# -------------------------------------------------------------------------------------------------
+app_stop = dvz.dvz_app_stop
+app_stop.__doc__ = """
+Stop the app's client.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_stop.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
 
