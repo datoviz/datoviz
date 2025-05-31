@@ -19,10 +19,9 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FLY_MOVE_SPEED  0.1f
-#define DVZ_FLY_MOUSE_SPEED 0.5f
-#define DVZ_FLY_ROLL_SPEED  30.0f
-#define DVZ_FLY_WHEEL_SPEED 3.0f
+#define DVZ_FLY_LOOK_SPEED  0.5f
+#define DVZ_FLY_MOVE_SPEED  5.0f
+#define DVZ_FLY_WHEEL_SPEED 0.3f
 
 
 
@@ -124,7 +123,7 @@ void dvz_fly_move_forward(DvzFly* fly, float amount)
 
     // Move in the direction we're looking
     vec3 move;
-    glm_vec3_scale(front, amount * DVZ_FLY_MOVE_SPEED, move);
+    glm_vec3_scale(front, amount, move);
     glm_vec3_add(fly->position, move, fly->position);
 }
 
@@ -140,7 +139,7 @@ void dvz_fly_move_right(DvzFly* fly, float amount)
     vec3 right, move;
     glm_vec3_cross(front, up, right);
     glm_vec3_normalize(right);
-    glm_vec3_scale(right, amount * DVZ_FLY_MOVE_SPEED, move);
+    glm_vec3_scale(right, amount, move);
     glm_vec3_add(fly->position, move, fly->position);
 }
 
@@ -154,7 +153,7 @@ void dvz_fly_move_up(DvzFly* fly, float amount)
 
     // Move along up vector
     vec3 move;
-    glm_vec3_scale(up, amount * DVZ_FLY_MOVE_SPEED, move);
+    glm_vec3_scale(up, amount, move);
     glm_vec3_add(fly->position, move, fly->position);
 }
 
@@ -245,9 +244,9 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
         if (ev->button == DVZ_MOUSE_BUTTON_LEFT)
         {
             // Calculate the normalized displacement from press position.
-            float dx = DVZ_FLY_MOUSE_SPEED * (ev->pos[0] - ev->content.d.last_pos[0]) /
+            float dx = DVZ_FLY_LOOK_SPEED * (ev->pos[0] - ev->content.d.last_pos[0]) /
                        fly->viewport_size[0];
-            float dy = DVZ_FLY_MOUSE_SPEED * (ev->pos[1] - ev->content.d.last_pos[1]) /
+            float dy = DVZ_FLY_LOOK_SPEED * (ev->pos[1] - ev->content.d.last_pos[1]) /
                        fly->viewport_size[1];
 
             // Mouse look (yaw/pitch)
@@ -257,9 +256,9 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
         else if (ev->button == DVZ_MOUSE_BUTTON_RIGHT)
         {
             // Roll with right mouse drag (horizontal only), normalized by viewport width
-            float dx = DVZ_FLY_ROLL_SPEED * //
+            float dx = DVZ_FLY_MOVE_SPEED * //
                        (ev->pos[0] - ev->content.d.last_pos[0]) / fly->viewport_size[0];
-            float dy = -DVZ_FLY_ROLL_SPEED * //
+            float dy = -DVZ_FLY_MOVE_SPEED * //
                        (ev->pos[1] - ev->content.d.last_pos[1]) / fly->viewport_size[1];
 
             dvz_fly_move_right(fly, dx);
