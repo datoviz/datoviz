@@ -1381,6 +1381,12 @@ class App:
         dvz.app_timer(self.c_app, delay, period, max_count)
         return decorator
 
+    def clear_timers(self):
+        """
+        Stop and clear all timers.
+        """
+        dvz.app_timer_clear(self.c_app)
+
     def timestamps(self, figure: Figure, count: int) -> Tuple[np.ndarray, np.ndarray]:
         """
         Get presentation timestamps for the given figure.
