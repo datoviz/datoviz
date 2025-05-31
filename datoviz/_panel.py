@@ -265,14 +265,16 @@ class Panel:
         Add fly camera controller to the panel.
 
         Similar to first-person camera controls in 3D video games:
+
         - Left mouse drag: Look around (yaw/pitch)
-        - Right mouse drag: Roll camera
+        - Right mouse drag: Move the camera left/right and up/down
         - Arrow keys: Move in view direction (up/down) or strafe (left/right)
 
         Parameters
         ----------
         c_flags : int, optional
             Flags for the fly controller, by default 0
+
             - DVZ_FLY_FLAGS_NONE: No special behavior
             - DVZ_FLY_FLAGS_INVERT_MOUSE: Invert mouse look controls
 

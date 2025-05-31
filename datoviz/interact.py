@@ -224,8 +224,9 @@ class Fly:
     Fly camera controller.
 
     Controls:
+
         - Left mouse drag: Look around (yaw/pitch)
-        - Right mouse drag: Roll camera
+        - Right mouse drag: Move the camera left/right and up/down
         - Arrow keys: Move in view direction (up/down) or strafe (left/right)
     """
 
