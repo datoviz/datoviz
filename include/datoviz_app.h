@@ -213,6 +213,15 @@ DVZ_EXPORT void dvz_app_wait(DvzApp* app);
 
 
 /**
+ * Stop the app's client.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_stop(DvzApp* app);
+
+
+
+/**
  * Destroy the app.
  *
  * @param app the app

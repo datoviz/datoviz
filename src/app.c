@@ -596,6 +596,15 @@ void dvz_app_wait(DvzApp* app)
 
 
 
+void dvz_app_stop(DvzApp* app)
+{
+    ANN(app);
+    ANN(app->client);
+    dvz_client_stop(app->client);
+}
+
+
+
 void dvz_app_destroy(DvzApp* app)
 {
     ANN(app);
