@@ -383,6 +383,14 @@ DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t m
 
 
 
+void dvz_app_timer_clear(DvzApp* app)
+{
+    ANN(app);
+    dvz_timer_clear(app->timer);
+}
+
+
+
 void dvz_app_on_timer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data)
 {
     ANN(app);

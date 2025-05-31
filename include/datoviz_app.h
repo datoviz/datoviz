@@ -136,6 +136,15 @@ dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
 
 
 /**
+ * Stop and remove all timers.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_timer_clear(DvzApp* app);
+
+
+
+/**
  * Register a timer callback.
  *
  * @param app the app

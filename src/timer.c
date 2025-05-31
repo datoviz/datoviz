@@ -96,6 +96,15 @@ DvzTimer* dvz_timer(void)
 
 
 
+void dvz_timer_clear(DvzTimer* timer)
+{
+    ANN(timer);
+    dvz_list_clear(timer->items);
+    dvz_list_clear(timer->callbacks);
+}
+
+
+
 uint32_t dvz_timer_count(DvzTimer* timer)
 {
     ANN(timer);
