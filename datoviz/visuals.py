@@ -1177,9 +1177,15 @@ class Glyph(Visual):
             The common offset of all strings, by default (0, 0).
         """
         assert strings
-        assert string_pos is not None
-        assert scales is not None
+
         string_count = len(strings)
+
+        if string_pos is None:
+            string_pos = np.zeros((string_count, 3), dtype=np.float32)
+
+        if scales is None:
+            scales = np.ones(string_count, dtype=np.float32)
+
         dvz.glyph_strings(
             self.c_visual,
             string_count,
