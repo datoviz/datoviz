@@ -20,7 +20,7 @@ from . import _constants as cst
 from . import _ctypes as dvz
 from ._axes import Axes
 from ._constants import Vec3
-from .interact import Arcball, Camera, Ortho, Panzoom
+from .interact import Arcball, Camera, Fly, Ortho, Panzoom
 from .shape_collection import ShapeCollection
 from .utils import to_cvec4_array
 from .visuals import Point, Sphere, Visual
@@ -48,6 +48,7 @@ class Panel:
     _ortho: Ortho = None
     _arcball: Arcball = None
     _camera: Camera = None
+    _fly = None
     _axes: Axes = None
     _app: 'App' = None
     _figure: 'Figure' = None
@@ -258,6 +259,32 @@ class Panel:
                 self.update()
             self._camera = Camera(c_camera, self.c_panel)
         return self._camera
+
+    def fly(self, c_flags: int = 0) -> 'Fly':
+        """
+        Add fly camera controller to the panel.
+
+        Similar to first-person camera controls in 3D video games:
+        - Left mouse drag: Look around (yaw/pitch)
+        - Right mouse drag: Roll camera
+        - Arrow keys: Move in view direction (up/down) or strafe (left/right)
+
+        Parameters
+        ----------
+        c_flags : int, optional
+            Flags for the fly controller, by default 0
+            - DVZ_FLY_FLAGS_NONE: No special behavior
+            - DVZ_FLY_FLAGS_INVERT_MOUSE: Invert mouse look controls
+
+        Returns
+        -------
+        Fly
+            The fly camera controller instance
+        """
+        if not self._fly:
+            c_fly = dvz.panel_fly(self.c_panel, c_flags)
+            self._fly = Fly(c_fly, self.c_panel)
+        return self._fly
 
     # Axes
     # ---------------------------------------------------------------------------------------------

@@ -1208,7 +1208,7 @@ class App:
         arcball : Arcball
             Arcball instance.
         """
-        c_figure = panel.c_figure
+        c_figure = panel._figure.c_figure
         dvz.arcball_gui(arcball.c_arcball, self.c_app, dvz.figure_id(c_figure), panel.c_panel)
 
     # Events
