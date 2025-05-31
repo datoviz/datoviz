@@ -72,7 +72,9 @@ def _shape_transform(
     # TODO
     # dvz.shape_rotate(c_shape, angle, axis)
     if transform is not None:
-        dvz.shape_transform(c_shape, dvz.mat4(*transform))
+        dvz.shape_transform(
+            c_shape, dvz.mat4(*map(float, np.array(transform, dtype=np.float32).flatten()))
+        )
 
     dvz.shape_end(c_shape)
 
@@ -294,7 +296,7 @@ class ShapeCollection:
 
     def add_disc(
         self,
-        count: int,
+        count: int = DEFAULT_SIZE,
         offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
@@ -323,9 +325,9 @@ class ShapeCollection:
 
     def add_sector(
         self,
-        count: int,
-        angle_start: float,
-        angle_stop: float,
+        count: int = DEFAULT_SIZE,
+        angle_start: float = 0,
+        angle_stop: float = 2 * np.pi,
         offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,

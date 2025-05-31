@@ -12,6 +12,8 @@ SPDX-License-Identifier: MIT
 
 from typing import TYPE_CHECKING, Optional, Tuple
 
+import numpy as np
+
 if TYPE_CHECKING:
     from ._app import App
     from ._figure import Figure
@@ -327,6 +329,16 @@ class Panel:
     # ---------------------------------------------------------------------------------------------
 
     def axes(self, xlim: Tuple[float, float] = None, ylim: Tuple[float, float] = None):
+        """
+        Add 2D axes to the panel.
+
+        Parameters
+        ----------
+        xlim : Tuple[float, float], optional
+            The limits for the x-axis, by default None.
+        ylim : Tuple[float, float], optional
+            The limits for the y-axis, by default None.
+        """
         if self._axes is None:
             xlim = xlim or cst.NDC
             ylim = ylim or cst.NDC
@@ -339,6 +351,70 @@ class Panel:
 
             self._axes = Axes(c_axes, c_ref, c_panzoom, self.c_panel)
         return self._axes
+
+    # Horizontal grid in 3D
+    # ---------------------------------------------------------------------------------------------
+
+    def horizontal_grid(
+        self,
+        scale: float = cst.DEFAULT_GRID_SCALE,
+        offset: Tuple[float, float, float] = cst.DEFAULT_GRID_OFFSET,
+        transform: Tuple[
+            Tuple[float, float, float, float],
+            Tuple[float, float, float, float],
+            Tuple[float, float, float, float],
+            Tuple[float, float, float, float],
+        ] = cst.DEFAULT_GRID_TRANSFORM,
+        color: Tuple[int, int, int, int] = cst.DEFAULT_GRID_COLOR,
+        texture_size: int = cst.DEFAULT_GRID_SIZE,
+    ):
+        """
+        Add a horizontal grid texture on the y=0 plane, using a repeating pattern.
+
+        Parameters
+        ----------
+        scale : float, optional
+            Scale of the square, by default 32.
+        offset : tuple of 3 float, optional
+            Position offset of the square, by default (0, 0, -0.62).
+        transform : tuple of 4x4 float tuples, optional
+            Transformation matrix to orient the square onto the y=0 plane.
+        color : tuple of 4 int, optional
+            RGBA color of the grid lines, by default (230, 230, 230, 230).
+        texture_size : int, optional
+            Resolution of the texture, by default 64.
+        """
+        support = ShapeCollection()
+        support.add_square(scale=scale, offset=offset, transform=transform)
+
+        tex = np.zeros((texture_size, texture_size, 4), dtype=np.uint8)
+        tex[:1, :, :] = color
+        tex[:, :1, :] = color
+
+        texture = self._app.texture_2D(tex, address_mode='repeat')
+
+        k = scale * 2
+        texcoords = np.array(
+            [
+                [0, 0, 0, 1],
+                [k, 0, 0, 1],
+                [k, k, 0, 1],
+                [k, k, 0, 1],
+                [0, k, 0, 1],
+                [0, 0, 0, 1],
+            ],
+            dtype=np.float32,
+        )
+
+        self.add(
+            self._app.mesh(
+                support,
+                texcoords=texcoords,
+                texture=texture,
+                lighting=False,
+                depth_test=True,
+            )
+        )
 
     # Demo visuals
     # ---------------------------------------------------------------------------------------------

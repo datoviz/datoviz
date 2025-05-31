@@ -36,6 +36,17 @@ DEFAULT_BACKGROUND = (
     (10, 10, 20, 255),
 )
 
+DEFAULT_GRID_COLOR = (230, 230, 230, 230)
+DEFAULT_GRID_SCALE = 32
+DEFAULT_GRID_SIZE = 64
+DEFAULT_GRID_OFFSET = (0, 0, 0)
+DEFAULT_GRID_TRANSFORM = (
+    (1, 0, 0, 0),
+    (0, 0, -1, 0),
+    (0, 1, 0, 0),
+    (0, 0, 0, 1),
+)
+
 # TODO: use the C constants instead of redefining Python constants here
 DEFAULT_LIGHTING = False
 DEFAULT_LIGHT_DIR = (1.0, -1.0, -1.0, 0.0)
