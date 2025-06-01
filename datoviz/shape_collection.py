@@ -602,14 +602,14 @@ class ShapeCollection:
         dvz.shape_arrow(c_shape, count, head_length, head_radius, shaft_radius, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_guizmo(
+    def add_gizmo(
         self,
         offset: Tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
     ) -> None:
         """
-        Add a guizmo shape to the collection.
+        Add a gizmo shape to the collection.
 
         Parameters
         ----------
@@ -621,7 +621,7 @@ class ShapeCollection:
             A 4x4 transformation matrix, by default None.
         """
         c_shape = dvz.shape()
-        dvz.shape_guizmo(c_shape)
+        dvz.shape_gizmo(c_shape)
         dvz.shape_unindex(c_shape, 0)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 

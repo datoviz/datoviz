@@ -445,9 +445,9 @@ class Panel:
         visual = Sphere(c_visual)
         return visual
 
-    def guizmo(self) -> None:
+    def gizmo(self) -> None:
         """
-        Add a 3D guizmo to a 3D panel with an arcball.
+        Add a 3D gizmo to a 3D panel with an arcball.
 
         This function displays at the bottom right of the panel three 3D arrows representing
         the X (red), Y (green), and Z (blue) axes, which rotate with the arcball.
@@ -465,27 +465,27 @@ class Panel:
         offset = (w - w * a - m, h - h * a - m)
         size = (w * a, h * a)
 
-        guizmo_panel = self._figure.panel(offset=offset, size=size)
-        guizmo_panel.camera(initial=(0, 0, 3))
+        gizmo_panel = self._figure.panel(offset=offset, size=size)
+        gizmo_panel.camera(initial=(0, 0, 3))
 
-        guizmo_sc = ShapeCollection()
-        guizmo_sc.add_guizmo()
+        gizmo_sc = ShapeCollection()
+        gizmo_sc.add_gizmo()
 
-        guizmo_visual = self._app.mesh(guizmo_sc, lighting=True, depth_test=True)
-        guizmo_visual.set_light_pos((2, 2, 5))
+        gizmo_visual = self._app.mesh(gizmo_sc, lighting=True, depth_test=True)
+        gizmo_visual.set_light_pos((2, 2, 5))
 
         # Diffuse.
-        guizmo_visual.set_material_params((0.5,) * 3, idx=0)
+        gizmo_visual.set_material_params((0.5,) * 3, idx=0)
 
         # Ambient.
-        guizmo_visual.set_material_params((0.1,) * 3, idx=1)
+        gizmo_visual.set_material_params((0.1,) * 3, idx=1)
 
         # Specular.
-        guizmo_visual.set_material_params((0.1,) * 3, idx=2)
+        gizmo_visual.set_material_params((0.1,) * 3, idx=2)
 
-        guizmo_panel.add(guizmo_visual)
+        gizmo_panel.add(gizmo_visual)
 
-        self.link(guizmo_panel, model=True)
+        self.link(gizmo_panel, model=True)
 
     # GUI
     # ---------------------------------------------------------------------------------------------

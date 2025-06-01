@@ -1770,11 +1770,11 @@ DVZ_EXPORT void dvz_shape_arrow(
 
 
 /**
- * Create a 3D guizmo with three arrows on the three axes.
+ * Create a 3D gizmo with three arrows on the three axes.
  *
  * @param shape the shape
  */
-DVZ_EXPORT void dvz_shape_guizmo(DvzShape* shape);
+DVZ_EXPORT void dvz_shape_gizmo(DvzShape* shape);
 
 
 

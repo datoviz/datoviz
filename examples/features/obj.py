@@ -1,7 +1,7 @@
 """
 # Mesh visual from an OBJ file
 
-Show the mesh visual with an OBJ file and a 3D guizmo.
+Show the mesh visual with an OBJ file and a 3D gizmo.
 
 ---
 tags:
@@ -9,7 +9,7 @@ tags:
   - shape
   - obj
   - arcball
-  - guizmo
+  - gizmo
 in_gallery: true
 make_screenshot: true
 ---
@@ -35,8 +35,8 @@ camera = panel.camera(initial=(0, 0, 3))
 visual = app.mesh(sc, lighting=True, linewidth=linewidth, edgecolor=edgecolor)
 panel.add(visual)
 
-# Add a 3D guizmo.
-panel.guizmo()
+# Add a 3D gizmo.
+panel.gizmo()
 
 app.run()
 app.destroy()

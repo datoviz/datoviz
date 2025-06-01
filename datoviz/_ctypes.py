@@ -5900,16 +5900,16 @@ shape_arrow.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
-shape_guizmo = dvz.dvz_shape_guizmo
-shape_guizmo.__doc__ = """
-Create a 3D guizmo with three arrows on the three axes.
+shape_gizmo = dvz.dvz_shape_gizmo
+shape_gizmo.__doc__ = """
+Create a 3D gizmo with three arrows on the three axes.
 
 Parameters
 ----------
 shape : DvzShape*
     the shape
 """
-shape_guizmo.argtypes = [
+shape_gizmo.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 

@@ -2080,7 +2080,7 @@ void dvz_shape_torus(
 
 
 
-void dvz_shape_guizmo(DvzShape* shape)
+void dvz_shape_gizmo(DvzShape* shape)
 {
     ANN(shape);
 

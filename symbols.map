@@ -186,7 +186,7 @@ dvz_shape_destroy
 dvz_shape_disc
 dvz_shape_dodecahedron
 dvz_shape_end
-dvz_shape_guizmo
+dvz_shape_gizmo
 dvz_shape_hexahedron
 dvz_shape_histogram
 dvz_shape_icosahedron
