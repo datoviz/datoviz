@@ -2022,6 +2022,32 @@ class Sphere(Visual):
         value = value if value is not None else cst.DEFAULT_LIGHT_COLOR
         dvz.sphere_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
+    def set_material_params(self, value: tuple, idx: int = 0) -> None:
+        """
+        Set the parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material light parameters (r, g, b).
+        idx : int, optional
+            The index of the material, by default 0.  (0 ambient, 1 diffuse, 2 specular,
+            3 emission)
+        """
+        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
+        dvz.sphere_material_params(self.c_visual, idx, dvz.vec3(*value))
+
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the sphere texture.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
+        dvz.image_texture(self.c_visual, texture.c_texture)
+
 
 # -------------------------------------------------------------------------------------------------
 # Volume visual

@@ -1083,6 +1083,7 @@ class App:
         shine: tp.Optional[float] = None,
         emit: tp.Optional[float] = None,
         texture: tp.Optional[Texture] = None,
+        equal_rectangular: tp.Optional[Texture] = None,
         lighting: tp.Optional[bool] = None,
         size_pixels: tp.Optional[bool] = None,
         depth_test: bool = None,
@@ -1113,6 +1114,8 @@ class App:
             Material emission factor for the sphere, in the range [0, 1].
         texture : Texture, optional
             Texture for the sphere, when using a textured sphere.
+        equal_rectangular : bool
+            Texture is equal rectangular.
         lighting : bool
             Whether lighting is enabled.
         size_pixels : bool
@@ -1128,7 +1131,7 @@ class App:
             The created sphere visual instance.
         """
         has_texture = True if texture is not None else False
-        c_flags = sphere_flags(textured=has_texture, lighting=lighting, size_pixels=size_pixels)
+        c_flags = sphere_flags(textured=has_texture, lighting=lighting, size_pixels=size_pixels, equal_rectangular=equal_rectangular)
         return self._visual(
             dvz.sphere,
             vs.Sphere,

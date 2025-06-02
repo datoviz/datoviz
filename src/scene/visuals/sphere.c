@@ -21,6 +21,7 @@
 #include "fileio.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -34,9 +35,9 @@
    mvp 0
    viewport 1
 */
-#define SPHERE_SLOT_LIGHT    2
-#define SPHERE_SLOT_MATERIAL 3
-#define SPHERE_SLOT_TEX      4
+#define SPHERE_SLOT_LIGHT 2
+#define SPHERE_SLOT_MATERIAL 4
+#define SPHERE_SLOT_TEX 3
 
 
 
@@ -65,11 +66,12 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
 
     // Parse flags.
     int textured = ((flags & DVZ_SPHERE_FLAGS_TEXTURED) != 0);
+    int rectangular = ((flags & DVZ_SPHERE_FLAGS_EQUAL_RECTANGULAR) != 0);
     int lighting = ((flags & DVZ_SPHERE_FLAGS_LIGHTING) != 0);
     int size_pixels = ((flags & DVZ_SPHERE_FLAGS_SIZE_PIXELS) != 0);
     log_trace(
-        "create sphere visual, texture: %d, lighting: %d, size_pixels", //
-        textured, lighting, size_pixels);
+        "create sphere visual, texture: %d, lighting: %d, size_pixels: %d, equal_rectangular: %d", //
+        textured, lighting, size_pixels, rectangular);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_sphere");
@@ -79,6 +81,8 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
 
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &textured);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &lighting);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), &rectangular);
+
 
     // Enable depth test.
     dvz_visual_depth(visual, DVZ_DEPTH_TEST_ENABLE);
@@ -265,4 +269,21 @@ void dvz_sphere_emit(DvzVisual* visual, float emit)
 {
     ANN(visual);
     dvz_visual_param(visual, SPHERE_SLOT_MATERIAL, DVZ_SPHERE_PARAMS_EMIT, &emit);
+}
+
+
+
+void dvz_sphere_texture(DvzVisual* visual, DvzTexture* texture)
+{
+    ANN(visual);
+    ANN(texture);
+
+    if (!(visual->flags & DVZ_SPHERE_FLAGS_TEXTURED))
+    {
+        log_error("the mesh visual needs to be created with the DVZ_SPHERE_FLAGS_TEXTURED flag");
+        return;
+    }
+
+    dvz_texture_create(texture); // only create it if it is not already created
+    dvz_visual_tex(visual, SPHERE_SLOT_TEX, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }

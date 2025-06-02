@@ -107,7 +107,7 @@ PROPS = {
         'index': {'type': np.ndarray, 'dtype': np.uint32, 'shape': (-1,)},
         'light_pos': {'type': vec4},
         'light_color': {'type': cvec4},
-        'material_params': {'type': vec3},
+        'material_params': {'type': vec3, 'dtype': np.float32, 'shape': (-1, 3)},
         'shine': {'type': float},
         'emit': {'type': float},
         'edgecolor': {'type': cvec4},
