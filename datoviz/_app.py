@@ -1083,7 +1083,7 @@ class App:
         shine: tp.Optional[float] = None,
         emit: tp.Optional[float] = None,
         texture: tp.Optional[Texture] = None,
-        equal_rectangular: tp.Optional[Texture] = None,
+        equal_rectangular: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
         size_pixels: tp.Optional[bool] = None,
         depth_test: bool = None,

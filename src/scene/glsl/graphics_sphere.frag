@@ -22,7 +22,6 @@ layout(location = 0) in vec4 in_color;
 layout(location = 1) in vec4 in_pos;
 layout(location = 2) in float in_radius;
 layout(location = 3) in vec4 in_cam_pos;
-layout(location = 4) in vec4 in_view_vec;
 
 layout(location = 0) out vec4 out_color;
 
@@ -81,7 +80,7 @@ void main()
         else
         {
             // Magnify circlar area of texture mirrored to front and back of sphere surface.
-            uv = 0.5 - N.xy/(1.9 + abs(N.z));   //vec2(N.xy/(2.0 + abs(N.z)));
+            uv = 0.5 - N.xy/(2.0 + abs(N.z));
         }
         vec4 color = texture(tex, uv.xy);
         out_color = mix(out_color, color, color.a);
