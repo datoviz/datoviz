@@ -1079,7 +1079,10 @@ class App:
         size: np.ndarray = None,
         light_pos: tp.Optional[Tuple[float, float, float, float]] = None,
         light_color: tp.Optional[Tuple[int, int, int, int]] = None,
-        material_params: tp.Optional[Tuple[float, float, float]] = None,
+        ambient_params: tp.Optional[Tuple[float, float, float]] = None,
+        diffuse_params: tp.Optional[Tuple[float, float, float]] = None,
+        specular_params: tp.Optional[Tuple[float, float, float]] = None,
+        emission_params: tp.Optional[Tuple[float, float, float]] = None,
         shine: tp.Optional[float] = None,
         emit: tp.Optional[float] = None,
         texture: tp.Optional[Texture] = None,
@@ -1105,9 +1108,14 @@ class App:
             If `w` is 0, the light is directional; if `w` is 1, the light is positional.
         light_color : Tuple[int, int, int, int], optional
             Light color in RGBA format, in the form (r, g, b, a).
-        material_params : Tuple[float, float, float], optional
+        ambient_params : Tuple[float, float, float], optional
             Material ambient parameters for the sphere, in the form (r, g, b).
-            For diffuse, specular, and exponent, use `Sphere.set_material_params()`.
+        diffuse_params : Tuple[float, float, float], optional
+            Material diffuse parameters for the sphere, in the form (r, g, b).
+        specular_params : Tuple[float, float, float], optional
+            Material specular parameters for the sphere, in the form (r, g, b).
+        emission_params : Tuple[float, float, float], optional
+            Material emission parameters for the sphere, in the form (r, g, b).
         shine : float, optional
             Material shine factor for the sphere, in the range [0, 1].
         emit : float, optional
@@ -1141,7 +1149,10 @@ class App:
             size=size,
             light_pos=light_pos,
             light_color=light_color,
-            material_params=material_params,
+            ambient_params=ambient_params,
+            diffuse_params=diffuse_params,
+            specular_params=specular_params,
+            emission_params=emission_params,
             shine=shine,
             emit=emit,
             texture=texture,

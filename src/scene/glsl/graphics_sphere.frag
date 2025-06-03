@@ -11,8 +11,8 @@
 // mvp --> slot 0
 // viewport --> slot 1
 #define SPHERE_SLOT_LIGHT 2
-#define SPHERE_SLOT_MATERIAL 4
-#define SPHERE_SLOT_TEX 3
+#define SPHERE_SLOT_MATERIAL 3
+#define SPHERE_SLOT_TEX 4
 
 layout(constant_id = 0) const int SPHERE_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int SPHERE_LIGHTING = 0; // 1 to enable

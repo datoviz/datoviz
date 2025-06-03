@@ -36,8 +36,8 @@
    viewport 1
 */
 #define SPHERE_SLOT_LIGHT 2
-#define SPHERE_SLOT_MATERIAL 4
-#define SPHERE_SLOT_TEX 3
+#define SPHERE_SLOT_MATERIAL 3
+#define SPHERE_SLOT_TEX 4
 
 
 
@@ -280,7 +280,7 @@ void dvz_sphere_texture(DvzVisual* visual, DvzTexture* texture)
 
     if (!(visual->flags & DVZ_SPHERE_FLAGS_TEXTURED))
     {
-        log_error("the mesh visual needs to be created with the DVZ_SPHERE_FLAGS_TEXTURED flag");
+        log_error("the sphere visual needs to be created with the DVZ_SPHERE_FLAGS_TEXTURED flag");
         return;
     }
 

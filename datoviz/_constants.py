@@ -53,7 +53,10 @@ DEFAULT_LIGHT_DIR = (1.0, -1.0, -1.0, 0.0)
 DEFAULT_LIGHT_POS = (-1.0, +1.0, +10.0, 1.0)  # Behind camera.
 DEFAULT_LIGHT_COLOR = (255, 255, 255, 255)
 
-DEFAULT_MATERIAL_PARAMS = (0.5, 0.5, 0.5)  # r,g,b values.
+DEFAULT_AMBIENT_PARAMS = (0.1, 0.1, 0.1)  # r,g,b values.
+DEFAULT_DIFFUSE_PARAMS = (0.7, 0.7, 0.7)  # r,g,b values.
+DEFAULT_SPECULAR_PARAMS = (0.5, 0.5, 0.5)  # r,g,b values.
+DEFAULT_EMISSION_PARAMS = (0.5, 0.5, 0.5)  # r,g,b values.
 
 DEFAULT_EQUAL_RECTANGULAR = False
 
