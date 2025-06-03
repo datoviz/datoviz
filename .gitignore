@@ -91,3 +91,4 @@ api_*.md
 cleaned
 */benchmarks/*.png
 */benchmarks/*.json
+uv.lock
