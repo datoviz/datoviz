@@ -42,6 +42,17 @@ void main(void)
     vec4 P0_ = transform(P0, shift.xy);
     vec4 P1_ = transform(P1, shift.zw);
 
+    // Check if z is outside clipping plane.
+    vec3 P0_c = P0_.xyz/P0_.w;   // -1 to 1 range
+    if (P0_c.z > 1.0)
+    {
+        P0_.xyz /= P0_.z;
+    }
+    vec3 P1_c = P1_.xyz/P1_.w;
+    if (P1_c.z > 1.0)
+    {
+        P1_.xyz /= P1_.z;
+    }
 
     // Viewport coordinates.
     mat4 ortho = get_ortho_matrix();
