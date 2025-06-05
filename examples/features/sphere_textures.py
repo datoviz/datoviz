@@ -1,8 +1,15 @@
 """
 # Sphere visual texture example
 
-Show the sphere visual with textures.
+Show the sphere visual with textures, using different projection modes.
 
+---
+tags:
+  - sphere
+  - texture
+in_gallery: true
+make_screenshot: true
+---
 
 """
 
