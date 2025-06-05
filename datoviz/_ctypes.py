@@ -900,6 +900,7 @@ class DvzSphereFlags(CtypesEnum):
     DVZ_SPHERE_FLAGS_TEXTURED = 0x0001
     DVZ_SPHERE_FLAGS_LIGHTING = 0x0002
     DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0004
+    DVZ_SPHERE_FLAGS_EQUAL_RECTANGULAR = 0x0008
 
 
 class DvzMeshFlags(CtypesEnum):
@@ -2000,6 +2001,7 @@ SHAPE_TORUS = 10
 SLOT_COUNT = 2
 SLOT_DAT = 0
 SLOT_TEX = 1
+SPHERE_FLAGS_EQUAL_RECTANGULAR = 0x0008
 SPHERE_FLAGS_LIGHTING = 0x0002
 SPHERE_FLAGS_NONE = 0x0000
 SPHERE_FLAGS_SIZE_PIXELS = 0x0004
@@ -14727,6 +14729,24 @@ item_count : int
 sphere_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
+]
+
+
+# -------------------------------------------------------------------------------------------------
+sphere_texture = dvz.dvz_sphere_texture
+sphere_texture.__doc__ = """
+Assign a 2D texture to a sphere visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+texture : DvzTexture*
+    the texture
+"""
+sphere_texture.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 

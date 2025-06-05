@@ -1588,6 +1588,16 @@ DVZ_EXPORT void dvz_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 /**
+ * Assign a 2D texture to a sphere visual.
+ *
+ * @param visual the visual
+ * @param texture the texture
+ */
+DVZ_EXPORT void dvz_sphere_texture(DvzVisual* visual, DvzTexture* texture);
+
+
+
+/**
  * Set the sphere light position.
  *
  * @param visual the sphere

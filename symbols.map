@@ -536,6 +536,7 @@ dvz_sphere_material_params
 dvz_sphere_position
 dvz_sphere_shine
 dvz_sphere_size
+dvz_sphere_texture
 dvz_tex_slice
 dvz_volume
 dvz_volume_bounds
