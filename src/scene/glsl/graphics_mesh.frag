@@ -208,7 +208,7 @@ void main()
     {
         out_color = lighting(in_pos, color, normal, in_cam_pos, light, material);
     }
-    else
+    else if (normal.z > 0.0)
     {
         out_color.rgb *= (0.2 + 0.8 * normal.z);
     }
