@@ -103,21 +103,30 @@ struct DvzClock
 /*************************************************************************************************/
 
 /**
+ * Wait a given number of microseconds.
+ *
+ * @param microseconds sleep duration
+ */
+static inline void dvz_sleep_us(int microseconds)
+{
+#if OS_WINDOWS
+    Sleep((uint32_t)(microseconds / 1000));
+#else
+    struct timespec ts;
+    ts.tv_sec = microseconds / 1000000;
+    ts.tv_nsec = (microseconds % 1000000) * 1000;
+    nanosleep(&ts, NULL);
+#endif
+}
+
+
+
+/**
  * Wait a given number of milliseconds.
  *
  * @param milliseconds sleep duration
  */
-static inline void dvz_sleep(int milliseconds)
-{
-#if OS_WINDOWS
-    Sleep((uint32_t)milliseconds);
-#else
-    struct timespec ts;
-    ts.tv_sec = milliseconds / 1000;
-    ts.tv_nsec = (milliseconds % 1000) * 1000000;
-    nanosleep(&ts, NULL);
-#endif
-}
+static inline void dvz_sleep(int milliseconds) { dvz_sleep_us(milliseconds * 1000); }
 
 
 
