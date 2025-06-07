@@ -36,6 +36,8 @@
 
 #define BACKEND DVZ_BACKEND_GLFW
 
+#define DVZ_DEFAULT_MAX_FPS 200
+
 
 
 /*************************************************************************************************/
@@ -207,6 +209,14 @@ DvzApp* dvz_app(int flags)
 
         app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
         ANN(app->prt);
+
+        // Target FPS.
+        char* env = getenv("DVZ_MAX_FPS");
+        int32_t target_fps = env != NULL ? atoi(env) : DVZ_DEFAULT_MAX_FPS;
+        if (target_fps > 0)
+        {
+            dvz_fps_target(&app->prt->fps, (uint32_t)target_fps, 0.1, .02);
+        }
     }
     else
     {
