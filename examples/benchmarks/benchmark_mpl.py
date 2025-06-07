@@ -56,8 +56,7 @@ def format_eng(n, _):
         return str(int(n))
 
 
-N_VALUES = [int(1e3), int(1e4), int(1e5)]
-# N_VALUES = [int(1e6), int(1e7), int(1e8)]
+N_VALUES = [int(1e3), int(1e4), int(1e5), int(1e6), int(1e7), int(1e8)]
 
 W, H = 800, 600
 DPI = 200.0
@@ -362,8 +361,10 @@ def plot_results():
     x = np.arange(len(ns_all))  # positions on x-axis
     width = 0.35
 
-    fig, axes = plt.subplots(2, 2, figsize=(8, 6), dpi=200, sharex=True)
+    fig, axes = plt.subplots(2, 2, figsize=(8, 6), dpi=150, sharex=True)
     fig.subplots_adjust(hspace=0.4)
+    axes[0][0].set_yscale('log')
+    axes[0][1].set_yscale('log')
 
     for col, metric in enumerate(metrics):
         ax = axes[0, col]
@@ -429,7 +430,7 @@ def plot_results():
     axes[0, 0].legend(fontsize=8, loc='upper right', frameon=False)
     fig.suptitle('Datoviz vs Matplotlib Performance (scatter plot)', fontsize=12)
     plt.tight_layout()
-    fig.savefig(CURDIR / 'benchmark.png', dpi=250)
+    fig.savefig(CURDIR / 'benchmark.png', dpi=150)
     plt.show()
 
 

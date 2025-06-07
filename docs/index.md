@@ -1,8 +1,8 @@
 # Datoviz: high-performance rendering for scientific data visualization
 
-**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
+**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization** making extensive use of the graphics processing unit (GPU).
 
-It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
+Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
 [![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
