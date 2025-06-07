@@ -84,6 +84,41 @@ static double compute_fps(uint64_t counter, uint32_t count, double* values)
 
 
 
+static void adaptive_frame_pacing(DvzFps* fps, double interval)
+{
+    if (fps->target_fps <= 0)
+        return;
+
+    // Target time per frame (seconds)
+    double target = fps->target_frame_time;
+
+    // Compute error: positive if frame was too fast
+    double error = target - interval;
+
+    // Integrate the error over time
+    fps->error_integral += error;
+
+    // Proportional-Integral control to adjust sleep time
+    fps->sleep_time += fps->gain_p * error + fps->gain_i * fps->error_integral;
+
+    // Clamp to non-negative sleep time
+    if (fps->sleep_time < 0.0)
+    {
+        fps->sleep_time = 0.0;
+        fps->error_integral = 0.0; // Optional: reset integral when overshooting too far
+    }
+
+    // Sleep for the computed duration
+    if (fps->sleep_time > 0.0)
+    {
+        int sleep_us = (int)(fps->sleep_time * 1000000.0);
+        if (sleep_us > 0)
+            dvz_sleep_us(sleep_us);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  FPS                                                                                          */
 /*************************************************************************************************/
@@ -95,6 +130,20 @@ DvzFps dvz_fps()
     fps.values = (double*)calloc(DVZ_FPS_MAX_COUNT, sizeof(double));
     fps.hist = (float*)calloc(DVZ_FPS_BINS, sizeof(float));
     return fps;
+}
+
+
+
+void dvz_fps_target(DvzFps* fps, double target_fps, double gain_p, double gain_i)
+{
+    ANN(fps);
+    log_debug("set adaptive FPS target: %d FPS", target_fps);
+    fps->target_fps = target_fps;
+    fps->target_frame_time = (target_fps > 0) ? 1.0 / target_fps : 0.0;
+    fps->gain_p = gain_p;
+    fps->gain_i = gain_i;
+    fps->sleep_time = 0.0;
+    fps->error_integral = 0.0;
 }
 
 
@@ -120,6 +169,8 @@ void dvz_fps_tick(DvzFps* fps)
 
     dvz_clock_tick(&fps->clock);
     fps->counter++;
+
+    adaptive_frame_pacing(fps, interval);
 }
 
 
