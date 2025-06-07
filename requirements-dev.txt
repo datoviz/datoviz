@@ -9,7 +9,7 @@ twine
 mkdocs-material
 mkdocstrings[python]
 pymdown-extensions
-
+psutil
 imageio
 matplotlib
 nilearn
