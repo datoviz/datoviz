@@ -3,13 +3,22 @@ name: "WHEELS"
 # Trigger on tags
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
+    inputs:
+      nightly:
+        description: "Force nightly build?"
+        required: false
+        default: "false"
   schedule:
     - cron: '0 3 * * *'  # every night at 3am UTC
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
   USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
-  DVZ_NIGHTLY_TAG: ${{ github.event_name == 'schedule' && format('.dev{0}', github.run_started_at | slice(0,10) | replace('-', '')) || '' }}
+  DVZ_NIGHTLY_TAG: ${{
+    github.event_name == 'schedule' && format('.dev{0}', github.run_started_at | slice(0,10) | replace('-', '')) ||
+    (github.event_name == 'workflow_dispatch' && github.event.inputs.nightly == 'true' && format('.dev{0}', github.run_started_at | slice(0,10) | replace('-', '')) ) ||
+    ''
+  }}
 
 jobs:
 
