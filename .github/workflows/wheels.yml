@@ -3,10 +3,13 @@ name: "WHEELS"
 # Trigger on tags
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
+  schedule:
+    - cron: '0 3 * * *'  # every night at 3am UTC
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
   USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
+  DVZ_NIGHTLY_TAG: ${{ github.event_name == 'schedule' && format('.dev{0}', github.run_started_at | slice(0,10) | replace('-', '')) || '' }}
 
 jobs:
 
@@ -62,7 +65,7 @@ jobs:
       working-directory: /datoviz
       run: |
         export PATH=$PATH:/opt/python/cp38-cp38/bin/
-        just wheel almalinux=1
+        just buildwheel almalinux=1
 
     # Test the wheel
     - name: Test
@@ -128,7 +131,7 @@ jobs:
     - name: Wheel
       run: |
         just pydev
-        just wheel "macosx_10_9_universal2"
+        just buildwheel "macosx_10_9_universal2"
 
     # Upload the wheel
     - name: Upload
@@ -187,7 +190,7 @@ jobs:
     - name: Wheel
       run: |
         just pydev
-        just wheel "macosx_10_9_x86_64"
+        just buildwheel "macosx_10_9_x86_64"
 
     # Upload the wheel
     - name: Upload
@@ -272,7 +275,7 @@ jobs:
       continue-on-error: true
       run: |
         just pydev
-        just wheel
+        just buildwheel
 
     # Upload the wheel
     - name: Upload
