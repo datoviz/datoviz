@@ -154,6 +154,42 @@ wheels:
     xdg-open "$URL" || open "$URL"
 #
 
+nightly arg='':
+    #!/usr/bin/env sh
+    set -e
+
+    DATE=$(date +%Y%m%d)
+    VERSION_TAG="dev${DATE}"
+    OUTDIR="dist"
+
+    echo "Building nightly wheel with tag: $VERSION_TAG and arg: {{arg}}"
+
+    # Clean and create output directory
+    rm -rf $OUTDIR
+    mkdir -p $OUTDIR
+
+    # Build the wheel normally
+    just wheel {{arg}}
+
+    # Find the built wheel
+    WHEEL=$(ls dist/datoviz-*.whl | head -n 1)
+    if [ ! -f "$WHEEL" ]; then
+        echo "❌ No wheel found in dist/"
+        exit 1
+    fi
+
+    # Generate new filename
+    BASENAME=$(basename "$WHEEL")
+    NEWNAME=$(echo "$BASENAME" | sed "s/dev/$VERSION_TAG/")
+    mv "$WHEEL" "dist/$NEWNAME"
+
+    # Move to nightly output folder
+    cp "dist/$NEWNAME" "$OUTDIR/"
+
+    echo "✅ Nightly wheel ready at $OUTDIR/$NEWNAME"
+#
+
+
 
 # -------------------------------------------------------------------------------------------------
 # Building
@@ -503,7 +539,7 @@ wheel almalinux="0":
     fi
 
     # Build the wheel
-    pip wheel wheel/ -w "dist/" --no-deps
+    pip3 wheel wheel/ -w "dist/" --no-deps
 
     # Rename the wheel
     if [ "{{almalinux}}" != "0" ]; then
@@ -1027,6 +1063,19 @@ checkartifact RUN_ID="":
     rm -rf "${temp_dir}"
     exit $exit_code
 #
+
+buildwheel args='':
+    #!/usr/bin/env sh
+    set -e
+
+    if [ -n "$DVZ_NIGHTLY_TAG" ]; then
+        echo "🔁 Detected DVZ_NIGHTLY_TAG=$DVZ_NIGHTLY_TAG — using just nightly"
+        just nightly {{args}}
+    else
+        echo "🎯 No DVZ_NIGHTLY_TAG — using just wheel"
+        just wheel {{args}}
+    fi
+
 
 
 # -------------------------------------------------------------------------------------------------
