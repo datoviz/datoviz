@@ -92,3 +92,6 @@ cleaned
 */benchmarks/*.png
 */benchmarks/*.json
 uv.lock
+
+.direnv
+.env*
