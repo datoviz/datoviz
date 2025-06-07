@@ -63,7 +63,7 @@ The figure below shows a preliminary [**performance benchmark**](https://github.
   <img src="https://raw.githubusercontent.com/datoviz/data/master/screenshots/benchmark.png" alt="Datoviz vs Matplotlib benchmark" width="800">
 </p>
 
-In this benchmark, **Datoviz outperforms Matplotlib by a factor of 20× to over 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
+In this benchmark, **Datoviz outperforms Matplotlib by a factor of up to 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
 
 
 
