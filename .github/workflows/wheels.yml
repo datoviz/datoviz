@@ -92,6 +92,16 @@ jobs:
         name: wheel-linux_x86_64
         path: /datoviz/dist/*.whl
 
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # -----------------------------------------------------------------------------------------------
   # macOS arm64
   # -----------------------------------------------------------------------------------------------
@@ -158,6 +168,16 @@ jobs:
         name: wheel-macosx_arm64
         path: dist/*.whl
 
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # -----------------------------------------------------------------------------------------------
   # macOS x86_64
   # -----------------------------------------------------------------------------------------------
@@ -223,6 +243,16 @@ jobs:
       with:
         name: wheel-macosx_x86_64
         path: dist/*.whl
+
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # -----------------------------------------------------------------------------------------------
   # Windows
@@ -316,3 +346,13 @@ jobs:
       with:
         name: wheel-win_amd64
         path: dist/*.whl
+
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
