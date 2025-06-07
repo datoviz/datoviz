@@ -98,7 +98,7 @@ jobs:
       with:
         tag_name: nightly
         prerelease: true
-        files: dist/*.whl
+        files: /datoviz/dist/*.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
