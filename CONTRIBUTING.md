@@ -96,7 +96,9 @@ To render all Datoviz applications offscreen and save a screenshot, set:
 
 Set the following environment variables to enable performance-related diagnostics:
 
-- `DVZ_FPS=1` — Display an FPS (frames per second) counter.
+* `DVZ_FPS=1` enables an FPS (frames per second) counter
+* `DVZ_MAX_FPS=200` sets a frame rate limit (default is 200 FPS to reduce GPU usage)
+* `DVZ_MAX_FPS=0` disables the frame rate limit for benchmarking purposes
 - `DVZ_MONITOR=1` — Show a GPU memory monitor (allocated memory usage).
 
 !!! note

@@ -153,7 +153,7 @@ This model is key to Datoviz's performance: many visual instances are submitted 
 
 ## Coordinate system
 
-All visuals expect positions in [**3D Normalized Device Coordinates (NDC)**](common.md#positioning-data-ndc-model), where each axis ranges from `-1` to `+1`.
+All visuals expect positions in [**3D Normalized Device Coordinates (NDC)**](common.md#coordinate-system), where each axis ranges from `-1` to `+1`.
 
 For 2D rendering, simply set the Z coordinate to `0` and use a 2D camera or interaction mode (e.g. pan-zoom). This keeps your data in the XY plane while leveraging the full GPU pipeline.
 
