@@ -162,31 +162,34 @@ nightly arg='':
     VERSION_TAG="dev${DATE}"
     OUTDIR="dist"
 
-    echo "Building nightly wheel with tag: $VERSION_TAG and arg: {{arg}}"
+    echo "📦 Building nightly wheel with tag: $VERSION_TAG and arg: {{arg}}"
 
-    # Clean and create output directory
-    rm -rf $OUTDIR
+    # Optionally clean the dist directory
+    rm -rf $OUTDIR/*
     mkdir -p $OUTDIR
 
-    # Build the wheel normally
+    # Build the wheel
     just wheel {{arg}}
 
     # Find the built wheel
-    WHEEL=$(ls dist/datoviz-*.whl | head -n 1)
+    WHEEL=$(ls $OUTDIR/datoviz-*.whl | head -n 1)
+
     if [ ! -f "$WHEEL" ]; then
-        echo "❌ No wheel found in dist/"
+        echo "❌ No wheel found in $OUTDIR/"
         exit 1
     fi
 
-    # Generate new filename
+    # Only rename if not already tagged
     BASENAME=$(basename "$WHEEL")
-    NEWNAME=$(echo "$BASENAME" | sed "s/dev/$VERSION_TAG/")
-    mv "$WHEEL" "dist/$NEWNAME"
+    if echo "$BASENAME" | grep -q "$VERSION_TAG"; then
+        echo "✅ Wheel already tagged with $VERSION_TAG: $BASENAME"
+    else
+        NEWNAME=$(echo "$BASENAME" | sed "s/dev0/$VERSION_TAG/")
+        echo "Renaming $BASENAME → $NEWNAME"
+        mv "$WHEEL" "$OUTDIR/$NEWNAME"
+    fi
 
-    # Move to nightly output folder
-    cp "dist/$NEWNAME" "$OUTDIR/"
-
-    echo "✅ Nightly wheel ready at $OUTDIR/$NEWNAME"
+    echo "✅ Nightly wheel ready: $OUTDIR/$(ls $OUTDIR | grep $VERSION_TAG)"
 #
 
 
@@ -860,6 +863,8 @@ showwheel:
 renamewheel platform_tag='':
     #!/usr/bin/env sh
     set -e
+
+    echo "just renamewheel {{platform_tag}}"
 
     # Rename the wheel depending on the current platform.
     if [ ! -f dist/*any.whl ]; then

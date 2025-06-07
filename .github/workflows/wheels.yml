@@ -31,7 +31,6 @@ jobs:
 
     # Create the directory
     steps:
-
     - name: Set DVZ_NIGHTLY_TAG
       run: |
         if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
@@ -101,6 +100,12 @@ jobs:
 
     # Clone the repo (except if local with "act")
     steps:
+    - name: Set DVZ_NIGHTLY_TAG
+      run: |
+        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
+          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+        fi
+
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
@@ -160,6 +165,12 @@ jobs:
 
     # Clone the repo (except if local with "act")
     steps:
+    - name: Set DVZ_NIGHTLY_TAG
+      run: |
+        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
+          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+        fi
+
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
@@ -230,6 +241,12 @@ jobs:
       VULKAN_SDK: C:/VulkanSDK/1.3.280.0/
 
     steps:
+
+    - name: Set DVZ_NIGHTLY_TAG
+      run: |
+        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
+          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+        fi
 
     # Install Python and required dependencies
     - name: Setup Python
