@@ -32,8 +32,9 @@ jobs:
     # Create the directory
     steps:
     - name: Set DVZ_NIGHTLY_TAG
+      shell: bash
       run: |
-        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
           echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
         fi
 
@@ -101,8 +102,9 @@ jobs:
     # Clone the repo (except if local with "act")
     steps:
     - name: Set DVZ_NIGHTLY_TAG
+      shell: bash
       run: |
-        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
           echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
         fi
 
@@ -166,8 +168,9 @@ jobs:
     # Clone the repo (except if local with "act")
     steps:
     - name: Set DVZ_NIGHTLY_TAG
+      shell: bash
       run: |
-        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
           echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
         fi
 
@@ -243,10 +246,12 @@ jobs:
     steps:
 
     - name: Set DVZ_NIGHTLY_TAG
+      shell: pwsh
       run: |
-        if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.nightly }}" = "true" ]; then
-          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
-        fi
+        if ($env:GITHUB_EVENT_NAME -eq 'schedule' -or $env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and "${{ github.event.inputs.nightly }}" -eq "true") {
+          $date = Get-Date -Format "yyyyMMdd"
+          "DVZ_NIGHTLY_TAG=.dev$date" | Out-File -FilePath $env:GITHUB_ENV -Append
+        }
 
     # Install Python and required dependencies
     - name: Setup Python
