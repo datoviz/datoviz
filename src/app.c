@@ -50,6 +50,9 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
 
     // The timer callbacks are called here.
     dvz_timer_tick(app->timer, ev->time);
+
+    // FPS tick, whether the FPS is displayed or not.
+    dvz_fps_tick(&app->prt->fps);
 }
 
 
