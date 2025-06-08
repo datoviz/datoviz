@@ -53,6 +53,7 @@ dvz_fly_get_lookat
 dvz_fly_get_position
 dvz_fly_get_up
 dvz_fly_initial
+dvz_fly_initial_lookat
 dvz_fly_keyboard
 dvz_fly_mouse
 dvz_fly_move_forward
@@ -62,6 +63,7 @@ dvz_fly_reset
 dvz_fly_resize
 dvz_fly_roll
 dvz_fly_rotate
+dvz_fly_set_lookat
 dvz_font
 dvz_font_ascii
 dvz_font_destroy
@@ -105,6 +107,7 @@ dvz_panel_destroy
 dvz_panel_figure
 dvz_panel_flags
 dvz_panel_fly
+dvz_panel_grid
 dvz_panel_gui
 dvz_panel_link
 dvz_panel_margins
@@ -439,6 +442,10 @@ dvz_glyph_texcoords
 dvz_glyph_texture
 dvz_glyph_unicode
 dvz_glyph_xywh
+dvz_grid_color
+dvz_grid_elevation
+dvz_grid_linewidth
+dvz_grid_scale
 dvz_image
 dvz_image_alloc
 dvz_image_anchor
