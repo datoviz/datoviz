@@ -2282,6 +2282,17 @@ DVZ_EXPORT void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pit
 
 
 /**
+ * Set the initial position and orientation of a fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param position the initial position
+ * @param lookat the initial lookat position
+ */
+DVZ_EXPORT void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 lookat);
+
+
+
+/**
  * Move the fly camera forward or backward along its view direction.
  *
  * @param fly the fly camera controller
@@ -2349,6 +2360,16 @@ DVZ_EXPORT void dvz_fly_get_position(DvzFly* fly, vec3 out_pos);
  * @param[out] out_lookat the current lookat point
  */
 DVZ_EXPORT void dvz_fly_get_lookat(DvzFly* fly, vec3 out_lookat);
+
+
+
+/**
+ * Set the lookat point of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param lookat the lookat point
+ */
+DVZ_EXPORT void dvz_fly_set_lookat(DvzFly* fly, vec3 lookat);
 
 
 
