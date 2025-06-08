@@ -1139,7 +1139,12 @@ class App:
             The created sphere visual instance.
         """
         has_texture = True if texture is not None else False
-        c_flags = sphere_flags(textured=has_texture, lighting=lighting, size_pixels=size_pixels, equal_rectangular=equal_rectangular)
+        c_flags = sphere_flags(
+            textured=has_texture,
+            lighting=lighting,
+            size_pixels=size_pixels,
+            equal_rectangular=equal_rectangular,
+        )
         return self._visual(
             dvz.sphere,
             vs.Sphere,

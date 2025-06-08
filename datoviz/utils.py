@@ -586,7 +586,9 @@ def sphere_flags(
     """
     c_flags = 0
     lighting = lighting if (lighting is not None) else cst.DEFAULT_LIGHTING
-    equal_rectangular = equal_rectangular if (equal_rectangular is not None) else cst.DEFAULT_EQUAL_RECTANGULAR
+    equal_rectangular = (
+        equal_rectangular if (equal_rectangular is not None) else cst.DEFAULT_EQUAL_RECTANGULAR
+    )
     if textured:
         c_flags |= dvz.SPHERE_FLAGS_TEXTURED
     if equal_rectangular:

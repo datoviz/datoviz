@@ -167,7 +167,7 @@ class Visual:
         value : Any
             The value to set.
         """
-        prop_info = PROPS[self.visual_name].get(prop_name, {})
+        prop_info = PROPS.get(self.visual_name, {}).get(prop_name, {})
         prop_type = prop_info.get('type', None)
         if not prop_type:
             # print(f'Prop {prop_name} not found in visual {self.visual_name}')
