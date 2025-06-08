@@ -968,12 +968,13 @@ void dvz_gui_image(DvzTex* tex, float width, float height)
     }
     ASSERT(tex->_imgui_texid != VK_NULL_HANDLE);
 
-    ImVec2 uv_min = ImVec2(0.0f, 0.0f);               // Top left
-    ImVec2 uv_max = ImVec2(1.0f, 1.0f);               // Bottom right
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f); // Top left
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f); // Bottom right
+    ImVec4 bg_col = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
     ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // No tint
-    // ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 
-    ImGui::Image((ImTextureID)tex->_imgui_texid, ImVec2(width, height), uv_min, uv_max, tint_col);
+    ImGui::Image(
+        (ImTextureID)tex->_imgui_texid, ImVec2(width, height), uv_min, uv_max, bg_col, tint_col);
 }
 
 
