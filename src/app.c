@@ -215,6 +215,13 @@ DvzApp* dvz_app(int flags)
         int32_t target_fps = env != NULL ? atoi(env) : DVZ_DEFAULT_MAX_FPS;
         if (target_fps > 0)
         {
+            if (getenv("DVZ_FPS"))
+            {
+                log_info( //
+                    "Setting a frame rate limit to %d FPS to reduce GPU usage. Use the "
+                    "DVZ_MAX_FPS=0 environment variable to disable the cap.",
+                    target_fps);
+            }
             dvz_fps_target(&app->prt->fps, (uint32_t)target_fps, 0.1, .02);
         }
     }
