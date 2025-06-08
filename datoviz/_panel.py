@@ -381,7 +381,8 @@ class Panel:
     # ---------------------------------------------------------------------------------------------
 
     def horizontal_grid(
-        self, elevation: float = 0,
+        self,
+        elevation: float = 0,
     ):
         """
         Add a horizontal grid texture on the y=0 plane, using a repeating pattern.

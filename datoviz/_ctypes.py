@@ -384,7 +384,6 @@ COLOR_FLOAT_MAX = 1.0
 COLOR_MAX = 1.0
 M_PI = 3.141592653589793
 M_2PI = 6.283185307179586
-M_PI_2 = 1.5707963267948966
 M_INV_255 = 0.00392156862745098
 EPSILON = 1e-10
 GB = 1073741824
@@ -2771,10 +2770,10 @@ Requester = DvzRequester
 # ===============================================================================
 
 
+
 on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzGuiEvent))
 on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzMouseEvent))
-on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(
-    None, P_(DvzApp), DvzId, P_(DvzKeyboardEvent))
+on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzKeyboardEvent))
 on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzFrameEvent))
 on_timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzTimerEvent))
 on_resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzWindowEvent))
@@ -2876,7 +2875,7 @@ Parameters
 qapp : np.ndarray[QApplication]
     placeholder
 flags : int
-
+    placeholder
 
 Returns
 -------
@@ -2919,6 +2918,7 @@ Parameters
 app : DvzQtApp*
     placeholder
 batch : DvzBatch*
+    placeholder
 """
 qt_submit.argtypes = [
     ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
@@ -2991,6 +2991,7 @@ Parameters
 server : DvzServer*
     placeholder
 batch : DvzBatch*
+    placeholder
 """
 server_submit.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3048,10 +3049,11 @@ Parameters
 server : DvzServer*
     placeholder
 canvas_id : DvzId
-
+    placeholder
 width : int
-
+    placeholder
 height : int
+    placeholder
 """
 server_resize.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3071,9 +3073,9 @@ Parameters
 server : DvzServer*
     placeholder
 canvas_id : DvzId
-
+    placeholder
 flags : int
-
+    placeholder
 
 Returns
 -------
@@ -3097,6 +3099,7 @@ Parameters
 scene : DvzScene*
     placeholder
 server : DvzServer*
+    placeholder
 """
 scene_render.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene

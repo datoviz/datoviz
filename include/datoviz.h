@@ -143,6 +143,7 @@ DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT DvzQtApp* dvz_qt_app(QApplication* qapp, int flags);
 
@@ -160,6 +161,7 @@ DVZ_EXPORT DvzQtWindow* dvz_qt_window(DvzQtApp* app);
 /**
  * Placeholder.
  *
+ * @param placeholder placeholder
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch);
@@ -203,6 +205,7 @@ DVZ_EXPORT DvzServer* dvz_server(int flags);
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_server_submit(DvzServer* server, DvzBatch* batch);
 
@@ -230,6 +233,9 @@ DVZ_EXPORT DvzKeyboard* dvz_server_keyboard(DvzServer* server);
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
+ * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT void
 dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint32_t height);
@@ -240,6 +246,8 @@ dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint32_t h
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flags);
 
@@ -247,6 +255,7 @@ DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flag
 /**
  * Placeholder.
  *
+ * @param placeholder placeholder
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_scene_render(DvzScene* scene, DvzServer* server);
