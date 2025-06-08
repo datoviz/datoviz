@@ -737,6 +737,17 @@ DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel, int flags);
 
 
 /**
+ * Add a 3D horizontal grid.
+ *
+ * @param panel the panel
+ * @param flags the grid creation flags
+ * @returns the grid
+ */
+DVZ_EXPORT DvzVisual* dvz_panel_grid(DvzPanel* panel, int flags);
+
+
+
+/**
  * Show or hide a panel.
  *
  * @param panel the panel

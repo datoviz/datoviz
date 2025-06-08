@@ -1826,6 +1826,50 @@ DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 
 
 
+/*************************************************************************************************/
+/*  Grid                                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Set the grid line color.
+ *
+ * @param grid the grid visual
+ * @param value RGBA color of fine lines
+ */
+DVZ_EXPORT void dvz_grid_color(DvzVisual* grid, vec4 value);
+
+
+
+/**
+ * Set the line width.
+ *
+ * @param grid the grid visual
+ * @param value width of lines (in world units)
+ */
+DVZ_EXPORT void dvz_grid_linewidth(DvzVisual* grid, float value);
+
+
+
+/**
+ * Set the grid spacing.
+ *
+ * @param grid the grid visual
+ * @param value spacing between grid lines (in world units)
+ */
+DVZ_EXPORT void dvz_grid_scale(DvzVisual* grid, float value);
+
+
+
+/**
+ * Set the grid elevation on the Y axis.
+ *
+ * @param grid the grid visual
+ * @param value grid elevation
+ */
+DVZ_EXPORT void dvz_grid_elevation(DvzVisual* grid, float value);
+
+
+
 EXTERN_C_OFF
 
 #endif
