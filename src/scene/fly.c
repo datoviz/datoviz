@@ -297,7 +297,9 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
             dvz_fly_rotate(fly, dx * M_PI, -dy * M_PI);
             return true;
         }
-        else if (ev->button == DVZ_MOUSE_BUTTON_MIDDLE)
+        else if (
+            ev->button == DVZ_MOUSE_BUTTON_MIDDLE ||
+            (ev->button == DVZ_MOUSE_BUTTON_RIGHT && (ev->mods & DVZ_KEY_MODIFIER_CONTROL)))
         {
             // Roll with right mouse drag (horizontal only), normalized by viewport width
             float dx = DVZ_FLY_MOVE_SPEED * //
