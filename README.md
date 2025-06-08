@@ -129,6 +129,16 @@ This installs a Python wheel that includes the C library, precompiled for your s
 If the installation fails, you may need to [build from source](BUILD.md) or [open an issue](https://github.com/datoviz/datoviz/issues) to request support for your configuration.
 
 
+### Nightly builds
+
+[Nightly builds](https://github.com/datoviz/datoviz/releases/tag/nightly) are automatically generated from the [`dev`](https://github.com/datoviz/datoviz/tree/dev) branch via [GitHub Actions](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). These builds contain the latest experimental features and bug fixes that have not yet been released.
+
+> [!WARNING]
+> Nightly wheels are untested and may be unstable. Use at your own risk, and please [report issues](https://github.com/datoviz/datoviz/issues) if you encounter any problems.
+
+You can find the latest builds on the **[Nightly Release Page](https://github.com/datoviz/datoviz/releases/tag/nightly)**.
+Each wheel file is tagged by platform (e.g. `manylinux`, `macosx`, `win_amd64`) and build date (`devYYYYMMDD`).
+
 
 ## 🚀 Usage
 
