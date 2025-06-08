@@ -699,6 +699,31 @@ void dvz_panel_destroy(DvzPanel* panel)
         dvz_ref_destroy(panel->ref);
     }
 
+    if (panel->camera != NULL)
+    {
+        dvz_camera_destroy(panel->camera);
+    }
+
+    if (panel->panzoom != NULL)
+    {
+        dvz_panzoom_destroy(panel->panzoom);
+    }
+
+    if (panel->ortho != NULL)
+    {
+        dvz_ortho_destroy(panel->ortho);
+    }
+
+    if (panel->arcball != NULL)
+    {
+        dvz_arcball_destroy(panel->arcball);
+    }
+
+    if (panel->fly != NULL)
+    {
+        dvz_fly_destroy(panel->fly);
+    }
+
     FREE(panel);
 }
 

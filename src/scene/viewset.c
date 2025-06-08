@@ -367,6 +367,16 @@ void dvz_view_destroy(DvzView* view)
     ANN(view->viewset);
     log_trace("destroy view");
 
+    // Destroy all visuals.
+    uint64_t count = dvz_list_count(view->visuals);
+    DvzVisual* visual = NULL;
+    for (uint64_t j = 0; j < count; j++)
+    {
+        visual = (DvzVisual*)dvz_list_get(view->visuals, j).p;
+        ANN(visual);
+        dvz_visual_destroy(visual);
+    }
+
     dvz_list_destroy(view->visuals);
     dvz_list_remove_pointer(view->viewset->views, view);
     FREE(view);
