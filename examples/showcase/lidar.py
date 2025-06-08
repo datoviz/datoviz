@@ -6,7 +6,7 @@ Data origin: https://lidarpayload.com/sample-data/, RESEPI-M2X-100m10ms-FOV90-On
 ---
 tags:
   - pixel
-  - arcball
+  - fly
 in_gallery: true
 make_screenshot: true
 ---
@@ -21,14 +21,14 @@ data = np.load(dvz.download_data('misc/lidar.npz'))
 pos, color = data['pos'], data['color']
 print(f'Loaded LIDAR data with {len(pos)} points.')
 N = pos.shape[0]
+pos *= 5
 
 # -------------------------------------------------------------------------------------------------
 
 app = dvz.App()
 figure = app.figure()
 panel = figure.panel(background=True)
-arcball = panel.arcball(initial=(0.5, 0.9, 0.1))
-camera = panel.camera(initial=(0, 0, 1.5))
+fly = panel.fly(initial=(+2, 2.0, -6), initial_lookat=(0, -1, 0))
 
 visual = app.pixel(position=pos, color=color, size=2, depth_test=True)
 panel.add(visual)

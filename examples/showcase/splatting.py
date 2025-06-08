@@ -7,7 +7,8 @@ Show triangle splatting using the **Basic** visual, data obtained from the 2025 
 Use the fly camera controller to navigate in the 3D scene:
 
 - Left mouse drag: Look around (yaw/pitch)
-- Right mouse drag: Move the camera left/right and up/down
+- Right mouse drag: Orbit around a dynamic center (in front of the camera)
+- Middle mouse drag: Move the camera left/right and up/down
 - Arrow keys: Move in view direction (up/down) or strafe (left/right)
 
 ## Credits
