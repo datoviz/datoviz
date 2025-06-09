@@ -9,6 +9,7 @@
 #include "constants.glsl"
 
 layout(location = 0) out vec3 out_world_pos;
+layout(location = 1) out vec3 out_view_pos;
 
 layout(std140, binding = 2) uniform GridParams
 {
@@ -37,6 +38,7 @@ void main()
     world.x *= GRID_HALF_EXTENT;
     world.z *= GRID_HALF_EXTENT;
     out_world_pos = world;
+    out_view_pos = (mvp.view * mvp.model * vec4(world, 1)).xyz;
 
     gl_Position = transform(world);
 }

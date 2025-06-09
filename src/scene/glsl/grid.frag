@@ -9,9 +9,11 @@
 #include "constants.glsl"
 
 layout(location = 0) in vec3 in_world_pos;
+layout(location = 1) in vec3 in_view_pos;
+
 layout(location = 0) out vec4 out_color;
 
-#define FADE_PARAM 1000
+#define FADE_PARAM 5000
 
 layout(std140, binding = 2) uniform GridParams
 {
@@ -57,7 +59,7 @@ void main()
     vec3 color = params.color.rgb;
 
     // Radial fade from origin (XZ plane)
-    float d = length(coord);
+    float d = length(in_view_pos.xz);
     float fade = exp(-d * d / FADE_PARAM);
 
     out_color = vec4(color, params.color.a * mask_total * fade);
