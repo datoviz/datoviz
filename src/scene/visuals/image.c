@@ -192,9 +192,8 @@ void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
     ANN(visual);
     if (!(visual->flags & DVZ_IMAGE_FLAGS_BORDER))
     {
-        log_warn(
-            "The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
-            "edgecolor is set");
+        log_warn("The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
+                 "edgecolor is set");
         return;
     }
 
@@ -218,9 +217,8 @@ void dvz_image_linewidth(DvzVisual* visual, float width)
     ANN(visual);
     if (!(visual->flags & DVZ_IMAGE_FLAGS_BORDER))
     {
-        log_warn(
-            "The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
-            "linewidth is set");
+        log_warn("The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
+                 "linewidth is set");
         return;
     }
     dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_LINEWIDTH, &width);

@@ -58,6 +58,7 @@ typedef struct DvzAxis DvzAxis;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzBox DvzBox;
 typedef struct DvzCamera DvzCamera;
+typedef struct DvzColorbar DvzColorbar;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzFly DvzFly;
 typedef struct DvzFont DvzFont;
@@ -2255,7 +2256,7 @@ void dvz_arcball_gui(DvzArcball* arcball, DvzApp* app, DvzId canvas_id, DvzPanel
 
 
 /*************************************************************************************************/
-/*  Fly                                                                                      */
+/*  Fly                                                                                          */
 /*************************************************************************************************/
 
 /**
@@ -3060,6 +3061,90 @@ DVZ_EXPORT void dvz_ref_inverse(DvzRef* ref, vec3 pos_tr, dvec3* pos);
  * @param ref the reference frame
  */
 DVZ_EXPORT void dvz_ref_destroy(DvzRef* ref);
+
+
+
+/*************************************************************************************************/
+/*  Colorbar                                                                                     */
+/*************************************************************************************************/
+
+
+/**
+ * Create a colorbar.
+ *
+ * @param batch the batch
+ * @param flags the flags
+ * @returns the colorbar
+ */
+DVZ_EXPORT DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags);
+
+
+
+/**
+ * Set the colormap of a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param cmap the colormap
+ */
+DVZ_EXPORT void dvz_colorbar_colormap(DvzColorbar* colorbar, DvzColormap cmap);
+
+
+
+/**
+ * Set the position of a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param position the 2D position in NDC
+ */
+DVZ_EXPORT void dvz_colorbar_position(DvzColorbar* colorbar, vec2 position);
+
+
+
+/**
+ * Set the size of a colorbar
+ *
+ * @param colorbar the colorbar
+ * @param size the colorbar size in pixels
+ */
+DVZ_EXPORT void dvz_colorbar_size(DvzColorbar* colorbar, vec2 size);
+
+
+
+/**
+ * Set the anchor of a colorbar
+ *
+ * @param colorbar the colorbar
+ * @param anchor the colorbar anchor
+ */
+DVZ_EXPORT void dvz_colorbar_anchor(DvzColorbar* colorbar, vec2 anchor);
+
+
+
+/**
+ * Add a colorbar to a panel.
+ *
+ * @param colorbar the colorbar
+ * @param panel the panel
+ */
+DVZ_EXPORT void dvz_colorbar_panel(DvzColorbar* colorbar, DvzPanel* panel);
+
+
+
+/**
+ * Update a colorbar.
+ *
+ * @param colorbar the colorbar
+ */
+DVZ_EXPORT void dvz_colorbar_update(DvzColorbar* colorbar);
+
+
+
+/**
+ * Destroy a colorbar.
+ *
+ * @param colorbar the colorbar
+ */
+DVZ_EXPORT void dvz_colorbar_destroy(DvzColorbar* colorbar);
 
 
 

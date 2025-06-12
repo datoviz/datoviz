@@ -808,6 +808,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/baker.c"
     "src/scene/box.c"
     "src/scene/camera.c"
+    "src/scene/colorbar.c"
     "src/scene/colormaps.c"
     "src/scene/demo.c"
     "src/scene/dual.c"
