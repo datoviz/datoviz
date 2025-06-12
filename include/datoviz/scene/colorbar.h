@@ -5,11 +5,11 @@
  */
 
 /*************************************************************************************************/
-/* Fly                                                                                           */
+/* Colorbar                                                                                      */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_FLY
-#define DVZ_HEADER_FLY
+#ifndef DVZ_HEADER_COLORBAR
+#define DVZ_HEADER_COLORBAR
 
 
 
@@ -19,8 +19,6 @@
 
 #include "datoviz_math.h"
 #include "datoviz_types.h"
-#include "scene/mvp.h"
-#include "scene/panzoom.h"
 
 
 
@@ -28,7 +26,14 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzFly DvzFly;
+typedef struct DvzColorbar DvzColorbar;
+
+// Forward declarations.
+typedef struct DvzVisual DvzVisual;
+typedef struct DvzAxis DvzAxis;
+typedef struct DvzTexture DvzTexture;
+typedef struct DvzBatch DvzBatch;
+typedef struct DvzRef DvzRef;
 
 
 
@@ -36,24 +41,21 @@ typedef struct DvzFly DvzFly;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzFly
+struct DvzColorbar
 {
+    DvzBatch* batch;
     int flags;
+    DvzAtlasFont af;
+    DvzRef* ref;
+    DvzColor* imgdata;
+    DvzVisual* image;
+    DvzTexture* texture;
+    DvzAxis* axis;
 
-    // Current state
-    vec3 position; // Camera position
-    float yaw;     // Rotation around Y axis (left/right)
-    float pitch;   // Rotation around X axis (up/down)
-    float roll;    // Rotation around Z axis (right mouse)
-
-    // Initial state
-    vec3 position_init;
-    float yaw_init;
-    float pitch_init;
-    float roll_init;
-
-    // Viewport size
-    vec2 viewport_size;
+    DvzColormap cmap;
+    vec2 position;
+    vec2 anchor;
+    uvec2 size;
 };
 
 
