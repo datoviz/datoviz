@@ -30,6 +30,14 @@ dvz_camera_viewproj
 dvz_camera_zrange
 dvz_circular_2D
 dvz_circular_3D
+dvz_colorbar
+dvz_colorbar_anchor
+dvz_colorbar_colormap
+dvz_colorbar_destroy
+dvz_colorbar_panel
+dvz_colorbar_position
+dvz_colorbar_size
+dvz_colorbar_update
 dvz_colormap
 dvz_colormap_8bit
 dvz_colormap_array

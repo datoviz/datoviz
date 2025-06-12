@@ -20,7 +20,6 @@ make_screenshot: true
 import datoviz as dvz
 
 app = dvz.App()
-# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure()
 panel = figure.panel(background=True)
 

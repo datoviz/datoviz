@@ -2060,6 +2060,10 @@ class DvzCamera(ctypes.Structure):
     pass
 
 
+class DvzColorbar(ctypes.Structure):
+    pass
+
+
 class DvzFifo(ctypes.Structure):
     pass
 
@@ -8239,6 +8243,150 @@ ref : DvzRef*
 """
 ref_destroy.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar = dvz.dvz_colorbar
+colorbar.__doc__ = """
+Create a colorbar.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the flags
+
+Returns
+-------
+result : DvzColorbar*
+     the colorbar
+"""
+colorbar.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_int,  # int flags
+]
+colorbar.restype = ctypes.POINTER(DvzColorbar)
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_colormap = dvz.dvz_colorbar_colormap
+colorbar_colormap.__doc__ = """
+Set the colormap of a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+cmap : DvzColormap
+    the colormap
+"""
+colorbar_colormap.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    DvzColormap,  # DvzColormap cmap
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_position = dvz.dvz_colorbar_position
+colorbar_position.__doc__ = """
+Set the position of a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+position : Tuple[float, float]
+    the 2D position in NDC
+"""
+colorbar_position.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    vec2,  # vec2 position
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_size = dvz.dvz_colorbar_size
+colorbar_size.__doc__ = """
+Set the size of a colorbar
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+size : Tuple[int, int]
+    the colorbar size in pixels
+"""
+colorbar_size.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    uvec2,  # uvec2 size
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_anchor = dvz.dvz_colorbar_anchor
+colorbar_anchor.__doc__ = """
+Set the anchor of a colorbar
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+anchor : Tuple[float, float]
+    the colorbar anchor
+"""
+colorbar_anchor.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    vec2,  # vec2 anchor
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_panel = dvz.dvz_colorbar_panel
+colorbar_panel.__doc__ = """
+Add a colorbar to a panel.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+panel : DvzPanel*
+    the panel
+"""
+colorbar_panel.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_update = dvz.dvz_colorbar_update
+colorbar_update.__doc__ = """
+Update a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+"""
+colorbar_update.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_destroy = dvz.dvz_colorbar_destroy
+colorbar_destroy.__doc__ = """
+Destroy a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+"""
+colorbar_destroy.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
 ]
 
 
