@@ -32,15 +32,14 @@ light_color = (
     vec4(0, 0, 1, 1),  # Green
 )
 
-material = (
-    vec3(0.2, 0.2, 0.2),  # Ambient   R, G, B
-    vec3(0.7, 0.7, 0.7),  # Diffuse   R, G, B
-    vec3(0.7, 0.7, 0.7),  # Specular  R, G, B
-    vec3(0.5, 0.5, 0.5),  # Emission  R, G, B
+material = dict(
+    ambient_params=vec3(0.25, 0.25, 0.25),  # R, G, B levels
+    diffuse_params=vec3(0.75, 0.75, 0.75),
+    specular_params=vec3(0.75, 0.75, 0.75),
+    emission_params=vec3(0.5, 0.5, 0.5),
+    shine=Out(0.5),
+    emit=Out(0.0),
 )
-
-shine = Out(0.9)
-emit = Out(0.0)
 
 
 sc = dvz.ShapeCollection()
@@ -67,9 +66,12 @@ def update_params():
             (int(c[0] * 255), int(c[1] * 255), int(c[2] * 255), int(c[3] * 255)), i
         )
         visual.set_light_pos(light_pos[i], i)
-        visual.set_material_params(material[i], i)  # for ambient, specular, diffuse, and emission.
-    visual.set_shine(shine.value)
-    visual.set_emit(emit.value)
+    visual.set_ambient_params(material['ambient_params'])
+    visual.set_diffuse_params(material['diffuse_params'])
+    visual.set_specular_params(material['specular_params'])
+    visual.set_emission_params(material['emission_params'])
+    visual.set_shine(material['shine'].value)
+    visual.set_emit(material['emit'].value)
     visual.update()
 
 
@@ -101,12 +103,12 @@ def on_gui(ev):
     has_changed |= dvz.gui_slider_vec4('Color 3 RGBA', 0, 1, light_color[3])
 
     dvz.gui_text('Material properties:')
-    has_changed |= dvz.gui_slider_vec3('Ambient RGB', 0, 1, material[0])
-    has_changed |= dvz.gui_slider_vec3('Diffuse RGB', 0, 1, material[1])
-    has_changed |= dvz.gui_slider_vec3('Specular RGB', 0, 1, material[2])
-    has_changed |= dvz.gui_slider_vec3('Emission RGB', 0, 1, material[3])
-    has_changed |= dvz.gui_slider('Shininess level', 0, 1, shine)
-    has_changed |= dvz.gui_slider('Emission level', 0, 1, emit)
+    has_changed |= dvz.gui_slider_vec3('Ambient RGB', 0, 1, material['ambient_params'])
+    has_changed |= dvz.gui_slider_vec3('Diffuse RGB', 0, 1, material['diffuse_params'])
+    has_changed |= dvz.gui_slider_vec3('Specular RGB', 0, 1, material['specular_params'])
+    has_changed |= dvz.gui_slider_vec3('Emission RGB', 0, 1, material['emission_params'])
+    has_changed |= dvz.gui_slider('Shininess level', 0, 1, material['shine'])
+    has_changed |= dvz.gui_slider('Emission level', 0, 1, material['emit'])
 
     dvz.gui_end()
 

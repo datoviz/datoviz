@@ -6,8 +6,7 @@
 
 #version 450
 #include "common.glsl"
-// #include "params_mesh.glsl"    // TODO: is needed?
-//#include "params_light.glsl"
+
 
 // Attributes.
 layout(location = 0) in vec3 pos;

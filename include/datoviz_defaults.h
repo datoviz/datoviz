@@ -45,11 +45,11 @@
 // #define DVZ_DEFAULT_LIGHT2_COLOR (cvec4){  0, 255,   0, 255}
 // #define DVZ_DEFAULT_LIGHT3_COLOR (cvec4){  0,   0, 255, 255}
 
-#define DVZ_DEFAULT_AMBIENT   (vec4){0.35, 0.35, 0.35} // R, G, B
-#define DVZ_DEFAULT_DIFFUSE   (vec4){0.5, 0.5, 0.5}
-#define DVZ_DEFAULT_SPECULAR  (vec4){0.1, 0.1, 0.1}
-#define DVZ_DEFAULT_EMISSION  (vec4){0.0, 0.0, 0.0}
-#define DVZ_DEFAULT_SHINE     1.0f
+#define DVZ_DEFAULT_AMBIENT   (vec4){0.25, 0.25, 0.25} // R, G, B
+#define DVZ_DEFAULT_DIFFUSE   (vec4){0.75, 0.75, 0.75}
+#define DVZ_DEFAULT_SPECULAR  (vec4){0.5, 0.5, 0.5}
+#define DVZ_DEFAULT_EMISSION  (vec4){0.5, 0.5, 0.5}
+#define DVZ_DEFAULT_SHINE     0.5f
 #define DVZ_DEFAULT_EMIT      0.0f
 #define DVZ_DEFAULT_LINEWIDTH 0.1f
 #define DVZ_DEFAULT_EDGECOLOR 0, 0, 0, 96

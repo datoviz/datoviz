@@ -185,28 +185,22 @@ void main()
         return;
     }
 
-    // Texture.
-    vec4 color = vec4(0);
+    out_color = in_uvcolor;
+
     if (MESH_TEXTURED > 0)
     {
-        // in this case, in_uvcolor.xy is uv coordinates
-        color = texture(tex, in_uvcolor.xy);
-        // uvcolor.a contains the alpha component.
-        color.a *= in_uvcolor.a;
-    }
-    // Color.
-    else
-    {
-        color = in_uvcolor; // rgba
+        // In this case, in_uvcolor.xy is uv coordinates
+        vec4 color = texture(tex, in_uvcolor.xy);
+        out_color = mix(out_color, color, color.a);
     }
 
-    out_color = color;
+    // Light both sides of surface.
+    // normal.z = abs(normal.z);
 
-
-    // Lighting.
     if (MESH_LIGHTING > 0)
     {
-        out_color = lighting(in_pos, color, normal, in_cam_pos, light, material);
+
+        out_color = lighting(in_pos, out_color, normal, in_cam_pos, light, material);
     }
     else if (normal.z > 0.0)
     {
@@ -260,4 +254,6 @@ void main()
         float isoline = logContours(value, contour.isoline_count, linewidth);
         out_color.rgb = mix(out_color.rgb, edgecolor, isoline);
     }
+
+    out_color.a = in_uvcolor.a;
 }
