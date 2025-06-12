@@ -508,6 +508,10 @@ void dvz_shape_merge(DvzShape* merged, uint32_t count, DvzShape** shapes)
         ASSERT(merged->index_count > 0);
         merged->index = (DvzIndex*)calloc(merged->index_count, sizeof(DvzIndex));
     }
+    else
+    {
+        merged->index_count = 0;
+    }
 
     uint32_t vertex_offset = 0;
     uint32_t index_offset = 0;
