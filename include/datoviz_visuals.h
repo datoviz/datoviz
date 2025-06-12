@@ -1641,7 +1641,7 @@ DVZ_EXPORT void dvz_sphere_shine(DvzVisual* visual, float shine);
 
 
 /**
- * Set the mesh surface emission level.
+ * Set the sphere surface emission level.
  *
  * @param visual the sphere
  * @param emit the emission level

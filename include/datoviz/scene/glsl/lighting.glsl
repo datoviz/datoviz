@@ -138,11 +138,9 @@ vec4 lighting(vec4 pos, vec4 color, vec3 normal, vec4 cam_pos, Light light, Mate
     vec3 N = normalize(normal);                     // Surface angle to camera
     vec3 CD = normalize(cam_pos.xyz - pos.xyz);     // Camera Direction
 
-    vec4 ambient = vec4(0);
+    // Parameters affected by lights.
     vec4 diffuse = vec4(0);
     vec4 specular = vec4(0);
-    vec4 emission = vec4(0);
-
     int count = 0;
     for (int i=0; i<4; i++)
     {
@@ -158,31 +156,28 @@ vec4 lighting(vec4 pos, vec4 color, vec3 normal, vec4 cam_pos, Light light, Mate
         else
             LD = normalize(light.pos[i].xyz - pos.xyz);   // is a light position.
 
-        ambient += 1.0 + N.z * N.z;
-
         diffuse += light_color * max(dot(N, LD), 0.0);
 
         // Blinn-Phong
         vec3 HA = normalize(LD + CD);              // Half Angle
         specular += light_color * pow(max(dot(N, HA), 0.0), 1.0 + material.shine * 128.0);
 
-        emission += material.emit;
-
         count++;
     }
-    count = max(count, 1);
 
-    // Calculate final color.
-    ambient *= material.params[AMBIENT];
-    diffuse *= material.params[DIFFUSE];
-    emission *= material.params[EMISSION];
+    if (count > 0)
+    {
+        diffuse *= material.params[DIFFUSE] / count;
+        specular *= material.params[SPECULAR] * 2.0 * material.shine / count;
+    }
 
-    // Moderate energy level.
-    specular *= 2.0 * material.params[SPECULAR] * (0.5 + material.shine);
+    // Parameters not affected by lights.
+    vec4 ambient = color * material.params[AMBIENT] * (0.8 + 0.2 * max(dot(N, CD), 0.0));
+    vec4 emission = material.emit * material.params[EMISSION];
 
     vec4 total_color = color * (ambient + diffuse) + specular + emission;
 
-    total_color = min(total_color/count, 1.0);
+    total_color = min(total_color, 1.0);
     total_color.a = color.a;
     return total_color;
 }
