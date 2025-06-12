@@ -109,6 +109,33 @@ void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float r
 
 
 
+void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 lookat)
+{
+    ANN(fly);
+    glm_vec3_copy(position, fly->position_init);
+    glm_vec3_copy(position, fly->position);
+
+    // Compute the direction vector from the position to the lookat point
+    vec3 dir;
+    glm_vec3_sub(lookat, fly->position, dir);
+    glm_vec3_normalize(dir);
+
+    // Compute pitch and yaw from the direction vector
+    // pitch is the angle from the XZ plane (vertical)
+    // yaw is the angle from the +X axis in the XZ plane (horizontal)
+
+    fly->pitch_init = asinf(dir[1]); // y component directly gives the pitch
+
+    // yaw = atan2(z, x)
+    fly->yaw_init = atan2f(dir[2], dir[0]);
+
+    // Note: roll is not affected
+
+    dvz_fly_reset(fly);
+}
+
+
+
 void dvz_fly_reset(DvzFly* fly)
 {
     ANN(fly);
@@ -218,6 +245,29 @@ void dvz_fly_get_lookat(DvzFly* fly, vec3 out_lookat)
 
 
 
+void dvz_fly_set_lookat(DvzFly* fly, vec3 lookat)
+{
+    ANN(fly);
+
+    // Compute the direction vector from the position to the lookat point
+    vec3 dir;
+    glm_vec3_sub(lookat, fly->position, dir);
+    glm_vec3_normalize(dir);
+
+    // Compute pitch and yaw from the direction vector
+    // pitch is the angle from the XZ plane (vertical)
+    // yaw is the angle from the +X axis in the XZ plane (horizontal)
+
+    fly->pitch = asinf(dir[1]); // y component directly gives the pitch
+
+    // yaw = atan2(z, x)
+    fly->yaw = atan2f(dir[2], dir[0]);
+
+    // Note: roll is not affected
+}
+
+
+
 void dvz_fly_get_up(DvzFly* fly, vec3 out_up)
 {
     ANN(fly);
@@ -234,17 +284,6 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
 
     switch (ev->type)
     {
-        // case DVZ_MOUSE_EVENT_PRESS:
-        //     if (ev->button == DVZ_MOUSE_BUTTON_LEFT || ev->button == DVZ_MOUSE_BUTTON_RIGHT)
-        //     {
-        //         // Store initial angles at press
-        //         fly->yaw_init = fly->yaw;
-        //         fly->pitch_init = fly->pitch;
-        //         fly->roll_init = fly->roll;
-        //         return true;
-        //     }
-        //     break;
-
     case DVZ_MOUSE_EVENT_DRAG:
         if (ev->button == DVZ_MOUSE_BUTTON_LEFT)
         {
@@ -258,7 +297,9 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
             dvz_fly_rotate(fly, dx * M_PI, -dy * M_PI);
             return true;
         }
-        else if (ev->button == DVZ_MOUSE_BUTTON_RIGHT)
+        else if (
+            ev->button == DVZ_MOUSE_BUTTON_MIDDLE ||
+            (ev->button == DVZ_MOUSE_BUTTON_RIGHT && (ev->mods & DVZ_KEY_MODIFIER_CONTROL)))
         {
             // Roll with right mouse drag (horizontal only), normalized by viewport width
             float dx = DVZ_FLY_MOVE_SPEED * //
@@ -271,6 +312,61 @@ bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev)
 
             return true;
         }
+        else if (ev->button == DVZ_MOUSE_BUTTON_RIGHT)
+        {
+            // Compute drag deltas normalized by viewport size
+            float dx = (ev->pos[0] - ev->content.d.last_pos[0]) / fly->viewport_size[0];
+            float dy = (ev->pos[1] - ev->content.d.last_pos[1]) / fly->viewport_size[1];
+
+            // Sensitivity scaling (adjust if needed)
+            float speed = M_2PI * DVZ_FLY_LOOK_SPEED; // One full drag moves 360 degrees
+            dx *= -speed;
+            dy *= speed;
+
+            // Step 1: compute initial distance (|V| = distance from initial pos to origin)
+            vec3 V = {-fly->position_init[0], -fly->position_init[1], -fly->position_init[2]};
+            float radius = glm_vec3_norm(V);
+
+            // Step 2: compute current front vector (from position to lookat)
+            vec3 lookat;
+            dvz_fly_get_lookat(fly, lookat);
+            vec3 front;
+            glm_vec3_sub(lookat, fly->position, front);
+            glm_vec3_normalize(front);
+
+            // Step 3: compute orbit center = position + radius * front
+            vec3 center;
+            glm_vec3_scale(front, radius, center);
+            glm_vec3_add(fly->position, center, center);
+
+            // Step 4: get spherical coordinates of position relative to center
+            vec3 rel;
+            glm_vec3_sub(fly->position, center, rel);
+            float r = glm_vec3_norm(rel);
+            float azimuth = atan2f(rel[2], rel[0]);             // around Y axis
+            float inclination = acosf(CLIP(rel[1] / r, -1, 1)); // from +Y
+
+            // Step 5: apply deltas
+            azimuth -= dx;
+            inclination -= dy;
+
+            // Clamp inclination to avoid pole singularities
+            float eps = 0.01f;
+            inclination = CLIP(inclination, eps, M_PI - eps);
+
+            // Step 6: convert back to Cartesian and update position
+            fly->position[0] = center[0] + r * sinf(inclination) * cosf(azimuth);
+            fly->position[1] = center[1] + r * cosf(inclination);
+            fly->position[2] = center[2] + r * sinf(inclination) * sinf(azimuth);
+
+            // Always look at the dynamic center
+            dvz_fly_set_lookat(fly, center);
+
+            return true;
+        }
+
+
+
         break;
 
     case DVZ_MOUSE_EVENT_DOUBLE_CLICK:

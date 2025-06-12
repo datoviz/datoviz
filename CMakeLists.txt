@@ -815,6 +815,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/font.c"
     "src/scene/geometry.cpp"
     "src/scene/graphics.c"
+    "src/scene/grid.c"
     "src/scene/meshobj.cpp"
     "src/scene/mvp.c"
     "src/scene/ortho.c"

@@ -1,8 +1,8 @@
 # Datoviz: high-performance rendering for scientific data visualization
 
-**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
+**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization** making extensive use of the graphics processing unit (GPU).
 
-It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
+Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
 [![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
@@ -57,7 +57,7 @@ The figure below shows a preliminary [**performance benchmark**](https://github.
   <a href="https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py"><img src="https://raw.githubusercontent.com/datoviz/data/master/screenshots/benchmark.png" alt="Datoviz vs Matplotlib benchmark"></a>
 </p>
 
-In this benchmark, **Datoviz outperforms Matplotlib by a factor of 20× to over 2000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
+In this benchmark, **Datoviz outperforms Matplotlib by a factor of up to 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
 
 
 ### 🧊 VTK

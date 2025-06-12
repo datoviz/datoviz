@@ -54,6 +54,14 @@ struct DvzFps
     // double max;
     double* values; // time to render the last 'count' frames
     float* hist;    // histogram of 'values', with DVZ_FPS_BINS bins
+
+    // Adaptive frame pacing
+    double target_fps; // 0 = disabled
+    double target_frame_time;
+    double sleep_time; // in seconds
+    double error_integral;
+    double gain_p;
+    double gain_i;
 };
 
 
@@ -72,7 +80,7 @@ void dvz_fps_tick(DvzFps* fps);
 
 
 
-void dvz_fps_destroy(DvzFps* fps);
+void dvz_fps_target(DvzFps* fps, double target_fps, double gain_p, double gain_i);
 
 
 
@@ -80,6 +88,10 @@ void dvz_fps_destroy(DvzFps* fps);
  * Display a FPS histogram.
  */
 void dvz_fps_histogram(DvzFps* fps);
+
+
+
+void dvz_fps_destroy(DvzFps* fps);
 
 
 

@@ -25,6 +25,7 @@
 #include "scene/camera.h"
 #include "scene/fly.h"
 #include "scene/graphics.h"
+#include "scene/grid.h"
 #include "scene/ortho.h"
 #include "scene/panzoom.h"
 #include "scene/transform.h"
@@ -699,6 +700,31 @@ void dvz_panel_destroy(DvzPanel* panel)
         dvz_ref_destroy(panel->ref);
     }
 
+    if (panel->camera != NULL)
+    {
+        dvz_camera_destroy(panel->camera);
+    }
+
+    if (panel->panzoom != NULL)
+    {
+        dvz_panzoom_destroy(panel->panzoom);
+    }
+
+    if (panel->ortho != NULL)
+    {
+        dvz_ortho_destroy(panel->ortho);
+    }
+
+    if (panel->arcball != NULL)
+    {
+        dvz_arcball_destroy(panel->arcball);
+    }
+
+    if (panel->fly != NULL)
+    {
+        dvz_fly_destroy(panel->fly);
+    }
+
     FREE(panel);
 }
 
@@ -1007,6 +1033,23 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags)
     dvz_transform_update(panel->transform);
 
     return panel->camera;
+}
+
+
+
+/*************************************************************************************************/
+/*  Grid                                                                                       */
+/*************************************************************************************************/
+
+DvzVisual* dvz_panel_grid(DvzPanel* panel, int flags)
+{
+    ANN(panel);
+    ANN(panel->figure);
+    ANN(panel->figure->scene);
+
+    DvzVisual* grid = dvz_grid(panel->figure->scene->batch, flags);
+
+    return grid;
 }
 
 

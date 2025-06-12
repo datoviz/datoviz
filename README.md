@@ -1,4 +1,4 @@
-# Datoviz: high-performance rendering for scientific data visualization
+# Datoviz: high-performance GPU rendering for scientific data visualization
 
 [**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
 [**[Usage]**](#-usage) &nbsp;
@@ -7,9 +7,9 @@
 
 
 
-**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
+**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization** making extensive use of the graphics processing unit (GPU).
 
-It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
+Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
 [![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
@@ -57,13 +57,14 @@ Use **Matplotlib** for polished static plots, **Datoviz** for responsive data ex
 
 #### Preliminary performance benchmark
 
-The figure below shows a preliminary [**performance benchmark**](https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py) comparing Datoviz and Matplotlib on an interactive 2D scatter plot, with increasing numbers of points and a simulated zoom interaction:
+The figure below shows a preliminary [**performance benchmark**](https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py) comparing Datoviz and Matplotlib on an interactive 2D scatter plot, with increasing numbers of points and a simulated zoom interaction (on a high-end Linux desktop PC):
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/datoviz/data/master/screenshots/benchmark.png" alt="Datoviz vs Matplotlib benchmark" width="800">
 </p>
 
-In this benchmark, **Datoviz outperforms Matplotlib by a factor of 20× to over 2000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
+In this benchmark, **Datoviz outperforms Matplotlib by a factor of up to 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
+
 
 
 ### 🧊 VTK
@@ -127,6 +128,16 @@ This installs a Python wheel that includes the C library, precompiled for your s
 
 If the installation fails, you may need to [build from source](BUILD.md) or [open an issue](https://github.com/datoviz/datoviz/issues) to request support for your configuration.
 
+
+### Nightly builds
+
+[Nightly builds](https://github.com/datoviz/datoviz/releases/tag/nightly) are automatically generated from the [`dev`](https://github.com/datoviz/datoviz/tree/dev) branch via [GitHub Actions](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). These builds contain the latest experimental features and bug fixes that have not yet been released.
+
+> [!WARNING]
+> Nightly wheels are untested and may be unstable. Use at your own risk, and please [report issues](https://github.com/datoviz/datoviz/issues) if you encounter any problems.
+
+You can find the latest builds on the **[Nightly Release Page](https://github.com/datoviz/datoviz/releases/tag/nightly)**.
+Each wheel file is tagged by platform (e.g. `manylinux`, `macosx`, `win_amd64`) and build date (`devYYYYMMDD`).
 
 
 ## 🚀 Usage

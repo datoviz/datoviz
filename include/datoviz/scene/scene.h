@@ -122,6 +122,7 @@ struct DvzPanel
 
     // Panel axes and decorations.
     DvzRef* ref;
+    DvzVisual* grid; // 3D horizontal grid
     DvzAxes* axes;
     DvzLegend* legend;
     DvzTitle* title;

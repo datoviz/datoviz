@@ -36,6 +36,8 @@
 
 #define BACKEND DVZ_BACKEND_GLFW
 
+#define DVZ_DEFAULT_MAX_FPS 200
+
 
 
 /*************************************************************************************************/
@@ -48,6 +50,9 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
 
     // The timer callbacks are called here.
     dvz_timer_tick(app->timer, ev->time);
+
+    // FPS tick, whether the FPS is displayed or not.
+    dvz_fps_tick(&app->prt->fps);
 }
 
 
@@ -207,6 +212,21 @@ DvzApp* dvz_app(int flags)
 
         app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
         ANN(app->prt);
+
+        // Target FPS.
+        char* env = getenv("DVZ_MAX_FPS");
+        int32_t target_fps = env != NULL ? atoi(env) : DVZ_DEFAULT_MAX_FPS;
+        if (target_fps > 0)
+        {
+            if (getenv("DVZ_FPS"))
+            {
+                log_info( //
+                    "Setting a frame rate limit to %d FPS to reduce GPU usage. Use the "
+                    "DVZ_MAX_FPS=0 environment variable to disable the cap.",
+                    target_fps);
+            }
+            dvz_fps_target(&app->prt->fps, (uint32_t)target_fps, 0.1, .02);
+        }
     }
     else
     {

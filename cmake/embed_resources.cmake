@@ -26,7 +26,7 @@ function(create_resources files prefix output)
         string(REGEX MATCH "([^/]+)$" filename ${bin})
 
         # HACK: do not include non graphics shaders in the embeded resources files.
-        if(${filename} MATCHES ".spv" AND NOT ${filename} MATCHES "graphics_")
+        if(${filename} MATCHES ".spv" AND ${filename} MATCHES "test_")
             continue()
         endif()
 
@@ -58,7 +58,7 @@ function(create_resources files prefix output)
         string(REGEX MATCH "([^/]+)$" filename ${bin})
 
         # HACK: do not include non graphics shaders in the embeded resources files.
-        if(${filename} MATCHES ".spv" AND NOT ${filename} MATCHES "graphics_")
+        if(${filename} MATCHES ".spv" AND ${filename} MATCHES "test_")
             continue()
         endif()
 

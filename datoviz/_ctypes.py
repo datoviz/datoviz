@@ -384,7 +384,6 @@ COLOR_FLOAT_MAX = 1.0
 COLOR_MAX = 1.0
 M_PI = 3.141592653589793
 M_2PI = 6.283185307179586
-M_PI2 = 1.5707963267948966
 M_INV_255 = 0.00392156862745098
 EPSILON = 1e-10
 GB = 1073741824
@@ -2876,7 +2875,7 @@ Parameters
 qapp : np.ndarray[QApplication]
     placeholder
 flags : int
-    
+    placeholder
 
 Returns
 -------
@@ -2919,6 +2918,7 @@ Parameters
 app : DvzQtApp*
     placeholder
 batch : DvzBatch*
+    placeholder
 """
 qt_submit.argtypes = [
     ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
@@ -2991,6 +2991,7 @@ Parameters
 server : DvzServer*
     placeholder
 batch : DvzBatch*
+    placeholder
 """
 server_submit.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3048,10 +3049,11 @@ Parameters
 server : DvzServer*
     placeholder
 canvas_id : DvzId
-    
+    placeholder
 width : int
-    
+    placeholder
 height : int
+    placeholder
 """
 server_resize.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3071,9 +3073,9 @@ Parameters
 server : DvzServer*
     placeholder
 canvas_id : DvzId
-    
+    placeholder
 flags : int
-    
+    placeholder
 
 Returns
 -------
@@ -3097,6 +3099,7 @@ Parameters
 scene : DvzScene*
     placeholder
 server : DvzServer*
+    placeholder
 """
 scene_render.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
@@ -4026,6 +4029,30 @@ panel_fly.argtypes = [
     ctypes.c_int,  # int flags
 ]
 panel_fly.restype = ctypes.POINTER(DvzFly)
+
+
+# -------------------------------------------------------------------------------------------------
+panel_grid = dvz.dvz_panel_grid
+panel_grid.__doc__ = """
+Add a 3D horizontal grid.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the grid creation flags
+
+Returns
+-------
+result : DvzVisual*
+     the grid
+"""
+panel_grid.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
+]
+panel_grid.restype = ctypes.POINTER(DvzVisual)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -6810,6 +6837,27 @@ fly_initial.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+fly_initial_lookat = dvz.dvz_fly_initial_lookat
+fly_initial_lookat.__doc__ = """
+Set the initial position and orientation of a fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+position : Tuple[float, float, float]
+    the initial position
+lookat : Tuple[float, float, float]
+    the initial lookat position
+"""
+fly_initial_lookat.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # vec3 position
+    vec3,  # vec3 lookat
+]
+
+
+# -------------------------------------------------------------------------------------------------
 fly_move_forward = dvz.dvz_fly_move_forward
 fly_move_forward.__doc__ = """
 Move the fly camera forward or backward along its view direction.
@@ -6935,6 +6983,24 @@ out_lookat : Out[Tuple[float, float, float]] (out parameter)
 fly_get_lookat.argtypes = [
     ctypes.POINTER(DvzFly),  # DvzFly* fly
     vec3,  # out vec3 out_lookat
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_set_lookat = dvz.dvz_fly_set_lookat
+fly_set_lookat.__doc__ = """
+Set the lookat point of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+lookat : Tuple[float, float, float]
+    the lookat point
+"""
+fly_set_lookat.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # vec3 lookat
 ]
 
 
@@ -15173,6 +15239,78 @@ alpha : float
 slice_alpha.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float alpha
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_color = dvz.dvz_grid_color
+grid_color.__doc__ = """
+Set the grid line color.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : Tuple[float, float, float, float]
+    RGBA color of fine lines
+"""
+grid_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    vec4,  # vec4 value
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_linewidth = dvz.dvz_grid_linewidth
+grid_linewidth.__doc__ = """
+Set the line width.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : float
+    width of lines (in world units)
+"""
+grid_linewidth.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    ctypes.c_float,  # float value
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_scale = dvz.dvz_grid_scale
+grid_scale.__doc__ = """
+Set the grid spacing.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : float
+    spacing between grid lines (in world units)
+"""
+grid_scale.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    ctypes.c_float,  # float value
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_elevation = dvz.dvz_grid_elevation
+grid_elevation.__doc__ = """
+Set the grid elevation on the Y axis.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : float
+    grid elevation
+"""
+grid_elevation.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    ctypes.c_float,  # float value
 ]
 
 

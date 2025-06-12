@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+import math
 from typing import TYPE_CHECKING, Optional, Tuple
 
 import numpy as np
@@ -256,27 +257,42 @@ class Panel:
         """
         if not self._camera:
             c_camera = dvz.panel_camera(self.c_panel, c_flags)
-            pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
-            lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT
-            up = initial_up if initial_up is not None else cst.DEFAULT_CAMERA_UP
-            if initial is not None:
-                dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
-                self.update()
             self._camera = Camera(c_camera, self.c_panel)
+        else:
+            c_camera = self._camera.c_camera
+        assert self._camera
+
+        pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
+        lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT
+        up = initial_up if initial_up is not None else cst.DEFAULT_CAMERA_UP
+        if initial is not None:
+            dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
+            self.update()
+
         return self._camera
 
-    def fly(self, c_flags: int = 0) -> 'Fly':
+    def fly(
+        self,
+        initial: Optional[Vec3] = None,
+        initial_lookat: Optional[Vec3] = None,
+        c_flags: int = 0,
+    ) -> 'Fly':
         """
         Add fly camera controller to the panel.
 
         Similar to first-person camera controls in 3D video games:
 
         - Left mouse drag: Look around (yaw/pitch)
-        - Right mouse drag: Move the camera left/right and up/down
+        - Right mouse drag: Orbit around a dynamic center (in front of the camera)
+        - Middle mouse drag: Move the camera left/right and up/down
         - Arrow keys: Move in view direction (up/down) or strafe (left/right)
 
         Parameters
         ----------
+        initial : tuple
+            Initial x, y, z coordinates of the fly camera.
+        initial_lookat : Vec3, optional
+            Initial look-at position, by default None.
         c_flags : int, optional
             Flags for the fly controller, by default 0
 
@@ -291,8 +307,17 @@ class Panel:
         if not self._fly:
             c_fly = dvz.panel_fly(self.c_panel, c_flags)
             self._fly = Fly(c_fly, self.c_panel)
+        assert self._fly
+
         # Also create the camera.
-        self.camera()
+        if not self._camera:
+            self.camera()
+
+        # TODO: customizable initial fly angles
+        pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
+        lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT
+        dvz.fly_initial_lookat(self._fly.c_fly, dvz.vec3(*pos), dvz.vec3(*lookat))
+
         return self._fly
 
     def orbit(
@@ -357,64 +382,20 @@ class Panel:
 
     def horizontal_grid(
         self,
-        scale: float = cst.DEFAULT_GRID_SCALE,
-        offset: Tuple[float, float, float] = cst.DEFAULT_GRID_OFFSET,
-        transform: Tuple[
-            Tuple[float, float, float, float],
-            Tuple[float, float, float, float],
-            Tuple[float, float, float, float],
-            Tuple[float, float, float, float],
-        ] = cst.DEFAULT_GRID_TRANSFORM,
-        color: Tuple[int, int, int, int] = cst.DEFAULT_GRID_COLOR,
-        texture_size: int = cst.DEFAULT_GRID_SIZE,
+        elevation: float = 0,
     ):
         """
         Add a horizontal grid texture on the y=0 plane, using a repeating pattern.
 
         Parameters
         ----------
-        scale : float, optional
-            Scale of the square, by default 32.
-        offset : tuple of 3 float, optional
-            Position offset of the square, by default (0, 0, -0.62).
-        transform : tuple of 4x4 float tuples, optional
-            Transformation matrix to orient the square onto the y=0 plane.
-        color : tuple of 4 int, optional
-            RGBA color of the grid lines, by default (230, 230, 230, 230).
-        texture_size : int, optional
-            Resolution of the texture, by default 64.
+        elevation : float, optional
+            Elevation of the grid on the Y axis.
         """
-        support = ShapeCollection()
-        support.add_square(scale=scale, offset=offset, transform=transform)
-
-        tex = np.zeros((texture_size, texture_size, 4), dtype=np.uint8)
-        tex[:1, :, :] = color
-        tex[:, :1, :] = color
-
-        texture = self._app.texture_2D(tex, address_mode='repeat')
-
-        k = scale * 2
-        texcoords = np.array(
-            [
-                [0, 0, 0, 1],
-                [k, 0, 0, 1],
-                [k, k, 0, 1],
-                [k, k, 0, 1],
-                [0, k, 0, 1],
-                [0, 0, 0, 1],
-            ],
-            dtype=np.float32,
-        )
-
-        self.add(
-            self._app.mesh(
-                support,
-                texcoords=texcoords,
-                texture=texture,
-                lighting=False,
-                depth_test=True,
-            )
-        )
+        c_grid = dvz.panel_grid(self.c_panel, 0)
+        dvz.grid_elevation(c_grid, elevation)
+        visual = Visual(c_grid)
+        self.add(visual)
 
     # Demo visuals
     # ---------------------------------------------------------------------------------------------

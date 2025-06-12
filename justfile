@@ -154,6 +154,45 @@ wheels:
     xdg-open "$URL" || open "$URL"
 #
 
+nightly arg='':
+    #!/usr/bin/env sh
+    set -e
+
+    DATE=$(date +%Y%m%d)
+    VERSION_TAG="dev${DATE}"
+    OUTDIR="dist"
+
+    echo "📦 Building nightly wheel with tag: $VERSION_TAG and arg: {{arg}}"
+
+    # Optionally clean the dist directory
+    rm -rf $OUTDIR/*
+    mkdir -p $OUTDIR
+
+    # Build the wheel
+    just wheel {{arg}}
+
+    # Find the built wheel
+    WHEEL=$(ls $OUTDIR/datoviz-*.whl | head -n 1)
+
+    if [ ! -f "$WHEEL" ]; then
+        echo "❌ No wheel found in $OUTDIR/"
+        exit 1
+    fi
+
+    # Only rename if not already tagged
+    BASENAME=$(basename "$WHEEL")
+    if echo "$BASENAME" | grep -q "$VERSION_TAG"; then
+        echo "✅ Wheel already tagged with $VERSION_TAG: $BASENAME"
+    else
+        NEWNAME=$(echo "$BASENAME" | sed "s/dev0/$VERSION_TAG/")
+        echo "Renaming $BASENAME → $NEWNAME"
+        mv "$WHEEL" "$OUTDIR/$NEWNAME"
+    fi
+
+    echo "✅ Nightly wheel ready: $OUTDIR/$(ls $OUTDIR | grep $VERSION_TAG)"
+#
+
+
 
 # -------------------------------------------------------------------------------------------------
 # Building
@@ -503,7 +542,7 @@ wheel almalinux="0":
     fi
 
     # Build the wheel
-    pip wheel wheel/ -w "dist/" --no-deps
+    pip3 wheel wheel/ -w "dist/" --no-deps
 
     # Rename the wheel
     if [ "{{almalinux}}" != "0" ]; then
@@ -825,6 +864,8 @@ renamewheel platform_tag='':
     #!/usr/bin/env sh
     set -e
 
+    echo "just renamewheel {{platform_tag}}"
+
     # Rename the wheel depending on the current platform.
     if [ ! -f dist/*any.whl ]; then
         echo "No universal wheel to rename in dist/"
@@ -1027,6 +1068,19 @@ checkartifact RUN_ID="":
     rm -rf "${temp_dir}"
     exit $exit_code
 #
+
+buildwheel args='':
+    #!/usr/bin/env sh
+    set -e
+
+    if [ -n "$DVZ_NIGHTLY_TAG" ]; then
+        echo "🔁 Detected DVZ_NIGHTLY_TAG=$DVZ_NIGHTLY_TAG — using just nightly"
+        just nightly {{args}}
+    else
+        echo "🎯 No DVZ_NIGHTLY_TAG — using just wheel"
+        just wheel {{args}}
+    fi
+
 
 
 # -------------------------------------------------------------------------------------------------
