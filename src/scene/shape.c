@@ -444,6 +444,12 @@ void dvz_shape_merge(DvzShape* merged, uint32_t count, DvzShape** shapes)
         merged->vertex_count += shapes[i]->vertex_count;
         merged->index_count += shapes[i]->index_count;
 
+        // NOTE: will use trivial sequential indexing on non-indexed shapes.
+        if (shapes[i]->index_count == 0)
+        {
+            merged->index_count += shapes[i]->vertex_count;
+        }
+
         has_normal |= shapes[i]->normal != NULL;
         has_color |= shapes[i]->color != NULL;
         has_texcoords |= shapes[i]->texcoords != NULL;
@@ -451,6 +457,9 @@ void dvz_shape_merge(DvzShape* merged, uint32_t count, DvzShape** shapes)
         has_d_left |= shapes[i]->d_left != NULL;
         has_d_right |= shapes[i]->d_right != NULL;
         has_contour |= shapes[i]->contour != NULL;
+
+        // NOTE: has_index indicates whether there is at least 1 truly indexed shape among
+        // the shapes to merge.
         has_index |= shapes[i]->index_count > 0;
     }
 
@@ -502,11 +511,13 @@ void dvz_shape_merge(DvzShape* merged, uint32_t count, DvzShape** shapes)
 
     uint32_t vertex_offset = 0;
     uint32_t index_offset = 0;
+    uint32_t index_count = 0;
 
     // Copy the data from each shape into the merged shape.
     for (uint32_t i = 0; i < count; i++)
     {
         DvzShape* shape = shapes[i];
+        index_count = shape->index_count;
 
         memcpy(merged->pos + vertex_offset, shape->pos, shape->vertex_count * sizeof(vec3));
 
@@ -544,14 +555,35 @@ void dvz_shape_merge(DvzShape* merged, uint32_t count, DvzShape** shapes)
                 shape->vertex_count * sizeof(cvec4));
 
         // Copy and reindex the indices.
-        for (uint32_t j = 0; j < shape->index_count; j++)
+        if (has_index)
         {
-            merged->index[index_offset + j] = shape->index[j] + vertex_offset;
+            ASSERT(merged->index != NULL);
+            // Shape has an index buffer.
+            if (index_count > 0)
+            {
+                ASSERT(index_offset + index_count <= merged->index_count);
+                for (uint32_t j = 0; j < index_count; j++)
+                {
+                    merged->index[index_offset + j] = shape->index[j] + vertex_offset;
+                }
+            }
+
+            // Shape doesn't have an index buffer, so we use a trivial sequential indexing.
+            else
+            {
+                // NOTE: trivial sequential indexing if non-indexed shape.
+                index_count = shape->vertex_count;
+                ASSERT(index_offset + index_count <= merged->index_count);
+                for (uint32_t j = 0; j < index_count; j++)
+                {
+                    merged->index[index_offset + j] = j + vertex_offset;
+                }
+            }
         }
 
         // Update the offsets.
         vertex_offset += shape->vertex_count;
-        index_offset += shape->index_count;
+        index_offset += index_count;
     }
 }
 
