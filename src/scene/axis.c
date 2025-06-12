@@ -32,17 +32,24 @@
 // TODO: customizable
 #define TICK_DENSITY             0.15
 #define MINOR_TICKS_PER_INTERVAL 4
+#define DEFAULT_EXTRA            3
 
-#define ANCHOR_X        (vec2){0, 0}
-#define OFFSET_X        (vec2){0, -35}
-#define DIR_X           (vec2){0, -1}
+#define ANCHOR_X                                                                                  \
+    (vec2) { 0, 0 }
+#define OFFSET_X                                                                                  \
+    (vec2) { 0, -35 }
+#define DIR_X                                                                                     \
+    (vec2) { 0, -1 }
 #define POS_X           -1
 #define FACTOR_OFFSET_X -20, -70
 #define LABEL_OFFSET_X  0, -70
 
-#define ANCHOR_Y        (vec2){+1, 0}
-#define OFFSET_Y        (vec2){-25, 0}
-#define DIR_Y           (vec2){-1, 0}
+#define ANCHOR_Y                                                                                  \
+    (vec2) { +1, 0 }
+#define OFFSET_Y                                                                                  \
+    (vec2) { -25, 0 }
+#define DIR_Y                                                                                     \
+    (vec2) { -1, 0 }
 #define POS_Y           -1
 #define FACTOR_OFFSET_Y 20, -30
 #define LABEL_OFFSET_Y  0, 0
@@ -344,26 +351,28 @@ static void compute_layout(
 
 
 
-static void create_spine(DvzVisual* spine, DvzDim dim)
+static void create_spine(DvzVisual* spine, DvzDim dim, float pos)
 {
     ANN(spine);
     // Set spine.
     dvz_segment_alloc(spine, 1);
     vec3 start = {0};
     vec3 end = {0};
+    float min = -1;
+    float max = 1;
     if (dim == DVZ_DIM_X)
     {
-        start[0] = -1;
-        start[1] = -1;
-        end[0] = +2;
-        end[1] = -1;
+        start[0] = min;
+        start[1] = pos;
+        end[0] = max;
+        end[1] = pos;
     }
     else if (dim == DVZ_DIM_Y)
     {
-        start[0] = -1;
-        start[1] = -1;
-        end[0] = -1;
-        end[1] = +2;
+        start[0] = pos;
+        start[1] = min;
+        end[0] = pos;
+        end[1] = max;
     }
     dvz_segment_position(spine, 0, 1, &start, &end, 0);
     dvz_segment_color(spine, 0, 1, (DvzColor[]){{BLACK}}, 0);
@@ -403,8 +412,9 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
 
     // Create the spine visual.
     axis->spine = dvz_segment(batch, 0);
-    create_spine(axis->spine, dim);
+    create_spine(axis->spine, dim, axis->spec.pos);
 
+    axis->spec.extra = DEFAULT_EXTRA;
 
     // Create the ticks.
     axis->ticks = dvz_ticks(0);
@@ -412,11 +422,11 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
     // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
     // at the moment.
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, (vec2){0},
-        (vec2){0});
+        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, //
+        (vec2){0}, (vec2){0});
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, (vec2){0},
-        (vec2){0});
+        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, //
+        (vec2){0}, (vec2){0});
 
     return axis;
 }
@@ -574,10 +584,8 @@ bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double dmax)
     dvz_ticks_range(ticks, &lmin, &lmax, &lstep);
 
     // NOTE: extend left and right for aesthetical purposes.
-    // WARNING: extra should be a multiple of step
-    double extra = 3 * lstep;
-    lmin -= extra;
-    lmax += extra;
+    lmin -= axis->spec.extra * lstep;
+    lmax += axis->spec.extra * lstep;
 
     uint32_t tick_count = get_tick_count(lmin, lmax, lstep);
     if (tick_count < 2)
@@ -740,6 +748,14 @@ void dvz_axis_destroy(DvzAxis* axis)
 /*************************************************************************************************/
 /*  Axis spec                                                                                    */
 /*************************************************************************************************/
+
+void dvz_axis_extra(DvzAxis* axis, float extra)
+{
+    ANN(axis);
+    axis->spec.extra = extra;
+}
+
+
 
 void dvz_axis_pos(DvzAxis* axis, float pos)
 {

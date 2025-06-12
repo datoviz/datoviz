@@ -55,6 +55,7 @@ struct DvzAxisSpec
     vec2 anchor;
     vec2 offset;
     float pos;
+    float extra;
 
     // Color.
     DvzColor color_glyph;
@@ -199,9 +200,14 @@ DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
 /*************************************************************************************************/
 
 /**
- * Create an axis.
  *
- * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_extra(DvzAxis* axis, float extra);
+
+
+
+/**
+ *
  */
 DVZ_EXPORT void dvz_axis_pos(DvzAxis* axis, float pos); // x0 for y axis, y0 for x axis
 
