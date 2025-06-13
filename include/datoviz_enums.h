@@ -173,6 +173,15 @@ typedef enum
 
 
 
+// Axis flags.
+typedef enum
+{
+    DVZ_AXIS_FLAGS_NONE = 0x00,
+    DVZ_AXIS_FLAGS_DARK = 0x01,
+} DvzAxisFlags;
+
+
+
 // Arcball flags.
 typedef enum
 {

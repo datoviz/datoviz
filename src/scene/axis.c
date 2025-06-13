@@ -64,21 +64,10 @@
 #define LENGTH_MAJOR 16
 #define LENGTH_MINOR 10
 
-#define LABEL_COLOR                                                                               \
-    (DvzColor) { BLACK }
-#define LABEL_BGCOLOR                                                                             \
-    (DvzColor) { WHITE }
-
-#define COLOR_GLYPH                                                                               \
-    (DvzColor) { BLACK }
-#define COLOR_LIM                                                                                 \
-    (DvzColor) { BLACK }
-#define COLOR_GRID                                                                                \
-    (DvzColor) { BLACK }
-#define COLOR_MAJOR                                                                               \
-    (DvzColor) { BLACK }
-#define COLOR_MINOR                                                                               \
-    (DvzColor) { BLACK }
+#define BACKGROUND                                                                                \
+    (((axis->flags & DVZ_AXIS_FLAGS_DARK) != 0) ? ((DvzColor){BLACK}) : ((DvzColor){WHITE}))
+#define FOREGROUND                                                                                \
+    (((axis->flags & DVZ_AXIS_FLAGS_DARK) != 0) ? ((DvzColor){WHITE}) : ((DvzColor){BLACK}))
 
 
 
@@ -253,9 +242,9 @@ static void axis_common_params(DvzAxis* axis)
 {
     dvz_axis_width(axis, WIDTH_LIM, WIDTH_GRID, WIDTH_MAJOR, WIDTH_MINOR);
     dvz_axis_length(axis, LENGTH_LIM, LENGTH_GRID, LENGTH_MAJOR, LENGTH_MINOR);
-    dvz_axis_color(axis, COLOR_GLYPH, COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
+    dvz_axis_color(axis, FOREGROUND, FOREGROUND, FOREGROUND, FOREGROUND, FOREGROUND);
 
-    dvz_glyph_bgcolor(axis->glyph, LABEL_BGCOLOR);
+    dvz_glyph_bgcolor(axis->glyph, BACKGROUND);
 
     // if (axis->factor != NULL)
     // {
@@ -351,15 +340,28 @@ static void compute_layout(
 
 
 
-static void create_spine(DvzVisual* spine, DvzDim dim, float pos)
+static void create_spine(DvzVisual* spine, DvzDim dim, DvzColor foreground)
 {
     ANN(spine);
     // Set spine.
     dvz_segment_alloc(spine, 1);
+
+    DvzColor foreground_ = {0};
+    memcpy(foreground_, foreground, sizeof(DvzColor));
+    dvz_segment_color(spine, 0, 1, &foreground_, 0);
+    dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
+    // dvz_visual_fixed(spine, true, true, true);
+}
+
+
+
+static void spine_position(DvzVisual* spine, DvzDim dim, float pos)
+{
+    ANN(spine);
     vec3 start = {0};
     vec3 end = {0};
     float min = -1;
-    float max = 1;
+    float max = 2;
     if (dim == DVZ_DIM_X)
     {
         start[0] = min;
@@ -375,9 +377,6 @@ static void create_spine(DvzVisual* spine, DvzDim dim, float pos)
         end[1] = max;
     }
     dvz_segment_position(spine, 0, 1, &start, &end, 0);
-    dvz_segment_color(spine, 0, 1, (DvzColor[]){{BLACK}}, 0);
-    dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
-    // dvz_visual_fixed(spine, true, true, true);
 }
 
 
@@ -412,7 +411,7 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
 
     // Create the spine visual.
     axis->spine = dvz_segment(batch, 0);
-    create_spine(axis->spine, dim, axis->spec.pos);
+    create_spine(axis->spine, dim, FOREGROUND);
 
     axis->spec.extra = DEFAULT_EXTRA;
 
@@ -422,10 +421,10 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
     // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
     // at the moment.
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, //
+        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, (DvzColor){BLACK}, //
         (vec2){0}, (vec2){0});
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, //
+        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, (DvzColor){BLACK}, //
         (vec2){0}, (vec2){0});
 
     return axis;
@@ -447,7 +446,7 @@ void dvz_axis_glyph(DvzAxis* axis, uint32_t tick_count, char** labels, vec3* pos
     ANN(axis->glyph);
 
     dvz_glyph_strings(
-        axis->glyph, tick_count, labels, positions, NULL, LABEL_COLOR, axis->spec.offset,
+        axis->glyph, tick_count, labels, positions, NULL, FOREGROUND, axis->spec.offset,
         axis->spec.anchor);
 }
 
@@ -521,7 +520,7 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
     }
 
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){label}, &pos, NULL, LABEL_COLOR, axis->factor_layout.offset,
+        axis->factor, 1, (char*[]){label}, &pos, NULL, FOREGROUND, axis->factor_layout.offset,
         anchor);
 }
 
@@ -544,7 +543,7 @@ void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orie
 
     vec2 anchor = {0, 1};
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){text}, &pos, NULL, LABEL_COLOR, axis->label_layout.offset,
+        axis->label, 1, (char*[]){text}, &pos, NULL, FOREGROUND, axis->label_layout.offset,
         anchor);
 }
 
@@ -762,6 +761,8 @@ void dvz_axis_pos(DvzAxis* axis, float pos)
     ANN(axis);
     // x0 for y axis, y0 for x axis
     axis->spec.pos = pos;
+
+    spine_position(axis->spine, axis->dim, axis->spec.pos);
 }
 
 
