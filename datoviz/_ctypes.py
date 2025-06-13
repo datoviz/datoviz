@@ -491,6 +491,11 @@ class DvzRefFlags(CtypesEnum):
     DVZ_REF_FLAGS_EQUAL = 0x01
 
 
+class DvzAxisFlags(CtypesEnum):
+    DVZ_AXIS_FLAGS_NONE = 0x00
+    DVZ_AXIS_FLAGS_DARK = 0x01
+
+
 class DvzArcballFlags(CtypesEnum):
     DVZ_ARCBALL_FLAGS_NONE = 0
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 1
@@ -1288,6 +1293,7 @@ class DvzPrintFlagsFlags(CtypesEnum):
 Align = DvzAlign
 AppFlags = DvzAppFlags
 ArcballFlags = DvzArcballFlags
+AxisFlags = DvzAxisFlags
 BlendType = DvzBlendType
 BoxExtentStrategy = DvzBoxExtentStrategy
 BoxMergeStrategy = DvzBoxMergeStrategy
@@ -1365,6 +1371,8 @@ APP_FLAGS_OFFSCREEN = 0x008000
 APP_FLAGS_WHITE_BACKGROUND = 0x100000
 ARCBALL_FLAGS_CONSTRAIN = 1
 ARCBALL_FLAGS_NONE = 0
+AXIS_FLAGS_DARK = 0x01
+AXIS_FLAGS_NONE = 0x00
 BLEND_DESTINATION = 2
 BLEND_DISABLE = 0
 BLEND_OIT = 3
@@ -8255,6 +8263,12 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
+cmap : DvzColormap
+    the colormap
+dmin : float
+    the minimal value
+dmax : float
+    the maximal value
 flags : int
     the flags
 
@@ -8265,14 +8279,38 @@ result : DvzColorbar*
 """
 colorbar.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzColormap,  # DvzColormap cmap
+    ctypes.c_double,  # double dmin
+    ctypes.c_double,  # double dmax
     ctypes.c_int,  # int flags
 ]
 colorbar.restype = ctypes.POINTER(DvzColorbar)
 
 
 # -------------------------------------------------------------------------------------------------
-colorbar_colormap = dvz.dvz_colorbar_colormap
-colorbar_colormap.__doc__ = """
+colorbar_range = dvz.dvz_colorbar_range
+colorbar_range.__doc__ = """
+Set the colorbar range.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+dmin : float
+    the minimal value
+dmax : float
+    the maximal value
+"""
+colorbar_range.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    ctypes.c_double,  # double dmin
+    ctypes.c_double,  # double dmax
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_cmap = dvz.dvz_colorbar_cmap
+colorbar_cmap.__doc__ = """
 Set the colormap of a colorbar.
 
 Parameters
@@ -8282,7 +8320,7 @@ colorbar : DvzColorbar*
 cmap : DvzColormap
     the colormap
 """
-colorbar_colormap.argtypes = [
+colorbar_cmap.argtypes = [
     ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
     DvzColormap,  # DvzColormap cmap
 ]
@@ -8315,12 +8353,12 @@ Parameters
 ----------
 colorbar : DvzColorbar*
     the colorbar
-size : Tuple[int, int]
+size : Tuple[float, float]
     the colorbar size in pixels
 """
 colorbar_size.argtypes = [
     ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
-    uvec2,  # uvec2 size
+    vec2,  # vec2 size
 ]
 
 
