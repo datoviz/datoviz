@@ -35,7 +35,7 @@ visual_values_defaults = dict(
     light_pos=(-30, +30, +100, 1),
     ambient_params=vec3(0.2, 0.2, 0.2),
     diffuse_params=vec3(0.9, 0.9, 0.9),
-    specular_params=vec3(0.3, 0.3, 0.3),
+    specular_params=vec3(0.5, 0.5, 0.5),
     shine=0.1,
 )
 

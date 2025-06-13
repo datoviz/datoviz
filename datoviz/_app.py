@@ -923,7 +923,10 @@ class App:
         index: np.ndarray = None,
         light_pos: Tuple[float, float, float, float] = None,
         light_color: Tuple[int, int, int, int] = None,
-        material_params: Tuple[float, float, float] = None,
+        ambient_params: tp.Optional[Tuple[float, float, float]] = None,
+        diffuse_params: tp.Optional[Tuple[float, float, float]] = None,
+        specular_params: tp.Optional[Tuple[float, float, float]] = None,
+        emission_params: tp.Optional[Tuple[float, float, float]] = None,
         shine: float = None,
         emit: float = None,
         edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
@@ -967,9 +970,14 @@ class App:
             If `w` is 0, the light is directional; if `w` is 1, the light is positional.
         light_color : Tuple[int, int, int, int], optional
             Light color in RGBA format, in the form (r, g, b, a).
-        material_params : Tuple[float, float, float], optional
+        ambient_params : Tuple[float, float, float], optional
             Material ambient parameters for the mesh, in the form (r, g, b).
-            For diffuse, specular, and exponent, use `Mesh.set_material_params()`.
+        diffuse_params : Tuple[float, float, float], optional
+            Material diffuse parameters for the mesh, in the form (r, g, b).
+        specular_params : Tuple[float, float, float], optional
+            Material specular parameters for the mesh, in the form (r, g, b).
+        emission_params : Tuple[float, float, float], optional
+            Material emission parameters for the mesh, in the form (r, g, b).
         shine : float, optional
             Material shine factor for the mesh, in the range [0, 1].
         emit : float, optional
@@ -1060,7 +1068,10 @@ class App:
             index=index,
             light_pos=light_pos,
             light_color=light_color,
-            material_params=material_params,
+            ambient_params=ambient_params,
+            diffuse_params=diffuse_params,
+            specular_params=specular_params,
+            emission_params=emission_params,
             shine=shine,
             emit=emit,
             edgecolor=edgecolor,

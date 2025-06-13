@@ -454,15 +454,9 @@ class Panel:
 
         gizmo_visual = self._app.mesh(gizmo_sc, lighting=True, depth_test=True)
         gizmo_visual.set_light_pos((2, 2, 5))
-
-        # Diffuse.
-        gizmo_visual.set_material_params((0.5,) * 3, idx=0)
-
-        # Ambient.
-        gizmo_visual.set_material_params((0.1,) * 3, idx=1)
-
-        # Specular.
-        gizmo_visual.set_material_params((0.1,) * 3, idx=2)
+        gizmo_visual.set_ambient_params((0.5,) * 3)
+        gizmo_visual.set_diffuse_params((0.1,) * 3)
+        gizmo_visual.set_specular_params((0.1,) * 3)
 
         gizmo_panel.add(gizmo_visual)
 

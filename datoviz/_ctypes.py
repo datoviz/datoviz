@@ -15086,7 +15086,7 @@ sphere_shine.argtypes = [
 # -------------------------------------------------------------------------------------------------
 sphere_emit = dvz.dvz_sphere_emit
 sphere_emit.__doc__ = """
-Set the mesh surface emission level.
+Set the sphere surface emission level.
 
 Parameters
 ----------

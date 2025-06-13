@@ -94,7 +94,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     int lighting = (flags & DVZ_MESH_FLAGS_LIGHTING);
     int contour = (flags & DVZ_MESH_FLAGS_CONTOUR);
     int isoline = (flags & DVZ_MESH_FLAGS_ISOLINE);
-    log_trace("create mesh visual, texture: %d, lighting: %d", textured, lighting);
+    log_trace("create mesh visual, texture: %d, lighting: %d, contour: %d, isoline: %d",
+              textured, lighting, contour, isoline);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_mesh");

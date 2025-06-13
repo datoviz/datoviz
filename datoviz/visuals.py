@@ -1834,20 +1834,53 @@ class Mesh(Visual):
         value = value if value is not None else cst.DEFAULT_LIGHT_COLOR
         dvz.mesh_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
-    def set_material_params(self, value: tuple, idx: int = 0) -> None:
+    def set_ambient_params(self, value: tuple) -> None:
         """
-        Set the parameters of the material.
+        Set the ambient parameters of the material.
 
         Parameters
         ----------
         value : tuple
-            The material light parameters (r, g, b).
-        idx : int, optional
-            The index of the material, by default 0.  (0 ambient, 1 diffuse, 2 specular,
-            3 emission)
+            The material ambient parameters (r, g, b).
         """
-        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
-        dvz.mesh_material_params(self.c_visual, idx, dvz.vec3(*value))
+        value = value if value is not None else cst.DEFAULT_AMBIENT_PARAMS
+        dvz.mesh_material_params(self.c_visual, 0, dvz.vec3(*value))
+
+    def set_diffuse_params(self, value: tuple) -> None:
+        """
+        Set the diffuse parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material diffuse parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_DIFFUSE_PARAMS
+        dvz.mesh_material_params(self.c_visual, 1, dvz.vec3(*value))
+
+    def set_specular_params(self, value: tuple) -> None:
+        """
+        Set the specular parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material specular parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_SPECULAR_PARAMS
+        dvz.mesh_material_params(self.c_visual, 2, dvz.vec3(*value))
+
+    def set_emission_params(self, value: tuple) -> None:
+        """
+        Set the emission parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material emission parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_EMISSION_PARAMS
+        dvz.mesh_material_params(self.c_visual, 3, dvz.vec3(*value))
 
     def set_shine(self, value: float) -> None:
         """

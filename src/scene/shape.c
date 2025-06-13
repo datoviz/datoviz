@@ -1075,8 +1075,9 @@ void dvz_shape_square(DvzShape* shape, DvzColor color)
 {
     ANN(shape);
 
+    const uint32_t vertex_count = 6;
     shape->type = DVZ_SHAPE_SQUARE;
-    shape->vertex_count = 6;
+    shape->vertex_count = vertex_count;
 
     // Position.
     float x = .5;
@@ -1112,12 +1113,12 @@ void dvz_shape_square(DvzShape* shape, DvzColor color)
     memcpy(
         shape->texcoords,
         (vec4[]){
-            {0, 0, 0, 1},
-            {1, 0, 0, 1},
-            {1, 1, 0, 1},
-            {1, 1, 0, 1},
             {0, 1, 0, 1},
+            {1, 1, 0, 1},
+            {1, 0, 0, 1},
+            {1, 0, 0, 1},
             {0, 0, 0, 1},
+            {0, 1, 0, 1},
         },
         shape->vertex_count * sizeof(vec4));
 }
@@ -1172,7 +1173,7 @@ void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color)
         float x = shape->pos[i][0];
         float y = shape->pos[i][1];
         shape->texcoords[i][0] = 0.5f + x;
-        shape->texcoords[i][1] = 0.5f + y;
+        shape->texcoords[i][1] = 0.5f - y;   // Invert y for vulkan.
         shape->texcoords[i][2] = 0.0f;
         shape->texcoords[i][3] = 1.0f;
     }
@@ -1248,7 +1249,7 @@ void dvz_shape_sector(
         float x = shape->pos[i + 1][0];
         float y = shape->pos[i + 1][1];
         shape->texcoords[i + 1][0] = 0.5f + x;
-        shape->texcoords[i + 1][1] = 0.5f + y;
+        shape->texcoords[i + 1][1] = 0.5f - y;  // Invert y.
         shape->texcoords[i + 1][2] = 0.0f;
         shape->texcoords[i + 1][3] = 1.0f;
     }
@@ -1447,8 +1448,8 @@ void dvz_shape_surface(
             shape->color[point_idx][2] = colors != NULL ? colors[point_idx][2] : ALPHA_MAX;
             shape->color[point_idx][3] = colors != NULL ? colors[point_idx][3] : ALPHA_MAX;
 
-            shape->texcoords[point_idx][0] = i / (float)(row_count - 1); // in [0, 1] along i axis
-            shape->texcoords[point_idx][1] = j / (float)(col_count - 1); // in [0, 1] along j axis
+            shape->texcoords[point_idx][1] = i / (float)(row_count - 1); // in [0, 1] along i axis
+            shape->texcoords[point_idx][0] = j / (float)(col_count - 1); // in [0, 1] along j axis
             // shape->texcoords[point_idx][2];     // unused for now
             shape->texcoords[point_idx][3] = 1; // alpha
 
@@ -1683,7 +1684,7 @@ void dvz_shape_sphere(DvzShape* shape, uint32_t rows, uint32_t cols, DvzColor co
             memcpy(shape->color[point_idx], color, sizeof(DvzColor));
 
             // Texcoords.
-            shape->texcoords[point_idx][0] = j / (float)cols;
+            shape->texcoords[point_idx][0] = 1.0 - j / (float)cols;
             shape->texcoords[point_idx][1] = i / (float)rows;
             shape->texcoords[point_idx][3] = 1; // alpha
 
@@ -1752,8 +1753,8 @@ void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color)
         shape->pos[vi][2] = radius * z;
         glm_vec3_copy((vec3){x, 0, z}, shape->normal[vi]);
         memcpy(shape->color[vi], color, sizeof(DvzColor));
-        shape->texcoords[vi][0] = i / (float)count;
-        shape->texcoords[vi][1] = 0;
+        shape->texcoords[vi][0] = 1 - i / (float)count;
+        shape->texcoords[vi][1] = 1;
         shape->texcoords[vi][3] = 1;
         vi++;
 
@@ -1763,8 +1764,8 @@ void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color)
         shape->pos[vi][2] = radius * z;
         glm_vec3_copy((vec3){x, 0, z}, shape->normal[vi]);
         memcpy(shape->color[vi], color, sizeof(DvzColor));
-        shape->texcoords[vi][0] = i / (float)count;
-        shape->texcoords[vi][1] = 1;
+        shape->texcoords[vi][0] = 1 - i / (float)count;
+        shape->texcoords[vi][1] = 0;
         shape->texcoords[vi][3] = 1;
         vi++;
     }
@@ -1819,7 +1820,7 @@ void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color)
         glm_vec3_copy((vec3){0, -1, 0}, shape->normal[vi]);
         memcpy(shape->color[vi], color, sizeof(DvzColor));
         shape->texcoords[vi][0] = 0.5f + 0.5f * x;
-        shape->texcoords[vi][1] = 0.5f + 0.5f * z;
+        shape->texcoords[vi][1] = 0.5f - 0.5f * z;
         shape->texcoords[vi][3] = 1;
         vi++;
     }
@@ -1904,8 +1905,8 @@ void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
         glm_vec3_normalize_to(n, shape->normal[vi]);
 
         memcpy(shape->color[vi], color, sizeof(DvzColor));
-        shape->texcoords[vi][0] = i / (float)count;
-        shape->texcoords[vi][1] = 0;
+        shape->texcoords[vi][0] = 1 - i / (float)count;
+        shape->texcoords[vi][1] = 1;
         shape->texcoords[vi][3] = 1;
         vi++;
     }
@@ -1918,7 +1919,7 @@ void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
     glm_vec3_copy((vec3){0, 1, 0}, shape->normal[vi]);
     memcpy(shape->color[vi], color, sizeof(DvzColor));
     shape->texcoords[vi][0] = 0.5;
-    shape->texcoords[vi][1] = 1.0;
+    shape->texcoords[vi][1] = 0;
     shape->texcoords[vi][3] = 1;
     vi++;
 
@@ -1958,7 +1959,7 @@ void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
         glm_vec3_copy((vec3){0, -1, 0}, shape->normal[vi]);
         memcpy(shape->color[vi], color, sizeof(DvzColor));
         shape->texcoords[vi][0] = 0.5f + 0.5f * x;
-        shape->texcoords[vi][1] = 0.5f + 0.5f * z;
+        shape->texcoords[vi][1] = 0.5f - 0.5f * z;
         shape->texcoords[vi][3] = 1;
         vi++;
     }
