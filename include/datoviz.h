@@ -3073,10 +3073,25 @@ DVZ_EXPORT void dvz_ref_destroy(DvzRef* ref);
  * Create a colorbar.
  *
  * @param batch the batch
+ * @param cmap the colormap
+ * @param dmin the minimal value
+ * @param dmax the maximal value
  * @param flags the flags
  * @returns the colorbar
  */
-DVZ_EXPORT DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags);
+DVZ_EXPORT DvzColorbar*
+dvz_colorbar(DvzBatch* batch, DvzColormap cmap, double dmin, double dmax, int flags);
+
+
+
+/**
+ * Set the colorbar range.
+ *
+ * @param colorbar the colorbar
+ * @param dmin the minimal value
+ * @param dmax the maximal value
+ */
+DVZ_EXPORT void dvz_colorbar_range(DvzColorbar* colorbar, double dmin, double dmax);
 
 
 
@@ -3086,7 +3101,7 @@ DVZ_EXPORT DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags);
  * @param colorbar the colorbar
  * @param cmap the colormap
  */
-DVZ_EXPORT void dvz_colorbar_colormap(DvzColorbar* colorbar, DvzColormap cmap);
+DVZ_EXPORT void dvz_colorbar_cmap(DvzColorbar* colorbar, DvzColormap cmap);
 
 
 

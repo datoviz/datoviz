@@ -21,7 +21,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define FONT_SIZE  16
+#define FONT_SIZE  18
 #define DIM        DVZ_DIM_Y
 #define POS_X      0
 #define POS_Y      0
@@ -29,6 +29,7 @@
 #define HEIGHT     2
 #define TEXWIDTH   1
 #define TEXHEIGHT  256
+#define TEXSIZE    (TEXWIDTH * TEXHEIGHT * (sizeof(DvzColor)))
 #define XANCHOR    -1
 #define YANCHOR    0
 #define COLORMAP   DVZ_CMAP_HSV
@@ -94,7 +95,7 @@ static DvzVisual* create_colormap_visual(DvzBatch* batch)
     ANN(image);
 
     dvz_image_alloc(image, 1);
-    dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
+    dvz_image_texcoords(image, 0, 1, (vec4[]){{1, 1, 0, 0}}, 0);
     // dvz_visual_fixed(image, true, true, true);
     return image;
 }
@@ -120,6 +121,11 @@ static void update_colorbar(DvzColorbar* colorbar)
         colorbar->texture =
             create_colormap_texture(colorbar->batch, TEXWIDTH, TEXHEIGHT, colorbar->imgdata);
     }
+    else
+    {
+        dvz_texture_data(
+            colorbar->texture, 0, 0, 0, TEXWIDTH, TEXHEIGHT, 1, TEXSIZE, colorbar->imgdata);
+    }
 }
 
 
@@ -128,23 +134,18 @@ static void update_colorbar(DvzColorbar* colorbar)
 /*  Colorbar                                                                                     */
 /*************************************************************************************************/
 
-DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags)
+DvzColorbar* dvz_colorbar(DvzBatch* batch, DvzColormap cmap, double dmin, double dmax, int flags)
 {
     ANN(batch);
 
     DvzColorbar* colorbar = (DvzColorbar*)calloc(1, sizeof(DvzColorbar));
     colorbar->flags = flags;
     colorbar->batch = batch;
+    colorbar->ref = dvz_ref(0);
 
     dvz_atlas_font(FONT_SIZE, &colorbar->af);
 
-    double dmin = 0;
-    double dmax = 1;
-
-    colorbar->ref = dvz_ref(0);
-    dvz_ref_set(colorbar->ref, DIM, dmin, dmax);
-
-    colorbar->axis = dvz_axis(batch, &colorbar->af, DIM, 0);
+    colorbar->axis = dvz_axis(batch, &colorbar->af, DIM, DVZ_AXIS_FLAGS_DARK);
     dvz_axis_extra(colorbar->axis, 0);
     dvz_axis_size(colorbar->axis, 600, GLYPH_SIZE);
     dvz_axis_anchor(colorbar->axis, (vec2){+1, 0});
@@ -153,8 +154,6 @@ DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags)
     dvz_axis_pos(colorbar->axis, 0);
     dvz_visual_show(colorbar->axis->spine, false);
 
-    dvz_axis_update(colorbar->axis, colorbar->ref, dmin, dmax);
-
     // Create the visual.
     if (colorbar->image == NULL)
     {
@@ -162,7 +161,8 @@ DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags)
     }
 
     // Default values.
-    dvz_colorbar_colormap(colorbar, COLORMAP);
+    dvz_colorbar_range(colorbar, dmin, dmax);
+    dvz_colorbar_cmap(colorbar, cmap);
     dvz_colorbar_position(colorbar, (vec2){POS_X, POS_Y});
     dvz_colorbar_size(colorbar, (vec2){WIDTH, HEIGHT});
     dvz_colorbar_anchor(colorbar, (vec2){XANCHOR, YANCHOR});
@@ -174,7 +174,17 @@ DvzColorbar* dvz_colorbar(DvzBatch* batch, int flags)
 
 
 
-void dvz_colorbar_colormap(DvzColorbar* colorbar, DvzColormap cmap)
+void dvz_colorbar_range(DvzColorbar* colorbar, double dmin, double dmax)
+{
+    ANN(colorbar);
+    ASSERT(dmin < dmax);
+    dvz_ref_set(colorbar->ref, DIM, dmin, dmax);
+    dvz_axis_update(colorbar->axis, colorbar->ref, dmin, dmax);
+}
+
+
+
+void dvz_colorbar_cmap(DvzColorbar* colorbar, DvzColormap cmap)
 {
     ANN(colorbar);
     colorbar->cmap = cmap;
