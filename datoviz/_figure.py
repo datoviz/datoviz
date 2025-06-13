@@ -25,6 +25,26 @@ from .utils import to_cvec4_array, to_enum
 # -------------------------------------------------------------------------------------------------
 
 
+class Colorbar:
+    c_colorbar: dvz.DvzColorbar = None
+    colorbar_panel: 'Panel' = None
+
+    def __init__(self, c_colorbar: dvz.DvzColorbar, colorbar_panel: 'Panel'):
+        self.c_colorbar = c_colorbar
+        self.colorbar_panel = colorbar_panel
+
+    def set_cmap(self, cmap: str):
+        c_cmap = to_enum(f'cmap_{cmap}')
+        dvz.colorbar_cmap(self.c_colorbar, c_cmap)
+        dvz.colorbar_update(self.c_colorbar)
+
+    def set_range(self, dmin: float, dmax: float):
+        dvz.colorbar_range(self.c_colorbar, dmin, dmax)
+
+    def destroy(self):
+        dvz.colorbar_destroy(self.c_colorbar)
+
+
 class Figure:
     """
     Represents a figure, which is a container for panels.
@@ -37,8 +57,7 @@ class Figure:
 
     c_figure: dvz.DvzFigure = None
     _app: 'App' = None
-    c_colorbar: dvz.DvzColorbar = None
-    c_colorbar_panel: 'Panel' = None
+    colorbar: Colorbar = None
 
     def __init__(self, c_figure: dvz.DvzFigure, app: Optional['App'] = None) -> None:
         """
@@ -117,16 +136,21 @@ class Figure:
         """
         return dvz.figure_id(self.c_figure)
 
-    def colorbar(self, cmap: str = 'hsv', dmin: float = 0, dmax: float = 1):
+    def _create_colorbar_panel(self):
         w, h = self.size()
         cw, ch = 80, h - 40
         m = 20
-        self.colorbar_panel = self.panel((w - cw - m, m), (cw, ch))
-        self.colorbar_panel.margins(m//2, m//2, m//2, m//2)
+        colorbar_panel = self.panel((w - cw - m, m), (cw, ch))
+        colorbar_panel.margins(m // 2, m // 2, m // 2, m // 2)
+        return colorbar_panel
 
+    def colorbar(self, cmap: str = 'hsv', dmin: float = 0, dmax: float = 1):
         c_cmap = to_enum(f'cmap_{cmap}')
-        self.c_colorbar = dvz.colorbar(self._app.c_batch, c_cmap, dmin, dmax, 0)
-        dvz.colorbar_panel(self.c_colorbar, self.colorbar_panel.c_panel)
+        c_colorbar = dvz.colorbar(self._app.c_batch, c_cmap, dmin, dmax, 0)
+
+        colorbar_panel = self._create_colorbar_panel()
+        dvz.colorbar_panel(c_colorbar, colorbar_panel.c_panel)
+        return Colorbar(c_colorbar, colorbar_panel)
 
     def destroy(self) -> None:
         """
