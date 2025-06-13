@@ -293,7 +293,8 @@ void dvz_timer_destroy(DvzTimer* timer)
         DvzTimerPayload* item = NULL;
         for (uint64_t i = 0; i < n; i++)
         {
-            item = (DvzTimerPayload*)dvz_list_get(list, i).p;
+            // NOTE: 0 instead of i ?
+            item = (DvzTimerPayload*)dvz_list_get(list, 0).p;
             ANN(item);
             dvz_list_remove_pointer(list, item);
             FREE(item);

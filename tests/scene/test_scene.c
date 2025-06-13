@@ -103,8 +103,8 @@ int test_scene_1(TstSuite* suite)
     dvz_scene_run(scene, app, N_FRAMES);
 
     // Cleanup.
-    dvz_panel_destroy(panel);
-    dvz_figure_destroy(figure);
+    // dvz_panel_destroy(panel);
+    // dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);
     dvz_app_destroy(app);
     FREE(pos);
@@ -170,9 +170,9 @@ int test_scene_2(TstSuite* suite)
     dvz_scene_run(scene, app, N_FRAMES);
 
     // Cleanup.
-    dvz_panel_destroy(panel_0);
-    dvz_panel_destroy(panel_1);
-    dvz_figure_destroy(figure);
+    // dvz_panel_destroy(panel_0);
+    // dvz_panel_destroy(panel_1);
+    // dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);
     dvz_app_destroy(app);
     FREE(pos);
@@ -227,8 +227,8 @@ int test_scene_3(TstSuite* suite)
 
     // Cleanup.
     dvz_shape_destroy(shape);
-    dvz_panel_destroy(panel);
-    dvz_figure_destroy(figure);
+    // dvz_panel_destroy(panel);
+    // dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);
     dvz_app_destroy(app);
     return 0;
@@ -279,8 +279,8 @@ int test_scene_offscreen(TstSuite* suite)
     dvz_app_screenshot(app, figure->canvas_id, imgpath);
 
     // Cleanup.
-    dvz_panel_destroy(panel);
-    dvz_figure_destroy(figure);
+    // dvz_panel_destroy(panel);
+    // dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);
     dvz_app_destroy(app);
     FREE(pos);

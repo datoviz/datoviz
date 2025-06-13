@@ -249,10 +249,10 @@ void dvz_colorbar_destroy(DvzColorbar* colorbar)
 {
     ANN(colorbar);
 
-    if (colorbar->image != NULL)
-    {
-        dvz_visual_destroy(colorbar->image);
-    }
+    // if (colorbar->image != NULL)
+    // {
+    //     dvz_visual_destroy(colorbar->image);
+    // }
 
     if (colorbar->texture != NULL)
     {

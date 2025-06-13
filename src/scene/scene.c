@@ -124,6 +124,19 @@ DvzBatch* dvz_scene_batch(DvzScene* scene)
 void dvz_scene_destroy(DvzScene* scene)
 {
     ANN(scene);
+    ANN(scene->figures);
+
+    uint32_t n = dvz_list_count(scene->figures);
+    DvzFigure* fig = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
+        ANN(fig);
+
+        log_trace("destroy figure #%d", i);
+        dvz_figure_destroy(fig);
+    }
+
     dvz_list_destroy(scene->figures);
     FREE(scene);
 }
@@ -334,7 +347,10 @@ void dvz_figure_destroy(DvzFigure* fig)
     uint32_t n = dvz_list_count(fig->panels);
     for (uint32_t i = 0; i < n; i++)
     {
-        dvz_panel_destroy((DvzPanel*)dvz_list_get(fig->panels, i).p);
+        log_trace("destroy panel #%d of figure", i);
+        // NOTE: panel_destroy() removes the panel from the figure's list of panels,
+        // so we constantly delete the first panel until there is no panel left in the figure.
+        dvz_panel_destroy((DvzPanel*)dvz_list_get(fig->panels, 0).p);
     }
 
     // Destroy the list of panels.
@@ -686,13 +702,13 @@ void dvz_panel_destroy(DvzPanel* panel)
     dvz_transform_destroy(panel->static_transform);
 
     // Destroy the view.
-    dvz_view_destroy(panel->view);
+    // dvz_view_destroy(panel->view);
 
     // Free the memory buffer with the panel's title.
     if (panel->gui_title != NULL)
         FREE(panel->gui_title);
 
-    // Remove the figure from the scene's figures.
+    // Remove the panel from the figure's panels.
     dvz_list_remove_pointer(panel->figure->panels, panel);
 
     if (panel->ref != NULL)

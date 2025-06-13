@@ -136,8 +136,11 @@ void dvz_viewset_clear(DvzViewset* viewset)
     DvzView* view = NULL;
     for (uint64_t i = 0; i < count; i++)
     {
-        view = (DvzView*)dvz_list_get(viewset->views, i).p;
+        // NOTE: view_destroy() removes the view from the viewset's list of views,
+        // so we constantly delete the first view until there is no view left in the viewset.
+        view = (DvzView*)dvz_list_get(viewset->views, 0).p;
         ANN(view);
+        log_trace("destroy view #%d of viewset while clearing it", i);
         dvz_view_destroy(view);
     }
     dvz_list_clear(viewset->views);
@@ -372,8 +375,11 @@ void dvz_view_destroy(DvzView* view)
     DvzVisual* visual = NULL;
     for (uint64_t j = 0; j < count; j++)
     {
+        // NOTE: visual_destroy() removes the visual from the panel's list of visuals,
+        // so we constantly delete the first visual until there is no visual left in the panel.
         visual = (DvzVisual*)dvz_list_get(view->visuals, j).p;
         ANN(visual);
+        log_trace("destroy visual #%d of view", j);
         dvz_visual_destroy(visual);
     }
 
