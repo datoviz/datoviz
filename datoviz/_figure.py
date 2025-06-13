@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 from . import _constants as cst
 from . import _ctypes as dvz
 from ._panel import Panel
-from .utils import to_cvec4_array
+from .utils import to_cvec4_array, to_enum
 
 # -------------------------------------------------------------------------------------------------
 # Figure
@@ -37,6 +37,8 @@ class Figure:
 
     c_figure: dvz.DvzFigure = None
     _app: 'App' = None
+    c_colorbar: dvz.DvzColorbar = None
+    c_colorbar_panel: 'Panel' = None
 
     def __init__(self, c_figure: dvz.DvzFigure, app: Optional['App'] = None) -> None:
         """
@@ -114,3 +116,21 @@ class Figure:
             The ID of the figure.
         """
         return dvz.figure_id(self.c_figure)
+
+    def colorbar(self, cmap: str = 'hsv', dmin: float = 0, dmax: float = 1):
+        w, h = self.size()
+        cw, ch = 80, h - 40
+        m = 20
+        self.colorbar_panel = self.panel((w - cw - m, m), (cw, ch))
+        self.colorbar_panel.margins(m//2, m//2, m//2, m//2)
+
+        c_cmap = to_enum(f'cmap_{cmap}')
+        self.c_colorbar = dvz.colorbar(self._app.c_batch, c_cmap, dmin, dmax, 0)
+        dvz.colorbar_panel(self.c_colorbar, self.colorbar_panel.c_panel)
+
+    def destroy(self) -> None:
+        """
+        Destroy the figure.
+        """
+        if self.c_colorbar:
+            dvz.colorbar_destroy(self.c_colorbar)
