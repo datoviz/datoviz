@@ -1040,11 +1040,8 @@ void dvz_shape_square(DvzShape* shape, DvzColor color)
     ANN(shape);
 
     const uint32_t vertex_count = 6;
-    const uint32_t index_count = 6;
-
     shape->type = DVZ_SHAPE_SQUARE;
     shape->vertex_count = vertex_count;
-    shape->index_count = index_count;
 
     // Position.
     float x = .5;
@@ -1088,23 +1085,6 @@ void dvz_shape_square(DvzShape* shape, DvzColor color)
             {0, 1, 0, 1},
         },
         shape->vertex_count * sizeof(vec4));
-
-    // Indices
-    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
-    for (uint32_t i = 0; i < index_count; i++)
-    {
-        shape->index[i] = i;
-    }
-
-
-//    // Indices: two triangles (0, 1, 2) and (2, 1, 3)
-//    shape->index[0] = 0;
-//    shape->index[1] = 1;
-//    shape->index[2] = 2;
-//
-//    shape->index[3] = 2;
-//    shape->index[4] = 1;
-//    shape->index[5] = 3;
 }
 
 
@@ -1467,14 +1447,11 @@ void dvz_shape_cube(DvzShape* shape, DvzColor* colors)
     shape->type = DVZ_SHAPE_CUBE;
 
     const uint32_t vertex_count = 36;
-    const uint32_t index_count = 36;
 
     shape->vertex_count = vertex_count;
-    shape->index_count = index_count;
 
     shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
-    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
     shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
     shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
 
@@ -1620,12 +1597,6 @@ void dvz_shape_cube(DvzShape* shape, DvzColor* colors)
             {0, 1, 0, 1}, //
         },
         vertex_count * sizeof(vec4));
-
-    // Indices
-    for (uint32_t i = 0; i < index_count; i++)
-    {
-        shape->index[i] = i;
-    }
 }
 
 

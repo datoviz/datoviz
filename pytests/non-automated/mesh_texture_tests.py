@@ -68,7 +68,7 @@ def show_images(texture_file_path):
 
 if __name__ == '__main__':
 
-    texture_file_path = 'crate_this_side_up.jpg'
+    texture_file_path = 'textures/crate_this_side_up.jpg'
     show_images(texture_file_path)
 
     texture_file_path = 'textures/world.200412.3x5400x2700.jpg'
