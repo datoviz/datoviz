@@ -26,22 +26,64 @@ from .utils import to_cvec4_array, to_enum
 
 
 class Colorbar:
+    """
+    Represents a colorbar associated with a panel.
+
+    Attributes
+    ----------
+    c_colorbar : dvz.DvzColorbar
+        The underlying C colorbar object.
+    colorbar_panel : Panel
+        The panel in which the colorbar is displayed.
+    """
+
     c_colorbar: dvz.DvzColorbar = None
     colorbar_panel: 'Panel' = None
 
     def __init__(self, c_colorbar: dvz.DvzColorbar, colorbar_panel: 'Panel'):
+        """
+        Initialize a Colorbar instance.
+
+        Parameters
+        ----------
+        c_colorbar : dvz.DvzColorbar
+            The underlying C colorbar object.
+        colorbar_panel : Panel
+            The panel to attach the colorbar to.
+        """
         self.c_colorbar = c_colorbar
         self.colorbar_panel = colorbar_panel
 
     def set_cmap(self, cmap: str):
+        """
+        Set the colormap of the colorbar.
+
+        Parameters
+        ----------
+        cmap : str
+            The name of the colormap to use.
+        """
         c_cmap = to_enum(f'cmap_{cmap}')
         dvz.colorbar_cmap(self.c_colorbar, c_cmap)
         dvz.colorbar_update(self.c_colorbar)
 
     def set_range(self, dmin: float, dmax: float):
+        """
+        Set the data range of the colorbar.
+
+        Parameters
+        ----------
+        dmin : float
+            Minimum data value.
+        dmax : float
+            Maximum data value.
+        """
         dvz.colorbar_range(self.c_colorbar, dmin, dmax)
 
     def destroy(self):
+        """
+        Destroy the colorbar.
+        """
         dvz.colorbar_destroy(self.c_colorbar)
 
 
@@ -75,6 +117,14 @@ class Figure:
         self._app = app
 
     def size(self):
+        """
+        Get the size of the figure in pixels.
+
+        Returns
+        -------
+        tuple of int
+            The (width, height) of the figure.
+        """
         return (dvz.figure_width(self.c_figure), dvz.figure_height(self.c_figure))
 
     def panel(
@@ -137,6 +187,14 @@ class Figure:
         return dvz.figure_id(self.c_figure)
 
     def _create_colorbar_panel(self):
+        """
+        Create and return a panel for the colorbar.
+
+        Returns
+        -------
+        Panel
+            The panel used for displaying the colorbar.
+        """
         w, h = self.size()
         cw, ch = 80, h - 40
         m = 20
@@ -145,6 +203,23 @@ class Figure:
         return colorbar_panel
 
     def colorbar(self, cmap: str = 'hsv', dmin: float = 0, dmax: float = 1):
+        """
+        Create a colorbar in the figure.
+
+        Parameters
+        ----------
+        cmap : str
+            The colormap name.
+        dmin : float
+            Minimum data value.
+        dmax : float
+            Maximum data value.
+
+        Returns
+        -------
+        Colorbar
+            The created colorbar instance.
+        """
         c_cmap = to_enum(f'cmap_{cmap}')
         c_colorbar = dvz.colorbar(self._app.c_batch, c_cmap, dmin, dmax, 0)
 
