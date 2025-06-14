@@ -14,6 +14,8 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wint-in-bool-context"
+#pragma GCC diagnostic ignored "-Wswitch-default"
 // #include "msdfgen.h"
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
 #include <msdf-atlas-gen/types.h>

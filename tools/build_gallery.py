@@ -114,7 +114,8 @@ def generate_example_page(category, script_path, output_path):
     else:
         dependencies = ''
 
-    md = f"""\
+    code = meta['code'].replace('\n', '\n    ')
+    md = f"""
 # {meta['title']}
 
 {meta['description']}
@@ -128,7 +129,7 @@ def generate_example_page(category, script_path, output_path):
 === "Python code"
 
     ```python
-    {meta['code'].replace('\n', '\n    ')}
+    {code}
     ```
 
 {back_link}
