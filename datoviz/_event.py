@@ -249,3 +249,29 @@ class Event:
             The time in seconds since the start of the timer.
         """
         return self.c_ev.time
+
+    # Frame
+    # ---------------------------------------------------------------------------------------------
+
+    def is_frame(self) -> bool:
+        """
+        Return whether the event is a frame event.
+
+        Returns
+        -------
+        bool
+            True if the event is a frame event, False otherwise.
+        """
+        return self.event_type == 'frame'
+
+    def frame_idx(self):
+        """
+        Return the current frame index of a frame event.
+
+        Returns
+        -------
+        int
+            The frame index, starting from 0.
+        """
+        if self.is_frame():
+            return self.c_ev.frame_idx
