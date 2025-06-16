@@ -20,7 +20,7 @@ from . import _ctypes as dvz
 from ._props import PROPS
 from ._texture import Texture
 from .utils import (
-    get_fixed_params,
+    get_fixed_flag,
     get_size,
     is_enumerable,
     prepare_data_array,
@@ -259,7 +259,7 @@ class Visual:
             Use True to fix all x, y, z dimensions, or `x` or `x,y` etc to fix only some of the
             axes.
         """
-        dvz.visual_fixed(self.c_visual, *get_fixed_params(fixed))
+        dvz.visual_fixed(self.c_visual, get_fixed_flag(fixed))
 
     # Elements
     # ---------------------------------------------------------------------------------------------
@@ -1027,10 +1027,10 @@ class Path(Visual):
                 position = [position]
             elif isinstance(groups, int):
                 k = position.shape[0] // groups
-                position = [position[i * k : (i + 1) * k] for i in range(groups)]
+                position = [position[i * k: (i + 1) * k] for i in range(groups)]
             elif is_enumerable(groups):
                 indices = np.cumsum([0] + list(groups))
-                position = [position[indices[i] : indices[i + 1]] for i in range(len(groups))]
+                position = [position[indices[i]: indices[i + 1]] for i in range(len(groups))]
 
         # Ensure we get a list of positions in the end.
         assert isinstance(position, list)

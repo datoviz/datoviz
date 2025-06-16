@@ -96,7 +96,6 @@ static DvzVisual* create_colormap_visual(DvzBatch* batch)
 
     dvz_image_alloc(image, 1);
     dvz_image_texcoords(image, 0, 1, (vec4[]){{1, 1, 0, 0}}, 0);
-    // dvz_visual_fixed(image, true, true, true);
     return image;
 }
 

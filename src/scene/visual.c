@@ -74,6 +74,12 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
     // Blend mode.
     dvz_set_blend(batch, visual->graphics_id, DVZ_BLEND_STANDARD);
 
+    // Fixed axes.
+    if ((flags & 0x007000) != 0)
+    {
+        dvz_visual_fixed(visual, flags & 0x007000);
+    }
+
     // Visual dirty status.
     visual->status = dvz_atomic();
     dvz_atomic_set(visual->status, (int)DVZ_BUILD_CLEAR);
@@ -233,16 +239,16 @@ void dvz_visual_specialization(
 
 
 
-void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z)
+void dvz_visual_fixed(DvzVisual* visual, int fixed)
 {
     ANN(visual);
 
     int transform_flags = 0;
-    if (fixed_x)
+    if (fixed & DVZ_VISUAL_FLAGS_FIXED_X)
         transform_flags |= DVZ_TRANSFORM_FIXED_X;
-    if (fixed_y)
+    if (fixed & DVZ_VISUAL_FLAGS_FIXED_Y)
         transform_flags |= DVZ_TRANSFORM_FIXED_Y;
-    if (fixed_z)
+    if (fixed & DVZ_VISUAL_FLAGS_FIXED_Z)
         transform_flags |= DVZ_TRANSFORM_FIXED_Z;
     dvz_visual_specialization(
         visual, DVZ_SHADER_VERTEX, DVZ_SPECIALIZATION_TRANSFORM, sizeof(int), &transform_flags);

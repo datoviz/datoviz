@@ -269,8 +269,8 @@ static void axis_horizontal_params(DvzAxis* axis)
     dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_X);
     dvz_axis_label_layout(axis, DVZ_ALIGN_MIDDLE, LABEL_OFFSET_X);
 
-    dvz_visual_fixed(axis->glyph, false, true, false);
-    dvz_visual_fixed(axis->segment, false, true, false);
+    dvz_visual_fixed(axis->glyph, DVZ_VISUAL_FLAGS_FIXED_Y);
+    dvz_visual_fixed(axis->segment, DVZ_VISUAL_FLAGS_FIXED_Y);
 
     dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_BOTTOM);
     dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_BOTTOM);
@@ -289,8 +289,8 @@ static void axis_vertical_params(DvzAxis* axis)
     dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_Y);
     dvz_axis_label_layout(axis, DVZ_ALIGN_HIGH, LABEL_OFFSET_Y);
 
-    dvz_visual_fixed(axis->glyph, true, false, false);
-    dvz_visual_fixed(axis->segment, true, false, false);
+    dvz_visual_fixed(axis->glyph, DVZ_VISUAL_FLAGS_FIXED_X);
+    dvz_visual_fixed(axis->segment, DVZ_VISUAL_FLAGS_FIXED_X);
 
     dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_LEFT);
     dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_LEFT);

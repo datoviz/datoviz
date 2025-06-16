@@ -523,6 +523,10 @@ class DvzVisualFlags(CtypesEnum):
     DVZ_VISUAL_FLAGS_DEFAULT = 0x000000
     DVZ_VISUAL_FLAGS_INDEXED = 0x010000
     DVZ_VISUAL_FLAGS_INDIRECT = 0x020000
+    DVZ_VISUAL_FLAGS_FIXED_X = 0x001000
+    DVZ_VISUAL_FLAGS_FIXED_Y = 0x002000
+    DVZ_VISUAL_FLAGS_FIXED_Z = 0x004000
+    DVZ_VISUAL_FLAGS_FIXED_ALL = 0x007000
     DVZ_VISUAL_FLAGS_VERTEX_MAPPABLE = 0x400000
     DVZ_VISUAL_FLAGS_INDEX_MAPPABLE = 0x800000
 
@@ -2030,6 +2034,10 @@ VIEW_FLAGS_NOCLIP = 0x0020
 VIEW_FLAGS_NONE = 0x0000
 VIEW_FLAGS_STATIC = 0x0010
 VISUAL_FLAGS_DEFAULT = 0x000000
+VISUAL_FLAGS_FIXED_ALL = 0x007000
+VISUAL_FLAGS_FIXED_X = 0x001000
+VISUAL_FLAGS_FIXED_Y = 0x002000
+VISUAL_FLAGS_FIXED_Z = 0x004000
 VISUAL_FLAGS_INDEXED = 0x010000
 VISUAL_FLAGS_INDEX_MAPPABLE = 0x800000
 VISUAL_FLAGS_INDIRECT = 0x020000
@@ -4202,18 +4210,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-fixed_x : bool
-    whether the x axis should be fixed
-fixed_y : bool
-    whether the y axis should be fixed
-fixed_z : bool
-    whether the z axis should be fixed
+flags : int
+    the fixed bitmask (combination of `DVZ_VISUAL_FLAGS_FIXED_X|Y|Z`)
 """
 visual_fixed.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_bool,  # bool fixed_x
-    ctypes.c_bool,  # bool fixed_y
-    ctypes.c_bool,  # bool fixed_z
+    ctypes.c_int,  # int flags
 ]
 
 

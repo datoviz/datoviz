@@ -600,7 +600,7 @@ def sphere_flags(
     return c_flags
 
 
-def get_fixed_params(fixed: Union[bool, str]) -> Tuple[bool, bool, bool]:
+def get_fixed_flag(fixed: Union[bool, str]) -> int:
     """
     Get the fixed parameters for a visual on all three dimensions.
 
@@ -611,11 +611,18 @@ def get_fixed_params(fixed: Union[bool, str]) -> Tuple[bool, bool, bool]:
 
     Returns
     -------
-    tuple of bool
-        A tuple indicating whether each axis is fixed.
+    int
+        The visual fixed flag.
     """
     if fixed is True:
-        return (True, True, True)
+        return dvz.VISUAL_FLAGS_FIXED_ALL
     elif isinstance(fixed, str):
-        return ('x' in fixed, 'y' in fixed, 'z' in fixed)
-    return (False, False, False)
+        c_flags = 0
+        if 'x' in fixed:
+            c_flags |= dvz.VISUAL_FLAGS_FIXED_X
+        if 'y' in fixed:
+            c_flags |= dvz.VISUAL_FLAGS_FIXED_Y
+        if 'z' in fixed:
+            c_flags |= dvz.VISUAL_FLAGS_FIXED_Z
+        return c_flags
+    return 0

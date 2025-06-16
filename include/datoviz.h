@@ -841,11 +841,9 @@ DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
  * Fix some axes in a visual.
  *
  * @param visual the visual
- * @param fixed_x whether the x axis should be fixed
- * @param fixed_y whether the y axis should be fixed
- * @param fixed_z whether the z axis should be fixed
+ * @param flags the fixed bitmask (combination of `DVZ_VISUAL_FLAGS_FIXED_X|Y|Z`)
  */
-DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z);
+DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, int flags);
 
 
 
