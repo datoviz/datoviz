@@ -192,6 +192,10 @@ nightly arg='':
     echo "✅ Nightly wheel ready: $OUTDIR/$(ls $OUTDIR | grep $VERSION_TAG)"
 #
 
+# Display the list of commits since the last tag.
+commits:
+    @git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"%s" | sort | uniq
+#
 
 
 # -------------------------------------------------------------------------------------------------
