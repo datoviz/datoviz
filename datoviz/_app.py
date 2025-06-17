@@ -1289,6 +1289,35 @@ class App:
 
         return decorator
 
+    def on_resize(self, figure: Figure) -> tp.Callable:
+        """
+        Register a resize event handler for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to attach the handler to.
+
+        Returns
+        -------
+        Callable
+            A decorator for the resize event handler.
+        """
+        assert figure
+
+        def decorator(fun):
+            @dvz.on_resize
+            def on_resize(app, window_id, ev_):
+                if dvz.figure_id(figure.c_figure) == window_id:
+                    ev = ev_.contents
+                    fun(Event(ev, 'resize'))
+
+            dvz.app_on_resize(self.c_app, on_resize, None)
+            self._callbacks.append(on_resize)
+            return fun
+
+        return decorator
+
     def on_frame(self, figure: Figure) -> tp.Callable:
         """
         Register a frame event handler for the given figure.
@@ -1375,6 +1404,8 @@ class App:
                 return self.on_frame(figure)(fun)
             elif fun.__name__ == 'on_gui':
                 return self.on_gui(figure)(fun)
+            elif fun.__name__ == 'on_resize':
+                return self.on_resize(figure)(fun)
             # TODO: on_frame
 
         return decorator
