@@ -275,3 +275,41 @@ class Event:
         """
         if self.is_frame():
             return self.c_ev.frame_idx
+
+    # Resize
+    # ---------------------------------------------------------------------------------------------
+
+    def is_resize(self) -> bool:
+        """
+        Return whether the event is a resize event.
+
+        Returns
+        -------
+        bool
+            True if the event is a resize event, False otherwise.
+        """
+        return self.event_type == 'resize'
+
+    def screen_width(self):
+        """
+        Return the current screen width of a resize event.
+
+        Returns
+        -------
+        int
+            The screen width.
+        """
+        if self.is_resize():
+            return self.c_ev.screen_width
+
+    def screen_height(self):
+        """
+        Return the current screen height of a resize event.
+
+        Returns
+        -------
+        int
+            The screen height.
+        """
+        if self.is_resize():
+            return self.c_ev.screen_height
