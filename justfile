@@ -1230,7 +1230,7 @@ tree:
 #
 
 cloc:
-    cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
+    cloc include src datoviz tests pytests examples cli --quiet
 #
 
 copyright:
