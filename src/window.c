@@ -65,6 +65,29 @@ void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 
 
 
+void dvz_window_fullscreen(DvzWindow* window, bool fullscreen)
+{
+    // Switches between windowed and fullscreen if not already done.
+    if (window->is_fullscreen != fullscreen)
+    {
+        window->is_fullscreen = fullscreen;
+        if (fullscreen)
+        {
+            // Save size and position.
+            window->_width = window->width;
+            window->_height = window->height;
+            backend_get_window_position(window, &window->_xpos, &window->_ypos);
+            backend_set_fullscreen(window);
+        }
+        else
+        {
+            backend_unset_fullscreen(window);
+        }
+    }
+}
+
+
+
 void dvz_window_destroy(DvzWindow* window)
 {
     if (window == NULL || window->obj.status == DVZ_OBJECT_STATUS_DESTROYED)

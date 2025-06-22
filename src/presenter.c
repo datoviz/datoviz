@@ -51,6 +51,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     bool has_gui = ((req.flags & DVZ_CANVAS_FLAGS_IMGUI) != 0);
     bool has_fps = ((req.flags & (DVZ_CANVAS_FLAGS_FPS ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
     bool has_monitor = ((req.flags & (DVZ_CANVAS_FLAGS_MONITOR ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
+    bool has_fullscreen = ((req.flags & DVZ_CANVAS_FLAGS_FULLSCREEN) != 0);
 
     // When the client receives a REQUEST event with a canvas creation command, it will *also*
     // create a window in the client with the same id and size. The canvas and window will be
@@ -102,6 +103,11 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     // HACK: once we have an img_count, we update the "global" variable with this value.
     // We ensure that the global img_count is larger than all img_count of canvases.
     rd->ctx->res.img_count = MAX(canvas->render.swapchain.img_count, rd->ctx->res.img_count);
+
+    if (has_fullscreen)
+    {
+        dvz_window_fullscreen(window, true);
+    }
 
     // Create the associated GUI window if requested.
     if (has_gui)

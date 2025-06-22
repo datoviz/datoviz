@@ -127,6 +127,16 @@ class Figure:
         """
         return (dvz.figure_width(self.c_figure), dvz.figure_height(self.c_figure))
 
+    def set_fullscreen(self, fullscreen: bool) -> None:
+        """
+        Set figure to fullscreen mode.
+
+        Parameters
+        ----------
+        is_fullscreen : True for fullscreen mode, False for window mode.
+        """
+        dvz.app_fullscreen(self._app.c_app, self.figure_id(), fullscreen)
+
     def panel(
         self,
         offset: Tuple[float, float] = None,
