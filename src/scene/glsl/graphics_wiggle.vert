@@ -13,6 +13,7 @@ layout(location = 1) in vec2 uv;     // in texel coordinates
 
 // Varyings.
 layout(location = 0) out vec2 out_uv;
+layout(location = 1) out float out_zoom;
 
 
 void main()
@@ -21,4 +22,5 @@ void main()
 
     // Varyings.
     out_uv = uv;
+    out_zoom = total_zoom();
 }

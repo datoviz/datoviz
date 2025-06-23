@@ -23,23 +23,26 @@ params;
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 layout(location = 0) in vec2 in_uv;
+layout(location = 1) in float in_zoom;
 
 layout(location = 0) out vec4 out_color;
 
 
 
+// p is the position (x, y) assuming x=0 vertical line
+// v is the function value
 int wiggle(vec2 p, float v)
 {
-    float xp = p.x;
+    float x = p.x;
     float y = p.y;
-    if ((v <= 0) && (xp < v))       // outside left
-        return 0;                   //
-    else if ((v < xp) && (xp <= 0)) // negative
-        return 1;                   //
-    else if ((0 <= xp) && (xp < v)) // positive
-        return 2;                   //
-    else if ((v < xp))              // outside right
-        return 4;                   //
+    if ((v <= 0) && (x < v))       // outside left
+        return 0;                  //
+    else if ((v < x) && (x <= 0))  // negative
+        return 1;                  //
+    else if ((0 <= x) && (x < v))  // positive
+        return 2;                  //
+    else if ((v < x))              // outside right
+        return 4;                  //
     else
         return -1;
 }
@@ -54,32 +57,38 @@ vec4 wiggle_color(
     float y = p.y;
     float x0 = xrange.x;
     float xl = xrange.y;
+    vec4 color = vec4(1);
 
     for (int i = 0; i < channels; i++)
     {
+        // Determine where we are in the wiggle plot.
         float a = channels >= 2 ? float(i) / (channels - 1) : .5;
         float v = scale * texture(tex, vec2(y, a)).r;
-
-        // DEBUG
-        // v = .1;
-
         float xi = x0 + (xl - x0) * a;
-
-        // In x=xi line:
-        if (length(x - xi) < linewidth)
-            return edgecolor;
-
         vec2 q = vec2(x - xi, y);
         int w = wiggle(q, v);
 
-        // Stop at the first channel
+        // Positive or negative part.
         if (w == 1)
-            return negative_color;
+            color = negative_color;
         else if (w == 2)
-            return positive_color;
+            color = positive_color;
+
+        // Stroke.
+        float lw = 4;
+        float c = length(viewport.size) * in_zoom;
+        float d = abs(q.x - v);
+        if (d * c <= 1 * lw) {
+            float alpha = stroke(d * c, lw, edgecolor).a;
+            color.rgb = mix(color.rgb, edgecolor.rgb, alpha);
+            break;
+        }
+
+        // Stop at the first channel
+        if (w == 1 || w == 2) break;
     }
 
-    return vec4(32, 32, 32, 32);
+    return color;
 }
 
 
@@ -91,7 +100,7 @@ void main()
     vec2 p = in_uv;
 
     // NOTE: from pixels to NDC.
-    float linewidth = 2.0; // TODO: param
+    float linewidth = 1.0; // TODO: param
     float lw = .5 * linewidth / viewport.size.x;
     float scale = params.scale * (params.xrange.y - params.xrange.x) / params.channels;
 
