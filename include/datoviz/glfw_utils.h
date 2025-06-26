@@ -407,9 +407,10 @@ static void backend_set_fullscreen(DvzWindow* window)
 
 
 
-static void backend_unset_fullscreen(DvzWindow* window)
+static void backend_set_window(DvzWindow* window, uint32_t window_xpos, uint32_t window_ypos, //
+                               uint32_t window_width, uint32_t window_height)
 {
-    log_trace("Unset fullscreen mode...");
+    log_trace("Set window position and size.");
 
     ANN(window);
     void* bwin = window->backend_window;
@@ -424,10 +425,8 @@ static void backend_unset_fullscreen(DvzWindow* window)
 #if HAS_GLFW
         ANN(bwin);
 
-        GLFWmonitor* monitor = glfwGetWindowMonitor((GLFWwindow*)bwin);
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor((GLFWwindow*)bwin, NULL, (int)window->_xpos, (int)window->_ypos, //
-                             (int)window->_width, (int)window->_height, mode->refreshRate);
+        glfwSetWindowMonitor((GLFWwindow*)bwin, NULL, (int)window_xpos, (int)window_ypos, //
+                             (int)window_width, (int)window_height, 0);
 #endif
         break;
     }

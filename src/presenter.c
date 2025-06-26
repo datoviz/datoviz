@@ -104,10 +104,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     // We ensure that the global img_count is larger than all img_count of canvases.
     rd->ctx->res.img_count = MAX(canvas->render.swapchain.img_count, rd->ctx->res.img_count);
 
-    if (has_fullscreen)
-    {
-        dvz_window_fullscreen(window, true);
-    }
+    dvz_window_fullscreen(window, has_fullscreen);
 
     // Create the associated GUI window if requested.
     if (has_gui)
