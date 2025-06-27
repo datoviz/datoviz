@@ -339,6 +339,104 @@ backend_get_window_size(DvzWindow* window, uint32_t* window_width, uint32_t* win
 
 
 
+static void
+backend_get_window_position(DvzWindow* window, uint32_t* window_xpos, uint32_t* window_ypos)
+{
+    log_trace("determining the position of backend window...");
+
+    ANN(window);
+    void* bwin = window->backend_window;
+
+    DvzBackend backend = window->backend;
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+    {
+#if HAS_GLFW
+        int xpos, ypos;
+        ANN(bwin);
+
+        // Get window pos.
+        glfwGetWindowPos((GLFWwindow*)bwin, &xpos, &ypos);
+        *window_xpos = (uint32_t)xpos;
+        *window_ypos = (uint32_t)ypos;
+        log_trace("window positions is %dx%d", xpos, ypos);
+#endif
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+
+
+static void backend_set_fullscreen(DvzWindow* window)
+{
+    log_trace("Set fullscreen mode...");
+
+    ANN(window);
+    void* bwin = window->backend_window;
+
+    DvzBackend backend = window->backend;
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+    {
+#if HAS_GLFW
+        ANN(bwin);
+
+        // Get primary monitor
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor((GLFWwindow*)bwin, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+#endif
+        break;
+    }
+
+    default:
+        break;
+
+    }
+}
+
+
+
+static void backend_set_window(DvzWindow* window, uint32_t window_xpos, uint32_t window_ypos, //
+                               uint32_t window_width, uint32_t window_height)
+{
+    log_trace("Set window position and size.");
+
+    ANN(window);
+    void* bwin = window->backend_window;
+
+    DvzBackend backend = window->backend;
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+    {
+#if HAS_GLFW
+        ANN(bwin);
+
+        glfwSetWindowMonitor((GLFWwindow*)bwin, NULL, (int)window_xpos, (int)window_ypos, //
+                             (int)window_width, (int)window_height, 0);
+#endif
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+
+
 static void backend_get_framebuffer_size(
     DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {

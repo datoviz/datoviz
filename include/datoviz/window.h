@@ -56,9 +56,14 @@ struct DvzWindow
     DvzBackend backend;
     void* backend_window;
     uint32_t width, height;                         // screen size
+    uint32_t xpos, ypos;
     uint32_t framebuffer_width, framebuffer_height; // framebuffer size
     DvzGuiWindow* gui_window;
     bool is_captured; // false by default (Datoviz interactivity), true when ImGui processes events
+
+    bool is_fullscreen;
+    uint32_t _width, _height;      // Window size and position before fullscreen.
+    uint32_t _xpos, _ypos;         //
 
     // Forward pointer.
     DvzInput* input;
@@ -104,6 +109,16 @@ void dvz_window_poll_size(DvzWindow* window);
  * @param height the height, in pixels
  */
 void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Toggle fullscreen mode.
+ *
+ * @param window the window
+ * @param is_fullscreen the
+ */
+void dvz_window_fullscreen(DvzWindow* window, bool is_fullscreen);
 
 
 

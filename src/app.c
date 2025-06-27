@@ -560,6 +560,23 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
 
 
+void dvz_app_fullscreen(DvzApp* app, DvzId canvas_id, bool is_fullscreen)
+{
+    ANN(app);
+
+    DvzWindow* window = dvz_client_window(app->client, canvas_id);
+    if (window == NULL)
+    {
+        log_error("canvas #%" PRIx64 " does not exist");
+        return;
+    }
+    ANN(window);
+
+    dvz_window_fullscreen(window, is_fullscreen);
+}
+
+
+
 void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
 {
     // NOTE: the app must have run before.

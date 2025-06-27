@@ -28,15 +28,20 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
     dvz_obj_init(&window.obj);
     window.obj.type = DVZ_OBJECT_TYPE_WINDOW;
 
-    window.width = width;
-    window.height = height;
-    window.backend = backend;
-
     // Create the window, depending on the backend.
     window.backend_window = backend_window(backend, width, height, flags);
 
+    window.backend = backend;
+
+    // Set the initial position.
+    backend_get_window_position(&window, &window.xpos, &window.ypos);
+    window._xpos = window.xpos;
+    window._ypos = window.ypos;
+
     // Set the initial size.
     backend_get_window_size(&window, &window.width, &window.height);
+    window._width = window.width;
+    window._height = window.height;
 
     // NOTE: poll the framebuffer size
     backend_get_framebuffer_size(&window, &window.framebuffer_width, &window.framebuffer_height);
@@ -61,6 +66,38 @@ void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
     ANN(window);
     backend_set_window_size(window, width, height);
     backend_get_window_size(window, &window->width, &window->height);
+}
+
+
+
+void dvz_window_fullscreen(DvzWindow* window, bool fullscreen)
+{
+    if (window->is_fullscreen != fullscreen)
+    {
+        if (fullscreen)
+        {
+            // Save position and size.
+            backend_get_window_position(window, &window->_xpos, &window->_ypos);
+            backend_get_window_size(window, &window->_width, &window->_height);
+
+            backend_set_fullscreen(window);
+
+            // Update window struct with current values.
+            window->is_fullscreen = true;
+            backend_get_window_position(window, &window->xpos, &window->ypos);
+            dvz_window_poll_size(window);
+        }
+        else
+        {
+            // Restore window from saved position and size.
+            backend_set_window(window, window->_xpos, window->_ypos,  window->_width, window->_height);
+
+            // Update window struct with current values.
+            window->is_fullscreen = false;
+            backend_get_window_position(window, &window->xpos, &window->ypos);
+            dvz_window_poll_size(window);
+        }
+    }
 }
 
 
