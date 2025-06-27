@@ -131,6 +131,9 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     {
         dvz_presenter_gui(prt, req.id, _gui_callback_monitoring, &rd->ctx->datalloc);
     }
+
+    // This ensures resize event is generated on new window.
+    canvas->render.swapchain.obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
 }
 
 

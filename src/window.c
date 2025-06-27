@@ -46,10 +46,6 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
     // NOTE: poll the framebuffer size
     backend_get_framebuffer_size(&window, &window.framebuffer_width, &window.framebuffer_height);
 
-    bool has_fullscreen = ((flags & DVZ_CANVAS_FLAGS_FULLSCREEN) != 0);
-    window.is_fullscreen = has_fullscreen;
-    dvz_window_fullscreen(&window, has_fullscreen);
-
     dvz_obj_created(&window.obj);
     return window;
 }
