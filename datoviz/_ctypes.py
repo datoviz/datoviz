@@ -410,6 +410,7 @@ class DvzCanvasFlags(CtypesEnum):
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001
     DVZ_CANVAS_FLAGS_FPS = 0x0003
     DVZ_CANVAS_FLAGS_MONITOR = 0x0005
+    DVZ_CANVAS_FLAGS_FULLSCREEN = 0x0008
     DVZ_CANVAS_FLAGS_VSYNC = 0x0010
     DVZ_CANVAS_FLAGS_PICK = 0x0020
     DVZ_CANVAS_FLAGS_PUSH_SCALE = 0x0040
@@ -1397,6 +1398,7 @@ BUFFER_TYPE_VERTEX = 2
 CAMERA_FLAGS_ORTHO = 0x01
 CAMERA_FLAGS_PERSPECTIVE = 0x00
 CANVAS_FLAGS_FPS = 0x0003
+CANVAS_FLAGS_FULLSCREEN = 0x0008
 CANVAS_FLAGS_IMGUI = 0x0001
 CANVAS_FLAGS_MONITOR = 0x0005
 CANVAS_FLAGS_NONE = 0x0000
@@ -3486,6 +3488,27 @@ figure_height.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* fig
 ]
 figure_height.restype = ctypes.c_uint32
+
+
+# -------------------------------------------------------------------------------------------------
+app_fullscreen = dvz.dvz_app_fullscreen
+app_fullscreen.__doc__ = """
+Set display to fullscreen.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the ID of the canvas
+is_fullscreen : bool
+    True for fullscreen, False for windowed.
+"""
+app_fullscreen.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ctypes.c_bool,  # bool is_fullscreen
+]
 
 
 # -------------------------------------------------------------------------------------------------

@@ -92,6 +92,7 @@ class App:
         height: int = cst.DEFAULT_HEIGHT,
         c_flags: int = 0,
         gui: bool = False,
+        fullscreen: bool = False,
     ) -> Figure:
         """
         Create a new figure.
@@ -106,6 +107,8 @@ class App:
             Flags for the figure, by default 0.
         gui : bool, optional
             Whether to enable GUI, by default False.
+        fullscreen : bool, optional
+            Open figure in fullscreen mode.
 
         Returns
         -------
@@ -119,6 +122,8 @@ class App:
         """
         if gui:
             c_flags |= dvz.CANVAS_FLAGS_IMGUI
+        if fullscreen:
+            c_flags |= dvz.CANVAS_FLAGS_FULLSCREEN
         c_figure = dvz.figure(self.c_scene, width, height, c_flags)
         return Figure(c_figure, app=self)
 

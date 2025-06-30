@@ -467,6 +467,17 @@ DVZ_EXPORT uint32_t dvz_figure_height(DvzFigure* fig);
 
 
 
+ /**
+ * Set display to fullscreen.
+ *
+ * @param app the app
+ * @param canvas_id the ID of the canvas
+ * @param is_fullscreen True for fullscreen, False for windowed.
+ */
+DVZ_EXPORT void dvz_app_fullscreen(DvzApp* app, DvzId canvas_id, bool is_fullscreen);
+
+
+
 /**
  * Get a figure from its id.
  *
