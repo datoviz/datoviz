@@ -60,6 +60,15 @@ void dvz_backend_get_window_size(
 void dvz_backend_get_framebuffer_size(
     DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
 
+void dvz_backend_get_window_position(
+    DvzWindow* window, uint32_t* window_xpos, uint32_t* window_ypos);
+
+void dvz_backend_set_fullscreen(DvzWindow* window);
+
+void dvz_backend_set_window(
+    DvzWindow* window, uint32_t window_xpos, uint32_t window_ypos, //
+    uint32_t window_width, uint32_t window_height);
+
 bool dvz_backend_should_close(DvzWindow* window);
 
 void dvz_backend_loop(DvzWindow* window, uint64_t max_frames);

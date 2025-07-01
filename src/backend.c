@@ -361,8 +361,8 @@ void dvz_backend_get_window_size(
 
 
 
-static void
-backend_get_window_position(DvzWindow* window, uint32_t* window_xpos, uint32_t* window_ypos)
+void dvz_backend_get_window_position(
+    DvzWindow* window, uint32_t* window_xpos, uint32_t* window_ypos)
 {
     log_trace("determining the position of backend window...");
 
@@ -396,7 +396,7 @@ backend_get_window_position(DvzWindow* window, uint32_t* window_xpos, uint32_t* 
 
 
 
-static void backend_set_fullscreen(DvzWindow* window)
+void dvz_backend_set_fullscreen(DvzWindow* window)
 {
     log_trace("Set fullscreen mode...");
 
@@ -429,7 +429,7 @@ static void backend_set_fullscreen(DvzWindow* window)
 
 
 
-static void backend_set_window(
+void dvz_backend_set_window(
     DvzWindow* window, uint32_t window_xpos, uint32_t window_ypos, //
     uint32_t window_width, uint32_t window_height)
 {
@@ -461,7 +461,7 @@ static void backend_set_window(
 
 
 
-static void backend_get_framebuffer_size(
+void dvz_backend_get_framebuffer_size(
     DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {
     log_trace("determining the size of backend window...");
