@@ -34,7 +34,7 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
     window.backend = backend;
 
     // Set the initial position.
-    backend_get_window_position(&window, &window.xpos, &window.ypos);
+    dvz_backend_get_window_position(&window, &window.xpos, &window.ypos);
     window._xpos = window.xpos;
     window._ypos = window.ypos;
 
@@ -82,25 +82,25 @@ void dvz_window_fullscreen(DvzWindow* window, bool fullscreen)
         if (fullscreen)
         {
             // Save position and size.
-            backend_get_window_position(window, &window->_xpos, &window->_ypos);
-            backend_get_window_size(window, &window->_width, &window->_height);
+            dvz_backend_get_window_position(window, &window->_xpos, &window->_ypos);
+            dvz_backend_get_window_size(window, &window->_width, &window->_height);
 
-            backend_set_fullscreen(window);
+            dvz_backend_set_fullscreen(window);
 
             // Update window struct with current values.
             window->is_fullscreen = true;
-            backend_get_window_position(window, &window->xpos, &window->ypos);
+            dvz_backend_get_window_position(window, &window->xpos, &window->ypos);
             dvz_window_poll_size(window);
         }
         else
         {
             // Restore window from saved position and size.
-            backend_set_window(
+            dvz_backend_set_window(
                 window, window->_xpos, window->_ypos, window->_width, window->_height);
 
             // Update window struct with current values.
             window->is_fullscreen = false;
-            backend_get_window_position(window, &window->xpos, &window->ypos);
+            dvz_backend_get_window_position(window, &window->xpos, &window->ypos);
             dvz_window_poll_size(window);
         }
     }
