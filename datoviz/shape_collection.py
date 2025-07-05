@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import ctypes
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -44,7 +44,7 @@ WHITE = dvz.cvec4(255, 255, 255, 255)
 def _shape_transform(
     c_shape: dvz.Shape,
     offset: Tuple[float, float, float] = None,
-    scale: float = None,
+    scale: Union[float, Tuple[float, float, float]] = None,
     transform: Mat4 = None,
 ) -> None:
     """
@@ -56,7 +56,7 @@ def _shape_transform(
         The shape to transform.
     offset : tuple of float, optional
         The (x, y, z) offset to apply, by default None.
-    scale : float, optional
+    scale : float or tuple of float, optional
         The scale factor to apply, by default None.
     transform : Mat4, optional
         A 4x4 transformation matrix, by default None.
@@ -66,7 +66,9 @@ def _shape_transform(
 
     dvz.shape_begin(c_shape, 0, 0)
     if scale is not None:
-        dvz.shape_scale(c_shape, dvz.vec3(scale, scale, scale))
+        if isinstance(scale, float):
+            scale = (scale, scale, scale)
+        dvz.shape_scale(c_shape, dvz.vec3(*scale))
     if offset is not None:
         dvz.shape_translate(c_shape, dvz.vec3(*offset))
     # TODO
@@ -205,7 +207,7 @@ class ShapeCollection:
         self,
         c_shape: dvz.Shape,
         offset: Tuple[float, float, float] = None,
-        scale: float = None,
+        scale: Union[float, Tuple[float, float, float]] = None,
         transform: Mat4 = None,
     ) -> None:
         """
@@ -217,7 +219,7 @@ class ShapeCollection:
             The shape to add.
         offset : tuple of float, optional
             The (x, y, z) offset to apply, by default None.
-        scale : float, optional
+        scale : float or tuple of float, optional
             The scale factor to apply, by default None.
         transform : Mat4, optional
             A 4x4 transformation matrix, by default None.
@@ -228,7 +230,7 @@ class ShapeCollection:
     def transform(
         self,
         offset: Tuple[float, float, float] = None,
-        scale: float = None,
+        scale: Union[float, Tuple[float, float, float]] = None,
         transform: Mat4 = None,
     ):
         """
@@ -238,7 +240,7 @@ class ShapeCollection:
         ----------
         offset : tuple of float, optional
             The (x, y, z) offset to apply, by default None.
-        scale : float, optional
+        scale : float or tuple of float, optional
             The scale factor to apply, by default None.
         transform : Mat4, optional
             A 4x4 transformation matrix, by default None.
