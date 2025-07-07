@@ -30,19 +30,11 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-<<<<<<< HEAD
-<!-- API PHILOSOPHY -->
-=======
->>>>>>> dev
-
 ## 🧩 API philosophy
 
 Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()`, or `imshow()`. Instead, it exposes flexible visual primitives—markers, images, meshes, and more—that can be added to a scene and customized directly with data. This approach offers fine-grained control and high performance, while remaining concise enough for quick plots.
 
 A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
-<<<<<<< HEAD
-=======
-
 
 
 ## 🔍 Comparison with other libraries
@@ -64,7 +56,6 @@ The figure below shows a preliminary [**performance benchmark**](https://github.
 </p>
 
 In this benchmark, **Datoviz outperforms Matplotlib by a factor of up to 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
->>>>>>> dev
 
 
 ### 🧊 VTK
