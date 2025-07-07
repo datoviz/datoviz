@@ -1,5 +1,5 @@
 """
-# Marker visual example
+# Marker visual
 
 Show the different types of marker visuals.
 
@@ -8,6 +8,8 @@ tags:
   - marker
   - texture
   - svg
+dependencies:
+  - imageio
 in_gallery: true
 make_screenshot: true
 ---

@@ -84,6 +84,7 @@ nav:
       - Segment: 'visuals/segment.md'
       - Path: 'visuals/path.md'
       - Image: 'visuals/image.md'
+      - Wiggle: 'visuals/wiggle.md'
       - Glyph: 'visuals/glyph.md'
       - Mesh: 'visuals/mesh.md'
       - Sphere: 'visuals/sphere.md'

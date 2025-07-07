@@ -1,7 +1,7 @@
 """
-# Mesh visual example
+# Volume
 
-Show the mesh visual with predefined shapes.
+Show a volume visual with an arcball camera.
 
 ---
 tags:

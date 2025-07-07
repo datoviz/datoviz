@@ -35,7 +35,6 @@ static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
     dvz_gui_corner(DVZ_DIALOG_CORNER_TOP_RIGHT, (vec2){0, 0});
     dvz_gui_begin("FPS", DVZ_DIALOG_FLAGS_OVERLAY);
 
-    dvz_fps_tick(fps);
     dvz_fps_histogram(fps);
 
     dvz_gui_end();

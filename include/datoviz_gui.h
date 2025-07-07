@@ -4,21 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-/**************************************************************************************************
-
- * DATOVIZ PUBLIC API HEADER FILE
- * ==============================
- * 2025-05-28
- * Cyrille Rossant
- * cyrille dot rossant at gmail com
-
-This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
-visualization.
-
-Datoviz is still an early stage library and the API may change at any time.
-
-**************************************************************************************************/
-
 
 
 /*************************************************************************************************/
@@ -313,6 +298,58 @@ DVZ_EXPORT bool dvz_gui_slider_vec3(const char* name, float vmin, float vmax, ve
  * @returns whether the value has changed
  */
 DVZ_EXPORT bool dvz_gui_slider_vec4(const char* name, float vmin, float vmax, vec4 value);
+
+
+
+/**
+ * Add an integer slider.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_int(const char* name, int vmin, int vmax, int* value);
+
+
+
+/**
+ * Add an integer slider with 2 values.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_ivec2(const char* name, int vmin, int vmax, ivec2 value);
+
+
+
+/**
+ * Add an integer slider with 3 values.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_ivec3(const char* name, int vmin, int vmax, ivec3 value);
+
+
+
+/**
+ * Add an integer slider with 4 values.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_ivec4(const char* name, int vmin, int vmax, ivec4 value);
 
 
 

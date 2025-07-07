@@ -1,5 +1,5 @@
 """
-# Visibility example
+# Toggling visual visibility
 
 Show how to show/hide a visual.
 

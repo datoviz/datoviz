@@ -1,5 +1,5 @@
 """
-# Tiled image grid visual
+# Tiled image grid
 
 Split an image into a grid of smaller images displayed using a single image visual.
 
@@ -8,6 +8,8 @@ tags:
   - image
   - texture
   - panzoom
+dependencies:
+  - imageio
 in_gallery: true
 make_screenshot: true
 ---

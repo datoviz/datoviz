@@ -27,9 +27,9 @@
 // from: https://raw.githubusercontent.com/nicolausYes/easing-functions/master/src/easing.cpp
 // see also: https://easings.net
 
-static double easeInSine(double t) { return sin(M_PI2 * t); }
+static double easeInSine(double t) { return sin(M_PI_2 * t); }
 
-static double easeOutSine(double t) { return sin(M_PI2 * t); }
+static double easeOutSine(double t) { return sin(M_PI_2 * t); }
 
 static double easeInOutSine(double t) { return 0.5 * (1 + sin(M_PI * (t - 0.5))); }
 
@@ -349,20 +349,20 @@ void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out)
 
 
 
-void dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out)
+void dvz_circular_3D(vec3 pos_init, vec3 center, vec3 axis, float t, vec3 out)
 {
-    vec2 center_p = {0};
-    center_p[0] = center[0];
-    center_p[1] = center[1];
+    float angle = 2 * M_PI * t;
 
-    vec2 out_p = {0};
-    dvz_circular_2D(center_p, radius, angle, t, out_p);
-    float x = out_p[0];
-    float y = out_p[1];
+    vec3 a = {0};
+    glm_normalize_to(axis, a);
 
-    out[0] = center[0] + u[0] * x + v[0] * y;
-    out[1] = center[1] + u[1] * x + v[1] * y;
-    out[2] = center[2] + u[2] * x + v[2] * y;
+    vec3 rel = {0};
+    glm_vec3_sub(pos_init, center, rel); // relative position from center
+
+    glm_vec3_copy(rel, out);
+    glm_vec3_rotate(out, angle, a); // rotate in-place
+
+    glm_vec3_add(out, center, out); // translate back
 }
 
 

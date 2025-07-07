@@ -54,6 +54,6 @@ void dvz_assert(bool assertion, const char* message, const char* filename, int l
 void dvz_error_callback(DvzErrorCallback cb)
 {
     ANN(cb);
-    log_debug("Registering an error callback function");
+    // log_debug("Registering an error callback function");
     error_callback = cb;
 }

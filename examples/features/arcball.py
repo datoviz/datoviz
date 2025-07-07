@@ -1,5 +1,5 @@
 """
-# Arcball example
+# Arcball
 
 Show how to manipulate an arcball.
 
@@ -24,9 +24,9 @@ panel.demo_3D()
 arcball = panel.arcball(initial=(-1.5, 0.0, +1.5))
 
 # Display a little GUI widget with sliders to control the arcball angles.
-app.arcball_gui(panel, arcball)
+panel.arcball_gui()
 
-# Angles can be set and retrieved as follws:
+# Angles can be set and retrieved as follows:
 angles = (-1.5, 0.0, +2.5)
 arcball.set(angles)
 angles = arcball.get()

@@ -4,21 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-/**************************************************************************************************
-
- * DATOVIZ PUBLIC API HEADER FILE
- * ==============================
- * 2025-05-28
- * Cyrille Rossant
- * cyrille dot rossant at gmail com
-
-This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
-visualization.
-
-Datoviz is still an early stage library and the API may change at any time.
-
-**************************************************************************************************/
-
 
 
 /*************************************************************************************************/
@@ -138,6 +123,19 @@ DVZ_EXPORT void dvz_basic_size(DvzVisual* visual, float size);
  * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_basic_alloc(DvzVisual* visual, uint32_t item_count);
+
+
+
+/**
+ * Create a basic visual from a DvzShape instance.
+ *
+ * @param batch the batch
+ * @param shape the shape
+ * @param flags the visual creation flags
+ * @returns the visual
+ */
+DVZ_EXPORT
+DvzVisual* dvz_basic_shape(DvzBatch* batch, DvzShape* shape, int flags);
 
 
 
@@ -1168,6 +1166,89 @@ DVZ_EXPORT void dvz_image_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 /*************************************************************************************************/
+/*  Wiggle                                                                                       */
+/*************************************************************************************************/
+
+/**
+ * Create a wiggle visual.
+ *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_wiggle(DvzBatch* batch, int flags);
+
+
+
+/**
+ * Set the wiggle bounds.
+ *
+ * @param visual the visual
+ * @param xlim xmin and xmax
+ * @param ylim ymin and ymax
+ */
+DVZ_EXPORT void dvz_wiggle_bounds(DvzVisual* visual, vec2 xlim, vec2 ylim);
+
+
+
+/**
+ * Set the color of the negative and positive sections.
+ *
+ * @param visual the visual
+ * @param negative_color the color of the negative section
+ * @param positive_color the color of the positive section
+ */
+DVZ_EXPORT void
+dvz_wiggle_color(DvzVisual* visual, DvzColor negative_color, DvzColor positive_color);
+
+
+
+/**
+ * Set the edge color.
+ *
+ * @param visual the visual
+ * @param color the edge color
+ */
+DVZ_EXPORT void dvz_wiggle_edgecolor(DvzVisual* visual, DvzColor color);
+
+
+
+/**
+ * Set the range of the wiggle on the x axis, in normalized coordinates ([0, 1]).
+ *
+ * @param visual the visual
+ * @param xrange the x0 and xl in the quad, the channels will be in the interval [x0, xl]
+ */
+DVZ_EXPORT void dvz_wiggle_xrange(DvzVisual* visual, vec2 xrange);
+
+
+
+/**
+ * Set the texture scaling factor.
+ *
+ * @param visual the visual
+ * @param scale the scaling factor
+ */
+DVZ_EXPORT void dvz_wiggle_scale(DvzVisual* visual, float scale);
+
+
+
+/**
+ * Assign a texture to an wiggle visual.
+ *
+ * @param visual the visual
+ * @param texture the texture
+ */
+DVZ_EXPORT void dvz_wiggle_texture(DvzVisual* visual, DvzTexture* texture);
+
+
+
+// TODO
+// DVZ_EXPORT void dvz_wiggle_swizzle(DvzVisual* visual, int swizzle);
+
+
+
+/*************************************************************************************************/
 /*  Mesh                                                                                         */
 /*************************************************************************************************/
 
@@ -1507,6 +1588,16 @@ DVZ_EXPORT void dvz_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 /**
+ * Assign a 2D texture to a sphere visual.
+ *
+ * @param visual the visual
+ * @param texture the texture
+ */
+DVZ_EXPORT void dvz_sphere_texture(DvzVisual* visual, DvzTexture* texture);
+
+
+
+/**
  * Set the sphere light position.
  *
  * @param visual the sphere
@@ -1550,7 +1641,7 @@ DVZ_EXPORT void dvz_sphere_shine(DvzVisual* visual, float shine);
 
 
 /**
- * Set the mesh surface emission level.
+ * Set the sphere surface emission level.
  *
  * @param visual the sphere
  * @param emit the emission level
@@ -1732,6 +1823,50 @@ DVZ_EXPORT DvzId dvz_tex_slice(
  * @param alpha the alpha value
  */
 DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
+
+
+
+/*************************************************************************************************/
+/*  Grid                                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Set the grid line color.
+ *
+ * @param grid the grid visual
+ * @param value RGBA color of fine lines
+ */
+DVZ_EXPORT void dvz_grid_color(DvzVisual* grid, vec4 value);
+
+
+
+/**
+ * Set the line width.
+ *
+ * @param grid the grid visual
+ * @param value width of lines (in world units)
+ */
+DVZ_EXPORT void dvz_grid_linewidth(DvzVisual* grid, float value);
+
+
+
+/**
+ * Set the grid spacing.
+ *
+ * @param grid the grid visual
+ * @param value spacing between grid lines (in world units)
+ */
+DVZ_EXPORT void dvz_grid_scale(DvzVisual* grid, float value);
+
+
+
+/**
+ * Set the grid elevation on the Y axis.
+ *
+ * @param grid the grid visual
+ * @param value grid elevation
+ */
+DVZ_EXPORT void dvz_grid_elevation(DvzVisual* grid, float value);
 
 
 

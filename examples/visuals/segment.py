@@ -1,5 +1,5 @@
 """
-# Segment visual example
+# Segment visual
 
 Show the segment visual.
 

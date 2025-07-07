@@ -1,5 +1,5 @@
 """
-# Segment cap
+# Segment caps
 
 Show the different cap of the segment visual.
 

@@ -1,5 +1,5 @@
 """
-# Fixed example
+# Fixed dimensions on a visual
 
 Show how to fix a visual in the panel on one or several axes.
 

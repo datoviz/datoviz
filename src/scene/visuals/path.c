@@ -47,6 +47,40 @@ static void _visual_callback(
 
 
 
+static void* repeat_and_shift(DvzSize item_size, uint32_t count, const void* values)
+{
+    uint32_t new_count = 4 * count;
+    void* result = calloc(new_count, item_size);
+    if (!result)
+    {
+        return NULL;
+    }
+
+    const uint8_t* src = (const uint8_t*)values;
+    uint8_t* dst = (uint8_t*)result;
+
+    // handle the first two items (copy first original item twice)
+    memcpy(dst + 0 * item_size, src, item_size);
+    memcpy(dst + 1 * item_size, src, item_size);
+
+    // repeat each item 4 times starting from index 2
+    for (uint32_t i = 1; i < count; i++)
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            {
+                memcpy(dst + ((2 + (i - 1) * 4 + j) * item_size), src + i * item_size, item_size);
+            }
+        }
+
+    // last two items (copy first original item)
+    memcpy(dst + (new_count - 2) * item_size, src, item_size);
+    memcpy(dst + (new_count - 1) * item_size, src, item_size);
+
+    return result;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -72,8 +106,8 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 1, FIELD(DvzPathVertex, p1), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
     dvz_visual_attr(visual, 2, FIELD(DvzPathVertex, p2), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
     dvz_visual_attr(visual, 3, FIELD(DvzPathVertex, p3), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
-    dvz_visual_attr(visual, 4, FIELD(DvzPathVertex, color), DVZ_FORMAT_COLOR, attr_flag);
-    dvz_visual_attr(visual, 5, FIELD(DvzPathVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, attr_flag);
+    dvz_visual_attr(visual, 4, FIELD(DvzPathVertex, color), DVZ_FORMAT_COLOR, 0);
+    dvz_visual_attr(visual, 5, FIELD(DvzPathVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, 0);
 
     // Uniforms.
     _common_setup(visual);
@@ -205,8 +239,9 @@ void dvz_path_position(
 void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
-    // NOTE: repeat x4 is done transparently thanks to the attribute flags passed in dvz_path().
-    dvz_visual_data(visual, 4, first, count, (void*)values);
+    void* reps = repeat_and_shift(sizeof(DvzColor), count, values);
+    dvz_visual_data(visual, 4, 4 * first, 4 * count, (void*)reps);
+    FREE(reps);
 }
 
 
@@ -215,8 +250,9 @@ void dvz_path_linewidth(
     DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
 {
     ANN(visual);
-    // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_data(visual, 5, first, count, (void*)values);
+    void* reps = repeat_and_shift(sizeof(float), count, values);
+    dvz_visual_data(visual, 5, 4 * first, 4 * count, (void*)reps);
+    FREE(reps);
 }
 
 

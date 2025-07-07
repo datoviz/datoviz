@@ -1,9 +1,11 @@
 """
-# Offscreen example
+# Screenshots and offscreen rendering
 
 Show how to render an offscreen image.
 
-NOTE: the API for this feature may change in an upcoming version.
+!!! warning
+
+  The API for this feature may change in an upcoming version.
 
 ---
 tags:

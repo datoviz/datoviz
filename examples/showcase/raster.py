@@ -1,5 +1,5 @@
 """
-# Raster plot
+# Raster plot with the Pixel visual
 
 Show a raster plot (spikes in 2D, time on the x axis, neuron depth on the y axis) using
 the Pixel visual.

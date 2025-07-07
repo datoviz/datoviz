@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import re
+from operator import itemgetter
 from pathlib import Path
 from textwrap import dedent
 
@@ -10,6 +11,33 @@ GALLERY_DIR = Path('docs/gallery')
 DATA_DIR = Path('data')
 CATEGORIES = ['showcase', 'visuals', 'features']
 GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/main/gallery'
+
+INTRO = {
+    'gallery': """The Datoviz gallery shows what the library can do through concrete examples.
+It is divided into three sections.
+
+* The [**showcase**](#showcase) section features polished demos based on real-world data.
+* The [**visuals**](#visuals) section shows one example per visual type.
+* The [**features**](#features) section focuses on specific API features.
+
+""",
+    'showcase': """This section highlights polished demos built on real-world datasets.
+
+""",
+    'visuals': """Each example in this section focuses on a single visual type.
+
+""",
+    'features': """This section isolates individual features of the Datoviz API.
+Each example is designed to demonstrate a specific capability.
+
+!!! warning
+
+    Some examples use GUI elements that are not yet supported in automatic screenshots.
+    As a result, certain screenshots may appear blank. This limitation will be addressed in a
+    future release.
+
+""",
+}
 
 
 def extract_metadata(script_path):
@@ -32,15 +60,15 @@ def extract_metadata(script_path):
     yaml_raw = yaml_match.group(1).strip() if yaml_match else ''
     metadata = yaml.safe_load(yaml_raw) if yaml_raw else {}
     tags = metadata.get('tags', [])
+    dependencies = metadata.get('dependencies', [])
 
     # Extract description: all lines between title and YAML block
-    yaml_start = docstring.find('---')
     title_index = next(i for i, line in enumerate(lines) if line.strip().startswith('#'))
     description_lines = []
     for i in range(title_index + 1, len(lines)):
         if lines[i].strip().startswith('---'):
             break
-        description_lines.append(lines[i].strip())
+        description_lines.append(lines[i].rstrip())
     description = '\n'.join(description_lines).strip()
 
     # Remove docstring from the rest of the code
@@ -51,11 +79,11 @@ def extract_metadata(script_path):
     in_gallery = True
     if 'in_gallery: false' in content:
         in_gallery = False
-
     return {
         'title': title_line,
         'description': description,
         'tags': tags,
+        'dependencies': dependencies,
         'code': dedent(code_body).rstrip(),
         'in_gallery': in_gallery,
     }
@@ -81,19 +109,27 @@ def generate_example_page(category, script_path, output_path):
         screenshot_image = ''
     back_link = f'[← Back to gallery](../index.md#{category})'
 
-    md = f"""\
+    if meta['dependencies']:
+        dependencies = f'**Extra Python dependencies**: {", ".join(meta["dependencies"])}'
+    else:
+        dependencies = ''
+
+    code = meta['code'].replace('\n', '\n    ')
+    md = f"""
 # {meta['title']}
 
 {meta['description']}
 
 **Tags**: {', '.join(meta['tags'])}
 
+{dependencies}
+
 {screenshot_image}
 
 === "Python code"
 
     ```python
-    {meta['code'].replace('\n', '\n    ')}
+    {code}
     ```
 
 {back_link}
@@ -103,11 +139,16 @@ def generate_example_page(category, script_path, output_path):
 
 
 def generate_index(pages):
-    lines = ['# Gallery\n']
+    lines = [
+        '# Gallery\n',
+        '<!-- WARNING: this file is auto-generated, edit tools/build_gallery.py instead -->\n',
+    ]
+    lines.extend(INTRO['gallery'].splitlines())
     for category in CATEGORIES:
         lines.append(f'## {category.capitalize()}\n')
+        lines.extend(INTRO[category].splitlines())
         lines.append('<div class="grid cards" markdown="1">\n')
-        for name, title in pages.get(category, []):
+        for name, title in sorted(pages.get(category, []), key=itemgetter(1)):
             screenshot_url = get_screenshot_url(category, name)
             page_url = f'{category}/{name}/'
             lines.append(f"""\

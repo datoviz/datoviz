@@ -1,5 +1,5 @@
 """
-# Mouse example
+# Mouse events
 
 Show how to react to mouse events.
 

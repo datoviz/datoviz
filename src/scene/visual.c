@@ -74,6 +74,12 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
     // Blend mode.
     dvz_set_blend(batch, visual->graphics_id, DVZ_BLEND_STANDARD);
 
+    // Fixed axes.
+    if ((flags & 0x007000) != 0)
+    {
+        dvz_visual_fixed(visual, flags & 0x007000);
+    }
+
     // Visual dirty status.
     visual->status = dvz_atomic();
     dvz_atomic_set(visual->status, (int)DVZ_BUILD_CLEAR);
@@ -233,16 +239,16 @@ void dvz_visual_specialization(
 
 
 
-void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z)
+void dvz_visual_fixed(DvzVisual* visual, int fixed)
 {
     ANN(visual);
 
     int transform_flags = 0;
-    if (fixed_x)
+    if (fixed & DVZ_VISUAL_FLAGS_FIXED_X)
         transform_flags |= DVZ_TRANSFORM_FIXED_X;
-    if (fixed_y)
+    if (fixed & DVZ_VISUAL_FLAGS_FIXED_Y)
         transform_flags |= DVZ_TRANSFORM_FIXED_Y;
-    if (fixed_z)
+    if (fixed & DVZ_VISUAL_FLAGS_FIXED_Z)
         transform_flags |= DVZ_TRANSFORM_FIXED_Z;
     dvz_visual_specialization(
         visual, DVZ_SHADER_VERTEX, DVZ_SPECIALIZATION_TRANSFORM, sizeof(int), &transform_flags);
@@ -694,6 +700,7 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp)
 
     ANN(visual);
     ANN(visual->baker);
+    ANN(mvp);
 
     // if (visual->baker->slot_count == 0)
     // {
@@ -710,9 +717,9 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp)
 void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
 {
     // NOTE: the data is immediately copied into the visual's baker's dual
-
     ANN(visual);
     ANN(visual->baker);
+    ANN(viewport);
 
     // if (visual->baker->slot_count <= 1)
     // {
@@ -738,6 +745,9 @@ void dvz_visual_data(
 
     DvzBaker* baker = visual->baker;
     ANN(baker);
+
+    ASSERT(count > 0);
+    ANN(data);
 
     int flags = visual->attrs[attr_idx].flags;
 
@@ -775,6 +785,8 @@ void dvz_visual_quads(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br)
 {
     ANN(visual);
+    ANN(tl_br);
+    ASSERT(count > 0);
     ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
 
     DvzBaker* baker = visual->baker;
@@ -793,6 +805,8 @@ void dvz_visual_quads(
 void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data)
 {
     ANN(visual);
+    ANN(data);
+    ASSERT(count > 0);
 
     DvzBaker* baker = visual->baker;
     ANN(baker);
@@ -808,6 +822,7 @@ void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzInde
 void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item)
 {
     ANN(visual);
+    ANN(item);
     ASSERT(slot_idx < DVZ_MAX_BINDINGS);
 
     DvzParams* params = visual->params[slot_idx];

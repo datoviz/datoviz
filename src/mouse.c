@@ -188,6 +188,10 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
     // Old state.
     DvzMouseState state = mouse->state;
 
+    vec2 last_pos = {0};
+    glm_vec2_copy(mouse->cur_pos, last_pos);
+
+
     // Copy the current position.
     glm_vec2_copy(pos, mouse->cur_pos);
 
@@ -236,6 +240,7 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
         // Shift between the press position and the current position.
         glm_vec2_sub(pos, mouse->press_pos, ev.content.d.shift);
         glm_vec2_copy(mouse->press_pos, ev.content.d.press_pos); // Copy the press position
+        glm_vec2_copy(last_pos, ev.content.d.last_pos);
         break;
 
     default:

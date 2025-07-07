@@ -4,8 +4,8 @@ Datoviz supports basic 2D and 3D interactivity on panels, including:
 
 - Mouse-based pan and zoom
 - 3D arcball rotation
+- Fly camera
 - Orthographic projection control
-- Full 3D camera navigation
 
 These modes are attached to a panel and control the panel's internal transformation matrices.
 
@@ -70,11 +70,45 @@ angles = arcball.get()    # get current rotation
 arcball.reset()           # reset to initial state
 ```
 
+When using an arcball, you can add a 3D gizmo with:
+
+```python
+panel.gizmo()
+```
+
+<figure markdown="span">
+![3D gizmo](https://raw.githubusercontent.com/datoviz/data/main/screenshots/guide/gizmo.png){ width="300" }
+</figure>
+
+!!! warning
+
+    This feature is still experimental. A known issue is that the gizmo may be obscured by other visuals in the scene if they are rendered in front of it. This will be fixed in version 0.4.
+
+---
+
+## Fly Camera Interactivity (3D)
+
+The fly camera allows you to navigate through a 3D scene as if you were flying. It provides controls for moving forward, backward, left, right, and up/down, as well as rotating the view using the mouse or keyboard.
+
+```python
+fly = panel.fly()
+```
+
+Features:
+
+- **Mouse Controls**: Drag the left mouse button to rotate the view (yaw/pitch). Drag the right mouse button to roll or move sideways/upwards. Use the mouse wheel to move forward/backward.
+- **Keyboard Controls**: Use arrow keys to move forward, backward, left, or right.
+- **Reset**: Double-click to reset the camera to its initial position and orientation.
+
+!!! warning
+
+    This controller is still experimental and may need further testing.
+
 ---
 
 ## Camera Interactivity (3D)
 
-Adds a full 3D camera with position, target (look-at), and up vector.
+Adds a 3D camera with position, target (look-at), and up vector.
 
 ```python
 camera = panel.camera()
@@ -101,8 +135,6 @@ camera.set(position=(...), lookat=(...), up=(...))
 pos = camera.position()
 ```
 
-This interactivity is suited for full 3D scenes, model navigation, and dynamic viewing.
-
 ---
 
 ## Summary
@@ -112,7 +144,8 @@ This interactivity is suited for full 3D scenes, model navigation, and dynamic v
 | `panzoom()`   | Mouse-driven 2D pan/zoom      | Line plots, scatter, 2D UI  |
 | `ortho()`     | Fixed orthographic controller | Pixel-accurate 2D panels    |
 | `arcball()`   | Interactive 3D rotation       | Object inspection, rotation |
-| `camera()`    | Full 3D camera                | Volumes, meshes, 3D scenes  |
+| `fly()`       | Fly camera                    | Navigation in a 3D scene    |
+| `camera()`    | Custom 3D camera control      | Navigation in a 3D scene    |
 
 Each mode provides access to its state (e.g. position, rotation) and can be reset or manually adjusted.
 

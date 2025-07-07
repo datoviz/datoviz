@@ -4,21 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-/**************************************************************************************************
-
- * DATOVIZ PUBLIC API HEADER FILE
- * ==============================
- * 2025-05-28
- * Cyrille Rossant
- * cyrille dot rossant at gmail com
-
-This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
-visualization.
-
-Datoviz is still an early stage library and the API may change at any time.
-
-**************************************************************************************************/
-
 
 
 /*************************************************************************************************/
@@ -151,6 +136,15 @@ dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
 
 
 /**
+ * Stop and remove all timers.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_timer_clear(DvzApp* app);
+
+
+
+/**
  * Register a timer callback.
  *
  * @param app the app
@@ -224,6 +218,15 @@ DVZ_EXPORT void dvz_app_timestamps(
  * @param app the app
  */
 DVZ_EXPORT void dvz_app_wait(DvzApp* app);
+
+
+
+/**
+ * Stop the app's client.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_stop(DvzApp* app);
 
 
 

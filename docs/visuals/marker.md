@@ -33,7 +33,7 @@ Use the marker visual when:
 
 ---
 
-## Attributes
+## Properties
 
 ### Options
 

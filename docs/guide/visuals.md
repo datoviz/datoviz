@@ -12,6 +12,13 @@ Datoviz is designed to render millions of visual items at interactive framerates
 
 ## Available visuals
 
+Here is the list of available visuals.
+
+!!! note
+
+    Additional visuals may be introduced in future versions based on user needs.
+
+
 <div class="grid cards" markdown="1">
 
 <div class="card">
@@ -65,6 +72,14 @@ Continuous polylines with optional variable thickness, optionally closed (no arr
 <img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/image.png" alt="Image" />
 <div class="card-title">🖼️ <strong>Image</strong></a>:
 User-facing 2D images (RGBA or single-channel with colormap) anchored in world space.
+</div>
+</div>
+
+<div class="card">
+<a href="../../visuals/wiggle/">
+<img src="https://raw.githubusercontent.com/datoviz/data/main/gallery/visuals/wiggle.png" alt="Wiggle plot" />
+<div class="card-title">🖼️ <strong>Wiggle plot</strong></a>:
+Wiggle plot for multichannel time series.
 </div>
 </div>
 
@@ -136,9 +151,9 @@ This model is key to Datoviz's performance: many visual instances are submitted 
 
 ---
 
-## Positioning data: 3D NDC
+## Coordinate system
 
-All visuals expect positions in [**3D Normalized Device Coordinates (NDC)**](common.md#positioning-data-ndc-model), where each axis ranges from `-1` to `+1`.
+All visuals expect positions in [**3D Normalized Device Coordinates (NDC)**](common.md#coordinate-system), where each axis ranges from `-1` to `+1`.
 
 For 2D rendering, simply set the Z coordinate to `0` and use a 2D camera or interaction mode (e.g. pan-zoom). This keeps your data in the XY plane while leveraging the full GPU pipeline.
 
@@ -152,7 +167,7 @@ All visuals are created using the `app.visual_name()` functions:
 visual = app.point(position=..., color=..., size=...)
 ```
 
-Attributes can also be set or modified as follows:
+Properties can also be set or modified as follows:
 
 ```python
 visual.set_position(position)

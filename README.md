@@ -1,17 +1,17 @@
-# Datoviz: high-performance rendering for scientific data visualization
+# Datoviz: high-performance GPU rendering for scientific data visualization
 
 [**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
 [**[Usage]**](#-usage) &nbsp;
 [**[User guide]**](https://datoviz.org/guide/) &nbsp;
 [**[Gallery]**](https://datoviz.org/gallery/) &nbsp;
 
-<!-- INTRODUCTION -->
 
-**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
 
-It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
+**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization** making extensive use of the graphics processing unit (GPU).
 
-![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
+Up to **10,000x faster than matplotlib**, it delivers highly efficient **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
+
+[![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
 Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.
 
@@ -23,7 +23,6 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 > Datoviz is a young library. The API is stabilizing, but breaking changes may still occur as the project evolves with broader usage.
 
 
-<!-- FEATURES -->
 
 ## ✨ Current features
 
@@ -37,30 +36,57 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-<!-- API PHILOSOPHY -->
-
 ## 🧩 API philosophy
 
 Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()`, or `imshow()`. Instead, it exposes flexible visual primitives—markers, images, meshes, and more—that can be added to a scene and customized directly with data. This approach offers fine-grained control and high performance, while remaining concise enough for quick plots.
 
 A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
 
+Datoviz does **not** use high-level plotting functions like `plot()`, `scatter()`, or `imshow()`. Instead, it exposes flexible visual primitives—markers, images, meshes, and more—that can be added to a scene and customized directly with data. This approach offers fine-grained control and high performance, while remaining concise enough for quick plots.
 
-<!-- CURRENT STATUS -->
+A [higher-level plotting interface is under development as part of **VisPy 2.0**](https://github.com/vispy/vispy/discussions/2661), which will use Datoviz as its rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API for declarative plotting.
 
-## 🕐 Current status [May 2025]
 
-**The current version is v0.3.**
+## 🔍 Comparison with other libraries
+
+### 🐍 Matplotlib
+
+**Matplotlib** is the gold standard for static, publication-quality figures, with a mature, feature-rich API. But it's not optimized for interactivity or large datasets.
+
+**Datoviz**, in contrast, is a younger, GPU-based library designed for fast, interactive visualization. It lacks Matplotlib’s high-level API but excels at rendering millions of points in real time.
+
+Use **Matplotlib** for polished static plots, **Datoviz** for responsive data exploration.
+
+#### Preliminary performance benchmark
+
+The figure below shows a preliminary [**performance benchmark**](https://github.com/datoviz/datoviz/blob/main/examples/benchmarks/benchmark_mpl.py) comparing Datoviz and Matplotlib on an interactive 2D scatter plot, with increasing numbers of points and a simulated zoom interaction (on a high-end Linux desktop PC):
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/datoviz/data/master/screenshots/benchmark.png" alt="Datoviz vs Matplotlib benchmark" width="800">
+</p>
+
+In this benchmark, **Datoviz outperforms Matplotlib by a factor of up to 10,000×**, maintaining interactive framerates even with millions of points. Matplotlib, in contrast, becomes sluggish or fails entirely as the dataset size increases.
+
+
+
+### 🧊 VTK
+
+Datoviz is lighter, simpler, and easier to install than VTK. It compiles in seconds, has minimal dependencies, and focuses exclusively on real-time rendering of visual primitives. Unlike VTK, it does not include data file I/O (except minimal test loaders like `.obj`), computational geometry, or data processing.
+
+VTK is a powerful, heavyweight toolkit for 3D visualization, simulation, and scientific computing workflows. In contrast, Datoviz is designed for fast, high-quality 2D and 3D rendering.
+
+
+
+## 🕐 Current status [July 2025]
+
+**The current version is v0.3.x**
 This release introduces major updates over v0.2, including 2D axes and a new Pythonic API.
 
 
 
+## 🕐 Roadmap
 
-<!-- ROADMAP -->
-
-## 🕐 Roadmap [May 2025]
-
-Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
+Looking ahead, the upcoming v0.4 release (2026) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
 
 * 🧊 Correct transparency in 3D mesh and volume rendering
 * ✨ Multisample anti-aliasing (MSAA)
@@ -76,7 +102,6 @@ Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on fo
 * 🌐 WebGPU backend
 
 
-<!-- INSTALLATION -->
 
 ## 🛠️ Installation instructions
 
@@ -106,7 +131,16 @@ This installs a Python wheel that includes the C library, precompiled for your s
 If the installation fails, you may need to [build from source](BUILD.md) or [open an issue](https://github.com/datoviz/datoviz/issues) to request support for your configuration.
 
 
-<!-- DOCUMENTATION -->
+### Nightly builds
+
+[Nightly builds](https://github.com/datoviz/datoviz/releases/tag/nightly) are automatically generated from the [`dev`](https://github.com/datoviz/datoviz/tree/dev) branch via [GitHub Actions](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). These builds contain the latest experimental features and bug fixes that have not yet been released.
+
+> [!WARNING]
+> Nightly wheels are untested and may be unstable. Use at your own risk, and please [report issues](https://github.com/datoviz/datoviz/issues) if you encounter any problems.
+
+You can find the latest builds on the **[Nightly Release Page](https://github.com/datoviz/datoviz/releases/tag/nightly)**.
+Each wheel file is tagged by platform (e.g. `manylinux`, `macosx`, `win_amd64`) and build date (`devYYYYMMDD`).
+
 
 ## 🚀 Usage
 
@@ -158,6 +192,7 @@ app.destroy()
 * [**🛠️ Maintainers** instructions](https://datoviz.org/discussions/MAINTAINERS/)
 
 
+
 ## 🕰️ History
 
 Datoviz builds on more than a decade of open-source GPU-based scientific visualization work:
@@ -179,14 +214,17 @@ Datoviz remains closely tied to **VisPy** and is being developed by one of its o
 The long-term vision is to enable high-performance 2D/3D scientific visualization across platforms (desktop, web, cloud) and languages (C/C++, Python, Julia, Rust).
 
 
+
 ## 🤝 Contributing
 
 See the [contributing notes](CONTRIBUTING.md).
 
 
+
 ## 📄 License
 
 See the [MIT license](LICENSE).
+
 
 
 ## 🙏 Credits

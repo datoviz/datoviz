@@ -92,6 +92,7 @@ class App:
         height: int = cst.DEFAULT_HEIGHT,
         c_flags: int = 0,
         gui: bool = False,
+        fullscreen: bool = False,
     ) -> Figure:
         """
         Create a new figure.
@@ -106,6 +107,8 @@ class App:
             Flags for the figure, by default 0.
         gui : bool, optional
             Whether to enable GUI, by default False.
+        fullscreen : bool, optional
+            Open figure in fullscreen mode.
 
         Returns
         -------
@@ -119,8 +122,10 @@ class App:
         """
         if gui:
             c_flags |= dvz.CANVAS_FLAGS_IMGUI
+        if fullscreen:
+            c_flags |= dvz.CANVAS_FLAGS_FULLSCREEN
         c_figure = dvz.figure(self.c_scene, width, height, c_flags)
-        return Figure(c_figure)
+        return Figure(c_figure, app=self)
 
     def run(self, frame_count: int = 0) -> None:
         """
@@ -148,6 +153,10 @@ class App:
         """
         self.run(1)
         dvz.app_screenshot(self.c_app, figure.figure_id(), png_path)
+
+    def stop(self):
+        """Stop the application."""
+        dvz.app_stop(self.c_app)
 
     def __del__(self) -> None:
         self.destroy()
@@ -363,11 +372,12 @@ class App:
 
     def basic(
         self,
-        topology: str,
+        topology: str = None,
         position: np.ndarray = None,
         color: np.ndarray = None,
         group: np.ndarray = None,
         size: float = None,
+        shape: ShapeCollection = None,
         depth_test: bool = None,
         cull: str = None,
     ) -> vs.Basic:
@@ -387,6 +397,8 @@ class App:
             Group indices of all points (optional).
         size : float
             Point size in pixels, when using the `point_list` topology.
+        shape : ShapeCollection, optional
+            Create a basic visual from a shape collection.
         depth_test : bool, optional
             Whether to enable depth testing.
         cull : str, optional
@@ -397,11 +409,16 @@ class App:
         vs.Basic
             The created basic visual instance.
         """
-        if topology not in cst.TOPOLOGY_OPTIONS:
+        if not shape and topology not in cst.TOPOLOGY_OPTIONS:
             raise ValueError(f'Topology must be one of {cst.TOPOLOGY_OPTIONS} and not {topology}')
         c_topology = to_enum(f'primitive_topology_{topology}')
         assert c_topology is not None
-        c_visual = dvz.basic(self.c_batch, c_topology, 0)
+        if shape is None:
+            c_visual = dvz.basic(self.c_batch, c_topology, 0)
+        else:
+            if not shape.c_merged:
+                shape.merge()
+            c_visual = dvz.basic_shape(self.c_batch, shape.c_merged, c_topology, 0)
         return self._visual(
             cls=vs.Basic,
             c_visual=c_visual,
@@ -851,6 +868,52 @@ class App:
             cull=cull,
         )
 
+    def wiggle(
+        self,
+        bounds: tp.Optional[Tuple[Tuple[float, float], Tuple[float, float]]] = None,
+        negative_color: tp.Optional[Tuple[int, int, int, int]] = None,
+        positive_color: tp.Optional[Tuple[int, int, int, int]] = None,
+        edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
+        xrange: tp.Optional[Tuple[float, float]] = None,
+        scale: tp.Optional[float] = None,
+        texture: tp.Optional[Texture] = None,
+    ) -> vs.Wiggle:
+        """
+        Create a Wiggle visual.
+
+        Parameters
+        ----------
+        bounds : tuple of tuples, optional
+            Bounds for the wiggle plot, in the form ((xmin, xmax), (ymin, ymax)).
+        negative_color : Tuple[int, int, int, int], optional
+            Color for the negative wiggle values, in RGBA format.
+        positive_color : Tuple[int, int, int, int], optional
+            Color for the positive wiggle values, in RGBA format.
+        edgecolor : Tuple[int, int, int, int], optional
+            Line color in RGBA format.
+        xrange : tuple of float, optional
+            Range of the x-axis for the wiggle plot, in the form (x0, xl).
+        scale : float, optional
+            Scale factor for the wiggle plot, applied to the wiggle values.
+        texture : Texture, optional
+            Texture for the wiggle, a 2D texture containing the data.
+
+        Returns
+        -------
+        vs.Wiggle
+            The created wiggle visual instance.
+        """
+        return self._visual(
+            dvz.wiggle,
+            vs.Wiggle,
+            bounds=bounds,
+            color=(negative_color, positive_color),
+            edgecolor=edgecolor,
+            xrange=xrange,
+            scale=scale,
+            texture=texture,
+        )
+
     def mesh(
         self,
         shape: ShapeCollection = None,
@@ -865,7 +928,10 @@ class App:
         index: np.ndarray = None,
         light_pos: Tuple[float, float, float, float] = None,
         light_color: Tuple[int, int, int, int] = None,
-        material_params: Tuple[float, float, float] = None,
+        ambient_params: tp.Optional[Tuple[float, float, float]] = None,
+        diffuse_params: tp.Optional[Tuple[float, float, float]] = None,
+        specular_params: tp.Optional[Tuple[float, float, float]] = None,
+        emission_params: tp.Optional[Tuple[float, float, float]] = None,
         shine: float = None,
         emit: float = None,
         edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
@@ -909,9 +975,14 @@ class App:
             If `w` is 0, the light is directional; if `w` is 1, the light is positional.
         light_color : Tuple[int, int, int, int], optional
             Light color in RGBA format, in the form (r, g, b, a).
-        material_params : Tuple[float, float, float], optional
+        ambient_params : Tuple[float, float, float], optional
             Material ambient parameters for the mesh, in the form (r, g, b).
-            For diffuse, specular, and exponent, use `Mesh.set_material_params()`.
+        diffuse_params : Tuple[float, float, float], optional
+            Material diffuse parameters for the mesh, in the form (r, g, b).
+        specular_params : Tuple[float, float, float], optional
+            Material specular parameters for the mesh, in the form (r, g, b).
+        emission_params : Tuple[float, float, float], optional
+            Material emission parameters for the mesh, in the form (r, g, b).
         shine : float, optional
             Material shine factor for the mesh, in the range [0, 1].
         emit : float, optional
@@ -1002,7 +1073,10 @@ class App:
             index=index,
             light_pos=light_pos,
             light_color=light_color,
-            material_params=material_params,
+            ambient_params=ambient_params,
+            diffuse_params=diffuse_params,
+            specular_params=specular_params,
+            emission_params=emission_params,
             shine=shine,
             emit=emit,
             edgecolor=edgecolor,
@@ -1021,10 +1095,14 @@ class App:
         size: np.ndarray = None,
         light_pos: tp.Optional[Tuple[float, float, float, float]] = None,
         light_color: tp.Optional[Tuple[int, int, int, int]] = None,
-        material_params: tp.Optional[Tuple[float, float, float]] = None,
+        ambient_params: tp.Optional[Tuple[float, float, float]] = None,
+        diffuse_params: tp.Optional[Tuple[float, float, float]] = None,
+        specular_params: tp.Optional[Tuple[float, float, float]] = None,
+        emission_params: tp.Optional[Tuple[float, float, float]] = None,
         shine: tp.Optional[float] = None,
         emit: tp.Optional[float] = None,
         texture: tp.Optional[Texture] = None,
+        equal_rectangular: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
         size_pixels: tp.Optional[bool] = None,
         depth_test: bool = None,
@@ -1046,15 +1124,22 @@ class App:
             If `w` is 0, the light is directional; if `w` is 1, the light is positional.
         light_color : Tuple[int, int, int, int], optional
             Light color in RGBA format, in the form (r, g, b, a).
-        material_params : Tuple[float, float, float], optional
+        ambient_params : Tuple[float, float, float], optional
             Material ambient parameters for the sphere, in the form (r, g, b).
-            For diffuse, specular, and exponent, use `Sphere.set_material_params()`.
+        diffuse_params : Tuple[float, float, float], optional
+            Material diffuse parameters for the sphere, in the form (r, g, b).
+        specular_params : Tuple[float, float, float], optional
+            Material specular parameters for the sphere, in the form (r, g, b).
+        emission_params : Tuple[float, float, float], optional
+            Material emission parameters for the sphere, in the form (r, g, b).
         shine : float, optional
             Material shine factor for the sphere, in the range [0, 1].
         emit : float, optional
             Material emission factor for the sphere, in the range [0, 1].
         texture : Texture, optional
             Texture for the sphere, when using a textured sphere.
+        equal_rectangular : bool
+            Texture is equal rectangular.
         lighting : bool
             Whether lighting is enabled.
         size_pixels : bool
@@ -1070,7 +1155,12 @@ class App:
             The created sphere visual instance.
         """
         has_texture = True if texture is not None else False
-        c_flags = sphere_flags(textured=has_texture, lighting=lighting, size_pixels=size_pixels)
+        c_flags = sphere_flags(
+            textured=has_texture,
+            lighting=lighting,
+            size_pixels=size_pixels,
+            equal_rectangular=equal_rectangular,
+        )
         return self._visual(
             dvz.sphere,
             vs.Sphere,
@@ -1080,7 +1170,10 @@ class App:
             size=size,
             light_pos=light_pos,
             light_color=light_color,
-            material_params=material_params,
+            ambient_params=ambient_params,
+            diffuse_params=diffuse_params,
+            specular_params=specular_params,
+            emission_params=emission_params,
             shine=shine,
             emit=emit,
             texture=texture,
@@ -1090,7 +1183,7 @@ class App:
 
     def volume(
         self,
-        bounds: Tuple[tuple, tuple, tuple] = None,
+        bounds: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]] = None,
         permutation: Tuple[int, int, int] = None,
         slice: int = None,
         transfer: Tuple[float, float, float, float] = None,
@@ -1102,7 +1195,7 @@ class App:
 
         Parameters
         ----------
-        bounds : Tuple[tuple, tuple, tuple]
+        bounds : Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
             Bounds of the volume in normalized device coordinates, as three tuples
             (xmin, xmax), (ymin, ymax), (zmin, zmax).
         permutation : Tuple[int, int, int], optional
@@ -1139,23 +1232,6 @@ class App:
     ) -> vs.Slice:
         """Not implemented yet."""
         raise NotImplementedError()
-
-    # GUI
-    # ---------------------------------------------------------------------------------------------
-
-    def arcball_gui(self, panel, arcball) -> None:
-        """
-        Attach an arcball GUI to a panel.
-
-        Parameters
-        ----------
-        panel : Panel
-            Panel instance.
-        arcball : Arcball
-            Arcball instance.
-        """
-        c_figure = panel.c_figure
-        dvz.arcball_gui(arcball.c_arcball, self.c_app, dvz.figure_id(c_figure), panel.c_panel)
 
     # Events
     # ---------------------------------------------------------------------------------------------
@@ -1214,6 +1290,35 @@ class App:
 
             dvz.app_on_keyboard(self.c_app, on_keyboard, None)
             self._callbacks.append(on_keyboard)
+            return fun
+
+        return decorator
+
+    def on_resize(self, figure: Figure) -> tp.Callable:
+        """
+        Register a resize event handler for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to attach the handler to.
+
+        Returns
+        -------
+        Callable
+            A decorator for the resize event handler.
+        """
+        assert figure
+
+        def decorator(fun):
+            @dvz.on_resize
+            def on_resize(app, window_id, ev_):
+                if dvz.figure_id(figure.c_figure) == window_id:
+                    ev = ev_.contents
+                    fun(Event(ev, 'resize'))
+
+            dvz.app_on_resize(self.c_app, on_resize, None)
+            self._callbacks.append(on_resize)
             return fun
 
         return decorator
@@ -1304,6 +1409,8 @@ class App:
                 return self.on_frame(figure)(fun)
             elif fun.__name__ == 'on_gui':
                 return self.on_gui(figure)(fun)
+            elif fun.__name__ == 'on_resize':
+                return self.on_resize(figure)(fun)
             # TODO: on_frame
 
         return decorator
@@ -1331,7 +1438,7 @@ class App:
             @dvz.on_timer
             def on_timer(app, window_id, ev_):
                 ev = ev_.contents
-                fun(ev)
+                fun(Event(ev, 'timer'))
 
             dvz.app_on_timer(self.c_app, on_timer, None)
             self._callbacks.append(on_timer)
@@ -1339,6 +1446,12 @@ class App:
 
         dvz.app_timer(self.c_app, delay, period, max_count)
         return decorator
+
+    def clear_timers(self):
+        """
+        Stop and clear all timers.
+        """
+        dvz.app_timer_clear(self.c_app)
 
     def timestamps(self, figure: Figure, count: int) -> Tuple[np.ndarray, np.ndarray]:
         """

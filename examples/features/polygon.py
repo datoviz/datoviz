@@ -1,5 +1,5 @@
 """
-# Polygon example
+# Polygons
 
 ---
 tags:

@@ -1,5 +1,5 @@
 """
-# GUI panel example
+# GUI panels
 
 Show how to create a GUI panel.
 

@@ -1,5 +1,5 @@
 """
-# Point visual example
+# Point visual
 
 Show the point visual.
 

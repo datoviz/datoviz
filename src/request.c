@@ -106,32 +106,16 @@ static int write_file(const char* filename, DvzSize block_size, uint32_t block_c
 
 static inline char* show_hex(const unsigned char* src, size_t len)
 {
-    char* buf = (char*)calloc(3 * len + 1, sizeof(char));
+    int buf_len = 3 * len + 1;
+    char* buf = (char*)calloc((size_t)buf_len, sizeof(char));
     int index = 0;
-    uint32_t is_zero = 0;
     unsigned char value = 0;
     for (uint32_t i = 0; i < len; i++)
     {
         value = src[i];
-        // printf("%hhu ", value);
-
-        if (!is_zero)
-        {
-            index += sprintf(&buf[index], "%02X ", value);
-            if (value == 0)
-                is_zero = 1;
-        }
-        else
-        {
-            is_zero++;
-        }
-
-        if (is_zero && value != 0)
-        {
-            index += sprintf(&buf[index], "(x%d) ", is_zero);
-            is_zero = 0;
-        }
+        index += sprintf(&buf[index], "%02X ", value);
     }
+    ASSERT(index < buf_len);
     return buf;
 }
 
@@ -202,10 +186,9 @@ static inline char* show_string(const char* src)
 static void _print_start(void)
 {
     log_trace("print_start");
-    printf(
-        "---\n"
-        "version: '1.0'\n"
-        "requests:\n");
+    printf("---\n"
+           "version: '1.0'\n"
+           "requests:\n");
 }
 
 
@@ -410,11 +393,16 @@ static void _print_upload_tex(DvzRequest* req, int flags)
         "    data:\n"
         "      mode: %s\n"
         "      buffer: %s\n",
-        tex, size, offset[0], offset[1], offset[2], shape[0], shape[1], shape[2],
-        encoded && encoded[2] == ' ' ? "hex" : "base64", encoded ? encoded : "");
+        tex, size,                                                    //
+        offset[0], offset[1], offset[2],                              //
+        shape[0], shape[1], shape[2],                                 //
+        encoded && size >= 3 && encoded[2] == ' ' ? "hex" : "base64", //
+        encoded ? encoded : "");
 
     if (encoded && encoded[0] != '<')
+    {
         FREE(encoded);
+    }
 }
 
 static void _print_delete_tex(DvzRequest* req)

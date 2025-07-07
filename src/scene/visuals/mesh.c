@@ -94,7 +94,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     int lighting = (flags & DVZ_MESH_FLAGS_LIGHTING);
     int contour = (flags & DVZ_MESH_FLAGS_CONTOUR);
     int isoline = (flags & DVZ_MESH_FLAGS_ISOLINE);
-    log_trace("create mesh visual, texture: %d, lighting: %d", textured, lighting);
+    log_trace("create mesh visual, texture: %d, lighting: %d, contour: %d, isoline: %d",
+              textured, lighting, contour, isoline);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_mesh");
@@ -493,26 +494,42 @@ void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape)
     dvz_mesh_position(visual, 0, vertex_count, shape->pos, 0);
 
     if (shape->normal)
+    {
         dvz_mesh_normal(visual, 0, vertex_count, shape->normal, 0);
+    }
 
     if (shape->color && !(visual->flags & DVZ_MESH_FLAGS_TEXTURED))
+    {
         dvz_mesh_color(visual, 0, vertex_count, shape->color, 0);
+    }
 
     if (shape->texcoords && (visual->flags & DVZ_MESH_FLAGS_TEXTURED))
+    {
         dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
+    }
 
     if (shape->isoline)
+    {
         dvz_mesh_isoline(visual, 0, vertex_count, shape->isoline, 0);
+    }
 
     if (shape->d_left)
+    {
         dvz_mesh_left(visual, 0, vertex_count, shape->d_left, 0);
+    }
 
     if (shape->d_right)
+    {
         dvz_mesh_right(visual, 0, vertex_count, shape->d_right, 0);
+    }
 
     if (shape->contour)
+    {
         dvz_mesh_contour(visual, 0, vertex_count, shape->contour, 0);
+    }
 
-    if (shape->index_count > 0)
+    if (shape->index_count > 0 && shape->index != NULL)
+    {
         dvz_mesh_index(visual, 0, index_count, shape->index, 0);
+    }
 }

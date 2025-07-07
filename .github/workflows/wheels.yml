@@ -3,6 +3,13 @@ name: "WHEELS"
 # Trigger on tags
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
+    inputs:
+      nightly:
+        description: "Force nightly build?"
+        required: false
+        default: "false"
+  schedule:
+    - cron: '0 3 * * *'  # every night at 3am UTC
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
@@ -24,6 +31,13 @@ jobs:
 
     # Create the directory
     steps:
+    - name: Set DVZ_NIGHTLY_TAG
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
+          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+        fi
+
     - name: Make directory
       run: mkdir -p /datoviz
 
@@ -62,7 +76,7 @@ jobs:
       working-directory: /datoviz
       run: |
         export PATH=$PATH:/opt/python/cp38-cp38/bin/
-        just wheel almalinux=1
+        just buildwheel almalinux=1
 
     # Test the wheel
     - name: Test
@@ -78,6 +92,16 @@ jobs:
         name: wheel-linux_x86_64
         path: /datoviz/dist/*.whl
 
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: /datoviz/dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # -----------------------------------------------------------------------------------------------
   # macOS arm64
   # -----------------------------------------------------------------------------------------------
@@ -87,6 +111,13 @@ jobs:
 
     # Clone the repo (except if local with "act")
     steps:
+    - name: Set DVZ_NIGHTLY_TAG
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
+          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+        fi
+
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
@@ -128,7 +159,7 @@ jobs:
     - name: Wheel
       run: |
         just pydev
-        just wheel "macosx_10_9_universal2"
+        just buildwheel "macosx_10_9_universal2"
 
     # Upload the wheel
     - name: Upload
@@ -136,6 +167,16 @@ jobs:
       with:
         name: wheel-macosx_arm64
         path: dist/*.whl
+
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # -----------------------------------------------------------------------------------------------
   # macOS x86_64
@@ -146,6 +187,13 @@ jobs:
 
     # Clone the repo (except if local with "act")
     steps:
+    - name: Set DVZ_NIGHTLY_TAG
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
+          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+        fi
+
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
@@ -187,7 +235,7 @@ jobs:
     - name: Wheel
       run: |
         just pydev
-        just wheel "macosx_10_9_x86_64"
+        just buildwheel "macosx_10_9_x86_64"
 
     # Upload the wheel
     - name: Upload
@@ -195,6 +243,16 @@ jobs:
       with:
         name: wheel-macosx_x86_64
         path: dist/*.whl
+
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # -----------------------------------------------------------------------------------------------
   # Windows
@@ -216,6 +274,14 @@ jobs:
       VULKAN_SDK: C:/VulkanSDK/1.3.280.0/
 
     steps:
+
+    - name: Set DVZ_NIGHTLY_TAG
+      shell: pwsh
+      run: |
+        if ($env:GITHUB_EVENT_NAME -eq 'schedule' -or $env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and "${{ github.event.inputs.nightly }}" -eq "true") {
+          $date = Get-Date -Format "yyyyMMdd"
+          "DVZ_NIGHTLY_TAG=.dev$date" | Out-File -FilePath $env:GITHUB_ENV -Append
+        }
 
     # Install Python and required dependencies
     - name: Setup Python
@@ -272,7 +338,7 @@ jobs:
       continue-on-error: true
       run: |
         just pydev
-        just wheel
+        just buildwheel
 
     # Upload the wheel
     - name: Upload
@@ -280,3 +346,13 @@ jobs:
       with:
         name: wheel-win_amd64
         path: dist/*.whl
+
+    - name: Upload to GitHub Release
+      if: env.DVZ_NIGHTLY_TAG != ''
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        prerelease: true
+        files: dist/*.whl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

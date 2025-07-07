@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 import numpy as np
 
-from ._ctypes import cvec4, ivec2, ivec3, vec3, vec4
+from ._ctypes import cvec4, ivec2, ivec3, vec2, vec3, vec4
 
 # -------------------------------------------------------------------------------------------------
 # Visual properties
@@ -89,6 +89,12 @@ PROPS = {
         'colormap': {'type': 'enum', 'enum': 'DVZ_CMAP'},
         'texture': {'type': 'texture'},
     },
+    'wiggle': {
+        'edgecolor': {'type': cvec4},
+        'xrange': {'type': vec2},
+        'scale': {'type': float},
+        'texture': {'type': 'texture'},
+    },
     'mesh': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
@@ -101,7 +107,10 @@ PROPS = {
         'index': {'type': np.ndarray, 'dtype': np.uint32, 'shape': (-1,)},
         'light_pos': {'type': vec4},
         'light_color': {'type': cvec4},
-        'material_params': {'type': vec3},
+        'ambient_params': {'type': vec3},
+        'diffuse_params': {'type': vec3},
+        'specular_params': {'type': vec3},
+        'emission_params': {'type': vec3},
         'shine': {'type': float},
         'emit': {'type': float},
         'edgecolor': {'type': cvec4},
@@ -115,7 +124,10 @@ PROPS = {
         'size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
         'light_pos': {'type': vec4},
         'light_color': {'type': cvec4},
-        'material_params': {'type': vec3},
+        'ambient_params': {'type': vec3},
+        'diffuse_params': {'type': vec3},
+        'specular_params': {'type': vec3},
+        'emission_params': {'type': vec3},
         'shine': {'type': float},
         'emit': {'type': float},
         'texture': {'type': 'texture'},

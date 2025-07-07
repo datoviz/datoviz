@@ -28,7 +28,7 @@ Use the image visual when:
 
 ---
 
-## Attributes
+## Properties
 
 Each item in the visual is a single image. Multiple images can be efficiently displayed at different positions in the same visual.
 
@@ -56,7 +56,7 @@ Each item in the visual is a single image. Multiple images can be efficiently di
 
 ### Per-visual (uniform)
 
-| Attribute     | Type     | Description                                        |
+| Parameter     | Type     | Description                                        |
 |---------------|----------|----------------------------------------------------|
 | `border`      | `bool`   | Show or hide a border around the image             |
 | `edgecolor`   | `cvec4`  | Color of the border edge                           |
@@ -107,7 +107,7 @@ Use the `rescale` attribute to define how the image is resized:
 
 Use the `border` attribute to indicate whether a border should be shown. If enabled, the following attributes can be used to customize the image border:
 
-| Attribute   | Description                                   |
+| Parameter   | Description                                   |
 |-------------|-----------------------------------------------|
 | `edgecolor` | Color of the border                           |
 | `linewidth` | Thickness in pixels                           |

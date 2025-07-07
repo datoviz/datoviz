@@ -281,7 +281,11 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
         brs[i] = dat->br;
         offsets[i] = pipe->vertex_bindings[i].offset;
     }
-    dvz_cmd_bind_vertex_buffer(cmds, idx, count, brs, offsets);
+
+    if (count > 0)
+    {
+        dvz_cmd_bind_vertex_buffer(cmds, idx, count, brs, offsets);
+    }
 
     // Index buffer.
     if (pipe->index_binding.dat != NULL)

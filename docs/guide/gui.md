@@ -57,6 +57,8 @@ dvz.gui_slider('My slider', 0.0, 100.0, slider)
 
 Also supports `vec2`, `vec3`, `vec4` versions for multi-axis sliders.
 
+There are also integer versions: `dvz.gui_slider_int`, `dvz.gui_slider_ivec2`, etc.
+
 ### Checkboxes
 
 ```python

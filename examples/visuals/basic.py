@@ -1,5 +1,5 @@
 """
-# Basic visual example
+# Basic visual
 
 Show the basic visual with line strip topology and groups.
 

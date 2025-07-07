@@ -1,5 +1,5 @@
 """
-# Pixel visual example
+# Pixel visual
 
 Show the pixel visual.
 
@@ -7,6 +7,8 @@ Show the pixel visual.
 tags:
   - pixel
   - panzoom
+dependencies:
+  - matplotlib
 in_gallery: true
 make_screenshot: true
 ---

@@ -23,7 +23,9 @@
 #include "scene/axes.h"
 #include "scene/baker.h"
 #include "scene/camera.h"
+#include "scene/fly.h"
 #include "scene/graphics.h"
+#include "scene/grid.h"
 #include "scene/ortho.h"
 #include "scene/panzoom.h"
 #include "scene/transform.h"
@@ -122,6 +124,19 @@ DvzBatch* dvz_scene_batch(DvzScene* scene)
 void dvz_scene_destroy(DvzScene* scene)
 {
     ANN(scene);
+    ANN(scene->figures);
+
+    uint32_t n = dvz_list_count(scene->figures);
+    DvzFigure* fig = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
+        ANN(fig);
+
+        log_trace("destroy figure #%d", i);
+        dvz_figure_destroy(fig);
+    }
+
     dvz_list_destroy(scene->figures);
     FREE(scene);
 }
@@ -174,6 +189,9 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     // Panels.
     fig->panels = dvz_list();
 
+    // Links.
+    fig->links = dvz_list();
+
     // Requester.
     DvzBatch* batch = scene->batch;
     ANN(batch);
@@ -196,10 +214,10 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
 
 
 
-DvzId dvz_figure_id(DvzFigure* figure)
+DvzId dvz_figure_id(DvzFigure* fig)
 {
-    ANN(figure);
-    return figure->canvas_id;
+    ANN(fig);
+    return fig->canvas_id;
 }
 
 
@@ -271,6 +289,22 @@ void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
 
 
 
+uint32_t dvz_figure_width(DvzFigure* fig)
+{
+    ANN(fig);
+    return fig->shape[0];
+}
+
+
+
+uint32_t dvz_figure_height(DvzFigure* fig)
+{
+    ANN(fig);
+    return fig->shape[1];
+}
+
+
+
 DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id)
 {
     // Return a figure from a canvas ID.
@@ -292,12 +326,12 @@ DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id)
 
 
 
-void dvz_figure_update(DvzFigure* figure)
+void dvz_figure_update(DvzFigure* fig)
 {
-    ANN(figure);
-    ANN(figure->viewset);
-    ANN(figure->viewset->status);
-    dvz_atomic_set(figure->viewset->status, (int)DVZ_BUILD_DIRTY);
+    ANN(fig);
+    ANN(fig->viewset);
+    ANN(fig->viewset->status);
+    dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_DIRTY);
 }
 
 
@@ -313,11 +347,25 @@ void dvz_figure_destroy(DvzFigure* fig)
     uint32_t n = dvz_list_count(fig->panels);
     for (uint32_t i = 0; i < n; i++)
     {
-        dvz_panel_destroy((DvzPanel*)dvz_list_get(fig->panels, i).p);
+        log_trace("destroy panel #%d of figure", i);
+        // NOTE: panel_destroy() removes the panel from the figure's list of panels,
+        // so we constantly delete the first panel until there is no panel left in the figure.
+        dvz_panel_destroy((DvzPanel*)dvz_list_get(fig->panels, 0).p);
     }
 
     // Destroy the list of panels.
     dvz_list_destroy(fig->panels);
+
+    // Destroy the list of panel links.
+    // Free all panel links.
+    n = dvz_list_count(fig->links);
+    void* pointer = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pointer = dvz_list_get(fig->links, i).p;
+        FREE(pointer);
+    }
+    dvz_list_destroy(fig->links);
 
     // Remove the figure from the scene's figures.
     dvz_list_remove_pointer(fig->scene->figures, fig);
@@ -567,6 +615,11 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
         dvz_transform_update(panel->transform);
     }
 
+    if (panel->fly != NULL)
+    {
+        dvz_fly_resize(panel->fly, width, height);
+    }
+
     if (panel->ortho != NULL)
     {
         // NOTE: for the ortho, we also need to update the MVP struct on the GPU because the
@@ -649,18 +702,43 @@ void dvz_panel_destroy(DvzPanel* panel)
     dvz_transform_destroy(panel->static_transform);
 
     // Destroy the view.
-    dvz_view_destroy(panel->view);
+    // dvz_view_destroy(panel->view);
 
     // Free the memory buffer with the panel's title.
     if (panel->gui_title != NULL)
         FREE(panel->gui_title);
 
-    // Remove the figure from the scene's figures.
+    // Remove the panel from the figure's panels.
     dvz_list_remove_pointer(panel->figure->panels, panel);
 
     if (panel->ref != NULL)
     {
         dvz_ref_destroy(panel->ref);
+    }
+
+    if (panel->camera != NULL)
+    {
+        dvz_camera_destroy(panel->camera);
+    }
+
+    if (panel->panzoom != NULL)
+    {
+        dvz_panzoom_destroy(panel->panzoom);
+    }
+
+    if (panel->ortho != NULL)
+    {
+        dvz_ortho_destroy(panel->ortho);
+    }
+
+    if (panel->arcball != NULL)
+    {
+        dvz_arcball_destroy(panel->arcball);
+    }
+
+    if (panel->fly != NULL)
+    {
+        dvz_fly_destroy(panel->fly);
     }
 
     FREE(panel);
@@ -730,9 +808,6 @@ DvzOrtho* dvz_panel_ortho(DvzPanel* panel, int flags)
         return NULL;
     }
 
-    ASSERT(panel->view->shape[0] > 0);
-    ASSERT(panel->view->shape[1] > 0);
-
     log_trace("create a new Ortho instance");
 
     float w = panel->view->shape[0];
@@ -787,6 +862,41 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel, int flags)
     DvzCamera* camera = dvz_panel_camera(panel, DVZ_CAMERA_FLAGS_PERSPECTIVE);
 
     return panel->arcball;
+}
+
+
+
+DvzFly* dvz_panel_fly(DvzPanel* panel, int flags)
+{
+    ANN(panel);
+    ANN(panel->view);
+    ANN(panel->figure);
+
+    DvzScene* scene = panel->figure->scene;
+    ANN(scene);
+
+    if (panel->fly != NULL)
+        return panel->fly;
+
+    if (panel->transform != NULL)
+    {
+        log_error("could not create a fly camera as the panel has already a transform");
+        return NULL;
+    }
+
+    log_trace("create a new Fly camera instance");
+    panel->fly = dvz_fly(flags);
+
+    // Create perspective camera if not exists
+    if (panel->camera == NULL)
+    {
+        panel->camera = dvz_panel_camera(panel, DVZ_CAMERA_FLAGS_PERSPECTIVE);
+    }
+
+    panel->transform = dvz_transform(scene->batch, 0);
+    panel->transform_to_destroy = true;
+
+    return panel->fly;
 }
 
 
@@ -944,6 +1054,23 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags)
 
 
 /*************************************************************************************************/
+/*  Grid                                                                                       */
+/*************************************************************************************************/
+
+DvzVisual* dvz_panel_grid(DvzPanel* panel, int flags)
+{
+    ANN(panel);
+    ANN(panel->figure);
+    ANN(panel->figure->scene);
+
+    DvzVisual* grid = dvz_grid(panel->figure->scene->batch, flags);
+
+    return grid;
+}
+
+
+
+/*************************************************************************************************/
 /*  Updates                                                                                      */
 /*************************************************************************************************/
 
@@ -963,6 +1090,7 @@ static void _update_panzoom(DvzPanel* panel)
 }
 
 
+
 static void _update_ortho(DvzPanel* panel)
 {
     ANN(panel);
@@ -977,6 +1105,7 @@ static void _update_ortho(DvzPanel* panel)
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_ortho_mvp(ortho, mvp);
 }
+
 
 
 static void _update_arcball(DvzPanel* panel)
@@ -1012,6 +1141,32 @@ static void _update_camera(DvzPanel* panel)
 
 
 
+static void _update_fly(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzFly* fly = panel->fly;
+    ANN(fly);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+
+    // Get vectors from fly camera
+    vec3 pos = {0}, lookat = {0}, up = {0};
+    dvz_fly_get_position(fly, pos);
+    dvz_fly_get_lookat(fly, lookat);
+    dvz_fly_get_up(fly, up);
+
+    // Update camera
+    dvz_camera_position(panel->camera, pos);
+    dvz_camera_lookat(panel->camera, lookat);
+    dvz_camera_up(panel->camera, up);
+
+    _update_camera(panel);
+}
+
+
+
 void dvz_panel_show(DvzPanel* panel, bool is_visible)
 {
     ANN(panel);
@@ -1022,9 +1177,138 @@ void dvz_panel_show(DvzPanel* panel, bool is_visible)
 
 
 
+static DvzPanelLink* _find_panel_link(DvzFigure* fig, DvzPanel* target, DvzPanel* source)
+{
+    ANN(fig);
+    ANN(target);
+    ANN(source);
+
+    uint32_t n = dvz_list_count(fig->links);
+    DvzPanelLink* link = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        link = dvz_list_get(fig->links, i).p;
+        if (link != NULL)
+        {
+            if (link->source == source && link->target == target)
+            {
+                return link;
+            }
+        }
+    }
+    return NULL;
+}
+
+void dvz_panel_link(DvzPanel* panel, DvzPanel* source, int flags)
+{
+    // The panel's model/view/projection matrices come from the source and they are updated
+    // whenever the source's matrices are updated.
+
+    // Flags:
+    ANN(panel);
+    ANN(source);
+
+    DvzFigure* fig = panel->figure;
+    ANN(fig);
+
+    DvzPanelLink* link = NULL;
+
+    if (flags == 0)
+    {
+        // Remove link.
+        link = _find_panel_link(fig, panel, source);
+        if (link)
+        {
+            dvz_list_remove_pointer(fig->links, link);
+            FREE(link);
+        }
+        else
+        {
+            log_trace("unable to remove non-existing panel link");
+            return;
+        }
+    }
+    ASSERT(flags != 0);
+
+    link = (DvzPanelLink*)calloc(1, sizeof(DvzPanelLink));
+    link->target = panel;
+    link->source = source;
+    link->flags = flags;
+    dvz_list_append(fig->links, (DvzListItem){.p = (void*)link});
+}
+
+
+
+static void _update_linked_panel(DvzPanelLink* link)
+{
+    ANN(link);
+
+    DvzPanel* target = link->target;
+    DvzPanel* source = link->source;
+
+    ANN(target);
+    ANN(source);
+
+    DvzMVP* target_mvp = dvz_transform_mvp(target->transform);
+    DvzMVP* source_mvp = dvz_transform_mvp(source->transform);
+
+    ANN(target_mvp);
+    ANN(source_mvp);
+
+    int flags = link->flags;
+    ASSERT(flags != 0);
+
+    if ((flags & DVZ_PANEL_LINK_FLAGS_MODEL) != 0)
+    {
+        glm_mat4_copy(source_mvp->model, target_mvp->model);
+    }
+
+    if ((flags & DVZ_PANEL_LINK_FLAGS_VIEW) != 0)
+    {
+        glm_mat4_copy(source_mvp->view, target_mvp->view);
+    }
+
+    if ((flags & DVZ_PANEL_LINK_FLAGS_PROJECTION) != 0)
+    {
+        glm_mat4_copy(source_mvp->proj, target_mvp->proj);
+    }
+
+    dvz_transform_update(target->transform);
+}
+
+static void _update_linked_panels(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzFigure* fig = panel->figure;
+    ANN(fig);
+
+    // Go through all panel links, if source matches the updated panel, update the
+    // target panel transform and call transform update on it.
+    uint32_t n = dvz_list_count(fig->links);
+    DvzPanelLink* link = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        link = dvz_list_get(fig->links, i).p;
+        if (link != NULL)
+        {
+            if (link->source == panel)
+            {
+                if (link->target != NULL && link->target->transform != NULL)
+                {
+                    _update_linked_panel(link);
+                }
+            }
+        }
+    }
+}
+
 void dvz_panel_update(DvzPanel* panel)
 {
     ANN(panel);
+
+    DvzFigure* fig = panel->figure;
+    ANN(fig);
 
     if (panel->camera)
         _update_camera(panel);
@@ -1035,9 +1319,24 @@ void dvz_panel_update(DvzPanel* panel)
     if (panel->arcball)
         _update_arcball(panel);
 
+    // Update the axes if any.
+    if (panel->axes != NULL && panel->panzoom != NULL)
+    {
+        DvzRef* ref = dvz_panel_ref(panel);
+        ANN(ref);
+        dvz_axes_resize(panel->axes, panel->view);
+        dvz_axes_update(panel->axes, ref, panel->panzoom, false);
+    }
+
     DvzTransform* tr = panel->transform;
+    if (tr == NULL)
+    {
+        return;
+    }
     ANN(tr);
     dvz_transform_update(tr);
+
+    _update_linked_panels(panel);
 }
 
 
@@ -1390,6 +1689,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         {
             _update_panzoom(panel);
             dvz_transform_update(tr);
+            _update_linked_panels(panel);
 
             // Update the axes if any.
             if (panel->axes != NULL)
@@ -1417,6 +1717,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         {
             _update_ortho(panel);
             dvz_transform_update(tr);
+            _update_linked_panels(panel);
         }
     }
 
@@ -1452,34 +1753,72 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         }
 
         dvz_transform_update(tr);
+        _update_linked_panels(panel);
+    }
+
+    // Fly camera
+    DvzFly* fly = panel->fly;
+    if (fly != NULL)
+    {
+        DvzTransform* tr = panel->transform;
+        if (tr == NULL)
+        {
+            log_warn("no transform set in panel");
+            return;
+        }
+
+        // Pass events to fly controller
+        if (dvz_fly_mouse(fly, &mev))
+        {
+            _update_fly(panel);
+            _update_camera(panel);
+            dvz_transform_update(tr);
+            _update_linked_panels(panel);
+        }
     }
 }
 
 
 
-static inline bool _figure_has_gui_panels(DvzFigure* fig)
+static void _scene_on_keyboard(DvzApp* app, DvzId window_id, DvzKeyboardEvent* ev)
 {
-    ANN(fig);
-    ANN(fig->panels);
+    ANN(app);
 
-    // Go through all panels.
+    DvzScene* scene = (DvzScene*)ev->user_data;
+    ANN(scene);
+
+    DvzFigure* fig = dvz_scene_figure(scene, window_id);
+    ANN(fig);
+
+    // Find active panel (one with focus, or first with fly camera for now)
+    // TODO: add a notion of currently active panel
     uint32_t n = dvz_list_count(fig->panels);
     DvzPanel* panel = NULL;
     for (uint32_t i = 0; i < n; i++)
     {
         panel = (DvzPanel*)dvz_list_get(fig->panels, i).p;
-        ANN(panel);
-        ANN(panel->view);
-
-        // Display the GUI panels for those which have a title.
-        if (panel->gui_title != NULL)
+        if (panel != NULL && panel->fly != NULL)
         {
-            return true;
+            DvzTransform* tr = panel->transform;
+            if (tr == NULL)
+            {
+                log_warn("no transform set in panel");
+                return;
+            }
+
+            // Pass keyboard event to fly controller
+            if (dvz_fly_keyboard(panel->fly, ev))
+            {
+                _update_fly(panel);
+                dvz_transform_update(tr);
+                _update_linked_panels(panel);
+            }
+            break;
         }
     }
-
-    return false;
 }
+
+
 
 void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
 {
@@ -1498,6 +1837,7 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
         dvz_app_on_mouse(app, _scene_on_mouse, scene);
         dvz_app_on_resize(app, _scene_onresize, scene);
         dvz_app_on_frame(app, _scene_onframe, scene);
+        dvz_app_on_keyboard(app, _scene_on_keyboard, scene);
 
         // Initial build of the scene.
         // NOTE: this call will mark the scene as dvz_obj_created().
@@ -1509,16 +1849,36 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
         ANN(scene->figures);
         uint32_t n = dvz_list_count(scene->figures);
         DvzFigure* fig = NULL;
+        bool has_gui_panel = false;
         for (uint32_t i = 0; i < n; i++)
         {
             fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
             ANN(fig);
 
-            // Only register the GUI panels callback if the figure has at least one GUI panel.
-            // NOTE: this will fail if a GUI panel is registered *AFTER* dvz_scene_run() is called.
-            if (_figure_has_gui_panels(fig))
+            // Go through all panels.
+            uint32_t m = dvz_list_count(fig->panels);
+            DvzPanel* panel = NULL;
+            for (uint32_t j = 0; j < m; j++)
             {
-                dvz_app_gui(app, fig->canvas_id, _scene_gui_panels, scene);
+                panel = (DvzPanel*)dvz_list_get(fig->panels, j).p;
+                ANN(panel);
+                ANN(panel->view);
+
+                if (panel->fly)
+                    _update_fly(panel);
+                dvz_transform_update(panel->transform);
+                _update_linked_panels(panel);
+
+                // Only register the GUI panels callback if the figure has at least one GUI panel.
+                // NOTE: this will fail if a GUI panel is registered *AFTER* dvz_scene_run() is
+                // called.
+
+                // Display the GUI panels for those which have a title.
+                if (!has_gui_panel && panel->gui_title != NULL)
+                {
+                    dvz_app_gui(app, fig->canvas_id, _scene_gui_panels, scene);
+                    has_gui_panel = true;
+                }
             }
         }
     }

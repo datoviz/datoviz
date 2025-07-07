@@ -1,5 +1,5 @@
 """
-# GUI example
+# GUI widgets
 
 Show how to create a GUI dialog.
 
@@ -33,6 +33,7 @@ checked = Out(True)
 color = vec3(0.7, 0.5, 0.3)
 
 slider = Out(25.0)  # Warning: needs to be a float as it is passed to a function expecting a float
+dropdown_selected = Out(1)
 
 # GUI callback function, called at every frame. This is using Dear ImGui, an immediate-mode
 # GUI system. This means the GUI is recreated from scratch at every frame.
@@ -85,6 +86,9 @@ def on_gui(ev):
 
     if dvz.gui_slider('Slider', 0.0, 100.0, slider):
         print('Slider value:', slider.value)
+
+    if dvz.gui_dropdown('Dropdown', 3, ['item 1', 'item 2', 'item 3'], dropdown_selected, 0):
+        print('Dropdown index:', dropdown_selected.value)
 
     # End the GUI dialog.
     dvz.gui_end()

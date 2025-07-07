@@ -67,14 +67,14 @@ void dvz_transform_set(DvzTransform* tr, DvzMVP* mvp)
 void dvz_transform_update(DvzTransform* tr)
 {
     // This function emits a dat upload request with the new DvzMVP value.
+    if (tr != NULL)
+    {
+        // Force the dual update by marking it as dirty.
+        dvz_dual_dirty(&tr->dual, 0, 1);
 
-    ANN(tr);
-
-    // Force the dual update by marking it as dirty.
-    dvz_dual_dirty(&tr->dual, 0, 1);
-
-    // Emit the dat upload request.
-    dvz_dual_update(&tr->dual);
+        // Emit the dat upload request.
+        dvz_dual_update(&tr->dual);
+    }
 }
 
 

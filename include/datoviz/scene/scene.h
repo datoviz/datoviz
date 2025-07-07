@@ -32,27 +32,29 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
+typedef struct DvzPanelLink DvzPanelLink;
+typedef struct DvzScene DvzScene;
 
 // Forward declarations.
 typedef struct DvzApp DvzApp;
 typedef struct DvzArcball DvzArcball;
-typedef struct DvzCamera DvzCamera;
-typedef struct DvzList DvzList;
-typedef struct DvzPanzoom DvzPanzoom;
-typedef struct DvzOrtho DvzOrtho;
+typedef struct DvzAxes DvzAxes;
 typedef struct DvzBatch DvzBatch;
+typedef struct DvzCamera DvzCamera;
+typedef struct DvzColorbar DvzColorbar;
+typedef struct DvzFly DvzFly;
+typedef struct DvzLegend DvzLegend;
+typedef struct DvzList DvzList;
+typedef struct DvzOrtho DvzOrtho;
+typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzRef DvzRef;
+typedef struct DvzTitle DvzTitle;
 typedef struct DvzTransform DvzTransform;
 typedef struct DvzView DvzView;
 typedef struct DvzViewset DvzViewset;
 typedef struct DvzVisual DvzVisual;
-typedef struct DvzRef DvzRef;
-typedef struct DvzAxes DvzAxes;
-typedef struct DvzLegend DvzLegend;
-typedef struct DvzTitle DvzTitle;
-typedef struct DvzColorbar DvzColorbar;
 
 
 
@@ -80,10 +82,20 @@ struct DvzScene
 
 
 
+struct DvzPanelLink
+{
+    DvzPanel* target;
+    DvzPanel* source;
+    int flags;
+};
+
+
+
 struct DvzFigure
 {
     DvzScene* scene;
     DvzList* panels;
+    DvzList* links;
     vec2 shape, shape_init; // NOTE: in screen coordinates
     float scale;
     int flags;
@@ -106,9 +118,11 @@ struct DvzPanel
     DvzPanzoom* panzoom;
     DvzOrtho* ortho;
     DvzArcball* arcball;
+    DvzFly* fly;
 
     // Panel axes and decorations.
     DvzRef* ref;
+    DvzVisual* grid; // 3D horizontal grid
     DvzAxes* axes;
     DvzLegend* legend;
     DvzTitle* title;

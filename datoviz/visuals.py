@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -20,7 +20,7 @@ from . import _ctypes as dvz
 from ._props import PROPS
 from ._texture import Texture
 from .utils import (
-    get_fixed_params,
+    get_fixed_flag,
     get_size,
     is_enumerable,
     prepare_data_array,
@@ -167,7 +167,7 @@ class Visual:
         value : Any
             The value to set.
         """
-        prop_info = PROPS[self.visual_name].get(prop_name, {})
+        prop_info = PROPS.get(self.visual_name, {}).get(prop_name, {})
         prop_type = prop_info.get('type', None)
         if not prop_type:
             # print(f'Prop {prop_name} not found in visual {self.visual_name}')
@@ -259,7 +259,7 @@ class Visual:
             Use True to fix all x, y, z dimensions, or `x` or `x,y` etc to fix only some of the
             axes.
         """
-        dvz.visual_fixed(self.c_visual, *get_fixed_params(fixed))
+        dvz.visual_fixed(self.c_visual, get_fixed_flag(fixed))
 
     # Elements
     # ---------------------------------------------------------------------------------------------
@@ -1027,10 +1027,10 @@ class Path(Visual):
                 position = [position]
             elif isinstance(groups, int):
                 k = position.shape[0] // groups
-                position = [position[i * k : (i + 1) * k] for i in range(groups)]
+                position = [position[i * k: (i + 1) * k] for i in range(groups)]
             elif is_enumerable(groups):
                 indices = np.cumsum([0] + list(groups))
-                position = [position[indices[i] : indices[i + 1]] for i in range(len(groups))]
+                position = [position[indices[i]: indices[i + 1]] for i in range(len(groups))]
 
         # Ensure we get a list of positions in the end.
         assert isinstance(position, list)
@@ -1177,9 +1177,15 @@ class Glyph(Visual):
             The common offset of all strings, by default (0, 0).
         """
         assert strings
-        assert string_pos is not None
-        assert scales is not None
+
         string_count = len(strings)
+
+        if string_pos is None:
+            string_pos = np.zeros((string_count, 3), dtype=np.float32)
+
+        if scales is None:
+            scales = np.ones(string_count, dtype=np.float32)
+
         dvz.glyph_strings(
             self.c_visual,
             string_count,
@@ -1500,6 +1506,102 @@ class Image(Visual):
 
 
 # -------------------------------------------------------------------------------------------------
+# Wiggle visual
+# -------------------------------------------------------------------------------------------------
+
+
+class Wiggle(Visual):
+    """
+    A visual for displaying a wiggle plot.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'wiggle'.
+    """
+
+    visual_name = 'wiggle'
+
+    def set_bounds(self, xlim: tuple, ylim: tuple = None) -> None:
+        """
+        Set the bounds of the wiggle plot.
+
+        Parameters
+        ----------
+        xlim : tuple
+            The x-axis bounds.
+        ylim : tuple
+            The y-axis bounds.
+        """
+        if ylim is None:
+            xlim, ylim = xlim
+        dvz.wiggle_bounds(self.c_visual, dvz.vec2(*xlim), dvz.vec2(*ylim))
+
+    def set_color(
+        self,
+        negative: Tuple[float, float, float, float],
+        positive: Optional[Tuple[float, float, float, float]] = None,
+    ) -> None:
+        """
+        Set the color of the wiggle plot.
+
+        Parameters
+        ----------
+        negative : tuple
+            The color for negative values.
+        positive : tuple
+            The color for positive values.
+        """
+        if hasattr(negative[0], '__len__'):
+            negative, positive = negative
+        dvz.wiggle_color(self.c_visual, dvz.cvec4(*negative), dvz.cvec4(*positive))
+
+    def set_edgecolor(self, value: Tuple[int, int, int, int]) -> None:
+        """
+        Set the line color.
+
+        Parameters
+        ----------
+        value : tuple
+            The edge color value.
+        """
+        self.edgecolor = value
+
+    def set_xrange(self, xrange: Tuple[float, float]) -> None:
+        """
+        Set the x-axis range of the wiggle plot.
+
+        Parameters
+        ----------
+        xrange : tuple
+            The x-axis range.
+        """
+        self.xrange = xrange
+
+    def set_scale(self, scale: float) -> None:
+        """
+        Set the wiggle scale.
+
+        Parameters
+        ----------
+        scale : float
+            The scale factor for the wiggle plot.
+        """
+        self.scale = scale
+
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the wiggle texture.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
+        dvz.wiggle_texture(self.c_visual, texture.c_texture)
+
+
+# -------------------------------------------------------------------------------------------------
 # Mesh visual
 # -------------------------------------------------------------------------------------------------
 
@@ -1570,7 +1672,13 @@ class Mesh(Visual):
             # Automatic normal computation.
             if compute_normals:
                 normals = np.zeros((nv, 3), dtype=np.float32)
-                dvz.compute_normals(nv, ni, kwargs['position'], kwargs['index'], normals)
+                dvz.compute_normals(
+                    nv,
+                    ni,
+                    kwargs['position'].astype(np.float32),
+                    kwargs['index'].astype(np.uint32),
+                    normals,
+                )
                 kwargs['normal'] = normals
 
         if vertex_count is not None and index_count is not None:
@@ -1726,20 +1834,53 @@ class Mesh(Visual):
         value = value if value is not None else cst.DEFAULT_LIGHT_COLOR
         dvz.mesh_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
-    def set_material_params(self, value: tuple, idx: int = 0) -> None:
+    def set_ambient_params(self, value: tuple) -> None:
         """
-        Set the parameters of the material.
+        Set the ambient parameters of the material.
 
         Parameters
         ----------
         value : tuple
-            The material light parameters (r, g, b).
-        idx : int, optional
-            The index of the material, by default 0.  (0 ambient, 1 diffuse, 2 specular,
-            3 emission)
+            The material ambient parameters (r, g, b).
         """
-        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
-        dvz.mesh_material_params(self.c_visual, idx, dvz.vec3(*value))
+        value = value if value is not None else cst.DEFAULT_AMBIENT_PARAMS
+        dvz.mesh_material_params(self.c_visual, 0, dvz.vec3(*value))
+
+    def set_diffuse_params(self, value: tuple) -> None:
+        """
+        Set the diffuse parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material diffuse parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_DIFFUSE_PARAMS
+        dvz.mesh_material_params(self.c_visual, 1, dvz.vec3(*value))
+
+    def set_specular_params(self, value: tuple) -> None:
+        """
+        Set the specular parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material specular parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_SPECULAR_PARAMS
+        dvz.mesh_material_params(self.c_visual, 2, dvz.vec3(*value))
+
+    def set_emission_params(self, value: tuple) -> None:
+        """
+        Set the emission parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material emission parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_EMISSION_PARAMS
+        dvz.mesh_material_params(self.c_visual, 3, dvz.vec3(*value))
 
     def set_shine(self, value: float) -> None:
         """
@@ -1805,7 +1946,7 @@ class Mesh(Visual):
         texture : Texture
             The texture object.
         """
-        dvz.image_texture(self.c_visual, texture.c_texture)
+        dvz.mesh_texture(self.c_visual, texture.c_texture)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1914,6 +2055,65 @@ class Sphere(Visual):
         value = value if value is not None else cst.DEFAULT_LIGHT_COLOR
         dvz.sphere_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
+    def set_ambient_params(self, value: tuple) -> None:
+        """
+        Set the ambient parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material ambient parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
+        dvz.sphere_material_params(self.c_visual, 0, dvz.vec3(*value))
+
+    def set_diffuse_params(self, value: tuple) -> None:
+        """
+        Set the diffuse parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material diffuse parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
+        dvz.sphere_material_params(self.c_visual, 1, dvz.vec3(*value))
+
+    def set_specular_params(self, value: tuple) -> None:
+        """
+        Set the specular parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material specular parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
+        dvz.sphere_material_params(self.c_visual, 2, dvz.vec3(*value))
+
+    def set_emission_params(self, value: tuple) -> None:
+        """
+        Set the emission parameters of the material.
+
+        Parameters
+        ----------
+        value : tuple
+            The material emission parameters (r, g, b).
+        """
+        value = value if value is not None else cst.DEFAULT_MATERIAL_PARAMS
+        dvz.sphere_material_params(self.c_visual, 3, dvz.vec3(*value))
+
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the sphere texture.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
+        dvz.sphere_texture(self.c_visual, texture.c_texture)
+
 
 # -------------------------------------------------------------------------------------------------
 # Volume visual
@@ -2008,7 +2208,7 @@ class Volume(Visual):
         texture : Texture
             The texture object.
         """
-        dvz.image_texture(self.c_visual, texture.c_texture)
+        dvz.volume_texture(self.c_visual, texture.c_texture)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -2074,4 +2274,4 @@ class Slice(Visual):
         texture : Texture
             The texture object.
         """
-        dvz.image_texture(self.c_visual, texture.c_texture)
+        dvz.slice_texture(self.c_visual, texture.c_texture)

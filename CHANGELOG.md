@@ -2,9 +2,7 @@
 
 ## Development version
 
-Work in progress.
-
-### Ongoing developments [planned for v0.4.0, late 2025/early 2026?]
+Ongoing developments planned for v0.4.0 (2026) include:
 
 * Internal backend-related refactoring to better support Qt and offscreen rendering.
 * Better support for compute shaders.
@@ -14,7 +12,120 @@ Work in progress.
 
 ---
 
-## v0.3.0 (2025-05-28) [LATEST RELEASE]
+## v0.3.1 (2025-07-XX) [LATEST RELEASE]
+
+This is a minor release featuring a few additions, improvements, performance benchmarks and bug fixes, mostly a new **Wiggle** visual, several new examples including a **triangle splatting showcase example**, a few new features such as a **colorbar**, a **3D gizmo**, a **3D horizontal grid**, a **fly controller**, support for camera orbiting and experimental panel linking.
+
+### Shapes
+
+* Added several methods to `ShapeCollection`: `add_guizmo()`, `transform()`, `vertex_count()`, `index_count()`.
+
+* Fixed texture orientation on shapes ([#96](https://github.com/datoviz/datoviz/pull/96) by @ron-adam).
+
+* Add support for anisotropic scaling in shape collection ([#104](https://github.com/datoviz/datoviz/pull/104) by @kshitijgoel007).
+
+
+### Examples
+
+#### Showcase examples
+
+* Added choropleth showcase example.
+* Added triangle splatting showcase example.
+
+#### Feature examples
+
+* Added animation feature example.
+* Added basic shape feature example.
+* Added colorbar feature example.
+* Added transparent mesh feature example.
+* Added sphere texture feature example.
+* Added stop feature example.
+* Added timer feature example.
+
+
+### Visuals
+
+#### Wiggle
+
+* Added a new **Wiggle** visual for displaying multichannel time series.
+
+#### Basic
+
+* Added a shape argument to the **Basic** visual.
+
+#### Segment
+
+* Fixed visual bug with segments in 3D (issue [#90](https://github.com/datoviz/datoviz/issues/90), pull request [#91](https://github.com/datoviz/datoviz/pull/91) by @ron-adam).
+
+#### Path
+
+* Fixed smooth color and linewidth gradient in **Path** visual (issue [#90](https://github.com/datoviz/datoviz/issues/90)).
+
+#### Sphere
+
+* Implemented textured spheres ([#89](https://github.com/datoviz/datoviz/pull/89) by @ron-adam).
+
+
+#### Mesh
+
+* Improved Python API for setting ambient, diffuse, specular, and emission parameters.
+
+
+### Axes
+
+* Implemented black or white background in axis component.
+
+
+### Graphical components
+
+* Implemented a preliminary colorbar.
+* Implemented a 3D horizontal grid.
+* Implemented a 3D gizmo to visualize arcball orientation with three colored arrows.
+
+
+### GUI
+
+* Added integer versions of the GUI slider widgets.
+
+
+### Controllers
+
+* Added a new fly controller.
+
+
+### User events
+
+* Added `last_pos` field in mouse drag event.
+
+
+### Python API
+
+* Wrapped the `frame` and `resize` event in the Python API.
+* Added `Panel.orbit()` to easily create an animation with the camera orbiting around a fixed point.
+* Added `Panel.link()` to link two panels together (experimental).
+* Added fullscreen mode ([#102](https://github.com/datoviz/datoviz/pull/102) by @ron-adam).
+* Fix bug with textre upload ([#105](https://github.com/datoviz/datoviz/pull/105) by @ron-adam).
+
+
+### Performance
+
+* Added support for a `DVZ_MAX_FPS` environment variable to limit the maximum frame rate and reduce GPU usage (defaults to 200 FPS, can be disabled with `DVZ_MAX_FPS=0`).
+
+* Implemented and ran a preliminary performance comparison benchmark of Datoviz vs Matplotlib, showing an up to 10,000x speedup.
+
+### Documentation
+
+* Made various improvements.
+
+
+### Build
+
+* Implemented nightly builds on the `dev` branch on GitHub Actions.
+
+
+---
+
+## v0.3.0 (2025-05-28)
 
 This is a major release featuring interactive 2D axes, a new user-friendly Pythonic API, significantly improved documentation and gallery, many additional examples, and numerous fixes and enhancements.
 

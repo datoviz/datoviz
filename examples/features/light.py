@@ -1,5 +1,5 @@
 """
-# Light example
+# Light manipulation
 
 Show how to manipulate lights.
 

@@ -56,6 +56,7 @@
 #include "scene/visuals/test_slice.h"
 #include "scene/visuals/test_sphere.h"
 #include "scene/visuals/test_volume.h"
+#include "scene/visuals/test_wiggle.h"
 #include "test.h"
 #include "test_alloc.h"
 #include "test_app.h"
@@ -424,6 +425,7 @@ int dvz_run_tests(const char* match)
     TEST(test_volume_2)
     TEST(test_image_1)
     TEST(test_image_2)
+    TEST(test_wiggle_1)
     TEST(test_slice_1)
     TEST(test_sphere_1)
     // TEST(test_axis_1)

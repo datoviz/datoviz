@@ -47,6 +47,7 @@ typedef enum
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
     DVZ_CANVAS_FLAGS_FPS = 0x0003,     // NOTE: 1 bit for ImGUI, 1 bit for FPS
     DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
+    DVZ_CANVAS_FLAGS_FULLSCREEN = 0x0008,
     DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
     DVZ_CANVAS_FLAGS_PICK = 0x0020,
     DVZ_CANVAS_FLAGS_PUSH_SCALE = 0x0040, // HACK: shaders expect a push constant with scaling
@@ -173,12 +174,31 @@ typedef enum
 
 
 
+// Axis flags.
+typedef enum
+{
+    DVZ_AXIS_FLAGS_NONE = 0x00,
+    DVZ_AXIS_FLAGS_DARK = 0x01,
+} DvzAxisFlags;
+
+
+
 // Arcball flags.
 typedef enum
 {
     DVZ_ARCBALL_FLAGS_NONE,
     DVZ_ARCBALL_FLAGS_CONSTRAIN,
 } DvzArcballFlags;
+
+
+
+// Fly flags.
+typedef enum
+{
+    DVZ_FLY_FLAGS_NONE = 0x0000,
+    DVZ_FLY_FLAGS_INVERT_MOUSE = 0x0001,
+    DVZ_FLY_FLAGS_FIXED_UP = 0x0002,
+} DvzFlyFlags;
 
 
 
@@ -210,6 +230,11 @@ typedef enum
     DVZ_VISUAL_FLAGS_INDEXED = 0x010000,
     DVZ_VISUAL_FLAGS_INDIRECT = 0x020000,
 
+    DVZ_VISUAL_FLAGS_FIXED_X = 0x001000,
+    DVZ_VISUAL_FLAGS_FIXED_Y = 0x002000,
+    DVZ_VISUAL_FLAGS_FIXED_Z = 0x004000,
+    DVZ_VISUAL_FLAGS_FIXED_ALL = 0x007000,
+
     DVZ_VISUAL_FLAGS_VERTEX_MAPPABLE = 0x400000,
     DVZ_VISUAL_FLAGS_INDEX_MAPPABLE = 0x800000,
 } DvzVisualFlags;
@@ -223,6 +248,17 @@ typedef enum
     DVZ_VIEW_FLAGS_STATIC = 0x0010,
     DVZ_VIEW_FLAGS_NOCLIP = 0x0020,
 } DvzViewFlags;
+
+
+
+// Panel link flags.
+typedef enum
+{
+    DVZ_PANEL_LINK_FLAGS_NONE = 0x00,
+    DVZ_PANEL_LINK_FLAGS_MODEL = 0x01,
+    DVZ_PANEL_LINK_FLAGS_VIEW = 0x02,
+    DVZ_PANEL_LINK_FLAGS_PROJECTION = 0x04,
+} DvzPanelLinkFlags;
 
 
 
@@ -779,6 +815,7 @@ typedef enum
     DVZ_SPHERE_FLAGS_TEXTURED = 0x0001,
     DVZ_SPHERE_FLAGS_LIGHTING = 0x0002,
     DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0004,
+    DVZ_SPHERE_FLAGS_EQUAL_RECTANGULAR = 0x0008,
 } DvzSphereFlags;
 
 

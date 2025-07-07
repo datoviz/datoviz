@@ -1,5 +1,5 @@
 """
-# Basic topology examples
+# Topologies of the Basic visual
 
 Show the different topology possibilities of the basic visual.
 

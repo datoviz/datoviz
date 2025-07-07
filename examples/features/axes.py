@@ -1,5 +1,5 @@
 """
-# Axes example
+# Axes
 
 Show how to use 2D axes.
 

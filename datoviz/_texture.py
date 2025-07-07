@@ -84,4 +84,4 @@ class Texture:
         elif self.ndim == 3:
             h, w, d = image.shape[:3]
 
-        dvz.texture_data(self.c_texture, x, y, z, w, h, d, image.size, image)
+        dvz.texture_data(self.c_texture, x, y, z, w, h, d, image.nbytes, image)

@@ -15,8 +15,6 @@
 This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
 visualization.
 
-Datoviz is still an early stage library and the API may change at any time.
-
 **************************************************************************************************/
 
 
@@ -60,7 +58,9 @@ typedef struct DvzAxis DvzAxis;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzBox DvzBox;
 typedef struct DvzCamera DvzCamera;
+typedef struct DvzColorbar DvzColorbar;
 typedef struct DvzFigure DvzFigure;
+typedef struct DvzFly DvzFly;
 typedef struct DvzFont DvzFont;
 typedef struct DvzKeyboard DvzKeyboard;
 typedef struct DvzMouse DvzMouse;
@@ -144,6 +144,7 @@ DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT DvzQtApp* dvz_qt_app(QApplication* qapp, int flags);
 
@@ -161,6 +162,7 @@ DVZ_EXPORT DvzQtWindow* dvz_qt_window(DvzQtApp* app);
 /**
  * Placeholder.
  *
+ * @param placeholder placeholder
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch);
@@ -204,6 +206,7 @@ DVZ_EXPORT DvzServer* dvz_server(int flags);
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_server_submit(DvzServer* server, DvzBatch* batch);
 
@@ -231,6 +234,9 @@ DVZ_EXPORT DvzKeyboard* dvz_server_keyboard(DvzServer* server);
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
+ * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT void
 dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint32_t height);
@@ -241,6 +247,8 @@ dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint32_t h
  * Placeholder.
  *
  * @param placeholder placeholder
+ * @param placeholder placeholder
+ * @param placeholder placeholder
  */
 DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flags);
 
@@ -248,6 +256,7 @@ DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flag
 /**
  * Placeholder.
  *
+ * @param placeholder placeholder
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_scene_render(DvzScene* scene, DvzServer* server);
@@ -435,6 +444,37 @@ DVZ_EXPORT DvzId dvz_figure_id(DvzFigure* figure);
  * @param height the window height
  */
 DVZ_EXPORT void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Return a figure width.
+ *
+ * @param fig the figure
+ * @returns the figure width
+ */
+DVZ_EXPORT uint32_t dvz_figure_width(DvzFigure* fig);
+
+
+
+/**
+ * Return a figure height.
+ *
+ * @param fig the figure
+ * @returns the figure height
+ */
+DVZ_EXPORT uint32_t dvz_figure_height(DvzFigure* fig);
+
+
+
+ /**
+ * Set display to fullscreen.
+ *
+ * @param app the app
+ * @param canvas_id the ID of the canvas
+ * @param is_fullscreen True for fullscreen, False for windowed.
+ */
+DVZ_EXPORT void dvz_app_fullscreen(DvzApp* app, DvzId canvas_id, bool is_fullscreen);
 
 
 
@@ -707,12 +747,47 @@ DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel, int flags);
 
 
 /**
+ * Set fly interactivity for a panel.
+ *
+ * @param panel the panel
+ * @param flags the flags
+ * @returns the fly
+ */
+DVZ_EXPORT DvzFly* dvz_panel_fly(DvzPanel* panel, int flags);
+
+
+
+/**
+ * Add a 3D horizontal grid.
+ *
+ * @param panel the panel
+ * @param flags the grid creation flags
+ * @returns the grid
+ */
+DVZ_EXPORT DvzVisual* dvz_panel_grid(DvzPanel* panel, int flags);
+
+
+
+/**
  * Show or hide a panel.
  *
  * @param panel the panel
  * @param is_visible whether to show or hide the panel
  */
 DVZ_EXPORT void dvz_panel_show(DvzPanel* panel, bool is_visible);
+
+
+
+/**
+ * Add or remove a link between two panels.
+ *
+ * At all times, the target panel's transform is copied from the source panel's transform.
+ *
+ * @param panel the target panel
+ * @param source the source panel
+ * @param flags the panel link flags: 0 to remove, or a bit field with model, view, projection
+ */
+DVZ_EXPORT void dvz_panel_link(DvzPanel* panel, DvzPanel* source, int flags);
 
 
 
@@ -777,11 +852,9 @@ DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
  * Fix some axes in a visual.
  *
  * @param visual the visual
- * @param fixed_x whether the x axis should be fixed
- * @param fixed_y whether the y axis should be fixed
- * @param fixed_z whether the z axis should be fixed
+ * @param flags the fixed bitmask (combination of `DVZ_VISUAL_FLAGS_FIXED_X|Y|Z`)
  */
-DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z);
+DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, int flags);
 
 
 
@@ -1727,6 +1800,15 @@ DVZ_EXPORT void dvz_shape_arrow(
 
 
 /**
+ * Create a 3D gizmo with three arrows on the three axes.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_gizmo(DvzShape* shape);
+
+
+
+/**
  * Create a torus shape.
  *
  * The radius of the ring is 0.5.
@@ -1994,16 +2076,13 @@ DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t,
 /**
  * Generate a 3D circular motion.
  *
- * @param center the circle center
- * @param u the first 3D vector defining the plane containing the circle
- * @param v the second 3D vector defining the plane containing the circle
- * @param radius the circle radius
- * @param angle the initial angle
- * @param t the normalized value
+ * @param pos_init the initial position
+ * @param center the center position
+ * @param axis the axis around which to rotate
+ * @param t the normalized value (1 = full circle)
  * @param[out] out the 3D position
  */
-DVZ_EXPORT void
-dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out);
+DVZ_EXPORT void dvz_circular_3D(vec3 pos_init, vec3 center, vec3 axis, float t, vec3 out);
 
 
 
@@ -2044,7 +2123,7 @@ DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Arcball                                                                                      */
 /*************************************************************************************************/
 
 /**
@@ -2182,6 +2261,186 @@ DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
  */
 DVZ_EXPORT
 void dvz_arcball_gui(DvzArcball* arcball, DvzApp* app, DvzId canvas_id, DvzPanel* panel);
+
+
+
+/*************************************************************************************************/
+/*  Fly                                                                                          */
+/*************************************************************************************************/
+
+/**
+ * Create a fly camera controller.
+ *
+ * @param flags the fly camera controller flags
+ * @returns the fly camera controller
+ */
+DVZ_EXPORT DvzFly* dvz_fly(int flags);
+
+
+
+/**
+ * Reset a fly camera to its initial position and orientation.
+ *
+ * @param fly the fly camera controller
+ */
+DVZ_EXPORT void dvz_fly_reset(DvzFly* fly);
+
+
+
+/**
+ * Inform a fly camera of a panel resize.
+ *
+ * @param fly the fly
+ * @param width the panel width
+ * @param height the panel height
+ */
+DVZ_EXPORT void dvz_fly_resize(DvzFly* fly, float width, float height);
+
+
+
+/**
+ * Set the initial position and orientation of a fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param position the initial position
+ * @param yaw the initial yaw angle (rotation around Y axis)
+ * @param pitch the initial pitch angle (rotation around X axis)
+ * @param roll the initial roll angle (rotation around Z/view axis)
+ */
+DVZ_EXPORT void dvz_fly_initial(DvzFly* fly, vec3 position, float yaw, float pitch, float roll);
+
+
+
+/**
+ * Set the initial position and orientation of a fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param position the initial position
+ * @param lookat the initial lookat position
+ */
+DVZ_EXPORT void dvz_fly_initial_lookat(DvzFly* fly, vec3 position, vec3 lookat);
+
+
+
+/**
+ * Move the fly camera forward or backward along its view direction.
+ *
+ * @param fly the fly camera controller
+ * @param amount the movement amount (positive for forward, negative for backward)
+ */
+DVZ_EXPORT void dvz_fly_move_forward(DvzFly* fly, float amount);
+
+
+
+/**
+ * Move the fly camera right or left perpendicular to its view direction.
+ *
+ * @param fly the fly camera controller
+ * @param amount the movement amount (positive for right, negative for left)
+ */
+DVZ_EXPORT void dvz_fly_move_right(DvzFly* fly, float amount);
+
+
+
+/**
+ * Move the fly camera up or down along its up vector.
+ *
+ * @param fly the fly camera controller
+ * @param amount the movement amount (positive for up, negative for down)
+ */
+DVZ_EXPORT void dvz_fly_move_up(DvzFly* fly, float amount);
+
+
+
+/**
+ * Rotate the fly camera's view direction (yaw and pitch).
+ *
+ * @param fly the fly camera controller
+ * @param dx the horizontal rotation amount
+ * @param dy the vertical rotation amount
+ */
+DVZ_EXPORT void dvz_fly_rotate(DvzFly* fly, float dx, float dy);
+
+
+
+/**
+ * Roll the fly camera around its view direction.
+ *
+ * @param fly the fly camera controller
+ * @param dx the roll amount
+ */
+DVZ_EXPORT void dvz_fly_roll(DvzFly* fly, float dx);
+
+
+
+/**
+ * Get the current position of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param[out] out_pos the current position
+ */
+DVZ_EXPORT void dvz_fly_get_position(DvzFly* fly, vec3 out_pos);
+
+
+
+/**
+ * Get the current lookat point of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param[out] out_lookat the current lookat point
+ */
+DVZ_EXPORT void dvz_fly_get_lookat(DvzFly* fly, vec3 out_lookat);
+
+
+
+/**
+ * Set the lookat point of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param lookat the lookat point
+ */
+DVZ_EXPORT void dvz_fly_set_lookat(DvzFly* fly, vec3 lookat);
+
+
+
+/**
+ * Get the current up vector of the fly camera.
+ *
+ * @param fly the fly camera controller
+ * @param[out] out_up the current up vector
+ */
+DVZ_EXPORT void dvz_fly_get_up(DvzFly* fly, vec3 out_up);
+
+
+
+/**
+ * Process a mouse event for the fly camera controller.
+ *
+ * @param fly the fly camera controller
+ * @param ev the mouse event
+ * @returns whether the event was handled by the fly camera
+ */
+DVZ_EXPORT bool dvz_fly_mouse(DvzFly* fly, DvzMouseEvent* ev);
+
+
+
+/**
+ * Process a keyboard event for the fly camera controller.
+ *
+ * @param fly the fly camera controller
+ * @param ev the keyboard event
+ * @returns whether the event was handled by the fly camera
+ */
+DVZ_EXPORT bool dvz_fly_keyboard(DvzFly* fly, DvzKeyboardEvent* ev);
+
+
+
+/**
+ * Destroy a fly camera controller.
+ *
+ * @param fly the fly camera controller
+ */
+DVZ_EXPORT void dvz_fly_destroy(DvzFly* fly);
 
 
 
@@ -2811,6 +3070,105 @@ DVZ_EXPORT void dvz_ref_inverse(DvzRef* ref, vec3 pos_tr, dvec3* pos);
  * @param ref the reference frame
  */
 DVZ_EXPORT void dvz_ref_destroy(DvzRef* ref);
+
+
+
+/*************************************************************************************************/
+/*  Colorbar                                                                                     */
+/*************************************************************************************************/
+
+
+/**
+ * Create a colorbar.
+ *
+ * @param batch the batch
+ * @param cmap the colormap
+ * @param dmin the minimal value
+ * @param dmax the maximal value
+ * @param flags the flags
+ * @returns the colorbar
+ */
+DVZ_EXPORT DvzColorbar*
+dvz_colorbar(DvzBatch* batch, DvzColormap cmap, double dmin, double dmax, int flags);
+
+
+
+/**
+ * Set the colorbar range.
+ *
+ * @param colorbar the colorbar
+ * @param dmin the minimal value
+ * @param dmax the maximal value
+ */
+DVZ_EXPORT void dvz_colorbar_range(DvzColorbar* colorbar, double dmin, double dmax);
+
+
+
+/**
+ * Set the colormap of a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param cmap the colormap
+ */
+DVZ_EXPORT void dvz_colorbar_cmap(DvzColorbar* colorbar, DvzColormap cmap);
+
+
+
+/**
+ * Set the position of a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param position the 2D position in NDC
+ */
+DVZ_EXPORT void dvz_colorbar_position(DvzColorbar* colorbar, vec2 position);
+
+
+
+/**
+ * Set the size of a colorbar
+ *
+ * @param colorbar the colorbar
+ * @param size the colorbar size in pixels
+ */
+DVZ_EXPORT void dvz_colorbar_size(DvzColorbar* colorbar, vec2 size);
+
+
+
+/**
+ * Set the anchor of a colorbar
+ *
+ * @param colorbar the colorbar
+ * @param anchor the colorbar anchor
+ */
+DVZ_EXPORT void dvz_colorbar_anchor(DvzColorbar* colorbar, vec2 anchor);
+
+
+
+/**
+ * Add a colorbar to a panel.
+ *
+ * @param colorbar the colorbar
+ * @param panel the panel
+ */
+DVZ_EXPORT void dvz_colorbar_panel(DvzColorbar* colorbar, DvzPanel* panel);
+
+
+
+/**
+ * Update a colorbar.
+ *
+ * @param colorbar the colorbar
+ */
+DVZ_EXPORT void dvz_colorbar_update(DvzColorbar* colorbar);
+
+
+
+/**
+ * Destroy a colorbar.
+ *
+ * @param colorbar the colorbar
+ */
+DVZ_EXPORT void dvz_colorbar_destroy(DvzColorbar* colorbar);
 
 
 

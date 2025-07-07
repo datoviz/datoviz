@@ -561,6 +561,7 @@ def mesh_flags(
 
 def sphere_flags(
     textured: bool = None,
+    equal_rectangular: bool = None,
     lighting: bool = None,
     size_pixels: bool = None,
 ) -> int:
@@ -571,6 +572,8 @@ def sphere_flags(
     ----------
     textured : bool
         Whether to use a texture for the sphere.
+    equal_rectangular : bool
+        Whether texture is equal rectangular or front/back tiled.
     lighting : bool
         Whether lighting is enabled.
     size_pixels : bool
@@ -583,8 +586,13 @@ def sphere_flags(
     """
     c_flags = 0
     lighting = lighting if (lighting is not None) else cst.DEFAULT_LIGHTING
+    equal_rectangular = (
+        equal_rectangular if (equal_rectangular is not None) else cst.DEFAULT_EQUAL_RECTANGULAR
+    )
     if textured:
         c_flags |= dvz.SPHERE_FLAGS_TEXTURED
+    if equal_rectangular:
+        c_flags |= dvz.SPHERE_FLAGS_EQUAL_RECTANGULAR
     if lighting:
         c_flags |= dvz.SPHERE_FLAGS_LIGHTING
     if size_pixels:
@@ -592,7 +600,7 @@ def sphere_flags(
     return c_flags
 
 
-def get_fixed_params(fixed: Union[bool, str]) -> Tuple[bool, bool, bool]:
+def get_fixed_flag(fixed: Union[bool, str]) -> int:
     """
     Get the fixed parameters for a visual on all three dimensions.
 
@@ -603,11 +611,18 @@ def get_fixed_params(fixed: Union[bool, str]) -> Tuple[bool, bool, bool]:
 
     Returns
     -------
-    tuple of bool
-        A tuple indicating whether each axis is fixed.
+    int
+        The visual fixed flag.
     """
     if fixed is True:
-        return (True, True, True)
+        return dvz.VISUAL_FLAGS_FIXED_ALL
     elif isinstance(fixed, str):
-        return ('x' in fixed, 'y' in fixed, 'z' in fixed)
-    return (False, False, False)
+        c_flags = 0
+        if 'x' in fixed:
+            c_flags |= dvz.VISUAL_FLAGS_FIXED_X
+        if 'y' in fixed:
+            c_flags |= dvz.VISUAL_FLAGS_FIXED_Y
+        if 'z' in fixed:
+            c_flags |= dvz.VISUAL_FLAGS_FIXED_Z
+        return c_flags
+    return 0

@@ -32,17 +32,24 @@
 // TODO: customizable
 #define TICK_DENSITY             0.15
 #define MINOR_TICKS_PER_INTERVAL 4
+#define DEFAULT_EXTRA            3
 
-#define ANCHOR_X        (vec2){0, 0}
-#define OFFSET_X        (vec2){0, -35}
-#define DIR_X           (vec2){0, -1}
+#define ANCHOR_X                                                                                  \
+    (vec2) { 0, 0 }
+#define OFFSET_X                                                                                  \
+    (vec2) { 0, -35 }
+#define DIR_X                                                                                     \
+    (vec2) { 0, -1 }
 #define POS_X           -1
 #define FACTOR_OFFSET_X -20, -70
 #define LABEL_OFFSET_X  0, -70
 
-#define ANCHOR_Y        (vec2){+1, 0}
-#define OFFSET_Y        (vec2){-25, 0}
-#define DIR_Y           (vec2){-1, 0}
+#define ANCHOR_Y                                                                                  \
+    (vec2) { +1, 0 }
+#define OFFSET_Y                                                                                  \
+    (vec2) { -25, 0 }
+#define DIR_Y                                                                                     \
+    (vec2) { -1, 0 }
 #define POS_Y           -1
 #define FACTOR_OFFSET_Y 20, -30
 #define LABEL_OFFSET_Y  0, 0
@@ -57,21 +64,10 @@
 #define LENGTH_MAJOR 16
 #define LENGTH_MINOR 10
 
-#define LABEL_COLOR                                                                               \
-    (DvzColor) { BLACK }
-#define LABEL_BGCOLOR                                                                             \
-    (DvzColor) { WHITE }
-
-#define COLOR_GLYPH                                                                               \
-    (DvzColor) { BLACK }
-#define COLOR_LIM                                                                                 \
-    (DvzColor) { BLACK }
-#define COLOR_GRID                                                                                \
-    (DvzColor) { BLACK }
-#define COLOR_MAJOR                                                                               \
-    (DvzColor) { BLACK }
-#define COLOR_MINOR                                                                               \
-    (DvzColor) { BLACK }
+#define BACKGROUND                                                                                \
+    (((axis->flags & DVZ_AXIS_FLAGS_DARK) != 0) ? ((DvzColor){BLACK}) : ((DvzColor){WHITE}))
+#define FOREGROUND                                                                                \
+    (((axis->flags & DVZ_AXIS_FLAGS_DARK) != 0) ? ((DvzColor){WHITE}) : ((DvzColor){BLACK}))
 
 
 
@@ -246,9 +242,9 @@ static void axis_common_params(DvzAxis* axis)
 {
     dvz_axis_width(axis, WIDTH_LIM, WIDTH_GRID, WIDTH_MAJOR, WIDTH_MINOR);
     dvz_axis_length(axis, LENGTH_LIM, LENGTH_GRID, LENGTH_MAJOR, LENGTH_MINOR);
-    dvz_axis_color(axis, COLOR_GLYPH, COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
+    dvz_axis_color(axis, FOREGROUND, FOREGROUND, FOREGROUND, FOREGROUND, FOREGROUND);
 
-    dvz_glyph_bgcolor(axis->glyph, LABEL_BGCOLOR);
+    dvz_glyph_bgcolor(axis->glyph, BACKGROUND);
 
     // if (axis->factor != NULL)
     // {
@@ -273,8 +269,8 @@ static void axis_horizontal_params(DvzAxis* axis)
     dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_X);
     dvz_axis_label_layout(axis, DVZ_ALIGN_MIDDLE, LABEL_OFFSET_X);
 
-    dvz_visual_fixed(axis->glyph, false, true, false);
-    dvz_visual_fixed(axis->segment, false, true, false);
+    dvz_visual_fixed(axis->glyph, DVZ_VISUAL_FLAGS_FIXED_Y);
+    dvz_visual_fixed(axis->segment, DVZ_VISUAL_FLAGS_FIXED_Y);
 
     dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_BOTTOM);
     dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_BOTTOM);
@@ -293,8 +289,8 @@ static void axis_vertical_params(DvzAxis* axis)
     dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_Y);
     dvz_axis_label_layout(axis, DVZ_ALIGN_HIGH, LABEL_OFFSET_Y);
 
-    dvz_visual_fixed(axis->glyph, true, false, false);
-    dvz_visual_fixed(axis->segment, true, false, false);
+    dvz_visual_fixed(axis->glyph, DVZ_VISUAL_FLAGS_FIXED_X);
+    dvz_visual_fixed(axis->segment, DVZ_VISUAL_FLAGS_FIXED_X);
 
     dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_LEFT);
     dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_LEFT);
@@ -344,31 +340,43 @@ static void compute_layout(
 
 
 
-static void create_spine(DvzVisual* spine, DvzDim dim)
+static void create_spine(DvzVisual* spine, DvzDim dim, DvzColor foreground)
 {
     ANN(spine);
     // Set spine.
     dvz_segment_alloc(spine, 1);
+
+    DvzColor foreground_ = {0};
+    memcpy(foreground_, foreground, sizeof(DvzColor));
+    dvz_segment_color(spine, 0, 1, &foreground_, 0);
+    dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
+    // dvz_visual_fixed(spine, true, true, true);
+}
+
+
+
+static void spine_position(DvzVisual* spine, DvzDim dim, float pos)
+{
+    ANN(spine);
     vec3 start = {0};
     vec3 end = {0};
+    float min = -1;
+    float max = 2;
     if (dim == DVZ_DIM_X)
     {
-        start[0] = -1;
-        start[1] = -1;
-        end[0] = +2;
-        end[1] = -1;
+        start[0] = min;
+        start[1] = pos;
+        end[0] = max;
+        end[1] = pos;
     }
     else if (dim == DVZ_DIM_Y)
     {
-        start[0] = -1;
-        start[1] = -1;
-        end[0] = -1;
-        end[1] = +2;
+        start[0] = pos;
+        start[1] = min;
+        end[0] = pos;
+        end[1] = max;
     }
     dvz_segment_position(spine, 0, 1, &start, &end, 0);
-    dvz_segment_color(spine, 0, 1, (DvzColor[]){{BLACK}}, 0);
-    dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
-    // dvz_visual_fixed(spine, true, true, true);
 }
 
 
@@ -403,8 +411,9 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
 
     // Create the spine visual.
     axis->spine = dvz_segment(batch, 0);
-    create_spine(axis->spine, dim);
+    create_spine(axis->spine, dim, FOREGROUND);
 
+    axis->spec.extra = DEFAULT_EXTRA;
 
     // Create the ticks.
     axis->ticks = dvz_ticks(0);
@@ -412,11 +421,11 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
     // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
     // at the moment.
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, (vec2){0},
-        (vec2){0});
+        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, (DvzColor){BLACK}, //
+        (vec2){0}, (vec2){0});
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, (vec2){0},
-        (vec2){0});
+        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, (DvzColor){BLACK}, //
+        (vec2){0}, (vec2){0});
 
     return axis;
 }
@@ -437,7 +446,7 @@ void dvz_axis_glyph(DvzAxis* axis, uint32_t tick_count, char** labels, vec3* pos
     ANN(axis->glyph);
 
     dvz_glyph_strings(
-        axis->glyph, tick_count, labels, positions, NULL, LABEL_COLOR, axis->spec.offset,
+        axis->glyph, tick_count, labels, positions, NULL, FOREGROUND, axis->spec.offset,
         axis->spec.anchor);
 }
 
@@ -511,7 +520,7 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
     }
 
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){label}, &pos, NULL, LABEL_COLOR, axis->factor_layout.offset,
+        axis->factor, 1, (char*[]){label}, &pos, NULL, FOREGROUND, axis->factor_layout.offset,
         anchor);
 }
 
@@ -534,7 +543,7 @@ void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orie
 
     vec2 anchor = {0, 1};
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){text}, &pos, NULL, LABEL_COLOR, axis->label_layout.offset,
+        axis->label, 1, (char*[]){text}, &pos, NULL, FOREGROUND, axis->label_layout.offset,
         anchor);
 }
 
@@ -574,10 +583,8 @@ bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double dmax)
     dvz_ticks_range(ticks, &lmin, &lmax, &lstep);
 
     // NOTE: extend left and right for aesthetical purposes.
-    // WARNING: extra should be a multiple of step
-    double extra = 3 * lstep;
-    lmin -= extra;
-    lmax += extra;
+    lmin -= axis->spec.extra * lstep;
+    lmax += axis->spec.extra * lstep;
 
     uint32_t tick_count = get_tick_count(lmin, lmax, lstep);
     if (tick_count < 2)
@@ -741,11 +748,21 @@ void dvz_axis_destroy(DvzAxis* axis)
 /*  Axis spec                                                                                    */
 /*************************************************************************************************/
 
+void dvz_axis_extra(DvzAxis* axis, float extra)
+{
+    ANN(axis);
+    axis->spec.extra = extra;
+}
+
+
+
 void dvz_axis_pos(DvzAxis* axis, float pos)
 {
     ANN(axis);
     // x0 for y axis, y0 for x axis
     axis->spec.pos = pos;
+
+    spine_position(axis->spine, axis->dim, axis->spec.pos);
 }
 
 

@@ -15,8 +15,20 @@ from textwrap import indent
 from tqdm import tqdm
 import pyparsing as pp
 from pyparsing import (
-    Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
-    Keyword, cStyleComment, Empty, Literal
+    Suppress,
+    Word,
+    alphas,
+    alphanums,
+    nums,
+    Optional,
+    Group,
+    ZeroOrMore,
+    empty,
+    restOfLine,
+    Keyword,
+    cStyleComment,
+    Empty,
+    Literal,
 )
 
 from parse_headers import ROOT_DIR, iter_vars
@@ -95,9 +107,7 @@ VIEWSET_STRUCTS = (
     '_Vk',
 )
 
-VIEWSET_FUNCTIONS = (
-    'dvz_view',
-)
+VIEWSET_FUNCTIONS = ('dvz_view',)
 
 SCENE_STRUCTS = (
     # 'DvzScene',
@@ -111,13 +121,9 @@ SCENE_FUNCTIONS = (
     'dvz_figure',
 )
 
-PIXEL_FUNCTIONS = (
-    'dvz_pixel',
-)
+PIXEL_FUNCTIONS = ('dvz_pixel',)
 
-SEGMENT_FUNCTIONS = (
-    'dvz_segment',
-)
+SEGMENT_FUNCTIONS = ('dvz_segment',)
 
 # RENDERER_FUNCTIONS = (
 #     'dvz_init',
@@ -129,13 +135,14 @@ SEGMENT_FUNCTIONS = (
 # Cython generation utils
 # -------------------------------------------------------------------------------------------------
 
+
 def insert_into_file(filename, start, end, insert):
     text = filename.read_text()
     i0 = text.index(start)
     i1 = text.index(end)
-    out = text[:i0 + len(start) + 1]
+    out = text[: i0 + len(start) + 1]
     out += indent(insert, '    ')
-    out += text[i1 - 5:]
+    out += text[i1 - 5 :]
     filename.write_text(out)
 
 
@@ -156,6 +163,7 @@ def _keep(n, t):
 
 # Cython generation
 # -------------------------------------------------------------------------------------------------
+
 
 def _generate_enum(enum, defines=None):
     assert enum
@@ -185,7 +193,7 @@ def _generate_struct(struct, defines=None):
         if dtype == 'bool':
             dtype = 'bint'
         if const:
-            dtype = "const " + dtype
+            dtype = 'const ' + dtype
         if count:
             if defines and count in defines:
                 count = defines[count]
@@ -225,12 +233,11 @@ def _generate_function(func):
             elif dtype == 'size_t':
                 argname = 'size'
             elif 'Dvz' in dtype:
-                argname = _camel_to_snake(
-                    dtype.replace('Dvz', '')).replace('*', '')
+                argname = _camel_to_snake(dtype.replace('Dvz', '')).replace('*', '')
             else:
                 raise ValueError(dtype)
         if const:
-            dtype = "const " + dtype
+            dtype = 'const ' + dtype
         if dtype == 'bool':
             dtype = 'bint'
         args_s.append(f'{dtype} {argname}'.strip())
@@ -240,7 +247,7 @@ def _generate_function(func):
 
 def generate_enums(enums):
     out = ''
-    defines = dict(iter_vars("defines"))
+    defines = dict(iter_vars('defines'))
     for n, v in iter_vars('enums'):
         if _keep(n, enums):
             out += _generate_enum(v, defines=defines)
@@ -249,7 +256,7 @@ def generate_enums(enums):
 
 def generate_structs(structs):
     out = ''
-    defines = dict(iter_vars("defines"))
+    defines = dict(iter_vars('defines'))
     for n, v in iter_vars('structs'):
         if _keep(n, structs):
             out += _generate_struct(v, defines=defines)
@@ -265,7 +272,6 @@ def generate_functions(functions):
 
 
 def generate_cython():
-
     # _types.h
     path = ROOT_DIR / 'datoviz/_types.pxd'
     insert_into_file(path, ENUM_START, ENUM_END, generate_enums(ENUMS))
@@ -273,30 +279,25 @@ def generate_cython():
     # app.h
     path = ROOT_DIR / 'datoviz/app.pxd'
     insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(APP_STRUCTS))
-    insert_into_file(
-        path, FUNCTION_START, FUNCTION_END, generate_functions(APP_FUNCTIONS))
+    insert_into_file(path, FUNCTION_START, FUNCTION_END, generate_functions(APP_FUNCTIONS))
 
     # viewset.h
     path = ROOT_DIR / 'datoviz/viewset.pxd'
     insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(VIEWSET_STRUCTS))
-    insert_into_file(
-        path, FUNCTION_START, FUNCTION_END, generate_functions(VIEWSET_FUNCTIONS))
+    insert_into_file(path, FUNCTION_START, FUNCTION_END, generate_functions(VIEWSET_FUNCTIONS))
 
     # scene.h
     path = ROOT_DIR / 'datoviz/scene.pxd'
     insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(SCENE_STRUCTS))
-    insert_into_file(
-        path, FUNCTION_START, FUNCTION_END, generate_functions(SCENE_FUNCTIONS))
+    insert_into_file(path, FUNCTION_START, FUNCTION_END, generate_functions(SCENE_FUNCTIONS))
 
     # pixel.h
     path = ROOT_DIR / 'datoviz/pixel.pxd'
-    insert_into_file(
-        path, FUNCTION_START, FUNCTION_END, generate_functions(PIXEL_FUNCTIONS))
+    insert_into_file(path, FUNCTION_START, FUNCTION_END, generate_functions(PIXEL_FUNCTIONS))
 
     # segment.h
     path = ROOT_DIR / 'datoviz/segment.pxd'
-    insert_into_file(
-        path, FUNCTION_START, FUNCTION_END, generate_functions(SEGMENT_FUNCTIONS))
+    insert_into_file(path, FUNCTION_START, FUNCTION_END, generate_functions(SEGMENT_FUNCTIONS))
 
     # request.h
     path = ROOT_DIR / 'datoviz/request.pxd'

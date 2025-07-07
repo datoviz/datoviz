@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 # WARNING: DO NOT EDIT: automatically-generated file
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 # ===============================================================================
@@ -30,7 +30,7 @@ try:
     from numpy.ctypeslib import ndpointer as ndpointer_
 except ImportError:
     float32 = object
-    raise ImportError("NumPy is not available")
+    raise ImportError('NumPy is not available')
 
 
 # ===============================================================================
@@ -45,18 +45,18 @@ faulthandler.enable()
 # ===============================================================================
 
 PLATFORMS = {
-    "Linux": "linux",
-    "Darwin": "macos",
-    "Windows": "windows",
+    'Linux': 'linux',
+    'Darwin': 'macos',
+    'Windows': 'windows',
 }
 PLATFORM = PLATFORMS.get(platform.system(), None)
 
 LIB_NAMES = {
-    "linux": "libdatoviz.so",
-    "macos": "libdatoviz.dylib",
-    "windows": "libdatoviz.dll",
+    'linux': 'libdatoviz.so',
+    'macos': 'libdatoviz.dylib',
+    'windows': 'libdatoviz.dll',
 }
-LIB_NAME = LIB_NAMES.get(PLATFORM, "")
+LIB_NAME = LIB_NAMES.get(PLATFORM, '')
 
 FILE_DIR = pathlib.Path(__file__).parent.resolve()
 
@@ -67,12 +67,12 @@ LIB_PATH = DATOVIZ_DIR / LIB_NAME
 
 # Development paths: the libraries are in build/ and libs/
 if not LIB_PATH.exists():
-    DATOVIZ_DIR = (FILE_DIR / "../build/").resolve()
-    LIB_DIR = (FILE_DIR / f"../libs/vulkan/{PLATFORM}/").resolve()
+    DATOVIZ_DIR = (FILE_DIR / '../build/').resolve()
+    LIB_DIR = (FILE_DIR / f'../libs/vulkan/{PLATFORM}/').resolve()
     LIB_PATH = DATOVIZ_DIR / LIB_NAME
 
 if not LIB_PATH.exists():
-    raise RuntimeError(f"Unable to find `{LIB_PATH}`.")
+    raise RuntimeError(f'Unable to find `{LIB_PATH}`.')
 
 
 # ===============================================================================
@@ -83,17 +83,18 @@ assert LIB_PATH.exists()
 try:
     dvz = ctypes.cdll.LoadLibrary(str(LIB_PATH))
 except Exception as e:
-    print(f"Error loading library at {LIB_PATH}: {e}")
+    print(f'Error loading library at {LIB_PATH}: {e}')
     exit(1)
 
 # on macOS, we need to set the VK_DRIVER_FILES environment variable to the path to the MoltenVK ICD
-if PLATFORM == "macos":
-    os.environ["VK_DRIVER_FILES"] = str(LIB_DIR / "MoltenVK_icd.json")
+if PLATFORM == 'macos':
+    os.environ['VK_DRIVER_FILES'] = str(LIB_DIR / 'MoltenVK_icd.json')
 
 
 # ===============================================================================
 # Util classes
 # ===============================================================================
+
 
 # see https://v4.chriskrycho.com/2015/ctypes-structures-and-dll-exports.html
 class CtypesEnum(IntEnum):
@@ -106,12 +107,11 @@ class CStringArrayType:
     @classmethod
     def from_param(cls, value):
         if not isinstance(value, Iterable) or isinstance(value, (str, bytes)):
-            raise TypeError("Expected a list of strings")
+            raise TypeError('Expected a list of strings')
 
-        encoded = [s.encode("utf-8") for s in value]
+        encoded = [s.encode('utf-8') for s in value]
         bufs = [ctypes.create_string_buffer(s) for s in encoded]
-        arr = (ctypes.c_char_p * len(bufs))(*
-                                            [ctypes.cast(b, ctypes.c_char_p) for b in bufs])
+        arr = (ctypes.c_char_p * len(bufs))(*[ctypes.cast(b, ctypes.c_char_p) for b in bufs])
 
         # keep references alive
         arr._buffers = bufs
@@ -135,25 +135,25 @@ class CStringBuffer:
     """
 
     # -------- allocate an explicit, reusable buffer -----------------
-    def __init__(self, initial: str = "", size: Optional[int] = 64):
+    def __init__(self, initial: str = '', size: Optional[int] = 64):
         if isinstance(initial, Path):
             initial = str(initial)
         if not isinstance(initial, str):
-            raise TypeError("Expected a string")
+            raise TypeError('Expected a string')
 
-        raw = initial.encode("utf-8")
+        raw = initial.encode('utf-8')
         size = (len(raw) + 1) if size is None else size
         if size < len(raw) + 1:
-            raise ValueError("Buffer too small for initial contents")
+            raise ValueError('Buffer too small for initial contents')
 
         self._buf = ctypes.create_string_buffer(size)
-        ctypes.memmove(self._buf, raw, len(raw))   # copy text, keep final NUL
+        ctypes.memmove(self._buf, raw, len(raw))  # copy text, keep final NUL
 
     # -------- read the current value --------------------------------
     @property
     def value(self) -> str:
         """Return the UTF‑8 text currently stored in the buffer."""
-        return self._buf.value.decode("utf‑8")
+        return self._buf.value.decode('utf‑8')
 
     # convenience: expose total capacity (bytes, inc. NUL)
     @property
@@ -175,16 +175,17 @@ class CStringBuffer:
         if isinstance(value, Path):
             value = str(value)
         if isinstance(value, str):
-            buf = ctypes.create_string_buffer(value.encode("utf‑8"))
-            buf._keepalive = buf           # prevent premature GC
+            buf = ctypes.create_string_buffer(value.encode('utf‑8'))
+            buf._keepalive = buf  # prevent premature GC
             return buf
 
-        raise TypeError("Expected CStringBuffer or str")
+        raise TypeError('Expected CStringBuffer or str')
 
 
 # ===============================================================================
 # Out wrapper
 # ===============================================================================
+
 
 class Out:
     _ctype_map = {
@@ -199,7 +200,7 @@ class Out:
         else:
             py_type = type(initial)
             if py_type not in self._ctype_map:
-                raise TypeError(f"Unsupported type: {py_type}")
+                raise TypeError(f'Unsupported type: {py_type}')
             self._ctype = self._ctype_map[py_type]
         self._buffer = self._ctype(initial)
 
@@ -217,7 +218,7 @@ class Out:
     @classmethod
     def from_param(cls, obj):
         if not isinstance(obj, cls):
-            raise TypeError("Expected an Out instance")
+            raise TypeError('Expected an Out instance')
         return ctypes.byref(obj._buffer)
 
     def __format__(self, format_spec):
@@ -231,10 +232,11 @@ class Out:
 # Array wrappers
 # ===============================================================================
 
+
 # HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
 def ndpointer(*args, **kwargs):
-    ndim = kwargs.pop("ndim", None)
-    ncol = kwargs.pop("ncol", None)
+    ndim = kwargs.pop('ndim', None)
+    ncol = kwargs.pop('ncol', None)
     base = ndpointer_(*args, **kwargs)
 
     @classmethod
@@ -242,38 +244,37 @@ def ndpointer(*args, **kwargs):
         if obj is None:
             return obj
         if isinstance(obj, np.ndarray):
-            s = f"array <{obj.dtype}>{obj.shape}"
+            s = f'array <{obj.dtype}>{obj.shape}'
             if ndim and obj.ndim != ndim:
-                raise ValueError(
-                    f"Wrong ndim {obj.ndim} (expected {ndim}) for {s}")
+                raise ValueError(f'Wrong ndim {obj.ndim} (expected {ndim}) for {s}')
             if ncol and ncol > 1 and obj.shape[1] != ncol:
-                raise ValueError(
-                    f"Wrong shape {obj.shape} (expected (*, {ncol})) for {s}")
+                raise ValueError(f'Wrong shape {obj.shape} (expected (*, {ncol})) for {s}')
             out = base.from_param(obj)
         else:
             # NOTE: allow passing ndpointers without change
             out = obj
         return out
 
-    return type(base.__name__, (base,), {"from_param": from_param})
+    return type(base.__name__, (base,), {'from_param': from_param})
 
 
 # ===============================================================================
 # Vec types
 # ===============================================================================
 
+
 class CVectorBase(ctypes.Array):
     _type_ = ctypes.c_float
     _length_ = 0
-    _name_ = ""
+    _name_ = ''
 
     def __new__(cls, *values):
         values = list(values) + [0] * (cls._length_ - len(values))
         return super().__new__(cls, *values[: cls._length_])
 
     def __repr__(self):
-        vals = ", ".join(f"{v:.6g}" for v in self)
-        return f"{self._name_}({vals})"
+        vals = ', '.join(f'{v:.6g}' for v in self)
+        return f'{self._name_}({vals})'
 
 
 VEC_TYPES = []
@@ -284,30 +285,30 @@ def make_vector_type(name, ctype, length):
         name,
         (CVectorBase,),
         {
-            "_type_": ctype,
-            "_length_": length,
-            "_name_": name,
+            '_type_': ctype,
+            '_length_': length,
+            '_name_': name,
         },
     )
     VEC_TYPES.append(t)
     return t
 
 
-vec2 = make_vector_type("vec2", ctypes.c_float, 2)
-vec3 = make_vector_type("vec3", ctypes.c_float, 3)
-vec4 = make_vector_type("vec4", ctypes.c_float, 4)
-dvec2 = make_vector_type("dvec2", ctypes.c_double, 2)
-dvec3 = make_vector_type("dvec3", ctypes.c_double, 3)
-dvec4 = make_vector_type("dvec4", ctypes.c_double, 4)
-cvec4 = make_vector_type("cvec4", ctypes.c_uint8, 4)
-uvec2 = make_vector_type("uvec2", ctypes.c_uint32, 2)
-uvec3 = make_vector_type("uvec3", ctypes.c_uint32, 3)
-uvec4 = make_vector_type("uvec4", ctypes.c_uint32, 4)
-ivec2 = make_vector_type("ivec2", ctypes.c_int32, 2)
-ivec3 = make_vector_type("ivec3", ctypes.c_int32, 3)
-ivec4 = make_vector_type("ivec4", ctypes.c_int32, 4)
-mat3 = make_vector_type("mat3", ctypes.c_int32, 3 * 3)
-mat4 = make_vector_type("mat4", ctypes.c_int32, 4 * 4)
+vec2 = make_vector_type('vec2', ctypes.c_float, 2)
+vec3 = make_vector_type('vec3', ctypes.c_float, 3)
+vec4 = make_vector_type('vec4', ctypes.c_float, 4)
+dvec2 = make_vector_type('dvec2', ctypes.c_double, 2)
+dvec3 = make_vector_type('dvec3', ctypes.c_double, 3)
+dvec4 = make_vector_type('dvec4', ctypes.c_double, 4)
+cvec4 = make_vector_type('cvec4', ctypes.c_uint8, 4)
+uvec2 = make_vector_type('uvec2', ctypes.c_uint32, 2)
+uvec3 = make_vector_type('uvec3', ctypes.c_uint32, 3)
+uvec4 = make_vector_type('uvec4', ctypes.c_uint32, 4)
+ivec2 = make_vector_type('ivec2', ctypes.c_int32, 2)
+ivec3 = make_vector_type('ivec3', ctypes.c_int32, 3)
+ivec4 = make_vector_type('ivec4', ctypes.c_int32, 4)
+mat3 = make_vector_type('mat3', ctypes.c_float, 3 * 3)
+mat4 = make_vector_type('mat4', ctypes.c_float, 4 * 4)
 
 
 # ===============================================================================
@@ -383,7 +384,6 @@ COLOR_FLOAT_MAX = 1.0
 COLOR_MAX = 1.0
 M_PI = 3.141592653589793
 M_2PI = 6.283185307179586
-M_PI2 = 1.5707963267948966
 M_INV_255 = 0.00392156862745098
 EPSILON = 1e-10
 GB = 1073741824
@@ -392,6 +392,7 @@ KB = 1024
 DVZ_REQUEST_VERSION = 1
 DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 3
+DVZ_VERSION_PATCH = 1
 
 
 # ===============================================================================
@@ -409,6 +410,7 @@ class DvzCanvasFlags(CtypesEnum):
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001
     DVZ_CANVAS_FLAGS_FPS = 0x0003
     DVZ_CANVAS_FLAGS_MONITOR = 0x0005
+    DVZ_CANVAS_FLAGS_FULLSCREEN = 0x0008
     DVZ_CANVAS_FLAGS_VSYNC = 0x0010
     DVZ_CANVAS_FLAGS_PICK = 0x0020
     DVZ_CANVAS_FLAGS_PUSH_SCALE = 0x0040
@@ -490,9 +492,20 @@ class DvzRefFlags(CtypesEnum):
     DVZ_REF_FLAGS_EQUAL = 0x01
 
 
+class DvzAxisFlags(CtypesEnum):
+    DVZ_AXIS_FLAGS_NONE = 0x00
+    DVZ_AXIS_FLAGS_DARK = 0x01
+
+
 class DvzArcballFlags(CtypesEnum):
     DVZ_ARCBALL_FLAGS_NONE = 0
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 1
+
+
+class DvzFlyFlags(CtypesEnum):
+    DVZ_FLY_FLAGS_NONE = 0x0000
+    DVZ_FLY_FLAGS_INVERT_MOUSE = 0x0001
+    DVZ_FLY_FLAGS_FIXED_UP = 0x0002
 
 
 class DvzPanzoomFlags(CtypesEnum):
@@ -511,6 +524,10 @@ class DvzVisualFlags(CtypesEnum):
     DVZ_VISUAL_FLAGS_DEFAULT = 0x000000
     DVZ_VISUAL_FLAGS_INDEXED = 0x010000
     DVZ_VISUAL_FLAGS_INDIRECT = 0x020000
+    DVZ_VISUAL_FLAGS_FIXED_X = 0x001000
+    DVZ_VISUAL_FLAGS_FIXED_Y = 0x002000
+    DVZ_VISUAL_FLAGS_FIXED_Z = 0x004000
+    DVZ_VISUAL_FLAGS_FIXED_ALL = 0x007000
     DVZ_VISUAL_FLAGS_VERTEX_MAPPABLE = 0x400000
     DVZ_VISUAL_FLAGS_INDEX_MAPPABLE = 0x800000
 
@@ -519,6 +536,13 @@ class DvzViewFlags(CtypesEnum):
     DVZ_VIEW_FLAGS_NONE = 0x0000
     DVZ_VIEW_FLAGS_STATIC = 0x0010
     DVZ_VIEW_FLAGS_NOCLIP = 0x0020
+
+
+class DvzPanelLinkFlags(CtypesEnum):
+    DVZ_PANEL_LINK_FLAGS_NONE = 0x00
+    DVZ_PANEL_LINK_FLAGS_MODEL = 0x01
+    DVZ_PANEL_LINK_FLAGS_VIEW = 0x02
+    DVZ_PANEL_LINK_FLAGS_PROJECTION = 0x04
 
 
 class DvzDatFlags(CtypesEnum):
@@ -885,6 +909,7 @@ class DvzSphereFlags(CtypesEnum):
     DVZ_SPHERE_FLAGS_TEXTURED = 0x0001
     DVZ_SPHERE_FLAGS_LIGHTING = 0x0002
     DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0004
+    DVZ_SPHERE_FLAGS_EQUAL_RECTANGULAR = 0x0008
 
 
 class DvzMeshFlags(CtypesEnum):
@@ -1273,6 +1298,7 @@ class DvzPrintFlagsFlags(CtypesEnum):
 Align = DvzAlign
 AppFlags = DvzAppFlags
 ArcballFlags = DvzArcballFlags
+AxisFlags = DvzAxisFlags
 BlendType = DvzBlendType
 BoxExtentStrategy = DvzBoxExtentStrategy
 BoxMergeStrategy = DvzBoxMergeStrategy
@@ -1292,6 +1318,7 @@ DialogFlags = DvzDialogFlags
 Dim = DvzDim
 Easing = DvzEasing
 Filter = DvzFilter
+FlyFlags = DvzFlyFlags
 FontFlags = DvzFontFlags
 Format = DvzFormat
 FrontFace = DvzFrontFace
@@ -1312,6 +1339,7 @@ MouseButton = DvzMouseButton
 MouseEventType = DvzMouseEventType
 MouseState = DvzMouseState
 Orientation = DvzOrientation
+PanelLinkFlags = DvzPanelLinkFlags
 PanzoomFlags = DvzPanzoomFlags
 PathFlags = DvzPathFlags
 PolygonMode = DvzPolygonMode
@@ -1348,6 +1376,8 @@ APP_FLAGS_OFFSCREEN = 0x008000
 APP_FLAGS_WHITE_BACKGROUND = 0x100000
 ARCBALL_FLAGS_CONSTRAIN = 1
 ARCBALL_FLAGS_NONE = 0
+AXIS_FLAGS_DARK = 0x01
+AXIS_FLAGS_NONE = 0x00
 BLEND_DESTINATION = 2
 BLEND_DISABLE = 0
 BLEND_OIT = 3
@@ -1368,6 +1398,7 @@ BUFFER_TYPE_VERTEX = 2
 CAMERA_FLAGS_ORTHO = 0x01
 CAMERA_FLAGS_PERSPECTIVE = 0x00
 CANVAS_FLAGS_FPS = 0x0003
+CANVAS_FLAGS_FULLSCREEN = 0x0008
 CANVAS_FLAGS_IMGUI = 0x0001
 CANVAS_FLAGS_MONITOR = 0x0005
 CANVAS_FLAGS_NONE = 0x0000
@@ -1600,6 +1631,9 @@ EASING_OUT_SINE = 2
 FILTER_CUBIC_IMG = 1000015000
 FILTER_LINEAR = 1
 FILTER_NEAREST = 0
+FLY_FLAGS_FIXED_UP = 0x0002
+FLY_FLAGS_INVERT_MOUSE = 0x0001
+FLY_FLAGS_NONE = 0x0000
 FONT_FLAGS_RGB = 0
 FONT_FLAGS_RGBA = 1
 FORMAT_B8G8R8A8_UNORM = 44
@@ -1868,6 +1902,10 @@ ORIENTATION_DEFAULT = 0
 ORIENTATION_DOWN = 3
 ORIENTATION_REVERSE = 2
 ORIENTATION_UP = 1
+PANEL_LINK_FLAGS_MODEL = 0x01
+PANEL_LINK_FLAGS_NONE = 0x00
+PANEL_LINK_FLAGS_PROJECTION = 0x04
+PANEL_LINK_FLAGS_VIEW = 0x02
 PANZOOM_FLAGS_FIXED_X = 0x10
 PANZOOM_FLAGS_FIXED_Y = 0x20
 PANZOOM_FLAGS_KEEP_ASPECT = 0x01
@@ -1976,6 +2014,7 @@ SHAPE_TORUS = 10
 SLOT_COUNT = 2
 SLOT_DAT = 0
 SLOT_TEX = 1
+SPHERE_FLAGS_EQUAL_RECTANGULAR = 0x0008
 SPHERE_FLAGS_LIGHTING = 0x0002
 SPHERE_FLAGS_NONE = 0x0000
 SPHERE_FLAGS_SIZE_PIXELS = 0x0004
@@ -1997,6 +2036,10 @@ VIEW_FLAGS_NOCLIP = 0x0020
 VIEW_FLAGS_NONE = 0x0000
 VIEW_FLAGS_STATIC = 0x0010
 VISUAL_FLAGS_DEFAULT = 0x000000
+VISUAL_FLAGS_FIXED_ALL = 0x007000
+VISUAL_FLAGS_FIXED_X = 0x001000
+VISUAL_FLAGS_FIXED_Y = 0x002000
+VISUAL_FLAGS_FIXED_Z = 0x004000
 VISUAL_FLAGS_INDEXED = 0x010000
 VISUAL_FLAGS_INDEX_MAPPABLE = 0x800000
 VISUAL_FLAGS_INDIRECT = 0x020000
@@ -2035,11 +2078,19 @@ class DvzCamera(ctypes.Structure):
     pass
 
 
+class DvzColorbar(ctypes.Structure):
+    pass
+
+
 class DvzFifo(ctypes.Structure):
     pass
 
 
 class DvzFigure(ctypes.Structure):
+    pass
+
+
+class DvzFly(ctypes.Structure):
     pass
 
 
@@ -2226,6 +2277,7 @@ class DvzMouseDragEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("press_pos", vec2),
+        ("last_pos", vec2),
         ("shift", vec2),
         ("is_press_valid", ctypes.c_bool),
     ]
@@ -2845,7 +2897,7 @@ Parameters
 qapp : np.ndarray[QApplication]
     placeholder
 flags : int
-    
+    placeholder
 
 Returns
 -------
@@ -2888,6 +2940,7 @@ Parameters
 app : DvzQtApp*
     placeholder
 batch : DvzBatch*
+    placeholder
 """
 qt_submit.argtypes = [
     ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
@@ -2960,6 +3013,7 @@ Parameters
 server : DvzServer*
     placeholder
 batch : DvzBatch*
+    placeholder
 """
 server_submit.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3017,10 +3071,11 @@ Parameters
 server : DvzServer*
     placeholder
 canvas_id : DvzId
-    
+    placeholder
 width : int
-    
+    placeholder
 height : int
+    placeholder
 """
 server_resize.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3040,9 +3095,9 @@ Parameters
 server : DvzServer*
     placeholder
 canvas_id : DvzId
-    
+    placeholder
 flags : int
-    
+    placeholder
 
 Returns
 -------
@@ -3066,6 +3121,7 @@ Parameters
 scene : DvzScene*
     placeholder
 server : DvzServer*
+    placeholder
 """
 scene_render.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
@@ -3389,6 +3445,69 @@ figure_resize.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* fig
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
+]
+
+
+# -------------------------------------------------------------------------------------------------
+figure_width = dvz.dvz_figure_width
+figure_width.__doc__ = """
+Return a figure width.
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+
+Returns
+-------
+result : uint32_t
+     the figure width
+"""
+figure_width.argtypes = [
+    ctypes.POINTER(DvzFigure),  # DvzFigure* fig
+]
+figure_width.restype = ctypes.c_uint32
+
+
+# -------------------------------------------------------------------------------------------------
+figure_height = dvz.dvz_figure_height
+figure_height.__doc__ = """
+Return a figure height.
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+
+Returns
+-------
+result : uint32_t
+     the figure height
+"""
+figure_height.argtypes = [
+    ctypes.POINTER(DvzFigure),  # DvzFigure* fig
+]
+figure_height.restype = ctypes.c_uint32
+
+
+# -------------------------------------------------------------------------------------------------
+app_fullscreen = dvz.dvz_app_fullscreen
+app_fullscreen.__doc__ = """
+Set display to fullscreen.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the ID of the canvas
+is_fullscreen : bool
+    True for fullscreen, False for windowed.
+"""
+app_fullscreen.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ctypes.c_bool,  # bool is_fullscreen
 ]
 
 
@@ -3932,6 +4051,54 @@ panel_arcball.restype = ctypes.POINTER(DvzArcball)
 
 
 # -------------------------------------------------------------------------------------------------
+panel_fly = dvz.dvz_panel_fly
+panel_fly.__doc__ = """
+Set fly interactivity for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the flags
+
+Returns
+-------
+result : DvzFly*
+     the fly
+"""
+panel_fly.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
+]
+panel_fly.restype = ctypes.POINTER(DvzFly)
+
+
+# -------------------------------------------------------------------------------------------------
+panel_grid = dvz.dvz_panel_grid
+panel_grid.__doc__ = """
+Add a 3D horizontal grid.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the grid creation flags
+
+Returns
+-------
+result : DvzVisual*
+     the grid
+"""
+panel_grid.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
+]
+panel_grid.restype = ctypes.POINTER(DvzVisual)
+
+
+# -------------------------------------------------------------------------------------------------
 panel_show = dvz.dvz_panel_show
 panel_show.__doc__ = """
 Show or hide a panel.
@@ -3946,6 +4113,28 @@ is_visible : bool
 panel_show.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_bool,  # bool is_visible
+]
+
+
+# -------------------------------------------------------------------------------------------------
+panel_link = dvz.dvz_panel_link
+panel_link.__doc__ = """
+Add or remove a link between two panels.
+At all times, the target panel's transform is copied from the source panel's transform.
+
+Parameters
+----------
+panel : DvzPanel*
+    the target panel
+source : DvzPanel*
+    the source panel
+flags : int
+    the panel link flags: 0 to remove, or a bit field with model, view, projection
+"""
+panel_link.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.POINTER(DvzPanel),  # DvzPanel* source
+    ctypes.c_int,  # int flags
 ]
 
 
@@ -4044,18 +4233,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-fixed_x : bool
-    whether the x axis should be fixed
-fixed_y : bool
-    whether the y axis should be fixed
-fixed_z : bool
-    whether the z axis should be fixed
+flags : int
+    the fixed bitmask (combination of `DVZ_VISUAL_FLAGS_FIXED_X|Y|Z`)
 """
 visual_fixed.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_bool,  # bool fixed_x
-    ctypes.c_bool,  # bool fixed_y
-    ctypes.c_bool,  # bool fixed_z
+    ctypes.c_int,  # int flags
 ]
 
 
@@ -5783,6 +5966,21 @@ shape_arrow.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+shape_gizmo = dvz.dvz_shape_gizmo
+shape_gizmo.__doc__ = """
+Create a 3D gizmo with three arrows on the three axes.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
+shape_gizmo.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
+
+# -------------------------------------------------------------------------------------------------
 shape_torus = dvz.dvz_shape_torus
 shape_torus.__doc__ = """
 Create a torus shape.
@@ -6259,27 +6457,21 @@ Generate a 3D circular motion.
 
 Parameters
 ----------
+pos_init : Tuple[float, float, float]
+    the initial position
 center : Tuple[float, float, float]
-    the circle center
-u : Tuple[float, float, float]
-    the first 3D vector defining the plane containing the circle
-v : Tuple[float, float, float]
-    the second 3D vector defining the plane containing the circle
-radius : float
-    the circle radius
-angle : float
-    the initial angle
+    the center position
+axis : Tuple[float, float, float]
+    the axis around which to rotate
 t : float
-    the normalized value
+    the normalized value (1 = full circle)
 out : Out[Tuple[float, float, float]] (out parameter)
     the 3D position
 """
 circular_3D.argtypes = [
+    vec3,  # vec3 pos_init
     vec3,  # vec3 center
-    vec3,  # vec3 u
-    vec3,  # vec3 v
-    ctypes.c_float,  # float radius
-    ctypes.c_float,  # float angle
+    vec3,  # vec3 axis
     ctypes.c_float,  # float t
     vec3,  # out vec3 out
 ]
@@ -6594,6 +6786,339 @@ arcball_gui.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly = dvz.dvz_fly
+fly.__doc__ = """
+Create a fly camera controller.
+
+Parameters
+----------
+flags : int
+    the fly camera controller flags
+
+Returns
+-------
+result : DvzFly*
+     the fly camera controller
+"""
+fly.argtypes = [
+    ctypes.c_int,  # int flags
+]
+fly.restype = ctypes.POINTER(DvzFly)
+
+
+# -------------------------------------------------------------------------------------------------
+fly_reset = dvz.dvz_fly_reset
+fly_reset.__doc__ = """
+Reset a fly camera to its initial position and orientation.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+"""
+fly_reset.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_resize = dvz.dvz_fly_resize
+fly_resize.__doc__ = """
+Inform a fly camera of a panel resize.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly
+width : float
+    the panel width
+height : float
+    the panel height
+"""
+fly_resize.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_initial = dvz.dvz_fly_initial
+fly_initial.__doc__ = """
+Set the initial position and orientation of a fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+position : Tuple[float, float, float]
+    the initial position
+yaw : float
+    the initial yaw angle (rotation around Y axis)
+pitch : float
+    the initial pitch angle (rotation around X axis)
+roll : float
+    the initial roll angle (rotation around Z/view axis)
+"""
+fly_initial.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # vec3 position
+    ctypes.c_float,  # float yaw
+    ctypes.c_float,  # float pitch
+    ctypes.c_float,  # float roll
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_initial_lookat = dvz.dvz_fly_initial_lookat
+fly_initial_lookat.__doc__ = """
+Set the initial position and orientation of a fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+position : Tuple[float, float, float]
+    the initial position
+lookat : Tuple[float, float, float]
+    the initial lookat position
+"""
+fly_initial_lookat.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # vec3 position
+    vec3,  # vec3 lookat
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_move_forward = dvz.dvz_fly_move_forward
+fly_move_forward.__doc__ = """
+Move the fly camera forward or backward along its view direction.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+amount : float
+    the movement amount (positive for forward, negative for backward)
+"""
+fly_move_forward.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float amount
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_move_right = dvz.dvz_fly_move_right
+fly_move_right.__doc__ = """
+Move the fly camera right or left perpendicular to its view direction.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+amount : float
+    the movement amount (positive for right, negative for left)
+"""
+fly_move_right.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float amount
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_move_up = dvz.dvz_fly_move_up
+fly_move_up.__doc__ = """
+Move the fly camera up or down along its up vector.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+amount : float
+    the movement amount (positive for up, negative for down)
+"""
+fly_move_up.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float amount
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_rotate = dvz.dvz_fly_rotate
+fly_rotate.__doc__ = """
+Rotate the fly camera's view direction (yaw and pitch).
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+dx : float
+    the horizontal rotation amount
+dy : float
+    the vertical rotation amount
+"""
+fly_rotate.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float dx
+    ctypes.c_float,  # float dy
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_roll = dvz.dvz_fly_roll
+fly_roll.__doc__ = """
+Roll the fly camera around its view direction.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+dx : float
+    the roll amount
+"""
+fly_roll.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.c_float,  # float dx
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_get_position = dvz.dvz_fly_get_position
+fly_get_position.__doc__ = """
+Get the current position of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+out_pos : Out[Tuple[float, float, float]] (out parameter)
+    the current position
+"""
+fly_get_position.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # out vec3 out_pos
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_get_lookat = dvz.dvz_fly_get_lookat
+fly_get_lookat.__doc__ = """
+Get the current lookat point of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+out_lookat : Out[Tuple[float, float, float]] (out parameter)
+    the current lookat point
+"""
+fly_get_lookat.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # out vec3 out_lookat
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_set_lookat = dvz.dvz_fly_set_lookat
+fly_set_lookat.__doc__ = """
+Set the lookat point of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+lookat : Tuple[float, float, float]
+    the lookat point
+"""
+fly_set_lookat.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # vec3 lookat
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_get_up = dvz.dvz_fly_get_up
+fly_get_up.__doc__ = """
+Get the current up vector of the fly camera.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+out_up : Out[Tuple[float, float, float]] (out parameter)
+    the current up vector
+"""
+fly_get_up.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    vec3,  # out vec3 out_up
+]
+
+
+# -------------------------------------------------------------------------------------------------
+fly_mouse = dvz.dvz_fly_mouse
+fly_mouse.__doc__ = """
+Process a mouse event for the fly camera controller.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+ev : DvzMouseEvent*
+    the mouse event
+
+Returns
+-------
+result : bool
+     whether the event was handled by the fly camera
+"""
+fly_mouse.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.POINTER(DvzMouseEvent),  # DvzMouseEvent* ev
+]
+fly_mouse.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+fly_keyboard = dvz.dvz_fly_keyboard
+fly_keyboard.__doc__ = """
+Process a keyboard event for the fly camera controller.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+ev : DvzKeyboardEvent*
+    the keyboard event
+
+Returns
+-------
+result : bool
+     whether the event was handled by the fly camera
+"""
+fly_keyboard.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
+    ctypes.POINTER(DvzKeyboardEvent),  # DvzKeyboardEvent* ev
+]
+fly_keyboard.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+fly_destroy = dvz.dvz_fly_destroy
+fly_destroy.__doc__ = """
+Destroy a fly camera controller.
+
+Parameters
+----------
+fly : DvzFly*
+    the fly camera controller
+"""
+fly_destroy.argtypes = [
+    ctypes.POINTER(DvzFly),  # DvzFly* fly
 ]
 
 
@@ -7755,6 +8280,180 @@ ref_destroy.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+colorbar = dvz.dvz_colorbar
+colorbar.__doc__ = """
+Create a colorbar.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+cmap : DvzColormap
+    the colormap
+dmin : float
+    the minimal value
+dmax : float
+    the maximal value
+flags : int
+    the flags
+
+Returns
+-------
+result : DvzColorbar*
+     the colorbar
+"""
+colorbar.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzColormap,  # DvzColormap cmap
+    ctypes.c_double,  # double dmin
+    ctypes.c_double,  # double dmax
+    ctypes.c_int,  # int flags
+]
+colorbar.restype = ctypes.POINTER(DvzColorbar)
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_range = dvz.dvz_colorbar_range
+colorbar_range.__doc__ = """
+Set the colorbar range.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+dmin : float
+    the minimal value
+dmax : float
+    the maximal value
+"""
+colorbar_range.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    ctypes.c_double,  # double dmin
+    ctypes.c_double,  # double dmax
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_cmap = dvz.dvz_colorbar_cmap
+colorbar_cmap.__doc__ = """
+Set the colormap of a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+cmap : DvzColormap
+    the colormap
+"""
+colorbar_cmap.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    DvzColormap,  # DvzColormap cmap
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_position = dvz.dvz_colorbar_position
+colorbar_position.__doc__ = """
+Set the position of a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+position : Tuple[float, float]
+    the 2D position in NDC
+"""
+colorbar_position.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    vec2,  # vec2 position
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_size = dvz.dvz_colorbar_size
+colorbar_size.__doc__ = """
+Set the size of a colorbar
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+size : Tuple[float, float]
+    the colorbar size in pixels
+"""
+colorbar_size.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    vec2,  # vec2 size
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_anchor = dvz.dvz_colorbar_anchor
+colorbar_anchor.__doc__ = """
+Set the anchor of a colorbar
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+anchor : Tuple[float, float]
+    the colorbar anchor
+"""
+colorbar_anchor.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    vec2,  # vec2 anchor
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_panel = dvz.dvz_colorbar_panel
+colorbar_panel.__doc__ = """
+Add a colorbar to a panel.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+panel : DvzPanel*
+    the panel
+"""
+colorbar_panel.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_update = dvz.dvz_colorbar_update
+colorbar_update.__doc__ = """
+Update a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+"""
+colorbar_update.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+]
+
+
+# -------------------------------------------------------------------------------------------------
+colorbar_destroy = dvz.dvz_colorbar_destroy
+colorbar_destroy.__doc__ = """
+Destroy a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+"""
+colorbar_destroy.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+]
+
+
+# -------------------------------------------------------------------------------------------------
 app = dvz.dvz_app
 app.__doc__ = """
 Create an app.
@@ -7926,6 +8625,21 @@ app_timer.restype = ctypes.POINTER(DvzTimerItem)
 
 
 # -------------------------------------------------------------------------------------------------
+app_timer_clear = dvz.dvz_app_timer_clear
+app_timer_clear.__doc__ = """
+Stop and remove all timers.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_timer_clear.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+
+# -------------------------------------------------------------------------------------------------
 app_on_timer = dvz.dvz_app_on_timer
 app_on_timer.__doc__ = """
 Register a timer callback.
@@ -8062,6 +8776,21 @@ app : DvzApp*
     the app
 """
 app_wait.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+
+# -------------------------------------------------------------------------------------------------
+app_stop = dvz.dvz_app_stop
+app_stop.__doc__ = """
+Stop the app's client.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_stop.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
 
@@ -8757,6 +9486,126 @@ gui_slider_vec4.argtypes = [
     vec4,  # out vec4 value
 ]
 gui_slider_vec4.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_int = dvz.dvz_gui_slider_int
+gui_slider_int.__doc__ = """
+Add an integer slider.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[int] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_int.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    Out,  # out int* value
+]
+gui_slider_int.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_ivec2 = dvz.dvz_gui_slider_ivec2
+gui_slider_ivec2.__doc__ = """
+Add an integer slider with 2 values.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[Tuple[int, int]] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_ivec2.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    ivec2,  # out ivec2 value
+]
+gui_slider_ivec2.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_ivec3 = dvz.dvz_gui_slider_ivec3
+gui_slider_ivec3.__doc__ = """
+Add an integer slider with 3 values.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[Tuple[int, int, int]] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_ivec3.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    ivec3,  # out ivec3 value
+]
+gui_slider_ivec3.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+gui_slider_ivec4 = dvz.dvz_gui_slider_ivec4
+gui_slider_ivec4.__doc__ = """
+Add an integer slider with 4 values.
+
+Parameters
+----------
+name : str
+    the slider name
+vmin : int
+    the minimum value
+vmax : int
+    the maximum value
+value : Out[Tuple[int, int, int, int]] (out parameter)
+    the pointer to the value
+
+Returns
+-------
+result : bool
+     whether the value has changed
+"""
+gui_slider_ivec4.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_int,  # int vmin
+    ctypes.c_int,  # int vmax
+    ivec4,  # out ivec4 value
+]
+gui_slider_ivec4.restype = ctypes.c_bool
 
 
 # -------------------------------------------------------------------------------------------------
@@ -11514,6 +12363,33 @@ basic_alloc.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+basic_shape = dvz.dvz_basic_shape
+basic_shape.__doc__ = """
+Create a basic visual from a DvzShape instance.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+shape : DvzShape*
+    the shape
+flags : int
+    the visual creation flags
+
+Returns
+-------
+result : DvzVisual*
+     the visual
+"""
+basic_shape.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_int,  # int flags
+]
+basic_shape.restype = ctypes.POINTER(DvzVisual)
+
+
+# -------------------------------------------------------------------------------------------------
 pixel = dvz.dvz_pixel
 pixel.__doc__ = """
 Create a pixel visual.
@@ -13366,6 +14242,144 @@ image_alloc.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+wiggle = dvz.dvz_wiggle
+wiggle.__doc__ = """
+Create a wiggle visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+result : DvzVisual*
+     the visual
+"""
+wiggle.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_int,  # int flags
+]
+wiggle.restype = ctypes.POINTER(DvzVisual)
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_bounds = dvz.dvz_wiggle_bounds
+wiggle_bounds.__doc__ = """
+Set the wiggle bounds.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+xlim : Tuple[float, float]
+    xmin and xmax
+ylim : Tuple[float, float]
+    ymin and ymax
+"""
+wiggle_bounds.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    vec2,  # vec2 xlim
+    vec2,  # vec2 ylim
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_color = dvz.dvz_wiggle_color
+wiggle_color.__doc__ = """
+Set the color of the negative and positive sections.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+negative_color : Tuple[int, int, int, int]
+    the color of the negative section
+positive_color : Tuple[int, int, int, int]
+    the color of the positive section
+"""
+wiggle_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzColor,  # DvzColor negative_color
+    DvzColor,  # DvzColor positive_color
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_edgecolor = dvz.dvz_wiggle_edgecolor
+wiggle_edgecolor.__doc__ = """
+Set the edge color.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+color : Tuple[int, int, int, int]
+    the edge color
+"""
+wiggle_edgecolor.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzColor,  # DvzColor color
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_xrange = dvz.dvz_wiggle_xrange
+wiggle_xrange.__doc__ = """
+Set the range of the wiggle on the x axis, in normalized coordinates ([0, 1]).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+xrange : Tuple[float, float]
+    the x0 and xl in the quad, the channels will be in the interval [x0, xl]
+"""
+wiggle_xrange.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    vec2,  # vec2 xrange
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_scale = dvz.dvz_wiggle_scale
+wiggle_scale.__doc__ = """
+Set the texture scaling factor.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+scale : float
+    the scaling factor
+"""
+wiggle_scale.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float scale
+]
+
+
+# -------------------------------------------------------------------------------------------------
+wiggle_texture = dvz.dvz_wiggle_texture
+wiggle_texture.__doc__ = """
+Assign a texture to an wiggle visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+texture : DvzTexture*
+    the texture
+"""
+wiggle_texture.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+]
+
+
+# -------------------------------------------------------------------------------------------------
 mesh = dvz.dvz_mesh
 mesh.__doc__ = """
 Create a mesh visual.
@@ -13996,6 +15010,24 @@ sphere_alloc.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+sphere_texture = dvz.dvz_sphere_texture
+sphere_texture.__doc__ = """
+Assign a 2D texture to a sphere visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+texture : DvzTexture*
+    the texture
+"""
+sphere_texture.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+]
+
+
+# -------------------------------------------------------------------------------------------------
 sphere_light_pos = dvz.dvz_sphere_light_pos
 sphere_light_pos.__doc__ = """
 Set the sphere light position.
@@ -14079,7 +15111,7 @@ sphere_shine.argtypes = [
 # -------------------------------------------------------------------------------------------------
 sphere_emit = dvz.dvz_sphere_emit
 sphere_emit.__doc__ = """
-Set the mesh surface emission level.
+Set the sphere surface emission level.
 
 Parameters
 ----------
@@ -14418,6 +15450,78 @@ alpha : float
 slice_alpha.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float alpha
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_color = dvz.dvz_grid_color
+grid_color.__doc__ = """
+Set the grid line color.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : Tuple[float, float, float, float]
+    RGBA color of fine lines
+"""
+grid_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    vec4,  # vec4 value
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_linewidth = dvz.dvz_grid_linewidth
+grid_linewidth.__doc__ = """
+Set the line width.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : float
+    width of lines (in world units)
+"""
+grid_linewidth.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    ctypes.c_float,  # float value
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_scale = dvz.dvz_grid_scale
+grid_scale.__doc__ = """
+Set the grid spacing.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : float
+    spacing between grid lines (in world units)
+"""
+grid_scale.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    ctypes.c_float,  # float value
+]
+
+
+# -------------------------------------------------------------------------------------------------
+grid_elevation = dvz.dvz_grid_elevation
+grid_elevation.__doc__ = """
+Set the grid elevation on the Y axis.
+
+Parameters
+----------
+grid : DvzVisual*
+    the grid visual
+value : float
+    grid elevation
+"""
+grid_elevation.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* grid
+    ctypes.c_float,  # float value
 ]
 
 

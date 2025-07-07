@@ -235,7 +235,8 @@ struct DvzMouseWheelEvent
 struct DvzMouseDragEvent
 {
     vec2 press_pos;
-    vec2 shift;
+    vec2 last_pos;
+    vec2 shift;          // difference between current position and press position
     bool is_press_valid; // whether the press event was valid
 };
 
