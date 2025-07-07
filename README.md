@@ -75,16 +75,16 @@ VTK is a powerful, heavyweight toolkit for 3D visualization, simulation, and sci
 
 
 
-## 🕐 Current status [May 2025]
+## 🕐 Current status [July 2025]
 
-**The current version is v0.3.**
+**The current version is v0.3.x**
 This release introduces major updates over v0.2, including 2D axes and a new Pythonic API.
 
 
 
-## 🕐 Roadmap [May 2025]
+## 🕐 Roadmap
 
-Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
+Looking ahead, the upcoming v0.4 release (2026) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
 
 * 🧊 Correct transparency in 3D mesh and volume rendering
 * ✨ Multisample anti-aliasing (MSAA)

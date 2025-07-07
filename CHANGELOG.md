@@ -12,7 +12,7 @@ Ongoing developments planned for v0.4.0 (2026) include:
 
 ---
 
-## v0.3.1 (2025-06-XX) [LATEST RELEASE]
+## v0.3.1 (2025-07-XX) [LATEST RELEASE]
 
 This is a minor release featuring a few additions, improvements, performance benchmarks and bug fixes, mostly a new **Wiggle** visual, several new examples including a **triangle splatting showcase example**, a few new features such as a **colorbar**, a **3D gizmo**, a **3D horizontal grid**, a **fly controller**, support for camera orbiting and experimental panel linking.
 
@@ -21,6 +21,8 @@ This is a minor release featuring a few additions, improvements, performance ben
 * Added several methods to `ShapeCollection`: `add_guizmo()`, `transform()`, `vertex_count()`, `index_count()`.
 
 * Fixed texture orientation on shapes ([#96](https://github.com/datoviz/datoviz/pull/96) by @ron-adam).
+
+* Add support for anisotropic scaling in shape collection ([#104](https://github.com/datoviz/datoviz/pull/104) by @kshitijgoel007).
 
 
 ### Examples
@@ -98,10 +100,11 @@ This is a minor release featuring a few additions, improvements, performance ben
 
 ### Python API
 
-* Wrapped the Frame event in the Python API.
+* Wrapped the `frame` and `resize` event in the Python API.
 * Added `Panel.orbit()` to easily create an animation with the camera orbiting around a fixed point.
 * Added `Panel.link()` to link two panels together (experimental).
-
+* Added fullscreen mode ([#102](https://github.com/datoviz/datoviz/pull/102) by @ron-adam).
+* Fix bug with textre upload ([#105](https://github.com/datoviz/datoviz/pull/105) by @ron-adam).
 
 
 ### Performance
