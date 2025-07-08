@@ -197,8 +197,8 @@ nightly arg='':
 #
 
 # Display the list of commits since the last tag.
-commits:
-    @git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"%s" | sort | uniq
+commits since until:
+    @git log --since="{{since}}" --until="{{until}}" --pretty=format:"%s" | sort | uniq
 #
 
 
