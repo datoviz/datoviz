@@ -185,8 +185,12 @@ nightly arg='':
         echo "✅ Wheel already tagged with $VERSION_TAG: $BASENAME"
     else
         NEWNAME=$(echo "$BASENAME" | sed "s/dev0/$VERSION_TAG/")
-        echo "Renaming $BASENAME → $NEWNAME"
-        mv "$WHEEL" "$OUTDIR/$NEWNAME"
+        if [ "$BASENAME" = "$NEWNAME" ]; then
+            echo "ℹ️  No rename needed: $BASENAME == $NEWNAME"
+        else
+            echo "Renaming $BASENAME → $NEWNAME"
+            mv "$WHEEL" "$OUTDIR/$NEWNAME"
+        fi
     fi
 
     echo "✅ Nightly wheel ready: $OUTDIR/$(ls $OUTDIR | grep $VERSION_TAG)"
