@@ -36,6 +36,9 @@ jobs:
       run: |
         if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
           echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+          echo "DVZ_BRANCH_TO_CHECKOUT=dev" >> $GITHUB_ENV
+        else
+          echo "DVZ_BRANCH_TO_CHECKOUT=main" >> $GITHUB_ENV
         fi
 
     - name: Make directory
@@ -46,6 +49,7 @@ jobs:
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
+        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
         submodules: recursive
 
     # Conditionally copy local files using rsync when USING_ACT is 1
@@ -116,12 +120,16 @@ jobs:
       run: |
         if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
           echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+          echo "DVZ_BRANCH_TO_CHECKOUT=dev" >> $GITHUB_ENV
+        else
+          echo "DVZ_BRANCH_TO_CHECKOUT=main" >> $GITHUB_ENV
         fi
 
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
+        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
         submodules: recursive
 
     # Install Python and required dependencies
@@ -192,12 +200,16 @@ jobs:
       run: |
         if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
           echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
+          echo "DVZ_BRANCH_TO_CHECKOUT=dev" >> $GITHUB_ENV
+        else
+          echo "DVZ_BRANCH_TO_CHECKOUT=main" >> $GITHUB_ENV
         fi
 
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
+        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
         submodules: recursive
 
     # Install Python and required dependencies
@@ -275,12 +287,19 @@ jobs:
 
     steps:
 
-    - name: Set DVZ_NIGHTLY_TAG
+    - name: Set DVZ_NIGHTLY_TAG (and BRANCH_TO_CHECKOUT if nightly)
       shell: pwsh
       run: |
-        if ($env:GITHUB_EVENT_NAME -eq 'schedule' -or $env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and "${{ github.event.inputs.nightly }}" -eq "true") {
+        if (
+          $env:GITHUB_EVENT_NAME -eq 'schedule' -or
+          ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and "${{ github.event.inputs.nightly }}" -eq "true")
+        ) {
           $date = Get-Date -Format "yyyyMMdd"
           "DVZ_NIGHTLY_TAG=.dev$date" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "DVZ_BRANCH_TO_CHECKOUT=dev" | Out-File -FilePath $env:GITHUB_ENV -Append
+        }
+        else {
+          "DVZ_BRANCH_TO_CHECKOUT=main" | Out-File -FilePath $env:GITHUB_ENV -Append
         }
 
     # Install Python and required dependencies
@@ -316,6 +335,7 @@ jobs:
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
+        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
         submodules: recursive
 
     # Python
