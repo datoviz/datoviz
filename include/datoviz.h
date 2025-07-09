@@ -352,8 +352,9 @@ DVZ_EXPORT DvzMouse* dvz_mouse(void);
  * @param mouse the mouse
  * @param pos the cursor position, in pixels
  * @param mods the keyboard modifier flags
+ * @returns the mouse event
  */
-DVZ_EXPORT void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
+DVZ_EXPORT DvzMouseEvent dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
 
 
 
@@ -363,8 +364,9 @@ DVZ_EXPORT void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
  * @param mouse the mouse
  * @param button the mouse button (enum int)
  * @param mods the keyboard modifier flags
+ * @returns the mouse event
  */
-DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
+DVZ_EXPORT DvzMouseEvent dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 
@@ -374,8 +376,9 @@ DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods
  * @param mouse the mouse
  * @param button the mouse button (enum int)
  * @param mods the keyboard modifier flags
+ * @returns the mouse event
  */
-DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
+DVZ_EXPORT DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 
@@ -385,8 +388,9 @@ DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mo
  * @param mouse the mouse
  * @param dir the mouse wheel direction (x, y)
  * @param mods the keyboard modifier flags
+ * @returns the mouse event
  */
-DVZ_EXPORT void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
+DVZ_EXPORT DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
 
 
 
@@ -467,7 +471,7 @@ DVZ_EXPORT uint32_t dvz_figure_height(DvzFigure* fig);
 
 
 
- /**
+/**
  * Set display to fullscreen.
  *
  * @param app the app
