@@ -197,8 +197,22 @@ nightly arg='':
 #
 
 # Display the list of commits since the last tag.
-commits since until:
-    @git log --since="{{since}}" --until="{{until}}" --pretty=format:"%s" | sort | uniq
+commits since='' until='':
+    #!/usr/bin/env sh
+    set -e
+
+    if [ -z "{{since}}" ]; then
+        since=$(git describe --tags --abbrev=0)
+    else
+        since="{{since}}"
+    fi
+    if [ -z "{{until}}" ]; then
+        until=$(date +%Y-%m-%d)
+    else
+        until="{{until}}"
+    fi
+    git log --since="$since" --until="$until" --pretty=format:"%s" | sort | uniq
+    # @git log --since="{{since}}" --until="{{until}}" --pretty=format:"%s" | sort | uniq
 #
 
 
