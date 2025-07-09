@@ -392,7 +392,7 @@ KB = 1024
 DVZ_REQUEST_VERSION = 1
 DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 3
-DVZ_VERSION_PATCH = 1
+DVZ_VERSION_PATCH = 2
 
 
 # ===============================================================================
@@ -3272,12 +3272,18 @@ pos : Tuple[float, float]
     the cursor position, in pixels
 mods : int
     the keyboard modifier flags
+
+Returns
+-------
+result : DvzMouseEvent
+     the mouse event
 """
 mouse_move.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
     vec2,  # vec2 pos
     ctypes.c_int,  # int mods
 ]
+mouse_move.restype = DvzMouseEvent
 
 
 # -------------------------------------------------------------------------------------------------
@@ -3293,12 +3299,18 @@ button : DvzMouseButton
     the mouse button (enum int)
 mods : int
     the keyboard modifier flags
+
+Returns
+-------
+result : DvzMouseEvent
+     the mouse event
 """
 mouse_press.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
     DvzMouseButton,  # DvzMouseButton button
     ctypes.c_int,  # int mods
 ]
+mouse_press.restype = DvzMouseEvent
 
 
 # -------------------------------------------------------------------------------------------------
@@ -3314,12 +3326,18 @@ button : DvzMouseButton
     the mouse button (enum int)
 mods : int
     the keyboard modifier flags
+
+Returns
+-------
+result : DvzMouseEvent
+     the mouse event
 """
 mouse_release.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
     DvzMouseButton,  # DvzMouseButton button
     ctypes.c_int,  # int mods
 ]
+mouse_release.restype = DvzMouseEvent
 
 
 # -------------------------------------------------------------------------------------------------
@@ -3335,12 +3353,18 @@ dir : Tuple[float, float]
     the mouse wheel direction (x, y)
 mods : int
     the keyboard modifier flags
+
+Returns
+-------
+result : DvzMouseEvent
+     the mouse event
 """
 mouse_wheel.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
     vec2,  # vec2 dir
     ctypes.c_int,  # int mods
 ]
+mouse_wheel.restype = DvzMouseEvent
 
 
 # -------------------------------------------------------------------------------------------------
