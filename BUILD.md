@@ -28,7 +28,7 @@ Versions of the various dependencies, including the bundled ones.
 
 ```bash
 # Install the build and system dependencies.
-sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-format patchelf tree libtinyxml2-dev libfreetype-dev
+sudo apt install build-essential cmake curl gcc git ccache ninja-build xorg-dev clang-format patchelf tree libtinyxml2-dev libfreetype-dev
 
 # Install just, see https://github.com/casey/just
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
