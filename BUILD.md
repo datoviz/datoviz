@@ -50,9 +50,6 @@ just build
 # Try a demo.
 just demo
 
-# Compile and run a C example.
-just example scatter
-
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
 ```
@@ -86,9 +83,6 @@ just build
 # Try a demo.
 just demo
 
-# Compile and run a C example.
-just example scatter
-
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
 ```
@@ -121,9 +115,6 @@ just build
 
 # Try a demo.
 just demo
-
-# Compile and run a C example.
-just example scatter
 
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
@@ -165,9 +156,6 @@ just build
 
 # Try a demo.
 just demo
-
-# Compile and run a C example.
-just example scatter
 
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
