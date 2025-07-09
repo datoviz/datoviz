@@ -134,7 +134,7 @@ class QtFigure(QWidget):
     def wheelEvent(self, event):
         super(QtFigure, self).wheelEvent(event)
         x, y, dvz_button = self._mouse_button_pos(event)
-        delta = event.angleDelta().y()
+        delta = .01 * event.angleDelta().y()
         self._mouse_move(x, y)
         self._mouse_wheel(delta)
         self.update_image()
