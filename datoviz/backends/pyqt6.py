@@ -11,14 +11,17 @@ import ctypes
 try:
     from PyQt6.QtCore import Qt
     from PyQt6.QtGui import QImage, QPixmap
-    from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
+    from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget, QSizePolicy
 except:
     from PyQt5.QtCore import Qt
     from PyQt5.QtGui import QImage, QPixmap
-    from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
+    from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QSizePolicy
 
 import datoviz as dvz
 from datoviz import vec2
+from datoviz import _constants as cst
+from datoviz._figure import Figure
+
 
 # -------------------------------------------------------------------------------------------------
 # Constants
@@ -39,25 +42,23 @@ BUTTON_MAPPING = {
 # -------------------------------------------------------------------------------------------------
 
 
-class QtFigure(QWidget):
-    def __init__(self, figure, server=None, scene=None):
-        super().__init__()
-        self.figure = figure
-        self.server = server
-        self.scene = scene
-        self.mouse = dvz.server_mouse(server)
+class QtFigure(Figure, QWidget):
+    def __init__(self, c_figure, c_server=None, c_scene=None):
+        QWidget.__init__(self)
+        Figure.__init__(self, c_figure)
+        self.c_server = c_server
+        self.c_scene = c_scene
+        self.mouse = dvz.server_mouse(c_server)
 
         self.label = QLabel(self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
         layout = QVBoxLayout()
         layout.addWidget(self.label)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         self.setMinimumSize(50, 50)
-
-        # self.resize_timer = QTimer(self)
-        # self.resize_timer.setSingleShot(True)
-        # self.resize_timer.timeout.connect(self.update_image)
 
         self.update_image()
 
@@ -67,10 +68,10 @@ class QtFigure(QWidget):
         if w <= 0 or h <= 0:
             return
 
-        dvz.figure_resize(self.figure, w, h)
-        dvz.figure_update(self.figure)
-        dvz.scene_render(self.scene, self.server)
-        data = dvz.server_grab(self.server, dvz.figure_id(self.figure), 0)
+        dvz.figure_resize(self.c_figure, w, h)
+        dvz.figure_update(self.c_figure)
+        dvz.scene_render(self.c_scene, self.c_server)
+        data = dvz.server_grab(self.c_server, dvz.figure_id(self.c_figure), 0)
 
         if data is None:
             return
@@ -96,19 +97,19 @@ class QtFigure(QWidget):
 
     def _mouse_move(self, x, y):
         ev = dvz.mouse_move(self.mouse, vec2(x, y), 0)
-        dvz.scene_mouse(self.scene, self.figure, ev)
+        dvz.scene_mouse(self.c_scene, self.c_figure, ev)
 
     def _mouse_press(self, dvz_button):
         ev = dvz.mouse_press(self.mouse, dvz_button, 0)
-        dvz.scene_mouse(self.scene, self.figure, ev)
+        dvz.scene_mouse(self.c_scene, self.c_figure, ev)
 
     def _mouse_release(self, dvz_button):
         ev = dvz.mouse_release(self.mouse, dvz_button, 0)
-        dvz.scene_mouse(self.scene, self.figure, ev)
+        dvz.scene_mouse(self.c_scene, self.c_figure, ev)
 
     def _mouse_wheel(self, dir):
         ev = dvz.mouse_wheel(self.mouse, vec2(0, dir), 0)
-        dvz.scene_mouse(self.scene, self.figure, ev)
+        dvz.scene_mouse(self.c_scene, self.c_figure, ev)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -153,14 +154,19 @@ class QtFigure(QWidget):
 # -------------------------------------------------------------------------------------------------
 
 
-class QtServer:
+class QtServer(dvz.App):
     def __init__(self):
-        self.server = dvz.server(0)
-        self.scene = dvz.scene(None)
+        self.c_server = dvz.server(0)
+        self.c_scene = dvz.scene(None)
+        self.c_batch = dvz.scene_batch(self.c_scene)
 
-    def create_figure(self, width=None, height=None):
-        figure = dvz.figure(self.scene, width or WIDTH, height or HEIGHT, 0)
-        return QtFigure(figure, server=self.server, scene=self.scene)
+        # NOTE: keep a reference to callbacks defined inside functions to avoid them being
+        # garbage-collected, resulting in a segfault.
+        self._callbacks = []
+
+    def figure(self, width: int = 0, height: int = 0) -> QtFigure:
+        c_figure = dvz.figure(self.c_scene, width or WIDTH, height or HEIGHT, 0)
+        return QtFigure(c_figure, c_server=self.c_server, c_scene=self.c_scene)
 
     def __del__(self):
-        dvz.server_destroy(self.server)
+        dvz.server_destroy(self.c_server)
