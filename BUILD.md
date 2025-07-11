@@ -50,6 +50,9 @@ just build
 # Try a demo.
 just demo
 
+# Install the development version of Datoviz as a pip package.
+pip install -e .
+
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
 ```
@@ -58,6 +61,9 @@ python -c "import datoviz; datoviz.demo()"
 ## macOS (arm64)
 
 ```bash
+# Install XCode if you don't have it already.
+xcode-select --install
+
 # Install brew if you don't have it already.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
@@ -82,6 +88,9 @@ just build
 
 # Try a demo.
 just demo
+
+# Install the development version of Datoviz as a pip package.
+pip install -e .
 
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
@@ -91,6 +100,9 @@ python -c "import datoviz; datoviz.demo()"
 ## macOS (Intel x86-64)
 
 ```bash
+# Install XCode if you don't have it already.
+xcode-select --install
+
 # Install brew if you don't have it already.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
@@ -115,6 +127,9 @@ just build
 
 # Try a demo.
 just demo
+
+# Install the development version of Datoviz as a pip package.
+pip install -e .
 
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
@@ -156,6 +171,9 @@ just build
 
 # Try a demo.
 just demo
+
+# Install the development version of Datoviz as a pip package.
+pip install -e .
 
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
