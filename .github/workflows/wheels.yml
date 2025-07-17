@@ -136,6 +136,7 @@ jobs:
         name: wheel-linux_x86_64
         path: /datoviz/dist/*.whl
 
+    # Upload to GitHub Release
     - name: Upload to GitHub Release
       if: env.DVZ_NIGHTLY_TAG != ''
       uses: softprops/action-gh-release@v2
@@ -145,6 +146,17 @@ jobs:
         files: /datoviz/dist/*.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Update nightly tag
+    - name: Update nightly tag
+      if: env.DVZ_NIGHTLY_TAG != ''
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin
+        git tag -f nightly
+        git push -f origin nightly
+
 
   # -----------------------------------------------------------------------------------------------
   # macOS arm64
@@ -220,6 +232,7 @@ jobs:
         name: wheel-macosx_arm64
         path: dist/*.whl
 
+    # Upload to GitHub Release
     - name: Upload to GitHub Release
       if: env.DVZ_NIGHTLY_TAG != ''
       uses: softprops/action-gh-release@v2
@@ -229,6 +242,16 @@ jobs:
         files: dist/*.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Update nightly tag
+    - name: Update nightly tag
+      if: env.DVZ_NIGHTLY_TAG != ''
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin
+        git tag -f nightly
+        git push -f origin nightly
 
   # -----------------------------------------------------------------------------------------------
   # macOS x86_64
@@ -304,6 +327,7 @@ jobs:
         name: wheel-macosx_x86_64
         path: dist/*.whl
 
+    # Upload to GitHub Release
     - name: Upload to GitHub Release
       if: env.DVZ_NIGHTLY_TAG != ''
       uses: softprops/action-gh-release@v2
@@ -313,6 +337,16 @@ jobs:
         files: dist/*.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Update nightly tag
+    - name: Update nightly tag
+      if: env.DVZ_NIGHTLY_TAG != ''
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin
+        git tag -f nightly
+        git push -f origin nightly
 
   # -----------------------------------------------------------------------------------------------
   # Windows
@@ -419,6 +453,7 @@ jobs:
         name: wheel-win_amd64
         path: dist/*.whl
 
+    # Upload to GitHub Release
     - name: Upload to GitHub Release
       if: env.DVZ_NIGHTLY_TAG != ''
       uses: softprops/action-gh-release@v2
@@ -428,3 +463,13 @@ jobs:
         files: dist/*.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Update nightly tag
+    - name: Update nightly tag
+      if: env.DVZ_NIGHTLY_TAG != ''
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git fetch origin
+        git tag -f nightly
+        git push -f origin nightly
