@@ -2,22 +2,27 @@ name: "PRUNE NIGHTLY"
 
 on:
   schedule:
-    - cron: "0 3 * * 0"
+    - cron: "0 3 * * 0"  # every Sunday at 3am UTC
   workflow_dispatch:
 
 jobs:
   prune:
     runs-on: ubuntu-latest
 
+    env:
+      GH_TOKEN: ${{ secrets.GH_PAT_NIGHTLY }}
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install GitHub CLI
-        run: sudo apt-get install gh -y
-
-      - name: Authenticate GitHub CLI
+      - name: Install dependencies
         run: |
-          echo "${{ secrets.GH_PAT_NIGHTLY }}" | gh auth login --with-token
+          sudo apt-get update
+          sudo apt-get install -y gh jq
+
+      - name: Check GitHub authentication
+        run: |
+          echo "🔗 Checking GitHub authentication"
           gh auth status
 
       - name: Get assets for 'nightly' release
@@ -30,9 +35,8 @@ jobs:
 
           RELEASE_ID=$(jq -r '.id' nightly_release.json)
           echo "✅ RELEASE_ID = $RELEASE_ID"
-          echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
 
-          echo "📄 Fetching assets for release ID $RELEASE_ID…"
+          echo "📄 Determining old assets to delete (keeping most recent 28)…"
           jq -r '.assets | sort_by(.created_at) | reverse | .[28:] | .[].id' nightly_release.json > old_asset_ids.txt
 
           if [[ -s old_asset_ids.txt ]]; then
@@ -44,7 +48,16 @@ jobs:
 
       - name: Delete old assets
         run: |
+          set -euo pipefail
+
+          if [[ ! -s old_asset_ids.txt ]]; then
+            echo "ℹ️ No old assets to delete. Done."
+            exit 0
+          fi
+
           for id in $(cat old_asset_ids.txt); do
-            echo "Deleting asset $id"
+            echo "🗑 Deleting asset $id"
             gh api --method DELETE /repos/${{ github.repository }}/releases/assets/$id
           done
+
+          echo "✅ Old assets deleted."
