@@ -119,13 +119,12 @@ def zoom_matplotlib(ax, total_zoom: float):
 # Generate shared data
 # -------------------------------------------------------------------------------------------------
 
-
 def generate_data(n):
-    x, y = np.random.rand(2, n)
-    color = np.random.randint(100, 240, size=(n, 4), dtype=np.uint8)
+    rng = np.random.default_rng(3141)
+    x, y = rng.random((2, n))
+    color = rng.integers(100, 240, size=(n, 4), dtype=np.uint8)
     color[:, 3] = 255
-    size = np.random.uniform(5, 10, size=n)
-
+    size = rng.uniform(5, 10, size=n)
     return x, y, color, color / 255.0, size
 
 

@@ -18,12 +18,14 @@ import numpy as np
 
 import datoviz as dvz
 
+rng = np.random.default_rng(seed=3141)
+
 n = 10
 xmin, xmax = 1, 10
 ymin, ymax = 100, 1000
 x, y = np.meshgrid(np.linspace(xmin, xmax, n), np.linspace(ymin, ymax, n))
 nn = x.size
-color = np.random.randint(low=100, high=240, size=(nn, 4)).astype(np.uint8)
+color = rng.integers(low=100, high=240, size=(nn, 4), dtype=np.uint8)
 size = np.full(nn, 20)
 
 app = dvz.App(background='white')

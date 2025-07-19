@@ -21,6 +21,8 @@ import numpy as np
 
 import datoviz as dvz
 
+rng = np.random.default_rng(seed=3141)
+
 # Load the bunny mesh.
 sc = dvz.ShapeCollection()
 file_path = dvz.download_data('mesh/bunny.obj')
@@ -35,7 +37,7 @@ camera = panel.camera(initial=(0, 0, 3))
 
 # Random colors.
 nv = sc.vertex_count()
-color = np.random.randint(low=0, high=255, size=(nv, 4), dtype=np.uint8)
+color = rng.integers(low=0, high=255, size=(nv, 4), dtype=np.uint8)
 color[:, 3] = 255  # Set alpha channel to fully opaque.
 
 # Create a basic visual from the ShapeCollection.

@@ -28,7 +28,7 @@ def generate_data():
     n_particles_per_arm = 200_000
     n_total = n_arms * n_particles_per_arm
 
-    rng = np.random.default_rng(seed=42)
+    rng = np.random.default_rng(seed=3141)
 
     # Radius from center, with more points toward center
     r = rng.power(2.0, size=n_total)  # values in [0, 1), biased toward 0

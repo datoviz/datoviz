@@ -19,18 +19,20 @@ import numpy as np
 
 import datoviz as dvz
 
+rng = np.random.default_rng(seed=3141)
+
 # Number of points
 n = 1000
 
 # Generate random (x, y) coordinates
-x, y = np.random.rand(2, n)
+x, y = rng.random((2, n))
 
 # Generate RGBA colors (uint8 in range [0, 255])
-color = np.random.randint(100, 240, size=(n, 4), dtype=np.uint8)
+color = rng.integers(100, 240, size=(n, 4), dtype=np.uint8)
 color[:, 3] = 255  # full opacity
 
 # Generate random point sizes (in pixels)
-size = np.random.uniform(10, 30, size=n)
+size = rng.uniform(10, 30, size=n)
 
 # Create a Datoviz app with a white background
 app = dvz.App(background='white')
