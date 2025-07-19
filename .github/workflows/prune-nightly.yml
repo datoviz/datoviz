@@ -23,12 +23,24 @@ jobs:
       - name: Get assets for 'nightly' release
         id: assets
         run: |
-          RELEASE_ID=$(gh release view nightly --repo "${{ github.repository }}" --json id -q .id)
-          echo $RELEASE_ID
+          set -euo pipefail
+
+          echo "📄 Fetching release info for 'nightly' tag…"
+          gh api /repos/${{ github.repository }}/releases/tags/nightly > nightly_release.json
+
+          RELEASE_ID=$(jq -r '.id' nightly_release.json)
+          echo "✅ RELEASE_ID = $RELEASE_ID"
           echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
 
-          gh api /repos/${{ github.repository }}/releases/$RELEASE_ID/assets \
-            --jq 'sort_by(.created_at) | reverse | .[28:] | .[].id' > old_asset_ids.txt
+          echo "📄 Fetching assets for release ID $RELEASE_ID…"
+          jq -r '.assets | sort_by(.created_at) | reverse | .[28:] | .[].id' nightly_release.json > old_asset_ids.txt
+
+          if [[ -s old_asset_ids.txt ]]; then
+            echo "✅ Found old assets to delete:"
+            cat old_asset_ids.txt
+          else
+            echo "ℹ️ No old assets to delete."
+          fi
 
       - name: Delete old assets
         run: |
