@@ -218,7 +218,6 @@ def to_enum(enumstr: Union[str, int], prefixes: Optional[List] = None) -> int:
     if prefixes is None:
         enumstr_u = enumstr.upper()
         if hasattr(dvz, enumstr_u):
-            print(enumstr_u, "A", getattr(dvz, enumstr_u), "B")
             return getattr(dvz, enumstr_u)
         else:
             # fallback = 0 if isinstance(enumstr, str) else enumstr
