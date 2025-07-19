@@ -25,13 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
+      nightly_tag: ${{ steps.check.outputs.nightly_tag }}
+      branch_to_checkout: ${{ steps.check.outputs.branch_to_checkout }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
 
-      - name: Check if dev has new commits
+      - name: Check if dev has new commits and set build parameters
         id: check
         run: |
           git fetch --tags
@@ -42,16 +44,34 @@ jobs:
           echo "Current dev HEAD: $DEV_COMMIT"
           echo "Last nightly tag: $NIGHTLY_COMMIT"
 
-          if [ "${{ github.event_name }}" != "schedule" ]; then
+          if [[ "${{ github.event_name }}" != "schedule" ]]; then
             echo "Not a scheduled nightly → proceeding anyway."
             echo "should_run=true" >> $GITHUB_OUTPUT
-          elif [ "$DEV_COMMIT" != "$NIGHTLY_COMMIT" ]; then
+          elif [[ "$DEV_COMMIT" != "$NIGHTLY_COMMIT" ]]; then
             echo "New commits detected → proceeding."
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
             echo "No new commits since last nightly → skip build."
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
+
+          # Compute nightly tag & branch_to_checkout
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
+            NIGHTLY_TAG=".dev$(date +%Y%m%d)"
+            BRANCH="dev"
+          else
+            NIGHTLY_TAG=""
+            BRANCH="main"
+          fi
+
+          echo "nightly_tag=$NIGHTLY_TAG" >> $GITHUB_OUTPUT
+          echo "branch_to_checkout=$BRANCH" >> $GITHUB_OUTPUT
+
+          echo "📝 Outputs:"
+          echo "  should_run = $(cat $GITHUB_OUTPUT | grep should_run | cut -d= -f2)"
+          echo "  nightly_tag = $NIGHTLY_TAG"
+          echo "  branch_to_checkout = $BRANCH"
+
 
   # -----------------------------------------------------------------------------------------------
   # Linux
@@ -63,7 +83,9 @@ jobs:
 
     # Skip nightly build if there was no new commit on dev since last nightly build.
     needs: check-if-needed
-    if: needs.check-if-needed.outputs.should_run == 'true'
+    if: ${{ needs.check-if-needed.outputs.should_run == 'true' }}
+    env:
+      DVZ_NIGHTLY_TAG: ${{ needs.check-if-needed.outputs.nightly_tag }}
 
     # Use a pre-built Docker image with all build and run dependencies.
     container:
@@ -71,16 +93,6 @@ jobs:
 
     # Create the directory
     steps:
-    - name: Set DVZ_NIGHTLY_TAG
-      shell: bash
-      run: |
-        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
-          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
-          echo "DVZ_BRANCH_TO_CHECKOUT=dev" >> $GITHUB_ENV
-        else
-          echo "DVZ_BRANCH_TO_CHECKOUT=main" >> $GITHUB_ENV
-        fi
-
     - name: Make directory
       run: mkdir -p /datoviz
 
@@ -89,7 +101,7 @@ jobs:
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
-        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
+        ref: ${{ needs.check-if-needed.outputs.branch_to_checkout }}
         submodules: recursive
 
     # Conditionally copy local files using rsync when USING_ACT is 1
@@ -136,27 +148,6 @@ jobs:
         name: wheel-linux_x86_64
         path: /datoviz/dist/*.whl
 
-    # Upload to GitHub Release
-    - name: Upload to GitHub Release
-      if: env.DVZ_NIGHTLY_TAG != ''
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: nightly
-        prerelease: true
-        files: /datoviz/dist/*.whl
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Update nightly tag
-    - name: Update nightly tag
-      if: env.DVZ_NIGHTLY_TAG != ''
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin
-        git tag -f nightly
-        git push -f origin nightly
-
 
   # -----------------------------------------------------------------------------------------------
   # macOS arm64
@@ -167,25 +158,18 @@ jobs:
 
     # Skip nightly build if there was no new commit on dev since last nightly build.
     needs: check-if-needed
-    if: needs.check-if-needed.outputs.should_run == 'true'
+    if: ${{ needs.check-if-needed.outputs.should_run == 'true' }}
+    env:
+      DVZ_NIGHTLY_TAG: ${{ needs.check-if-needed.outputs.nightly_tag }}
 
     # Clone the repo (except if local with "act")
     steps:
-    - name: Set DVZ_NIGHTLY_TAG
-      shell: bash
-      run: |
-        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
-          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
-          echo "DVZ_BRANCH_TO_CHECKOUT=dev" >> $GITHUB_ENV
-        else
-          echo "DVZ_BRANCH_TO_CHECKOUT=main" >> $GITHUB_ENV
-        fi
 
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
-        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
+        ref: ${{ needs.check-if-needed.outputs.branch_to_checkout }}
         submodules: recursive
 
     # Install Python and required dependencies
@@ -232,26 +216,6 @@ jobs:
         name: wheel-macosx_arm64
         path: dist/*.whl
 
-    # Upload to GitHub Release
-    - name: Upload to GitHub Release
-      if: env.DVZ_NIGHTLY_TAG != ''
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: nightly
-        prerelease: true
-        files: dist/*.whl
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Update nightly tag
-    - name: Update nightly tag
-      if: env.DVZ_NIGHTLY_TAG != ''
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin
-        git tag -f nightly
-        git push -f origin nightly
 
   # -----------------------------------------------------------------------------------------------
   # macOS x86_64
@@ -262,25 +226,18 @@ jobs:
 
     # Skip nightly build if there was no new commit on dev since last nightly build.
     needs: check-if-needed
-    if: needs.check-if-needed.outputs.should_run == 'true'
+    if: ${{ needs.check-if-needed.outputs.should_run == 'true' }}
+    env:
+      DVZ_NIGHTLY_TAG: ${{ needs.check-if-needed.outputs.nightly_tag }}
 
     # Clone the repo (except if local with "act")
     steps:
-    - name: Set DVZ_NIGHTLY_TAG
-      shell: bash
-      run: |
-        if [[ "${{ github.event_name }}" == "schedule" || "${{ github.event.inputs.nightly }}" == "true" ]]; then
-          echo "DVZ_NIGHTLY_TAG=.dev$(date +%Y%m%d)" >> $GITHUB_ENV
-          echo "DVZ_BRANCH_TO_CHECKOUT=dev" >> $GITHUB_ENV
-        else
-          echo "DVZ_BRANCH_TO_CHECKOUT=main" >> $GITHUB_ENV
-        fi
 
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
-        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
+        ref: ${{ needs.check-if-needed.outputs.branch_to_checkout }}
         submodules: recursive
 
     # Install Python and required dependencies
@@ -327,26 +284,6 @@ jobs:
         name: wheel-macosx_x86_64
         path: dist/*.whl
 
-    # Upload to GitHub Release
-    - name: Upload to GitHub Release
-      if: env.DVZ_NIGHTLY_TAG != ''
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: nightly
-        prerelease: true
-        files: dist/*.whl
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # Update nightly tag
-    - name: Update nightly tag
-      if: env.DVZ_NIGHTLY_TAG != ''
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin
-        git tag -f nightly
-        git push -f origin nightly
 
   # -----------------------------------------------------------------------------------------------
   # Windows
@@ -357,7 +294,7 @@ jobs:
 
     # Skip nightly build if there was no new commit on dev since last nightly build.
     needs: check-if-needed
-    if: needs.check-if-needed.outputs.should_run == 'true'
+    if: ${{ needs.check-if-needed.outputs.should_run == 'true' }}
 
     # NOTE: Windows Docker images are not yet supported on GitHub Actions
     # see https://github.com/docker/build-push-action/issues/18
@@ -368,25 +305,11 @@ jobs:
     #   image: rossant/datoviz_windows
 
     env:
+      DVZ_NIGHTLY_TAG: ${{ needs.check-if-needed.outputs.nightly_tag }}
       VCPKG_ROOT: C:/vcpkg
       VULKAN_SDK: C:/VulkanSDK/1.3.280.0/
 
     steps:
-
-    - name: Set DVZ_NIGHTLY_TAG (and BRANCH_TO_CHECKOUT if nightly)
-      shell: pwsh
-      run: |
-        if (
-          $env:GITHUB_EVENT_NAME -eq 'schedule' -or
-          ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch' -and "${{ github.event.inputs.nightly }}" -eq "true")
-        ) {
-          $date = Get-Date -Format "yyyyMMdd"
-          "DVZ_NIGHTLY_TAG=.dev$date" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "DVZ_BRANCH_TO_CHECKOUT=dev" | Out-File -FilePath $env:GITHUB_ENV -Append
-        }
-        else {
-          "DVZ_BRANCH_TO_CHECKOUT=main" | Out-File -FilePath $env:GITHUB_ENV -Append
-        }
 
     # Install Python and required dependencies
     - name: Setup Python
@@ -421,7 +344,7 @@ jobs:
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
-        ref: ${{ env.DVZ_BRANCH_TO_CHECKOUT }}
+        ref: ${{ needs.check-if-needed.outputs.branch_to_checkout }}
         submodules: recursive
 
     # Python
@@ -453,23 +376,46 @@ jobs:
         name: wheel-win_amd64
         path: dist/*.whl
 
-    # Upload to GitHub Release
-    - name: Upload to GitHub Release
-      if: env.DVZ_NIGHTLY_TAG != ''
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: nightly
-        prerelease: true
-        files: dist/*.whl
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Update nightly tag
-    - name: Update nightly tag
-      if: env.DVZ_NIGHTLY_TAG != ''
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git fetch origin
-        git tag -f nightly
-        git push -f origin nightly
+# -----------------------------------------------------------------------------------------------
+# Update nightly tag
+# -----------------------------------------------------------------------------------------------
+
+  update-nightly-tag:
+    runs-on: ubuntu-latest
+    needs:
+      - wheel-linux_x86_64
+      - wheel-macosx_arm64
+      - wheel-macosx_x86_64
+      - wheel-win_amd64
+    if: ${{ needs.check-if-needed.outputs.should_run == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+
+      - name: List wheels
+        run: ls -R ./dist
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          prerelease: true
+          files: ./dist/**/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update nightly tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin
+          git tag -f nightly
+          git push -f origin nightly
