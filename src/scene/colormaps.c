@@ -44,20 +44,22 @@ static unsigned char* DVZ_COLORMAP_ARRAY;
 /*************************************************************************************************/
 
 // Rescale a float value to a byte.
-static uint8_t _scale_uint8(float value, float vmin, float vmax)
+static uint8_t _scale_uint8(float value, float vmin, float vmax, int max)
 {
     if (vmin == vmax)
     {
         log_warn("error in colormap_value(): vmin=vmax");
         return 0;
     }
+    ASSERT(max <= 256);
+
     float d = vmax - vmin;
     float x = (CLIP(value, vmin, vmax - d * 1e-7) - vmin) / d;
     // printf("%f %f %f %f\n", value, vmin, vmax, x);
     if (x >= 1 - EPSILON)
         x = 1 - EPSILON;
     ASSERT(0 <= x && x < 1);
-    return (uint8_t)floor(x * 256);
+    return (uint8_t)floor(x * max);
 }
 
 
@@ -146,7 +148,85 @@ void dvz_colormap_8bit(DvzColormap cmap, uint8_t value, cvec4 color)
 
 void dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, DvzColor color)
 {
-    uint8_t u_value = _scale_uint8(value, vmin, vmax);
+    uint8_t u_value = 0;
+    if ((int)cmap < CPAL032_OFS)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 256);
+    }
+    // HACK
+    else if (cmap == DVZ_CPAL032_ACCENT)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 8);
+    }
+    else if (cmap == DVZ_CPAL032_DARK2)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 8);
+    }
+    else if (cmap == DVZ_CPAL032_PAIRED)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 12);
+    }
+    else if (cmap == DVZ_CPAL032_PASTEL1)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 9);
+    }
+    else if (cmap == DVZ_CPAL032_PASTEL2)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 8);
+    }
+    else if (cmap == DVZ_CPAL032_SET1)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 9);
+    }
+    else if (cmap == DVZ_CPAL032_SET2)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 8);
+    }
+    else if (cmap == DVZ_CPAL032_SET3)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 12);
+    }
+    else if (cmap == DVZ_CPAL032_TAB10)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 10);
+    }
+    else if (cmap == DVZ_CPAL032_TAB20)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 20);
+    }
+    else if (cmap == DVZ_CPAL032_TAB20B)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 20);
+    }
+    else if (cmap == DVZ_CPAL032_TAB20C)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 20);
+    }
+    else if (cmap == DVZ_CPAL032_CATEGORY10_10)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 10);
+    }
+    else if (cmap == DVZ_CPAL032_CATEGORY20_20)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 20);
+    }
+    else if (cmap == DVZ_CPAL032_CATEGORY20B_20)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 20);
+    }
+    else if (cmap == DVZ_CPAL032_CATEGORY20C_20)
+    {
+        u_value = _scale_uint8(value, vmin, vmax, 20);
+    }
+    else
+    {
+        log_error("unknown cmap %d", cmap);
+    }
+    // else if (cmap == DVZ_CPAL032_COLORBLIND8)
+    // {
+    //     u_value = _scale_uint8(value, vmin, vmax, 8);
+    // }
+
     dvz_colormap(cmap, u_value, color);
 }
 
