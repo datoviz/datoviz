@@ -47,7 +47,6 @@ jobs:
           fi
 
       - name: Delete old assets
-        if: success() && steps.assets.outputs.RELEASE_ID != ''
         run: |
           set -euo pipefail
 
