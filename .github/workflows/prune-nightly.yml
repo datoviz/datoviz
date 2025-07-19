@@ -10,24 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install GitHub CLI
-      run: sudo apt-get install gh -y
+      - uses: actions/checkout@v4
 
-    - name: Authenticate GitHub CLI
-      run: echo "${{ secrets.GH_PAT_NIGHTLY }}" | gh auth login --with-token
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
 
-    - name: Get assets for 'nightly' release
-      id: assets
-      run: |
-        RELEASE_ID=$(gh release view nightly --json id -q .id)
-        echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.GH_PAT_NIGHTLY }}" | gh auth login --with-token
 
-        gh api /repos/${{ github.repository }}/releases/$RELEASE_ID/assets \
-          --jq 'sort_by(.created_at) | reverse | .[100:] | .[].id' > old_asset_ids.txt
+      - name: Get assets for 'nightly' release
+        id: assets
+        run: |
+          RELEASE_ID=$(gh release view nightly --repo "${{ github.repository }}" --json id -q .id)
+          echo "RELEASE_ID=$RELEASE_ID" >> $GITHUB_ENV
 
-    - name: Delete old assets
-      run: |
-        for id in $(cat old_asset_ids.txt); do
-          echo "Deleting asset $id"
-          gh api --method DELETE /repos/${{ github.repository }}/releases/assets/$id
-        done
+          gh api /repos/${{ github.repository }}/releases/$RELEASE_ID/assets \
+            --jq 'sort_by(.created_at) | reverse | .[28:] | .[].id' > old_asset_ids.txt
+
+      - name: Delete old assets
+        run: |
+          for id in $(cat old_asset_ids.txt); do
+            echo "Deleting asset $id"
+            gh api --method DELETE /repos/${{ github.repository }}/releases/assets/$id
+          done
