@@ -186,8 +186,20 @@ def parse_enums(text):
 
     for item, start, stop in enum.scanString(text):
         l = []
-        for i, entry in enumerate(item.names):
-            l.append((entry.name, _parse_value(entry.value, i=i)))
+        i = 0
+        offset = ''
+        for entry in item.names:
+            value = entry.value
+            if value and isinstance(value, str):
+                offset = value
+                i = 0
+            elif value and isinstance(value, int):
+                i = value
+            if not value and offset:
+                value = f'{offset} + {i}'
+            val = _parse_value(value, i=i)
+            l.append((entry.name, val))
+            i += 1
         enums[item.enum] = Bunch(name=item.enum, values=l)
     return enums
 

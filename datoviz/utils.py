@@ -199,7 +199,7 @@ def from_enum(enum_cls: type, value: int, prettify: bool = True) -> Optional[str
     return None
 
 
-def to_enum(enumstr: Union[str, int]) -> int:
+def to_enum(enumstr: Union[str, int], prefixes: Optional[List] = None) -> int:
     """
     Convert an enum string to its corresponding value.
 
@@ -207,13 +207,31 @@ def to_enum(enumstr: Union[str, int]) -> int:
     ----------
     enumstr : str or int
         The enum string or value (no-op).
+    prefixes : list (optional)
+        List of tentative prefixes for the enum string, will return the first matching prefix.
 
     Returns
     -------
     int
         The enum value.
     """
-    return getattr(dvz, enumstr.upper(), 0 if isinstance(enumstr, str) else enumstr)
+    if prefixes is None:
+        enumstr_u = enumstr.upper()
+        if hasattr(dvz, enumstr_u):
+            print(enumstr_u, "A", getattr(dvz, enumstr_u), "B")
+            return getattr(dvz, enumstr_u)
+        else:
+            # fallback = 0 if isinstance(enumstr, str) else enumstr
+            # return fallback
+            raise ValueError(f"Couldn't find `dvz.{enumstr_u}")  # , fallback to {fallback}")
+    else:
+        for prefix in prefixes:
+            try:
+                return to_enum(f"{prefix}_{enumstr}")
+            except ValueError as e:
+                pass
+        raise ValueError(
+            f"Couldn't find enumeration {enumstr} with prefixes {', '.join(prefixes)}.")
 
 
 # -------------------------------------------------------------------------------------------------
@@ -285,7 +303,7 @@ def cmap(
         An array of RGBA colors.
     """
     if isinstance(cm, str):
-        cm = to_enum(f'cmap_{cm}')
+        cm = to_enum(cm, prefixes=['cmap', 'cpal032', 'cpal256'])
     assert isinstance(cm, int)
     values = np.asanyarray(values, dtype=np.float32)
     n = values.size
