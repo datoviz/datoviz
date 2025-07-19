@@ -409,6 +409,7 @@ class App:
         vs.Basic
             The created basic visual instance.
         """
+        topology = topology or 'point_list'
         if not shape and topology not in cst.TOPOLOGY_OPTIONS:
             raise ValueError(f'Topology must be one of {cst.TOPOLOGY_OPTIONS} and not {topology}')
         c_topology = to_enum(f'primitive_topology_{topology}')
