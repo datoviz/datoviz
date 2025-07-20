@@ -18,6 +18,7 @@ from .utils import (
     from_enum,
     to_enum,
     cmap,
+    colormaps,
     from_array,
     from_pointer,
 )  # noqa
