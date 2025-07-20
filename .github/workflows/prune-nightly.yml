@@ -2,7 +2,7 @@ name: "PRUNE NIGHTLY"
 
 on:
   schedule:
-    - cron: "0 3 * * 0"  # every Sunday at 3am UTC
+    - cron: "0 4 * * 0"  # every Sunday at 4am UTC
   workflow_dispatch:
 
 jobs:
