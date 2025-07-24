@@ -200,9 +200,10 @@ nightly arg='':
 commits since='' until='':
     #!/usr/bin/env sh
     set -e
-
+    tag=""
     if [ -z "{{since}}" ]; then
-        since=$(git describe --tags --abbrev=0)
+        tag=$(git describe --tags --abbrev=0)
+        since=$(git log -1 --date=format:'%Y-%m-%d' --format=%ad "${tag}")
     else
         since="{{since}}"
     fi
@@ -211,8 +212,8 @@ commits since='' until='':
     else
         until="{{until}}"
     fi
+    echo "commits between ${since} (tag: ${tag}) and ${until}:\n"
     git log --since="$since" --until="$until" --pretty=format:"%s" | sort | uniq
-    # @git log --since="{{since}}" --until="{{until}}" --pretty=format:"%s" | sort | uniq
 #
 
 
@@ -282,7 +283,6 @@ build release="Debug": && bundledeps
     cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     cd build/ && ninja
 #
-
 
 [windows]
 [linux]
@@ -1102,7 +1102,7 @@ buildwheel args='':
         echo "🎯 No DVZ_NIGHTLY_TAG — using just wheel"
         just wheel {{args}}
     fi
-
+#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1196,6 +1196,7 @@ swiftshader +args:
 # -------------------------------------------------------------------------------------------------
 # WebAssembly
 # -------------------------------------------------------------------------------------------------
+
 wasm:
     set -e
     python3 tools/generate_wasm.py
@@ -1244,7 +1245,7 @@ prof:
 #
 
 tree:
-    tree -I external -I "build*" -I data -I bin -I libs -I tools -I "packaging*" -I docs -I cmake -I "*.py" -I "*.pxd" -I "*.pyx" -I "*.json" -I "*.out"
+    tree -P '*.c' -P '*.h' -P '*.py' -P '*.cpp' -P '*.glsl' -P '*.vert' -P '*.frag' include src datoviz tests pytests examples cli
 #
 
 cloc:
