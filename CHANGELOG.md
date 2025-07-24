@@ -10,9 +10,42 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * Integration with other GPU APIs such as CUDA/CuPy.
 
 
+## v0.3.2 (2025-07-XX) [UPCOMING]
+
+### Backends
+
+* Experimental (and slow) PyQt Datoviz backend, available on the [experiments repository](https://github.com/datoviz/experiments/blob/main/qt/pyqt_offscreen.py).
+
+### Examples
+
+* Add colormaps feature example.
+* Use fixed random seed in Python examples.
+
+### Python API
+
+* Add `dvz.colormaps()`, a function returning the list of all supported colormaps.
+* Fix topology enum in App Python wrapper for basic visual creation.
+
+### Colormaps
+
+* Fix colormap scaling with variable-length color palettes.
+
+### Shapes
+
+* Fix `shape_transform` in ShapeCollection ([#106](https://github.com/datoviz/datoviz/pull/106) by @kshitijgoel007).
+
+### C API
+
+* Mouse functions now return a DvzMouseEvent.
+
+### Build
+
+* Fix nightly releases, prune old nightly releases weekly on GitHub Actions.
+
 ---
 
-## v0.3.1 (2025-07-XX) [LATEST RELEASE]
+
+## v0.3.1 (2025-07-07) [LATEST RELEASE]
 
 This is a minor release featuring a few additions, improvements, performance benchmarks and bug fixes, mostly a new **Wiggle** visual, several new examples including a **triangle splatting showcase example**, a few new features such as a **colorbar**, a **3D gizmo**, a **3D horizontal grid**, a **fly controller**, support for camera orbiting and experimental panel linking.
 
