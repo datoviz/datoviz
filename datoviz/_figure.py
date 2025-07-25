@@ -80,6 +80,17 @@ class Colorbar:
         """
         dvz.colorbar_range(self.c_colorbar, dmin, dmax)
 
+    def show(self, is_visible: bool = True) -> None:
+        """
+        Show or hide the colorbar.
+
+        Parameters
+        ----------
+        is_visible : bool, optional
+            Whether to show the colorbar, by default True.
+        """
+        dvz.colorbar_show(self.c_colorbar, is_visible)
+
     def destroy(self):
         """
         Destroy the colorbar.

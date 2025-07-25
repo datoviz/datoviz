@@ -244,6 +244,19 @@ void dvz_colorbar_update(DvzColorbar* colorbar)
 
 
 
+void dvz_colorbar_show(DvzColorbar* colorbar, bool is_visible)
+{
+    ANN(colorbar);
+    colorbar->image->is_visible = is_visible;
+    colorbar->axis->glyph->is_visible = is_visible;
+    colorbar->axis->segment->is_visible = is_visible;
+    colorbar->axis->factor->is_visible = is_visible;
+    colorbar->axis->label->is_visible = is_visible;
+    colorbar->axis->spine->is_visible = is_visible;
+}
+
+
+
 void dvz_colorbar_destroy(DvzColorbar* colorbar)
 {
     ANN(colorbar);

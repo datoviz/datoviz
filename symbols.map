@@ -38,6 +38,7 @@ dvz_colorbar_destroy
 dvz_colorbar_panel
 dvz_colorbar_position
 dvz_colorbar_range
+dvz_colorbar_show
 dvz_colorbar_size
 dvz_colorbar_update
 dvz_colormap
