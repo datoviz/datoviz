@@ -1027,10 +1027,10 @@ class Path(Visual):
                 position = [position]
             elif isinstance(groups, int):
                 k = position.shape[0] // groups
-                position = [position[i * k: (i + 1) * k] for i in range(groups)]
+                position = [position[i * k : (i + 1) * k] for i in range(groups)]
             elif is_enumerable(groups):
                 indices = np.cumsum([0] + list(groups))
-                position = [position[indices[i]: indices[i + 1]] for i in range(len(groups))]
+                position = [position[indices[i] : indices[i + 1]] for i in range(len(groups))]
 
         # Ensure we get a list of positions in the end.
         assert isinstance(position, list)

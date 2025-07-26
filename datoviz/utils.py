@@ -377,11 +377,12 @@ def to_enum(enumstr: Union[str, int], prefixes: Optional[List] = None) -> int:
     else:
         for prefix in prefixes:
             try:
-                return to_enum(f"{prefix}_{enumstr}")
+                return to_enum(f'{prefix}_{enumstr}')
             except ValueError as e:
                 pass
         raise ValueError(
-            f"Couldn't find enumeration {enumstr} with prefixes {', '.join(prefixes)}.")
+            f"Couldn't find enumeration {enumstr} with prefixes {', '.join(prefixes)}."
+        )
 
 
 # -------------------------------------------------------------------------------------------------
