@@ -247,12 +247,11 @@ void dvz_colorbar_update(DvzColorbar* colorbar)
 void dvz_colorbar_show(DvzColorbar* colorbar, bool is_visible)
 {
     ANN(colorbar);
-    colorbar->image->is_visible = is_visible;
-    colorbar->axis->glyph->is_visible = is_visible;
-    colorbar->axis->segment->is_visible = is_visible;
-    colorbar->axis->factor->is_visible = is_visible;
-    colorbar->axis->label->is_visible = is_visible;
-    colorbar->axis->spine->is_visible = is_visible;
+    dvz_visual_show(colorbar->image, is_visible);
+    dvz_visual_show(colorbar->axis->glyph, is_visible);
+    dvz_visual_show(colorbar->axis->segment, is_visible);
+    dvz_visual_show(colorbar->axis->factor, is_visible);
+    dvz_visual_show(colorbar->axis->label, is_visible);
 }
 
 
