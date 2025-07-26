@@ -207,9 +207,18 @@ class Figure:
         """
         return dvz.figure_id(self.c_figure)
 
-    def _create_colorbar_panel(self):
+    def _create_colorbar_panel(self, cw: int = 80, ch_offset: int = 40, m: int = 20):
         """
         Create and return a panel for the colorbar.
+
+        Parameters
+        ----------
+        cw : int
+            Colorbar width.
+        ch_offset : int
+            Colorbar height offset.
+        m : int
+            Colorbar margin.
 
         Returns
         -------
@@ -217,13 +226,19 @@ class Figure:
             The panel used for displaying the colorbar.
         """
         w, h = self.size()
-        cw, ch = 80, h - 40
-        m = 20
-        colorbar_panel = self.panel((w - cw - m, m), (cw, ch))
+        colorbar_panel = self.panel((w - cw - m, m), (cw, h - ch_offset))
         colorbar_panel.margins(m // 2, m // 2, m // 2, m // 2)
         return colorbar_panel
 
-    def colorbar(self, cmap: str = 'hsv', dmin: float = 0, dmax: float = 1):
+    def colorbar(
+        self,
+        cmap: str = 'hsv',
+        dmin: float = 0,
+        dmax: float = 1,
+        cw: int = 80,
+        ch_offset: int = 40,
+        m: int = 20,
+    ):
         """
         Create a colorbar in the figure.
 
@@ -235,6 +250,12 @@ class Figure:
             Minimum data value.
         dmax : float
             Maximum data value.
+        cw : int
+            Colorbar width.
+        ch_offset : int
+            Colorbar height offset.
+        m : int
+            Colorbar margin.
 
         Returns
         -------
@@ -244,7 +265,7 @@ class Figure:
         c_cmap = to_enum(f'cmap_{cmap}')
         c_colorbar = dvz.colorbar(self._app.c_batch, c_cmap, dmin, dmax, 0)
 
-        colorbar_panel = self._create_colorbar_panel()
+        colorbar_panel = self._create_colorbar_panel(cw, ch_offset, m)
         dvz.colorbar_panel(c_colorbar, colorbar_panel.c_panel)
         return Colorbar(c_colorbar, colorbar_panel)
 
