@@ -1,13 +1,14 @@
 """
-    manual_test_fullscreen.py
+manual_test_fullscreen.py
 
-    1: Start in window mode.
-        Switch to fullscreen, then back to window mode.
+1: Start in window mode.
+    Switch to fullscreen, then back to window mode.
 
-    2: Start in fullscreen mode.
-        Switch to window, then back to fullscreen mode.
+2: Start in fullscreen mode.
+    Switch to window, then back to fullscreen mode.
 
 """
+
 import time
 import numpy as np
 import datoviz as dvz
@@ -27,7 +28,6 @@ texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
 
 
 def show_image(fullscreen: bool = False, resize: bool = False) -> None:
-
     app = dvz.App()
     figure = app.figure(fullscreen=fullscreen)
     panel = figure.panel(background=True)
@@ -51,19 +51,17 @@ def show_image(fullscreen: bool = False, resize: bool = False) -> None:
         case += 1
         if case < 3:
             fullscreen = not fullscreen
-            print(f"Case: {case}, fullscreen: {fullscreen}")
+            print(f'Case: {case}, fullscreen: {fullscreen}')
 
             figure.set_fullscreen(fullscreen)
         else:
             app.stop()
-
 
     app.run()
     app.destroy()
 
 
 def show_visual(fullscreen: bool = False, resize: bool = False) -> None:
-
     app = dvz.App()
     figure = app.figure(fullscreen=fullscreen)
 
@@ -80,12 +78,11 @@ def show_visual(fullscreen: bool = False, resize: bool = False) -> None:
         case += 1
         if case < 3:
             fullscreen = not fullscreen
-            print(f"Case: {case}, fullscreen: {fullscreen}")
+            print(f'Case: {case}, fullscreen: {fullscreen}')
 
             figure.set_fullscreen(fullscreen)
         else:
             app.stop()
-
 
     app.run()
     app.destroy()
@@ -93,8 +90,8 @@ def show_visual(fullscreen: bool = False, resize: bool = False) -> None:
     time.sleep(2)
     print()
 
-if __name__ == "__main__":
 
+if __name__ == '__main__':
     show_image(fullscreen=False)
     show_image(fullscreen=True)
 

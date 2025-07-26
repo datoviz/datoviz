@@ -75,7 +75,8 @@ def _shape_transform(
     # dvz.shape_rotate(c_shape, angle, axis)
     if transform is not None:
         dvz.shape_transform(
-            c_shape, dvz.mat4(*map(float, np.array(transform, dtype=np.float32).flatten(order='F')))
+            c_shape,
+            dvz.mat4(*map(float, np.array(transform, dtype=np.float32).flatten(order='F'))),
         )
 
     dvz.shape_end(c_shape)

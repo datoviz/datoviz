@@ -119,6 +119,7 @@ def zoom_matplotlib(ax, total_zoom: float):
 # Generate shared data
 # -------------------------------------------------------------------------------------------------
 
+
 def generate_data(n):
     rng = np.random.default_rng(3141)
     x, y = rng.random((2, n))

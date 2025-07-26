@@ -3168,6 +3168,16 @@ DVZ_EXPORT void dvz_colorbar_update(DvzColorbar* colorbar);
 
 
 /**
+ * Set the visibility of a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param is_visible the colorbar visibility
+ */
+DVZ_EXPORT void dvz_colorbar_show(DvzColorbar* colorbar, bool is_visible);
+
+
+
+/**
  * Destroy a colorbar.
  *
  * @param colorbar the colorbar
