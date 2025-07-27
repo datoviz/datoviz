@@ -24,6 +24,8 @@ Ongoing developments planned for v0.4.0 (2026) include:
 ### Python API
 
 * Add `dvz.colormaps()`, a function returning the list of all supported colormaps.
+* Add `dvz.colormap_show(is_visible)` to show/hide a colorbar ([#110](https://github.com/datoviz/datoviz/pull/110) by @kshitijgoel007).
+* Customizable colorbar parameters ([#110](https://github.com/datoviz/datoviz/pull/110) by @kshitijgoel007).
 * Fix topology enum in App Python wrapper for basic visual creation.
 
 ### Colormaps
