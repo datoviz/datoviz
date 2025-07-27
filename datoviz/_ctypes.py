@@ -8463,6 +8463,24 @@ colorbar_update.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+colorbar_show = dvz.dvz_colorbar_show
+colorbar_show.__doc__ = """
+Set the visibility of a colorbar.
+
+Parameters
+----------
+colorbar : DvzColorbar*
+    the colorbar
+is_visible : bool
+    the colorbar visibility
+"""
+colorbar_show.argtypes = [
+    ctypes.POINTER(DvzColorbar),  # DvzColorbar* colorbar
+    ctypes.c_bool,  # bool is_visible
+]
+
+
+# -------------------------------------------------------------------------------------------------
 colorbar_destroy = dvz.dvz_colorbar_destroy
 colorbar_destroy.__doc__ = """
 Destroy a colorbar.
