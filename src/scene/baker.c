@@ -326,20 +326,25 @@ void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count, uint32_t index_cou
     // Resize the vertex bindings.
     for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
-        // Resize the underlying dual array.
-        dvz_array_resize(baker->vertex_bindings[binding_idx].dual.array, vertex_count);
+        if (baker->vertex_bindings[binding_idx].dual.array != NULL)
+        {
+            // Resize the underlying dual array.
+            dvz_array_resize(baker->vertex_bindings[binding_idx].dual.array, vertex_count);
 
-        // Emit the dual's dat resize commands.
-        dvz_dual_resize(&baker->vertex_bindings[binding_idx].dual, vertex_count);
+            // Emit the dual's dat resize commands.
+            dvz_dual_resize(&baker->vertex_bindings[binding_idx].dual, vertex_count);
+        }
     }
 
-    // Resizing the index buffer.
+    // Resizing the index buffer if there is one.
+    if (baker->index.array != NULL)
+    {
+        // Resize the underlying dual array.
+        dvz_array_resize(baker->index.array, index_count);
 
-    // Resize the underlying dual array.
-    dvz_array_resize(baker->index.array, index_count);
-
-    // Emit the dual's dat resize commands.
-    dvz_dual_resize(&baker->index, index_count);
+        // Emit the dual's dat resize commands.
+        dvz_dual_resize(&baker->index, index_count);
+    }
 }
 
 
