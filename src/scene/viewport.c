@@ -35,6 +35,9 @@ void dvz_viewport(vec2 offset, vec2 shape, int flags, DvzViewport* viewport)
     viewport->size_screen[0] = viewport->size_framebuffer[0];
     viewport->size_screen[1] = viewport->size_framebuffer[1];
 
+    viewport->offset_framebuffer[0] = offset[0];
+    viewport->offset_framebuffer[1] = offset[1];
+
     viewport->flags = flags;
 }
 
