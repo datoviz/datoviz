@@ -25,6 +25,7 @@ Release checklist from a Linux development machine:
         * `just pytest`: run the Python testing suite.
     * **On Linux only**:
         * `just act test-linux`: simulate the GitHub Actions tests locally.
+        * `rm dist/*`: delete old wheels
         * `just wheel`: build the wheel
         * `just checkwheel`: check the wheel
         * `just testwheel`: check the wheel
