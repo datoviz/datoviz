@@ -144,7 +144,7 @@ class Figure:
 
         Parameters
         ----------
-        is_fullscreen : True for fullscreen mode, False for window mode.
+        fullscreen : True for fullscreen mode, False for window mode.
         """
         dvz.app_fullscreen(self._app.c_app, self.figure_id(), fullscreen)
 
