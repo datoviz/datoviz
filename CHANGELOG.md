@@ -10,11 +10,11 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * Integration with other GPU APIs such as CUDA/CuPy.
 
 
-## v0.3.2 (2025-07-XX) [UPCOMING]
+## v0.3.2 (2025-10-XX) [UPCOMING]
 
 ### Backends
 
-* Experimental (and slow) PyQt Datoviz backend, available on the [experiments repository](https://github.com/datoviz/experiments/blob/main/qt/pyqt_offscreen.py).
+* Experimental (and slow) PyQt Datoviz backend, available in the [experiments repository](https://github.com/datoviz/experiments/blob/main/qt/pyqt_offscreen.py).
 
 ### Examples
 
@@ -27,6 +27,11 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * Add `dvz.colormap_show(is_visible)` to show/hide a colorbar ([#110](https://github.com/datoviz/datoviz/pull/110) by @kshitijgoel007).
 * Customizable colorbar parameters ([#110](https://github.com/datoviz/datoviz/pull/110) by @kshitijgoel007).
 * Fix topology enum in App Python wrapper for basic visual creation.
+
+### Scene
+
+* Fix visual resizing bug ([#114](https://github.com/datoviz/datoviz/issues/114))
+* Fix viewport positioning ([#115](https://github.com/datoviz/datoviz/issues/115))
 
 ### Colormaps
 
