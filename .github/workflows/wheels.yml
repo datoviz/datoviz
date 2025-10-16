@@ -61,7 +61,16 @@ jobs:
             BRANCH="dev"
           else
             NIGHTLY_TAG=""
-            BRANCH="main"
+
+            # Prefer the ref the workflow was dispatched with (works with "gh workflow run ... --ref <branch>").
+            if [[ -n "${GITHUB_REF_NAME}" ]]; then
+              BRANCH="${GITHUB_REF_NAME}"
+            elif [[ -n "${GITHUB_REF}" ]]; then
+              BRANCH="${GITHUB_REF#refs/heads/}"
+              BRANCH="${BRANCH#refs/tags/}"
+            else
+              BRANCH="main"
+            fi
           fi
 
           echo "nightly_tag=$NIGHTLY_TAG" >> $GITHUB_OUTPUT
