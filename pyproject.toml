@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "datoviz"
 requires-python = ">=3.8"  # 3.10 actually required but need this temporarily for almalinux build
 dependencies = ["numpy", "requests", "platformdirs"]
-version = "0.3.2-dev"
+version = "0.3.2"
 description = "Datoviz: high-performance rendering for scientific data visualization"
 authors = [
     { name = "Cyrille Rossant", email = "cyrille.rossant@gmail.com" }
