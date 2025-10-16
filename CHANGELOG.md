@@ -10,7 +10,7 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * Integration with other GPU APIs such as CUDA/CuPy.
 
 
-## v0.3.2 (2025-10-XX) [UPCOMING]
+## v0.3.2 (2025-10-16) [LATEST]
 
 ### Backends
 
@@ -52,7 +52,7 @@ Ongoing developments planned for v0.4.0 (2026) include:
 ---
 
 
-## v0.3.1 (2025-07-07) [LATEST RELEASE]
+## v0.3.1 (2025-07-07)
 
 This is a minor release featuring a few additions, improvements, performance benchmarks and bug fixes, mostly a new **Wiggle** visual, several new examples including a **triangle splatting showcase example**, a few new features such as a **colorbar**, a **3D gizmo**, a **3D horizontal grid**, a **fly controller**, support for camera orbiting and experimental panel linking.
 
