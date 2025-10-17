@@ -94,50 +94,51 @@ static int setup(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
+    // DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
+    // ANN(ctx);
 
-    bool is_offscreen = !(tstitem->flags & DVZ_TEST_FLAGS_BACKEND);
+    // bool is_offscreen = !(tstitem->flags & DVZ_TEST_FLAGS_BACKEND);
 
-    if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
-    {
-        log_debug("test fixture: init backend");
-        dvz_backend_init(DVZ_BACKEND_GLFW);
-    }
+    // if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
+    // {
+    //     log_debug("test fixture: init backend");
+    //     dvz_backend_init(DVZ_BACKEND_GLFW);
+    // }
 
-    if (tstitem->flags & DVZ_TEST_FLAGS_HOST)
-    {
-        if (!ctx->host)
-        {
-            log_debug("test fixture: init host");
-            ctx->host = dvz_default_host(is_offscreen ? DVZ_BACKEND_OFFSCREEN : DVZ_BACKEND_GLFW);
-        }
-        ANN(ctx->host);
-    }
+    // if (tstitem->flags & DVZ_TEST_FLAGS_HOST)
+    // {
+    //     if (!ctx->host)
+    //     {
+    //         log_debug("test fixture: init host");
+    //         ctx->host = dvz_default_host(is_offscreen ? DVZ_BACKEND_OFFSCREEN :
+    //         DVZ_BACKEND_GLFW);
+    //     }
+    //     ANN(ctx->host);
+    // }
 
-    if (tstitem->flags & DVZ_TEST_FLAGS_GPU)
-    {
-        if (!ctx->gpu)
-        {
-            ANN(ctx->host);
+    // if (tstitem->flags & DVZ_TEST_FLAGS_GPU)
+    // {
+    //     if (!ctx->gpu)
+    //     {
+    //         ANN(ctx->host);
 
-            ctx->gpu = dvz_default_gpu(ctx->host);
-            ANN(ctx->gpu);
+    //         ctx->gpu = dvz_default_gpu(ctx->host);
+    //         ANN(ctx->gpu);
 
-            if (is_offscreen)
-            {
-                log_debug("test fixture: init GPU without surface");
-                dvz_gpu_create(ctx->gpu, NULL);
-            }
-            else
-            {
-                log_debug("test fixture: init GPU with surface");
-                dvz_gpu_create_with_surface(ctx->gpu);
-            }
-        }
-        ANN(ctx->gpu);
-        ASSERT(dvz_obj_is_created(&ctx->gpu->obj));
-    }
+    //         if (is_offscreen)
+    //         {
+    //             log_debug("test fixture: init GPU without surface");
+    //             dvz_gpu_create(ctx->gpu, NULL);
+    //         }
+    //         else
+    //         {
+    //             log_debug("test fixture: init GPU with surface");
+    //             dvz_gpu_create_with_surface(ctx->gpu);
+    //         }
+    //     }
+    //     ANN(ctx->gpu);
+    //     ASSERT(dvz_obj_is_created(&ctx->gpu->obj));
+    // }
 
     return 0;
 }
@@ -149,34 +150,34 @@ static int teardown(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
+    // DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
+    // ANN(ctx);
 
-    if (tstitem->flags & DVZ_TEST_FLAGS_GPU)
-    {
-        if (ctx->gpu)
-        {
-            log_debug("test fixture: destroy GPU");
-            dvz_gpu_destroy(ctx->gpu);
-            ctx->gpu = NULL;
-        }
-    }
+    // if (tstitem->flags & DVZ_TEST_FLAGS_GPU)
+    // {
+    //     if (ctx->gpu)
+    //     {
+    //         log_debug("test fixture: destroy GPU");
+    //         dvz_gpu_destroy(ctx->gpu);
+    //         ctx->gpu = NULL;
+    //     }
+    // }
 
-    if (tstitem->flags & DVZ_TEST_FLAGS_HOST)
-    {
-        if (ctx->host)
-        {
-            log_debug("test fixture: destroy host");
-            dvz_host_destroy(ctx->host);
-            ctx->host = NULL;
-        }
-    }
+    // if (tstitem->flags & DVZ_TEST_FLAGS_HOST)
+    // {
+    //     if (ctx->host)
+    //     {
+    //         log_debug("test fixture: destroy host");
+    //         dvz_host_destroy(ctx->host);
+    //         ctx->host = NULL;
+    //     }
+    // }
 
-    if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
-    {
-        log_debug("test fixture: destroy backend");
-        dvz_backend_terminate(DVZ_BACKEND_GLFW);
-    }
+    // if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
+    // {
+    //     log_debug("test fixture: destroy backend");
+    //     dvz_backend_terminate(DVZ_BACKEND_GLFW);
+    // }
 
     return 0;
 }

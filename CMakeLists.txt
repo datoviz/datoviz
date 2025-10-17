@@ -713,51 +713,51 @@ set_target_properties(external_sources PROPERTIES C_VISIBILITY_PRESET hidden)
 set(core_files
 
     "src/_atomic.cpp"
-    "src/_error.c"
-    "src/_list.c"
-    "src/_map.cpp"
-    "src/_math.c"
+    # "src/_error.c"
+    # "src/_list.c"
+    # "src/_map.cpp"
+    # "src/_math.c"
     "src/_mutex.c"
-    "src/_prng.cpp"
-    "src/_thread.c"
+    # "src/_prng.cpp"
+    # "src/_thread.c"
     "src/_version.c"
-    "src/alloc.c"
-    "src/backend.c"
-    "src/board.c"
-    "src/canvas.c"
-    "src/client_input.c"
-    "src/client.c"
-    "src/context.c"
-    "src/datalloc.c"
-    "src/external.c"
-    "src/fifo.c"
-    "src/fileio.cpp"
-    "src/fps.cpp"
-    "src/gui.cpp"
-    "src/host.c"
-    "src/input.c"
-    "src/keyboard.c"
+    # "src/alloc.c"
+    # "src/backend.c"
+    # "src/board.c"
+    # "src/canvas.c"
+    # "src/client_input.c"
+    # "src/client.c"
+    # "src/context.c"
+    # "src/datalloc.c"
+    # "src/external.c"
+    # "src/fifo.c"
+    # "src/fileio.cpp"
+    # "src/fps.cpp"
+    # "src/gui.cpp"
+    # "src/host.c"
+    # "src/input.c"
+    # "src/keyboard.c"
     "src/log.c"
-    "src/loop.c"
-    "src/mouse.c"
-    "src/pipe.c"
-    "src/pipelib.c"
-    "src/presenter.c"
-    "src/recorder.c"
-    "src/renderer.cpp"
-    "src/resources.c"
-    "src/server.c"
-    "src/shader.c"
-    "src/surface.c"
-    "src/timer.c"
-    "src/transfers.c"
-    "src/vklite.c"
-    "src/window.c"
-    "src/workspace.c"
-    "src/wrap.c"
+    # "src/loop.c"
+    # "src/mouse.c"
+    # "src/pipe.c"
+    # "src/pipelib.c"
+    # "src/presenter.c"
+    # "src/recorder.c"
+    # "src/renderer.cpp"
+    # "src/resources.c"
+    # "src/server.c"
+    # "src/shader.c"
+    # "src/surface.c"
+    # "src/timer.c"
+    # "src/transfers.c"
+    # "src/vklite.c"
+    # "src/window.c"
+    # "src/workspace.c"
+    # "src/wrap.c"
 
     # Qt: the file is protected by #if HAS_QT
-    "src/qtapp.cpp"
+    # "src/qtapp.cpp"
 )
 
 add_library(datoviz_core OBJECT ${core_files})
@@ -770,83 +770,83 @@ set_target_properties(datoviz_core PROPERTIES C_VISIBILITY_PRESET hidden)
 # -------------------------------------------------------------------------------------------------
 # Datoviz requests
 # -------------------------------------------------------------------------------------------------
-add_library(datoviz_requests OBJECT
-    "src/request.c"
-)
+# add_library(datoviz_requests OBJECT
+#     "src/request.c"
+# )
 
-target_include_directories(datoviz_requests PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_requests PRIVATE ${COMPILE_DEFINITIONS})
-set_target_properties(datoviz_requests PROPERTIES C_VISIBILITY_PRESET hidden)
+# target_include_directories(datoviz_requests PRIVATE ${INCL_DIRS})
+# target_compile_definitions(datoviz_requests PRIVATE ${COMPILE_DEFINITIONS})
+# set_target_properties(datoviz_requests PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz app
 # -------------------------------------------------------------------------------------------------
-add_library(datoviz_app OBJECT
-    "src/app.c"
-)
+# add_library(datoviz_app OBJECT
+#     "src/app.c"
+# )
 
-target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
-set_target_properties(datoviz_app PROPERTIES C_VISIBILITY_PRESET hidden)
+# target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
+# target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
+# set_target_properties(datoviz_app PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz scene
 # -------------------------------------------------------------------------------------------------
-add_library(datoviz_scene OBJECT
-    "src/scene/animation.c"
-    "src/scene/arcball.c"
-    "src/scene/array.c"
-    "src/scene/atlas.cpp"
-    "src/scene/axis.c"
-    "src/scene/axes.c"
-    "src/scene/baker.c"
-    "src/scene/box.c"
-    "src/scene/camera.c"
-    "src/scene/colorbar.c"
-    "src/scene/colormaps.c"
-    "src/scene/demo.c"
-    "src/scene/dual.c"
-    "src/scene/fly.c"
-    "src/scene/font.c"
-    "src/scene/geometry.cpp"
-    "src/scene/graphics.c"
-    "src/scene/grid.c"
-    "src/scene/meshobj.cpp"
-    "src/scene/mvp.c"
-    "src/scene/ortho.c"
-    "src/scene/panzoom.c"
-    "src/scene/params.c"
-    "src/scene/ref.c"
-    "src/scene/scene.c"
-    "src/scene/sdf.cpp"
-    "src/scene/shape.c"
-    "src/scene/texture.c"
-    "src/scene/ticks.c"
-    "src/scene/transform.c"
-    "src/scene/viewport.c"
-    "src/scene/viewset.c"
-    "src/scene/visual.c"
-    "src/scene/visuals/basic.c"
-    "src/scene/visuals/glyph.c"
-    "src/scene/visuals/image.c"
-    "src/scene/visuals/wiggle.c"
-    "src/scene/visuals/slice.c"
-    "src/scene/visuals/marker.c"
-    "src/scene/visuals/mesh.c"
-    "src/scene/visuals/monoglyph.c"
-    "src/scene/visuals/path.c"
-    "src/scene/visuals/pixel.c"
-    "src/scene/visuals/point.c"
-    "src/scene/visuals/segment.c"
-    "src/scene/visuals/slice.c"
-    "src/scene/visuals/sphere.c"
-    "src/scene/visuals/volume.c"
-)
+# add_library(datoviz_scene OBJECT
+#     "src/scene/animation.c"
+#     "src/scene/arcball.c"
+#     "src/scene/array.c"
+#     "src/scene/atlas.cpp"
+#     "src/scene/axis.c"
+#     "src/scene/axes.c"
+#     "src/scene/baker.c"
+#     "src/scene/box.c"
+#     "src/scene/camera.c"
+#     "src/scene/colorbar.c"
+#     "src/scene/colormaps.c"
+#     "src/scene/demo.c"
+#     "src/scene/dual.c"
+#     "src/scene/fly.c"
+#     "src/scene/font.c"
+#     "src/scene/geometry.cpp"
+#     "src/scene/graphics.c"
+#     "src/scene/grid.c"
+#     "src/scene/meshobj.cpp"
+#     "src/scene/mvp.c"
+#     "src/scene/ortho.c"
+#     "src/scene/panzoom.c"
+#     "src/scene/params.c"
+#     "src/scene/ref.c"
+#     "src/scene/scene.c"
+#     "src/scene/sdf.cpp"
+#     "src/scene/shape.c"
+#     "src/scene/texture.c"
+#     "src/scene/ticks.c"
+#     "src/scene/transform.c"
+#     "src/scene/viewport.c"
+#     "src/scene/viewset.c"
+#     "src/scene/visual.c"
+#     "src/scene/visuals/basic.c"
+#     "src/scene/visuals/glyph.c"
+#     "src/scene/visuals/image.c"
+#     "src/scene/visuals/wiggle.c"
+#     "src/scene/visuals/slice.c"
+#     "src/scene/visuals/marker.c"
+#     "src/scene/visuals/mesh.c"
+#     "src/scene/visuals/monoglyph.c"
+#     "src/scene/visuals/path.c"
+#     "src/scene/visuals/pixel.c"
+#     "src/scene/visuals/point.c"
+#     "src/scene/visuals/segment.c"
+#     "src/scene/visuals/slice.c"
+#     "src/scene/visuals/sphere.c"
+#     "src/scene/visuals/volume.c"
+# )
 
-target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
-target_link_libraries(datoviz_scene ${SCENE_LIBS})
-set_target_properties(datoviz_scene PROPERTIES C_VISIBILITY_PRESET hidden)
+# target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
+# target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
+# target_link_libraries(datoviz_scene ${SCENE_LIBS})
+# set_target_properties(datoviz_scene PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz resources
@@ -866,9 +866,9 @@ set_target_properties(datoviz_resources PROPERTIES C_VISIBILITY_PRESET hidden)
 # -------------------------------------------------------------------------------------------------
 add_library(libdatoviz SHARED
     $<TARGET_OBJECTS:datoviz_core>
-    $<TARGET_OBJECTS:datoviz_requests>
-    $<TARGET_OBJECTS:datoviz_app>
-    $<TARGET_OBJECTS:datoviz_scene>
+    # $<TARGET_OBJECTS:datoviz_requests>
+    # $<TARGET_OBJECTS:datoviz_app>
+    # $<TARGET_OBJECTS:datoviz_scene>
     $<TARGET_OBJECTS:datoviz_resources>
 
     ${external_sources}
@@ -907,9 +907,9 @@ endif()
 target_link_libraries(libdatoviz
     external_sources
     datoviz_core
-    datoviz_requests
-    datoviz_app
-    datoviz_scene
+    # datoviz_requests
+    # datoviz_app
+    # datoviz_scene
     datoviz_resources
 
     # ${LINK_LIBS}
@@ -930,79 +930,79 @@ if(DATOVIZ_WITH_CLI)
         "tests/testing.cpp"
         "tests/test.c"
 
-        "tests/test_alloc.c"
-        "tests/test_app.c"
-        "tests/test_board.c"
-        "tests/test_canvas.c"
-        "tests/test_client_input.c"
-        "tests/test_client.c"
-        "tests/test_datalloc.c"
-        "tests/test_external.c"
-        "tests/test_fifo.c"
-        "tests/test_fileio.c"
-        "tests/test_gui.c"
-        "tests/test_host.c"
-        "tests/test_input.c"
-        "tests/test_keyboard.c"
-        "tests/test_list.c"
-        "tests/test_loop.c"
-        "tests/test_map.c"
-        "tests/test_mouse.c"
-        "tests/test_obj.c"
-        "tests/test_pipe.c"
-        "tests/test_pipelib.c"
-        "tests/test_presenter.c"
-        "tests/test_prng.c"
-        "tests/test_renderer.c"
-        "tests/test_request.c"
-        "tests/test_resources.c"
-        "tests/test_server.c"
-        "tests/test_thread.c"
-        "tests/test_timer.c"
-        "tests/test_transfers.c"
-        "tests/test_vklite.c"
-        "tests/test_window.c"
-        "tests/test_workspace.c"
+        # "tests/test_alloc.c"
+        # "tests/test_app.c"
+        # "tests/test_board.c"
+        # "tests/test_canvas.c"
+        # "tests/test_client_input.c"
+        # "tests/test_client.c"
+        # "tests/test_datalloc.c"
+        # "tests/test_external.c"
+        # "tests/test_fifo.c"
+        # "tests/test_fileio.c"
+        # "tests/test_gui.c"
+        # "tests/test_host.c"
+        # "tests/test_input.c"
+        # "tests/test_keyboard.c"
+        # "tests/test_list.c"
+        # "tests/test_loop.c"
+        # "tests/test_map.c"
+        # "tests/test_mouse.c"
+        # "tests/test_obj.c"
+        # "tests/test_pipe.c"
+        # "tests/test_pipelib.c"
+        # "tests/test_presenter.c"
+        # "tests/test_prng.c"
+        # "tests/test_renderer.c"
+        # "tests/test_request.c"
+        # "tests/test_resources.c"
+        # # "tests/test_server.c"
+        # "tests/test_thread.c"
+        # "tests/test_timer.c"
+        # "tests/test_transfers.c"
+        # "tests/test_vklite.c"
+        # "tests/test_window.c"
+        # "tests/test_workspace.c"
 
-        "tests/scene/test_animation.c"
-        "tests/scene/test_arcball.c"
-        "tests/scene/test_array.c"
-        "tests/scene/test_atlas.c"
-        "tests/scene/test_axis.c"
-        "tests/scene/test_axes.c"
-        "tests/scene/test_baker.c"
-        "tests/scene/test_box.c"
-        "tests/scene/test_camera.c"
-        "tests/scene/test_colormaps.c"
-        "tests/scene/test_dual.c"
-        "tests/scene/test_font.c"
-        "tests/scene/test_graphics.c"
-        "tests/scene/test_mvp.c"
-        "tests/scene/test_ortho.c"
-        "tests/scene/test_panzoom.c"
-        "tests/scene/test_params.c"
-        "tests/scene/test_ref.c"
-        "tests/scene/test_scene.c"
-        "tests/scene/test_sdf.c"
-        "tests/scene/test_shape.c"
-        "tests/scene/test_ticks.c"
-        "tests/scene/test_viewset.c"
-        "tests/scene/test_visual.c"
-        "tests/scene/visuals/test_basic.c"
-        "tests/scene/visuals/test_glyph.c"
-        "tests/scene/visuals/test_image.c"
-        "tests/scene/visuals/test_wiggle.c"
-        "tests/scene/visuals/test_slice.c"
-        "tests/scene/visuals/test_marker.c"
-        "tests/scene/visuals/test_mesh.c"
-        "tests/scene/visuals/test_monoglyph.c"
-        "tests/scene/visuals/test_path.c"
-        "tests/scene/visuals/test_pixel.c"
-        "tests/scene/visuals/test_point.c"
-        "tests/scene/visuals/test_segment.c"
-        "tests/scene/visuals/test_slice.c"
-        "tests/scene/visuals/test_sphere.c"
-        "tests/scene/visuals/test_volume.c"
+        # "tests/scene/test_animation.c"
+        # "tests/scene/test_arcball.c"
+        # "tests/scene/test_array.c"
+        # "tests/scene/test_atlas.c"
+        # "tests/scene/test_axis.c"
+        # "tests/scene/test_axes.c"
+        # "tests/scene/test_baker.c"
+        # "tests/scene/test_box.c"
+        # "tests/scene/test_camera.c"
+        # "tests/scene/test_colormaps.c"
+        # "tests/scene/test_dual.c"
+        # "tests/scene/test_font.c"
+        # "tests/scene/test_graphics.c"
+        # "tests/scene/test_mvp.c"
+        # "tests/scene/test_ortho.c"
+        # "tests/scene/test_panzoom.c"
+        # "tests/scene/test_params.c"
+        # "tests/scene/test_ref.c"
+        # "tests/scene/test_scene.c"
+        # "tests/scene/test_sdf.c"
+        # "tests/scene/test_shape.c"
+        # "tests/scene/test_ticks.c"
+        # "tests/scene/test_viewset.c"
+        # "tests/scene/test_visual.c"
+        # "tests/scene/visuals/test_basic.c"
+        # "tests/scene/visuals/test_glyph.c"
+        # "tests/scene/visuals/test_image.c"
+        # "tests/scene/visuals/test_wiggle.c"
+        # "tests/scene/visuals/test_slice.c"
+        # "tests/scene/visuals/test_marker.c"
+        # "tests/scene/visuals/test_mesh.c"
+        # "tests/scene/visuals/test_monoglyph.c"
+        # "tests/scene/visuals/test_path.c"
+        # "tests/scene/visuals/test_pixel.c"
+        # "tests/scene/visuals/test_point.c"
+        # "tests/scene/visuals/test_segment.c"
+        # "tests/scene/visuals/test_slice.c"
+        # "tests/scene/visuals/test_sphere.c"
+        # "tests/scene/visuals/test_volume.c"
     )
 
     if(${OS_WINDOWS})
@@ -1016,9 +1016,9 @@ if(DATOVIZ_WITH_CLI)
             ${path_testdata}
 
             $<TARGET_OBJECTS:datoviz_core>
-            $<TARGET_OBJECTS:datoviz_requests>
-            $<TARGET_OBJECTS:datoviz_app>
-            $<TARGET_OBJECTS:datoviz_scene>
+            # $<TARGET_OBJECTS:datoviz_requests>
+            # $<TARGET_OBJECTS:datoviz_app>
+            # $<TARGET_OBJECTS:datoviz_scene>
             $<TARGET_OBJECTS:datoviz_resources>
         )
     endif()
