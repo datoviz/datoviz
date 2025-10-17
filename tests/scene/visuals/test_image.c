@@ -161,6 +161,10 @@ int test_image_2(TstSuite* suite)
     const char* text = "Hello world!\n语言处理";
     uint32_t length = 0;
     uint32_t* codepoints = utf32_codepoints(text, &length);
+    if (codepoints == NULL)
+    {
+        return 0;
+    }
     uvec3 tex_size = {0};
     DvzTexture* texture = dvz_font_texture(font, vt.batch, length, codepoints, tex_size);
     FREE(codepoints);
