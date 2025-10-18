@@ -71,8 +71,8 @@ _old*
 *.npz
 *.out.txt
 *.zst
-*/benchmarks/*.json
-*/benchmarks/*.png
+*/*/benchmarks/*.json
+*/*/benchmarks/*.png
 api_*.md
 api.md
 bugs
