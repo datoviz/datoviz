@@ -9,8 +9,9 @@
 /*************************************************************************************************/
 
 #include "datoviz/scene/fly.h"
+#include "_cglm.h"
 #include "datoviz.h"
-#include "datoviz/scene/camera.h"
+#include "datoviz_defaults.h"
 #include "datoviz_math.h"
 
 

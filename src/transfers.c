@@ -20,7 +20,6 @@
 #include "host.h"
 #include "resources_utils.h"
 #include "transfers_utils.h"
-#include "window.h"
 
 
 

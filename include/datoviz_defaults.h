@@ -54,6 +54,15 @@
 #define DVZ_DEFAULT_LINEWIDTH 0.1f
 #define DVZ_DEFAULT_EDGECOLOR 0, 0, 0, 96
 
+#define DVZ_CAMERA_DEFAULT_ZRANGE   0.1, 100
+#define DVZ_CAMERA_DEFAULT_FOV      GLM_PI_4
+#define DVZ_CAMERA_DEFAULT_POSITION 0, 0, 4
+#define DVZ_CAMERA_DEFAULT_LOOKAT   0, 0, 0
+#define DVZ_CAMERA_DEFAULT_UP       0, 1, 0
+
+// Default object IDs used for empty textures bound to unused texture descriptors.
+#define DVZ_SCENE_DEFAULT_TEX_ID     1
+#define DVZ_SCENE_DEFAULT_SAMPLER_ID 2
 
 
 #endif

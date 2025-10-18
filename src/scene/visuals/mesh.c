@@ -18,12 +18,12 @@
 #include "_cglm.h"
 #include "_map.h"
 #include "datoviz.h"
+#include "datoviz_defaults.h"
 #include "datoviz_protocol.h"
 #include "datoviz_types.h"
 #include "fileio.h"
 #include "scene/baker.h"
 #include "scene/graphics.h"
-#include "scene/scene.h"
 #include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
@@ -94,8 +94,9 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     int lighting = (flags & DVZ_MESH_FLAGS_LIGHTING);
     int contour = (flags & DVZ_MESH_FLAGS_CONTOUR);
     int isoline = (flags & DVZ_MESH_FLAGS_ISOLINE);
-    log_trace("create mesh visual, texture: %d, lighting: %d, contour: %d, isoline: %d",
-              textured, lighting, contour, isoline);
+    log_trace(
+        "create mesh visual, texture: %d, lighting: %d, contour: %d, isoline: %d", textured,
+        lighting, contour, isoline);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_mesh");

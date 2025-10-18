@@ -11,7 +11,6 @@
 #include "qtapp.hpp"
 #include "canvas.h"
 #include "datoviz.h"
-#include "datoviz_protocol.h"
 #include "host.h"
 #include "recorder.h"
 #include "render_utils.h"

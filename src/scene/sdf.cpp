@@ -25,7 +25,6 @@ using namespace msdfgen;
 #include "_pointer.h"
 #include "datoviz.h"
 #include "datoviz_math.h"
-#include "datoviz_protocol.h"
 #include "fileio.h"
 #include "scene/sdf.h"
 

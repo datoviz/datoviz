@@ -13,7 +13,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "viewport.h"
+#include "datoviz_math.h"
+#include "params.h"
 #include "visual.h"
 
 
