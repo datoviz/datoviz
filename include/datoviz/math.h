@@ -16,11 +16,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "math/arithm.h"
-#include "math/mock.h"
-#include "math/rand.h"
-#include "math/types.h"
 #include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
+
+#include "math/arithm.h"
+#include "math/enums.h"
+#include "math/mock.h"
+#include "math/rand.h"
+#include "math/types.h"

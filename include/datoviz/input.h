@@ -16,4 +16,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "input/enums.h"
+#include "input/keycodes.h"
 #include "input/types.h"
