@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "datoviz_common_types.h"
+#include "common/types.h"
 
 
 

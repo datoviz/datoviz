@@ -30,9 +30,9 @@
 
 #include "datoviz_enums.h"
 #include "datoviz_macros.h"
-#include "datoviz_math_mock.h"
-#include "datoviz_math_rand.h"
-#include "datoviz_math_types.h"
+#include "math/mock.h"
+#include "math/rand.h"
+#include "math/types.h"
 
 
 
