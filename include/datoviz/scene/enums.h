@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Text enums                                                                                   */
+/*  Scene enums                                                                                  */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,20 +16,11 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-
-// Font flags.
+// Panel link flags.
 typedef enum
 {
-    DVZ_FONT_FLAGS_RGB,
-    DVZ_FONT_FLAGS_RGBA,
-} DvzFontFlags;
-
-
-
-// Predefined font for scene module.
-typedef enum
-{
-    DVZ_SCENE_FONT_MONO,
-    DVZ_SCENE_FONT_LABEL,
-    DVZ_SCENE_FONT_COUNT,
-} DvzSceneFont;
+    DVZ_PANEL_LINK_FLAGS_NONE = 0x00,
+    DVZ_PANEL_LINK_FLAGS_MODEL = 0x01,
+    DVZ_PANEL_LINK_FLAGS_VIEW = 0x02,
+    DVZ_PANEL_LINK_FLAGS_PROJECTION = 0x04,
+} DvzPanelLinkFlags;

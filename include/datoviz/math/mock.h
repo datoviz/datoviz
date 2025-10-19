@@ -16,23 +16,16 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/color/enums.h"
+#include "datoviz/color/types.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
 
-#if HAS_OPENMP
-#include <omp.h>
-#endif
-
-#include "datoviz/color/enums.h"
-#include "datoviz/common/macros.h"
-#include "datoviz/common/types.h"
-#include "datoviz/math/types.h"
-
 
 EXTERN_C_ON
-
-
 
 /*************************************************************************************************/
 /*  Mock random data                                                                             */

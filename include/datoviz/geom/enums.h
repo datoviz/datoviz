@@ -49,3 +49,15 @@ typedef enum
     DVZ_SHAPE_OBJ,
     DVZ_SHAPE_OTHER,
 } DvzShapeType;
+
+
+
+// Indexing flags.
+// This indicates how a mesh is being triangulated. This is used to specify predefine contours
+// in the mesh visual, when using a DvzShape.
+typedef enum
+{
+    DVZ_INDEXING_NONE = 0x00,    // no indexing
+    DVZ_INDEXING_EARCUT = 0x10,  // polygon contour = consecutive indices i..(i+1)
+    DVZ_INDEXING_SURFACE = 0x20, // indexing of mesh grid for surface
+} DvzShapeIndexingFlags;

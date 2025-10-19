@@ -21,14 +21,13 @@
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // #include "_cglm.h"
 #include "_log.h"
 // #include "datoviz.h" // for dvz_colormap_scale() used in mock
-#include "datoviz/math.h"
+#include "datoviz/math/types.h"
 
 
 

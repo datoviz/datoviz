@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Text enums                                                                                   */
+/*  Data structures types                                                                        */
 /*************************************************************************************************/
 
 #pragma once
@@ -13,23 +13,8 @@
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Includes                                                                                     */
 /*************************************************************************************************/
 
-
-// Font flags.
-typedef enum
-{
-    DVZ_FONT_FLAGS_RGB,
-    DVZ_FONT_FLAGS_RGBA,
-} DvzFontFlags;
-
-
-
-// Predefined font for scene module.
-typedef enum
-{
-    DVZ_SCENE_FONT_MONO,
-    DVZ_SCENE_FONT_LABEL,
-    DVZ_SCENE_FONT_COUNT,
-} DvzSceneFont;
+typedef struct DvzList DvzList;
+typedef struct DvzFifo DvzFifo;

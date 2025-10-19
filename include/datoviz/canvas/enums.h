@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Text enums                                                                                   */
+/*  Canvas enums                                                                                 */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,20 +16,15 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-
-// Font flags.
+// Canvas creation flags.
 typedef enum
 {
-    DVZ_FONT_FLAGS_RGB,
-    DVZ_FONT_FLAGS_RGBA,
-} DvzFontFlags;
-
-
-
-// Predefined font for scene module.
-typedef enum
-{
-    DVZ_SCENE_FONT_MONO,
-    DVZ_SCENE_FONT_LABEL,
-    DVZ_SCENE_FONT_COUNT,
-} DvzSceneFont;
+    DVZ_CANVAS_FLAGS_NONE = 0x0000,
+    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
+    DVZ_CANVAS_FLAGS_FPS = 0x0003,     // NOTE: 1 bit for ImGUI, 1 bit for FPS
+    DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
+    DVZ_CANVAS_FLAGS_FULLSCREEN = 0x0008,
+    DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
+    DVZ_CANVAS_FLAGS_PICK = 0x0020,
+    DVZ_CANVAS_FLAGS_PUSH_SCALE = 0x0040, // HACK: shaders expect a push constant with scaling
+} DvzCanvasFlags;
