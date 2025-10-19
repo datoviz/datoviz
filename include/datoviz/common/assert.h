@@ -5,8 +5,10 @@
  */
 
 /*************************************************************************************************/
-/*  Error handling                                                                               */
+/*  Assertions                                                                                   */
 /*************************************************************************************************/
+
+#pragma once
 
 
 
@@ -14,24 +16,34 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/assert.h"
-#include "datoviz/common/error.h"
-#include <stdlib.h>
+#include "macros.h"
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Assertions                                                                                   */
 /*************************************************************************************************/
 
-char error_message[2048] = {0};
-DvzErrorCallback error_callback = NULL;
+#ifndef ASSERT
+#if DEBUG
+#define ASSERT(x) assert(x)
+#else
+#define ASSERT(x) dvz_assert(x, #x, __FILE_NAME__, __LINE__)
+#endif
+#endif
 
 
 
-void dvz_error_callback(DvzErrorCallback cb)
-{
-    ANN(cb);
-    // log_debug("Registering an error callback function");
-    error_callback = cb;
-}
+// ASSERT NOT NULL
+#ifndef ANN
+#define ANN(x) ASSERT((x) != NULL);
+#endif
+
+
+
+EXTERN_C_ON
+
+DVZ_EXPORT extern void
+dvz_assert(bool assertion, const char* message, const char* filename, int line);
+
+EXTERN_C_OFF

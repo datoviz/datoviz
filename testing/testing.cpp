@@ -18,13 +18,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <functional>
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "_log.h"
+#include "datoviz/common/alloc.h"
+#include "datoviz/common/assert.h"
 #include "testing.h"
 
 

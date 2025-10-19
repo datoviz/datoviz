@@ -8,30 +8,29 @@
 /*  Error handling                                                                               */
 /*************************************************************************************************/
 
+#pragma once
+
 
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/assert.h"
-#include "datoviz/common/error.h"
-#include <stdlib.h>
+#include "macros.h"
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Definitions                                                                                  */
 /*************************************************************************************************/
 
-char error_message[2048] = {0};
-DvzErrorCallback error_callback = NULL;
+EXTERN_C_ON
+
+// Error callback function type.
+typedef void (*DvzErrorCallback)(const char* message);
+
+extern char error_message[2048];
+extern DvzErrorCallback error_callback;
 
 
-
-void dvz_error_callback(DvzErrorCallback cb)
-{
-    ANN(cb);
-    // log_debug("Registering an error callback function");
-    error_callback = cb;
-}
+EXTERN_C_OFF

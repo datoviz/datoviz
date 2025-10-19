@@ -27,7 +27,9 @@
 #include "_enums.h"
 #include "_log.h"
 #include "_macros.h"
-#include "datoviz/math.h"
+#include "datoviz/common/alloc.h"
+#include "datoviz/common/assert.h"
+#include "datoviz/math/arithm.h"
 
 
 

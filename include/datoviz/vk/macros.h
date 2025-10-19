@@ -5,8 +5,10 @@
  */
 
 /*************************************************************************************************/
-/*  Error handling                                                                               */
+/*  Vulkan macros                                                                                */
 /*************************************************************************************************/
+
+#pragma once
 
 
 
@@ -14,24 +16,27 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/assert.h"
-#include "datoviz/common/error.h"
-#include <stdlib.h>
-
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
 /*************************************************************************************************/
 
-char error_message[2048] = {0};
-DvzErrorCallback error_callback = NULL;
-
-
-
-void dvz_error_callback(DvzErrorCallback cb)
+// macOS NOTE: if INCLUDE_VK_DRIVER_FILES is #defined, set the vulkan driver files to the path
+// to the MoltenVK_icd.json file.
+#ifdef INCLUDE_VK_DRIVER_FILES
+__attribute__((constructor)) static void set_vk_driver_files(void)
 {
-    ANN(cb);
-    // log_debug("Registering an error callback function");
-    error_callback = cb;
+#if OS_MACOS
+    char file_path[1024] = {0};
+    strncpy(file_path, __FILE__, sizeof(file_path));
+
+    char path[1024] = {0};
+    snprintf(
+        path, 1024, "%s%s", dirname(file_path),
+        "/../libs/vulkan/macos/MoltenVK_icd.json:/usr/local/lib/datoviz/MoltenVK_icd.json");
+    setenv("VK_DRIVER_FILES", path, 1);
+// log_error("Setting VK_DRIVER_FILES to %s", path);
+#endif
 }
+#endif

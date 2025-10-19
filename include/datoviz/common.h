@@ -16,7 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "common/enums.h"
+#include "common/alloc.h"
 #include "common/macros.h"
 #include "common/types.h"
 #include "common/version.h"

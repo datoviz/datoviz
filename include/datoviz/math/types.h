@@ -43,6 +43,18 @@ static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
 #pragma GCC diagnostic pop
 #define DVZ_ZERO_OFFSET _ZERO_OFFSET
 
+// Box
+#define DVZ_BOX_NDC                                                                               \
+    (DvzBox) { -1, +1, -1, +1, -1, +1 }
+
+// Null ID
+#define DVZ_ID_NONE 0
+
+#define _DMAT4_IDENTITY_INIT                                                                      \
+    {                                                                                             \
+        {1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 1.0, 0.0}, { 0.0, 0.0, 0.0, 1.0 }  \
+    }
+
 
 
 /*************************************************************************************************/
@@ -55,11 +67,6 @@ static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
 
 // #define TO_BYTE(x)   (uint8_t)round(CLIP((x), 0, 1) * 255)
 // #define FROM_BYTE(x) ((x) / 255.0)
-
-#define _DMAT4_IDENTITY_INIT                                                                      \
-    {                                                                                             \
-        {1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 1.0, 0.0}, { 0.0, 0.0, 0.0, 1.0 }  \
-    }
 
 
 

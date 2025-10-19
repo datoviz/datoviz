@@ -21,37 +21,12 @@
 #include <stdbool.h>
 #include <string.h>
 
-
-
-// TODO: dispatch in other modules
-
-/*************************************************************************************************/
-/*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
-/*************************************************************************************************/
-
-// macOS NOTE: if INCLUDE_VK_DRIVER_FILES is #defined, set the vulkan driver files to the path
-// to the MoltenVK_icd.json file.
-#ifdef INCLUDE_VK_DRIVER_FILES
-__attribute__((constructor)) static void set_vk_driver_files(void)
-{
-#if OS_MACOS
-    char file_path[1024] = {0};
-    strncpy(file_path, __FILE__, sizeof(file_path));
-
-    char path[1024] = {0};
-    snprintf(
-        path, 1024, "%s%s", dirname(file_path),
-        "/../libs/vulkan/macos/MoltenVK_icd.json:/usr/local/lib/datoviz/MoltenVK_icd.json");
-    setenv("VK_DRIVER_FILES", path, 1);
-// log_error("Setting VK_DRIVER_FILES to %s", path);
-#endif
-}
-#endif
+#include "macros.h"
 
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Export                                                                                       */
 /*************************************************************************************************/
 
 #ifndef DVZ_EXPORT
@@ -71,45 +46,6 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 #ifndef __STDC_VERSION__
 #define __STDC_VERSION__ 0
 #endif
-
-
-
-// Null ID
-#define DVZ_ID_NONE 0
-
-
-
-// Box
-#define DVZ_BOX_NDC                                                                               \
-    (DvzBox) { -1, +1, -1, +1, -1, +1 }
-
-
-
-/*************************************************************************************************/
-/*  Memory management                                                                            */
-/*************************************************************************************************/
-
-#define FREE(x)                                                                                   \
-    if ((x) != NULL)                                                                              \
-    {                                                                                             \
-        free((x));                                                                                \
-        (x) = NULL;                                                                               \
-    }
-
-#define ALIGNED_FREE(x)                                                                           \
-    if (x.aligned)                                                                                \
-        aligned_free(x.pointer);                                                                  \
-    else                                                                                          \
-        FREE(x.pointer)
-
-#define REALLOC(T, x, s)                                                                          \
-    {                                                                                             \
-        T _new = (T)realloc((x), (s));                                                            \
-        if (_new == NULL)                                                                         \
-            exit(1);                                                                              \
-        else                                                                                      \
-            x = _new;                                                                             \
-    }
 
 
 
@@ -171,44 +107,4 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 // #pragma warning(push)
 #define MUTE_OFF
 // #pragma warning(pop)
-#endif
-
-
-
-/*************************************************************************************************/
-/*  Error handling                                                                               */
-/*************************************************************************************************/
-
-EXTERN_C_ON
-
-// Error callback function type.
-typedef void (*DvzErrorCallback)(const char* message);
-
-extern char error_message[2048];
-extern DvzErrorCallback error_callback;
-
-DVZ_EXPORT extern void
-dvz_assert(bool assertion, const char* message, const char* filename, int line);
-
-EXTERN_C_OFF
-
-
-
-/*************************************************************************************************/
-/*  Assertions                                                                                   */
-/*************************************************************************************************/
-
-#ifndef ASSERT
-#if DEBUG
-#define ASSERT(x) assert(x)
-#else
-#define ASSERT(x) dvz_assert(x, #x, __FILE_NAME__, __LINE__)
-#endif
-#endif
-
-
-
-// ASSERT NOT NULL
-#ifndef ANN
-#define ANN(x) ASSERT((x) != NULL);
 #endif
