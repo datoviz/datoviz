@@ -270,7 +270,7 @@ build release="Debug":
 #
 
 [macos]
-build release="Debug": && bundledeps
+build release="Debug": # && bundledeps
     @set -e
     @unset CC
     @unset CXX

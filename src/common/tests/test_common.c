@@ -32,7 +32,7 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-int main(const char* match)
+int main(int argc, char** argv)
 {
     TstSuite suite = tst_suite();
     // DvzTestCtx ctx = {0};

@@ -8,8 +8,7 @@
 /*  Key code                                                                                     */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_KEYCODE
-#define DVZ_HEADER_KEYCODE
+#pragma once
 
 
 
@@ -144,7 +143,3 @@ typedef enum
     DVZ_KEY_MENU = 348,
     DVZ_KEY_LAST = 348,
 } DvzKeyCode;
-
-
-
-#endif

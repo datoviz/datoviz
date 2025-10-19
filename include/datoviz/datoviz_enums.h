@@ -8,8 +8,7 @@
 /*  Common enums                                                                                 */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_ENUMS
-#define DVZ_HEADER_PUBLIC_ENUMS
+#pragma once
 
 
 
@@ -1211,7 +1210,3 @@ typedef enum
     // DVZ_CPAL032_WEB_16,
 
 } DvzColormap;
-
-
-
-#endif

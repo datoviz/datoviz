@@ -8,8 +8,7 @@
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_MACROS
-#define DVZ_HEADER_PUBLIC_MACROS
+#pragma once
 
 
 
@@ -83,8 +82,7 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 
 
 // Box
-#define DVZ_BOX_NDC                                                                               \
-    (DvzBox) { -1, +1, -1, +1, -1, +1 }
+#define DVZ_BOX_NDC (DvzBox){-1, +1, -1, +1, -1, +1}
 
 
 
@@ -214,8 +212,4 @@ EXTERN_C_OFF
 // ASSERT NOT NULL
 #ifndef ANN
 #define ANN(x) ASSERT((x) != NULL);
-#endif
-
-
-
 #endif

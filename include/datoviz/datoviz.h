@@ -8,8 +8,7 @@
 /*  Main include                                                                                 */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_MAIN
-#define DVZ_HEADER_PUBLIC_MAIN
+#pragma once
 
 
 
@@ -18,7 +17,4 @@
 /*************************************************************************************************/
 
 #include "datoviz_common.h"
-
-
-
-#endif
+#include "datoviz_math.h"

@@ -13,9 +13,8 @@
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                     */
+/*  Defines                                                                                      */
 /*************************************************************************************************/
 
-#include "datoviz_enums.h"
-#include "datoviz_macros.h"
-#include "datoviz_version.h"
+#define DvzColor cvec4
+#define DvzAlpha uint8_t

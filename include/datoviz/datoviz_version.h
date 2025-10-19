@@ -8,8 +8,7 @@
 /*  Version number: single source of truth                                                       */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_VERSION
-#define DVZ_HEADER_PUBLIC_VERSION
+#pragma once
 
 
 
@@ -39,7 +38,3 @@
 
 #define DVZ_NAME       "Datoviz"
 #define DVZ_MAINTAINER "Cyrille Rossant <cyrille.rossant at gmail.com>"
-
-
-
-#endif

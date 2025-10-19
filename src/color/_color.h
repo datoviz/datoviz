@@ -5,11 +5,11 @@
  */
 
 /*************************************************************************************************/
-/*  Colors                                                                                       */
+/*  Color                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_COLORS
-#define DVZ_HEADER_PUBLIC_COLORS
+#ifndef DVZ_HEADER_COLOR
+#define DVZ_HEADER_COLOR
 
 
 
@@ -31,8 +31,6 @@
 /*************************************************************************************************/
 
 // Colors
-#define DVZ_COLOR_CVEC4 1
-
 #define COLOR_UINT_MAX  255
 #define COLOR_FLOAT_MAX 1.0
 
@@ -47,14 +45,10 @@
 
 
 
-#if DVZ_COLOR_CVEC4
-
-#define DvzColor         cvec4
-#define DvzAlpha         uint8_t
 #define DVZ_FORMAT_COLOR DVZ_FORMAT_R8G8B8A8_UNORM
 #define COLOR_MAX        COLOR_UINT_MAX
 
-// convert from default (either uint or float depending on DVZ_COLOR_CVEC4) to float
+// convert from default to float
 #define COLOR_D2F(rgba8)           COLOR_U2F(rgba8)
 #define COLOR_D2FV(r8, g8, b8, a8) COLOR_U2FV(r8, g8, b8, a8)
 
@@ -81,41 +75,6 @@
 // from uint to default
 #define ALPHA_U2D(a) a
 
-#else
-
-#define DvzColor                   vec4
-#define DvzAlpha                   float
-#define DVZ_FORMAT_COLOR           DVZ_FORMAT_R32G32B32A32_SFLOAT
-#define COLOR_MAX                  COLOR_FLOAT_MAX
-
-// convert from default (either uint or float depending on DVZ_COLOR_CVEC4) to float
-#define COLOR_D2F(rgbf)            rgbf
-#define COLOR_D2FV(rf, gf, bf, af) rf, gf, bf, af
-
-// from default to uint
-#define COLOR_D2U(rgbf)            COLOR_F2U(rgbf)
-#define COLOR_D2UV(rf, gf, bf, af) COLOR_F2UV(rf, gf, bf, af)
-
-// from uint to default
-#define COLOR_U2D(rgba8)           COLOR_U2F(rgba8)
-#define COLOR_U2DV(rf, gf, bf, af) COLOR_U2FV(rf, gf, bf, af)
-
-// from float to default
-#define COLOR_F2D(rgbaf)           rgbaf
-
-// from default to float
-#define ALPHA_D2F(a)               a
-
-// from float to default
-#define ALPHA_F2D(a)               a
-
-// from default to uint
-#define ALPHA_D2U(a)               ALPHA_F2U(a)
-
-// from uint to default
-#define ALPHA_U2D(a)               ALPHA_U2F(a)
-
-#endif
 
 // HACK: other modules may define symbols with the same name
 #ifdef WHITE

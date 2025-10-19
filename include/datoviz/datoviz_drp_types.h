@@ -8,8 +8,7 @@
 /*  Common types                                                                                 */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_TYPES
-#define DVZ_HEADER_PUBLIC_TYPES
+#pragma once
 
 
 
@@ -31,26 +30,8 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzShape DvzShape;
-typedef struct DvzMVP DvzMVP;
-typedef struct DvzViewport DvzViewport;
-typedef struct _VkViewport _VkViewport;
-typedef struct DvzAtlasFont DvzAtlasFont;
-typedef struct DvzTime DvzTime;
-
-typedef struct DvzKeyboardEvent DvzKeyboardEvent;
-typedef struct DvzMouseEvent DvzMouseEvent;
-typedef union DvzMouseEventUnion DvzMouseEventUnion;
-typedef struct DvzMouseWheelEvent DvzMouseWheelEvent;
-typedef struct DvzMouseDragEvent DvzMouseDragEvent;
-
-typedef struct DvzWindowEvent DvzWindowEvent;
-typedef struct DvzFrameEvent DvzFrameEvent;
-typedef struct DvzGuiEvent DvzGuiEvent;
-typedef struct DvzTimerEvent DvzTimerEvent;
-typedef struct DvzRequestsEvent DvzRequestsEvent;
-
 // Requests.
+typedef struct DvzRequestsEvent DvzRequestsEvent;
 typedef struct DvzRequestBoard DvzRequestBoard;
 typedef struct DvzRequestCanvas DvzRequestCanvas;
 typedef struct DvzRequestDat DvzRequestDat;
@@ -84,221 +65,11 @@ typedef union DvzRequestContent DvzRequestContent;
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzBatch DvzBatch;
 
-// Qt.
-typedef struct DvzQtApp DvzQtApp;
-typedef struct QApplication QApplication;
-typedef struct DvzQtWindow DvzQtWindow;
-
-// Recorder.
-typedef struct DvzRecorderViewport DvzRecorderViewport;
-typedef struct DvzRecorderPush DvzRecorderPush;
-typedef struct DvzRecorderDraw DvzRecorderDraw;
-typedef struct DvzRecorderDrawIndexed DvzRecorderDrawIndexed;
-typedef struct DvzRecorderDrawIndirect DvzRecorderDrawIndirect;
-typedef struct DvzRecorderDrawIndexedIndirect DvzRecorderDrawIndexedIndirect;
-typedef union DvzRecorderUnion DvzRecorderUnion;
-typedef struct DvzRecorderCommand DvzRecorderCommand;
-
-// Forward declarations.
-typedef struct DvzTimerItem DvzTimerItem;
-typedef struct DvzGuiWindow DvzGuiWindow;
-typedef struct DvzApp DvzApp;
-typedef struct DvzAtlas DvzAtlas;
-typedef struct DvzFont DvzFont;
-typedef struct DvzList DvzList;
-typedef struct DvzFifo DvzFifo;
-
-// Callback types.
-typedef void (*DvzAppGuiCallback)(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev);
-typedef void (*DvzAppMouseCallback)(DvzApp* app, DvzId window_id, DvzMouseEvent* ev);
-typedef void (*DvzAppKeyboardCallback)(DvzApp* app, DvzId window_id, DvzKeyboardEvent* ev);
-typedef void (*DvzAppFrameCallback)(DvzApp* app, DvzId window_id, DvzFrameEvent* ev);
-typedef void (*DvzAppTimerCallback)(DvzApp* app, DvzId window_id, DvzTimerEvent* ev);
-typedef void (*DvzAppResizeCallback)(DvzApp* app, DvzId window_id, DvzWindowEvent* ev);
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzAtlasFont
-{
-    unsigned long ttf_size;
-    unsigned char* ttf_bytes;
-    DvzAtlas* atlas;
-    DvzFont* font;
-    float font_size;
-};
-
-
-
-struct DvzMVP
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-
-    // float time;
-};
-
-
-
-// NOTE: this corresponds to VkViewport, but we want to avoid the inclusion of vklite.h here.
-struct _VkViewport
-{
-    float x;
-    float y;
-    float width;
-    float height;
-    float minDepth;
-    float maxDepth;
-};
-
-// NOTE: must correspond to the shader structure in common.glsl
-struct DvzViewport
-{
-    _VkViewport viewport; // Vulkan viewport
-    vec4 margins;
-
-    // Position and size of the viewport in screen coordinates.
-    uvec2 offset_screen;
-    uvec2 size_screen;
-
-    // Position and size of the viewport in framebuffer coordinates.
-    uvec2 offset_framebuffer;
-    uvec2 size_framebuffer;
-
-    // NOTE: obsolete?
-    int flags;
-    // TODO: aspect ratio
-};
-
-
-
-struct DvzShape
-{
-    // Transform variables during transform begin/end.
-    mat4 transform; // transformation matrix
-    uint32_t first; // first vertex to transform
-    uint32_t count; // number of vertices to transform
-
-    DvzShapeType type;     // shape type
-    uint32_t vertex_count; // number of vertices
-    uint32_t index_count;  // number of indices (three times the number of triangle faces)
-
-    vec3* pos;       // 3D positions of each vertex
-    vec3* normal;    // 3D normal vector at each vertex
-    DvzColor* color; // RGBA color of each vertex
-    vec4* texcoords; // texture coordinates as u, v, (unused), alpha
-    float* isoline;  // scalar field for isolines
-    vec3* d_left;    // the distance of each vertex to the left edge adjacent to each face vertex
-    vec3* d_right;   // the distance of each vertex to the right edge adjacent to each face vertex
-    cvec4* contour;  // in each face, a bit mask with 1 if the opposite edge belongs to the contour
-                     // edge, 2 if it is a corner, 4 if it should be oriented differently
-    DvzIndex* index; // the index buffer
-
-    // UGLY HACK: this seems to be necessary to ensure struct size equality between C and ctypes
-    // (just checkstructs), maybe some alignment issue.
-    // double _;
-};
-
-
-
-struct DvzTime
-{
-    uint64_t seconds;
-    uint64_t nanoseconds;
-};
-
-
-
-/*************************************************************************************************/
-/*  Events                                                                                       */
-/*************************************************************************************************/
-
-struct DvzKeyboardEvent
-{
-    DvzKeyboardEventType type;
-    DvzKeyCode key;
-    int mods;
-    void* user_data;
-};
-
-
-
-struct DvzMouseWheelEvent
-{
-    vec2 dir;
-};
-
-struct DvzMouseDragEvent
-{
-    vec2 press_pos;
-    vec2 last_pos;
-    vec2 shift;          // difference between current position and press position
-    bool is_press_valid; // whether the press event was valid
-};
-
-union DvzMouseEventUnion
-{
-    DvzMouseWheelEvent w;
-    DvzMouseDragEvent d;
-};
-
-struct DvzMouseEvent
-{
-    DvzMouseEventType type;
-    DvzMouseEventUnion content;
-    vec2 pos; // current position
-    DvzMouseButton button;
-    int mods;
-    float content_scale;
-    void* user_data;
-};
-
-
-
-struct DvzWindowEvent
-{
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    uint32_t screen_width;
-    uint32_t screen_height;
-    int flags;
-    void* user_data;
-};
-
-struct DvzFrameEvent
-{
-    uint64_t frame_idx;
-    double time;
-    double interval;
-    void* user_data;
-};
-
-struct DvzGuiEvent
-{
-    DvzGuiWindow* gui_window;
-    void* user_data;
-};
-
-struct DvzTimerEvent
-{
-    uint32_t timer_idx;
-    DvzTimerItem* timer_item;
-    uint64_t step_idx;
-    double time;
-    void* user_data;
-};
-
 
 
 /*************************************************************************************************/
 /*  Requests                                                                                     */
 /*************************************************************************************************/
-
-
 
 struct DvzRecorderViewport
 {
@@ -679,7 +450,3 @@ struct DvzRequester
 {
     DvzFifo* fifo;
 };
-
-
-
-#endif

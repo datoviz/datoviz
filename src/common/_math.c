@@ -105,16 +105,6 @@ void dvz_threads_default(void)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-inline uint64_t dvz_next_pow2(uint64_t x)
-{
-    uint64_t p = 1;
-    while (p < x)
-        p *= 2;
-    return p;
-}
-
-
-
 inline double dvz_mean(uint32_t n, double* values)
 {
     ASSERT(n > 0);
