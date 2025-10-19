@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #include "_obj.h"
-#include "datoviz_macros.h"
+#include "datoviz/common/macros.h"
 #include "test_common.h"
 #include "testing.h"
 

@@ -28,8 +28,8 @@
 #include <omp.h>
 #endif
 
-#include "datoviz_enums.h"
-#include "datoviz_macros.h"
+#include "common/enums.h"
+#include "common/macros.h"
 #include "math/mock.h"
 #include "math/rand.h"
 #include "math/types.h"

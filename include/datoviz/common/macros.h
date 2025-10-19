@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "datoviz_version.h"
+#include "version.h"
 
 
 

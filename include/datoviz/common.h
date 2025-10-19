@@ -16,6 +16,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz_enums.h"
-#include "datoviz_macros.h"
-#include "datoviz_version.h"
+#include "common/enums.h"
+#include "common/macros.h"
+#include "common/version.h"

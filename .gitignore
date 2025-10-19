@@ -93,3 +93,4 @@ site
 uv.lock
 *venv
 wheel
+.cache

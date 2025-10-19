@@ -15,10 +15,10 @@ endif()
 enable_testing()
 
 # Global include for public headers
-# Allow includes like "datoviz_macros.h" (no prefix) and "datoviz/*.h"
+# Allow includes like "datoviz_common.h" (no prefix) and "datoviz/*.h"
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/include/datoviz
+    # ${PROJECT_SOURCE_DIR}/include/datoviz
 )
 
 # Add subdirectories

@@ -27,8 +27,8 @@
 
 // #include "_cglm.h"
 #include "_log.h"
-#include "datoviz.h" // for dvz_colormap_scale() used in mock
-#include "datoviz_math.h"
+// #include "datoviz.h" // for dvz_colormap_scale() used in mock
+#include "datoviz/math.h"
 
 
 

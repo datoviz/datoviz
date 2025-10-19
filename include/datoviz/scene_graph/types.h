@@ -20,10 +20,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "datoviz_enums.h"
-#include "datoviz_keycodes.h"
-#include "datoviz_math.h"
-
 
 
 /*************************************************************************************************/

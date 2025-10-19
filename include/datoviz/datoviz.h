@@ -16,5 +16,5 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz_common.h"
-#include "datoviz_math.h"
+#include "common.h"
+#include "math.h"

@@ -28,10 +28,10 @@
 #include <omp.h>
 #endif
 
-#include "common/types.h"
-#include "datoviz_enums.h"
-#include "datoviz_macros.h"
-#include "math/types.h"
+#include "datoviz/color/enums.h"
+#include "datoviz/color/types.h"
+#include "datoviz/common/types.h"
+#include "datoviz/math/types.h"
 
 
 EXTERN_C_ON

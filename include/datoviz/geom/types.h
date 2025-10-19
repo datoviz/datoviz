@@ -19,10 +19,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "color/types.h"
-#include "datoviz_enums.h"
-#include "datoviz_keycodes.h"
-#include "datoviz_math.h"
+#include "datoviz/color/types.h"
+#include "datoviz/math.h"
+#include "enums.h"
 
 
 

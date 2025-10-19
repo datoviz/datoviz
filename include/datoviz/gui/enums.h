@@ -1,0 +1,31 @@
+
+
+// GUI flags.
+typedef enum
+{
+    DVZ_GUI_FLAGS_NONE = 0x000000,
+    DVZ_GUI_FLAGS_OFFSCREEN = 0x008000,
+    DVZ_GUI_FLAGS_DOCKING = 0x000010,
+} DvzGuiFlags;
+
+
+
+// GUI dialog flags.
+typedef enum
+{
+    DVZ_DIALOG_FLAGS_NONE = 0x0000,
+    DVZ_DIALOG_FLAGS_OVERLAY = 0x0001,
+    DVZ_DIALOG_FLAGS_BLANK = 0x0004,
+    DVZ_DIALOG_FLAGS_PANEL = 0x0008,
+} DvzDialogFlags;
+
+
+
+// GUI corner.
+typedef enum
+{
+    DVZ_DIALOG_CORNER_TOP_LEFT = 0,
+    DVZ_DIALOG_CORNER_TOP_RIGHT = 1,
+    DVZ_DIALOG_CORNER_BOTTOM_LEFT = 2,
+    DVZ_DIALOG_CORNER_BOTTOM_RIGHT = 3,
+} DvzCorner;

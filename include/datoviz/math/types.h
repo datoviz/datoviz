@@ -24,9 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "datoviz_enums.h"
-#include "datoviz_macros.h"
-
 
 
 /*************************************************************************************************/
