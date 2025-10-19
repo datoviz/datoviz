@@ -11,13 +11,16 @@
 #pragma once
 
 
+
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/math/types.h"
+#include "enums.h"
+#include "keycodes.h"
 #include <inttypes.h>
 #include <stdbool.h>
-#include <string.h>
 
 
 
@@ -48,6 +51,7 @@ typedef void (*DvzAppKeyboardCallback)(DvzApp* app, DvzId window_id, DvzKeyboard
 typedef void (*DvzAppFrameCallback)(DvzApp* app, DvzId window_id, DvzFrameEvent* ev);
 typedef void (*DvzAppTimerCallback)(DvzApp* app, DvzId window_id, DvzTimerEvent* ev);
 typedef void (*DvzAppResizeCallback)(DvzApp* app, DvzId window_id, DvzWindowEvent* ev);
+
 
 
 /*************************************************************************************************/

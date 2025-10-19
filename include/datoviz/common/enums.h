@@ -18,9 +18,8 @@
 
 #include <stdint.h>
 
-#include "macros.h"
 
-
+// TODO: dispatch in various modules
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
@@ -553,33 +552,6 @@ typedef enum
     DVZ_IMAGE_FLAGS_MODE_FILL = 0x0020,     // image mode: fill color
     DVZ_IMAGE_FLAGS_BORDER = 0x0080,        // square or rounded border around the image
 } DvzImageFlags;
-
-
-
-// Shape type.
-typedef enum
-{
-    DVZ_SHAPE_NONE,
-    DVZ_SHAPE_SQUARE,
-    DVZ_SHAPE_DISC,
-    DVZ_SHAPE_SECTOR,
-    DVZ_SHAPE_POLYGON,
-    DVZ_SHAPE_HISTOGRAM,
-    DVZ_SHAPE_CUBE,
-    DVZ_SHAPE_SPHERE,
-    DVZ_SHAPE_CYLINDER,
-    DVZ_SHAPE_CONE,
-    DVZ_SHAPE_TORUS,
-    DVZ_SHAPE_ARROW,
-    DVZ_SHAPE_TETRAHEDRON,
-    DVZ_SHAPE_HEXAHEDRON,
-    DVZ_SHAPE_OCTAHEDRON,
-    DVZ_SHAPE_DODECAHEDRON,
-    DVZ_SHAPE_ICOSAHEDRON,
-    DVZ_SHAPE_SURFACE,
-    DVZ_SHAPE_OBJ,
-    DVZ_SHAPE_OTHER,
-} DvzShapeType;
 
 
 

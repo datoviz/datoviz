@@ -1,6 +1,19 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Colormap enums                                                                               */
+/*************************************************************************************************/
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Defines                                                                                      */
 /*************************************************************************************************/
 
 // Colormaps: native, user-defined, total.
@@ -34,6 +47,12 @@
 #define CMAP_CUSTOM       (CMAP_TOT - CMAP_CUSTOM_COUNT)    // 160
 #define CPAL256_CUSTOM    (CPAL032_OFS - CMAP_CUSTOM_COUNT) // 224
 // TODO: CPAL032 custom
+
+
+
+/*************************************************************************************************/
+/*  Main enum                                                                                    */
+/*************************************************************************************************/
 
 // Colormaps.
 typedef enum

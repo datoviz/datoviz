@@ -16,5 +16,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "color.h"
 #include "common.h"
+#include "drp.h"
+#include "geom.h"
+#include "input.h"
 #include "math.h"
+#include "scene_graph.h"

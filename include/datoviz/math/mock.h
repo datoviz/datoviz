@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Common mock macros                                                                           */
+/*  Mock functions                                                                               */
 /*************************************************************************************************/
 
 #pragma once
@@ -18,18 +18,14 @@
 
 #include <float.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #if HAS_OPENMP
 #include <omp.h>
 #endif
 
 #include "datoviz/color/enums.h"
-#include "datoviz/color/types.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/common/types.h"
 #include "datoviz/math/types.h"
 

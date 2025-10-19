@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Common random macros                                                                         */
+/*  Random functions                                                                             */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,15 +16,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/common/macros.h"
 #include <float.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "datoviz/common/macros.h"
 
 
 

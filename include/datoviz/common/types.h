@@ -18,13 +18,10 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
-#include <string.h>
-
-#include "datoviz/input/keycodes.h"
-#include "datoviz/math/types.h"
-#include "enums.h"
 
 
+
+// TODO: dispatch in other modules
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */

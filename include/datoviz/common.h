@@ -18,4 +18,5 @@
 
 #include "common/enums.h"
 #include "common/macros.h"
+#include "common/types.h"
 #include "common/version.h"

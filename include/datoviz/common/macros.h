@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Common macros                                                                               */
 /*************************************************************************************************/
 
 #pragma once
@@ -19,13 +19,11 @@
 #include <assert.h>
 #include <libgen.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "version.h"
 
 
+// TODO: dispatch in other modules
 
 /*************************************************************************************************/
 /*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
@@ -82,7 +80,8 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 
 
 // Box
-#define DVZ_BOX_NDC (DvzBox){-1, +1, -1, +1, -1, +1}
+#define DVZ_BOX_NDC                                                                               \
+    (DvzBox) { -1, +1, -1, +1, -1, +1 }
 
 
 

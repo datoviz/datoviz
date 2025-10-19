@@ -5,8 +5,10 @@
  */
 
 /*************************************************************************************************/
-/*  Version                                                                                      */
+/*  Geometry enums                                                                               */
 /*************************************************************************************************/
+
+#pragma once
 
 
 
@@ -14,16 +16,36 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/macros.h"
+#include <inttypes.h>
+#include <stdbool.h>
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Enums                                                                                        */
 /*************************************************************************************************/
 
-const char* dvz_version(void)
+// Shape type.
+typedef enum
 {
-    //
-    return (DVZ_VERSION);
-}
+    DVZ_SHAPE_NONE,
+    DVZ_SHAPE_SQUARE,
+    DVZ_SHAPE_DISC,
+    DVZ_SHAPE_SECTOR,
+    DVZ_SHAPE_POLYGON,
+    DVZ_SHAPE_HISTOGRAM,
+    DVZ_SHAPE_CUBE,
+    DVZ_SHAPE_SPHERE,
+    DVZ_SHAPE_CYLINDER,
+    DVZ_SHAPE_CONE,
+    DVZ_SHAPE_TORUS,
+    DVZ_SHAPE_ARROW,
+    DVZ_SHAPE_TETRAHEDRON,
+    DVZ_SHAPE_HEXAHEDRON,
+    DVZ_SHAPE_OCTAHEDRON,
+    DVZ_SHAPE_DODECAHEDRON,
+    DVZ_SHAPE_ICOSAHEDRON,
+    DVZ_SHAPE_SURFACE,
+    DVZ_SHAPE_OBJ,
+    DVZ_SHAPE_OTHER,
+} DvzShapeType;
