@@ -21,8 +21,8 @@
 
 #include <time.h>
 
-#include "datoviz/common/assert.h"
-#include "datoviz/common/macros.h"
+#include "_assert.h"
+#include "_macros.h"
 
 
 

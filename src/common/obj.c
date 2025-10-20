@@ -20,13 +20,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "_alloc.h"
+#include "_assert.h"
 #include "_enums.h"
-#include "datoviz/common/alloc.h"
-#include "datoviz/common/assert.h"
-#include "datoviz/common/macros.h"
+#include "_log.h"
+#include "_macros.h"
+#include "_obj.h"
 #include "datoviz/math/arithm.h"
-#include "log.h"
-#include "obj.h"
 
 
 

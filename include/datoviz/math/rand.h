@@ -16,7 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/macros.h"
+#include "_macros.h"
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>

@@ -14,8 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/error.h"
-#include "log.h"
+#include "_assert.h"
+#include "_error.h"
+#include "_log.h"
 #include <stdlib.h>
 
 

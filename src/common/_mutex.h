@@ -19,8 +19,8 @@
 // #include "tinycthread.h"
 #include <pthread.h>
 
+#include "_macros.h"
 #include "_time_utils.h"
-#include "datoviz/common/macros.h"
 
 
 /*************************************************************************************************/

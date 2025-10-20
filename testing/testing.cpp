@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
-#include "datoviz/common/alloc.h"
-#include "datoviz/common/assert.h"
-#include "log.h"
+#include "_alloc.h"
+#include "_assert.h"
+#include "_log.h"
 #include "testing.h"
 
 

@@ -14,8 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/assert.h"
-#include "obj.h"
+#include "_assert.h"
+#include "_obj.h"
+
 #include "test_common.h"
 #include "testing.h"
 

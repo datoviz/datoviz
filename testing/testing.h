@@ -20,8 +20,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "datoviz/common/macros.h"
-#include "log.h"
+#include "_log.h"
+#include "_macros.h"
 
 
 

@@ -42,6 +42,7 @@ target_include_directories(dvztest
     # ${CMAKE_CURRENT_SOURCE_DIR}/tests
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/common
 )
 
 # Ensure OS/Compiler macros are available to tests

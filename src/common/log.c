@@ -42,8 +42,8 @@
 #include <pthread.h>
 #endif
 
+#include "_log.h"
 #include "_mutex.h"
-#include "log.h"
 
 #define MAX_THREADS 64
 
