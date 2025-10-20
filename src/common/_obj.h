@@ -28,16 +28,6 @@
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef struct DvzObject DvzObject;
-typedef struct DvzContainer DvzContainer;
-typedef struct DvzContainerIterator DvzContainerIterator;
-
-
-
-/*************************************************************************************************/
 /*  Macros                                                                                      */
 /*************************************************************************************************/
 
@@ -54,6 +44,76 @@ typedef struct DvzContainerIterator DvzContainerIterator;
             dvz_container_iter(&_iter);                                                           \
         }                                                                                         \
     }
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+// Object types.
+typedef enum
+{
+    DVZ_OBJECT_TYPE_UNDEFINED,
+    DVZ_OBJECT_TYPE_HOST,
+    DVZ_OBJECT_TYPE_GPU,
+    DVZ_OBJECT_TYPE_WINDOW,
+    DVZ_OBJECT_TYPE_GUI_WINDOW,
+    DVZ_OBJECT_TYPE_SWAPCHAIN,
+    DVZ_OBJECT_TYPE_CANVAS,
+    DVZ_OBJECT_TYPE_BOARD,
+    DVZ_OBJECT_TYPE_COMMANDS,
+    DVZ_OBJECT_TYPE_BUFFER,
+    DVZ_OBJECT_TYPE_DAT,
+    DVZ_OBJECT_TYPE_TEX,
+    DVZ_OBJECT_TYPE_IMAGES,
+    DVZ_OBJECT_TYPE_SAMPLER,
+    DVZ_OBJECT_TYPE_BINDINGS,
+    DVZ_OBJECT_TYPE_COMPUTE,
+    DVZ_OBJECT_TYPE_GRAPHICS,
+    DVZ_OBJECT_TYPE_SHADER,
+    DVZ_OBJECT_TYPE_PIPE,
+    DVZ_OBJECT_TYPE_BARRIER,
+    DVZ_OBJECT_TYPE_FENCES,
+    DVZ_OBJECT_TYPE_SEMAPHORES,
+    DVZ_OBJECT_TYPE_RENDERPASS,
+    DVZ_OBJECT_TYPE_FRAMEBUFFER,
+    DVZ_OBJECT_TYPE_WORKSPACE,
+    DVZ_OBJECT_TYPE_PIPELIB,
+    DVZ_OBJECT_TYPE_SUBMIT,
+    DVZ_OBJECT_TYPE_SCREENCAST,
+    DVZ_OBJECT_TYPE_TIMER,
+    DVZ_OBJECT_TYPE_ARRAY,
+    DVZ_OBJECT_TYPE_CUSTOM,
+} DvzObjectType;
+
+
+
+// Object status.
+// NOTE: the order is important, status >= CREATED means the object has been created
+typedef enum
+{
+    DVZ_OBJECT_STATUS_NONE,          //
+    DVZ_OBJECT_STATUS_ALLOC,         // after allocation
+    DVZ_OBJECT_STATUS_DESTROYED,     // after destruction
+    DVZ_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
+    DVZ_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
+    DVZ_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
+    DVZ_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
+    DVZ_OBJECT_STATUS_NEED_DESTROY,  // need to be destroyed
+    DVZ_OBJECT_STATUS_INACTIVE,      // inactive
+    DVZ_OBJECT_STATUS_INVALID,       // invalid
+} DvzObjectStatus;
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzObject DvzObject;
+typedef struct DvzContainer DvzContainer;
+typedef struct DvzContainerIterator DvzContainerIterator;
 
 
 
