@@ -83,6 +83,7 @@ add_subdirectory(common)
 add_subdirectory(ds)
 add_subdirectory(fileio)
 add_subdirectory(math)
+add_subdirectory(thread)
 
 # -------------------------------------------------------------------------------------------------
 # Include and linking
@@ -95,6 +96,7 @@ target_link_libraries(datoviz
     datoviz_ds
     datoviz_fileio
     datoviz_math
+    datoviz_thread
 )
 
 # Public headers

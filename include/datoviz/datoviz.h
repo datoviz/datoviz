@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Main include                                                                                 */
+/*  Public API                                                                                   */
 /*************************************************************************************************/
 
 #pragma once
@@ -17,16 +17,10 @@
 /*************************************************************************************************/
 
 #include "axes.h"
-#include "canvas.h"
 #include "color.h"
-#include "common.h"
 #include "drp.h"
-#include "ds.h"
 #include "geom.h"
-#include "input.h"
 #include "math.h"
-#include "renderer.h"
-#include "runner.h"
 #include "scene.h"
 #include "scene_data.h"
 #include "scene_graph.h"

@@ -41,7 +41,9 @@ extern "C"
 #ifdef DEBUG
 #define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
 #else
-#define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
+// In RELEASE mode, by default (when DVZ_LOG_LEVEL env variable is not set), effectively
+// disables all logging.
+#define DVZ_DEFAULT_LOG_LEVEL 10
 #endif
 
 #define log_trace(...) log_log(LOG_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)

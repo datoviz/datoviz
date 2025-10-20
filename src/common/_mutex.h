@@ -8,6 +8,8 @@
 /*  Mutex                                                                                        */
 /*************************************************************************************************/
 
+// NOTE: this is part of common because the log module depends on it for thread-safe logging.
+
 #pragma once
 
 
@@ -21,6 +23,7 @@
 
 #include "_macros.h"
 #include "_time_utils.h"
+
 
 
 /*************************************************************************************************/
