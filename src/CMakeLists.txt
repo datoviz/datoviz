@@ -129,6 +129,9 @@ target_include_directories(datoviz
     ${PROJECT_SOURCE_DIR}/include
 )
 
+# -------------------------------------------------------------------------------------------------
+# Sanitizers
+# -------------------------------------------------------------------------------------------------
 if(DVZ_ENABLE_ASAN_IN_DEBUG)
     set(_DVZ_SANITIZER_FLAGS "")
     set(_DVZ_SANITIZER_MODE "${DVZ_SANITIZER}")

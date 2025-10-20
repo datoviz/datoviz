@@ -5,8 +5,10 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz test runner                                                                          */
+/*  Testing data structures                                                                      */
 /*************************************************************************************************/
+
+#pragma once
 
 
 
@@ -14,24 +16,18 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/common/tests/test_common.h"
-#include "../src/ds/tests/test_ds.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
-{
-    TstSuite suite = tst_suite();
+int test_map_1(TstSuite* suite, TstItem* tstitem);
 
-    test_common(&suite);
-    test_ds(&suite);
+int test_map_2(TstSuite* suite, TstItem* tstitem);
 
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
-    tst_suite_destroy(&suite);
-    return 0;
-}
+
+
+int test_ds(TstSuite* suite);

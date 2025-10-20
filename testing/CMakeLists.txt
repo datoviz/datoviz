@@ -32,6 +32,10 @@ add_executable(dvztest ${TEST_SOURCES})
 target_link_libraries(dvztest
     PRIVATE
     datoviz_common
+    datoviz_ds
+    datoviz_fileio
+    datoviz_math
+    datoviz_thread
     testing
 )
 

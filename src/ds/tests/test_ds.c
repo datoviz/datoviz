@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz test runner                                                                          */
+/*  Testing data structures                                                                      */
 /*************************************************************************************************/
 
 
@@ -14,8 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/common/tests/test_common.h"
-#include "../src/ds/tests/test_ds.h"
+#include "_assert.h"
+
+#include "test_ds.h"
 #include "testing.h"
 
 
@@ -24,14 +25,14 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+int test_ds(TstSuite* suite)
 {
-    TstSuite suite = tst_suite();
+    ANN(suite);
 
-    test_common(&suite);
-    test_ds(&suite);
+    const char* tags = "ds";
 
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
-    tst_suite_destroy(&suite);
+    TEST_SIMPLE(test_map_1);
+    TEST_SIMPLE(test_map_2);
+
     return 0;
 }
