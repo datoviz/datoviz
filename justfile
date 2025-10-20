@@ -1299,17 +1299,17 @@ copyright:
 
 [linux]
 test test_name="":
-    ./build/datoviz test {{test_name}}
+    ./build/testing/dvztest {{test_name}}
 #
 
 [macos]
 test test_name="":
-    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
+    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/testing/dvztest {{test_name}}
 #
 
 [windows]
 test test_name="":
-    ./build/datoviz.exe test {{test_name}}
+    ./build/testing/dvztest.exe {{test_name}}
 #
 
 
@@ -1317,15 +1317,15 @@ test test_name="":
 # Info
 # -------------------------------------------------------------------------------------------------
 
-[unix]
-info:
-    @./build/datoviz info
-#
+# [unix]
+# info:
+#     @./build/datoviz info
+# #
 
-[windows]
-info:
-    @build/datoviz.exe info
-#
+# [windows]
+# info:
+#     @build/datoviz.exe info
+# #
 
 [linux]
 exec arg:
@@ -1338,9 +1338,9 @@ exec arg:
 # Demo
 # -------------------------------------------------------------------------------------------------
 
-demo:
-    ./build/datoviz demo
-#
+# demo:
+#     ./build/datoviz demo
+# #
 
 [linux]
 pydemo_dll:

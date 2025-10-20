@@ -13,8 +13,8 @@
 /*************************************************************************************************/
 
 #include "_mutex.h"
-#include "_macros.h"
 #include "datoviz/common/assert.h"
+#include "datoviz/common/macros.h"
 
 
 

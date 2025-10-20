@@ -42,7 +42,6 @@
 #include <pthread.h>
 #endif
 
-#include "_macros.h"
 #include "_mutex.h"
 #include "log.h"
 

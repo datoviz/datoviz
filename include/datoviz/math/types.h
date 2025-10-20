@@ -122,6 +122,10 @@ static inline char* pretty_size(DvzSize size)
     return _PRETTY_SIZE;
 }
 
+#define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
+
+#define fsizeof(type, member) sizeof(((type*)0)->member)
+
 
 
 /*************************************************************************************************/

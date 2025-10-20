@@ -8,8 +8,7 @@
 /*  Common macros                                                                                */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_MACROS
-#define DVZ_HEADER_MACROS
+#pragma once
 
 
 
@@ -24,52 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "datoviz/common/macros.h"
-
-
-
-/*************************************************************************************************/
-/*  Build macros                                                                                 */
-/*************************************************************************************************/
-
-#ifndef SPIRV_DIR
-#define SPIRV_DIR ""
-#endif
-
-
-
-/*************************************************************************************************/
-/*  Misc                                                                                         */
-/*************************************************************************************************/
-
-#define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
-
-#ifdef LANG_CPP
-#define INIT(t, n) t n = {};
-#else
-#define INIT(t, n) t n = {0};
-#endif
-
-#define fsizeof(type, member) sizeof(((type*)0)->member)
-
-
-
-#if CC_CLANG
-#define MUTE_NONLITERAL_ON                                                                        \
-    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
-#define MUTE_NONLITERAL_OFF _Pragma("clang diagnostic pop")
-#else
-#define MUTE_NONLITERAL_ON
-#define MUTE_NONLITERAL_OFF
-#endif
-
 
 
 /*************************************************************************************************/
 /*  Environment variables                                                                        */
 /*************************************************************************************************/
-
-#define IF_VERBOSE if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "req", 3) == 0))
 
 static inline bool checkenv(const char* x)
 {
@@ -84,7 +42,3 @@ static inline int32_t getenvint(const char* x)
         return -1;
     return atoi(env);
 }
-
-
-
-#endif

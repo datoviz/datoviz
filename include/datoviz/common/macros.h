@@ -67,6 +67,14 @@
 
 
 
+#ifdef LANG_CPP
+#define INIT(t, n) t n = {};
+#else
+#define INIT(t, n) t n = {0};
+#endif
+
+
+
 /*************************************************************************************************/
 /*  Mute macros                                                                                  */
 /*************************************************************************************************/
@@ -107,4 +115,15 @@
 // #pragma warning(push)
 #define MUTE_OFF
 // #pragma warning(pop)
+#endif
+
+
+
+#if CC_CLANG
+#define MUTE_NONLITERAL_ON                                                                        \
+    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
+#define MUTE_NONLITERAL_OFF _Pragma("clang diagnostic pop")
+#else
+#define MUTE_NONLITERAL_ON
+#define MUTE_NONLITERAL_OFF
 #endif

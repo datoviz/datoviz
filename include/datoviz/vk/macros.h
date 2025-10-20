@@ -22,6 +22,12 @@
 /*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
 /*************************************************************************************************/
 
+#ifndef SPIRV_DIR
+#define SPIRV_DIR ""
+#endif
+
+
+
 // macOS NOTE: if INCLUDE_VK_DRIVER_FILES is #defined, set the vulkan driver files to the path
 // to the MoltenVK_icd.json file.
 #ifdef INCLUDE_VK_DRIVER_FILES

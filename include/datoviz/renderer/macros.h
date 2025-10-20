@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Common                                                                                       */
+/*  Renderer macros                                                                              */
 /*************************************************************************************************/
 
 #pragma once
@@ -13,13 +13,7 @@
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                     */
+/*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#include "common/alloc.h"
-#include "common/assert.h"
-#include "common/env.h"
-#include "common/error.h"
-#include "common/macros.h"
-#include "common/types.h"
-#include "common/version.h"
+#define IF_VERBOSE if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "req", 3) == 0))
