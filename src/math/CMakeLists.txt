@@ -10,6 +10,7 @@ target_include_directories(datoviz_math
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/external/cglm/include
 )
 
 # Propagate global compile definitions (OS/Compiler flags)
