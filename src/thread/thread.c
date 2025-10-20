@@ -34,7 +34,8 @@
 
 DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data)
 {
-    DvzThread* thread = (DvzThread*)calloc(1, sizeof(DvzThread));
+    DvzThread* thread = (DvzThread*)dvz_calloc(1, sizeof(DvzThread));
+    ANN(thread);
     log_trace("creating thread");
     // if (tct_thrd_create(&thread->thread, callback, user_data) != tct_thrd_success)
     if (pthread_create(&thread->thread, NULL, callback, user_data))
@@ -98,5 +99,5 @@ void dvz_thread_join(DvzThread* thread)
     dvz_mutex_destroy(&thread->lock);
     dvz_atomic_destroy(thread->lock_idx);
     dvz_obj_destroyed(&thread->obj);
-    FREE(thread);
+    dvz_free(thread);
 }

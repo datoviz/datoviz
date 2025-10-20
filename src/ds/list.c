@@ -29,7 +29,9 @@ static void _realloc_if_needed(DvzList* list)
     if (list->count >= list->capacity)
     {
         list->capacity *= 2;
-        REALLOC(DvzListItem*, list->values, list->capacity * sizeof(DvzListItem))
+        list->values = (DvzListItem*)dvz_realloc(
+            list->values, list->capacity * sizeof(DvzListItem));
+        ANN(list->values);
     }
     ASSERT(list->count < list->capacity);
 }
@@ -42,10 +44,12 @@ static void _realloc_if_needed(DvzList* list)
 
 DvzList* dvz_list(void)
 {
-    DvzList* list = (DvzList*)calloc(1, sizeof(DvzList));
+    DvzList* list = (DvzList*)dvz_calloc(1, sizeof(DvzList));
+    ANN(list);
     list->count = 0;
     list->capacity = DVZ_MAX_LIST_CAPACITY;
-    list->values = (DvzListItem*)calloc(list->capacity, sizeof(DvzListItem));
+    list->values = (DvzListItem*)dvz_calloc(list->capacity, sizeof(DvzListItem));
+    ANN(list->values);
     return list;
 }
 
@@ -169,6 +173,6 @@ uint64_t dvz_list_count(DvzList* list)
 void dvz_list_destroy(DvzList* list)
 {
     ANN(list);
-    FREE(list->values);
-    FREE(list);
+    dvz_free_ptr((void**)&list->values);
+    dvz_free_ptr((void**)&list);
 }

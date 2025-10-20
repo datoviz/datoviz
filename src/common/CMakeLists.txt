@@ -8,7 +8,8 @@ add_library(datoviz_common OBJECT ${COMMON_SRC})
 
 target_include_directories(datoviz_common
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include # for public headers
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/external/mimalloc/include
     INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR} # so other modules see _*.h
 )

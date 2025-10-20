@@ -84,7 +84,8 @@ ATOMIC_DECL void dvz_atomic_init(DvzAtomic atomic)
 ATOMIC_DECL DvzAtomic dvz_atomic(void)
 #ifdef ATOMIC_C
 {
-    DvzAtomic atomic = (DvzAtomic)calloc(1, sizeof(DvzAtomic_));
+    DvzAtomic atomic = (DvzAtomic)dvz_calloc(1, sizeof(DvzAtomic_));
+    ANN(atomic);
     dvz_atomic_init(atomic);
     return atomic;
 }
@@ -139,7 +140,7 @@ ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
     ANN(atomic);
-    FREE(atomic);
+    dvz_free(atomic);
 }
 #else
     ;

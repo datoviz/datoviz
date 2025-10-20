@@ -32,4 +32,8 @@ int test_common(TstSuite* suite)
     const char* tags = "common";
 
     TEST_SIMPLE(test_obj_1);
+    TEST_SIMPLE(test_alloc_basic);
+    TEST_SIMPLE(test_alloc_aligned);
+
+    return 0;
 }

@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/fileio/fileio.h"
+#include "_alloc.h"
 #include "_assert.h"
 #include "_log.h"
 #include "fpng.h"
@@ -54,7 +55,8 @@ void* dvz_read_file(const char* filename, DvzSize* size)
     if (size != NULL)
         *size = length;
     fseek(f, 0, SEEK_SET);
-    buffer = (void*)malloc((size_t)length);
+    buffer = dvz_malloc((size_t)length);
+    ANN(buffer);
     fread(buffer, 1, (size_t)length, f);
     fclose(f);
 
@@ -118,7 +120,7 @@ char* dvz_read_npy(const char* filename, DvzSize* size)
         goto error;
 
     // Read the data buffer.
-    buffer = (char*)calloc((size_t)length, 1);
+    buffer = (char*)dvz_calloc((size_t)length, 1);
     ANN(buffer);
     fread(buffer, 1, (size_t)length, f);
     fclose(f);
@@ -162,7 +164,7 @@ char* dvz_parse_npy(DvzSize size, char* npy_bytes)
     DvzSize array_data_size = size - data_offset;
 
     // Allocate memory for the output buffer
-    char* array_data = (char*)malloc(array_data_size);
+    char* array_data = (char*)dvz_malloc(array_data_size);
     if (array_data == NULL)
     {
         return NULL;
@@ -198,7 +200,7 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
 
     // Allocate an initial buffer to decompress the file into memory
     size_t buffer_size = 1024 * 1024; // Start with 1 MB
-    char* buffer = (char*)malloc(buffer_size);
+    char* buffer = (char*)dvz_malloc(buffer_size);
     if (buffer == NULL)
     {
         perror("Failed to allocate memory");
@@ -215,11 +217,11 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
         if (buffer_used + 4096 > buffer_size)
         {
             buffer_size *= 2;
-            char* new_buffer = (char*)realloc(buffer, buffer_size);
+            char* new_buffer = (char*)dvz_realloc(buffer, buffer_size);
             if (new_buffer == NULL)
             {
                 perror("Failed to reallocate memory");
-                free(buffer);
+                dvz_free(buffer);
                 gzclose(gz_file);
                 return NULL;
             }
@@ -231,7 +233,7 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
         if (bytes_read < 0)
         {
             fprintf(stderr, "Decompression error: %s\n", gzerror(gz_file, NULL));
-            free(buffer);
+            dvz_free(buffer);
             gzclose(gz_file);
             return NULL;
         }
@@ -363,7 +365,8 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
 
     uint32_t size = (uint32_t)(*width * *height * 3);
     ASSERT(size > 0);
-    uint8_t* image = (uint8_t*)calloc(size, sizeof(uint8_t));
+    uint8_t* image = (uint8_t*)dvz_calloc(size, sizeof(uint8_t));
+    ANN(image);
     fread(image, 1, size, fp);
     fclose(fp);
     return image;
@@ -401,7 +404,7 @@ int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* s
     std::vector<uint8_t> outvec;
     fpng::fpng_encode_image_to_memory(rgb, width, height, 3, outvec, 0);
     *size = outvec.size();
-    *out = malloc(*size);
+    *out = dvz_malloc(*size);
     ANN(*out);
     memcpy(*out, outvec.data(), *size);
     return 0;
@@ -445,7 +448,7 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
     }
 
     // Allocate memory for the decoded image
-    uint8_t* output = (uint8_t*)malloc(img_width * img_height * channels);
+    uint8_t* output = (uint8_t*)dvz_malloc(img_width * img_height * channels);
     if (output == NULL)
     {
         fprintf(stderr, "Failed to allocate memory for the decoded image\n");

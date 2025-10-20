@@ -86,7 +86,8 @@ static void print_end(int index, int res)
 TstSuite tst_suite(void)
 {
     TstSuite suite = {};
-    suite.items = (TstItem*)calloc(TST_DEFAULT_CAPACITY, sizeof(TstItem));
+    suite.items = (TstItem*)dvz_calloc(TST_DEFAULT_CAPACITY, sizeof(TstItem));
+    ANN(suite.items);
     suite.capacity = TST_DEFAULT_CAPACITY;
     suite.n_items = 0;
     return suite;
@@ -109,7 +110,9 @@ void tst_suite_add(
         log_trace("reallocate memory for test suite items");
         ANN(suite->items);
         ASSERT(suite->n_items > 0);
-        REALLOC(TstItem*, suite->items, (size_t)(2 * suite->n_items * sizeof(TstItem)));
+        suite->items = (TstItem*)dvz_realloc(
+            suite->items, (size_t)(2 * suite->n_items * sizeof(TstItem)));
+        ANN(suite->items);
         suite->capacity *= 2;
     }
     ASSERT(suite->n_items < suite->capacity);
@@ -225,5 +228,5 @@ void tst_suite_destroy(TstSuite* suite)
     ANN(suite->items);
     suite->n_items = 0;
     suite->capacity = 0;
-    FREE(suite->items);
+    dvz_free_ptr((void**)&suite->items);
 }

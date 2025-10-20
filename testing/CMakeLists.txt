@@ -35,6 +35,10 @@ target_link_libraries(dvztest
     testing
 )
 
+if(DVZ_WITH_MIMALLOC)
+    target_link_libraries(dvztest PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+endif()
+
 # Include test headers and internal paths
 target_include_directories(dvztest
     PRIVATE
@@ -47,6 +51,22 @@ target_include_directories(dvztest
 
 # Ensure OS/Compiler macros are available to tests
 target_compile_definitions(dvztest PRIVATE ${COMPILE_DEFINITIONS})
+
+if(DVZ_ENABLE_ASAN_IN_DEBUG)
+    if(DEFINED DVZ_ASAN_FLAG AND NOT DVZ_ASAN_FLAG STREQUAL "")
+        set(_DVZ_ASAN_FLAG "${DVZ_ASAN_FLAG}")
+    elseif(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+        set(_DVZ_ASAN_FLAG "/fsanitize=address")
+    else()
+        set(_DVZ_ASAN_FLAG "-fsanitize=address")
+    endif()
+    foreach(_target testing dvztest)
+        if(TARGET ${_target})
+            target_compile_options(${_target} PRIVATE $<$<CONFIG:Debug>:${_DVZ_ASAN_FLAG}>)
+            target_link_options(${_target} PRIVATE $<$<CONFIG:Debug>:${_DVZ_ASAN_FLAG}>)
+        endif()
+    endforeach()
+endif()
 
 # Register it as a CTest entry
 add_test(NAME dvztest COMMAND dvztest)

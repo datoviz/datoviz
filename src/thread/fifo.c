@@ -30,10 +30,12 @@ DvzFifo* dvz_fifo(int32_t capacity)
 {
     log_trace("creating generic FIFO queue with a capacity of %d items", capacity);
     ASSERT(capacity >= 2);
-    DvzFifo* fifo = (DvzFifo*)calloc(1, sizeof(DvzFifo));
+    DvzFifo* fifo = (DvzFifo*)dvz_calloc(1, sizeof(DvzFifo));
+    ANN(fifo);
     ASSERT(capacity <= DVZ_MAX_FIFO_CAPACITY);
     fifo->capacity = capacity;
-    fifo->items = (void**)calloc((uint32_t)capacity, sizeof(void*));
+    fifo->items = (void**)dvz_calloc((uint32_t)capacity, sizeof(void*));
+    ANN(fifo->items);
 
     // Create atomic variables.
     fifo->is_empty = dvz_atomic();
@@ -69,7 +71,9 @@ static void _fifo_resize(DvzFifo* fifo)
 
         fifo->capacity *= 2;
         log_debug("FIFO queue is full, enlarging it to %d", fifo->capacity);
-        REALLOC(void**, fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
+        fifo->items = (void**)dvz_realloc(
+            fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
+        ANN(fifo->items);
     }
 
     if ((fifo->tail + 1) % fifo->capacity == fifo->head)
@@ -254,11 +258,11 @@ void dvz_fifo_destroy(DvzFifo* fifo)
     dvz_cond_destroy(&fifo->cond);
 
     dvz_atomic_destroy(fifo->is_empty);
-    dvz_atomic_destroy(fifo->is_processing);
+   dvz_atomic_destroy(fifo->is_processing);
 
     ANN(fifo->items);
-    FREE(fifo->items);
-    FREE(fifo);
+    dvz_free_ptr((void**)&fifo->items);
+    dvz_free(fifo);
 }
 
 
@@ -393,7 +397,7 @@ static void _enqueue_next(DvzDeq* deq, uint32_t item_count, DvzDeqItem* items)
             dvz_deq_enqueue_submit(deq, next->next_item, next->enqueue_first);
         }
         // Free the next_items array.
-        FREE(items[i].next_items);
+        dvz_free_ptr((void**)&items[i].next_items);
     }
 }
 
@@ -406,7 +410,8 @@ static void _enqueue_next(DvzDeq* deq, uint32_t item_count, DvzDeqItem* items)
 DvzDeq* dvz_deq(uint32_t nq, DvzSize item_size)
 {
     ASSERT(item_size > 0);
-    DvzDeq* deq = (DvzDeq*)calloc(1, sizeof(DvzDeq));
+    DvzDeq* deq = (DvzDeq*)dvz_calloc(1, sizeof(DvzDeq));
+    ANN(deq);
     ASSERT(nq <= DVZ_DEQ_MAX_QUEUES);
     deq->queue_count = nq;
     deq->item_size = item_size;
@@ -507,7 +512,7 @@ static DvzDeqItem* _deq_item(
     uint32_t deq_idx, int type, DvzSize item_size, void* item, uint32_t next_count,
     DvzDeqItemNext* next_items)
 {
-    DvzDeqItem* deq_item = (DvzDeqItem*)calloc(1, sizeof(DvzDeqItem));
+    DvzDeqItem* deq_item = (DvzDeqItem*)dvz_calloc(1, sizeof(DvzDeqItem));
     ANN(deq_item);
     deq_item->deq_idx = deq_idx;
     deq_item->type = type;
@@ -515,7 +520,8 @@ static DvzDeqItem* _deq_item(
     // NOTE: make a copy on the heap of the item pointer. The deq will free it later.
     if (item != NULL)
     {
-        deq_item->item = malloc(item_size);
+        deq_item->item = dvz_malloc(item_size);
+        ANN(deq_item->item);
         memcpy(deq_item->item, item, item_size);
     }
 
@@ -578,12 +584,12 @@ void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next, bool enqueue_f
     if (deq_item->next_items == NULL)
     {
         ASSERT(deq_item->next_count == 0);
-        deq_item->next_items = calloc(2, sizeof(DvzDeqItemNext));
+        deq_item->next_items = (DvzDeqItemNext*)dvz_calloc(2, sizeof(DvzDeqItemNext));
+        ANN(deq_item->next_items);
     }
-    ANN(deq_item->next_items);
     if (deq_item->next_count >= 2)
     {
-        // TO DO: implement this, just need a REALLOC with a 2x size
+        // TO DO: implement this, just need a dvz_realloc with a 2x size
         log_error("more than 2 next items: not currently supported");
         return;
     }
@@ -638,7 +644,7 @@ DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
 
 
 
-// WARNING: the deq_item.item pointer must be FREE-ed by the caller.
+// WARNING: the deq_item.item pointer must be freed by the caller.
 DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait)
 {
     ANN(deq);
@@ -694,7 +700,7 @@ DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait)
             // Consistency check.
             ASSERT(deq_idx == item_s.deq_idx);
             // log_trace("dequeue item from FIFO queue #%d with type %d", deq_idx, item_s.type);
-            FREE(deq_item);
+            dvz_free(deq_item);
             break;
         }
         // log_trace("queue #%d was empty", deq_idx);
@@ -726,12 +732,12 @@ DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait)
 
 
 
-// NOTE: this function FREEs the item and does not return it.
+// NOTE: this function frees the item and does not return it.
 void dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
 {
     DvzDeqItem item = dvz_deq_dequeue_return(deq, proc_idx, wait);
     if (item.item != NULL)
-        FREE(item.item);
+        dvz_free(item.item);
 }
 
 
@@ -758,7 +764,7 @@ void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx)
             // We free the item copy made by the enqueue function. The user-specified item pointer
             // is never used directly.
             log_trace("free item");
-            FREE(item.item);
+            dvz_free(item.item);
         }
         log_trace("got a deq item on proc #%d", proc_idx);
     }
@@ -786,7 +792,10 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
     DvzDeqItem* items = NULL;
     // Allocate the memory for the items to be dequeued.
     if (item_count > 0)
-        items = calloc(item_count, sizeof(DvzDeqItem));
+    {
+        items = (DvzDeqItem*)dvz_calloc(item_count, sizeof(DvzDeqItem));
+        ANN(items);
+    }
     else
     {
         // Skip this function if there are no pending items in the dequeue.
@@ -824,7 +833,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
             // Consistency check.
             ASSERT(deq_idx == item_s.deq_idx);
             // log_trace("dequeue item from FIFO queue #%d with type %d", deq_idx, item_s.type);
-            FREE(deq_item);
+            dvz_free(deq_item);
             // Copy the item into the array allocated above.
             items[k++] = item_s;
             k_tot++;
@@ -863,10 +872,10 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
         if (items[i].item != NULL)
         {
             // log_trace("free item #%d in proc #%d", i, proc_idx);
-            FREE(items[i].item);
+            dvz_free(items[i].item);
         }
     }
-    FREE(items);
+    dvz_free(items);
 }
 
 
@@ -931,7 +940,7 @@ void dvz_deq_destroy(DvzDeq* deq)
             if (item.item == NULL)
                 break;
             else
-                FREE(item.item);
+                dvz_free(item.item);
         }
     }
 
@@ -945,5 +954,5 @@ void dvz_deq_destroy(DvzDeq* deq)
     for (uint32_t i = 0; i < deq->queue_count; i++)
         dvz_fifo_destroy(deq->queues[i]);
 
-    FREE(deq);
+    dvz_free(deq);
 }

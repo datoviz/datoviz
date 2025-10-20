@@ -68,7 +68,8 @@ DvzContainer dvz_container(uint32_t count, size_t item_size, DvzObjectType type)
     container.type = type;
     container.capacity = (uint32_t)dvz_next_pow2(count);
     ASSERT(container.capacity > 0);
-    container.items = (void**)calloc(container.capacity, sizeof(void*));
+    container.items = (void**)dvz_calloc(container.capacity, sizeof(void*));
+    ANN(container.items);
     // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
     // guaranteed that NULL is represented by 0 bits.
     // https://stackoverflow.com/a/22624643/1595060
@@ -93,7 +94,7 @@ void dvz_container_delete_if_destroyed(DvzContainer* container, uint32_t idx)
     if (object->status == DVZ_OBJECT_STATUS_DESTROYED)
     {
         // log_trace("delete container item #%d", idx);
-        FREE(container->items[idx]);
+        dvz_free(container->items[idx]);
         container->items[idx] = NULL;
         container->count--;
         ASSERT(container->count < UINT32_MAX);
@@ -122,7 +123,7 @@ void* dvz_container_alloc(DvzContainer* container)
     if (available_slot == UINT32_MAX)
     {
         log_trace("reallocate container up to %d items", 2 * container->capacity);
-        void** _new = (void**)realloc(
+        void** _new = (void**)dvz_realloc(
             container->items, (size_t)(2 * container->capacity * container->item_size));
         ANN(_new);
         container->items = _new;
@@ -145,7 +146,7 @@ void* dvz_container_alloc(DvzContainer* container)
 
     // Memory allocation on the heap and store the pointer in the container.
     // log_trace("container allocates new item #%d", available_slot);
-    container->items[available_slot] = calloc(1, container->item_size);
+    container->items[available_slot] = dvz_calloc(1, container->item_size);
     container->count++;
     ANN(container->items[available_slot]);
 
@@ -264,7 +265,7 @@ void dvz_container_destroy(DvzContainer* container)
             {
                 ASSERT(item->status <= DVZ_OBJECT_STATUS_INIT);
                 ASSERT(item->status != DVZ_OBJECT_STATUS_DESTROYED);
-                FREE(container->items[i]);
+                dvz_free(container->items[i]);
                 container->items[i] = NULL;
                 container->count--;
                 ASSERT(container->count < UINT32_MAX);
@@ -274,7 +275,7 @@ void dvz_container_destroy(DvzContainer* container)
     }
     ASSERT(container->count == 0);
     // log_trace("free container items");
-    FREE(container->items);
+    dvz_free(container->items);
     log_trace("container destroy (%d elements)", count);
     container->capacity = 0;
 }

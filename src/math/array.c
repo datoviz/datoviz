@@ -160,7 +160,8 @@ static uint32_t _get_components(DvzDataType dtype)
 static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize item_size)
 {
     log_trace("creating array with %d items of size %s each", item_count, pretty_size(item_size));
-    DvzArray* arr = (DvzArray*)calloc(1, sizeof(DvzArray));
+    DvzArray* arr = (DvzArray*)dvz_calloc(1, sizeof(DvzArray));
+    ANN(arr);
     memset(arr, 0, sizeof(DvzArray));
     arr->obj.type = DVZ_OBJECT_TYPE_ARRAY;
     arr->dtype = dtype;
@@ -170,7 +171,10 @@ static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize i
     arr->item_count = item_count;
     arr->buffer_size = item_count * arr->item_size;
     if (item_count > 0)
-        arr->data = calloc(item_count, arr->item_size);
+    {
+        arr->data = dvz_calloc(item_count, arr->item_size);
+        ANN(arr->data);
+    }
     dvz_obj_created(&arr->obj);
     return arr;
 }
@@ -248,9 +252,11 @@ DvzArray* dvz_array(uint32_t item_count, DvzDataType dtype)
  */
 DvzArray* dvz_array_copy(DvzArray* arr)
 {
-    DvzArray* arr_new = calloc(1, sizeof(DvzArray));
+    DvzArray* arr_new = dvz_calloc(1, sizeof(DvzArray));
+    ANN(arr_new);
     memcpy(arr_new, arr, sizeof(DvzArray));
-    arr_new->data = malloc(arr->buffer_size);
+    arr_new->data = dvz_malloc(arr->buffer_size);
+    ANN(arr_new->data);
     memcpy(arr_new->data, arr->data, arr->buffer_size);
     return arr_new;
 }
@@ -369,7 +375,8 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
     // If the array was not allocated, allocate it with the specified size.
     if (array->data == NULL)
     {
-        array->data = calloc(item_count, array->item_size);
+        array->data = dvz_calloc(item_count, array->item_size);
+        ANN(array->data);
         array->item_count = item_count;
 
         // NOTE: using dvz_next_pow2() below causes a crash in scene_axes test
@@ -398,7 +405,8 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
         log_trace(
             "resize array from %d to %d items of size %d", //
             old_item_count, new_item_count, array->item_size);
-        REALLOC(void*, array->data, new_size);
+        array->data = dvz_realloc(array->data, new_size);
+        ANN(array->data);
         // Repeat the last element when resizing.
         _repeat_last(old_size / array->item_size, array->item_size, array->data, new_item_count);
         array->buffer_size = new_size;
@@ -580,7 +588,11 @@ void dvz_array_data(
     void* dst = array->data;
     // Allocate the array if needed.
     if (dst == NULL)
-        dst = array->data = calloc(first_item + array->item_count, array->item_size);
+    {
+        array->data = dvz_calloc(first_item + array->item_count, array->item_size);
+        ANN(array->data);
+        dst = array->data;
+    }
     ANN(dst);
     const void* src = data;
     ANN(src);
@@ -752,6 +764,6 @@ void dvz_array_destroy(DvzArray* array)
     if (!dvz_obj_is_created(&array->obj))
         return;
     dvz_obj_destroyed(&array->obj);
-    FREE(array->data);
-    FREE(array);
+    dvz_free_ptr((void**)&array->data);
+    dvz_free(array);
 }

@@ -18,9 +18,9 @@
 #include <inttypes.h>
 #include <math.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "_assert.h"
+#include "_alloc.h"
 #include "datoviz/color.h"
 #include "datoviz/math/mock.h"
 #include "datoviz/math/rand.h"
@@ -35,7 +35,8 @@
 vec3* dvz_mock_pos_2D(uint32_t count, float std)
 {
     ASSERT(count > 0);
-    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    vec3* pos = (vec3*)dvz_calloc(count, sizeof(vec3));
+    ANN(pos);
     for (uint32_t i = 0; i < count; i++)
     {
         pos[i][0] = std * dvz_rand_normal();
@@ -49,7 +50,8 @@ vec3* dvz_mock_pos_2D(uint32_t count, float std)
 vec3* dvz_mock_circle(uint32_t count, float radius)
 {
     ASSERT(count > 1);
-    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    vec3* pos = (vec3*)dvz_calloc(count, sizeof(vec3));
+    ANN(pos);
     // bool closed = (flags & DVZ_MOCK_FLAGS_CLOSED) > 0;
     uint32_t n = count; // closed ? count - 1 : count;
     for (uint32_t i = 0; i < count; i++)
@@ -67,7 +69,8 @@ vec3* dvz_mock_band(uint32_t count, vec2 size)
     ASSERT(count > 0);
     float a = size[0] * .5;
     float b = size[1] * .5;
-    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    vec3* pos = (vec3*)dvz_calloc(count, sizeof(vec3));
+    ANN(pos);
     for (uint32_t i = 0; i < count; i++)
     {
         pos[i][0] = -a + 2 * a * (i / 2) * 1. / (count / 2 - 1);
@@ -81,7 +84,8 @@ vec3* dvz_mock_band(uint32_t count, vec2 size)
 vec3* dvz_mock_pos_3D(uint32_t count, float std)
 {
     ASSERT(count > 0);
-    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    vec3* pos = (vec3*)dvz_calloc(count, sizeof(vec3));
+    ANN(pos);
     for (uint32_t i = 0; i < count; i++)
     {
         pos[i][0] = std * dvz_rand_normal();
@@ -96,7 +100,8 @@ vec3* dvz_mock_pos_3D(uint32_t count, float std)
 vec3* dvz_mock_fixed(uint32_t count, vec3 fixed)
 {
     ASSERT(count > 0);
-    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    vec3* pos = (vec3*)dvz_calloc(count, sizeof(vec3));
+    ANN(pos);
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -112,7 +117,8 @@ vec3* dvz_mock_fixed(uint32_t count, vec3 fixed)
 vec3* dvz_mock_line(uint32_t count, vec3 p0, vec3 p1)
 {
     ASSERT(count > 1);
-    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    vec3* pos = (vec3*)dvz_calloc(count, sizeof(vec3));
+    ANN(pos);
 
     vec3 u = {0};
     u[0] = (p1[0] - p0[0]) * 1. / (count - 1);
@@ -134,7 +140,8 @@ float* dvz_mock_uniform(uint32_t count, float vmin, float vmax)
 {
     ASSERT(count > 0);
     ASSERT(vmin <= vmax);
-    float* size = (float*)calloc(count, sizeof(float));
+    float* size = (float*)dvz_calloc(count, sizeof(float));
+    ANN(size);
     float a = vmax - vmin;
     for (uint32_t i = 0; i < count; i++)
     {
@@ -148,7 +155,8 @@ float* dvz_mock_uniform(uint32_t count, float vmin, float vmax)
 float* dvz_mock_full(uint32_t count, float value)
 {
     ASSERT(count > 0);
-    float* values = (float*)calloc(count, sizeof(float));
+    float* values = (float*)dvz_calloc(count, sizeof(float));
+    ANN(values);
     for (uint32_t i = 0; i < count; i++)
     {
         values[i] = value;
@@ -161,7 +169,8 @@ float* dvz_mock_full(uint32_t count, float value)
 uint32_t* dvz_mock_range(uint32_t count, uint32_t initial)
 {
     ASSERT(count > 1);
-    uint32_t* values = (uint32_t*)calloc(count, sizeof(uint32_t));
+    uint32_t* values = (uint32_t*)dvz_calloc(count, sizeof(uint32_t));
+    ANN(values);
     for (uint32_t i = 0; i < count; i++)
     {
         values[i] = initial + i;
@@ -174,7 +183,8 @@ uint32_t* dvz_mock_range(uint32_t count, uint32_t initial)
 float* dvz_mock_linspace(uint32_t count, float initial, float final)
 {
     ASSERT(count > 1);
-    float* values = (float*)calloc(count, sizeof(float));
+    float* values = (float*)dvz_calloc(count, sizeof(float));
+    ANN(values);
     for (uint32_t i = 0; i < count; i++)
     {
         values[i] = initial + (final - initial) * i * 1.0 / (count - 1);
@@ -191,7 +201,8 @@ float* dvz_mock_linspace(uint32_t count, float initial, float final)
 DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha)
 {
     ASSERT(count > 0);
-    DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
+    DvzColor* color = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
+    ANN(color);
     const uint8_t k = 64;
     for (uint32_t i = 0; i < count; i++)
     {
@@ -209,7 +220,8 @@ DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha)
 DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono)
 {
     ASSERT(count > 0);
-    DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
+    DvzColor* color = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
+    ANN(color);
     for (uint32_t i = 0; i < count; i++)
     {
         color[i][0] = mono[0];

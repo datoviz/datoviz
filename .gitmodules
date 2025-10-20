@@ -7,3 +7,6 @@
 [submodule "external/cglm"]
 	path = external/cglm
 	url = https://github.com/recp/cglm.git
+[submodule "external/mimalloc"]
+	path = external/mimalloc
+	url = https://github.com/microsoft/mimalloc.git

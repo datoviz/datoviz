@@ -72,6 +72,26 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CC_CLANG=${CC_CLANG}
 )
 
+if(DVZ_WITH_MIMALLOC)
+    list(APPEND COMPILE_DEFINITIONS
+        DVZ_HAS_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
+else()
+    list(APPEND COMPILE_DEFINITIONS DVZ_HAS_MIMALLOC=0)
+endif()
+
+if(DVZ_USE_MIMALLOC_RELEASE_DEFAULT AND DVZ_WITH_MIMALLOC)
+    list(APPEND COMPILE_DEFINITIONS
+        DVZ_ALLOCATOR_DEFAULT_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
+else()
+    list(APPEND COMPILE_DEFINITIONS DVZ_ALLOCATOR_DEFAULT_MIMALLOC=0)
+endif()
+
+if(DVZ_ENABLE_ASAN_IN_DEBUG)
+    list(APPEND COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=1)
+else()
+    list(APPEND COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=0)
+endif()
+
 target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
 
 # -------------------------------------------------------------------------------------------------
@@ -99,8 +119,28 @@ target_link_libraries(datoviz
     datoviz_thread
 )
 
+if(DVZ_WITH_MIMALLOC)
+    target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+endif()
+
 # Public headers
 target_include_directories(datoviz
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
 )
+
+if(DVZ_ENABLE_ASAN_IN_DEBUG)
+    if(CC_MSVC)
+        set(DVZ_ASAN_FLAG "/fsanitize=address")
+    else()
+        set(DVZ_ASAN_FLAG "-fsanitize=address")
+    endif()
+    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread)
+        if(TARGET ${target_name})
+            target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_ASAN_FLAG}>)
+            target_link_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_ASAN_FLAG}>)
+        endif()
+    endforeach()
+    # Share sanitizer flag with sibling directories.
+    set(DVZ_ASAN_FLAG ${DVZ_ASAN_FLAG} PARENT_SCOPE)
+endif()

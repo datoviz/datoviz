@@ -43,7 +43,8 @@ void dvz_atomic_init(DvzAtomic atomic)
 
 DvzAtomic dvz_atomic()
 {
-    DvzAtomic atomic = (DvzAtomic)calloc(1, sizeof(DvzAtomic_));
+    DvzAtomic atomic = (DvzAtomic)dvz_calloc(1, sizeof(DvzAtomic_));
+    ANN(atomic);
     dvz_atomic_init(atomic);
     return atomic;
 }
@@ -70,5 +71,5 @@ int32_t dvz_atomic_get(DvzAtomic atomic)
 void dvz_atomic_destroy(DvzAtomic atomic)
 {
     ANN(atomic);
-    FREE(atomic);
+    dvz_free(atomic);
 }
