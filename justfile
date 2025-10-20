@@ -1339,12 +1339,12 @@ test test_name="":
 #
 
 [linux]
-mtest test_name="":
+mtest test_name="": msan
     ./build-msan/testing/dvztest {{test_name}}
 #
 
 [linux]
-ttest test_name="":
+ttest test_name="": tsan
     ./build-tsan/testing/dvztest {{test_name}}
 #
 
