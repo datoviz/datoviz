@@ -11,7 +11,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allocator & sanitizer options
-option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable AddressSanitizer instrumentation in Debug builds" ON)
+option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" ON)
+set(DVZ_SANITIZER "asan" CACHE STRING "Sanitizer mode to use when DVZ_ENABLE_ASAN_IN_DEBUG is ON (asan, msan, tsan)")
+set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "asan" "msan" "tsan")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
 
 # Third-party dependencies

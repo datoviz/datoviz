@@ -265,8 +265,28 @@ build release="Debug":
     @mkdir -p docs/images
     @mkdir -p build
     @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build/
-    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build/ && ninja
+#
+
+[linux]
+msan:
+    @set -e
+    @mkdir -p docs/images
+    @mkdir -p build-msan
+    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-msan/
+    @cd build-msan/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER=msan -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-msan/ && ninja
+#
+
+[linux]
+tsan:
+    @set -e
+    @mkdir -p docs/images
+    @mkdir -p build-tsan
+    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-tsan/
+    @cd build-tsan/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER=tsan -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-tsan/ && ninja
 #
 
 [macos]
@@ -280,7 +300,7 @@ build release="Debug": # && bundledeps
     @cp -a libs/vulkan/macos/libMoltenVK.dylib build/
     @cp -a libs/vulkan/macos/MoltenVK_icd.json build/
     @cp -a libs/shaderc/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/libshaderc*dylib build/
-    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cd build/ && ninja
 #
 
@@ -397,7 +417,7 @@ build release="Debug":
     cp "$MINGW64_DIR/libwinpthread-1.dll" build/
 
     pushd build/
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cmake --build .
 
     # Copy vcpkg_installed dll's to datoviz.exe location.
@@ -1292,6 +1312,22 @@ copyright:
     done
 #
 
+# -------------------------------------------------------------------------------------------------
+# Static analysis
+# -------------------------------------------------------------------------------------------------
+
+analyze:
+    @if [ ! -f build/compile_commands.json ]; then \
+        echo "compile_commands.json not found. Run 'just build' first."; \
+        exit 1; \
+    fi
+    @if command -v run-clang-tidy >/dev/null 2>&1; then \
+        run-clang-tidy -p build -quiet 'include/.*' 'src/.*' 'testing/.*'; \
+    else \
+        echo "run-clang-tidy not found. Install clang-tidy or add it to PATH."; \
+        exit 1; \
+    fi
+#
 
 # -------------------------------------------------------------------------------------------------
 # Tests
@@ -1300,6 +1336,16 @@ copyright:
 [linux]
 test test_name="":
     ./build/testing/dvztest {{test_name}}
+#
+
+[linux]
+mtest test_name="":
+    ./build-msan/testing/dvztest {{test_name}}
+#
+
+[linux]
+ttest test_name="":
+    ./build-tsan/testing/dvztest {{test_name}}
 #
 
 [macos]
