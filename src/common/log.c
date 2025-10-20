@@ -31,7 +31,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
 
@@ -43,9 +42,9 @@
 #include <pthread.h>
 #endif
 
-#include "_log.h"
 #include "_macros.h"
 #include "_mutex.h"
+#include "log.h"
 
 #define MAX_THREADS 64
 

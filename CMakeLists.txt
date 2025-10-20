@@ -1,3 +1,7 @@
+# -------------------------------------------------------------------------------------------------
+# Main CMake file
+# -------------------------------------------------------------------------------------------------
+
 cmake_minimum_required(VERSION 3.20)
 project(datoviz VERSION 0.4 LANGUAGES C CXX)
 
@@ -12,13 +16,11 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Enable testing (for ctest)
-enable_testing()
+# enable_testing()
 
 # Global include for public headers
-# Allow includes like "datoviz_common.h" (no prefix) and "datoviz/*.h"
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    # ${PROJECT_SOURCE_DIR}/include/datoviz
 )
 
 # Add subdirectories

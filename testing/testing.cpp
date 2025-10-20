@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
-#include "_log.h"
 #include "datoviz/common/alloc.h"
 #include "datoviz/common/assert.h"
+#include "log.h"
 #include "testing.h"
 
 
@@ -42,20 +42,20 @@ static void print_start(void)
 
 static void print_test(int index, const char* name)
 {
-    printf("- Running test #%03d %28s\n", index, name);
+    printf("- Running test #%03d %28s\n", index, name ? name : "");
 }
 
 
 
 static void print_res(int index, const char* name, int res)
 {
-    printf("%50s", name);
+    printf("%50s", name ? name : "");
     printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
 }
 
 static void print_res_begin(int index, const char* name)
 {
-    log_debug("starting test #%03d %s", index, name);
+    log_debug("starting test #%03d %s", index, name ? name : "");
     printf("%50s...", name);
 }
 
@@ -99,6 +99,7 @@ void tst_suite_add(
     TstFunction test, TstFunction setup, TstFunction teardown, void* user_data, int flags)
 {
     ANN(suite);
+    ANN(name);
     // log_trace(
     //     "append one test item to suite with %d items, capacity %d", //
     //     suite->n_items, suite->capacity);
@@ -140,8 +141,8 @@ void tst_suite_run(TstSuite* suite, const char* match)
     for (uint32_t i = 0; i < suite->n_items; ++i)
     {
         TstItem* item = &suite->items[i];
-        if (std::string(item->name).find(match) != std::string::npos ||
-            std::string(item->tags).find(match) != std::string::npos)
+        if (!match || (item->name && std::string(item->name).find(match) != std::string::npos) ||
+            (item->tags && std::string(item->tags).find(match) != std::string::npos))
         {
             if (item->flags & TST_ITEM_FLAGS_STANDALONE)
             {

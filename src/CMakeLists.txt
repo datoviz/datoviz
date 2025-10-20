@@ -1,7 +1,7 @@
-
 # -------------------------------------------------------------------------------------------------
 # Detect the OS
 # -------------------------------------------------------------------------------------------------
+
 set(OS_LINUX 0)
 set(OS_MACOS 0)
 set(OS_WINDOWS 0)
@@ -14,11 +14,12 @@ elseif(WIN32)
     set(OS_WINDOWS 1)
 endif()
 
-message("linux ${OS_LINUX}")
+
 
 # -------------------------------------------------------------------------------------------------
 # Detect the compiler
 # -------------------------------------------------------------------------------------------------
+
 set(CC_GCC 0)
 set(CC_CLANG 0)
 set(CC_MSVC 0)
@@ -36,8 +37,32 @@ endif()
 
 
 
-set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
+# -------------------------------------------------------------------------------------------------
+# Create the library
+# -------------------------------------------------------------------------------------------------
 
+# Create the shared library combining all object libraries
+add_library(datoviz SHARED
+    "empty.c"
+)
+
+# Output name
+set_target_properties(datoviz PROPERTIES OUTPUT_NAME "datoviz")
+
+# Install rule
+install(TARGETS datoviz
+    LIBRARY DESTINATION lib
+)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Compile definitions
+# -------------------------------------------------------------------------------------------------
+
+set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
+    LOG_USE_COLOR
+    ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>
 
     # OS.
@@ -49,19 +74,24 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CC_MSVC=${CC_MSVC}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
-
-
 )
 
+target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Components
+# -------------------------------------------------------------------------------------------------
 
 # Add source modules
 add_subdirectory(common)
 
 
-# Create the shared library combining all object libraries
-add_library(datoviz SHARED
-    "empty.c"
-)
+
+# -------------------------------------------------------------------------------------------------
+# Include and linking
+# -------------------------------------------------------------------------------------------------
 
 # Link object modules
 target_link_libraries(datoviz
@@ -73,14 +103,4 @@ target_link_libraries(datoviz
 target_include_directories(datoviz
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
-
-# Output name
-set_target_properties(datoviz PROPERTIES OUTPUT_NAME "datoviz")
-
-# Install rule
-install(TARGETS datoviz
-    LIBRARY DESTINATION lib
 )

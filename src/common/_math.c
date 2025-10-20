@@ -22,11 +22,11 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 
 // #include "_cglm.h"
-#include "_log.h"
+#include "log.h"
 // #include "datoviz.h" // for dvz_colormap_scale() used in mock
+#include "datoviz/common/assert.h"
 #include "datoviz/math/types.h"
 
 

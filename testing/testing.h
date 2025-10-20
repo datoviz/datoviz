@@ -19,20 +19,25 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 
-#include "_log.h"
 #include "datoviz/common/macros.h"
+#include "log.h"
 
 
 
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  MACROS                                                                                       */
+/*  Macros                                                                                       */
 /*************************************************************************************************/
 
 #define TST_DEFAULT_CAPACITY 32
+
+
+
+/*************************************************************************************************/
+/*  Test assertions */
+/*************************************************************************************************/
 
 #define AT(x)                                                                                     \
     if (!(x))                                                                                     \
@@ -57,6 +62,12 @@ EXTERN_C_ON
 
 #define EPS 1e-6
 
+
+
+/*************************************************************************************************/
+/*  Profiling                                                                                    */
+/*************************************************************************************************/
+
 #define PROF_START(num)                                                                           \
     {                                                                                             \
         uint32_t N = num;                                                                         \
@@ -69,6 +80,17 @@ EXTERN_C_ON
     double elapsed = dvz_clock_get(&clock);                                                       \
     log_info("profiling: %.6f ms per run", 1000 * elapsed / N);                                   \
     }
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+#define TEST(test, tags, setup, teardown, flags)                                                  \
+    tst_suite_add(&suite, #test, tags, test, setup, teardown, NULL, flags);
+
+#define TEST_SIMPLE(test) TEST(test, NULL, NULL, NULL, TST_ITEM_FLAGS_NONE)
 
 
 
