@@ -31,14 +31,3 @@ typedef enum
     DVZ_REF_FLAGS_NONE = 0x00,
     DVZ_REF_FLAGS_EQUAL = 0x01,
 } DvzRefFlags;
-
-
-
-// Dimension.
-typedef enum
-{
-    DVZ_DIM_X = 0x0000,
-    DVZ_DIM_Y = 0x0001,
-    DVZ_DIM_Z = 0x0002,
-    DVZ_DIM_COUNT,
-} DvzDim;
