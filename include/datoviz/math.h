@@ -22,9 +22,11 @@
 #include <stdbool.h>
 
 #include "math/_cglm.h"
+#include "math/anim.h"
 #include "math/arithm.h"
 #include "math/enums.h"
 #include "math/mock.h"
 #include "math/rand.h"
+#include "math/stats.h"
 #include "math/types.h"
 #include "math/vec.h"

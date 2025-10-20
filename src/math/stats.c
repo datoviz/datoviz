@@ -20,6 +20,7 @@
 #include <stdbool.h>
 
 #include "_assert.h"
+#include "datoviz/math/stats.h"
 #include "datoviz/math/types.h"
 
 
