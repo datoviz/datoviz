@@ -8,8 +8,7 @@
 /*  Color                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_COLOR
-#define DVZ_HEADER_COLOR
+#pragma once
 
 
 
@@ -100,7 +99,3 @@
 #define PURPLE         COLOR_U2DV(255, 0, 255, 255)
 #define YELLOW         COLOR_U2DV(0, 255, 255, 255)
 #define WHITE_ALPHA(a) COLOR_U2DV(255, 255, 255, a)
-
-
-
-#endif

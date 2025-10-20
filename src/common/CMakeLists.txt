@@ -8,9 +8,9 @@ add_library(datoviz_common OBJECT ${COMMON_SRC})
 
 target_include_directories(datoviz_common
     PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/include # for public headers
+    INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR} # so other modules see _*.h
 )
 
 # Propagate global compile definitions (OS/Compiler flags)

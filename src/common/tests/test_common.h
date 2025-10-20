@@ -8,8 +8,7 @@
 /*  Testing object                                                                               */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TEST_OBJ
-#define DVZ_HEADER_TEST_OBJ
+#pragma once
 
 
 
@@ -30,7 +29,3 @@ int test_obj_1(TstSuite* suite, TstItem* tstitem);
 
 
 int test_common(TstSuite* suite);
-
-
-
-#endif

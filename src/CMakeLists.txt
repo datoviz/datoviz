@@ -18,12 +18,9 @@ elseif(WIN32)
     set(OS_WINDOWS 1)
 endif()
 
-
-
 # -------------------------------------------------------------------------------------------------
 # Detect the compiler
 # -------------------------------------------------------------------------------------------------
-
 set(CC_GCC 0)
 set(CC_CLANG 0)
 set(CC_MSVC 0)
@@ -38,8 +35,6 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     # message("compiler is MSVC")
     set(CC_MSVC 1)
 endif()
-
-
 
 # -------------------------------------------------------------------------------------------------
 # Create the library
@@ -58,12 +53,9 @@ install(TARGETS datoviz
     LIBRARY DESTINATION lib
 )
 
-
-
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
-
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
@@ -82,16 +74,12 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
 target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
 
-
-
 # -------------------------------------------------------------------------------------------------
 # Components
 # -------------------------------------------------------------------------------------------------
 
 # Add source modules
 add_subdirectory(common)
-
-
 
 # -------------------------------------------------------------------------------------------------
 # Include and linking
@@ -100,11 +88,11 @@ add_subdirectory(common)
 # Link object modules
 target_link_libraries(datoviz
     PRIVATE
-        datoviz_common
+    datoviz_common
 )
 
 # Public headers
 target_include_directories(datoviz
     PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/include
 )

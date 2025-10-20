@@ -8,8 +8,7 @@
 /*  Mutex                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_MUTEX
-#define DVZ_HEADER_MUTEX
+#pragma once
 
 
 
@@ -152,5 +151,3 @@ void dvz_cond_destroy(DvzCond* cond);
 
 
 EXTERN_C_OFF
-
-#endif
