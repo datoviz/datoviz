@@ -34,6 +34,19 @@ typedef enum
 
 
 
+// Default queue.
+typedef enum
+{
+    // NOTE: by convention in vklite, the first queue MUST support transfers
+    DVZ_DEFAULT_QUEUE_TRANSFER,
+    DVZ_DEFAULT_QUEUE_COMPUTE,
+    DVZ_DEFAULT_QUEUE_RENDER,
+    DVZ_DEFAULT_QUEUE_PRESENT,
+    DVZ_DEFAULT_QUEUE_COUNT,
+} DvzDefaultQueue;
+
+
+
 /*************************************************************************************************/
 /*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
 /*  WARNING: they must match exactly the corresponding Vulkan enums.                             */

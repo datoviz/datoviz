@@ -105,3 +105,41 @@ typedef enum
     DVZ_VIEW_FLAGS_STATIC = 0x0010,
     DVZ_VIEW_FLAGS_NOCLIP = 0x0020,
 } DvzViewFlags;
+
+
+
+/*************************************************************************************************/
+/*  Scene                                                                                        */
+/*************************************************************************************************/
+
+// Build status
+typedef enum
+{
+    DVZ_BUILD_CLEAR,
+    DVZ_BUILD_BUSY,
+    DVZ_BUILD_DIRTY,
+} DvzBuildStatus;
+
+
+
+// Panel resizing.
+typedef enum
+{
+    DVZ_PANEL_RESIZE_STRETCH = 0x00,
+
+    DVZ_PANEL_RESIZE_FIXED_WIDTH = 0x01,
+    DVZ_PANEL_RESIZE_FIXED_HEIGHT = 0x02,
+
+    // if these 2 flags are set, FIXED_WIDTH should not be set
+    DVZ_PANEL_RESIZE_FIXED_TOP_LEFT = 0x10,
+    DVZ_PANEL_RESIZE_FIXED_TOP_RIGHT = 0x20,
+
+    // if these 2 flags are set, FIXED_HEIGHT should not be set
+    DVZ_PANEL_RESIZE_FIXED_BOTTOM_LEFT = 0x40,
+    DVZ_PANEL_RESIZE_FIXED_BOTTOM_RIGHT = 0x80,
+
+    DVZ_PANEL_RESIZE_FIXED_SHAPE = 0x03,
+    DVZ_PANEL_RESIZE_FIXED_OFFSET = 0xF0,
+
+    DVZ_PANEL_RESIZE_FIXED = 0xF3,
+} DvzPanelResizing;

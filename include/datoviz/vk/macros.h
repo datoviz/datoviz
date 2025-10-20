@@ -13,20 +13,23 @@
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                     */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
-
-
-/*************************************************************************************************/
-/*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
-/*************************************************************************************************/
+#define DVZ_MAX_BINDINGS        16
+#define DVZ_MAX_VERTEX_ATTRS    16
+#define DVZ_MAX_VERTEX_BINDINGS 8
+#define DVZ_MAX_PARAMS          16
 
 #ifndef SPIRV_DIR
 #define SPIRV_DIR ""
 #endif
 
 
+
+/*************************************************************************************************/
+/*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
+/*************************************************************************************************/
 
 // macOS NOTE: if INCLUDE_VK_DRIVER_FILES is #defined, set the vulkan driver files to the path
 // to the MoltenVK_icd.json file.

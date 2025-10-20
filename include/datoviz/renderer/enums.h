@@ -28,42 +28,15 @@ typedef enum
 
 
 
-// Tex dims.
+/*************************************************************************************************/
+/*  Renderer                                                                                     */
+/*************************************************************************************************/
+
+// Renderer flags.
 typedef enum
 {
-    DVZ_TEX_NONE,
-    DVZ_TEX_1D,
-    DVZ_TEX_2D,
-    DVZ_TEX_3D,
-} DvzTexDims;
-
-
-
-// Dat flags.
-typedef enum
-{
-    DVZ_DAT_FLAGS_NONE = 0x0000,               // default: shared, with staging, single copy
-    DVZ_DAT_FLAGS_STANDALONE = 0x0100,         // (or shared)
-    DVZ_DAT_FLAGS_MAPPABLE = 0x0200,           // (or non-mappable = need staging buffer)
-    DVZ_DAT_FLAGS_DUP = 0x0400,                // (or single copy)
-    DVZ_DAT_FLAGS_KEEP_ON_RESIZE = 0x1000,     // (or loose the data when resizing the buffer)
-    DVZ_DAT_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
-} DvzDatFlags;
-
-
-
-// Dat upload flags.
-typedef enum
-{
-    DVZ_UPLOAD_FLAGS_NOCOPY = 0x0800, // (avoid data copy/free)
-
-} DvzUploadFlags;
-
-
-
-// Tex flags.
-typedef enum
-{
-    DVZ_TEX_FLAGS_NONE = 0x0000,               // default
-    DVZ_TEX_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
-} DvzTexFlags;
+    DVZ_RENDERER_FLAGS_NONE = 0x000000,
+    DVZ_RENDERER_FLAGS_WHITE_BACKGROUND = 0x100000,
+    DVZ_RENDERER_FLAGS_NO_WORKSPACE = 0x200000,
+    DVZ_RENDERER_FLAGS_OFFSCREEN = 0x008000,
+} DvzRendererFlags;
