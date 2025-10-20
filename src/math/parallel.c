@@ -20,14 +20,84 @@
 #include <stdbool.h>
 
 #include "_assert.h"
-#include "_log.h"
-#include "datoviz/math/types.h"
+#include "datoviz/math/parallel.h"
+
+
+
+/*************************************************************************************************/
+/*  OpenMP                                                                                       */
+/*************************************************************************************************/
+
+static int NUM_THREADS;
+
+int dvz_num_procs(void)
+{
+#if HAS_OPENMP
+    return omp_get_num_procs();
+#else
+    return 0;
+#endif
+}
+
+
+
+void dvz_threads_set(int num_threads)
+{
+#if HAS_OPENMP
+    int num_procs = dvz_num_procs();
+    if (num_threads <= 0)
+    {
+        num_threads += num_procs;
+    }
+    num_threads = MIN(num_threads, num_procs);
+    ASSERT(1 <= num_threads);
+    ASSERT(num_threads <= num_procs);
+    log_info("setting the number of OpenMP threads to %d/%d", num_threads, num_procs);
+    NUM_THREADS = num_threads;
+    omp_set_num_threads(num_threads);
+#endif
+}
+
+
+
+int dvz_threads_get(void)
+{
+#if HAS_OPENMP
+    return NUM_THREADS;
+#else
+    return 0;
+#endif
+}
+
+
+
+void dvz_threads_default(void)
+{
+#if HAS_OPENMP
+    // Set number of threads from DVZ_NUM_THREADS env variable.
+    char* env = getenv("DVZ_NUM_THREADS");
+    if (env == NULL)
+    {
+        int n = dvz_num_procs();
+        n = MAX(1, n / 2);
+        ASSERT(1 <= n);
+        dvz_threads_set(n);
+    }
+    else
+    {
+        int num_threads = getenvint("DVZ_NUM_THREADS");
+        dvz_threads_set(num_threads);
+    }
+#endif
+}
 
 
 
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
+
+
 
 inline double dvz_mean(uint32_t n, double* values)
 {

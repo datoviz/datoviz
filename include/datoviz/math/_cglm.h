@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Math                                                                                         */
+/*  Include cglm                                                                                 */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,15 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
-#include <inttypes.h>
-#include <math.h>
-#include <stdbool.h>
-
-#include "math/_cglm.h"
-#include "math/arithm.h"
-#include "math/enums.h"
-#include "math/mock.h"
-#include "math/rand.h"
-#include "math/types.h"
-#include "math/vec.h"
+#include "_macros.h"
+MUTE_ON
+#define CGLM_DEFINE_PRINTS
+#include <cglm/cglm.h>
+MUTE_OFF

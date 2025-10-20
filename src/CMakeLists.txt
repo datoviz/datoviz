@@ -80,6 +80,7 @@ target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
 
 # Add source modules
 add_subdirectory(common)
+add_subdirectory(math)
 
 # -------------------------------------------------------------------------------------------------
 # Include and linking
@@ -89,6 +90,7 @@ add_subdirectory(common)
 target_link_libraries(datoviz
     PRIVATE
     datoviz_common
+    datoviz_math
 )
 
 # Public headers
