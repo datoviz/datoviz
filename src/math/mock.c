@@ -22,6 +22,7 @@
 
 #include "_assert.h"
 #include "datoviz/color.h"
+#include "datoviz/math/mock.h"
 #include "datoviz/math/rand.h"
 #include "datoviz/math/types.h"
 

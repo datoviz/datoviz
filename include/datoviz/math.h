@@ -24,6 +24,7 @@
 #include "math/_cglm.h"
 #include "math/anim.h"
 #include "math/arithm.h"
+#include "math/array.h"
 #include "math/box.h"
 #include "math/enums.h"
 #include "math/mock.h"
