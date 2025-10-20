@@ -29,4 +29,8 @@ int test_obj_1(TstSuite* suite, TstItem* tstitem);
 
 
 
+int test_common(TstSuite* suite);
+
+
+
 #endif

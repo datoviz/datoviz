@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing common                                                                               */
+/*  Datoviz test runner                                                                          */
 /*************************************************************************************************/
 
 
@@ -14,8 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "test_common.h"
-#include "datoviz/common/assert.h"
+#include "../src/common/tests/test_common.h"
 #include "testing.h"
 
 
@@ -24,11 +23,13 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-int test_common(TstSuite* suite)
+int main(int argc, char** argv)
 {
-    ANN(suite);
+    TstSuite suite = tst_suite();
 
-    const char* tags = "common";
+    test_common(&suite);
 
-    TEST_SIMPLE(test_obj_1);
+    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
+    tst_suite_destroy(&suite);
+    return 0;
 }

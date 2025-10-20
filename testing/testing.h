@@ -88,9 +88,9 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 #define TEST(test, tags, setup, teardown, flags)                                                  \
-    tst_suite_add(&suite, #test, tags, test, setup, teardown, NULL, flags);
+    tst_suite_add(suite, #test, tags, test, setup, teardown, NULL, flags);
 
-#define TEST_SIMPLE(test) TEST(test, NULL, NULL, NULL, TST_ITEM_FLAGS_NONE)
+#define TEST_SIMPLE(test) TEST(test, tags, NULL, NULL, TST_ITEM_FLAGS_NONE)
 
 
 

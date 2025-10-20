@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------------------------
-# Main CMake file
+# Meta CMake file
 # -------------------------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.20)
@@ -24,8 +24,8 @@ include_directories(
 )
 
 # Add subdirectories
-add_subdirectory(testing)
 add_subdirectory(src)
+add_subdirectory(testing)
 
 # Install headers and library
 install(DIRECTORY include/ DESTINATION include)

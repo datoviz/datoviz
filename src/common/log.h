@@ -22,7 +22,6 @@ extern "C"
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "datoviz/common/macros.h"
 
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
