@@ -14,10 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdio.h>
-
-#include "_obj.h"
-#include "datoviz/common/macros.h"
+#include "datoviz/common/assert.h"
+#include "obj.h"
 #include "test_common.h"
 #include "testing.h"
 
