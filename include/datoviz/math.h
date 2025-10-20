@@ -28,6 +28,7 @@
 #include "math/box.h"
 #include "math/enums.h"
 #include "math/mock.h"
+#include "math/prng.h"
 #include "math/rand.h"
 #include "math/stats.h"
 #include "math/types.h"

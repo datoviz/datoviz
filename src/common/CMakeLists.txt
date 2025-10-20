@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------------------------------------
 
 # Common module (OBJECT library)
-file(GLOB COMMON_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
+file(GLOB COMMON_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
 add_library(datoviz_common OBJECT ${COMMON_SRC})
 
 target_include_directories(datoviz_common

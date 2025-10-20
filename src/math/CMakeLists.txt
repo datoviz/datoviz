@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------------------------------------
 
 # Math module (OBJECT library)
-file(GLOB MATH_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
+file(GLOB MATH_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
 add_library(datoviz_math OBJECT ${MATH_SRC})
 
 target_include_directories(datoviz_math
