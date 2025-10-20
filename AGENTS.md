@@ -14,6 +14,8 @@ The goals:
 * Unified **test runner** for all modules
 * CMake-based build and test system
 
+When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
+
 ---
 
 ## 🧩 **Project Structure**
@@ -109,6 +111,16 @@ Only `common`, `ds`, `fileio`, `math`, and `thread` currently build and link int
   ```
 
 `COMPILE_DEFINITIONS` is assembled in `src/CMakeLists.txt` (OS/compiler switches, `LOG_USE_COLOR`, `ENABLE_VALIDATION_LAYERS`, `DEBUG`) and applied `PUBLIC` to every module and to `dvztest`.
+
+## 🛠️ **Build & Test Commands**
+
+The top-level `justfile` provides the primary workflow; Codex should stick to:
+
+* `just clean` — remove generated build artifacts so the next build starts fresh.
+* `just build` — configure (if needed) and compile the active targets through CMake.
+* `just test` — execute the unified `dvztest` suite after a successful build.
+
+Run these commands from the repository root. Other `just` recipes exist but are currently out of scope.
 
 ### Public vs Internal Includes
 
