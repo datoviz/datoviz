@@ -16,6 +16,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 
 #include "datoviz/fileio/fileio.h"
 #include "test_fileio.h"
@@ -85,14 +86,14 @@ int test_parse_npy(TstSuite* suite, TstItem* tstitem)
     uint8_t* buffer = (uint8_t*)dvz_calloc(total_size, 1);
     ANN(buffer);
 
-    memcpy(buffer, "\x93NUMPY", 6);
+    dvz_memcpy(buffer, total_size, "\x93NUMPY", 6);
     buffer[6] = 1;
     buffer[7] = 0;
     uint16_t header_len = (uint16_t)header_padded_len;
     dvz_memcpy(buffer + 8, sizeof(header_len), &header_len, sizeof(header_len));
 
-    memset(buffer + 10, ' ', header_padded_len);
-    memcpy(buffer + 10, header, header_body_len);
+    dvz_memset(buffer + 10, total_size - 10, ' ', header_padded_len);
+    dvz_memcpy(buffer + 10, total_size - 10, header, header_body_len);
     buffer[10 + header_padded_len - 1] = '\n';
 
     double value = 42.0;
