@@ -94,7 +94,9 @@ int test_cond_1(TstSuite* suite, TstItem* tstitem)
     DvzMutex mutex = dvz_mutex();
 
     DvzThread* thread = dvz_thread(_cond_callback, &cond);
+    dvz_mutex_lock(&mutex);
     dvz_cond_wait(&cond, &mutex);
+    dvz_mutex_unlock(&mutex);
 
     dvz_thread_join(thread);
     dvz_mutex_destroy(&mutex);
