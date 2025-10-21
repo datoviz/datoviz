@@ -55,6 +55,7 @@ static void* _mutex_callback(void* user_data)
     DvzMutex* mutex = (DvzMutex*)user_data;
     dvz_sleep(10);
     dvz_mutex_lock(mutex);
+    dvz_sleep(50);
     dvz_mutex_unlock(mutex);
     return NULL;
 }
@@ -68,6 +69,7 @@ int test_mutex_1(TstSuite* suite, TstItem* tstitem)
     dvz_mutex_lock(&mutex);
     dvz_sleep(20);
     dvz_mutex_unlock(&mutex);
+    dvz_sleep(80);
 
     dvz_thread_join(thread);
     dvz_mutex_destroy(&mutex);
