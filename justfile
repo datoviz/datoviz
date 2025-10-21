@@ -406,28 +406,48 @@ build release="Debug":
     set -e
     unset CC
     unset CXX
-    mkdir -p build
-    cp libs/vulkan/windows/vulkan-1.dll build/
-    cp libs/shaderc/windows/libshaderc_shared.dll build/
+    BUILD_DIR="build"
+    mkdir -p "$BUILD_DIR"
+    cp libs/vulkan/windows/vulkan-1.dll "$BUILD_DIR"/
+    cp libs/shaderc/windows/libshaderc_shared.dll "$BUILD_DIR"/
 
-    # Copy mingw64 shared libraries.
-    MINGW64_DIR="$(dirname $(which gcc))"
-    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" build/
-    cp "$MINGW64_DIR/libstdc++-6.dll" build/
-    cp "$MINGW64_DIR/libwinpthread-1.dll" build/
+    # Copy MinGW runtime libraries next to the built artifacts.
+    MINGW64_DIR="$(dirname "$(which gcc)")"
+    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" "$BUILD_DIR"/
+    cp "$MINGW64_DIR/libstdc++-6.dll" "$BUILD_DIR"/
+    cp "$MINGW64_DIR/libwinpthread-1.dll" "$BUILD_DIR"/
 
-    pushd build/
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    cmake --build .
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=mingw -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    cmake --build --preset mingw
 
     # Copy vcpkg_installed dll's to datoviz.exe location.
     if [ "{{release}}" == "Debug" ]; then
-        cp vcpkg_installed/x64-windows/debug/bin/*.dll .
+        cp "$BUILD_DIR/vcpkg_installed/x64-windows/debug/bin/"*.dll "$BUILD_DIR"/
     else
-        cp vcpkg_installed/x64-windows/bin/*.dll .
+        cp "$BUILD_DIR/vcpkg_installed/x64-windows/bin/"*.dll "$BUILD_DIR"/
     fi
+#
 
-    popd
+[windows]
+msvc release="Debug":
+    #!/usr/bin/env sh
+    set -e
+    unset CC
+    unset CXX
+    BUILD_DIR="build-msvc"
+    mkdir -p "$BUILD_DIR"
+    cp libs/vulkan/windows/vulkan-1.dll "$BUILD_DIR"/
+    cp libs/shaderc/windows/libshaderc_shared.dll "$BUILD_DIR"/
+
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake --preset=msvc -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    cmake --build --preset msvc --config {{release}}
+
+    # Copy vcpkg_installed dll's next to datoviz.exe.
+    if [ "{{release}}" == "Debug" ]; then
+        cp "$BUILD_DIR/vcpkg_installed/x64-windows/debug/bin/"*.dll "$BUILD_DIR"/
+    else
+        cp "$BUILD_DIR/vcpkg_installed/x64-windows/bin/"*.dll "$BUILD_DIR"/
+    fi
 #
 
 
