@@ -16,3 +16,11 @@ target_include_directories(datoviz_common
 
 # Propagate global compile definitions (OS/Compiler flags)
 target_compile_definitions(datoviz_common PUBLIC ${COMPILE_DEFINITIONS})
+if(WIN32)
+    # Export symbols when building the shared library on Windows
+    target_compile_definitions(datoviz_common PRIVATE DVZ_SHARED)
+endif()
+
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(datoviz_common PUBLIC ${DVZ_THREADING_TARGET})
+endif()

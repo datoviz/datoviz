@@ -12,6 +12,9 @@ target_include_directories(datoviz_ds
 )
 
 target_compile_definitions(datoviz_ds PUBLIC ${COMPILE_DEFINITIONS})
+if(WIN32)
+    target_compile_definitions(datoviz_ds PRIVATE DVZ_SHARED)
+endif()
 
 if(";${DVZ_ACTIVE_SANITIZERS};" MATCHES ";memory;")
     set_source_files_properties(

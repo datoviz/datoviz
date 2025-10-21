@@ -10,6 +10,9 @@ target_include_directories(testing
     ${PROJECT_SOURCE_DIR}/src/common
 )
 
+# Ensure OS/Compiler macros are visible to the testing library as well
+target_compile_definitions(testing PUBLIC ${COMPILE_DEFINITIONS})
+
 # Allow linking from C
 set_target_properties(testing PROPERTIES
     LINKER_LANGUAGE CXX
@@ -38,6 +41,10 @@ target_link_libraries(dvztest
     datoviz_thread
     testing
 )
+
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(dvztest PRIVATE ${DVZ_THREADING_TARGET})
+endif()
 
 if(DVZ_WITH_MIMALLOC)
     target_link_libraries(dvztest PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
@@ -80,15 +87,17 @@ target_include_directories(dvz_public_header_probe
 
 target_compile_definitions(dvz_public_header_probe PRIVATE ${COMPILE_DEFINITIONS})
 
-add_custom_command(TARGET dvz_public_header_probe
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E env
-    "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{LD_LIBRARY_PATH}"
-    "DYLD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{DYLD_LIBRARY_PATH}"
-    "PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{PATH}"
-    $<TARGET_FILE:dvz_public_header_probe>
-    WORKING_DIRECTORY $<TARGET_FILE_DIR:dvz_public_header_probe>
-)
+if(NOT WIN32)
+    add_custom_command(TARGET dvz_public_header_probe
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E env
+        "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{LD_LIBRARY_PATH}"
+        "DYLD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{DYLD_LIBRARY_PATH}"
+        "PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{PATH}"
+        $<TARGET_FILE:dvz_public_header_probe>
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:dvz_public_header_probe>
+    )
+endif()
 
 if(DVZ_ENABLE_ASAN_IN_DEBUG AND DVZ_SANITIZER_FLAGS)
     foreach(_target testing dvztest)

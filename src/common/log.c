@@ -40,6 +40,8 @@
 #include <unistd.h>
 #elif OS_MACOS
 #include <pthread.h>
+#elif OS_WINDOWS
+#include <windows.h>
 #endif
 
 #include "_compat.h"
@@ -92,7 +94,8 @@ static uint64_t get_thread_idx(void)
     pthread_threadid_np(NULL, &tid);
 #elif OS_WINDOWS
     // Windows
-    tid = pthread_self();
+    // Use native WinAPI to obtain a stable thread ID.
+    tid = (uint64_t)(GetCurrentThreadId());
 #else
     // Linux
     tid = (uint64_t)(syscall(__NR_gettid));

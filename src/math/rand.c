@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "datoviz/math/types.h"
 #include "datoviz/math/rand.h"
 
 

@@ -12,3 +12,10 @@ target_include_directories(datoviz_thread
 )
 
 target_compile_definitions(datoviz_thread PUBLIC ${COMPILE_DEFINITIONS})
+if(WIN32)
+    target_compile_definitions(datoviz_thread PRIVATE DVZ_SHARED)
+endif()
+
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(datoviz_thread PUBLIC ${DVZ_THREADING_TARGET})
+endif()

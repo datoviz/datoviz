@@ -94,3 +94,4 @@ uv.lock
 *venv
 wheel
 .cache
+vcpkg_installed

@@ -19,16 +19,33 @@
 #include "datoviz/common/macros.h"
 
 
+/*************************************************************************************************/
+/*  Forward declarations                                                                          */
+/*************************************************************************************************/
+
+// Ensure the assertion function is declared before any macro might expand and reference it,
+// especially when included from C++ translation units.
+EXTERN_C_ON
+
+DVZ_EXPORT void dvz_assert(bool assertion, const char* message, const char* filename, int line);
+
+EXTERN_C_OFF
+
+
 
 /*************************************************************************************************/
 /*  Assertions                                                                                   */
 /*************************************************************************************************/
 
 #ifndef ASSERT
+#ifdef __cplusplus
+#define ASSERT(x) assert(x)
+#else
 #if DEBUG
 #define ASSERT(x) assert(x)
 #else
 #define ASSERT(x) dvz_assert(x, #x, __FILE_NAME__, __LINE__)
+#endif
 #endif
 #endif
 

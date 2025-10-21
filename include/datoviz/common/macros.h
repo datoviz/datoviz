@@ -27,7 +27,7 @@
 /*************************************************************************************************/
 
 #ifndef DVZ_EXPORT
-#if CC_MSVC
+#if defined(_MSC_VER) || CC_MSVC
 #ifdef DVZ_SHARED
 #define DVZ_EXPORT __declspec(dllexport)
 #else
@@ -42,6 +42,21 @@
 
 #ifndef __STDC_VERSION__
 #define __STDC_VERSION__ 0
+#endif
+
+
+
+/*************************************************************************************************/
+/*  Portable __FILE_NAME__ fallback                                                              */
+/*************************************************************************************************/
+
+// Some compilers (GCC/Clang) provide __FILE_NAME__ which is the basename of __FILE__.
+// MSVC does not define it, so provide a compatible fallback that computes a const char*
+// at runtime from the __FILE__ string literal. This keeps logging/asserts concise.
+#ifndef __FILE_NAME__
+#define __FILE_NAME__                                                                             \
+    (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1                                      \
+                              : (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__))
 #endif
 
 

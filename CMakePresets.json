@@ -2,12 +2,50 @@
     "version": 2,
     "configurePresets": [
         {
-            "name": "default",
+            "name": "mingw",
+            "displayName": "MinGW Makefiles",
+            "description": "Generate build files with MinGW Makefiles",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
+        },
+        {
+            "name": "msvc",
+            "displayName": "MSVC 2022",
+            "description": "Generate build files with Visual Studio 17 2022 (x64)",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build-msvc",
+            "architecture": {
+                "value": "x64"
+            },
+            "toolset": {
+                "value": "host=x64"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "mingw",
+            "configurePreset": "mingw"
+        },
+        {
+            "name": "msvc",
+            "configurePreset": "msvc"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "mingw",
+            "configurePreset": "mingw"
+        },
+        {
+            "name": "msvc",
+            "configurePreset": "msvc"
         }
     ]
 }

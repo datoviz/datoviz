@@ -23,6 +23,9 @@ target_include_directories(datoviz_fileio
 target_compile_definitions(
     datoviz_fileio PUBLIC
     ${COMPILE_DEFINITIONS} "FPNG_USE_UNALIGNED_LOADS=0")
+if(WIN32)
+    target_compile_definitions(datoviz_fileio PRIVATE DVZ_SHARED)
+endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Enable the SIMD code paths used by fpng.

@@ -124,6 +124,10 @@ target_link_libraries(datoviz
     datoviz_thread
 )
 
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
+endif()
+
 if(DVZ_WITH_MIMALLOC)
     target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
 endif()
