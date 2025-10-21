@@ -44,7 +44,7 @@
 
 #include "_compat.h"
 #include "_log.h"
-#include "_mutex.h"
+#include "datoviz/common/mutex.h"
 
 #if OS_WINDOWS
 MUTE_ON

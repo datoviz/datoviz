@@ -20,7 +20,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 
 

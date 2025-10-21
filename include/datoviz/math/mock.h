@@ -16,9 +16,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_macros.h"
 #include "datoviz/color/enums.h"
 #include "datoviz/color/types.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include <float.h>
 #include <inttypes.h>

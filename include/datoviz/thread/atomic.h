@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include "_alloc.h"
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 
 
 

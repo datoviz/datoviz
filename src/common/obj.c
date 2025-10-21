@@ -23,8 +23,8 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "_macros.h"
-#include "_obj.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/arithm.h"
 
 

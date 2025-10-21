@@ -17,8 +17,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
-#include "_obj.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 
 

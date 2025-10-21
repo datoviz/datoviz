@@ -18,6 +18,7 @@
 
 #include "axes.h"
 #include "color.h"
+#include "common.h"
 #include "drp.h"
 #include "dvzmath.h"
 #include "geom.h"

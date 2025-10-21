@@ -16,13 +16,56 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
-#include "enums.h"
 #include "types.h"
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+// Easing.
+typedef enum
+{
+    DVZ_EASING_NONE,
+    DVZ_EASING_IN_SINE,
+    DVZ_EASING_OUT_SINE,
+    DVZ_EASING_IN_OUT_SINE,
+    DVZ_EASING_IN_QUAD,
+    DVZ_EASING_OUT_QUAD,
+    DVZ_EASING_IN_OUT_QUAD,
+    DVZ_EASING_IN_CUBIC,
+    DVZ_EASING_OUT_CUBIC,
+    DVZ_EASING_IN_OUT_CUBIC,
+    DVZ_EASING_IN_QUART,
+    DVZ_EASING_OUT_QUART,
+    DVZ_EASING_IN_OUT_QUART,
+    DVZ_EASING_IN_QUINT,
+    DVZ_EASING_OUT_QUINT,
+    DVZ_EASING_IN_OUT_QUINT,
+    DVZ_EASING_IN_EXPO,
+    DVZ_EASING_OUT_EXPO,
+    DVZ_EASING_IN_OUT_EXPO,
+    DVZ_EASING_IN_CIRC,
+    DVZ_EASING_OUT_CIRC,
+    DVZ_EASING_IN_OUT_CIRC,
+    DVZ_EASING_IN_BACK,
+    DVZ_EASING_OUT_BACK,
+    DVZ_EASING_IN_OUT_BACK,
+    DVZ_EASING_IN_ELASTIC,
+    DVZ_EASING_OUT_ELASTIC,
+    DVZ_EASING_IN_OUT_ELASTIC,
+    DVZ_EASING_IN_BOUNCE,
+    DVZ_EASING_OUT_BOUNCE,
+    DVZ_EASING_IN_OUT_BOUNCE,
+    DVZ_EASING_COUNT,
+} DvzEasing;
+
 
 
 EXTERN_C_ON

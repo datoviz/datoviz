@@ -20,8 +20,8 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_macros.h"
 #include "atomic.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "thread.h"
 

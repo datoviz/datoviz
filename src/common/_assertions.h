@@ -16,7 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 
 
 
@@ -36,12 +36,12 @@
 
 // ASSERT NOT NULL
 #ifndef ANN
-#define ANN(x)                                                                                   \
-    do                                                                                           \
-    {                                                                                            \
-        assert((x) != NULL);                                                                     \
-        ASSERT((x) != NULL);                                                                     \
-        DVZ_ASSUME((x) != NULL);                                                                 \
+#define ANN(x)                                                                                    \
+    do                                                                                            \
+    {                                                                                             \
+        assert((x) != NULL);                                                                      \
+        ASSERT((x) != NULL);                                                                      \
+        DVZ_ASSUME((x) != NULL);                                                                  \
     } while (0)
 #endif
 

@@ -12,9 +12,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/common/mutex.h"
 #include "_assertions.h"
-#include "_macros.h"
-#include "_mutex.h"
+#include "datoviz/common/macros.h"
 
 
 

@@ -16,7 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 #include <math.h>
 MUTE_ON
 #define CGLM_DEFINE_PRINTS

@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #include "_log.h"
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 
 
 

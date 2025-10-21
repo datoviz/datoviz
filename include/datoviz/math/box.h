@@ -16,9 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_macros.h"
-#include "datoviz/math/vec.h"
-#include "enums.h"
+#include "datoviz/common/macros.h"
+#include "types.h"
 
 
 
@@ -44,6 +43,26 @@ struct DvzBox
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
+
+// Box merge flags.
+typedef enum
+{
+    DVZ_BOX_MERGE_DEFAULT = 0, // take extrema of input boxes
+    DVZ_BOX_MERGE_CENTER = 1,  // merged is centered around 0 and encompasses all input boxes
+    DVZ_BOX_MERGE_CORNER = 2,  // merged has (0,0,0) in its lower left corner
+} DvzBoxMergeStrategy;
+
+
+
+// Box flags.
+typedef enum
+{
+    DVZ_BOX_EXTENT_DEFAULT = 0,               // no fixed aspect ratio
+    DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND = 1,   // expand the box to match the aspect ratio
+    DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2, // contract the box to match the aspect ratio
+} DvzBoxExtentStrategy;
+
+
 
 // Dimension.
 typedef enum

@@ -21,10 +21,10 @@
 
 // #include "tinycthread.h"
 
-#include "_macros.h"
-#include "_mutex.h"
-#include "_obj.h"
 #include "atomic.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/common/mutex.h"
+#include "datoviz/common/obj.h"
 
 
 

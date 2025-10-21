@@ -23,7 +23,7 @@
 #include <time.h>
 
 #include "_assertions.h"
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 
 
 

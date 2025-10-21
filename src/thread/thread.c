@@ -17,9 +17,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "_macros.h"
-#include "_mutex.h"
-#include "_obj.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/common/mutex.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/thread/atomic.h"
 
 // MUTE_ON

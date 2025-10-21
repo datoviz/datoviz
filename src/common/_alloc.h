@@ -23,7 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "_macros.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/math/arithm.h"
 #include "datoviz/math/types.h"
 
