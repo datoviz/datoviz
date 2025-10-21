@@ -46,8 +46,6 @@
 #include "_mutex.h"
 #include "_compat.h"
 
-#define MAX_THREADS 64
-
 #if OS_WINDOWS
 MUTE_ON
 // #include "ansicolor-w32.h"
@@ -86,8 +84,6 @@ static void unlock(void)
     }
 }
 
-static uint64_t _THREADS[MAX_THREADS];
-
 static uint64_t get_thread_idx(void)
 {
     uint64_t tid = 0;
@@ -102,18 +98,6 @@ static uint64_t get_thread_idx(void)
     tid = (uint64_t)(syscall(__NR_gettid));
 #endif
     assert(tid != 0);
-
-    // Relative thread idx lookup.
-    for (uint32_t i = 0; i < MAX_THREADS; i++)
-    {
-        if (_THREADS[i] == 0)
-        {
-            _THREADS[i] = tid;
-            return i;
-        }
-        if (_THREADS[i] == tid)
-            return i;
-    }
 
     return tid;
 }
