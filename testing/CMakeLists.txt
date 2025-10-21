@@ -90,11 +90,8 @@ add_custom_command(TARGET dvz_public_header_probe
     WORKING_DIRECTORY $<TARGET_FILE_DIR:dvz_public_header_probe>
 )
 
-# Include the probe in shared instrumentation (coverage, sanitizers, ...).
-set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS dvz_public_header_probe)
-
 if(DVZ_ENABLE_ASAN_IN_DEBUG AND DVZ_SANITIZER_FLAGS)
-    foreach(_target testing dvztest dvz_public_header_probe)
+    foreach(_target testing dvztest)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
             target_link_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
