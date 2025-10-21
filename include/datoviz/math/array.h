@@ -362,3 +362,81 @@ static inline void* dvz_array_item(DvzArray* array, uint32_t idx)
     idx = CLIP(idx, 0, array->item_count - 1);
     return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
 }
+
+
+
+// Size in bytes of a single element of a given dtype.
+static inline DvzSize dvz_array_dtype_size(DvzDataType dtype)
+{
+    switch (dtype)
+    {
+    // 8 bits
+    case DVZ_DTYPE_CHAR:
+        return 1;
+    case DVZ_DTYPE_CVEC2:
+        return 1 * 2;
+    case DVZ_DTYPE_CVEC3:
+        return 1 * 3;
+    case DVZ_DTYPE_CVEC4:
+        return 1 * 4;
+
+    // 16 bits
+    case DVZ_DTYPE_USHORT:
+    case DVZ_DTYPE_SHORT:
+        return 2;
+    case DVZ_DTYPE_SVEC2:
+    case DVZ_DTYPE_USVEC2:
+        return 2 * 2;
+    case DVZ_DTYPE_SVEC3:
+    case DVZ_DTYPE_USVEC3:
+        return 2 * 3;
+    case DVZ_DTYPE_SVEC4:
+    case DVZ_DTYPE_USVEC4:
+        return 2 * 4;
+
+    // 32 bits
+    case DVZ_DTYPE_FLOAT:
+    case DVZ_DTYPE_UINT:
+    case DVZ_DTYPE_INT:
+        return 4;
+
+    case DVZ_DTYPE_VEC2:
+    case DVZ_DTYPE_UVEC2:
+    case DVZ_DTYPE_IVEC2:
+        return 4 * 2;
+
+    case DVZ_DTYPE_VEC3:
+    case DVZ_DTYPE_UVEC3:
+    case DVZ_DTYPE_IVEC3:
+        return 4 * 3;
+
+    case DVZ_DTYPE_VEC4:
+    case DVZ_DTYPE_UVEC4:
+    case DVZ_DTYPE_IVEC4:
+        return 4 * 4;
+
+    // 64 bits
+    case DVZ_DTYPE_DOUBLE:
+        return 8;
+    case DVZ_DTYPE_DVEC2:
+        return 8 * 2;
+    case DVZ_DTYPE_DVEC3:
+        return 8 * 3;
+    case DVZ_DTYPE_DVEC4:
+        return 8 * 4;
+    case DVZ_DTYPE_STR:
+        return sizeof(char*);
+
+    case DVZ_DTYPE_MAT2:
+        return 2 * 2 * 4;
+    case DVZ_DTYPE_MAT3:
+        return 3 * 3 * 4;
+    case DVZ_DTYPE_MAT4:
+        return 4 * 4 * 4;
+
+    default:
+        break;
+    }
+
+    return 0;
+}

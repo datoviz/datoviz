@@ -17,92 +17,14 @@
 
 #include "datoviz/math/array.h"
 #include "_alloc.h"
-#include "_log.h"
 #include "_compat.h"
+#include "_log.h"
 
 
 
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
-
-// Size in bytes of a single element of a given dtype.
-static DvzSize _get_dtype_size(DvzDataType dtype)
-{
-    switch (dtype)
-    {
-    // 8 bits
-    case DVZ_DTYPE_CHAR:
-        return 1;
-    case DVZ_DTYPE_CVEC2:
-        return 1 * 2;
-    case DVZ_DTYPE_CVEC3:
-        return 1 * 3;
-    case DVZ_DTYPE_CVEC4:
-        return 1 * 4;
-
-    // 16 bits
-    case DVZ_DTYPE_USHORT:
-    case DVZ_DTYPE_SHORT:
-        return 2;
-    case DVZ_DTYPE_SVEC2:
-    case DVZ_DTYPE_USVEC2:
-        return 2 * 2;
-    case DVZ_DTYPE_SVEC3:
-    case DVZ_DTYPE_USVEC3:
-        return 2 * 3;
-    case DVZ_DTYPE_SVEC4:
-    case DVZ_DTYPE_USVEC4:
-        return 2 * 4;
-
-    // 32 bits
-    case DVZ_DTYPE_FLOAT:
-    case DVZ_DTYPE_UINT:
-    case DVZ_DTYPE_INT:
-        return 4;
-
-    case DVZ_DTYPE_VEC2:
-    case DVZ_DTYPE_UVEC2:
-    case DVZ_DTYPE_IVEC2:
-        return 4 * 2;
-
-    case DVZ_DTYPE_VEC3:
-    case DVZ_DTYPE_UVEC3:
-    case DVZ_DTYPE_IVEC3:
-        return 4 * 3;
-
-    case DVZ_DTYPE_VEC4:
-    case DVZ_DTYPE_UVEC4:
-    case DVZ_DTYPE_IVEC4:
-        return 4 * 4;
-
-    // 64 bits
-    case DVZ_DTYPE_DOUBLE:
-        return 8;
-    case DVZ_DTYPE_DVEC2:
-        return 8 * 2;
-    case DVZ_DTYPE_DVEC3:
-        return 8 * 3;
-    case DVZ_DTYPE_DVEC4:
-        return 8 * 4;
-    case DVZ_DTYPE_STR:
-        return sizeof(char*);
-
-    case DVZ_DTYPE_MAT2:
-        return 2 * 2 * 4;
-    case DVZ_DTYPE_MAT3:
-        return 3 * 3 * 4;
-    case DVZ_DTYPE_MAT4:
-        return 4 * 4 * 4;
-
-    default:
-        break;
-    }
-
-    if (dtype != DVZ_DTYPE_NONE)
-        log_trace("could not find the size of dtype %d, are we creating a struct array?", dtype);
-    return 0;
-}
 
 
 
@@ -192,23 +114,28 @@ static inline bool _is_double_family(DvzDataType dtype)
 // arrays containing heterogeneous data)
 static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize item_size)
 {
+    ASSERT(item_size > 0);
+
     log_trace("creating array with %d items of size %s each", item_count, pretty_size(item_size));
+
     DvzArray* arr = (DvzArray*)dvz_calloc(1, sizeof(DvzArray));
     ANN(arr);
+
     dvz_memset(arr, sizeof(DvzArray), 0, sizeof(DvzArray));
     arr->obj.type = DVZ_OBJECT_TYPE_ARRAY;
     arr->dtype = dtype;
     arr->components = _get_components(dtype);
     arr->item_size = item_size;
-    ASSERT(item_size > 0);
     arr->item_count = item_count;
     arr->buffer_size = item_count * arr->item_size;
+
     if (item_count > 0)
     {
         arr->data = dvz_calloc(item_count, arr->item_size);
         ANN(arr->data);
     }
     dvz_obj_created(&arr->obj);
+
     return arr;
 }
 
@@ -257,7 +184,8 @@ _repeat_last(uint32_t old_item_count, DvzSize item_size, void* data, uint32_t it
     uint32_t repeat_count = item_count - old_item_count;
     for (uint32_t i = 0; i < repeat_count; i++)
     {
-        dvz_memcpy((void*)dst_offset, (size_t)item_size, (const void*)src_offset, (size_t)item_size);
+        dvz_memcpy(
+            (void*)dst_offset, (size_t)item_size, (const void*)src_offset, (size_t)item_size);
         dst_offset += (int64_t)item_size;
     }
 }
@@ -279,7 +207,7 @@ DvzArray* dvz_array(uint32_t item_count, DvzDataType dtype)
 {
     ASSERT(dtype != DVZ_DTYPE_NONE);
     ASSERT(dtype != DVZ_DTYPE_CUSTOM);
-    return _create_array(item_count, dtype, _get_dtype_size(dtype));
+    return _create_array(item_count, dtype, dvz_array_dtype_size(dtype));
 }
 
 
@@ -372,6 +300,7 @@ dvz_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, Dv
 {
     ASSERT(ndims > 0);
     ASSERT(ndims <= 3);
+    ASSERT(item_size > 0);
 
     if (ndims == 1)
         ASSERT(height <= 1 && depth <= 1);
@@ -756,7 +685,8 @@ void dvz_array_column(
             if (source_dtype == target_dtype ||   //
                 source_dtype == DVZ_DTYPE_NONE || //
                 target_dtype == DVZ_DTYPE_NONE)   //
-                dvz_memcpy((void*)dst_byte, (size_t)col_size, (const void*)src_byte, (size_t)col_size);
+                dvz_memcpy(
+                    (void*)dst_byte, (size_t)col_size, (const void*)src_byte, (size_t)col_size);
             else
             {
                 _cast(target_dtype, (void*)dst_byte, source_dtype, (void*)src_byte);

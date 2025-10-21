@@ -338,7 +338,7 @@ int test_array_mvp(TstSuite* suite, TstItem* tstitem)
 
 int test_array_3D(TstSuite* suite, TstItem* tstitem)
 {
-    DvzArray* arr = dvz_array_3D(2, 2, 3, 1, DVZ_DTYPE_CHAR);
+    DvzArray* arr = dvz_array_3D(2, 2, 3, 1, dvz_array_dtype_size(DVZ_DTYPE_CHAR));
 
     uint8_t value = 12;
     dvz_array_data(arr, 0, 6, 1, &value);
