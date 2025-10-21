@@ -42,9 +42,9 @@
 #include <pthread.h>
 #endif
 
+#include "_compat.h"
 #include "_log.h"
 #include "_mutex.h"
-#include "_compat.h"
 
 #if OS_WINDOWS
 MUTE_ON
@@ -202,5 +202,6 @@ void log_set_level_env(void)
         level_int = strtol(level, NULL, 10);
     log_set_level(level_int);
 
-    log_set_lock(_lock);
+    // HACK: temporarily remove the log lock for now.
+    // log_set_lock(_lock);
 }
