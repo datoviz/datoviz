@@ -26,7 +26,23 @@
 
 int test_prng_1(TstSuite* suite, TstItem* tstitem);
 
-int test_parallel_stats(TstSuite* suite, TstItem* tstitem);
+
+
+int test_box_1(TstSuite* suite, TstItem* tstitem);
+
+int test_box_2(TstSuite* suite, TstItem* tstitem);
+
+int test_box_3(TstSuite* suite, TstItem* tstitem);
+
+int test_box_4(TstSuite* suite, TstItem* tstitem);
+
+int test_box_5(TstSuite* suite, TstItem* tstitem);
+
+int test_box_6(TstSuite* suite, TstItem* tstitem);
+
+
+
+int test_stats_parallel(TstSuite* suite, TstItem* tstitem);
 
 
 
