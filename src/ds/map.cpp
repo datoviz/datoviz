@@ -143,9 +143,9 @@ uint64_t dvz_map_count(DvzMap* map, int type)
     else
     {
         uint64_t count = 0;
-        for (const auto& [id, pair] : map->_map)
+        for (const auto& item : map->_map)
         {
-            if (pair.first == type)
+            if (item.second.first == type)
                 count++;
         }
         return count;
@@ -158,10 +158,10 @@ void* dvz_map_first(DvzMap* map, int type)
 {
     ANN(map);
 
-    for (const auto& [id, pair] : map->_map)
+    for (const auto& item : map->_map)
     {
-        if (type == 0 || pair.first == type)
-            return pair.second;
+        if (type == 0 || item.second.first == type)
+            return item.second.second;
     }
     log_trace("no item with type %d found in map", type);
     return NULL;
@@ -172,10 +172,10 @@ void* dvz_map_first(DvzMap* map, int type)
 void* dvz_map_last(DvzMap* map, int type)
 {
     ANN(map);
-    for (const auto& [id, pair] : reverse(map->_map))
+    for (const auto& item : reverse(map->_map))
     {
-        if (type == 0 || pair.first == type)
-            return pair.second;
+        if (type == 0 || item.second.first == type)
+            return item.second.second;
     }
     log_trace("no item with type %d found in map", type);
     return NULL;
