@@ -128,5 +128,14 @@ int test_thread(TstSuite* suite)
     TEST_SIMPLE(test_cond_1);
     TEST_SIMPLE(test_atomic_1);
 
+    TEST_SIMPLE(test_fifo_1);
+    TEST_SIMPLE(test_fifo_2);
+    TEST_SIMPLE(test_fifo_resize);
+    TEST_SIMPLE(test_fifo_discard);
+    TEST_SIMPLE(test_fifo_first);
+    TEST_SIMPLE(test_deq_1);
+    TEST_SIMPLE(test_deq_2);
+    TEST_SIMPLE(test_deq_3);
+
     return 0;
 }

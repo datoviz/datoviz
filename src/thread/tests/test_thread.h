@@ -34,4 +34,22 @@ int test_atomic_1(TstSuite* suite, TstItem* tstitem);
 
 
 
+int test_fifo_1(TstSuite* suite, TstItem* tstitem);
+
+int test_fifo_2(TstSuite* suite, TstItem* tstitem);
+
+int test_fifo_resize(TstSuite* suite, TstItem* tstitem);
+
+int test_fifo_discard(TstSuite* suite, TstItem* tstitem);
+
+int test_fifo_first(TstSuite* suite, TstItem* tstitem);
+
+int test_deq_1(TstSuite* suite, TstItem* tstitem);
+
+int test_deq_2(TstSuite* suite, TstItem* tstitem);
+
+int test_deq_3(TstSuite* suite, TstItem* tstitem);
+
+
+
 int test_thread(TstSuite* suite);

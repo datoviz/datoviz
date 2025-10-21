@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing FIFO                                                                                 */
+/*  Testing thread */
 /*************************************************************************************************/
 
 
@@ -14,12 +14,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdio.h>
-
-#include "_thread_utils.h"
-#include "fifo.h"
-#include "test.h"
-#include "test_fifo.h"
+#include "_alloc.h"
+#include "_assert.h"
+#include "datoviz/ds/types.h"
+#include "datoviz/thread/fifo.h"
+#include "test_thread.h"
 #include "testing.h"
 
 
@@ -56,7 +55,8 @@ static void* _fifo_thread_2(void* arg)
 {
     DvzFifo* fifo = arg;
     // NOTE: this pointer will be FREE-ed by the main thread (as user_data).
-    uint8_t* numbers = (uint8_t*)calloc(5, sizeof(uint8_t));
+    uint8_t* numbers = (uint8_t*)dvz_calloc(5, sizeof(uint8_t));
+    ANN(numbers);
     fifo->user_data = numbers;
     for (uint32_t i = 0; i < 5; i++)
     {
@@ -110,7 +110,7 @@ int test_fifo_1(TstSuite* suite, TstItem* tstitem)
         i++;
     } while (dequeued != NULL);
     dvz_thread_join(thread);
-    FREE(fifo->user_data);
+    dvz_free(fifo->user_data);
 
     dvz_fifo_destroy(fifo);
     return 0;
@@ -242,7 +242,7 @@ int test_deq_1(TstSuite* suite, TstItem* tstitem)
     AT(item.deq_idx == 0);
     AT(item.type == 0);
     AT(data == 2);
-    FREE(item.item);
+    dvz_free(item.item);
 
     // Enqueue in the queue without a callback.
     data = 0;
@@ -251,7 +251,7 @@ int test_deq_1(TstSuite* suite, TstItem* tstitem)
     AT(item.deq_idx == 1);
     AT(item.type == 10);
     AT(data == 0);
-    FREE(item.item);
+    dvz_free(item.item);
 
     // Enqueue in the queue with a callback.
     dvz_deq_enqueue(deq, 0, 10, (int[]){3});
@@ -259,7 +259,7 @@ int test_deq_1(TstSuite* suite, TstItem* tstitem)
     AT(item.deq_idx == 0);
     AT(item.type == 10);
     AT(data == 0);
-    FREE(item.item);
+    dvz_free(item.item);
 
     dvz_deq_callback(deq, 0, 10, _deq_1_callback, &data);
     dvz_deq_enqueue(deq, 0, 10, (int[]){4});
@@ -268,7 +268,7 @@ int test_deq_1(TstSuite* suite, TstItem* tstitem)
     AT(item.type == 10);
     AT(item.item != NULL);
     AT(data == 4);
-    FREE(item.item);
+    dvz_free(item.item);
 
     // Supbsequent dequeues are empty.
     item = dvz_deq_dequeue_return(deq, 0, false);
