@@ -6,6 +6,13 @@ file(GLOB FILEIO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
 list(APPEND FILEIO_SRC "${PROJECT_SOURCE_DIR}/external/fpng.cpp")
 add_library(datoviz_fileio OBJECT ${FILEIO_SRC})
 
+set_property(
+    SOURCE ${PROJECT_SOURCE_DIR}/external/fpng.cpp
+    APPEND
+    PROPERTY COMPILE_OPTIONS
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-tautological-constant-out-of-range-compare>
+)
+
 target_include_directories(datoviz_fileio
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
