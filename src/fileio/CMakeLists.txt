@@ -13,7 +13,9 @@ target_include_directories(datoviz_fileio
     ${PROJECT_SOURCE_DIR}/src/common
 )
 
-target_compile_definitions(datoviz_fileio PUBLIC ${COMPILE_DEFINITIONS})
+target_compile_definitions(
+    datoviz_fileio PUBLIC
+    ${COMPILE_DEFINITIONS} "FPNG_USE_UNALIGNED_LOADS=0")
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Enable the SIMD code paths used by fpng.
