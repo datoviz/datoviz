@@ -36,10 +36,14 @@
 
 #define EPSILON 1e-10
 
+#if defined(__clang__) || defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
 static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
+#if defined(__clang__) || defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif
 #define DVZ_ZERO_OFFSET _ZERO_OFFSET
 
 // Box
