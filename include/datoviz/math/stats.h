@@ -18,7 +18,6 @@
 
 #include "_macros.h"
 #include "datoviz/math/types.h"
-#include "enums.h"
 #include "types.h"
 #include <float.h>
 #include <inttypes.h>

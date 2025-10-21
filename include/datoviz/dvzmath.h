@@ -10,6 +10,8 @@
 
 #pragma once
 
+// NOTE: this file should NOT be named math.h otherwise conflict in emcc/wasm.
+
 
 
 /*************************************************************************************************/
@@ -26,6 +28,7 @@
 #include "math/arithm.h"
 #include "math/array.h"
 #include "math/box.h"
+#include "math/dvzmath.h"
 #include "math/enums.h"
 #include "math/mock.h"
 #include "math/prng.h"

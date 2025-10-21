@@ -96,7 +96,7 @@ if __name__ == '__main__':
             name = fn['name']
             if name not in exported:
                 continue
-            ret = map_type(fn['returns'])
+            ret = map_type(fn.get('returns', {}).get('dtype', ''))
             args = [map_type(arg['dtype']) for arg in fn['args']]
             short_name = name[4:] if name.startswith('dvz_') else name
             wrappers.append(

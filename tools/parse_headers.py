@@ -25,7 +25,7 @@ from tqdm import tqdm
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
-HEADER_DIR = (ROOT_DIR / 'include').resolve()
+HEADER_DIR = (ROOT_DIR / 'include/datoviz').resolve()
 CACHE_PATH = ROOT_DIR / 'build/headers.json'
 EXCLUDE_DEFINES = (
     'DVZ_COLOR_CVEC4',
@@ -42,7 +42,6 @@ LPAR, RPAR, LBRACE, RBRACE, LBRACKET, RBRACKET, COMMA, SEMICOLON, EQ, SPACE = ma
 
 # Utils
 # -------------------------------------------------------------------------------------------------
-
 
 class Bunch(dict):
     def __init__(self, *args, **kwargs):
@@ -123,12 +122,9 @@ def parse_doxygen_docstring(docstring):
 # File explorer and manipulation
 # -------------------------------------------------------------------------------------------------
 
-
 def iter_header_files():
-    for h in sorted(HEADER_DIR.glob('*.h')):
+    for h in sorted(HEADER_DIR.glob('*/*.h')):
         yield h
-    # for h in sorted(HEADER_DIR.glob('*/*.h')):
-    #     yield h
 
 
 def count_header_files():
@@ -146,7 +142,6 @@ def read_file(filename):
 
 # C header parsing
 # -------------------------------------------------------------------------------------------------
-
 
 def parse_defines(text):
     defines = {}
@@ -353,7 +348,6 @@ def parse_headers():
 
 # Object getter
 # -------------------------------------------------------------------------------------------------
-
 
 @lru_cache
 def load_headers():
