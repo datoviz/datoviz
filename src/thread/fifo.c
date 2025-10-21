@@ -16,9 +16,9 @@
 
 #include "datoviz/thread/fifo.h"
 #include "_alloc.h"
-#include "_assert.h"
-#include "_log.h"
+#include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "datoviz/ds/map.h"
 
 
@@ -72,8 +72,7 @@ static void _fifo_resize(DvzFifo* fifo)
 
         fifo->capacity *= 2;
         log_debug("FIFO queue is full, enlarging it to %d", fifo->capacity);
-        fifo->items = (void**)dvz_realloc(
-            fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
+        fifo->items = (void**)dvz_realloc(fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
         ANN(fifo->items);
     }
 
@@ -261,7 +260,7 @@ void dvz_fifo_destroy(DvzFifo* fifo)
     dvz_cond_destroy(&fifo->cond);
 
     dvz_atomic_destroy(fifo->is_empty);
-   dvz_atomic_destroy(fifo->is_processing);
+    dvz_atomic_destroy(fifo->is_processing);
 
     ANN(fifo->items);
     dvz_free_ptr((void**)&fifo->items);

@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #include "_alloc.h"
-#include "_assert.h"
+#include "_assertions.h"
 #include "_macros.h"
 #include "atomic.h"
 #include "datoviz/math/types.h"
@@ -387,8 +387,8 @@ void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t
  * Enqueue an item.
  *
  * !!! warning
-*     When using the built-in Deq loop, the passed pointer `item` MUST be allocated with dvz_malloc()
- *     or equivalent as it will be automatically freed by the Deq loop.
+ *     When using the built-in Deq loop, the passed pointer `item` MUST be allocated with
+ * dvz_malloc() or equivalent as it will be automatically freed by the Deq loop.
  *
  * @param deq the Deq
  * @param deq_idx the queue index

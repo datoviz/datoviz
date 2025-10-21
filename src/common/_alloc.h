@@ -20,10 +20,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "_assert.h"
+#include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "_macros.h"
-#include "_compat.h"
 #include "datoviz/math/arithm.h"
 #include "datoviz/math/types.h"
 
@@ -262,13 +262,14 @@ static inline DvzSize dvz_aligned_size(DvzSize size, DvzSize alignment)
 
 
 
-static inline DvzPointer dvz_aligned_repeat(
-    DvzSize size, const void* data, uint32_t count, DvzSize alignment)
+static inline DvzPointer
+dvz_aligned_repeat(DvzSize size, const void* data, uint32_t count, DvzSize alignment)
 {
     DvzSize item_size = alignment > 0 ? dvz_alignment_get(size, alignment) : size;
     DvzSize total_size = item_size * count;
     /* Back-port of aligned_repeat(): duplicate a small pattern in an aligned heap buffer. */
-    void* repeated = alignment > 0 ? dvz_aligned_alloc(alignment, total_size) : dvz_malloc(total_size);
+    void* repeated =
+        alignment > 0 ? dvz_aligned_alloc(alignment, total_size) : dvz_malloc(total_size);
     ANN(repeated);
     dvz_memset(repeated, (size_t)total_size, 0, (size_t)total_size);
     for (uint32_t i = 0; i < count; i++)

@@ -19,8 +19,8 @@
 #include <math.h>
 #include <stdbool.h>
 
-#include "_assert.h"
 #include "_alloc.h"
+#include "_assertions.h"
 #include "datoviz/color.h"
 #include "datoviz/math/mock.h"
 #include "datoviz/math/rand.h"

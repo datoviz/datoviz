@@ -10,10 +10,10 @@
 
 #include "datoviz/ds/list.h"
 #include "_alloc.h"
-#include "_assert.h"
+#include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "_macros.h"
-#include "_compat.h"
 
 
 
@@ -30,8 +30,8 @@ static void _realloc_if_needed(DvzList* list)
     if (list->count >= list->capacity)
     {
         list->capacity *= 2;
-        list->values = (DvzListItem*)dvz_realloc(
-            list->values, list->capacity * sizeof(DvzListItem));
+        list->values =
+            (DvzListItem*)dvz_realloc(list->values, list->capacity * sizeof(DvzListItem));
         ANN(list->values);
     }
     ASSERT(list->count < list->capacity);

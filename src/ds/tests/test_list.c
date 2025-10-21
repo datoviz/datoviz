@@ -14,7 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assert.h"
+#include "_assertions.h"
 #include "datoviz/ds/list.h"
 
 #include "test_ds.h"

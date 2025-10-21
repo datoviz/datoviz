@@ -19,7 +19,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-#include "_assert.h"
+#include "_assertions.h"
 #include "datoviz/math/parallel.h"
 
 

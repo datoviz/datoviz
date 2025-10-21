@@ -4,9 +4,9 @@
 
 #include "datoviz/fileio/fileio.h"
 #include "_alloc.h"
-#include "_assert.h"
-#include "_log.h"
+#include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "fpng.h"
 #include <errno.h>
 #include <sys/stat.h>
@@ -172,7 +172,8 @@ char* dvz_parse_npy(DvzSize size, char* npy_bytes)
     }
 
     // Copy the array data to the output buffer
-    dvz_memcpy(array_data, (size_t)array_data_size, npy_bytes + data_offset, (size_t)array_data_size);
+    dvz_memcpy(
+        array_data, (size_t)array_data_size, npy_bytes + data_offset, (size_t)array_data_size);
 
     return array_data;
 }

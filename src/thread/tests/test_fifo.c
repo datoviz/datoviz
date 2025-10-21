@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "_alloc.h"
-#include "_assert.h"
+#include "_assertions.h"
 #include "datoviz/ds/types.h"
 #include "datoviz/thread/fifo.h"
 #include "test_thread.h"

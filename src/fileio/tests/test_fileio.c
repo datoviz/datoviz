@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "_alloc.h"
-#include "_assert.h"
+#include "_assertions.h"
 
 #include "datoviz/fileio/fileio.h"
 #include "test_fileio.h"

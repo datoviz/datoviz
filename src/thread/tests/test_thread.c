@@ -14,7 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assert.h"
+#include "_assertions.h"
 
 #include "_mutex.h" // this one is in common as it is used by _log.h
 #include "datoviz/thread/thread.h"

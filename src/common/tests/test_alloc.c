@@ -19,7 +19,7 @@
 #include <string.h>
 
 #include "_alloc.h"
-#include "_assert.h"
+#include "_assertions.h"
 #include "_compat.h"
 
 #include "test_common.h"

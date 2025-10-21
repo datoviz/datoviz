@@ -3,7 +3,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/ds/map.h"
-#include "_assert.h"
+#include "_assertions.h"
 #include "_log.h"
 
 #include <map>

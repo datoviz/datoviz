@@ -33,7 +33,7 @@ datoviz/
 │
 ├── src/                        # Internal implementation (not installed)
 │   ├── common/
-│   │   ├── _alloc.h _assert.h _error.h _log.h _macros.h _mutex.h _obj.h _time_utils.h
+│   │   ├── _alloc.h _assertions.h _error.h _log.h _macros.h _mutex.h _obj.h _time_utils.h
 │   │   ├── assert.c error.c log.c mutex.c obj.c version.c
 │   │   └── tests/
 │   ├── ds/                     # Data-structure primitives
@@ -170,7 +170,7 @@ Filenames starting with `_` are **legal**, but **identifiers** (macros, function
 
 ```c
 // src/common/tests/test_obj.c
-#include "_assert.h"
+#include "_assertions.h"
 #include "_obj.h"
 #include "test_common.h"
 #include "testing.h"
@@ -271,7 +271,7 @@ CMake does not link object libraries on its own; usage requirements only flow on
 Shared internal headers in `src/common/` provide:
 
 * `_alloc.h` — allocation helpers and aligned memory
-* `_assert.h` — assertion helpers (`ANN`, `ASSERT`, etc.)
+* `_assertions.h` — assertion helpers (`ANN`, `ASSERT`, etc.)
 * `_error.h` — error callbacks and reporting buffer
 * `_log.h` — logging API
 * `_macros.h` — global macros (`EXTERN_C_*`, `DVZ_EXPORT`, `MUTE_ON`, …)
