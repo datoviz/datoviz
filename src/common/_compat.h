@@ -104,8 +104,16 @@ dvz_memcpy(void* destination, size_t destination_size, const void* source, size_
 static inline int
 dvz_memset(void* destination, size_t destination_size, int value, size_t count)
 {
-#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
+#if defined(__STDC_LIB_EXT1__)
     return memset_s(destination, destination_size, value, count);
+#elif defined(_MSC_VER)
+#if _MSC_VER >= 1900
+    return memset_s(destination, destination_size, value, count);
+#else
+    (void)destination_size;
+    memset(destination, value, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    return 0;
+#endif
 #else
     (void)destination_size;
     memset(destination, value, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
@@ -130,4 +138,3 @@ dvz_memmove(void* destination, size_t destination_size, const void* source, size
 #ifdef __cplusplus
 }
 #endif
-
