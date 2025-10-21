@@ -17,7 +17,6 @@
 /*************************************************************************************************/
 
 #include <assert.h>
-#include <libgen.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -82,13 +81,13 @@
 #elif CC_CLANG
 #define DVZ_ASSUME(x) __builtin_assume(x)
 #elif CC_GCC
-#define DVZ_ASSUME(x)                                                                           \
-    do                                                                                          \
-    {                                                                                           \
-        if (!(x))                                                                               \
-        {                                                                                       \
-            __builtin_unreachable();                                                            \
-        }                                                                                       \
+#define DVZ_ASSUME(x)                                                                             \
+    do                                                                                            \
+    {                                                                                             \
+        if (!(x))                                                                                 \
+        {                                                                                         \
+            __builtin_unreachable();                                                              \
+        }                                                                                         \
     } while (0)
 #else
 #define DVZ_ASSUME(x) ((void)0)
