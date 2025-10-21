@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz test runner                                                                          */
+/*  Testing prng                                                                                 */
 /*************************************************************************************************/
 
 
@@ -14,26 +14,26 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/common/tests/test_common.h"
-#include "../src/ds/tests/test_ds.h"
-#include "../src/math/tests/test_math.h"
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
+#include "_log.h"
+#include "datoviz/math/prng.h"
+#include "test_math.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  PRNG tests                                                                                   */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+int test_prng_1(TstSuite* suite, TstItem* tstitem)
 {
-    TstSuite suite = tst_suite();
-
-    test_common(&suite);
-    test_ds(&suite);
-    test_math(&suite);
-
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
-    tst_suite_destroy(&suite);
+    DvzPrng* prng = dvz_prng();
+    uint64_t uuid = dvz_prng_uuid(prng);
+    log_info("random uuid is %" PRIu64, uuid);
+    dvz_prng_destroy(prng);
     return 0;
 }

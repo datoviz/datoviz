@@ -5,8 +5,10 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz test runner                                                                          */
+/*  Testing math                                                                                 */
 /*************************************************************************************************/
+
+#pragma once
 
 
 
@@ -14,26 +16,16 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/common/tests/test_common.h"
-#include "../src/ds/tests/test_ds.h"
-#include "../src/math/tests/test_math.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
-{
-    TstSuite suite = tst_suite();
+int test_prng_1(TstSuite* suite, TstItem* tstitem);
 
-    test_common(&suite);
-    test_ds(&suite);
-    test_math(&suite);
 
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
-    tst_suite_destroy(&suite);
-    return 0;
-}
+
+int test_math(TstSuite* suite);

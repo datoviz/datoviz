@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz test runner                                                                          */
+/*  Testing math                                                                                 */
 /*************************************************************************************************/
 
 
@@ -14,9 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/common/tests/test_common.h"
-#include "../src/ds/tests/test_ds.h"
-#include "../src/math/tests/test_math.h"
+#include "_assert.h"
+
+#include "test_math.h"
 #include "testing.h"
 
 
@@ -25,15 +25,13 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+int test_math(TstSuite* suite)
 {
-    TstSuite suite = tst_suite();
+    ANN(suite);
 
-    test_common(&suite);
-    test_ds(&suite);
-    test_math(&suite);
+    const char* tags = "math";
 
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
-    tst_suite_destroy(&suite);
+    TEST_SIMPLE(test_prng_1);
+
     return 0;
 }
