@@ -28,6 +28,8 @@ int test_map_1(TstSuite* suite, TstItem* tstitem);
 
 int test_map_2(TstSuite* suite, TstItem* tstitem);
 
+int test_list_1(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_ds(TstSuite* suite);
