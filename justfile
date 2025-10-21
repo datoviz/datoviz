@@ -1340,6 +1340,25 @@ test test_name="":
 #
 
 [linux]
+coverage filter="":
+    @set -e
+    @if ! command -v gcovr >/dev/null 2>&1; then \
+        echo "gcovr is required for coverage reporting. Install it with 'pip install gcovr'."; \
+        exit 1; \
+    fi
+    @rm -rf build-coverage
+    @mkdir -p docs/images
+    @mkdir -p build-coverage/coverage
+    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-coverage/
+    @cd build-coverage && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-coverage && ninja
+    @cd build-coverage && if [ -n "{{filter}}" ]; then ./testing/dvztest "{{filter}}"; else ./testing/dvztest; fi
+    @cd build-coverage && gcovr --root .. --exclude 'external/' --exclude 'testing/' --exclude 'v0\.3/' --exclude 'build.*/' --branches --print-summary
+    @cd build-coverage && gcovr --root .. --exclude 'external/' --exclude 'testing/' --exclude 'v0\.3/' --exclude 'build.*/' --branches --html --html-details -o coverage/index.html
+    @echo "Coverage HTML report: build-coverage/coverage/index.html"
+#
+
+[linux]
 mtest test_name="": msan
     ./build-msan/testing/dvztest {{test_name}}
 #

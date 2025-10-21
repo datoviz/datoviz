@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allocator & sanitizer options
 option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" ON)
+option(DVZ_ENABLE_COVERAGE "Enable code coverage instrumentation for supported compilers" OFF)
 set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds (asan, msan, tsan, or a comma-separated list)")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
 
@@ -42,9 +43,37 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
 )
 
+# Prepare a shared list of targets so subdirectories can register themselves.
+set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(testing)
+
+if(DVZ_ENABLE_COVERAGE)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Code coverage instrumentation enabled")
+        get_property(_dvz_targets GLOBAL PROPERTY DVZ_ALL_TARGETS)
+        list(REMOVE_DUPLICATES _dvz_targets)
+
+        set(_dvz_coverage_compile_flags -O0 -g --coverage)
+        set(_dvz_coverage_link_flags --coverage)
+
+        foreach(_dvz_target ${_dvz_targets})
+            if(TARGET ${_dvz_target})
+                get_target_property(_dvz_target_type ${_dvz_target} TYPE)
+                if(_dvz_target_type AND NOT _dvz_target_type STREQUAL "INTERFACE_LIBRARY")
+                    target_compile_options(${_dvz_target} PRIVATE ${_dvz_coverage_compile_flags})
+                    if(NOT _dvz_target_type STREQUAL "OBJECT_LIBRARY")
+                        target_link_options(${_dvz_target} PRIVATE ${_dvz_coverage_link_flags})
+                    endif()
+                endif()
+            endif()
+        endforeach()
+    else()
+        message(WARNING "DVZ_ENABLE_COVERAGE is ON but coverage flags are only supported with GCC or Clang")
+    endif()
+endif()
 
 # Install headers and library
 install(DIRECTORY include/ DESTINATION include)

@@ -43,6 +43,13 @@ if(DVZ_WITH_MIMALLOC)
     target_link_libraries(dvztest PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
 endif()
 
+# Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
+foreach(_dvz_test_target testing dvztest)
+    if(TARGET ${_dvz_test_target})
+        set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_test_target})
+    endif()
+endforeach()
+
 # Include test headers and internal paths
 target_include_directories(dvztest
     PRIVATE

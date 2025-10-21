@@ -128,6 +128,22 @@ if(DVZ_WITH_MIMALLOC)
     target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
 endif()
 
+# Track core targets for optional coverage instrumentation.
+set(_dvz_tracked_targets
+    datoviz
+    datoviz_common
+    datoviz_ds
+    datoviz_fileio
+    datoviz_math
+    datoviz_thread
+)
+
+foreach(_dvz_target ${_dvz_tracked_targets})
+    if(TARGET ${_dvz_target})
+        set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_target})
+    endif()
+endforeach()
+
 # Public headers
 target_include_directories(datoviz
     PUBLIC
