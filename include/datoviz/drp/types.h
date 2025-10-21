@@ -20,6 +20,7 @@
 #include <stdbool.h>
 
 #include "datoviz/math/types.h"
+#include "datoviz/vk/enums.h"
 #include "enums.h"
 
 
@@ -60,8 +61,21 @@ typedef struct DvzRequestRecord DvzRequestRecord;
 typedef struct DvzRequest DvzRequest;
 typedef union DvzRequestContent DvzRequestContent;
 
+typedef struct DvzRecorderViewport DvzRecorderViewport;
+typedef struct DvzRecorderPush DvzRecorderPush;
+typedef struct DvzRecorderDraw DvzRecorderDraw;
+typedef struct DvzRecorderDrawIndexed DvzRecorderDrawIndexed;
+typedef struct DvzRecorderDrawIndirect DvzRecorderDrawIndirect;
+typedef struct DvzRecorderDrawIndexedIndirect DvzRecorderDrawIndexedIndirect;
+typedef struct DvzRecorderCommand DvzRecorderCommand;
+typedef union DvzRecorderUnion DvzRecorderUnion;
+
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzBatch DvzBatch;
+
+// Forward declarations.
+typedef struct DvzList DvzList;
+typedef struct DvzFifo DvzFifo;
 
 
 

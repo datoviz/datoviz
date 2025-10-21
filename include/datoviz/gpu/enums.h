@@ -16,17 +16,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Tex dims.
-typedef enum
-{
-    DVZ_TEX_NONE,
-    DVZ_TEX_1D,
-    DVZ_TEX_2D,
-    DVZ_TEX_3D,
-} DvzTexDims;
-
-
-
 // Dat flags.
 typedef enum
 {

@@ -16,15 +16,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Blend type.
-typedef enum
-{
-    DVZ_BLEND_DISABLE,
-    DVZ_BLEND_STANDARD,
-    DVZ_BLEND_DESTINATION,
-    DVZ_BLEND_OIT,
-} DvzBlendType;
-
 
 
 // Slot type.
@@ -34,16 +25,6 @@ typedef enum
     DVZ_SLOT_TEX,
     DVZ_SLOT_COUNT,
 } DvzSlotType;
-
-
-
-// Depth test.
-typedef enum
-{
-    DVZ_DEPTH_TEST_DISABLE,
-    DVZ_DEPTH_TEST_ENABLE,
-} DvzDepthTest;
-
 
 
 // Orientation.

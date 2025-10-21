@@ -16,16 +16,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Graphics builtins
-// TODO: remove?
-typedef enum
-{
-    DVZ_GRAPHICS_NONE,
-    DVZ_GRAPHICS_POINT,
-    DVZ_GRAPHICS_TRIANGLE,
-    DVZ_GRAPHICS_CUSTOM,
-} DvzGraphicsType;
-
 
 
 /*************************************************************************************************/

@@ -81,3 +81,63 @@ typedef enum
 
     DVZ_REQUEST_OBJECT_RECORD, // use recorder.h
 } DvzRequestObject;
+
+
+
+// Buffer type.
+// NOTE: the enum index should correspond to the buffer index in the context->buffers container
+typedef enum
+{
+    DVZ_BUFFER_TYPE_UNDEFINED,
+    DVZ_BUFFER_TYPE_STAGING,  // 1
+    DVZ_BUFFER_TYPE_VERTEX,   // 2
+    DVZ_BUFFER_TYPE_INDEX,    // 3
+    DVZ_BUFFER_TYPE_STORAGE,  // 4
+    DVZ_BUFFER_TYPE_UNIFORM,  // 5
+    DVZ_BUFFER_TYPE_INDIRECT, // 6
+} DvzBufferType;
+
+#define DVZ_BUFFER_TYPE_COUNT 6
+
+
+
+// Blend type.
+typedef enum
+{
+    DVZ_BLEND_DISABLE,
+    DVZ_BLEND_STANDARD,
+    DVZ_BLEND_DESTINATION,
+    DVZ_BLEND_OIT,
+} DvzBlendType;
+
+
+
+// Depth test.
+typedef enum
+{
+    DVZ_DEPTH_TEST_DISABLE,
+    DVZ_DEPTH_TEST_ENABLE,
+} DvzDepthTest;
+
+
+
+// Graphics builtins
+// TODO: remove?
+typedef enum
+{
+    DVZ_GRAPHICS_NONE,
+    DVZ_GRAPHICS_POINT,
+    DVZ_GRAPHICS_TRIANGLE,
+    DVZ_GRAPHICS_CUSTOM,
+} DvzGraphicsType;
+
+
+
+// Tex dims.
+typedef enum
+{
+    DVZ_TEX_NONE,
+    DVZ_TEX_1D,
+    DVZ_TEX_2D,
+    DVZ_TEX_3D,
+} DvzTexDims;
