@@ -19,5 +19,10 @@ target_compile_definitions(
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Enable the SIMD code paths used by fpng.
-    target_compile_options(datoviz_fileio PRIVATE -msse4.1 -mpclmul)
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _dvz_cpu_arch)
+    if(_dvz_cpu_arch MATCHES "amd64|x86_64|i.86")
+        target_compile_options(datoviz_fileio PRIVATE -msse4.1 -mpclmul)
+    else()
+        message(STATUS "Skipping SSE4.1/PCLMUL flags on non-x86 architecture (${CMAKE_SYSTEM_PROCESSOR}).")
+    endif()
 endif()
