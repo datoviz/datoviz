@@ -280,6 +280,8 @@ dvz_aligned_repeat(DvzSize size, const void* data, uint32_t count, DvzSize align
     }
     /* WARNING: the returned pointer carries the aligned flag so callers free it correctly on all
      * platforms (Windows requires _aligned_free for true aligned blocks). */
-    DvzPointer out = {.pointer = repeated, .aligned = alignment > 0};
+    DvzPointer out = {0};
+    out.pointer = repeated;
+    out.aligned = alignment > 0;
     return out;
 }
