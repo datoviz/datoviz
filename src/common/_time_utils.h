@@ -19,6 +19,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h> // portable: uint64_t   MSVC: __int64
 #include <time.h>
 
 #include "_assertions.h"
@@ -34,7 +35,6 @@
 #if CC_MSVC
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <stdint.h> // portable: uint64_t   MSVC: __int64
 
 // MSVC defines this in winsock2.h!?
 typedef struct timeval
