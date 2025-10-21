@@ -1350,11 +1350,11 @@ coverage filter="":
     @mkdir -p docs/images
     @mkdir -p build-coverage/coverage
     @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-coverage/
-    @cd build-coverage && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @ROOT=$(pwd) && cd build-coverage && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=
     @cd build-coverage && ninja
     @cd build-coverage && if [ -n "{{filter}}" ]; then ./testing/dvztest "{{filter}}"; else ./testing/dvztest; fi
-    @cd build-coverage && gcovr --root .. --exclude 'external/' --exclude 'testing/' --exclude 'v0\.3/' --exclude 'build.*/' --branches --print-summary
-    @cd build-coverage && gcovr --root .. --exclude 'external/' --exclude 'testing/' --exclude 'v0\.3/' --exclude 'build.*/' --branches --html --html-details -o coverage/index.html
+    @ROOT=$(pwd) && cd build-coverage && gcovr --root "$ROOT" --filter "$ROOT/src" --filter "$ROOT/include" --exclude "$ROOT/external" --exclude "$ROOT/testing" --exclude "$ROOT/v0.3" --exclude "$ROOT/build" --txt-metric branch --print-summary
+    @ROOT=$(pwd) && cd build-coverage && gcovr --root "$ROOT" --filter "$ROOT/src" --filter "$ROOT/include" --exclude "$ROOT/external" --exclude "$ROOT/testing" --exclude "$ROOT/v0.3" --exclude "$ROOT/build" --html --html-details -o coverage/index.html
     @echo "Coverage HTML report: build-coverage/coverage/index.html"
 #
 
