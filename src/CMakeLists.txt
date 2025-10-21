@@ -6,6 +6,7 @@
 # Detect the OS
 # -------------------------------------------------------------------------------------------------
 
+#
 set(OS_LINUX 0)
 set(OS_MACOS 0)
 set(OS_WINDOWS 0)
@@ -21,6 +22,8 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Detect the compiler
 # -------------------------------------------------------------------------------------------------
+
+#
 set(CC_GCC 0)
 set(CC_CLANG 0)
 set(CC_MSVC 0)
@@ -56,6 +59,8 @@ install(TARGETS datoviz
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
+
+#
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
@@ -132,84 +137,85 @@ target_include_directories(datoviz
 # -------------------------------------------------------------------------------------------------
 # Sanitizers
 # -------------------------------------------------------------------------------------------------
-if(DVZ_ENABLE_ASAN_IN_DEBUG)
-    set(_DVZ_SANITIZER_FLAGS "")
-    set(_DVZ_SANITIZER_MODE "${DVZ_SANITIZER}")
 
-    if(CC_MSVC AND NOT _DVZ_SANITIZER_MODE STREQUAL "asan")
-        message(WARNING "Sanitizer mode '${_DVZ_SANITIZER_MODE}' is not supported on MSVC; falling back to AddressSanitizer.")
-        set(_DVZ_SANITIZER_MODE "asan")
+#
+set(DVZ_SANITIZER_FLAGS "")
+set(DVZ_ACTIVE_SANITIZERS "")
+
+if(DVZ_ENABLE_ASAN_IN_DEBUG)
+    set(_dvz_override "${DVZ_SANITIZER}")
+    string(STRIP "${_dvz_override}" _dvz_override)
+    string(TOLOWER "${_dvz_override}" _dvz_override)
+
+    if(_dvz_override STREQUAL "off" OR _dvz_override STREQUAL "none")
+        set(_dvz_override "")
     endif()
 
-    if(_DVZ_SANITIZER_MODE STREQUAL "asan")
+    if(_dvz_override STREQUAL "" OR _dvz_override STREQUAL "asan")
         if(CC_MSVC)
-            list(APPEND _DVZ_SANITIZER_FLAGS "/fsanitize=address")
-            message(STATUS "Enabling AddressSanitizer in Debug builds.")
-            message(WARNING "LeakSanitizer, UndefinedBehaviorSanitizer, MemorySanitizer, and ThreadSanitizer are unavailable under MSVC.")
-        else()
-            list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize=address")
+            set(DVZ_SANITIZER_FLAGS "/fsanitize=address")
+            set(DVZ_ACTIVE_SANITIZERS "address")
+        elseif(CC_CLANG)
             if(OS_WINDOWS)
-                message(WARNING "LeakSanitizer and UndefinedBehaviorSanitizer are unavailable on Windows; enabling AddressSanitizer only.")
+                set(DVZ_SANITIZER_FLAGS "-fsanitize=address")
+                set(DVZ_ACTIVE_SANITIZERS "address")
             else()
-                list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize=undefined")
-                if(OS_MACOS)
-                    message(STATUS "Enabling AddressSanitizer and UndefinedBehaviorSanitizer in Debug builds (LeakSanitizer is unavailable on macOS).")
-                else()
-                    list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize=leak")
-                    message(STATUS "Enabling AddressSanitizer, LeakSanitizer, and UndefinedBehaviorSanitizer in Debug builds.")
+                set(DVZ_SANITIZER_FLAGS "-fsanitize=address,undefined")
+                set(DVZ_ACTIVE_SANITIZERS "address;undefined")
+
+                if(NOT OS_MACOS)
+                    set(DVZ_SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
+                    set(DVZ_ACTIVE_SANITIZERS "address;undefined;leak")
                 endif()
             endif()
+        elseif(CC_GCC)
+            if(OS_WINDOWS)
+                set(DVZ_SANITIZER_FLAGS "-fsanitize=address")
+                set(DVZ_ACTIVE_SANITIZERS "address")
+            else()
+                set(DVZ_SANITIZER_FLAGS "-fsanitize=address")
+                set(DVZ_ACTIVE_SANITIZERS "address")
 
-            # message(WARNING "MemorySanitizer cannot be combined with AddressSanitizer; use DVZ_SANITIZER=msan for MemorySanitizer.")
-            # message(WARNING "ThreadSanitizer cannot be combined with AddressSanitizer; use DVZ_SANITIZER=tsan for ThreadSanitizer.")
-        endif()
-    elseif(_DVZ_SANITIZER_MODE STREQUAL "msan")
-        if(NOT CC_CLANG)
-            message(WARNING "MemorySanitizer requires Clang; disabling sanitizer instrumentation.")
-            set(_DVZ_SANITIZER_FLAGS "")
-        else()
-            list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize=memory")
-            list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize-memory-track-origins")
-            list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize-blacklist=${PROJECT_SOURCE_DIR}/sanitizers/msan.ignore")
-            message(STATUS "Enabling MemorySanitizer in Debug builds.")
-        endif()
-    elseif(_DVZ_SANITIZER_MODE STREQUAL "tsan")
-        if(NOT CC_CLANG)
-            message(WARNING "ThreadSanitizer requires Clang; disabling sanitizer instrumentation.")
-            set(_DVZ_SANITIZER_FLAGS "")
-        else()
-            list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize=thread")
-            message(STATUS "Enabling ThreadSanitizer in Debug builds.")
-        endif()
-    else()
-        message(WARNING "Unknown DVZ_SANITIZER mode '${_DVZ_SANITIZER_MODE}'; disabling sanitizer instrumentation.")
-        set(_DVZ_SANITIZER_FLAGS "")
-    endif()
-
-    if(OS_WINDOWS)
-        set(_DVZ_SANITIZER_FLAGS_ORIG "${_DVZ_SANITIZER_FLAGS}")
-        list(REMOVE_ITEM _DVZ_SANITIZER_FLAGS "-fsanitize=undefined" "-fsanitize=leak")
-        list(REMOVE_DUPLICATES _DVZ_SANITIZER_FLAGS)
-        if(NOT CC_MSVC AND _DVZ_SANITIZER_MODE STREQUAL "asan")
-            if(NOT _DVZ_SANITIZER_FLAGS)
-                list(APPEND _DVZ_SANITIZER_FLAGS "-fsanitize=address")
-            endif()
-            if(NOT ("${_DVZ_SANITIZER_FLAGS_ORIG}" STREQUAL "${_DVZ_SANITIZER_FLAGS}"))
-                message(WARNING "LeakSanitizer and UndefinedBehaviorSanitizer are unavailable on Windows; keeping AddressSanitizer only.")
+                if(NOT OS_MACOS)
+                    set(DVZ_SANITIZER_FLAGS "-fsanitize=address,undefined,leak")
+                    set(DVZ_ACTIVE_SANITIZERS "address;undefined;leak")
+                endif()
             endif()
         endif()
-    endif()
+    elseif(_dvz_override STREQUAL "msan")
+        if(CC_CLANG AND NOT OS_MACOS)
+            set(DVZ_SANITIZER_FLAGS
+                "-fsanitize=memory"
+                "-fsanitize-memory-track-origins"
+                "-fsanitize-blacklist=${PROJECT_SOURCE_DIR}/sanitizers/msan.ignore")
+            set(DVZ_ACTIVE_SANITIZERS "memory")
+        endif()
+    elseif(_dvz_override STREQUAL "tsan")
+        if(CC_CLANG)
+            set(DVZ_SANITIZER_FLAGS "-fsanitize=thread")
+            set(DVZ_ACTIVE_SANITIZERS "thread")
+        endif()
+    elseif(_dvz_override)
+        set(DVZ_SANITIZER_FLAGS "${DVZ_SANITIZER}")
 
-    if(_DVZ_SANITIZER_FLAGS)
-        foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread)
-            if(TARGET ${target_name})
-                target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${_DVZ_SANITIZER_FLAGS}>)
-                target_link_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${_DVZ_SANITIZER_FLAGS}>)
-            endif()
-        endforeach()
+        if(DVZ_SANITIZER MATCHES "memory")
+            set(DVZ_ACTIVE_SANITIZERS "memory")
+        elseif(DVZ_SANITIZER MATCHES "thread")
+            set(DVZ_ACTIVE_SANITIZERS "thread")
+        endif()
     endif()
-
-    # Share sanitizer flags with sibling directories.
-    set(DVZ_SANITIZER_FLAGS "${_DVZ_SANITIZER_FLAGS}" PARENT_SCOPE)
-    set(DVZ_ASAN_FLAG "${_DVZ_SANITIZER_FLAGS}" PARENT_SCOPE)
 endif()
+
+if(DVZ_SANITIZER_FLAGS)
+    message(STATUS "Debug sanitizers: ${DVZ_SANITIZER_FLAGS}")
+
+    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread)
+        if(TARGET ${target_name})
+            target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
+            target_link_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
+        endif()
+    endforeach()
+endif()
+
+set(DVZ_SANITIZER_FLAGS "${DVZ_SANITIZER_FLAGS}" CACHE INTERNAL "Sanitizer flags for Debug targets" FORCE)
+set(DVZ_ACTIVE_SANITIZERS "${DVZ_ACTIVE_SANITIZERS}" CACHE INTERNAL "Enabled sanitizer names" FORCE)
