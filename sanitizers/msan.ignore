@@ -1,0 +1,2 @@
+# Ignore libstdc++ red-black tree internals to avoid false positives when using std::map.
+src:/usr/include/c++/*/bits/stl_tree.h
