@@ -37,7 +37,6 @@ inline double dvz_mean(uint32_t n, double* values)
     for (uint32_t i = 0; i < n; i++)
         mean += values[i];
     mean /= n;
-    ASSERT(mean >= 0);
     return mean;
 }
 
@@ -90,8 +89,8 @@ inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
         return;
     ASSERT(n > 0);
     ASSERT(values != NULL);
-    min_max[0] = FLT_MAX;
-    min_max[1] = FLT_MIN;
+    min_max[0] = DBL_MAX;
+    min_max[1] = -DBL_MAX;
     double val = 0;
     for (uint32_t i = 0; i < n; i++)
     {
