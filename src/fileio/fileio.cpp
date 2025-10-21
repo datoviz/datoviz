@@ -6,6 +6,7 @@
 #include "_alloc.h"
 #include "_assert.h"
 #include "_log.h"
+#include "_compat.h"
 #include "fpng.h"
 #include <errno.h>
 #include <sys/stat.h>
@@ -171,7 +172,7 @@ char* dvz_parse_npy(DvzSize size, char* npy_bytes)
     }
 
     // Copy the array data to the output buffer
-    memcpy(array_data, npy_bytes + data_offset, array_data_size);
+    dvz_memcpy(array_data, (size_t)array_data_size, npy_bytes + data_offset, (size_t)array_data_size);
 
     return array_data;
 }
@@ -184,7 +185,7 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
 #if HAS_ZLIB
     if (!filename || !size)
     {
-        fprintf(stderr, "Error: Invalid arguments.\n");
+        dvz_fprintf(stderr, "Error: Invalid arguments.\n");
         return NULL;
     }
     ANN(filename);
@@ -232,7 +233,7 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
         int bytes_read = gzread(gz_file, buffer + buffer_used, 4096);
         if (bytes_read < 0)
         {
-            fprintf(stderr, "Decompression error: %s\n", gzerror(gz_file, NULL));
+            dvz_fprintf(stderr, "Decompression error: %s\n", gzerror(gz_file, NULL));
             dvz_free(buffer);
             gzclose(gz_file);
             return NULL;
@@ -295,7 +296,7 @@ int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
         return 1;
     // ppm header
     char buffer[256];
-    snprintf(buffer, 256, "P6\n%d\n%d\n255\n", (int)width, (int)height);
+    dvz_snprintf(buffer, sizeof(buffer), "P6\n%d\n%d\n255\n", (int)width, (int)height);
     fwrite(buffer, strlen(buffer), 1, fp);
     // Write the RGB image.
     fwrite(image, width * height * 3, 1, fp);
@@ -406,7 +407,7 @@ int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* s
     *size = outvec.size();
     *out = dvz_malloc(*size);
     ANN(*out);
-    memcpy(*out, outvec.data(), *size);
+    dvz_memcpy(*out, (size_t)(*size), outvec.data(), (size_t)(*size));
     return 0;
 }
 
@@ -428,7 +429,7 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
 
     if (!success)
     {
-        fprintf(stderr, "Failed to decode PNG image\n");
+        dvz_fprintf(stderr, "Failed to decode PNG image\n");
         return NULL;
     }
 
@@ -443,7 +444,7 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
     // Check if the decoded image format is RGB (3 channels)
     if (channels != 3)
     {
-        fprintf(stderr, "Decoded image is not in RGB format\n");
+        dvz_fprintf(stderr, "Decoded image is not in RGB format\n");
         return NULL;
     }
 
@@ -451,12 +452,14 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
     uint8_t* output = (uint8_t*)dvz_malloc(img_width * img_height * channels);
     if (output == NULL)
     {
-        fprintf(stderr, "Failed to allocate memory for the decoded image\n");
+        dvz_fprintf(stderr, "Failed to allocate memory for the decoded image\n");
         return NULL;
     }
 
     // Copy the decoded data to the allocated buffer
-    memcpy(output, image_data.data(), img_width * img_height * channels);
+    dvz_memcpy(
+        output, (size_t)(img_width * img_height * channels), image_data.data(),
+        (size_t)(img_width * img_height * channels));
 
     return output;
 }

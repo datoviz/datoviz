@@ -44,6 +44,7 @@
 
 #include "_log.h"
 #include "_mutex.h"
+#include "_compat.h"
 
 #define MAX_THREADS 64
 
@@ -154,24 +155,24 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
         clock_t uptime = (clock() / (CLOCKS_PER_SEC / 1000)) % 1000;
         buf[strftime(buf, sizeof(buf), "%H:%M:%S.    ", lt)] = '\0';
         // HH:MM:SS.MMS(thread_id)
-        snprintf(&buf[9], 12, "%03d T%01u", (int)uptime, tid);
+        dvz_snprintf(&buf[9], 12, "%03d T%01u", (int)uptime, tid);
 
 #ifdef LOG_USE_COLOR
-        fprintf(
+        dvz_fprintf(
             stderr, "%s %s%-1s\x1b[0m \x1b[90m%18s:%04d:\x1b[0m %s", buf, level_colors[level],
             level_names[level], file, line, level_colors[level]);
 #else
-        fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
+        dvz_fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
 #endif
         va_start(args, fmt);
         MUTE_NONLITERAL_ON
-        vfprintf(stderr, fmt, args);
+        dvz_vfprintf(stderr, fmt, args);
         MUTE_NONLITERAL_OFF
         va_end(args);
 #ifdef LOG_USE_COLOR
-        fprintf(stderr, "\x1b[0m");
+        dvz_fprintf(stderr, "\x1b[0m");
 #endif
-        fprintf(stderr, "\n");
+        dvz_fprintf(stderr, "\n");
         fflush(stderr);
     }
 
@@ -181,13 +182,13 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
         va_list args;
         char buf[32] = {0};
         buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
-        fprintf(L.fp, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
+        dvz_fprintf(L.fp, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
         va_start(args, fmt);
         MUTE_NONLITERAL_ON
-        vfprintf(L.fp, fmt, args);
+        dvz_vfprintf(L.fp, fmt, args);
         MUTE_NONLITERAL_OFF
         va_end(args);
-        fprintf(L.fp, "\n");
+        dvz_fprintf(L.fp, "\n");
         fflush(L.fp);
     }
 

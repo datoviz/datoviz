@@ -10,7 +10,14 @@
 
 #pragma once
 
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
 
+#include <libgen.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -42,7 +49,7 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 
     char path[1024] = {0};
     snprintf(
-        path, 1024, "%s%s", dirname(file_path),
+        path, 1024, "%s%s", dirname(file_path), // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         "/../libs/vulkan/macos/MoltenVK_icd.json:/usr/local/lib/datoviz/MoltenVK_icd.json");
     setenv("VK_DRIVER_FILES", path, 1);
 // log_error("Setting VK_DRIVER_FILES to %s", path);

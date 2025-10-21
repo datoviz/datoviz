@@ -18,6 +18,7 @@
 #include "_alloc.h"
 #include "_assert.h"
 #include "_log.h"
+#include "_compat.h"
 #include "datoviz/ds/map.h"
 
 
@@ -83,7 +84,9 @@ static void _fifo_resize(DvzFifo* fifo)
 
         ASSERT(fifo->tail > 0);
         ASSERT(old_cap < fifo->capacity);
-        memcpy(&fifo->items[old_cap], &fifo->items[0], (uint32_t)fifo->tail * sizeof(void*));
+        size_t copy_size = (size_t)fifo->tail * sizeof(void*);
+        size_t dest_size = (size_t)(fifo->capacity - old_cap) * sizeof(void*);
+        dvz_memcpy(&fifo->items[old_cap], dest_size, &fifo->items[0], copy_size);
 
         // Move the tail to the new position.
         fifo->tail += old_cap;
@@ -522,7 +525,7 @@ static DvzDeqItem* _deq_item(
     {
         deq_item->item = dvz_malloc(item_size);
         ANN(deq_item->item);
-        memcpy(deq_item->item, item, item_size);
+        dvz_memcpy(deq_item->item, (size_t)item_size, item, (size_t)item_size);
     }
 
     deq_item->next_count = next_count;
@@ -915,7 +918,7 @@ void dvz_deq_stats(DvzDeq* deq)
     char sn[8] = {0};
     for (uint32_t i = 0; i < deq->queue_count; i++)
     {
-        snprintf(sn, sizeof(sn), "%d", dvz_fifo_size(deq->queues[i]));
+        dvz_snprintf(sn, sizeof(sn), "%d", dvz_fifo_size(deq->queues[i]));
         _strcat(s, sn);
         if (i < deq->queue_count - 1)
             _strcat(s, ", ");

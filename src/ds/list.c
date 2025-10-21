@@ -13,6 +13,7 @@
 #include "_assert.h"
 #include "_log.h"
 #include "_macros.h"
+#include "_compat.h"
 
 
 
@@ -100,7 +101,9 @@ void dvz_list_remove(DvzList* list, uint64_t index)
     list->count--;
 
     // Reset the unset positions in the array.
-    memset(&list->values[list->count], 0, (list->capacity - list->count) * sizeof(DvzListItem));
+    dvz_memset(
+        &list->values[list->count], (list->capacity - list->count) * sizeof(DvzListItem), 0,
+        (list->capacity - list->count) * sizeof(DvzListItem));
 }
 
 

@@ -17,6 +17,7 @@
 #include "_assert.h"
 #include "_error.h"
 #include "_log.h"
+#include "_compat.h"
 #include <stdlib.h>
 
 
@@ -30,7 +31,7 @@ void dvz_assert(bool assertion, const char* message, const char* filename, int l
     if (!assertion)
     {
         // Prepare the error message with the filename, line number, and failing assertion.
-        sprintf(error_message, "Assertion error in %s:%d: %s\n", filename, line, message);
+        dvz_snprintf(error_message, sizeof(error_message), "Assertion error in %s:%d: %s\n", filename, line, message);
 
         // Log the error message
         log_error("%s", error_message);

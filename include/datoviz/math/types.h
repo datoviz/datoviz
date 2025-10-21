@@ -22,8 +22,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-
-
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
@@ -95,7 +93,7 @@ static inline char* pretty_size(DvzSize size)
 {
     if (size <= 8192)
     {
-        snprintf(_PRETTY_SIZE, 64, "%" PRIu64 " bytes", size);
+        snprintf(_PRETTY_SIZE, 64, "%" PRIu64 " bytes", size); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
         return _PRETTY_SIZE;
     }
     float s = (float)size;
@@ -119,7 +117,7 @@ static inline char* pretty_size(DvzSize size)
     {
         u = "bytes";
     }
-    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u);
+    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     return _PRETTY_SIZE;
 }
 

@@ -23,6 +23,7 @@
 #include "_assert.h"
 #include "_log.h"
 #include "_macros.h"
+#include "_compat.h"
 #include "datoviz/math/arithm.h"
 #include "datoviz/math/types.h"
 
@@ -219,7 +220,7 @@ static inline void* dvz_memdup(DvzSize size, const void* data)
     /* Replacement for the old _cpy() helper: copies arbitrary memory with the active allocator. */
     void* copy = dvz_malloc(size);
     ANN(copy);
-    memcpy(copy, data, (size_t)size);
+    dvz_memcpy(copy, (size_t)size, data, (size_t)size);
     return copy;
 }
 
@@ -269,11 +270,12 @@ static inline DvzPointer dvz_aligned_repeat(
     /* Back-port of aligned_repeat(): duplicate a small pattern in an aligned heap buffer. */
     void* repeated = alignment > 0 ? dvz_aligned_alloc(alignment, total_size) : dvz_malloc(total_size);
     ANN(repeated);
-    memset(repeated, 0, (size_t)total_size);
+    dvz_memset(repeated, (size_t)total_size, 0, (size_t)total_size);
     for (uint32_t i = 0; i < count; i++)
     {
-        memcpy(
-            (void*)((uint8_t*)repeated + ((size_t)i * (size_t)item_size)), data, (size_t)size);
+        dvz_memcpy(
+            (void*)((uint8_t*)repeated + ((size_t)i * (size_t)item_size)), (size_t)size, data,
+            (size_t)size);
     }
     /* WARNING: the returned pointer carries the aligned flag so callers free it correctly on all
      * platforms (Windows requires _aligned_free for true aligned blocks). */

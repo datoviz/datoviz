@@ -18,6 +18,7 @@
 #include "datoviz/math/array.h"
 #include "_alloc.h"
 #include "_log.h"
+#include "_compat.h"
 
 
 
@@ -162,7 +163,7 @@ static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize i
     log_trace("creating array with %d items of size %s each", item_count, pretty_size(item_size));
     DvzArray* arr = (DvzArray*)dvz_calloc(1, sizeof(DvzArray));
     ANN(arr);
-    memset(arr, 0, sizeof(DvzArray));
+    dvz_memset(arr, sizeof(DvzArray), 0, sizeof(DvzArray));
     arr->obj.type = DVZ_OBJECT_TYPE_ARRAY;
     arr->dtype = dtype;
     arr->components = _get_components(dtype);
@@ -217,7 +218,7 @@ _repeat_last(uint32_t old_item_count, DvzSize item_size, void* data, uint32_t it
     uint32_t repeat_count = item_count - old_item_count;
     for (uint32_t i = 0; i < repeat_count; i++)
     {
-        memcpy((void*)dst_offset, (void*)src_offset, item_size);
+        dvz_memcpy((void*)dst_offset, (size_t)item_size, (const void*)src_offset, (size_t)item_size);
         dst_offset += (int64_t)item_size;
     }
 }
@@ -254,10 +255,10 @@ DvzArray* dvz_array_copy(DvzArray* arr)
 {
     DvzArray* arr_new = dvz_calloc(1, sizeof(DvzArray));
     ANN(arr_new);
-    memcpy(arr_new, arr, sizeof(DvzArray));
+    dvz_memcpy(arr_new, sizeof(DvzArray), arr, sizeof(DvzArray));
     arr_new->data = dvz_malloc(arr->buffer_size);
     ANN(arr_new->data);
-    memcpy(arr_new->data, arr->data, arr->buffer_size);
+    dvz_memcpy(arr_new->data, (size_t)arr->buffer_size, arr->data, (size_t)arr->buffer_size);
     return arr_new;
 }
 
@@ -272,7 +273,7 @@ DvzArray* dvz_array_copy(DvzArray* arr)
 DvzArray* dvz_array_point(dvec3 pos)
 {
     DvzArray* arr = dvz_array(1, DVZ_DTYPE_DVEC3);
-    memcpy(arr->data, pos, sizeof(dvec3));
+    dvz_memcpy(arr->data, (size_t)arr->buffer_size, pos, sizeof(dvec3));
     return arr;
 }
 
@@ -424,7 +425,7 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
 void dvz_array_clear(DvzArray* array)
 {
     ANN(array);
-    memset(array->data, 0, array->buffer_size);
+    dvz_memset(array->data, (size_t)array->buffer_size, 0, (size_t)array->buffer_size);
 }
 
 
@@ -496,11 +497,12 @@ void dvz_array_insert(DvzArray* array, uint32_t offset, uint32_t size, void* ins
 
     // Move the second chunk after the inserted data.
     if (chunk1_size > 0 && chunk1_bef != chunk1_aft)
-        memmove(chunk1_aft, chunk1_bef, chunk1_size);
+        dvz_memmove(chunk1_aft, (size_t)chunk1_size, chunk1_bef, (size_t)chunk1_size);
 
     // Insert the data.
     ASSERT((int64_t)chunk1_bef + (int64_t)(size * array->item_size) == (int64_t)chunk1_aft);
-    memcpy(chunk1_bef, insert, size * array->item_size);
+    dvz_memcpy(
+        chunk1_bef, (size_t)(size * array->item_size), insert, (size_t)(size * array->item_size));
 }
 
 
@@ -529,7 +531,7 @@ void dvz_array_copy_region(
     void* src = (void*)((int64_t)src_arr->data + ((int64_t)(src_offset * src_arr->item_size)));
     void* dst = (void*)((int64_t)dst_arr->data + ((int64_t)(dst_offset * dst_arr->item_size)));
     DvzSize size = item_count * src_arr->item_size;
-    memcpy(dst, src, size);
+    dvz_memcpy(dst, (size_t)size, src, (size_t)size);
 }
 
 
@@ -603,7 +605,9 @@ void dvz_array_data(
     //     "copy %d elements (%d bytes) into array[%d:%d]", //
     //     data_item_count, copy_size, first_item, first_item + item_count);
     ASSERT(array->buffer_size >= (first_item + item_count) * item_size);
-    memcpy((void*)((int64_t)dst + (int64_t)(first_item * item_size)), src, copy_size);
+    dvz_memcpy(
+        (void*)((int64_t)dst + (int64_t)(first_item * item_size)), (size_t)copy_size, src,
+        (size_t)copy_size);
 
     // If the source data array is smaller than the destination array, repeat the last value.
     if (data_item_count < item_count)
@@ -713,7 +717,7 @@ void dvz_array_column(
             if (source_dtype == target_dtype ||   //
                 source_dtype == DVZ_DTYPE_NONE || //
                 target_dtype == DVZ_DTYPE_NONE)   //
-                memcpy((void*)dst_byte, (void*)src_byte, col_size);
+                dvz_memcpy((void*)dst_byte, (size_t)col_size, (const void*)src_byte, (size_t)col_size);
             else
             {
                 _cast(target_dtype, (void*)dst_byte, source_dtype, (void*)src_byte);

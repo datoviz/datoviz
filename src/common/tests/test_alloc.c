@@ -20,6 +20,7 @@
 
 #include "_alloc.h"
 #include "_assert.h"
+#include "_compat.h"
 
 #include "test_common.h"
 #include "testing.h"
@@ -75,7 +76,7 @@ int test_alloc_aligned(TstSuite* suite, TstItem* tstitem)
     uint8_t* aligned = (uint8_t*)dvz_aligned_alloc(alignment, size);
     AT(aligned != NULL);
     AT(((uintptr_t)aligned % alignment) == 0);
-    memset(aligned, 0xAB, (size_t)size);
+    dvz_memset(aligned, (size_t)size, 0xAB, (size_t)size);
     dvz_aligned_free(aligned);
 
     // Verify dvz_aligned_repeat duplicates data correctly.

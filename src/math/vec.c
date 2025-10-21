@@ -17,7 +17,7 @@
 #include "datoviz/math/vec.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/math/types.h"
-#include <string.h>
+#include "_compat.h"
 
 
 
@@ -163,7 +163,7 @@ void dvz_dmat4_mulv(dmat4 m, dvec4 v, dvec4 dest)
     res[1] = m[0][1] * v[0] + m[1][1] * v[1] + m[2][1] * v[2] + m[3][1] * v[3];
     res[2] = m[0][2] * v[0] + m[1][2] * v[1] + m[2][2] * v[2] + m[3][2] * v[3];
     res[3] = m[0][3] * v[0] + m[1][3] * v[1] + m[2][3] * v[2] + m[3][3] * v[3];
-    memcpy(dest, res, sizeof(dvec4));
+    dvz_memcpy(dest, sizeof(dvec4), res, sizeof(dvec4));
 }
 
 
