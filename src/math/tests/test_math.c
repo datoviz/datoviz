@@ -41,6 +41,7 @@ int test_math(TstSuite* suite)
     TEST_SIMPLE(test_box_6);
 
     TEST_SIMPLE(test_stats_parallel);
+    TEST_SIMPLE(test_anim_1);
 
     return 0;
 }

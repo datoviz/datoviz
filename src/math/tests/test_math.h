@@ -46,4 +46,8 @@ int test_stats_parallel(TstSuite* suite, TstItem* tstitem);
 
 
 
+int test_anim_1(TstSuite* suite, TstItem* tstitem);
+
+
+
 int test_math(TstSuite* suite);
