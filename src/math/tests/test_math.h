@@ -26,6 +26,8 @@
 
 int test_prng_1(TstSuite* suite, TstItem* tstitem);
 
+int test_parallel_stats(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_math(TstSuite* suite);

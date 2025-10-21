@@ -26,6 +26,8 @@
 
 int test_png_1(TstSuite* suite, TstItem* tstitem);
 
+int test_parse_npy(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_fileio(TstSuite* suite);

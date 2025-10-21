@@ -36,7 +36,7 @@ struct DvzAtomic_
 void dvz_atomic_init(DvzAtomic atomic)
 {
     ANN(atomic);
-    atomic->atom = 0;
+    atomic->atom.store(0, std::memory_order_relaxed);
 }
 
 
@@ -54,7 +54,7 @@ DvzAtomic dvz_atomic()
 void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 {
     ANN(atomic);
-    atomic->atom = value;
+    atomic->atom.store(value, std::memory_order_release);
 }
 
 
@@ -62,8 +62,7 @@ void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 int32_t dvz_atomic_get(DvzAtomic atomic)
 {
     ANN(atomic);
-    int32_t value = atomic->atom;
-    return value;
+    return atomic->atom.load(std::memory_order_acquire);
 }
 
 

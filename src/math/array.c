@@ -156,6 +156,38 @@ static uint32_t _get_components(DvzDataType dtype)
 
 
 
+static inline bool _is_float_family(DvzDataType dtype)
+{
+    switch (dtype)
+    {
+    case DVZ_DTYPE_FLOAT:
+    case DVZ_DTYPE_VEC2:
+    case DVZ_DTYPE_VEC3:
+    case DVZ_DTYPE_VEC4:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+static inline bool _is_double_family(DvzDataType dtype)
+{
+    switch (dtype)
+    {
+    case DVZ_DTYPE_DOUBLE:
+    case DVZ_DTYPE_DVEC2:
+    case DVZ_DTYPE_DVEC3:
+    case DVZ_DTYPE_DVEC4:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
 // Create a new 1D array with a given dtype, number of elements, and item size (used for record
 // arrays containing heterogeneous data)
 static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize item_size)
@@ -185,20 +217,27 @@ static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize i
 // Cast a vector.
 static inline void _cast(DvzDataType target_dtype, void* dst, DvzDataType source_dtype, void* src)
 {
-    if (source_dtype == DVZ_DTYPE_DOUBLE && target_dtype == DVZ_DTYPE_FLOAT)
+    uint32_t dst_components = _get_components(target_dtype);
+    uint32_t src_components = _get_components(source_dtype);
+    uint32_t count = MIN(dst_components, src_components);
+
+    if (_is_float_family(target_dtype) && _is_double_family(source_dtype))
     {
-        ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
+        float* dst_f = (float*)dst;
+        const double* src_d = (const double*)src;
+        for (uint32_t i = 0; i < count; i++)
+            dst_f[i] = (float)src_d[i];
+        for (uint32_t i = count; i < dst_components; i++)
+            dst_f[i] = 0.f;
     }
-    else if (source_dtype == DVZ_DTYPE_DVEC2 && target_dtype == DVZ_DTYPE_VEC2)
+    else if (_is_double_family(target_dtype) && _is_float_family(source_dtype))
     {
-        ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
-        ((vec3*)dst)[0][1] = ((dvec3*)src)[0][1];
-    }
-    else if (source_dtype == DVZ_DTYPE_DVEC3 && target_dtype == DVZ_DTYPE_VEC3)
-    {
-        ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
-        ((vec3*)dst)[0][1] = ((dvec3*)src)[0][1];
-        ((vec3*)dst)[0][2] = ((dvec3*)src)[0][2];
+        double* dst_d = (double*)dst;
+        const float* src_f = (const float*)src;
+        for (uint32_t i = 0; i < count; i++)
+            dst_d[i] = (double)src_f[i];
+        for (uint32_t i = count; i < dst_components; i++)
+            dst_d[i] = 0.0;
     }
     else
         log_error("unknown casting dtypes %d %d", source_dtype, target_dtype);

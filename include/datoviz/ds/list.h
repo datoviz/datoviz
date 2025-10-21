@@ -28,7 +28,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_LIST_CAPACITY 64
+#define DVZ_LIST_INITIAL_CAPACITY 64
 
 
 

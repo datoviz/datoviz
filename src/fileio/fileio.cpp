@@ -150,7 +150,9 @@ char* dvz_parse_npy(DvzSize size, char* npy_bytes)
     }
 
     // Extract the header length (at byte 8 and 9 for v1.0/1.1)
-    uint16_t header_len = *(uint16_t*)((uint64_t)npy_bytes + 8);
+    const uint8_t* bytes = (const uint8_t*)npy_bytes;
+    uint16_t header_len = 0;
+    dvz_memcpy(&header_len, sizeof(header_len), bytes + 8, sizeof(header_len));
 
     // Calculate the offset of the array data
     DvzSize data_offset = 10 + header_len;

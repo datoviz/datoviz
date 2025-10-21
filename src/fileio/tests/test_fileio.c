@@ -72,6 +72,46 @@ int test_png_1(TstSuite* suite, TstItem* tstitem)
 
 
 
+int test_parse_npy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+
+    const char header[] = "{'descr': '<f8', 'fortran_order': False, 'shape': (1,), }";
+    const size_t header_body_len = strlen(header);
+    const size_t header_padded_len = ((header_body_len + 1 + 15) / 16) * 16; // include newline
+    const size_t data_size = sizeof(double);
+    const size_t total_size = 10 + header_padded_len + data_size;
+
+    uint8_t* buffer = (uint8_t*)dvz_calloc(total_size, 1);
+    ANN(buffer);
+
+    memcpy(buffer, "\x93NUMPY", 6);
+    buffer[6] = 1;
+    buffer[7] = 0;
+    uint16_t header_len = (uint16_t)header_padded_len;
+    dvz_memcpy(buffer + 8, sizeof(header_len), &header_len, sizeof(header_len));
+
+    memset(buffer + 10, ' ', header_padded_len);
+    memcpy(buffer + 10, header, header_body_len);
+    buffer[10 + header_padded_len - 1] = '\n';
+
+    double value = 42.0;
+    dvz_memcpy(buffer + 10 + header_padded_len, data_size, &value, data_size);
+
+    char* parsed = dvz_parse_npy((DvzSize)total_size, (char*)buffer);
+    AT(parsed != NULL);
+
+    double parsed_value = 0.0;
+    dvz_memcpy(&parsed_value, sizeof(parsed_value), parsed, data_size);
+    AC(parsed_value, value, EPS);
+
+    dvz_free(parsed);
+    dvz_free(buffer);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -83,6 +123,7 @@ int test_fileio(TstSuite* suite)
     const char* tags = "fileio";
 
     TEST_SIMPLE(test_png_1);
+    TEST_SIMPLE(test_parse_npy);
 
     return 0;
 }

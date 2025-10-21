@@ -9,6 +9,7 @@
 
 #include <random>
 
+#include "_assertions.h"
 #include "_log.h"
 #include "_mutex.h"
 #include "datoviz/math/prng.h"

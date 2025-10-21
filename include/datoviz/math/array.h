@@ -358,7 +358,8 @@ void dvz_array_destroy(DvzArray* array);
  */
 static inline void* dvz_array_item(DvzArray* array, uint32_t idx)
 {
-    ANN(array);
+    if (array == NULL)
+        return NULL;
     idx = CLIP(idx, 0, array->item_count - 1);
     return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
 }

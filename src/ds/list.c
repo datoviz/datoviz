@@ -24,17 +24,19 @@
 static void _realloc_if_needed(DvzList* list)
 {
     ANN(list);
-    ANN(list->values);
-    ASSERT(list->capacity > 0);
-
+    if (list->values == NULL || list->capacity == 0)
+    {
+        list->capacity = DVZ_LIST_INITIAL_CAPACITY;
+        list->values = (DvzListItem*)dvz_calloc(list->capacity, sizeof(DvzListItem));
+    }
     if (list->count >= list->capacity)
     {
         list->capacity *= 2;
         list->values =
             (DvzListItem*)dvz_realloc(list->values, list->capacity * sizeof(DvzListItem));
-        ANN(list->values);
     }
     ASSERT(list->count < list->capacity);
+    ANN(list->values);
 }
 
 
@@ -48,7 +50,7 @@ DvzList* dvz_list(void)
     DvzList* list = (DvzList*)dvz_calloc(1, sizeof(DvzList));
     ANN(list);
     list->count = 0;
-    list->capacity = DVZ_MAX_LIST_CAPACITY;
+    list->capacity = DVZ_LIST_INITIAL_CAPACITY;
     list->values = (DvzListItem*)dvz_calloc(list->capacity, sizeof(DvzListItem));
     ANN(list->values);
     return list;
@@ -114,12 +116,15 @@ void dvz_list_remove_pointer(DvzList* list, const void* pointer)
     ANN(list->values);
     ANN(pointer);
 
-    for (uint64_t i = 0; i < list->count; i++)
+    uint64_t i = 0;
+    while (i < list->count)
     {
         if (list->values[i].p == pointer)
         {
             dvz_list_remove(list, i);
         }
+        else
+            i++;
     }
 }
 

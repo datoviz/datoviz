@@ -93,3 +93,28 @@ int test_list_1(TstSuite* suite, TstItem* tstitem)
     dvz_list_destroy(list);
     return 0;
 }
+
+
+
+int test_list_remove_pointer(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+
+    // Verify that removing by pointer handles duplicates without skipping entries.
+    int payload = 7;
+    DvzList* list = dvz_list();
+    for (uint32_t i = 0; i < 3; i++)
+        dvz_list_append(list, (DvzListItem){.p = &payload});
+    AT(dvz_list_count(list) == 3);
+
+    dvz_list_remove_pointer(list, &payload);
+    AT(dvz_list_count(list) == 0);
+
+    // Ensure the list dynamically grows beyond the initial capacity.
+    for (uint32_t i = 0; i < DVZ_LIST_INITIAL_CAPACITY * 4; i++)
+        dvz_list_append(list, (DvzListItem){.i = (int)i});
+    AT(dvz_list_count(list) == DVZ_LIST_INITIAL_CAPACITY * 4);
+
+    dvz_list_destroy(list);
+    return 0;
+}

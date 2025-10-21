@@ -32,8 +32,9 @@ int test_ds(TstSuite* suite)
     const char* tags = "ds";
 
     TEST_SIMPLE(test_map_1);
-    TEST_SIMPLE(test_map_2);
-    TEST_SIMPLE(test_list_1);
+   TEST_SIMPLE(test_map_2);
+   TEST_SIMPLE(test_list_1);
+    TEST_SIMPLE(test_list_remove_pointer);
 
     return 0;
 }

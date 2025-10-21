@@ -106,9 +106,7 @@ inline double dvz_mean(uint32_t n, double* values)
     double mean = 0;
     for (uint32_t i = 0; i < n; i++)
         mean += values[i];
-    mean /= n;
-    ASSERT(mean >= 0);
-    return mean;
+    return mean / (double)n;
 }
 
 
@@ -156,19 +154,16 @@ inline void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values, uin
 
 inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
 {
-    if (n == 0)
-        return;
     ASSERT(n > 0);
     ASSERT(values != NULL);
-    min_max[0] = FLT_MAX;
-    min_max[1] = FLT_MIN;
-    double val = 0;
+    ASSERT(min_max != NULL);
+    min_max[0] = DBL_MAX;
+    min_max[1] = -DBL_MAX;
     for (uint32_t i = 0; i < n; i++)
     {
-        val = values[i];
+        double val = values[i];
         if (val < min_max[0])
             min_max[0] = val;
-
         if (val > min_max[1])
             min_max[1] = val;
     }
