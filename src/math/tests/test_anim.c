@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing math                                                                                 */
+/*  Testing anim                                                                                 */
 /*************************************************************************************************/
 
 
@@ -14,45 +14,29 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
+#include "_assertions.h"
+#include "datoviz/math/anim.h"
 #include "test_math.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Anim tests                                                                                   */
 /*************************************************************************************************/
 
-int test_math(TstSuite* suite)
+int test_anim_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-
-    const char* tags = "math";
-
-    TEST_SIMPLE(test_prng_1);
-
-    TEST_SIMPLE(test_box_1);
-    TEST_SIMPLE(test_box_2);
-    TEST_SIMPLE(test_box_3);
-    TEST_SIMPLE(test_box_4);
-    TEST_SIMPLE(test_box_5);
-    TEST_SIMPLE(test_box_6);
-
-    TEST_SIMPLE(test_array_1)
-    TEST_SIMPLE(test_array_2)
-    TEST_SIMPLE(test_array_3)
-    TEST_SIMPLE(test_array_4)
-    TEST_SIMPLE(test_array_5)
-    TEST_SIMPLE(test_array_6)
-    TEST_SIMPLE(test_array_7)
-    TEST_SIMPLE(test_array_cast)
-    TEST_SIMPLE(test_array_mvp)
-    TEST_SIMPLE(test_array_3D)
-
-    TEST_SIMPLE(test_stats_parallel);
-    TEST_SIMPLE(test_anim_1);
-
+    double t = 0;
+    for (int i = 0; i < (int)DVZ_EASING_COUNT; i++)
+    {
+        AC(dvz_easing((DvzEasing)i, t), 0, EPSILON);
+        AC(dvz_easing((DvzEasing)i, 1), 1, EPSILON);
+    }
     return 0;
 }
