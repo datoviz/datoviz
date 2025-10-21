@@ -264,7 +264,7 @@ build release="Debug":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
-    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build/
+    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build/ && ninja
 #
@@ -274,7 +274,7 @@ msan:
     @set -e
     @mkdir -p docs/images
     @mkdir -p build-msan
-    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-msan/
+    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-msan/
     @cd build-msan/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER=msan -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build-msan/ && ninja
 #
@@ -284,7 +284,7 @@ tsan:
     @set -e
     @mkdir -p docs/images
     @mkdir -p build-tsan
-    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-tsan/
+    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-tsan/
     @cd build-tsan/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER=tsan -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build-tsan/ && ninja
 #
@@ -361,7 +361,7 @@ manylinux release="Release":
         cp datoviz/*.py wheel/datoviz/ && \
         cp pyproject.toml wheel/ && \
         cp build/libdatoviz.so wheel/datoviz/ && \
-        cp -a libs/shaderc/linux/*.so* wheel/datoviz/ && \
+        cp -L libs/shaderc/linux/*.so* wheel/datoviz/ && \
         cp /usr/lib64/libvulkan.so.1 wheel/datoviz/ && \
         cp /usr/bin/glslc wheel/datoviz/
 
@@ -489,8 +489,8 @@ deb: checkstructs && rpath
 
     # Copy the libraries.
     cp -a build/libdatoviz.so* $DEB$LIBDIR
-    cp -a libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR
-    cp -a libs/shaderc/linux/libshaderc*.so* $DEB$LIBDIR
+    cp -L libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR
+    cp -L libs/shaderc/linux/libshaderc*.so* $DEB$LIBDIR
 
     # Copy the Python files
     cp -a datoviz/ $DEB$LIBDIR/
@@ -1349,7 +1349,7 @@ coverage filter="":
     @rm -rf build-coverage
     @mkdir -p docs/images
     @mkdir -p build-coverage/coverage
-    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-coverage/
+    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-coverage/
     @ROOT=$(pwd) && cd build-coverage && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=
     @cd build-coverage && ninja
     @cd build-coverage && if [ -n "{{filter}}" ]; then ./testing/dvztest "{{filter}}"; else ./testing/dvztest; fi

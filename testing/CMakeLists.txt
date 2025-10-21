@@ -51,7 +51,7 @@ if(DVZ_WITH_MIMALLOC)
 endif()
 
 # Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
-foreach(_dvz_test_target testing dvztest)
+foreach(_dvz_test_target testing dvztest dvz_public_header_probe)
     if(TARGET ${_dvz_test_target})
         set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_test_target})
     endif()
@@ -91,6 +91,8 @@ if(NOT WIN32)
     add_custom_command(TARGET dvz_public_header_probe
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E env
+        "ASAN_OPTIONS=detect_leaks=0"
+        "LSAN_OPTIONS=detect_leaks=0"
         "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{LD_LIBRARY_PATH}"
         "DYLD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{DYLD_LIBRARY_PATH}"
         "PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{PATH}"
@@ -100,7 +102,7 @@ if(NOT WIN32)
 endif()
 
 if(DVZ_ENABLE_ASAN_IN_DEBUG AND DVZ_SANITIZER_FLAGS)
-    foreach(_target testing dvztest)
+    foreach(_target testing dvztest dvz_public_header_probe)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
             target_link_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
