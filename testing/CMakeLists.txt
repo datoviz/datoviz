@@ -56,8 +56,38 @@ target_include_directories(dvztest
 # Ensure OS/Compiler macros are available to tests
 target_compile_definitions(dvztest PRIVATE ${COMPILE_DEFINITIONS})
 
+# -------------------------------------------------------------------------------------------------
+# Public header probe
+# -------------------------------------------------------------------------------------------------
+add_executable(dvz_public_header_probe dvz_public_header_probe.c)
+
+target_link_libraries(dvz_public_header_probe
+    PRIVATE
+    datoviz
+)
+
+target_include_directories(dvz_public_header_probe
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+target_compile_definitions(dvz_public_header_probe PRIVATE ${COMPILE_DEFINITIONS})
+
+add_custom_command(TARGET dvz_public_header_probe
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E env
+    "LD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{LD_LIBRARY_PATH}"
+    "DYLD_LIBRARY_PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{DYLD_LIBRARY_PATH}"
+    "PATH=$<TARGET_FILE_DIR:datoviz>:$ENV{PATH}"
+    $<TARGET_FILE:dvz_public_header_probe>
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:dvz_public_header_probe>
+)
+
+# Include the probe in shared instrumentation (coverage, sanitizers, ...).
+set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS dvz_public_header_probe)
+
 if(DVZ_ENABLE_ASAN_IN_DEBUG AND DVZ_SANITIZER_FLAGS)
-    foreach(_target testing dvztest)
+    foreach(_target testing dvztest dvz_public_header_probe)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
             target_link_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
