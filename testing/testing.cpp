@@ -109,13 +109,14 @@ void tst_suite_add(
         log_trace("reallocate memory for test suite items");
         ANN(suite->items);
         ASSERT(suite->n_items > 0);
-        suite->items = (TstItem*)dvz_realloc(
-            suite->items, (size_t)(2 * suite->n_items * sizeof(TstItem)));
+        suite->items =
+            (TstItem*)dvz_realloc(suite->items, (size_t)(2 * suite->n_items * sizeof(TstItem)));
         ANN(suite->items);
         suite->capacity *= 2;
     }
     ASSERT(suite->n_items < suite->capacity);
     TstItem* item = &suite->items[suite->n_items++];
+    ANN(item);
 
     item->name = name;
     item->tags = tags;

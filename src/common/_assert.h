@@ -36,7 +36,13 @@
 
 // ASSERT NOT NULL
 #ifndef ANN
-#define ANN(x) ASSERT((x) != NULL);
+#define ANN(x)                                                                                   \
+    do                                                                                           \
+    {                                                                                            \
+        assert((x) != NULL);                                                                     \
+        ASSERT((x) != NULL);                                                                     \
+        DVZ_ASSUME((x) != NULL);                                                                 \
+    } while (0)
 #endif
 
 

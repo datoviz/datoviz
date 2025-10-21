@@ -1322,7 +1322,8 @@ analyze:
         exit 1; \
     fi
     @if command -v run-clang-tidy >/dev/null 2>&1; then \
-        run-clang-tidy -p build -quiet 'include/.*' 'src/.*' 'testing/.*'; \
+        ROOT=$(pwd); \
+        run-clang-tidy -p build -quiet -header-filter="^$ROOT/(include|src|testing)/" "$ROOT/include/.*" "$ROOT/src/.*" "$ROOT/testing/.*"; \
     else \
         echo "run-clang-tidy not found. Install clang-tidy or add it to PATH."; \
         exit 1; \
