@@ -12,7 +12,7 @@ target_include_directories(datoviz_vk
     ${PROJECT_SOURCE_DIR}/external
 )
 
-target_compile_definitions(datoviz_vk PUBLIC ${COMPILE_DEFINITIONS})
+target_compile_definitions(datoviz_vk PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
 if(WIN32)
     target_compile_definitions(datoviz_vk PRIVATE DVZ_SHARED)

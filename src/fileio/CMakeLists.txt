@@ -12,6 +12,11 @@ set_property(
     PROPERTY COMPILE_OPTIONS
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-tautological-constant-out-of-range-compare>
 )
+set_source_files_properties(
+    ${PROJECT_SOURCE_DIR}/external/fpng.cpp
+    PROPERTIES
+        COMPILE_FLAGS "-w"
+)
 
 target_include_directories(datoviz_fileio
     PUBLIC
@@ -22,7 +27,7 @@ target_include_directories(datoviz_fileio
 
 target_compile_definitions(
     datoviz_fileio PUBLIC
-    ${COMPILE_DEFINITIONS} "FPNG_USE_UNALIGNED_LOADS=0")
+    ${DVZ_COMPILE_DEFINITIONS} "FPNG_USE_UNALIGNED_LOADS=0")
 if(WIN32)
     target_compile_definitions(datoviz_fileio PRIVATE DVZ_SHARED)
 endif()

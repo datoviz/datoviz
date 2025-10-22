@@ -60,6 +60,49 @@ set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
 add_subdirectory(src)
 add_subdirectory(testing)
 
+get_property(_dvz_targets GLOBAL PROPERTY DVZ_ALL_TARGETS)
+list(REMOVE_DUPLICATES _dvz_targets)
+get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
+
+foreach(_dvz_target ${_dvz_targets})
+    if(TARGET ${_dvz_target})
+        if(DVZ_COMMON_COMPILE_OPTIONS)
+            target_compile_options(${_dvz_target} PRIVATE ${DVZ_COMMON_COMPILE_OPTIONS})
+        endif()
+        if(DVZ_COMPILE_OPTIONS_C)
+            target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:C>:${DVZ_COMPILE_OPTIONS_C}>)
+        endif()
+        if(DVZ_COMPILE_OPTIONS_CXX)
+            target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DVZ_COMPILE_OPTIONS_CXX}>)
+        endif()
+        if(DVZ_COMPILE_OPTIONS_OBJC)
+            target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:OBJC>:${DVZ_COMPILE_OPTIONS_OBJC}>)
+        endif()
+        if(_dvz_compile_definitions)
+            target_compile_definitions(${_dvz_target} PRIVATE ${_dvz_compile_definitions})
+        endif()
+    endif()
+endforeach()
+
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC" OR CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(_dvz_external_nowarn "/W0")
+else()
+    set(_dvz_external_nowarn "-w")
+endif()
+
+file(GLOB_RECURSE DVZ_EXTERNAL_SOURCES CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/external/*.c"
+    "${PROJECT_SOURCE_DIR}/external/*.cc"
+    "${PROJECT_SOURCE_DIR}/external/*.cpp"
+    "${PROJECT_SOURCE_DIR}/external/*.cxx"
+    "${PROJECT_SOURCE_DIR}/external/*.m"
+    "${PROJECT_SOURCE_DIR}/external/*.mm"
+)
+
+if(DVZ_EXTERNAL_SOURCES AND _dvz_external_nowarn)
+    set_property(SOURCE ${DVZ_EXTERNAL_SOURCES} APPEND_STRING PROPERTY COMPILE_FLAGS " ${_dvz_external_nowarn}")
+endif()
+
 if(DVZ_ENABLE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         message(STATUS "Code coverage instrumentation enabled")

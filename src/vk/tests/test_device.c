@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/vk/device.h"
+#include "test_vk.h"
 #include "testing.h"
 
 

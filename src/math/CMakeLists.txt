@@ -12,7 +12,7 @@ target_include_directories(datoviz_math
     ${PROJECT_SOURCE_DIR}/external/cglm/include
 )
 
-target_compile_definitions(datoviz_math PUBLIC ${COMPILE_DEFINITIONS})
+target_compile_definitions(datoviz_math PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
 # Ensure pthread headers from PThreads4W (Windows) or system Threads are visible
 if(DVZ_THREADING_TARGET)

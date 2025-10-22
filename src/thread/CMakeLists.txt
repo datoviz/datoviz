@@ -11,7 +11,7 @@ target_include_directories(datoviz_thread
     ${PROJECT_SOURCE_DIR}/src/common
 )
 
-target_compile_definitions(datoviz_thread PUBLIC ${COMPILE_DEFINITIONS})
+target_compile_definitions(datoviz_thread PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 if(WIN32)
     target_compile_definitions(datoviz_thread PRIVATE DVZ_SHARED)
 endif()

@@ -4,6 +4,8 @@
 
 add_library(testing STATIC testing.cpp)
 
+get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
+
 target_include_directories(testing
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -11,7 +13,9 @@ target_include_directories(testing
 )
 
 # Ensure OS/Compiler macros are visible to the testing library as well
-target_compile_definitions(testing PUBLIC ${COMPILE_DEFINITIONS})
+if(_dvz_compile_definitions)
+    target_compile_definitions(testing PUBLIC ${_dvz_compile_definitions})
+endif()
 
 # Allow linking from C
 set_target_properties(testing PROPERTIES
@@ -69,7 +73,9 @@ target_include_directories(dvztest
 )
 
 # Ensure OS/Compiler macros are available to tests
-target_compile_definitions(dvztest PRIVATE ${COMPILE_DEFINITIONS})
+if(_dvz_compile_definitions)
+    target_compile_definitions(dvztest PRIVATE ${_dvz_compile_definitions})
+endif()
 
 # -------------------------------------------------------------------------------------------------
 # Public header probe
@@ -87,7 +93,9 @@ target_include_directories(dvz_public_header_probe
     ${PROJECT_SOURCE_DIR}/include
 )
 
-target_compile_definitions(dvz_public_header_probe PRIVATE ${COMPILE_DEFINITIONS})
+if(_dvz_compile_definitions)
+    target_compile_definitions(dvz_public_header_probe PRIVATE ${_dvz_compile_definitions})
+endif()
 
 if(NOT WIN32)
     add_custom_command(TARGET dvz_public_header_probe

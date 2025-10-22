@@ -38,6 +38,124 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 # -------------------------------------------------------------------------------------------------
+# Compiler options
+# -------------------------------------------------------------------------------------------------
+set(DVZ_COMMON_COMPILE_OPTIONS "")
+set(DVZ_COMPILE_OPTIONS_C "")
+set(DVZ_COMPILE_OPTIONS_CXX "")
+set(DVZ_COMPILE_OPTIONS_OBJC "")
+
+# Default: OpenMP remains disabled until detection is reintroduced.
+set(HAS_OPENMP 0)
+set(DVZ_FPNG_NO_SSE 1)
+
+if(CC_GCC OR CC_CLANG)
+    list(APPEND DVZ_COMMON_COMPILE_OPTIONS
+        -g
+        -m64
+        -pedantic
+        -Wall
+        -Wextra
+        -Werror=vla
+        -Wcast-align
+        -Wcast-qual
+        -Wredundant-decls
+        -Wswitch-default
+        -Wmissing-declarations
+        -Wmissing-include-dirs
+        -Wno-unused-result
+        -Wno-unused-function
+        -Wno-unused-variable
+        -Wno-unused-parameter
+        -Wno-format-nonliteral
+        -Wno-strict-overflow
+        -Wsign-conversion
+        -Wshadow
+        -Wformat=2
+        -Winit-self
+        -Wundef
+        $<$<CONFIG:Debug>:-O0>
+        $<$<NOT:$<CONFIG:Debug>>:-O2>
+    )
+endif()
+
+if(CC_GCC)
+    list(APPEND DVZ_COMMON_COMPILE_OPTIONS
+        -Wlogical-op
+        -Wno-stringop-overread
+        -fvisibility=hidden
+        -fdiagnostics-color=always
+        -Wno-unused-but-set-variable
+    )
+
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|amd64|i.86")
+        list(APPEND DVZ_COMMON_COMPILE_OPTIONS
+            -msse4.1
+            -mpclmul
+        )
+        set(DVZ_FPNG_NO_SSE 0)
+    else()
+        set(DVZ_FPNG_NO_SSE 1)
+    endif()
+
+    if(HAS_OPENMP AND OpenMP_CXX_FLAGS)
+        separate_arguments(_dvz_openmp_flags NATIVE_COMMAND "${OpenMP_CXX_FLAGS}")
+        list(APPEND DVZ_COMMON_COMPILE_OPTIONS ${_dvz_openmp_flags})
+    endif()
+
+    list(APPEND DVZ_COMPILE_OPTIONS_C
+        -std=gnu11
+        -Wmissing-prototypes
+        -Wimplicit-function-declaration
+        -Wstrict-prototypes
+    )
+
+    list(APPEND DVZ_COMPILE_OPTIONS_CXX
+        -std=c++17
+    )
+elseif(CC_CLANG)
+    list(APPEND DVZ_COMMON_COMPILE_OPTIONS
+        -fcolor-diagnostics
+        -Wno-missing-braces
+        -fdiagnostics-color=always
+    )
+
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        list(APPEND DVZ_COMMON_COMPILE_OPTIONS
+            -msse4.1
+            -mpclmul
+        )
+        set(DVZ_FPNG_NO_SSE 0)
+    else()
+        set(DVZ_FPNG_NO_SSE 1)
+    endif()
+
+    list(APPEND DVZ_COMPILE_OPTIONS_C
+        -std=gnu11
+        -Wmissing-prototypes
+    )
+
+    list(APPEND DVZ_COMPILE_OPTIONS_CXX
+        -stdlib=libc++
+        -std=c++17
+    )
+
+    set(DVZ_COMPILE_OPTIONS_OBJC
+        -Wno-partial-availability
+        -Wno-unguarded-availability-new
+    )
+elseif(CC_MSVC)
+    list(APPEND DVZ_COMPILE_OPTIONS_C /std:c11)
+    list(APPEND DVZ_COMPILE_OPTIONS_CXX /std:c++17)
+endif()
+
+set(DVZ_COMMON_COMPILE_OPTIONS "${DVZ_COMMON_COMPILE_OPTIONS}" CACHE INTERNAL "Datoviz shared compiler options" FORCE)
+set(DVZ_COMPILE_OPTIONS_C "${DVZ_COMPILE_OPTIONS_C}" CACHE INTERNAL "Datoviz C compiler options" FORCE)
+set(DVZ_COMPILE_OPTIONS_CXX "${DVZ_COMPILE_OPTIONS_CXX}" CACHE INTERNAL "Datoviz C++ compiler options" FORCE)
+set(DVZ_COMPILE_OPTIONS_OBJC "${DVZ_COMPILE_OPTIONS_OBJC}" CACHE INTERNAL "Datoviz Objective-C compiler options" FORCE)
+set(HAS_OPENMP "${HAS_OPENMP}" CACHE INTERNAL "OpenMP availability flag" FORCE)
+
+# -------------------------------------------------------------------------------------------------
 # Create the library
 # -------------------------------------------------------------------------------------------------
 
@@ -58,7 +176,7 @@ install(TARGETS datoviz
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
 #
-set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
+set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>
@@ -72,29 +190,37 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CC_MSVC=${CC_MSVC}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
+    # TODO: ZLIB
+    HAS_ZLIB=0
+    HAS_OPENMP=${HAS_OPENMP}
 )
 
 if(DVZ_WITH_MIMALLOC)
-    list(APPEND COMPILE_DEFINITIONS
+    list(APPEND DVZ_COMPILE_DEFINITIONS
         DVZ_HAS_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
 else()
-    list(APPEND COMPILE_DEFINITIONS DVZ_HAS_MIMALLOC=0)
+    list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_HAS_MIMALLOC=0)
 endif()
 
 if(DVZ_USE_MIMALLOC_RELEASE_DEFAULT AND DVZ_WITH_MIMALLOC)
-    list(APPEND COMPILE_DEFINITIONS
+    list(APPEND DVZ_COMPILE_DEFINITIONS
         DVZ_ALLOCATOR_DEFAULT_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
 else()
-    list(APPEND COMPILE_DEFINITIONS DVZ_ALLOCATOR_DEFAULT_MIMALLOC=0)
+    list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_ALLOCATOR_DEFAULT_MIMALLOC=0)
 endif()
 
 if(DVZ_ENABLE_ASAN_IN_DEBUG)
-    list(APPEND COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=1)
+    list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=1)
 else()
-    list(APPEND COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=0)
+    list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=0)
 endif()
 
-target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
+list(APPEND DVZ_COMPILE_DEFINITIONS FPNG_NO_SSE=${DVZ_FPNG_NO_SSE})
+
+target_compile_definitions(datoviz PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+
+set(DVZ_COMPILE_DEFINITIONS "${DVZ_COMPILE_DEFINITIONS}" PARENT_SCOPE)
+set_property(GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS "${DVZ_COMPILE_DEFINITIONS}")
 
 # -------------------------------------------------------------------------------------------------
 # Components
