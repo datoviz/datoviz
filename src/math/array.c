@@ -19,14 +19,13 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "_log.h"
+#include "array_struct.h"
 
 
 
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
-
-
 
 // Number of components in a given dtype (e.g. 4 for vec4)
 static uint32_t _get_components(DvzDataType dtype)
