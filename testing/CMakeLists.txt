@@ -39,6 +39,7 @@ target_link_libraries(dvztest
     datoviz_fileio
     datoviz_math
     datoviz_thread
+    datoviz_vk
     testing
 )
 
@@ -73,6 +74,7 @@ target_compile_definitions(dvztest PRIVATE ${COMPILE_DEFINITIONS})
 # -------------------------------------------------------------------------------------------------
 # Public header probe
 # -------------------------------------------------------------------------------------------------
+#
 add_executable(dvz_public_header_probe dvz_public_header_probe.c)
 
 target_link_libraries(dvz_public_header_probe

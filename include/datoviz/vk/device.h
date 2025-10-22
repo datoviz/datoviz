@@ -23,6 +23,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+// #define DVZ_MAX_EXTENSION_NAME_SIZE 256
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -41,12 +49,12 @@ typedef struct VkInstance_T* VkInstance;
  * Get the supported layers before creating an instance.
  *
  * !!! warning
- *     This function assumes layers is already allocated with enough memory. *
+ *     Tthe caller needs to free the returned array AS WELL AS every string in it.
  *
- * @param[out] layers a pointer to an array of strings
- * @returns the number of supported layers
+ * @param[out] count the number of supported layers
+ * @returns a pointer to an array of strings
  */
-DVZ_EXPORT uint32_t dvz_instance_supported_layers(char** layers);
+DVZ_EXPORT char** dvz_instance_supported_layers(uint32_t* count);
 
 
 
