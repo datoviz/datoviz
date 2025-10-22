@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Datoviz test runner                                                                          */
+/*  Testing device                                                                              */
 /*************************************************************************************************/
 
 
@@ -14,32 +14,25 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/common/tests/test_common.h"
-#include "../src/ds/tests/test_ds.h"
-#include "../src/fileio/tests/test_fileio.h"
-#include "../src/math/tests/test_math.h"
-#include "../src/thread/tests/test_thread.h"
-#include "../src/vk/tests/test_vk.h"
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/common/macros.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  <Title> tests                                                                                */
 /*************************************************************************************************/
 
-int main(int argc, char** argv)
+int test_device_1(TstSuite* suite, TstItem* tstitem)
 {
-    TstSuite suite = tst_suite();
+    ANN(suite);
+    ANN(tstitem);
 
-    test_common(&suite);
-    test_ds(&suite);
-    test_fileio(&suite);
-    test_math(&suite);
-    test_thread(&suite);
-    test_vk(&suite);
-
-    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
-    tst_suite_destroy(&suite);
     return 0;
 }
