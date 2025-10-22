@@ -14,6 +14,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "list_structs.h"
 
 
 
