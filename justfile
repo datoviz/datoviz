@@ -1401,7 +1401,13 @@ analyze:
 
 [linux]
 test test_name="":
-    ./build/testing/dvztest {{test_name}}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    build_dir="$(pwd)/build"
+    suppressions_file="${build_dir}/lsan.supp"
+    mkdir -p "${build_dir}"
+    grep '^leak:' sanitizers/asan.ignore > "${suppressions_file}" || true
+    LSAN_OPTIONS="suppressions=${suppressions_file}${LSAN_OPTIONS:+:${LSAN_OPTIONS}}" ./build/testing/dvztest {{test_name}}
 #
 
 [linux]

@@ -1,1 +1,4 @@
 src:*/vulkan_loader.c
+leak:dbus_pending_call_block
+leak:_dbus_message_loader_queue_messages
+leak:_dbus_string_copy_len
