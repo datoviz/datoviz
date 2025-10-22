@@ -35,6 +35,8 @@ stub path:
     template=""
     case "$base" in
         *_structs.h) template="{{TEMPLATES_DIR}}/structs.h" ;;
+        test*.c)      template="{{TEMPLATES_DIR}}/test.c" ;;
+        test*.h)      template="{{TEMPLATES_DIR}}/test.h" ;;
         *.h)          template="{{TEMPLATES_DIR}}/header.h" ;;
         *.c)          template="{{TEMPLATES_DIR}}/source.c" ;;
         *) echo "error: no template defined for $path" >&2; exit 1 ;;
@@ -42,11 +44,17 @@ stub path:
 
     mkdir -p "$(dirname "$path")"
 
-    # Capitalize first letter of title (POSIX way)
+    # Extract filename without extension
     title="$(basename "$path" ".$ext")"
-    title="$(printf '%s' "$title" | sed 's/^\(.\)/\U\1/')"
 
-    sed "s/<Title>/$title/g" "$template" > "$path"
+    # Split by '_' and take the last part
+    title="${title##*_}"
+
+    # Lowercase (POSIX way via tr)
+    title="$(printf '%s' "$title" | tr '[:upper:]' '[:lower:]')"
+
+    # Replace <title> placeholder
+    sed "s/<title>/$title/g" "$template" > "$path"
 
     echo "Created stub: $path"
 #
