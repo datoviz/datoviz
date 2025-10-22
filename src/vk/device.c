@@ -22,6 +22,8 @@
 #include "_compat.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
+#include "macros.h"
+#include "vulkan/vulkan_core.h"
 
 
 
@@ -35,12 +37,12 @@ struct DvzInstance
     uint32_t vk_version;
 
     uint32_t layer_count;
-    const char** layers;
+    char** layers;
 
     uint32_t ext_count;
-    const char** extensions;
+    char** extensions;
 
-    const char* name;
+    char* name;
     uint32_t version;
 };
 
@@ -162,14 +164,38 @@ void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version
 {
     ANN(instance);
     if (name != NULL)
-        instance->name = name;
+        instance->name = dvz_strdup(name);
+
+    instance->version = version;
 }
 
 
 
 int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 {
-    ANN(instance); //
+    ANN(instance);
+    instance->vk_version = vk_version;
+
+
+    // Prepare the creation of the Vulkan instance.
+    VkApplicationInfo appInfo = {0};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = instance->name;
+    appInfo.applicationVersion = instance->version;
+    appInfo.apiVersion = instance->vk_version;
+
+    VkInstanceCreateInfo info_inst = {0};
+    info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    info_inst.pApplicationInfo = &appInfo;
+
+    // Enabled instance extensions.
+    info_inst.enabledExtensionCount = instance->ext_count;
+    info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
+
+    log_trace("creating instance");
+    VkResult res = vkCreateInstance(&info_inst, NULL, &instance->vk_instance);
+    check_result(res);
+    return res;
 }
 
 
@@ -177,18 +203,30 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
 {
     ANN(instance); //
+
+    return 0;
 }
 
 
 
 VkInstance dvz_instance_handle(DvzInstance* instance)
 {
-    ANN(instance); //
+    ANN(instance);
+    return instance->vk_instance;
 }
 
 
 
-int dvz_instance_destroy(DvzInstance* instance)
+void dvz_instance_destroy(DvzInstance* instance)
 {
-    ANN(instance); //
+    ANN(instance);
+
+    if (instance->vk_instance != VK_NULL_HANDLE)
+    {
+        vkDestroyInstance(instance->vk_instance, NULL);
+    }
+
+    dvz_free_strings(instance->ext_count, (char**)instance->extensions);
+    dvz_free_strings(instance->layer_count, (char**)instance->layers);
+    dvz_free((char*)instance->name);
 }

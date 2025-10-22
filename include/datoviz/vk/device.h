@@ -140,6 +140,6 @@ DVZ_EXPORT VkInstance dvz_instance_handle(DvzInstance* instance);
 /**
  * Destroy the instance.
  *
- * @param the instance
+ * @param instance the instance
  */
-DVZ_EXPORT int dvz_instance_destroy(DvzInstance* instance);
+DVZ_EXPORT void dvz_instance_destroy(DvzInstance* instance);

@@ -30,7 +30,7 @@
 
 
 /*************************************************************************************************/
-/*  CONSTANTS                                                                                    */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
 #define DVZ_MAX_STRING_LENGTH 4096
@@ -221,12 +221,12 @@ static inline void dvz_pointer_reset(DvzPointer* pointer)
 /*  Strings */
 /*************************************************************************************************/
 
-static const char** dvz_copy_strings(uint32_t count, const char** src)
+static char** dvz_copy_strings(uint32_t count, const char** src)
 {
     if (count == 0 || src == NULL)
         return NULL;
 
-    const char** dst = (const char**)dvz_calloc(count, sizeof(char*));
+    char** dst = (char**)dvz_calloc(count, sizeof(char*));
     if (!dst)
         return NULL;
 
@@ -284,6 +284,20 @@ static inline void* dvz_memdup(DvzSize size, const void* data)
     void* copy = dvz_malloc(size);
     ANN(copy);
     dvz_memcpy(copy, (size_t)size, data, (size_t)size);
+    return copy;
+}
+
+
+
+static inline char* dvz_strdup(const char* s)
+{
+    if (s == NULL)
+        return NULL;
+
+    size_t len = strnlen(s, DVZ_MAX_STRING_LENGTH);
+    char* copy = (char*)dvz_memdup(len + 1, s);
+    if (copy)
+        copy[len] = '\0';
     return copy;
 }
 
