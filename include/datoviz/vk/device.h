@@ -40,6 +40,9 @@ typedef struct VkInstance_T* VkInstance;
 /**
  * Get the supported layers before creating an instance.
  *
+ * !!! warning
+ *     This function assumes layers is already allocated with enough memory. *
+ *
  * @param[out] layers a pointer to an array of strings
  * @returns the number of supported layers
  */

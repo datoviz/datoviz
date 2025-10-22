@@ -5,7 +5,6 @@
 # -------------------------------------------------------------------------------------------------
 # Detect the OS
 # -------------------------------------------------------------------------------------------------
-
 #
 set(OS_LINUX 0)
 set(OS_MACOS 0)
@@ -22,7 +21,6 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Detect the compiler
 # -------------------------------------------------------------------------------------------------
-
 #
 set(CC_GCC 0)
 set(CC_CLANG 0)
@@ -59,7 +57,6 @@ install(TARGETS datoviz
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
-
 #
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
@@ -102,26 +99,31 @@ target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
 # -------------------------------------------------------------------------------------------------
 # Components
 # -------------------------------------------------------------------------------------------------
-
-# Add source modules
+#
 add_subdirectory(common)
 add_subdirectory(ds)
 add_subdirectory(fileio)
 add_subdirectory(math)
 add_subdirectory(thread)
+add_subdirectory(vk)
 
 # -------------------------------------------------------------------------------------------------
 # Include and linking
 # -------------------------------------------------------------------------------------------------
-
-# Link object modules
-target_link_libraries(datoviz
-    PRIVATE
+#
+set(DVZ_COMPONENTS
     datoviz_common
     datoviz_ds
     datoviz_fileio
     datoviz_math
     datoviz_thread
+    datoviz_vk
+)
+
+# Link object modules
+target_link_libraries(datoviz
+    PRIVATE
+    ${DVZ_COMPONENTS}
 )
 
 if(DVZ_THREADING_TARGET)
@@ -132,17 +134,7 @@ if(DVZ_WITH_MIMALLOC)
     target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
 endif()
 
-# Track core targets for optional coverage instrumentation.
-set(_dvz_tracked_targets
-    datoviz
-    datoviz_common
-    datoviz_ds
-    datoviz_fileio
-    datoviz_math
-    datoviz_thread
-)
-
-foreach(_dvz_target ${_dvz_tracked_targets})
+foreach(_dvz_target datoviz ${DVZ_COMPONENTS})
     if(TARGET ${_dvz_target})
         set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_target})
     endif()
@@ -157,7 +149,6 @@ target_include_directories(datoviz
 # -------------------------------------------------------------------------------------------------
 # Sanitizers
 # -------------------------------------------------------------------------------------------------
-
 #
 set(DVZ_SANITIZER_FLAGS "")
 set(DVZ_ACTIVE_SANITIZERS "")
