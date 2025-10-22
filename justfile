@@ -4,6 +4,8 @@
 
 MAINTAINER := "Cyrille Rossant <cyrille.rossant@gmail.com>"
 DESCRIPTION := "A C library for high-performance GPU scientific visualization"
+TEMPLATES_DIR := "templates"
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -14,6 +16,41 @@ default:
     @echo "No arguments supplied"
     @exit 1
 #
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Templates
+# -------------------------------------------------------------------------------------------------
+
+stub path:
+    #!/usr/bin/env sh
+    path="{{path}}"
+
+    # Determine extension and base name
+    ext="${path##*.}"
+    base="$(basename "$path")"
+
+    # Pick template based on name pattern or extension
+    template=""
+    case "$base" in
+        *_structs.h) template="{{TEMPLATES_DIR}}/structs.h" ;;
+        *.h)          template="{{TEMPLATES_DIR}}/header.h" ;;
+        *.c)          template="{{TEMPLATES_DIR}}/source.c" ;;
+        *) echo "error: no template defined for $path" >&2; exit 1 ;;
+    esac
+
+    mkdir -p "$(dirname "$path")"
+
+    # Capitalize first letter of title (POSIX way)
+    title="$(basename "$path" ".$ext")"
+    title="$(printf '%s' "$title" | sed 's/^\(.\)/\U\1/')"
+
+    sed "s/<Title>/$title/g" "$template" > "$path"
+
+    echo "Created stub: $path"
+#
+
 
 
 # -------------------------------------------------------------------------------------------------
