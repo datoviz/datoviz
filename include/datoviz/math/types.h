@@ -89,15 +89,18 @@ typedef uint64_t DvzId;
 #define MB 1048576
 #define KB 1024
 
+#define PRETTY_SIZE_THRESHOLD 8192
+
 static char _PRETTY_SIZE[64] = {0};
 
 typedef uint64_t DvzSize;
 
 static inline char* pretty_size(DvzSize size)
 {
-    if (size <= 8192)
+    if (size <= PRETTY_SIZE_THRESHOLD)
     {
-        snprintf(_PRETTY_SIZE, 64, "%" PRIu64 " bytes", size); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        snprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            _PRETTY_SIZE, 64, "%" PRIu64 " bytes", size);
         return _PRETTY_SIZE;
     }
     float s = (float)size;
@@ -121,11 +124,12 @@ static inline char* pretty_size(DvzSize size)
     {
         u = "bytes";
     }
-    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    snprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        _PRETTY_SIZE, 64, "%.1f %s", s, u);
     return _PRETTY_SIZE;
 }
 
-#define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
+#define DVZ_ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
 
 #define fsizeof(type, member) sizeof(((type*)0)->member)
 
