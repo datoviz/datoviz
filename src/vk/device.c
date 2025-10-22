@@ -135,7 +135,7 @@ void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char**
     if (count > 0)
         ANN(extensions);
 
-    instance->layer_count = count;
+    instance->ext_count = count;
     instance->extensions = dvz_copy_strings(count, extensions);
 }
 
