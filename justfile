@@ -311,7 +311,7 @@ build release="Debug":
     @mkdir -p build
     @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    @cd build/ && ninja -v
+    @cd build/ && ninja
 #
 
 [linux]

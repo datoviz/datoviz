@@ -30,6 +30,14 @@
 
 
 /*************************************************************************************************/
+/*  CONSTANTS                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_MAX_STRING_LENGTH 4096
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -192,19 +200,6 @@ static inline void dvz_free_ptr(void** pointer)
 
 
 
-static inline void dvz_free_strings(uint32_t count, char** strings)
-{
-    if (strings == NULL)
-        return;
-    for (uint32_t i = 0; i < count; i++)
-    {
-        dvz_free(strings[i]);
-    }
-    dvz_free(strings);
-}
-
-
-
 static inline void dvz_pointer_reset(DvzPointer* pointer)
 {
     if (pointer == NULL || pointer->pointer == NULL)
@@ -218,6 +213,61 @@ static inline void dvz_pointer_reset(DvzPointer* pointer)
         dvz_free(pointer->pointer);
     pointer->pointer = NULL;
     pointer->aligned = false;
+}
+
+
+
+/*************************************************************************************************/
+/*  Strings */
+/*************************************************************************************************/
+
+static const char** dvz_copy_strings(uint32_t count, const char** src)
+{
+    if (count == 0 || src == NULL)
+        return NULL;
+
+    const char** dst = (const char**)dvz_calloc(count, sizeof(char*));
+    if (!dst)
+        return NULL;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const char* s = src[i];
+        if (s)
+        {
+            size_t len = strnlen(s, DVZ_MAX_STRING_LENGTH); // safe upper bound
+            if (len >= DVZ_MAX_STRING_LENGTH - 1)
+            {
+                log_warn("maximum string limit reached");
+            }
+            char* copy = (char*)dvz_calloc(len + 1, sizeof(char));
+            if (copy)
+            {
+                dvz_memcpy(copy, len + 1, s, len);
+                copy[len] = '\0';
+                dst[i] = copy;
+            }
+        }
+        else
+        {
+            dst[i] = NULL;
+        }
+    }
+
+    return dst;
+}
+
+
+
+static inline void dvz_free_strings(uint32_t count, char** strings)
+{
+    if (strings == NULL)
+        return;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_free(strings[i]);
+    }
+    dvz_free(strings);
 }
 
 
