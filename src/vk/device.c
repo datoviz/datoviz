@@ -21,6 +21,7 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/vk/device.h"
 
 
 

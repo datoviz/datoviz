@@ -252,12 +252,12 @@ static inline DvzSize dvz_alignment_get(DvzSize alignment, DvzSize min_alignment
 
 
 
-static inline void* dvz_aligned_pointer(const void* data, DvzSize alignment, uint32_t idx)
+static inline const void* dvz_aligned_pointer(const void* data, DvzSize alignment, uint32_t idx)
 {
     if (alignment == 0)
-        return (void*)((const uint8_t*)data + idx);
-    /* Return a pointer within a tightly-packed aligned buffer without recomputing layout. */
-    return (void*)(((uint64_t)data) + ((uint64_t)idx * alignment));
+        return (const void*)((const uint8_t*)data + idx);
+
+    return (const void*)((uintptr_t)data + (uintptr_t)idx * alignment);
 }
 
 
@@ -293,7 +293,7 @@ dvz_aligned_repeat(DvzSize size, const void* data, uint32_t count, DvzSize align
     }
     /* WARNING: the returned pointer carries the aligned flag so callers free it correctly on all
      * platforms (Windows requires _aligned_free for true aligned blocks). */
-    DvzPointer out = {0};
+    INIT(DvzPointer, out);
     out.pointer = repeated;
     out.aligned = alignment > 0;
     return out;
