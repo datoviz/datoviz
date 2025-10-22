@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing Vulkan                                                                               */
+/* Vulkan types                                                                                  */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,20 +16,27 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "testing.h"
+#include <stdint.h>
+
+#include <vulkan/vulkan.h>
 
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
-int test_device_layers(TstSuite* suite, TstItem* tstitem);
+struct DvzInstance
+{
+    VkInstance vk_instance;
+    uint32_t vk_version;
 
-int test_device_extensions(TstSuite* suite, TstItem* tstitem);
+    uint32_t layer_count;
+    char** layers;
 
-int test_device_instance(TstSuite* suite, TstItem* tstitem);
+    uint32_t ext_count;
+    char** extensions;
 
-
-
-int test_vk(TstSuite* suite);
+    char* name;
+    uint32_t version;
+};

@@ -33,6 +33,7 @@ int test_vk(TstSuite* suite)
 
     TEST_SIMPLE(test_device_layers);
     TEST_SIMPLE(test_device_extensions);
+    TEST_SIMPLE(test_device_instance);
 
     return 0;
 }

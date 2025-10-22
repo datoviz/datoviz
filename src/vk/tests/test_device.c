@@ -17,7 +17,9 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <vulkan/vulkan_core.h>
 
+#include "../types.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -79,6 +81,23 @@ int test_device_extensions(TstSuite* suite, TstItem* tstitem)
     dvz_free_strings(count, extensions);
 
     log_info("Test completed successfully.");
+
+    return 0;
+}
+
+
+
+int test_device_instance(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzInstance instance = {0};
+    dvz_instance_info(&instance, "Instance test", 42);
+
+    VkInstance vk_instance = dvz_instance_handle(&instance);
+    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    dvz_instance_destroy(&instance);
 
     return 0;
 }

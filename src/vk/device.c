@@ -23,28 +23,8 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
 #include "macros.h"
+#include "types.h"
 #include "vulkan/vulkan_core.h"
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzInstance
-{
-    VkInstance vk_instance;
-    uint32_t vk_version;
-
-    uint32_t layer_count;
-    char** layers;
-
-    uint32_t ext_count;
-    char** extensions;
-
-    char* name;
-    uint32_t version;
-};
 
 
 
@@ -202,7 +182,9 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 
 uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
 {
-    ANN(instance); //
+    ANN(instance);
+
+    // TODO
 
     return 0;
 }
