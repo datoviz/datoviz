@@ -315,23 +315,23 @@ build release="Debug":
 #
 
 [linux]
-msan:
+_sanitizer-build name sanitizer:
     @set -e
     @mkdir -p docs/images
-    @mkdir -p build-msan
-    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-msan/
-    @cd build-msan/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER=msan -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    @cd build-msan/ && ninja
+    @mkdir -p build-{{name}}
+    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-{{name}}/
+    @cd build-{{name}}/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER={{sanitizer}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-{{name}}/ && ninja
+#
+
+[linux]
+msan:
+    just _sanitizer-build msan msan
 #
 
 [linux]
 tsan:
-    @set -e
-    @mkdir -p docs/images
-    @mkdir -p build-tsan
-    @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-tsan/
-    @cd build-tsan/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER=tsan -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    @cd build-tsan/ && ninja
+    just _sanitizer-build tsan tsan
 #
 
 [macos]

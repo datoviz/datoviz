@@ -67,11 +67,11 @@ if(CC_GCC OR CC_CLANG)
         -Wno-unused-function
         -Wno-unused-variable
         -Wno-unused-parameter
-        -Wno-format-nonliteral
         -Wno-strict-overflow
         -Wsign-conversion
         -Wshadow
         -Wformat=2
+        -Wno-format-nonliteral
         -Winit-self
         -Wundef
         $<$<CONFIG:Debug>:-O0>
@@ -135,10 +135,12 @@ elseif(CC_CLANG)
         -Wmissing-prototypes
     )
 
-    list(APPEND DVZ_COMPILE_OPTIONS_CXX
-        -stdlib=libc++
-        -std=c++17
-    )
+    if(APPLE)
+        list(APPEND DVZ_COMPILE_OPTIONS_CXX
+            -stdlib=libc++
+        )
+    endif()
+    list(APPEND DVZ_COMPILE_OPTIONS_CXX -std=c++17)
 
     set(DVZ_COMPILE_OPTIONS_OBJC
         -Wno-partial-availability
