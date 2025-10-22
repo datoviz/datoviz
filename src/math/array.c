@@ -19,7 +19,7 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "_log.h"
-#include "array_struct.h"
+#include "array_structs.h"
 
 
 

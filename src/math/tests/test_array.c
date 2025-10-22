@@ -18,7 +18,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "../array_struct.h"
+#include "../array_structs.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/math/array.h"
 #include "test_math.h"
