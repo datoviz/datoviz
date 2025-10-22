@@ -27,7 +27,7 @@ warn {
         block = block $0 ORS
     }
 
-    if ($0 ~ /Vulkan-Loader/) in_loader=1
+    if ($0 ~ /Vulkan-Loader|nvidia/i) in_loader=1
 
     # End of block
     if ($0 ~ /^SUMMARY:/) {
