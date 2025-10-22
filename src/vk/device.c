@@ -24,6 +24,7 @@
 #include "datoviz/vk/device.h"
 #include "macros.h"
 #include "types.h"
+#include "validation.h"
 #include "vulkan/vulkan_core.h"
 
 
@@ -172,9 +173,40 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     info_inst.enabledExtensionCount = instance->ext_count;
     info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
 
-    log_trace("creating instance");
+
+
+    // TODO: IF VALIDATION
+
+    // Validation structures
+    VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};
+    _fill_info_debug(&info_debug);
+    info_debug.pUserData = &instance->n_errors;
+
+    VkValidationFeaturesEXT features = {0};
+    _fill_validation_features(&features);
+    features.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
+
+    info_inst.pNext = &features;
+
+
+
+    // Create Vulkan instance.
+    log_trace("creating Vulkan instance...");
     VkResult res = vkCreateInstance(&info_inst, NULL, &instance->vk_instance);
     check_result(res);
+
+    VkInstance vki = instance->vk_instance;
+    ASSERT(vki != VK_NULL_HANDLE);
+    log_trace("Vulkan instance created");
+
+
+
+    // Create debug messenger.
+    LOAD_VK_FUNC(vki, vkCreateDebugUtilsMessengerEXT);
+    vkCreateDebugUtilsMessengerEXT_d(vki, &info_debug, NULL, &instance->debug_messenger);
+
+
+
     return res;
 }
 
@@ -183,8 +215,6 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
 {
     ANN(instance);
-
-    // TODO
 
     return 0;
 }
@@ -203,9 +233,18 @@ void dvz_instance_destroy(DvzInstance* instance)
 {
     ANN(instance);
 
-    if (instance->vk_instance != VK_NULL_HANDLE)
+    VkInstance vki = instance->vk_instance;
+
+    if (vki != VK_NULL_HANDLE)
     {
-        vkDestroyInstance(instance->vk_instance, NULL);
+        if (instance->debug_messenger != NULL)
+        {
+            LOAD_VK_FUNC(vki, vkDestroyDebugUtilsMessengerEXT);
+
+            vkDestroyDebugUtilsMessengerEXT_d(vki, instance->debug_messenger, NULL);
+        }
+
+        vkDestroyInstance(vki, NULL);
     }
 
     dvz_free_strings(instance->ext_count, (char**)instance->extensions);

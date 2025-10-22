@@ -39,4 +39,8 @@ struct DvzInstance
 
     char* name;
     uint32_t version;
+
+    // Validation.
+    VkDebugUtilsMessengerEXT debug_messenger;
+    uint32_t n_errors;
 };

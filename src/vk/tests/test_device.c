@@ -92,11 +92,24 @@ int test_device_instance(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
+    // Initialize the instance structure.
     DvzInstance instance = {0};
     dvz_instance_info(&instance, "Instance test", 42);
 
-    VkInstance vk_instance = dvz_instance_handle(&instance);
+    // Enable validation layer and debug extension.
+    dvz_instance_layers(&instance, 1, (const char*[]){"VK_LAYER_KHRONOS_validation"});
+    dvz_instance_extensions(&instance, 1, (const char*[]){VK_EXT_DEBUG_UTILS_EXTENSION_NAME});
+
+    // Create the instance.
     dvz_instance_create(&instance, VK_API_VERSION_1_3);
+
+
+    // Get Vulkan instance handle.
+    VkInstance vk_instance = dvz_instance_handle(&instance);
+    AT(vk_instance != VK_NULL_HANDLE);
+
+
+    // Destroy the instance.
     dvz_instance_destroy(&instance);
 
     return 0;

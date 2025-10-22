@@ -77,3 +77,7 @@ static inline int check_result(VkResult res)
         VkResult res = (f);                                                                       \
         check_result(res);                                                                        \
     }
+
+#define LOAD_VK_FUNC(instance, name)                                                              \
+    PFN_##name name##_d = (PFN_##name)vkGetInstanceProcAddr(instance, #name);                     \
+    ANN(name##_d);
