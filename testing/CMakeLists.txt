@@ -111,7 +111,7 @@ if(NOT WIN32)
     )
 endif()
 
-if(DVZ_ENABLE_ASAN_IN_DEBUG AND DVZ_SANITIZER_FLAGS)
+if(DVZ_SANITIZER_FLAGS)
     foreach(_target testing dvztest dvz_public_header_probe)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)

@@ -21,9 +21,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allocator & sanitizer options
-option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" ON)
+option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" OFF)
 option(DVZ_ENABLE_COVERAGE "Enable code coverage instrumentation for supported compilers" OFF)
 set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds (asan, msan, tsan, or a comma-separated list)")
+set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "" "asan" "msan" "tsan" "off")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
 
 # Third-party dependencies
@@ -69,15 +70,19 @@ foreach(_dvz_target ${_dvz_targets})
         if(DVZ_COMMON_COMPILE_OPTIONS)
             target_compile_options(${_dvz_target} PRIVATE ${DVZ_COMMON_COMPILE_OPTIONS})
         endif()
+
         if(DVZ_COMPILE_OPTIONS_C)
             target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:C>:${DVZ_COMPILE_OPTIONS_C}>)
         endif()
+
         if(DVZ_COMPILE_OPTIONS_CXX)
             target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:${DVZ_COMPILE_OPTIONS_CXX}>)
         endif()
+
         if(DVZ_COMPILE_OPTIONS_OBJC)
             target_compile_options(${_dvz_target} PRIVATE $<$<COMPILE_LANGUAGE:OBJC>:${DVZ_COMPILE_OPTIONS_OBJC}>)
         endif()
+
         if(_dvz_compile_definitions)
             target_compile_definitions(${_dvz_target} PRIVATE ${_dvz_compile_definitions})
         endif()
@@ -115,8 +120,10 @@ if(DVZ_ENABLE_COVERAGE)
         foreach(_dvz_target ${_dvz_targets})
             if(TARGET ${_dvz_target})
                 get_target_property(_dvz_target_type ${_dvz_target} TYPE)
+
                 if(_dvz_target_type AND NOT _dvz_target_type STREQUAL "INTERFACE_LIBRARY")
                     target_compile_options(${_dvz_target} PRIVATE ${_dvz_coverage_compile_flags})
+
                     if(NOT _dvz_target_type STREQUAL "OBJECT_LIBRARY")
                         target_link_options(${_dvz_target} PRIVATE ${_dvz_coverage_link_flags})
                     endif()

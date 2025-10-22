@@ -315,23 +315,32 @@ build release="Debug":
 #
 
 [linux]
-_sanitizer-build name sanitizer:
+_sanitizer-build name:
     @set -e
-    @mkdir -p docs/images
-    @mkdir -p build-{{name}}
+    @mkdir -p docs/images build-{{name}}
     @cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-{{name}}/
-    @cd build-{{name}}/ && CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_ASAN_IN_DEBUG=ON -DDVZ_SANITIZER={{sanitizer}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-{{name}}/ && \
+      CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake .. -GNinja \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DDVZ_ENABLE_ASAN_IN_DEBUG=$([ "{{name}}" = "asan" ] && echo ON || echo OFF) \
+        -DDVZ_SANITIZER={{name}} \
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build-{{name}}/ && ninja
 #
 
 [linux]
 msan:
-    just _sanitizer-build msan msan
+    just _sanitizer-build msan
+#
+
+[linux]
+asan:
+    just _sanitizer-build asan
 #
 
 [linux]
 tsan:
-    just _sanitizer-build tsan tsan
+    just _sanitizer-build tsan
 #
 
 [macos]
@@ -1403,11 +1412,18 @@ analyze:
 test test_name="":
     #!/usr/bin/env bash
     set -euo pipefail
-    build_dir="$(pwd)/build"
+    ./build/testing/dvztest {{test_name}}
+#
+
+[linux]
+atest test_name="": asan
+    #!/usr/bin/env bash
+    set -euo pipefail
+    build_dir="$(pwd)/build-asan"
     suppressions_file="${build_dir}/lsan.supp"
     mkdir -p "${build_dir}"
     grep '^leak:' sanitizers/asan.ignore > "${suppressions_file}" || true
-    LSAN_OPTIONS="suppressions=${suppressions_file}${LSAN_OPTIONS:+:${LSAN_OPTIONS}}" ./build/testing/dvztest {{test_name}}
+    LSAN_OPTIONS="suppressions=${suppressions_file}${LSAN_OPTIONS:+:${LSAN_OPTIONS}}" ./build-asan/testing/dvztest {{test_name}}
 #
 
 [linux]
@@ -1432,12 +1448,15 @@ coverage filter="":
 [linux]
 mtest test_name="": msan
     #!/usr/bin/env bash
+    set -euo pipefail
     MSAN_OPTIONS="halt_on_error=0:exit_code=0:print_stats=0:symbolize=1:abort_on_error=0" \
     ./build-msan/testing/dvztest {{test_name}} 2> >(awk -f tools/hide-msan.awk >&2)
 #
 
 [linux]
 ttest test_name="": tsan
+    #!/usr/bin/env bash
+    set -euo pipefail
     ./build-tsan/testing/dvztest {{test_name}}
 #
 
