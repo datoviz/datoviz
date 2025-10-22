@@ -29,7 +29,7 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT char** dvz_instance_supported_layers(uint32_t* count)
+char** dvz_instance_supported_layers(uint32_t* count)
 {
     ANN(count);
 
@@ -66,4 +66,47 @@ DVZ_EXPORT char** dvz_instance_supported_layers(uint32_t* count)
 
     dvz_free(props);
     return layers;
+}
+
+
+
+char** dvz_instance_supported_extensions(uint32_t* count)
+{
+    ANN(count);
+
+    // Get the number of instance extensions.
+    VkResult res = vkEnumerateInstanceExtensionProperties(NULL, count, NULL);
+    if (res != VK_SUCCESS || *count == 0)
+        return 0;
+
+    ASSERT(*count < 1024); // consistency check
+
+    // Allocate and retrieve the extension properties.
+    VkExtensionProperties* props =
+        (VkExtensionProperties*)dvz_calloc((size_t)*count, sizeof(VkExtensionProperties));
+    if (!props)
+        return 0;
+
+    res = vkEnumerateInstanceExtensionProperties(NULL, count, props);
+    if (res != VK_SUCCESS)
+    {
+        dvz_free(props);
+        return 0;
+    }
+
+    // Allocate the array of strings.
+    char** extensions = (char**)dvz_calloc((size_t)*count, sizeof(char*));
+    for (uint32_t i = 0; i < *count; i++)
+    {
+        // Allocate memory for each string.
+        extensions[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
+        ANN(extensions[i]);
+
+        // Copy the extension name.
+        (void)dvz_snprintf(
+            extensions[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].extensionName);
+    }
+
+    dvz_free(props);
+    return extensions;
 }

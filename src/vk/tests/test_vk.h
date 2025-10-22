@@ -24,7 +24,9 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_device_1(TstSuite* suite, TstItem* tstitem);
+int test_device_layers(TstSuite* suite, TstItem* tstitem);
+
+int test_device_extensions(TstSuite* suite, TstItem* tstitem);
 
 
 

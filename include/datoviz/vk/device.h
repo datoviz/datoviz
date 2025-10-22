@@ -61,10 +61,13 @@ DVZ_EXPORT char** dvz_instance_supported_layers(uint32_t* count);
 /**
  * Get the supported extensions before creating an instance.
  *
- * @param[out] extensions a pointer to an array of strings
- * @returns the number of supported extensions
+ * !!! warning
+ *     Tthe caller needs to free the returned array AS WELL AS every string in it.
+ *
+ * @param[out] count the number of supported extensions
+ * @returns a pointer to an array of strings
  */
-DVZ_EXPORT uint32_t dvz_instance_supported_extensions(char** layers);
+DVZ_EXPORT char** dvz_instance_supported_extensions(uint32_t* count);
 
 
 

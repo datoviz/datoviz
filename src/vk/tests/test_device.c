@@ -31,7 +31,7 @@
 /*  <Title> tests                                                                                */
 /*************************************************************************************************/
 
-int test_device_1(TstSuite* suite, TstItem* tstitem)
+int test_device_layers(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -50,6 +50,33 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
 
     // Free.
     dvz_free_strings(count, layers);
+
+    log_info("Test completed successfully.");
+
+    return 0;
+}
+
+
+
+int test_device_extensions(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    log_info("Testing dvz_instance_supported_extensions()...");
+
+    // Call the function under test.
+    uint32_t count = 0;
+    char** extensions = dvz_instance_supported_extensions(&count);
+    log_info("Found %u supported Vulkan instance extensions:", count);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        log_info("  [%02u] %s", i, extensions[i]);
+    }
+
+    // Free the array of strings.
+    dvz_free_strings(count, extensions);
 
     log_info("Test completed successfully.");
 

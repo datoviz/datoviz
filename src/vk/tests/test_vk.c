@@ -31,7 +31,8 @@ int test_vk(TstSuite* suite)
 
     const char* tags = "vk";
 
-    TEST_SIMPLE(test_device_1);
+    TEST_SIMPLE(test_device_layers);
+    TEST_SIMPLE(test_device_extensions);
 
     return 0;
 }
