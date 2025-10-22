@@ -1,5 +1,6 @@
 # Ignore libstdc++ red-black tree internals to avoid false positives when using std::map.
 src:/usr/include/c++/*/bits/stl_tree.h
+
 # Clang may emit slightly different include roots (e.g. /usr/bin/../lib/...),
 # so fall back to a catch-all that still matches the canonical header path.
 src:*/include/c++/*/bits/stl_tree.h

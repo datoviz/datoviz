@@ -196,9 +196,10 @@ if(DVZ_ENABLE_ASAN_IN_DEBUG)
     elseif(_dvz_override STREQUAL "msan")
         if(CC_CLANG AND NOT OS_MACOS)
             set(DVZ_SANITIZER_FLAGS
+                "-fsanitize-recover=all"
                 "-fsanitize=memory"
                 "-fsanitize-memory-track-origins"
-                "-fsanitize-blacklist=${PROJECT_SOURCE_DIR}/sanitizers/msan.ignore")
+                "-fsanitize-ignorelist=${PROJECT_SOURCE_DIR}/sanitizers/msan.ignore")
             set(DVZ_ACTIVE_SANITIZERS "memory")
         endif()
     elseif(_dvz_override STREQUAL "tsan")

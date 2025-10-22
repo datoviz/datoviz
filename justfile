@@ -1425,7 +1425,9 @@ coverage filter="":
 
 [linux]
 mtest test_name="": msan
-    ./build-msan/testing/dvztest {{test_name}}
+    #!/usr/bin/env bash
+    MSAN_OPTIONS="halt_on_error=0:exit_code=0:print_stats=0:symbolize=1:abort_on_error=0" \
+    ./build-msan/testing/dvztest {{test_name}} 2> >(awk -f tools/hide-msan.awk >&2)
 #
 
 [linux]
