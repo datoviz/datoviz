@@ -20,7 +20,7 @@
 
 
 /*************************************************************************************************/
-/*  Forward declarations                                                                          */
+/*  Forward declarations */
 /*************************************************************************************************/
 
 // Ensure the assertion function is declared before any macro might expand and reference it,
@@ -61,12 +61,3 @@ EXTERN_C_OFF
         DVZ_ASSUME((x) != NULL);                                                                  \
     } while (0)
 #endif
-
-
-
-EXTERN_C_ON
-
-DVZ_EXPORT extern void
-dvz_assert(bool assertion, const char* message, const char* filename, int line);
-
-EXTERN_C_OFF

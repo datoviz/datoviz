@@ -16,5 +16,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "common/functions.h"
 #include "common/types.h"
 #include "common/version.h"

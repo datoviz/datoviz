@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Error handling                                                                               */
+/* Common functions                                                                              */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,19 +16,35 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/functions.h"
+#include <stdint.h>
+
 #include "datoviz/common/macros.h"
 
 
 
 /*************************************************************************************************/
-/*  Definitions                                                                                  */
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+// Error callback function type.
+typedef void (*DvzErrorCallback)(const char* message);
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
 
-extern char error_message[2048];
-extern DvzErrorCallback error_callback;
+
+/**
+ * Register an error callback, a C function taking as input a string.
+ *
+ * @param cb the error callback
+ */
+DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
+
 
 
 EXTERN_C_OFF
