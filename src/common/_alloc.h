@@ -192,6 +192,19 @@ static inline void dvz_free_ptr(void** pointer)
 
 
 
+static inline void dvz_free_strings(uint32_t count, char** strings)
+{
+    if (strings == NULL)
+        return;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_free(strings[i]);
+    }
+    dvz_free(strings);
+}
+
+
+
 static inline void dvz_pointer_reset(DvzPointer* pointer)
 {
     if (pointer == NULL || pointer->pointer == NULL)

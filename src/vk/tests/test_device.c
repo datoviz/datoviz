@@ -48,11 +48,7 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
     }
 
     // Free.
-    for (uint32_t i = 0; i < count; i++)
-    {
-        dvz_free(layers[i]);
-    }
-    dvz_free(layers);
+    dvz_free_strings(count, layers);
 
     log_info("Test completed successfully.");
 
