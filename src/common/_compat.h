@@ -26,18 +26,17 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "datoviz/common/macros.h"
+
 
 
 /*************************************************************************************************/
 /*  Guarded wrappers                                                                             */
 /*************************************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_ON
 
-static inline int
-dvz_vsnprintf(char* buffer, size_t size, const char* format, va_list args)
+static inline int dvz_vsnprintf(char* buffer, size_t size, const char* format, va_list args)
 {
 #if defined(_MSC_VER)
     return _vsnprintf_s(buffer, size, _TRUNCATE, format, args);
@@ -45,14 +44,15 @@ dvz_vsnprintf(char* buffer, size_t size, const char* format, va_list args)
     return vsnprintf_s(buffer, size, _TRUNCATE, format, args);
 #else
     (void)size;
-    return vsnprintf(buffer, size, format, args); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    return vsnprintf(
+        buffer, size, format,
+        args); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif
 }
 
 
 
-static inline int
-dvz_snprintf(char* buffer, size_t size, const char* format, ...)
+static inline int dvz_snprintf(char* buffer, size_t size, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -63,20 +63,20 @@ dvz_snprintf(char* buffer, size_t size, const char* format, ...)
 
 
 
-static inline int
-dvz_vfprintf(FILE* stream, const char* format, va_list args)
+static inline int dvz_vfprintf(FILE* stream, const char* format, va_list args)
 {
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
     return vfprintf_s(stream, format, args);
 #else
-    return vfprintf(stream, format, args); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    return vfprintf(
+        stream, format,
+        args); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
 #endif
 }
 
 
 
-static inline int
-dvz_fprintf(FILE* stream, const char* format, ...)
+static inline int dvz_fprintf(FILE* stream, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -94,25 +94,30 @@ dvz_memcpy(void* destination, size_t destination_size, const void* source, size_
     return memcpy_s(destination, destination_size, source, count);
 #else
     (void)destination_size;
-    memcpy(destination, source, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memcpy(
+        destination, source,
+        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     return 0;
 #endif
 }
 
 
 
-static inline int
-dvz_memset(void* destination, size_t destination_size, int value, size_t count)
+static inline int dvz_memset(void* destination, size_t destination_size, int value, size_t count)
 {
 #if defined(__STDC_LIB_EXT1__)
     return memset_s(destination, destination_size, value, count);
 #elif defined(_MSC_VER)
     (void)destination_size;
-    memset(destination, value, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memset(
+        destination, value,
+        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     return 0;
 #else
     (void)destination_size;
-    memset(destination, value, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memset(
+        destination, value,
+        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     return 0;
 #endif
 }
@@ -126,11 +131,13 @@ dvz_memmove(void* destination, size_t destination_size, const void* source, size
     return memmove_s(destination, destination_size, source, count);
 #else
     (void)destination_size;
-    memmove(destination, source, count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memmove(
+        destination, source,
+        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
     return 0;
 #endif
 }
 
-#ifdef __cplusplus
-}
-#endif
+
+
+EXTERN_C_OFF
