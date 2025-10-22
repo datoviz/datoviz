@@ -140,6 +140,7 @@ elseif(CC_CLANG)
             -stdlib=libc++
         )
     endif()
+
     list(APPEND DVZ_COMPILE_OPTIONS_CXX -std=c++17)
 
     set(DVZ_COMPILE_OPTIONS_OBJC
@@ -192,6 +193,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     CC_MSVC=${CC_MSVC}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
+
     # TODO: ZLIB
     HAS_ZLIB=0
     HAS_OPENMP=${HAS_OPENMP}
@@ -299,7 +301,9 @@ if(DVZ_ENABLE_ASAN_IN_DEBUG)
                 set(DVZ_SANITIZER_FLAGS "-fsanitize=address")
                 set(DVZ_ACTIVE_SANITIZERS "address")
             else()
-                set(DVZ_SANITIZER_FLAGS "-fsanitize=address,undefined")
+                set(DVZ_SANITIZER_FLAGS
+                    "-fsanitize=address,undefined"
+                    "-fsanitize-ignorelist=${PROJECT_SOURCE_DIR}/sanitizers/asan.ignore")
                 set(DVZ_ACTIVE_SANITIZERS "address;undefined")
 
                 if(NOT OS_MACOS)

@@ -1201,7 +1201,7 @@ headers:
 
 [linux]
 [macos]
-symbols:
+symbols: headers
     @jq -r '.[] | .functions | keys[]' {{justfile_directory()}}/build/headers.json > {{justfile_directory()}}/symbols.map
 #
 
