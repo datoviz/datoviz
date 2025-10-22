@@ -42,14 +42,14 @@ typedef struct VkInstance_T* VkInstance;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Functions                                                                                    */
 /*************************************************************************************************/
 
 /**
  * Get the supported layers before creating an instance.
  *
  * !!! warning
- *     Tthe caller needs to free the returned array AS WELL AS every string in it.
+ *     The caller needs to free the returned array AS WELL AS every string in it.
  *
  * @param[out] count the number of supported layers
  * @returns a pointer to an array of strings
@@ -62,7 +62,7 @@ DVZ_EXPORT char** dvz_instance_supported_layers(uint32_t* count);
  * Get the supported extensions before creating an instance.
  *
  * !!! warning
- *     Tthe caller needs to free the returned array AS WELL AS every string in it.
+ *     The caller needs to free the returned array AS WELL AS every string in it.
  *
  * @param[out] count the number of supported extensions
  * @returns a pointer to an array of strings

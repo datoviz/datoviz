@@ -26,6 +26,27 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzInstance
+{
+    VkInstance vk_instance;
+    uint32_t vk_version;
+
+    uint32_t layer_count;
+    const char** layers;
+
+    uint32_t ext_count;
+    const char** extensions;
+
+    const char* name;
+    uint32_t version;
+};
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -109,4 +130,65 @@ char** dvz_instance_supported_extensions(uint32_t* count)
 
     dvz_free(props);
     return extensions;
+}
+
+
+
+void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** layers)
+{
+    ANN(instance);
+    if (count > 0)
+        ANN(layers);
+
+    instance->layer_count = count;
+    instance->layers = dvz_copy_strings(count, layers);
+}
+
+
+
+void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char** extensions)
+{
+    ANN(instance);
+    if (count > 0)
+        ANN(extensions);
+
+    instance->layer_count = count;
+    instance->extensions = dvz_copy_strings(count, extensions);
+}
+
+
+
+void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version)
+{
+    ANN(instance);
+    if (name != NULL)
+        instance->name = name;
+}
+
+
+
+int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
+{
+    ANN(instance); //
+}
+
+
+
+uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
+{
+    ANN(instance); //
+}
+
+
+
+VkInstance dvz_instance_handle(DvzInstance* instance)
+{
+    ANN(instance); //
+}
+
+
+
+int dvz_instance_destroy(DvzInstance* instance)
+{
+    ANN(instance); //
 }
