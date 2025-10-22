@@ -1282,7 +1282,7 @@ swiftshader +args:
 # WebAssembly
 # -------------------------------------------------------------------------------------------------
 
-wasm:
+wasm: headers
     set -e
     python3 tools/generate_wasm.py
     ../emsdk/upstream/emscripten/emcc @wasm_sources.txt -o build/datoviz.js \
