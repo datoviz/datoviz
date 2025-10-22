@@ -44,9 +44,8 @@ static inline int dvz_vsnprintf(char* buffer, size_t size, const char* format, v
     return vsnprintf_s(buffer, size, _TRUNCATE, format, args);
 #else
     (void)size;
-    return vsnprintf(
-        buffer, size, format,
-        args); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    return vsnprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        buffer, size, format, args);
 #endif
 }
 
@@ -68,9 +67,8 @@ static inline int dvz_vfprintf(FILE* stream, const char* format, va_list args)
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
     return vfprintf_s(stream, format, args);
 #else
-    return vfprintf(
-        stream, format,
-        args); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    return vfprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        stream, format, args);
 #endif
 }
 
@@ -94,9 +92,8 @@ dvz_memcpy(void* destination, size_t destination_size, const void* source, size_
     return memcpy_s(destination, destination_size, source, count);
 #else
     (void)destination_size;
-    memcpy(
-        destination, source,
-        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memcpy( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        destination, source, count);
     return 0;
 #endif
 }
@@ -109,15 +106,13 @@ static inline int dvz_memset(void* destination, size_t destination_size, int val
     return memset_s(destination, destination_size, value, count);
 #elif defined(_MSC_VER)
     (void)destination_size;
-    memset(
-        destination, value,
-        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memset( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        destination, value, count);
     return 0;
 #else
     (void)destination_size;
-    memset(
-        destination, value,
-        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memset( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        destination, value, count);
     return 0;
 #endif
 }
@@ -131,9 +126,8 @@ dvz_memmove(void* destination, size_t destination_size, const void* source, size
     return memmove_s(destination, destination_size, source, count);
 #else
     (void)destination_size;
-    memmove(
-        destination, source,
-        count); // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+    memmove( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        destination, source, count);
     return 0;
 #endif
 }
