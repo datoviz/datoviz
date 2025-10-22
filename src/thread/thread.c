@@ -22,9 +22,20 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/thread/atomic.h"
 
-// MUTE_ON
-// #include "tinycthread.h"
-// MUTE_OFF
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzThread
+{
+    DvzObject obj;
+    // tct_thrd_t thread;
+    pthread_t thread;
+    DvzMutex lock;
+    DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
+};
 
 
 

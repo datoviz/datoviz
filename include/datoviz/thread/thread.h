@@ -38,21 +38,6 @@ typedef void* (*DvzThreadCallback)(void*);
 
 
 
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzThread
-{
-    DvzObject obj;
-    // tct_thrd_t thread;
-    pthread_t thread;
-    DvzMutex lock;
-    DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
-};
-
-
-
 EXTERN_C_ON
 
 /*************************************************************************************************/

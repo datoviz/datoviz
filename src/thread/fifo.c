@@ -20,6 +20,8 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_time_utils.h"
+#include "datoviz/thread/atomic.h"
+#include "fifo_structs.h"
 
 
 
