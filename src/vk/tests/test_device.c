@@ -94,10 +94,11 @@ int test_device_instance(TstSuite* suite, TstItem* tstitem)
 
     // Initialize the instance structure.
     DvzInstance instance = {0};
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
     dvz_instance_info(&instance, "Instance test", 42);
 
     // Enable validation layer and debug extension.
-    dvz_instance_layers(&instance, 1, (const char*[]){"VK_LAYER_KHRONOS_validation"});
+    dvz_instance_layers(&instance, 1, (const char*[]){"VK_LAYER_KHRONOS_synchronization2"});
     dvz_instance_extensions(&instance, 1, (const char*[]){VK_EXT_DEBUG_UTILS_EXTENSION_NAME});
 
     // Add one layer.
@@ -106,8 +107,14 @@ int test_device_instance(TstSuite* suite, TstItem* tstitem)
     // Add one extension.
     dvz_instance_extension(&instance, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
+    AT(instance.ext_count == 2);
+    AT(instance.layer_count == 2);
+
     // Create the instance.
     dvz_instance_create(&instance, VK_API_VERSION_1_3);
+
+    AT(instance.ext_count == 2);   // debug extension is already there
+    AT(instance.layer_count == 3); // add validation layer
 
 
     // Get Vulkan instance handle.

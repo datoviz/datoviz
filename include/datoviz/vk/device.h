@@ -23,14 +23,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-// #define DVZ_MAX_EXTENSION_NAME_SIZE 256
-
-
-
-/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -42,8 +34,30 @@ typedef struct VkInstance_T* VkInstance;
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+// Instance flags.
+typedef enum
+{
+    DVZ_INSTANCE_VALIDATION_FLAGS = 0x01,
+} DvzInstanceFlags;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Initialize an instance.
+ *
+ * @param instance the instance
+ * @param flags the instance flags
+ */
+DVZ_EXPORT void dvz_instance(DvzInstance* instance, int flags);
+
+
 
 /**
  * Get the supported layers before creating an instance.
@@ -55,6 +69,16 @@ typedef struct VkInstance_T* VkInstance;
  * @returns a pointer to an array of strings
  */
 DVZ_EXPORT char** dvz_instance_supported_layers(uint32_t* count);
+
+
+
+/**
+ * Returns whether an instance layer is supported on the system?
+ *
+ * @param layer the layer name.
+ * @returns a boolean indicating whether this layer is supported.
+ */
+DVZ_EXPORT bool dvz_instance_has_layer(const char* layer);
 
 
 
@@ -141,6 +165,24 @@ dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char** exte
  * @param version the application version
  */
 DVZ_EXPORT void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version);
+
+
+
+/**
+ * Set up validation before instance creation.
+ *
+ * @param instance the instance.
+ */
+DVZ_EXPORT void dvz_instance_validation_pre(DvzInstance* instance);
+
+
+
+/**
+ * Set up validation after instance creation.
+ *
+ * @param instance the instance.
+ */
+DVZ_EXPORT void dvz_instance_validation_post(DvzInstance* instance);
 
 
 

@@ -35,7 +35,12 @@ struct DvzInstance
 
     VkInstance vk_instance;
     uint32_t vk_version;
-    VkInstanceCreateFlags create_flags;
+
+    // Instance creation structures.
+    bool flags;
+    VkInstanceCreateInfo info_inst;
+    VkDebugUtilsMessengerCreateInfoEXT info_debug;
+    VkValidationFeaturesEXT validation_features;
 
     uint32_t layer_count;
     char** layers;

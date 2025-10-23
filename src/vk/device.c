@@ -37,12 +37,23 @@
 #define DVZ_MAX_LAYERS                 256
 #define DVZ_MAX_EXTENSIONS             256
 #define DVZ_PORTABILITY_EXTENSION_NAME VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+#define DVZ_LAYER_VALIDATION_NAME      "VK_LAYER_KHRONOS_validation"
 
 
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+void dvz_instance(DvzInstance* instance, int flags)
+{
+    ANN(instance);
+    instance->flags = flags;
+    instance->obj.type = DVZ_OBJECT_TYPE_DEVICE;
+    dvz_obj_init(&instance->obj);
+}
+
+
 
 char** dvz_instance_supported_layers(uint32_t* count)
 {
@@ -81,6 +92,50 @@ char** dvz_instance_supported_layers(uint32_t* count)
 
     dvz_free(props);
     return layers;
+}
+
+
+
+bool dvz_instance_has_layer(const char* layer)
+{
+    if (layer == NULL)
+        return false;
+
+    uint32_t count = 0;
+
+    // Get the number of instance layers.
+    VkResult res = vkEnumerateInstanceLayerProperties(&count, NULL);
+    if (res != VK_SUCCESS || count == 0)
+        return 0;
+
+    ASSERT(count > 0);
+    ASSERT(count < DVZ_MAX_LAYERS); // consistency check
+
+    // Allocate and retrieve the layer properties.
+    VkLayerProperties* props =
+        (VkLayerProperties*)dvz_calloc((size_t)count, sizeof(VkLayerProperties));
+    if (!props)
+        return 0;
+    ANN(props);
+
+    res = vkEnumerateInstanceLayerProperties(&count, props);
+    if (res != VK_SUCCESS)
+    {
+        dvz_free(props);
+        return 0;
+    }
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        ANN(props[i].layerName);
+        if (strncmp(props[i].layerName, layer, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+        {
+            dvz_free(props);
+            return true;
+        }
+    }
+    dvz_free(props);
+    return false;
 }
 
 
@@ -149,6 +204,13 @@ bool dvz_instance_has_extension(const char* extension)
         return 0;
     ANN(props);
 
+    res = vkEnumerateInstanceExtensionProperties(NULL, &count, props);
+    if (res != VK_SUCCESS)
+    {
+        dvz_free(props);
+        return 0;
+    }
+
     for (uint32_t i = 0; i < count; i++)
     {
         ANN(props[i].extensionName);
@@ -168,7 +230,10 @@ void dvz_instance_layer(DvzInstance* instance, const char* layer)
 {
     ANN(instance);
     ANN(layer);
-    instance->layers[instance->layer_count++] = dvz_strdup(layer);
+    if (!dvz_strings_contains(instance->layer_count, instance->layers, layer))
+    {
+        instance->layers[instance->layer_count++] = dvz_strdup(layer);
+    }
 }
 
 
@@ -178,6 +243,9 @@ void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** lay
     ANN(instance);
     if (count > 0)
         ANN(layers);
+
+    if (instance->layers)
+        dvz_free_strings(instance->layer_count, instance->layers);
 
     instance->layer_count = count;
     instance->layers = dvz_copy_strings(count, layers);
@@ -189,7 +257,10 @@ void dvz_instance_extension(DvzInstance* instance, const char* extension)
 {
     ANN(instance);
     ANN(extension);
-    instance->extensions[instance->ext_count++] = dvz_strdup(extension);
+    if (!dvz_strings_contains(instance->ext_count, instance->extensions, extension))
+    {
+        instance->extensions[instance->ext_count++] = dvz_strdup(extension);
+    }
 }
 
 
@@ -199,6 +270,9 @@ void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char**
     ANN(instance);
     if (count > 0)
         ANN(extensions);
+
+    if (instance->extensions)
+        dvz_free_strings(instance->ext_count, instance->extensions);
 
     instance->ext_count = count;
     instance->extensions = dvz_copy_strings(count, extensions);
@@ -210,11 +284,8 @@ void dvz_instance_portability(DvzInstance* instance)
 {
     ANN(instance);
 
-    if (dvz_instance_has_extension(DVZ_PORTABILITY_EXTENSION_NAME))
-    {
-        dvz_instance_extension(instance, DVZ_PORTABILITY_EXTENSION_NAME);
-        instance->create_flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    }
+    dvz_instance_extension(instance, DVZ_PORTABILITY_EXTENSION_NAME);
+    instance->info_inst.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 }
 
 
@@ -222,9 +293,6 @@ void dvz_instance_portability(DvzInstance* instance)
 void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version)
 {
     ANN(instance);
-
-    instance->obj.type = DVZ_OBJECT_TYPE_DEVICE;
-    dvz_obj_init(&instance->obj);
 
     if (name != NULL)
         instance->name = dvz_strdup(name);
@@ -234,11 +302,64 @@ void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version
 
 
 
+void dvz_instance_validation_pre(DvzInstance* instance)
+{
+    ANN(instance);
+
+    // Prepare the instance creation for validation support.
+
+    // Add the validation layer and debug extension.
+    dvz_instance_layer(instance, DVZ_LAYER_VALIDATION_NAME);
+    dvz_instance_extension(instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    // Validation info debug.
+    _fill_info_debug(&instance->info_debug);
+    instance->info_debug.pUserData = &instance->n_errors;
+
+    // Validation features.
+    _fill_validation_features(&instance->validation_features);
+    instance->validation_features.pNext =
+        (VkDebugUtilsMessengerCreateInfoEXT*)&instance->info_debug;
+    instance->info_inst.pNext = &instance->validation_features;
+}
+
+
+
+void dvz_instance_validation_post(DvzInstance* instance)
+{
+    ANN(instance);
+
+    if (instance->vk_instance == VK_NULL_HANDLE)
+    {
+        log_warn("cannot set up validation layers after instance creation as creation failed");
+        return;
+    }
+    ASSERT(instance->vk_instance != NULL);
+
+    // Create debug messenger.
+    LOAD_VK_FUNC(instance->vk_instance, vkCreateDebugUtilsMessengerEXT);
+    vkCreateDebugUtilsMessengerEXT_d(
+        instance->vk_instance, &instance->info_debug, NULL, &instance->debug_messenger);
+}
+
+
+
 int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 {
     ANN(instance);
     instance->vk_version = vk_version;
 
+    // Whether the instance creation supports portability enumeration.
+    bool has_portability = dvz_instance_has_extension(DVZ_PORTABILITY_EXTENSION_NAME);
+
+    // Whether the validation layer is supported and requested.
+    bool can_validation = dvz_instance_has_layer(DVZ_LAYER_VALIDATION_NAME);
+    bool wants_validation = (instance->flags & DVZ_INSTANCE_VALIDATION_FLAGS) != 0;
+    if (!can_validation && wants_validation)
+    {
+        log_warn("validation layer is not supported");
+    }
+    bool has_validation = can_validation && wants_validation;
 
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
@@ -247,53 +368,39 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     appInfo.applicationVersion = instance->version;
     appInfo.apiVersion = instance->vk_version;
 
-    VkInstanceCreateInfo info_inst = {0};
-    info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    info_inst.pApplicationInfo = &appInfo;
+    instance->info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instance->info_inst.pApplicationInfo = &appInfo;
 
     // Enabled instance extensions.
-    info_inst.enabledExtensionCount = instance->ext_count;
-    info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
-
+    instance->info_inst.enabledExtensionCount = instance->ext_count;
+    instance->info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
 
     // Add portability enumeration extension and creation flag if "VK_KHR_portability_enumeration"
     // is in the supported instance extensions.
-    dvz_instance_portability(instance);
-    info_inst.flags |= instance->create_flags;
+    if (has_portability)
+    {
+        dvz_instance_portability(instance);
+    }
 
-
-    // TODO: IF VALIDATION
-
-    // Validation structures
-    VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};
-    _fill_info_debug(&info_debug);
-    info_debug.pUserData = &instance->n_errors;
-
-    VkValidationFeaturesEXT features = {0};
-    _fill_validation_features(&features);
-    features.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
-
-    info_inst.pNext = &features;
-
-
+    // Validation.
+    if (has_validation)
+    {
+        dvz_instance_validation_pre(instance);
+    }
 
     // Create Vulkan instance.
     log_trace("creating Vulkan instance...");
-    VkResult res = vkCreateInstance(&info_inst, NULL, &instance->vk_instance);
+    VkResult res = vkCreateInstance(&instance->info_inst, NULL, &instance->vk_instance);
     check_result(res);
-
-    VkInstance vki = instance->vk_instance;
-    ASSERT(vki != VK_NULL_HANDLE);
+    ASSERT(instance->vk_instance != VK_NULL_HANDLE);
     dvz_obj_created(&instance->obj);
     log_trace("Vulkan instance created");
 
-
-
-    // Create debug messenger.
-    LOAD_VK_FUNC(vki, vkCreateDebugUtilsMessengerEXT);
-    vkCreateDebugUtilsMessengerEXT_d(vki, &info_debug, NULL, &instance->debug_messenger);
-
-
+    // Validation.
+    if (has_validation)
+    {
+        dvz_instance_validation_post(instance);
+    }
 
     return res;
 }

@@ -221,7 +221,7 @@ static inline void dvz_pointer_reset(DvzPointer* pointer)
 /*  Strings */
 /*************************************************************************************************/
 
-static char** dvz_copy_strings(uint32_t count, const char** src)
+static inline char** dvz_copy_strings(uint32_t count, const char** src)
 {
     if (count == 0 || src == NULL)
         return NULL;
@@ -255,6 +255,30 @@ static char** dvz_copy_strings(uint32_t count, const char** src)
     }
 
     return dst;
+}
+
+
+
+static inline bool dvz_strings_contains(uint32_t count, char** strings, const char* string)
+{
+    if (count == 0)
+        return false;
+    ASSERT(count > 0);
+    ANN(strings);
+    ANN(string);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (strnlen(strings[i], DVZ_MAX_STRING_LENGTH) >= DVZ_MAX_STRING_LENGTH - 1)
+        {
+            log_warn("strings #%d too long", i);
+        }
+        else if (strncmp(strings[i], string, DVZ_MAX_STRING_LENGTH) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 
