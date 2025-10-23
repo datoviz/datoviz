@@ -286,9 +286,11 @@ set(DVZ_ACTIVE_SANITIZERS "")
 set(_dvz_sanitizer "${DVZ_SANITIZER}")
 string(STRIP "${_dvz_sanitizer}" _dvz_sanitizer)
 set(_dvz_sanitizer_user 0)
+
 if(NOT _dvz_sanitizer STREQUAL "")
     set(_dvz_sanitizer_user 1)
 endif()
+
 string(TOLOWER "${_dvz_sanitizer}" _dvz_sanitizer)
 
 if(_dvz_sanitizer STREQUAL "off" OR _dvz_sanitizer STREQUAL "none")
@@ -317,6 +319,9 @@ if(_dvz_sanitizer STREQUAL "asan")
         else()
             list(APPEND DVZ_SANITIZER_FLAGS "-fsanitize=address")
             list(APPEND DVZ_SANITIZER_FLAGS "-fsanitize=undefined")
+            list(APPEND DVZ_SANITIZER_FLAGS "-fno-omit-frame-pointer")
+            list(APPEND DVZ_SANITIZER_FLAGS "-fno-optimize-sibling-calls")
+            list(APPEND DVZ_SANITIZER_FLAGS "-O1")
 
             if(_dvz_asan_ignore)
                 list(APPEND DVZ_SANITIZER_FLAGS "-fsanitize-ignorelist=${_dvz_asan_ignore}")
@@ -331,7 +336,7 @@ if(_dvz_sanitizer STREQUAL "asan")
         endif()
     elseif(CC_GCC)
         if(OS_WINDOWS)
-            # GCC ASan is not available on Windows Mingw builds by default.
+        # GCC ASan is not available on Windows Mingw builds by default.
         else()
             list(APPEND DVZ_SANITIZER_FLAGS "-fsanitize=address")
             list(APPEND DVZ_ACTIVE_SANITIZERS "address")
@@ -350,6 +355,7 @@ if(_dvz_sanitizer STREQUAL "asan")
                 if(_dvz_has_ignorelist)
                     list(APPEND DVZ_SANITIZER_FLAGS "-fsanitize-ignorelist=${_dvz_asan_ignore}")
                 endif()
+
                 # GCC historically used -fsanitize-blacklist; fallback removed in v0.4-dev in favour of ignorelist.
             endif()
         endif()
