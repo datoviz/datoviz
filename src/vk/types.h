@@ -18,6 +18,8 @@
 
 #include <stdint.h>
 
+#include "datoviz/common/obj.h"
+
 #include <vulkan/vulkan.h>
 
 
@@ -28,6 +30,8 @@
 
 struct DvzInstance
 {
+    DvzObject obj;
+
     VkInstance vk_instance;
     uint32_t vk_version;
 

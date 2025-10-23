@@ -72,6 +72,16 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(uint32_t* count);
 
 
 /**
+ * Add an instance layer.
+ *
+ * @param instance the instance
+ * @param layer the layer name
+ */
+DVZ_EXPORT void dvz_instance_layer(DvzInstance* instance, const char* layer);
+
+
+
+/**
  * Set the requested layers before instance creation.
  *
  * @param instance the instance
@@ -79,6 +89,16 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(uint32_t* count);
  * @param layers array of layer names
  */
 DVZ_EXPORT void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** layers);
+
+
+
+/**
+ * Add an instance extension.
+ *
+ * @param instance the instance
+ * @param extension the extension name.
+ */
+DVZ_EXPORT void dvz_instance_extension(DvzInstance* instance, const char* extension);
 
 
 

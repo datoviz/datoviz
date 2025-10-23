@@ -21,6 +21,7 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "macros.h"
 #include "types.h"
@@ -117,6 +118,15 @@ char** dvz_instance_supported_extensions(uint32_t* count)
 
 
 
+void dvz_instance_layer(DvzInstance* instance, const char* layer)
+{
+    ANN(instance);
+    ANN(layer);
+    instance->layers[instance->layer_count++] = dvz_strdup(layer);
+}
+
+
+
 void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** layers)
 {
     ANN(instance);
@@ -125,6 +135,15 @@ void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** lay
 
     instance->layer_count = count;
     instance->layers = dvz_copy_strings(count, layers);
+}
+
+
+
+void dvz_instance_extension(DvzInstance* instance, const char* extension)
+{
+    ANN(instance);
+    ANN(extension);
+    instance->extensions[instance->ext_count++] = dvz_strdup(extension);
 }
 
 
@@ -144,6 +163,10 @@ void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char**
 void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version)
 {
     ANN(instance);
+
+    instance->obj.type = DVZ_OBJECT_TYPE_DEVICE;
+    dvz_obj_init(&instance->obj);
+
     if (name != NULL)
         instance->name = dvz_strdup(name);
 
@@ -197,6 +220,7 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 
     VkInstance vki = instance->vk_instance;
     ASSERT(vki != VK_NULL_HANDLE);
+    dvz_obj_created(&instance->obj);
     log_trace("Vulkan instance created");
 
 
@@ -245,6 +269,7 @@ void dvz_instance_destroy(DvzInstance* instance)
         }
 
         vkDestroyInstance(vki, NULL);
+        dvz_obj_destroyed(&instance->obj);
     }
 
     dvz_free_strings(instance->ext_count, (char**)instance->extensions);
