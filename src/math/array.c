@@ -115,7 +115,8 @@ static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize i
 {
     ASSERT(item_size > 0);
 
-    log_trace("creating array with %d items of size %s each", item_count, pretty_size(item_size));
+    log_trace(
+        "creating array with %d items of size %s each", item_count, dvz_pretty_size(item_size));
 
     DvzArray* arr = (DvzArray*)dvz_calloc(1, sizeof(DvzArray));
     ANN(arr);
@@ -353,7 +354,7 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
 
         log_trace(
             "allocate array to contain %d elements (%s)", item_count,
-            pretty_size(array->buffer_size));
+            dvz_pretty_size(array->buffer_size));
         return;
     }
 

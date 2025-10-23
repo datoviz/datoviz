@@ -95,7 +95,7 @@ static char _PRETTY_SIZE[64] = {0};
 
 typedef uint64_t DvzSize;
 
-static inline char* pretty_size(DvzSize size)
+static inline char* dvz_pretty_size(DvzSize size)
 {
     if (size <= PRETTY_SIZE_THRESHOLD)
     {
