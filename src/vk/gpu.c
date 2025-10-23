@@ -162,15 +162,20 @@ void dvz_gpu_probe_memprops(DvzGpu* gpu)
 {
     ANN(gpu);
 
+    gpu->memprops = (VkPhysicalDeviceMemoryProperties2){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2,
+        .pNext = NULL,
+    };
+
     vkGetPhysicalDeviceMemoryProperties2(gpu->pdevice, &gpu->memprops);
 }
 
 
 
-VkPhysicalDeviceMemoryProperties2* dvz_gpu_memprops(DvzGpu* gpu)
+VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu)
 {
     ANN(gpu);
-    return &gpu->memprops;
+    return &gpu->memprops.memoryProperties;
 }
 
 

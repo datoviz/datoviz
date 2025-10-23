@@ -132,7 +132,7 @@ DVZ_EXPORT void dvz_gpu_probe_memprops(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns memory properties
  */
-DVZ_EXPORT VkPhysicalDeviceMemoryProperties2* dvz_gpu_memprops(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu);
 
 
 

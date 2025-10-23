@@ -34,6 +34,8 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem);
 
 int test_gpu_props(TstSuite* suite, TstItem* tstitem);
 
+int test_gpu_memprops(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vk(TstSuite* suite);
