@@ -33,7 +33,8 @@ int test_vk(TstSuite* suite)
 
     TEST_SIMPLE(test_instance_layers);
     TEST_SIMPLE(test_instance_extensions);
-    TEST_SIMPLE(test_instance_instance);
+    TEST_SIMPLE(test_instance_creation);
+    TEST_SIMPLE(test_gpu_1);
 
     return 0;
 }

@@ -28,7 +28,11 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem);
 
 int test_instance_extensions(TstSuite* suite, TstItem* tstitem);
 
-int test_instance_instance(TstSuite* suite, TstItem* tstitem);
+int test_instance_creation(TstSuite* suite, TstItem* tstitem);
+
+
+
+int test_gpu_1(TstSuite* suite, TstItem* tstitem);
 
 
 

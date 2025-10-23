@@ -107,7 +107,7 @@ void dvz_instance_validation_post(DvzInstance* instance)
         log_warn("cannot set up validation layers after instance creation as creation failed");
         return;
     }
-    ASSERT(instance->vk_instance != NULL);
+    ASSERT(instance->vk_instance != VK_NULL_HANDLE);
 
     // Create debug messenger.
     LOAD_VK_FUNC(instance->vk_instance, vkCreateDebugUtilsMessengerEXT);
@@ -144,10 +144,6 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     instance->info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instance->info_inst.pApplicationInfo = &appInfo;
 
-    // Enabled instance extensions.
-    instance->info_inst.enabledExtensionCount = instance->ext_count;
-    instance->info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
-
     // Add portability enumeration extension and creation flag if "VK_KHR_portability_enumeration"
     // is in the supported instance extensions.
     if (has_portability)
@@ -160,6 +156,14 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     {
         dvz_instance_validation_pre(instance);
     }
+
+    // Enabled instance extensions.
+    instance->info_inst.enabledExtensionCount = instance->ext_count;
+    instance->info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
+
+    // Enabled layers.
+    instance->info_inst.enabledLayerCount = instance->layer_count;
+    instance->info_inst.ppEnabledLayerNames = (const char* const*)instance->layers;
 
     // Create Vulkan instance.
     log_trace("creating Vulkan instance...");

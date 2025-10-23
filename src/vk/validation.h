@@ -40,6 +40,7 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     "BestPractices-vkAllocateMemory-small-allocation",
     "BestPractices-vkCreateCommandPool-command-buffer-reset",
     "BestPractices-vkCreateInstance-specialuse-extension",
+    "BestPractices-specialuse-extension",
 
     // prevent unnecessary error messages when quickly resizing a window (race condition, fix to be
     // done probably in the validation layers)
@@ -57,6 +58,7 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     // HACK: see https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/7348
     "vkQueueSubmit():  Hazard WRITE_AFTER_READ for entry 0, VkCommandBuffer",
 };
+
 static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {
     VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
     VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
