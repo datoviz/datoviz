@@ -76,7 +76,7 @@ DVZ_EXPORT int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
  * @param gpu the GPU
  * @returns properties for Vulkan 1.0
  */
-DVZ_EXPORT VkPhysicalDeviceProperties dvz_gpu_properties10(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceProperties* dvz_gpu_properties10(DvzGpu* gpu);
 
 
 
@@ -86,7 +86,7 @@ DVZ_EXPORT VkPhysicalDeviceProperties dvz_gpu_properties10(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns properties for Vulkan 1.1
  */
-DVZ_EXPORT VkPhysicalDeviceVulkan11Properties dvz_gpu_properties11(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceVulkan11Properties* dvz_gpu_properties11(DvzGpu* gpu);
 
 
 
@@ -96,7 +96,7 @@ DVZ_EXPORT VkPhysicalDeviceVulkan11Properties dvz_gpu_properties11(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns properties for Vulkan 1.2
  */
-DVZ_EXPORT VkPhysicalDeviceVulkan12Properties dvz_gpu_properties12(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceVulkan12Properties* dvz_gpu_properties12(DvzGpu* gpu);
 
 
 
@@ -106,7 +106,7 @@ DVZ_EXPORT VkPhysicalDeviceVulkan12Properties dvz_gpu_properties12(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns properties for Vulkan 1.3
  */
-DVZ_EXPORT VkPhysicalDeviceVulkan13Properties dvz_gpu_properties13(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceVulkan13Properties* dvz_gpu_properties13(DvzGpu* gpu);
 
 
 
@@ -116,7 +116,7 @@ DVZ_EXPORT VkPhysicalDeviceVulkan13Properties dvz_gpu_properties13(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns memory properties
  */
-DVZ_EXPORT VkPhysicalDeviceMemoryProperties dvz_gpu_memprops(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu);
 
 
 
@@ -130,7 +130,7 @@ DVZ_EXPORT VkPhysicalDeviceMemoryProperties dvz_gpu_memprops(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns features for Vulkan 1.0
  */
-DVZ_EXPORT VkPhysicalDeviceFeatures dvz_gpu_features10(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceFeatures* dvz_gpu_features10(DvzGpu* gpu);
 
 
 
@@ -140,7 +140,7 @@ DVZ_EXPORT VkPhysicalDeviceFeatures dvz_gpu_features10(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns features for Vulkan 1.1
  */
-DVZ_EXPORT VkPhysicalDeviceVulkan11Features dvz_gpu_features11(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceVulkan11Features* dvz_gpu_features11(DvzGpu* gpu);
 
 
 
@@ -150,7 +150,7 @@ DVZ_EXPORT VkPhysicalDeviceVulkan11Features dvz_gpu_features11(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns features for Vulkan 1.2
  */
-DVZ_EXPORT VkPhysicalDeviceVulkan12Features dvz_gpu_features12(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceVulkan12Features* dvz_gpu_features12(DvzGpu* gpu);
 
 
 
@@ -160,7 +160,7 @@ DVZ_EXPORT VkPhysicalDeviceVulkan12Features dvz_gpu_features12(DvzGpu* gpu);
  * @param gpu the GPU
  * @returns features for Vulkan 1.3
  */
-DVZ_EXPORT VkPhysicalDeviceVulkan13Features dvz_gpu_features13(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceVulkan13Features* dvz_gpu_features13(DvzGpu* gpu);
 
 
 
@@ -174,17 +174,19 @@ DVZ_EXPORT VkPhysicalDeviceVulkan13Features dvz_gpu_features13(DvzGpu* gpu);
  * !!! warning
  *     The caller needs to free the returned array AS WELL AS every string in it.
  *
+ * @param gpu the GPU
  * @param[out] count the number of supported extensions
  * @returns a pointer to an array of strings
  */
-DVZ_EXPORT char** dvz_gpu_supported_extensions(uint32_t* count);
+DVZ_EXPORT char** dvz_gpu_supported_extensions(DvzGpu* gpu, uint32_t* count);
 
 
 
 /**
  * Returns whether an GPU extension is supported?
  *
+ * @param gpu the GPU
  * @param extension the extension name
  * @returns a boolean indicating whether this extension is supported by the GPU
  */
-DVZ_EXPORT bool dvz_gpu_has_extension(const char* extension);
+DVZ_EXPORT bool dvz_gpu_has_extension(DvzGpu* gpu, const char* extension);

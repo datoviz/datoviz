@@ -40,12 +40,35 @@ typedef struct DvzGpu DvzGpu;
 
 #define DVZ_MAX_LAYERS     128
 #define DVZ_MAX_EXTENSIONS 128
+#define DVZ_MAX_GPUS       8
 
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzGpu
+{
+    VkPhysicalDevice pdevice;
+
+    VkPhysicalDeviceProperties2 props;
+    VkPhysicalDeviceVulkan11Properties props11;
+    VkPhysicalDeviceVulkan12Properties props12;
+    VkPhysicalDeviceVulkan13Properties props13;
+
+    VkPhysicalDeviceMemoryProperties memprops;
+
+    VkPhysicalDeviceFeatures2 features;
+    VkPhysicalDeviceVulkan11Features features11;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+
+    uint32_t ext_count;
+    char* extensions[DVZ_MAX_EXTENSIONS];
+};
+
+
 
 struct DvzInstance
 {
@@ -72,23 +95,8 @@ struct DvzInstance
     // Validation.
     VkDebugUtilsMessengerEXT debug_messenger;
     uint32_t n_errors;
-};
 
-
-
-struct DvzGpu
-{
-    VkPhysicalDevice pdevice;
-
-    VkPhysicalDeviceProperties2 props;
-    VkPhysicalDeviceVulkan11Properties props11;
-    VkPhysicalDeviceVulkan12Properties props12;
-    VkPhysicalDeviceVulkan13Properties props13;
-
-    VkPhysicalDeviceMemoryProperties memprops;
-
-    VkPhysicalDevice features;
-
-    uint32_t ext_count;
-    char* extensions[DVZ_MAX_EXTENSIONS];
+    // GPUs
+    uint32_t gpu_count;
+    DvzGpu gpus[DVZ_MAX_GPUS];
 };
