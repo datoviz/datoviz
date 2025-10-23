@@ -41,10 +41,11 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
+DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)
 {
     ANN(instance);
+    ANN(count);
 
 
-    return 0;
+    return NULL;
 }

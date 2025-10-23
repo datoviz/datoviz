@@ -18,6 +18,8 @@
 
 #include <stdint.h>
 
+#include <vulkan/vulkan.h>
+
 #include "datoviz/common/macros.h"
 
 
@@ -46,18 +48,60 @@ typedef struct DvzDevice DvzDevice;
  * Get the detected physical GPUs.
  *
  * @param instance the instance
- * @param gpus the array of detected GPUs
- * @returns the number of returned GPUs.
+ * @param[out] count a pointer the number of returned GPUs
+ * @returns the array of detected GPUs
  */
-DVZ_EXPORT uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus);
+DVZ_EXPORT DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count);
 
 
 
-DVZ_EXPORT char** dvz_gpu_properties(DvzGpu* gpu, uint32_t* count);
+/**
+ * Return physical device properties for Vulkan 1.0.
+ *
+ * @param gpu
+ * @returns properties for Vulkan 1.0
+ */
+DVZ_EXPORT VkPhysicalDeviceProperties dvz_gpu_properties10(DvzGpu* gpu);
 
 
 
-DVZ_EXPORT void* dvz_gpu_property(DvzGpu* gpu, const char* property);
+/**
+ * Return physical device properties for Vulkan 1.1.
+ *
+ * @param gpu
+ * @returns properties for Vulkan 1.1
+ */
+DVZ_EXPORT VkPhysicalDeviceVulkan11Properties dvz_gpu_properties11(DvzGpu* gpu);
+
+
+
+/**
+ * Return physical device properties for Vulkan 1.2.
+ *
+ * @param gpu
+ * @returns properties for Vulkan 1.2
+ */
+DVZ_EXPORT VkPhysicalDeviceVulkan12Properties dvz_gpu_properties12(DvzGpu* gpu);
+
+
+
+/**
+ * Return physical device properties for Vulkan 1.3.
+ *
+ * @param gpu
+ * @returns properties for Vulkan 1.3
+ */
+DVZ_EXPORT VkPhysicalDeviceVulkan13Properties dvz_gpu_properties13(DvzGpu* gpu);
+
+
+
+/**
+ * Return physical device memory properties.
+ *
+ * @param gpu
+ * @returns memory properties
+ */
+DVZ_EXPORT VkPhysicalDeviceMemoryProperties dvz_gpu_memprops(DvzGpu* gpu);
 
 
 

@@ -78,8 +78,14 @@ struct DvzInstance
 
 struct DvzGpu
 {
-    VkPhysicalDevice physical_device;
-    VkPhysicalDeviceFeatures features;
-    VkPhysicalDeviceProperties props;
+    VkPhysicalDevice pdevice;
+
+    VkPhysicalDeviceFeatures2 features;
+
+    VkPhysicalDeviceProperties2 props;
+    VkPhysicalDeviceVulkan11Properties props11;
+    VkPhysicalDeviceVulkan12Properties props12;
+    VkPhysicalDeviceVulkan13Properties props13;
+
     VkPhysicalDeviceMemoryProperties memprops;
 };
