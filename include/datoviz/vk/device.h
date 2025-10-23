@@ -72,6 +72,25 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(uint32_t* count);
 
 
 /**
+ * Returns whether an instance extension is supported on the system?
+ *
+ * @param extension the extension name.
+ * @returns a boolean indicating whether this extension is supported.
+ */
+DVZ_EXPORT bool dvz_instance_has_extension(const char* extension);
+
+
+
+/**
+ * Set the instance portability enumeration extension/creation flag if the system supports it.
+ *
+ * @param instance the instance
+ */
+DVZ_EXPORT void dvz_instance_portability(DvzInstance* instance);
+
+
+
+/**
  * Add an instance layer.
  *
  * @param instance the instance

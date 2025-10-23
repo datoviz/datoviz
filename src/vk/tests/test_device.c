@@ -100,6 +100,12 @@ int test_device_instance(TstSuite* suite, TstItem* tstitem)
     dvz_instance_layers(&instance, 1, (const char*[]){"VK_LAYER_KHRONOS_validation"});
     dvz_instance_extensions(&instance, 1, (const char*[]){VK_EXT_DEBUG_UTILS_EXTENSION_NAME});
 
+    // Add one layer.
+    dvz_instance_layer(&instance, "VK_LAYER_LUNARG_api_dump");
+
+    // Add one extension.
+    dvz_instance_extension(&instance, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+
     // Create the instance.
     dvz_instance_create(&instance, VK_API_VERSION_1_3);
 

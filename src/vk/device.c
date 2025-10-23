@@ -31,6 +31,16 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_MAX_LAYERS                 256
+#define DVZ_MAX_EXTENSIONS             256
+#define DVZ_PORTABILITY_EXTENSION_NAME VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -44,7 +54,7 @@ char** dvz_instance_supported_layers(uint32_t* count)
         return 0;
 
     // Get the names of the instance layers.
-    ASSERT(*count < 1024); // consistency check
+    ASSERT(*count < DVZ_MAX_LAYERS); // consistency check
     VkLayerProperties* props =
         (VkLayerProperties*)dvz_calloc((size_t)*count, sizeof(VkLayerProperties));
     if (!props)
@@ -84,7 +94,7 @@ char** dvz_instance_supported_extensions(uint32_t* count)
     if (res != VK_SUCCESS || *count == 0)
         return 0;
 
-    ASSERT(*count < 1024); // consistency check
+    ASSERT(*count < DVZ_MAX_EXTENSIONS); // consistency check
 
     // Allocate and retrieve the extension properties.
     VkExtensionProperties* props =
@@ -114,6 +124,42 @@ char** dvz_instance_supported_extensions(uint32_t* count)
 
     dvz_free(props);
     return extensions;
+}
+
+
+
+bool dvz_instance_has_extension(const char* extension)
+{
+    if (extension == NULL)
+        return false;
+
+    uint32_t count = 0;
+
+    // Get the number of instance extensions.
+    VkResult res = vkEnumerateInstanceExtensionProperties(NULL, &count, NULL);
+    if (res != VK_SUCCESS || count == 0)
+        return 0;
+
+    ASSERT(count < DVZ_MAX_EXTENSIONS); // consistency check
+
+    // Allocate and retrieve the extension properties.
+    VkExtensionProperties* props =
+        (VkExtensionProperties*)dvz_calloc((size_t)count, sizeof(VkExtensionProperties));
+    if (!props)
+        return 0;
+    ANN(props);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        ANN(props[i].extensionName);
+        if (strncmp(props[i].extensionName, extension, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+        {
+            dvz_free(props);
+            return true;
+        }
+    }
+    dvz_free(props);
+    return false;
 }
 
 
@@ -160,6 +206,19 @@ void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char**
 
 
 
+void dvz_instance_portability(DvzInstance* instance)
+{
+    ANN(instance);
+
+    if (dvz_instance_has_extension(DVZ_PORTABILITY_EXTENSION_NAME))
+    {
+        dvz_instance_extension(instance, DVZ_PORTABILITY_EXTENSION_NAME);
+        instance->create_flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    }
+}
+
+
+
 void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version)
 {
     ANN(instance);
@@ -196,6 +255,11 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     info_inst.enabledExtensionCount = instance->ext_count;
     info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
 
+
+    // Add portability enumeration extension and creation flag if "VK_KHR_portability_enumeration"
+    // is in the supported instance extensions.
+    dvz_instance_portability(instance);
+    info_inst.flags |= instance->create_flags;
 
 
     // TODO: IF VALIDATION

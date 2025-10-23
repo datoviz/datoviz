@@ -21,6 +21,7 @@
 #include "datoviz/common/obj.h"
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 
 
@@ -34,6 +35,7 @@ struct DvzInstance
 
     VkInstance vk_instance;
     uint32_t vk_version;
+    VkInstanceCreateFlags create_flags;
 
     uint32_t layer_count;
     char** layers;
