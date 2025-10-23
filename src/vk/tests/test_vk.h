@@ -32,7 +32,7 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem);
 
 
 
-int test_gpu_1(TstSuite* suite, TstItem* tstitem);
+int test_gpu_props(TstSuite* suite, TstItem* tstitem);
 
 
 
