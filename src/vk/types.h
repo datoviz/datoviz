@@ -80,12 +80,15 @@ struct DvzGpu
 {
     VkPhysicalDevice pdevice;
 
-    VkPhysicalDeviceFeatures2 features;
-
     VkPhysicalDeviceProperties2 props;
     VkPhysicalDeviceVulkan11Properties props11;
     VkPhysicalDeviceVulkan12Properties props12;
     VkPhysicalDeviceVulkan13Properties props13;
 
     VkPhysicalDeviceMemoryProperties memprops;
+
+    VkPhysicalDevice features;
+
+    uint32_t ext_count;
+    char* extensions[DVZ_MAX_EXTENSIONS];
 };
