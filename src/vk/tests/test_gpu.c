@@ -38,7 +38,6 @@
 
 int test_gpu_props(TstSuite* suite, TstItem* tstitem)
 {
-
     ANN(suite);
     ANN(tstitem);
 
@@ -81,7 +80,6 @@ int test_gpu_props(TstSuite* suite, TstItem* tstitem)
 
 int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
 {
-
     ANN(suite);
     ANN(tstitem);
 
@@ -124,6 +122,76 @@ int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
             strcat(s, "LAZILY_ALLOCATED ");
         log_info("Type %2u: heap=%u  %s", i, t->heapIndex, s);
     }
+
+    log_info("total VRAM: %s", dvz_pretty_size(dvz_gpu_vram(gpu)));
+
+    dvz_instance_destroy(&instance);
+    return 0;
+}
+
+
+
+int test_gpu_features(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Create an instance.
+    DvzInstance instance = {0};
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpu = &gpus[0];
+
+    dvz_gpu_probe_features(gpu);
+
+    VkPhysicalDeviceFeatures* features = dvz_gpu_features10(gpu);
+    log_info("geometry shader: %b", features->geometryShader);
+
+    VkPhysicalDeviceVulkan11Features* features11 = dvz_gpu_features11(gpu);
+    log_info("sampler Ycbcr conversion: %b", features11->samplerYcbcrConversion);
+
+    VkPhysicalDeviceVulkan12Features* features12 = dvz_gpu_features12(gpu);
+    log_info("draw indirect count: %b", features12->drawIndirectCount);
+
+    VkPhysicalDeviceVulkan13Features* features13 = dvz_gpu_features13(gpu);
+    log_info("dynamic rendering: %b", features13->dynamicRendering);
+
+    dvz_instance_destroy(&instance);
+    return 0;
+}
+
+
+
+int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Create an instance.
+    DvzInstance instance = {0};
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpu = &gpus[0];
+
+    // Call the function under test.
+    uint32_t ext_count = 0;
+    char** extensions = dvz_gpu_supported_extensions(gpu, &ext_count);
+    log_info("Found %u supported GPU instance extensions:", ext_count);
+
+    for (uint32_t i = 0; i < ext_count; i++)
+    {
+        log_info("  [%02u] %s", i, extensions[i]);
+    }
+
+    // Free the array of strings.
+    dvz_free_strings(count, extensions);
+    dvz_free(extensions);
 
     dvz_instance_destroy(&instance);
     return 0;

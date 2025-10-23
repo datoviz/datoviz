@@ -36,6 +36,8 @@ int test_vk(TstSuite* suite)
     TEST_SIMPLE(test_instance_creation);
     TEST_SIMPLE(test_gpu_props);
     TEST_SIMPLE(test_gpu_memprops);
+    TEST_SIMPLE(test_gpu_features);
+    TEST_SIMPLE(test_gpu_extensions);
 
     return 0;
 }

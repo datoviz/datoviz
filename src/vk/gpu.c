@@ -214,16 +214,16 @@ void dvz_gpu_probe_features(DvzGpu* gpu)
     };
     gpu->features12 = (VkPhysicalDeviceVulkan12Features){
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .pNext = &gpu->props11,
+        .pNext = &gpu->features11,
     };
     gpu->features13 = (VkPhysicalDeviceVulkan13Features){
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
-        .pNext = &gpu->props12,
+        .pNext = &gpu->features12,
     };
 
     gpu->features = (VkPhysicalDeviceFeatures2){
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-        .pNext = &gpu->props13,
+        .pNext = &gpu->features13,
     };
 
     vkGetPhysicalDeviceFeatures2(gpu->pdevice, &gpu->features);

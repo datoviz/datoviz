@@ -36,6 +36,10 @@ int test_gpu_props(TstSuite* suite, TstItem* tstitem);
 
 int test_gpu_memprops(TstSuite* suite, TstItem* tstitem);
 
+int test_gpu_features(TstSuite* suite, TstItem* tstitem);
+
+int test_gpu_extensions(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vk(TstSuite* suite);

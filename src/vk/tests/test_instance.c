@@ -38,8 +38,6 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    log_info("Testing dvz_instance_supported_layers()...");
-
     // Call the function under test.
     uint32_t count = 0;
     char** layers = dvz_instance_supported_layers(&count);
@@ -54,8 +52,6 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
     dvz_free_strings(count, layers);
     dvz_free(layers);
 
-    log_info("Test completed successfully.");
-
     return 0;
 }
 
@@ -65,8 +61,6 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
-
-    log_info("Testing dvz_instance_supported_extensions()...");
 
     // Call the function under test.
     uint32_t count = 0;
@@ -81,8 +75,6 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
     // Free the array of strings.
     dvz_free_strings(count, extensions);
     dvz_free(extensions);
-
-    log_info("Test completed successfully.");
 
     return 0;
 }
