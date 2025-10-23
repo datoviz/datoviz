@@ -13,6 +13,15 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzInstance DvzInstance;
+typedef struct DvzGpu DvzGpu;
+
+
+
+/*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
@@ -63,4 +72,14 @@ struct DvzInstance
     // Validation.
     VkDebugUtilsMessengerEXT debug_messenger;
     uint32_t n_errors;
+};
+
+
+
+struct DvzGpu
+{
+    VkPhysicalDevice physical_device;
+    VkPhysicalDeviceFeatures features;
+    VkPhysicalDeviceProperties props;
+    VkPhysicalDeviceMemoryProperties memprops;
 };

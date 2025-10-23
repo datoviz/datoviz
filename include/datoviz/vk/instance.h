@@ -198,17 +198,6 @@ DVZ_EXPORT int dvz_instance_create(DvzInstance* instance, uint32_t vk_version);
 
 
 /**
- * Get the detected physical GPUs.
- *
- * @param instance the instance
- * @param gpus the array of detected GPUs
- * @returns the number of returned GPUs.
- */
-DVZ_EXPORT uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus);
-
-
-
-/**
  * Return the native VkInstance for a DvzInstance.
  *
  * @param instance the Datoviz instance

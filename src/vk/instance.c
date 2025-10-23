@@ -421,17 +421,6 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 
 
 
-uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
-{
-    ANN(instance);
-
-    // TODO, move to gpu.c?
-
-    return 0;
-}
-
-
-
 VkInstance dvz_instance_handle(DvzInstance* instance)
 {
     ANN(instance);
