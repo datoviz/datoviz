@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing Vulkan                                                                               */
+/*  GPU                                                                                          */
 /*************************************************************************************************/
 
 
@@ -14,26 +14,29 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
+#include <stdint.h>
 
-#include "test_vk.h"
-#include "testing.h"
+#include <vulkan/vulkan.h>
+
+#include "_alloc.h"
+#include "_compat.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/instance.h"
+#include "macros.h"
+#include "types.h"
+#include "validation.h"
+#include "vulkan/vulkan_core.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
-int test_vk(TstSuite* suite)
-{
-    ANN(suite);
 
-    const char* tags = "vk";
 
-    TEST_SIMPLE(test_instance_layers);
-    TEST_SIMPLE(test_instance_extensions);
-    TEST_SIMPLE(test_instance_instance);
-
-    return 0;
-}
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/

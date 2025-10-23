@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing device                                                                              */
+/*  Testing instance */
 /*************************************************************************************************/
 
 
@@ -23,7 +23,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/vk/device.h"
+#include "datoviz/vk/instance.h"
 #include "test_vk.h"
 #include "testing.h"
 
@@ -33,7 +33,7 @@
 /*  <Title> tests                                                                                */
 /*************************************************************************************************/
 
-int test_device_layers(TstSuite* suite, TstItem* tstitem)
+int test_instance_layers(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -61,7 +61,7 @@ int test_device_layers(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_extensions(TstSuite* suite, TstItem* tstitem)
+int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -89,7 +89,7 @@ int test_device_extensions(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_device_instance(TstSuite* suite, TstItem* tstitem)
+int test_instance_instance(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

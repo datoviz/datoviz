@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Device                                                                                      */
+/*  Instance                                                                                     */
 /*************************************************************************************************/
 
 
@@ -22,7 +22,7 @@
 #include "_compat.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
-#include "datoviz/vk/device.h"
+#include "datoviz/vk/instance.h"
 #include "macros.h"
 #include "types.h"
 #include "validation.h"
@@ -47,7 +47,7 @@ void dvz_instance(DvzInstance* instance, int flags)
 {
     ANN(instance);
     instance->flags = flags;
-    instance->obj.type = DVZ_OBJECT_TYPE_DEVICE;
+    instance->obj.type = DVZ_OBJECT_TYPE_INSTANCE;
     dvz_obj_init(&instance->obj);
 }
 

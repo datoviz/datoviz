@@ -17,4 +17,6 @@
 /*************************************************************************************************/
 
 #include "vk/enums.h"
+#include "vk/gpu.h"
+#include "vk/instance.h"
 #include "vk/macros.h"
