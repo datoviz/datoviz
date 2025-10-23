@@ -52,6 +52,7 @@ int test_device_layers(TstSuite* suite, TstItem* tstitem)
 
     // Free.
     dvz_free_strings(count, layers);
+    dvz_free(layers);
 
     log_info("Test completed successfully.");
 
@@ -79,6 +80,7 @@ int test_device_extensions(TstSuite* suite, TstItem* tstitem)
 
     // Free the array of strings.
     dvz_free_strings(count, extensions);
+    dvz_free(extensions);
 
     log_info("Test completed successfully.");
 

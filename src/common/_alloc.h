@@ -221,14 +221,14 @@ static inline void dvz_pointer_reset(DvzPointer* pointer)
 /*  Strings */
 /*************************************************************************************************/
 
-static inline char** dvz_copy_strings(uint32_t count, const char** src)
+static inline void dvz_copy_strings(uint32_t count, const char** src, char** dst)
 {
+    // Assumes src and dst are already allocated.
     if (count == 0 || src == NULL)
-        return NULL;
+        return;
 
-    char** dst = (char**)dvz_calloc(count, sizeof(char*));
     if (!dst)
-        return NULL;
+        return;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -239,6 +239,7 @@ static inline char** dvz_copy_strings(uint32_t count, const char** src)
             if (len >= DVZ_MAX_STRING_LENGTH - 1)
             {
                 log_warn("maximum string limit reached");
+                continue;
             }
             char* copy = (char*)dvz_calloc(len + 1, sizeof(char));
             if (copy)
@@ -253,8 +254,6 @@ static inline char** dvz_copy_strings(uint32_t count, const char** src)
             dst[i] = NULL;
         }
     }
-
-    return dst;
 }
 
 
@@ -291,7 +290,9 @@ static inline void dvz_free_strings(uint32_t count, char** strings)
     {
         dvz_free(strings[i]);
     }
-    dvz_free(strings);
+
+    // NOTE: the caller must free the array of strings itself.
+    // dvz_free(strings);
 }
 
 

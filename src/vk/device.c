@@ -34,8 +34,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_LAYERS                 256
-#define DVZ_MAX_EXTENSIONS             256
 #define DVZ_PORTABILITY_EXTENSION_NAME VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 #define DVZ_LAYER_VALIDATION_NAME      "VK_LAYER_KHRONOS_validation"
 
@@ -65,7 +63,7 @@ char** dvz_instance_supported_layers(uint32_t* count)
         return 0;
 
     // Get the names of the instance layers.
-    ASSERT(*count < DVZ_MAX_LAYERS); // consistency check
+    ASSERT(*count < DVZ_MAX_LAYERS * 8); // consistency check
     VkLayerProperties* props =
         (VkLayerProperties*)dvz_calloc((size_t)*count, sizeof(VkLayerProperties));
     if (!props)
@@ -109,7 +107,7 @@ bool dvz_instance_has_layer(const char* layer)
         return 0;
 
     ASSERT(count > 0);
-    ASSERT(count < DVZ_MAX_LAYERS); // consistency check
+    ASSERT(count < DVZ_MAX_LAYERS * 8); // consistency check
 
     // Allocate and retrieve the layer properties.
     VkLayerProperties* props =
@@ -149,7 +147,7 @@ char** dvz_instance_supported_extensions(uint32_t* count)
     if (res != VK_SUCCESS || *count == 0)
         return 0;
 
-    ASSERT(*count < DVZ_MAX_EXTENSIONS); // consistency check
+    ASSERT(*count < DVZ_MAX_EXTENSIONS * 8); // consistency check
 
     // Allocate and retrieve the extension properties.
     VkExtensionProperties* props =
@@ -195,7 +193,7 @@ bool dvz_instance_has_extension(const char* extension)
     if (res != VK_SUCCESS || count == 0)
         return 0;
 
-    ASSERT(count < DVZ_MAX_EXTENSIONS); // consistency check
+    ASSERT(count < DVZ_MAX_EXTENSIONS * 8); // consistency check
 
     // Allocate and retrieve the extension properties.
     VkExtensionProperties* props =
@@ -230,6 +228,9 @@ void dvz_instance_layer(DvzInstance* instance, const char* layer)
 {
     ANN(instance);
     ANN(layer);
+    ANN(instance->layers);
+    ASSERT(instance->layer_count < DVZ_MAX_LAYERS - 2);
+
     if (!dvz_strings_contains(instance->layer_count, instance->layers, layer))
     {
         instance->layers[instance->layer_count++] = dvz_strdup(layer);
@@ -243,12 +244,17 @@ void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** lay
     ANN(instance);
     if (count > 0)
         ANN(layers);
+    if (count >= DVZ_MAX_LAYERS)
+    {
+        log_warn("too many instance layers");
+        return;
+    }
 
-    if (instance->layers)
+    if (instance->layer_count > 0)
         dvz_free_strings(instance->layer_count, instance->layers);
 
     instance->layer_count = count;
-    instance->layers = dvz_copy_strings(count, layers);
+    dvz_copy_strings(count, layers, instance->layers);
 }
 
 
@@ -257,6 +263,9 @@ void dvz_instance_extension(DvzInstance* instance, const char* extension)
 {
     ANN(instance);
     ANN(extension);
+    ANN(instance->extensions);
+    ASSERT(instance->ext_count < DVZ_MAX_EXTENSIONS - 2);
+
     if (!dvz_strings_contains(instance->ext_count, instance->extensions, extension))
     {
         instance->extensions[instance->ext_count++] = dvz_strdup(extension);
@@ -270,12 +279,17 @@ void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char**
     ANN(instance);
     if (count > 0)
         ANN(extensions);
+    if (count >= DVZ_MAX_EXTENSIONS)
+    {
+        log_warn("too many instance extensions");
+        return;
+    }
 
-    if (instance->extensions)
+    if (instance->ext_count > 0)
         dvz_free_strings(instance->ext_count, instance->extensions);
 
     instance->ext_count = count;
-    instance->extensions = dvz_copy_strings(count, extensions);
+    dvz_copy_strings(count, extensions, instance->extensions);
 }
 
 
@@ -411,6 +425,8 @@ uint32_t dvz_instance_gpus(DvzInstance* instance, DvzGpu* gpus)
 {
     ANN(instance);
 
+    // TODO, move to gpu.c?
+
     return 0;
 }
 
@@ -443,7 +459,7 @@ void dvz_instance_destroy(DvzInstance* instance)
         dvz_obj_destroyed(&instance->obj);
     }
 
-    dvz_free_strings(instance->ext_count, (char**)instance->extensions);
-    dvz_free_strings(instance->layer_count, (char**)instance->layers);
+    dvz_free_strings(instance->ext_count, instance->extensions);
+    dvz_free_strings(instance->layer_count, instance->layers);
     dvz_free((char*)instance->name);
 }

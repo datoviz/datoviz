@@ -26,6 +26,15 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_MAX_LAYERS     128
+#define DVZ_MAX_EXTENSIONS 128
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -43,10 +52,10 @@ struct DvzInstance
     VkValidationFeaturesEXT validation_features;
 
     uint32_t layer_count;
-    char** layers;
+    char* layers[DVZ_MAX_LAYERS];
 
     uint32_t ext_count;
-    char** extensions;
+    char* extensions[DVZ_MAX_EXTENSIONS];
 
     char* name;
     uint32_t version;
