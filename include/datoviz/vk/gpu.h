@@ -21,6 +21,7 @@
 #include <vulkan/vulkan.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 
 
 
@@ -31,12 +32,6 @@
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzDevice DvzDevice;
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
 
 
 
@@ -62,13 +57,21 @@ DVZ_EXPORT DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count);
  * @param[out] device the created logical device
  * @returns the creation result
  */
-DVZ_EXPORT int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
+// DVZ_EXPORT int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
 
 
 
 /*************************************************************************************************/
 /*  GPU properties                                                                               */
 /*************************************************************************************************/
+
+/**
+ * Probe GPU properties.
+ *
+ * @param gpu the GPU
+ */
+DVZ_EXPORT void dvz_gpu_probe_properties(DvzGpu* gpu);
+
 
 /**
  * Return physical device properties for Vulkan 1.0.
@@ -110,19 +113,51 @@ DVZ_EXPORT VkPhysicalDeviceVulkan13Properties* dvz_gpu_properties13(DvzGpu* gpu)
 
 
 
+/*************************************************************************************************/
+/*  GPU memory properties                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Probe GPU memory properties.
+ *
+ * @param gpu the GPU
+ */
+DVZ_EXPORT void dvz_gpu_probe_memprops(DvzGpu* gpu);
+
+
+
 /**
  * Return physical device memory properties.
  *
  * @param gpu the GPU
  * @returns memory properties
  */
-DVZ_EXPORT VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu);
+DVZ_EXPORT VkPhysicalDeviceMemoryProperties2* dvz_gpu_memprops(DvzGpu* gpu);
+
+
+
+/**
+ * Return the total GPU VRAM available.
+ *
+ * @param gpu the GPU
+ * @returns the available VRAM
+ */
+DVZ_EXPORT DvzSize dvz_gpu_vram(DvzGpu* gpu);
 
 
 
 /*************************************************************************************************/
 /*  Device features                                                                              */
 /*************************************************************************************************/
+
+/**
+ * Probe GPU features.
+ *
+ * @param gpu the GPU
+ */
+DVZ_EXPORT void dvz_gpu_probe_features(DvzGpu* gpu);
+
+
 
 /**
  * Return physical device features for Vulkan 1.0.

@@ -81,22 +81,52 @@ DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)
 
 
 
-int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
-{
-    ANN(gpu);
-    // TODO: create the logical device
+// // TODO: move to device.c
+// int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
+// {
+//     ANN(gpu);
+//     // TODO: create the logical device
 
-    // NOTE: recreate the underlying vulkan logical device if called multiple times (destroying the
-    // old one first), which allows to change the queues before
+//     // NOTE: recreate the underlying vulkan logical device if called multiple times (destroying
+//     the
+//     // old one first), which allows to change the queues before
 
-    return 0;
-}
+//     VK_CHECK_RESULT(vkCreateDevice(gpu->pdevice, &device_info, NULL, &device->vk_device));
+
+//     return 0;
+// }
 
 
 
 /*************************************************************************************************/
 /*  GPU properties                                                                               */
 /*************************************************************************************************/
+
+void dvz_gpu_probe_properties(DvzGpu* gpu)
+{
+    ANN(gpu);
+
+    gpu->props11 = (VkPhysicalDeviceVulkan11Properties){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+    };
+    gpu->props12 = (VkPhysicalDeviceVulkan12Properties){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_PROPERTIES,
+        .pNext = &gpu->props11,
+    };
+    gpu->props13 = (VkPhysicalDeviceVulkan13Properties){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_PROPERTIES,
+        .pNext = &gpu->props12,
+    };
+
+    gpu->props = (VkPhysicalDeviceProperties2){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        .pNext = &gpu->props13,
+    };
+
+    vkGetPhysicalDeviceProperties2(gpu->pdevice, &gpu->props);
+}
+
+
 
 VkPhysicalDeviceProperties* dvz_gpu_properties10(DvzGpu* gpu)
 {
@@ -130,7 +160,20 @@ VkPhysicalDeviceVulkan13Properties* dvz_gpu_properties13(DvzGpu* gpu)
 
 
 
-VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu)
+/*************************************************************************************************/
+/*  GPU memory properties                                                                        */
+/*************************************************************************************************/
+
+void dvz_gpu_probe_memprops(DvzGpu* gpu)
+{
+    ANN(gpu);
+
+    vkGetPhysicalDeviceMemoryProperties2(gpu->pdevice, &gpu->memprops);
+}
+
+
+
+VkPhysicalDeviceMemoryProperties2* dvz_gpu_memprops(DvzGpu* gpu)
 {
     ANN(gpu);
     return &gpu->memprops;
@@ -138,9 +181,56 @@ VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu)
 
 
 
+DvzSize dvz_gpu_vram(DvzGpu* gpu)
+{
+    ANN(gpu);
+    DvzSize vram = 0;
+
+    VkMemoryHeap* heap = NULL;
+    for (uint32_t j = 0; j < gpu->memprops.memoryProperties.memoryHeapCount; j++)
+    {
+        heap = &gpu->memprops.memoryProperties.memoryHeaps[j];
+        if (heap->size > 0 && ((heap->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0))
+        {
+            ASSERT(heap->size > 0);
+            vram += heap->size;
+        }
+    }
+
+    return vram;
+}
+
+
+
 /*************************************************************************************************/
 /*  Device features                                                                              */
 /*************************************************************************************************/
+
+void dvz_gpu_probe_features(DvzGpu* gpu)
+{
+    ANN(gpu);
+
+    gpu->features11 = (VkPhysicalDeviceVulkan11Features){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+    };
+    gpu->features12 = (VkPhysicalDeviceVulkan12Features){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = &gpu->props11,
+    };
+    gpu->features13 = (VkPhysicalDeviceVulkan13Features){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .pNext = &gpu->props12,
+    };
+
+    gpu->features = (VkPhysicalDeviceFeatures2){
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+        .pNext = &gpu->props13,
+    };
+
+    vkGetPhysicalDeviceFeatures2(gpu->pdevice, &gpu->features);
+}
+
+
 
 VkPhysicalDeviceFeatures* dvz_gpu_features10(DvzGpu* gpu)
 {

@@ -57,7 +57,7 @@ struct DvzGpu
     VkPhysicalDeviceVulkan12Properties props12;
     VkPhysicalDeviceVulkan13Properties props13;
 
-    VkPhysicalDeviceMemoryProperties memprops;
+    VkPhysicalDeviceMemoryProperties2 memprops;
 
     VkPhysicalDeviceFeatures2 features;
     VkPhysicalDeviceVulkan11Features features11;
