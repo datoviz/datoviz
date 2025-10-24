@@ -125,6 +125,15 @@ DVZ_EXPORT void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues);
 
 
 /**
+ * Show the queues.
+ *
+ * @param queues the queues
+ */
+DVZ_EXPORT void dvz_queues_show(DvzQueues* queues);
+
+
+
+/**
  * Returns whether a queue supports a given role.
  *
  * @param queue a queue
@@ -143,4 +152,6 @@ DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
  */
 DVZ_EXPORT DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role);
 
-// in device.c: void dvz_queues_create(DvzQueues* queues, DvzDevice* device);
+
+
+// TODO: put in device.c: void dvz_queues_create(DvzQueues* queues, DvzDevice* device);
