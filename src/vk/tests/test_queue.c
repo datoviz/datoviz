@@ -52,7 +52,7 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
     ANN(gpu);
 
     // Probe the GPU queues.
-    DvzQueueCaps* qc = dvz_gpu_probe_queues(gpu);
+    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
     ANN(qc);
 
     for (uint32_t qf = 0; qf < qc->family_count; qf++)
@@ -66,10 +66,6 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
             log_info("  VK_QUEUE_COMPUTE_BIT");
         if (flags & VK_QUEUE_TRANSFER_BIT)
             log_info("  VK_QUEUE_TRANSFER_BIT");
-        if (flags & VK_QUEUE_SPARSE_BINDING_BIT)
-            log_info("  VK_QUEUE_SPARSE_BINDING_BIT");
-        if (flags & VK_QUEUE_PROTECTED_BIT)
-            log_info("  VK_QUEUE_PROTECTED_BIT");
         if (flags & VK_QUEUE_VIDEO_DECODE_BIT_KHR)
             log_info("  VK_QUEUE_VIDEO_DECODE_BIT_KHR");
         if (flags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)

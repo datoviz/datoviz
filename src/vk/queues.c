@@ -18,8 +18,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "_alloc.h"
-#include "_compat.h"
+#include "_assertions.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
@@ -33,21 +32,10 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzQueue DvzQueue;
-
-
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzQueue
-{
-    uint32_t family_index;
-    uint32_t queue_index;
-    VkQueue handle;
-    VkQueueFlags flags;
-};
 
 
 
@@ -55,15 +43,7 @@ struct DvzQueue
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzQueueCaps* dvz_gpu_queues(DvzGpu* gpu)
-{
-    ANN(gpu);
-    return &gpu->queue_caps;
-}
-
-
-
-DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu)
+DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu)
 {
     ANN(gpu);
 
@@ -98,12 +78,74 @@ DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu)
 
 
 
-void dvz_gpu_choose_queues(DvzGpu* gpu)
+void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues) { ANN(qc); }
+
+
+
+bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role)
 {
-    ANN(gpu);
+    ANN(queue);
+    VkQueueFlags f = queue->flags;
 
-    DvzQueueCaps* qc = &gpu->queue_caps;
-    ANN(qc);
+    switch (role)
+    {
+    case DVZ_QUEUE_MAIN:
+        return (f & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) ==
+               (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+    case DVZ_QUEUE_COMPUTE:
+        return (f & VK_QUEUE_COMPUTE_BIT) != 0;
+    case DVZ_QUEUE_TRANSFER:
+        return ((f & VK_QUEUE_TRANSFER_BIT) != 0) ||
+               (f & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) ==
+                   (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+    case DVZ_QUEUE_VIDEO_ENCODE:
+        return (f & VK_QUEUE_VIDEO_ENCODE_BIT_KHR) != 0;
+    case DVZ_QUEUE_VIDEO_DECODE:
+        return (f & VK_QUEUE_VIDEO_DECODE_BIT_KHR) != 0;
+    default:
+        return false;
+    }
+    return false;
+}
 
-    // TODO
+
+
+DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role)
+{
+    ANN(queues);
+    if ((int)role < 0 || (int)role >= DVZ_QUEUE_COUNT)
+        return NULL;
+
+    // If requesting the main queue, return it.
+    DvzQueue* main = &queues->queues[DVZ_QUEUE_MAIN];
+    ANN(main);
+
+    if (role == DVZ_QUEUE_MAIN)
+        return main;
+
+    // Otherwise, try to find a queue beyond main that supports the requested role.
+    DvzQueue* queue = NULL;
+    for (uint32_t i = 0; i < queues->queue_count; i++)
+    {
+        queue = &queues->queues[i];
+        ANN(queue);
+        if (queue == main)
+            continue;
+        if (dvz_queue_supports(queue, role))
+        {
+            log_trace("find queue #%d supporting role %d", i, (int)role);
+            return queue;
+        }
+    }
+
+    // Otherwise, return main if it supports the role, or NULL otherwise.
+    if (dvz_queue_supports(main, role))
+    {
+        log_trace("return main queue supporting role %d", (int)role);
+        return main;
+    }
+
+    log_error("could not find a queue supporting role %d", role);
+
+    return NULL;
 }

@@ -29,7 +29,7 @@
 /*************************************************************************************************/
 
 #define DVZ_MAX_QUEUE_FAMILIES 8
-#define DVZ_MAX_QUEUES         8
+// #define DVZ_MAX_QUEUES         8
 
 
 
@@ -40,7 +40,7 @@
 // Queue role.
 typedef enum
 {
-    DVZ_QUEUE_MAIN = 0,     // guaranteed
+    DVZ_QUEUE_MAIN,         // guaranteed: graphics + compute (+ transfer implicitly)
     DVZ_QUEUE_COMPUTE,      // optional async compute
     DVZ_QUEUE_TRANSFER,     // optional async transfer
     DVZ_QUEUE_VIDEO_ENCODE, // optional
@@ -57,8 +57,9 @@ typedef enum
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzDevice DvzDevice;
-typedef struct DvzQueue DvzQueue;
 typedef struct DvzQueueCaps DvzQueueCaps;
+typedef struct DvzQueue DvzQueue;
+typedef struct DvzQueues DvzQueues;
 
 
 
@@ -73,8 +74,28 @@ struct DvzQueueCaps
     uint32_t queue_count[DVZ_MAX_QUEUE_FAMILIES];
 
     // Filled by automatic queue strategy, finding one queue per role depending on the queue caps.
-    uint32_t role_family[DVZ_MAX_QUEUES]; // for each role, the family idx
-    uint32_t role_idx[DVZ_MAX_QUEUES];    // for each role, the queue idx within its family
+    // uint32_t role_family[DVZ_MAX_QUEUES]; // for each role, the family idx
+    // uint32_t role_idx[DVZ_MAX_QUEUES];    // for each role, the queue idx within its family
+};
+
+
+
+struct DvzQueue
+{
+    uint32_t family_idx;
+    uint32_t queue_idx;
+    VkQueue handle;
+    VkQueueFlags flags;
+    bool is_main; // whether this queue is the main one
+    bool is_set;  // whether this queue exists
+};
+
+
+
+struct DvzQueues
+{
+    uint32_t queue_count;
+    DvzQueue queues[DVZ_QUEUE_COUNT]; // for each role, a dedicated queue, or none.
 };
 
 
@@ -89,24 +110,37 @@ struct DvzQueueCaps
  * @param gpu
  * @returns the queue capabilities
  */
-DVZ_EXPORT DvzQueueCaps* dvz_gpu_queues(DvzGpu* gpu);
-
-
-
-/**
- * Probe the queues of a GPU.
- *
- * @param gpu the GPU
- * @returns the queue capabilities
- */
-DVZ_EXPORT DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu);
+DVZ_EXPORT DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu);
 
 
 
 /**
  * Choose the requested queues for the logical device depending on the GPU queues capabilities.
- * Fills in the gpu->queue_caps structure.
  *
- * @param gpu the GPU
+ * @param qc the queue caps
+ * @param[out] queues the queues specification
  */
-DVZ_EXPORT void dvz_gpu_choose_queues(DvzGpu* gpu);
+DVZ_EXPORT void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues);
+
+
+
+/**
+ * Returns whether a queue supports a given role.
+ *
+ * @param queue a queue
+ * @param role a queue role
+ */
+DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
+
+
+
+/**
+ * Get a queue from its role, either a dedicated queue, or the main queue if it supports the role.
+ *
+ * @param queues the queues
+ * @param role the role
+ * @returns the queue
+ */
+DVZ_EXPORT DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role);
+
+// in device.c: void dvz_queues_create(DvzQueues* queues, DvzDevice* device);
