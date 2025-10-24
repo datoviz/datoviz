@@ -38,9 +38,11 @@ typedef struct DvzGpu DvzGpu;
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_LAYERS     128
-#define DVZ_MAX_EXTENSIONS 128
-#define DVZ_MAX_GPUS       8
+#define DVZ_MAX_GPUS 8
+
+// Maximum number of requested layers/extensions.
+#define DVZ_MAX_REQ_LAYERS     32
+#define DVZ_MAX_REQ_EXTENSIONS 256
 
 
 
@@ -64,8 +66,9 @@ struct DvzGpu
     VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceVulkan13Features features13;
 
-    uint32_t ext_count;
-    char* extensions[DVZ_MAX_EXTENSIONS];
+    // All supported device extensions.
+    uint32_t extension_count;
+    char** extensions;
 };
 
 
@@ -83,12 +86,19 @@ struct DvzInstance
     VkDebugUtilsMessengerCreateInfoEXT info_debug;
     VkValidationFeaturesEXT validation_features;
 
+    // Requested layers and extensions.
+    uint32_t req_layer_count;
+    uint32_t req_extension_count;
+    char* req_layers[DVZ_MAX_REQ_LAYERS];
+    char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
+
+    // All supported instance layers and extensions.
     uint32_t layer_count;
-    char* layers[DVZ_MAX_LAYERS];
+    uint32_t extension_count;
+    char** layers;
+    char** extensions;
 
-    uint32_t ext_count;
-    char* extensions[DVZ_MAX_EXTENSIONS];
-
+    // Application info.
     char* name;
     uint32_t version;
 

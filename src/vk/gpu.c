@@ -32,6 +32,15 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+// Consistency check.
+#define MAX_COUNT 1024
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -69,6 +78,8 @@ DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)
     {
         instance->gpus[i].pdevice = pdevices[i];
     }
+
+    dvz_free(pdevices);
 
     return instance->gpus;
 }
@@ -267,87 +278,65 @@ VkPhysicalDeviceVulkan13Features* dvz_gpu_features13(DvzGpu* gpu)
 /*  Device extensions                                                                            */
 /*************************************************************************************************/
 
+void dvz_gpu_probe_extensions(DvzGpu* gpu)
+{
+    ANN(gpu);
+
+    if (gpu->extension_count > 0)
+        return;
+
+    // Get the number of gpu extensions.
+    VkResult res =
+        vkEnumerateDeviceExtensionProperties(gpu->pdevice, NULL, &gpu->extension_count, NULL);
+    if (res != VK_SUCCESS || gpu->extension_count == 0)
+        return;
+
+    // Get the names of the gpu extensions.
+    ASSERT(gpu->extension_count > 0);
+    ASSERT(gpu->extension_count < MAX_COUNT); // consistency check
+    VkExtensionProperties* props = (VkExtensionProperties*)dvz_calloc(
+        (size_t)gpu->extension_count, sizeof(VkExtensionProperties));
+    if (!props)
+        return;
+
+    res = vkEnumerateDeviceExtensionProperties(gpu->pdevice, NULL, &gpu->extension_count, props);
+    if (res != VK_SUCCESS)
+    {
+        dvz_free(props);
+        return;
+    }
+
+    // Allocate the array of strings.
+    gpu->extensions = (char**)dvz_calloc((size_t)gpu->extension_count, sizeof(char*));
+    for (uint32_t i = 0; i < gpu->extension_count; i++)
+    {
+        // Allocate the string.
+        gpu->extensions[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
+        ANN(gpu->extensions[i]);
+
+        // Fill in the string.
+        (void)dvz_snprintf(
+            gpu->extensions[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].extensionName);
+    }
+
+    dvz_free(props);
+}
+
+
+
 char** dvz_gpu_supported_extensions(DvzGpu* gpu, uint32_t* count)
 {
     ANN(gpu);
     ANN(count);
-
-    // Get the number of device extensions.
-    VkResult res = vkEnumerateDeviceExtensionProperties(gpu->pdevice, NULL, count, NULL);
-    if (res != VK_SUCCESS || *count == 0)
-        return 0;
-
-    ASSERT(*count < DVZ_MAX_EXTENSIONS * 8); // consistency check
-
-    // Allocate and retrieve the extension properties.
-    VkExtensionProperties* props =
-        (VkExtensionProperties*)dvz_calloc((size_t)*count, sizeof(VkExtensionProperties));
-    if (!props)
-        return 0;
-
-    res = vkEnumerateDeviceExtensionProperties(gpu->pdevice, NULL, count, props);
-    if (res != VK_SUCCESS)
-    {
-        dvz_free(props);
-        return 0;
-    }
-
-    // Allocate the array of strings.
-    char** extensions = (char**)dvz_calloc((size_t)*count, sizeof(char*));
-    for (uint32_t i = 0; i < *count; i++)
-    {
-        // Allocate memory for each string.
-        extensions[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
-        ANN(extensions[i]);
-
-        // Copy the extension name.
-        (void)dvz_snprintf(
-            extensions[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].extensionName);
-    }
-
-    dvz_free(props);
-    return extensions;
+    *count = gpu->extension_count;
+    return gpu->extensions;
 }
 
 
 
 bool dvz_gpu_has_extension(DvzGpu* gpu, const char* extension)
 {
-    if (extension == NULL)
-        return false;
-
-    uint32_t count = 0;
-
-    // Get the number of device extensions.
-    VkResult res = vkEnumerateDeviceExtensionProperties(gpu->pdevice, NULL, &count, NULL);
-    if (res != VK_SUCCESS || count == 0)
-        return 0;
-
-    ASSERT(count < DVZ_MAX_EXTENSIONS * 8); // consistency check
-
-    // Allocate and retrieve the extension properties.
-    VkExtensionProperties* props =
-        (VkExtensionProperties*)dvz_calloc((size_t)count, sizeof(VkExtensionProperties));
-    if (!props)
-        return 0;
-    ANN(props);
-
-    res = vkEnumerateDeviceExtensionProperties(gpu->pdevice, NULL, &count, props);
-    if (res != VK_SUCCESS)
-    {
-        dvz_free(props);
-        return 0;
-    }
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        ANN(props[i].extensionName);
-        if (strncmp(props[i].extensionName, extension, VK_MAX_EXTENSION_NAME_SIZE) == 0)
-        {
-            dvz_free(props);
-            return true;
-        }
-    }
-    dvz_free(props);
-    return false;
+    ANN(gpu);
+    ANN(extension);
+    return dvz_strings_contains(gpu->extension_count, gpu->extensions, extension);
 }

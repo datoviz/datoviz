@@ -204,6 +204,15 @@ DVZ_EXPORT VkPhysicalDeviceVulkan13Features* dvz_gpu_features13(DvzGpu* gpu);
 /*************************************************************************************************/
 
 /**
+ * Probe GPU extensions.
+ *
+ * @param gpu the GPU
+ */
+DVZ_EXPORT void dvz_gpu_probe_extensions(DvzGpu* gpu);
+
+
+
+/**
  * Get the supported extensions before creating a GPU.
  *
  * !!! warning

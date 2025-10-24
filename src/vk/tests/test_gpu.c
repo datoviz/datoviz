@@ -177,7 +177,10 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
 
     uint32_t count = 0;
     DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+
+    // Probe GPU extensions.
     DvzGpu* gpu = &gpus[0];
+    dvz_gpu_probe_extensions(gpu);
 
     // Call the function under test.
     uint32_t ext_count = 0;

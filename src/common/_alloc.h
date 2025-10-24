@@ -262,6 +262,8 @@ static inline bool dvz_strings_contains(uint32_t count, char** strings, const ch
 {
     if (count == 0)
         return false;
+    if (strings == NULL)
+        return false;
     ASSERT(count > 0);
     ANN(strings);
     ANN(string);

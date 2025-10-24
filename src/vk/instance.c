@@ -37,6 +37,9 @@
 #define DVZ_PORTABILITY_EXTENSION_NAME VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 #define DVZ_LAYER_VALIDATION_NAME      "VK_LAYER_KHRONOS_validation"
 
+// Consistency check.
+#define MAX_COUNT 1024
+
 
 
 /*************************************************************************************************/
@@ -69,7 +72,7 @@ void dvz_instance_portability(DvzInstance* instance)
 {
     ANN(instance);
 
-    dvz_instance_extension(instance, DVZ_PORTABILITY_EXTENSION_NAME);
+    dvz_instance_request_extension(instance, DVZ_PORTABILITY_EXTENSION_NAME);
     instance->info_inst.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 }
 
@@ -82,8 +85,8 @@ void dvz_instance_validation_pre(DvzInstance* instance)
     // Prepare the instance creation for validation support.
 
     // Add the validation layer and debug extension.
-    dvz_instance_layer(instance, DVZ_LAYER_VALIDATION_NAME);
-    dvz_instance_extension(instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    dvz_instance_request_layer(instance, DVZ_LAYER_VALIDATION_NAME);
+    dvz_instance_request_extension(instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     // Validation info debug.
     _fill_info_debug(&instance->info_debug);
@@ -122,11 +125,14 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     ANN(instance);
     instance->vk_version = vk_version;
 
+    dvz_instance_probe_extensions(instance);
+    dvz_instance_probe_layers(instance);
+
     // Whether the instance creation supports portability enumeration.
-    bool has_portability = dvz_instance_has_extension(DVZ_PORTABILITY_EXTENSION_NAME);
+    bool has_portability = dvz_instance_has_extension(instance, DVZ_PORTABILITY_EXTENSION_NAME);
 
     // Whether the validation layer is supported and requested.
-    bool can_validation = dvz_instance_has_layer(DVZ_LAYER_VALIDATION_NAME);
+    bool can_validation = dvz_instance_has_layer(instance, DVZ_LAYER_VALIDATION_NAME);
     bool wants_validation = (instance->flags & DVZ_INSTANCE_VALIDATION_FLAGS) != 0;
     if (!can_validation && wants_validation)
     {
@@ -158,12 +164,12 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     }
 
     // Enabled instance extensions.
-    instance->info_inst.enabledExtensionCount = instance->ext_count;
-    instance->info_inst.ppEnabledExtensionNames = (const char* const*)instance->extensions;
+    instance->info_inst.enabledExtensionCount = instance->req_extension_count;
+    instance->info_inst.ppEnabledExtensionNames = (const char* const*)instance->req_extensions;
 
     // Enabled layers.
-    instance->info_inst.enabledLayerCount = instance->layer_count;
-    instance->info_inst.ppEnabledLayerNames = (const char* const*)instance->layers;
+    instance->info_inst.enabledLayerCount = instance->req_layer_count;
+    instance->info_inst.ppEnabledLayerNames = (const char* const*)instance->req_layers;
 
     // Create Vulkan instance.
     log_trace("creating Vulkan instance...");
@@ -211,8 +217,25 @@ void dvz_instance_destroy(DvzInstance* instance)
         dvz_obj_destroyed(&instance->obj);
     }
 
-    dvz_free_strings(instance->ext_count, instance->extensions);
     dvz_free_strings(instance->layer_count, instance->layers);
+    dvz_free(instance->layers);
+
+    dvz_free_strings(instance->extension_count, instance->extensions);
+    dvz_free(instance->extensions);
+
+    dvz_free_strings(instance->req_layer_count, instance->req_layers);
+    dvz_free_strings(instance->req_extension_count, instance->req_extensions);
+
+    for (uint32_t i = 0; i < instance->gpu_count; i++)
+    {
+        if (instance->gpus[i].extension_count > 0)
+        {
+            ANN(instance->gpus[i].extensions);
+            // dvz_free_strings(instance->gpus[i].extension_count, instance->gpus[i].extensions);
+            // dvz_free(instance->gpus[i].extensions);
+        }
+    }
+
     dvz_free((char*)instance->name);
 }
 
@@ -222,122 +245,82 @@ void dvz_instance_destroy(DvzInstance* instance)
 /*  Layers                                                                                       */
 /*************************************************************************************************/
 
-char** dvz_instance_supported_layers(uint32_t* count)
+void dvz_instance_probe_layers(DvzInstance* instance)
 {
-    ANN(count);
+    ANN(instance);
+
+    if (instance->layer_count > 0)
+        return;
 
     // Get the number of instance layers.
-    VkResult res = vkEnumerateInstanceLayerProperties(count, NULL);
-    if (res != VK_SUCCESS || *count == 0)
-        return 0;
+    VkResult res = vkEnumerateInstanceLayerProperties(&instance->layer_count, NULL);
+    if (res != VK_SUCCESS || instance->layer_count == 0)
+        return;
 
     // Get the names of the instance layers.
-    ASSERT(*count < DVZ_MAX_LAYERS * 8); // consistency check
+    ASSERT(instance->layer_count > 0);
+    ASSERT(instance->layer_count < MAX_COUNT); // consistency check
     VkLayerProperties* props =
-        (VkLayerProperties*)dvz_calloc((size_t)*count, sizeof(VkLayerProperties));
+        (VkLayerProperties*)dvz_calloc((size_t)instance->layer_count, sizeof(VkLayerProperties));
     if (!props)
-        return 0;
+        return;
 
-    res = vkEnumerateInstanceLayerProperties(count, props);
+    res = vkEnumerateInstanceLayerProperties(&instance->layer_count, props);
     if (res != VK_SUCCESS)
     {
         dvz_free(props);
-        return 0;
-    }
-
-    // Allocate the array of strings.
-    char** layers = (char**)dvz_calloc((size_t)*count, sizeof(char*));
-    for (uint32_t i = 0; i < *count; i++)
-    {
-        // Allocate the string.
-        layers[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
-        ANN(layers[i]);
-
-        // Fill in the string.
-        (void)dvz_snprintf(layers[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].layerName);
-    }
-
-    dvz_free(props);
-    return layers;
-}
-
-
-
-bool dvz_instance_has_layer(const char* layer)
-{
-    if (layer == NULL)
-        return false;
-
-    uint32_t count = 0;
-
-    // Get the number of instance layers.
-    VkResult res = vkEnumerateInstanceLayerProperties(&count, NULL);
-    if (res != VK_SUCCESS || count == 0)
-        return 0;
-
-    ASSERT(count > 0);
-    ASSERT(count < DVZ_MAX_LAYERS * 8); // consistency check
-
-    // Allocate and retrieve the layer properties.
-    VkLayerProperties* props =
-        (VkLayerProperties*)dvz_calloc((size_t)count, sizeof(VkLayerProperties));
-    if (!props)
-        return 0;
-    ANN(props);
-
-    res = vkEnumerateInstanceLayerProperties(&count, props);
-    if (res != VK_SUCCESS)
-    {
-        dvz_free(props);
-        return 0;
-    }
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        ANN(props[i].layerName);
-        if (strncmp(props[i].layerName, layer, VK_MAX_EXTENSION_NAME_SIZE) == 0)
-        {
-            dvz_free(props);
-            return true;
-        }
-    }
-    dvz_free(props);
-    return false;
-}
-
-
-
-void dvz_instance_layer(DvzInstance* instance, const char* layer)
-{
-    ANN(instance);
-    ANN(layer);
-    ANN(instance->layers);
-    ASSERT(instance->layer_count < DVZ_MAX_LAYERS - 2);
-
-    if (!dvz_strings_contains(instance->layer_count, instance->layers, layer))
-    {
-        instance->layers[instance->layer_count++] = dvz_strdup(layer);
-    }
-}
-
-
-
-void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** layers)
-{
-    ANN(instance);
-    if (count > 0)
-        ANN(layers);
-    if (count >= DVZ_MAX_LAYERS)
-    {
-        log_warn("too many instance layers");
         return;
     }
 
-    if (instance->layer_count > 0)
-        dvz_free_strings(instance->layer_count, instance->layers);
+    // Allocate the array of strings.
+    instance->layers = (char**)dvz_calloc((size_t)instance->layer_count, sizeof(char*));
+    for (uint32_t i = 0; i < instance->layer_count; i++)
+    {
+        // Allocate the string.
+        instance->layers[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
+        ANN(instance->layers[i]);
 
-    instance->layer_count = count;
-    dvz_copy_strings(count, layers, instance->layers);
+        // Fill in the string.
+        (void)dvz_snprintf(
+            instance->layers[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].layerName);
+    }
+
+    dvz_free(props);
+}
+
+
+
+char** dvz_instance_supported_layers(DvzInstance* instance, uint32_t* count)
+{
+    ANN(instance);
+    ANN(count);
+    *count = instance->layer_count;
+    return instance->layers;
+}
+
+
+
+bool dvz_instance_has_layer(DvzInstance* instance, const char* layer)
+{
+    ANN(instance);
+    ANN(layer);
+    return dvz_strings_contains(instance->layer_count, instance->layers, layer);
+}
+
+
+
+void dvz_instance_request_layer(DvzInstance* instance, const char* layer)
+{
+    ANN(instance);
+    ANN(layer);
+
+    ANN(instance->req_layers);
+    ASSERT(instance->req_layer_count < DVZ_MAX_REQ_LAYERS - 1);
+
+    if (!dvz_strings_contains(instance->req_layer_count, instance->req_layers, layer))
+    {
+        instance->req_layers[instance->req_layer_count++] = dvz_strdup(layer);
+    }
 }
 
 
@@ -346,121 +329,80 @@ void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** lay
 /*  Extensions                                                                                   */
 /*************************************************************************************************/
 
-char** dvz_instance_supported_extensions(uint32_t* count)
+void dvz_instance_probe_extensions(DvzInstance* instance)
 {
-    ANN(count);
+    ANN(instance);
+
+    if (instance->extension_count > 0)
+        return;
 
     // Get the number of instance extensions.
-    VkResult res = vkEnumerateInstanceExtensionProperties(NULL, count, NULL);
-    if (res != VK_SUCCESS || *count == 0)
-        return 0;
+    VkResult res = vkEnumerateInstanceExtensionProperties(NULL, &instance->extension_count, NULL);
+    if (res != VK_SUCCESS || instance->extension_count == 0)
+        return;
 
-    ASSERT(*count < DVZ_MAX_EXTENSIONS * 8); // consistency check
-
-    // Allocate and retrieve the extension properties.
-    VkExtensionProperties* props =
-        (VkExtensionProperties*)dvz_calloc((size_t)*count, sizeof(VkExtensionProperties));
+    // Get the names of the instance extensions.
+    ASSERT(instance->extension_count > 0);
+    ASSERT(instance->extension_count < MAX_COUNT); // consistency check
+    VkExtensionProperties* props = (VkExtensionProperties*)dvz_calloc(
+        (size_t)instance->extension_count, sizeof(VkExtensionProperties));
     if (!props)
-        return 0;
+        return;
 
-    res = vkEnumerateInstanceExtensionProperties(NULL, count, props);
+    res = vkEnumerateInstanceExtensionProperties(NULL, &instance->extension_count, props);
     if (res != VK_SUCCESS)
     {
         dvz_free(props);
-        return 0;
-    }
-
-    // Allocate the array of strings.
-    char** extensions = (char**)dvz_calloc((size_t)*count, sizeof(char*));
-    for (uint32_t i = 0; i < *count; i++)
-    {
-        // Allocate memory for each string.
-        extensions[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
-        ANN(extensions[i]);
-
-        // Copy the extension name.
-        (void)dvz_snprintf(
-            extensions[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].extensionName);
-    }
-
-    dvz_free(props);
-    return extensions;
-}
-
-
-
-bool dvz_instance_has_extension(const char* extension)
-{
-    if (extension == NULL)
-        return false;
-
-    uint32_t count = 0;
-
-    // Get the number of instance extensions.
-    VkResult res = vkEnumerateInstanceExtensionProperties(NULL, &count, NULL);
-    if (res != VK_SUCCESS || count == 0)
-        return 0;
-
-    ASSERT(count < DVZ_MAX_EXTENSIONS * 8); // consistency check
-
-    // Allocate and retrieve the extension properties.
-    VkExtensionProperties* props =
-        (VkExtensionProperties*)dvz_calloc((size_t)count, sizeof(VkExtensionProperties));
-    if (!props)
-        return 0;
-    ANN(props);
-
-    res = vkEnumerateInstanceExtensionProperties(NULL, &count, props);
-    if (res != VK_SUCCESS)
-    {
-        dvz_free(props);
-        return 0;
-    }
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        ANN(props[i].extensionName);
-        if (strncmp(props[i].extensionName, extension, VK_MAX_EXTENSION_NAME_SIZE) == 0)
-        {
-            dvz_free(props);
-            return true;
-        }
-    }
-    dvz_free(props);
-    return false;
-}
-
-
-
-void dvz_instance_extension(DvzInstance* instance, const char* extension)
-{
-    ANN(instance);
-    ANN(extension);
-    ANN(instance->extensions);
-    ASSERT(instance->ext_count < DVZ_MAX_EXTENSIONS - 2);
-
-    if (!dvz_strings_contains(instance->ext_count, instance->extensions, extension))
-    {
-        instance->extensions[instance->ext_count++] = dvz_strdup(extension);
-    }
-}
-
-
-
-void dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char** extensions)
-{
-    ANN(instance);
-    if (count > 0)
-        ANN(extensions);
-    if (count >= DVZ_MAX_EXTENSIONS)
-    {
-        log_warn("too many instance extensions");
         return;
     }
 
-    if (instance->ext_count > 0)
-        dvz_free_strings(instance->ext_count, instance->extensions);
+    // Allocate the array of strings.
+    instance->extensions = (char**)dvz_calloc((size_t)instance->extension_count, sizeof(char*));
+    for (uint32_t i = 0; i < instance->extension_count; i++)
+    {
+        // Allocate the string.
+        instance->extensions[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
+        ANN(instance->extensions[i]);
 
-    instance->ext_count = count;
-    dvz_copy_strings(count, extensions, instance->extensions);
+        // Fill in the string.
+        (void)dvz_snprintf(
+            instance->extensions[i], VK_MAX_EXTENSION_NAME_SIZE, "%s", props[i].extensionName);
+    }
+
+    dvz_free(props);
+}
+
+
+
+char** dvz_instance_supported_extensions(DvzInstance* instance, uint32_t* count)
+{
+    ANN(instance);
+    ANN(count);
+    *count = instance->extension_count;
+    return instance->extensions;
+}
+
+
+
+bool dvz_instance_has_extension(DvzInstance* instance, const char* extension)
+{
+    ANN(instance);
+    ANN(extension);
+    return dvz_strings_contains(instance->extension_count, instance->extensions, extension);
+}
+
+
+
+void dvz_instance_request_extension(DvzInstance* instance, const char* extension)
+{
+    ANN(instance);
+    ANN(extension);
+
+    ANN(instance->req_extensions);
+    ASSERT(instance->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
+
+    if (!dvz_strings_contains(instance->req_extension_count, instance->req_extensions, extension))
+    {
+        instance->req_extensions[instance->req_extension_count++] = dvz_strdup(extension);
+    }
 }
