@@ -121,6 +121,8 @@ int test_queues_multiple(TstSuite* suite, TstItem* tstitem)
     ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].family_idx == 1);
     ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].family_idx == 2);
 
+    dvz_queues_show(&queues);
+
     return 0;
 }
 

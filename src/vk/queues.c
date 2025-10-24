@@ -110,6 +110,33 @@ static uint32_t queue_flags_count(VkQueueFlags f)
 
 
 
+static void queue_flags_str(VkQueueFlags flags, char* buf, size_t buf_size)
+{
+    ANN(buf);
+    buf[0] = '\0';
+
+    if (flags & VK_QUEUE_GRAPHICS_BIT)
+        strncat(buf, "GRAPHICS ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_COMPUTE_BIT)
+        strncat(buf, "COMPUTE ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_TRANSFER_BIT)
+        strncat(buf, "TRANSFER ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_SPARSE_BINDING_BIT)
+        strncat(buf, "SPARSE_BINDING ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_PROTECTED_BIT)
+        strncat(buf, "PROTECTED ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_VIDEO_DECODE_BIT_KHR)
+        strncat(buf, "VIDEO_DECODE ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
+        strncat(buf, "VIDEO_ENCODE ", buf_size - strlen(buf) - 1);
+    if (flags & VK_QUEUE_OPTICAL_FLOW_BIT_NV)
+        strncat(buf, "OPTICAL_FLOW ", buf_size - strlen(buf) - 1);
+    if (buf[0] == '\0')
+        strncat(buf, "NONE", buf_size - 1);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -246,13 +273,18 @@ void dvz_queues_show(DvzQueues* queues)
 {
     ANN(queues);
     log_info("Selected %u queue(s):", queues->queue_count);
+
     for (uint32_t role = 0; role < DVZ_QUEUE_COUNT; role++)
     {
         DvzQueue* q = &queues->queues[role];
         if (!q->is_set)
             continue;
+
+        char buf[128];
+        queue_flags_str(q->flags, buf, sizeof(buf));
+
         log_info(
-            "  role %u: family=%u  flags=0x%x%s", role, q->family_idx, q->flags,
+            "  role %u: family=%u  flags=[%s]%s", role, q->family_idx, buf,
             q->is_main ? " (main)" : "");
     }
 }
