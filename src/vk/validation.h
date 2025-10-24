@@ -16,12 +16,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <vulkan/vulkan.h>
+
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
-
-#include <vulkan/vulkan.h>
 
 
 

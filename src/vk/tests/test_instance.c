@@ -17,10 +17,8 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
-#include <vulkan/vulkan_core.h>
 
 #include "../types.h"
-#include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/vk/instance.h"

@@ -17,7 +17,6 @@
 /*************************************************************************************************/
 
 #include "_log.h"
-#include "datoviz/common/macros.h"
 
 #include <vulkan/vulkan.h>
 

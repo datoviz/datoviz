@@ -20,14 +20,10 @@
 
 #include "_alloc.h"
 #include "_compat.h"
-#include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
 #include "types.h"
-#include "validation.h"
-#include "vulkan/vulkan_core.h"
 
 
 
