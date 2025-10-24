@@ -68,14 +68,18 @@ static void* dvz_system_aligned_alloc(DvzSize alignment, DvzSize size)
 #if OS_WINDOWS
     void* data = _aligned_malloc((size_t)aligned_size, (size_t)alignment);
     if (data == NULL)
-        log_error("failed aligned allocation (size=%" PRIu64 ", alignment=%" PRIu64 ")", size, alignment);
+        log_error(
+            "failed aligned allocation (size=%" PRIu64 ", alignment=%" PRIu64 ")", size,
+            alignment);
     return data;
 #else
     void* data = NULL;
 #if defined(_ISOC11_SOURCE) || (__STDC_VERSION__ >= 201112L && !defined(OS_MACOS))
     data = aligned_alloc((size_t)alignment, (size_t)aligned_size);
     if (data == NULL)
-        log_error("failed aligned allocation (size=%" PRIu64 ", alignment=%" PRIu64 ")", size, alignment);
+        log_error(
+            "failed aligned allocation (size=%" PRIu64 ", alignment=%" PRIu64 ")", size,
+            alignment);
     return data;
 #else
     int rc = posix_memalign(&data, (size_t)alignment, (size_t)aligned_size);
@@ -95,7 +99,8 @@ static void* dvz_system_aligned_alloc(DvzSize alignment, DvzSize size)
 
 static void dvz_system_free(void* pointer)
 {
-    free(pointer);
+    if (pointer != NULL)
+        free(pointer);
 }
 
 
@@ -131,10 +136,7 @@ static const DvzAllocator DVZ_SYSTEM_ALLOCATOR = {
 
 #if DVZ_HAS_MIMALLOC
 
-static void* dvz_mimalloc_malloc(DvzSize size)
-{
-    return mi_malloc((size_t)size);
-}
+static void* dvz_mimalloc_malloc(DvzSize size) { return mi_malloc((size_t)size); }
 
 
 
@@ -158,16 +160,14 @@ static void* dvz_mimalloc_aligned_alloc(DvzSize alignment, DvzSize size)
     DvzSize aligned_size = dvz_aligned_size(size, alignment);
     void* data = mi_malloc_aligned((size_t)aligned_size, (size_t)alignment);
     if (data == NULL)
-        log_error("mi_malloc_aligned failed (size=%" PRIu64 ", alignment=%" PRIu64 ")", size, alignment);
+        log_error(
+            "mi_malloc_aligned failed (size=%" PRIu64 ", alignment=%" PRIu64 ")", size, alignment);
     return data;
 }
 
 
 
-static void dvz_mimalloc_free(void* pointer)
-{
-    mi_free(pointer);
-}
+static void dvz_mimalloc_free(void* pointer) { mi_free(pointer); }
 
 
 
@@ -226,10 +226,7 @@ const DvzAllocator* dvz_get_allocator(void)
 
 
 
-const DvzAllocator* dvz_system_allocator(void)
-{
-    return &DVZ_SYSTEM_ALLOCATOR;
-}
+const DvzAllocator* dvz_system_allocator(void) { return &DVZ_SYSTEM_ALLOCATOR; }
 
 
 
@@ -244,10 +241,7 @@ const DvzAllocator* dvz_mimalloc_allocator(void)
 
 
 
-void dvz_use_system_allocator(void)
-{
-    dvz_set_allocator(dvz_system_allocator());
-}
+void dvz_use_system_allocator(void) { dvz_set_allocator(dvz_system_allocator()); }
 
 
 

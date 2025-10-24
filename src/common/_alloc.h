@@ -297,6 +297,19 @@ static inline void dvz_free_strings(uint32_t count, char** strings)
     // dvz_free(strings);
 }
 
+#define DVZ_FREE_STRING_CONTAINER(count, strings)                                                 \
+    if ((count) > 0)                                                                              \
+    {                                                                                             \
+        ANN((strings));                                                                           \
+        dvz_free_strings(count, (strings));                                                       \
+        dvz_free((strings));                                                                      \
+    }                                                                                             \
+    else                                                                                          \
+    {                                                                                             \
+        ASSERT(strings == NULL);                                                                  \
+    }                                                                                             \
+    strings = NULL;
+
 
 
 /*************************************************************************************************/

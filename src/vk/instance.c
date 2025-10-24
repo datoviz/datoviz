@@ -202,8 +202,29 @@ void dvz_instance_destroy(DvzInstance* instance)
 {
     ANN(instance);
 
-    VkInstance vki = instance->vk_instance;
+    DVZ_FREE_STRING_CONTAINER(instance->layer_count, instance->layers)
+    DVZ_FREE_STRING_CONTAINER(instance->extension_count, instance->extensions)
 
+    // NOTE: free the strings in these arrays, but not the arrays themselves are they are not on
+    // the heap.
+    dvz_free_strings(instance->req_layer_count, instance->req_layers);
+    dvz_free_strings(instance->req_extension_count, instance->req_extensions);
+
+    DvzGpu* gpu = NULL;
+    for (uint32_t i = 0; i < instance->gpu_count; i++)
+    {
+        gpu = &instance->gpus[i];
+        ANN(gpu);
+        if (gpu->extension_count > 0)
+        {
+            ANN(gpu->extensions);
+            DVZ_FREE_STRING_CONTAINER(gpu->extension_count, gpu->extensions);
+        }
+    }
+
+    dvz_free((char*)instance->name);
+
+    VkInstance vki = instance->vk_instance;
     if (vki != VK_NULL_HANDLE)
     {
         if (instance->debug_messenger != NULL)
@@ -212,33 +233,10 @@ void dvz_instance_destroy(DvzInstance* instance)
 
             vkDestroyDebugUtilsMessengerEXT_d(vki, instance->debug_messenger, NULL);
         }
-
         vkDestroyInstance(vki, NULL);
-        dvz_obj_destroyed(&instance->obj);
     }
 
-    dvz_free_strings(instance->layer_count, instance->layers);
-    dvz_free(instance->layers);
-
-    dvz_free_strings(instance->extension_count, instance->extensions);
-    dvz_free(instance->extensions);
-
-    // NOTE: free the strings in these arrays, but not the arrays themselves are they are not on
-    // the heap.
-    dvz_free_strings(instance->req_layer_count, instance->req_layers);
-    dvz_free_strings(instance->req_extension_count, instance->req_extensions);
-
-    for (uint32_t i = 0; i < instance->gpu_count; i++)
-    {
-        if (instance->gpus[i].extension_count > 0)
-        {
-            ANN(instance->gpus[i].extensions);
-            dvz_free_strings(instance->gpus[i].extension_count, instance->gpus[i].extensions);
-            dvz_free(instance->gpus[i].extensions);
-        }
-    }
-
-    dvz_free((char*)instance->name);
+    dvz_obj_destroyed(&instance->obj);
 }
 
 

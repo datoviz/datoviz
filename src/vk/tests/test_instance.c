@@ -53,7 +53,7 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
     }
 
     // Free.
-    dvz_free_strings(count, layers);
+    dvz_instance_destroy(&instance);
 
     return 0;
 }
@@ -80,7 +80,7 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
     }
 
     // Free the array of strings.
-    dvz_free_strings(count, extensions);
+    dvz_instance_destroy(&instance);
 
     return 0;
 }
@@ -112,11 +112,9 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
     AT(instance.req_layer_count == 2);     // add validation layer
     AT(instance.req_extension_count == 2); // debug extension is already there, but add portability
 
-
     // Get Vulkan instance handle.
     VkInstance vk_instance = dvz_instance_handle(&instance);
     AT(vk_instance != VK_NULL_HANDLE);
-
 
     // Destroy the instance.
     dvz_instance_destroy(&instance);
