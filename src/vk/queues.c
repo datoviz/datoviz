@@ -116,23 +116,24 @@ static void queue_flags_str(VkQueueFlags flags, char* buf, size_t buf_size)
     buf[0] = '\0';
 
     if (flags & VK_QUEUE_GRAPHICS_BIT)
-        strncat(buf, "GRAPHICS ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "GRAPHICS ", buf_size);
     if (flags & VK_QUEUE_COMPUTE_BIT)
-        strncat(buf, "COMPUTE ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "COMPUTE ", buf_size);
     if (flags & VK_QUEUE_TRANSFER_BIT)
-        strncat(buf, "TRANSFER ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "TRANSFER ", buf_size);
     if (flags & VK_QUEUE_SPARSE_BINDING_BIT)
-        strncat(buf, "SPARSE_BINDING ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "SPARSE_BINDING ", buf_size);
     if (flags & VK_QUEUE_PROTECTED_BIT)
-        strncat(buf, "PROTECTED ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "PROTECTED ", buf_size);
     if (flags & VK_QUEUE_VIDEO_DECODE_BIT_KHR)
-        strncat(buf, "VIDEO_DECODE ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "VIDEO_DECODE ", buf_size);
     if (flags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
-        strncat(buf, "VIDEO_ENCODE ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "VIDEO_ENCODE ", buf_size);
     if (flags & VK_QUEUE_OPTICAL_FLOW_BIT_NV)
-        strncat(buf, "OPTICAL_FLOW ", buf_size - strlen(buf) - 1);
+        strlcat(buf, "OPTICAL_FLOW ", buf_size);
+
     if (buf[0] == '\0')
-        strncat(buf, "NONE", buf_size - 1);
+        strlcat(buf, "NONE", buf_size);
 }
 
 
