@@ -60,4 +60,8 @@ int test_queues_video_roles(TstSuite* suite, TstItem* tstitem);
 
 
 
+int test_device_1(TstSuite* suite, TstItem* tstitem);
+
+
+
 int test_vk(TstSuite* suite);

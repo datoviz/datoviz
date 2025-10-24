@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing Vulkan                                                                               */
+/*  Testing queues                                                                               */
 /*************************************************************************************************/
 
 
@@ -14,42 +14,30 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
+#include "../types.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/instance.h"
+#include "datoviz/vk/queues.h"
 #include "test_vk.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Queue tests                                                                                  */
 /*************************************************************************************************/
 
-int test_vk(TstSuite* suite)
+int test_device_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
+    ANN(tstitem);
 
-    const char* tags = "vk";
-
-    TEST_SIMPLE(test_instance_layers);
-    TEST_SIMPLE(test_instance_extensions);
-    TEST_SIMPLE(test_instance_creation);
-
-    TEST_SIMPLE(test_gpu_props);
-    TEST_SIMPLE(test_gpu_memprops);
-    TEST_SIMPLE(test_gpu_features);
-    TEST_SIMPLE(test_gpu_extensions);
-
-    TEST_SIMPLE(test_queues_caps);
-    TEST_SIMPLE(test_queues_basic);
-    TEST_SIMPLE(test_queues_multiple);
-    TEST_SIMPLE(test_queues_tie_break);
-    TEST_SIMPLE(test_queues_no_optional);
-    TEST_SIMPLE(test_queues_video_roles);
-    TEST_SIMPLE(test_queue_from_role);
-    TEST_SIMPLE(test_queue_supports);
-
-    TEST_SIMPLE(test_device_1);
 
 
     return 0;
