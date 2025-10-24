@@ -37,23 +37,57 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static bool queue_flags_supports(VkQueueFlags f, DvzQueueRole role)
+static inline uint32_t queue_role_mask(DvzQueueRole role)
 {
     switch (role)
     {
     case DVZ_QUEUE_MAIN:
+        return VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+    case DVZ_QUEUE_COMPUTE:
+        return VK_QUEUE_COMPUTE_BIT;
+    case DVZ_QUEUE_TRANSFER:
+        return VK_QUEUE_TRANSFER_BIT;
+    case DVZ_QUEUE_VIDEO_ENCODE:
+        return VK_QUEUE_VIDEO_ENCODE_BIT_KHR;
+    case DVZ_QUEUE_VIDEO_DECODE:
+        return VK_QUEUE_VIDEO_DECODE_BIT_KHR;
+    default:
+        return 0;
+    }
+}
+
+
+
+static bool queue_flags_supports(VkQueueFlags f, DvzQueueRole role)
+{
+    switch (role)
+    {
+
+    case DVZ_QUEUE_MAIN:
         return (f & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) ==
                (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+
     case DVZ_QUEUE_COMPUTE:
         return (f & VK_QUEUE_COMPUTE_BIT) != 0;
+
     case DVZ_QUEUE_TRANSFER:
-        return ((f & VK_QUEUE_TRANSFER_BIT) != 0) ||
-               (f & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) ==
-                   (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+        /*
+        NOTE: any queue that supports graphics or compute supports transfer per the Vulkan spec,
+        EVEN if that bit is not set.
+        See https://docs.vulkan.org/refpages/latest/refpages/source/VkQueueFlagBits.html
+
+        */
+        return (
+            ((f & VK_QUEUE_TRANSFER_BIT) != 0) || //
+            ((f & VK_QUEUE_GRAPHICS_BIT) != 0) || //
+            ((f & VK_QUEUE_COMPUTE_BIT) != 0));
+
     case DVZ_QUEUE_VIDEO_ENCODE:
         return (f & VK_QUEUE_VIDEO_ENCODE_BIT_KHR) != 0;
+
     case DVZ_QUEUE_VIDEO_DECODE:
         return (f & VK_QUEUE_VIDEO_DECODE_BIT_KHR) != 0;
+
     default:
         return false;
     }
@@ -168,6 +202,7 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
     {
         int best_idx = -1;
         uint32_t best_count = UINT32_MAX;
+        uint32_t best_closeness = UINT32_MAX;
 
         // Goes through all non-main roles.
         for (uint32_t i = 0; i < qc->family_count; i++)
@@ -181,10 +216,13 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
 
             // Here, this queue family is not main and supports the current role.
             uint32_t c = queue_flags_count(f);
+            uint32_t role_mask = queue_role_mask(role);
+            uint32_t closeness = queue_flags_count(f ^ role_mask); // how many bits differ
 
-            if (c < best_count)
+            if (c < best_count || (c == best_count && closeness < best_closeness))
             {
                 best_count = c;
+                best_closeness = closeness;
                 best_idx = (int)i;
             }
         }
@@ -217,14 +255,6 @@ void dvz_queues_show(DvzQueues* queues)
             "  role %u: family=%u  flags=0x%x%s", role, q->family_idx, q->flags,
             q->is_main ? " (main)" : "");
     }
-}
-
-
-
-bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role)
-{
-    ANN(queue);
-    return queue_flags_supports(queue->flags, role);
 }
 
 
@@ -264,7 +294,15 @@ DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role)
         return main;
     }
 
-    log_error("could not find a queue supporting role %d", role);
+    log_warn("could not find a queue supporting role %d", role);
 
     return NULL;
+}
+
+
+
+bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role)
+{
+    ANN(queue);
+    return queue_flags_supports(queue->flags, role);
 }

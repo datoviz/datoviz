@@ -134,16 +134,6 @@ DVZ_EXPORT void dvz_queues_show(DvzQueues* queues);
 
 
 /**
- * Returns whether a queue supports a given role.
- *
- * @param queue a queue
- * @param role a queue role
- */
-DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
-
-
-
-/**
  * Get a queue from its role, either a dedicated queue, or the main queue if it supports the role.
  *
  * @param queues the queues
@@ -151,6 +141,16 @@ DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
  * @returns the queue
  */
 DVZ_EXPORT DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role);
+
+
+
+/**
+ * Returns whether a queue supports a given role.
+ *
+ * @param queue a queue
+ * @param role a queue role
+ */
+DVZ_EXPORT bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role);
 
 
 

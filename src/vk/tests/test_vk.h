@@ -44,6 +44,20 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem);
 
 int test_queues_caps(TstSuite* suite, TstItem* tstitem);
 
+int test_queue_supports(TstSuite* suite, TstItem* tstitem);
+
+int test_queue_from_role(TstSuite* suite, TstItem* tstitem);
+
+int test_queues_basic(TstSuite* suite, TstItem* tstitem);
+
+int test_queues_multiple(TstSuite* suite, TstItem* tstitem);
+
+int test_queues_tie_break(TstSuite* suite, TstItem* tstitem);
+
+int test_queues_no_optional(TstSuite* suite, TstItem* tstitem);
+
+int test_queues_video_roles(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vk(TstSuite* suite);
