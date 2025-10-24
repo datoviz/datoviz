@@ -31,7 +31,6 @@
 
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
-typedef struct DvzDevice DvzDevice;
 
 
 

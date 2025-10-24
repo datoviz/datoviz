@@ -30,6 +30,7 @@ typedef struct DvzGpu DvzGpu;
 #include <vulkan/vulkan.h>
 
 #include "datoviz/common/obj.h"
+#include "datoviz/vk/queues.h"
 
 
 
@@ -37,11 +38,11 @@ typedef struct DvzGpu DvzGpu;
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_GPUS 8
-
 // Maximum number of requested layers/extensions.
 #define DVZ_MAX_REQ_LAYERS     32
 #define DVZ_MAX_REQ_EXTENSIONS 256
+
+#define DVZ_MAX_GPUS 8
 
 
 
@@ -68,6 +69,8 @@ struct DvzGpu
     // All supported device extensions.
     uint32_t extension_count;
     char** extensions;
+
+    DvzQueueCaps queue_caps;
 };
 
 

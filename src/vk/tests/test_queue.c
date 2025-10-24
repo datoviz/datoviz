@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing Vulkan                                                                               */
+/*  Testing queues                                                                               */
 /*************************************************************************************************/
 
 
@@ -14,33 +14,30 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
+#include "../types.h"
+#include "_alloc.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/math/types.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/instance.h"
 #include "test_vk.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Queue tests                                                                                  */
 /*************************************************************************************************/
 
-int test_vk(TstSuite* suite)
+int test_queues_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-
-    const char* tags = "vk";
-
-    TEST_SIMPLE(test_instance_layers);
-    TEST_SIMPLE(test_instance_extensions);
-    TEST_SIMPLE(test_instance_creation);
-
-    TEST_SIMPLE(test_gpu_props);
-    TEST_SIMPLE(test_gpu_memprops);
-    TEST_SIMPLE(test_gpu_features);
-    TEST_SIMPLE(test_gpu_extensions);
-
-    TEST_SIMPLE(test_queues_1);
+    ANN(tstitem);
 
     return 0;
 }

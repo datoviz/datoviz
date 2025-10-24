@@ -42,4 +42,8 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem);
 
 
 
+int test_queues_1(TstSuite* suite, TstItem* tstitem);
+
+
+
 int test_vk(TstSuite* suite);
