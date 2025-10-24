@@ -76,5 +76,6 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
             log_info("  VK_QUEUE_VIDEO_ENCODE_BIT_KHR");
     }
 
+    dvz_instance_destroy(&instance);
     return 0;
 }
