@@ -42,25 +42,33 @@
 /*************************************************************************************************/
 
 static void _fill_queue_requests(
-    DvzDevice* device, VkDeviceQueueCreateInfo* infos, uint32_t* qfc, float* priority)
+    DvzQueues* queues, VkDeviceQueueCreateInfo* infos, uint32_t* qfc, float* priority)
 {
-    ANN(device);
+    ANN(queues);
     ANN(infos);
+    ANN(qfc);
+    ANN(priority);
 
     uint32_t qf = 0;
     VkDeviceQueueCreateInfo* info = NULL;
     DvzQueue* queue = NULL;
 
     uint32_t qf2infoidx[DVZ_MAX_QUEUE_FAMILIES] = {0};
+    // Initialize to a large value so it is properly initialized.
+    for (uint32_t i = 0; i < DVZ_MAX_QUEUE_FAMILIES; i++)
+    {
+        qf2infoidx[i] = 1024;
+    }
     uint32_t infoidx = 0;
     uint32_t nidx = 0;
-    dvz_memset(qf2infoidx, sizeof(qf2infoidx), 1024, sizeof(qf2infoidx));
 
     // Go through all queues, and count the number of requested queues per queue family index,
     // keeping only the queue family indices for which there is at least 1 requested queue.
-    for (uint32_t i = 0; i < device->queues.queue_count; i++)
+    for (uint32_t i = 0; i < queues->queue_count; i++)
     {
-        queue = &device->queues.queues[i];
+        queue = &queues->queues[i];
+        ANN(queue);
+
         qf = queue->family_idx;
         ASSERT(qf < DVZ_MAX_QUEUE_FAMILIES);
 
@@ -72,9 +80,11 @@ static void _fill_queue_requests(
             infoidx = nidx++;
             qf2infoidx[qf] = infoidx;
         }
-
         ASSERT(infoidx < DVZ_MAX_QUEUE_FAMILIES);
+        log_info("i=%d, qf=%d, infoidx=%d, nidx=%d", i, qf, infoidx, nidx);
+
         info = &infos[infoidx];
+        ANN(info);
         info->sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         info->pQueuePriorities = priority;
         info->queueCount++;
@@ -118,7 +128,6 @@ void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
     ANN(device);
 
     device->gpu = gpu;
-
 
     dvz_obj_init(&device->obj);
 }
@@ -221,7 +230,7 @@ int dvz_device_create(DvzDevice* device)
     VkDeviceQueueCreateInfo queue_families_info[DVZ_MAX_QUEUE_FAMILIES] = {0};
     uint32_t qfs = 0;
     float priority = 1.0f;
-    _fill_queue_requests(device, queue_families_info, &qfs, &priority);
+    _fill_queue_requests(&device->queues, queue_families_info, &qfs, &priority);
     ASSERT(qfs > 0);
     device_info.queueCreateInfoCount = qfs;
     device_info.pQueueCreateInfos = queue_families_info;

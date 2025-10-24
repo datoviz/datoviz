@@ -46,9 +46,8 @@ DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)
     ANN(count);
 
     // Count the number of GPUs.
-    uint32_t gpu_count = 0;
     VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance->vk_instance, &instance->gpu_count, NULL));
-    log_trace("found %d GPU(s)", gpu_count);
+    log_trace("found %d GPU(s)", instance->gpu_count);
 
     if (instance->gpu_count == 0)
         return NULL;
