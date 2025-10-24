@@ -16,6 +16,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+#include "vulkan/vulkan_core.h"
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
 
@@ -72,7 +73,8 @@ struct DvzDevice
     VkPhysicalDeviceVulkan13Features features13;
 
     VkDevice vk_device;
-    VkDescriptorPool dset_pool;
+    VkCommandPool cpools[DVZ_MAX_QUEUE_FAMILIES];
+    VkDescriptorPool dpool;
     VmaAllocator allocator;
 };
 
