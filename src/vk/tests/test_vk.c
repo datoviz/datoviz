@@ -40,7 +40,7 @@ int test_vk(TstSuite* suite)
     TEST_SIMPLE(test_gpu_features);
     TEST_SIMPLE(test_gpu_extensions);
 
-    TEST_SIMPLE(test_queues_1);
+    TEST_SIMPLE(test_queues_caps);
 
     return 0;
 }

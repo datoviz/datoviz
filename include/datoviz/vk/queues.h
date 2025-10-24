@@ -85,3 +85,13 @@ struct DvzQueueCaps
  * @returns the queue capabilities
  */
 DVZ_EXPORT DvzQueueCaps* dvz_gpu_queues(DvzGpu* gpu);
+
+
+
+/**
+ * Probe the queues of a GPU.
+ *
+ * @param gpu the GPU
+ * @returns the queue capabilities
+ */
+DVZ_EXPORT DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu);
