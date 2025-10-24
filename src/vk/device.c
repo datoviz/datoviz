@@ -209,7 +209,6 @@ VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* devic
 }
 
 
-
 int dvz_device_create(DvzDevice* device)
 {
     ANN(device);
@@ -245,8 +244,10 @@ int dvz_device_create(DvzDevice* device)
     device_info.pNext = &device->features;
 
     // Create the device.
+    log_trace("creating the device");
     VkResult res = vkCreateDevice(device->gpu->pdevice, &device_info, NULL, &device->vk_device);
     int out = check_result(res);
+    log_trace("device created");
 
     dvz_obj_created(&device->obj);
     return out;
@@ -276,7 +277,9 @@ void dvz_device_destroy(DvzDevice* device)
 
     if (device->vk_device != VK_NULL_HANDLE)
     {
+        log_trace("destroying the device");
         vkDestroyDevice(device->vk_device, NULL);
+        log_trace("device destroyed");
     }
 
     dvz_obj_destroyed(&device->obj);
