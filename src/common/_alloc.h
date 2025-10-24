@@ -284,6 +284,17 @@ static inline bool dvz_strings_contains(uint32_t count, char** strings, const ch
 
 
 
+static inline void dvz_strings_show(uint32_t count, char** strings)
+{
+    ANN(strings);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        log_info("  - %s", strings[i]);
+    }
+}
+
+
+
 static inline void dvz_free_strings(uint32_t count, char** strings)
 {
     if (strings == NULL)

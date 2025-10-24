@@ -135,7 +135,7 @@ void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
 
 
 
-void dvz_device_request_queue(DvzDevice* device, uint32_t family, uint32_t count)
+void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t count)
 {
     ANN(device);
     if (family >= DVZ_MAX_QUEUE_FAMILIES)
@@ -145,18 +145,12 @@ void dvz_device_request_queue(DvzDevice* device, uint32_t family, uint32_t count
     }
     ASSERT(family < DVZ_MAX_QUEUE_FAMILIES);
 
-    device->req_queues_per_family[family] += count;
-}
-
-
-
-void dvz_device_request_queues(DvzDevice* device, DvzQueues* queues)
-{
-    ANN(device);
-    ANN(queues);
-    for (uint32_t i = 0; i < queues->queue_count; i++)
+    uint32_t queue_idx = 0; // local to each family
+    for (uint32_t i = 0; i < count; i++)
     {
-        dvz_device_request_queue(device, queues->queues[i].family_idx, 1);
+        DvzQueue* queue = &device->queues.queues[device->queues.queue_count++];
+        queue->family_idx = family;
+        queue->queue_idx = queue_idx++;
     }
 }
 
@@ -209,6 +203,7 @@ VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* devic
 }
 
 
+
 int dvz_device_create(DvzDevice* device)
 {
     ANN(device);
@@ -231,6 +226,11 @@ int dvz_device_create(DvzDevice* device)
     uint32_t qfs = 0;
     float priority = 1.0f;
     _fill_queue_requests(&device->queues, queue_families_info, &qfs, &priority);
+    if (qfs == 0)
+    {
+        log_error("at least one queue must be requested to create the device");
+        return 1;
+    }
     ASSERT(qfs > 0);
     device_info.queueCreateInfoCount = qfs;
     device_info.pQueueCreateInfos = queue_families_info;

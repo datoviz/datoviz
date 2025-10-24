@@ -50,6 +50,7 @@ int test_vk(TstSuite* suite)
     TEST_SIMPLE(test_queue_supports);
 
     TEST_SIMPLE(test_device_1);
+    TEST_SIMPLE(test_device_2);
 
 
     return 0;

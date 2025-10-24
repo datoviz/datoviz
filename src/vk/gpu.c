@@ -328,6 +328,10 @@ char** dvz_gpu_supported_extensions(DvzGpu* gpu, uint32_t* count)
 {
     ANN(gpu);
     ANN(count);
+    if (gpu->extension_count == 0)
+    {
+        dvz_gpu_probe_extensions(gpu);
+    }
     *count = gpu->extension_count;
     return gpu->extensions;
 }
@@ -338,5 +342,9 @@ bool dvz_gpu_has_extension(DvzGpu* gpu, const char* extension)
 {
     ANN(gpu);
     ANN(extension);
+    if (gpu->extension_count == 0)
+    {
+        dvz_gpu_probe_extensions(gpu);
+    }
     return dvz_strings_contains(gpu->extension_count, gpu->extensions, extension);
 }

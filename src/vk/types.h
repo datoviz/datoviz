@@ -62,7 +62,6 @@ struct DvzDevice
     DvzGpu* gpu;
 
     DvzQueues queues;
-    uint32_t req_queues_per_family[DVZ_MAX_QUEUE_FAMILIES]; // # of requested queues per family
 
     uint32_t req_extension_count;
     char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];

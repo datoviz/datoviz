@@ -54,17 +54,7 @@ DVZ_EXPORT void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
  * @param family the queue family index
  * @param count the number of queues requested
  */
-DVZ_EXPORT void dvz_device_request_queue(DvzDevice* device, uint32_t family, uint32_t count);
-
-
-
-/**
- * Request queues corresponding from a DvzQueues structure.
- *
- * @param device the device
- * @param queues the requested queues
- */
-DVZ_EXPORT void dvz_device_request_queues(DvzDevice* device, DvzQueues* queues);
+DVZ_EXPORT void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t count);
 
 
 
