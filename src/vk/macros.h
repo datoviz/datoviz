@@ -18,6 +18,8 @@
 
 #include "_log.h"
 
+#include <string.h>
+
 #include <vulkan/vulkan.h>
 
 
@@ -70,6 +72,8 @@ static inline int check_result(VkResult res)
     }
     return 0;
 }
+
+#define ANNVK(x) ASSERT((x) != VK_NULL_HANDLE)
 
 #define VK_CHECK_RESULT(f)                                                                        \
     {                                                                                             \

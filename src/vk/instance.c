@@ -108,7 +108,7 @@ void dvz_instance_validation_post(DvzInstance* instance)
         log_warn("cannot set up validation layers after instance creation as creation failed");
         return;
     }
-    ASSERT(instance->vk_instance != VK_NULL_HANDLE);
+    ANNVK(instance->vk_instance);
 
     // Create debug messenger.
     LOAD_VK_FUNC(instance->vk_instance, vkCreateDebugUtilsMessengerEXT);
@@ -173,7 +173,7 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     log_trace("creating Vulkan instance...");
     VkResult res = vkCreateInstance(&instance->info_inst, NULL, &instance->vk_instance);
     check_result(res);
-    ASSERT(instance->vk_instance != VK_NULL_HANDLE);
+    ANNVK(instance->vk_instance);
     dvz_obj_created(&instance->obj);
     log_trace("Vulkan instance created");
 

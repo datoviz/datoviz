@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../macros.h"
 #include "../types.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -112,7 +113,7 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
 
     // Get Vulkan instance handle.
     VkInstance vk_instance = dvz_instance_handle(&instance);
-    AT(vk_instance != VK_NULL_HANDLE);
+    ANNVK(vk_instance);
 
     // Destroy the instance.
     dvz_instance_destroy(&instance);
