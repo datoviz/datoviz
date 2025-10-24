@@ -29,6 +29,7 @@
 /*************************************************************************************************/
 
 #define DVZ_MAX_QUEUE_FAMILIES 8
+#define DVZ_MAX_QUEUES         8
 
 
 
@@ -70,6 +71,10 @@ struct DvzQueueCaps
     uint32_t family_count;
     VkQueueFlags flags[DVZ_MAX_QUEUE_FAMILIES];
     uint32_t queue_count[DVZ_MAX_QUEUE_FAMILIES];
+
+    // Filled by automatic queue strategy, finding one queue per role depending on the queue caps.
+    uint32_t role_family[DVZ_MAX_QUEUES]; // for each role, the family idx
+    uint32_t role_idx[DVZ_MAX_QUEUES];    // for each role, the queue idx within its family
 };
 
 
@@ -95,3 +100,13 @@ DVZ_EXPORT DvzQueueCaps* dvz_gpu_queues(DvzGpu* gpu);
  * @returns the queue capabilities
  */
 DVZ_EXPORT DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu);
+
+
+
+/**
+ * Choose the requested queues for the logical device depending on the GPU queues capabilities.
+ * Fills in the gpu->queue_caps structure.
+ *
+ * @param gpu the GPU
+ */
+DVZ_EXPORT void dvz_gpu_choose_queues(DvzGpu* gpu);

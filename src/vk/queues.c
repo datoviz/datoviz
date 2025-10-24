@@ -71,6 +71,12 @@ DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu)
     ANNVK(pdevice);
 
     DvzQueueCaps* qc = &gpu->queue_caps;
+    ANN(qc);
+
+    if (qc->family_count > 0)
+    {
+        return qc;
+    }
 
     // Get the queue family properties.
     vkGetPhysicalDeviceQueueFamilyProperties(pdevice, &qc->family_count, NULL);
@@ -88,4 +94,16 @@ DvzQueueCaps* dvz_gpu_probe_queues(DvzGpu* gpu)
     }
 
     return qc;
+}
+
+
+
+void dvz_gpu_choose_queues(DvzGpu* gpu)
+{
+    ANN(gpu);
+
+    DvzQueueCaps* qc = &gpu->queue_caps;
+    ANN(qc);
+
+    // TODO
 }
