@@ -146,16 +146,16 @@ int test_gpu_features(TstSuite* suite, TstItem* tstitem)
     dvz_gpu_probe_features(gpu);
 
     VkPhysicalDeviceFeatures* features = dvz_gpu_features10(gpu);
-    log_info("geometry shader: %b", features->geometryShader);
+    log_info("geometry shader: %d", features->geometryShader);
 
     VkPhysicalDeviceVulkan11Features* features11 = dvz_gpu_features11(gpu);
-    log_info("sampler Ycbcr conversion: %b", features11->samplerYcbcrConversion);
+    log_info("sampler Ycbcr conversion: %d", features11->samplerYcbcrConversion);
 
     VkPhysicalDeviceVulkan12Features* features12 = dvz_gpu_features12(gpu);
-    log_info("draw indirect count: %b", features12->drawIndirectCount);
+    log_info("draw indirect count: %d", features12->drawIndirectCount);
 
     VkPhysicalDeviceVulkan13Features* features13 = dvz_gpu_features13(gpu);
-    log_info("dynamic rendering: %b", features13->dynamicRendering);
+    log_info("dynamic rendering: %d", features13->dynamicRendering);
 
     dvz_instance_destroy(&instance);
     return 0;
