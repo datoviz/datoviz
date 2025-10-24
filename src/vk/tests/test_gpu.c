@@ -111,15 +111,15 @@ int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
         VkMemoryPropertyFlags f = t->propertyFlags;
         char s[128] = "";
         if (f & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-            strcat(s, "DEVICE_LOCAL ");
+            strlcat(s, "DEVICE_LOCAL ", 64);
         if (f & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-            strcat(s, "HOST_VISIBLE ");
+            strlcat(s, "HOST_VISIBLE ", 64);
         if (f & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-            strcat(s, "HOST_COHERENT ");
+            strlcat(s, "HOST_COHERENT ", 64);
         if (f & VK_MEMORY_PROPERTY_HOST_CACHED_BIT)
-            strcat(s, "HOST_CACHED ");
+            strlcat(s, "HOST_CACHED ", 64);
         if (f & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
-            strcat(s, "LAZILY_ALLOCATED ");
+            strlcat(s, "LAZILY_ALLOCATED ", 64);
         log_info("Type %2u: heap=%u  %s", i, t->heapIndex, s);
     }
 
