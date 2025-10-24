@@ -72,10 +72,6 @@ struct DvzQueueCaps
     uint32_t family_count;
     VkQueueFlags flags[DVZ_MAX_QUEUE_FAMILIES];
     uint32_t queue_count[DVZ_MAX_QUEUE_FAMILIES];
-
-    // Filled by automatic queue strategy, finding one queue per role depending on the queue caps.
-    // uint32_t role_family[DVZ_MAX_QUEUES]; // for each role, the family idx
-    // uint32_t role_idx[DVZ_MAX_QUEUES];    // for each role, the queue idx within its family
 };
 
 

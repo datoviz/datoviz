@@ -19,14 +19,9 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 
 #include <vulkan/vulkan.h>
 
-MUTE_ON
-#define VMA_EXTERNAL_MEMORY 1
-#include "vk_mem_alloc.h"
-MUTE_OFF
 
 #include "queues.h"
 
@@ -35,37 +30,6 @@ MUTE_OFF
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef struct DvzInstance DvzInstance;
-typedef struct DvzGpu DvzGpu;
-typedef struct DvzDevice DvzDevice;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzDevice
-{
-    DvzObject obj;
-    DvzQueues queues;
-    VkDescriptorPool dset_pool;
-    VkDevice device;
-    VmaAllocator allocator;
-};
 
 
 
@@ -105,6 +69,55 @@ DVZ_EXPORT void dvz_device_request_queues(DvzDevice* device, DvzQueues* queues);
 
 
 /**
+ * Request device extension.
+ *
+ * @param device the device
+ * @param extension the requested extension
+ */
+DVZ_EXPORT void dvz_device_request_extension(DvzDevice* device, const char* extension);
+
+
+/**
+ * Request features for Vulkan 1.0.
+ *
+ * @param device the device
+ * @returns the features struct to use to enable individual features
+ */
+DVZ_EXPORT VkPhysicalDeviceFeatures* dvz_device_request_features10(DvzDevice* device);
+
+
+
+/**
+ * Request features for Vulkan 1.1.
+ *
+ * @param device the device
+ * @returns the features struct to use to enable individual features
+ */
+DVZ_EXPORT VkPhysicalDeviceVulkan11Features* dvz_device_request_features11(DvzDevice* device);
+
+
+
+/**
+ * Request features for Vulkan 1.2.
+ *
+ * @param device the device
+ * @returns the features struct to use to enable individual features
+ */
+DVZ_EXPORT VkPhysicalDeviceVulkan12Features* dvz_device_request_features12(DvzDevice* device);
+
+
+
+/**
+ * Request features for Vulkan 1.3.
+ *
+ * @param device the device
+ * @returns the features struct to use to enable individual features
+ */
+DVZ_EXPORT VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* device);
+
+
+
+/**
  * Create the logical device after requesting queues.
  *
  * @param device the device
@@ -115,26 +128,13 @@ DVZ_EXPORT int dvz_device_create(DvzDevice* device);
 
 
 /**
- * Retrieve a queue after device creation, from its queue family index and queue index within the
- * family.
- *
- * @param device the device
- * @param family the queue family index
- * @param idx the queue index within its family
- * @returns the queue
- */
-DVZ_EXPORT DvzQueue* dvz_device_queue_from_idx(DvzDevice* device, uint32_t family, uint32_t idx);
-
-
-
-/**
  * Retrieve a queue from a role.
  *
  * @param device the device
  * @param role the role
  * @returns the queue
  */
-DVZ_EXPORT DvzQueue* dvz_device_queue_for_role(DvzDevice* device, DvzQueueRole role);
+DVZ_EXPORT DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role);
 
 
 

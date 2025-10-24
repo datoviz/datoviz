@@ -30,6 +30,13 @@ typedef struct DvzGpu DvzGpu;
 #include <vulkan/vulkan.h>
 
 #include "datoviz/common/obj.h"
+
+MUTE_ON
+#define VMA_EXTERNAL_MEMORY 1
+#include "vk_mem_alloc.h"
+MUTE_OFF
+
+#include "datoviz/common/obj.h"
 #include "datoviz/vk/queues.h"
 
 
@@ -41,14 +48,36 @@ typedef struct DvzGpu DvzGpu;
 // Maximum number of requested layers/extensions.
 #define DVZ_MAX_REQ_LAYERS     32
 #define DVZ_MAX_REQ_EXTENSIONS 256
-
-#define DVZ_MAX_GPUS 8
+#define DVZ_MAX_GPUS           8
 
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzDevice
+{
+    DvzObject obj;
+    DvzGpu* gpu;
+
+    DvzQueues queues;
+    uint32_t req_queues_per_family[DVZ_MAX_QUEUE_FAMILIES]; // # of requested queues per family
+
+    uint32_t req_extension_count;
+    char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
+
+    VkPhysicalDeviceFeatures2 features;
+    VkPhysicalDeviceVulkan11Features features11;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+
+    VkDevice vk_device;
+    VkDescriptorPool dset_pool;
+    VmaAllocator allocator;
+};
+
+
 
 struct DvzGpu
 {
