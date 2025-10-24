@@ -81,7 +81,8 @@ static void _fill_queue_requests(
             qf2infoidx[qf] = infoidx;
         }
         ASSERT(infoidx < DVZ_MAX_QUEUE_FAMILIES);
-        log_info("i=%d, qf=%d, infoidx=%d, nidx=%d", i, qf, infoidx, nidx);
+        // DEBUG
+        log_trace("i=%d, qf=%d, infoidx=%d, nidx=%d", i, qf, infoidx, nidx);
 
         info = &infos[infoidx];
         ANN(info);
@@ -272,6 +273,11 @@ void dvz_device_destroy(DvzDevice* device)
     ANN(device);
 
     dvz_free_strings(device->req_extension_count, device->req_extensions);
+
+    if (device->vk_device != VK_NULL_HANDLE)
+    {
+        vkDestroyDevice(device->vk_device, NULL);
+    }
 
     dvz_obj_destroyed(&device->obj);
 }

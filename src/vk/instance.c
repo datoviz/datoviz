@@ -225,12 +225,16 @@ void dvz_instance_destroy(DvzInstance* instance)
     VkInstance vki = instance->vk_instance;
     if (vki != VK_NULL_HANDLE)
     {
+        // Destroy debug messenger.
         if (instance->debug_messenger != NULL)
         {
+            log_trace("destroy debug utils messenger");
             LOAD_VK_FUNC(vki, vkDestroyDebugUtilsMessengerEXT);
-
             vkDestroyDebugUtilsMessengerEXT_d(vki, instance->debug_messenger, NULL);
         }
+
+        // Destroy Vulkan instance.
+        log_trace("destroy instance");
         vkDestroyInstance(vki, NULL);
     }
 
