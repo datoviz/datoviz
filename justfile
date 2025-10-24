@@ -1420,10 +1420,11 @@ atest test_name="": asan
     #!/usr/bin/env bash
     set -euo pipefail
     build_dir="$(pwd)/build-asan"
+    # NOTE: we create build-asan/lsan.supp by copying parts of sanitizers/asan.ignore into it
     suppressions_file="${build_dir}/lsan.supp"
     mkdir -p "${build_dir}"
     grep '^leak:' sanitizers/asan.ignore > "${suppressions_file}" || true
-        ASAN_OPTIONS="halt_on_error=1:detect_stack_use_after_return=1:strict_init_order=1:alloc_dealloc_mismatch=1:detect_invalid_pointer_pairs=1:malloc_context_size=20:verbosity=1" LSAN_OPTIONS="suppressions=${suppressions_file}${LSAN_OPTIONS:+:${LSAN_OPTIONS}}" ./build-asan/testing/dvztest {{test_name}}
+    ASAN_OPTIONS="halt_on_error=1:detect_stack_use_after_return=1:strict_init_order=1:alloc_dealloc_mismatch=1:detect_invalid_pointer_pairs=1:malloc_context_size=20:verbosity=1" LSAN_OPTIONS="suppressions=${suppressions_file}${LSAN_OPTIONS:+:${LSAN_OPTIONS}}" ./build-asan/testing/dvztest {{test_name}}
 #
 
 [linux]
@@ -1457,7 +1458,7 @@ mtest test_name="": msan
 ttest test_name="": tsan
     #!/usr/bin/env bash
     set -euo pipefail
-    ./build-tsan/testing/dvztest {{test_name}}
+    TSAN_OPTIONS="ignore_noninstrumented_modules=1:verbosity=0" ./build-tsan/testing/dvztest {{test_name}}
 #
 
 [macos]
