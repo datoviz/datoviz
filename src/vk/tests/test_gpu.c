@@ -194,7 +194,6 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
 
     // Free the array of strings.
     dvz_free_strings(count, extensions);
-    dvz_free(extensions);
 
     dvz_instance_destroy(&instance);
     return 0;

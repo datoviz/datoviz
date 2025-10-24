@@ -223,6 +223,8 @@ void dvz_instance_destroy(DvzInstance* instance)
     dvz_free_strings(instance->extension_count, instance->extensions);
     dvz_free(instance->extensions);
 
+    // NOTE: free the strings in these arrays, but not the arrays themselves are they are not on
+    // the heap.
     dvz_free_strings(instance->req_layer_count, instance->req_layers);
     dvz_free_strings(instance->req_extension_count, instance->req_extensions);
 
@@ -231,8 +233,8 @@ void dvz_instance_destroy(DvzInstance* instance)
         if (instance->gpus[i].extension_count > 0)
         {
             ANN(instance->gpus[i].extensions);
-            // dvz_free_strings(instance->gpus[i].extension_count, instance->gpus[i].extensions);
-            // dvz_free(instance->gpus[i].extensions);
+            dvz_free_strings(instance->gpus[i].extension_count, instance->gpus[i].extensions);
+            dvz_free(instance->gpus[i].extensions);
         }
     }
 

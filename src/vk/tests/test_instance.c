@@ -54,7 +54,6 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
 
     // Free.
     dvz_free_strings(count, layers);
-    dvz_free(layers);
 
     return 0;
 }
@@ -82,7 +81,6 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
 
     // Free the array of strings.
     dvz_free_strings(count, extensions);
-    dvz_free(extensions);
 
     return 0;
 }

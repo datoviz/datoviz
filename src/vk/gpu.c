@@ -305,6 +305,7 @@ void dvz_gpu_probe_extensions(DvzGpu* gpu)
         dvz_free(props);
         return;
     }
+    ASSERT(gpu->extension_count > 0);
 
     // Allocate the array of strings.
     gpu->extensions = (char**)dvz_calloc((size_t)gpu->extension_count, sizeof(char*));
@@ -313,6 +314,10 @@ void dvz_gpu_probe_extensions(DvzGpu* gpu)
         // Allocate the string.
         gpu->extensions[i] = (char*)dvz_calloc(VK_MAX_EXTENSION_NAME_SIZE, sizeof(char));
         ANN(gpu->extensions[i]);
+        ANN(props[i].extensionName);
+        ASSERT(
+            strnlen(props[i].extensionName, VK_MAX_EXTENSION_NAME_SIZE) <
+            VK_MAX_EXTENSION_NAME_SIZE - 1);
 
         // Fill in the string.
         (void)dvz_snprintf(
