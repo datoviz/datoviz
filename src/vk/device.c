@@ -32,16 +32,10 @@
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _fill_queue_requests(
+static void fill_queue_requests(
     DvzQueues* queues, VkDeviceQueueCreateInfo* infos, uint32_t* qfc, float* priority)
 {
     ANN(queues);
@@ -97,7 +91,7 @@ static void _fill_queue_requests(
 
 
 
-static void _fill_features(DvzDevice* device)
+static void fill_features(DvzDevice* device)
 {
     // Set up the chain of features to enable for the device creation.
     device->features11 = (VkPhysicalDeviceVulkan11Features){
@@ -115,6 +109,24 @@ static void _fill_features(DvzDevice* device)
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
         .pNext = &device->features13,
     };
+}
+
+
+
+static void create_queues(DvzDevice* device)
+{
+    ANN(device);
+    ANNVK(device->vk_device);
+
+    DvzQueues* queues = &device->queues;
+    ANN(queues);
+
+    for (uint32_t i = 0; i < queues->queue_count; i++)
+    {
+        vkGetDeviceQueue(
+            device->vk_device, queues->queues[i].family_idx, queues->queues[i].queue_idx,
+            &queues->queues[i].handle);
+    }
 }
 
 
@@ -225,7 +237,7 @@ int dvz_device_create(DvzDevice* device)
     VkDeviceQueueCreateInfo queue_families_info[DVZ_MAX_QUEUE_FAMILIES] = {0};
     uint32_t qfs = 0;
     float priority = 1.0f;
-    _fill_queue_requests(&device->queues, queue_families_info, &qfs, &priority);
+    fill_queue_requests(&device->queues, queue_families_info, &qfs, &priority);
     if (qfs == 0)
     {
         log_error("at least one queue must be requested to create the device");
@@ -240,16 +252,19 @@ int dvz_device_create(DvzDevice* device)
     device_info.ppEnabledExtensionNames = (const char* const*)device->req_extensions;
 
     // Features using v2 API with features structs chain.
-    _fill_features(device);
+    fill_features(device);
     device_info.pNext = &device->features;
 
     // Create the device.
-    log_trace("creating the device");
+    log_trace("creating the Vulkan device");
     VkResult res = vkCreateDevice(device->gpu->pdevice, &device_info, NULL, &device->vk_device);
     int out = check_result(res);
-    log_trace("device created");
+    log_trace("Vulkan device created");
+
+    create_queues(device);
 
     dvz_obj_created(&device->obj);
+    log_trace("DvzDevice created");
     return out;
 }
 
