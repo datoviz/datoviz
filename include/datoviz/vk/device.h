@@ -17,12 +17,9 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
-
-#include "datoviz/common/macros.h"
-
 #include <vulkan/vulkan.h>
 
-
+#include "datoviz/common/macros.h"
 #include "queues.h"
 
 
@@ -59,6 +56,40 @@ DVZ_EXPORT void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
 DVZ_EXPORT void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t count);
 
 
+
+/**
+ * Create the logical device after requesting queues.
+ *
+ * @param device the device
+ * @returns the result code
+ */
+DVZ_EXPORT int dvz_device_create(DvzDevice* device);
+
+
+
+/**
+ * Retrieve a queue from a role.
+ *
+ * @param device the device
+ * @param role the role
+ * @returns the queue
+ */
+DVZ_EXPORT DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role);
+
+
+
+/**
+ * Destroy a device.
+ *
+ * @param device
+ */
+DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
+
+
+
+/*************************************************************************************************/
+/*  Extensions & features                                                                        */
+/*************************************************************************************************/
 
 /**
  * Request device extension.
@@ -106,33 +137,3 @@ DVZ_EXPORT VkPhysicalDeviceVulkan12Features* dvz_device_request_features12(DvzDe
  * @returns the features struct to use to enable individual features
  */
 DVZ_EXPORT VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* device);
-
-
-
-/**
- * Create the logical device after requesting queues.
- *
- * @param device the device
- * @returns the result code
- */
-DVZ_EXPORT int dvz_device_create(DvzDevice* device);
-
-
-
-/**
- * Retrieve a queue from a role.
- *
- * @param device the device
- * @param role the role
- * @returns the queue
- */
-DVZ_EXPORT DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role);
-
-
-
-/**
- * Destroy a device.
- *
- * @param device
- */
-DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);

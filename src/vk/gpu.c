@@ -181,6 +181,10 @@ void dvz_gpu_probe_memprops(DvzGpu* gpu)
 VkPhysicalDeviceMemoryProperties* dvz_gpu_memprops(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->memprops.sType == 0)
+    {
+        dvz_gpu_probe_memprops(gpu);
+    }
     return &gpu->memprops.memoryProperties;
 }
 

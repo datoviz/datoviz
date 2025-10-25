@@ -247,7 +247,7 @@ static void destroy_dpool(DvzDevice* device)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Device                                                                                       */
 /*************************************************************************************************/
 
 void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
@@ -280,54 +280,6 @@ void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t coun
         queue->family_idx = family;
         queue->queue_idx = queue_idx++;
     }
-}
-
-
-
-void dvz_device_request_extension(DvzDevice* device, const char* extension)
-{
-    ANN(device);
-    ANN(extension);
-
-    ANN(device->req_extensions);
-    ASSERT(device->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
-
-    if (!dvz_strings_contains(device->req_extension_count, device->req_extensions, extension))
-    {
-        device->req_extensions[device->req_extension_count++] = dvz_strdup(extension);
-    }
-}
-
-
-
-VkPhysicalDeviceFeatures* dvz_device_request_features10(DvzDevice* device)
-{
-    ANN(device);
-    return &device->features.features;
-}
-
-
-
-VkPhysicalDeviceVulkan11Features* dvz_device_request_features11(DvzDevice* device)
-{
-    ANN(device);
-    return &device->features11;
-}
-
-
-
-VkPhysicalDeviceVulkan12Features* dvz_device_request_features12(DvzDevice* device)
-{
-    ANN(device);
-    return &device->features12;
-}
-
-
-
-VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* device)
-{
-    ANN(device);
-    return &device->features13;
 }
 
 
@@ -431,4 +383,56 @@ void dvz_device_destroy(DvzDevice* device)
 
     dvz_free_strings(device->req_extension_count, device->req_extensions);
     dvz_obj_destroyed(&device->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Extensions & features                                                                        */
+/*************************************************************************************************/
+
+void dvz_device_request_extension(DvzDevice* device, const char* extension)
+{
+    ANN(device);
+    ANN(extension);
+
+    ANN(device->req_extensions);
+    ASSERT(device->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
+
+    if (!dvz_strings_contains(device->req_extension_count, device->req_extensions, extension))
+    {
+        device->req_extensions[device->req_extension_count++] = dvz_strdup(extension);
+    }
+}
+
+
+
+VkPhysicalDeviceFeatures* dvz_device_request_features10(DvzDevice* device)
+{
+    ANN(device);
+    return &device->features.features;
+}
+
+
+
+VkPhysicalDeviceVulkan11Features* dvz_device_request_features11(DvzDevice* device)
+{
+    ANN(device);
+    return &device->features11;
+}
+
+
+
+VkPhysicalDeviceVulkan12Features* dvz_device_request_features12(DvzDevice* device)
+{
+    ANN(device);
+    return &device->features12;
+}
+
+
+
+VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* device)
+{
+    ANN(device);
+    return &device->features13;
 }
