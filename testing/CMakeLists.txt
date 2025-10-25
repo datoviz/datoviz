@@ -91,6 +91,7 @@ target_link_libraries(dvz_public_header_probe
 target_include_directories(dvz_public_header_probe
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/external
 )
 
 if(_dvz_compile_definitions)
