@@ -68,6 +68,16 @@ DVZ_EXPORT int dvz_device_create(DvzDevice* device);
 
 
 /**
+ * Get the Vulkan VkDevice handle of a device.
+ *
+ * @param device the device
+ * @returns the Vulkan VkDevice handle
+ */
+DVZ_EXPORT VkDevice dvz_device_handle(DvzDevice* device);
+
+
+
+/**
  * Retrieve a queue from a role.
  *
  * @param device the device

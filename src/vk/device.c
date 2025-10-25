@@ -351,6 +351,14 @@ int dvz_device_create(DvzDevice* device)
 
 
 
+VkDevice dvz_device_handle(DvzDevice* device)
+{
+    ANN(device);
+    return device->vk_device;
+}
+
+
+
 DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role)
 {
     ANN(device);
