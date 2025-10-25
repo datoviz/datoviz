@@ -16,6 +16,12 @@ The goals:
 
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
+### 🏗️ Current refactor status (v0.4-dev)
+
+* ✅ Core runtime modules (`common`, `ds`, `fileio`, `math`, `thread`) have been fully ported to the v0.4 architecture and already ship inside `libdatoviz.so`.
+* 🚧 The Vulkan backend (`vk`) is being actively rebuilt; expect frequent changes inside `src/vk`, `include/datoviz/vk*`, and build glue. Treat it as an **active module**.
+* ⏭️ Upcoming components will land in this order: `vklite`, `canvas`, GPU data management (buffer/image abstractions), and then the higher-level layers (client/protocol, scientific visualization, renderer/scene APIs). Keep their directories untouched unless you are explicitly asked to bring them online.
+
 ---
 
 ## 🧩 **Project Structure**
@@ -46,6 +52,7 @@ datoviz/
 │   │   └── tests/
 │   ├── thread/                 # Threading primitives
 │   │   ├── atomic.cpp fifo.c thread.c
+│   ├── vk/                     # Vulkan backend (device, swapchain, commands; WIP)
 │   ├── empty.c                 # Keeps the shared library non-empty
 │   └── CMakeLists.txt          # Collects object modules into libdatoviz
 │       (additional module folders exist but are currently placeholders)
@@ -60,7 +67,14 @@ datoviz/
 └── CMakeLists.txt              # Root build definition
 ```
 
-Only `common`, `ds`, `fileio`, `math`, and `thread` currently build and link into `libdatoviz.so`; other module directories are scaffolding that should be kept untouched unless explicitly revived.
+Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `math`, `thread`, and the in-progress `vk` backend**. All other module directories are scaffolding; leave them untouched unless you are explicitly resurrecting them as part of the staged refactor.
+
+### ⏩ Planned activation order
+
+1. `vk` (finishing now; keep changes tightly scoped to Vulkan internals and their headers).
+2. `vklite` (thin convenience layer on top of raw Vulkan helpers).
+3. `canvas` and GPU data management (buffer/image uploads, staging, synchronization helpers).
+4. Remaining high-level systems: client/protocol, visualization components, scene/renderer APIs, etc.
 
 ---
 
@@ -83,6 +97,7 @@ Only `common`, `ds`, `fileio`, `math`, and `thread` currently build and link int
   ```
 
 * `src/common/CMakeLists.txt` publishes its directory with `INTERFACE` usage requirements so any consumer of `datoviz_common` can include `_alloc.h`, `_macros.h`, etc.
+* `src/vk/CMakeLists.txt` follows the same OBJECT-library pattern (`datoviz_vk`), adds `${PROJECT_SOURCE_DIR}/external` to expose bundled Vulkan headers, and links to the platform Vulkan loader (`libvulkan.so.1`, `libvulkan.dylib`, or `vulkan-1.lib`). The helper logic in that file falls back to vendored loader binaries under `libs/vulkan/<platform>/` when the system SDK is missing.
 
 * The root `src/CMakeLists.txt` assembles the shared library and registers the active modules:
 
@@ -94,6 +109,7 @@ Only `common`, `ds`, `fileio`, `math`, and `thread` currently build and link int
   add_subdirectory(fileio)
   add_subdirectory(math)
   add_subdirectory(thread)
+  add_subdirectory(vk)
 
   target_link_libraries(datoviz
       PRIVATE
@@ -102,6 +118,7 @@ Only `common`, `ds`, `fileio`, `math`, and `thread` currently build and link int
           datoviz_fileio
           datoviz_math
           datoviz_thread
+          datoviz_vk
   )
 
   target_include_directories(datoviz
@@ -291,6 +308,16 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * **Public headers live in `include/datoviz/`; shared `_*.h` stay in `src/common` and remain reachable via include dirs**
 * **One unified test executable** (`dvztest`)
 * **Public headers cleanly grouped by module**
+* **Roadmap discipline** — activate one module at a time (vk → vklite → canvas/GPU data → renderer/scene/client layers) and keep untouched modules pristine scaffolds until their turn.
+
+---
+
+## 🚧 Refactor Roadmap Guidance
+
+- **`vk` (in progress):** Focus on robustness (device creation, swapchains, command encoders). Keep its public headers limited to the Vulkan-facing API and push any shared helpers down to `src/common` if multiple modules will need them later.
+- **`vklite` (next):** Acts as a friendlier façade over raw Vulkan. Once vk is stable, mirror the existing module template (OBJECT library + public headers + tests) before wiring it into `src/CMakeLists.txt`.
+- **`canvas` & GPU data management:** Will introduce higher-level drawing surfaces plus buffer/image orchestration. Expect tight coupling with `vk`; reuse the established include/linking rules.
+- **Remaining subsystems (client/protocol, scientific visualization, scene/renderer APIs):** Leave existing directories as placeholders. When their turn comes, follow the same staged bring-up process: add CMake object libs, public headers, and tests before integrating with the main shared library.
 
 ---
 
