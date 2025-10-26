@@ -69,6 +69,7 @@ struct DvzVma
 {
     DvzDevice* device;
     VmaAllocator vma;
+    VkExternalMemoryHandleTypeFlagsKHR external;
 };
 
 

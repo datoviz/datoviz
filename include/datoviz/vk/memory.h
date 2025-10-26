@@ -53,9 +53,11 @@ EXTERN_C_ON
  * Create an allocator.
  *
  * @param device the device
+ * @param export if exporting created allocations, the external memory handle type
  * @param[out] allocator the allocator
  */
-DVZ_EXPORT int dvz_device_allocator(DvzDevice* device, DvzVma* allocator);
+DVZ_EXPORT int dvz_device_allocator(
+    DvzDevice* device, VkExternalMemoryHandleTypeFlagsKHR export, DvzVma* allocator);
 
 
 

@@ -68,7 +68,8 @@ static int _set_vma_flags(DvzGpu* gpu)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-int dvz_device_allocator(DvzDevice* device, DvzVma* allocator)
+int dvz_device_allocator(
+    DvzDevice* device, VkExternalMemoryHandleTypeFlagsKHR external, DvzVma* allocator)
 {
     ANN(device);
     ANN(allocator);
@@ -77,19 +78,31 @@ int dvz_device_allocator(DvzDevice* device, DvzVma* allocator)
     ANN(gpu);
 
     allocator->device = device;
+    allocator->external = external;
 
     int vma_flags = _set_vma_flags(gpu);
 
-    VmaAllocatorCreateInfo allocatorCreateInfo = {0};
-    allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-    allocatorCreateInfo.vulkanApiVersion = gpu->instance->vk_version;
-    allocatorCreateInfo.physicalDevice = gpu->pdevice;
-    allocatorCreateInfo.device = device->vk_device;
-    allocatorCreateInfo.instance = gpu->instance->vk_instance;
-    // allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+    VmaAllocatorCreateInfo info = {0};
+    info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+    info.vulkanApiVersion = gpu->instance->vk_version;
+    info.physicalDevice = gpu->pdevice;
+    info.device = device->vk_device;
+    info.instance = gpu->instance->vk_instance;
+    // info.pVulkanFunctions = &vulkanFunctions;
+
+    // If the external is set, set it to all memory types, to be used to all allocations.
+    if (external != 0)
+    {
+        VkExternalMemoryHandleTypeFlagsKHR types[VK_MAX_MEMORY_TYPES] = {0};
+        for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
+        {
+            types[i] = external;
+        }
+        info.pTypeExternalMemoryHandleTypes = types;
+    }
 
     log_trace("creating allocator...");
-    VK_RETURN_RESULT(vmaCreateAllocator(&allocatorCreateInfo, &allocator->vma));
+    VK_RETURN_RESULT(vmaCreateAllocator(&info, &allocator->vma));
     log_trace("allocator created");
 
     return out;
@@ -109,6 +122,17 @@ int dvz_allocator_buffer(
     VmaAllocationCreateInfo alloc_info = {0};
     alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
     alloc_info.flags = flags;
+
+    // External memory.
+    VkExternalMemoryBufferCreateInfo external_info = {0};
+    if (allocator->external != 0)
+    {
+        external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO;
+        external_info.handleTypes = allocator->external;
+        info->pNext = &external_info;
+    }
+
+    // TODO: qeue families
 
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateBuffer(
@@ -150,7 +174,7 @@ int dvz_allocator_image(
 
 
 /*************************************************************************************************/
-/*  Export                                                                                       */
+/*  External                                                                                     */
 /*************************************************************************************************/
 
 int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)

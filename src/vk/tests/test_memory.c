@@ -65,7 +65,7 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
 
     // Allocator.
     DvzVma allocator = {0};
-    dvz_device_allocator(&device, &allocator);
+    dvz_device_allocator(&device, 0, &allocator);
 
     // Buffer allocation.
     VkBuffer vk_buffer = VK_NULL_HANDLE;
