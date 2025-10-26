@@ -64,6 +64,16 @@ static int _set_vma_flags(DvzGpu* gpu)
 
 
 
+#define ENSURE_EXTERNAL                                                                           \
+    if (allocator->external == 0)                                                                 \
+    {                                                                                             \
+        log_warn("unable to use external feature as the external flag was not set at allocator "  \
+                 "creation");                                                                     \
+        return -1;                                                                                \
+    }
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -187,21 +197,26 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
     ANN(handle);
 
     // NOTE: need device extension: VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
-    if (allocator->external == 0)
-    {
-        log_warn( //
-            "unable to export an allocation as the external flag was not set at allocator "
-            "creation");
-    }
+    ENSURE_EXTERNAL
 
+#if OS_MACOS || OS_LINUX
     VkMemoryGetFdInfoKHR info = {.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR};
     info.memory = alloc->info.deviceMemory;
     info.handleType = allocator->external;
 
     LOAD_VK_FUNC(allocator->device->gpu->instance->vk_instance, vkGetMemoryFdKHR);
-    VK_CHECK_RESULT(vkGetMemoryFdKHR_d(allocator->device->vk_device, &info, handle));
+    VK_RETURN_RESULT(vkGetMemoryFdKHR_d(allocator->device->vk_device, &info, handle));
 
-    return 0;
+#elif OS_WINDOWS
+    // TODO
+    log_error("Windows external support not yet implemented");
+    int out = 0;
+
+#else
+    int out = -1;
+#endif
+
+    return out;
 }
 
 
@@ -215,7 +230,54 @@ int dvz_allocator_import_buffer(
     ANN(alloc);
     ANN(vk_buffer);
 
-    return 0;
+    ENSURE_EXTERNAL
+
+    // Set the external info structure to the VkBufferCreateInfo struct.
+    VkExternalMemoryBufferCreateInfoKHR external_info = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR};
+    external_info.handleTypes = allocator->external;
+    if (info->pNext != NULL)
+    {
+        log_error("info.pNext must be NULL, otherwise need to iterate through the next chain and "
+                  "set external_info to the last one. PR welcome");
+    }
+    else
+    {
+        info->pNext = &external_info;
+    }
+
+    // VMA allocation create info.
+    VmaAllocationCreateInfo alloc_info = {0};
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+    alloc_info.flags = flags;
+
+#if OS_MACOS || OS_LINUX
+    VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
+    import_info.handleType = allocator->external;
+    import_info.fd = handle;
+#elif OS_WINDOWS
+    // TODO
+    log_error("Windows external support not yet implemented");
+    int out = 0;
+
+#else
+    int out = -1;
+#endif
+
+    log_trace("creating buffer...");
+    VK_RETURN_RESULT(vmaCreateDedicatedBuffer(
+        allocator->vma, info, &alloc_info, &import_info, vk_buffer, &alloc->alloc, &alloc->info));
+    log_trace("buffer created");
+
+    // Get the memory flags found by VMA and store them in the DvzBuffer instance.
+    vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);
+
+    // Store the alignment requirement in the DvzBuffer.
+    VkMemoryRequirements req = {0};
+    vkGetBufferMemoryRequirements(allocator->device->vk_device, *vk_buffer, &req);
+    alloc->alignment = req.alignment;
+
+    return out;
 }
 
 
@@ -229,7 +291,54 @@ int dvz_allocator_import_image(
     ANN(alloc);
     ANN(vk_image);
 
-    return 0;
+    ENSURE_EXTERNAL
+
+    // Set the external info structure to the VkImageCreateInfo struct.
+    VkExternalMemoryImageCreateInfoKHR external_info = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
+    external_info.handleTypes = allocator->external;
+    if (info->pNext != NULL)
+    {
+        log_error("info.pNext must be NULL, otherwise need to iterate through the next chain and "
+                  "set external_info to the last one. PR welcome");
+    }
+    else
+    {
+        info->pNext = &external_info;
+    }
+
+    // VMA allocation create info.
+    VmaAllocationCreateInfo alloc_info = {0};
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+    alloc_info.flags = flags;
+
+#if OS_MACOS || OS_LINUX
+    VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
+    import_info.handleType = allocator->external;
+    import_info.fd = handle;
+#elif OS_WINDOWS
+    // TODO
+    log_error("Windows external support not yet implemented");
+    int out = 0;
+
+#else
+    int out = -1;
+#endif
+
+    log_trace("creating image...");
+    VK_RETURN_RESULT(vmaCreateDedicatedImage(
+        allocator->vma, info, &alloc_info, &import_info, vk_image, &alloc->alloc, &alloc->info));
+    log_trace("image created");
+
+    // Get the memory flags found by VMA and store them in the DvzImage instance.
+    vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);
+
+    // Store the alignment requirement in the DvzImage.
+    VkMemoryRequirements req = {0};
+    vkGetImageMemoryRequirements(allocator->device->vk_device, *vk_image, &req);
+    alloc->alignment = req.alignment;
+
+    return out;
 }
 
 
