@@ -135,6 +135,17 @@ DVZ_EXPORT int dvz_allocator_import_image(
 
 
 /**
+ * Destroy a buffer allocation.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ * @param vk_buffer the buffer
+ */
+DVZ_EXPORT void
+dvz_allocator_buffer_destroy(DvzVma* allocator, DvzAllocation* alloc, VkBuffer vk_buffer);
+
+
+/**
  * Destroy an allocator.
  *
  * @param allocator the allocator.

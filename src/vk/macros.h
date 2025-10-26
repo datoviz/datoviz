@@ -82,9 +82,10 @@ static inline int check_result(VkResult res)
     }
 
 #define VK_RETURN_RESULT(f)                                                                       \
+    int out = 0;                                                                                  \
     {                                                                                             \
         VkResult res = (f);                                                                       \
-        return check_result(res);                                                                 \
+        out = check_result(res);                                                                  \
     }
 
 #define LOAD_VK_FUNC(instance, name)                                                              \

@@ -67,6 +67,17 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     DvzVma allocator = {0};
     dvz_device_allocator(&device, &allocator);
 
+    // Buffer allocation.
+    VkBuffer vk_buffer = VK_NULL_HANDLE;
+    VkBufferCreateInfo info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    info.size = 65536;
+    info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    DvzAllocation alloc = {0};
+    dvz_allocator_buffer(&allocator, &info, 0, &alloc, &vk_buffer);
+
+    // Buffer destruction.
+    dvz_allocator_buffer_destroy(&allocator, &alloc, vk_buffer);
+
     // Cleanup.
     dvz_allocator_destroy(&allocator);
     dvz_device_destroy(&device);

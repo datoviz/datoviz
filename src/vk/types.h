@@ -54,12 +54,20 @@ MUTE_OFF
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzDevice DvzDevice;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-
 struct DvzVma
 {
+    DvzDevice* device;
     VmaAllocator vma;
 };
 
@@ -71,6 +79,7 @@ struct DvzAllocation
     VmaAllocationCreateFlags flags;
     VmaAllocationInfo info;
     VmaAllocation alloc;
+    VkMemoryPropertyFlags memory_flags;
     VkDeviceSize alignment; // alignment required by Vulkan
 };
 

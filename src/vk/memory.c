@@ -76,6 +76,8 @@ int dvz_device_allocator(DvzDevice* device, DvzVma* allocator)
     DvzGpu* gpu = device->gpu;
     ANN(gpu);
 
+    allocator->device = device;
+
     int vma_flags = _set_vma_flags(gpu);
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {0};
@@ -89,6 +91,8 @@ int dvz_device_allocator(DvzDevice* device, DvzVma* allocator)
     log_trace("creating allocator...");
     VK_RETURN_RESULT(vmaCreateAllocator(&allocatorCreateInfo, &allocator->vma));
     log_trace("allocator created");
+
+    return out;
 }
 
 
@@ -106,8 +110,20 @@ int dvz_allocator_buffer(
     alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
     alloc_info.flags = flags;
 
-    VK_RETURN_RESULT(
-        vmaCreateBuffer(allocator->vma, info, &alloc_info, vk_buffer, &alloc->alloc, NULL));
+    log_trace("creating buffer...");
+    VK_RETURN_RESULT(vmaCreateBuffer(
+        allocator->vma, info, &alloc_info, vk_buffer, &alloc->alloc, &alloc->info));
+    log_trace("buffer created");
+
+    // Get the memory flags found by VMA and store them in the DvzBuffer instance.
+    vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);
+
+    // Store the alignment requirement in the DvzBuffer.
+    VkMemoryRequirements req = {0};
+    vkGetBufferMemoryRequirements(allocator->device->vk_device, *vk_buffer, &req);
+    alloc->alignment = req.alignment;
+
+    return out;
 }
 
 
@@ -122,11 +138,13 @@ int dvz_allocator_image(
     ANN(vk_image);
 
     VmaAllocationCreateInfo alloc_info = {0};
-    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-    alloc_info.flags = flags;
+    alloc_info.usage = alloc->usage = VMA_MEMORY_USAGE_AUTO;
+    alloc_info.flags = alloc->flags = flags;
 
     VK_RETURN_RESULT(
-        vmaCreateImage(allocator->vma, info, &alloc_info, vk_image, &alloc->alloc, NULL));
+        vmaCreateImage(allocator->vma, info, &alloc_info, vk_image, &alloc->alloc, &alloc->info));
+
+    return out;
 }
 
 
@@ -166,6 +184,13 @@ int dvz_allocator_import_image(
     ANN(vk_image);
 
     return 0;
+}
+
+
+
+void dvz_allocator_buffer_destroy(DvzVma* allocator, DvzAllocation* alloc, VkBuffer vk_buffer)
+{
+    vmaDestroyBuffer(allocator->vma, vk_buffer, alloc->alloc);
 }
 
 
