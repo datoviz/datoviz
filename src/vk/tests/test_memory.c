@@ -17,6 +17,7 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "../types.h"
 #include "_alloc.h"
@@ -25,6 +26,8 @@
 
 #if HAS_CUDA
 #include <cuda_runtime_api.h>
+
+#include <cuda.h>
 #endif
 
 #include "datoviz/vk/device.h"
@@ -114,24 +117,173 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
 /*  CUDA interop tests                                                                           */
 /*************************************************************************************************/
 
+void launch_add1_kernel(uint32_t* dev_ptr, size_t count);
+
 int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
 
 #if HAS_CUDA
-    // Placeholder: the CUDA allocator import/export test will be implemented later.
+    cudaError_t cerr;
     int device_count = 0;
-    cudaError_t err = cudaGetDeviceCount(&device_count);
-
-    if(err != cudaSuccess)
+    cerr = cudaGetDeviceCount(&device_count);
+    if (cerr != cudaSuccess || device_count == 0)
     {
-        log_error("CUDA runtime error: %s", cudaGetErrorString(err));
+        log_error("No CUDA devices found: %s", cudaGetErrorString(cerr));
         return -1;
     }
+    log_info("CUDA reports %d device(s)", device_count);
 
-    log_debug("CUDA runtime detected %d device(s); interop test TBD.", device_count);
-    return (device_count > 0) ? 0 : -1;
+    const VkExternalMemoryHandleTypeFlagBits handle_type =
+        VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+    const size_t N = 1024;
+    const size_t SIZE = N * sizeof(uint32_t);
+
+    /******************* Vulkan setup *******************/
+    DvzInstance instance = {0};
+    dvz_instance(&instance, 0);
+    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+
+    // Obtain a GPU.
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpu = &gpus[0];
+
+    // Query the queues.
+    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
+
+    // Initialize a device.
+    DvzDevice device = {0};
+    dvz_gpu_device(gpu, &device);
+    dvz_queues(qc, &device.queues);
+
+    // Create the device.
+    dvz_device_create(&device);
+
+    DvzVma allocator = {0};
+    dvz_device_allocator(&device, handle_type, &allocator);
+
+    VkBufferCreateInfo buf_info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = SIZE,
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+    };
+
+    VkBuffer vk_buffer = VK_NULL_HANDLE;
+    DvzAllocation alloc = {0};
+    dvz_allocator_buffer(
+        &allocator, &buf_info,
+        VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
+        &alloc, &vk_buffer);
+
+    /******************* Initialize data on Vulkan side *******************/
+    uint32_t* ptr = NULL;
+    vmaMapMemory(allocator.vma, alloc.alloc, (void**)&ptr);
+    for (uint32_t i = 0; i < N; i++)
+        ptr[i] = i;
+    vmaUnmapMemory(allocator.vma, alloc.alloc);
+
+    /******************* Export memory FD *******************/
+    int fd = -1;
+    dvz_allocator_export(&allocator, &alloc, &fd);
+    if (fd < 0)
+    {
+        log_error("Failed to export Vulkan memory FD");
+        goto cleanup_vulkan;
+    }
+
+    /******************* Import into CUDA *******************/
+    cudaExternalMemory_t cuda_mem;
+    struct cudaExternalMemoryHandleDesc handle_desc = {0};
+    handle_desc.type = cudaExternalMemoryHandleTypeOpaqueFd;
+    handle_desc.handle.fd = fd;
+    handle_desc.size = SIZE;
+
+    cerr = cudaImportExternalMemory(&cuda_mem, &handle_desc);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaImportExternalMemory failed: %s", cudaGetErrorString(cerr));
+        goto cleanup_fd;
+    }
+
+    void* cuda_ptr = NULL;
+    struct cudaExternalMemoryBufferDesc buf_desc = {0};
+    buf_desc.offset = 0;
+    buf_desc.size = SIZE;
+    cerr = cudaExternalMemoryGetMappedBuffer(&cuda_ptr, cuda_mem, &buf_desc);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaExternalMemoryGetMappedBuffer failed: %s", cudaGetErrorString(cerr));
+        goto cleanup_cuda_mem;
+    }
+
+    /******************* CUDA modifies Vulkan memory *******************/
+    launch_add1_kernel((uint32_t*)cuda_ptr, N);
+    cudaDeviceSynchronize();
+
+    /******************* Check result from Vulkan side *******************/
+    vmaMapMemory(allocator.vma, alloc.alloc, (void**)&ptr);
+    int errors = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        if (ptr[i] != i + 1)
+        {
+            log_error("Mismatch after CUDA write at %u: got %u expected %u", i, ptr[i], i + 1);
+            errors++;
+            if (errors > 10)
+                break;
+        }
+    }
+    vmaUnmapMemory(allocator.vma, alloc.alloc);
+    if (errors == 0)
+        log_info("Vulkan->CUDA path verified OK (CUDA write visible in Vulkan)");
+
+    /******************* Vulkan modifies data again *******************/
+    vmaMapMemory(allocator.vma, alloc.alloc, (void**)&ptr);
+    for (uint32_t i = 0; i < N; i++)
+        ptr[i] += 1; // add 1 again (now should be i + 2)
+    vmaUnmapMemory(allocator.vma, alloc.alloc);
+    vkDeviceWaitIdle(device.vk_device); // ensure write visible
+
+    /******************* CUDA reads and checks *******************/
+    uint32_t* host_copy = (uint32_t*)malloc(SIZE);
+    cerr = cudaMemcpy(host_copy, cuda_ptr, SIZE, cudaMemcpyDeviceToHost);
+    if (cerr != cudaSuccess)
+        log_error("cudaMemcpyDeviceToHost failed: %s", cudaGetErrorString(cerr));
+    else
+    {
+        errors = 0;
+        for (uint32_t i = 0; i < N; i++)
+        {
+            if (host_copy[i] != i + 2)
+            {
+                log_error(
+                    "Mismatch after Vulkan write at %u: got %u expected %u", i, host_copy[i],
+                    i + 2);
+                errors++;
+                if (errors > 10)
+                    break;
+            }
+        }
+        if (errors == 0)
+            log_info("CUDA->Vulkan->CUDA sync verified OK (Vulkan write visible in CUDA)");
+    }
+    free(host_copy);
+
+    /******************* Cleanup *******************/
+cleanup_cuda_mem:
+    cudaDestroyExternalMemory(cuda_mem);
+cleanup_fd:
+    close(fd);
+cleanup_vulkan:
+    dvz_allocator_destroy_buffer(&allocator, &alloc, vk_buffer);
+    dvz_allocator_destroy(&allocator);
+    dvz_device_destroy(&device);
+    dvz_instance_destroy(&instance);
+
+    return 0;
 #else
     log_warn("test_memory_cuda skipped because HAS_CUDA=0");
     return -1;

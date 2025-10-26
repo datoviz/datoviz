@@ -77,8 +77,28 @@ target_include_directories(dvztest
 )
 
 if(DVZ_ENABLE_CUDA)
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wno-unknown-warning-option")
+
     target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
     target_link_libraries(dvztest PRIVATE CUDA::cudart)
+
+    # Enable CUDA language for dvztest so it can compile .cu kernels
+    enable_language(CUDA)
+
+    # Optional: explicitly add the CUDA kernel file if it exists
+    set(TEST_CUDA_KERNEL
+        "${PROJECT_SOURCE_DIR}/src/vk/tests/test_cuda.cu"
+    )
+    set_target_properties(dvztest PROPERTIES CUDA_ARCHITECTURES "native")
+    message(STATUS "Adding CUDA test kernel: ${TEST_CUDA_KERNEL}")
+    target_sources(dvztest PRIVATE ${TEST_CUDA_KERNEL})
+    set_source_files_properties(${TEST_CUDA_KERNEL} PROPERTIES LANGUAGE CUDA)
+
+    # Avoid slow host-device link step for simple kernels
+    set_target_properties(dvztest PROPERTIES
+        CUDA_SEPARABLE_COMPILATION OFF
+        CUDA_RESOLVE_DEVICE_SYMBOLS OFF
+    )
 endif()
 
 # Ensure OS/Compiler macros are available to tests
@@ -124,7 +144,9 @@ endif()
 if(DVZ_SANITIZER_FLAGS)
     foreach(_target testing dvztest dvz_public_header_probe)
         if(TARGET ${_target})
-            target_compile_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
+            target_compile_options(${_target} PRIVATE
+                $<$<AND:$<CONFIG:Debug>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:${DVZ_SANITIZER_FLAGS}>
+            )
             target_link_options(${_target} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
         endif()
     endforeach()

@@ -69,7 +69,9 @@ get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
 foreach(_dvz_target ${_dvz_targets})
     if(TARGET ${_dvz_target})
         if(DVZ_COMMON_COMPILE_OPTIONS)
-            target_compile_options(${_dvz_target} PRIVATE ${DVZ_COMMON_COMPILE_OPTIONS})
+            target_compile_options(${_dvz_target} PRIVATE
+                $<$<NOT:$<COMPILE_LANGUAGE:CUDA>>:${DVZ_COMMON_COMPILE_OPTIONS}>
+            )
         endif()
 
         if(DVZ_COMPILE_OPTIONS_C)
