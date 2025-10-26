@@ -55,6 +55,7 @@ int test_vk(TstSuite* suite)
 
 
     TEST_SIMPLE(test_memory_1);
+    TEST_SIMPLE(test_memory_cuda);
 
 
     return 0;

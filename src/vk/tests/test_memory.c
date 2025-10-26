@@ -22,6 +22,11 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+
+#if HAS_CUDA
+#include <cuda_runtime_api.h>
+#endif
+
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
@@ -101,4 +106,34 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     dvz_device_destroy(&device);
     dvz_instance_destroy(&instance);
     return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  CUDA interop tests                                                                           */
+/*************************************************************************************************/
+
+int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+#if HAS_CUDA
+    // Placeholder: the CUDA allocator import/export test will be implemented later.
+    int device_count = 0;
+    cudaError_t err = cudaGetDeviceCount(&device_count);
+
+    if(err != cudaSuccess)
+    {
+        log_error("CUDA runtime error: %s", cudaGetErrorString(err));
+        return -1;
+    }
+
+    log_debug("CUDA runtime detected %d device(s); interop test TBD.", device_count);
+    return (device_count > 0) ? 0 : -1;
+#else
+    log_warn("test_memory_cuda skipped because HAS_CUDA=0");
+    return -1;
+#endif
 }

@@ -179,6 +179,12 @@ install(TARGETS datoviz
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
 #
+set(HAS_CUDA 0)
+
+if(DVZ_ENABLE_CUDA)
+    set(HAS_CUDA 1)
+endif()
+
 set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
@@ -197,6 +203,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     # TODO: ZLIB
     HAS_ZLIB=0
     HAS_OPENMP=${HAS_OPENMP}
+    HAS_CUDA=${HAS_CUDA}
 )
 
 if(DVZ_WITH_MIMALLOC)

@@ -6,6 +6,10 @@ add_library(testing STATIC testing.cpp)
 
 get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
 
+if(DVZ_ENABLE_CUDA)
+    find_package(CUDAToolkit REQUIRED)
+endif()
+
 target_include_directories(testing
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -71,6 +75,11 @@ target_include_directories(dvztest
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/src/common
 )
+
+if(DVZ_ENABLE_CUDA)
+    target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+    target_link_libraries(dvztest PRIVATE CUDA::cudart)
+endif()
 
 # Ensure OS/Compiler macros are available to tests
 if(_dvz_compile_definitions)
