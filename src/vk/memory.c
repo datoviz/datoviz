@@ -132,7 +132,7 @@ int dvz_allocator_buffer(
         info->pNext = &external_info;
     }
 
-    // TODO: qeue families
+    // TODO: queue families
 
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateBuffer(
@@ -180,8 +180,26 @@ int dvz_allocator_image(
 int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
 {
     ANN(allocator);
+    ANN(allocator->device);
+    ANN(allocator->device->gpu);
+    ANN(allocator->device->gpu->instance);
     ANN(alloc);
     ANN(handle);
+
+    // NOTE: need device extension: VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
+    if (allocator->external == 0)
+    {
+        log_warn( //
+            "unable to export an allocation as the external flag was not set at allocator "
+            "creation");
+    }
+
+    VkMemoryGetFdInfoKHR info = {.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR};
+    info.memory = alloc->info.deviceMemory;
+    info.handleType = allocator->external;
+
+    LOAD_VK_FUNC(allocator->device->gpu->instance->vk_instance, vkGetMemoryFdKHR);
+    VK_CHECK_RESULT(vkGetMemoryFdKHR_d(allocator->device->vk_device, &info, handle));
 
     return 0;
 }
