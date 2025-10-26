@@ -149,6 +149,10 @@ int dvz_allocator_image(
 
 
 
+/*************************************************************************************************/
+/*  Export                                                                                       */
+/*************************************************************************************************/
+
 int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
 {
     ANN(allocator);
@@ -188,9 +192,26 @@ int dvz_allocator_import_image(
 
 
 
-void dvz_allocator_buffer_destroy(DvzVma* allocator, DvzAllocation* alloc, VkBuffer vk_buffer)
+/*************************************************************************************************/
+/*  Destruction                                                                                  */
+/*************************************************************************************************/
+
+void dvz_allocator_destroy_buffer(DvzVma* allocator, DvzAllocation* alloc, VkBuffer vk_buffer)
 {
-    vmaDestroyBuffer(allocator->vma, vk_buffer, alloc->alloc);
+    ANN(allocator);
+    ANN(alloc);
+    if (vk_buffer != VK_NULL_HANDLE)
+        vmaDestroyBuffer(allocator->vma, vk_buffer, alloc->alloc);
+}
+
+
+
+void dvz_allocator_destroy_image(DvzVma* allocator, DvzAllocation* alloc, VkImage vk_image)
+{
+    ANN(allocator);
+    ANN(alloc);
+    if (vk_image != VK_NULL_HANDLE)
+        vmaDestroyImage(allocator->vma, vk_image, alloc->alloc);
 }
 
 

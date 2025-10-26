@@ -69,14 +69,32 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
 
     // Buffer allocation.
     VkBuffer vk_buffer = VK_NULL_HANDLE;
-    VkBufferCreateInfo info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-    info.size = 65536;
-    info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    DvzAllocation alloc = {0};
-    dvz_allocator_buffer(&allocator, &info, 0, &alloc, &vk_buffer);
+    VkBufferCreateInfo buf_info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    buf_info.size = 65536;
+    buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    DvzAllocation buf_alloc = {0};
+    dvz_allocator_buffer(&allocator, &buf_info, 0, &buf_alloc, &vk_buffer);
 
-    // Buffer destruction.
-    dvz_allocator_buffer_destroy(&allocator, &alloc, vk_buffer);
+    // Image allocation.
+    VkImage vk_image = VK_NULL_HANDLE;
+    VkImageCreateInfo img_info = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    img_info.imageType = VK_IMAGE_TYPE_2D;
+    img_info.extent.width = 800;
+    img_info.extent.height = 600;
+    img_info.extent.depth = 1;
+    img_info.mipLevels = 1;
+    img_info.arrayLayers = 1;
+    img_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    img_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    img_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    DvzAllocation img_alloc = {0};
+    dvz_allocator_image(&allocator, &img_info, 0, &img_alloc, &vk_image);
+
+    // Resource destruction.
+    dvz_allocator_destroy_buffer(&allocator, &buf_alloc, vk_buffer);
+    dvz_allocator_destroy_image(&allocator, &img_alloc, vk_image);
 
     // Cleanup.
     dvz_allocator_destroy(&allocator);
