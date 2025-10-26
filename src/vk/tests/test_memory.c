@@ -25,6 +25,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "test_vk.h"
 #include "testing.h"
@@ -57,14 +58,17 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     // Initialize a device.
     DvzDevice device = {0};
     dvz_gpu_device(gpu, &device);
-
-    // Find an adequate set of queues to request.
     dvz_queues(qc, &device.queues);
 
     // Create the device.
     dvz_device_create(&device);
 
+    // Allocator.
+    DvzVma allocator = {0};
+    dvz_device_allocator(&device, &allocator);
+
     // Cleanup.
+    dvz_allocator_destroy(&allocator);
     dvz_device_destroy(&device);
     dvz_instance_destroy(&instance);
     return 0;

@@ -86,7 +86,9 @@ int dvz_device_allocator(DvzDevice* device, DvzVma* allocator)
     allocatorCreateInfo.instance = gpu->instance->vk_instance;
     // allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
+    log_trace("creating allocator...");
     VK_RETURN_RESULT(vmaCreateAllocator(&allocatorCreateInfo, &allocator->vma));
+    log_trace("allocator created");
 }
 
 
@@ -119,7 +121,12 @@ int dvz_allocator_image(
     ANN(alloc);
     ANN(vk_image);
 
-    return 0;
+    VmaAllocationCreateInfo alloc_info = {0};
+    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
+    alloc_info.flags = flags;
+
+    VK_RETURN_RESULT(
+        vmaCreateImage(allocator->vma, info, &alloc_info, vk_image, &alloc->alloc, NULL));
 }
 
 
@@ -165,5 +172,12 @@ int dvz_allocator_import_image(
 
 void dvz_allocator_destroy(DvzVma* allocator)
 {
-    ANN(allocator); //
+    ANN(allocator);
+    if (allocator->vma != NULL)
+    {
+        log_trace("destroyed allocator...");
+        vmaDestroyAllocator(allocator->vma);
+        allocator->vma = NULL;
+        log_trace("allocator destroyed");
+    }
 }
