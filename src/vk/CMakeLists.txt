@@ -3,7 +3,10 @@
 # -------------------------------------------------------------------------------------------------
 
 file(GLOB VK_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
-add_library(datoviz_vk OBJECT ${VK_SRC})
+add_library(datoviz_vk OBJECT
+    ${VK_SRC}
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../external/vk_mem_alloc.cpp"
+)
 
 target_include_directories(datoviz_vk
     PUBLIC

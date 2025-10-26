@@ -53,5 +53,9 @@ int test_vk(TstSuite* suite)
     TEST_SIMPLE(test_device_2);
 
 
+
+    TEST_SIMPLE(test_memory_1);
+
+
     return 0;
 }

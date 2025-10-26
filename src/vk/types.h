@@ -57,6 +57,25 @@ MUTE_OFF
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+
+struct DvzVma
+{
+    VmaAllocator vma;
+};
+
+
+
+struct DvzAllocation
+{
+    VmaMemoryUsage usage;
+    VmaAllocationCreateFlags flags;
+    VmaAllocationInfo info;
+    VmaAllocation alloc;
+    VkDeviceSize alignment; // alignment required by Vulkan
+};
+
+
+
 struct DvzDevice
 {
     DvzObject obj;
@@ -82,6 +101,8 @@ struct DvzDevice
 
 struct DvzGpu
 {
+    DvzInstance* instance;
+
     VkPhysicalDevice pdevice;
 
     VkPhysicalDeviceProperties2 props;

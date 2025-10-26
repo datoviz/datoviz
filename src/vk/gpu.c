@@ -71,6 +71,7 @@ DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)
     // Populate the DvzGpu structures, only with pdevice field for now.
     for (uint32_t i = 0; i < instance->gpu_count; i++)
     {
+        instance->gpus[i].instance = instance;
         instance->gpus[i].pdevice = pdevices[i];
     }
 

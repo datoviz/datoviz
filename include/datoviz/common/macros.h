@@ -55,8 +55,8 @@
 // at runtime from the __FILE__ string literal. This keeps logging/asserts concise.
 #ifndef __FILE_NAME__
 #define __FILE_NAME__                                                                             \
-    (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1                                      \
-                              : (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__))
+    (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1                                        \
+                             : (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__))
 #endif
 
 
@@ -121,11 +121,12 @@
             _Pragma("GCC diagnostic ignored \"-Wcast-qual\"")                                     \
                 _Pragma("GCC diagnostic ignored \"-Wredundant-decls\"")                           \
                     _Pragma("GCC diagnostic ignored \"-Wcast-qual\"")                             \
-                        _Pragma("GCC diagnostic ignored \"-Wunused\"")                            \
-                            _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")              \
-                                _Pragma("GCC diagnostic ignored \"-Wstrict-overflow\"")           \
-                                    _Pragma("GCC diagnostic ignored \"-Wswitch-default\"")        \
-                                        _Pragma("GCC diagnostic ignored \"-Wmissing-braces\"")
+                        _Pragma("GCC diagnostic ignored \"-Wunused\"") _Pragma(                   \
+                            "GCC diagnostic ignored \"-Wunused-parameter\"")                      \
+                            _Pragma("GCC diagnostic ignored \"-Wstrict-overflow\"") _Pragma(      \
+                                "GCC diagnostic ignored \"-Wswitch-default\"")                    \
+                                _Pragma("GCC diagnostic ignored \"-Wmissing-braces\"") _Pragma(   \
+                                    "GCC diagnostic ignored \"-Wmissing-field-initializers\"")
 
 #define MUTE_OFF _Pragma("GCC diagnostic pop")
 #elif CC_CLANG
