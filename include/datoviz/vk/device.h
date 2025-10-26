@@ -110,6 +110,18 @@ DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 DVZ_EXPORT void dvz_device_request_extension(DvzDevice* device, const char* extension);
 
 
+
+/**
+ * Return whether a device was created with support for a given extension or not.
+ *
+ * @param device the device
+ * @param extension the extension name
+ * @returns whether the device has support for the extension
+ */
+DVZ_EXPORT bool dvz_device_has_extension(DvzDevice* device, const char* extension);
+
+
+
 /**
  * Request features for Vulkan 1.0.
  *

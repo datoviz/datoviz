@@ -415,6 +415,19 @@ void dvz_device_request_extension(DvzDevice* device, const char* extension)
 
 
 
+bool dvz_device_has_extension(DvzDevice* device, const char* extension)
+{
+    ANN(device);
+    ANN(extension);
+
+    ANN(device->req_extensions);
+    ASSERT(device->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
+
+    return dvz_strings_contains(device->req_extension_count, device->req_extensions, extension);
+}
+
+
+
 VkPhysicalDeviceFeatures* dvz_device_request_features10(DvzDevice* device)
 {
     ANN(device);

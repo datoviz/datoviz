@@ -19,9 +19,11 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-#include "vk_mem_alloc.h"
-
 #include "datoviz/common/macros.h"
+
+MUTE_ON
+#include "vk_mem_alloc.h"
+MUTE_OFF
 
 
 

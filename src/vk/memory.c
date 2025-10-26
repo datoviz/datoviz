@@ -18,10 +18,12 @@
 
 #include "_alloc.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
+#include "datoviz/vk/memory.h"
 #include "vulkan/vulkan_core.h"
 MUTE_ON
-#include "datoviz/vk/memory.h"
+#include "vk_mem_alloc.h"
 MUTE_OFF
 #include "macros.h"
 #include "types.h"
@@ -32,31 +34,28 @@ MUTE_OFF
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static int _set_vma_flags(DvzGpu* gpu)
+static VmaAllocatorCreateFlagBits _set_vma_flags(DvzDevice* device)
 {
-    ANN(gpu);
+    ANN(device);
 
-    uint32_t extension_count = 0;
-    char** extensions = dvz_gpu_supported_extensions(gpu, &extension_count);
-
-    int vma_flags = 0;
-    if (dvz_gpu_has_extension(gpu, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME))
+    VmaAllocatorCreateFlagBits vma_flags = 0;
+    if (dvz_device_has_extension(device, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
-    if (dvz_gpu_has_extension(gpu, "VK_KHR_bind_memory2"))
+    if (dvz_device_has_extension(device, "VK_KHR_bind_memory2"))
         vma_flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
-    if (dvz_gpu_has_extension(gpu, VK_KHR_MAINTENANCE_4_EXTENSION_NAME))
+    if (dvz_device_has_extension(device, VK_KHR_MAINTENANCE_4_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE4_BIT;
-    if (dvz_gpu_has_extension(gpu, VK_KHR_MAINTENANCE_5_EXTENSION_NAME))
+    if (dvz_device_has_extension(device, VK_KHR_MAINTENANCE_5_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_KHR_MAINTENANCE5_BIT;
-    if (dvz_gpu_has_extension(gpu, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME))
+    if (dvz_device_has_extension(device, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-    if (dvz_gpu_has_extension(gpu, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
+    if (dvz_device_has_extension(device, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-    if (dvz_gpu_has_extension(gpu, VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME))
+    if (dvz_device_has_extension(device, VK_EXT_MEMORY_PRIORITY_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
-    if (dvz_gpu_has_extension(gpu, VK_AMD_DEVICE_COHERENT_MEMORY_EXTENSION_NAME))
+    if (dvz_device_has_extension(device, VK_AMD_DEVICE_COHERENT_MEMORY_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_AMD_DEVICE_COHERENT_MEMORY_BIT;
-    if (dvz_gpu_has_extension(gpu, "VK_KHR_external_memory_win32"))
+    if (dvz_device_has_extension(device, "VK_KHR_external_memory_win32"))
         vma_flags |= VMA_ALLOCATOR_CREATE_KHR_EXTERNAL_MEMORY_WIN32_BIT;
 
     return vma_flags;
@@ -90,10 +89,10 @@ int dvz_device_allocator(
     allocator->device = device;
     allocator->external = external;
 
-    int vma_flags = _set_vma_flags(gpu);
+    VmaAllocatorCreateFlagBits vma_flags = _set_vma_flags(device);
 
     VmaAllocatorCreateInfo info = {0};
-    info.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+    info.flags = vma_flags | VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
     info.vulkanApiVersion = gpu->instance->vk_version;
     info.physicalDevice = gpu->pdevice;
     info.device = device->vk_device;
