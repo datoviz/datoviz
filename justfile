@@ -1399,7 +1399,16 @@ analyze:
     fi
     @if command -v run-clang-tidy >/dev/null 2>&1; then \
         ROOT=$(pwd); \
-        run-clang-tidy -p build -quiet -header-filter="^$ROOT/(include|src|testing)/" "$ROOT/include/.*" "$ROOT/src/.*" "$ROOT/testing/(?!dvz_public_header_probe\\.c).*"; \
+        FILES=$(jq -r '.[].file' build/compile_commands.json \
+            | grep -E "^$ROOT/(include|src|testing)/" \
+            | grep -v '\.cu$' \
+            | grep -v 'dvz_public_header_probe\.c$' \
+            | tr '\n' ' '); \
+        if [ -z "$FILES" ]; then \
+            echo "No files matched for static analysis."; \
+        else \
+            run-clang-tidy -p build -quiet -header-filter="^$ROOT/(include|src|testing)/" $FILES; \
+        fi; \
     else \
         echo "run-clang-tidy not found. Install clang-tidy or add it to PATH."; \
         exit 1; \
