@@ -16,6 +16,8 @@
 
 #include <stdint.h>
 
+#include <volk.h>
+
 #include "_alloc.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
@@ -241,8 +243,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
         return -1;
     }
 
-    LOAD_VK_DEVICE_FUNC(vkd, vkGetMemoryFdKHR);
-    VK_RETURN_RESULT(vkGetMemoryFdKHR_d(vkd, &info, handle));
+    VK_RETURN_RESULT(vkGetMemoryFdKHR(vkd, &info, handle));
 
 #elif OS_WINDOWS
     // TODO

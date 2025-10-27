@@ -97,7 +97,7 @@ Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `ma
   ```
 
 * `src/common/CMakeLists.txt` publishes its directory with `INTERFACE` usage requirements so any consumer of `datoviz_common` can include `_alloc.h`, `_macros.h`, etc.
-* `src/vk/CMakeLists.txt` follows the same OBJECT-library pattern (`datoviz_vk`), adds `${PROJECT_SOURCE_DIR}/external` to expose bundled Vulkan headers, and links to the platform Vulkan loader (`libvulkan.so.1`, `libvulkan.dylib`, or `vulkan-1.lib`). The helper logic in that file falls back to vendored loader binaries under `libs/vulkan/<platform>/` when the system SDK is missing.
+* `src/vk/CMakeLists.txt` follows the same OBJECT-library pattern (`datoviz_vk`), pulls in `${PROJECT_SOURCE_DIR}/external/volk` and links against the `datoviz_volk` OBJECT target (Volk `vulkan-sdk-1.4.328.1`) so the Vulkan entry points are resolved via Volk instead of platform-specific loader binaries. The project no longer bundles `libs/vulkan/`; expect a system ICD to be present at runtime.
 
 * The root `src/CMakeLists.txt` assembles the shared library and registers the active modules:
 

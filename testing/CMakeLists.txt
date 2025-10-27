@@ -48,6 +48,7 @@ target_link_libraries(dvztest
     datoviz_math
     datoviz_thread
     datoviz_vk
+    datoviz_volk
     testing
 )
 
@@ -74,6 +75,7 @@ target_include_directories(dvztest
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/external/volk
 )
 
 if(DVZ_ENABLE_CUDA)
@@ -83,6 +85,10 @@ if(DVZ_ENABLE_CUDA)
     target_link_libraries(dvztest PRIVATE CUDA::cudart CUDA::cuda_driver)
 
     # Enable CUDA language for dvztest so it can compile .cu kernels
+    if(NOT CMAKE_CUDA_ARCHITECTURES)
+        # Default to native architecture so CMake is satisfied when CUDA is enabled.
+        set(CMAKE_CUDA_ARCHITECTURES "native")
+    endif()
     enable_language(CUDA)
 
     # Optional: explicitly add the CUDA kernel file if it exists

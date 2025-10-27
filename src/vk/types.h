@@ -28,7 +28,7 @@ typedef struct DvzGpu DvzGpu;
 
 #include <stdint.h>
 
-#include <vulkan/vulkan.h>
+#include <volk.h>
 
 #include "datoviz/common/obj.h"
 

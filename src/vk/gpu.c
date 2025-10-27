@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-#include <vulkan/vulkan.h>
+#include <volk.h>
 
 #include "_alloc.h"
 #include "_compat.h"
