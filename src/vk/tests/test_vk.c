@@ -22,6 +22,36 @@
 
 
 /*************************************************************************************************/
+/*  Sanitizer detection                                                                          */
+/*************************************************************************************************/
+
+#ifndef DVZ_HAS_FEATURE
+#if defined(__has_feature)
+#define DVZ_HAS_FEATURE(x) __has_feature(x)
+#else
+#define DVZ_HAS_FEATURE(x) 0
+#endif
+#endif
+
+#ifndef DVZ_USING_MSAN
+#if DVZ_HAS_FEATURE(memory_sanitizer) || defined(__SANITIZE_MEMORY__)
+#define DVZ_USING_MSAN 1
+#else
+#define DVZ_USING_MSAN 0
+#endif
+#endif
+
+#ifndef DVZ_USING_TSAN
+#if DVZ_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#define DVZ_USING_TSAN 1
+#else
+#define DVZ_USING_TSAN 0
+#endif
+#endif
+
+
+
+/*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
@@ -55,8 +85,8 @@ int test_vk(TstSuite* suite)
 
 
     TEST_SIMPLE(test_memory_1);
-#if HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG
-    // Skip CUDA interop test when ASan is active; sanitizer hooks conflict with CUDA allocator.
+#if HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG && !DVZ_USING_MSAN && !DVZ_USING_TSAN
+    // Skip CUDA interop test when sanitizers that conflict with CUDA are active.
     TEST_SIMPLE(test_memory_cuda_1);
 #endif
     // TEST_SIMPLE(test_memory_cuda_2);
