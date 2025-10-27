@@ -288,14 +288,14 @@ int dvz_device_create(DvzDevice* device)
 {
     ANN(device);
 
-    /*
-    TODO
-    recreate the underlying vulkan logical device if called multiple times (destroying the old one
-    first), which allows to change the queues before
+    // TODO: recreate the underlying vulkan logical device if called multiple times (destroying the
+    // old one first), which allows to change the queues before
 
-    portability : if gpu supported extensions
-    include VK_KHR_portability_subset, must be included in the requested extensions
-    */
+    // NOTE: if the GPU supports extension VK_KHR_portability_subset, it must be requested
+    if (dvz_gpu_has_extension(device->gpu, "VK_KHR_portability_subset"))
+    {
+        dvz_device_request_extension(device, "VK_KHR_portability_subset");
+    }
 
     // From the requested queues, get the number of queues per queue family.
     uint32_t qfn = 0;
