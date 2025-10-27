@@ -267,6 +267,12 @@ int dvz_allocator_import_buffer(
     ANN(alloc);
     ANN(vk_buffer);
 
+    if (handle == 0)
+    {
+        log_error("handle cannot be 0, aborting external buffer import");
+        return 1;
+    }
+
     ENSURE_EXTERNAL
 
     // Set the external info structure to the VkBufferCreateInfo struct.

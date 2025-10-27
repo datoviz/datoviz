@@ -80,7 +80,7 @@ if(DVZ_ENABLE_CUDA)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wno-unknown-warning-option")
 
     target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
-    target_link_libraries(dvztest PRIVATE CUDA::cudart)
+    target_link_libraries(dvztest PRIVATE CUDA::cudart CUDA::cuda_driver)
 
     # Enable CUDA language for dvztest so it can compile .cu kernels
     enable_language(CUDA)
