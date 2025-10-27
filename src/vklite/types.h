@@ -42,9 +42,11 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzCommands DvzCommands;
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzQueue DvzQueue;
+
+typedef struct DvzCommands DvzCommands;
+typedef struct DvzSampler DvzSampler;
 
 
 
@@ -61,4 +63,17 @@ struct DvzCommands
     uint32_t count;
     VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
     bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES]; // if true, no need to refill it in the FRAME
+};
+
+
+
+struct DvzSampler
+{
+    DvzObject obj;
+    DvzDevice* device;
+
+    VkFilter min_filter;
+    VkFilter mag_filter;
+    VkSamplerAddressMode address_modes[3]; // x, y, z
+    VkSampler sampler;
 };

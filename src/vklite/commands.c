@@ -32,7 +32,7 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-void dvz_commands(DvzCommands* cmds, DvzDevice* device, DvzQueue* queue, uint32_t count)
+void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cmds)
 {
     ANN(cmds);
     ANN(device);

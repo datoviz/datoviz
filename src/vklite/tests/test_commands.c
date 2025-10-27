@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing commands */
+/*  Testing commands                                                                             */
 /*************************************************************************************************/
 
 
@@ -33,7 +33,7 @@
 
 
 /*************************************************************************************************/
-/*  <Title> tests                                                                                */
+/*  vklite tests                                                                                 */
 /*************************************************************************************************/
 
 int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
@@ -52,7 +52,7 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
     ANN(queue);
 
     DvzCommands cmds = {0};
-    dvz_commands(&cmds, device, queue, 3);
+    dvz_commands(device, queue, 3, &cmds);
     dvz_cmd_begin(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_reset(&cmds, 0);

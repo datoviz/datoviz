@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  command                                                                                      */
+/*  Commands                                                                                     */
 /*************************************************************************************************/
 
 #pragma once
@@ -58,9 +58,9 @@ EXTERN_C_ON
  * @param device the device
  * @param queue the queue
  * @param count the number of command buffers to create
- * @returns the set of command buffers
+ * @param[out] cmds the create command buffers
  */
-void dvz_commands(DvzCommands* cmds, DvzDevice* device, DvzQueue* queue, uint32_t count);
+void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cmds);
 
 
 
