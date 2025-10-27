@@ -185,6 +185,12 @@ if(DVZ_ENABLE_CUDA)
     set(HAS_CUDA 1)
 endif()
 
+# Validation layers are enabled by default except for Release builds unless manually overridden.
+option(DVZ_USE_VALIDATION "Enable Vulkan validation layers and debug utils" ON)
+
+set(ENABLE_VALIDATION_LAYERS
+    $<IF:$<OR:$<CONFIG:Release>,$<NOT:$<BOOL:${DVZ_USE_VALIDATION}>>>,0,1>)
+
 set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
