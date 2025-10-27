@@ -69,6 +69,24 @@ void dvz_sampler_address_mode(
 
 
 
+void dvz_sampler_anisotropy(DvzSampler* sampler, float anisotropy)
+{
+    ANN(sampler);
+    ANN(sampler->device);
+
+    VkPhysicalDeviceFeatures* features = dvz_device_request_features10(sampler->device);
+    if (anisotropy != 0 && !features->samplerAnisotropy)
+    {
+        log_warn("unable to set sampler anisotropy because the device was not created with "
+                 "samplerAnisotropy Vulkan 1.0 feature");
+        return;
+    }
+
+    sampler->anisotropy = anisotropy;
+}
+
+
+
 void dvz_sampler_create(DvzSampler* sampler)
 {
     ANN(sampler);
@@ -88,8 +106,8 @@ void dvz_sampler_create(DvzSampler* sampler)
     info.addressModeV = sampler->address_modes[1];
     info.addressModeW = sampler->address_modes[2];
 
-    info.anisotropyEnable = false;
-    info.maxAnisotropy = 16;
+    info.anisotropyEnable = sampler->anisotropy != 0;
+    info.maxAnisotropy = sampler->anisotropy;
     info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     info.unnormalizedCoordinates = VK_FALSE;
     info.compareEnable = VK_FALSE;

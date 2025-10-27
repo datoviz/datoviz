@@ -75,5 +75,7 @@ struct DvzSampler
     VkFilter min_filter;
     VkFilter mag_filter;
     VkSamplerAddressMode address_modes[3]; // x, y, z
+    float anisotropy;
+
     VkSampler vk_sampler;
 };

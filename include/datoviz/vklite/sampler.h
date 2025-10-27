@@ -94,6 +94,18 @@ DVZ_EXPORT void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter);
 DVZ_EXPORT void dvz_sampler_address_mode(
     DvzSampler* sampler, DvzSamplerAxis axis, VkSamplerAddressMode address_mode);
 
+
+
+/**
+ * Set the anisotropy.
+ *
+ * @param sampler the sampler
+ * @param anisotropy anisotropy
+ */
+DVZ_EXPORT void dvz_sampler_anisotropy(DvzSampler* sampler, float anisotropy);
+
+
+
 /**
  * Create the sampler after it has been set up.
  *
