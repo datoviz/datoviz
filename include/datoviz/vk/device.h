@@ -100,6 +100,15 @@ DVZ_EXPORT VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t que
 
 
 /**
+ * Wait until the device is ready. Inefficient.
+ *
+ * @param device the device
+ */
+DVZ_EXPORT void dvz_device_wait(DvzDevice* device);
+
+
+
+/**
  * Destroy a device.
  *
  * @param device

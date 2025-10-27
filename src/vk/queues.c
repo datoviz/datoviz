@@ -372,6 +372,14 @@ VkQueue dvz_queue_handle(DvzQueue* queue)
 
 
 
+void dvz_queue_wait(DvzQueue* queue)
+{
+    ANN(queue);
+    vkQueueWaitIdle(queue->handle);
+}
+
+
+
 bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role)
 {
     ANN(queue);

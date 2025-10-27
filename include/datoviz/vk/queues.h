@@ -170,6 +170,15 @@ DVZ_EXPORT VkQueue dvz_queue_handle(DvzQueue* queue);
 
 
 /**
+ * Wait for a queue to be idle. Inefficient.
+ *
+ * @param queue the queue
+ */
+DVZ_EXPORT void dvz_queue_wait(DvzQueue* queue);
+
+
+
+/**
  * Returns whether a queue supports a given role.
  *
  * @param queue a queue

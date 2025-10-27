@@ -387,6 +387,14 @@ VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t queue_family)
 
 
 
+void dvz_device_wait(DvzDevice* device)
+{
+    ANN(device);
+    vkDeviceWaitIdle(device->vk_device);
+}
+
+
+
 void dvz_device_destroy(DvzDevice* device)
 {
     ANN(device);
