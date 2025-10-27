@@ -5,10 +5,21 @@
 cmake_minimum_required(VERSION 3.20)
 project(datoviz VERSION 0.4 LANGUAGES C CXX)
 
+# Threading setup (portable: Linux, macOS, Windows-MSVC, Windows-MinGW)
 if(WIN32)
-    find_package(PThreads4W CONFIG REQUIRED)
-    set(DVZ_THREADING_TARGET PThreads4W::PThreads4W)
+    if(MINGW)
+        # MinGW-w64 provides pthreads automatically (winpthread)
+        set(THREADS_PREFER_PTHREAD_FLAG ON)
+        set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+        find_package(Threads REQUIRED)
+        set(DVZ_THREADING_TARGET Threads::Threads)
+    else()
+        # True MSVC / Visual Studio environment → use PThreads4W
+        find_package(PThreads4W CONFIG REQUIRED)
+        set(DVZ_THREADING_TARGET PThreads4W::PThreads4W)
+    endif()
 else()
+    # Unix-like platforms: regular pthreads
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     find_package(Threads REQUIRED)

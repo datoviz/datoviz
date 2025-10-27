@@ -34,7 +34,7 @@
 // Time utils.
 #if CC_MSVC
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 
 // MSVC defines this in winsock2.h!?
 typedef struct timeval
@@ -70,7 +70,7 @@ static int gettimeofday(struct timeval* tp, struct timezone* tzp)
 
 // Used for Sleep()
 #if OS_WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #elif OS_MACOS
 #include <mach/mach_time.h>
 #endif
