@@ -29,6 +29,9 @@ MUTE_ON
 #include "vk_mem_alloc.h"
 MUTE_OFF
 #include "macros.h"
+#if OS_WINDOWS
+#include <windows.h>
+#endif
 #include "types.h"
 
 
@@ -251,9 +254,30 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
     VK_RETURN_RESULT(vkGetMemoryFdKHR(vkd, &info, handle));
 
 #elif OS_WINDOWS
-    // TODO
-    log_error("Windows external support not yet implemented");
-    int out = 0;
+    if (!dvz_device_has_extension(
+            allocator->device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME))
+    {
+        log_error("VK_KHR_external_memory_win32 extension not enabled on device; cannot export "
+                  "memory handle");
+        return -1;
+    }
+
+    VkMemoryGetWin32HandleInfoKHR info = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
+    };
+    info.memory = alloc->info.deviceMemory;
+    ANNVK(info.memory);
+    info.handleType = allocator->external;
+    if (info.handleType == 0)
+    {
+        log_error(
+            "the allocator must have been created with a VkExternalMemoryHandleTypeFlagsKHR flag");
+        return -1;
+    }
+
+    HANDLE win32_handle = NULL;
+    VK_RETURN_RESULT(vkGetMemoryWin32HandleKHR(vkd, &info, &win32_handle));
+    *handle = (int)(uintptr_t)win32_handle;
 
 #else
     int out = -1;
@@ -305,9 +329,11 @@ int dvz_allocator_import_buffer(
     import_info.handleType = allocator->external;
     import_info.fd = handle;
 #elif OS_WINDOWS
-    // TODO
-    log_error("Windows external support not yet implemented");
-    int out = 0;
+    VkImportMemoryWin32HandleInfoKHR import_info = {
+        .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+    };
+    import_info.handleType = allocator->external;
+    import_info.handle = (HANDLE)(uintptr_t)handle;
 
 #else
     int out = -1;
@@ -366,9 +392,11 @@ int dvz_allocator_import_image(
     import_info.handleType = allocator->external;
     import_info.fd = handle;
 #elif OS_WINDOWS
-    // TODO
-    log_error("Windows external support not yet implemented");
-    int out = 0;
+    VkImportMemoryWin32HandleInfoKHR import_info = {
+        .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+    };
+    import_info.handleType = allocator->external;
+    import_info.handle = (HANDLE)(uintptr_t)handle;
 
 #else
     int out = -1;
