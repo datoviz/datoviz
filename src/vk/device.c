@@ -272,6 +272,15 @@ void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t coun
     }
     ASSERT(family < DVZ_MAX_QUEUE_FAMILIES);
 
+    uint32_t max = device->gpu->queue_caps.queue_count[family];
+    if (count >= max)
+    {
+        log_error(
+            "cannot request %d queues on family %d which only supports %d queues", //
+            count, family, max);
+        return;
+    }
+
     uint32_t queue_idx = 0; // local to each family
     for (uint32_t i = 0; i < count; i++)
     {
