@@ -48,6 +48,7 @@ target_link_libraries(dvztest
     datoviz_math
     datoviz_thread
     datoviz_vk
+    datoviz_vklite
     datoviz_volk
     testing
 )

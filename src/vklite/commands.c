@@ -25,7 +25,6 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "types.h"
-#include "vulkan_core.h"
 
 
 
@@ -37,6 +36,7 @@ void dvz_commands(DvzCommands* cmds, DvzDevice* device, DvzQueue* queue, uint32_
 {
     ANN(cmds);
     ANN(device);
+    ANN(queue);
 
     ASSERT(0 < count && count <= DVZ_MAX_SWAPCHAIN_IMAGES);
     log_trace("creating commands");

@@ -262,6 +262,7 @@ add_subdirectory(fileio)
 add_subdirectory(math)
 add_subdirectory(thread)
 add_subdirectory(vk)
+add_subdirectory(vklite)
 
 # -------------------------------------------------------------------------------------------------
 # Include and linking
@@ -274,6 +275,7 @@ set(DVZ_COMPONENTS
     datoviz_math
     datoviz_thread
     datoviz_vk
+    datoviz_vklite
 )
 
 # Link object modules
