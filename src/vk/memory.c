@@ -182,6 +182,27 @@ int dvz_allocator_image(
 
 
 
+void* dvz_allocator_map(DvzVma* allocator, DvzAllocation* alloc)
+{
+    ANN(allocator);
+    ANN(alloc);
+    uint32_t* ptr = NULL;
+    vmaMapMemory(allocator->vma, alloc->alloc, (void**)&ptr);
+    ANN(ptr);
+    return ptr;
+}
+
+
+
+void dvz_allocator_unmap(DvzVma* allocator, DvzAllocation* alloc)
+{
+    ANN(allocator);
+    ANN(alloc);
+    vmaUnmapMemory(allocator->vma, alloc->alloc);
+}
+
+
+
 /*************************************************************************************************/
 /*  External                                                                                     */
 /*************************************************************************************************/

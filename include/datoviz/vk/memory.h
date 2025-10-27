@@ -92,6 +92,26 @@ DVZ_EXPORT int dvz_allocator_image(
     DvzAllocation* alloc, VkImage* vk_image);
 
 
+/**
+ * Map an allocation.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ * @returns the mapped pointer
+ */
+DVZ_EXPORT void* dvz_allocator_map(DvzVma* allocator, DvzAllocation* alloc);
+
+
+
+/**
+ * Unmap the allocation.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ */
+DVZ_EXPORT void dvz_allocator_unmap(DvzVma* allocator, DvzAllocation* alloc);
+
+
 
 /**
  * Export an allocation for another GPU API.
