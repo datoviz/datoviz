@@ -55,7 +55,9 @@ int test_vk(TstSuite* suite)
 
 
     TEST_SIMPLE(test_memory_1);
+#if HAS_CUDA
     TEST_SIMPLE(test_memory_cuda_1);
+#endif
     // TEST_SIMPLE(test_memory_cuda_2);
 
 
