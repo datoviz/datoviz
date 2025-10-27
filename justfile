@@ -1449,7 +1449,7 @@ coverage filter="":
     @mkdir -p docs/images
     @mkdir -p build-coverage/coverage
     @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-coverage/; fi
-    @ROOT=$(pwd) && cd build-coverage && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=
+    @ROOT=$(pwd) && cd build-coverage && cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug -DDVZ_ENABLE_COVERAGE=ON -DDVZ_ENABLE_ASAN_IN_DEBUG=OFF -DDVZ_ENABLE_CUDA=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=
     @cd build-coverage && ninja
     @cd build-coverage && if [ -n "{{filter}}" ]; then ./testing/dvztest "{{filter}}"; else ./testing/dvztest; fi
     @ROOT=$(pwd) && cd build-coverage && gcovr --root "$ROOT" --filter "$ROOT/src" --filter "$ROOT/include" --exclude "$ROOT/external" --exclude "$ROOT/testing" --exclude "$ROOT/v0.3" --exclude "$ROOT/build" --txt-metric branch --print-summary
