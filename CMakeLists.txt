@@ -28,6 +28,10 @@ set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "" "asan" "msan" "tsan" "off")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
 option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ON)
 
+if(APPLE)
+    set_property(CACHE DVZ_ENABLE_CUDA PROPERTY VALUE OFF)
+endif()
+
 # Third-party dependencies
 set(DVZ_WITH_MIMALLOC OFF)
 set(DVZ_EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")

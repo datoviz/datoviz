@@ -132,17 +132,21 @@
 #elif CC_CLANG
 #define MUTE_ON                                                                                   \
     _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")    \
-        _Pragma("clang diagnostic ignored \"-Wcast-qual\"")                                       \
-            _Pragma("clang diagnostic ignored \"-Wredundant-decls\"") _Pragma(                    \
-                "clang diagnostic ignored \"-Wcast-qual\"")                                       \
-                _Pragma("clang diagnostic ignored \"-Wstrict-overflow\"") _Pragma(                \
-                    "clang diagnostic ignored \"-Wswitch-default\"")                              \
-                    _Pragma("clang diagnostic ignored \"-Wcast-align\"") _Pragma(                 \
-                        "clang diagnostic ignored \"-Wundef\"")                                   \
-                        _Pragma("clang diagnostic ignored \"-Wmissing-braces\"") _Pragma(         \
-                            "clang diagnostic ignored \"-Wnullability-extension\"")               \
-                            _Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"")  \
-                                _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+        _Pragma("clang diagnostic ignored \"-Wcast-qual\"") _Pragma(                              \
+            "clang diagnostic ignored \"-Wredundant-decls\"")                                     \
+            _Pragma("clang diagnostic ignored \"-Wcast-qual\"") _Pragma(                          \
+                "clang diagnostic ignored \"-Wstrict-overflow\"")                                 \
+                _Pragma("clang diagnostic ignored \"-Wswitch-default\"") _Pragma(                 \
+                    "clang diagnostic ignored \"-Wcast-align\"")                                  \
+                    _Pragma("clang diagnostic ignored \"-Wundef\"") _Pragma(                      \
+                        "clang diagnostic ignored \"-Wmissing-braces\"")                          \
+                        _Pragma("clang diagnostic ignored \"-Wnullability-extension\"") _Pragma(  \
+                            "clang diagnostic ignored \"-Wunguarded-availability-new\"")          \
+                            _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")     \
+                                _Pragma(                                                          \
+                                    "clang diagnostic ignored \"-Wnullability-completeness\"")
+_Pragma("clang diagnostic ignored \"-Wmissing-field-initializers\"")
+    _Pragma("clang diagnostic ignored \"-Wunused-private-field\"")
 
 #define MUTE_OFF _Pragma("clang diagnostic pop")
 #else
