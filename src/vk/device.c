@@ -378,6 +378,15 @@ DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role)
 
 
 
+VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t queue_family)
+{
+    ANN(device);
+    ASSERT(queue_family < DVZ_MAX_QUEUE_FAMILIES);
+    return device->cpools[queue_family];
+}
+
+
+
 void dvz_device_destroy(DvzDevice* device)
 {
     ANN(device);

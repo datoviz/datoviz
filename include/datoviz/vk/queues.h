@@ -140,6 +140,36 @@ DVZ_EXPORT DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role);
 
 
 /**
+ * Return the queue index of a queue.
+ *
+ * @param queue the queue
+ * @returns the queue index
+ */
+DVZ_EXPORT uint32_t dvz_queue_index(DvzQueue* queue);
+
+
+
+/**
+ * Return the queue family of a queue.
+ *
+ * @param queue the queue
+ * @returns the queue family index
+ */
+DVZ_EXPORT uint32_t dvz_queue_family(DvzQueue* queue);
+
+
+
+/**
+ * Return the Vulkan handle of a queue.
+ *
+ * @param queue the queue
+ * @returns the queue Vulkan handle
+ */
+DVZ_EXPORT VkQueue dvz_queue_handle(DvzQueue* queue);
+
+
+
+/**
  * Returns whether a queue supports a given role.
  *
  * @param queue a queue

@@ -89,6 +89,17 @@ DVZ_EXPORT DvzQueue* dvz_device_queue(DvzDevice* device, DvzQueueRole role);
 
 
 /**
+ * Return the command pool associated to a queue family index.
+ *
+ * @param device the device
+ * @param queue_family the queue family index
+ * @returns the Vulkan command pool
+ */
+DVZ_EXPORT VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t queue_family);
+
+
+
+/**
  * Destroy a device.
  *
  * @param device

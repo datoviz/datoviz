@@ -348,6 +348,30 @@ DvzQueue* dvz_queue_from_role(DvzQueues* queues, DvzQueueRole role)
 
 
 
+uint32_t dvz_queue_index(DvzQueue* queue)
+{
+    ANN(queue);
+    return queue->queue_idx;
+}
+
+
+
+uint32_t dvz_queue_family(DvzQueue* queue)
+{
+    ANN(queue);
+    return queue->family_idx;
+}
+
+
+
+VkQueue dvz_queue_handle(DvzQueue* queue)
+{
+    ANN(queue);
+    return queue->handle;
+}
+
+
+
 bool dvz_queue_supports(DvzQueue* queue, DvzQueueRole role)
 {
     ANN(queue);
