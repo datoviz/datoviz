@@ -16,8 +16,6 @@
 
 #include <stdint.h>
 
-#include <volk.h>
-
 #include "_alloc.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
@@ -33,6 +31,12 @@ MUTE_OFF
 #include <windows.h>
 #endif
 #include "types.h"
+
+#if defined(VOLK_HEADER_VERSION)
+VkResult vmaImportVulkanFunctionsFromVolk(
+    const VmaAllocatorCreateInfo* pAllocatorCreateInfo,
+    VmaVulkanFunctions* pDstVulkanFunctions);
+#endif
 
 
 
@@ -98,8 +102,6 @@ int dvz_device_allocator(
     VmaAllocatorCreateFlags vma_flags = _set_vma_flags(device);
 
     VmaVulkanFunctions funcs = {0};
-    funcs.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-    funcs.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
 
     VmaAllocatorCreateInfo info = {0};
     info.flags = vma_flags | VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
@@ -107,7 +109,15 @@ int dvz_device_allocator(
     info.physicalDevice = gpu->pdevice;
     info.device = device->vk_device;
     info.instance = gpu->instance->vk_instance;
-    info.pVulkanFunctions = &funcs;
+
+#if defined(VOLK_HEADER_VERSION)
+    VkResult import_res = vmaImportVulkanFunctionsFromVolk(&info, &funcs);
+    if (check_result(import_res) != 0)
+        return 1;
+#else
+    funcs.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    funcs.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+#endif
 
     // If the external is set, set it to all memory types, to be used to all allocations.
     VkExternalMemoryHandleTypeFlagsKHR types[VK_MAX_MEMORY_TYPES] = {0};
@@ -121,6 +131,7 @@ int dvz_device_allocator(
     }
 
     log_trace("creating allocator...");
+    info.pVulkanFunctions = &funcs;
     VK_RETURN_RESULT(vmaCreateAllocator(&info, &allocator->vma));
     log_trace("allocator created");
 

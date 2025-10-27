@@ -16,7 +16,13 @@ target_include_directories(datoviz_vk
         ${PROJECT_SOURCE_DIR}/external/volk
 )
 
-target_compile_definitions(datoviz_vk PUBLIC ${DVZ_COMPILE_DEFINITIONS} VK_NO_PROTOTYPES)
+target_compile_definitions(datoviz_vk
+    PUBLIC
+        ${DVZ_COMPILE_DEFINITIONS}
+        VK_NO_PROTOTYPES
+        VMA_STATIC_VULKAN_FUNCTIONS=0
+        VMA_DYNAMIC_VULKAN_FUNCTIONS=0
+)
 
 if(WIN32)
     target_compile_definitions(datoviz_vk PRIVATE DVZ_SHARED)
