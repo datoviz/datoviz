@@ -100,6 +100,35 @@ int test_queues_basic(TstSuite* suite, TstItem* tstitem)
 
 
 
+int test_queues_single_family(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Pretend the GPU already reported a single queue family exposing a single queue.
+    DvzGpu gpu = {0};
+    gpu.queue_caps.family_count = 1;
+    gpu.queue_caps.flags[0] = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    gpu.queue_caps.queue_count[0] = 1;
+
+    DvzQueueCaps* qc = &gpu.queue_caps;
+    ANN(qc);
+    ASSERT(qc->family_count == 1);
+    ASSERT(qc->queue_count[0] == 1);
+
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+
+    ASSERT(queues.queue_count == 1);
+    ASSERT(queues.queues[DVZ_QUEUE_MAIN].is_main);
+    ASSERT(queues.queues[DVZ_QUEUE_MAIN].queue_idx == 0);
+    ASSERT(dvz_queue_supports(&queues.queues[DVZ_QUEUE_MAIN], DVZ_QUEUE_MAIN));
+
+    return 0;
+}
+
+
+
 int test_queues_multiple(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);

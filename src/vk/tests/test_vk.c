@@ -72,6 +72,7 @@ int test_vk(TstSuite* suite)
 
     TEST_SIMPLE(test_queues_caps);
     TEST_SIMPLE(test_queues_basic);
+    TEST_SIMPLE(test_queues_single_family);
     TEST_SIMPLE(test_queues_multiple);
     TEST_SIMPLE(test_queues_tie_break);
     TEST_SIMPLE(test_queues_no_optional);

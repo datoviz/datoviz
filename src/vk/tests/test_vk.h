@@ -50,6 +50,8 @@ int test_queue_from_role(TstSuite* suite, TstItem* tstitem);
 
 int test_queues_basic(TstSuite* suite, TstItem* tstitem);
 
+int test_queues_single_family(TstSuite* suite, TstItem* tstitem);
+
 int test_queues_multiple(TstSuite* suite, TstItem* tstitem);
 
 int test_queues_tie_break(TstSuite* suite, TstItem* tstitem);
