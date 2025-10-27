@@ -75,5 +75,5 @@ struct DvzSampler
     VkFilter min_filter;
     VkFilter mag_filter;
     VkSamplerAddressMode address_modes[3]; // x, y, z
-    VkSampler sampler;
+    VkSampler vk_sampler;
 };

@@ -99,7 +99,7 @@ void dvz_sampler_create(DvzSampler* sampler)
     info.minLod = 0.0f;
     info.maxLod = 0.0f;
 
-    VK_CHECK_RESULT(vkCreateSampler(dvz_device_handle(device), &info, NULL, sampler));
+    VK_CHECK_RESULT(vkCreateSampler(dvz_device_handle(device), &info, NULL, &sampler->vk_sampler));
 
     dvz_obj_created(&sampler->obj);
     log_trace("sampler created");
@@ -120,10 +120,10 @@ void dvz_sampler_destroy(DvzSampler* sampler)
         return;
     }
     log_trace("destroy sampler");
-    if (sampler->sampler != VK_NULL_HANDLE)
+    if (sampler->vk_sampler != VK_NULL_HANDLE)
     {
-        vkDestroySampler(dvz_device_handle(device), sampler->sampler, NULL);
-        sampler->sampler = VK_NULL_HANDLE;
+        vkDestroySampler(dvz_device_handle(device), sampler->vk_sampler, NULL);
+        sampler->vk_sampler = VK_NULL_HANDLE;
     }
     dvz_obj_destroyed(&sampler->obj);
 }

@@ -24,9 +24,7 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/device.h"
-#include "datoviz/vk/queues.h"
-#include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/sampler.h"
 #include "test_vklite.h"
 #include "testing.h"
 
@@ -45,8 +43,15 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, 0);
 
+    DvzSampler sampler = {0};
+    dvz_sampler(&bootstrap.device, &sampler);
+    dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
+    dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_create(&sampler);
 
     // Cleanup.
+    dvz_sampler_destroy(&sampler);
     dvz_bootstrap_destroy(&bootstrap);
     return 0;
 }
