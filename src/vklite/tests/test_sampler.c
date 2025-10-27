@@ -56,7 +56,7 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
     dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_sampler_anisotropy(&sampler, 8);
-    dvz_sampler_create(&sampler);
+    AT(dvz_sampler_create(&sampler) == 0);
 
     // Cleanup.
     dvz_sampler_destroy(&sampler);

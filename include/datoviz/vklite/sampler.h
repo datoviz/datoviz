@@ -110,8 +110,9 @@ DVZ_EXPORT void dvz_sampler_anisotropy(DvzSampler* sampler, float anisotropy);
  * Create the sampler after it has been set up.
  *
  * @param sampler the sampler
+ * @returns the creation result code
  */
-DVZ_EXPORT void dvz_sampler_create(DvzSampler* sampler);
+DVZ_EXPORT int dvz_sampler_create(DvzSampler* sampler);
 
 
 
