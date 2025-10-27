@@ -257,6 +257,9 @@ void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
 
     device->gpu = gpu;
 
+    // Features using v2 API with features structs chain.
+    fill_features(device);
+
     dvz_obj_init(&device->obj);
 }
 
@@ -335,7 +338,6 @@ int dvz_device_create(DvzDevice* device)
     device_info.ppEnabledExtensionNames = (const char* const*)device->req_extensions;
 
     // Features using v2 API with features structs chain.
-    fill_features(device);
     device_info.pNext = &device->features;
 
     // Create the device.
