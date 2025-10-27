@@ -68,8 +68,8 @@ int test_device_2(TstSuite* suite, TstItem* tstitem);
 
 int test_memory_1(TstSuite* suite, TstItem* tstitem);
 
-int test_memory_cuda(TstSuite* suite, TstItem* tstitem);
+int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem);
 
-
+int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem);
 
 int test_vk(TstSuite* suite);

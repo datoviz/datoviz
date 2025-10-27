@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-#include <vulkan/vulkan.h>
+#include <volk.h>
 
 #include "_alloc.h"
 #include "_compat.h"
@@ -38,6 +38,25 @@
 // Consistency check.
 #define MAX_COUNT 1024
 
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static void volk_init(void)
+{
+    static bool volk_initialized = false;
+    if (volk_initialized)
+        return;
+
+    VkResult res = volkInitialize();
+    if (res != VK_SUCCESS)
+    {
+        check_result(res);
+        return;
+    }
+    volk_initialized = true;
+}
+
 
 
 /*************************************************************************************************/
@@ -47,6 +66,7 @@
 void dvz_instance(DvzInstance* instance, int flags)
 {
     ANN(instance);
+    volk_init();
     instance->flags = flags;
     instance->obj.type = DVZ_OBJECT_TYPE_INSTANCE;
     dvz_obj_init(&instance->obj);
@@ -111,9 +131,8 @@ void dvz_instance_validation_post(DvzInstance* instance)
     ANNVK(instance->vk_instance);
 
     // Create debug messenger.
-    LOAD_VK_INSTANCE_FUNC(instance->vk_instance, vkCreateDebugUtilsMessengerEXT);
-    vkCreateDebugUtilsMessengerEXT_d(
-        instance->vk_instance, &instance->info_debug, NULL, &instance->debug_messenger);
+    VK_CHECK_RESULT(vkCreateDebugUtilsMessengerEXT(
+        instance->vk_instance, &instance->info_debug, NULL, &instance->debug_messenger));
 }
 
 
@@ -172,7 +191,13 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     // Create Vulkan instance.
     log_trace("creating Vulkan instance...");
     VkResult res = vkCreateInstance(&instance->info_inst, NULL, &instance->vk_instance);
-    check_result(res);
+    if (res != VK_SUCCESS)
+    {
+        check_result(res);
+        return res;
+    }
+
+    volkLoadInstance(instance->vk_instance);
     ANNVK(instance->vk_instance);
     dvz_obj_created(&instance->obj);
     log_trace("Vulkan instance created");
@@ -226,11 +251,10 @@ void dvz_instance_destroy(DvzInstance* instance)
     if (vki != VK_NULL_HANDLE)
     {
         // Destroy debug messenger.
-        if (instance->debug_messenger != NULL)
+        if (instance->debug_messenger != VK_NULL_HANDLE)
         {
             log_trace("destroy debug utils messenger");
-            LOAD_VK_INSTANCE_FUNC(vki, vkDestroyDebugUtilsMessengerEXT);
-            vkDestroyDebugUtilsMessengerEXT_d(vki, instance->debug_messenger, NULL);
+            vkDestroyDebugUtilsMessengerEXT(vki, instance->debug_messenger, NULL);
         }
 
         // Destroy Vulkan instance.

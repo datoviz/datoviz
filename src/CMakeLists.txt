@@ -190,6 +190,9 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
     DEBUG=$<IF:$<CONFIG:Debug>,1,0>
 
+    # Required so volk supplies the Vulkan entry points instead of the SDK prototypes.
+    VK_NO_PROTOTYPES
+
     # OS.
     OS_LINUX=${OS_LINUX}
     OS_MACOS=${OS_MACOS}
@@ -234,6 +237,12 @@ set(DVZ_COMPILE_DEFINITIONS "${DVZ_COMPILE_DEFINITIONS}" PARENT_SCOPE)
 set_property(GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS "${DVZ_COMPILE_DEFINITIONS}")
 
 # -------------------------------------------------------------------------------------------------
+# External dependencies
+# -------------------------------------------------------------------------------------------------
+#
+add_subdirectory(${PROJECT_SOURCE_DIR}/external/volk ${CMAKE_CURRENT_BINARY_DIR}/external/volk EXCLUDE_FROM_ALL)
+
+# -------------------------------------------------------------------------------------------------
 # Components
 # -------------------------------------------------------------------------------------------------
 #
@@ -261,6 +270,7 @@ set(DVZ_COMPONENTS
 target_link_libraries(datoviz
     PRIVATE
     ${DVZ_COMPONENTS}
+    datoviz_volk
 )
 
 if(DVZ_THREADING_TARGET)

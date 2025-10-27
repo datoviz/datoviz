@@ -16,11 +16,14 @@
 
 #include <stdint.h>
 
+#include <volk.h>
+
 #include "_alloc.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
+#include <volk.h>
 #include "vulkan/vulkan_core.h"
 MUTE_ON
 #include "vk_mem_alloc.h"
@@ -91,13 +94,17 @@ int dvz_device_allocator(
 
     VmaAllocatorCreateFlagBits vma_flags = _set_vma_flags(device);
 
+    VmaVulkanFunctions funcs = {0};
+    funcs.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    funcs.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+
     VmaAllocatorCreateInfo info = {0};
     info.flags = vma_flags | VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
     info.vulkanApiVersion = gpu->instance->vk_version;
     info.physicalDevice = gpu->pdevice;
     info.device = device->vk_device;
     info.instance = gpu->instance->vk_instance;
-    // info.pVulkanFunctions = &vulkanFunctions;
+    info.pVulkanFunctions = &funcs;
 
     // If the external is set, set it to all memory types, to be used to all allocations.
     VkExternalMemoryHandleTypeFlagsKHR types[VK_MAX_MEMORY_TYPES] = {0};
@@ -241,8 +248,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
         return -1;
     }
 
-    LOAD_VK_DEVICE_FUNC(vkd, vkGetMemoryFdKHR);
-    VK_RETURN_RESULT(vkGetMemoryFdKHR_d(vkd, &info, handle));
+    VK_RETURN_RESULT(vkGetMemoryFdKHR(vkd, &info, handle));
 
 #elif OS_WINDOWS
     // TODO
@@ -266,6 +272,12 @@ int dvz_allocator_import_buffer(
     ANN(info);
     ANN(alloc);
     ANN(vk_buffer);
+
+    if (handle == 0)
+    {
+        log_error("handle cannot be 0, aborting external buffer import");
+        return 1;
+    }
 
     ENSURE_EXTERNAL
 

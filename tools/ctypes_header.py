@@ -63,7 +63,7 @@ LIB_PATH = DATOVIZ_DIR / LIB_NAME
 # Development paths: the libraries are in build/ and libs/
 if not LIB_PATH.exists():
     DATOVIZ_DIR = (FILE_DIR / '../build/').resolve()
-    LIB_DIR = (FILE_DIR / f'../libs/vulkan/{PLATFORM}/').resolve()
+    LIB_DIR = DATOVIZ_DIR
     LIB_PATH = DATOVIZ_DIR / LIB_NAME
 
 if not LIB_PATH.exists():
@@ -83,7 +83,9 @@ except Exception as e:
 
 # on macOS, we need to set the VK_DRIVER_FILES environment variable to the path to the MoltenVK ICD
 if PLATFORM == 'macos':
-    os.environ['VK_DRIVER_FILES'] = str(LIB_DIR / 'MoltenVK_icd.json')
+    moltenvk_icd = LIB_DIR / 'MoltenVK_icd.json'
+    if moltenvk_icd.exists():
+        os.environ['VK_DRIVER_FILES'] = str(moltenvk_icd)
 
 
 # ===============================================================================
