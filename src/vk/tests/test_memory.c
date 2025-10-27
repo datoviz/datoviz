@@ -30,6 +30,7 @@
 #include <cuda.h>
 #endif
 
+#include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
@@ -68,30 +69,15 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    // Bootstrap.
+    DvzBootstrap bootstrap = {0};
+    dvz_bootstrap(&bootstrap, 0);
 
-    // Obtain a GPU.
-    uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
-    DvzGpu* gpu = &gpus[0];
+    DvzGpu* gpu = dvz_bootstrap_gpu(&bootstrap);
+    ANN(gpu);
 
-    // Query the queues.
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
-
-    // Initialize a device.
-    DvzDevice device = {0};
-    dvz_gpu_device(gpu, &device);
-    dvz_queues(qc, &device.queues);
-
-    // Create the device.
-    dvz_device_create(&device);
-
-    // Allocator.
-    DvzVma allocator = {0};
-    dvz_device_allocator(&device, 0, &allocator);
+    DvzVma* allocator = dvz_bootstrap_allocator(&bootstrap);
+    ANN(allocator);
 
     // Buffer allocation.
     VkBuffer vk_buffer = VK_NULL_HANDLE;
@@ -99,7 +85,7 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     buf_info.size = 65536;
     buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     DvzAllocation buf_alloc = {0};
-    dvz_allocator_buffer(&allocator, &buf_info, 0, &buf_alloc, &vk_buffer);
+    dvz_allocator_buffer(allocator, &buf_info, 0, &buf_alloc, &vk_buffer);
 
     // Image allocation.
     VkImage vk_image = VK_NULL_HANDLE;
@@ -116,16 +102,14 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     img_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     img_info.samples = VK_SAMPLE_COUNT_1_BIT;
     DvzAllocation img_alloc = {0};
-    dvz_allocator_image(&allocator, &img_info, 0, &img_alloc, &vk_image);
+    dvz_allocator_image(allocator, &img_info, 0, &img_alloc, &vk_image);
 
     // Resource destruction.
-    dvz_allocator_destroy_buffer(&allocator, &buf_alloc, vk_buffer);
-    dvz_allocator_destroy_image(&allocator, &img_alloc, vk_image);
+    dvz_allocator_destroy_buffer(allocator, &buf_alloc, vk_buffer);
+    dvz_allocator_destroy_image(allocator, &img_alloc, vk_image);
 
     // Cleanup.
-    dvz_allocator_destroy(&allocator);
-    dvz_device_destroy(&device);
-    dvz_instance_destroy(&instance);
+    dvz_bootstrap_destroy(&bootstrap);
     return 0;
 }
 

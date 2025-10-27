@@ -57,7 +57,12 @@ MUTE_OFF
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzVma DvzVma;
+typedef struct DvzAllocation DvzAllocation;
 typedef struct DvzDevice DvzDevice;
+typedef struct DvzGpu DvzGpu;
+typedef struct DvzInstance DvzInstance;
+typedef struct DvzBootstrap DvzBootstrap;
 
 
 
@@ -172,4 +177,15 @@ struct DvzInstance
     // GPUs
     uint32_t gpu_count;
     DvzGpu gpus[DVZ_MAX_GPUS];
+};
+
+
+
+struct DvzBootstrap
+{
+    int flags;
+    DvzInstance instance;
+    DvzGpu* gpu;
+    DvzDevice device;
+    DvzVma allocator;
 };
