@@ -23,6 +23,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
+#include <volk.h>
 #include "vulkan/vulkan_core.h"
 MUTE_ON
 #include "vk_mem_alloc.h"
@@ -93,13 +94,17 @@ int dvz_device_allocator(
 
     VmaAllocatorCreateFlagBits vma_flags = _set_vma_flags(device);
 
+    VmaVulkanFunctions funcs = {0};
+    funcs.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    funcs.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+
     VmaAllocatorCreateInfo info = {0};
     info.flags = vma_flags | VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
     info.vulkanApiVersion = gpu->instance->vk_version;
     info.physicalDevice = gpu->pdevice;
     info.device = device->vk_device;
     info.instance = gpu->instance->vk_instance;
-    // info.pVulkanFunctions = &vulkanFunctions;
+    info.pVulkanFunctions = &funcs;
 
     // If the external is set, set it to all memory types, to be used to all allocations.
     VkExternalMemoryHandleTypeFlagsKHR types[VK_MAX_MEMORY_TYPES] = {0};

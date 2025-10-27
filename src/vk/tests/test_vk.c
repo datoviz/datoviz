@@ -55,7 +55,8 @@ int test_vk(TstSuite* suite)
 
 
     TEST_SIMPLE(test_memory_1);
-#if HAS_CUDA
+#if HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG
+    // Skip CUDA interop test when ASan is active; sanitizer hooks conflict with CUDA allocator.
     TEST_SIMPLE(test_memory_cuda_1);
 #endif
     // TEST_SIMPLE(test_memory_cuda_2);
