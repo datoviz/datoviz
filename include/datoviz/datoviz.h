@@ -27,3 +27,4 @@
 #include "scene_graph.h"
 #include "visuals.h"
 #include "vk.h"
+#include "vklite.h"
