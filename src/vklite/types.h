@@ -27,6 +27,7 @@
 #include <volk.h>
 
 #include "datoviz/common/obj.h"
+#include "vulkan/vulkan_core.h"
 
 
 
@@ -47,6 +48,8 @@ typedef struct DvzQueue DvzQueue;
 
 typedef struct DvzCommands DvzCommands;
 typedef struct DvzSampler DvzSampler;
+typedef struct DvzCompute DvzCompute;
+typedef struct DvzSlots DvzSlots;
 
 
 
@@ -78,4 +81,16 @@ struct DvzSampler
     float anisotropy;
 
     VkSampler vk_sampler;
+};
+
+
+
+struct DvzCompute
+{
+    DvzObject obj;
+    DvzDevice* device;
+
+    VkShaderModule shader;
+    VkPipelineLayout layout;
+    VkPipeline vk_pipeline;
 };
