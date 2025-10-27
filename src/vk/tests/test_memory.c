@@ -142,9 +142,13 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
     const size_t N = 1024;
     const size_t SIZE = N * sizeof(uint32_t);
 
+    int out = 0;
+
     /******************* Vulkan setup *******************/
     DvzInstance instance = {0};
     dvz_instance(&instance, 0);
+    // IMPORTANT: need external memory instance extension.
+    dvz_instance_request_extension(&instance, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
     dvz_instance_create(&instance, VK_API_VERSION_1_3);
 
     // Obtain a GPU.
@@ -159,13 +163,16 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
     DvzDevice device = {0};
     dvz_gpu_device(gpu, &device);
     dvz_queues(qc, &device.queues);
+    // IMPORTANT: need external memory device extension.
+    dvz_device_request_extension(&device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
     dvz_device_create(&device);
 
     // Memory allocator.
     DvzVma allocator = {0};
+    // IMPORTANT: need to pass the external memory handle type when creating the allocator.
     dvz_device_allocator(&device, handle_type, &allocator);
 
-    // Create a buffer.
+    // Create a mappable buffer.
     VkBufferCreateInfo buf_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = SIZE,
@@ -201,7 +208,7 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
     }
 
     /******************* Import into CUDA *******************/
-    cudaExternalMemory_t cuda_mem;
+    cudaExternalMemory_t cuda_mem = {0};
     struct cudaExternalMemoryHandleDesc handle_desc = {0};
     handle_desc.type = cudaExternalMemoryHandleTypeOpaqueFd;
     handle_desc.handle.fd = fd;
@@ -230,37 +237,35 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
     cudaDeviceSynchronize();
 
     /******************* Check result from Vulkan side *******************/
-    vmaMapMemory(allocator.vma, alloc.alloc, (void**)&ptr);
-    int errors = 0;
+    ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
     for (uint32_t i = 0; i < N; i++)
     {
         if (ptr[i] != i + 1)
         {
             log_error("Mismatch after CUDA write at %u: got %u expected %u", i, ptr[i], i + 1);
-            errors++;
-            if (errors > 10)
-                break;
+            out = 1;
+            break;
         }
     }
-    vmaUnmapMemory(allocator.vma, alloc.alloc);
-    if (errors == 0)
+    dvz_allocator_unmap(&allocator, &alloc);
+    if (out == 0)
         log_info("Vulkan->CUDA path verified OK (CUDA write visible in Vulkan)");
 
     /******************* Vulkan modifies data again *******************/
-    vmaMapMemory(allocator.vma, alloc.alloc, (void**)&ptr);
+    ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
     for (uint32_t i = 0; i < N; i++)
         ptr[i] += 1; // add 1 again (now should be i + 2)
-    vmaUnmapMemory(allocator.vma, alloc.alloc);
+    dvz_allocator_unmap(&allocator, &alloc);
     vkDeviceWaitIdle(device.vk_device); // ensure write visible
 
     /******************* CUDA reads and checks *******************/
     uint32_t* host_copy = (uint32_t*)malloc(SIZE);
+    ANN(host_copy);
     cerr = cudaMemcpy(host_copy, cuda_ptr, SIZE, cudaMemcpyDeviceToHost);
     if (cerr != cudaSuccess)
         log_error("cudaMemcpyDeviceToHost failed: %s", cudaGetErrorString(cerr));
     else
     {
-        errors = 0;
         for (uint32_t i = 0; i < N; i++)
         {
             if (host_copy[i] != i + 2)
@@ -268,12 +273,11 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
                 log_error(
                     "Mismatch after Vulkan write at %u: got %u expected %u", i, host_copy[i],
                     i + 2);
-                errors++;
-                if (errors > 10)
-                    break;
+                out = 2;
+                break;
             }
         }
-        if (errors == 0)
+        if (out == 0)
             log_info("CUDA->Vulkan->CUDA sync verified OK (Vulkan write visible in CUDA)");
     }
     free(host_copy);
@@ -289,7 +293,7 @@ cleanup_vulkan:
     dvz_device_destroy(&device);
     dvz_instance_destroy(&instance);
 
-    return 0;
+    return out;
 #else
     log_warn("test_memory_cuda skipped because HAS_CUDA=0");
     return -1;

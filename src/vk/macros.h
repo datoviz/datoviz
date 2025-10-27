@@ -88,6 +88,10 @@ static inline int check_result(VkResult res)
         out = check_result(res);                                                                  \
     }
 
-#define LOAD_VK_FUNC(instance, name)                                                              \
+#define LOAD_VK_INSTANCE_FUNC(instance, name)                                                     \
     PFN_##name name##_d = (PFN_##name)vkGetInstanceProcAddr(instance, #name);                     \
+    ANN(name##_d);
+
+#define LOAD_VK_DEVICE_FUNC(device, name)                                                         \
+    PFN_##name name##_d = (PFN_##name)vkGetDeviceProcAddr(device, #name);                         \
     ANN(name##_d);

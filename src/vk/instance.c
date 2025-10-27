@@ -111,7 +111,7 @@ void dvz_instance_validation_post(DvzInstance* instance)
     ANNVK(instance->vk_instance);
 
     // Create debug messenger.
-    LOAD_VK_FUNC(instance->vk_instance, vkCreateDebugUtilsMessengerEXT);
+    LOAD_VK_INSTANCE_FUNC(instance->vk_instance, vkCreateDebugUtilsMessengerEXT);
     vkCreateDebugUtilsMessengerEXT_d(
         instance->vk_instance, &instance->info_debug, NULL, &instance->debug_messenger);
 }
@@ -229,7 +229,7 @@ void dvz_instance_destroy(DvzInstance* instance)
         if (instance->debug_messenger != NULL)
         {
             log_trace("destroy debug utils messenger");
-            LOAD_VK_FUNC(vki, vkDestroyDebugUtilsMessengerEXT);
+            LOAD_VK_INSTANCE_FUNC(vki, vkDestroyDebugUtilsMessengerEXT);
             vkDestroyDebugUtilsMessengerEXT_d(vki, instance->debug_messenger, NULL);
         }
 

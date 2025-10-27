@@ -219,13 +219,17 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
     // NOTE: need device extension: VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
     ENSURE_EXTERNAL
 
-    VkInstance vki = allocator->device->gpu->instance->vk_instance;
-    ANNVK(vki);
-
     VkDevice vkd = allocator->device->vk_device;
     ANNVK(vkd);
 
 #if OS_MACOS || OS_LINUX
+    if (!dvz_device_has_extension(allocator->device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME))
+    {
+        log_error("VK_KHR_external_memory_fd extension not enabled on device; cannot export "
+                  "memory FD");
+        return -1;
+    }
+
     VkMemoryGetFdInfoKHR info = {.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR};
     info.memory = alloc->info.deviceMemory;
     ANNVK(info.memory);
@@ -237,7 +241,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
         return -1;
     }
 
-    LOAD_VK_FUNC(vki, vkGetMemoryFdKHR);
+    LOAD_VK_DEVICE_FUNC(vkd, vkGetMemoryFdKHR);
     VK_RETURN_RESULT(vkGetMemoryFdKHR_d(vkd, &info, handle));
 
 #elif OS_WINDOWS
