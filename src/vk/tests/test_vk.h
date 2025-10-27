@@ -58,6 +58,8 @@ int test_queues_no_optional(TstSuite* suite, TstItem* tstitem);
 
 int test_queues_video_roles(TstSuite* suite, TstItem* tstitem);
 
+int test_queues_queue_limits(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_device_1(TstSuite* suite, TstItem* tstitem);

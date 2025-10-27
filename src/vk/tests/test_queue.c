@@ -17,6 +17,7 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "../types.h"
 #include "_assertions.h"
@@ -197,6 +198,42 @@ int test_queues_video_roles(TstSuite* suite, TstItem* tstitem)
     ASSERT(queues.queues[DVZ_QUEUE_VIDEO_DECODE].is_set);
     ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].is_set);
     ASSERT(queues.queue_count == 4);
+
+    return 0;
+}
+
+
+
+int test_queues_queue_limits(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzQueueCaps qc = {0};
+    qc.family_count = 2;
+    qc.flags[0] = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+    qc.queue_count[0] = 1;
+    qc.flags[1] = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    qc.queue_count[1] = 2;
+
+    DvzQueues queues = {0};
+    dvz_queues(&qc, &queues);
+
+    ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].is_set);
+    ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].family_idx == 1);
+    ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].queue_idx == 0);
+
+    ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].is_set);
+    ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].family_idx == 1);
+    ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].queue_idx == 1);
+
+    qc.queue_count[1] = 1;
+    memset(&queues, 0, sizeof(queues));
+    dvz_queues(&qc, &queues);
+
+    ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].is_set);
+    ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].queue_idx == 0);
+    ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].is_set == false);
 
     return 0;
 }

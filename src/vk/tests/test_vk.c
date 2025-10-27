@@ -76,6 +76,7 @@ int test_vk(TstSuite* suite)
     TEST_SIMPLE(test_queues_tie_break);
     TEST_SIMPLE(test_queues_no_optional);
     TEST_SIMPLE(test_queues_video_roles);
+    TEST_SIMPLE(test_queues_queue_limits);
     TEST_SIMPLE(test_queue_from_role);
     TEST_SIMPLE(test_queue_supports);
 

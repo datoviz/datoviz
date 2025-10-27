@@ -182,6 +182,8 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
     ANN(qc);
     ANN(queues);
 
+    uint32_t used[DVZ_MAX_QUEUE_FAMILIES] = {0};
+
     // First, we find the main queue, let's define it as the first queue that supports
     // graphics+compute (and also transfer implicitly as per the Vulkan spec).
 
@@ -213,6 +215,7 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
         return;
     }
     ASSERT(main_family >= 0);
+    ASSERT(qc->queue_count[main_family] > 0);
 
     queues->queues[DVZ_QUEUE_MAIN] = (DvzQueue){
         .family_idx = (uint32_t)main_family,
@@ -222,6 +225,7 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
         .is_set = true,
     };
     queues->queue_count = 1;
+    used[main_family] = 1;
 
     // ------------------------------------------------------------------
     // 2. For each other role, find the best queue family.
@@ -235,6 +239,8 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
         // Goes through all non-main roles.
         for (uint32_t i = 0; i < qc->family_count; i++)
         {
+            if (qc->queue_count[i] == 0 || used[i] >= qc->queue_count[i])
+                continue;
             if ((int)i == main_family)
                 continue;
 
@@ -257,13 +263,21 @@ void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
 
         if (best_idx >= 0)
         {
+            uint32_t queue_idx = used[best_idx];
+            ASSERT(queue_idx < qc->queue_count[best_idx]);
             queues->queues[role] = (DvzQueue){
                 .family_idx = (uint32_t)best_idx,
-                .queue_idx = 0,
+                .queue_idx = queue_idx,
                 .flags = qc->flags[best_idx],
                 .is_set = true,
             };
             queues->queue_count++;
+            used[best_idx]++;
+        }
+        else
+        {
+            log_trace(
+                "no available queue family for role %u (requested flags subset exhausted)", role);
         }
     }
 }
