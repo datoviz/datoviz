@@ -124,6 +124,10 @@ target_link_libraries(dvz_public_header_probe
     datoviz
 )
 
+set_target_properties(dvz_public_header_probe PROPERTIES
+    LINKER_LANGUAGE CXX # ensure C++ runtime/sanitizers are linked when headers pull C++ objects
+)
+
 target_include_directories(dvz_public_header_probe
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
