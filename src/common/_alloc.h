@@ -111,7 +111,7 @@ static inline size_t dvz_strlcpy(char* dst, const char* src, size_t siz)
     {
         size_t to_copy = (src_len >= siz) ? (siz - 1) : src_len;
         if (to_copy && dst && src)
-            memcpy(dst, src, to_copy);
+            dvz_memcpy(dst, siz, src, to_copy);
         if (dst)
             dst[to_copy] = '\0';
     }
@@ -129,7 +129,7 @@ static inline size_t dvz_strlcat(char* dst, const char* src, size_t siz)
     size_t space = siz - dst_len - 1; /* remaining space excluding NUL */
     size_t to_copy = (src_len > space) ? space : src_len;
     if (to_copy && dst && src)
-        memcpy(dst + dst_len, src, to_copy);
+        dvz_memcpy(dst + dst_len, siz - dst_len, src, to_copy);
     if (dst)
         dst[dst_len + to_copy] = '\0';
     return dst_len + src_len;
