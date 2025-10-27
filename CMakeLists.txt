@@ -32,6 +32,15 @@ if(APPLE)
     set_property(CACHE DVZ_ENABLE_CUDA PROPERTY VALUE OFF)
 endif()
 
+if(DVZ_ENABLE_CUDA)
+    find_package(CUDAToolkit QUIET)
+
+    if(NOT CUDAToolkit_FOUND)
+        message(WARNING "CUDA toolkit not found — disabling DVZ_ENABLE_CUDA")
+        set(DVZ_ENABLE_CUDA OFF CACHE BOOL "Enable CUDA interop hooks and tests" FORCE)
+    endif()
+endif()
+
 # Third-party dependencies
 set(DVZ_WITH_MIMALLOC OFF)
 set(DVZ_EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
