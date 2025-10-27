@@ -17,7 +17,9 @@
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
+#if !OS_WINDOWS
 #include <unistd.h>
+#endif
 
 #include "../types.h"
 #include "_alloc.h"

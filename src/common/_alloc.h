@@ -100,6 +100,53 @@ EXTERN_C_OFF
 /*  Inline helpers                                                                               */
 /*************************************************************************************************/
 
+/* Portable fallbacks for strlcpy/strlcat on platforms that don't provide them (e.g., MSVC).
+ * Implementations follow typical BSD semantics: return the length of the string it tried to
+ * create. Map to the standard names via macros if they are not already defined so existing code
+ * using strlcpy/strlcat compiles on all platforms. */
+static inline size_t dvz_strlcpy(char* dst, const char* src, size_t siz)
+{
+    size_t src_len = src ? strlen(src) : 0;
+    if (siz)
+    {
+        size_t to_copy = (src_len >= siz) ? (siz - 1) : src_len;
+        if (to_copy && dst && src)
+            memcpy(dst, src, to_copy);
+        if (dst)
+            dst[to_copy] = '\0';
+    }
+    return src_len;
+}
+
+static inline size_t dvz_strlcat(char* dst, const char* src, size_t siz)
+{
+    size_t dst_len = dst ? strlen(dst) : 0;
+    size_t src_len = src ? strlen(src) : 0;
+
+    if (dst_len >= siz)
+        return siz + src_len;
+
+    size_t space = siz - dst_len - 1; /* remaining space excluding NUL */
+    size_t to_copy = (src_len > space) ? space : src_len;
+    if (to_copy && dst && src)
+        memcpy(dst + dst_len, src, to_copy);
+    if (dst)
+        dst[dst_len + to_copy] = '\0';
+    return dst_len + src_len;
+}
+
+#if !defined(HAVE_STRLCPY)
+#  if !defined(strlcpy)
+#    define strlcpy dvz_strlcpy
+#  endif
+#endif
+
+#if !defined(HAVE_STRLCAT)
+#  if !defined(strlcat)
+#    define strlcat dvz_strlcat
+#  endif
+#endif
+
 static inline const DvzAllocator* dvz_active_allocator(void)
 {
     const DvzAllocator* allocator = dvz_get_allocator();

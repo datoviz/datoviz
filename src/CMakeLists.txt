@@ -219,6 +219,11 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     VMA_DYNAMIC_VULKAN_FUNCTIONS=0
 )
 
+if(OS_WINDOWS)
+    # Enable Win32 platform surface/interop declarations in Vulkan/Volk headers.
+    list(APPEND DVZ_COMPILE_DEFINITIONS VK_USE_PLATFORM_WIN32_KHR)
+endif()
+
 if(DVZ_WITH_MIMALLOC)
     list(APPEND DVZ_COMPILE_DEFINITIONS
         DVZ_HAS_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
@@ -420,12 +425,26 @@ endif()
 if(DVZ_SANITIZER_FLAGS)
     message(STATUS "Debug sanitizers: ${DVZ_SANITIZER_FLAGS}")
 
-    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread)
+    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread datoviz_vk datoviz_vklite)
         if(TARGET ${target_name})
+            # Always add sanitizer compile flags in Debug.
             target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
-            target_link_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
+
+            # MSVC linker does not recognize /fsanitize=address; let the compiler drive ASan.
+            if(NOT CC_MSVC)
+                target_link_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
+            endif()
         endif()
     endforeach()
+endif()
+
+# Ensure consistent C++ STL iterator debugging level across all C++ TUs on MSVC to
+# avoid LNK2038 mismatches like 'annotate_string'/'annotate_vector'.
+if(CC_MSVC)
+    list(APPEND DVZ_COMPILE_DEFINITIONS
+        _ITERATOR_DEBUG_LEVEL=$<IF:$<CONFIG:Debug>,1,0>
+        _HAS_ITERATOR_DEBUGGING=$<IF:$<CONFIG:Debug>,1,0>
+    )
 endif()
 
 set(DVZ_SANITIZER_FLAGS "${DVZ_SANITIZER_FLAGS}" CACHE INTERNAL "Sanitizer flags for Debug targets" FORCE)

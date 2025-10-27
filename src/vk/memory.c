@@ -21,7 +21,6 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
-#include "vulkan/vulkan_core.h"
 #include <volk.h>
 MUTE_ON
 #include "vk_mem_alloc.h"
@@ -29,6 +28,7 @@ MUTE_OFF
 #include "macros.h"
 #if OS_WINDOWS
 #include <windows.h>
+#include <vulkan/vulkan_win32.h>
 #endif
 #include "types.h"
 

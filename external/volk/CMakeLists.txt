@@ -15,3 +15,8 @@ target_compile_definitions(datoviz_volk
         VOLK_STATIC_DEFINES
         VOLK_VULKAN_H_PATH=\"${PROJECT_SOURCE_DIR}/external/vulkan/vulkan.h\"
 )
+
+if(WIN32)
+    # Ensure Win32-specific Vulkan surface/interop entry points are declared/defined by Volk.
+    target_compile_definitions(datoviz_volk PUBLIC VK_USE_PLATFORM_WIN32_KHR)
+endif()

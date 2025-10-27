@@ -19,6 +19,7 @@
 #include <volk.h>
 
 #include "_assertions.h"
+#include "_alloc.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
