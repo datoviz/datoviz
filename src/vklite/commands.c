@@ -25,6 +25,7 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "types.h"
+#include "vulkan_core.h"
 
 
 
@@ -38,17 +39,15 @@ void dvz_commands(DvzCommands* cmds, DvzDevice* device, DvzQueue* queue, uint32_
     ANN(device);
 
     ASSERT(0 < count && count <= DVZ_MAX_SWAPCHAIN_IMAGES);
-    uint32_t qf = dvz_queue_family(queue);
-    uint32_t qi = dvz_queue_index(queue);
-    log_trace("creating commands on queue #%d, queue family #%d", qi, qf);
+    log_trace("creating commands");
 
     cmds->device = device;
-    cmds->queue_idx = qi;
+    cmds->queue = queue;
     cmds->count = count;
 
     VkCommandBufferAllocateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    info.commandPool = dvz_device_command_pool(device, qf);
+    info.commandPool = dvz_device_command_pool(device, dvz_queue_family(queue));
     info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     info.commandBufferCount = count;
     VK_CHECK_RESULT(vkAllocateCommandBuffers(dvz_device_handle(device), &info, cmds->cmds));
@@ -105,42 +104,51 @@ void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
 
 void dvz_cmd_free(DvzCommands* cmds)
 {
-    // ANN(cmds);
-    // ASSERT(cmds->count > 0);
-    // ANN(cmds->gpu);
-    // ASSERT(cmds->gpu->device != VK_NULL_HANDLE);
+    ANN(cmds);
 
-    // log_trace("free %d command buffer(s)", cmds->count);
-    // vkFreeCommandBuffers(
-    //     cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
-    //     cmds->count, cmds->cmds);
+    DvzDevice* device = cmds->device;
+    ANN(device);
 
-    // dvz_obj_init(&cmds->obj);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
+
+    VkCommandPool cpool = dvz_device_command_pool(device, dvz_queue_family(cmds->queue));
+
+    log_trace("free %d command buffer(s)", cmds->count);
+    vkFreeCommandBuffers(vkd, cpool, cmds->count, cmds->cmds);
+
+    dvz_obj_init(&cmds->obj);
 }
 
 
 
-void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
+void dvz_cmd_submit(DvzCommands* cmds, uint32_t idx)
 {
-    // ANN(cmds);
-    // ASSERT(cmds->count > 0);
-    // // NOTE: idx is NOT used for now
+    ANN(cmds);
 
-    // log_debug("[SLOW] submit %d command buffer(s) to queue #%d", cmds->count, cmds->queue_idx);
+    DvzDevice* device = cmds->device;
+    ANN(device);
 
-    // DvzQueues* q = &cmds->gpu->queues;
-    // VkQueue queue = q->queues[cmds->queue_idx];
+    log_trace("submit %d command buffer(s)", cmds->count);
 
-    // // NOTE: hard synchronization on the whole GPU here, otherwise write after write hasard
-    // warning
-    // // if just waiting on the queue.
-    // vkDeviceWaitIdle(cmds->gpu->device);
-    // VkSubmitInfo info = {0};
-    // info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    // info.commandBufferCount = cmds->count;
-    // info.pCommandBuffers = cmds->cmds;
-    // vkQueueSubmit(queue, 1, &info, VK_NULL_HANDLE);
-    // vkQueueWaitIdle(queue);
+    DvzQueue* queue = cmds->queue;
+    ANN(queue);
+
+    // NOTE: inefficient device-level wait.
+    dvz_device_wait(device);
+
+    VkQueue vk_queue = dvz_queue_handle(queue);
+    ANNVK(vk_queue);
+
+    // Submit.
+    VkSubmitInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    info.commandBufferCount = cmds->count;
+    info.pCommandBuffers = cmds->cmds;
+    vkQueueSubmit(vk_queue, 1, &info, VK_NULL_HANDLE);
+
+    // Wait.
+    dvz_queue_wait(queue);
 }
 
 

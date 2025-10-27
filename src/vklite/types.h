@@ -44,6 +44,7 @@
 
 typedef struct DvzCommands DvzCommands;
 typedef struct DvzDevice DvzDevice;
+typedef struct DvzQueue DvzQueue;
 
 
 
@@ -55,8 +56,8 @@ struct DvzCommands
 {
     DvzObject obj;
     DvzDevice* device;
+    DvzQueue* queue;
 
-    uint32_t queue_idx;
     uint32_t count;
     VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
     bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES]; // if true, no need to refill it in the FRAME
