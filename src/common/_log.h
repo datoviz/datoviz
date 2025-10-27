@@ -24,7 +24,9 @@ extern "C"
 
 
 
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __FILENAME__                                                                              \
+    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1                                          \
+                            : (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
 
     typedef void (*log_LockFn)(void* udata, int lock);
 
