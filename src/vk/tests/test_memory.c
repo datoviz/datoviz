@@ -137,6 +137,7 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
 
     const VkExternalMemoryHandleTypeFlagBits handle_type =
         VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+    ASSERT(handle_type != 0);
 
     const size_t N = 1024;
     const size_t SIZE = N * sizeof(uint32_t);
@@ -158,19 +159,18 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
     DvzDevice device = {0};
     dvz_gpu_device(gpu, &device);
     dvz_queues(qc, &device.queues);
-
-    // Create the device.
     dvz_device_create(&device);
 
+    // Memory allocator.
     DvzVma allocator = {0};
     dvz_device_allocator(&device, handle_type, &allocator);
 
+    // Create a buffer.
     VkBufferCreateInfo buf_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = SIZE,
         .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
     };
-
     VkBuffer vk_buffer = VK_NULL_HANDLE;
     DvzAllocation alloc = {0};
     dvz_allocator_buffer(
@@ -179,11 +179,13 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
         &alloc, &vk_buffer);
 
     /******************* Initialize data on Vulkan side *******************/
-    uint32_t* ptr = NULL;
-    vmaMapMemory(allocator.vma, alloc.alloc, (void**)&ptr);
+    log_trace("mapping and sending data to the buffer");
+    uint32_t* ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
+    ANN(ptr);
     for (uint32_t i = 0; i < N; i++)
         ptr[i] = i;
-    vmaUnmapMemory(allocator.vma, alloc.alloc);
+    dvz_allocator_unmap(&allocator, &alloc);
+    log_trace("data copied");
 
     /******************* Export memory FD *******************/
     int fd = -1;
@@ -192,6 +194,10 @@ int test_memory_cuda(TstSuite* suite, TstItem* tstitem)
     {
         log_error("Failed to export Vulkan memory FD");
         goto cleanup_vulkan;
+    }
+    else
+    {
+        log_trace("Vulkan memory allocation successfully exported");
     }
 
     /******************* Import into CUDA *******************/

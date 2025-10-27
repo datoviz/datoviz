@@ -100,9 +100,9 @@ int dvz_device_allocator(
     // info.pVulkanFunctions = &vulkanFunctions;
 
     // If the external is set, set it to all memory types, to be used to all allocations.
+    VkExternalMemoryHandleTypeFlagsKHR types[VK_MAX_MEMORY_TYPES] = {0};
     if (external != 0)
     {
-        VkExternalMemoryHandleTypeFlagsKHR types[VK_MAX_MEMORY_TYPES] = {0};
         for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
         {
             types[i] = external;
@@ -219,13 +219,26 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
     // NOTE: need device extension: VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT
     ENSURE_EXTERNAL
 
+    VkInstance vki = allocator->device->gpu->instance->vk_instance;
+    ANNVK(vki);
+
+    VkDevice vkd = allocator->device->vk_device;
+    ANNVK(vkd);
+
 #if OS_MACOS || OS_LINUX
     VkMemoryGetFdInfoKHR info = {.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR};
     info.memory = alloc->info.deviceMemory;
+    ANNVK(info.memory);
     info.handleType = allocator->external;
+    if (info.handleType == 0)
+    {
+        log_error(
+            "the allocator must have been created with a VkExternalMemoryHandleTypeFlagsKHR flag");
+        return -1;
+    }
 
-    LOAD_VK_FUNC(allocator->device->gpu->instance->vk_instance, vkGetMemoryFdKHR);
-    VK_RETURN_RESULT(vkGetMemoryFdKHR_d(allocator->device->vk_device, &info, handle));
+    LOAD_VK_FUNC(vki, vkGetMemoryFdKHR);
+    VK_RETURN_RESULT(vkGetMemoryFdKHR_d(vkd, &info, handle));
 
 #elif OS_WINDOWS
     // TODO
