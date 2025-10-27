@@ -44,6 +44,13 @@ typedef struct DvzVma DvzVma;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_BOOTSTRAP_MANUAL_CREATE_INSTANCE = 0x01,
+    DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE = 0x02,
+    DVZ_BOOTSTRAP_MANUAL_CREATE_ALLOCATOR = 0x05,
+} DvzBootstrapFlags;
+
 
 
 /*************************************************************************************************/

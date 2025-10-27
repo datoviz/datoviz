@@ -44,6 +44,10 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
     ANN(device);
 
     dvz_instance(instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+
+    if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_INSTANCE) != 0)
+        return;
+
     dvz_instance_create(instance, VK_API_VERSION_1_3);
 
     // Obtain the first GPU for simplicity.
@@ -60,8 +64,14 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
     // Find an adequate set of queues to request.
     dvz_queues(qc, &device->queues);
 
+    if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE) != 0)
+        return;
+
     // Create the device.
     dvz_device_create(device);
+
+    if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_ALLOCATOR) != 0)
+        return;
 
     // Create the memory allocator.
     dvz_device_allocator(device, 0, &bootstrap->allocator);
