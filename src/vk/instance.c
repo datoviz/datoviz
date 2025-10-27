@@ -188,9 +188,6 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
     instance->info_inst.enabledLayerCount = instance->req_layer_count;
     instance->info_inst.ppEnabledLayerNames = (const char* const*)instance->req_layers;
 
-    // Ensure Volk is ready (may already be initialized by dvz_instance()).
-    volk_init();
-
     // Create Vulkan instance.
     log_trace("creating Vulkan instance...");
     VkResult res = vkCreateInstance(&instance->info_inst, NULL, &instance->vk_instance);
@@ -278,8 +275,6 @@ void dvz_instance_probe_layers(DvzInstance* instance)
 {
     ANN(instance);
 
-    volk_init();
-
     if (instance->layer_count > 0)
         return;
 
@@ -363,8 +358,6 @@ void dvz_instance_request_layer(DvzInstance* instance, const char* layer)
 void dvz_instance_probe_extensions(DvzInstance* instance)
 {
     ANN(instance);
-
-    volk_init();
 
     if (instance->extension_count > 0)
         return;
