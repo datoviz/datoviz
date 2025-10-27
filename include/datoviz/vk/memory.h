@@ -127,6 +127,9 @@ DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int
 /**
  * Import an external GPU data pointer to a Vulkan buffer.
  *
+ * !!! warning
+ *     This function does NOT appear to work for now. test_memory_cuda_2() test fails.
+ *
  * @param allocator the allocator
  * @param info the buffer creation
  * @param info the buffer creation info Vulkan struct

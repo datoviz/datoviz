@@ -512,6 +512,8 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     close(fd);
     fd = -1;
 
+    // BUG: this test fails here, the buffer appears to be all zeros, as if the import didn't work.
+
     /******************* Validate Vulkan view *******************/
     uint32_t* ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
     ANN(ptr);
