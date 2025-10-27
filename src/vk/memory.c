@@ -23,8 +23,8 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
-#include <volk.h>
 #include "vulkan/vulkan_core.h"
+#include <volk.h>
 MUTE_ON
 #include "vk_mem_alloc.h"
 MUTE_OFF
@@ -37,11 +37,11 @@ MUTE_OFF
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VmaAllocatorCreateFlagBits _set_vma_flags(DvzDevice* device)
+static VmaAllocatorCreateFlags _set_vma_flags(DvzDevice* device)
 {
     ANN(device);
 
-    VmaAllocatorCreateFlagBits vma_flags = 0;
+    VmaAllocatorCreateFlags vma_flags = 0;
     if (dvz_device_has_extension(device, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME))
         vma_flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
     if (dvz_device_has_extension(device, "VK_KHR_bind_memory2"))
@@ -92,7 +92,7 @@ int dvz_device_allocator(
     allocator->device = device;
     allocator->external = external;
 
-    VmaAllocatorCreateFlagBits vma_flags = _set_vma_flags(device);
+    VmaAllocatorCreateFlags vma_flags = _set_vma_flags(device);
 
     VmaVulkanFunctions funcs = {0};
     funcs.vkGetInstanceProcAddr = vkGetInstanceProcAddr;

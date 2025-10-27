@@ -21,6 +21,7 @@
 
 #include "../types.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
@@ -228,7 +229,7 @@ int test_queues_queue_limits(TstSuite* suite, TstItem* tstitem)
     ASSERT(queues.queues[DVZ_QUEUE_TRANSFER].queue_idx == 1);
 
     qc.queue_count[1] = 1;
-    memset(&queues, 0, sizeof(queues));
+    dvz_memset(&queues, sizeof(queues), 0, sizeof(queues));
     dvz_queues(&qc, &queues);
 
     ASSERT(queues.queues[DVZ_QUEUE_COMPUTE].is_set);
