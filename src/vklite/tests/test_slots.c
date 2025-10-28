@@ -58,6 +58,7 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
 
     // Create the slots.
     int res = dvz_slots_create(&slots);
+    AT(res == 0);
 
     // Retrieve the pipeline layout handle.
     VkPipelineLayout handle = dvz_slots_handle(&slots);
