@@ -27,15 +27,14 @@ MUTE_ON
 MUTE_OFF
 #include "macros.h"
 #if OS_WINDOWS
-#include <windows.h>
 #include <vulkan/vulkan_win32.h>
+#include <windows.h>
 #endif
 #include "types.h"
 
 #if defined(VOLK_HEADER_VERSION)
 VkResult vmaImportVulkanFunctionsFromVolk(
-    const VmaAllocatorCreateInfo* pAllocatorCreateInfo,
-    VmaVulkanFunctions* pDstVulkanFunctions);
+    const VmaAllocatorCreateInfo* pAllocatorCreateInfo, VmaVulkanFunctions* pDstVulkanFunctions);
 #endif
 
 
@@ -133,7 +132,8 @@ int dvz_device_allocator(
     log_trace("creating allocator...");
     info.pVulkanFunctions = &funcs;
     VK_RETURN_RESULT(vmaCreateAllocator(&info, &allocator->vma));
-    log_trace("allocator created");
+    if (out == 0)
+        log_trace("allocator created");
 
     return out;
 }
@@ -167,7 +167,8 @@ int dvz_allocator_buffer(
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateBuffer(
         allocator->vma, info, &alloc_info, vk_buffer, &alloc->alloc, &alloc->info));
-    log_trace("buffer created");
+    if (out == 0)
+        log_trace("buffer created");
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
     vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);
@@ -195,8 +196,11 @@ int dvz_allocator_image(
     alloc_info.usage = alloc->usage = VMA_MEMORY_USAGE_AUTO;
     alloc_info.flags = alloc->flags = flags;
 
+    log_trace("creating image...");
     VK_RETURN_RESULT(
         vmaCreateImage(allocator->vma, info, &alloc_info, vk_image, &alloc->alloc, &alloc->info));
+    if (out == 0)
+        log_trace("image created");
 
     return out;
 }
@@ -265,8 +269,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
     VK_RETURN_RESULT(vkGetMemoryFdKHR(vkd, &info, handle));
 
 #elif OS_WINDOWS
-    if (!dvz_device_has_extension(
-            allocator->device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME))
+    if (!dvz_device_has_extension(allocator->device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME))
     {
         log_error("VK_KHR_external_memory_win32 extension not enabled on device; cannot export "
                   "memory handle");
@@ -353,7 +356,8 @@ int dvz_allocator_import_buffer(
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateDedicatedBuffer(
         allocator->vma, info, &alloc_info, &import_info, vk_buffer, &alloc->alloc, &alloc->info));
-    log_trace("buffer created");
+    if (out == 0)
+        log_trace("buffer created");
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
     vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);
@@ -416,7 +420,8 @@ int dvz_allocator_import_image(
     log_trace("creating image...");
     VK_RETURN_RESULT(vmaCreateDedicatedImage(
         allocator->vma, info, &alloc_info, &import_info, vk_image, &alloc->alloc, &alloc->info));
-    log_trace("image created");
+    if (out == 0)
+        log_trace("image created");
 
     // Get the memory flags found by VMA and store them in the DvzImage instance.
     vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);

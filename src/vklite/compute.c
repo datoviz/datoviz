@@ -87,8 +87,11 @@ int dvz_compute_create(DvzCompute* compute)
     VK_RETURN_RESULT(vkCreateComputePipelines(
         dvz_device_handle(compute->device), VK_NULL_HANDLE, 1, &pipelineInfo, NULL,
         &compute->vk_pipeline));
-    dvz_obj_created(&compute->obj);
-    log_trace("compute created");
+    if (out == 0)
+    {
+        dvz_obj_created(&compute->obj);
+        log_trace("compute created");
+    }
 
     return out;
 }

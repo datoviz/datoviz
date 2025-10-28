@@ -142,7 +142,11 @@ int dvz_slots_create(DvzSlots* slots)
 
     log_trace("creating pipeline layout...");
     VK_RETURN_RESULT(vkCreatePipelineLayout(vkd, &info, NULL, &slots->pipeline_layout));
-    log_trace("pipeline layout created");
+    if (out == 0)
+    {
+        log_trace("pipeline layout created");
+        dvz_obj_created(&slots->obj);
+    }
 
     return out;
 }

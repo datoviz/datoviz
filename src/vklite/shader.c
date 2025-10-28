@@ -54,9 +54,13 @@ int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShade
     info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     info.codeSize = (size_t)size;
     info.pCode = buffer;
+    log_trace("creating shader module...");
     VK_RETURN_RESULT(vkCreateShaderModule(vkd, &info, NULL, &shader->handle));
-
-    dvz_obj_init(&shader->obj);
+    if (out == 0)
+    {
+        dvz_obj_created(&shader->obj);
+        log_trace("shader module created");
+    }
 
     return out;
 }

@@ -119,9 +119,11 @@ int dvz_sampler_create(DvzSampler* sampler)
 
     VK_RETURN_RESULT(
         vkCreateSampler(dvz_device_handle(device), &info, NULL, &sampler->vk_sampler));
-
-    dvz_obj_created(&sampler->obj);
-    log_trace("sampler created");
+    if (out == 0)
+    {
+        dvz_obj_created(&sampler->obj);
+        log_trace("sampler created");
+    }
 
     return out;
 }
