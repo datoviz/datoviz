@@ -117,9 +117,9 @@ struct DvzShader
 
 struct DvzPush
 {
-    VkDeviceSize push_offset;
-    VkDeviceSize push_size;
-    VkShaderStageFlagBits push_stage;
+    VkDeviceSize offset;
+    VkDeviceSize size;
+    VkShaderStageFlagBits stages;
 };
 
 struct DvzSlots
@@ -130,14 +130,14 @@ struct DvzSlots
     // Binding types, for each set and each binding in each set.
     uint32_t set_count;
     uint32_t binding_counts[DVZ_MAX_SETS];
-    VkDescriptorType types[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
+    VkDescriptorType bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
 
     // Push constants.
     uint32_t push_count;
     DvzPush pushs[DVZ_MAX_PUSH_CONSTANTS];
 
     // Descriptor set layouts.
-    VkDescriptorSetLayout sets[DVZ_MAX_BINDINGS];
+    VkDescriptorSetLayout set_layouts[DVZ_MAX_BINDINGS];
 
     // Pipeline layout.
     VkPipelineLayout pipeline_layout;

@@ -62,10 +62,12 @@ DVZ_EXPORT void dvz_slots(DvzDevice* device, DvzSlots* slots);
  * Set the slots descriptor.
  *
  * @param slots the slots
- * @param idx the slot index to set up
+ * @param set the set index
+ * @param binding the binding index within that set
  * @param type the descriptor type for that slot
  */
-DVZ_EXPORT void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type);
+DVZ_EXPORT void
+dvz_slots_binding(DvzSlots* slots, uint32_t set, uint32_t binding, VkDescriptorType type);
 
 
 
@@ -86,8 +88,19 @@ DVZ_EXPORT void dvz_slots_push(
  * Create the slots after they have been set up.
  *
  * @param slots the slots
+ * @returns the Vulkan creation result code
  */
-DVZ_EXPORT void dvz_slots_create(DvzSlots* slots);
+DVZ_EXPORT int dvz_slots_create(DvzSlots* slots);
+
+
+
+/**
+ * Return the pipeline layout Vulkan handle.
+ *
+ * @param slots the slots
+ * @returns the pipeline layout
+ */
+DVZ_EXPORT VkPipelineLayout dvz_slots_handle(DvzSlots* slots);
 
 
 
