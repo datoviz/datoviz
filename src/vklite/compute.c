@@ -64,10 +64,15 @@ int dvz_compute_create(DvzCompute* compute)
     ANN(compute);
     ANN(compute->device);
 
-    if ((compute->layout == VK_NULL_HANDLE) || (compute->shader == VK_NULL_HANDLE))
+    if (compute->layout == VK_NULL_HANDLE)
     {
-        log_error("cannot create compute pipeline with no layout or shader");
+        log_error("cannot create compute pipeline without layout");
         return 1;
+    }
+    if (compute->shader == VK_NULL_HANDLE)
+    {
+        log_error("cannot create compute pipeline without shader");
+        return 2;
     }
 
     VkComputePipelineCreateInfo pipelineInfo = {0};
