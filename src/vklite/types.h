@@ -27,6 +27,8 @@
 #include <volk.h>
 
 #include "datoviz/common/obj.h"
+#include "datoviz/math/types.h"
+#include "datoviz/vk/enums.h"
 #include "vulkan/vulkan_core.h"
 
 
@@ -93,4 +95,16 @@ struct DvzCompute
     VkShaderModule shader;
     VkPipelineLayout layout;
     VkPipeline vk_pipeline;
+};
+
+
+
+struct DvzShader
+{
+    DvzObject obj; // used to hold the id in the mapping structure
+    DvzDevice* device;
+    DvzShaderType type;
+    DvzSize size;
+    VkShaderModule handle;
+    uint32_t* buffer; // only for SPIRV obj_type
 };
