@@ -18,9 +18,11 @@
 
 #include "../src/vk/macros.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
+#include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/compute.h"
@@ -59,6 +61,42 @@ void dvz_compute_layout(DvzCompute* compute, VkPipelineLayout layout)
 
 
 
+void dvz_compute_constant(
+    DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize size, void* data)
+{
+    ANN(compute);
+    ANN(data);
+
+    if (index >= DVZ_MAX_SPEC_CONST)
+    {
+        log_error(
+            "there can be no more than %d specialization constants per pipeline",
+            DVZ_MAX_SPEC_CONST);
+        return;
+    }
+
+    if (offset + size >= DVZ_MAX_SPEC_CONST_SIZE)
+    {
+        log_error(
+            "the specialization constant data buffer can be no more than %s",
+            dvz_pretty_size(DVZ_MAX_SPEC_CONST_SIZE));
+        return;
+    }
+
+    compute->spec_entries[index].constantID = index;
+    compute->spec_entries[index].offset = offset;
+    compute->spec_entries[index].size = size;
+
+    compute->spec_info.mapEntryCount = MAX(compute->spec_info.mapEntryCount, index + 1);
+    compute->spec_info.dataSize = MAX(compute->spec_info.dataSize, offset + size);
+    ASSERT(compute->spec_info.dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
+
+    // Copy the value in the specialization constant data buffer.
+    dvz_memcpy(&compute->spec_data[offset], size, data, size);
+}
+
+
+
 int dvz_compute_create(DvzCompute* compute)
 {
     ANN(compute);
@@ -75,13 +113,19 @@ int dvz_compute_create(DvzCompute* compute)
         return 2;
     }
 
+    VkPipelineShaderStageCreateInfo stage = {0};
+    stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    stage.pName = "main";
+    stage.module = compute->shader;
+    compute->spec_info.pMapEntries = compute->spec_entries;
+    compute->spec_info.pData = compute->spec_data;
+    stage.pSpecializationInfo = &compute->spec_info;
+
     VkComputePipelineCreateInfo pipelineInfo = {0};
-    pipelineInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-    pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    pipelineInfo.stage = stage;
     pipelineInfo.layout = compute->layout;
-    pipelineInfo.stage.pName = "main";
-    pipelineInfo.stage.module = compute->shader;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     VK_RETURN_RESULT(vkCreateComputePipelines(

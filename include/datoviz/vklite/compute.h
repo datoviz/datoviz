@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 #include "vulkan/vulkan_core.h"
 #include <stdint.h>
 #include <volk.h>
@@ -74,6 +75,20 @@ DVZ_EXPORT void dvz_compute_shader(DvzCompute* compute, VkShaderModule module);
  * @param layout the pipeline layout
  */
 DVZ_EXPORT void dvz_compute_layout(DvzCompute* compute, VkPipelineLayout layout);
+
+
+
+/**
+ * Set a specialization constant.
+ *
+ * @param compute the compute pipeline
+ * @param index the specialization constant index in the shader
+ * @param offset the offset, in bytes, of that constant, without the specialization constant data
+ * @param size the size of the specialization constant value
+ * @param data the value of the constant
+ */
+DVZ_EXPORT void dvz_compute_constant(
+    DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize size, void* data);
 
 
 

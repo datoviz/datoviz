@@ -41,6 +41,10 @@
 #define DVZ_MAX_SETS             4
 #define DVZ_MAX_BINDINGS         16
 #define DVZ_MAX_PUSH_CONSTANTS   8
+#define DVZ_MAX_SPEC_CONST       8
+
+// Arbitrarily limit the spec constant data buffer size which simplifies the implementation.
+#define DVZ_MAX_SPEC_CONST_SIZE 128
 
 
 
@@ -98,6 +102,11 @@ struct DvzCompute
 
     VkShaderModule shader;
     VkPipelineLayout layout;
+
+    VkSpecializationMapEntry spec_entries[DVZ_MAX_SPEC_CONST];
+    VkSpecializationInfo spec_info;
+    unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
+
     VkPipeline vk_pipeline;
 };
 
