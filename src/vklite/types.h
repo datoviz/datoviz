@@ -139,7 +139,7 @@ struct DvzSlots
     // Binding types, for each set and each binding in each set.
     uint32_t set_count;
     uint32_t binding_counts[DVZ_MAX_SETS];
-    VkDescriptorType bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
+    VkDescriptorSetLayoutBinding bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
 
     // Push constants.
     uint32_t push_count;

@@ -135,7 +135,7 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     // Create slots.
     DvzSlots slots = {0};
     dvz_slots(&bootstrap.device, &slots);
-    dvz_slots_binding(&slots, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    dvz_slots_binding(&slots, 0, 0, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
     dvz_slots_create(&slots);
 
     // Create a compile pipeline.

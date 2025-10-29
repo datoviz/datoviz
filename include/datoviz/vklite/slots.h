@@ -64,10 +64,13 @@ DVZ_EXPORT void dvz_slots(DvzDevice* device, DvzSlots* slots);
  * @param slots the slots
  * @param set the set index
  * @param binding the binding index within that set
+ * @param stages the shader stages to enable
  * @param type the descriptor type for that slot
+ * @param count the number of descriptor if using descriptor arrays
  */
-DVZ_EXPORT void
-dvz_slots_binding(DvzSlots* slots, uint32_t set, uint32_t binding, VkDescriptorType type);
+DVZ_EXPORT void dvz_slots_binding(
+    DvzSlots* slots, uint32_t set, uint32_t binding, VkShaderStageFlags stages,
+    VkDescriptorType type, uint32_t count);
 
 
 

@@ -63,14 +63,20 @@ void dvz_slots(DvzDevice* device, DvzSlots* slots)
 
 
 
-void dvz_slots_binding(DvzSlots* slots, uint32_t set, uint32_t binding, VkDescriptorType type)
+void dvz_slots_binding(
+    DvzSlots* slots, uint32_t set, uint32_t binding, VkShaderStageFlags stages,
+    VkDescriptorType type, uint32_t count)
 {
     ANN(slots);
     ASSERT(set < DVZ_MAX_SETS);
     ASSERT(binding < DVZ_MAX_BINDINGS);
     slots->set_count = MAX(set + 1, slots->set_count);
     slots->binding_counts[set] = MAX(binding + 1, slots->binding_counts[set]);
-    slots->bindings[set][binding] = type;
+
+    slots->bindings[set][binding].binding = binding;
+    slots->bindings[set][binding].descriptorCount = count;
+    slots->bindings[set][binding].stageFlags = stages;
+    slots->bindings[set][binding].descriptorType = type;
 }
 
 
@@ -104,24 +110,14 @@ int dvz_slots_create(DvzSlots* slots)
     // Go through all sets.
     for (uint32_t set = 0; set < slots->set_count; set++)
     {
-        VkDescriptorSetLayoutBinding layout_descriptors[DVZ_MAX_BINDINGS] = {0};
         uint32_t binding_count = slots->binding_counts[set];
         ASSERT(binding_count <= DVZ_MAX_BINDINGS);
-
-        // For each set, go through all bindings in that set.
-        for (uint32_t binding = 0; binding < binding_count; binding++)
-        {
-            layout_descriptors[binding].binding = binding;
-            layout_descriptors[binding].descriptorType = slots->bindings[set][binding];
-            layout_descriptors[binding].descriptorCount = 1;
-            layout_descriptors[binding].stageFlags = VK_SHADER_STAGE_ALL;
-        }
 
         // Create descriptor set layout.
         VkDescriptorSetLayoutCreateInfo info = {0};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         info.bindingCount = binding_count;
-        info.pBindings = layout_descriptors;
+        info.pBindings = (const VkDescriptorSetLayoutBinding*)&slots->bindings;
 
         log_trace(
             "creating descriptor set layout for set #%d with %d bindings", set, binding_count);
