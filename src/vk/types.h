@@ -120,6 +120,7 @@ struct DvzAllocation
     VmaAllocation alloc;
     VkMemoryPropertyFlags memory_flags;
     VkDeviceSize alignment; // alignment required by Vulkan
+    void* mmap;
 };
 
 

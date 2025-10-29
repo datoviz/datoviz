@@ -93,6 +93,25 @@ DVZ_EXPORT int dvz_buffer_create(DvzBuffer* buffer);
 
 
 /**
+ * Memmap a GPU buffer.
+ *
+ * @param buffer
+ * @returns the result code
+ */
+DVZ_EXPORT int dvz_buffer_map(DvzBuffer* buffer);
+
+
+
+/**
+ * Unmap a GPU buffer.
+ *
+ * @param buffer
+ */
+DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
+
+
+
+/**
  * Resize a buffer.
  *
  * @param buffer the buffer

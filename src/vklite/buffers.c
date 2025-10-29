@@ -178,6 +178,24 @@ void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
 
 
 
+int dvz_buffer_map(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    buffer->alloc.mmap = dvz_allocator_map(buffer->allocator, &buffer->alloc);
+    return buffer->alloc.mmap != NULL ? 0 : 1;
+}
+
+
+
+void dvz_buffer_unmap(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    dvz_allocator_unmap(buffer->allocator, &buffer->alloc);
+    buffer->alloc.mmap = NULL;
+}
+
+
+
 void dvz_buffer_destroy(DvzBuffer* buffer)
 {
     ANN(buffer);
