@@ -21,6 +21,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/math/types.h"
+#include "vulkan/vulkan_core.h"
 
 
 
@@ -65,7 +66,8 @@ static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {
 };
 
 static const VkDebugUtilsMessageSeverityFlagsEXT DVZ_VALIDATION_SEVERITY =
-    VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+    // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+    // VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
     VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
