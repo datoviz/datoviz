@@ -79,6 +79,18 @@ target_include_directories(dvztest
     ${PROJECT_SOURCE_DIR}/external/volk
 )
 
+if(APPLE)
+    set(_dvz_runtime_rpath "@executable_path;@loader_path")
+endif()
+
+if(APPLE)
+    # Let executables resolve bundled dylibs located next to them.
+    set_target_properties(dvztest PROPERTIES
+        BUILD_RPATH "${_dvz_runtime_rpath}"
+        INSTALL_RPATH "${_dvz_runtime_rpath}"
+    )
+endif()
+
 if(DVZ_ENABLE_CUDA)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wno-unknown-warning-option")
 
@@ -136,6 +148,14 @@ target_include_directories(dvz_public_header_probe
 
 if(_dvz_compile_definitions)
     target_compile_definitions(dvz_public_header_probe PRIVATE ${_dvz_compile_definitions})
+endif()
+
+if(APPLE)
+    # Mirror the run-path configuration for the auxiliary test executable.
+    set_target_properties(dvz_public_header_probe PROPERTIES
+        BUILD_RPATH "${_dvz_runtime_rpath}"
+        INSTALL_RPATH "${_dvz_runtime_rpath}"
+    )
 endif()
 
 if(NOT WIN32)

@@ -175,6 +175,14 @@ install(TARGETS datoviz
     LIBRARY DESTINATION lib
 )
 
+if(APPLE)
+    # Ensure the shared library can resolve sibling dylibs at runtime via dlopen().
+    set_target_properties(datoviz PROPERTIES
+        BUILD_RPATH "@loader_path"
+        INSTALL_RPATH "@loader_path"
+    )
+endif()
+
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
