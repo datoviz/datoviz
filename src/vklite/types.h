@@ -26,6 +26,7 @@
 
 #include <volk.h>
 
+#include "../vk/types.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/enums.h"
@@ -60,6 +61,8 @@ typedef struct DvzSampler DvzSampler;
 typedef struct DvzCompute DvzCompute;
 typedef struct DvzPush DvzPush;
 typedef struct DvzSlots DvzSlots;
+typedef struct DvzBuffer DvzBuffer;
+typedef struct DvzBufferViews DvzBufferViews;
 
 
 
@@ -143,4 +146,19 @@ struct DvzSlots
 
     // Pipeline layout.
     VkPipelineLayout pipeline_layout;
+};
+
+
+
+struct DvzBuffer
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzVma* allocator;
+
+    DvzSize req_size;
+    VkBufferUsageFlags req_usage;
+
+    VkBuffer vk_buffer;
+    DvzAllocation alloc;
 };

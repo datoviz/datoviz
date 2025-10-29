@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing slots                                                                                */
+/*  Testing buffers                                                                              */
 /*************************************************************************************************/
 
 
@@ -24,7 +24,8 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vklite/slots.h"
+#include "datoviz/vk/enums.h"
+#include "datoviz/vklite/buffers.h"
 #include "test_vklite.h"
 #include "testing.h"
 #include "vulkan_core.h"
@@ -32,10 +33,10 @@
 
 
 /*************************************************************************************************/
-/*  Slots tests                                                                                  */
+/*  Shader tests                                                                                */
 /*************************************************************************************************/
 
-int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
+int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -44,28 +45,16 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, 0);
 
-    // Create slots.
-    DvzSlots slots = {0};
-    dvz_slots(&bootstrap.device, &slots);
+    DvzBuffer buffer = {0};
+    DvzSize size = 65536;
 
-    // Bindings.
-    dvz_slots_binding(&slots, 0, 0, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-    dvz_slots_binding(&slots, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1);
-    dvz_slots_binding(&slots, 1, 0, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
-
-    // Push constants.
-    dvz_slots_push(&slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, 64);
-
-    // Create the slots.
-    int res = dvz_slots_create(&slots);
-    AT(res == 0);
-
-    // Retrieve the pipeline layout handle.
-    VkPipelineLayout handle = dvz_slots_handle(&slots);
-    AT(handle != VK_NULL_HANDLE);
+    dvz_buffer(&bootstrap.device, &bootstrap.allocator, &buffer);
+    dvz_buffer_size(&buffer, size);
+    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_create(&buffer);
+    dvz_buffer_destroy(&buffer);
 
     // Cleanup.
-    dvz_slots_destroy(&slots);
     dvz_bootstrap_destroy(&bootstrap);
     return 0;
 }

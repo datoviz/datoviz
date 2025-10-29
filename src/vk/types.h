@@ -146,7 +146,6 @@ struct DvzDevice
     VkDevice vk_device;
     VkCommandPool cpools[DVZ_MAX_QUEUE_FAMILIES];
     VkDescriptorPool dpool;
-    VmaAllocator allocator;
 };
 
 
