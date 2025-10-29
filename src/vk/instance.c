@@ -44,6 +44,7 @@
 
 static void volk_init(void)
 {
+    log_trace("initializing volk");
     static bool volk_initialized = false;
     if (volk_initialized)
         return;
