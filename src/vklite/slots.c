@@ -32,23 +32,6 @@
 
 
 /*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-static void fill_push(DvzSlots* slots, VkPushConstantRange* push)
-{
-    ANN(slots);
-    for (uint32_t i = 0; i < slots->push_count; i++)
-    {
-        push[i].offset = slots->pushs[i].offset;
-        push[i].size = slots->pushs[i].size;
-        push[i].stageFlags = slots->pushs[i].stages;
-    }
-}
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -90,9 +73,9 @@ void dvz_slots_push(
         log_warn("only one push constant is supported for now");
         return;
     }
-    slots->pushs[0].stages = stages;
     slots->pushs[0].offset = offset;
     slots->pushs[0].size = size;
+    slots->pushs[0].stageFlags = stages;
 }
 
 
@@ -131,10 +114,8 @@ int dvz_slots_create(DvzSlots* slots)
     info.pSetLayouts = slots->set_layouts;
 
     // Push constants.
-    VkPushConstantRange push[DVZ_MAX_PUSH_CONSTANTS] = {0};
-    fill_push(slots, push);
     info.pushConstantRangeCount = slots->push_count;
-    info.pPushConstantRanges = push;
+    info.pPushConstantRanges = slots->pushs;
 
     log_trace("creating pipeline layout...");
     VK_RETURN_RESULT(vkCreatePipelineLayout(vkd, &info, NULL, &slots->pipeline_layout));

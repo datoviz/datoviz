@@ -124,13 +124,6 @@ struct DvzShader
 
 
 
-struct DvzPush
-{
-    VkDeviceSize offset;
-    VkDeviceSize size;
-    VkShaderStageFlagBits stages;
-};
-
 struct DvzSlots
 {
     DvzObject obj;
@@ -143,7 +136,7 @@ struct DvzSlots
 
     // Push constants.
     uint32_t push_count;
-    DvzPush pushs[DVZ_MAX_PUSH_CONSTANTS];
+    VkPushConstantRange pushs[DVZ_MAX_PUSH_CONSTANTS];
 
     // Descriptor set layouts.
     VkDescriptorSetLayout set_layouts[DVZ_MAX_BINDINGS];
