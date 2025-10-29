@@ -57,6 +57,10 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
 
     // HACK: see https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/7348
     "vkQueueSubmit():  Hazard WRITE_AFTER_READ for entry 0, VkCommandBuffer",
+
+    "Internal Warning: Forcing ",
+    "Attempting to enable extension VK_EXT_debug_utils",
+    "DebugPrintf logs to the Information message severity",
 };
 
 static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {
