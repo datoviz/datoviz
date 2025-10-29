@@ -64,6 +64,14 @@ void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage)
 
 
 
+void dvz_buffer_flags(DvzBuffer* buffer, VmaAllocationCreateFlags flags)
+{
+    ANN(buffer);
+    buffer->alloc.flags = flags;
+}
+
+
+
 int dvz_buffer_create(DvzBuffer* buffer)
 {
     ANN(buffer);
@@ -75,7 +83,8 @@ int dvz_buffer_create(DvzBuffer* buffer)
     VkBufferCreateInfo buf_info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     buf_info.size = buffer->req_size;
     buf_info.usage = buffer->req_usage;
-    int out = dvz_allocator_buffer(allocator, &buf_info, 0, &buffer->alloc, &buffer->vk_buffer);
+    int out = dvz_allocator_buffer(
+        allocator, &buf_info, buffer->alloc.flags, &buffer->alloc, &buffer->vk_buffer);
 
     dvz_obj_created(&buffer->obj);
     return out;
@@ -181,6 +190,7 @@ void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
 int dvz_buffer_map(DvzBuffer* buffer)
 {
     ANN(buffer);
+    log_trace("mapping buffer memory");
     buffer->alloc.mmap = dvz_allocator_map(buffer->allocator, &buffer->alloc);
     return buffer->alloc.mmap != NULL ? 0 : 1;
 }
@@ -190,8 +200,64 @@ int dvz_buffer_map(DvzBuffer* buffer)
 void dvz_buffer_unmap(DvzBuffer* buffer)
 {
     ANN(buffer);
+    log_trace("unmapping buffer memory");
     dvz_allocator_unmap(buffer->allocator, &buffer->alloc);
     buffer->alloc.mmap = NULL;
+}
+
+
+
+void dvz_buffer_upload(DvzBuffer* buffer, DvzSize offset, DvzSize size, const void* data)
+{
+    ANN(buffer);
+    ANN(data);
+    ASSERT(size > 0);
+    if (offset + size > buffer->alloc.info.size)
+    {
+        log_error("the data is too large for the buffer");
+        return;
+    }
+
+    bool need_unmap = false;
+    if (buffer->alloc.mmap == NULL)
+    {
+        dvz_buffer_map(buffer);
+        need_unmap = true;
+    }
+
+    ANN(buffer->alloc.mmap);
+    log_trace("buffer upload of %s", dvz_pretty_size(size));
+    dvz_memcpy(POINTER_OFFSET(buffer->alloc.mmap, offset), size, data, size);
+
+    if (need_unmap)
+    {
+        dvz_buffer_unmap(buffer);
+    }
+}
+
+
+
+void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* data)
+{
+    ANN(buffer);
+    ANN(data);
+    ASSERT(size > 0);
+
+    bool need_unmap = false;
+    if (buffer->alloc.mmap == NULL)
+    {
+        dvz_buffer_map(buffer);
+        need_unmap = true;
+    }
+
+    ANN(buffer->alloc.mmap);
+    log_trace("buffer download of %s", dvz_pretty_size(size));
+    dvz_memcpy(data, size, POINTER_OFFSET(buffer->alloc.mmap, offset), size);
+
+    if (need_unmap)
+    {
+        dvz_buffer_unmap(buffer);
+    }
 }
 
 

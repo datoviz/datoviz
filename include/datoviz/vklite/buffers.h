@@ -19,6 +19,7 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/enums.h"
+#include "vk_mem_alloc.h"
 #include "vulkan/vulkan_core.h"
 #include <stdint.h>
 #include <volk.h>
@@ -83,12 +84,32 @@ DVZ_EXPORT void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage);
 
 
 /**
+ * Set the VMA creation flags.
+ *
+ * @param buffer the buffer
+ * @param flags the flags
+ */
+DVZ_EXPORT void dvz_buffer_flags(DvzBuffer* buffer, VmaAllocationCreateFlags flags);
+
+
+
+/**
  * Create the buffer after it has been set.
  *
  * @param buffer the buffer
  * @returns the Vulkan creation result code
  */
 DVZ_EXPORT int dvz_buffer_create(DvzBuffer* buffer);
+
+
+
+/**
+ * Resize a buffer.
+ *
+ * @param buffer the buffer
+ * @param size the new buffer size, in bytes
+ */
+DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size);
 
 
 
@@ -112,12 +133,35 @@ DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
 
 
 /**
- * Resize a buffer.
+ * Upload data to a GPU buffer.
+ *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller.
  *
  * @param buffer the buffer
- * @param size the new buffer size, in bytes
+ * @param offset the offset within the buffer, in bytes
+ * @param size the buffer size, in bytes
+ * @param data the data to upload
  */
-DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size);
+DVZ_EXPORT void
+dvz_buffer_upload(DvzBuffer* buffer, DvzSize offset, DvzSize size, const void* data);
+
+
+
+/**
+ * Download a buffer data to the CPU.
+ *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller.
+ *
+ * @param buffer the buffer
+ * @param offset the offset within the buffer, in bytes
+ * @param size the size of the region to download, in bytes
+ * @param[out] data (array) the buffer to download on (must be allocated with the appropriate size)
+ */
+DVZ_EXPORT void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* data);
 
 
 

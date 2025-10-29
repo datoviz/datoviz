@@ -35,6 +35,8 @@
 
 #define DVZ_MAX_STRING_LENGTH 4096
 
+#define POINTER_OFFSET(x, o) (void*)((uint64_t)(x) + (uint64_t)(o))
+
 
 
 /*************************************************************************************************/
@@ -136,15 +138,15 @@ static inline size_t dvz_strlcat(char* dst, const char* src, size_t siz)
 }
 
 #if !defined(HAVE_STRLCPY)
-#  if !defined(strlcpy)
-#    define strlcpy dvz_strlcpy
-#  endif
+#if !defined(strlcpy)
+#define strlcpy dvz_strlcpy
+#endif
 #endif
 
 #if !defined(HAVE_STRLCAT)
-#  if !defined(strlcat)
-#    define strlcat dvz_strlcat
-#  endif
+#if !defined(strlcat)
+#define strlcat dvz_strlcat
+#endif
 #endif
 
 static inline const DvzAllocator* dvz_active_allocator(void)

@@ -150,8 +150,8 @@ int dvz_allocator_buffer(
     ANN(vk_buffer);
 
     VmaAllocationCreateInfo alloc_info = {0};
-    alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-    alloc_info.flags = flags;
+    alloc_info.usage = alloc->usage = VMA_MEMORY_USAGE_AUTO;
+    alloc_info.flags = alloc->flags = flags;
 
     // External memory.
     VkExternalMemoryBufferCreateInfo external_info = {0};

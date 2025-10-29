@@ -21,6 +21,7 @@
 #include "../../vk/types.h"
 #include "../types.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
@@ -33,7 +34,16 @@
 
 
 /*************************************************************************************************/
-/*  Shader tests                                                                                */
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MAP_OFFSET 64
+#define MAP_SIZE   1024
+
+
+
+/*************************************************************************************************/
+/*  Tests                                                                                        */
 /*************************************************************************************************/
 
 int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
@@ -50,11 +60,37 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
 
     dvz_buffer(&bootstrap.device, &bootstrap.allocator, &buffer);
     dvz_buffer_size(&buffer, size);
+    dvz_buffer_flags(&buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     dvz_buffer_create(&buffer);
-    dvz_buffer_destroy(&buffer);
+
+    // Map the buffer.
+    dvz_buffer_map(&buffer);
+
+    // Create some data.
+    uint8_t data[MAP_SIZE] = {0};
+    DvzSize msize = MAP_SIZE;
+    for (uint32_t i = 0; i < MAP_SIZE; i++)
+    {
+        data[i] = i;
+    }
+    DvzSize offset = MAP_OFFSET;
+
+    // Upload the data and check.
+    dvz_buffer_upload(&buffer, offset, msize, data);
+    AT(data[10] == 10);
+
+    // Reset the data.
+    dvz_buffer_unmap(&buffer);
+    dvz_memset(data, msize, 0, msize);
+    AT(data[10] == 0);
+
+    // Download the data and check again.
+    dvz_buffer_download(&buffer, offset, msize, data);
+    AT(data[10] == 10);
 
     // Cleanup.
+    dvz_buffer_destroy(&buffer);
     dvz_bootstrap_destroy(&bootstrap);
     return 0;
 }
