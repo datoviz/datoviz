@@ -36,6 +36,8 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vklite(TstSuite* suite);

@@ -27,6 +27,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_MAX_BUFFER_VIEWS 4
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -39,8 +47,18 @@ typedef struct DvzBufferViews DvzBufferViews;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzBufferViews
+{
+    DvzBuffer* buffer;
+    uint32_t count;
+    VkDeviceSize size;
+    VkDeviceSize aligned_size; // NOTE: is non-null only for aligned arrays
+    VkDeviceSize alignment;
+    VkDeviceSize offsets[DVZ_MAX_BUFFER_VIEWS];
+};
 
 
 
@@ -171,6 +189,22 @@ DVZ_EXPORT void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize s
  * @param buffer the buffer
  */
 DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
+
+
+
+/**
+ * Create buffer views on an existing GPU buffer.
+ *
+ * @param buffer the buffer
+ * @param count the number of successive views
+ * @param offset the offset within the buffer
+ * @param size the size of each view, in bytes
+ * @param alignment the alignment requirement for the view offsets
+ * @param[out] views the created buffer views
+ */
+DVZ_EXPORT void dvz_buffer_views(
+    DvzBuffer* buffer, uint32_t count, //
+    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment, DvzBufferViews* views);
 
 
 

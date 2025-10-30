@@ -115,3 +115,35 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap_destroy(&bootstrap);
     return 0;
 }
+
+
+
+int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
+{
+    // Bootstrap.
+    DvzBootstrap bootstrap = {0};
+    dvz_bootstrap(&bootstrap, 0);
+
+    DvzBuffer buffer = {0};
+    DvzSize size = 65536;
+
+    dvz_buffer(&bootstrap.device, &bootstrap.allocator, &buffer);
+    dvz_buffer_size(&buffer, size);
+    dvz_buffer_flags(&buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_create(&buffer);
+
+    DvzBufferViews views = {0};
+    DvzSize offset = 33;
+    DvzSize vsize = 7;
+    DvzSize alignment = 16;
+    dvz_buffer_views(&buffer, 3, offset, vsize, alignment, &views);
+    AT(views.offsets[0] == 48);
+    AT(views.offsets[1] == 64);
+    AT(views.offsets[2] == 80);
+
+    // Cleanup.
+    dvz_buffer_destroy(&buffer);
+    dvz_bootstrap_destroy(&bootstrap);
+    return 0;
+}

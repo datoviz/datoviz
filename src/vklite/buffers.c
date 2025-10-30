@@ -212,3 +212,42 @@ void dvz_buffer_destroy(DvzBuffer* buffer)
     dvz_obj_destroyed(&buffer->obj);
     log_trace("buffer destroyed");
 }
+
+
+
+void dvz_buffer_views(
+    DvzBuffer* buffer, uint32_t count, //
+    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment, DvzBufferViews* views)
+{
+    ANN(buffer);
+    ANN(buffer->device);
+    ASSERT(count <= DVZ_MAX_BUFFER_VIEWS);
+
+    views->buffer = buffer;
+    views->count = count;
+    views->size = size;
+    views->alignment = alignment;
+
+    VkDeviceSize offset_req = offset;
+    if (alignment > 0)
+    {
+        // Aligned size for uniform buffers.
+        views->aligned_size = dvz_aligned_size(size, alignment);
+        // Align the offset.
+        offset = dvz_aligned_size(offset, alignment);
+        ASSERT(offset >= offset_req);
+        ASSERT(views->aligned_size >= views->size);
+        // Align the size.
+        size = views->aligned_size;
+    }
+
+    // Compute the offsets.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        views->offsets[i] = offset + i * size;
+        if (alignment > 0)
+        {
+            ASSERT(views->offsets[i] % alignment == 0);
+        }
+    }
+}
