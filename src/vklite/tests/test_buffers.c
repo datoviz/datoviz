@@ -89,6 +89,27 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_download(&buffer, offset, msize, data);
     AT(data[10] == 10);
 
+
+    // RESIZING.
+
+    // No-op as buffer is smaller.
+    dvz_buffer_resize(&buffer, size / 2);
+
+    // Download the data and check again.
+    dvz_buffer_download(&buffer, offset, msize, data);
+    AT(data[10] == 10);
+
+    VkBuffer vk_buffer = buffer.vk_buffer;
+
+    // Buffer recreated if size is larger.
+    dvz_buffer_resize(&buffer, 2 * size);
+
+    // Download the data and check again.
+    dvz_buffer_download(&buffer, offset, msize, data);
+    AT(buffer.alloc.info.size == 2 * size);
+
+    AT(buffer.vk_buffer != vk_buffer);
+
     // Cleanup.
     dvz_buffer_destroy(&buffer);
     dvz_bootstrap_destroy(&bootstrap);
