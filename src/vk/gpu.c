@@ -124,6 +124,7 @@ void dvz_gpu_probe_properties(DvzGpu* gpu)
         .pNext = &gpu->props13,
     };
 
+    log_trace("probing physical device properties...");
     vkGetPhysicalDeviceProperties2(gpu->pdevice, &gpu->props);
 }
 
@@ -132,6 +133,10 @@ void dvz_gpu_probe_properties(DvzGpu* gpu)
 VkPhysicalDeviceProperties* dvz_gpu_properties10(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->props.sType == 0)
+    {
+        dvz_gpu_probe_properties(gpu);
+    }
     return &gpu->props.properties;
 }
 
@@ -140,6 +145,10 @@ VkPhysicalDeviceProperties* dvz_gpu_properties10(DvzGpu* gpu)
 VkPhysicalDeviceVulkan11Properties* dvz_gpu_properties11(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->props.sType == 0)
+    {
+        dvz_gpu_probe_properties(gpu);
+    }
     return &gpu->props11;
 }
 
@@ -148,6 +157,10 @@ VkPhysicalDeviceVulkan11Properties* dvz_gpu_properties11(DvzGpu* gpu)
 VkPhysicalDeviceVulkan12Properties* dvz_gpu_properties12(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->props.sType == 0)
+    {
+        dvz_gpu_probe_properties(gpu);
+    }
     return &gpu->props12;
 }
 
@@ -156,6 +169,10 @@ VkPhysicalDeviceVulkan12Properties* dvz_gpu_properties12(DvzGpu* gpu)
 VkPhysicalDeviceVulkan13Properties* dvz_gpu_properties13(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->props.sType == 0)
+    {
+        dvz_gpu_probe_properties(gpu);
+    }
     return &gpu->props13;
 }
 
@@ -237,6 +254,7 @@ void dvz_gpu_probe_features(DvzGpu* gpu)
         .pNext = &gpu->features13,
     };
 
+    log_trace("probing physical device features...");
     vkGetPhysicalDeviceFeatures2(gpu->pdevice, &gpu->features);
 }
 
@@ -245,6 +263,10 @@ void dvz_gpu_probe_features(DvzGpu* gpu)
 VkPhysicalDeviceFeatures* dvz_gpu_features10(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->features.sType == 0)
+    {
+        dvz_gpu_probe_features(gpu);
+    }
     return &gpu->features.features;
 }
 
@@ -253,6 +275,10 @@ VkPhysicalDeviceFeatures* dvz_gpu_features10(DvzGpu* gpu)
 VkPhysicalDeviceVulkan11Features* dvz_gpu_features11(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->features.sType == 0)
+    {
+        dvz_gpu_probe_features(gpu);
+    }
     return &gpu->features11;
 }
 
@@ -261,6 +287,10 @@ VkPhysicalDeviceVulkan11Features* dvz_gpu_features11(DvzGpu* gpu)
 VkPhysicalDeviceVulkan12Features* dvz_gpu_features12(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->features.sType == 0)
+    {
+        dvz_gpu_probe_features(gpu);
+    }
     return &gpu->features12;
 }
 
@@ -269,6 +299,10 @@ VkPhysicalDeviceVulkan12Features* dvz_gpu_features12(DvzGpu* gpu)
 VkPhysicalDeviceVulkan13Features* dvz_gpu_features13(DvzGpu* gpu)
 {
     ANN(gpu);
+    if (gpu->features.sType == 0)
+    {
+        dvz_gpu_probe_features(gpu);
+    }
     return &gpu->features13;
 }
 
