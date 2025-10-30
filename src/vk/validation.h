@@ -59,6 +59,7 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     "vkQueueSubmit():  Hazard WRITE_AFTER_READ for entry 0, VkCommandBuffer",
 
     "Internal Warning: Forcing ",
+    "Internal Warning: Setting VkPhysicalDevice",
     "Attempting to enable extension VK_EXT_debug_utils",
     "DebugPrintf logs to the Information message severity",
 };
