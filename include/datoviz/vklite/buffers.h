@@ -75,7 +75,7 @@ EXTERN_C_ON
  *
  * @param device the device
  * @param allocator the VMA allocator
- * @param[out] buffer the create buffer
+ * @param[out] buffer the initialized buffer
  */
 DVZ_EXPORT void dvz_buffer(DvzDevice* device, DvzVma* allocator, DvzBuffer* buffer);
 

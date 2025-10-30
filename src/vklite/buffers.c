@@ -39,6 +39,7 @@
 void dvz_buffer(DvzDevice* device, DvzVma* allocator, DvzBuffer* buffer)
 {
     ANN(device);
+    ANN(allocator);
     ANN(buffer);
 
     buffer->device = device;
@@ -80,11 +81,11 @@ int dvz_buffer_create(DvzBuffer* buffer)
     DvzVma* allocator = buffer->allocator;
     ANN(allocator);
 
-    VkBufferCreateInfo buf_info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-    buf_info.size = buffer->req_size;
-    buf_info.usage = buffer->req_usage;
+    VkBufferCreateInfo info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    info.size = buffer->req_size;
+    info.usage = buffer->req_usage;
     int out = dvz_allocator_buffer(
-        allocator, &buf_info, buffer->alloc.flags, &buffer->alloc, &buffer->vk_buffer);
+        allocator, &info, buffer->alloc.flags, &buffer->alloc, &buffer->vk_buffer);
 
     dvz_obj_created(&buffer->obj);
     return out;

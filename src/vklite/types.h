@@ -30,6 +30,8 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/enums.h"
+#include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/images.h"
 #include "vulkan/vulkan_core.h"
 
 
@@ -161,4 +163,26 @@ struct DvzBuffer
 
     VkBuffer vk_buffer;
     DvzAllocation alloc;
+};
+
+
+
+struct DvzImages
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzVma* allocator;
+
+    uint32_t count;
+    uvec3 shape;
+    bool is_swapchain;
+
+    VkFormat format;
+    VkImageType image_type;
+    VkImageLayout layout;
+    VkImageTiling tiling;
+    VkImageUsageFlags usage;
+
+    VkImage vk_images[DVZ_MAX_IMAGES];
+    DvzAllocation allocs[DVZ_MAX_IMAGES];
 };
