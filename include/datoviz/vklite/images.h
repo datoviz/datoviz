@@ -136,6 +136,36 @@ DVZ_EXPORT void dvz_images_flags(DvzImages* img, VmaAllocationCreateFlags flags)
 
 
 /**
+ * Set the number of mip levels.
+ *
+ * @param image the image
+ * @param mip the number of mip levels
+ */
+DVZ_EXPORT void dvz_images_mip(DvzImages* img, uint32_t mip);
+
+
+
+/**
+ * Set the number of MSAA samples.
+ *
+ * @param image the image
+ * @param samples the Vulkan samples flags
+ */
+DVZ_EXPORT void dvz_images_samples(DvzImages* img, VkSampleCountFlags samples);
+
+
+
+/**
+ * Set the number of array layers.
+ *
+ * @param image the image
+ * @param layers the number of array layers
+ */
+DVZ_EXPORT void dvz_images_layers(DvzImages* img, uint32_t layers);
+
+
+
+/**
  * Create the images after they have been set up.
  *
  * @param images the images

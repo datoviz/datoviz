@@ -175,6 +175,8 @@ struct DvzImages
 
     uint32_t count;
     uvec3 shape;
+    uint32_t mip;    // number of mip levels
+    uint32_t layers; // number of array layers
     bool is_swapchain;
 
     VkFormat format;
@@ -182,6 +184,7 @@ struct DvzImages
     VkImageLayout layout;
     VkImageTiling tiling;
     VkImageUsageFlags usage;
+    VkSampleCountFlags samples; // for multisample antialiasing
 
     VkImage vk_images[DVZ_MAX_IMAGES];
     DvzAllocation allocs[DVZ_MAX_IMAGES];

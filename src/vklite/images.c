@@ -100,18 +100,24 @@ static int check_image_size(VkPhysicalDeviceProperties* props, VkImageType image
 /*************************************************************************************************/
 
 void dvz_images(
-    DvzDevice* device, DvzVma* allocator, VkImageType type, uint32_t count, DvzImages* images)
+    DvzDevice* device, DvzVma* allocator, VkImageType type, uint32_t count, DvzImages* img)
 {
     ANN(device);
     ANN(allocator);
-    ANN(images);
+    ANN(img);
     ASSERT(count <= DVZ_MAX_IMAGES);
 
-    images->device = device;
-    images->allocator = allocator;
-    images->image_type = type;
-    images->count = count;
-    dvz_obj_init(&images->obj);
+    img->device = device;
+    img->allocator = allocator;
+    img->image_type = type;
+    img->count = count;
+
+    // Default values.
+    img->mip = 1;
+    img->layers = 1;
+    img->samples = VK_SAMPLE_COUNT_1_BIT;
+
+    dvz_obj_init(&img->obj);
 }
 
 
@@ -132,12 +138,12 @@ void dvz_images_layout(DvzImages* img, VkImageLayout layout)
 
 
 
-void dvz_images_size(DvzImages* images, uint32_t width, uint32_t height, uint32_t depth)
+void dvz_images_size(DvzImages* img, uint32_t width, uint32_t height, uint32_t depth)
 {
-    ANN(images);
-    images->shape[0] = width;
-    images->shape[1] = height;
-    images->shape[2] = depth;
+    ANN(img);
+    img->shape[0] = width;
+    img->shape[1] = height;
+    img->shape[2] = depth;
 }
 
 
@@ -150,74 +156,109 @@ void dvz_images_tiling(DvzImages* img, VkImageTiling tiling)
 
 
 
-void dvz_images_usage(DvzImages* images, VkImageUsageFlags usage)
+void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 {
-    ANN(images);
-    // images->req_usage = usage;
-    // TODO: delete?
+    ANN(img);
+    img->usage = usage;
 }
 
 
 
-void dvz_images_flags(DvzImages* images, VmaAllocationCreateFlags flags)
+void dvz_images_flags(DvzImages* img, VmaAllocationCreateFlags flags)
 {
-    ANN(images);
-    for (uint32_t i = 0; i < images->count; i++)
+    ANN(img);
+    for (uint32_t i = 0; i < img->count; i++)
     {
-        images->allocs[i].flags = flags;
+        img->allocs[i].flags = flags;
     }
 }
 
 
 
-int dvz_images_create(DvzImages* images)
+void dvz_images_mip(DvzImages* img, uint32_t mip)
 {
-    ANN(images);
-    ANN(images->device);
+    ANN(img);
+    img->mip = mip;
+}
 
-    DvzDevice* device = images->device;
+
+
+void dvz_images_layers(DvzImages* img, uint32_t layers)
+{
+    ANN(img);
+    img->layers = layers;
+}
+
+
+
+void dvz_images_samples(DvzImages* img, VkSampleCountFlags samples)
+{
+    ANN(img);
+    img->samples = samples;
+}
+
+
+
+int dvz_images_create(DvzImages* img)
+{
+    ANN(img);
+    ANN(img->device);
+
+    DvzDevice* device = img->device;
     ANN(device);
 
-    DvzVma* allocator = images->allocator;
+    DvzVma* allocator = img->allocator;
     ANN(allocator);
 
     // Get GPU properties to check the dimensions of the image.
     VkPhysicalDeviceProperties* props = dvz_gpu_properties10(device->gpu);
-    if (check_image_size(props, images->image_type, images->shape) != 0)
+    if (check_image_size(props, img->image_type, img->shape) != 0)
     {
         log_error("abort image creation");
         return 1;
     }
 
     VkImageCreateInfo info = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    info.imageType = img->image_type;
+    info.extent.width = img->shape[0];
+    info.extent.height = img->shape[1];
+    info.extent.depth = img->shape[2];
+    info.mipLevels = MAX(1, img->mip);
+    info.arrayLayers = MAX(1, img->layers);
+    info.format = img->format;
+    info.tiling = img->tiling;
+    info.usage = img->usage;
+    info.samples = img->samples;
+    info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
     int out = 0;
-    for (uint32_t i = 0; i < images->count; i++)
+    for (uint32_t i = 0; i < img->count; i++)
     {
         out += dvz_allocator_image(
-            allocator, &info, images->allocs[i].flags, &images->allocs[i], &images->vk_images[i]);
+            allocator, &info, img->allocs[i].flags, &img->allocs[i], &img->vk_images[i]);
     }
 
-    dvz_obj_created(&images->obj);
+    dvz_obj_created(&img->obj);
 
     return out;
 }
 
 
 
-void dvz_images_destroy(DvzImages* images)
+void dvz_images_destroy(DvzImages* img)
 {
-    ANN(images);
-    ANN(images->device);
+    ANN(img);
+    ANN(img->device);
 
-    DvzVma* allocator = images->allocator;
+    DvzVma* allocator = img->allocator;
     ANN(allocator);
 
 
-    log_trace("destroying images...");
-    for (uint32_t i = 0; i < images->count; i++)
+    log_trace("destroying img...");
+    for (uint32_t i = 0; i < img->count; i++)
     {
-        dvz_allocator_destroy_image(allocator, &images->allocs[i], images->vk_images[i]);
+        dvz_allocator_destroy_image(allocator, &img->allocs[i], img->vk_images[i]);
     }
-    dvz_obj_destroyed(&images->obj);
-    log_trace("images destroyed");
+    dvz_obj_destroyed(&img->obj);
+    log_trace(" destroyed");
 }
