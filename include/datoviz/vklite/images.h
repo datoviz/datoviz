@@ -51,13 +51,12 @@ typedef struct DvzImageViews DvzImageViews;
 /*************************************************************************************************/
 
 
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
 
 EXTERN_C_ON
 
-
+/*************************************************************************************************/
+/*  Images                                                                                       */
+/*************************************************************************************************/
 
 /**
  * Initialize a set of GPU images.
@@ -181,6 +180,80 @@ DVZ_EXPORT int dvz_images_create(DvzImages* img);
  * @param images the images
  */
 DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
+
+
+
+/*************************************************************************************************/
+/*  Image views                                                                                  */
+/*************************************************************************************************/
+
+/**
+ * Create image views.
+ *
+ * @param img the images
+ * @param[out] views the created image views
+ */
+DVZ_EXPORT void dvz_image_views(DvzImages* img, DvzImageViews* views);
+
+
+
+/**
+ * Set the image views type.
+ *
+ * @param views the image views
+ * @param type the view type
+ */
+DVZ_EXPORT void dvz_image_views_type(DvzImageViews* views, VkImageViewType type);
+
+
+
+/**
+ * Set the image views aspect.
+ *
+ * @param views the image views
+ * @param aspect the aspect
+ */
+DVZ_EXPORT void dvz_image_views_aspect(DvzImageViews* views, VkImageAspectFlags aspect);
+
+
+
+/**
+ * Set the MIP levels for the views.
+ *
+ * @param views the image views
+ * @param base the mip level base
+ * @param count the mip level count
+ */
+DVZ_EXPORT void dvz_image_views_mip(DvzImageViews* views, uint32_t base, uint32_t count);
+
+
+
+/**
+ * Set the array layers for the views.
+ *
+ * @param views the image views
+ * @param base the array layer base
+ * @param count the array layer count
+ */
+DVZ_EXPORT void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint32_t count);
+
+
+
+/**
+ * Create image views.
+ *
+ * @param views the image views
+ */
+DVZ_EXPORT void dvz_image_views_create(DvzImageViews* views);
+
+
+
+/**
+ * Destroy image views.
+ *
+ * @param views the image views
+ */
+DVZ_EXPORT void dvz_image_views_destroy(DvzImageViews* views);
 
 
 

@@ -96,7 +96,7 @@ static int check_image_size(VkPhysicalDeviceProperties* props, VkImageType image
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Images                                                                                       */
 /*************************************************************************************************/
 
 void dvz_images(
@@ -254,11 +254,134 @@ void dvz_images_destroy(DvzImages* img)
     ANN(allocator);
 
 
-    log_trace("destroying img...");
+    log_trace("destroying images...");
     for (uint32_t i = 0; i < img->count; i++)
     {
         dvz_allocator_destroy_image(allocator, &img->allocs[i], img->vk_images[i]);
     }
     dvz_obj_destroyed(&img->obj);
-    log_trace(" destroyed");
+    log_trace("images destroyed");
+}
+
+
+
+/*************************************************************************************************/
+/*  Image views                                                                                  */
+/*************************************************************************************************/
+
+void dvz_image_views(DvzImages* img, DvzImageViews* views)
+{
+    ANN(img);
+    ANN(views);
+
+    views->device = img->device;
+    views->images = img;
+
+    // Default values.
+    views->layers_count = 1;
+    views->mip_count = 1;
+    views->aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+    if (img->image_type == VK_IMAGE_TYPE_1D)
+        views->type = VK_IMAGE_VIEW_TYPE_1D;
+    if (img->image_type == VK_IMAGE_TYPE_2D)
+        views->type = VK_IMAGE_VIEW_TYPE_2D;
+    if (img->image_type == VK_IMAGE_TYPE_3D)
+        views->type = VK_IMAGE_VIEW_TYPE_3D;
+
+    dvz_obj_init(&views->obj);
+}
+
+
+
+void dvz_image_views_type(DvzImageViews* views, VkImageViewType type)
+{
+    ANN(views);
+    views->type = type;
+}
+
+
+
+void dvz_image_views_aspect(DvzImageViews* views, VkImageAspectFlags aspect)
+{
+    ANN(views);
+    views->aspect = aspect;
+}
+
+
+
+void dvz_image_views_mip(DvzImageViews* views, uint32_t base, uint32_t count)
+{
+    ANN(views);
+    views->mip_base = base;
+    views->mip_count = count;
+}
+
+
+
+void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint32_t count)
+{
+    ANN(views);
+    views->layers_base = base;
+    views->layers_count = count;
+}
+
+
+
+void dvz_image_views_create(DvzImageViews* views)
+{
+    ANN(views);
+
+    DvzImages* img = views->images;
+    ANN(img);
+
+    DvzDevice* device = views->device;
+    ANN(device);
+
+    for (uint32_t i = 0; i < img->count; i++)
+    {
+        VkImageViewCreateInfo viewInfo = {0};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = img->vk_images[i];
+        viewInfo.viewType = views->type;
+        viewInfo.format = img->format;
+
+        // Mip levels.
+        viewInfo.subresourceRange.baseMipLevel = views->mip_base;
+        viewInfo.subresourceRange.levelCount = views->mip_count;
+
+        // Array layers.
+        viewInfo.subresourceRange.baseArrayLayer = views->layers_base;
+        viewInfo.subresourceRange.layerCount = views->layers_count;
+
+        viewInfo.subresourceRange.aspectMask = views->aspect;
+
+        VK_CHECK_RESULT(
+            vkCreateImageView(device->vk_device, &viewInfo, NULL, &views->vk_views[i]));
+    }
+
+    dvz_obj_created(&views->obj);
+}
+
+
+
+void dvz_image_views_destroy(DvzImageViews* views)
+{
+    ANN(views);
+
+    DvzImages* img = views->images;
+    ANN(img);
+
+    DvzDevice* device = views->device;
+    ANN(device);
+
+    for (uint32_t i = 0; i < img->count; i++)
+    {
+        if (views->vk_views[i] != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(device->vk_device, views->vk_views[i], NULL);
+            views->vk_views[i] = VK_NULL_HANDLE;
+        }
+    }
+
+    dvz_obj_destroyed(&views->obj);
 }

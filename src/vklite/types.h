@@ -65,6 +65,8 @@ typedef struct DvzPush DvzPush;
 typedef struct DvzSlots DvzSlots;
 typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzBufferViews DvzBufferViews;
+typedef struct DvzImages DvzImages;
+typedef struct DvzImageViews DvzImageViews;
 
 
 
@@ -188,4 +190,20 @@ struct DvzImages
 
     VkImage vk_images[DVZ_MAX_IMAGES];
     DvzAllocation allocs[DVZ_MAX_IMAGES];
+};
+
+
+
+struct DvzImageViews
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzImages* images;
+    VkImageViewType type;
+    VkImageAspectFlags aspect;
+    uint32_t mip_base;
+    uint32_t mip_count;
+    uint32_t layers_base;
+    uint32_t layers_count;
+    VkImageView vk_views[DVZ_MAX_IMAGES];
 };
