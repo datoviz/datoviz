@@ -5,10 +5,8 @@
  */
 
 /*************************************************************************************************/
-/*  Testing vklite                                                                               */
+/*  Testing descriptors                                                                          */
 /*************************************************************************************************/
-
-#pragma once
 
 
 
@@ -16,32 +14,37 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
+#include "../../vk/types.h"
+#include "../types.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vklite/descriptors.h"
+#include "test_vklite.h"
 #include "testing.h"
+#include "vulkan_core.h"
 
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Descriptors tests                                                                            */
 /*************************************************************************************************/
 
-int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
 
-int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem);
+    // Bootstrap.
+    DvzBootstrap bootstrap = {0};
+    dvz_bootstrap(&bootstrap, 0);
 
-int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem);
-
-int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem);
-
-int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem);
-
-int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem);
-
-int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem);
-
-int test_vklite_images_1(TstSuite* suite, TstItem* tstitem);
-
-int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
-
-
-
-int test_vklite(TstSuite* suite);
+    // Cleanup.
+    dvz_bootstrap_destroy(&bootstrap);
+    return 0;
+}

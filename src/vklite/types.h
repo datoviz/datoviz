@@ -63,6 +63,7 @@ typedef struct DvzSampler DvzSampler;
 typedef struct DvzCompute DvzCompute;
 typedef struct DvzPush DvzPush;
 typedef struct DvzSlots DvzSlots;
+typedef struct DvzDescriptors DvzDescriptors;
 typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzBufferViews DvzBufferViews;
 typedef struct DvzImages DvzImages;
@@ -150,6 +151,15 @@ struct DvzSlots
 
     // Pipeline layout.
     VkPipelineLayout pipeline_layout;
+};
+
+
+
+struct DvzDescriptors
+{
+    DvzSlots* slots;
+    DvzDevice* device;
+    VkDescriptorSet vk_descriptors[DVZ_MAX_SETS];
 };
 
 
