@@ -47,8 +47,8 @@ void dvz_slots(DvzDevice* device, DvzSlots* slots)
 
 
 void dvz_slots_binding(
-    DvzSlots* slots, uint32_t set, uint32_t binding, VkShaderStageFlags stages,
-    VkDescriptorType type, uint32_t count)
+    DvzSlots* slots, uint32_t set, uint32_t binding, uint32_t array_count,
+    VkShaderStageFlags stages, VkDescriptorType type)
 {
     ANN(slots);
     ASSERT(set < DVZ_MAX_SETS);
@@ -57,7 +57,7 @@ void dvz_slots_binding(
     slots->binding_counts[set] = MAX(binding + 1, slots->binding_counts[set]);
 
     slots->bindings[set][binding].binding = binding;
-    slots->bindings[set][binding].descriptorCount = count;
+    slots->bindings[set][binding].descriptorCount = array_count;
     slots->bindings[set][binding].stageFlags = stages;
     slots->bindings[set][binding].descriptorType = type;
 }

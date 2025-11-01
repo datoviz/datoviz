@@ -50,9 +50,9 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
     dvz_slots(&bootstrap.device, &slots);
 
     // Bindings.
-    dvz_slots_binding(&slots, 0, 0, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1);
-    dvz_slots_binding(&slots, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1);
-    dvz_slots_binding(&slots, 1, 0, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1);
+    dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_slots_binding(&slots, 0, 1, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+    dvz_slots_binding(&slots, 1, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Push constants.
     dvz_slots_push(&slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, 64);
