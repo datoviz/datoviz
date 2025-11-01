@@ -100,7 +100,7 @@ int dvz_slots_create(DvzSlots* slots)
         VkDescriptorSetLayoutCreateInfo info = {0};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         info.bindingCount = binding_count;
-        info.pBindings = (const VkDescriptorSetLayoutBinding*)&slots->bindings;
+        info.pBindings = (const VkDescriptorSetLayoutBinding*)&slots->bindings[set];
 
         log_trace(
             "creating descriptor set layout for set #%d with %d bindings", set, binding_count);

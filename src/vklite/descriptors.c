@@ -43,6 +43,9 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     DvzDevice* device = slots->device;
     ANN(device);
 
+    descriptors->device = device;
+    descriptors->slots = slots;
+
     VkDescriptorSetAllocateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     info.descriptorPool = device->dpool;
@@ -75,11 +78,11 @@ void dvz_descriptors_buffer(
 
     VkWriteDescriptorSet dsw = {0};
     dsw.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    dsw.descriptorType = slots->bindings[set][binding].descriptorType;
     dsw.dstSet = descriptors->vk_descriptors[set];
     dsw.dstBinding = binding;
     dsw.dstArrayElement = array_idx;
     dsw.descriptorCount = 1;
-    dsw.descriptorType = slots->bindings[set][binding].descriptorType;
     dsw.pBufferInfo = &buf_info;
 
     vkUpdateDescriptorSets(device->vk_device, 1, &dsw, 0, NULL);
