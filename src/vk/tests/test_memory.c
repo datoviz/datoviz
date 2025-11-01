@@ -99,7 +99,6 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     img_info.mipLevels = 1;
     img_info.arrayLayers = 1;
     img_info.format = VK_FORMAT_R8G8B8A8_UNORM;
-    img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     img_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     img_info.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -112,7 +111,8 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_bootstrap_destroy(&bootstrap);
-    return 0;
+
+    RETURN_VALIDATION
 }
 
 

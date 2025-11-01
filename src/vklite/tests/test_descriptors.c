@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../../vk/tests/test_vk.h"
 #include "../../vk/types.h"
 #include "../types.h"
 #include "_assertions.h"
@@ -79,7 +80,6 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &images);
     dvz_images_format(&images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&images, 256, 256, 1);
-    dvz_images_tiling(&images, VK_IMAGE_TILING_OPTIMAL);
     dvz_images_layout(&images, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     dvz_images_mip(&images, 1);
     dvz_images_layers(&images, 2);
@@ -109,5 +109,6 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&sbuf);
     dvz_slots_destroy(&slots);
     dvz_bootstrap_destroy(&bootstrap);
-    return 0;
+
+    RETURN_VALIDATION
 }

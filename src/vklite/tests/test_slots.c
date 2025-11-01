@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../../vk/tests/test_vk.h"
 #include "../../vk/types.h"
 #include "../types.h"
 #include "_assertions.h"
@@ -67,5 +68,6 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_slots_destroy(&slots);
     dvz_bootstrap_destroy(&bootstrap);
-    return 0;
+
+    RETURN_VALIDATION
 }

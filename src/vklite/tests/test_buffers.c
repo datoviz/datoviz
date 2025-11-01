@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../../vk/tests/test_vk.h"
 #include "../../vk/types.h"
 #include "../types.h"
 #include "_assertions.h"
@@ -113,7 +114,8 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_buffer_destroy(&buffer);
     dvz_bootstrap_destroy(&bootstrap);
-    return 0;
+
+    RETURN_VALIDATION
 }
 
 
@@ -145,5 +147,6 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_buffer_destroy(&buffer);
     dvz_bootstrap_destroy(&bootstrap);
-    return 0;
+
+    RETURN_VALIDATION
 }
