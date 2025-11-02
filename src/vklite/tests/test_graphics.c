@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Testing graphics                                                                             */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <float.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
+#include "../../vk/tests/test_vk.h"
+#include "../../vk/types.h"
+#include "../types.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vklite/graphics.h"
+#include "datoviz/vklite/images.h"
+#include "datoviz/vklite/slots.h"
+#include "test_vklite.h"
+#include "testing.h"
+
+
+
+/*************************************************************************************************/
+/*  Graphics tests                                                                            */
+/*************************************************************************************************/

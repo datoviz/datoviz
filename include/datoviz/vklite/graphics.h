@@ -71,26 +71,25 @@ DVZ_EXPORT void dvz_graphics(DvzDevice* device, DvzGraphics* graphics);
  *
  * @param graphics the graphics pipeline
  * @param stage the shader stage
- * @param module the shader module
+ * @param shader the shader module
  */
 DVZ_EXPORT void
-dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, VkShaderModule module);
+dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, VkShaderModule shader);
 
 
 
 /**
- * Declare a specialization constant for a graphics pipeline.
+ * Set a specialization constant.
  *
  * @param graphics the graphics pipeline
- * @param stage the shader stage
- * @param constant_id the constant ID
- * @param offset the offset of the value within the shader's specialization data buffer
- * @param size the size of the value within the shader's specialization data buffer
- * @param data the shader's specialization data buffer
+ * @param index the specialization constant index in the shader
+ * @param offset the offset, in bytes, of that constant, without the specialization constant data
+ * @param size the size of the specialization constant value
+ * @param data the value of the constant
  */
-DVZ_EXPORT void dvz_graphics_specialization(
-    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t constant_id, //
-    DvzSize offset, DvzSize size, void* data);
+DVZ_EXPORT void
+dvz_graphics_spec(DvzGraphics* graphics, uint32_t index, DvzSize offset, DvzSize size, void* data);
+
 
 
 /**
@@ -153,25 +152,12 @@ DVZ_EXPORT void dvz_graphics_vertex_attr(
 
 
 /**
- * Set the slots of a graphics pipeline.
+ * Set the pipeline layout.
  *
  * @param graphics the graphics pipeline
- * @param slots the slots
+ * @param layout the pipeline layout
  */
-DVZ_EXPORT void dvz_graphics_slots(DvzGraphics* graphics, DvzSlots* slots);
-
-
-
-/**
- * Set a graphics pipeline push constant.
- *
- * @param graphics the graphics pipeline
- * @param stages the shader stages that will access the push constant
- * @param offset the push constant offset, in bytes
- * @param offset the push size, in bytes
- */
-DVZ_EXPORT void dvz_graphics_push(
-    DvzGraphics* graphics, VkShaderStageFlagBits stages, DvzSize offset, DvzSize size);
+DVZ_EXPORT void dvz_graphics_layout(DvzGraphics* graphics, VkPipelineLayout layout);
 
 
 
@@ -337,8 +323,8 @@ DVZ_EXPORT void dvz_graphics_viewport(
  * @param flags indicate whether the blending constants are fixed or dynamic state set in the
  * command buffer
  */
-DVZ_EXPORT void
-dvz_graphics_blend(DvzGraphics* graphics, bool enable, VkLogicOp op, vec4 constants, int flags);
+DVZ_EXPORT
+void dvz_graphics_blend(DvzGraphics* graphics, VkLogicOp op, vec4 constants, int flags);
 
 
 
@@ -402,6 +388,17 @@ DVZ_EXPORT void dvz_graphics_create(DvzGraphics* graphics);
  * @param graphics the graphics pipeline
  */
 DVZ_EXPORT void dvz_graphics_destroy(DvzGraphics* graphics);
+
+
+
+/**
+ * Bind a graphics pipeline.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param graphics the graphics pipeline
+ */
+DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics);
 
 
 

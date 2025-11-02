@@ -36,6 +36,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_MAX_ATTACHMENTS      8
 #define DVZ_MAX_BINDINGS         16
 #define DVZ_MAX_DYNAMIC_STATES   32
 #define DVZ_MAX_PUSH_CONSTANTS   8
@@ -226,7 +227,7 @@ struct DvzImageViews
 
 struct DvzGraphics
 {
-    DvzObject* obj;
+    DvzObject obj;
     DvzDevice* device;
 
     uint32_t shader_count;
@@ -238,18 +239,60 @@ struct DvzGraphics
     VkSpecializationInfo spec_info;
     unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
 
-    VkPrimitiveTopology topology;
-    VkPolygonMode polygon_mode;
-    VkCullModeFlags cull_mode;
-    VkFrontFace front_face;
-
-    VkDynamicState dynamic_states[DVZ_MAX_DYNAMIC_STATES];
-
     uint32_t vertex_binding_count;
     VkVertexInputBindingDescription vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
 
     uint32_t vertex_attr_count;
     VkVertexInputAttributeDescription vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
+
+    VkPrimitiveTopology topology;
+    VkPolygonMode polygon_mode;
+    VkCullModeFlags cull_mode;
+    VkFrontFace front_face;
+    bool primitive_restart;
+
+    VkFormat attachments_colors[DVZ_MAX_ATTACHMENTS];
+    VkFormat attachments_depth;
+    VkFormat attachments_stencil;
+
+    bool depth_test;
+    bool depth_write;
+    VkCompareOp depth_compare;
+
+    bool depth_bounds_test;
+    vec2 depth_bounds;
+
+    bool depth_bias;
+    float depth_constant;
+    float depth_clamp;
+    float depth_slope;
+
+    bool stencil_test;
+    VkStencilFaceFlags stencil_mask;
+    VkStencilOp stencil_fail;
+    VkStencilOp stencil_pass;
+
+    VkStencilOp stencil_depth_fail;
+    VkCompareOp stencil_compare;
+    uint32_t stencil_compare_mask;
+    uint32_t stencil_write_mask;
+    uint32_t stencil_reference;
+
+    VkRect2D scissor;
+    VkViewport viewport;
+
+    bool blend_enable;
+    VkLogicOp blend_op;
+    vec4 blend_constants;
+
+    VkPipelineColorBlendAttachmentState blend[DVZ_MAX_ATTACHMENTS];
+
+    VkSampleCountFlagBits msaa_samples;
+    float msaa_min_sample_shading;
+    bool msaa_alpha_coverage;
+
+    uint32_t dynamic_count;
+    VkDynamicState dynamic_states[DVZ_MAX_DYNAMIC_STATES];
 
     VkPipeline vk_pipeline;
 };

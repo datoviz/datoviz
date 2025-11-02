@@ -57,7 +57,7 @@ void dvz_compute_layout(DvzCompute* compute, VkPipelineLayout layout)
 
 
 
-void dvz_compute_constant(
+void dvz_compute_spec(
     DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize size, void* data)
 {
     ANN(compute);
@@ -148,12 +148,13 @@ void dvz_compute_destroy(DvzCompute* compute)
         log_trace("skip destruction of already-destroyed compute");
         return;
     }
-    log_trace("destroy compute");
 
     if (compute->vk_pipeline != VK_NULL_HANDLE)
     {
+        log_trace("destroying compute...");
         vkDestroyPipeline(dvz_device_handle(compute->device), compute->vk_pipeline, NULL);
         compute->vk_pipeline = VK_NULL_HANDLE;
+        log_trace("compute destroyed");
     }
 
     dvz_obj_destroyed(&compute->obj);

@@ -85,8 +85,8 @@ DVZ_EXPORT void dvz_compute_layout(DvzCompute* compute, VkPipelineLayout layout)
  * @param size the size of the specialization constant value
  * @param data the value of the constant
  */
-DVZ_EXPORT void dvz_compute_constant(
-    DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize size, void* data);
+DVZ_EXPORT void
+dvz_compute_spec(DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize size, void* data);
 
 
 
