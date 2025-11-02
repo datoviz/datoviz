@@ -17,19 +17,14 @@
 #include <stdint.h>
 
 #include "../src/vk/macros.h"
-#include "_alloc.h"
 #include "_assertions.h"
-#include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/images.h"
 #include "types.h"
-#include "vulkan/vulkan_core.h"
 
 
 

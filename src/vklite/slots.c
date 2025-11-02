@@ -14,20 +14,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdint.h>
-
+#include "datoviz/vklite/slots.h"
 #include "../src/vk/macros.h"
-#include "_alloc.h"
 #include "_assertions.h"
-#include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include "datoviz/vklite/slots.h"
 #include "types.h"
-#include "vulkan/vulkan_core.h"
 
 
 
@@ -64,8 +58,7 @@ void dvz_slots_binding(
 
 
 
-void dvz_slots_push(
-    DvzSlots* slots, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size)
+void dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offset, DvzSize size)
 {
     ANN(slots);
     if (slots->push_count >= 1)

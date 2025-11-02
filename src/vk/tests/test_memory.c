@@ -33,14 +33,12 @@
 #endif
 
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "test_vk.h"
 #include "testing.h"
-#include "vulkan/vulkan_core.h"
 
 #if HAS_CUDA
 static int cuda_check(CUresult res, const char* label)

@@ -18,10 +18,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
-#include "datoviz/vk/enums.h"
 #include "vk_mem_alloc.h"
-#include "vulkan/vulkan_core.h"
-#include <stdint.h>
 #include <volk.h>
 
 
@@ -54,10 +51,10 @@ struct DvzBufferViews
 {
     DvzBuffer* buffer;
     uint32_t count;
-    VkDeviceSize size;
-    VkDeviceSize aligned_size; // NOTE: is non-null only for aligned arrays
-    VkDeviceSize alignment;
-    VkDeviceSize offsets[DVZ_MAX_BUFFER_VIEWS];
+    DvzSize size;
+    DvzSize aligned_size; // NOTE: is non-null only for aligned arrays
+    DvzSize alignment;
+    DvzSize offsets[DVZ_MAX_BUFFER_VIEWS];
 };
 
 
@@ -204,7 +201,7 @@ DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
  */
 DVZ_EXPORT void dvz_buffer_views(
     DvzBuffer* buffer, uint32_t count, //
-    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment, DvzBufferViews* views);
+    DvzSize offset, DvzSize size, DvzSize alignment, DvzBufferViews* views);
 
 
 

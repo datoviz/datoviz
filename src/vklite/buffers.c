@@ -16,19 +16,15 @@
 
 #include <stdint.h>
 
-#include "../src/vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
 #include "types.h"
-#include "vulkan/vulkan_core.h"
 
 
 
@@ -218,7 +214,7 @@ void dvz_buffer_destroy(DvzBuffer* buffer)
 
 void dvz_buffer_views(
     DvzBuffer* buffer, uint32_t count, //
-    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment, DvzBufferViews* views)
+    DvzSize offset, DvzSize size, DvzSize alignment, DvzBufferViews* views)
 {
     ANN(buffer);
     ANN(buffer->device);
@@ -229,7 +225,7 @@ void dvz_buffer_views(
     views->size = size;
     views->alignment = alignment;
 
-    VkDeviceSize offset_req = offset;
+    DvzSize offset_req = offset;
     if (alignment > 0)
     {
         // Aligned size for uniform buffers.

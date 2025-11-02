@@ -14,18 +14,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdint.h>
-
-#include <volk.h>
-
-#include "_assertions.h"
+#include "datoviz/vk/queues.h"
 #include "_alloc.h"
+#include "_assertions.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
-#include "datoviz/vk/queues.h"
 #include "macros.h"
 #include "types.h"
-#include "vulkan/vulkan_core.h"
+#include <volk.h>
 
 
 

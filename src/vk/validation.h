@@ -16,12 +16,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <volk.h>
-
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/math/types.h"
-#include "vulkan/vulkan_core.h"
+#include <volk.h>
 
 
 

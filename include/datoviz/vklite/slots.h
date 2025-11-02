@@ -18,8 +18,6 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
-#include "vulkan/vulkan_core.h"
-#include <stdint.h>
 #include <volk.h>
 
 
@@ -82,8 +80,8 @@ DVZ_EXPORT void dvz_slots_binding(
  * @param offset the push constant offset, in bytes
  * @param size the push constant size, in bytes
  */
-DVZ_EXPORT void dvz_slots_push(
-    DvzSlots* slots, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size);
+DVZ_EXPORT void
+dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offset, DvzSize size);
 
 
 

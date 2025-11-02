@@ -22,17 +22,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdint.h>
-
-#include <volk.h>
-
 #include "../vk/types.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/images.h"
-#include "vulkan/vulkan_core.h"
+#include <volk.h>
 
 
 

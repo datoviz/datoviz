@@ -17,11 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
-#include "datoviz/math/types.h"
-#include "datoviz/vk/enums.h"
 #include "vk_mem_alloc.h"
-#include "vulkan/vulkan_core.h"
-#include <stdint.h>
 #include <volk.h>
 
 

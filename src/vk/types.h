@@ -16,7 +16,6 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-#include "vulkan/vulkan_core.h"
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
 
@@ -26,19 +25,16 @@ typedef struct DvzGpu DvzGpu;
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/common/obj.h"
+#include "datoviz/math/types.h"
+#include "datoviz/vk/queues.h"
 #include <stdint.h>
 
 #include <volk.h>
-
-#include "datoviz/common/obj.h"
-
 MUTE_ON
 #define VMA_EXTERNAL_MEMORY 1
 #include "vk_mem_alloc.h"
 MUTE_OFF
-
-#include "datoviz/common/obj.h"
-#include "datoviz/vk/queues.h"
 
 
 
@@ -119,7 +115,7 @@ struct DvzAllocation
     VmaAllocationInfo info;
     VmaAllocation alloc;
     VkMemoryPropertyFlags memory_flags;
-    VkDeviceSize alignment; // alignment required by Vulkan
+    DvzSize alignment; // alignment required by Vulkan
     void* mmap;
 };
 

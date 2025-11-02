@@ -14,20 +14,16 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdint.h>
-
+#include "datoviz/vklite/shader.h"
 #include "../src/vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include "datoviz/vklite/shader.h"
 #include "types.h"
-#include "vulkan/vulkan_core.h"
 
 
 
