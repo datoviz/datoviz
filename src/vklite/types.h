@@ -36,14 +36,18 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_SWAPCHAIN_IMAGES 4
-#define DVZ_MAX_SETS             4
 #define DVZ_MAX_BINDINGS         16
+#define DVZ_MAX_DYNAMIC_STATES   32
 #define DVZ_MAX_PUSH_CONSTANTS   8
-#define DVZ_MAX_SPEC_CONST       8
+#define DVZ_MAX_SETS             4
+#define DVZ_MAX_SHADERS          4
+#define DVZ_MAX_SWAPCHAIN_IMAGES 4
+#define DVZ_MAX_VERTEX_ATTRS     16
+#define DVZ_MAX_VERTEX_BINDINGS  8
 
 // Arbitrarily limit the spec constant data buffer size which simplifies the implementation.
 #define DVZ_MAX_SPEC_CONST_SIZE 128
+#define DVZ_MAX_SPEC_CONST      8
 
 
 
@@ -64,6 +68,9 @@ typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzBufferViews DvzBufferViews;
 typedef struct DvzImages DvzImages;
 typedef struct DvzImageViews DvzImageViews;
+typedef struct DvzVertexBinding DvzVertexBinding;
+typedef struct DvzVertexAttr DvzVertexAttr;
+typedef struct DvzSpecialization DvzSpecialization;
 
 
 
@@ -205,6 +212,7 @@ struct DvzImageViews
     DvzObject obj;
     DvzDevice* device;
     DvzImages* images;
+
     VkImageViewType type;
     VkImageAspectFlags aspect;
     uint32_t mip_base;
@@ -212,4 +220,36 @@ struct DvzImageViews
     uint32_t layers_base;
     uint32_t layers_count;
     VkImageView vk_views[DVZ_MAX_IMAGES];
+};
+
+
+
+struct DvzGraphics
+{
+    DvzObject* obj;
+    DvzDevice* device;
+
+    uint32_t shader_count;
+    VkShaderStageFlagBits shader_stages[DVZ_MAX_SHADERS];
+    VkShaderModule shaders[DVZ_MAX_SHADERS];
+    VkPipelineLayout layout;
+
+    VkSpecializationMapEntry spec_entries[DVZ_MAX_SPEC_CONST];
+    VkSpecializationInfo spec_info;
+    unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
+
+    VkPrimitiveTopology topology;
+    VkPolygonMode polygon_mode;
+    VkCullModeFlags cull_mode;
+    VkFrontFace front_face;
+
+    VkDynamicState dynamic_states[DVZ_MAX_DYNAMIC_STATES];
+
+    uint32_t vertex_binding_count;
+    VkVertexInputBindingDescription vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
+
+    uint32_t vertex_attr_count;
+    VkVertexInputAttributeDescription vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
+
+    VkPipeline vk_pipeline;
 };
