@@ -426,7 +426,7 @@ void dvz_graphics_multisampling(
 void dvz_graphics_create(DvzGraphics* graphics)
 {
     ANN(graphics);
-    // TODOf
+    // TODO
 }
 
 
@@ -460,4 +460,6 @@ void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphic
     ANN(cmds);
     ANN(graphics);
     vkCmdBindPipeline(cmds->cmds[idx], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->vk_pipeline);
+
+    // TODO: go through all dynamic states and call the relevant vkCmdSet*() commands.
 }
