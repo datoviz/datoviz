@@ -36,6 +36,48 @@ file(GLOB TEST_SOURCES
     "dvztest.c"
 )
 
+set(DVZ_TEST_SPIRV_DIR "${PROJECT_BINARY_DIR}/testing/spirv")
+set(DVZ_TEST_SHADER_DIR "${PROJECT_SOURCE_DIR}/src/vklite/tests/shaders")
+file(GLOB DVZ_VKLITE_TEST_SHADERS
+    "${DVZ_TEST_SHADER_DIR}/*.vert"
+    "${DVZ_TEST_SHADER_DIR}/*.frag"
+    "${DVZ_TEST_SHADER_DIR}/*.comp"
+)
+
+if(DVZ_VKLITE_TEST_SHADERS)
+    file(MAKE_DIRECTORY "${DVZ_TEST_SPIRV_DIR}")
+
+    find_program(DVZ_GLSLC_EXECUTABLE
+        NAMES glslc
+        HINTS
+            "$ENV{VULKAN_SDK}/bin"
+            "$ENV{VULKAN_SDK}/Bin"
+            "${PROJECT_SOURCE_DIR}/bin/vulkan/linux"
+            "${PROJECT_SOURCE_DIR}/bin/vulkan/macos"
+            "${PROJECT_SOURCE_DIR}/bin/vulkan/windows"
+    )
+
+    if(NOT DVZ_GLSLC_EXECUTABLE)
+        message(FATAL_ERROR "glslc is required to compile vklite test shaders.")
+    endif()
+
+    set(DVZ_VKLITE_TEST_SPIRV_OUTPUTS)
+    foreach(_dvz_shader ${DVZ_VKLITE_TEST_SHADERS})
+        get_filename_component(_dvz_shader_name "${_dvz_shader}" NAME)
+        set(_dvz_shader_output "${DVZ_TEST_SPIRV_DIR}/${_dvz_shader_name}.spv")
+        add_custom_command(
+            OUTPUT "${_dvz_shader_output}"
+            COMMAND ${DVZ_GLSLC_EXECUTABLE} -o "${_dvz_shader_output}" "${_dvz_shader}"
+            DEPENDS "${_dvz_shader}"
+            COMMENT "Compiling ${_dvz_shader_name} to SPIR-V"
+            VERBATIM
+        )
+        list(APPEND DVZ_VKLITE_TEST_SPIRV_OUTPUTS "${_dvz_shader_output}")
+    endforeach()
+
+    add_custom_target(vklite_test_shaders DEPENDS ${DVZ_VKLITE_TEST_SPIRV_OUTPUTS})
+endif()
+
 # Build one executable: dvztest
 add_executable(dvztest ${TEST_SOURCES})
 
@@ -55,6 +97,10 @@ target_link_libraries(dvztest
 
 if(DVZ_THREADING_TARGET)
     target_link_libraries(dvztest PRIVATE ${DVZ_THREADING_TARGET})
+endif()
+
+if(TARGET vklite_test_shaders)
+    add_dependencies(dvztest vklite_test_shaders)
 endif()
 
 if(DVZ_WITH_MIMALLOC)
@@ -124,6 +170,8 @@ endif()
 if(_dvz_compile_definitions)
     target_compile_definitions(dvztest PRIVATE ${_dvz_compile_definitions})
 endif()
+
+target_compile_definitions(dvztest PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
 
 # -------------------------------------------------------------------------------------------------
 # Public header probe
