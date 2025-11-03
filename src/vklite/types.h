@@ -235,9 +235,10 @@ struct DvzGraphics
     VkShaderModule shaders[DVZ_MAX_SHADERS];
     VkPipelineLayout layout;
 
-    VkSpecializationMapEntry spec_entries[DVZ_MAX_SPEC_CONST];
-    VkSpecializationInfo spec_info;
-    unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
+    VkSpecializationMapEntry spec_entries[DVZ_MAX_SHADERS][DVZ_MAX_SPEC_CONST];
+    VkSpecializationInfo spec_info[DVZ_MAX_SHADERS];
+    // Specialization constant data buffer.
+    unsigned char spec_data[DVZ_MAX_SHADERS][DVZ_MAX_SPEC_CONST_SIZE];
 
     uint32_t vertex_binding_count;
     VkVertexInputBindingDescription vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];

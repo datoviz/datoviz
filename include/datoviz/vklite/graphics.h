@@ -82,13 +82,15 @@ dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, VkShader
  * Set a specialization constant.
  *
  * @param graphics the graphics pipeline
+ * @param stage the shader stage
  * @param index the specialization constant index in the shader
  * @param offset the offset, in bytes, of that constant, without the specialization constant data
  * @param size the size of the specialization constant value
  * @param data the value of the constant
  */
-DVZ_EXPORT void
-dvz_graphics_spec(DvzGraphics* graphics, uint32_t index, DvzSize offset, DvzSize size, void* data);
+DVZ_EXPORT void dvz_graphics_spec(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t index, DvzSize offset,
+    DvzSize size, void* data);
 
 
 
@@ -377,8 +379,9 @@ DVZ_EXPORT void dvz_graphics_multisampling(
  * Create a graphics pipeline after it has been set up.
  *
  * @param graphics the graphics pipeline
+ * @returns the creation result code
  */
-DVZ_EXPORT void dvz_graphics_create(DvzGraphics* graphics);
+DVZ_EXPORT int dvz_graphics_create(DvzGraphics* graphics);
 
 
 

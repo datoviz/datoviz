@@ -52,6 +52,116 @@ static void set_dynamic(DvzGraphics* graphics, VkDynamicState state)
 
 
 
+static int get_shader_index(DvzGraphics* graphics, VkShaderStageFlagBits stage)
+{
+    for (uint32_t i = 0; i < graphics->shader_count; i++)
+    {
+        if (graphics->shader_stages[i] == stage)
+        {
+            return (int)i;
+        }
+    }
+    return -1;
+}
+
+
+
+/*************************************************************************************************/
+/*  Pipeline creation helpers                                                                    */
+/*************************************************************************************************/
+
+static void set_shaders(DvzGraphics* graphics, VkPipelineShaderStageCreateInfo* shaders)
+{
+    ANN(graphics);
+    ANN(shaders);
+
+    for (uint32_t i = 0; i < graphics->shader_count; i++)
+    {
+        shaders[i].module = graphics->shaders[i];
+        shaders[i].stage = graphics->shader_stages[i];
+        shaders[i].pName = "main";
+        shaders[i].pSpecializationInfo = &graphics->spec_info[i];
+    }
+}
+
+
+
+static void set_vertex_input(
+    DvzGraphics* graphics, VkPipelineVertexInputStateCreateInfo* vertex_input,
+    VkVertexInputBindingDescription* bindings_info, VkVertexInputAttributeDescription* attrs_info)
+{
+    ANN(graphics);
+    ANN(vertex_input);
+    ANN(bindings_info);
+    ANN(attrs_info);
+}
+
+
+
+static void
+set_input_assembly(DvzGraphics* graphics, VkPipelineInputAssemblyStateCreateInfo* input_assembly)
+{
+    ANN(graphics);
+    ANN(input_assembly);
+}
+
+
+
+static void
+set_rasterizer(DvzGraphics* graphics, VkPipelineRasterizationStateCreateInfo* rasterizer)
+{
+    ANN(graphics);
+    ANN(rasterizer);
+}
+
+
+
+static void set_attachments(
+    DvzGraphics* graphics, VkPipelineColorBlendStateCreateInfo* color_blend,
+    VkPipelineColorBlendAttachmentState* color_attachments)
+{
+    ANN(graphics);
+    ANN(color_blend);
+    ANN(color_attachments);
+}
+
+
+
+static void
+set_depth_stencil(DvzGraphics* graphics, VkPipelineDepthStencilStateCreateInfo* depth_stencil)
+{
+    ANN(graphics);
+    ANN(depth_stencil);
+}
+
+
+
+static void
+set_multisampling(DvzGraphics* graphics, VkPipelineMultisampleStateCreateInfo* multisampling)
+{
+    ANN(graphics);
+    ANN(multisampling);
+}
+
+
+
+static void set_viewport(DvzGraphics* graphics, VkPipelineViewportStateCreateInfo* viewport)
+{
+    ANN(graphics);
+    ANN(viewport);
+}
+
+
+
+static void
+set_dynamic_state(DvzGraphics* graphics, VkPipelineDynamicStateCreateInfo* dynamic_state)
+{
+    ANN(graphics);
+    ANN(dynamic_state);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -85,10 +195,18 @@ void dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, VkS
 
 
 void dvz_graphics_spec(
-    DvzGraphics* graphics, uint32_t index, DvzSize offset, DvzSize size, void* data)
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t index, DvzSize offset,
+    DvzSize size, void* data)
 {
     ANN(graphics);
     ANN(data);
+    int shader_idx = get_shader_index(graphics, stage);
+    if (shader_idx < 0)
+    {
+        log_error("could not find shader stage %d in graphics pipeline", stage);
+        return;
+    }
+    ASSERT(shader_idx >= 0);
 
     if (index >= DVZ_MAX_SPEC_CONST)
     {
@@ -106,13 +224,15 @@ void dvz_graphics_spec(
         return;
     }
 
-    graphics->spec_entries[index].constantID = index;
-    graphics->spec_entries[index].offset = offset;
-    graphics->spec_entries[index].size = size;
+    graphics->spec_entries[shader_idx][index].constantID = index;
+    graphics->spec_entries[shader_idx][index].offset = offset;
+    graphics->spec_entries[shader_idx][index].size = size;
 
-    graphics->spec_info.mapEntryCount = MAX(graphics->spec_info.mapEntryCount, index + 1);
-    graphics->spec_info.dataSize = MAX(graphics->spec_info.dataSize, offset + size);
-    ASSERT(graphics->spec_info.dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
+    VkSpecializationInfo* spec_info = &graphics->spec_info[shader_idx];
+    ANN(spec_info);
+    spec_info->mapEntryCount = MAX(spec_info->mapEntryCount, index + 1);
+    spec_info->dataSize = MAX(spec_info->dataSize, offset + size);
+    ASSERT(spec_info->dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
 
     // Copy the value in the specialization constant data buffer.
     dvz_memcpy(&graphics->spec_data[offset], size, data, size);
@@ -423,10 +543,79 @@ void dvz_graphics_multisampling(
 
 
 
-void dvz_graphics_create(DvzGraphics* graphics)
+int dvz_graphics_create(DvzGraphics* graphics)
 {
     ANN(graphics);
-    // TODO
+
+    DvzDevice* device = graphics->device;
+    ANN(device);
+
+    // Create the pipeline.
+    VkGraphicsPipelineCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+
+    // Shaders.
+    VkPipelineShaderStageCreateInfo shaders[DVZ_MAX_SHADERS] = {0};
+    set_shaders(graphics, shaders);
+    info.stageCount = graphics->shader_count;
+    info.pStages = shaders;
+
+    // Vertex input.
+    VkVertexInputBindingDescription bindings_info[DVZ_MAX_VERTEX_BINDINGS] = {0};
+    VkVertexInputAttributeDescription attrs_info[DVZ_MAX_VERTEX_ATTRS] = {0};
+    VkPipelineVertexInputStateCreateInfo vertex_input = {0};
+    set_vertex_input(graphics, &vertex_input, bindings_info, attrs_info);
+    info.pVertexInputState = &vertex_input;
+
+    // Input assembly.
+    VkPipelineInputAssemblyStateCreateInfo input_assembly = {0};
+    set_input_assembly(graphics, &input_assembly);
+    info.pInputAssemblyState = &input_assembly;
+
+    // Rasterization.
+    VkPipelineRasterizationStateCreateInfo rasterizer = {0};
+    set_rasterizer(graphics, &rasterizer);
+    info.pRasterizationState = &rasterizer;
+
+    // Attachments and blending.
+    VkPipelineColorBlendAttachmentState color_attachments[DVZ_MAX_ATTACHMENTS];
+    VkPipelineColorBlendStateCreateInfo color_blend = {0};
+    set_attachments(graphics, &color_blend, color_attachments);
+    info.pColorBlendState = &color_blend;
+
+    // Depth stencil.
+    VkPipelineDepthStencilStateCreateInfo depth_stencil = {0};
+    set_depth_stencil(graphics, &depth_stencil);
+    info.pDepthStencilState = &depth_stencil;
+
+    // Multisampling.
+    VkPipelineMultisampleStateCreateInfo multisampling = {0};
+    set_multisampling(graphics, &multisampling);
+    info.pMultisampleState = &multisampling;
+
+    // Viewport.
+    VkPipelineViewportStateCreateInfo viewport = {0};
+    set_viewport(graphics, &viewport);
+    info.pViewportState = &viewport;
+
+    // Dynamic states.
+    VkPipelineDynamicStateCreateInfo dynamic_state = {0};
+    set_dynamic_state(graphics, &dynamic_state);
+    info.pDynamicState = &dynamic_state;
+
+    // Pipeline layout.
+    info.layout = graphics->layout;
+
+    // Creation.
+    log_trace("creating graphics pipeline...");
+    VK_RETURN_RESULT(vkCreateGraphicsPipelines(
+        device->vk_device, VK_NULL_HANDLE, 1, &info, NULL, &graphics->vk_pipeline));
+    if (out == 0)
+    {
+        dvz_obj_created(&graphics->obj);
+        log_trace("graphics created");
+    }
+    return out;
 }
 
 
