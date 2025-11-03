@@ -127,6 +127,8 @@ static void set_viewport(DvzGraphics* graphics, VkPipelineViewportStateCreateInf
     ANN(graphics);
     ANN(viewport);
 
+    viewport->sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+
     viewport->viewportCount = 1;
     viewport->pViewports = &graphics->viewport;
 
@@ -141,6 +143,7 @@ set_dynamic_state(DvzGraphics* graphics, VkPipelineDynamicStateCreateInfo* dynam
 {
     ANN(graphics);
     ANN(dynamic_state);
+    dynamic_state->sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamic_state->dynamicStateCount = graphics->dynamic_count;
     dynamic_state->pDynamicStates = graphics->dynamic_states;
 }
@@ -162,8 +165,6 @@ void dvz_graphics(DvzDevice* device, DvzGraphics* graphics)
     graphics->depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     graphics->blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     graphics->multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    graphics->viewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    graphics->dynamic_states.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 
     dvz_obj_init(&graphics->obj);
 }
@@ -442,9 +443,8 @@ void dvz_graphics_stencil(
     ANN(graphics);
 
     graphics->depth_stencil.stencilTestEnable = flags != 0;
-    graphics->depth_stencil.depthBoundsTestEnable
 
-        VkStencilOpState* state = NULL;
+    VkStencilOpState* state = NULL;
     if ((mask & VK_STENCIL_FACE_FRONT_BIT) != 0)
         state = &graphics->depth_stencil.front;
     else if ((mask & VK_STENCIL_FACE_BACK_BIT) != 0)
@@ -532,10 +532,10 @@ void dvz_graphics_blend_color(
     VkColorComponentFlags mask)
 {
     ANN(graphics);
-    graphics->attachments[idx].srcColorBlendFactor = src;
-    graphics->attachments[idx].dstColorBlendFactor = dst;
-    graphics->attachments[idx].colorBlendOp = op;
-    graphics->attachments[idx].colorWriteMask = mask;
+    graphics->blend_attachments[idx].srcColorBlendFactor = src;
+    graphics->blend_attachments[idx].dstColorBlendFactor = dst;
+    graphics->blend_attachments[idx].colorBlendOp = op;
+    graphics->blend_attachments[idx].colorWriteMask = mask;
 }
 
 
@@ -544,18 +544,19 @@ void dvz_graphics_blend_alpha(
     DvzGraphics* graphics, uint32_t idx, VkBlendFactor src, VkBlendFactor dst, VkBlendOp op)
 {
     ANN(graphics);
-    graphics->attachments[idx].srcAlphaBlendFactor = src;
-    graphics->attachments[idx].dstAlphaBlendFactor = dst;
-    graphics->attachments[idx].alphaBlendOp = op;
+    graphics->blend_attachments[idx].srcAlphaBlendFactor = src;
+    graphics->blend_attachments[idx].dstAlphaBlendFactor = dst;
+    graphics->blend_attachments[idx].alphaBlendOp = op;
 }
 
 
 
-void dvz_graphics_multisampling(DvzGraphics* graphics, VkSampleCountFlagBits samples,
-                                float min_sample_shading, bool alpha_coverage, int flags;)
+void dvz_graphics_multisampling(
+    DvzGraphics* graphics, VkSampleCountFlagBits samples, float min_sample_shading,
+    bool alpha_coverage)
 {
     ANN(graphics);
-    graphics->multisampling.sampleShadingEnable = (flags != 0);
+    graphics->multisampling.sampleShadingEnable = samples != VK_SAMPLE_COUNT_1_BIT;
     graphics->multisampling.rasterizationSamples = samples;
     graphics->multisampling.minSampleShading = min_sample_shading;
     graphics->multisampling.alphaToCoverageEnable = alpha_coverage;
@@ -591,7 +592,7 @@ int dvz_graphics_create(DvzGraphics* graphics)
     info.pInputAssemblyState = &graphics->input_assembly;
 
     // Rasterization.
-    info.pRasterizationState = &graphics->rasterizer;
+    info.pRasterizationState = &graphics->rasterization;
 
     // Attachments and blending.
     graphics->blend.pAttachments = graphics->blend_attachments;
@@ -605,7 +606,7 @@ int dvz_graphics_create(DvzGraphics* graphics)
 
     // Viewport.
     VkPipelineViewportStateCreateInfo viewport = {0};
-    set_viewport(graphics, &viewport.);
+    set_viewport(graphics, &viewport);
     info.pViewportState = &viewport;
 
     // Dynamic states.
