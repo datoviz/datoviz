@@ -51,7 +51,7 @@ int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShade
     info.codeSize = (size_t)size;
     info.pCode = buffer;
     log_trace("creating shader module...");
-    VK_RETURN_RESULT(vkCreateShaderModule(vkd, &info, NULL, &shader->handle));
+    VK_RETURN_RESULT(vkCreateShaderModule(vkd, &info, NULL, &shader->vk_shader));
     if (out == 0)
     {
         dvz_obj_created(&shader->obj);
@@ -66,7 +66,7 @@ int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShade
 VkShaderModule dvz_shader_module(DvzShader* shader)
 {
     ANN(shader);
-    return shader->handle;
+    return shader->vk_shader;
 }
 
 
@@ -81,7 +81,7 @@ void dvz_shader_destroy(DvzShader* shader)
     ANNVK(vkd);
 
     log_trace("destroying shader module...");
-    vkDestroyShaderModule(vkd, shader->handle, NULL);
+    vkDestroyShaderModule(vkd, shader->vk_shader, NULL);
     log_trace("shader module destroyed");
 
     dvz_free(shader->buffer);

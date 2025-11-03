@@ -130,7 +130,7 @@ struct DvzShader
     DvzDevice* device;
     DvzShaderType type;
     DvzSize size;
-    VkShaderModule handle;
+    VkShaderModule vk_shader;
     uint32_t* buffer; // only for SPIRV obj_type
 };
 

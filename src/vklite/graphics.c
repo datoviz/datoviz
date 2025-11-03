@@ -111,8 +111,6 @@ static void set_vertex_input(
     ANN(bindings_info);
     ANN(attrs_info);
 
-    vertex_input->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
     vertex_input->vertexBindingDescriptionCount = graphics->vertex_binding_count;
     vertex_input->pVertexBindingDescriptions = graphics->vertex_bindings;
 
@@ -126,8 +124,6 @@ static void set_viewport(DvzGraphics* graphics, VkPipelineViewportStateCreateInf
 {
     ANN(graphics);
     ANN(viewport);
-
-    viewport->sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 
     viewport->viewportCount = 1;
     viewport->pViewports = &graphics->viewport;
@@ -143,7 +139,7 @@ set_dynamic_state(DvzGraphics* graphics, VkPipelineDynamicStateCreateInfo* dynam
 {
     ANN(graphics);
     ANN(dynamic_state);
-    dynamic_state->sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+
     dynamic_state->dynamicStateCount = graphics->dynamic_count;
     dynamic_state->pDynamicStates = graphics->dynamic_states;
 }
@@ -165,6 +161,10 @@ void dvz_graphics(DvzDevice* device, DvzGraphics* graphics)
     graphics->depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     graphics->blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     graphics->multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+
+    graphics->rasterization.polygonMode = VK_POLYGON_MODE_FILL;
+    graphics->rasterization.cullMode = VK_CULL_MODE_NONE;
+    graphics->rasterization.frontFace = VK_FRONT_FACE_CLOCKWISE;
 
     dvz_obj_init(&graphics->obj);
 }
@@ -584,7 +584,8 @@ int dvz_graphics_create(DvzGraphics* graphics)
     // Vertex input.
     VkVertexInputBindingDescription bindings_info[DVZ_MAX_VERTEX_BINDINGS] = {0};
     VkVertexInputAttributeDescription attrs_info[DVZ_MAX_VERTEX_ATTRS] = {0};
-    VkPipelineVertexInputStateCreateInfo vertex_input = {0};
+    VkPipelineVertexInputStateCreateInfo vertex_input = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     set_vertex_input(graphics, &vertex_input, bindings_info, attrs_info);
     info.pVertexInputState = &vertex_input;
 
@@ -605,12 +606,14 @@ int dvz_graphics_create(DvzGraphics* graphics)
     info.pMultisampleState = &graphics->multisampling;
 
     // Viewport.
-    VkPipelineViewportStateCreateInfo viewport = {0};
+    VkPipelineViewportStateCreateInfo viewport = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO};
     set_viewport(graphics, &viewport);
     info.pViewportState = &viewport;
 
     // Dynamic states.
-    VkPipelineDynamicStateCreateInfo dynamic_state = {0};
+    VkPipelineDynamicStateCreateInfo dynamic_state = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO};
     set_dynamic_state(graphics, &dynamic_state);
     info.pDynamicState = &dynamic_state;
 
