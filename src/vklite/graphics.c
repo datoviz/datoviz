@@ -161,10 +161,16 @@ void dvz_graphics(DvzDevice* device, DvzGraphics* graphics)
     graphics->depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     graphics->blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     graphics->multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    graphics->rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 
+    // Default values.
     graphics->rasterization.polygonMode = VK_POLYGON_MODE_FILL;
     graphics->rasterization.cullMode = VK_CULL_MODE_NONE;
     graphics->rasterization.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    graphics->rasterization.lineWidth = 1.0f;
+    graphics->multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    graphics->blend.logicOpEnable = VK_FALSE;
+    graphics->blend.logicOp = VK_LOGIC_OP_COPY;
 
     dvz_obj_init(&graphics->obj);
 }
@@ -596,6 +602,7 @@ int dvz_graphics_create(DvzGraphics* graphics)
     info.pRasterizationState = &graphics->rasterization;
 
     // Attachments and blending.
+    graphics->blend.attachmentCount = graphics->rendering.colorAttachmentCount;
     graphics->blend.pAttachments = graphics->blend_attachments;
     info.pColorBlendState = &graphics->blend;
 
