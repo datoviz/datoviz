@@ -40,6 +40,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_buffer_views);
     TEST_SIMPLE(test_vklite_images_1);
     TEST_SIMPLE(test_vklite_descriptors_1);
+    TEST_SIMPLE(test_vklite_graphics_1);
 
 
 

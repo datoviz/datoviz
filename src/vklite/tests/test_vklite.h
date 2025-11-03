@@ -42,6 +42,8 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vklite(TstSuite* suite);
