@@ -225,13 +225,13 @@ DVZ_EXPORT void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front
  * Set the depth test.
  *
  * @param graphics the graphics pipeline
- * @param test enable or disable the depth test
- * @param write enable or disable the depth write
+ * @param clamp enable or disable depth clamp
+ * @param depth_write enable or disable the depth write
  * @param compare depth compare operation
  * @param flags indicate whether this setting is fixed or dynamic state set in the command buffer
  */
-DVZ_EXPORT void
-dvz_graphics_depth(DvzGraphics* graphics, bool depth_write, VkCompareOp compare, int flags);
+DVZ_EXPORT void dvz_graphics_depth(
+    DvzGraphics* graphics, bool clamp, bool depth_write, VkCompareOp compare, int flags);
 
 
 

@@ -35,7 +35,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void set_dynamic(DvzGraphics* graphics, VkDynamicState state)
+static inline void set_dynamic(DvzGraphics* graphics, VkDynamicState state)
 {
     // TODO: for now, once a state has been set as dynamic, it can't be set back as fixed.
     ANN(graphics);
@@ -48,6 +48,21 @@ static void set_dynamic(DvzGraphics* graphics, VkDynamicState state)
     }
     uint32_t i = graphics->dynamic_count++;
     graphics->dynamic_states[i] = state;
+}
+
+
+
+static inline bool is_dynamic(DvzGraphics* graphics, VkDynamicState state)
+{
+    ANN(graphics);
+    for (uint32_t i = 0; i < graphics->dynamic_count; i++)
+    {
+        if (graphics->dynamic_states[i] == state)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -77,6 +92,7 @@ static void set_shaders(DvzGraphics* graphics, VkPipelineShaderStageCreateInfo* 
 
     for (uint32_t i = 0; i < graphics->shader_count; i++)
     {
+        shaders[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaders[i].module = graphics->shaders[i];
         shaders[i].stage = graphics->shader_stages[i];
         shaders[i].pName = "main";
@@ -94,53 +110,14 @@ static void set_vertex_input(
     ANN(vertex_input);
     ANN(bindings_info);
     ANN(attrs_info);
-}
 
+    vertex_input->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
+    vertex_input->vertexBindingDescriptionCount = graphics->vertex_binding_count;
+    vertex_input->pVertexBindingDescriptions = graphics->vertex_bindings;
 
-static void
-set_input_assembly(DvzGraphics* graphics, VkPipelineInputAssemblyStateCreateInfo* input_assembly)
-{
-    ANN(graphics);
-    ANN(input_assembly);
-}
-
-
-
-static void
-set_rasterizer(DvzGraphics* graphics, VkPipelineRasterizationStateCreateInfo* rasterizer)
-{
-    ANN(graphics);
-    ANN(rasterizer);
-}
-
-
-
-static void set_attachments(
-    DvzGraphics* graphics, VkPipelineColorBlendStateCreateInfo* color_blend,
-    VkPipelineColorBlendAttachmentState* color_attachments)
-{
-    ANN(graphics);
-    ANN(color_blend);
-    ANN(color_attachments);
-}
-
-
-
-static void
-set_depth_stencil(DvzGraphics* graphics, VkPipelineDepthStencilStateCreateInfo* depth_stencil)
-{
-    ANN(graphics);
-    ANN(depth_stencil);
-}
-
-
-
-static void
-set_multisampling(DvzGraphics* graphics, VkPipelineMultisampleStateCreateInfo* multisampling)
-{
-    ANN(graphics);
-    ANN(multisampling);
+    vertex_input->vertexAttributeDescriptionCount = graphics->vertex_attr_count;
+    vertex_input->pVertexAttributeDescriptions = graphics->vertex_attrs;
 }
 
 
@@ -149,6 +126,12 @@ static void set_viewport(DvzGraphics* graphics, VkPipelineViewportStateCreateInf
 {
     ANN(graphics);
     ANN(viewport);
+
+    viewport->viewportCount = 1;
+    viewport->pViewports = &graphics->viewport;
+
+    viewport->scissorCount = 1;
+    viewport->pScissors = &graphics->scissor;
 }
 
 
@@ -158,6 +141,8 @@ set_dynamic_state(DvzGraphics* graphics, VkPipelineDynamicStateCreateInfo* dynam
 {
     ANN(graphics);
     ANN(dynamic_state);
+    dynamic_state->dynamicStateCount = graphics->dynamic_count;
+    dynamic_state->pDynamicStates = graphics->dynamic_states;
 }
 
 
@@ -171,6 +156,15 @@ void dvz_graphics(DvzDevice* device, DvzGraphics* graphics)
     ANN(device);
     ANN(graphics);
     graphics->device = device;
+
+    graphics->input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    graphics->rasterization.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    graphics->depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    graphics->blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    graphics->multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    graphics->viewport.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    graphics->dynamic_states.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+
     dvz_obj_init(&graphics->obj);
 }
 
@@ -244,6 +238,8 @@ void dvz_graphics_attachment_color(DvzGraphics* graphics, uint32_t idx, VkFormat
 {
     ANN(graphics);
     graphics->attachments_colors[idx] = format;
+    graphics->rendering.colorAttachmentCount =
+        MAX(graphics->rendering.colorAttachmentCount, idx + 1);
 }
 
 
@@ -251,7 +247,7 @@ void dvz_graphics_attachment_color(DvzGraphics* graphics, uint32_t idx, VkFormat
 void dvz_graphics_attachment_depth(DvzGraphics* graphics, VkFormat format)
 {
     ANN(graphics);
-    graphics->attachments_depth = format;
+    graphics->rendering.depthAttachmentFormat = format;
 }
 
 
@@ -259,7 +255,7 @@ void dvz_graphics_attachment_depth(DvzGraphics* graphics, VkFormat format)
 void dvz_graphics_attachment_stencil(DvzGraphics* graphics, VkFormat format)
 {
     ANN(graphics);
-    graphics->attachments_stencil = format;
+    graphics->rendering.stencilAttachmentFormat = format;
 }
 
 
@@ -320,7 +316,12 @@ void dvz_graphics_layout(DvzGraphics* graphics, VkPipelineLayout layout)
 void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology, int flags)
 {
     ANN(graphics);
-    graphics->topology = topology;
+    graphics->input_assembly.topology = topology;
+
+    if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
+    {
+        set_dynamic(graphics, VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY);
+    }
 }
 
 
@@ -328,7 +329,7 @@ void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology,
 void dvz_graphics_primitive_restart(DvzGraphics* graphics, int flags)
 {
     ANN(graphics);
-    graphics->primitive_restart = flags != 0;
+    graphics->input_assembly.primitiveRestartEnable = flags != 0;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -341,7 +342,7 @@ void dvz_graphics_primitive_restart(DvzGraphics* graphics, int flags)
 void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode, int flags)
 {
     ANN(graphics);
-    graphics->polygon_mode = polygon_mode;
+    graphics->rasterization.polygonMode = polygon_mode;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -355,7 +356,7 @@ void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode
 void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode, int flags)
 {
     ANN(graphics);
-    graphics->cull_mode = cull_mode;
+    graphics->rasterization.cullMode = cull_mode;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -368,7 +369,7 @@ void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode, in
 void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, int flags)
 {
     ANN(graphics);
-    graphics->front_face = front_face;
+    graphics->rasterization.frontFace = front_face;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -378,12 +379,16 @@ void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face, int 
 
 
 
-void dvz_graphics_depth(DvzGraphics* graphics, bool depth_write, VkCompareOp compare, int flags)
+void dvz_graphics_depth(
+    DvzGraphics* graphics, bool clamp, bool depth_write, VkCompareOp compare, int flags)
 {
     ANN(graphics);
-    graphics->depth_test = flags != 0;
-    graphics->depth_write = depth_write;
-    graphics->depth_compare = compare;
+
+    graphics->depth_stencil.depthTestEnable = flags != 0;
+    graphics->depth_stencil.depthWriteEnable = depth_write;
+    graphics->depth_stencil.depthCompareOp = compare;
+
+    graphics->rasterization.depthClampEnable = clamp;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -398,9 +403,9 @@ void dvz_graphics_depth(DvzGraphics* graphics, bool depth_write, VkCompareOp com
 void dvz_graphics_depth_bounds(DvzGraphics* graphics, float min, float max, int flags)
 {
     ANN(graphics);
-    graphics->depth_bounds_test = flags != 0;
-    graphics->depth_bounds[0] = min;
-    graphics->depth_bounds[0] = max;
+    graphics->depth_stencil.depthBoundsTestEnable = flags != 0;
+    graphics->depth_stencil.minDepthBounds = min;
+    graphics->depth_stencil.maxDepthBounds = max;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -415,10 +420,10 @@ void dvz_graphics_depth_bias(
     DvzGraphics* graphics, float constant_factor, float clamp, float slope_factor, int flags)
 {
     ANN(graphics);
-    graphics->depth_bias = flags != 0;
-    graphics->depth_constant = constant_factor;
-    graphics->depth_clamp = clamp;
-    graphics->depth_slope = slope_factor;
+    graphics->rasterization.depthBiasEnable = flags != 0;
+    graphics->rasterization.depthBiasConstantFactor = constant_factor;
+    graphics->rasterization.depthBiasClamp = clamp;
+    graphics->rasterization.depthBiasSlopeFactor = slope_factor;
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -435,14 +440,29 @@ void dvz_graphics_stencil(
     uint32_t reference, int flags)
 {
     ANN(graphics);
-    graphics->stencil_test = flags != 0;
-    graphics->stencil_mask = mask;
-    graphics->stencil_fail = fail;
-    graphics->stencil_depth_fail = depth_fail;
-    graphics->stencil_compare = compare;
-    graphics->stencil_compare_mask = compare_mask;
-    graphics->stencil_write_mask = write_mask;
-    graphics->stencil_reference = reference;
+
+    graphics->depth_stencil.stencilTestEnable = flags != 0;
+    graphics->depth_stencil.depthBoundsTestEnable
+
+        VkStencilOpState* state = NULL;
+    if ((mask & VK_STENCIL_FACE_FRONT_BIT) != 0)
+        state = &graphics->depth_stencil.front;
+    else if ((mask & VK_STENCIL_FACE_BACK_BIT) != 0)
+        state = &graphics->depth_stencil.back;
+    ANN(state);
+
+    state->compareMask = compare_mask;
+    state->compareOp = compare;
+    state->depthFailOp = depth_fail;
+    state->failOp = fail;
+    state->passOp = pass;
+    state->reference = reference;
+    state->writeMask = write_mask;
+
+    if (((mask & VK_STENCIL_FACE_FRONT_BIT) != 0) && ((mask & VK_STENCIL_FACE_BACK_BIT) != 0))
+    {
+        graphics->depth_stencil.back = graphics->depth_stencil.front;
+    }
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -495,9 +515,9 @@ void dvz_graphics_viewport(
 void dvz_graphics_blend(DvzGraphics* graphics, VkLogicOp op, vec4 constants, int flags)
 {
     ANN(graphics);
-    graphics->blend_enable = flags != 0;
-    graphics->blend_op = op;
-    glm_vec4_copy(constants, graphics->blend_constants);
+    graphics->blend.logicOpEnable = flags != 0;
+    graphics->blend.logicOp = op;
+    glm_vec4_copy(constants, graphics->blend.blendConstants);
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
@@ -512,10 +532,10 @@ void dvz_graphics_blend_color(
     VkColorComponentFlags mask)
 {
     ANN(graphics);
-    graphics->blend[idx].srcColorBlendFactor = src;
-    graphics->blend[idx].dstColorBlendFactor = dst;
-    graphics->blend[idx].colorBlendOp = op;
-    graphics->blend[idx].colorWriteMask = mask;
+    graphics->attachments[idx].srcColorBlendFactor = src;
+    graphics->attachments[idx].dstColorBlendFactor = dst;
+    graphics->attachments[idx].colorBlendOp = op;
+    graphics->attachments[idx].colorWriteMask = mask;
 }
 
 
@@ -524,21 +544,21 @@ void dvz_graphics_blend_alpha(
     DvzGraphics* graphics, uint32_t idx, VkBlendFactor src, VkBlendFactor dst, VkBlendOp op)
 {
     ANN(graphics);
-    graphics->blend[idx].srcAlphaBlendFactor = src;
-    graphics->blend[idx].dstAlphaBlendFactor = dst;
-    graphics->blend[idx].alphaBlendOp = op;
+    graphics->attachments[idx].srcAlphaBlendFactor = src;
+    graphics->attachments[idx].dstAlphaBlendFactor = dst;
+    graphics->attachments[idx].alphaBlendOp = op;
 }
 
 
 
-void dvz_graphics_multisampling(
-    DvzGraphics* graphics, VkSampleCountFlagBits samples, float min_sample_shading,
-    bool alpha_coverage)
+void dvz_graphics_multisampling(DvzGraphics* graphics, VkSampleCountFlagBits samples,
+                                float min_sample_shading, bool alpha_coverage, int flags;)
 {
     ANN(graphics);
-    graphics->msaa_samples = samples;
-    graphics->msaa_min_sample_shading = min_sample_shading;
-    graphics->msaa_alpha_coverage = alpha_coverage;
+    graphics->multisampling.sampleShadingEnable = (flags != 0);
+    graphics->multisampling.rasterizationSamples = samples;
+    graphics->multisampling.minSampleShading = min_sample_shading;
+    graphics->multisampling.alphaToCoverageEnable = alpha_coverage;
 }
 
 
@@ -568,40 +588,35 @@ int dvz_graphics_create(DvzGraphics* graphics)
     info.pVertexInputState = &vertex_input;
 
     // Input assembly.
-    VkPipelineInputAssemblyStateCreateInfo input_assembly = {0};
-    set_input_assembly(graphics, &input_assembly);
-    info.pInputAssemblyState = &input_assembly;
+    info.pInputAssemblyState = &graphics->input_assembly;
 
     // Rasterization.
-    VkPipelineRasterizationStateCreateInfo rasterizer = {0};
-    set_rasterizer(graphics, &rasterizer);
-    info.pRasterizationState = &rasterizer;
+    info.pRasterizationState = &graphics->rasterizer;
 
     // Attachments and blending.
-    VkPipelineColorBlendAttachmentState color_attachments[DVZ_MAX_ATTACHMENTS];
-    VkPipelineColorBlendStateCreateInfo color_blend = {0};
-    set_attachments(graphics, &color_blend, color_attachments);
-    info.pColorBlendState = &color_blend;
+    graphics->blend.pAttachments = graphics->blend_attachments;
+    info.pColorBlendState = &graphics->blend;
 
     // Depth stencil.
-    VkPipelineDepthStencilStateCreateInfo depth_stencil = {0};
-    set_depth_stencil(graphics, &depth_stencil);
-    info.pDepthStencilState = &depth_stencil;
+    info.pDepthStencilState = &graphics->depth_stencil;
 
     // Multisampling.
-    VkPipelineMultisampleStateCreateInfo multisampling = {0};
-    set_multisampling(graphics, &multisampling);
-    info.pMultisampleState = &multisampling;
+    info.pMultisampleState = &graphics->multisampling;
 
     // Viewport.
     VkPipelineViewportStateCreateInfo viewport = {0};
-    set_viewport(graphics, &viewport);
+    set_viewport(graphics, &viewport.);
     info.pViewportState = &viewport;
 
     // Dynamic states.
     VkPipelineDynamicStateCreateInfo dynamic_state = {0};
     set_dynamic_state(graphics, &dynamic_state);
     info.pDynamicState = &dynamic_state;
+
+    // Dynamic rendering.
+    // TODO: need to enable dynamic rendering Vulkan 1.3 feature when creating the device.
+    graphics->rendering.pColorAttachmentFormats = graphics->attachments_colors;
+    info.pNext = &graphics->rendering;
 
     // Pipeline layout.
     info.layout = graphics->layout;
