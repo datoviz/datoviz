@@ -204,6 +204,8 @@ int dvz_images_create(DvzImages* img)
 
     DvzVma* allocator = img->allocator;
     ANN(allocator);
+    ANN(allocator->device);
+    ASSERT(allocator->device == device);
 
     // Get GPU properties to check the dimensions of the image.
     VkPhysicalDeviceProperties* props = dvz_gpu_properties10(device->gpu);

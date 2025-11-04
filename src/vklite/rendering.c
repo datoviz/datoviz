@@ -77,7 +77,10 @@ void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue clear)
 void dvz_rendering(DvzRendering* rendering)
 {
     ANN(rendering);
+
+    // Default values.
     rendering->info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    rendering->info.layerCount = 1;
 }
 
 
@@ -144,8 +147,10 @@ void dvz_cmd_rendering_begin(DvzCommands* cmds, uint32_t idx, DvzRendering* rend
     }
 
     rendering->info.pColorAttachments = attachments;
-    rendering->info.pDepthAttachment = &rendering->depth.info;
-    rendering->info.pStencilAttachment = &rendering->stencil.info;
+    rendering->info.pDepthAttachment =
+        rendering->depth.info.sType != 0 ? &rendering->depth.info : NULL;
+    rendering->info.pStencilAttachment =
+        rendering->stencil.info.sType != 0 ? &rendering->stencil.info : NULL;
 
     vkCmdBeginRendering(cmds->cmds[idx], &rendering->info);
 }

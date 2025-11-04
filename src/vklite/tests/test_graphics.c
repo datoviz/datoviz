@@ -28,6 +28,7 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
@@ -73,6 +74,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
     features->dynamicRendering = true;
     dvz_device_create(device);
+    dvz_device_allocator(device, 0, &bootstrap.allocator);
 
     // Graphics setup.
     DvzGraphics graphics = {0};
@@ -125,17 +127,17 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Image to render to.
     VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
 
-    DvzImages images = {0};
-    dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &images);
-    dvz_images_format(&images, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_images_size(&images, WIDTH, HEIGHT, 1);
-    dvz_images_usage(&images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    dvz_images_layout(&images, img_layout);
-    dvz_images_create(&images);
+    DvzImages img = {0};
+    dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
+    dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(&img, WIDTH, HEIGHT, 1);
+    dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    dvz_images_layout(&img, img_layout);
+    dvz_images_create(&img);
 
     // Image views.
     DvzImageViews view = {0};
-    dvz_image_views(&images, &view);
+    dvz_image_views(&img, &view);
     dvz_image_views_create(&view);
 
     // Attachments.
@@ -153,6 +155,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_end(&cmds, 0);
 
     // Cleanup.
+    dvz_image_views_destroy(&view);
+    dvz_images_destroy(&img);
     dvz_shader_destroy(&vs);
     dvz_shader_destroy(&fs);
     dvz_slots_destroy(&slots);

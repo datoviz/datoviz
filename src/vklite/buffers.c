@@ -76,6 +76,8 @@ int dvz_buffer_create(DvzBuffer* buffer)
 
     DvzVma* allocator = buffer->allocator;
     ANN(allocator);
+    ANN(allocator->device);
+    ASSERT(allocator->device == buffer->device);
 
     VkBufferCreateInfo info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     info.size = buffer->req_size;
