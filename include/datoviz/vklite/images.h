@@ -245,6 +245,17 @@ DVZ_EXPORT void dvz_image_views_create(DvzImageViews* views);
 
 
 /**
+ * Return the Vulkan handle of an image view.
+ *
+ * @param views the image views
+ * @param idx the image view index
+ * @returns the Vulkan image view handle
+ */
+DVZ_EXPORT VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx);
+
+
+
+/**
  * Destroy image views.
  *
  * @param views the image views

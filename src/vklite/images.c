@@ -359,6 +359,15 @@ void dvz_image_views_create(DvzImageViews* views)
 
 
 
+VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx)
+{
+    ANN(views);
+    ASSERT(idx < DVZ_MAX_IMAGES);
+    return views->vk_views[idx];
+}
+
+
+
 void dvz_image_views_destroy(DvzImageViews* views)
 {
     ANN(views);
