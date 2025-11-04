@@ -353,8 +353,8 @@ void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
     {
-        log_warn("polygon mode dynamic state not implemented yet, requires extension");
-        // set_dynamic(graphics, VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
+        // NOTE: requires extensions, not core in Vulkan 1.3
+        set_dynamic(graphics, VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
     }
 }
 
@@ -674,7 +674,138 @@ void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphic
 {
     ANN(cmds);
     ANN(graphics);
-    vkCmdBindPipeline(cmds->cmds[idx], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->vk_pipeline);
 
+    ASSERT(idx < cmds->count);
+    VkCommandBuffer cmd = cmds->cmds[idx];
+    ANNVK(cmd);
+
+    // Bind the graphics pipeline.
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->vk_pipeline);
+
+    // Dynamic states.
     // TODO: go through all dynamic states and call the relevant vkCmdSet*() commands.
+
+    // Primitive topology.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY))
+    {
+        vkCmdSetPrimitiveTopology(cmd, graphics->input_assembly.topology);
+    }
+
+    // Primitive restart.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE))
+    {
+        vkCmdSetPrimitiveRestartEnable(cmd, graphics->input_assembly.primitiveRestartEnable);
+    }
+
+    // Polygon mode.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_POLYGON_MODE_EXT))
+    {
+        vkCmdSetPolygonModeEXT(cmd, graphics->rasterization.polygonMode);
+    }
+
+    // Cull mode.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_CULL_MODE))
+    {
+        vkCmdSetCullMode(cmd, graphics->rasterization.cullMode);
+    }
+
+    // Front face.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_FRONT_FACE))
+    {
+        vkCmdSetFrontFace(cmd, graphics->rasterization.frontFace);
+    }
+
+    // Depth test.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE))
+    {
+        vkCmdSetDepthTestEnable(cmd, graphics->depth_stencil.depthTestEnable);
+        vkCmdSetDepthWriteEnable(cmd, graphics->depth_stencil.depthWriteEnable);
+        vkCmdSetDepthCompareOp(cmd, graphics->depth_stencil.depthCompareOp);
+    }
+
+    // Depth bounds test.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE))
+    {
+        vkCmdSetDepthBoundsTestEnable(cmd, graphics->depth_stencil.depthBoundsTestEnable);
+        vkCmdSetDepthBounds(
+            cmd, graphics->depth_stencil.minDepthBounds, graphics->depth_stencil.maxDepthBounds);
+    }
+
+    // Depth bias.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE))
+    {
+        vkCmdSetDepthBiasEnable(cmd, graphics->rasterization.depthBiasEnable);
+        vkCmdSetDepthBias(
+            cmd, graphics->rasterization.depthBiasConstantFactor,
+            graphics->rasterization.depthBiasClamp, graphics->rasterization.depthBiasSlopeFactor);
+    }
+
+    // Stencil test.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE))
+    {
+        vkCmdSetStencilTestEnable(cmd, graphics->depth_stencil.stencilTestEnable);
+
+        // Front and back are identical.
+        if (memcmp(
+                &graphics->depth_stencil.front, &graphics->depth_stencil.back,
+                sizeof(graphics->depth_stencil.front)))
+        {
+            vkCmdSetStencilOp(
+                cmd, VK_STENCIL_FACE_FRONT_AND_BACK, graphics->depth_stencil.front.failOp,
+                graphics->depth_stencil.front.passOp, graphics->depth_stencil.front.depthFailOp,
+                graphics->depth_stencil.front.compareOp);
+            vkCmdSetStencilReference(
+                cmd, VK_STENCIL_FACE_FRONT_AND_BACK, graphics->depth_stencil.front.reference);
+            vkCmdSetStencilCompareMask(
+                cmd, VK_STENCIL_FACE_FRONT_AND_BACK, graphics->depth_stencil.front.compareMask);
+            vkCmdSetStencilWriteMask(
+                cmd, VK_STENCIL_FACE_FRONT_AND_BACK, graphics->depth_stencil.front.writeMask);
+        }
+
+        // Front and back are different.
+        else
+        {
+            // Front.
+            vkCmdSetStencilOp(
+                cmd, VK_STENCIL_FACE_FRONT_BIT, graphics->depth_stencil.front.failOp,
+                graphics->depth_stencil.front.passOp, graphics->depth_stencil.front.depthFailOp,
+                graphics->depth_stencil.front.compareOp);
+            vkCmdSetStencilReference(
+                cmd, VK_STENCIL_FACE_FRONT_BIT, graphics->depth_stencil.front.reference);
+            vkCmdSetStencilCompareMask(
+                cmd, VK_STENCIL_FACE_FRONT_BIT, graphics->depth_stencil.front.compareMask);
+            vkCmdSetStencilWriteMask(
+                cmd, VK_STENCIL_FACE_FRONT_BIT, graphics->depth_stencil.front.writeMask);
+
+            // Back.
+            vkCmdSetStencilOp(
+                cmd, VK_STENCIL_FACE_BACK_BIT, graphics->depth_stencil.back.failOp,
+                graphics->depth_stencil.back.passOp, graphics->depth_stencil.back.depthFailOp,
+                graphics->depth_stencil.back.compareOp);
+            vkCmdSetStencilReference(
+                cmd, VK_STENCIL_FACE_BACK_BIT, graphics->depth_stencil.back.reference);
+            vkCmdSetStencilCompareMask(
+                cmd, VK_STENCIL_FACE_BACK_BIT, graphics->depth_stencil.back.compareMask);
+            vkCmdSetStencilWriteMask(
+                cmd, VK_STENCIL_FACE_BACK_BIT, graphics->depth_stencil.back.writeMask);
+        }
+    }
+
+    // Scissor.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_SCISSOR))
+    {
+        vkCmdSetScissor(cmd, 0, 1, &graphics->scissor);
+    }
+
+    // Viewport.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_VIEWPORT))
+    {
+        vkCmdSetViewport(cmd, 0, 1, &graphics->viewport);
+    }
+
+    // Blend constants.
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_BLEND_CONSTANTS))
+    {
+        vkCmdSetBlendConstants(cmd, graphics->blend.blendConstants);
+    }
 }
