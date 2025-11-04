@@ -151,7 +151,7 @@ static void create_queues(DvzDevice* device)
         ASSERT(i < DVZ_QUEUE_COUNT);
         vkGetDeviceQueue(
             device->vk_device, queues->queues[i].family_idx, queues->queues[i].queue_idx,
-            &queues->queues[i].handle);
+            &queues->queues[i].vk_queue);
     }
 }
 

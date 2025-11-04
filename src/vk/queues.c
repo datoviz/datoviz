@@ -364,7 +364,7 @@ uint32_t dvz_queue_family(DvzQueue* queue)
 VkQueue dvz_queue_handle(DvzQueue* queue)
 {
     ANN(queue);
-    return queue->handle;
+    return queue->vk_queue;
 }
 
 
@@ -372,7 +372,7 @@ VkQueue dvz_queue_handle(DvzQueue* queue)
 void dvz_queue_wait(DvzQueue* queue)
 {
     ANN(queue);
-    vkQueueWaitIdle(queue->handle);
+    vkQueueWaitIdle(queue->vk_queue);
 }
 
 

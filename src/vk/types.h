@@ -79,7 +79,7 @@ struct DvzQueue
 {
     uint32_t family_idx;
     uint32_t queue_idx;
-    VkQueue handle;
+    VkQueue vk_queue;
     VkQueueFlags flags;
     bool is_main; // whether this queue is the main one
     bool is_set;  // whether this queue exists
