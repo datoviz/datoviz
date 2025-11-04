@@ -28,6 +28,8 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/queues.h"
+#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/shader.h"
@@ -52,6 +54,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
 
     DvzDevice* device = &bootstrap.device;
+    ANN(device);
+
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    ANN(queue);
 
     // Create a device with support for dynamic rendering.
     VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
@@ -100,6 +106,13 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Graphics creation.
     dvz_graphics_create(&graphics);
+
+    // Command buffer.
+    DvzCommands cmds = {0};
+    dvz_commands(device, queue, 1, &cmds);
+    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
+    dvz_cmd_end(&cmds, 0);
 
     // Cleanup.
     dvz_shader_destroy(&vs);
