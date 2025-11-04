@@ -134,7 +134,7 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     // Create a compile pipeline.
     DvzCompute compute = {0};
     dvz_compute(&bootstrap.device, &compute);
-    dvz_compute_shader(&compute, dvz_shader_module(&shader));
+    dvz_compute_shader(&compute, dvz_shader_handle(&shader));
     dvz_compute_layout(&compute, dvz_slots_handle(&slots));
     AT(dvz_compute_create(&compute) == 0);
 

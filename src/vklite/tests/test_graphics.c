@@ -73,8 +73,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     ANN(fs_spv);
     dvz_shader(device, vs_size, vs_spv, &vs);
     dvz_shader(device, fs_size, fs_spv, &fs);
-    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, vs.vk_shader);
-    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, fs.vk_shader);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
 
     // Slots.
     DvzSlots slots = {0};

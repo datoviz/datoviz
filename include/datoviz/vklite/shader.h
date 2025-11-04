@@ -66,7 +66,7 @@ dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShader* s
  * @param shader the shader
  * @returns the shader module handle
  */
-DVZ_EXPORT VkShaderModule dvz_shader_module(DvzShader* shader);
+DVZ_EXPORT VkShaderModule dvz_shader_handle(DvzShader* shader);
 
 
 

@@ -63,7 +63,7 @@ int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShade
 
 
 
-VkShaderModule dvz_shader_module(DvzShader* shader)
+VkShaderModule dvz_shader_handle(DvzShader* shader)
 {
     ANN(shader);
     return shader->vk_shader;
