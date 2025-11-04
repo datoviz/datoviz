@@ -37,6 +37,7 @@
 
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzVma DvzVma;
+typedef struct DvzCommands DvzCommands;
 
 typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzBufferViews DvzBufferViews;
@@ -202,6 +203,35 @@ DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
 DVZ_EXPORT void dvz_buffer_views(
     DvzBuffer* buffer, uint32_t count, //
     DvzSize offset, DvzSize size, DvzSize alignment, DvzBufferViews* views);
+
+
+
+/**
+ * Bind vertex buffers before recording draw commands.
+ *
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param first_binding the index of the first vertex binding
+ * @param binding_count the number of bindings
+ * @param buffers the "binding_count" buffers to bind
+ * @param offsets the offsets within each buffer
+ */
+DVZ_EXPORT void dvz_cmd_bind_vertex_buffers(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_binding, uint32_t binding_count,
+    DvzBuffer* buffers, DvzSize* offsets);
+
+
+
+/**
+ * Bind an index buffer.
+ *
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param buffer the index buffer
+ * @param offset the offset within the index buffer
+ */
+DVZ_EXPORT void
+dvz_cmd_bind_index_buffer(DvzCommands* cmds, uint32_t idx, DvzBuffer* buffer, DvzSize offset);
 
 
 
