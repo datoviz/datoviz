@@ -28,6 +28,7 @@
 #include "datoviz/vk/enums.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/images.h"
+#include "vulkan/vulkan_core.h"
 #include <volk.h>
 
 
@@ -72,6 +73,8 @@ typedef struct DvzImageViews DvzImageViews;
 typedef struct DvzVertexBinding DvzVertexBinding;
 typedef struct DvzVertexAttr DvzVertexAttr;
 typedef struct DvzSpecialization DvzSpecialization;
+typedef struct DvzAttachment DvzAttachment;
+typedef struct DvzRendering DvzRendering;
 
 
 
@@ -302,4 +305,32 @@ struct DvzGraphics
     VkDynamicState dynamic_states[DVZ_MAX_DYNAMIC_STATES];
 
     VkPipeline vk_pipeline;
+};
+
+
+
+struct DvzAttachment
+{
+    VkRenderingAttachmentInfo info;
+    // VkImageView view;
+    // VkImageLayout layout;
+
+    // VkResolveModeFlagBits resolve_mode;
+    // VkImageView resolve_view;
+    // VkImageLayout resolve_layout;
+
+    // VkAttachmentLoadOp load;
+    // VkAttachmentStoreOp store;
+    // VkClearValue clear;
+};
+
+
+
+struct DvzRendering
+{
+    VkRenderingInfo info;
+
+    DvzAttachment attachments[DVZ_MAX_ATTACHMENTS];
+    DvzAttachment depth;
+    DvzAttachment stencil;
 };
