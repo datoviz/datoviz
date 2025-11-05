@@ -35,8 +35,8 @@
 void dvz_attachment_image(DvzAttachment* attachment, VkImageView view, VkImageLayout layout)
 {
     ANN(attachment);
-    attachment->info.imageView = view;
-    attachment->info.imageLayout = layout;
+    attachment->imageView = view;
+    attachment->imageLayout = layout;
 }
 
 
@@ -45,9 +45,9 @@ void dvz_attachment_resolve(
     DvzAttachment* attachment, VkResolveModeFlagBits mode, VkImageView view, VkImageLayout layout)
 {
     ANN(attachment);
-    attachment->info.resolveMode = mode;
-    attachment->info.resolveImageView = view;
-    attachment->info.resolveImageLayout = layout;
+    attachment->resolveMode = mode;
+    attachment->resolveImageView = view;
+    attachment->resolveImageLayout = layout;
 }
 
 
@@ -56,8 +56,8 @@ void dvz_attachment_ops(
     DvzAttachment* attachment, VkAttachmentLoadOp load, VkAttachmentStoreOp store)
 {
     ANN(attachment);
-    attachment->info.loadOp = load;
-    attachment->info.storeOp = store;
+    attachment->loadOp = load;
+    attachment->storeOp = store;
 }
 
 
@@ -65,7 +65,7 @@ void dvz_attachment_ops(
 void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue clear)
 {
     ANN(attachment);
-    attachment->info.clearValue = clear;
+    attachment->clearValue = clear;
 }
 
 
@@ -111,7 +111,7 @@ DvzAttachment* dvz_rendering_color(DvzRendering* rendering, uint32_t idx)
     ANN(rendering);
     ASSERT(idx < DVZ_MAX_ATTACHMENTS);
     rendering->info.colorAttachmentCount = MAX(rendering->info.colorAttachmentCount, idx + 1);
-    rendering->attachments[idx].info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    rendering->attachments[idx].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     return &rendering->attachments[idx];
 }
 
@@ -120,7 +120,7 @@ DvzAttachment* dvz_rendering_color(DvzRendering* rendering, uint32_t idx)
 DvzAttachment* dvz_rendering_depth(DvzRendering* rendering)
 {
     ANN(rendering);
-    rendering->depth.info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    rendering->depth.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     return &rendering->depth;
 }
 
@@ -129,7 +129,7 @@ DvzAttachment* dvz_rendering_depth(DvzRendering* rendering)
 DvzAttachment* dvz_rendering_stencil(DvzRendering* rendering)
 {
     ANN(rendering);
-    rendering->stencil.info.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    rendering->stencil.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     return &rendering->stencil;
 }
 
@@ -143,14 +143,13 @@ void dvz_cmd_rendering_begin(DvzCommands* cmds, uint32_t idx, DvzRendering* rend
     VkRenderingAttachmentInfo attachments[DVZ_MAX_ATTACHMENTS] = {0};
     for (uint32_t i = 0; i < rendering->info.colorAttachmentCount; i++)
     {
-        attachments[i] = rendering->attachments[i].info;
+        attachments[i] = rendering->attachments[i];
     }
 
     rendering->info.pColorAttachments = attachments;
-    rendering->info.pDepthAttachment =
-        rendering->depth.info.sType != 0 ? &rendering->depth.info : NULL;
+    rendering->info.pDepthAttachment = rendering->depth.sType != 0 ? &rendering->depth : NULL;
     rendering->info.pStencilAttachment =
-        rendering->stencil.info.sType != 0 ? &rendering->stencil.info : NULL;
+        rendering->stencil.sType != 0 ? &rendering->stencil : NULL;
 
     vkCmdBeginRendering(cmds->cmds[idx], &rendering->info);
 }

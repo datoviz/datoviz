@@ -74,7 +74,7 @@ typedef struct VkBufferImageCopy2 DvzImageRegion;
 typedef struct DvzVertexBinding DvzVertexBinding;
 typedef struct DvzVertexAttr DvzVertexAttr;
 typedef struct DvzSpecialization DvzSpecialization;
-typedef struct DvzAttachment DvzAttachment;
+typedef struct VkRenderingAttachmentInfo DvzAttachment;
 typedef struct DvzRendering DvzRendering;
 
 typedef struct VkMemoryBarrier2 DvzBarrierMemory;
@@ -315,27 +315,9 @@ struct DvzGraphics
 
 
 
-struct DvzAttachment
-{
-    VkRenderingAttachmentInfo info;
-    // VkImageView view;
-    // VkImageLayout layout;
-
-    // VkResolveModeFlagBits resolve_mode;
-    // VkImageView resolve_view;
-    // VkImageLayout resolve_layout;
-
-    // VkAttachmentLoadOp load;
-    // VkAttachmentStoreOp store;
-    // VkClearValue clear;
-};
-
-
-
 struct DvzRendering
 {
     VkRenderingInfo info;
-
     DvzAttachment attachments[DVZ_MAX_ATTACHMENTS];
     DvzAttachment depth;
     DvzAttachment stencil;

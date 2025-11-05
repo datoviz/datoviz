@@ -29,7 +29,7 @@
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzCommands DvzCommands;
 
-typedef struct DvzAttachment DvzAttachment;
+typedef struct VkRenderingAttachmentInfo DvzAttachment;
 typedef struct DvzRendering DvzRendering;
 
 
