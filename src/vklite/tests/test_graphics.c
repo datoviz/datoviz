@@ -40,7 +40,6 @@
 #include "datoviz/vklite/sync.h"
 #include "test_vklite.h"
 #include "testing.h"
-#include "vulkan_core.h"
 
 
 
@@ -164,16 +163,16 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Command buffer.
     DvzCommands cmds = {0};
     dvz_commands(device, queue, 1, &cmds);
-    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_begin(&cmds);
     dvz_cmd_barriers(&cmds, 0, &barriers);
     dvz_cmd_rendering_begin(&cmds, 0, &rendering);
     dvz_cmd_bind_graphics(&cmds, 0, &graphics);
     dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
     dvz_cmd_rendering_end(&cmds, 0);
-    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_end(&cmds);
 
     // Submit the command buffer.
-    dvz_cmd_submit(&cmds, 0);
+    dvz_cmd_submit(&cmds);
 
     // Staging buffer for screenshot.
     DvzBuffer staging = {0};
@@ -186,8 +185,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_create(&staging);
 
     // Screenshot.
-    dvz_cmd_reset(&cmds, 0);
-    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_reset(&cmds);
+    dvz_cmd_begin(&cmds);
 
     // Layout transition.
     dvz_barrier_image_stage(
@@ -207,10 +206,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         dvz_buffer_handle(&staging), 0);
 
     // End the command buffer.
-    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_end(&cmds);
 
     // Submit the command buffer.
-    dvz_cmd_submit(&cmds, 0);
+    dvz_cmd_submit(&cmds);
 
     // Recover the screenshot.
     uint8_t* screenshot = (uint8_t*)dvz_calloc(WIDTH * HEIGHT, 4);

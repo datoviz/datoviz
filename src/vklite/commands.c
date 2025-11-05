@@ -56,43 +56,64 @@ void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommand
 
 
 
-void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx)
+VkCommandBuffer dvz_commands_handle(DvzCommands* cmds)
 {
     ANN(cmds);
-    ASSERT(cmds->count > 0);
-    ASSERT(idx != cmds->count);
-
-    // log_trace("begin command buffer");
-    VkCommandBufferBeginInfo begin_info = {0};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmds->cmds[idx], &begin_info));
+    return cmds->cmds[cmds->current];
 }
 
 
 
-void dvz_cmd_end(DvzCommands* cmds, uint32_t idx)
+void dvz_commands_current(DvzCommands* cmds, uint32_t current)
+{
+    ANN(cmds);
+    if (current >= cmds->count)
+    {
+        log_error("the current index (%d) must be no greater than %d", current, cmds->count);
+        return;
+    }
+    cmds->current = current;
+}
+
+
+
+void dvz_cmd_begin(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
-    ASSERT(idx != cmds->count);
+
+
+    // log_trace("begin command buffer");
+    VkCommandBufferBeginInfo begin_info = {0};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VK_CHECK_RESULT(vkBeginCommandBuffer(dvz_commands_handle(cmds), &begin_info));
+}
+
+
+
+void dvz_cmd_end(DvzCommands* cmds)
+{
+    ANN(cmds);
+    ASSERT(cmds->count > 0);
 
     // log_trace("end command buffer");
-    VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[idx]));
+    VK_CHECK_RESULT(vkEndCommandBuffer(dvz_commands_handle(cmds)));
 
     dvz_obj_created(&cmds->obj);
 }
 
 
 
-void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
+void dvz_cmd_reset(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
-    ASSERT(idx != cmds->count);
 
-    log_trace("reset command buffer #%d", idx);
-    ASSERT(cmds->cmds[idx] != VK_NULL_HANDLE);
-    VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[idx], 0));
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+
+    log_trace("reset command buffer #%d", cmds->current);
+    ANNVK(cmd);
+    VK_CHECK_RESULT(vkResetCommandBuffer(cmd, 0));
 
     // NOTE: when resetting, we mark the object as not created because it is no longer filled with
     // commands.
@@ -121,7 +142,7 @@ void dvz_cmd_free(DvzCommands* cmds)
 
 
 
-void dvz_cmd_submit(DvzCommands* cmds, uint32_t idx)
+void dvz_cmd_submit(DvzCommands* cmds)
 {
     ANN(cmds);
 

@@ -53,6 +53,7 @@ struct DvzCommands
     DvzQueue* queue;
 
     uint32_t count;
+    uint32_t current;
     VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
     bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES]; // if true, no need to refill it in the FRAME
 };
@@ -81,7 +82,28 @@ EXTERN_C_ON
  * @param count the number of command buffers to create
  * @param[out] cmds the create command buffers
  */
-void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cmds);
+DVZ_EXPORT void
+dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cmds);
+
+
+
+/**
+ * Return the Vulkan handle of the currently-selected command buffers.
+ *
+ * @param cmds the set of command buffers
+ * @returns the command buffer Vulkan handle
+ */
+DVZ_EXPORT VkCommandBuffer dvz_commands_handle(DvzCommands* cmds);
+
+
+
+/**
+ * Set the current command buffer index.
+ *
+ * @param cmds the set of command buffers
+ * @param current the current command buffer index
+ */
+DVZ_EXPORT void dvz_commands_current(DvzCommands* cmds, uint32_t current);
 
 
 
@@ -89,9 +111,8 @@ void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommand
  * Start recording a command buffer.
  *
  * @param cmds the set of command buffers
- * @param idx the index of the command buffer to begin recording on
  */
-DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds);
 
 
 
@@ -99,9 +120,8 @@ DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx);
  * Stop recording a command buffer.
  *
  * @param cmds the set of command buffers
- * @param idx the index of the command buffer to stop the recording on
  */
-DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds);
 
 
 
@@ -109,9 +129,8 @@ DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds, uint32_t idx);
  * Reset a command buffer.
  *
  * @param cmds the set of command buffers
- * @param idx the index of the command buffer to reset
  */
-DVZ_EXPORT void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_reset(DvzCommands* cmds);
 
 
 
@@ -130,9 +149,8 @@ DVZ_EXPORT void dvz_cmd_free(DvzCommands* cmds);
  * This function blocks the queue so it is not optimal.
  *
  * @param cmds the set of command buffers
- * @param idx the index of the command buffer to submit
  */
-DVZ_EXPORT void dvz_cmd_submit(DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_submit(DvzCommands* cmds);
 
 
 
