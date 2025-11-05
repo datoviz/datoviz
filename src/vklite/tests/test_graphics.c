@@ -120,6 +120,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Dynamic state.
     dvz_graphics_viewport(&graphics, 0, 0, WIDTH, HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_scissor(&graphics, 0, 0, WIDTH, HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
     // Graphics pipeline creation.
     dvz_graphics_create(&graphics);

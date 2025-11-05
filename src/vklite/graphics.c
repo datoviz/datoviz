@@ -128,7 +128,7 @@ static void set_viewport(DvzGraphics* graphics, VkPipelineViewportStateCreateInf
     viewport->viewportCount = 1;
     viewport->pViewports = &graphics->viewport;
 
-    viewport->scissorCount = 1;
+    viewport->scissorCount = graphics->scissor.extent.width > 0;
     viewport->pScissors = &graphics->scissor;
 }
 
