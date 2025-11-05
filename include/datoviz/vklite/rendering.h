@@ -182,4 +182,63 @@ DVZ_EXPORT void dvz_cmd_rendering_end(DvzCommands* cmds, uint32_t idx);
 
 
 
+/*************************************************************************************************/
+/*  Drawing                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Direct draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param first_vertex index of the first vertex
+ * @param vertex_count number of vertices to draw
+ */
+DVZ_EXPORT void dvz_cmd_draw(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
+    uint32_t first_instance, uint32_t instance_count);
+
+
+
+/**
+ * Direct indexed draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param first_index index of the first index
+ * @param vertex_offset offset of the vertex
+ * @param index_count number of indices to draw
+ */
+DVZ_EXPORT void dvz_cmd_draw_indexed(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_index, int32_t vertex_offset,
+    uint32_t index_count, uint32_t first_instance, uint32_t instance_count);
+
+
+
+/**
+ * Indirect draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param indirect buffer regions with the indirect draw info
+ */
+DVZ_EXPORT void dvz_cmd_draw_indirect(
+    DvzCommands* cmds, uint32_t idx, VkBuffer indirect, DvzSize offset, uint32_t draw_count,
+    DvzSize stride);
+
+
+
+/**
+ * Indirect indexed draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param indirect buffer regions with the indirect draw info
+ */
+DVZ_EXPORT void dvz_cmd_draw_indexed_indirect(
+    DvzCommands* cmds, uint32_t idx, VkBuffer indirect, DvzSize offset, uint32_t draw_count,
+    DvzSize stride);
+
+
+
 EXTERN_C_OFF
