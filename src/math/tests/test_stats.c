@@ -14,14 +14,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
-#include <inttypes.h>
-#include <stdbool.h>
-
 #include "_assertions.h"
 #include "datoviz/math/stats.h"
 #include "test_math.h"
 #include "testing.h"
+#include "datoviz/math/types.h"
 
 
 

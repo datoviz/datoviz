@@ -14,15 +14,19 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <volk.h>
 
 #include "_alloc.h"
+#include "_assertions.h"
 #include "_compat.h"
+#include "_log.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
 #include "validation.h"
-#include <volk.h>
 
 
 

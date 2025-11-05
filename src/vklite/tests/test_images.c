@@ -20,6 +20,7 @@
 #include "datoviz/vklite/images.h"
 #include "test_vklite.h"
 #include "testing.h"
+#include "vulkan_core.h"
 
 
 

@@ -15,6 +15,10 @@
 /*************************************************************************************************/
 
 #include "datoviz/thread/fifo.h"
+
+#include <sys/time.h>
+#include <time.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -22,6 +26,7 @@
 #include "_time_utils.h"
 #include "datoviz/thread/atomic.h"
 #include "fifo_structs.h"
+#include "datoviz/common/mutex.h"
 
 
 

@@ -17,12 +17,12 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/gpu.h"
 
-#include <vulkan/vulkan.h>
 MUTE_ON
 #define VMA_EXTERNAL_MEMORY 1
 #include "vk_mem_alloc.h"

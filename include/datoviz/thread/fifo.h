@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"

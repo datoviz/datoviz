@@ -17,6 +17,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 

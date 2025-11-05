@@ -21,9 +21,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-
 #include "test_common.h"
 #include "testing.h"
+#include "datoviz/math/types.h"
 
 
 

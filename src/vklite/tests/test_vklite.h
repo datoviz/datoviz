@@ -16,16 +16,18 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_alloc.h"
-#include "_compat.h"
-#include "datoviz/fileio.h"
-#include "testing.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "_alloc.h"
+#include "_compat.h"
+#include "datoviz/fileio.h"
+#include "testing.h"
+#include "datoviz/fileio/fileio.h"
+#include "datoviz/math/types.h"
 
 #if !defined(DVZ_SPIRV_ALIGN)
 #if defined(__cplusplus)

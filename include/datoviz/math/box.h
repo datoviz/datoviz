@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "datoviz/common/macros.h"
 #include "types.h"
 

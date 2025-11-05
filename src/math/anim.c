@@ -14,9 +14,14 @@
 /*************************************************************************************************/
 
 #include "datoviz/math/anim.h"
+
+#include <math.h>
+
 #include "_log.h"
-#include "datoviz/math/_cglm.h"
 #include "datoviz/math/types.h"
+#include "cglm/types.h"
+#include "cglm/vec2.h"
+#include "cglm/vec3.h"
 
 
 

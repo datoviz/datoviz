@@ -14,6 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "../fifo_structs.h"
 #include "_alloc.h"
 #include "_assertions.h"

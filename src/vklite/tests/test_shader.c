@@ -14,14 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
 #include <inttypes.h>
-#include <stdbool.h>
 
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
-#include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vklite/shader.h"
 #include "test_vklite.h"

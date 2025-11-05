@@ -14,18 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/vklite/sync.h"
+#include <volk.h>
+
 #include "../src/vk/macros.h"
 #include "_assertions.h"
-#include "_compat.h"
-#include "_log.h"
-#include "datoviz/common/obj.h"
-#include "datoviz/math/types.h"
-#include "datoviz/vk/device.h"
-#include "datoviz/vk/queues.h"
-#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/rendering.h"
-#include <volk.h>
+#include "datoviz/vklite/sync.h"
 
 
 

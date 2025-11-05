@@ -14,13 +14,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/vk/queues.h"
+#include <stddef.h>
+#include <volk.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/vk/gpu.h"
+#include "_log.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
-#include <volk.h>
 
 
 

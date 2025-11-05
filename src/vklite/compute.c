@@ -14,7 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/vklite/compute.h"
+#include <stddef.h>
+#include <volk.h>
+
 #include "../src/vk/macros.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -23,7 +25,7 @@
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include <volk.h>
+#include "datoviz/vklite/compute.h"
 
 
 

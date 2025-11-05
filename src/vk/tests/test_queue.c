@@ -14,7 +14,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
@@ -27,6 +26,7 @@
 #include "datoviz/vk/queues.h"
 #include "test_vk.h"
 #include "testing.h"
+#include "vulkan_core.h"
 
 
 

@@ -14,14 +14,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/vklite/descriptors.h"
+#include <stddef.h>
+#include <volk.h>
+
 #include "../src/vk/macros.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/vk/device.h"
-#include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
-#include <volk.h>
+#include "datoviz/vklite/descriptors.h"
 
 
 

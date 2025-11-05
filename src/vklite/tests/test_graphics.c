@@ -14,17 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "../../vk/macros.h"
 #include "../../vk/tests/test_vk.h"
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_compat.h"
-#include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
@@ -40,6 +35,9 @@
 #include "datoviz/vklite/sync.h"
 #include "test_vklite.h"
 #include "testing.h"
+#include "datoviz/math/types.h"
+#include "datoviz/vk/instance.h"
+#include "vulkan_core.h"
 
 
 

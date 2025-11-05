@@ -14,13 +14,16 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+#include <string.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-
 #include "datoviz/fileio/fileio.h"
 #include "test_fileio.h"
 #include "testing.h"
+#include "datoviz/math/types.h"
 
 
 

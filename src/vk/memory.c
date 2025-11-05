@@ -14,27 +14,23 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stddef.h>
 #include <stdint.h>
+#include <volk.h>
 
-#include "_alloc.h"
+#include "_assertions.h"
+#include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 
-#include <volk.h>
 MUTE_ON
-#include "vk_mem_alloc.h"
 MUTE_OFF
 #include "macros.h"
 #if OS_WINDOWS
 #include <vulkan/vulkan_win32.h>
 #include <windows.h>
-#endif
-
-#if defined(VOLK_HEADER_VERSION)
-VkResult vmaImportVulkanFunctionsFromVolk(
-    const VmaAllocatorCreateInfo* pAllocatorCreateInfo, VmaVulkanFunctions* pDstVulkanFunctions);
 #endif
 
 

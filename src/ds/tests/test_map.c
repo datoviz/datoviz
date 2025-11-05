@@ -14,11 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
 #include "datoviz/ds/map.h"
-
 #include "test_ds.h"
 #include "testing.h"
+#include "datoviz/math/types.h"
 
 
 

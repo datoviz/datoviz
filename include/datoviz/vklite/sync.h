@@ -16,10 +16,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <vulkan/vulkan.h>
+#include <stdint.h>
+#include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vk/device.h"
+#include "datoviz/vklite/commands.h"
 
 
 

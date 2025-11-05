@@ -14,10 +14,13 @@
 /*************************************************************************************************/
 
 #include "datoviz/thread/thread.h"
+
+#include <pthread.h>
+#include <stddef.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/common/mutex.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/thread/atomic.h"

@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stddef.h>
+
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
@@ -22,6 +24,9 @@
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
+#include "datoviz/math/types.h"
+#include "testing.h"
+#include "vulkan_core.h"
 
 
 

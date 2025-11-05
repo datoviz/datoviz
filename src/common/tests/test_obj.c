@@ -14,9 +14,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "_assertions.h"
 #include "datoviz/common/obj.h"
-
 #include "test_common.h"
 #include "testing.h"
 

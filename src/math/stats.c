@@ -17,7 +17,7 @@
 #include <float.h>
 #include <inttypes.h>
 #include <math.h>
-#include <stdbool.h>
+#include <stddef.h>
 
 #include "_assertions.h"
 #include "datoviz/math/stats.h"

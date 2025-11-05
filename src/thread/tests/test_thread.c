@@ -14,13 +14,15 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
+#include <stddef.h>
 
+#include "_assertions.h"
 #include "_time_utils.h"
 #include "datoviz/common/mutex.h" // this one is in common as it is used by _log.h
 #include "datoviz/thread/thread.h"
 #include "test_thread.h"
 #include "testing.h"
+#include "datoviz/thread/atomic.h"
 
 
 

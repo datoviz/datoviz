@@ -14,13 +14,18 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vklite/buffers.h"
-#include "datoviz/vklite/compute.h"
 #include "test_vklite.h"
+#include "datoviz/math/types.h"
+#include "datoviz/vk/instance.h"
+#include "testing.h"
+#include "vulkan_core.h"
 
 
 

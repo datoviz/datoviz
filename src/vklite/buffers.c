@@ -14,19 +14,21 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <volk.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
+#include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
-#include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
-#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
-#include <volk.h>
+#include "vk_mem_alloc.h"
 
 
 

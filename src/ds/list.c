@@ -9,11 +9,13 @@
 /*************************************************************************************************/
 
 #include "datoviz/ds/list.h"
+
+#include <stdlib.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/macros.h"
 #include "list_structs.h"
 
 

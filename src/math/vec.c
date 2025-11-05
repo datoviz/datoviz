@@ -15,9 +15,10 @@
 /*************************************************************************************************/
 
 #include "datoviz/math/vec.h"
-#include "datoviz/math/_cglm.h"
+
 #include "datoviz/math/types.h"
 #include "_compat.h"
+#include "cglm/types.h"
 
 
 

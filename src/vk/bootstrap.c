@@ -15,9 +15,9 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"

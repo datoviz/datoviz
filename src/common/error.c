@@ -14,10 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_assertions.h"
-#include "_error.h"
-#include "datoviz/common/functions.h"
 #include <stdlib.h>
+
+#include "_assertions.h"
+#include "datoviz/common/functions.h"
 
 
 

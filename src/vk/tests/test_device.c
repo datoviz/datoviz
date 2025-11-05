@@ -14,6 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/vk/device.h"
@@ -22,6 +26,7 @@
 #include "datoviz/vk/queues.h"
 #include "test_vk.h"
 #include "testing.h"
+#include "vulkan_core.h"
 
 
 

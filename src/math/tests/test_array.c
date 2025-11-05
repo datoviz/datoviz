@@ -14,15 +14,17 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
 #include <inttypes.h>
-#include <stdbool.h>
+#include <stddef.h>
+#include <string.h>
 
 #include "../array_structs.h"
-#include "datoviz/math/_cglm.h"
 #include "datoviz/math/array.h"
 #include "test_math.h"
 #include "testing.h"
+#include "cglm/mat4.h"
+#include "cglm/types.h"
+#include "datoviz/math/types.h"
 
 
 

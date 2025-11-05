@@ -16,10 +16,16 @@
 /*************************************************************************************************/
 
 #include "datoviz/math/array.h"
+
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "_alloc.h"
 #include "_compat.h"
 #include "_log.h"
 #include "array_structs.h"
+#include "_assertions.h"
+#include "datoviz/common/obj.h"
 
 
 

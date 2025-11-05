@@ -14,11 +14,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdlib.h>
+#include <stdbool.h>
+
 #include "_assertions.h"
 #include "_compat.h"
 #include "_error.h"
 #include "_log.h"
-#include <stdlib.h>
 
 
 

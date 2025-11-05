@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stddef.h>
+
 #include "../src/common/tests/test_common.h"
 #include "../src/ds/tests/test_ds.h"
 #include "../src/fileio/tests/test_fileio.h"

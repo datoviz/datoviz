@@ -14,9 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
 #include <inttypes.h>
-#include <stdbool.h>
 
 #include "_log.h"
 #include "datoviz/math/prng.h"

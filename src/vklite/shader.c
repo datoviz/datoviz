@@ -14,7 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/vklite/shader.h"
+
+#include <stddef.h>
+#include <volk.h>
+
 #include "../src/vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -23,12 +26,12 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include <volk.h>
+#include "datoviz/vklite/shader.h"
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Functions */
 /*************************************************************************************************/
 
 int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShader* shader)

@@ -3,12 +3,15 @@
 /*************************************************************************************************/
 
 #include "datoviz/ds/map.h"
+
+#include <inttypes.h>
+#include <stddef.h>
+#include <map>
+#include <utility>
+#include <iterator>
+
 #include "_assertions.h"
 #include "_log.h"
-
-#include <map>
-#include <numeric>
-#include <utility>
 
 
 

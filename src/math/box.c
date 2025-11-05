@@ -15,7 +15,12 @@
 /*************************************************************************************************/
 
 #include "datoviz/math/box.h"
+
+#include <math.h>
+#include <stdio.h>
+
 #include "_assertions.h"
+#include "datoviz/math/types.h"
 
 
 

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "datoviz/datoviz.h"
+#include "datoviz/common/version.h"
 
 int main(void)
 {

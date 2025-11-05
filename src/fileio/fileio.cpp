@@ -3,13 +3,17 @@
 /*************************************************************************************************/
 
 #include "datoviz/fileio/fileio.h"
+
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <vector>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "fpng.h"
-#include <errno.h>
-#include <sys/stat.h>
 
 #if HAS_ZLIB
 #include <zlib.h>

@@ -14,28 +14,23 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
 #include <inttypes.h>
-#include <stdbool.h>
 #if !OS_WINDOWS
 #include <unistd.h>
 #endif
 
-#include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "vulkan_core.h"
 
 #if HAS_CUDA
 #include <cuda_runtime_api.h>
-
 #include <cuda.h>
 #endif
 
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
-#include "datoviz/vk/queues.h"
 #include "test_vk.h"
 #include "testing.h"
 

@@ -9,11 +9,9 @@
 /*************************************************************************************************/
 
 #include <atomic>
-#include <cstddef>
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "_log.h"
 #include "datoviz/thread/atomic.h"
 
 

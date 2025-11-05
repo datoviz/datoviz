@@ -14,9 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "_assertions.h"
 #include "datoviz/ds/list.h"
-
 #include "test_ds.h"
 #include "testing.h"
 

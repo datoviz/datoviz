@@ -14,20 +14,16 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <float.h>
-#include <inttypes.h>
 #include <stdbool.h>
 
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
-#include "_log.h"
-#include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vklite/sampler.h"
 #include "test_vklite.h"
 #include "testing.h"
+#include "vulkan_core.h"
 
 
 

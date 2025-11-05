@@ -16,12 +16,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/common/macros.h"
-#include "datoviz/math/types.h"
-#include "types.h"
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
+
+#include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
+#include "types.h"
 
 
 
