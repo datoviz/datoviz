@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include <volk.h>
 
@@ -33,8 +34,39 @@ typedef struct DvzSlots DvzSlots;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define DVZ_MAX_BINDINGS       16
+#define DVZ_MAX_PUSH_CONSTANTS 8
+#define DVZ_MAX_SETS           4
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzSlots
+{
+    DvzObject obj;
+    DvzDevice* device;
+
+    // Binding types, for each set and each binding in each set.
+    uint32_t set_count;
+    uint32_t binding_counts[DVZ_MAX_SETS];
+    VkDescriptorSetLayoutBinding bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
+
+    // Push constants.
+    uint32_t push_count;
+    VkPushConstantRange pushs[DVZ_MAX_PUSH_CONSTANTS];
+
+    // Descriptor set layouts.
+    VkDescriptorSetLayout set_layouts[DVZ_MAX_BINDINGS];
+
+    // Pipeline layout.
+    VkPipelineLayout pipeline_layout;
+};
 
 
 

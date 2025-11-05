@@ -17,7 +17,9 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vk/memory.h"
 #include "vk_mem_alloc.h"
 #include <volk.h>
 
@@ -49,6 +51,46 @@ typedef struct VkBufferImageCopy2 DvzImageRegion;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzImages
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzVma* allocator;
+
+    uint32_t count;
+    uvec3 shape;
+    uint32_t mip;    // number of mip levels
+    uint32_t layers; // number of array layers
+    bool is_swapchain;
+
+    VkFormat format;
+    VkImageType image_type;
+    VkImageLayout layout;
+    VkImageTiling tiling;
+    VkImageUsageFlags usage;
+    VkSampleCountFlags samples; // for multisample antialiasing
+
+    VkImage vk_images[DVZ_MAX_IMAGES];
+    DvzAllocation allocs[DVZ_MAX_IMAGES];
+};
+
+
+
+struct DvzImageViews
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzImages* img;
+
+    VkImageViewType type;
+    VkImageAspectFlags aspect;
+    uint32_t mip_base;
+    uint32_t mip_count;
+    uint32_t layers_base;
+    uint32_t layers_count;
+    VkImageView vk_views[DVZ_MAX_IMAGES];
+};
 
 
 

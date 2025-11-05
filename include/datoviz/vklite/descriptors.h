@@ -18,6 +18,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vklite/slots.h"
 #include <volk.h>
 
 
@@ -35,8 +36,15 @@ typedef struct DvzCommands DvzCommands;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzDescriptors
+{
+    DvzSlots* slots;
+    DvzDevice* device;
+    VkDescriptorSet vk_descriptors[DVZ_MAX_SETS];
+};
 
 
 

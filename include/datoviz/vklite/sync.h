@@ -35,9 +35,26 @@ typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
 typedef struct DvzBarriers DvzBarriers;
 
 
+
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define DVZ_MAX_BARRIERS 4
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzBarriers
+{
+    VkDependencyInfo info;
+    DvzBarrierMemory bmems[DVZ_MAX_BARRIERS];
+    DvzBarrierBuffer bbufs[DVZ_MAX_BARRIERS];
+    DvzBarrierImage bimg[DVZ_MAX_BARRIERS];
+};
 
 
 

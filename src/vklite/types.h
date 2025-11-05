@@ -33,17 +33,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DVZ_MAX_BARRIERS       4
-#define DVZ_MAX_BINDINGS       16
-#define DVZ_MAX_PUSH_CONSTANTS 8
-#define DVZ_MAX_SETS           4
-
-
-
-/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -77,87 +66,3 @@ typedef struct DvzBarriers DvzBarriers;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-
-
-struct DvzSlots
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    // Binding types, for each set and each binding in each set.
-    uint32_t set_count;
-    uint32_t binding_counts[DVZ_MAX_SETS];
-    VkDescriptorSetLayoutBinding bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
-
-    // Push constants.
-    uint32_t push_count;
-    VkPushConstantRange pushs[DVZ_MAX_PUSH_CONSTANTS];
-
-    // Descriptor set layouts.
-    VkDescriptorSetLayout set_layouts[DVZ_MAX_BINDINGS];
-
-    // Pipeline layout.
-    VkPipelineLayout pipeline_layout;
-};
-
-
-
-struct DvzDescriptors
-{
-    DvzSlots* slots;
-    DvzDevice* device;
-    VkDescriptorSet vk_descriptors[DVZ_MAX_SETS];
-};
-
-
-
-struct DvzImages
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzVma* allocator;
-
-    uint32_t count;
-    uvec3 shape;
-    uint32_t mip;    // number of mip levels
-    uint32_t layers; // number of array layers
-    bool is_swapchain;
-
-    VkFormat format;
-    VkImageType image_type;
-    VkImageLayout layout;
-    VkImageTiling tiling;
-    VkImageUsageFlags usage;
-    VkSampleCountFlags samples; // for multisample antialiasing
-
-    VkImage vk_images[DVZ_MAX_IMAGES];
-    DvzAllocation allocs[DVZ_MAX_IMAGES];
-};
-
-
-
-struct DvzImageViews
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzImages* img;
-
-    VkImageViewType type;
-    VkImageAspectFlags aspect;
-    uint32_t mip_base;
-    uint32_t mip_count;
-    uint32_t layers_base;
-    uint32_t layers_count;
-    VkImageView vk_views[DVZ_MAX_IMAGES];
-};
-
-
-
-struct DvzBarriers
-{
-    VkDependencyInfo info;
-    DvzBarrierMemory bmems[DVZ_MAX_BARRIERS];
-    DvzBarrierBuffer bbufs[DVZ_MAX_BARRIERS];
-    DvzBarrierImage bimg[DVZ_MAX_BARRIERS];
-};
