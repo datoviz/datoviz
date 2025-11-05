@@ -237,5 +237,5 @@ void dvz_cmd_barriers(DvzCommands* cmds, uint32_t idx, DvzBarriers* barriers)
 {
     ANN(cmds);
     ANN(barriers);
-    // TODO
+    vkCmdPipelineBarrier2(cmds->cmds[idx], &barriers->info);
 }

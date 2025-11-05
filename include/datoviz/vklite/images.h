@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 #include "vk_mem_alloc.h"
 #include <volk.h>
 
@@ -35,10 +36,13 @@
 /*************************************************************************************************/
 
 typedef struct DvzDevice DvzDevice;
+typedef struct DvzCommands DvzCommands;
 typedef struct DvzVma DvzVma;
 
+typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzImages DvzImages;
 typedef struct DvzImageViews DvzImageViews;
+typedef struct VkBufferImageCopy2 DvzImageRegion;
 
 
 
@@ -261,6 +265,114 @@ DVZ_EXPORT VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx
  * @param views the image views
  */
 DVZ_EXPORT void dvz_image_views_destroy(DvzImageViews* views);
+
+
+
+/*************************************************************************************************/
+/*  Image region                                                                                 */
+/*************************************************************************************************/
+
+/**
+ * Initialize an image region.
+ *
+ * @param region the image region
+ */
+DVZ_EXPORT void dvz_image_region(DvzImageRegion* region);
+
+
+
+/**
+ * Set the image region offset.
+ *
+ * @param region the image region
+ * @param x offset x
+ * @param y offset y
+ * @param z offset z
+ */
+DVZ_EXPORT void dvz_image_region_offset(DvzImageRegion* region, int32_t x, int32_t y, int32_t z);
+
+
+
+/**
+ * Set the image region extent.
+ *
+ * @param region the image region
+ * @param w the width
+ * @param h the height
+ * @param d the depth
+ */
+DVZ_EXPORT void
+dvz_image_region_extent(DvzImageRegion* region, uint32_t w, uint32_t h, uint32_t d);
+
+
+
+/**
+ * Set the image region aspect.
+ *
+ * @param region the image region
+ * @param aspect the aspect mask
+ */
+DVZ_EXPORT void dvz_image_region_aspect(DvzImageRegion* region, VkImageAspectFlags aspect);
+
+
+
+/**
+ * Set the MIP level of the image region.
+ *
+ * @param region the image region
+ * @param mip the MIP level
+ */
+DVZ_EXPORT void dvz_image_region_mip(DvzImageRegion* region, uint32_t mip);
+
+
+
+/**
+ * Set the array layers of the image region.
+ *
+ * @param region the image region
+ * @param base_layer the base layer
+ * @param layer_count the number of layers
+ */
+DVZ_EXPORT void
+dvz_image_region_layers(DvzImageRegion* region, uint32_t base_layer, uint32_t layer_count);
+
+
+
+/*************************************************************************************************/
+/*  Image commands                                                                               */
+/*************************************************************************************************/
+
+/**
+ * Copy a GPU buffer to a GPU image.
+ *
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param buffer the source buffer
+ * @param offset the offset in the source buffer
+ * @param img the target image
+ * @param layout the image layout
+ * @param region the image region
+ */
+DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
+    DvzCommands* cmds, uint32_t idx, VkBuffer buffer, DvzSize offset, //
+    VkImage img, VkImageLayout layout, DvzImageRegion* region);
+
+
+
+/**
+ * Copy a GPU image to a GPU buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param tex_offset the texture offset
+ * @param shape the texture shape
+ * @param images the image
+ * @param buffer the buffer
+ * @param buf_offset the buffer offset
+ */
+DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
+    DvzCommands* cmds, uint32_t idx, VkImage img, VkImageLayout layout, DvzImageRegion* region,
+    VkBuffer buffer, DvzSize offset);
 
 
 

@@ -25,6 +25,7 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/images.h"
 #include "types.h"
+#include "vulkan/vulkan_core.h"
 
 
 
@@ -272,7 +273,7 @@ void dvz_image_views(DvzImages* img, DvzImageViews* views)
     ANN(views);
 
     views->device = img->device;
-    views->images = img;
+    views->img = img;
 
     // Default values.
     views->layers_count = 1;
@@ -328,7 +329,7 @@ void dvz_image_views_create(DvzImageViews* views)
 {
     ANN(views);
 
-    DvzImages* img = views->images;
+    DvzImages* img = views->img;
     ANN(img);
 
     DvzDevice* device = views->device;
@@ -374,7 +375,7 @@ void dvz_image_views_destroy(DvzImageViews* views)
 {
     ANN(views);
 
-    DvzImages* img = views->images;
+    DvzImages* img = views->img;
     ANN(img);
 
     DvzDevice* device = views->device;
@@ -390,4 +391,102 @@ void dvz_image_views_destroy(DvzImageViews* views)
     }
 
     dvz_obj_destroyed(&views->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Command buffer                                                                               */
+/*************************************************************************************************/
+
+void dvz_image_region(DvzImageRegion* region)
+{
+    ANN(region);
+
+    // Default values.
+    region->imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region->imageSubresource.layerCount = 1;
+}
+
+
+
+void dvz_image_region_offset(DvzImageRegion* region, int32_t x, int32_t y, int32_t z)
+{
+    ANN(region);
+    region->imageOffset.x = x;
+    region->imageOffset.y = y;
+    region->imageOffset.z = z;
+}
+
+
+
+void dvz_image_region_extent(DvzImageRegion* region, uint32_t w, uint32_t h, uint32_t d)
+{
+    ANN(region);
+    region->imageExtent.width = w;
+    region->imageExtent.height = h;
+    region->imageExtent.depth = d;
+}
+
+
+
+void dvz_image_region_aspect(DvzImageRegion* region, VkImageAspectFlags aspect)
+{
+    ANN(region);
+    region->imageSubresource.aspectMask = aspect;
+}
+
+
+
+void dvz_image_region_mip(DvzImageRegion* region, uint32_t mip)
+{
+    ANN(region);
+    region->imageSubresource.mipLevel = mip;
+}
+
+
+
+void dvz_image_region_layers(DvzImageRegion* region, uint32_t base_layer, uint32_t layer_count)
+{
+    ANN(region);
+    region->imageSubresource.baseArrayLayer = base_layer;
+    region->imageSubresource.layerCount = layer_count;
+}
+
+
+
+void dvz_cmd_copy_buffer_to_image(
+    DvzCommands* cmds, uint32_t idx, VkBuffer buffer, DvzSize offset, //
+    VkImage img, VkImageLayout layout, DvzImageRegion* region)
+{
+    ANN(cmds);
+
+    region->bufferOffset = offset;
+
+    VkCopyBufferToImageInfo2 info = {.sType = VK_STRUCTURE_TYPE_COPY_BUFFER_TO_IMAGE_INFO_2};
+    info.srcBuffer = buffer;
+    info.dstImage = img;
+    info.dstImageLayout = layout;
+    info.regionCount = 1;
+    info.pRegions = region;
+    vkCmdCopyBufferToImage2(cmds->cmds[idx], &info);
+}
+
+
+
+void dvz_cmd_copy_image_to_buffer(
+    DvzCommands* cmds, uint32_t idx, VkImage img, VkImageLayout layout, DvzImageRegion* region,
+    VkBuffer buffer, DvzSize offset)
+{
+    ANN(cmds);
+
+    region->bufferOffset = offset;
+
+    VkCopyImageToBufferInfo2 info = {.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2};
+    info.srcImage = img;
+    info.srcImageLayout = layout;
+    info.dstBuffer = buffer;
+    info.regionCount = 1;
+    info.pRegions = region;
+    vkCmdCopyImageToBuffer2(cmds->cmds[idx], &info);
 }

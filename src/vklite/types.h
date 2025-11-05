@@ -28,7 +28,6 @@
 #include "datoviz/vk/enums.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/images.h"
-#include "vulkan/vulkan_core.h"
 #include <volk.h>
 
 
@@ -71,6 +70,7 @@ typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzBufferViews DvzBufferViews;
 typedef struct DvzImages DvzImages;
 typedef struct DvzImageViews DvzImageViews;
+typedef struct VkBufferImageCopy2 DvzImageRegion;
 typedef struct DvzVertexBinding DvzVertexBinding;
 typedef struct DvzVertexAttr DvzVertexAttr;
 typedef struct DvzSpecialization DvzSpecialization;
@@ -221,7 +221,7 @@ struct DvzImageViews
 {
     DvzObject obj;
     DvzDevice* device;
-    DvzImages* images;
+    DvzImages* img;
 
     VkImageViewType type;
     VkImageAspectFlags aspect;
