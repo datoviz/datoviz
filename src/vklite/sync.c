@@ -413,3 +413,54 @@ void dvz_semaphore_destroy(DvzSemaphore* semaphore)
     }
     dvz_obj_destroyed(&semaphore->obj);
 }
+
+
+
+/*************************************************************************************************/
+/*  Submission                                                                                   */
+/*************************************************************************************************/
+
+void dvz_submit(DvzSubmit* submit)
+{
+    ANN(submit);
+    submit->info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+    submit->info.pWaitSemaphoreInfos = submit->wait;
+    submit->info.pSignalSemaphoreInfos = submit->signal;
+    submit->info.pCommandBufferInfos = submit->cmds;
+}
+
+
+
+void dvz_submit_wait(
+    DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage)
+{
+    ANN(submit);
+    VkSemaphoreSubmitInfo* info = &submit->wait[submit->info.waitSemaphoreInfoCount++];
+    info->sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+    info->semaphore = semaphore;
+    info->value = value;
+    info->stageMask = stage;
+}
+
+
+
+void dvz_submit_signal(
+    DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage)
+{
+    ANN(submit);
+    VkSemaphoreSubmitInfo* info = &submit->signal[submit->info.signalSemaphoreInfoCount++];
+    info->sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+    info->semaphore = semaphore;
+    info->value = value;
+    info->stageMask = stage;
+}
+
+
+
+void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd)
+{
+    ANN(submit);
+    VkCommandBufferSubmitInfo* info = &submit->cmds[submit->info.commandBufferInfoCount++];
+    info->sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+    info->commandBuffer = cmd;
+}

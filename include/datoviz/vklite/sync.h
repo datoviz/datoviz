@@ -39,6 +39,7 @@ typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
 typedef struct DvzBarriers DvzBarriers;
 typedef struct DvzFence DvzFence;
 typedef struct DvzSemaphore DvzSemaphore;
+typedef struct DvzSubmit DvzSubmit;
 
 
 
@@ -46,7 +47,9 @@ typedef struct DvzSemaphore DvzSemaphore;
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_BARRIERS 4
+#define DVZ_MAX_BARRIERS   4
+#define DVZ_MAX_SEMAPHORES 4
+#define DVZ_MAX_COMMANDS   4
 
 
 
@@ -79,6 +82,17 @@ struct DvzSemaphore
     DvzDevice* device;
     VkSemaphore vk_semaphore;
     uint64_t value;
+};
+
+
+
+struct DvzSubmit
+{
+    DvzDevice* device;
+    VkSubmitInfo2 info;
+    VkSemaphoreSubmitInfo wait[DVZ_MAX_SEMAPHORES];
+    VkSemaphoreSubmitInfo signal[DVZ_MAX_SEMAPHORES];
+    VkCommandBufferSubmitInfo cmds[DVZ_MAX_COMMANDS];
 };
 
 
@@ -421,6 +435,56 @@ DVZ_EXPORT uint64_t dvz_semaphore_query(DvzSemaphore* semaphore);
  * @param semaphore the semaphore
  */
 DVZ_EXPORT void dvz_semaphore_destroy(DvzSemaphore* semaphore);
+
+
+
+/*************************************************************************************************/
+/*  Submission                                                                                   */
+/*************************************************************************************************/
+
+
+/**
+ * Initialize a submission.
+ *
+ * @param submit the submission
+ */
+DVZ_EXPORT void dvz_submit(DvzSubmit* submit);
+
+
+
+/**
+ * Add a semaphore to wait on.
+ *
+ * @param submit the submission
+ * @param semaphore the semaphore
+ * @param value the value to wait on, if using a timeline semaphore
+ * @param stage the stage in the queue's execution that depends on that wait.
+ */
+DVZ_EXPORT void dvz_submit_wait(
+    DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage);
+
+
+
+/**
+ * Add a semaphore to signal.
+ *
+ * @param submit the submission
+ * @param semaphore the semaphore
+ * @param value the value to signal, if using a timeline semaphore
+ * @param stage the stage in the queue's execution that depends on that wait.
+ */
+DVZ_EXPORT void dvz_submit_signal(
+    DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage);
+
+
+
+/**
+ * Add a command buffer to the submission.
+ *
+ * @param submit the submission
+ * @param cmd the command buffer
+ */
+DVZ_EXPORT void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd);
 
 
 
