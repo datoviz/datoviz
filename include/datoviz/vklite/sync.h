@@ -78,6 +78,7 @@ struct DvzSemaphore
     DvzObject obj;
     DvzDevice* device;
     VkSemaphore vk_semaphore;
+    uint64_t value;
 };
 
 
@@ -374,11 +375,43 @@ DVZ_EXPORT void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore);
 
 
 /**
- * Recreate a semaphore.
+ * Initialize a timeline semaphore (GPU-GPU synchronization).
  *
- * @param semaphore the semaphore
+ * @param device the device
+ * @param value the initial value
+ * @param[out] the created semaphore
  */
-DVZ_EXPORT void dvz_semaphore_recreate(DvzSemaphore* semaphore);
+DVZ_EXPORT void dvz_semaphore_timeline(DvzDevice* device, uint64_t value, DvzSemaphore* semaphore);
+
+
+
+/**
+ * Signal a timeline semaphore from the CPU.
+ *
+ * @param semaphore
+ * @param value the value
+ */
+DVZ_EXPORT void dvz_semaphore_signal(DvzSemaphore* semaphore, uint64_t value);
+
+
+
+/**
+ * Wait a timeline semaphore on the CPU.
+ *
+ * @param semaphore
+ * @param value the value
+ */
+DVZ_EXPORT void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value);
+
+
+
+/**
+ * Retrieve the current value of a timeline semaphore.
+ *
+ * @param semaphore
+ * @returns the value
+ */
+DVZ_EXPORT uint64_t dvz_semaphore_query(DvzSemaphore* semaphore);
 
 
 

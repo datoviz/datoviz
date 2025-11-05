@@ -25,6 +25,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MAX_WAIT 100000000
+
+
+
+/*************************************************************************************************/
 /*  Memory barrier                                                                               */
 /*************************************************************************************************/
 
@@ -261,7 +269,7 @@ void dvz_fence_wait(DvzFence* fence)
     ANN(fence);
     if (fence->vk_fence != VK_NULL_HANDLE)
     {
-        vkWaitForFences(fence->device->vk_device, 1, &fence->vk_fence, VK_TRUE, 100000000);
+        vkWaitForFences(fence->device->vk_device, 1, &fence->vk_fence, VK_TRUE, MAX_WAIT);
     }
     else
     {
@@ -330,27 +338,59 @@ void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore)
 
 
 
-void dvz_semaphore_recreate(DvzSemaphore* semaphore)
+void dvz_semaphore_timeline(DvzDevice* device, uint64_t value, DvzSemaphore* semaphore)
 {
-    ANN(semaphore);
-    if (!dvz_obj_is_created(&semaphore->obj))
-    {
-        log_trace("skip destruction of already-destroyed semaphore");
-        return;
-    }
-    DvzDevice* device = semaphore->device;
     ANN(device);
+    ANN(semaphore);
 
-    log_trace("recreate semaphore");
+    semaphore->device = device;
+
+    VkSemaphoreTypeCreateInfo timeline_info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+        .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
+        .initialValue = value,
+    };
 
     VkSemaphoreCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    if (semaphore->vk_semaphore != VK_NULL_HANDLE)
-    {
-        vkDestroySemaphore(device->vk_device, semaphore->vk_semaphore, NULL);
-        VK_CHECK_RESULT(
-            vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
-    }
+    info.pNext = &timeline_info;
+    VK_CHECK_RESULT(vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
+}
+
+
+
+void dvz_semaphore_signal(DvzSemaphore* semaphore, uint64_t value)
+{
+    ANN(semaphore);
+    VkSemaphoreSignalInfo signalInfo = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
+        .semaphore = semaphore->vk_semaphore,
+        .value = value,
+    };
+    vkSignalSemaphore(semaphore->device->vk_device, &signalInfo);
+}
+
+
+
+void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value)
+{
+    ANN(semaphore);
+    VkSemaphoreWaitInfo waitInfo = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+        .semaphoreCount = 1,
+        .pSemaphores = &semaphore->vk_semaphore,
+        .pValues = &value,
+    };
+    vkWaitSemaphores(semaphore->device->vk_device, &waitInfo, MAX_WAIT);
+}
+
+
+
+uint64_t dvz_semaphore_query(DvzSemaphore* semaphore)
+{
+    uint64_t current = 0;
+    vkGetSemaphoreCounterValue(semaphore->device->vk_device, semaphore->vk_semaphore, &current);
+    return current;
 }
 
 
