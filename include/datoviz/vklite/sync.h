@@ -29,9 +29,9 @@
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzCommands DvzCommands;
 
-typedef struct DvzBarrierMemory DvzBarrierMemory;
-typedef struct DvzBarrierBuffer DvzBarrierBuffer;
-typedef struct DvzBarrierImage DvzBarrierImage;
+typedef struct VkMemoryBarrier2 DvzBarrierMemory;
+typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
+typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
 typedef struct DvzBarriers DvzBarriers;
 
 
@@ -156,7 +156,7 @@ DVZ_EXPORT void dvz_barrier_image( //
  * @param dst the destination stages
  */
 DVZ_EXPORT void dvz_barrier_image_stage( //
-    DvzBarrierBuffer* bimg, VkPipelineStageFlags2 src, VkPipelineStageFlags2 dst);
+    DvzBarrierImage* bimg, VkPipelineStageFlags2 src, VkPipelineStageFlags2 dst);
 
 
 
@@ -168,7 +168,7 @@ DVZ_EXPORT void dvz_barrier_image_stage( //
  * @param dst the destination access
  */
 DVZ_EXPORT void dvz_barrier_image_access( //
-    DvzBarrierBuffer* bimg, VkAccessFlags2 src, VkAccessFlags2 dst);
+    DvzBarrierImage* bimg, VkAccessFlags2 src, VkAccessFlags2 dst);
 
 
 
@@ -180,7 +180,7 @@ DVZ_EXPORT void dvz_barrier_image_access( //
  * @param new the new image layout
  */
 DVZ_EXPORT void dvz_barrier_image_layout( //
-    DvzBarrierBuffer* bimg, VkImageLayout old, VkImageLayout new);
+    DvzBarrierImage* bimg, VkImageLayout old, VkImageLayout new);
 
 
 
@@ -192,7 +192,7 @@ DVZ_EXPORT void dvz_barrier_image_layout( //
  * @param dst the destination queue family index
  */
 DVZ_EXPORT void dvz_barrier_image_queue( //
-    DvzBarrierBuffer* bimg, uint32_t src, uint32_t dst);
+    DvzBarrierImage* bimg, uint32_t src, uint32_t dst);
 
 
 

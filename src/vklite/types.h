@@ -38,6 +38,7 @@
 /*************************************************************************************************/
 
 #define DVZ_MAX_ATTACHMENTS      8
+#define DVZ_MAX_BARRIERS         4
 #define DVZ_MAX_BINDINGS         16
 #define DVZ_MAX_DYNAMIC_STATES   32
 #define DVZ_MAX_PUSH_CONSTANTS   8
@@ -75,6 +76,11 @@ typedef struct DvzVertexAttr DvzVertexAttr;
 typedef struct DvzSpecialization DvzSpecialization;
 typedef struct DvzAttachment DvzAttachment;
 typedef struct DvzRendering DvzRendering;
+
+typedef struct VkMemoryBarrier2 DvzBarrierMemory;
+typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
+typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
+typedef struct DvzBarriers DvzBarriers;
 
 
 
@@ -333,4 +339,14 @@ struct DvzRendering
     DvzAttachment attachments[DVZ_MAX_ATTACHMENTS];
     DvzAttachment depth;
     DvzAttachment stencil;
+};
+
+
+
+struct DvzBarriers
+{
+    VkDependencyInfo info;
+    DvzBarrierMemory bmems[DVZ_MAX_BARRIERS];
+    DvzBarrierBuffer bbufs[DVZ_MAX_BARRIERS];
+    DvzBarrierImage bimg[DVZ_MAX_BARRIERS];
 };
