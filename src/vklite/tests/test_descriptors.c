@@ -89,7 +89,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_descriptors(&slots, &desc);
     dvz_descriptors_buffer(&desc, 0, 0, 0, ubuf.vk_buffer, 0, size);
     dvz_descriptors_buffer(&desc, 1, 0, 0, sbuf.vk_buffer, 0, size);
-    dvz_descriptors_image(&desc, 0, 1, 0, views.images->layout, views.vk_views[0], NULL);
+    dvz_descriptors_image(&desc, 0, 1, 0, views.img->layout, views.vk_views[0], NULL);
 
 
     // Cleanup.
