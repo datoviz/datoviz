@@ -382,15 +382,15 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
 /*  PNG I/O                                                                                      */
 /*************************************************************************************************/
 
-int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb)
+int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba)
 {
     ANN(filename);
-    ANN(rgb);
+    ANN(rgba);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
     fpng::fpng_init();
-    fpng::fpng_encode_image_to_file(filename, rgb, width, height, 3, 0);
+    fpng::fpng_encode_image_to_file(filename, rgba, width, height, 4, 0);
     return 0;
 }
 

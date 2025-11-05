@@ -410,6 +410,7 @@ void dvz_image_views_destroy(DvzImageViews* views)
 void dvz_image_region(DvzImageRegion* region)
 {
     ANN(region);
+    region->sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2;
 
     // Default values.
     region->imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

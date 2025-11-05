@@ -33,14 +33,6 @@
 /*  Memory barrier                                                                               */
 /*************************************************************************************************/
 
-void dvz_barrier_memory(DvzBarrierMemory* bmem)
-{
-    ANN(bmem);
-    bmem->sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
-}
-
-
-
 void dvz_barrier_memory_stage(
     DvzBarrierMemory* bmem, VkPipelineStageFlags2 src, VkPipelineStageFlags2 dst)
 {
@@ -59,21 +51,10 @@ void dvz_barrier_memory_access(DvzBarrierMemory* bmem, VkAccessFlags2 src, VkAcc
 }
 
 
+
 /*************************************************************************************************/
 /*  Buffer barrier                                                                               */
 /*************************************************************************************************/
-
-void dvz_barrier_buffer( //
-    DvzBarrierBuffer* bbuf, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size)
-{
-    ANN(bbuf);
-    bbuf->sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
-    bbuf->buffer = buffer;
-    bbuf->offset = offset;
-    bbuf->size = size;
-}
-
-
 
 void dvz_barrier_buffer_stage( //
     DvzBarrierBuffer* bbuf, VkPipelineStageFlags2 src, VkPipelineStageFlags2 dst)
@@ -108,22 +89,6 @@ void dvz_barrier_buffer_queue( //
 /*************************************************************************************************/
 /*  Image barrier                                                                                */
 /*************************************************************************************************/
-
-void dvz_barrier_image( //
-    DvzBarrierImage* bimg, VkImage img)
-{
-    ANN(bimg);
-    ANNVK(img);
-    bimg->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    bimg->image = img;
-
-    // Default values.
-    bimg->subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    bimg->subresourceRange.levelCount = 1;
-    bimg->subresourceRange.layerCount = 1;
-}
-
-
 
 void dvz_barrier_image_stage( //
     DvzBarrierImage* bimg, VkPipelineStageFlags2 src, VkPipelineStageFlags2 dst)
@@ -215,32 +180,51 @@ void dvz_barriers_flags(DvzBarriers* barriers, VkDependencyFlags flags)
 }
 
 
-
-void dvz_barriers_memory(DvzBarriers* barriers, DvzBarrierMemory* bmem)
+DvzBarrierMemory* dvz_barriers_memory(DvzBarriers* barriers)
 {
     ANN(barriers);
+    DvzBarrierMemory* bmem = &barriers->bmems[barriers->info.memoryBarrierCount++];
     ANN(bmem);
-    barriers->bmems[barriers->info.memoryBarrierCount++] = *bmem;
+
+    bmem->sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER_2;
+
+    return bmem;
 }
 
 
-
-void dvz_barriers_buffer(DvzBarriers* barriers, DvzBarrierBuffer* bbuf)
+DvzBarrierBuffer*
+dvz_barriers_buffer(DvzBarriers* barriers, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size)
 {
     ANN(barriers);
+
+    DvzBarrierBuffer* bbuf = &barriers->bbufs[barriers->info.bufferMemoryBarrierCount++];
     ANN(bbuf);
-    ANNVK(bbuf->buffer);
-    barriers->bbufs[barriers->info.bufferMemoryBarrierCount++] = *bbuf;
+
+    bbuf->sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+    bbuf->buffer = buffer;
+    bbuf->offset = offset;
+    bbuf->size = size;
+
+    return bbuf;
 }
 
 
-
-void dvz_barriers_image(DvzBarriers* barriers, DvzBarrierImage* bimg)
+DvzBarrierImage* dvz_barriers_image(DvzBarriers* barriers, VkImage img)
 {
     ANN(barriers);
-    ANN(bimg);
-    ANNVK(bimg->image);
-    barriers->bimg[barriers->info.imageMemoryBarrierCount++] = *bimg;
+    ANNVK(img);
+
+    DvzBarrierImage* bimg = &barriers->bimg[barriers->info.imageMemoryBarrierCount++];
+
+    bimg->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+    bimg->image = img;
+
+    // Default values.
+    bimg->subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    bimg->subresourceRange.levelCount = 1;
+    bimg->subresourceRange.layerCount = 1;
+
+    return bimg;
 }
 
 

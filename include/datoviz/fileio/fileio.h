@@ -133,9 +133,9 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
  * @param filename path to the PNG file to create
  * @param width width of the image
  * @param height height of the image
- * @param image pointer to an array of 24-bit RGB values
+ * @param image pointer to an array of 32-bit RGBA values
  */
-int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb);
+int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba);
 
 
 

@@ -120,6 +120,16 @@ DVZ_EXPORT int dvz_buffer_create(DvzBuffer* buffer);
 
 
 /**
+ * Return a Vulkan handle to a buffer.
+ *
+ * @param buffer the buffer
+ * @returns the Vulkan buffer handle
+ */
+DVZ_EXPORT VkBuffer dvz_buffer_handle(DvzBuffer* buffer);
+
+
+
+/**
  * Resize a buffer.
  *
  * @param buffer the buffer

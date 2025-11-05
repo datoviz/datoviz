@@ -86,33 +86,33 @@ static inline int dvz_fprintf(FILE* stream, const char* format, ...)
 
 
 static inline int
-dvz_memcpy(void* destination, size_t destination_size, const void* source, size_t count)
+dvz_memcpy(void* destination, size_t destination_size, const void* source, size_t size)
 {
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
-    return memcpy_s(destination, destination_size, source, count);
+    return memcpy_s(destination, destination_size, source, size);
 #else
     (void)destination_size;
     memcpy( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        destination, source, count);
+        destination, source, size);
     return 0;
 #endif
 }
 
 
 
-static inline int dvz_memset(void* destination, size_t destination_size, int value, size_t count)
+static inline int dvz_memset(void* destination, size_t destination_size, int value, size_t size)
 {
 #if defined(__STDC_LIB_EXT1__)
-    return memset_s(destination, destination_size, value, count);
+    return memset_s(destination, destination_size, value, size);
 #elif defined(_MSC_VER)
     (void)destination_size;
     memset( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        destination, value, count);
+        destination, value, size);
     return 0;
 #else
     (void)destination_size;
     memset( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        destination, value, count);
+        destination, value, size);
     return 0;
 #endif
 }
@@ -120,14 +120,14 @@ static inline int dvz_memset(void* destination, size_t destination_size, int val
 
 
 static inline int
-dvz_memmove(void* destination, size_t destination_size, const void* source, size_t count)
+dvz_memmove(void* destination, size_t destination_size, const void* source, size_t size)
 {
 #if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
-    return memmove_s(destination, destination_size, source, count);
+    return memmove_s(destination, destination_size, source, size);
 #else
     (void)destination_size;
     memmove( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
-        destination, source, count);
+        destination, source, size);
     return 0;
 #endif
 }

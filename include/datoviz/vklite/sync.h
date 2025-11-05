@@ -48,15 +48,6 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Create a memory barrier.
- *
- * @param bmem the memory barrier
- */
-DVZ_EXPORT void dvz_barrier_memory(DvzBarrierMemory* bmem);
-
-
-
-/**
  * Set the barrier stages.
  *
  * @param bmem the memory barrier
@@ -83,19 +74,6 @@ dvz_barrier_memory_access(DvzBarrierMemory* bmem, VkAccessFlags2 src, VkAccessFl
 /*************************************************************************************************/
 /*  Buffer barrier                                                                               */
 /*************************************************************************************************/
-
-/**
- * Create a buffer memory barrier.
- *
- * @param bbuf the buffer barrier
- * @param buffer the buffer
- * @param offset the offset
- * @param size the size
- */
-DVZ_EXPORT void dvz_barrier_buffer( //
-    DvzBarrierBuffer* bbuf, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size);
-
-
 
 /**
  * Set the barrier stages.
@@ -136,17 +114,6 @@ DVZ_EXPORT void dvz_barrier_buffer_queue( //
 /*************************************************************************************************/
 /*  Image barrier                                                                                */
 /*************************************************************************************************/
-
-/**
- * Create an image memory barrier.
- *
- * @param bimg the image barrier
- * @param img the image
- */
-DVZ_EXPORT void dvz_barrier_image( //
-    DvzBarrierImage* bimg, VkImage img);
-
-
 
 /**
  * Set the barrier stages.
@@ -258,9 +225,9 @@ DVZ_EXPORT void dvz_barriers_flags(DvzBarriers* barriers, VkDependencyFlags flag
  * Add a memory barrier to a set of barriers
  *
  * @param barriers the set of barriers
- * @param bmem a memory barrier
+ * @returns the memory barrier
  */
-DVZ_EXPORT void dvz_barriers_memory(DvzBarriers* barriers, DvzBarrierMemory* bmem);
+DVZ_EXPORT DvzBarrierMemory* dvz_barriers_memory(DvzBarriers* barriers);
 
 
 
@@ -268,9 +235,13 @@ DVZ_EXPORT void dvz_barriers_memory(DvzBarriers* barriers, DvzBarrierMemory* bme
  * Add a buffer barrier to a set of barriers
  *
  * @param barriers the set of barriers
- * @param bbuf a buffer barrier
+ * @param buffer the buffer
+ * @param offset the offset
+ * @param size the size
+ * @returns the buffer barrier
  */
-DVZ_EXPORT void dvz_barriers_buffer(DvzBarriers* barriers, DvzBarrierBuffer* bbuf);
+DVZ_EXPORT DvzBarrierBuffer* dvz_barriers_buffer(
+    DvzBarriers* barriers, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size);
 
 
 
@@ -278,9 +249,10 @@ DVZ_EXPORT void dvz_barriers_buffer(DvzBarriers* barriers, DvzBarrierBuffer* bbu
  * Add an image barrier to a set of barriers
  *
  * @param barriers the set of barriers
- * @param bimg an image barrier
+ * @param img an image
+ * @returns the image barrier
  */
-DVZ_EXPORT void dvz_barriers_image(DvzBarriers* barriers, DvzBarrierImage* bimg);
+DVZ_EXPORT DvzBarrierImage* dvz_barriers_image(DvzBarriers* barriers, VkImage img);
 
 
 

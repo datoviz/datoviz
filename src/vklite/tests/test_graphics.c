@@ -24,18 +24,22 @@
 #include "../types.h"
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
+#include "datoviz/vklite/sync.h"
 #include "test_vklite.h"
 #include "testing.h"
 #include "vulkan_core.h"
@@ -117,7 +121,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Dynamic state.
     dvz_graphics_viewport(&graphics, 0, 0, WIDTH, HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
-    // Graphics creation.
+    // Graphics pipeline creation.
     dvz_graphics_create(&graphics);
 
     // Rendering.
@@ -145,18 +149,20 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     DvzAttachment* attachment = dvz_rendering_color(&rendering, 0);
     dvz_attachment_image(attachment, dvz_image_views_handle(&view, 0), img_layout);
     dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {.1, .2, .3, 1}});
+
+    // Image barrier.
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
 
     // Image transition.
-    DvzBarrierImage bimg = {0};
-    DvzBarriers barriers = {0};
-    dvz_barrier_image(&bimg, dvz_image_handle(&img, 0));
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&img, 0));
+    ANN(bimg);
     dvz_barrier_image_stage(
-        &bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_barrier_image_access(&bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
-        &bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_barriers(&barriers);
-    dvz_barriers_image(&barriers, &bimg);
+        bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     // Command buffer.
     DvzCommands cmds = {0};
@@ -172,9 +178,52 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Submit the command buffer.
     dvz_cmd_submit(&cmds, 0);
 
+    // Staging buffer for screenshot.
+    DvzBuffer staging = {0};
+    DvzSize screenshot_size = WIDTH * HEIGHT * 4;
+    dvz_buffer(&bootstrap.device, &bootstrap.allocator, &staging);
+    dvz_buffer_size(&staging, screenshot_size);
+    dvz_buffer_flags(
+        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_create(&staging);
+
+    // Screenshot.
+    dvz_cmd_reset(&cmds, 0);
+    dvz_cmd_begin(&cmds, 0);
+
+    // Layout transition.
+    dvz_barrier_image_stage(
+        bimg, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+    dvz_barrier_image_access(
+        bimg, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
+    dvz_barrier_image_layout(
+        bimg, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_cmd_barriers(&cmds, 0, &barriers);
+
+    // Copy image to buffer.
+    DvzImageRegion region = {0};
+    dvz_image_region(&region);
+    dvz_image_region_extent(&region, WIDTH, HEIGHT, 1);
+    dvz_cmd_copy_image_to_buffer(
+        &cmds, 0, dvz_image_handle(&img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        dvz_buffer_handle(&staging), 0);
+
+    // End the command buffer.
+    dvz_cmd_end(&cmds, 0);
+
+    // Submit the command buffer.
+    dvz_cmd_submit(&cmds, 0);
+
+    // Recover the screenshot.
+    uint8_t* screenshot = (uint8_t*)dvz_calloc(WIDTH * HEIGHT, 4);
+    dvz_buffer_download(&staging, 0, screenshot_size, screenshot);
+    dvz_write_png("build/screenshot.png", WIDTH, HEIGHT, screenshot);
+
     // Cleanup.
     dvz_image_views_destroy(&view);
     dvz_images_destroy(&img);
+    dvz_buffer_destroy(&staging);
     dvz_shader_destroy(&vs);
     dvz_shader_destroy(&fs);
     dvz_slots_destroy(&slots);
@@ -182,6 +231,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap_destroy(&bootstrap);
     dvz_free(vs_spv);
     dvz_free(fs_spv);
+    dvz_free(screenshot);
 
     RETURN_VALIDATION
 }

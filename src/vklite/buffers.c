@@ -91,6 +91,14 @@ int dvz_buffer_create(DvzBuffer* buffer)
 
 
 
+VkBuffer dvz_buffer_handle(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    return buffer->vk_buffer;
+}
+
+
+
 void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
 {
     ANN(buffer);
