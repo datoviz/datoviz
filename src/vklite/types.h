@@ -36,16 +36,15 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_ATTACHMENTS      8
-#define DVZ_MAX_BARRIERS         4
-#define DVZ_MAX_BINDINGS         16
-#define DVZ_MAX_DYNAMIC_STATES   32
-#define DVZ_MAX_PUSH_CONSTANTS   8
-#define DVZ_MAX_SETS             4
-#define DVZ_MAX_SHADERS          4
-#define DVZ_MAX_SWAPCHAIN_IMAGES 4
-#define DVZ_MAX_VERTEX_ATTRS     16
-#define DVZ_MAX_VERTEX_BINDINGS  8
+#define DVZ_MAX_ATTACHMENTS     8
+#define DVZ_MAX_BARRIERS        4
+#define DVZ_MAX_BINDINGS        16
+#define DVZ_MAX_DYNAMIC_STATES  32
+#define DVZ_MAX_PUSH_CONSTANTS  8
+#define DVZ_MAX_SETS            4
+#define DVZ_MAX_SHADERS         4
+#define DVZ_MAX_VERTEX_ATTRS    16
+#define DVZ_MAX_VERTEX_BINDINGS 8
 
 // Arbitrarily limit the spec constant data buffer size which simplifies the implementation.
 #define DVZ_MAX_SPEC_CONST_SIZE 128
@@ -87,19 +86,6 @@ typedef struct DvzBarriers DvzBarriers;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzCommands
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzQueue* queue;
-
-    uint32_t count;
-    VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
-    bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES]; // if true, no need to refill it in the FRAME
-};
-
-
 
 struct DvzSampler
 {

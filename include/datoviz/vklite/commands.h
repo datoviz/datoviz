@@ -17,8 +17,18 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <vulkan/vulkan.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_MAX_SWAPCHAIN_IMAGES 4
 
 
 
@@ -33,8 +43,19 @@ typedef struct DvzQueue DvzQueue;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzCommands
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzQueue* queue;
+
+    uint32_t count;
+    VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
+    bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES]; // if true, no need to refill it in the FRAME
+};
 
 
 

@@ -24,6 +24,7 @@
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/commands.h"
 #include "types.h"
 
 
