@@ -243,6 +243,14 @@ int dvz_images_create(DvzImages* img)
 
 
 
+VkImage dvz_image_handle(DvzImages* img, uint32_t idx)
+{
+    ANN(img);
+    return img->vk_images[idx];
+}
+
+
+
 void dvz_images_destroy(DvzImages* img)
 {
     ANN(img);

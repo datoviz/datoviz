@@ -68,6 +68,9 @@ void dvz_barrier_buffer( //
 {
     ANN(bbuf);
     bbuf->sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+    bbuf->buffer = buffer;
+    bbuf->offset = offset;
+    bbuf->size = size;
 }
 
 
@@ -110,7 +113,14 @@ void dvz_barrier_image( //
     DvzBarrierImage* bimg, VkImage img)
 {
     ANN(bimg);
+    ANNVK(img);
     bimg->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+    bimg->image = img;
+
+    // Default values.
+    bimg->subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    bimg->subresourceRange.levelCount = 1;
+    bimg->subresourceRange.layerCount = 1;
 }
 
 
@@ -219,6 +229,7 @@ void dvz_barriers_buffer(DvzBarriers* barriers, DvzBarrierBuffer* bbuf)
 {
     ANN(barriers);
     ANN(bbuf);
+    ANNVK(bbuf->buffer);
     barriers->bbufs[barriers->info.bufferMemoryBarrierCount++] = *bbuf;
 }
 
@@ -228,6 +239,7 @@ void dvz_barriers_image(DvzBarriers* barriers, DvzBarrierImage* bimg)
 {
     ANN(barriers);
     ANN(bimg);
+    ANNVK(bimg->image);
     barriers->bimg[barriers->info.imageMemoryBarrierCount++] = *bimg;
 }
 

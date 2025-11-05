@@ -175,6 +175,17 @@ DVZ_EXPORT int dvz_images_create(DvzImages* img);
 
 
 /**
+ * Return the Vulkan handle of an image.
+ *
+ * @param img the images
+ * @param idx the image index
+ * @returns the Vulkan image handle
+ */
+DVZ_EXPORT VkImage dvz_image_handle(DvzImages* img, uint32_t idx);
+
+
+
+/**
  * Destroy images.
  *
  * @param images the images

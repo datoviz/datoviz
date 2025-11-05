@@ -73,6 +73,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Create a device with support for dynamic rendering.
     VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
     features->dynamicRendering = true;
+    features->synchronization2 = true;
     dvz_device_create(device);
     dvz_device_allocator(device, 0, &bootstrap.allocator);
 
@@ -131,7 +132,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
     dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&img, WIDTH, HEIGHT, 1);
-    dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
     dvz_images_layout(&img, img_layout);
     dvz_images_create(&img);
 
@@ -145,14 +146,31 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_attachment_image(attachment, dvz_image_views_handle(&view, 0), img_layout);
     dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 
+    // Image transition.
+    DvzBarrierImage bimg = {0};
+    DvzBarriers barriers = {0};
+    dvz_barrier_image(&bimg, dvz_image_handle(&img, 0));
+    dvz_barrier_image_stage(
+        &bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_image_access(&bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_image_layout(
+        &bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_barriers(&barriers);
+    dvz_barriers_image(&barriers, &bimg);
+
     // Command buffer.
     DvzCommands cmds = {0};
     dvz_commands(device, queue, 1, &cmds);
     dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_barriers(&cmds, 0, &barriers);
     dvz_cmd_rendering_begin(&cmds, 0, &rendering);
     dvz_cmd_bind_graphics(&cmds, 0, &graphics);
+    dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
     dvz_cmd_rendering_end(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
+
+    // Submit the command buffer.
+    dvz_cmd_submit(&cmds, 0);
 
     // Cleanup.
     dvz_image_views_destroy(&view);
@@ -162,7 +180,6 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_slots_destroy(&slots);
     dvz_graphics_destroy(&graphics);
     dvz_bootstrap_destroy(&bootstrap);
-
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
