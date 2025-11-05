@@ -16,15 +16,24 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/fileio.h"
 #include "_alloc.h"
 #include "_compat.h"
+#include "datoviz/fileio.h"
 #include "testing.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if !defined(DVZ_SPIRV_ALIGN)
+#if defined(__cplusplus)
+#define DVZ_SPIRV_ALIGN alignas(uint32_t)
+#else
+#define DVZ_SPIRV_ALIGN _Alignas(uint32_t)
+#endif
+#endif
 
 #ifndef DVZ_TEST_SPIRV_DIR
 #error "DVZ_TEST_SPIRV_DIR must be defined when building vklite tests."
