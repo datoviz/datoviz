@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sync.h"
+#include "vulkan/vulkan_core.h"
 
 
 
@@ -228,4 +229,82 @@ void dvz_cmd_barriers(DvzCommands* cmds, uint32_t idx, DvzBarriers* barriers)
     ANN(cmds);
     ANN(barriers);
     vkCmdPipelineBarrier2(cmds->cmds[idx], &barriers->info);
+}
+
+
+
+/*************************************************************************************************/
+/*  Fence                                                                                        */
+/*************************************************************************************************/
+
+void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence)
+{
+    ANN(device);
+    ANN(fence);
+
+    fence->device = device;
+
+    VkFenceCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    if (signaled)
+        info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    VK_CHECK_RESULT(vkCreateFence(fence->device->vk_device, &info, NULL, &fence->vk_fence));
+
+    dvz_obj_created(&fence->obj);
+}
+
+
+
+void dvz_fence_wait(DvzFence* fence)
+{
+    ANN(fence);
+    if (fence->vk_fence != VK_NULL_HANDLE)
+    {
+        vkWaitForFences(fence->device->vk_device, 1, &fence->vk_fence, VK_TRUE, 100000000);
+    }
+    else
+    {
+        log_trace("skip wait for fence %u", fence->vk_fence);
+    }
+}
+
+
+
+bool dvz_fence_ready(DvzFence* fence)
+{
+    ANN(fence);
+    VK_RETURN_RESULT(vkGetFenceStatus(fence->device->vk_device, fence->vk_fence));
+    return (bool)out;
+}
+
+
+
+void dvz_fence_reset(DvzFence* fence)
+{
+    ANN(fence);
+    if (fence->vk_fence != VK_NULL_HANDLE)
+    {
+        vkResetFences(fence->device->vk_device, 1, &fence->vk_fence);
+    }
+}
+
+
+
+void dvz_fence_destroy(DvzFence* fence)
+{
+    ANN(fence);
+    if (!dvz_obj_is_created(&fence->obj))
+    {
+        log_trace("skip destruction of already-destroyed fence");
+        return;
+    }
+
+    log_trace("destroying fence...");
+    if (fence->vk_fence != VK_NULL_HANDLE)
+    {
+        vkDestroyFence(fence->device->vk_device, fence->vk_fence, NULL);
+        fence->vk_fence = VK_NULL_HANDLE;
+    }
+    dvz_obj_destroyed(&fence->obj);
 }

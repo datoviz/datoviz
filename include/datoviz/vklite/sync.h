@@ -37,6 +37,7 @@ typedef struct VkMemoryBarrier2 DvzBarrierMemory;
 typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
 typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
 typedef struct DvzBarriers DvzBarriers;
+typedef struct DvzFence DvzFence;
 
 
 
@@ -58,6 +59,15 @@ struct DvzBarriers
     DvzBarrierMemory bmems[DVZ_MAX_BARRIERS];
     DvzBarrierBuffer bbufs[DVZ_MAX_BARRIERS];
     DvzBarrierImage bimg[DVZ_MAX_BARRIERS];
+};
+
+
+
+struct DvzFence
+{
+    DvzObject obj;
+    DvzDevice* device;
+    VkFence vk_fence;
 };
 
 
@@ -285,6 +295,57 @@ DVZ_EXPORT DvzBarrierImage* dvz_barriers_image(DvzBarriers* barriers, VkImage im
  * @param barriers the set of barriers
  */
 DVZ_EXPORT void dvz_cmd_barriers(DvzCommands* cmds, uint32_t idx, DvzBarriers* barriers);
+
+
+
+/*************************************************************************************************/
+/*  Fences                                                                                       */
+/*************************************************************************************************/
+
+/**
+ * Initialize a fence (CPU-GPU synchronization).
+ *
+ * @param device the device
+ * @param signaled whether the fence is created in the signaled state or not
+ * @param[out] the created fence
+ */
+DVZ_EXPORT void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence);
+
+
+
+/**
+ * Wait on the GPU until a fence is signaled.
+ *
+ * @param fence the fence
+ */
+DVZ_EXPORT void dvz_fence_wait(DvzFence* fence);
+
+
+
+/**
+ * Return whether a fence is ready.
+ *
+ * @param fence the fence
+ */
+DVZ_EXPORT bool dvz_fence_ready(DvzFence* fence);
+
+
+
+/**
+ * Rset the state of a fence.
+ *
+ * @param fence the fence
+ */
+DVZ_EXPORT void dvz_fence_reset(DvzFence* fence);
+
+
+
+/**
+ * Destroy fence.
+ *
+ * @param fence the fence
+ */
+DVZ_EXPORT void dvz_fence_destroy(DvzFence* fence);
 
 
 
