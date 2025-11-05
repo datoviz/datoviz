@@ -16,13 +16,12 @@
 
 #include <stdint.h>
 
-#include <volk.h>
-
 #include "_alloc.h"
 #include "_compat.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
+#include <volk.h>
 
 
 

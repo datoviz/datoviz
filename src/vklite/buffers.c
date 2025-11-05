@@ -26,6 +26,7 @@
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
+#include <volk.h>
 
 
 

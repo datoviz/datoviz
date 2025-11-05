@@ -19,7 +19,6 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vklite/slots.h"
-#include <volk.h>
 
 
 

@@ -24,6 +24,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/sampler.h"
+#include <volk.h>
 
 
 

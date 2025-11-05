@@ -21,7 +21,6 @@
 #include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
 #include "vk_mem_alloc.h"
-#include <volk.h>
 
 
 

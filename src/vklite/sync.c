@@ -25,6 +25,7 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/rendering.h"
+#include <volk.h>
 
 
 

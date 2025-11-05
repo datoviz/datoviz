@@ -21,6 +21,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
+
 #include <volk.h>
 MUTE_ON
 #include "vk_mem_alloc.h"

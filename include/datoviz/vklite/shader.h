@@ -16,11 +16,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <vulkan/vulkan.h>
+
 #include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/enums.h"
-#include <volk.h>
 
 
 

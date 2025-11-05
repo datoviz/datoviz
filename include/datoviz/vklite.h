@@ -17,4 +17,14 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "vklite/buffers.h"
 #include "vklite/commands.h"
+#include "vklite/compute.h"
+#include "vklite/descriptors.h"
+#include "vklite/graphics.h"
+#include "vklite/images.h"
+#include "vklite/rendering.h"
+#include "vklite/sampler.h"
+#include "vklite/shader.h"
+#include "vklite/slots.h"
+#include "vklite/sync.h"

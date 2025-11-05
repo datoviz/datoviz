@@ -19,7 +19,6 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vklite/compute.h"
-#include <volk.h>
 
 
 
