@@ -423,6 +423,7 @@ void dvz_semaphore_destroy(DvzSemaphore* semaphore)
 void dvz_submit(DvzSubmit* submit)
 {
     ANN(submit);
+
     submit->info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
     submit->info.pWaitSemaphoreInfos = submit->wait;
     submit->info.pSignalSemaphoreInfos = submit->signal;
@@ -435,6 +436,8 @@ void dvz_submit_wait(
     DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage)
 {
     ANN(submit);
+    ANNVK(semaphore);
+
     VkSemaphoreSubmitInfo* info = &submit->wait[submit->info.waitSemaphoreInfoCount++];
     info->sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
     info->semaphore = semaphore;
@@ -448,6 +451,8 @@ void dvz_submit_signal(
     DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage)
 {
     ANN(submit);
+    ANNVK(semaphore);
+
     VkSemaphoreSubmitInfo* info = &submit->signal[submit->info.signalSemaphoreInfoCount++];
     info->sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
     info->semaphore = semaphore;
@@ -460,7 +465,18 @@ void dvz_submit_signal(
 void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd)
 {
     ANN(submit);
+    ANNVK(cmd);
+
     VkCommandBufferSubmitInfo* info = &submit->cmds[submit->info.commandBufferInfoCount++];
     info->sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
     info->commandBuffer = cmd;
+}
+
+
+
+void dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence)
+{
+    ANN(submit);
+    ANNVK(queue);
+    vkQueueSubmit2(queue, 1, &submit->info, fence);
 }

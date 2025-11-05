@@ -488,4 +488,15 @@ DVZ_EXPORT void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd);
 
 
 
+/**
+ * Send a submission to a queue.
+ *
+ * @param submit the submission
+ * @param queue the queue
+ * @param fence the fence that is signaled once all commands have completed
+ */
+DVZ_EXPORT void dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence);
+
+
+
 EXTERN_C_OFF
