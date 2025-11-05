@@ -17,7 +17,9 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vk/memory.h"
 #include "vk_mem_alloc.h"
 #include <volk.h>
 
@@ -47,6 +49,21 @@ typedef struct DvzBufferViews DvzBufferViews;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzBuffer
+{
+    DvzObject obj;
+    DvzDevice* device;
+    DvzVma* allocator;
+
+    DvzSize req_size;
+    VkBufferUsageFlags req_usage;
+
+    VkBuffer vk_buffer;
+    DvzAllocation alloc;
+};
+
+
 
 struct DvzBufferViews
 {

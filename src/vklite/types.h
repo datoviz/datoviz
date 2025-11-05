@@ -177,21 +177,6 @@ struct DvzDescriptors
 
 
 
-struct DvzBuffer
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzVma* allocator;
-
-    DvzSize req_size;
-    VkBufferUsageFlags req_usage;
-
-    VkBuffer vk_buffer;
-    DvzAllocation alloc;
-};
-
-
-
 struct DvzImages
 {
     DvzObject obj;

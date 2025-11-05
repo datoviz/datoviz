@@ -17,9 +17,9 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
-#include <vulkan/vulkan.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/math/types.h"
 
 MUTE_ON
 #include "vk_mem_alloc.h"
@@ -38,8 +38,19 @@ typedef struct DvzAllocation DvzAllocation;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzAllocation
+{
+    VmaMemoryUsage usage;
+    VmaAllocationCreateFlags flags;
+    VmaAllocationInfo info;
+    VmaAllocation alloc;
+    VkMemoryPropertyFlags memory_flags;
+    DvzSize alignment; // alignment required by Vulkan
+    void* mmap;
+};
 
 
 

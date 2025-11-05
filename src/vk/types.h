@@ -26,7 +26,6 @@ typedef struct DvzGpu DvzGpu;
 /*************************************************************************************************/
 
 #include "datoviz/common/obj.h"
-#include "datoviz/math/types.h"
 #include "datoviz/vk/queues.h"
 #include <stdint.h>
 
@@ -104,19 +103,6 @@ struct DvzVma
     DvzDevice* device;
     VmaAllocator vma;
     VkExternalMemoryHandleTypeFlagsKHR external;
-};
-
-
-
-struct DvzAllocation
-{
-    VmaMemoryUsage usage;
-    VmaAllocationCreateFlags flags;
-    VmaAllocationInfo info;
-    VmaAllocation alloc;
-    VkMemoryPropertyFlags memory_flags;
-    DvzSize alignment; // alignment required by Vulkan
-    void* mmap;
 };
 
 
