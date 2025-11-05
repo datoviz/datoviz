@@ -78,7 +78,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
     features->dynamicRendering = true;
     features->synchronization2 = true;
-    dvz_device_create(device);
+    AT(dvz_device_create(device) == 0);
     dvz_device_allocator(device, 0, &bootstrap.allocator);
 
     // Graphics setup.
@@ -102,9 +102,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Slots.
     DvzSlots slots = {0};
     dvz_slots(&bootstrap.device, &slots);
-    VK_CHECK_RESULT(dvz_slots_create(&slots));
-    VkPipelineLayout layout = dvz_slots_handle(&slots);
-    dvz_graphics_layout(&graphics, layout);
+    AT(dvz_slots_create(&slots) == 0);
+    dvz_graphics_layout(&graphics, dvz_slots_handle(&slots));
 
     // Attachments.
     dvz_graphics_attachment_color(&graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
@@ -123,7 +122,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_scissor(&graphics, 0, 0, WIDTH, HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
     // Graphics pipeline creation.
-    dvz_graphics_create(&graphics);
+    AT(dvz_graphics_create(&graphics) == 0);
 
     // Rendering.
     DvzRendering rendering = {0};
@@ -131,9 +130,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_rendering_area(&rendering, 0, 0, WIDTH, HEIGHT);
 
     // Image to render to.
-    VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
-
     DvzImages img = {0};
+    VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
     dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
     dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&img, WIDTH, HEIGHT, 1);
