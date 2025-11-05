@@ -21,7 +21,6 @@
 #include <unistd.h>
 #endif
 
-#include "../types.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"

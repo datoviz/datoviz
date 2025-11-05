@@ -23,7 +23,6 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include "types.h"
 
 
 

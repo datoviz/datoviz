@@ -19,6 +19,25 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
+#include "datoviz/vk/gpu.h"
+
+#include <vulkan/vulkan.h>
+MUTE_ON
+#define VMA_EXTERNAL_MEMORY 1
+#include "vk_mem_alloc.h"
+MUTE_OFF
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+// Maximum number of requested layers/extensions.
+#define DVZ_MAX_REQ_LAYERS     32
+#define DVZ_MAX_GPUS           8
+#define DVZ_MAX_REQ_EXTENSIONS 256
 
 
 
@@ -30,6 +49,50 @@ typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
 
 typedef struct VkInstance_T* VkInstance;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzInstance
+{
+    DvzObject obj;
+
+    VkInstance vk_instance;
+    uint32_t vk_version;
+
+    // Instance creation structures.
+    bool flags;
+    VkInstanceCreateInfo info_inst;
+    VkDebugUtilsMessengerCreateInfoEXT info_debug;
+    VkValidationFeaturesEXT validation_features;
+
+    // Requested layers and extensions.
+    uint32_t req_layer_count;
+    uint32_t req_extension_count;
+    char* req_layers[DVZ_MAX_REQ_LAYERS];
+    char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
+
+    // All supported instance layers and extensions.
+    uint32_t layer_count;
+    uint32_t extension_count;
+    char** layers;
+    char** extensions;
+
+    // Application info.
+    char* name;
+    uint32_t version;
+
+    // Validation.
+    VkDebugUtilsMessengerEXT debug_messenger;
+    uint32_t n_errors;
+
+    // GPUs
+    uint32_t gpu_count;
+    DvzGpu gpus[DVZ_MAX_GPUS];
+};
 
 
 

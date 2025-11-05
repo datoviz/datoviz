@@ -30,7 +30,6 @@ MUTE_OFF
 #include <vulkan/vulkan_win32.h>
 #include <windows.h>
 #endif
-#include "types.h"
 
 #if defined(VOLK_HEADER_VERSION)
 VkResult vmaImportVulkanFunctionsFromVolk(

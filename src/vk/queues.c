@@ -20,7 +20,6 @@
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
-#include "types.h"
 #include <volk.h>
 
 

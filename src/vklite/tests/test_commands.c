@@ -19,8 +19,6 @@
 #include <stdbool.h>
 
 #include "../../vk/tests/test_vk.h"
-#include "../../vk/types.h"
-#include "../types.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"

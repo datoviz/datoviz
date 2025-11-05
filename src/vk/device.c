@@ -21,7 +21,6 @@
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
 #include "macros.h"
-#include "types.h"
 #include <volk.h>
 
 

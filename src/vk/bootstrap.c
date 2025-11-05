@@ -24,7 +24,6 @@
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
-#include "types.h"
 
 
 

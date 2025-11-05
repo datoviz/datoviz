@@ -22,6 +22,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vk/queues.h"
 
 
 
@@ -31,6 +32,37 @@
 
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzGpu
+{
+    DvzInstance* instance;
+
+    VkPhysicalDevice pdevice;
+
+    VkPhysicalDeviceProperties2 props;
+    VkPhysicalDeviceVulkan11Properties props11;
+    VkPhysicalDeviceVulkan12Properties props12;
+    VkPhysicalDeviceVulkan13Properties props13;
+
+    VkPhysicalDeviceMemoryProperties2 memprops;
+
+    VkPhysicalDeviceFeatures2 features;
+    VkPhysicalDeviceVulkan11Features features11;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+
+    // All supported device extensions.
+    uint32_t extension_count;
+    char** extensions;
+
+    DvzQueueCaps queue_caps;
+};
 
 
 

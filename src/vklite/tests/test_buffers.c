@@ -15,7 +15,6 @@
 /*************************************************************************************************/
 
 #include "../../vk/tests/test_vk.h"
-#include "../types.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "datoviz/vk/bootstrap.h"

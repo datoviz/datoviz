@@ -14,7 +14,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../types.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/vk/device.h"

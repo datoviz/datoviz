@@ -19,7 +19,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "../types.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"

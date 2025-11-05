@@ -63,6 +63,39 @@ typedef struct DvzQueues DvzQueues;
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzQueueCaps
+{
+    uint32_t family_count;
+    VkQueueFlags flags[DVZ_MAX_QUEUE_FAMILIES];
+    uint32_t queue_count[DVZ_MAX_QUEUE_FAMILIES];
+};
+
+
+
+struct DvzQueue
+{
+    uint32_t family_idx;
+    uint32_t queue_idx;
+    VkQueue vk_queue;
+    VkQueueFlags flags;
+    bool is_main; // whether this queue is the main one
+    bool is_set;  // whether this queue exists
+};
+
+
+
+struct DvzQueues
+{
+    uint32_t queue_count;
+    DvzQueue queues[DVZ_QUEUE_COUNT]; // for each role, a dedicated queue, or none.
+};
+
+
+
+/*************************************************************************************************/
 /*  Queues                                                                                       */
 /*************************************************************************************************/
 

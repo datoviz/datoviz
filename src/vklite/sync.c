@@ -25,7 +25,6 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/rendering.h"
-#include "types.h"
 #include "vulkan/vulkan_core.h"
 
 

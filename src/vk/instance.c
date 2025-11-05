@@ -23,7 +23,6 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/instance.h"
 #include "macros.h"
-#include "types.h"
 #include "validation.h"
 
 

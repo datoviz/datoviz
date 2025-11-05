@@ -41,6 +41,15 @@ typedef struct DvzAllocation DvzAllocation;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzVma
+{
+    DvzDevice* device;
+    VmaAllocator vma;
+    VkExternalMemoryHandleTypeFlagsKHR external;
+};
+
+
+
 struct DvzAllocation
 {
     VmaMemoryUsage usage;

@@ -25,18 +25,11 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef struct DvzBootstrap DvzBootstrap;
-typedef struct DvzInstance DvzInstance;
-typedef struct DvzGpu DvzGpu;
-typedef struct DvzDevice DvzDevice;
-typedef struct DvzVma DvzVma;
+#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/instance.h"
+#include "datoviz/vk/memory.h"
 
 
 
@@ -50,6 +43,29 @@ typedef enum
     DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE = 0x02,
     DVZ_BOOTSTRAP_MANUAL_CREATE_ALLOCATOR = 0x05,
 } DvzBootstrapFlags;
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzBootstrap DvzBootstrap;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzBootstrap
+{
+    int flags;
+    DvzInstance instance;
+    DvzGpu* gpu;
+    DvzDevice device;
+    DvzVma allocator;
+};
 
 
 

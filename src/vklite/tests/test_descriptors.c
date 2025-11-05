@@ -15,10 +15,11 @@
 /*************************************************************************************************/
 
 #include "../../vk/tests/test_vk.h"
-#include "../types.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
+#include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/descriptors.h"
+#include "datoviz/vklite/images.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
 

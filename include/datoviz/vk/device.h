@@ -20,6 +20,8 @@
 #include <vulkan/vulkan.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
+#include "datoviz/vk/instance.h"
 #include "queues.h"
 
 
@@ -29,6 +31,32 @@
 /*************************************************************************************************/
 
 #define DVZ_MAX_DESCRIPTOR_SETS 1024
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzDevice
+{
+    DvzObject obj;
+    DvzGpu* gpu;
+
+    DvzQueues queues;
+
+    uint32_t req_extension_count;
+    char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
+
+    VkPhysicalDeviceFeatures2 features;
+    VkPhysicalDeviceVulkan11Features features11;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+
+    VkDevice vk_device;
+    VkCommandPool cpools[DVZ_MAX_QUEUE_FAMILIES];
+    VkDescriptorPool dpool;
+};
 
 
 
