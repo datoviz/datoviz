@@ -337,12 +337,9 @@ int dvz_device_create(DvzDevice* device)
 
     // Create the device.
     log_trace("creating the Vulkan device");
-    VkResult res = vkCreateDevice(device->gpu->pdevice, &device_info, NULL, &device->vk_device);
-    int out = check_result(res);
-    if (res != VK_SUCCESS)
-    {
+    VK_RETURN_RESULT(vkCreateDevice(device->gpu->pdevice, &device_info, NULL, &device->vk_device));
+    if (out)
         return out;
-    }
     volkLoadDevice(device->vk_device);
     log_trace("Vulkan device created");
 

@@ -191,12 +191,9 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 
     // Create Vulkan instance.
     log_trace("creating Vulkan instance...");
-    VkResult res = vkCreateInstance(&instance->info_inst, NULL, &instance->vk_instance);
-    if (res != VK_SUCCESS)
-    {
-        check_result(res);
-        return res;
-    }
+    VK_RETURN_RESULT(vkCreateInstance(&instance->info_inst, NULL, &instance->vk_instance));
+    if (out)
+        return out;
 
     volkLoadInstance(instance->vk_instance);
     ANNVK(instance->vk_instance);
@@ -209,7 +206,7 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
         dvz_instance_validation_post(instance);
     }
 
-    return res;
+    return out;
 }
 
 
