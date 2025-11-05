@@ -38,6 +38,7 @@ typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
 typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
 typedef struct DvzBarriers DvzBarriers;
 typedef struct DvzFence DvzFence;
+typedef struct DvzSemaphore DvzSemaphore;
 
 
 
@@ -68,6 +69,15 @@ struct DvzFence
     DvzObject obj;
     DvzDevice* device;
     VkFence vk_fence;
+};
+
+
+
+struct DvzSemaphore
+{
+    DvzObject obj;
+    DvzDevice* device;
+    VkSemaphore vk_semaphore;
 };
 
 
@@ -346,6 +356,38 @@ DVZ_EXPORT void dvz_fence_reset(DvzFence* fence);
  * @param fence the fence
  */
 DVZ_EXPORT void dvz_fence_destroy(DvzFence* fence);
+
+
+
+/*************************************************************************************************/
+/*  Semaphore                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Initialize a semaphore (GPU-GPU synchronization).
+ *
+ * @param device the device
+ * @param[out] the created semaphore
+ */
+DVZ_EXPORT void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore);
+
+
+
+/**
+ * Recreate a semaphore.
+ *
+ * @param semaphore the semaphore
+ */
+DVZ_EXPORT void dvz_semaphore_recreate(DvzSemaphore* semaphore);
+
+
+
+/**
+ * Destroy semaphore.
+ *
+ * @param semaphore the semaphore
+ */
+DVZ_EXPORT void dvz_semaphore_destroy(DvzSemaphore* semaphore);
 
 
 

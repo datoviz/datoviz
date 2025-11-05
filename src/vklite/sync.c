@@ -308,3 +308,68 @@ void dvz_fence_destroy(DvzFence* fence)
     }
     dvz_obj_destroyed(&fence->obj);
 }
+
+
+
+/*************************************************************************************************/
+/*  Semaphore                                                                                    */
+/*************************************************************************************************/
+
+void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore)
+{
+    ANN(device);
+
+    semaphore->device = device;
+
+    VkSemaphoreCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    VK_CHECK_RESULT(vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
+
+    dvz_obj_created(&semaphore->obj);
+}
+
+
+
+void dvz_semaphore_recreate(DvzSemaphore* semaphore)
+{
+    ANN(semaphore);
+    if (!dvz_obj_is_created(&semaphore->obj))
+    {
+        log_trace("skip destruction of already-destroyed semaphore");
+        return;
+    }
+    DvzDevice* device = semaphore->device;
+    ANN(device);
+
+    log_trace("recreate semaphore");
+
+    VkSemaphoreCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    if (semaphore->vk_semaphore != VK_NULL_HANDLE)
+    {
+        vkDestroySemaphore(device->vk_device, semaphore->vk_semaphore, NULL);
+        VK_CHECK_RESULT(
+            vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
+    }
+}
+
+
+
+void dvz_semaphore_destroy(DvzSemaphore* semaphore)
+{
+    ANN(semaphore);
+    if (!dvz_obj_is_created(&semaphore->obj))
+    {
+        log_trace("skip destruction of already-destroyed semaphore");
+        return;
+    }
+
+    log_trace("destroying semaphore...");
+
+    if (semaphore->vk_semaphore != VK_NULL_HANDLE)
+    {
+        vkDestroySemaphore(semaphore->device->vk_device, semaphore->vk_semaphore, NULL);
+        semaphore->vk_semaphore = VK_NULL_HANDLE;
+    }
+    dvz_obj_destroyed(&semaphore->obj);
+}
