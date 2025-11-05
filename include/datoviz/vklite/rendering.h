@@ -18,6 +18,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vklite/graphics.h"
 #include <volk.h>
 
 
@@ -35,8 +36,16 @@ typedef struct DvzRendering DvzRendering;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzRendering
+{
+    VkRenderingInfo info;
+    DvzAttachment attachments[DVZ_MAX_ATTACHMENTS];
+    DvzAttachment depth;
+    DvzAttachment stencil;
+};
 
 
 

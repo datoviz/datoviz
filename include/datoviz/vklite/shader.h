@@ -17,7 +17,9 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
+#include "datoviz/vk/enums.h"
 #include <volk.h>
 
 
@@ -33,8 +35,18 @@ typedef struct DvzShader DvzShader;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzShader
+{
+    DvzObject obj; // used to hold the id in the mapping structure
+    DvzDevice* device;
+    DvzShaderType type;
+    DvzSize size;
+    VkShaderModule vk_shader;
+    uint32_t* buffer; // only for SPIRV obj_type
+};
 
 
 

@@ -20,6 +20,7 @@
 #include "_compat.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/compute.h"
 #include "test_vklite.h"
 
 

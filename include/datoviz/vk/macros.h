@@ -29,11 +29,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_BINDINGS        16
-#define DVZ_MAX_VERTEX_ATTRS    16
-#define DVZ_MAX_VERTEX_BINDINGS 8
-#define DVZ_MAX_PARAMS          16
-
 #ifndef SPIRV_DIR
 #define SPIRV_DIR ""
 #endif
@@ -54,8 +49,8 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
     strncpy(file_path, __FILE__, sizeof(file_path));
 
     char path[1024] = {0};
-    const char* bundled =
-        "/../libs/vulkan/macos/MoltenVK_icd.json"; // Relative to this header inside the source tree.
+    const char* bundled = "/../libs/vulkan/macos/MoltenVK_icd.json"; // Relative to this header
+                                                                     // inside the source tree.
     const char* installed = "/usr/local/lib/datoviz/MoltenVK_icd.json";
 
     char root_path[1024] = {0};

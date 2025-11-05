@@ -36,19 +36,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_ATTACHMENTS     8
-#define DVZ_MAX_BARRIERS        4
-#define DVZ_MAX_BINDINGS        16
-#define DVZ_MAX_DYNAMIC_STATES  32
-#define DVZ_MAX_PUSH_CONSTANTS  8
-#define DVZ_MAX_SETS            4
-#define DVZ_MAX_SHADERS         4
-#define DVZ_MAX_VERTEX_ATTRS    16
-#define DVZ_MAX_VERTEX_BINDINGS 8
-
-// Arbitrarily limit the spec constant data buffer size which simplifies the implementation.
-#define DVZ_MAX_SPEC_CONST_SIZE 128
-#define DVZ_MAX_SPEC_CONST      8
+#define DVZ_MAX_BARRIERS       4
+#define DVZ_MAX_BINDINGS       16
+#define DVZ_MAX_PUSH_CONSTANTS 8
+#define DVZ_MAX_SETS           4
 
 
 
@@ -86,48 +77,6 @@ typedef struct DvzBarriers DvzBarriers;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzSampler
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    VkFilter min_filter;
-    VkFilter mag_filter;
-    VkSamplerAddressMode address_modes[3]; // x, y, z
-    float anisotropy;
-
-    VkSampler vk_sampler;
-};
-
-
-
-struct DvzCompute
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    VkShaderModule shader;
-    VkPipelineLayout layout;
-
-    VkSpecializationMapEntry spec_entries[DVZ_MAX_SPEC_CONST];
-    VkSpecializationInfo spec_info;
-    unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
-
-    VkPipeline vk_pipeline;
-};
-
-
-
-struct DvzShader
-{
-    DvzObject obj; // used to hold the id in the mapping structure
-    DvzDevice* device;
-    DvzShaderType type;
-    DvzSize size;
-    VkShaderModule vk_shader;
-    uint32_t* buffer; // only for SPIRV obj_type
-};
 
 
 
@@ -201,97 +150,6 @@ struct DvzImageViews
     uint32_t layers_base;
     uint32_t layers_count;
     VkImageView vk_views[DVZ_MAX_IMAGES];
-};
-
-
-
-struct DvzGraphics
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    uint32_t shader_count;
-    VkShaderStageFlagBits shader_stages[DVZ_MAX_SHADERS];
-    VkShaderModule shaders[DVZ_MAX_SHADERS];
-    VkPipelineLayout layout;
-
-    VkSpecializationMapEntry spec_entries[DVZ_MAX_SHADERS][DVZ_MAX_SPEC_CONST];
-    VkSpecializationInfo spec_info[DVZ_MAX_SHADERS];
-    // Specialization constant data buffer.
-    unsigned char spec_data[DVZ_MAX_SHADERS][DVZ_MAX_SPEC_CONST_SIZE];
-
-    uint32_t vertex_binding_count;
-    VkVertexInputBindingDescription vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
-
-    uint32_t vertex_attr_count;
-    VkVertexInputAttributeDescription vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
-
-    // This wraps:
-    // VkPrimitiveTopology topology;
-    // bool primitive_restart;
-    VkPipelineInputAssemblyStateCreateInfo input_assembly;
-
-    // This wraps:
-    // bool depth_bias;
-    // float depth_bias_constant;
-    // float depth_bias_clamp;
-    // float depth_bias_slope;
-    // VkPolygonMode polygon_mode;
-    // VkCullModeFlags cull_mode;
-    // VkFrontFace front_face;
-    VkPipelineRasterizationStateCreateInfo rasterization;
-
-    // This wraps:
-    // bool depth_test;
-    // bool depth_write;
-    // VkCompareOp depth_compare;
-    // bool depth_bounds_test;
-    // vec2 depth_bounds;
-    // VkStencilOp stencil_depth_fail;
-    // VkCompareOp stencil_compare;
-    // uint32_t stencil_compare_mask;
-    // uint32_t stencil_write_mask;
-    // uint32_t stencil_reference;
-    // bool stencil_test;
-    // VkStencilFaceFlags stencil_mask;
-    // VkStencilOp stencil_fail;
-    // VkStencilOp stencil_pass;
-    VkPipelineDepthStencilStateCreateInfo depth_stencil;
-
-    // Rendering and attachments.
-    VkFormat attachments_colors[DVZ_MAX_ATTACHMENTS];
-    VkPipelineRenderingCreateInfo rendering;
-
-    // This wraps:
-    // bool blend_enable;
-    // VkLogicOp blend_op;
-    // vec4 blend_constants;
-    VkPipelineColorBlendAttachmentState blend_attachments[DVZ_MAX_ATTACHMENTS];
-    VkPipelineColorBlendStateCreateInfo blend;
-
-    VkRect2D scissor;
-    VkViewport viewport;
-
-    // This wraps:
-    // VkSampleCountFlagBits msaa_samples;
-    // float msaa_min_sample_shading;
-    // bool msaa_alpha_coverage;
-    VkPipelineMultisampleStateCreateInfo multisampling;
-
-    uint32_t dynamic_count;
-    VkDynamicState dynamic_states[DVZ_MAX_DYNAMIC_STATES];
-
-    VkPipeline vk_pipeline;
-};
-
-
-
-struct DvzRendering
-{
-    VkRenderingInfo info;
-    DvzAttachment attachments[DVZ_MAX_ATTACHMENTS];
-    DvzAttachment depth;
-    DvzAttachment stencil;
 };
 
 

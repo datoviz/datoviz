@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include <stdint.h>
 #include <volk.h>
 
@@ -43,6 +44,25 @@ typedef enum
     DVZ_SAMPLER_AXIS_V,
     DVZ_SAMPLER_AXIS_W,
 } DvzSamplerAxis;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzSampler
+{
+    DvzObject obj;
+    DvzDevice* device;
+
+    VkFilter min_filter;
+    VkFilter mag_filter;
+    VkSamplerAddressMode address_modes[3]; // x, y, z
+    float anisotropy;
+
+    VkSampler vk_sampler;
+};
 
 
 

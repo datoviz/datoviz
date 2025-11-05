@@ -17,8 +17,18 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include <volk.h>
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+// Arbitrarily limit the spec constant data buffer size which simplifies the implementation.
+#define DVZ_MAX_SPEC_CONST_SIZE 128
+#define DVZ_MAX_SPEC_CONST      8
 
 
 
@@ -33,8 +43,23 @@ typedef struct DvzCompute DvzCompute;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzCompute
+{
+    DvzObject obj;
+    DvzDevice* device;
+
+    VkShaderModule shader;
+    VkPipelineLayout layout;
+
+    VkSpecializationMapEntry spec_entries[DVZ_MAX_SPEC_CONST];
+    VkSpecializationInfo spec_info;
+    unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
+
+    VkPipeline vk_pipeline;
+};
 
 
 
