@@ -16,6 +16,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/fileio.h"
+#include "_alloc.h"
+#include "_compat.h"
 #include "testing.h"
 
 #include <stddef.h>
@@ -37,55 +40,27 @@ static inline void* dvz_test_shader_load(const char* filename, size_t* size_out)
     size_t name_len = strlen(filename);
     size_t path_len = dir_len + 1 + name_len + 1;
 
-    char* path = (char*)malloc(path_len);
+    char* path = (char*)dvz_malloc(path_len);
     if (!path)
         return NULL;
 
-    int written = snprintf(path, path_len, "%s/%s", shader_dir, filename);
+    int written = dvz_snprintf(path, path_len, "%s/%s", shader_dir, filename);
     if (written < 0 || (size_t)written >= path_len)
     {
-        free(path);
+        dvz_free(path);
         return NULL;
     }
 
-    FILE* fp = fopen(path, "rb");
-    free(path);
-    if (!fp)
+    DvzSize shader_size = 0;
+    void* shader = dvz_read_file(path, &shader_size);
+    dvz_free(path);
+    if (!shader)
         return NULL;
-
-    if (fseek(fp, 0, SEEK_END) != 0)
-    {
-        fclose(fp);
-        return NULL;
-    }
-
-    long file_size = ftell(fp);
-    if (file_size < 0)
-    {
-        fclose(fp);
-        return NULL;
-    }
-    rewind(fp);
-
-    void* buffer = malloc((size_t)file_size);
-    if (!buffer)
-    {
-        fclose(fp);
-        return NULL;
-    }
-
-    size_t read = fread(buffer, 1, (size_t)file_size, fp);
-    fclose(fp);
-    if (read != (size_t)file_size)
-    {
-        free(buffer);
-        return NULL;
-    }
 
     if (size_out)
-        *size_out = read;
+        *size_out = (size_t)shader_size;
 
-    return buffer;
+    return shader;
 }
 
 
