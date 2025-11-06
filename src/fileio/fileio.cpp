@@ -2,8 +2,6 @@
 /*  File I/O utilities                                                                           */
 /*************************************************************************************************/
 
-#include "datoviz/fileio/fileio.h"
-
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,6 +11,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "datoviz/fileio/fileio.h"
 #include "fpng.h"
 
 #if HAS_ZLIB

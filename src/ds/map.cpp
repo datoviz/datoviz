@@ -2,16 +2,15 @@
 /*  Map                                                                                          */
 /*************************************************************************************************/
 
-#include "datoviz/ds/map.h"
-
 #include <inttypes.h>
-#include <stddef.h>
-#include <map>
-#include <utility>
 #include <iterator>
+#include <map>
+#include <stddef.h>
+#include <utility>
 
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/ds/map.h"
 
 
 

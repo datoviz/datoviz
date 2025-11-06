@@ -13,11 +13,8 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/mutex.h"
-
 #include "_assertions.h"
 #include "datoviz/common/macros.h"
-
-struct timespec;
 
 
 

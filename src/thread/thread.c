@@ -13,8 +13,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/thread/thread.h"
-
 #include <pthread.h>
 #include <stddef.h>
 
@@ -24,6 +22,7 @@
 #include "datoviz/common/mutex.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/thread/atomic.h"
+#include "datoviz/thread/thread.h"
 
 
 

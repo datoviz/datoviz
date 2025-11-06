@@ -14,8 +14,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/thread/fifo.h"
-
 #include <sys/time.h>
 #include <time.h>
 
@@ -24,9 +22,10 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_time_utils.h"
-#include "datoviz/thread/atomic.h"
-#include "fifo_structs.h"
 #include "datoviz/common/mutex.h"
+#include "datoviz/thread/atomic.h"
+#include "datoviz/thread/fifo.h"
+#include "fifo_structs.h"
 
 
 

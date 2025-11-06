@@ -21,7 +21,6 @@
 #include <stdlib.h>
 
 #include "datoviz/common/macros.h"
-#include "/home/cyrille/GIT/Viz/datoviz/src/ds/list_structs.h"
 
 
 
@@ -50,6 +49,15 @@ union DvzListItem
 {
     int i;
     void* p;
+};
+
+
+
+struct DvzList
+{
+    uint64_t capacity;
+    uint64_t count;
+    DvzListItem* values;
 };
 
 
