@@ -23,6 +23,7 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vklite/graphics.h"
+#include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/slots.h"
@@ -497,6 +498,137 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_graphics_destroy(&mgraphics);
+    dvz_proto_destroy(&proto);
+    dvz_free(vs_spv);
+    dvz_free(fs_spv);
+
+    return proto.bootstrap.instance.n_errors > 0;
+}
+
+
+
+int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Initialize the proto.
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+
+    VkSampleCountFlags sample_count = VK_SAMPLE_COUNT_8_BIT;
+
+    // Multisampled image.
+    DvzImages msimg = {0};
+    DvzImageViews msimg_view = {0};
+    DvzImages msdepth = {0};
+    DvzImageViews msdepth_view = {0};
+    {
+        ANN(&msimg);
+        dvz_images(
+            &proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msimg);
+        dvz_images_format(&msimg, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_images_samples(&msimg, sample_count);
+        dvz_images_size(&msimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+        dvz_images_usage(&msimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        dvz_images_create(&msimg);
+
+        // Image views.
+        ANN(&msimg_view);
+        dvz_image_views(&msimg, &msimg_view);
+        dvz_image_views_create(&msimg_view);
+
+        ANN(&msdepth);
+        dvz_images(
+            &proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msdepth);
+        dvz_images_format(&msdepth, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_images_samples(&msdepth, sample_count);
+        dvz_images_size(&msdepth, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+        dvz_images_usage(&msdepth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        dvz_images_create(&msdepth);
+
+        // Image views.
+        ANN(&msdepth_view);
+        dvz_image_views(&msdepth, &msdepth_view);
+        dvz_image_views_aspect(
+            &msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+        dvz_image_views_create(&msdepth_view);
+    }
+
+
+
+    // Load the shaders.
+    DvzSize vs_size = 0;
+    DvzSize fs_size = 0;
+    uint32_t* vs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &vs_size);
+    uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
+
+    // Get the graphics pipeline
+    DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
+    ANN(graphics);
+
+    dvz_graphics_multisampling(graphics, sample_count, 0.5, 0);
+
+    // Slots
+    DvzSlots* slots = dvz_proto_slots(&proto);
+    ANN(slots);
+    dvz_slots_create(slots);
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
+
+    // Create the graphics pipeline.
+    AT(dvz_graphics_create(graphics) == 0);
+
+
+    // Resolve in rendering.
+    DvzRendering* rendering = &proto.rendering;
+    ANN(rendering);
+    DvzAttachment* att = dvz_rendering_color(rendering, 0);
+    ANN(att);
+    dvz_attachment_image(
+        att, dvz_image_views_handle(&msimg_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+    dvz_attachment_resolve(
+        att, VK_RESOLVE_MODE_AVERAGE_BIT, dvz_image_views_handle(&proto.view, 0),
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(att, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+    DvzAttachment* datt = dvz_rendering_depth(rendering);
+    dvz_attachment_image(
+        datt, dvz_image_views_handle(&msdepth_view, 0),
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_attachment_resolve(
+        datt, VK_RESOLVE_MODE_AVERAGE_BIT, dvz_image_views_handle(&proto.dview, 0),
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+    DvzAttachment* satt = dvz_rendering_stencil(rendering);
+    dvz_attachment_image(
+        satt, dvz_image_views_handle(&msdepth_view, 0),
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_attachment_resolve(
+        satt, VK_RESOLVE_MODE_MIN_BIT, dvz_image_views_handle(&proto.dview, 0),
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+    // Record the command buffer.
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    ANN(cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_barriers(cmds, 0, &proto.barriers);
+    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_end(cmds);
+
+    // Submit the command buffer.
+    dvz_cmd_submit(cmds);
+
+    // Save a screenshot.
+    dvz_proto_screenshot(&proto, "build/technique_msaa.png");
+
+    // Cleanup.
+    dvz_image_views_destroy(&msimg_view);
+    dvz_image_views_destroy(&msdepth_view);
+    dvz_images_destroy(&msimg);
+    dvz_images_destroy(&msdepth);
     dvz_proto_destroy(&proto);
     dvz_free(vs_spv);
     dvz_free(fs_spv);

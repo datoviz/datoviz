@@ -54,6 +54,7 @@ void dvz_proto(DvzProto* proto)
     // Create a device with support for dynamic rendering.
     VkPhysicalDeviceFeatures* fet10 = dvz_device_request_features10(device);
     fet10->samplerAnisotropy = true;
+    fet10->sampleRateShading = true;
     VkPhysicalDeviceVulkan13Features* fet13 = dvz_device_request_features13(device);
     fet13->dynamicRendering = true;
     fet13->synchronization2 = true;
@@ -139,8 +140,13 @@ void dvz_proto(DvzProto* proto)
     DvzBarrierImage* bdimg = dvz_barriers_image(barriers, dvz_image_handle(dimg, 0));
     ANN(bdimg);
     dvz_barrier_image_stage(
-        bdimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
-    dvz_barrier_image_access(bdimg, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        bdimg, VK_PIPELINE_STAGE_2_NONE,
+        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+            VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT |
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_image_access(
+        bdimg, 0,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
         bdimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     dvz_barrier_image_aspect(bdimg, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);

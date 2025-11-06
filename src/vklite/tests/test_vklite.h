@@ -111,6 +111,8 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem);
 
 int test_technique_stencil(TstSuite* suite, TstItem* tstitem);
 
+int test_technique_msaa(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vklite(TstSuite* suite);

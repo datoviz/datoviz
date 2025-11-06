@@ -561,7 +561,7 @@ void dvz_graphics_multisampling(
     bool alpha_coverage)
 {
     ANN(graphics);
-    graphics->multisampling.sampleShadingEnable = samples != VK_SAMPLE_COUNT_1_BIT;
+    graphics->multisampling.sampleShadingEnable = min_sample_shading > 0;
     graphics->multisampling.rasterizationSamples = samples;
     graphics->multisampling.minSampleShading = min_sample_shading;
     graphics->multisampling.alphaToCoverageEnable = alpha_coverage;
