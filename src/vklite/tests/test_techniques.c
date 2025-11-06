@@ -24,6 +24,7 @@
 #include "datoviz/vklite/proto.h"
 #include "test_vklite.h"
 #include "testing.h"
+#include "vulkan_core.h"
 
 
 
@@ -40,18 +41,23 @@ int test_technique_triangle(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    // DvzSlots* slots = dvz_proto_slots(&proto);
-    // ANN(slots);
-
     // Load the shaders.
     DvzSize vs_size = 0;
     DvzSize fs_size = 0;
     uint32_t* vs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &vs_size);
     uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
 
-    // Create the graphics pipeline.
+    // Get the graphics pipeline
     DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
+
+    // Slots
+    DvzSlots* slots = dvz_proto_slots(&proto);
+    ANN(slots);
+    dvz_slots_create(slots);
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
+
+    // Create the graphics pipeline.
     AT(dvz_graphics_create(graphics) == 0);
 
     // Record the command buffer.
@@ -89,18 +95,25 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    // DvzSlots* slots = dvz_proto_slots(&proto);
-    // ANN(slots);
-
     // Load the shaders.
     DvzSize vs_size = 0;
     DvzSize fs_size = 0;
     uint32_t* vs_spv = dvz_test_shader_load("hello_square.vert.spv", &vs_size);
     uint32_t* fs_spv = dvz_test_shader_load("hello_square.frag.spv", &fs_size);
 
-    // Create the graphics pipeline.
+    // Initialize graphics pipeline.
     DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
+
+    // Slots
+    DvzSlots* slots = dvz_proto_slots(&proto);
+    ANN(slots);
+    dvz_slots_binding(
+        slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    dvz_slots_create(slots);
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
+
+    // Create the graphics pipeline.
     AT(dvz_graphics_create(graphics) == 0);
 
     // Record the command buffer.

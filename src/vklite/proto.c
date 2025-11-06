@@ -138,8 +138,6 @@ DvzGraphics* dvz_proto_graphics(
 
     // Slots.
     dvz_slots(device, &proto->slots);
-    dvz_slots_create(&proto->slots);
-    dvz_graphics_layout(graphics, dvz_slots_handle(&proto->slots));
 
     // Attachments.
     dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
