@@ -611,7 +611,9 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     DvzCommands* cmds = dvz_proto_commands(&proto);
     ANN(cmds);
     dvz_cmd_begin(cmds);
-    dvz_cmd_barriers(cmds, 0, &proto.barriers);
+    // NOTE: prevent a write after write sync hazard: we don't do the initial image transition on
+    // the resolve image since it is written by the MSAA rendering
+    // dvz_cmd_barriers(cmds, 0, &proto.barriers);
     dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
     dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
     dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
