@@ -278,14 +278,6 @@ void dvz_proto_destroy(DvzProto* proto)
     ANN(proto);
     dvz_image_views_destroy(&proto->view);
     dvz_images_destroy(&proto->img);
-
-    if (dvz_obj_is_created(&proto->tex.obj))
-        dvz_images_destroy(&proto->tex);
-    if (dvz_obj_is_created(&proto->tex_view.obj))
-        dvz_image_views_destroy(&proto->tex_view);
-    if (dvz_obj_is_created(&proto->sampler.obj))
-        dvz_sampler_destroy(&proto->sampler);
-
     dvz_buffer_destroy(&proto->staging);
     dvz_shader_destroy(&proto->vs);
     dvz_shader_destroy(&proto->fs);

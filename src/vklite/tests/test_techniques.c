@@ -187,20 +187,20 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
     // Image to render to, and to use as a texture.
-    DvzImages* tex = &proto.tex;
-    DvzImageViews* tex_view = &proto.tex_view;
+    DvzImages tex = {0};
+    DvzImageViews tex_view = {0};
     {
-        ANN(tex);
-        dvz_images(&proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, tex);
-        dvz_images_format(tex, VK_FORMAT_R8G8B8A8_UNORM);
-        dvz_images_size(tex, DVZ_PROTO_WIDTH / 2, DVZ_PROTO_HEIGHT / 2, 1);
-        dvz_images_usage(tex, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-        dvz_images_create(tex);
+        ANN(&tex);
+        dvz_images(&proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &tex);
+        dvz_images_format(&tex, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_images_size(&tex, DVZ_PROTO_WIDTH / 2, DVZ_PROTO_HEIGHT / 2, 1);
+        dvz_images_usage(&tex, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+        dvz_images_create(&tex);
 
         // Image views.
-        ANN(tex_view);
-        dvz_image_views(tex, tex_view);
-        dvz_image_views_create(tex_view);
+        ANN(&tex_view);
+        dvz_image_views(&tex, &tex_view);
+        dvz_image_views_create(&tex_view);
     }
 
 
@@ -213,24 +213,24 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         // Attachments.
         DvzAttachment* attachment = dvz_rendering_color(&irendering, 0);
         dvz_attachment_image(
-            attachment, dvz_image_views_handle(tex_view, 0),
+            attachment, dvz_image_views_handle(&tex_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-        dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {0, 0, 0, .5}});
+        dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {.5, .5, .5, 1}});
     }
 
 
     // Sampler.
-    DvzSampler* sampler = &proto.sampler;
+    DvzSampler sampler = {0};
     {
-        ANN(sampler);
-        dvz_sampler(&proto.bootstrap.device, sampler);
-        dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
-        dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
+        ANN(&sampler);
+        dvz_sampler(&proto.bootstrap.device, &sampler);
+        dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
+        dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
         dvz_sampler_address_mode(
-            sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-        dvz_sampler_anisotropy(sampler, 8);
-        AT(dvz_sampler_create(sampler) == 0);
+            &sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+        dvz_sampler_anisotropy(&sampler, 8);
+        AT(dvz_sampler_create(&sampler) == 0);
     }
 
 
@@ -249,7 +249,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     // Barrier for the inner rendering.
     DvzBarriers ibarriers = {0};
     dvz_barriers(&ibarriers);
-    DvzBarrierImage* ibimg = dvz_barriers_image(&ibarriers, dvz_image_handle(tex, 0));
+    DvzBarrierImage* ibimg = dvz_barriers_image(&ibarriers, dvz_image_handle(&tex, 0));
     ANN(ibimg);
     // Initial image transition for inner color attachment.
     {
@@ -266,7 +266,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         dvz_descriptors(&proto.slots, &proto.desc);
         dvz_descriptors_image(
             &proto.desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, //
-            tex_view->vk_views[0], sampler->vk_sampler);
+            tex_view.vk_views[0], sampler.vk_sampler);
     }
 
 
@@ -319,6 +319,9 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_proto_screenshot(&proto, "build/technique_render_texture.png");
 
     // Cleanup.
+    dvz_images_destroy(&tex);
+    dvz_image_views_destroy(&tex_view);
+    dvz_sampler_destroy(&sampler);
     dvz_graphics_destroy(&igraphics);
     dvz_proto_destroy(&proto);
     dvz_free(vs_spv);

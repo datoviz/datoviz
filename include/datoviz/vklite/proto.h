@@ -75,9 +75,6 @@ struct DvzProto
     DvzRendering rendering;
     DvzImages img;
     DvzImageViews view;
-    DvzImages tex;
-    DvzImageViews tex_view;
-    DvzSampler sampler;
     DvzBarriers barriers;
     DvzBarrierImage* bimg;
     DvzAttachment* attachment; // main color attachment
@@ -137,8 +134,16 @@ DVZ_EXPORT DvzCommands* dvz_proto_commands(DvzProto* proto);
 
 
 
-DVZ_EXPORT void dvz_proto_transition(
-    DvzProto* proto, DvzImages* img, VkAccessFlags2 access, VkImageLayout dst_layout);
+/**
+ * Image transition.
+ *
+ * @param proto the proto
+ * @param img the image
+ * @param access the target access
+ * @param layout the target layout
+ */
+DVZ_EXPORT void
+dvz_proto_transition(DvzProto* proto, DvzImages* img, VkAccessFlags2 access, VkImageLayout layout);
 
 
 
