@@ -106,7 +106,7 @@ void dvz_proto(DvzProto* proto)
     DvzImageViews* dview = &proto->dview;
     ANN(dview);
     dvz_image_views(dimg, dview);
-    dvz_image_views_aspect(dview, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_image_views_aspect(dview, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
     dvz_image_views_create(dview);
 
     DvzAttachment* datt = dvz_rendering_depth(rendering);
@@ -114,6 +114,12 @@ void dvz_proto(DvzProto* proto)
         datt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
+
+    DvzAttachment* satt = dvz_rendering_stencil(rendering);
+    dvz_attachment_image(
+        satt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(satt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
     // Image barrier.
     DvzBarriers* barriers = &proto->barriers;

@@ -369,6 +369,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
         // Attachments.
         dvz_graphics_attachment_color(&mgraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_graphics_attachment_depth(&mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_graphics_attachment_stencil(&mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
         dvz_graphics_blend_color(&mgraphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, 0, 0);
 
         // Fixed state.
@@ -427,6 +428,13 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
+
+        DvzAttachment* satt = dvz_rendering_stencil(&mrendering);
+        dvz_attachment_image(
+            satt, dvz_image_views_handle(&proto.dview, 0),
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(satt, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
 
     // Load the shaders.
@@ -457,6 +465,9 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     // Change the depth attachment settings to LOAD the depth values.
     DvzAttachment* datt = dvz_rendering_depth(&proto.rendering);
     dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+
+    DvzAttachment* satt = dvz_rendering_stencil(&proto.rendering);
+    dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
 
     // Record the command buffer.
     DvzCommands* cmds = dvz_proto_commands(&proto);
