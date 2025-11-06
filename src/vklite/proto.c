@@ -27,6 +27,7 @@
 #include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sampler.h"
+#include "datoviz/vklite/sync.h"
 #include "vulkan/vulkan_core.h"
 
 
@@ -127,6 +128,16 @@ void dvz_proto(DvzProto* proto)
     dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
         bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    // Depth image transition.
+    DvzBarrierImage* bdimg = dvz_barriers_image(barriers, dvz_image_handle(dimg, 0));
+    ANN(bdimg);
+    dvz_barrier_image_stage(
+        bdimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
+    dvz_barrier_image_access(bdimg, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_image_layout(
+        bdimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_barrier_image_aspect(bdimg, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
     // Command buffers.
     dvz_commands(device, queue, 1, &proto->cmds);
@@ -242,6 +253,8 @@ void dvz_proto_transition(
 void dvz_proto_screenshot(DvzProto* proto, const char* filename)
 {
     ANN(proto);
+
+    log_debug("starting screenshot into %s", filename);
 
     // Staging buffer for screenshot.
     DvzBuffer* staging = &proto->staging;

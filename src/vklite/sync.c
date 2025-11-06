@@ -236,6 +236,10 @@ void dvz_cmd_barriers(DvzCommands* cmds, uint32_t idx, DvzBarriers* barriers)
 {
     ANN(cmds);
     ANN(barriers);
+    log_trace(
+        "record barrier (%d memory barriers, %d buffer barriers, %d image barriers)",
+        barriers->info.memoryBarrierCount, barriers->info.bufferMemoryBarrierCount,
+        barriers->info.imageMemoryBarrierCount);
     vkCmdPipelineBarrier2(cmds->cmds[idx], &barriers->info);
 }
 
