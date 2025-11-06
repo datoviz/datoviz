@@ -129,14 +129,6 @@ void dvz_images_format(DvzImages* img, VkFormat format)
 
 
 
-void dvz_images_layout(DvzImages* img, VkImageLayout layout)
-{
-    ANN(img);
-    img->layout = layout;
-}
-
-
-
 void dvz_images_size(DvzImages* img, uint32_t width, uint32_t height, uint32_t depth)
 {
     ANN(img);

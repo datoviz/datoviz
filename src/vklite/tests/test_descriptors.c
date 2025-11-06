@@ -18,13 +18,13 @@
 
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
+#include "datoviz/math/types.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
-#include "datoviz/math/types.h"
 #include "testing.h"
 #include "vulkan_core.h"
 
@@ -76,7 +76,6 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &images);
     dvz_images_format(&images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&images, 256, 256, 1);
-    dvz_images_layout(&images, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     dvz_images_mip(&images, 1);
     dvz_images_layers(&images, 2);
     dvz_images_samples(&images, VK_SAMPLE_COUNT_1_BIT);
@@ -95,7 +94,8 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_descriptors(&slots, &desc);
     dvz_descriptors_buffer(&desc, 0, 0, 0, ubuf.vk_buffer, 0, size);
     dvz_descriptors_buffer(&desc, 1, 0, 0, sbuf.vk_buffer, 0, size);
-    dvz_descriptors_image(&desc, 0, 1, 0, views.img->layout, views.vk_views[0], NULL);
+    dvz_descriptors_image(
+        &desc, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, views.vk_views[0], NULL);
 
 
     // Cleanup.

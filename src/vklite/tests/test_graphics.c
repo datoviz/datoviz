@@ -121,12 +121,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Image to render to.
     DvzImages img = {0};
-    VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
     dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
     dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&img, WIDTH, HEIGHT, 1);
     dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_layout(&img, img_layout);
     dvz_images_create(&img);
 
     // Image views.
@@ -136,7 +134,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Attachments.
     DvzAttachment* attachment = dvz_rendering_color(&rendering, 0);
-    dvz_attachment_image(attachment, dvz_image_views_handle(&view, 0), img_layout);
+    dvz_attachment_image(
+        attachment, dvz_image_views_handle(&view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {.1, .2, .3, 1}});
 

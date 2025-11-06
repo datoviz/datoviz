@@ -65,7 +65,6 @@ struct DvzImages
 
     VkFormat format;
     VkImageType image_type;
-    VkImageLayout layout;
     VkImageTiling tiling;
     VkImageUsageFlags usage;
     VkSampleCountFlags samples; // for multisample antialiasing
@@ -120,16 +119,6 @@ DVZ_EXPORT void dvz_images(
  * @param format the image format
  */
 DVZ_EXPORT void dvz_images_format(DvzImages* img, VkFormat format);
-
-
-
-/**
- * Set the images layout.
- *
- * @param images the images
- * @param layout the image layout
- */
-DVZ_EXPORT void dvz_images_layout(DvzImages* img, VkImageLayout layout);
 
 
 

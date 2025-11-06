@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/common/obj.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
@@ -61,14 +62,12 @@ void dvz_proto(DvzProto* proto)
     dvz_rendering_area(&proto->rendering, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
 
     // Image to render to.
-    VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
     DvzImages* img = &proto->img;
     ANN(img);
     dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, img);
     dvz_images_format(img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
     dvz_images_usage(img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_layout(img, img_layout);
     dvz_images_create(img);
 
     // Image views.
@@ -81,7 +80,8 @@ void dvz_proto(DvzProto* proto)
     DvzRendering* rendering = &proto->rendering;
     ANN(rendering);
     proto->attachment = dvz_rendering_color(rendering, 0);
-    dvz_attachment_image(proto->attachment, dvz_image_views_handle(view, 0), img_layout);
+    dvz_attachment_image(
+        proto->attachment, dvz_image_views_handle(view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(
         proto->attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(
@@ -275,9 +275,14 @@ void dvz_proto_destroy(DvzProto* proto)
     ANN(proto);
     dvz_image_views_destroy(&proto->view);
     dvz_images_destroy(&proto->img);
-    dvz_images_destroy(&proto->tex);
-    dvz_image_views_destroy(&proto->tex_view);
-    dvz_sampler_destroy(&proto->sampler);
+
+    if (dvz_obj_is_created(&proto->tex.obj))
+        dvz_images_destroy(&proto->tex);
+    if (dvz_obj_is_created(&proto->tex_view.obj))
+        dvz_image_views_destroy(&proto->tex_view);
+    if (dvz_obj_is_created(&proto->sampler.obj))
+        dvz_sampler_destroy(&proto->sampler);
+
     dvz_buffer_destroy(&proto->staging);
     dvz_shader_destroy(&proto->vs);
     dvz_shader_destroy(&proto->fs);
