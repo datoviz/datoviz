@@ -21,32 +21,24 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/fileio/fileio.h"
+#include "datoviz/math/types.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
 #include "datoviz/vklite/sync.h"
 #include "test_vklite.h"
 #include "testing.h"
-#include "datoviz/math/types.h"
-#include "datoviz/vk/instance.h"
 #include "vulkan_core.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
 
 
 
@@ -58,6 +50,9 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
+
+    const uint32_t WIDTH = DVZ_PROTO_WIDTH;
+    const uint32_t HEIGHT = DVZ_PROTO_HEIGHT;
 
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
