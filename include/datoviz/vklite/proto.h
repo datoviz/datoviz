@@ -21,9 +21,11 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/rendering.h"
+#include "datoviz/vklite/sampler.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
 #include "datoviz/vklite/sync.h"
@@ -69,9 +71,13 @@ struct DvzProto
     DvzGraphics graphics;
     DvzCompute compute;
     DvzSlots slots;
+    DvzDescriptors desc;
     DvzRendering rendering;
     DvzImages img;
     DvzImageViews view;
+    DvzImages tex;
+    DvzImageViews tex_view;
+    DvzSampler sampler;
     DvzBarriers barriers;
     DvzBarrierImage* bimg;
     DvzAttachment* attachment; // main color attachment
@@ -128,6 +134,11 @@ DVZ_EXPORT DvzGraphics* dvz_proto_graphics(
  * @returns the commands
  */
 DVZ_EXPORT DvzCommands* dvz_proto_commands(DvzProto* proto);
+
+
+
+DVZ_EXPORT void dvz_proto_transition(
+    DvzProto* proto, DvzImages* img, VkAccessFlags2 access, VkImageLayout dst_layout);
 
 
 

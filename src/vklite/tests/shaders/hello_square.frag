@@ -8,4 +8,5 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     out_color = vec4(.7, .6, .5, 1.0);
+    out_color = texture(tex, uv.xy);
 }

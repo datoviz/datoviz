@@ -23,6 +23,8 @@
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
+#include "datoviz/vklite/sampler.h"
+#include "vulkan/vulkan_core.h"
 
 
 /*************************************************************************************************/
@@ -172,6 +174,40 @@ DvzCommands* dvz_proto_commands(DvzProto* proto)
 
 
 
+void dvz_proto_transition(
+    DvzProto* proto, DvzImages* img, VkAccessFlags2 access, VkImageLayout layout)
+{
+    ANN(proto);
+    ANN(img);
+
+    DvzCommands* cmds = &proto->cmds;
+    ANN(cmds);
+
+    DvzBarriers* barriers = &proto->barriers;
+    ANN(barriers);
+
+    // Screenshot.
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
+
+    // Image transition.
+    DvzBarrierImage* bimg = dvz_barriers_image(barriers, dvz_image_handle(img, 0));
+    ANN(bimg);
+    dvz_barrier_image_stage(bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT);
+    dvz_barrier_image_access(bimg, 0, access);
+    dvz_barrier_image_layout(bimg, 0, layout);
+
+    dvz_cmd_barriers(cmds, 0, barriers);
+
+    // End the command buffer.
+    dvz_cmd_end(cmds);
+
+    // Submit the command buffer.
+    dvz_cmd_submit(cmds);
+}
+
+
+
 void dvz_proto_screenshot(DvzProto* proto, const char* filename)
 {
     ANN(proto);
@@ -239,6 +275,9 @@ void dvz_proto_destroy(DvzProto* proto)
     ANN(proto);
     dvz_image_views_destroy(&proto->view);
     dvz_images_destroy(&proto->img);
+    dvz_images_destroy(&proto->tex);
+    dvz_image_views_destroy(&proto->tex_view);
+    dvz_sampler_destroy(&proto->sampler);
     dvz_buffer_destroy(&proto->staging);
     dvz_shader_destroy(&proto->vs);
     dvz_shader_destroy(&proto->fs);
