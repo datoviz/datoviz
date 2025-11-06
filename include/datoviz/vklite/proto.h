@@ -73,11 +73,12 @@ struct DvzProto
     DvzSlots slots;
     DvzDescriptors desc;
     DvzRendering rendering;
-    DvzImages img;
+    DvzImages img; // main color attachment
     DvzImageViews view;
+    DvzImages dimg; // depth-stencil buffer
+    DvzImageViews dview;
     DvzBarriers barriers;
     DvzBarrierImage* bimg;
-    DvzAttachment* attachment; // main color attachment
     DvzCommands cmds;
     DvzBuffer staging;
 };

@@ -22,6 +22,7 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
@@ -70,6 +71,7 @@ void dvz_proto(DvzProto* proto)
     dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, img);
     dvz_images_format(img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+    // NOTE: need transfer src for screenshot
     dvz_images_usage(img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
     dvz_images_create(img);
 
@@ -82,13 +84,35 @@ void dvz_proto(DvzProto* proto)
     // Attachments.
     DvzRendering* rendering = &proto->rendering;
     ANN(rendering);
-    proto->attachment = dvz_rendering_color(rendering, 0);
+    DvzAttachment* catt = dvz_rendering_color(rendering, 0);
     dvz_attachment_image(
-        proto->attachment, dvz_image_views_handle(view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-    dvz_attachment_ops(
-        proto->attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-    dvz_attachment_clear(
-        proto->attachment, (VkClearValue){.color.float32 = DVZ_PROTO_CLEAR_COLOR});
+        catt, dvz_image_views_handle(view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(catt, (VkClearValue){.color.float32 = DVZ_PROTO_CLEAR_COLOR});
+
+
+
+    // Image to render to.
+    DvzImages* dimg = &proto->dimg;
+    ANN(dimg);
+    dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, dimg);
+    dvz_images_format(dimg, VK_FORMAT_D32_SFLOAT_S8_UINT);
+    dvz_images_size(dimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+    dvz_images_usage(dimg, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    dvz_images_create(dimg);
+
+    // Image views.
+    DvzImageViews* dview = &proto->dview;
+    ANN(dview);
+    dvz_image_views(dimg, dview);
+    dvz_image_views_aspect(dview, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_image_views_create(dview);
+
+    DvzAttachment* datt = dvz_rendering_depth(rendering);
+    dvz_attachment_image(
+        datt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
     // Image barrier.
     DvzBarriers* barriers = &proto->barriers;
@@ -144,13 +168,17 @@ DvzGraphics* dvz_proto_graphics(
     // Slots.
     dvz_slots(device, &proto->slots);
 
-    // Attachments.
+    // Color attachment.
     dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_graphics_blend_color(
         graphics, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         VK_BLEND_OP_ADD, 0xF);
     dvz_graphics_blend_alpha(
         graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+
+    // Depth-stencil attachment.
+    dvz_graphics_attachment_depth(graphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+    dvz_graphics_attachment_stencil(graphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
 
     // Fixed state.
     dvz_graphics_primitive(
@@ -278,6 +306,8 @@ void dvz_proto_destroy(DvzProto* proto)
     ANN(proto);
     dvz_image_views_destroy(&proto->view);
     dvz_images_destroy(&proto->img);
+    dvz_image_views_destroy(&proto->dview);
+    dvz_images_destroy(&proto->dimg);
     dvz_buffer_destroy(&proto->staging);
     dvz_shader_destroy(&proto->vs);
     dvz_shader_destroy(&proto->fs);
