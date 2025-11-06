@@ -216,7 +216,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
             attachment, dvz_image_views_handle(tex_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-        dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {.8, .2, .2, .5}});
+        dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {0, 0, 0, .5}});
     }
 
 

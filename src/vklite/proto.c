@@ -21,6 +21,7 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/fileio/fileio.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
@@ -49,9 +50,11 @@ void dvz_proto(DvzProto* proto)
     ANN(queue);
 
     // Create a device with support for dynamic rendering.
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
-    features->dynamicRendering = true;
-    features->synchronization2 = true;
+    VkPhysicalDeviceFeatures* fet10 = dvz_device_request_features10(device);
+    fet10->samplerAnisotropy = true;
+    VkPhysicalDeviceVulkan13Features* fet13 = dvz_device_request_features13(device);
+    fet13->dynamicRendering = true;
+    fet13->synchronization2 = true;
     dvz_device_create(device);
     dvz_device_allocator(device, 0, &bootstrap->allocator);
 
