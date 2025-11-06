@@ -107,6 +107,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
 
 int test_technique_triangle(TstSuite* suite, TstItem* tstitem);
 
+int test_technique_render_texture(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vklite(TstSuite* suite);

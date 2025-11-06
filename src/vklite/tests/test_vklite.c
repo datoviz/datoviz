@@ -43,6 +43,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_graphics_1);
 
     TEST_SIMPLE(test_technique_triangle);
+    TEST_SIMPLE(test_technique_render_texture);
 
 
 
