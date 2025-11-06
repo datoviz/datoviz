@@ -51,6 +51,56 @@ void dvz_proto(DvzProto* proto)
     features->synchronization2 = true;
     dvz_device_create(device);
     dvz_device_allocator(device, 0, &bootstrap->allocator);
+
+
+
+    // Rendering.
+    dvz_rendering(&proto->rendering);
+    dvz_rendering_area(&proto->rendering, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
+
+    // Image to render to.
+    VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+    DvzImages* img = &proto->img;
+    ANN(img);
+    dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, img);
+    dvz_images_format(img, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+    dvz_images_usage(img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    dvz_images_layout(img, img_layout);
+    dvz_images_create(img);
+
+    // Image views.
+    DvzImageViews* view = &proto->view;
+    ANN(view);
+    dvz_image_views(img, view);
+    dvz_image_views_create(view);
+
+    // Attachments.
+    DvzRendering* rendering = &proto->rendering;
+    ANN(rendering);
+    proto->attachment = dvz_rendering_color(rendering, 0);
+    dvz_attachment_image(proto->attachment, dvz_image_views_handle(view, 0), img_layout);
+    dvz_attachment_ops(
+        proto->attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(
+        proto->attachment, (VkClearValue){.color.float32 = DVZ_PROTO_CLEAR_COLOR});
+
+    // Image barrier.
+    DvzBarriers* barriers = &proto->barriers;
+    ANN(barriers);
+    dvz_barriers(barriers);
+
+    // Image transition.
+    DvzBarrierImage* bimg = dvz_barriers_image(barriers, dvz_image_handle(img, 0));
+    ANN(bimg);
+    dvz_barrier_image_stage(
+        bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_image_layout(
+        bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    // Command buffers.
+    dvz_commands(device, queue, 1, &proto->cmds);
 }
 
 
@@ -110,51 +160,6 @@ DvzGraphics* dvz_proto_graphics(
         graphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
     // NOTE: we do NOT create the graphics pipeline, we leave it to the caller.
-
-    // Rendering.
-    dvz_rendering(&proto->rendering);
-    dvz_rendering_area(&proto->rendering, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
-
-    // Image to render to.
-    VkImageLayout img_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
-    DvzImages* img = &proto->img;
-    ANN(img);
-    dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, img);
-    dvz_images_format(img, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_images_size(img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
-    dvz_images_usage(img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_layout(img, img_layout);
-    dvz_images_create(img);
-
-    // Image views.
-    DvzImageViews* view = &proto->view;
-    ANN(view);
-    dvz_image_views(img, view);
-    dvz_image_views_create(view);
-
-    // Attachments.
-    DvzRendering* rendering = &proto->rendering;
-    ANN(rendering);
-    proto->attachment = dvz_rendering_color(rendering, 0);
-    dvz_attachment_image(proto->attachment, dvz_image_views_handle(view, 0), img_layout);
-    dvz_attachment_ops(
-        proto->attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-    dvz_attachment_clear(
-        proto->attachment, (VkClearValue){.color.float32 = DVZ_PROTO_CLEAR_COLOR});
-
-    // Image barrier.
-    DvzBarriers* barriers = &proto->barriers;
-    ANN(barriers);
-    dvz_barriers(barriers);
-
-    // Image transition.
-    DvzBarrierImage* bimg = dvz_barriers_image(barriers, dvz_image_handle(img, 0));
-    ANN(bimg);
-    dvz_barrier_image_stage(
-        bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
-    dvz_barrier_image_layout(
-        bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     return graphics;
 }

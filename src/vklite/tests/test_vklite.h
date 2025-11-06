@@ -25,9 +25,9 @@
 #include "_alloc.h"
 #include "_compat.h"
 #include "datoviz/fileio.h"
-#include "testing.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/math/types.h"
+#include "testing.h"
 
 #if !defined(DVZ_SPIRV_ALIGN)
 #if defined(__cplusplus)
@@ -76,7 +76,7 @@ static inline void* dvz_test_shader_load(const char* filename, size_t* size_out)
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Tests vklite                                                                                 */
 /*************************************************************************************************/
 
 int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem);
@@ -98,6 +98,14 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
+
+
+
+/*************************************************************************************************/
+/*  Tests techniques                                                                             */
+/*************************************************************************************************/
+
+int test_technique_triangle(TstSuite* suite, TstItem* tstitem);
 
 
 
