@@ -22,7 +22,9 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/proto.h"
+#include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -323,6 +325,167 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_destroy(&tex_view);
     dvz_sampler_destroy(&sampler);
     dvz_graphics_destroy(&igraphics);
+    dvz_proto_destroy(&proto);
+    dvz_free(vs_spv);
+    dvz_free(fs_spv);
+
+    return proto.bootstrap.instance.n_errors > 0;
+}
+
+
+
+int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Initialize the proto.
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+
+    // Mask pipeline.
+    DvzGraphics mgraphics = {0};
+    {
+        DvzDevice* device = &proto.bootstrap.device;
+        ANN(device);
+
+        // Initialize the graphics pipeline.
+        dvz_graphics(device, &mgraphics);
+
+        // Load the shaders.
+        DvzSize vs_size = 0;
+        DvzSize fs_size = 0;
+        DvzShader vs = {0};
+        DvzShader fs = {0};
+        uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
+        uint32_t* fs_spv = dvz_test_shader_load("disc_mask.frag.spv", &fs_size);
+
+        // Shaders.
+        dvz_shader(device, vs_size, vs_spv, &vs);
+        dvz_shader(device, fs_size, fs_spv, &fs);
+        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+
+        // Attachments.
+        dvz_graphics_attachment_color(&mgraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_depth(&mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_graphics_blend_color(&mgraphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, 0, 0);
+
+        // Fixed state.
+        dvz_graphics_primitive(
+            &mgraphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Dynamic state.
+        dvz_graphics_viewport(
+            &mgraphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+
+        dvz_graphics_scissor(
+            &mgraphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+
+        dvz_graphics_stencil(
+            &mgraphics, VK_STENCIL_FACE_FRONT_AND_BACK, VK_STENCIL_OP_KEEP, VK_STENCIL_OP_REPLACE,
+            VK_STENCIL_OP_KEEP, VK_COMPARE_OP_ALWAYS, 0xFF, 0xFF, 1, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        dvz_graphics_depth(
+            &mgraphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Slots
+        DvzSlots slots = {0};
+        dvz_slots(device, &slots);
+        dvz_slots_create(&slots);
+        dvz_graphics_layout(&mgraphics, dvz_slots_handle(&slots));
+
+        // Create the graphics pipeline.
+        AT(dvz_graphics_create(&mgraphics) == 0);
+
+        // Cleanup.
+        dvz_slots_destroy(&slots);
+        dvz_shader_destroy(&vs);
+        dvz_shader_destroy(&fs);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+    }
+
+    // Mask rendering.
+    DvzRendering mrendering = {0};
+    {
+        dvz_rendering(&mrendering);
+        dvz_rendering_area(&mrendering, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
+
+        // Attachments.
+        DvzAttachment* catt = dvz_rendering_color(&mrendering, 0);
+        dvz_attachment_image(
+            catt, dvz_image_views_handle(&proto.view, 0),
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(
+            catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+        // Attachments.
+        DvzAttachment* datt = dvz_rendering_depth(&mrendering);
+        dvz_attachment_image(
+            datt, dvz_image_views_handle(&proto.dview, 0),
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
+    }
+
+    // Load the shaders.
+    DvzSize vs_size = 0;
+    DvzSize fs_size = 0;
+    uint32_t* vs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &vs_size);
+    uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
+
+    // Get the graphics pipeline
+    DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
+    ANN(graphics);
+
+    dvz_graphics_stencil(
+        graphics, VK_STENCIL_FACE_FRONT_AND_BACK, VK_STENCIL_OP_KEEP, VK_STENCIL_OP_KEEP,
+        VK_STENCIL_OP_KEEP, VK_COMPARE_OP_EQUAL, 0xFF, 0, 1, DVZ_GRAPHICS_FLAGS_FIXED);
+
+    dvz_graphics_depth(graphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+
+    // Slots
+    DvzSlots* slots = dvz_proto_slots(&proto);
+    ANN(slots);
+    dvz_slots_create(slots);
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
+
+    // Create the graphics pipeline.
+    AT(dvz_graphics_create(graphics) == 0);
+
+    // Change the depth attachment settings to LOAD the depth values.
+    DvzAttachment* datt = dvz_rendering_depth(&proto.rendering);
+    dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+
+    // Record the command buffer.
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    ANN(cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_barriers(cmds, 0, &proto.barriers);
+
+    // Mask rendering.
+    dvz_cmd_rendering_begin(cmds, 0, &mrendering);
+    dvz_cmd_bind_graphics(cmds, 0, &mgraphics);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+
+    // Triangle rendering.
+    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+
+    dvz_cmd_end(cmds);
+
+    // Submit the command buffer.
+    dvz_cmd_submit(cmds);
+
+    // Save a screenshot.
+    dvz_proto_screenshot(&proto, "build/technique_stencil.png");
+
+    // Cleanup.
+    dvz_graphics_destroy(&mgraphics);
     dvz_proto_destroy(&proto);
     dvz_free(vs_spv);
     dvz_free(fs_spv);
