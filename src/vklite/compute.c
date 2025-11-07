@@ -25,7 +25,9 @@
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/compute.h"
+#include "vulkan/vulkan_core.h"
 
 
 
@@ -160,4 +162,32 @@ void dvz_compute_destroy(DvzCompute* compute)
     }
 
     dvz_obj_destroyed(&compute->obj);
+}
+
+
+
+void dvz_cmd_bind_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute)
+{
+    ANN(cmds);
+    ANN(compute);
+
+    ASSERT(idx < cmds->count);
+    VkCommandBuffer cmd = cmds->cmds[idx];
+    ANNVK(cmd);
+
+    // Bind the compute pipeline.
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, compute->vk_pipeline);
+}
+
+
+
+void dvz_cmd_dispatch(DvzCommands* cmds, uint32_t idx, uint32_t nx, uint32_t ny, uint32_t nz)
+{
+    ANN(cmds);
+
+    ASSERT(idx < cmds->count);
+    VkCommandBuffer cmd = cmds->cmds[idx];
+    ANNVK(cmd);
+
+    vkCmdDispatch(cmd, nx, ny, nz);
 }

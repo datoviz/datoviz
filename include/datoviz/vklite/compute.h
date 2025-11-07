@@ -41,6 +41,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzDevice DvzDevice;
+typedef struct DvzCommands DvzCommands;
 
 typedef struct DvzCompute DvzCompute;
 
@@ -135,6 +136,31 @@ DVZ_EXPORT int dvz_compute_create(DvzCompute* compute);
  * @param compute the compute pipeline
  */
 DVZ_EXPORT void dvz_compute_destroy(DvzCompute* compute);
+
+
+
+/**
+ * Bind a compute pipeline.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param compute the compute pipeline
+ */
+DVZ_EXPORT void dvz_cmd_bind_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute);
+
+
+
+/**
+ * Dispatch a compute task.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param nx the number of local workgroups to dispatch in the X dimension
+ * @param ny the number of local workgroups to dispatch in the Y dimension
+ * @param nz the number of local workgroups to dispatch in the Z dimension
+ */
+DVZ_EXPORT void
+dvz_cmd_dispatch(DvzCommands* cmds, uint32_t idx, uint32_t nx, uint32_t ny, uint32_t nz);
 
 
 
