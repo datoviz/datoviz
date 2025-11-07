@@ -50,11 +50,11 @@ if(DVZ_VKLITE_TEST_SHADERS)
     find_program(DVZ_GLSLC_EXECUTABLE
         NAMES glslc
         HINTS
-            "$ENV{VULKAN_SDK}/bin"
-            "$ENV{VULKAN_SDK}/Bin"
-            "${PROJECT_SOURCE_DIR}/bin/vulkan/linux"
-            "${PROJECT_SOURCE_DIR}/bin/vulkan/macos"
-            "${PROJECT_SOURCE_DIR}/bin/vulkan/windows"
+        "$ENV{VULKAN_SDK}/bin"
+        "$ENV{VULKAN_SDK}/Bin"
+        "${PROJECT_SOURCE_DIR}/bin/vulkan/linux"
+        "${PROJECT_SOURCE_DIR}/bin/vulkan/macos"
+        "${PROJECT_SOURCE_DIR}/bin/vulkan/windows"
     )
 
     if(NOT DVZ_GLSLC_EXECUTABLE)
@@ -62,6 +62,7 @@ if(DVZ_VKLITE_TEST_SHADERS)
     endif()
 
     set(DVZ_VKLITE_TEST_SPIRV_OUTPUTS)
+
     foreach(_dvz_shader ${DVZ_VKLITE_TEST_SHADERS})
         get_filename_component(_dvz_shader_name "${_dvz_shader}" NAME)
         set(_dvz_shader_output "${DVZ_TEST_SPIRV_DIR}/${_dvz_shader_name}.spv")
@@ -89,6 +90,7 @@ target_link_libraries(dvztest
     datoviz_fileio
     datoviz_math
     datoviz_thread
+    datoviz_video
     datoviz_vk
     datoviz_vklite
     datoviz_volk
@@ -148,6 +150,7 @@ if(DVZ_ENABLE_CUDA)
         # Default to native architecture so CMake is satisfied when CUDA is enabled.
         set(CMAKE_CUDA_ARCHITECTURES "native")
     endif()
+
     enable_language(CUDA)
 
     # Optional: explicitly add the CUDA kernel file if it exists

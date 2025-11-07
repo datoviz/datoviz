@@ -274,6 +274,7 @@ add_subdirectory(ds)
 add_subdirectory(fileio)
 add_subdirectory(math)
 add_subdirectory(thread)
+add_subdirectory(video)
 add_subdirectory(vk)
 add_subdirectory(vklite)
 
@@ -287,6 +288,7 @@ set(DVZ_COMPONENTS
     datoviz_fileio
     datoviz_math
     datoviz_thread
+    datoviz_video
     datoviz_vk
     datoviz_vklite
 )
@@ -433,7 +435,7 @@ endif()
 if(DVZ_SANITIZER_FLAGS)
     message(STATUS "Debug sanitizers: ${DVZ_SANITIZER_FLAGS}")
 
-    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread datoviz_vk datoviz_vklite)
+    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread datoviz_video datoviz_vk datoviz_vklite)
         if(TARGET ${target_name})
             # Always add sanitizer compile flags in Debug.
             target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
