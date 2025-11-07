@@ -36,6 +36,10 @@ file(GLOB TEST_SOURCES
     "dvztest.c"
 )
 
+if(NOT DVZ_ENABLE_CUDA)
+    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video\\.c.*")
+endif()
+
 set(DVZ_TEST_SPIRV_DIR "${PROJECT_BINARY_DIR}/testing/spirv")
 set(DVZ_TEST_SHADER_DIR "${PROJECT_SOURCE_DIR}/src/vklite/tests/shaders")
 file(GLOB DVZ_VKLITE_TEST_SHADERS
@@ -143,6 +147,7 @@ if(DVZ_ENABLE_CUDA)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wno-unknown-warning-option")
 
     target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+    target_include_directories(dvztest PRIVATE ${PROJECT_SOURCE_DIR}/external)
     target_link_libraries(dvztest PRIVATE CUDA::cudart CUDA::cuda_driver)
 
     # Enable CUDA language for dvztest so it can compile .cu kernels

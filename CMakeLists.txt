@@ -37,7 +37,8 @@ option(DVZ_ENABLE_COVERAGE "Enable code coverage instrumentation for supported c
 set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds (asan, msan, tsan, or a comma-separated list)")
 set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "" "asan" "msan" "tsan" "off")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
-option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" OFF)
+
+option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ON)
 
 if(APPLE)
     set_property(CACHE DVZ_ENABLE_CUDA PROPERTY VALUE OFF)
@@ -166,20 +167,24 @@ endif()
 message(STATUS "")
 message(STATUS "---------------- Datoviz build configuration ----------------")
 message(STATUS "Generator: ${CMAKE_GENERATOR}")
+
 if(CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Configured build types: ${CMAKE_CONFIGURATION_TYPES}")
 else()
     message(STATUS "Active build type: ${CMAKE_BUILD_TYPE}")
 endif()
+
 message(STATUS "Threading backend: ${DVZ_THREADING_TARGET}")
 message(STATUS "DVZ_ENABLE_ASAN_IN_DEBUG: ${DVZ_ENABLE_ASAN_IN_DEBUG}")
 message(STATUS "DVZ_ENABLE_COVERAGE: ${DVZ_ENABLE_COVERAGE}")
 message(STATUS "DVZ_USE_MIMALLOC_RELEASE_DEFAULT: ${DVZ_USE_MIMALLOC_RELEASE_DEFAULT}")
 message(STATUS "DVZ_ENABLE_CUDA: ${DVZ_ENABLE_CUDA}")
 message(STATUS "DVZ_WITH_MIMALLOC (detected): ${DVZ_WITH_MIMALLOC}")
+
 if(DEFINED DVZ_USE_VALIDATION)
     message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (Release configs disable validation unless explicitly ON)")
 endif()
+
 message(STATUS "-------------------------------------------------------------")
 message(STATUS "")
 

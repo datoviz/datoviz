@@ -24,6 +24,7 @@
 
 #include "_alloc.h"
 #include "_compat.h"
+#include "datoviz/common/macros.h"
 #include "datoviz/fileio.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/math/types.h"
@@ -35,8 +36,16 @@
 /*  Tests video                                                                                  */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
+
+
 int test_video_1(TstSuite* suite, TstItem* tstitem);
 
 
 
 int test_video(TstSuite* suite);
+
+
+
+EXTERN_C_OFF
