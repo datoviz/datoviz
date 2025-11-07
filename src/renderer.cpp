@@ -34,7 +34,7 @@
     t* n = (t*)dvz_map_get(rd->map, i);                                                           \
     if (n == NULL)                                                                                \
     {                                                                                             \
-        log_error("%s Ox%" PRIx64 " doesn't exist", #n, i);                                       \
+        log_error("%s 0x%" PRIx64 " doesn't exist", #n, i);                                       \
         return NULL;                                                                              \
     }                                                                                             \
     ANN(n);
@@ -1071,7 +1071,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 
         if (dvz_map_exists(rd->map, req.id))
         {
-            log_error("error while creating the object, id Ox%" PRIx64 " already exists", req.id);
+            log_error("error while creating the object, id 0x%" PRIx64 " already exists", req.id);
             break;
         }
 
