@@ -18,12 +18,19 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include <vk_video/vulkan_video_codec_h264std.h>        // level/profile enums (STD_VIDEO_*)
+#include <vk_video/vulkan_video_codec_h264std_encode.h> // std header name+version macros
+#include <vk_video/vulkan_video_codecs_common.h>
+
+#include "../../vk/macros.h"
 #include "../../vk/tests/test_vk.h"
 #include "../../vklite/tests/test_vklite.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/macros.h"
+#include "datoviz/vk/queues.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
@@ -33,6 +40,7 @@
 #include "test_video.h"
 #include "testing.h"
 #include "vulkan_core.h"
+#include <volk.h>
 
 
 
@@ -138,6 +146,74 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     DvzImageViews view = {0};
     dvz_image_views(&img, &view);
     dvz_image_views_create(&view);
+
+
+
+    // Raw Vulkan handles (grab from dvz helpers)
+    VkDevice vkdev = dvz_device_handle(device);
+    VkPhysicalDevice pdev = bootstrap.gpu->pdevice;
+    DvzQueue* q = dvz_queue_from_role(&bootstrap.device.queues, DVZ_QUEUE_VIDEO_ENCODE);
+    uint32_t qf = dvz_queue_family(q);
+
+
+
+    // Codec-specific H.264 encode profile info
+    VkVideoEncodeH264ProfileInfoKHR h264Profile = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PROFILE_INFO_KHR,
+        .pNext = NULL,
+        // Choose a base H.264 profile; most drivers support MAIN or HIGH.
+        .stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_MAIN,
+    };
+
+    // 8-bit 4:2:0 H.264 encode profile
+    VkVideoProfileInfoKHR videoProfile = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+        .pNext = &h264Profile,
+        .videoCodecOperation = VK_VIDEO_CODEC_OPERATION_ENCODE_H264_BIT_KHR,
+        .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+        .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+        .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+    };
+
+    // Required: std header name + version for the chosen codec
+    VkExtensionProperties h264StdHeader = {
+        .extensionName = VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_EXTENSION_NAME,
+        .specVersion = VK_STD_VULKAN_VIDEO_CODEC_H264_ENCODE_SPEC_VERSION,
+    };
+
+    // Optional but recommended: H.264-specific create info (can be empty defaults)
+    VkVideoEncodeH264SessionCreateInfoKHR h264CreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_CREATE_INFO_KHR, .pNext = NULL,
+        // You can set .useMaxLevelIdc / .maxLevelIdc if you want to clamp.
+        // Leaving defaults is fine for bring-up.
+    };
+
+    VkVideoSessionCreateInfoKHR sessionCI = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR,
+        .pNext = &h264CreateInfo, // <— codec-specific struct, OK
+        .queueFamilyIndex = qf,   // encode-capable qfam
+        .flags = 0,
+        .pVideoProfile = &videoProfile, // <— REQUIRED
+        .pictureFormat = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM,
+        .maxCodedExtent = (VkExtent2D){WIDTH, HEIGHT},
+        .referencePictureFormat = VK_FORMAT_UNDEFINED, // no refs for intra-only
+        .maxDpbSlots = 0,
+        .maxActiveReferencePictures = 0,
+        .pStdHeaderVersion = &h264StdHeader, // <— REQUIRED
+    };
+
+    VkVideoSessionKHR session = VK_NULL_HANDLE;
+    VK_CHECK_RESULT(vkCreateVideoSessionKHR(vkdev, &sessionCI, NULL, &session));
+
+    VkVideoSessionParametersCreateInfoKHR paramsCI = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR,
+        .pNext = NULL,
+        .videoSession = session,
+        .videoSessionParametersTemplate = VK_NULL_HANDLE,
+    };
+
+    VkVideoSessionParametersKHR sessionParams = VK_NULL_HANDLE;
+    VK_CHECK_RESULT(vkCreateVideoSessionParametersKHR(vkdev, &paramsCI, NULL, &sessionParams));
 
 
 
