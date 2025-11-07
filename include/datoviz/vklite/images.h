@@ -58,16 +58,18 @@ struct DvzImages
     DvzVma* allocator;
 
     uint32_t count;
-    uvec3 shape;
-    uint32_t mip;    // number of mip levels
-    uint32_t layers; // number of array layers
+    // uvec3 shape;
     bool is_swapchain;
 
-    VkFormat format;
-    VkImageType image_type;
-    VkImageTiling tiling;
-    VkImageUsageFlags usage;
-    VkSampleCountFlags samples; // for multisample antialiasing
+    // This wraps:
+    // VkImageUsageFlags usage;
+    // VkFormat format;
+    // VkImageTiling tiling;
+    // VkImageType image_type;
+    // uint32_t mip;    // number of mip levels
+    // uint32_t layers; // number of array layers
+    // VkSampleCountFlags samples; // for multisample antialiasing
+    VkImageCreateInfo info;
 
     VkImage vk_images[DVZ_MAX_IMAGES];
     DvzAllocation allocs[DVZ_MAX_IMAGES];
@@ -81,12 +83,15 @@ struct DvzImageViews
     DvzDevice* device;
     DvzImages* img;
 
-    VkImageViewType type;
-    VkImageAspectFlags aspect;
-    uint32_t mip_base;
-    uint32_t mip_count;
-    uint32_t layers_base;
-    uint32_t layers_count;
+    // This wraps:
+    // VkImageViewType type;
+    // VkImageAspectFlags aspect;
+    // uint32_t mip_base;
+    // uint32_t mip_count;
+    // uint32_t layers_base;
+    // uint32_t layers_count;
+    VkImageViewCreateInfo info;
+
     VkImageView vk_views[DVZ_MAX_IMAGES];
 };
 

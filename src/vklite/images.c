@@ -108,13 +108,14 @@ void dvz_images(
 
     img->device = device;
     img->allocator = allocator;
-    img->image_type = type;
     img->count = count;
 
     // Default values.
-    img->mip = 1;
-    img->layers = 1;
-    img->samples = VK_SAMPLE_COUNT_1_BIT;
+    img->info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    img->info.imageType = type;
+    img->info.mipLevels = 1;
+    img->info.arrayLayers = 1;
+    img->info.samples = VK_SAMPLE_COUNT_1_BIT;
 
     dvz_obj_init(&img->obj);
 }
@@ -124,7 +125,7 @@ void dvz_images(
 void dvz_images_format(DvzImages* img, VkFormat format)
 {
     ANN(img);
-    img->format = format;
+    img->info.format = format;
 }
 
 
@@ -132,9 +133,9 @@ void dvz_images_format(DvzImages* img, VkFormat format)
 void dvz_images_size(DvzImages* img, uint32_t width, uint32_t height, uint32_t depth)
 {
     ANN(img);
-    img->shape[0] = width;
-    img->shape[1] = height;
-    img->shape[2] = depth;
+    img->info.extent.width = width;
+    img->info.extent.height = height;
+    img->info.extent.depth = depth;
 }
 
 
@@ -142,7 +143,7 @@ void dvz_images_size(DvzImages* img, uint32_t width, uint32_t height, uint32_t d
 void dvz_images_tiling(DvzImages* img, VkImageTiling tiling)
 {
     ANN(img);
-    img->tiling = tiling;
+    img->info.tiling = tiling;
 }
 
 
@@ -150,7 +151,7 @@ void dvz_images_tiling(DvzImages* img, VkImageTiling tiling)
 void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 {
     ANN(img);
-    img->usage = usage;
+    img->info.usage = usage;
 }
 
 
@@ -169,7 +170,7 @@ void dvz_images_flags(DvzImages* img, VmaAllocationCreateFlags flags)
 void dvz_images_mip(DvzImages* img, uint32_t mip)
 {
     ANN(img);
-    img->mip = mip;
+    img->info.mipLevels = mip;
 }
 
 
@@ -177,7 +178,7 @@ void dvz_images_mip(DvzImages* img, uint32_t mip)
 void dvz_images_layers(DvzImages* img, uint32_t layers)
 {
     ANN(img);
-    img->layers = layers;
+    img->info.arrayLayers = layers;
 }
 
 
@@ -185,7 +186,7 @@ void dvz_images_layers(DvzImages* img, uint32_t layers)
 void dvz_images_samples(DvzImages* img, VkSampleCountFlags samples)
 {
     ANN(img);
-    img->samples = samples;
+    img->info.samples = samples;
 }
 
 
@@ -205,30 +206,18 @@ int dvz_images_create(DvzImages* img)
 
     // Get GPU properties to check the dimensions of the image.
     VkPhysicalDeviceProperties* props = dvz_gpu_properties10(device->gpu);
-    if (check_image_size(props, img->image_type, img->shape) != 0)
+    uvec3 shape = {img->info.extent.width, img->info.extent.height, img->info.extent.depth};
+    if (check_image_size(props, img->info.imageType, shape) != 0)
     {
         log_error("abort image creation");
         return 1;
     }
 
-    VkImageCreateInfo info = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
-    info.imageType = img->image_type;
-    info.extent.width = img->shape[0];
-    info.extent.height = img->shape[1];
-    info.extent.depth = img->shape[2];
-    info.mipLevels = MAX(1, img->mip);
-    info.arrayLayers = MAX(1, img->layers);
-    info.format = img->format;
-    info.tiling = img->tiling;
-    info.usage = img->usage;
-    info.samples = img->samples;
-    info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
     int out = 0;
     for (uint32_t i = 0; i < img->count; i++)
     {
         out += dvz_allocator_image(
-            allocator, &info, img->allocs[i].flags, &img->allocs[i], &img->vk_images[i]);
+            allocator, &img->info, img->allocs[i].flags, &img->allocs[i], &img->vk_images[i]);
     }
 
     dvz_obj_created(&img->obj);
@@ -279,15 +268,17 @@ void dvz_image_views(DvzImages* img, DvzImageViews* views)
     views->img = img;
 
     // Default values.
-    views->layers_count = 1;
-    views->mip_count = 1;
-    views->aspect = VK_IMAGE_ASPECT_COLOR_BIT;
-    if (img->image_type == VK_IMAGE_TYPE_1D)
-        views->type = VK_IMAGE_VIEW_TYPE_1D;
-    if (img->image_type == VK_IMAGE_TYPE_2D)
-        views->type = VK_IMAGE_VIEW_TYPE_2D;
-    if (img->image_type == VK_IMAGE_TYPE_3D)
-        views->type = VK_IMAGE_VIEW_TYPE_3D;
+    views->info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    views->info.subresourceRange.layerCount = 1;
+    views->info.subresourceRange.levelCount = 1;
+    views->info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    if (img->info.imageType == VK_IMAGE_TYPE_1D)
+        views->info.viewType = VK_IMAGE_VIEW_TYPE_1D;
+    if (img->info.imageType == VK_IMAGE_TYPE_2D)
+        views->info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    if (img->info.imageType == VK_IMAGE_TYPE_3D)
+        views->info.viewType = VK_IMAGE_VIEW_TYPE_3D;
 
     dvz_obj_init(&views->obj);
 }
@@ -297,7 +288,7 @@ void dvz_image_views(DvzImages* img, DvzImageViews* views)
 void dvz_image_views_type(DvzImageViews* views, VkImageViewType type)
 {
     ANN(views);
-    views->type = type;
+    views->info.viewType = type;
 }
 
 
@@ -305,7 +296,7 @@ void dvz_image_views_type(DvzImageViews* views, VkImageViewType type)
 void dvz_image_views_aspect(DvzImageViews* views, VkImageAspectFlags aspect)
 {
     ANN(views);
-    views->aspect = aspect;
+    views->info.subresourceRange.aspectMask = aspect;
 }
 
 
@@ -313,8 +304,8 @@ void dvz_image_views_aspect(DvzImageViews* views, VkImageAspectFlags aspect)
 void dvz_image_views_mip(DvzImageViews* views, uint32_t base, uint32_t count)
 {
     ANN(views);
-    views->mip_base = base;
-    views->mip_count = count;
+    views->info.subresourceRange.baseMipLevel = base;
+    views->info.subresourceRange.levelCount = count;
 }
 
 
@@ -322,8 +313,8 @@ void dvz_image_views_mip(DvzImageViews* views, uint32_t base, uint32_t count)
 void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint32_t count)
 {
     ANN(views);
-    views->layers_base = base;
-    views->layers_count = count;
+    views->info.subresourceRange.baseArrayLayer = base;
+    views->info.subresourceRange.layerCount = count;
 }
 
 
@@ -340,24 +331,10 @@ void dvz_image_views_create(DvzImageViews* views)
 
     for (uint32_t i = 0; i < img->count; i++)
     {
-        VkImageViewCreateInfo viewInfo = {0};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = img->vk_images[i];
-        viewInfo.viewType = views->type;
-        viewInfo.format = img->format;
-
-        // Mip levels.
-        viewInfo.subresourceRange.baseMipLevel = views->mip_base;
-        viewInfo.subresourceRange.levelCount = views->mip_count;
-
-        // Array layers.
-        viewInfo.subresourceRange.baseArrayLayer = views->layers_base;
-        viewInfo.subresourceRange.layerCount = views->layers_count;
-
-        viewInfo.subresourceRange.aspectMask = views->aspect;
-
+        views->info.image = img->vk_images[i];
+        views->info.format = img->info.format;
         VK_CHECK_RESULT(
-            vkCreateImageView(device->vk_device, &viewInfo, NULL, &views->vk_views[i]));
+            vkCreateImageView(device->vk_device, &views->info, NULL, &views->vk_views[i]));
     }
 
     dvz_obj_created(&views->obj);
