@@ -1281,6 +1281,65 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 #define CLEAR_B 255
 #define CLEAR_A 255
 
+static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_frames)
+{
+    VkClearColorValue clr = {.float32 = {CLEAR_R / 255.0f, CLEAR_G / 255.0f, CLEAR_B / 255.0f, 1.0f}};
+    if (total_frames == 0)
+    {
+        return clr;
+    }
+
+    float u = (float)(frame_idx % total_frames) / (float)total_frames;
+    float h = u * 6.0f;
+    uint32_t sector = (uint32_t)h;
+    if (sector >= 6)
+    {
+        sector = 5;
+    }
+    float f = h - (float)sector;
+
+    float r = 0.0f, g = 0.0f, b = 0.0f;
+    switch (sector)
+    {
+    case 0:
+        r = 1.0f;
+        g = f;
+        b = 0.0f;
+        break;
+    case 1:
+        r = 1.0f - f;
+        g = 1.0f;
+        b = 0.0f;
+        break;
+    case 2:
+        r = 0.0f;
+        g = 1.0f;
+        b = f;
+        break;
+    case 3:
+        r = 0.0f;
+        g = 1.0f - f;
+        b = 1.0f;
+        break;
+    case 4:
+        r = f;
+        g = 0.0f;
+        b = 1.0f;
+        break;
+    default:
+        r = 1.0f;
+        g = 0.0f;
+        b = 1.0f - f;
+        break;
+    }
+
+    clr.float32[0] = r;
+    clr.float32[1] = g;
+    clr.float32[2] = b;
+    clr.float32[3] = 1.0f;
+    return clr;
+}
+
 // NV12 pitch alignment for NVENC (use 256 for safety)
 #define PITCH_ALIGN 256
 
@@ -1661,10 +1720,11 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     }
 }
 
-static void vk_render_frame_and_sync(VulkanCtx* vk)
+static void vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr)
 {
     ANN(vk);
     ANNVK(vk->cmd);
+    ANN(clr);
 
     VK_CHECK(vkResetCommandBuffer(vk->cmd, 0));
 
@@ -1697,11 +1757,9 @@ static void vk_render_frame_and_sync(VulkanCtx* vk)
         .pImageMemoryBarriers = &pre};
     vkCmdPipelineBarrier2(vk->cmd, &dep_pre);
 
-    VkClearColorValue clr = {
-        .float32 = {CLEAR_R / 255.0f, CLEAR_G / 255.0f, CLEAR_B / 255.0f, CLEAR_A / 255.0f}};
     VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     vkCmdClearColorImage(
-        vk->cmd, vk->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clr, 1, &range);
+        vk->cmd, vk->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clr, 1, &range);
 
     VkImageMemoryBarrier2 post = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -2160,7 +2218,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         // 1. Record and submit a command buffer that clears the offscreen image and transitions it back
         //    to GENERAL layout so CUDA can read from it.
         // 2. Copy the VkImage contents into a pitch-linear RGBA buffer and convert to NV12 on the GPU.
-        vk_render_frame_and_sync(&vk);
+        VkClearColorValue clr = frame_clear_color((uint32_t)frame, NFRAMES);
+        vk_render_frame_and_sync(&vk, &clr);
         copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
         launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
 
