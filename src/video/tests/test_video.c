@@ -769,83 +769,110 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
         .imageViewBinding = nv12_views.vk_views[0], // VkImageView for the NV12 image
     };
 
+    FILE* f = fopen("out.h264", "wb");
+
+    for (uint32_t frame = 0; frame < 150; ++frame)
+    {
+
+        // ------------------------------
+        // Std *picture* info (frame-wide)
+        // ------------------------------
+        StdVideoEncodeH264PictureInfo stdPic = {0};
+        stdPic.flags.IdrPicFlag = 1; // IDR frame
+        // stdPic.flags.is_reference = 1; // reference (IDR)
+        // stdPic.pic_parameter_set_id = 0; // must match the PPS you created
+        // stdPic.frame_num = 0;            // start at 0
+        // If your SPS uses pic_order_cnt_type == 0 (the simple case):
+        // stdPic.pic_order_cnt_lsb = 0;
+        // stdPic.delta_pic_order_cnt_bottom = 0;
+        // stdPic.delta_pic_order_cnt[0] = 0;
+        // stdPic.delta_pic_order_cnt[1] = 0;
+        // If your headers expose idr_pic_id (some revs place it here):
+        // stdPic.idr_pic_id = 0;
+
+        // ---------------------------------
+        // Std *slice* header (one full slice)
+        // ---------------------------------
+        StdVideoEncodeH264SliceHeader stdSlice = {0};
+        stdSlice.slice_type = STD_VIDEO_H264_SLICE_TYPE_I; // I-slice
+        // stdSlice.pic_parameter_set_id = 0;                 // matches PPS
+        // No ref lists for I-slice; keep num_ref_idx_* at 0 and override flag = 0
+        stdSlice.flags.num_ref_idx_active_override_flag = 0;
+
+        // Deblocking/CABAC defaults (valid and simple)
+        stdSlice.cabac_init_idc = STD_VIDEO_H264_CABAC_INIT_IDC_0;
+        stdSlice.disable_deblocking_filter_idc =
+            STD_VIDEO_H264_DISABLE_DEBLOCKING_FILTER_IDC_DISABLED;
+        stdSlice.slice_alpha_c0_offset_div2 = 0;
+        stdSlice.slice_beta_offset_div2 = 0;
+
+        // If your header has 'slice_qp_delta', keep 0 and rely on constantQp below.
+        // Otherwise, some revs require setting pic_init_qp_minus26 in PPS/SPS.
+
+        // ------------------------------
+        // Wire into Vulkan encode structs
+        // ------------------------------
+        VkVideoEncodeH264NaluSliceInfoKHR nalu = {
+            .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_NALU_SLICE_INFO_KHR,
+            .pNext = NULL,
+            .constantQp = 0,              // pick your QP (lower = higher quality)
+            .pStdSliceHeader = &stdSlice, // REQUIRED (non-NULL)
+        };
+
+        VkVideoEncodeH264PictureInfoKHR h264PicInfo = {
+            .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PICTURE_INFO_KHR,
+            .pNext = NULL,
+            .naluSliceEntryCount = 1,
+            .pNaluSliceEntries = &nalu,
+            .pStdPictureInfo = &stdPic, // REQUIRED (non-NULL)
+        };
+
+        // Your existing encodeInfo; just chain h264PicInfo via pNext:
+        VkVideoEncodeInfoKHR encodeInfo = {
+            .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
+            .pNext = &h264PicInfo,        // <— REQUIRED for H.264
+            .flags = 0,                   // optionally set FINAL bit for EOS
+            .srcPictureResource = srcPic, // your NV12 view + extent
+            .dstBuffer = bitstream,
+            .dstBufferOffset = 0,
+            .dstBufferRange = bitstreamSize,
+            // .naluSliceEntryCount = 0, // leave 0 when using H.264 chain
+            // .pNaluSliceEntries = NULL,
+            // .qualityLevel = 0,
+            .pSetupReferenceSlot = NULL,
+            .referenceSlotCount = 0,
+            .pReferenceSlots = NULL,
+        };
 
 
-    // ------------------------------
-    // Std *picture* info (frame-wide)
-    // ------------------------------
-    StdVideoEncodeH264PictureInfo stdPic = {0};
-    stdPic.flags.IdrPicFlag = 1; // IDR frame
-    // stdPic.flags.is_reference = 1; // reference (IDR)
-    // stdPic.pic_parameter_set_id = 0; // must match the PPS you created
-    // stdPic.frame_num = 0;            // start at 0
-    // If your SPS uses pic_order_cnt_type == 0 (the simple case):
-    // stdPic.pic_order_cnt_lsb = 0;
-    // stdPic.delta_pic_order_cnt_bottom = 0;
-    // stdPic.delta_pic_order_cnt[0] = 0;
-    // stdPic.delta_pic_order_cnt[1] = 0;
-    // If your headers expose idr_pic_id (some revs place it here):
-    // stdPic.idr_pic_id = 0;
 
-    // ---------------------------------
-    // Std *slice* header (one full slice)
-    // ---------------------------------
-    StdVideoEncodeH264SliceHeader stdSlice = {0};
-    stdSlice.slice_type = STD_VIDEO_H264_SLICE_TYPE_I; // I-slice
-    // stdSlice.pic_parameter_set_id = 0;                 // matches PPS
-    // No ref lists for I-slice; keep num_ref_idx_* at 0 and override flag = 0
-    stdSlice.flags.num_ref_idx_active_override_flag = 0;
+        //------------------------------------------------------------
+        // Encode a single frame
+        //------------------------------------------------------------
+        vkCmdEncodeVideoKHR(cmdsv.cmds[0], &encodeInfo);
 
-    // Deblocking/CABAC defaults (valid and simple)
-    stdSlice.cabac_init_idc = STD_VIDEO_H264_CABAC_INIT_IDC_0;
-    stdSlice.disable_deblocking_filter_idc = STD_VIDEO_H264_DISABLE_DEBLOCKING_FILTER_IDC_DISABLED;
-    stdSlice.slice_alpha_c0_offset_div2 = 0;
-    stdSlice.slice_beta_offset_div2 = 0;
+        vkCmdEndVideoCodingKHR(
+            cmdsv.cmds[0], &(VkVideoEndCodingInfoKHR){
+                               .sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR,
+                               .pNext = NULL,
+                               .flags = 0,
+                           });
 
-    // If your header has 'slice_qp_delta', keep 0 and rely on constantQp below.
-    // Otherwise, some revs require setting pic_init_qp_minus26 in PPS/SPS.
+        // end & submit or wait per frame (simpler at first)
+        dvz_cmd_end(&cmdsv);
+        dvz_cmd_submit(&cmdsv);
 
-    // ------------------------------
-    // Wire into Vulkan encode structs
-    // ------------------------------
-    VkVideoEncodeH264NaluSliceInfoKHR nalu = {
-        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_NALU_SLICE_INFO_KHR,
-        .pNext = NULL,
-        .constantQp = 0,              // pick your QP (lower = higher quality)
-        .pStdSliceHeader = &stdSlice, // REQUIRED (non-NULL)
-    };
+        // map + append the encoded bytes
+        void* data = NULL;
+        vkMapMemory(vkdev, bitstreamMem, 0, bitstreamSize, 0, &data);
+        fwrite(data, 1, bitstreamSize, f);
+        vkUnmapMemory(vkdev, bitstreamMem);
 
-    VkVideoEncodeH264PictureInfoKHR h264PicInfo = {
-        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_PICTURE_INFO_KHR,
-        .pNext = NULL,
-        .naluSliceEntryCount = 1,
-        .pNaluSliceEntries = &nalu,
-        .pStdPictureInfo = &stdPic, // REQUIRED (non-NULL)
-    };
-
-    // Your existing encodeInfo; just chain h264PicInfo via pNext:
-    VkVideoEncodeInfoKHR encodeInfo = {
-        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_INFO_KHR,
-        .pNext = &h264PicInfo,        // <— REQUIRED for H.264
-        .flags = 0,                   // optionally set FINAL bit for EOS
-        .srcPictureResource = srcPic, // your NV12 view + extent
-        .dstBuffer = bitstream,
-        .dstBufferOffset = 0,
-        .dstBufferRange = bitstreamSize,
-        // .naluSliceEntryCount = 0, // leave 0 when using H.264 chain
-        // .pNaluSliceEntries = NULL,
-        // .qualityLevel = 0,
-        .pSetupReferenceSlot = NULL,
-        .referenceSlotCount = 0,
-        .pReferenceSlots = NULL,
-    };
-
-
-
-    //------------------------------------------------------------
-    // Encode a single frame
-    //------------------------------------------------------------
-    vkCmdEncodeVideoKHR(cmdsv.cmds[0], &encodeInfo);
+        // reuse command buffer
+        dvz_cmd_reset(&cmdsv);
+        dvz_cmd_begin(&cmdsv);
+        vkCmdBeginVideoCodingKHR(cmdsv.cmds[0], &beginInfo);
+    }
 
     //------------------------------------------------------------
     // End video coding scope
@@ -856,18 +883,16 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
                            .pNext = NULL,
                            .flags = 0,
                        });
-
-
-
     dvz_cmd_end(&cmdsv);
     dvz_cmd_submit(&cmdsv);
-
-    void* data = NULL;
-    vkMapMemory(vkdev, bitstreamMem, 0, bitstreamSize, 0, &data);
-    FILE* f = fopen("out.h264", "wb");
-    fwrite(data, 1, bitstreamSize, f);
     fclose(f);
-    vkUnmapMemory(vkdev, bitstreamMem);
+
+    // void* data = NULL;
+    // vkMapMemory(vkdev, bitstreamMem, 0, bitstreamSize, 0, &data);
+    // FILE* f = fopen("out.h264", "wb");
+    // fwrite(data, 1, bitstreamSize, f);
+    // fclose(f);
+    // vkUnmapMemory(vkdev, bitstreamMem);
 
 
 
