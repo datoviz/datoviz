@@ -56,7 +56,7 @@ const uint32_t WIDTH = DVZ_PROTO_WIDTH;
 const uint32_t HEIGHT = DVZ_PROTO_HEIGHT;
 const uint32_t FPS = 30;
 const uint32_t SECS = 5;
-const uint32_t NFR = FPS * SECS; // 150
+const uint32_t NFR = FPS * SECS;                              // 150
 const VkDeviceSize BITSTREAM_FRAME_SIZE = WIDTH * HEIGHT * 2; // generous per-frame budget
 
 typedef struct VideoBitstreamFeedback
@@ -521,8 +521,8 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     AT(headerSize > 0);
     uint8_t* headerBlob = (uint8_t*)calloc(headerSize, sizeof(uint8_t));
     ANN(headerBlob);
-    VK_CHECK_RESULT(
-        vkGetEncodedVideoSessionParametersKHR(vkdev, &paramsGetInfo, NULL, &headerSize, headerBlob));
+    VK_CHECK_RESULT(vkGetEncodedVideoSessionParametersKHR(
+        vkdev, &paramsGetInfo, NULL, &headerSize, headerBlob));
 
     FILE* f = fopen("out.h264", "wb");
     ANN(f);
@@ -563,10 +563,9 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     VkQueryPool queryPool = VK_NULL_HANDLE;
     VkQueryPoolVideoEncodeFeedbackCreateInfoKHR queryFeedback = {
         .sType = VK_STRUCTURE_TYPE_QUERY_POOL_VIDEO_ENCODE_FEEDBACK_CREATE_INFO_KHR,
-        .pNext = NULL,
-        .encodeFeedbackFlags =
-            VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BUFFER_OFFSET_BIT_KHR |
-            VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BYTES_WRITTEN_BIT_KHR,
+        .pNext = &videoProfile,
+        .encodeFeedbackFlags = VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BUFFER_OFFSET_BIT_KHR |
+                               VK_VIDEO_ENCODE_FEEDBACK_BITSTREAM_BYTES_WRITTEN_BIT_KHR,
     };
     VkQueryPoolCreateInfo queryInfo = {
         .sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO,
@@ -785,22 +784,43 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     //------------------------------------------------------------
     // Encode control structures reused per-frame
     //------------------------------------------------------------
-    VkVideoBeginCodingInfoKHR beginInfo = {
-        .sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
+
+    VkVideoEncodeRateControlLayerInfoKHR rcLayer = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR,
+        .pNext = NULL,
+        .averageBitrate = 5 * 1000 * 1000, // 5 Mbps
+        .maxBitrate = 8 * 1000 * 1000,
+        .frameRateNumerator = 30,
+        .frameRateDenominator = 1,
+    };
+
+    VkVideoEncodeRateControlInfoKHR rcInfo = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_INFO_KHR,
         .pNext = NULL,
         .flags = 0,
-        .videoSession = session,
-        .videoSessionParameters = sessionParams,
-        .referenceSlotCount = 0,
-        .pReferenceSlots = NULL,
+        .rateControlMode = VK_VIDEO_ENCODE_RATE_CONTROL_MODE_CBR_BIT_KHR,
+        .layerCount = 1,
+        .pLayers = &rcLayer,
+        .virtualBufferSizeInMs = 1000,
+        .initialVirtualBufferSizeInMs = 1000,
     };
 
     VkVideoCodingControlInfoKHR ctrlInfo = {
         .sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
-        .pNext = NULL,
-        .flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR, // reset/initialize the session
+        .pNext = &rcInfo,
+        .flags = VK_VIDEO_CODING_CONTROL_ENCODE_RATE_CONTROL_BIT_KHR,
     };
 
+    // 5. Begin-coding info itself
+    VkVideoBeginCodingInfoKHR beginInfo = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
+        .pNext = &ctrlInfo,
+        .flags = 0,
+        .videoSession = session,                 // VkVideoSessionKHR
+        .videoSessionParameters = sessionParams, // VkVideoSessionParametersKHR
+        .referenceSlotCount = 0,
+        .pReferenceSlots = NULL,
+    };
 
 
     ///////////////
@@ -826,13 +846,14 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     for (uint32_t frame = 0; frame < NFR; ++frame)
     {
         dvz_cmd_begin(&cmdsv);
+        vkCmdResetQueryPool(cmdsv.cmds[0], queryPool, 0, 1);
+
         vkCmdBeginVideoCodingKHR(cmdsv.cmds[0], &beginInfo);
         if (frame == 0)
         {
             vkCmdControlVideoCodingKHR(cmdsv.cmds[0], &ctrlInfo);
         }
 
-        vkCmdResetQueryPool(cmdsv.cmds[0], queryPool, 0, 1);
 
         // ------------------------------
         // Std *picture* info (frame-wide)
@@ -860,8 +881,7 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
             .slice_beta_offset_div2 = 0,
             .slice_qp_delta = 0,
             .cabac_init_idc = STD_VIDEO_H264_CABAC_INIT_IDC_0,
-            .disable_deblocking_filter_idc =
-                STD_VIDEO_H264_DISABLE_DEBLOCKING_FILTER_IDC_DISABLED,
+            .disable_deblocking_filter_idc = STD_VIDEO_H264_DISABLE_DEBLOCKING_FILTER_IDC_DISABLED,
             .pWeightTable = NULL,
         };
 
@@ -871,7 +891,7 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
         VkVideoEncodeH264NaluSliceInfoKHR nalu = {
             .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_NALU_SLICE_INFO_KHR,
             .pNext = NULL,
-            .constantQp = 26,
+            .constantQp = 0,
             .pStdSliceHeader = &stdSlice,
         };
 
@@ -934,7 +954,8 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
         AT(feedback.offset + feedback.bytes <= bitstreamSize);
 
         void* data = NULL;
-        VK_CHECK_RESULT(vkMapMemory(vkdev, bitstreamMem, feedback.offset, feedback.bytes, 0, &data));
+        VK_CHECK_RESULT(
+            vkMapMemory(vkdev, bitstreamMem, feedback.offset, feedback.bytes, 0, &data));
         fwrite(data, 1, feedback.bytes, f);
         vkUnmapMemory(vkdev, bitstreamMem);
 
