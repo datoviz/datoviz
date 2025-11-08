@@ -1,0 +1,38 @@
+#version 450
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout (binding = 0) uniform sampler2D rgba_in;
+layout (binding = 1, r8)  writeonly uniform image2D y_plane;
+layout (binding = 2, rg8) writeonly uniform image2D uv_plane;
+
+vec3 rgb2yuv(vec3 c) {
+    // Limited-range-ish; adjust if you need exact BT.709/BT.601 + range
+    float Y =  0.2126*c.r + 0.7152*c.g + 0.0722*c.b;
+    float U = -0.1146*c.r - 0.3854*c.g + 0.5000*c.b + 0.5;
+    float V =  0.5000*c.r - 0.4542*c.g - 0.0458*c.b + 0.5;
+    return vec3(Y, U, V);
+}
+
+void main() {
+    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 sizeY = imageSize(y_plane);
+    if (p.x >= sizeY.x || p.y >= sizeY.y) return;
+
+    vec4 rgba = texelFetch(rgba_in, p, 0);
+    vec3 yuv  = rgb2yuv(rgba.rgb);
+
+    // Write luma at full res
+    imageStore(y_plane, p, vec4(yuv.x, 0, 0, 1));
+
+    // For UV: write one sample per 2x2 block (NV12 interleaved)
+    if (((p.x | p.y) & 1) == 0) {
+        ivec2 q = p / 2; // half-res coords
+        // average 2x2
+        vec3 yuv01 = rgb2yuv(texelFetch(rgba_in, p + ivec2(1,0), 0).rgb);
+        vec3 yuv10 = rgb2yuv(texelFetch(rgba_in, p + ivec2(0,1), 0).rgb);
+        vec3 yuv11 = rgb2yuv(texelFetch(rgba_in, p + ivec2(1,1), 0).rgb);
+        float U = (yuv.y + yuv01.y + yuv10.y + yuv11.y) * 0.25;
+        float V = (yuv.z + yuv01.z + yuv10.z + yuv11.z) * 0.25;
+        imageStore(uv_plane, q, vec4(U, V, 0, 1));
+    }
+}

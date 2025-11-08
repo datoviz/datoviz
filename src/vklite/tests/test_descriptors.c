@@ -80,7 +80,6 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_images_layers(&images, 2);
     dvz_images_samples(&images, VK_SAMPLE_COUNT_1_BIT);
     dvz_images_usage(&images, VK_IMAGE_USAGE_SAMPLED_BIT);
-    dvz_images_flags(&images, 0);
     dvz_images_create(&images);
 
     // Image views.
