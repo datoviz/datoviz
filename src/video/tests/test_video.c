@@ -502,9 +502,17 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     VK_CHECK_RESULT(vkCreateVideoSessionParametersKHR(vkdev, &paramsCI, NULL, &sessionParams));
 
     // Grab the Annex B SPS/PPS blob once so the bitstream has proper headers.
+    VkVideoEncodeH264SessionParametersGetInfoKHR h264ParamsGetInfo = {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H264_SESSION_PARAMETERS_GET_INFO_KHR,
+        .pNext = NULL,
+        .writeStdSPS = VK_TRUE,
+        .writeStdPPS = VK_TRUE,
+        .stdSPSId = sps.seq_parameter_set_id,
+        .stdPPSId = pps.pic_parameter_set_id,
+    };
     VkVideoEncodeSessionParametersGetInfoKHR paramsGetInfo = {
         .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_SESSION_PARAMETERS_GET_INFO_KHR,
-        .pNext = NULL,
+        .pNext = &h264ParamsGetInfo,
         .videoSessionParameters = sessionParams,
     };
     size_t headerSize = 0;
