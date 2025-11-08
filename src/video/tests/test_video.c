@@ -31,6 +31,7 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/macros.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/compute.h"
@@ -52,8 +53,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-const uint32_t WIDTH = DVZ_PROTO_WIDTH;
-const uint32_t HEIGHT = DVZ_PROTO_HEIGHT;
+#define DVZ_ALIGN16(x) (((x) + 15u) & ~15u)
+
+// H.264 encoders operate on 16×16 macroblocks, so align render targets to multiples of 16 to avoid
+// validation/runtime failures when programming SPS/PPS.
+const uint32_t WIDTH = DVZ_ALIGN16(DVZ_PROTO_WIDTH);
+const uint32_t HEIGHT = DVZ_ALIGN16(DVZ_PROTO_HEIGHT);
 const uint32_t FPS = 30;
 const uint32_t SECS = 5;
 const uint32_t NFR = FPS * SECS;                              // 150
@@ -125,6 +130,44 @@ find_memory_type(VkPhysicalDevice phys, uint32_t type_bits, VkMemoryPropertyFlag
 
 
 
+static bool video_encode_supported(DvzBootstrap* bootstrap)
+{
+    ANN(bootstrap);
+
+    DvzGpu* gpu = bootstrap->gpu;
+    ANN(gpu);
+
+    const char* extensions[] = {
+        VK_KHR_VIDEO_QUEUE_EXTENSION_NAME,
+        VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME,
+        VK_KHR_VIDEO_ENCODE_H264_EXTENSION_NAME,
+    };
+
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(extensions); ++i)
+    {
+        if (!dvz_gpu_has_extension(gpu, extensions[i]))
+        {
+            log_warn("Skipping test_video_1: GPU missing extension %s", extensions[i]);
+            return false;
+        }
+    }
+
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+    for (uint32_t q = 0; q < caps->family_count; ++q)
+    {
+        if (caps->flags[q] & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
+        {
+            return true;
+        }
+    }
+
+    log_warn("Skipping test_video_1: no queue exposes VK_QUEUE_VIDEO_ENCODE_BIT_KHR");
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Video tests                                                                                  */
 /*************************************************************************************************/
@@ -137,6 +180,12 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
+
+    if (!video_encode_supported(&bootstrap))
+    {
+        log_warn("Video encode stack unavailable on this GPU, skipping test_video_1");
+        return 0;
+    }
 
     DvzDevice* device = &bootstrap.device;
     ANN(device);
@@ -789,7 +838,7 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
         .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_RATE_CONTROL_LAYER_INFO_KHR,
         .pNext = NULL,
         .averageBitrate = 5 * 1000 * 1000, // 5 Mbps
-        .maxBitrate = 8 * 1000 * 1000,
+        .maxBitrate = 5 * 1000 * 1000,
         .frameRateNumerator = 30,
         .frameRateDenominator = 1,
     };
@@ -814,7 +863,7 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     // 5. Begin-coding info itself
     VkVideoBeginCodingInfoKHR beginInfo = {
         .sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
-        .pNext = &ctrlInfo,
+        .pNext = &rcInfo,
         .flags = 0,
         .videoSession = session,                 // VkVideoSessionKHR
         .videoSessionParameters = sessionParams, // VkVideoSessionParametersKHR
@@ -846,14 +895,15 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
     for (uint32_t frame = 0; frame < NFR; ++frame)
     {
         dvz_cmd_begin(&cmdsv);
-        vkCmdResetQueryPool(cmdsv.cmds[0], queryPool, 0, 1);
-
         vkCmdBeginVideoCodingKHR(cmdsv.cmds[0], &beginInfo);
+
+        // NOTE: DO NOT UNCOMMENT THIS
+        // return 1;
+
         if (frame == 0)
         {
             vkCmdControlVideoCodingKHR(cmdsv.cmds[0], &ctrlInfo);
         }
-
 
         // ------------------------------
         // Std *picture* info (frame-wide)
@@ -943,6 +993,10 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
         vkCmdEndQuery(cmdsv.cmds[0], queryPool, 0);
         vkCmdEndVideoCodingKHR(cmdsv.cmds[0], &endInfo);
         dvz_cmd_end(&cmdsv);
+
+        // DEBUG: KEEP THIS, DO NOT REMOVE
+        return 1;
+
         dvz_cmd_submit(&cmdsv);
 
         VideoBitstreamFeedback feedback = {0};
