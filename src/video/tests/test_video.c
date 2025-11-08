@@ -1455,6 +1455,8 @@ typedef struct
     VkImage image;
     VkDeviceMemory memory;
     int memory_fd;
+    VkFence fence;
+    VkImageLayout image_layout;
 } VulkanCtx;
 
 // ====== NVENC dynamic API list ======
@@ -1588,6 +1590,9 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     cbai.commandBufferCount = 1;
     VK_CHECK(vkAllocateCommandBuffers(vk->device, &cbai, &vk->cmd));
 
+    VkFenceCreateInfo fci = {.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    VK_CHECK(vkCreateFence(vk->device, &fci, NULL, &vk->fence));
+
     // Create exportable RGBA8 image
     VkExternalMemoryImageCreateInfo emici = {
         .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO};
@@ -1642,56 +1647,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     VK_CHECK(vkAllocateMemory(vk->device, &mai, NULL, &vk->memory));
     VK_CHECK(vkBindImageMemory(vk->device, vk->image, vk->memory, 0));
-
-    // Clear the image to a color
-    VkCommandBufferBeginInfo cbbi = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-    VK_CHECK(vkBeginCommandBuffer(vk->cmd, &cbbi));
-
-    VkImageMemoryBarrier2 barrier1 = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-        .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        .image = vk->image,
-        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
-    VkDependencyInfo dep1 = {
-        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier1};
-    vkCmdPipelineBarrier2(vk->cmd, &dep1);
-
-    VkClearColorValue clr = {
-        .float32 = {CLEAR_R / 255.0f, CLEAR_G / 255.0f, CLEAR_B / 255.0f, CLEAR_A / 255.0f}};
-    VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    vkCmdClearColorImage(
-        vk->cmd, vk->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clr, 1, &range);
-
-    VkImageMemoryBarrier2 barrier2 = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
-        .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
-        .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        .newLayout = VK_IMAGE_LAYOUT_GENERAL,
-        .image = vk->image,
-        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
-    VkDependencyInfo dep2 = {
-        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier2};
-    vkCmdPipelineBarrier2(vk->cmd, &dep2);
-
-    VK_CHECK(vkEndCommandBuffer(vk->cmd));
-    VkSubmitInfo si = {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &vk->cmd};
-    VK_CHECK(vkQueueSubmit(vk->queue, 1, &si, VK_NULL_HANDLE));
-    VK_CHECK(vkQueueWaitIdle(vk->queue)); // CPU wait is fine; no data copies.
+    vk->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
     // Export memory FD
     VkMemoryGetFdInfoKHR getfd = {.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR};
@@ -1703,6 +1659,77 @@ static void vk_init_and_make_image(VulkanCtx* vk)
         fprintf(stderr, "Failed to export memory FD\n");
         exit(1);
     }
+}
+
+static void vk_render_frame_and_sync(VulkanCtx* vk)
+{
+    ANN(vk);
+    ANNVK(vk->cmd);
+
+    VK_CHECK(vkResetCommandBuffer(vk->cmd, 0));
+
+    VkCommandBufferBeginInfo begin = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    VK_CHECK(vkBeginCommandBuffer(vk->cmd, &begin));
+
+    VkPipelineStageFlags2 src_stage =
+        (vk->image_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+            ? VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT
+            : VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    VkAccessFlags2 src_access =
+        (vk->image_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+            ? 0
+            : (VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT);
+
+    VkImageMemoryBarrier2 pre = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .srcStageMask = src_stage,
+        .dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        .srcAccessMask = src_access,
+        .dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        .oldLayout = vk->image_layout,
+        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .image = vk->image,
+        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+    VkDependencyInfo dep_pre = {
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &pre};
+    vkCmdPipelineBarrier2(vk->cmd, &dep_pre);
+
+    VkClearColorValue clr = {
+        .float32 = {CLEAR_R / 255.0f, CLEAR_G / 255.0f, CLEAR_B / 255.0f, CLEAR_A / 255.0f}};
+    VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    vkCmdClearColorImage(
+        vk->cmd, vk->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clr, 1, &range);
+
+    VkImageMemoryBarrier2 post = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+        .srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
+        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .newLayout = VK_IMAGE_LAYOUT_GENERAL,
+        .image = vk->image,
+        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+    VkDependencyInfo dep_post = {
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &post};
+    vkCmdPipelineBarrier2(vk->cmd, &dep_post);
+
+    VK_CHECK(vkEndCommandBuffer(vk->cmd));
+
+    VK_CHECK(vkResetFences(vk->device, 1, &vk->fence));
+    VkSubmitInfo submit = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &vk->cmd};
+    VK_CHECK(vkQueueSubmit(vk->queue, 1, &submit, vk->fence));
+    VK_CHECK(vkWaitForFences(vk->device, 1, &vk->fence, VK_TRUE, UINT64_MAX));
+
+    vk->image_layout = VK_IMAGE_LAYOUT_GENERAL;
 }
 
 // ====== CUDA: import Vulkan memory as external memory, map to array ======
@@ -1990,54 +2017,41 @@ static void nvenc_write_spspps(NvEncCtx* nctx, NvEncIO* io)
     }
 }
 
-static void nvenc_encode_loop(NvEncCtx* nctx, NvEncIO* io, int frames)
+static void nvenc_encode_frame(
+    NvEncCtx* nctx, NvEncIO* io, NV_ENC_INPUT_PTR in, NV_ENC_OUTPUT_PTR out, uint32_t frame_idx)
 {
-    // Map once and reuse the same static frame
-    NV_ENC_INPUT_PTR in = nvenc_map_input(nctx, io);
-
-    // Use first bitstream buffer
-    NV_ENC_OUTPUT_PTR out = io->bitstreams[0];
-
-    // Prepend SPS/PPS
-    nvenc_write_spspps(nctx, io);
-
-    for (int i = 0; i < frames; i++)
+    NV_ENC_PIC_PARAMS pp = {0};
+    pp.version = NV_ENC_PIC_PARAMS_VER;
+    pp.inputBuffer = in;
+    pp.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12;
+    pp.inputWidth = WIDTH;
+    pp.inputHeight = HEIGHT;
+    pp.outputBitstream = out;
+    pp.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
+    pp.inputTimeStamp = frame_idx;
+    if (frame_idx == 0)
     {
-        NV_ENC_PIC_PARAMS pp = {0};
-        pp.version = NV_ENC_PIC_PARAMS_VER;
-        pp.inputBuffer = in;
-        pp.bufferFmt = NV_ENC_BUFFER_FORMAT_NV12;
-        pp.inputWidth = WIDTH;
-        pp.inputHeight = HEIGHT;
-        pp.outputBitstream = out;
-        pp.pictureStruct = NV_ENC_PIC_STRUCT_FRAME;
-        pp.inputTimeStamp = i;
-        if (i == 0)
-        {
-            pp.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR;
-        }
-        NVENC_API_CALL(g_nvenc.nvEncEncodePicture(nctx->hEncoder, &pp));
-
-        NV_ENC_LOCK_BITSTREAM lb = {0};
-        lb.version = NV_ENC_LOCK_BITSTREAM_VER;
-        lb.outputBitstream = out;
-        lb.doNotWait = 0;
-        NVENC_API_CALL(g_nvenc.nvEncLockBitstream(nctx->hEncoder, &lb));
-
-        fwrite(lb.bitstreamBufferPtr, 1, lb.bitstreamSizeInBytes, io->fp);
-
-        NVENC_API_CALL(g_nvenc.nvEncUnlockBitstream(nctx->hEncoder, out));
+        pp.encodePicFlags |= NV_ENC_PIC_FLAG_FORCEIDR;
     }
+    NVENC_API_CALL(g_nvenc.nvEncEncodePicture(nctx->hEncoder, &pp));
 
-    // Drain
+    NV_ENC_LOCK_BITSTREAM lb = {0};
+    lb.version = NV_ENC_LOCK_BITSTREAM_VER;
+    lb.outputBitstream = out;
+    lb.doNotWait = 0;
+    NVENC_API_CALL(g_nvenc.nvEncLockBitstream(nctx->hEncoder, &lb));
+
+    fwrite(lb.bitstreamBufferPtr, 1, lb.bitstreamSizeInBytes, io->fp);
+
+    NVENC_API_CALL(g_nvenc.nvEncUnlockBitstream(nctx->hEncoder, out));
+}
+
+static void nvenc_flush(NvEncCtx* nctx)
+{
     NV_ENC_PIC_PARAMS eos = {0};
     eos.version = NV_ENC_PIC_PARAMS_VER;
     eos.encodePicFlags = NV_ENC_PIC_FLAG_EOS;
     NVENC_API_CALL(g_nvenc.nvEncEncodePicture(nctx->hEncoder, &eos));
-
-    // No additional data usually needed in sync mode
-
-    nvenc_unmap_input(nctx, io);
 }
 
 static void nvenc_destroy(NvEncCtx* nctx, NvEncIO* io)
@@ -2124,38 +2138,6 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     alloc_rgba(&rb, WIDTH, HEIGHT, PITCH_ALIGN);
     alloc_nv12(&nb, WIDTH, HEIGHT, PITCH_ALIGN);
 
-    // One-time device-to-device copy: CUarray (Vulkan image) -> linear RGBA
-    copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
-    // -------------------------------------------------------------------------------------------------
-    // Datoviz integration placeholder:
-    //
-    // In the real pipeline we need a *per-frame* export instead of this one-shot copy. The rough flow is:
-    //
-    // 1. Render one frame into the offscreen color attachment (format must match what RGBA->NV12 kernel
-    //    expects, typically VK_FORMAT_R8G8B8A8_UNORM).
-    // 2. Insert a pipeline barrier so the attachment transitions from
-    //    `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` to `VK_IMAGE_LAYOUT_GENERAL`.
-    // 3. Signal a semaphore or fence that CUDA/NVENC waits on before copying out the pixels.
-    // 4. Call `cuda_import_vk_memory()` **once** at startup and keep the resulting `CUarray`.
-    // 5. Inside the frame loop, invoke `copy_array_to_linear_rgba()` again to bring the freshly rendered
-    //    pixels into the linear buffer before launching the RGBA->NV12 conversion.
-    //
-    // Pseudo-hook inside the renderer side:
-    //
-    // ```c
-    // void renderer_finish_frame(uint32_t frame_idx)
-    // {
-    //     transition_to_general(offscreen_color, cmd, COLOR_ATTACHMENT_OPTIMAL, GENERAL);
-    //     export_semaphore_signal(cmd, cuda_wait_semaphore);
-    // }
-    // ```
-    //
-    // On the CUDA side we would wait on that semaphore before performing `copy_array_to_linear_rgba()`.
-    // -------------------------------------------------------------------------------------------------
-
-    // Convert RGBA->NV12 on GPU (fills nb.dptr)
-    launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
-
     // Register NV12 input and create bitstream output
     nvenc_register_input(&nctx, &io, nb.dptr, nb.pitch, WIDTH, HEIGHT);
     nvenc_create_bitstreams(&nctx, &io, 1);
@@ -2168,31 +2150,26 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
 
-    // Encode loop: currently encodes the same static frame. To feed live Datoviz frames, replace the
-    // single-call helper above with a loop that renders, synchronizes, and copies each frame:
-    //
-    // ```c
-    // for (int frame = 0; frame < NFRAMES; ++frame)
-    // {
-    //     dvz_renderer_begin_frame(renderer, frame);
-    //     dvz_renderer_draw_scene(renderer, scene, offscreen_pass);
-    //     dvz_renderer_end_frame(renderer, frame);
-    //
-    //     wait_for_renderer_semaphore(cu.stream, cuda_wait_semaphore);
-    //     copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
-    //     launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
-    //
-    //     nvenc_encode_one_frame(&nctx, &io, frame);
-    // }
-    // ```
-    //
-    // Notes:
-    // - The renderer must queue a layout transition back to `COLOR_ATTACHMENT_OPTIMAL` once CUDA finishes,
-    //   otherwise the next frame cannot start rendering.
-    // - Timeline semaphores work best here; binary semaphores also work if you double-buffer.
-    // - `nvenc_encode_one_frame()` would inline what `nvenc_encode_loop()` currently does per iteration.
-    //
-    nvenc_encode_loop(&nctx, &io, NFRAMES);
+    NV_ENC_INPUT_PTR mapped_in = nvenc_map_input(&nctx, &io);
+    NV_ENC_OUTPUT_PTR bitstream = io.bitstreams[0];
+    nvenc_write_spspps(&nctx, &io);
+
+    for (int frame = 0; frame < NFRAMES; ++frame)
+    {
+        // Render/copy path:
+        // 1. Record and submit a command buffer that clears the offscreen image and transitions it back
+        //    to GENERAL layout so CUDA can read from it.
+        // 2. Copy the VkImage contents into a pitch-linear RGBA buffer and convert to NV12 on the GPU.
+        vk_render_frame_and_sync(&vk);
+        copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
+        launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
+
+        // 3. Kick the encoder once per frame.
+        nvenc_encode_frame(&nctx, &io, mapped_in, bitstream, (uint32_t)frame);
+    }
+
+    nvenc_flush(&nctx);
+    nvenc_unmap_input(&nctx, &io);
     encoded = true;
 
     fclose(io.fp);
@@ -2202,6 +2179,7 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
 cleanup:
     if (io.fp)
         fclose(io.fp);
+    nvenc_unmap_input(&nctx, &io);
     nvenc_destroy(&nctx, &io);
     if (rb.dptr)
         cuMemFree(rb.dptr);
@@ -2223,6 +2201,8 @@ cleanup:
         vkDestroyImage(vk.device, vk.image, NULL);
     if (vk.cmdPool)
         vkDestroyCommandPool(vk.device, vk.cmdPool, NULL);
+    if (vk.fence)
+        vkDestroyFence(vk.device, vk.fence, NULL);
     if (vk.device)
         vkDestroyDevice(vk.device, NULL);
     if (vk.instance)
