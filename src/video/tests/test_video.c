@@ -2079,6 +2079,25 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
 
     VulkanCtx vk;
     vk_init_and_make_image(&vk);
+    // -------------------------------------------------------------------------------------------------
+    // Placeholder for Datoviz renderer hookup:
+    //
+    // At the moment we just allocate an exportable VkImage and fill it once. When integrating the real
+    // Datoviz renderer, the Vulkan context above needs to be fed with the renderer-managed device,
+    // command queues, and the offscreen color attachment you already render into. Conceptually:
+    //
+    // ```c
+    // DvzRenderer* renderer = init_datoviz_renderer(...);
+    // DvzRenderPass* offscreen = dvz_renderer_offscreen_pass(renderer, WIDTH, HEIGHT);
+    // VkImage offscreen_color = dvz_render_pass_color_attachment(offscreen, 0);
+    // vk.image = offscreen_color;
+    // vk.memory = dvz_renderer_export_memory(offscreen_color);
+    // vk.memory_fd = dvz_renderer_export_fd(offscreen_color);
+    // ```
+    //
+    // You keep ownership of the renderer; test_video_2 only needs the external-memory handle + layout
+    // transitions described below. This makes the NVENC proof of concept consume whatever Datoviz draws.
+    // -------------------------------------------------------------------------------------------------
 
     // Query allocation size for CUDA import
     VkMemoryRequirements memReq;
@@ -2107,6 +2126,32 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
 
     // One-time device-to-device copy: CUarray (Vulkan image) -> linear RGBA
     copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
+    // -------------------------------------------------------------------------------------------------
+    // Datoviz integration placeholder:
+    //
+    // In the real pipeline we need a *per-frame* export instead of this one-shot copy. The rough flow is:
+    //
+    // 1. Render one frame into the offscreen color attachment (format must match what RGBA->NV12 kernel
+    //    expects, typically VK_FORMAT_R8G8B8A8_UNORM).
+    // 2. Insert a pipeline barrier so the attachment transitions from
+    //    `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` to `VK_IMAGE_LAYOUT_GENERAL`.
+    // 3. Signal a semaphore or fence that CUDA/NVENC waits on before copying out the pixels.
+    // 4. Call `cuda_import_vk_memory()` **once** at startup and keep the resulting `CUarray`.
+    // 5. Inside the frame loop, invoke `copy_array_to_linear_rgba()` again to bring the freshly rendered
+    //    pixels into the linear buffer before launching the RGBA->NV12 conversion.
+    //
+    // Pseudo-hook inside the renderer side:
+    //
+    // ```c
+    // void renderer_finish_frame(uint32_t frame_idx)
+    // {
+    //     transition_to_general(offscreen_color, cmd, COLOR_ATTACHMENT_OPTIMAL, GENERAL);
+    //     export_semaphore_signal(cmd, cuda_wait_semaphore);
+    // }
+    // ```
+    //
+    // On the CUDA side we would wait on that semaphore before performing `copy_array_to_linear_rgba()`.
+    // -------------------------------------------------------------------------------------------------
 
     // Convert RGBA->NV12 on GPU (fills nb.dptr)
     launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
@@ -2123,7 +2168,30 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
 
-    // Encode loop: static frame repeated NFRAMES times
+    // Encode loop: currently encodes the same static frame. To feed live Datoviz frames, replace the
+    // single-call helper above with a loop that renders, synchronizes, and copies each frame:
+    //
+    // ```c
+    // for (int frame = 0; frame < NFRAMES; ++frame)
+    // {
+    //     dvz_renderer_begin_frame(renderer, frame);
+    //     dvz_renderer_draw_scene(renderer, scene, offscreen_pass);
+    //     dvz_renderer_end_frame(renderer, frame);
+    //
+    //     wait_for_renderer_semaphore(cu.stream, cuda_wait_semaphore);
+    //     copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
+    //     launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
+    //
+    //     nvenc_encode_one_frame(&nctx, &io, frame);
+    // }
+    // ```
+    //
+    // Notes:
+    // - The renderer must queue a layout transition back to `COLOR_ATTACHMENT_OPTIMAL` once CUDA finishes,
+    //   otherwise the next frame cannot start rendering.
+    // - Timeline semaphores work best here; binary semaphores also work if you double-buffer.
+    // - `nvenc_encode_one_frame()` would inline what `nvenc_encode_loop()` currently does per iteration.
+    //
     nvenc_encode_loop(&nctx, &io, NFRAMES);
     encoded = true;
 
