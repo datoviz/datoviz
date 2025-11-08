@@ -41,6 +41,7 @@ EXTERN_C_ON
 
 
 int test_video_1(TstSuite* suite, TstItem* tstitem);
+int test_video_2(TstSuite* suite, TstItem* tstitem);
 
 
 
