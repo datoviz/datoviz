@@ -148,7 +148,40 @@ if(DVZ_ENABLE_CUDA)
 
     target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
     target_include_directories(dvztest PRIVATE ${PROJECT_SOURCE_DIR}/external)
+
     target_link_libraries(dvztest PRIVATE CUDA::cudart CUDA::cuda_driver)
+    target_link_libraries(dvztest PRIVATE cuda)
+
+    if(WIN32)
+        set(_dvz_nvenc_lib_dir "${PROJECT_SOURCE_DIR}/libs/nvenc/windows")
+    elseif(APPLE)
+        set(_dvz_nvenc_lib_dir "${PROJECT_SOURCE_DIR}/libs/nvenc/macos")
+    else()
+        set(_dvz_nvenc_lib_dir "${PROJECT_SOURCE_DIR}/libs/nvenc/linux")
+    endif()
+
+    if(EXISTS "${_dvz_nvenc_lib_dir}")
+        target_link_directories(dvztest PRIVATE "${_dvz_nvenc_lib_dir}")
+        # Ensure the loader picks NVENC straight from the repo tree when running tests.
+        set_property(TARGET dvztest APPEND PROPERTY BUILD_RPATH "${_dvz_nvenc_lib_dir}")
+    endif()
+
+    set(_dvz_nvenc_names nvencodeapi nvencodeapi64)
+    if(UNIX AND NOT APPLE)
+        list(APPEND _dvz_nvenc_names nvidia-encode)
+    endif()
+
+    find_library(_dvz_nvenc_lib
+        NAMES ${_dvz_nvenc_names}
+        HINTS ${_dvz_nvenc_lib_dir}
+    )
+
+    if(_dvz_nvenc_lib)
+        message(STATUS "Linking NVENC library: ${_dvz_nvenc_lib}")
+        target_link_libraries(dvztest PRIVATE ${_dvz_nvenc_lib})
+    else()
+        message(FATAL_ERROR "DVZ_ENABLE_CUDA is ON but no NVENC library was found (looked for: ${_dvz_nvenc_names}).")
+    endif()
 
     # Enable CUDA language for dvztest so it can compile .cu kernels
     if(NOT CMAKE_CUDA_ARCHITECTURES)
