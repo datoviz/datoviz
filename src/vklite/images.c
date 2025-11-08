@@ -156,13 +156,21 @@ void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 
 
 
-void dvz_images_flags(DvzImages* img, VmaAllocationCreateFlags flags)
+void dvz_images_vma_flags(DvzImages* img, VmaAllocationCreateFlags flags)
 {
     ANN(img);
     for (uint32_t i = 0; i < img->count; i++)
     {
         img->allocs[i].flags = flags;
     }
+}
+
+
+
+void dvz_images_flags(DvzImages* img, VkImageCreateFlags flags)
+{
+    ANN(img);
+    img->info.flags |= flags;
 }
 
 

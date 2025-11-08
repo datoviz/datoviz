@@ -165,7 +165,17 @@ DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
  * @param image the image
  * @param flags the flags
  */
-DVZ_EXPORT void dvz_images_flags(DvzImages* img, VmaAllocationCreateFlags flags);
+DVZ_EXPORT void dvz_images_vma_flags(DvzImages* img, VmaAllocationCreateFlags flags);
+
+
+
+/**
+ * Set the image creation flags.
+ *
+ * @param image the image
+ * @param flags the flags
+ */
+DVZ_EXPORT void dvz_images_flags(DvzImages* img, VkImageCreateFlags flags);
 
 
 

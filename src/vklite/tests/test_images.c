@@ -55,7 +55,6 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
     dvz_images_layers(&images, 2);
     dvz_images_samples(&images, VK_SAMPLE_COUNT_1_BIT);
     dvz_images_usage(&images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    dvz_images_flags(&images, 0);
     dvz_images_create(&images);
 
     // Image views.
