@@ -38,8 +38,11 @@
 #include "../../vk/macros.h"
 #include "../../vk/tests/test_vk.h"
 #include "../../vklite/tests/test_vklite.h"
+#define MINIMP4_IMPLEMENTATION
+#include "../../external/minimp4.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_alloc.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
@@ -1305,6 +1308,13 @@ typedef enum
     DVZ_VIDEO_CODEC_HEVC = 1,
 } DvzVideoCodec;
 
+typedef enum
+{
+    DVZ_VIDEO_MUX_NONE = 0,
+    DVZ_VIDEO_MUX_MP4_STREAMING = 1,
+    DVZ_VIDEO_MUX_MP4_POST = 2,
+} DvzVideoMux;
+
 typedef struct
 {
     const GUID* codec_guid;
@@ -1314,6 +1324,28 @@ typedef struct
     uint32_t qp_inter_p;
     uint32_t qp_inter_b;
 } DvzNvencProfile;
+
+typedef struct DvzMuxSample DvzMuxSample;
+
+typedef struct
+{
+    uint32_t width;
+    uint32_t height;
+    uint32_t fps;
+    VkFormat color_format;
+    DvzVideoCodec codec;
+    DvzVideoMux mux;
+    const char* mp4_path;
+    const char* raw_path;
+    int flags;
+} DvzVideoEncoderConfig;
+
+typedef struct DvzVideoEncoder DvzVideoEncoder;
+
+static void dvz_video_encoder_mux_sample(
+    DvzVideoEncoder* enc, const uint8_t* data, uint32_t size, uint32_t duration);
+static void dvz_video_encoder_record_sample(
+    DvzVideoEncoder* enc, uint64_t offset, uint32_t size, uint32_t duration);
 
 static DvzNvencProfile dvz_nvenc_profile(DvzVideoCodec codec)
 {
@@ -1336,6 +1368,22 @@ static DvzNvencProfile dvz_nvenc_profile(DvzVideoCodec codec)
     }
 
     return prof;
+}
+
+static DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
+{
+    DvzVideoEncoderConfig cfg = {
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = FPS,
+        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
+        .codec = DVZ_VIDEO_CODEC_H264,
+        .mux = DVZ_VIDEO_MUX_MP4_STREAMING,
+        .mp4_path = "out.mp4",
+        .raw_path = "out.h26x",
+        .flags = 0,
+    };
+    return cfg;
 }
 
 static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_frames)
@@ -2136,6 +2184,56 @@ typedef struct
     FILE* fp;
 } NvEncIO;
 
+struct DvzMuxSample
+{
+    uint64_t offset;
+    uint32_t size;
+    uint32_t duration;
+};
+
+struct DvzVideoEncoder
+{
+    DvzDevice* device;
+    DvzVideoEncoderConfig cfg;
+    bool started;
+    uint32_t frame_idx;
+
+    VkImage image;
+    VkDeviceMemory memory;
+    VkDeviceSize memory_size;
+    int memory_fd;
+
+    bool cuda_ready;
+    bool nvenc_ready;
+    bool wait_semaphore_ready;
+
+    FILE* fp;
+
+    CudaCtx cuda;
+    NvEncCtx nvenc;
+    NvEncIO io;
+    RgbaBuf rgba;
+    Nv12Buf nv12;
+    NV_ENC_INPUT_PTR mapped_in;
+    NV_ENC_OUTPUT_PTR bitstream;
+    CUexternalSemaphore wait_semaphore;
+    int wait_semaphore_fd;
+    DvzVideoMux mux;
+    FILE* mp4_fp;
+    MP4E_mux_t* mp4_mux;
+    mp4_h26x_writer_t mp4_writer;
+    bool mp4_writer_ready;
+    uint32_t mp4_frame_duration_num;
+    uint32_t mp4_frame_duration_den;
+    uint64_t mp4_frame_duration_accum;
+    uint32_t mp4_frame_duration_last;
+    char* mp4_path_owned;
+    bool own_bitstream_fp;
+    DvzMuxSample* mux_samples;
+    size_t mux_sample_count;
+    size_t mux_sample_capacity;
+};
+
 static void nvenc_create_bitstreams(NvEncCtx* nctx, NvEncIO* io, int count)
 {
     for (int i = 0; i < count; i++)
@@ -2182,7 +2280,7 @@ static void nvenc_unmap_input(NvEncCtx* nctx, NvEncIO* io)
     }
 }
 
-static void nvenc_write_spspps(NvEncCtx* nctx, NvEncIO* io)
+static void nvenc_write_spspps(NvEncCtx* nctx, NvEncIO* io, DvzVideoEncoder* enc)
 {
     // Optional: prepend sequence params
     if (g_nvenc.nvEncGetSequenceParams == NULL)
@@ -2201,10 +2299,20 @@ static void nvenc_write_spspps(NvEncCtx* nctx, NvEncIO* io)
     {
         fwrite(header, 1, header_size, io->fp);
     }
+    if (st == NV_ENC_SUCCESS && header_size > 0 && enc != NULL)
+    {
+        dvz_video_encoder_mux_sample(enc, header, (uint32_t)header_size, 0);
+    }
 }
 
 static void nvenc_encode_frame(
-    NvEncCtx* nctx, NvEncIO* io, NV_ENC_INPUT_PTR in, NV_ENC_OUTPUT_PTR out, uint32_t frame_idx)
+    DvzVideoEncoder* enc,
+    NvEncCtx* nctx,
+    NvEncIO* io,
+    NV_ENC_INPUT_PTR in,
+    NV_ENC_OUTPUT_PTR out,
+    uint32_t frame_idx,
+    uint32_t duration)
 {
     NV_ENC_PIC_PARAMS pp = {0};
     pp.version = NV_ENC_PIC_PARAMS_VER;
@@ -2227,7 +2335,29 @@ static void nvenc_encode_frame(
     lb.doNotWait = 0;
     NVENC_API_CALL(g_nvenc.nvEncLockBitstream(nctx->hEncoder, &lb));
 
-    fwrite(lb.bitstreamBufferPtr, 1, lb.bitstreamSizeInBytes, io->fp);
+    uint64_t sample_offset = UINT64_MAX;
+    if (enc && enc->mux == DVZ_VIDEO_MUX_MP4_POST && io->fp)
+    {
+        long pos = ftello(io->fp);
+        if (pos >= 0)
+        {
+            sample_offset = (uint64_t)pos;
+        }
+    }
+    if (io->fp)
+    {
+        fwrite(lb.bitstreamBufferPtr, 1, lb.bitstreamSizeInBytes, io->fp);
+    }
+    if (enc)
+    {
+        dvz_video_encoder_mux_sample(
+            enc, (const uint8_t*)lb.bitstreamBufferPtr, (uint32_t)lb.bitstreamSizeInBytes, duration);
+        if (sample_offset != UINT64_MAX)
+        {
+            dvz_video_encoder_record_sample(
+                enc, sample_offset, (uint32_t)lb.bitstreamSizeInBytes, duration);
+        }
+    }
 
     NVENC_API_CALL(g_nvenc.nvEncUnlockBitstream(nctx->hEncoder, out));
 }
@@ -2262,62 +2392,229 @@ static void nvenc_destroy(NvEncCtx* nctx, NvEncIO* io)
 }
 
 
-// ====== Minimal video-encoder API used by test_video_2 ======
-typedef struct
-{
-    uint32_t width;
-    uint32_t height;
-    uint32_t fps;
-    VkFormat color_format;
-    DvzVideoCodec codec;
-    int flags;
-} DvzVideoEncoderConfig;
-
-typedef struct DvzVideoEncoder
-{
-    DvzDevice* device;
-    DvzVideoEncoderConfig cfg;
-    bool started;
-    uint32_t frame_idx;
-
-    VkImage image;
-    VkDeviceMemory memory;
-    VkDeviceSize memory_size;
-    int memory_fd;
-
-    bool cuda_ready;
-    bool nvenc_ready;
-    bool wait_semaphore_ready;
-
-    FILE* fp;
-
-    CudaCtx cuda;
-    NvEncCtx nvenc;
-    NvEncIO io;
-    RgbaBuf rgba;
-    Nv12Buf nv12;
-    NV_ENC_INPUT_PTR mapped_in;
-    NV_ENC_OUTPUT_PTR bitstream;
-    CUexternalSemaphore wait_semaphore;
-    int wait_semaphore_fd;
-} DvzVideoEncoder;
-
-static DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
-{
-    DvzVideoEncoderConfig cfg = {
-        .width = WIDTH,
-        .height = HEIGHT,
-        .fps = FPS,
-        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
-        .codec = DVZ_VIDEO_CODEC_H264,
-        .flags = 0,
-    };
-    return cfg;
-}
-
 static const GUID* dvz_video_encoder_codec_guid(DvzVideoCodec codec)
 {
     return dvz_nvenc_profile(codec).codec_guid;
+}
+
+static uint32_t dvz_video_encoder_next_duration(DvzVideoEncoder* enc)
+{
+    if (!enc || enc->mp4_frame_duration_den == 0)
+    {
+        return 0;
+    }
+    enc->mp4_frame_duration_accum += enc->mp4_frame_duration_num;
+    uint32_t duration = (uint32_t)(enc->mp4_frame_duration_accum / enc->mp4_frame_duration_den);
+    enc->mp4_frame_duration_accum -=
+        (uint64_t)duration * (uint64_t)enc->mp4_frame_duration_den;
+    enc->mp4_frame_duration_last = duration;
+    return duration;
+}
+
+static int dvz_mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* token)
+{
+    FILE* fp = (FILE*)token;
+    if (!fp)
+    {
+        return MP4E_STATUS_FILE_WRITE_ERROR;
+    }
+    if (ftello(fp) != offset)
+    {
+        if (fseeko(fp, offset, SEEK_SET) != 0)
+        {
+            return MP4E_STATUS_FILE_WRITE_ERROR;
+        }
+    }
+    size_t written = fwrite(buffer, 1, size, fp);
+    return (written == size) ? MP4E_STATUS_OK : MP4E_STATUS_FILE_WRITE_ERROR;
+}
+
+static void dvz_video_encoder_mux_sample(
+    DvzVideoEncoder* enc, const uint8_t* data, uint32_t size, uint32_t duration)
+{
+    if (!enc || enc->mux != DVZ_VIDEO_MUX_MP4_STREAMING || !enc->mp4_writer_ready)
+    {
+        return;
+    }
+    if (data == NULL || size == 0)
+    {
+        return;
+    }
+    int err = mp4_h26x_write_nal(&enc->mp4_writer, data, (int)size, duration);
+    if (err != MP4E_STATUS_OK)
+    {
+        log_error("minimp4 streaming failed with status %d", err);
+        mp4_h26x_write_close(&enc->mp4_writer);
+        MP4E_close(enc->mp4_mux);
+        enc->mp4_writer_ready = false;
+        enc->mp4_mux = NULL;
+        if (enc->mp4_fp)
+        {
+            fclose(enc->mp4_fp);
+            enc->mp4_fp = NULL;
+        }
+    }
+}
+
+static void dvz_video_encoder_record_sample(
+    DvzVideoEncoder* enc, uint64_t offset, uint32_t size, uint32_t duration)
+{
+    if (!enc || enc->mux != DVZ_VIDEO_MUX_MP4_POST)
+    {
+        return;
+    }
+    if (enc->mux_sample_count == enc->mux_sample_capacity)
+    {
+        size_t new_cap = enc->mux_sample_capacity == 0 ? 128 : enc->mux_sample_capacity * 2;
+        DvzMuxSample* samples =
+            (DvzMuxSample*)realloc(enc->mux_samples, new_cap * sizeof(DvzMuxSample));
+        if (!samples)
+        {
+            log_error("failed to grow mux sample buffer");
+            return;
+        }
+        enc->mux_samples = samples;
+        enc->mux_sample_capacity = new_cap;
+    }
+    enc->mux_samples[enc->mux_sample_count++] =
+        (DvzMuxSample){.offset = offset, .size = size, .duration = duration};
+}
+
+static void dvz_video_encoder_close_mp4(DvzVideoEncoder* enc)
+{
+    if (!enc)
+    {
+        return;
+    }
+    if (enc->mp4_writer_ready)
+    {
+        mp4_h26x_write_close(&enc->mp4_writer);
+        enc->mp4_writer_ready = false;
+    }
+    if (enc->mp4_mux)
+    {
+        MP4E_close(enc->mp4_mux);
+        enc->mp4_mux = NULL;
+    }
+    if (enc->mp4_fp)
+    {
+        fclose(enc->mp4_fp);
+        enc->mp4_fp = NULL;
+    }
+}
+
+static bool dvz_video_encoder_open_mp4_stream(DvzVideoEncoder* enc)
+{
+    ANN(enc);
+    const char* mp4_path = enc->cfg.mp4_path ? enc->cfg.mp4_path : "out.mp4";
+    enc->mp4_path_owned = dvz_strdup(mp4_path);
+    enc->mp4_fp = fopen(mp4_path, "wb");
+    if (!enc->mp4_fp)
+    {
+        log_error("failed to open mp4 output '%s': %s", mp4_path, strerror(errno));
+        return false;
+    }
+    enc->mp4_mux = MP4E_open(1, 0, enc->mp4_fp, dvz_mp4_write_cb);
+    if (!enc->mp4_mux)
+    {
+        log_error("failed to initialize minimp4 muxer");
+        return false;
+    }
+    mp4_h26x_write_init(
+        &enc->mp4_writer, enc->mp4_mux, (int)enc->cfg.width, (int)enc->cfg.height,
+        enc->cfg.codec == DVZ_VIDEO_CODEC_HEVC);
+    enc->mp4_writer_ready = true;
+    enc->mp4_frame_duration_num = 90000;
+    enc->mp4_frame_duration_den = enc->cfg.fps > 0 ? enc->cfg.fps : 1;
+    enc->mp4_frame_duration_accum = 0;
+    return true;
+}
+
+static int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
+{
+    ANN(enc);
+    if (enc->mux != DVZ_VIDEO_MUX_MP4_POST || enc->mux_sample_count == 0 || !enc->io.fp)
+    {
+        return 0;
+    }
+    const char* mp4_path = enc->cfg.mp4_path ? enc->cfg.mp4_path : "out.mp4";
+    FILE* mp4_fp = fopen(mp4_path, "wb");
+    if (!mp4_fp)
+    {
+        log_error("failed to open mp4 output '%s': %s", mp4_path, strerror(errno));
+        return -1;
+    }
+    MP4E_mux_t* mux = MP4E_open(1, 0, mp4_fp, dvz_mp4_write_cb);
+    if (!mux)
+    {
+        fclose(mp4_fp);
+        log_error("failed to initialize minimp4 muxer for post-processing");
+        return -1;
+    }
+    mp4_h26x_writer_t writer;
+    memset(&writer, 0, sizeof(writer));
+    mp4_h26x_write_init(
+        &writer, mux, (int)enc->cfg.width, (int)enc->cfg.height,
+        enc->cfg.codec == DVZ_VIDEO_CODEC_HEVC);
+    uint8_t* buffer = NULL;
+    size_t buffer_size = 0;
+    for (size_t i = 0; i < enc->mux_sample_count; ++i)
+    {
+        DvzMuxSample sample = enc->mux_samples[i];
+        if (sample.size == 0)
+        {
+            continue;
+        }
+        if (buffer_size < sample.size)
+        {
+            uint8_t* new_buf = (uint8_t*)realloc(buffer, sample.size);
+            if (!new_buf)
+            {
+                log_error("failed to allocate buffer for mp4 mux");
+                free(buffer);
+                mp4_h26x_write_close(&writer);
+                MP4E_close(mux);
+                fclose(mp4_fp);
+                return -1;
+            }
+            buffer = new_buf;
+            buffer_size = sample.size;
+        }
+        if (fseeko(enc->io.fp, (off_t)sample.offset, SEEK_SET) != 0)
+        {
+            log_error("failed to seek raw stream for mp4 mux");
+            free(buffer);
+            mp4_h26x_write_close(&writer);
+            MP4E_close(mux);
+            fclose(mp4_fp);
+            return -1;
+        }
+        size_t read = fread(buffer, 1, sample.size, enc->io.fp);
+        if (read != sample.size)
+        {
+            log_error("failed to read raw stream chunk for mp4 mux");
+            free(buffer);
+            mp4_h26x_write_close(&writer);
+            MP4E_close(mux);
+            fclose(mp4_fp);
+            return -1;
+        }
+        int err = mp4_h26x_write_nal(&writer, buffer, (int)sample.size, sample.duration);
+        if (err != MP4E_STATUS_OK)
+        {
+            log_error("minimp4 post-processing failed with status %d", err);
+            free(buffer);
+            mp4_h26x_write_close(&writer);
+            MP4E_close(mux);
+            fclose(mp4_fp);
+            return -1;
+        }
+    }
+    free(buffer);
+    mp4_h26x_write_close(&writer);
+    MP4E_close(mux);
+    fclose(mp4_fp);
+    return 0;
 }
 
 static void dvz_video_encoder_release(DvzVideoEncoder* enc)
@@ -2361,6 +2658,17 @@ static void dvz_video_encoder_release(DvzVideoEncoder* enc)
     enc->wait_semaphore_ready = false;
     enc->wait_semaphore_fd = -1;
 
+    dvz_video_encoder_close_mp4(enc);
+    if (enc->mp4_path_owned)
+    {
+        free(enc->mp4_path_owned);
+        enc->mp4_path_owned = NULL;
+    }
+    free(enc->mux_samples);
+    enc->mux_samples = NULL;
+    enc->mux_sample_capacity = 0;
+    enc->mux_sample_count = 0;
+
     if (enc->cuda.cuMod)
         cuModuleUnload(enc->cuda.cuMod);
     if (enc->cuda.mmArr)
@@ -2377,6 +2685,11 @@ static void dvz_video_encoder_release(DvzVideoEncoder* enc)
     memset(&enc->cuda, 0, sizeof(enc->cuda));
     enc->cuda_ready = false;
 
+    if (enc->own_bitstream_fp && enc->fp)
+    {
+        fclose(enc->fp);
+    }
+    enc->own_bitstream_fp = false;
     enc->fp = NULL;
     enc->image = VK_NULL_HANDLE;
     enc->memory = VK_NULL_HANDLE;
@@ -2403,7 +2716,6 @@ static int dvz_video_encoder_start(
     int memory_fd, int wait_semaphore_fd, FILE* bitstream_out)
 {
     ANN(enc);
-    ANN(bitstream_out);
     if (enc->started)
     {
         log_error("video encoder already started");
@@ -2411,11 +2723,37 @@ static int dvz_video_encoder_start(
     }
 
     int rc = 0;
+    enc->mux = enc->cfg.mux;
+    enc->mp4_frame_duration_num = 90000;
+    enc->mp4_frame_duration_den = enc->cfg.fps > 0 ? enc->cfg.fps : 1;
+    enc->mp4_frame_duration_accum = 0;
     enc->image = image;
     enc->memory = memory;
     enc->memory_size = memory_size;
     enc->memory_fd = memory_fd;
     enc->wait_semaphore_fd = wait_semaphore_fd;
+
+    if (enc->mux == DVZ_VIDEO_MUX_MP4_STREAMING)
+    {
+        if (!dvz_video_encoder_open_mp4_stream(enc))
+        {
+            rc = -1;
+            goto fail;
+        }
+    }
+
+    if (!bitstream_out && enc->mux == DVZ_VIDEO_MUX_MP4_POST)
+    {
+        const char* raw_path = enc->cfg.raw_path ? enc->cfg.raw_path : "out.h26x";
+        bitstream_out = fopen(raw_path, "wb");
+        if (!bitstream_out)
+        {
+            log_error("failed to open raw bitstream '%s': %s", raw_path, strerror(errno));
+            rc = -1;
+            goto fail;
+        }
+        enc->own_bitstream_fp = true;
+    }
     enc->fp = bitstream_out;
     enc->io.fp = bitstream_out;
 
@@ -2451,7 +2789,7 @@ static int dvz_video_encoder_start(
     nvenc_create_bitstreams(&enc->nvenc, &enc->io, 1);
     enc->bitstream = enc->io.bitstreams[0];
     enc->mapped_in = nvenc_map_input(&enc->nvenc, &enc->io);
-    nvenc_write_spspps(&enc->nvenc, &enc->io);
+    nvenc_write_spspps(&enc->nvenc, &enc->io, enc);
 
     enc->frame_idx = 0;
     enc->started = true;
@@ -2480,7 +2818,9 @@ static int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
 
     copy_array_to_linear_rgba(&enc->cuda, &enc->rgba, enc->cfg.width, enc->cfg.height);
     launch_rgba_to_nv12(&enc->cuda, &enc->rgba, &enc->nv12, enc->cfg.width, enc->cfg.height);
-    nvenc_encode_frame(&enc->nvenc, &enc->io, enc->mapped_in, enc->bitstream, enc->frame_idx++);
+    uint32_t duration = dvz_video_encoder_next_duration(enc);
+    nvenc_encode_frame(
+        enc, &enc->nvenc, &enc->io, enc->mapped_in, enc->bitstream, enc->frame_idx++, duration);
     return 0;
 }
 
@@ -2494,6 +2834,12 @@ static int dvz_video_encoder_stop(DvzVideoEncoder* enc)
     if (enc->started && enc->nvenc_ready)
     {
         nvenc_flush(&enc->nvenc);
+    }
+    if (enc->mux == DVZ_VIDEO_MUX_MP4_POST && enc->io.fp)
+    {
+        fflush(enc->io.fp);
+        dvz_video_encoder_mux_post(enc);
+        fseeko(enc->io.fp, 0, SEEK_END);
     }
     dvz_video_encoder_release(enc);
     return 0;
@@ -2573,18 +2919,19 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(vk.device, vk.image, &memReq);
 
-    bitstream_fp = fopen("out.h264", "wb");
-    if (!bitstream_fp)
-    {
-        perror("fopen out.h264");
-        rc = 1;
-        goto cleanup;
-    }
-
     DvzVideoEncoderConfig vcfg = dvz_video_encoder_default_config();
+    vcfg.mp4_path = "out.mp4";
+    vcfg.raw_path = "out.h26x";
     encoder = dvz_video_encoder_create(NULL, &vcfg);
     if (!encoder)
     {
+        rc = 1;
+        goto cleanup;
+    }
+    bitstream_fp = fopen(vcfg.raw_path, "wb");
+    if (!bitstream_fp)
+    {
+        perror("fopen raw bitstream");
         rc = 1;
         goto cleanup;
     }
@@ -2651,8 +2998,8 @@ cleanup:
         vkDestroyInstance(vk.instance, NULL);
     if (!skip_encode && encoded)
     {
-        fprintf(
-            stderr, "Wrote out.h264 (%dx%d @ %dfps, %d frames)\n", WIDTH, HEIGHT, FPS, NFRAMES);
+        const char* mp4_path = vcfg.mp4_path ? vcfg.mp4_path : "out.mp4";
+        fprintf(stderr, "Wrote %s (%dx%d @ %dfps, %d frames)\n", mp4_path, WIDTH, HEIGHT, FPS, NFRAMES);
     }
     if (skip_encode)
     {
