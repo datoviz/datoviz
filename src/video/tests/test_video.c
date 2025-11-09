@@ -2134,6 +2134,241 @@ static void nvenc_destroy(NvEncCtx* nctx, NvEncIO* io)
 }
 
 
+// ====== Minimal video-encoder API used by test_video_2 ======
+typedef enum
+{
+    DVZ_VIDEO_CODEC_HEVC = 0,
+} DvzVideoCodec;
+
+typedef struct
+{
+    uint32_t width;
+    uint32_t height;
+    uint32_t fps;
+    VkFormat color_format;
+    DvzVideoCodec codec;
+    int flags;
+} DvzVideoEncoderConfig;
+
+typedef struct DvzVideoEncoder
+{
+    DvzDevice* device;
+    DvzVideoEncoderConfig cfg;
+    bool started;
+    uint32_t frame_idx;
+
+    VkImage image;
+    VkDeviceMemory memory;
+    VkDeviceSize memory_size;
+    int memory_fd;
+
+    bool cuda_ready;
+    bool nvenc_ready;
+
+    FILE* fp;
+
+    CudaCtx cuda;
+    NvEncCtx nvenc;
+    NvEncIO io;
+    RgbaBuf rgba;
+    Nv12Buf nv12;
+    NV_ENC_INPUT_PTR mapped_in;
+    NV_ENC_OUTPUT_PTR bitstream;
+} DvzVideoEncoder;
+
+static DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
+{
+    DvzVideoEncoderConfig cfg = {
+        .width = WIDTH,
+        .height = HEIGHT,
+        .fps = FPS,
+        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
+        .codec = DVZ_VIDEO_CODEC_HEVC,
+        .flags = 0,
+    };
+    return cfg;
+}
+
+static const GUID* dvz_video_encoder_codec_guid(DvzVideoCodec codec)
+{
+    switch (codec)
+    {
+    case DVZ_VIDEO_CODEC_HEVC:
+    default:
+        return &NV_ENC_CODEC_HEVC_GUID;
+    }
+}
+
+static void dvz_video_encoder_release(DvzVideoEncoder* enc)
+{
+    if (!enc)
+    {
+        return;
+    }
+
+    if (enc->nvenc_ready)
+    {
+        nvenc_unmap_input(&enc->nvenc, &enc->io);
+        nvenc_destroy(&enc->nvenc, &enc->io);
+        memset(&enc->nvenc, 0, sizeof(enc->nvenc));
+        memset(&enc->io, 0, sizeof(enc->io));
+        enc->mapped_in = NULL;
+        enc->bitstream = NULL;
+        enc->nvenc_ready = false;
+    }
+
+    if (enc->rgba.dptr)
+    {
+        cuMemFree(enc->rgba.dptr);
+        enc->rgba.dptr = 0;
+        enc->rgba.pitch = 0;
+        enc->rgba.size = 0;
+    }
+    if (enc->nv12.dptr)
+    {
+        cuMemFree(enc->nv12.dptr);
+        enc->nv12.dptr = 0;
+        enc->nv12.pitch = 0;
+        enc->nv12.size = 0;
+    }
+
+    if (enc->cuda.cuMod)
+        cuModuleUnload(enc->cuda.cuMod);
+    if (enc->cuda.mmArr)
+        cuMipmappedArrayDestroy(enc->cuda.mmArr);
+    if (enc->cuda.extMem)
+        cuDestroyExternalMemory(enc->cuda.extMem);
+    if (enc->cuda.cuCtx)
+        cuCtxDestroy(enc->cuda.cuCtx);
+    memset(&enc->cuda, 0, sizeof(enc->cuda));
+    enc->cuda_ready = false;
+
+    enc->fp = NULL;
+    enc->image = VK_NULL_HANDLE;
+    enc->memory = VK_NULL_HANDLE;
+    enc->memory_size = 0;
+    enc->memory_fd = -1;
+    enc->started = false;
+    enc->frame_idx = 0;
+}
+
+static DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg)
+{
+    DvzVideoEncoder* enc = (DvzVideoEncoder*)calloc(1, sizeof(DvzVideoEncoder));
+    ANN(enc);
+    enc->device = device;
+    enc->cfg = cfg ? *cfg : dvz_video_encoder_default_config();
+    enc->memory_fd = -1;
+    return enc;
+}
+
+static int dvz_video_encoder_start(
+    DvzVideoEncoder* enc,
+    VkImage image,
+    VkDeviceMemory memory,
+    VkDeviceSize memory_size,
+    int memory_fd,
+    FILE* bitstream_out)
+{
+    ANN(enc);
+    ANN(bitstream_out);
+    if (enc->started)
+    {
+        log_error("video encoder already started");
+        return -1;
+    }
+
+    int rc = 0;
+    enc->image = image;
+    enc->memory = memory;
+    enc->memory_size = memory_size;
+    enc->memory_fd = memory_fd;
+    enc->fp = bitstream_out;
+    enc->io.fp = bitstream_out;
+
+    nvenc_load_api();
+
+    cuda_import_vk_memory(&enc->cuda, memory_fd, memory_size);
+    enc->cuda_ready = true;
+
+    nvenc_open_session_cuda(&enc->nvenc, enc->cuda.cuCtx);
+    if (!nvenc_supports_codec(enc->nvenc.hEncoder, dvz_video_encoder_codec_guid(enc->cfg.codec)))
+    {
+        log_warn("requested video codec not supported");
+        rc = -1;
+        goto fail;
+    }
+    nvenc_init_hevc(&enc->nvenc, enc->cfg.width, enc->cfg.height, enc->cfg.fps);
+    enc->nvenc_ready = true;
+
+    alloc_rgba(&enc->rgba, enc->cfg.width, enc->cfg.height, PITCH_ALIGN);
+    alloc_nv12(&enc->nv12, enc->cfg.width, enc->cfg.height, PITCH_ALIGN);
+
+    nvenc_register_input(
+        &enc->nvenc, &enc->io, enc->nv12.dptr, enc->nv12.pitch, enc->cfg.width, enc->cfg.height);
+    nvenc_create_bitstreams(&enc->nvenc, &enc->io, 1);
+    enc->bitstream = enc->io.bitstreams[0];
+    enc->mapped_in = nvenc_map_input(&enc->nvenc, &enc->io);
+    nvenc_write_spspps(&enc->nvenc, &enc->io);
+
+    enc->frame_idx = 0;
+    enc->started = true;
+    return 0;
+
+fail:
+    dvz_video_encoder_release(enc);
+    return rc;
+}
+
+static int dvz_video_encoder_submit(
+    DvzVideoEncoder* enc,
+    VkSemaphore render_done,
+    VkPipelineStageFlags wait_stage,
+    VkImageLayout current_layout,
+    VkFence encode_done)
+{
+    (void)render_done;
+    (void)wait_stage;
+    (void)current_layout;
+    (void)encode_done;
+    ANN(enc);
+    if (!enc->started)
+    {
+        return -1;
+    }
+
+    copy_array_to_linear_rgba(enc->cuda.arr0, &enc->rgba, enc->cfg.width, enc->cfg.height);
+    launch_rgba_to_nv12(&enc->cuda, &enc->rgba, &enc->nv12, enc->cfg.width, enc->cfg.height);
+    nvenc_encode_frame(&enc->nvenc, &enc->io, enc->mapped_in, enc->bitstream, enc->frame_idx++);
+    return 0;
+}
+
+static int dvz_video_encoder_stop(DvzVideoEncoder* enc)
+{
+    if (!enc)
+    {
+        return 0;
+    }
+
+    if (enc->started && enc->nvenc_ready)
+    {
+        nvenc_flush(&enc->nvenc);
+    }
+    dvz_video_encoder_release(enc);
+    return 0;
+}
+
+static void dvz_video_encoder_destroy(DvzVideoEncoder* enc)
+{
+    if (!enc)
+    {
+        return;
+    }
+    dvz_video_encoder_stop(enc);
+    free(enc);
+}
+
+
 
 int test_video_2(TstSuite* suite, TstItem* tstitem)
 {
@@ -2144,10 +2379,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     bool skip_encode = false;
     bool encoded = false;
 
-    RgbaBuf rb = {0};
-    Nv12Buf nb = {0};
-    NvEncIO io;
-    memset(&io, 0, sizeof(io));
+    FILE* bitstream_fp = NULL;
+    DvzVideoEncoder* encoder = NULL;
 
     VulkanCtx vk;
     vk_init_and_make_image(&vk);
@@ -2175,83 +2408,58 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(vk.device, vk.image, &memReq);
 
-    // CUDA: import Vulkan memory, map to array, load kernel
-    CudaCtx cu;
-    cuda_import_vk_memory(&cu, vk.memory_fd, memReq.size);
-
-    // NVENC: load API, open session, ensure HEVC support, init encoder
-    nvenc_load_api();
-    NvEncCtx nctx;
-    memset(&nctx, 0, sizeof(nctx));
-    nvenc_open_session_cuda(&nctx, cu.cuCtx);
-    if (!nvenc_supports_codec(nctx.hEncoder, &NV_ENC_CODEC_HEVC_GUID))
-    {
-        log_warn("Skipping test_video_2: NVENC HEVC encode not supported on this GPU");
-        skip_encode = true;
-        goto cleanup;
-    }
-    nvenc_init_hevc(&nctx, WIDTH, HEIGHT, FPS);
-
-    // Allocate pitch-linear RGBA and NV12 device buffers
-    alloc_rgba(&rb, WIDTH, HEIGHT, PITCH_ALIGN);
-    alloc_nv12(&nb, WIDTH, HEIGHT, PITCH_ALIGN);
-
-    // Register NV12 input and create bitstream output
-    nvenc_register_input(&nctx, &io, nb.dptr, nb.pitch, WIDTH, HEIGHT);
-    nvenc_create_bitstreams(&nctx, &io, 1);
-
-    io.fp = fopen("out.h265", "wb");
-    if (!io.fp)
+    bitstream_fp = fopen("out.h265", "wb");
+    if (!bitstream_fp)
     {
         perror("fopen out.h265");
         rc = 1;
         goto cleanup;
     }
 
-    NV_ENC_INPUT_PTR mapped_in = nvenc_map_input(&nctx, &io);
-    NV_ENC_OUTPUT_PTR bitstream = io.bitstreams[0];
-    nvenc_write_spspps(&nctx, &io);
+    DvzVideoEncoderConfig vcfg = dvz_video_encoder_default_config();
+    encoder = dvz_video_encoder_create(NULL, &vcfg);
+    if (!encoder)
+    {
+        rc = 1;
+        goto cleanup;
+    }
+    if (dvz_video_encoder_start(
+            encoder, vk.image, vk.memory, memReq.size, vk.memory_fd, bitstream_fp) != 0)
+    {
+        skip_encode = true;
+        goto cleanup;
+    }
 
     for (int frame = 0; frame < NFRAMES; ++frame)
     {
         // Render/copy path:
         // 1. Record and submit a command buffer that clears the offscreen image and transitions it back
         //    to GENERAL layout so CUDA can read from it.
-        // 2. Copy the VkImage contents into a pitch-linear RGBA buffer and convert to NV12 on the GPU.
         VkClearColorValue clr = frame_clear_color((uint32_t)frame, NFRAMES);
         vk_render_frame_and_sync(&vk, &clr);
-        copy_array_to_linear_rgba(cu.arr0, &rb, WIDTH, HEIGHT);
-        launch_rgba_to_nv12(&cu, &rb, &nb, WIDTH, HEIGHT);
 
-        // 3. Kick the encoder once per frame.
-        nvenc_encode_frame(&nctx, &io, mapped_in, bitstream, (uint32_t)frame);
+        if (dvz_video_encoder_submit(
+                encoder, VK_NULL_HANDLE, 0, vk.image_layout, VK_NULL_HANDLE) != 0)
+        {
+            rc = 1;
+            goto cleanup;
+        }
     }
 
-    nvenc_flush(&nctx);
-    nvenc_unmap_input(&nctx, &io);
+    dvz_video_encoder_stop(encoder);
     encoded = true;
 
-    fclose(io.fp);
-    io.fp = NULL;
-
-    // Cleanup NVENC
 cleanup:
-    if (io.fp)
-        fclose(io.fp);
-    nvenc_unmap_input(&nctx, &io);
-    nvenc_destroy(&nctx, &io);
-    if (rb.dptr)
-        cuMemFree(rb.dptr);
-    if (nb.dptr)
-        cuMemFree(nb.dptr);
-    if (cu.cuMod)
-        cuModuleUnload(cu.cuMod);
-    if (cu.mmArr)
-        cuMipmappedArrayDestroy(cu.mmArr);
-    if (cu.extMem)
-        cuDestroyExternalMemory(cu.extMem);
-    if (cu.cuCtx)
-        cuCtxDestroy(cu.cuCtx);
+    if (encoder)
+    {
+        dvz_video_encoder_destroy(encoder);
+        encoder = NULL;
+    }
+    if (bitstream_fp)
+    {
+        fclose(bitstream_fp);
+        bitstream_fp = NULL;
+    }
     if (vk.memory_fd >= 0)
         close(vk.memory_fd);
     if (vk.memory)
