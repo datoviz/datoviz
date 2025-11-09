@@ -1379,6 +1379,7 @@ static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_fr
 
 // ====== Minimal Vulkan loader for external FD function ======
 static PFN_vkGetMemoryFdKHR vkGetMemoryFdKHR_ptr = NULL;
+static PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHR_ptr = NULL;
 
 // ====== CUDA kernel: RGBA8 -> NV12 ======
 static const char* ptx_rgba_to_nv12 =
@@ -1514,6 +1515,8 @@ typedef struct
     VkImage image;
     VkDeviceMemory memory;
     int memory_fd;
+    VkSemaphore semaphore;
+    int semaphore_fd;
     VkFence fence;
     VkImageLayout image_layout;
 } VulkanCtx;
@@ -1572,6 +1575,8 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 {
     VK_CHECK(volkInitialize());
     memset(vk, 0, sizeof(*vk));
+    vk->memory_fd = -1;
+    vk->semaphore_fd = -1;
 
     // Instance with no layers, minimal ext (we'll fetch device funcs later)
     VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -1616,6 +1621,8 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     const char* devExts[] = {
         VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
         VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+        VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+        VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
     };
 
     VkDeviceCreateInfo dci = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
@@ -1636,6 +1643,13 @@ static void vk_init_and_make_image(VulkanCtx* vk)
         fprintf(stderr, "vkGetMemoryFdKHR not found\n");
         exit(1);
     }
+    vkGetSemaphoreFdKHR_ptr =
+        (PFN_vkGetSemaphoreFdKHR)vkGetDeviceProcAddr(vk->device, "vkGetSemaphoreFdKHR");
+    if (!vkGetSemaphoreFdKHR_ptr)
+    {
+        fprintf(stderr, "vkGetSemaphoreFdKHR not found\n");
+        exit(1);
+    }
 
     // Command pool and buffer
     VkCommandPoolCreateInfo cpci = {.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
@@ -1651,6 +1665,27 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     VkFenceCreateInfo fci = {.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
     VK_CHECK(vkCreateFence(vk->device, &fci, NULL, &vk->fence));
+
+    VkExportSemaphoreCreateInfo esci = {
+        .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+        .handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
+    };
+    VkSemaphoreCreateInfo sci = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+        .pNext = &esci,
+    };
+    VK_CHECK(vkCreateSemaphore(vk->device, &sci, NULL, &vk->semaphore));
+    VkSemaphoreGetFdInfoKHR semfd = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+        .semaphore = vk->semaphore,
+        .handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
+    };
+    VK_CHECK(vkGetSemaphoreFdKHR_ptr(vk->device, &semfd, &vk->semaphore_fd));
+    if (vk->semaphore_fd < 0)
+    {
+        fprintf(stderr, "Failed to export semaphore fd\n");
+        exit(1);
+    }
 
     // Create exportable RGBA8 image
     VkExternalMemoryImageCreateInfo emici = {
@@ -1780,10 +1815,14 @@ static void vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr
     VK_CHECK(vkEndCommandBuffer(vk->cmd));
 
     VK_CHECK(vkResetFences(vk->device, 1, &vk->fence));
+    VkSemaphore signal_sems[1] = {vk->semaphore};
     VkSubmitInfo submit = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .commandBufferCount = 1,
-        .pCommandBuffers = &vk->cmd};
+        .pCommandBuffers = &vk->cmd,
+        .signalSemaphoreCount = (vk->semaphore != VK_NULL_HANDLE) ? 1 : 0,
+        .pSignalSemaphores = (vk->semaphore != VK_NULL_HANDLE) ? signal_sems : NULL,
+    };
     VK_CHECK(vkQueueSubmit(vk->queue, 1, &submit, vk->fence));
     VK_CHECK(vkWaitForFences(vk->device, 1, &vk->fence, VK_TRUE, UINT64_MAX));
 
@@ -1799,6 +1838,7 @@ typedef struct
     CUarray arr0;
     CUmodule cuMod;
     CUfunction cuFun;
+    CUstream stream;
 } CudaCtx;
 
 static void cuda_import_vk_memory(CudaCtx* cu, int mem_fd, size_t alloc_size)
@@ -1808,6 +1848,7 @@ static void cuda_import_vk_memory(CudaCtx* cu, int mem_fd, size_t alloc_size)
     CU_CHECK(cuInit(0));
     CU_CHECK(cuDeviceGet(&dev, 0));
     CU_CHECK(cuCtxCreate(&cu->cuCtx, 0, dev));
+    CU_CHECK(cuStreamCreate(&cu->stream, CU_STREAM_DEFAULT));
 
     CUDA_EXTERNAL_MEMORY_HANDLE_DESC hdesc = {0};
     hdesc.type = CU_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD;
@@ -1971,17 +2012,18 @@ static void alloc_rgba(RgbaBuf* rb, uint32_t w, uint32_t h, uint32_t pitch_align
 }
 
 // Copy from CUarray (imported Vulkan image) to linear RGBA device buffer (device→device)
-static void copy_array_to_linear_rgba(CUarray arr, RgbaBuf* rb, uint32_t w, uint32_t h)
+static void copy_array_to_linear_rgba(CudaCtx* cu, RgbaBuf* rb, uint32_t w, uint32_t h)
 {
+    ANN(cu);
     CUDA_MEMCPY2D c2d = {0};
     c2d.srcMemoryType = CU_MEMORYTYPE_ARRAY;
-    c2d.srcArray = arr;
+    c2d.srcArray = cu->arr0;
     c2d.dstMemoryType = CU_MEMORYTYPE_DEVICE;
     c2d.dstDevice = rb->dptr;
     c2d.dstPitch = rb->pitch;
     c2d.WidthInBytes = w * 4;
     c2d.Height = h;
-    CU_CHECK(cuMemcpy2D(&c2d)); // device-to-device
+    CU_CHECK(cuMemcpy2DAsync(&c2d, cu->stream)); // device-to-device
 }
 
 // Launch RGBA->NV12 kernel
@@ -1995,8 +2037,8 @@ static void launch_rgba_to_nv12(CudaCtx* cu, RgbaBuf* rb, Nv12Buf* nb, uint32_t 
     void* args[] = {(void*)&rb->dptr,  (void*)&rb->pitch, (void*)&nb->dptr,
                     (void*)&nb->pitch, (void*)&w,         (void*)&h};
 
-    CU_CHECK(cuLaunchKernel(cu->cuFun, gx, gy, 1, Bx, By, 1, 0, 0, args, NULL));
-    CU_CHECK(cuCtxSynchronize());
+    CU_CHECK(cuLaunchKernel(cu->cuFun, gx, gy, 1, Bx, By, 1, 0, cu->stream, args, NULL));
+    CU_CHECK(cuStreamSynchronize(cu->stream));
 }
 
 // NVENC resource registration / bitstream management
@@ -2164,6 +2206,7 @@ typedef struct DvzVideoEncoder
 
     bool cuda_ready;
     bool nvenc_ready;
+    bool wait_semaphore_ready;
 
     FILE* fp;
 
@@ -2174,6 +2217,8 @@ typedef struct DvzVideoEncoder
     Nv12Buf nv12;
     NV_ENC_INPUT_PTR mapped_in;
     NV_ENC_OUTPUT_PTR bitstream;
+    CUexternalSemaphore wait_semaphore;
+    int wait_semaphore_fd;
 } DvzVideoEncoder;
 
 static DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
@@ -2232,12 +2277,25 @@ static void dvz_video_encoder_release(DvzVideoEncoder* enc)
         enc->nv12.size = 0;
     }
 
+    if (enc->wait_semaphore_ready)
+    {
+        cuDestroyExternalSemaphore(enc->wait_semaphore);
+        enc->wait_semaphore = NULL;
+    }
+    enc->wait_semaphore_ready = false;
+    enc->wait_semaphore_fd = -1;
+
     if (enc->cuda.cuMod)
         cuModuleUnload(enc->cuda.cuMod);
     if (enc->cuda.mmArr)
         cuMipmappedArrayDestroy(enc->cuda.mmArr);
     if (enc->cuda.extMem)
         cuDestroyExternalMemory(enc->cuda.extMem);
+    if (enc->cuda.stream)
+    {
+        CU_CHECK(cuStreamDestroy(enc->cuda.stream));
+        enc->cuda.stream = NULL;
+    }
     if (enc->cuda.cuCtx)
         cuCtxDestroy(enc->cuda.cuCtx);
     memset(&enc->cuda, 0, sizeof(enc->cuda));
@@ -2259,6 +2317,7 @@ static DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVid
     enc->device = device;
     enc->cfg = cfg ? *cfg : dvz_video_encoder_default_config();
     enc->memory_fd = -1;
+    enc->wait_semaphore_fd = -1;
     return enc;
 }
 
@@ -2268,6 +2327,7 @@ static int dvz_video_encoder_start(
     VkDeviceMemory memory,
     VkDeviceSize memory_size,
     int memory_fd,
+    int wait_semaphore_fd,
     FILE* bitstream_out)
 {
     ANN(enc);
@@ -2283,6 +2343,7 @@ static int dvz_video_encoder_start(
     enc->memory = memory;
     enc->memory_size = memory_size;
     enc->memory_fd = memory_fd;
+    enc->wait_semaphore_fd = wait_semaphore_fd;
     enc->fp = bitstream_out;
     enc->io.fp = bitstream_out;
 
@@ -2290,6 +2351,15 @@ static int dvz_video_encoder_start(
 
     cuda_import_vk_memory(&enc->cuda, memory_fd, memory_size);
     enc->cuda_ready = true;
+
+    if (wait_semaphore_fd >= 0)
+    {
+        CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC shdesc = {0};
+        shdesc.type = CU_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD;
+        shdesc.handle.fd = wait_semaphore_fd;
+        CU_CHECK(cuImportExternalSemaphore(&enc->wait_semaphore, &shdesc));
+        enc->wait_semaphore_ready = true;
+    }
 
     nvenc_open_session_cuda(&enc->nvenc, enc->cuda.cuCtx);
     if (!nvenc_supports_codec(enc->nvenc.hEncoder, dvz_video_encoder_codec_guid(enc->cfg.codec)))
@@ -2337,7 +2407,14 @@ static int dvz_video_encoder_submit(
         return -1;
     }
 
-    copy_array_to_linear_rgba(enc->cuda.arr0, &enc->rgba, enc->cfg.width, enc->cfg.height);
+    if (enc->wait_semaphore_ready)
+    {
+        CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS wait_params = {0};
+        CU_CHECK(
+            cuWaitExternalSemaphoresAsync(&enc->wait_semaphore, &wait_params, 1, enc->cuda.stream));
+    }
+
+    copy_array_to_linear_rgba(&enc->cuda, &enc->rgba, enc->cfg.width, enc->cfg.height);
     launch_rgba_to_nv12(&enc->cuda, &enc->rgba, &enc->nv12, enc->cfg.width, enc->cfg.height);
     nvenc_encode_frame(&enc->nvenc, &enc->io, enc->mapped_in, enc->bitstream, enc->frame_idx++);
     return 0;
@@ -2424,7 +2501,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
     if (dvz_video_encoder_start(
-            encoder, vk.image, vk.memory, memReq.size, vk.memory_fd, bitstream_fp) != 0)
+            encoder, vk.image, vk.memory, memReq.size, vk.memory_fd, vk.semaphore_fd, bitstream_fp) !=
+        0)
     {
         skip_encode = true;
         goto cleanup;
@@ -2441,7 +2519,11 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         vk_render_frame_and_sync(&vk, &clr);
 
         if (dvz_video_encoder_submit(
-                encoder, VK_NULL_HANDLE, 0, vk.image_layout, VK_NULL_HANDLE) != 0)
+                encoder,
+                vk.semaphore,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                vk.image_layout,
+                VK_NULL_HANDLE) != 0)
         {
             rc = 1;
             goto cleanup;
@@ -2464,10 +2546,14 @@ cleanup:
     }
     if (vk.memory_fd >= 0)
         close(vk.memory_fd);
+    if (vk.semaphore_fd >= 0)
+        close(vk.semaphore_fd);
     if (vk.memory)
         vkFreeMemory(vk.device, vk.memory, NULL);
     if (vk.image)
         vkDestroyImage(vk.device, vk.image, NULL);
+    if (vk.semaphore)
+        vkDestroySemaphore(vk.device, vk.semaphore, NULL);
     if (vk.cmdPool)
         vkDestroyCommandPool(vk.device, vk.cmdPool, NULL);
     if (vk.fence)
