@@ -1269,6 +1269,22 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 
 
 // ====== Params ======
+// Video settings cheat sheet:
+// - Prefer HEVC/H.265 when hardware encoders exist (NVENC, VideoToolbox, VA-API). Fall back to H.264
+//   High profile for max compatibility or use kvazaar/x264 as CPU software encoders.
+// - 1080p60 interactive captures: target 12-18 Mb/s (CQP 20/22/24 or CRF 18-20), GOP length = 2s, 2
+//   B-frames. Expects ~90-135 MB per minute once muxed into MP4.
+// - Social media masters (H.264 High profile):
+//     * 1080p30: 8-10 Mb/s
+//     * 1080p60: 12-15 Mb/s
+//     * 4K30: 25-35 Mb/s (15-20 Mb/s if HEVC is allowed)
+//     * Vertical 1080x1920@30: 6-8 Mb/s
+// - Platform backends:
+//     * Linux/Windows + NVIDIA: CUDA external memory + NVENC.
+//     * macOS: MoltenVK-exported IOSurface → Metal blit/compute → VideoToolbox.
+//     * Linux Intel/AMD: exportable VkImage → VA-API/AMF.
+//     * CPU fallback: convert to planar YUV420 and feed kvazaar (BSD) or x264/x265 (GPL).
+// - Audio/mux later; this harness simply emits Annex B bitstreams (out.h265).
 #define WIDTH   1920
 #define HEIGHT  1080
 #define FPS     60
