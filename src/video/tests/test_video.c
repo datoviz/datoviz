@@ -2295,7 +2295,7 @@ static void nvenc_write_spspps(NvEncCtx* nctx, NvEncIO* io, DvzVideoEncoder* enc
     sps.spsppsBuffer = header;
     sps.outSPSPPSPayloadSize = &header_size;
     NVENCSTATUS st = g_nvenc.nvEncGetSequenceParams(nctx->hEncoder, &sps);
-    if (st == NV_ENC_SUCCESS && header_size > 0)
+    if (st == NV_ENC_SUCCESS && header_size > 0 && io && io->fp)
     {
         fwrite(header, 1, header_size, io->fp);
     }
@@ -2928,12 +2928,15 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         rc = 1;
         goto cleanup;
     }
-    bitstream_fp = fopen(vcfg.raw_path, "wb");
-    if (!bitstream_fp)
+    if (vcfg.mux == DVZ_VIDEO_MUX_MP4_POST || vcfg.mux == DVZ_VIDEO_MUX_NONE)
     {
-        perror("fopen raw bitstream");
-        rc = 1;
-        goto cleanup;
+        bitstream_fp = fopen(vcfg.raw_path, "wb");
+        if (!bitstream_fp)
+        {
+            perror("fopen raw bitstream");
+            rc = 1;
+            goto cleanup;
+        }
     }
     if (dvz_video_encoder_start(
             encoder, vk.image, vk.memory, memReq.size, vk.memory_fd, vk.semaphore_fd,
