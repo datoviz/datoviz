@@ -2400,8 +2400,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     // vk.memory_fd = dvz_renderer_export_fd(offscreen_color);
     // ```
     //
-    // You keep ownership of the renderer; test_video_2 only needs the external-memory handle + layout
-    // transitions described below. This makes the NVENC proof of concept consume whatever Datoviz draws.
+    // You keep ownership of the renderer; test_video_2 now feeds those handles to dvz_video_encoder_* so
+    // it can import the memory once, keep CUDA/NVENC objects alive, and consume whatever Datoviz draws.
     // -------------------------------------------------------------------------------------------------
 
     // Query allocation size for CUDA import
@@ -2435,6 +2435,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         // Render/copy path:
         // 1. Record and submit a command buffer that clears the offscreen image and transitions it back
         //    to GENERAL layout so CUDA can read from it.
+        // 2. Hand control to dvz_video_encoder_submit(), which copies the VkImage via CUDA and feeds
+        //    NVENC without re-importing resources.
         VkClearColorValue clr = frame_clear_color((uint32_t)frame, NFRAMES);
         vk_render_frame_and_sync(&vk, &clr);
 
