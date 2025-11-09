@@ -1272,7 +1272,7 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 #define WIDTH   1920
 #define HEIGHT  1080
 #define FPS     60
-#define SECONDS 5
+#define SECONDS 60
 #define NFRAMES (FPS * SECONDS)
 
 // Solid color to clear with Vulkan (uint8)
@@ -1283,7 +1283,8 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 
 static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_frames)
 {
-    VkClearColorValue clr = {.float32 = {CLEAR_R / 255.0f, CLEAR_G / 255.0f, CLEAR_B / 255.0f, 1.0f}};
+    VkClearColorValue clr = {
+        .float32 = {CLEAR_R / 255.0f, CLEAR_G / 255.0f, CLEAR_B / 255.0f, 1.0f}};
     if (total_frames == 0)
     {
         return clr;
@@ -1399,104 +1400,103 @@ static const char* ptx_rgba_to_nv12 =
 // - dst_uv: immediately after Y plane at dst_base + dst_pitch*HEIGHT
 // Kernel writes one pixel per thread; UV plane updated by threads where both coordinates are even.
 // It computes a simple BT.601-ish luma approximation and lightweight chroma contribution.
-static const char* PTX =
-    ".version 7.8\n"
-    ".target sm_52\n"
-    ".address_size 64\n"
-    "\n"
-    ".visible .entry rgba2nv12(\n"
-    "    .param .u64 param_src,\n"
-    "    .param .u32 param_src_pitch,\n"
-    "    .param .u64 param_dst,\n"
-    "    .param .u32 param_dst_pitch,\n"
-    "    .param .u32 param_width,\n"
-    "    .param .u32 param_height)\n"
-    "{\n"
-    "    .reg .pred %p<4>;\n"
-    "    .reg .b32  %r<60>;\n"
-    "    .reg .b64  %rd<12>;\n"
-    "\n"
-    "    ld.param.u64 %rd0, [param_src];\n"
-    "    ld.param.u32 %r0,  [param_src_pitch];\n"
-    "    ld.param.u64 %rd1, [param_dst];\n"
-    "    ld.param.u32 %r1,  [param_dst_pitch];\n"
-    "    ld.param.u32 %r2,  [param_width];\n"
-    "    ld.param.u32 %r3,  [param_height];\n"
-    "\n"
-    "    mov.u32 %r10, %ctaid.x;\n"
-    "    mov.u32 %r11, %ctaid.y;\n"
-    "    mov.u32 %r12, %ntid.x;\n"
-    "    mov.u32 %r13, %ntid.y;\n"
-    "    mov.u32 %r14, %tid.x;\n"
-    "    mov.u32 %r15, %tid.y;\n"
-    "\n"
-    "    mad.lo.u32 %r16, %r10, %r12, %r14;\n"
-    "    mad.lo.u32 %r17, %r11, %r13, %r15;\n"
-    "\n"
-    "    setp.ge.u32 %p0, %r16, %r2;\n"
-    "    @%p0 bra DONE;\n"
-    "    setp.ge.u32 %p1, %r17, %r3;\n"
-    "    @%p1 bra DONE;\n"
-    "\n"
-    "    mul.lo.u32 %r18, %r17, %r0;\n"
-    "    shl.b32 %r19, %r16, 2;\n"
-    "    add.u32 %r18, %r18, %r19;\n"
-    "    cvt.u64.u32 %rd2, %r18;\n"
-    "    add.u64 %rd2, %rd0, %rd2;\n"
-    "\n"
-    "    ld.global.u8 %r20, [%rd2];\n"
-    "    ld.global.u8 %r21, [%rd2+1];\n"
-    "    ld.global.u8 %r22, [%rd2+2];\n"
-    "\n"
-    "    cvt.u32.u8 %r23, %r20;\n"
-    "    cvt.u32.u8 %r24, %r21;\n"
-    "    cvt.u32.u8 %r25, %r22;\n"
-    "\n"
-    "    add.u32 %r26, %r24, %r24;\n"
-    "    add.u32 %r26, %r26, %r23;\n"
-    "    add.u32 %r26, %r26, %r25;\n"
-    "    shr.u32 %r26, %r26, 2;\n"
-    "    add.u32 %r26, %r26, 16;\n"
-    "    min.u32 %r26, %r26, 255;\n"
-    "\n"
-    "    mul.lo.u32 %r27, %r17, %r1;\n"
-    "    add.u32 %r27, %r27, %r16;\n"
-    "    cvt.u64.u32 %rd3, %r27;\n"
-    "    add.u64 %rd3, %rd1, %rd3;\n"
-    "    st.global.u8 [%rd3], %r26;\n"
-    "\n"
-    "    and.b32 %r30, %r16, 1;\n"
-    "    and.b32 %r31, %r17, 1;\n"
-    "    or.b32 %r32, %r30, %r31;\n"
-    "    setp.ne.u32 %p2, %r32, 0;\n"
-    "    @%p2 bra DONE;\n"
-    "\n"
-    "    shr.u32 %r33, %r16, 1;\n"
-    "    shr.u32 %r34, %r17, 1;\n"
-    "\n"
-    "    mul.lo.u32 %r35, %r3, %r1;\n"
-    "    cvt.u64.u32 %rd4, %r35;\n"
-    "    add.u64 %rd4, %rd1, %rd4;\n"
-    "\n"
-    "    mul.lo.u32 %r36, %r34, %r1;\n"
-    "    shl.b32 %r37, %r33, 1;\n"
-    "    add.u32 %r36, %r36, %r37;\n"
-    "    cvt.u64.u32 %rd5, %r36;\n"
-    "    add.u64 %rd4, %rd4, %rd5;\n"
-    "\n"
-    "    add.u32 %r40, %r33, %r34;\n"
-    "    add.u32 %r40, %r40, 128;\n"
-    "    min.u32 %r40, %r40, 255;\n"
-    "\n"
-    "    add.u32 %r41, %r23, 128;\n"
-    "    min.u32 %r41, %r41, 255;\n"
-    "\n"
-    "    st.global.u8 [%rd4], %r40;\n"
-    "    st.global.u8 [%rd4+1], %r41;\n"
-    "\n"
-    "DONE:\n"
-    "    ret;\n"
-    "}\n";
+static const char* PTX = ".version 7.8\n"
+                         ".target sm_52\n"
+                         ".address_size 64\n"
+                         "\n"
+                         ".visible .entry rgba2nv12(\n"
+                         "    .param .u64 param_src,\n"
+                         "    .param .u32 param_src_pitch,\n"
+                         "    .param .u64 param_dst,\n"
+                         "    .param .u32 param_dst_pitch,\n"
+                         "    .param .u32 param_width,\n"
+                         "    .param .u32 param_height)\n"
+                         "{\n"
+                         "    .reg .pred %p<4>;\n"
+                         "    .reg .b32  %r<60>;\n"
+                         "    .reg .b64  %rd<12>;\n"
+                         "\n"
+                         "    ld.param.u64 %rd0, [param_src];\n"
+                         "    ld.param.u32 %r0,  [param_src_pitch];\n"
+                         "    ld.param.u64 %rd1, [param_dst];\n"
+                         "    ld.param.u32 %r1,  [param_dst_pitch];\n"
+                         "    ld.param.u32 %r2,  [param_width];\n"
+                         "    ld.param.u32 %r3,  [param_height];\n"
+                         "\n"
+                         "    mov.u32 %r10, %ctaid.x;\n"
+                         "    mov.u32 %r11, %ctaid.y;\n"
+                         "    mov.u32 %r12, %ntid.x;\n"
+                         "    mov.u32 %r13, %ntid.y;\n"
+                         "    mov.u32 %r14, %tid.x;\n"
+                         "    mov.u32 %r15, %tid.y;\n"
+                         "\n"
+                         "    mad.lo.u32 %r16, %r10, %r12, %r14;\n"
+                         "    mad.lo.u32 %r17, %r11, %r13, %r15;\n"
+                         "\n"
+                         "    setp.ge.u32 %p0, %r16, %r2;\n"
+                         "    @%p0 bra DONE;\n"
+                         "    setp.ge.u32 %p1, %r17, %r3;\n"
+                         "    @%p1 bra DONE;\n"
+                         "\n"
+                         "    mul.lo.u32 %r18, %r17, %r0;\n"
+                         "    shl.b32 %r19, %r16, 2;\n"
+                         "    add.u32 %r18, %r18, %r19;\n"
+                         "    cvt.u64.u32 %rd2, %r18;\n"
+                         "    add.u64 %rd2, %rd0, %rd2;\n"
+                         "\n"
+                         "    ld.global.u8 %r20, [%rd2];\n"
+                         "    ld.global.u8 %r21, [%rd2+1];\n"
+                         "    ld.global.u8 %r22, [%rd2+2];\n"
+                         "\n"
+                         "    cvt.u32.u8 %r23, %r20;\n"
+                         "    cvt.u32.u8 %r24, %r21;\n"
+                         "    cvt.u32.u8 %r25, %r22;\n"
+                         "\n"
+                         "    add.u32 %r26, %r24, %r24;\n"
+                         "    add.u32 %r26, %r26, %r23;\n"
+                         "    add.u32 %r26, %r26, %r25;\n"
+                         "    shr.u32 %r26, %r26, 2;\n"
+                         "    add.u32 %r26, %r26, 16;\n"
+                         "    min.u32 %r26, %r26, 255;\n"
+                         "\n"
+                         "    mul.lo.u32 %r27, %r17, %r1;\n"
+                         "    add.u32 %r27, %r27, %r16;\n"
+                         "    cvt.u64.u32 %rd3, %r27;\n"
+                         "    add.u64 %rd3, %rd1, %rd3;\n"
+                         "    st.global.u8 [%rd3], %r26;\n"
+                         "\n"
+                         "    and.b32 %r30, %r16, 1;\n"
+                         "    and.b32 %r31, %r17, 1;\n"
+                         "    or.b32 %r32, %r30, %r31;\n"
+                         "    setp.ne.u32 %p2, %r32, 0;\n"
+                         "    @%p2 bra DONE;\n"
+                         "\n"
+                         "    shr.u32 %r33, %r16, 1;\n"
+                         "    shr.u32 %r34, %r17, 1;\n"
+                         "\n"
+                         "    mul.lo.u32 %r35, %r3, %r1;\n"
+                         "    cvt.u64.u32 %rd4, %r35;\n"
+                         "    add.u64 %rd4, %rd1, %rd4;\n"
+                         "\n"
+                         "    mul.lo.u32 %r36, %r34, %r1;\n"
+                         "    shl.b32 %r37, %r33, 1;\n"
+                         "    add.u32 %r36, %r36, %r37;\n"
+                         "    cvt.u64.u32 %rd5, %r36;\n"
+                         "    add.u64 %rd4, %rd4, %rd5;\n"
+                         "\n"
+                         "    add.u32 %r40, %r33, %r34;\n"
+                         "    add.u32 %r40, %r40, 128;\n"
+                         "    min.u32 %r40, %r40, 255;\n"
+                         "\n"
+                         "    add.u32 %r41, %r23, 128;\n"
+                         "    min.u32 %r41, %r41, 255;\n"
+                         "\n"
+                         "    st.global.u8 [%rd4], %r40;\n"
+                         "    st.global.u8 [%rd4+1], %r41;\n"
+                         "\n"
+                         "DONE:\n"
+                         "    ret;\n"
+                         "}\n";
 
 
 // ====== Utility: align up ======
@@ -1535,7 +1535,8 @@ static bool nvenc_guid_equal(const GUID* a, const GUID* b)
 static bool nvenc_supports_codec(void* hEncoder, const GUID* codec)
 {
     ANN(codec);
-    if (hEncoder == NULL || g_nvenc.nvEncGetEncodeGUIDCount == NULL || g_nvenc.nvEncGetEncodeGUIDs == NULL)
+    if (hEncoder == NULL || g_nvenc.nvEncGetEncodeGUIDCount == NULL ||
+        g_nvenc.nvEncGetEncodeGUIDs == NULL)
     {
         return false;
     }
@@ -1788,14 +1789,12 @@ static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue*
     begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     VK_CHECK(vkBeginCommandBuffer(vk->cmd, &begin));
 
-    VkPipelineStageFlags2 src_stage =
-        (vk->image_layout == VK_IMAGE_LAYOUT_UNDEFINED)
-            ? VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT
-            : VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
-    VkAccessFlags2 src_access =
-        (vk->image_layout == VK_IMAGE_LAYOUT_UNDEFINED)
-            ? 0
-            : (VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT);
+    VkPipelineStageFlags2 src_stage = (vk->image_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+                                          ? VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT
+                                          : VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    VkAccessFlags2 src_access = (vk->image_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+                                    ? 0
+                                    : (VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT);
 
     VkImageMemoryBarrier2 pre = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -1814,8 +1813,7 @@ static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue*
     vkCmdPipelineBarrier2(vk->cmd, &dep_pre);
 
     VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    vkCmdClearColorImage(
-        vk->cmd, vk->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clr, 1, &range);
+    vkCmdClearColorImage(vk->cmd, vk->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clr, 1, &range);
 
     VkImageMemoryBarrier2 post = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
@@ -2340,7 +2338,8 @@ static void dvz_video_encoder_release(DvzVideoEncoder* enc)
     enc->frame_idx = 0;
 }
 
-static DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg)
+static DvzVideoEncoder*
+dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg)
 {
     DvzVideoEncoder* enc = (DvzVideoEncoder*)calloc(1, sizeof(DvzVideoEncoder));
     ANN(enc);
@@ -2352,13 +2351,8 @@ static DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVid
 }
 
 static int dvz_video_encoder_start(
-    DvzVideoEncoder* enc,
-    VkImage image,
-    VkDeviceMemory memory,
-    VkDeviceSize memory_size,
-    int memory_fd,
-    int wait_semaphore_fd,
-    FILE* bitstream_out)
+    DvzVideoEncoder* enc, VkImage image, VkDeviceMemory memory, VkDeviceSize memory_size,
+    int memory_fd, int wait_semaphore_fd, FILE* bitstream_out)
 {
     ANN(enc);
     ANN(bitstream_out);
@@ -2432,8 +2426,8 @@ static int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
     {
         CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS wait_params = {0};
         wait_params.params.fence.value = wait_value;
-        CU_CHECK(
-            cuWaitExternalSemaphoresAsync(&enc->wait_semaphore, &wait_params, 1, enc->cuda.stream));
+        CU_CHECK(cuWaitExternalSemaphoresAsync(
+            &enc->wait_semaphore, &wait_params, 1, enc->cuda.stream));
     }
 
     copy_array_to_linear_rgba(&enc->cuda, &enc->rgba, enc->cfg.width, enc->cfg.height);
@@ -2469,6 +2463,28 @@ static void dvz_video_encoder_destroy(DvzVideoEncoder* enc)
 
 
 
+static void video_progress(int frame, int total)
+{
+    const int width = 40;
+    float ratio = (total > 0) ? (float)frame / (float)total : 1.0f;
+    if (ratio > 1.0f)
+        ratio = 1.0f;
+    int filled = (int)(ratio * width);
+    printf("\r[");
+    for (int i = 0; i < width; ++i)
+    {
+        putchar(i < filled ? '#' : ' ');
+    }
+    printf("] %d/%d", frame, total);
+    fflush(stdout);
+    if (frame >= total)
+    {
+        printf("\n");
+    }
+}
+
+
+
 int test_video_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
@@ -2486,9 +2502,10 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     // -------------------------------------------------------------------------------------------------
     // Placeholder for Datoviz renderer hookup:
     //
-    // At the moment we just allocate an exportable VkImage and fill it once. When integrating the real
-    // Datoviz renderer, the Vulkan context above needs to be fed with the renderer-managed device,
-    // command queues, and the offscreen color attachment you already render into. Conceptually:
+    // At the moment we just allocate an exportable VkImage and fill it once. When integrating the
+    // real Datoviz renderer, the Vulkan context above needs to be fed with the renderer-managed
+    // device, command queues, and the offscreen color attachment you already render into.
+    // Conceptually:
     //
     // ```c
     // DvzRenderer* renderer = init_datoviz_renderer(...);
@@ -2499,8 +2516,9 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     // vk.memory_fd = dvz_renderer_export_fd(offscreen_color);
     // ```
     //
-    // You keep ownership of the renderer; test_video_2 now feeds those handles to dvz_video_encoder_* so
-    // it can import the memory once, keep CUDA/NVENC objects alive, and consume whatever Datoviz draws.
+    // You keep ownership of the renderer; test_video_2 now feeds those handles to
+    // dvz_video_encoder_* so it can import the memory once, keep CUDA/NVENC objects alive, and
+    // consume whatever Datoviz draws.
     // -------------------------------------------------------------------------------------------------
 
     // Query allocation size for CUDA import
@@ -2523,8 +2541,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
     if (dvz_video_encoder_start(
-            encoder, vk.image, vk.memory, memReq.size, vk.memory_fd, vk.semaphore_fd, bitstream_fp) !=
-        0)
+            encoder, vk.image, vk.memory, memReq.size, vk.memory_fd, vk.semaphore_fd,
+            bitstream_fp) != 0)
     {
         skip_encode = true;
         goto cleanup;
@@ -2533,9 +2551,11 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     for (int frame = 0; frame < NFRAMES; ++frame)
     {
         // Render/copy path:
-        // 1. Record and submit a command buffer that clears the offscreen image and transitions it back
+        // 1. Record and submit a command buffer that clears the offscreen image and transitions it
+        // back
         //    to GENERAL layout so CUDA can read from it.
-        // 2. Hand control to dvz_video_encoder_submit(), which copies the VkImage via CUDA and feeds
+        // 2. Hand control to dvz_video_encoder_submit(), which copies the VkImage via CUDA and
+        // feeds
         //    NVENC without re-importing resources.
         VkClearColorValue clr = frame_clear_color((uint32_t)frame, NFRAMES);
         uint64_t signal_value = vk_render_frame_and_sync(&vk, &clr);
@@ -2545,6 +2565,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
             rc = 1;
             goto cleanup;
         }
+
+        video_progress(frame + 1, NFRAMES);
     }
 
     dvz_video_encoder_stop(encoder);
@@ -2581,7 +2603,8 @@ cleanup:
         vkDestroyInstance(vk.instance, NULL);
     if (!skip_encode && encoded)
     {
-        fprintf(stderr, "Wrote out.h265 (%dx%d @ %dfps, %d frames)\n", WIDTH, HEIGHT, FPS, NFRAMES);
+        fprintf(
+            stderr, "Wrote out.h265 (%dx%d @ %dfps, %d frames)\n", WIDTH, HEIGHT, FPS, NFRAMES);
     }
     if (skip_encode)
     {
