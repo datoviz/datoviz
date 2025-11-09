@@ -1519,6 +1519,7 @@ typedef struct
     int semaphore_fd;
     VkFence fence;
     VkImageLayout image_layout;
+    uint64_t timeline_value;
 } VulkanCtx;
 
 // ====== NVENC dynamic API list ======
@@ -1577,6 +1578,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     memset(vk, 0, sizeof(*vk));
     vk->memory_fd = -1;
     vk->semaphore_fd = -1;
+    vk->timeline_value = 0;
 
     // Instance with no layers, minimal ext (we'll fetch device funcs later)
     VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -1625,11 +1627,18 @@ static void vk_init_and_make_image(VulkanCtx* vk)
         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
     };
 
+    VkPhysicalDeviceTimelineSemaphoreFeatures timeline_features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+        .pNext = NULL,
+        .timelineSemaphore = VK_TRUE,
+    };
+
     VkDeviceCreateInfo dci = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
     dci.queueCreateInfoCount = 1;
     dci.pQueueCreateInfos = &qci;
     dci.enabledExtensionCount = (uint32_t)(sizeof(devExts) / sizeof(devExts[0]));
     dci.ppEnabledExtensionNames = devExts;
+    dci.pNext = &timeline_features;
 
     VK_CHECK(vkCreateDevice(vk->phys, &dci, NULL, &vk->device));
     volkLoadDevice(vk->device);
@@ -1663,11 +1672,21 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     cbai.commandBufferCount = 1;
     VK_CHECK(vkAllocateCommandBuffers(vk->device, &cbai, &vk->cmd));
 
-    VkFenceCreateInfo fci = {.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
+    VkFenceCreateInfo fci = {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
+    };
     VK_CHECK(vkCreateFence(vk->device, &fci, NULL, &vk->fence));
 
+    VkSemaphoreTypeCreateInfo stci = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+        .pNext = NULL,
+        .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
+        .initialValue = 0,
+    };
     VkExportSemaphoreCreateInfo esci = {
         .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+        .pNext = &stci,
         .handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
     };
     VkSemaphoreCreateInfo sci = {
@@ -1755,12 +1774,14 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     }
 }
 
-static void vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr)
+static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr)
 {
     ANN(vk);
     ANNVK(vk->cmd);
     ANN(clr);
 
+    VK_CHECK(vkWaitForFences(vk->device, 1, &vk->fence, VK_TRUE, UINT64_MAX));
+    VK_CHECK(vkResetFences(vk->device, 1, &vk->fence));
     VK_CHECK(vkResetCommandBuffer(vk->cmd, 0));
 
     VkCommandBufferBeginInfo begin = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
@@ -1814,19 +1835,28 @@ static void vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr
 
     VK_CHECK(vkEndCommandBuffer(vk->cmd));
 
-    VK_CHECK(vkResetFences(vk->device, 1, &vk->fence));
+    uint64_t signal_value = ++vk->timeline_value;
+    VkTimelineSemaphoreSubmitInfo timeline_info = {
+        .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+        .pNext = NULL,
+        .waitSemaphoreValueCount = 0,
+        .pWaitSemaphoreValues = NULL,
+        .signalSemaphoreValueCount = (vk->semaphore != VK_NULL_HANDLE) ? 1u : 0u,
+        .pSignalSemaphoreValues = (vk->semaphore != VK_NULL_HANDLE) ? &signal_value : NULL,
+    };
     VkSemaphore signal_sems[1] = {vk->semaphore};
     VkSubmitInfo submit = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = (vk->semaphore != VK_NULL_HANDLE) ? &timeline_info : NULL,
         .commandBufferCount = 1,
         .pCommandBuffers = &vk->cmd,
-        .signalSemaphoreCount = (vk->semaphore != VK_NULL_HANDLE) ? 1 : 0,
+        .signalSemaphoreCount = (vk->semaphore != VK_NULL_HANDLE) ? 1u : 0u,
         .pSignalSemaphores = (vk->semaphore != VK_NULL_HANDLE) ? signal_sems : NULL,
     };
     VK_CHECK(vkQueueSubmit(vk->queue, 1, &submit, vk->fence));
-    VK_CHECK(vkWaitForFences(vk->device, 1, &vk->fence, VK_TRUE, UINT64_MAX));
 
     vk->image_layout = VK_IMAGE_LAYOUT_GENERAL;
+    return signal_value;
 }
 
 // ====== CUDA: import Vulkan memory as external memory, map to array ======
@@ -2390,26 +2420,18 @@ fail:
     return rc;
 }
 
-static int dvz_video_encoder_submit(
-    DvzVideoEncoder* enc,
-    VkSemaphore render_done,
-    VkPipelineStageFlags wait_stage,
-    VkImageLayout current_layout,
-    VkFence encode_done)
+static int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
 {
-    (void)render_done;
-    (void)wait_stage;
-    (void)current_layout;
-    (void)encode_done;
     ANN(enc);
     if (!enc->started)
     {
         return -1;
     }
 
-    if (enc->wait_semaphore_ready)
+    if (enc->wait_semaphore_ready && wait_value > 0)
     {
         CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS wait_params = {0};
+        wait_params.params.fence.value = wait_value;
         CU_CHECK(
             cuWaitExternalSemaphoresAsync(&enc->wait_semaphore, &wait_params, 1, enc->cuda.stream));
     }
@@ -2516,14 +2538,9 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
         // 2. Hand control to dvz_video_encoder_submit(), which copies the VkImage via CUDA and feeds
         //    NVENC without re-importing resources.
         VkClearColorValue clr = frame_clear_color((uint32_t)frame, NFRAMES);
-        vk_render_frame_and_sync(&vk, &clr);
+        uint64_t signal_value = vk_render_frame_and_sync(&vk, &clr);
 
-        if (dvz_video_encoder_submit(
-                encoder,
-                vk.semaphore,
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                vk.image_layout,
-                VK_NULL_HANDLE) != 0)
+        if (dvz_video_encoder_submit(encoder, signal_value) != 0)
         {
             rc = 1;
             goto cleanup;
