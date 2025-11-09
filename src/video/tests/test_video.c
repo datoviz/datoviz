@@ -1270,9 +1270,11 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 
 // ====== Params ======
 // Video settings cheat sheet:
-// - Prefer HEVC/H.265 when hardware encoders exist (NVENC, VideoToolbox, VA-API). Fall back to H.264
+// - Prefer HEVC/H.265 when hardware encoders exist (NVENC, VideoToolbox, VA-API). Fall back to
+// H.264
 //   High profile for max compatibility or use kvazaar/x264 as CPU software encoders.
-// - 1080p60 interactive captures: target 12-18 Mb/s (CQP 20/22/24 or CRF 18-20), GOP length = 2s, 2
+// - 1080p60 interactive captures: target 12-18 Mb/s (CQP 20/22/24 or CRF 18-20), GOP length = 2s,
+// 2
 //   B-frames. Expects ~90-135 MB per minute once muxed into MP4.
 // - Social media masters (H.264 High profile):
 //     * 1080p30: 8-10 Mb/s
@@ -1296,6 +1298,45 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 #define CLEAR_G 128
 #define CLEAR_B 255
 #define CLEAR_A 255
+
+typedef enum
+{
+    DVZ_VIDEO_CODEC_H264 = 0,
+    DVZ_VIDEO_CODEC_HEVC = 1,
+} DvzVideoCodec;
+
+typedef struct
+{
+    const GUID* codec_guid;
+    const GUID* preset_guid;
+    NV_ENC_TUNING_INFO tuning;
+    uint32_t qp_intra;
+    uint32_t qp_inter_p;
+    uint32_t qp_inter_b;
+} DvzNvencProfile;
+
+static DvzNvencProfile dvz_nvenc_profile(DvzVideoCodec codec)
+{
+    DvzNvencProfile prof = {
+        .codec_guid = &NV_ENC_CODEC_H264_GUID,
+        .preset_guid = &NV_ENC_PRESET_P4_GUID,
+        .tuning = NV_ENC_TUNING_INFO_HIGH_QUALITY,
+        .qp_intra = 18,
+        .qp_inter_p = 18,
+        .qp_inter_b = 20,
+    };
+
+    if (codec == DVZ_VIDEO_CODEC_HEVC)
+    {
+        prof.codec_guid = &NV_ENC_CODEC_HEVC_GUID;
+        prof.preset_guid = &NV_ENC_PRESET_P5_GUID;
+        prof.qp_intra = 20;
+        prof.qp_inter_p = 20;
+        prof.qp_inter_b = 22;
+    }
+
+    return prof;
+}
 
 static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_frames)
 {
@@ -1599,7 +1640,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     // Instance with no layers, minimal ext (we'll fetch device funcs later)
     VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO};
-    app.pApplicationName = "vk_cuda_nvenc_h265";
+    app.pApplicationName = "vk_cuda_nvenc";
     app.apiVersion = VK_API_VERSION_1_3;
 
     VkInstanceCreateInfo ici = {.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
@@ -1919,7 +1960,7 @@ static void cuda_import_vk_memory(CudaCtx* cu, int mem_fd, size_t alloc_size)
 }
 
 // ====== NVENC helpers ======
-static void nvenc_load_api()
+static void nvenc_load_api(void)
 {
     memset(&g_nvenc, 0, sizeof(g_nvenc));
     g_nvenc.version = NV_ENCODE_API_FUNCTION_LIST_VER;
@@ -1954,17 +1995,17 @@ static void nvenc_open_session_cuda(NvEncCtx* nctx, CUcontext cuCtx)
     NVENC_API_CALL(g_nvenc.nvEncOpenEncodeSessionEx(&open, &nctx->hEncoder));
 }
 
-static void nvenc_init_hevc(NvEncCtx* nctx, uint32_t width, uint32_t height, uint32_t fps)
+static void nvenc_init_codec(
+    NvEncCtx* nctx, DvzVideoCodec codec_sel, uint32_t width, uint32_t height, uint32_t fps)
 {
+    DvzNvencProfile prof = dvz_nvenc_profile(codec_sel);
+
     // Fill defaults
     memset(&nctx->init, 0, sizeof(nctx->init));
     memset(&nctx->encCfg, 0, sizeof(nctx->encCfg));
     nctx->init.version = NV_ENC_INITIALIZE_PARAMS_VER;
     nctx->encCfg.version = NV_ENC_CONFIG_VER;
-    nctx->init.tuningInfo = NV_ENC_TUNING_INFO_HIGH_QUALITY;
-
-    GUID codec = NV_ENC_CODEC_HEVC_GUID;
-    GUID preset = NV_ENC_PRESET_P5_GUID; // HQ preset
+    nctx->init.tuningInfo = prof.tuning;
 
     // Get preset config
     NV_ENC_PRESET_CONFIG pcfg = {0};
@@ -1974,11 +2015,12 @@ static void nvenc_init_hevc(NvEncCtx* nctx, uint32_t width, uint32_t height, uin
     if (g_nvenc.nvEncGetEncodePresetConfigEx != NULL)
     {
         preset_status = g_nvenc.nvEncGetEncodePresetConfigEx(
-            nctx->hEncoder, codec, preset, nctx->init.tuningInfo, &pcfg);
+            nctx->hEncoder, *prof.codec_guid, *prof.preset_guid, nctx->init.tuningInfo, &pcfg);
     }
     else
     {
-        preset_status = g_nvenc.nvEncGetEncodePresetConfig(nctx->hEncoder, codec, preset, &pcfg);
+        preset_status = g_nvenc.nvEncGetEncodePresetConfig(
+            nctx->hEncoder, *prof.codec_guid, *prof.preset_guid, &pcfg);
     }
     NVENC_API_CALL(preset_status);
 
@@ -1990,12 +2032,12 @@ static void nvenc_init_hevc(NvEncCtx* nctx, uint32_t width, uint32_t height, uin
 
     // Use const QP for static content
     nctx->encCfg.rcParams.rateControlMode = NV_ENC_PARAMS_RC_CONSTQP;
-    nctx->encCfg.rcParams.constQP.qpIntra = 20;
-    nctx->encCfg.rcParams.constQP.qpInterP = 20;
-    nctx->encCfg.rcParams.constQP.qpInterB = 22;
+    nctx->encCfg.rcParams.constQP.qpIntra = prof.qp_intra;
+    nctx->encCfg.rcParams.constQP.qpInterP = prof.qp_inter_p;
+    nctx->encCfg.rcParams.constQP.qpInterB = prof.qp_inter_b;
 
-    nctx->init.encodeGUID = codec;
-    nctx->init.presetGUID = preset;
+    nctx->init.encodeGUID = *prof.codec_guid;
+    nctx->init.presetGUID = *prof.preset_guid;
     nctx->init.encodeWidth = width;
     nctx->init.encodeHeight = height;
     nctx->init.maxEncodeWidth = width;
@@ -2221,11 +2263,6 @@ static void nvenc_destroy(NvEncCtx* nctx, NvEncIO* io)
 
 
 // ====== Minimal video-encoder API used by test_video_2 ======
-typedef enum
-{
-    DVZ_VIDEO_CODEC_HEVC = 0,
-} DvzVideoCodec;
-
 typedef struct
 {
     uint32_t width;
@@ -2272,7 +2309,7 @@ static DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
         .height = HEIGHT,
         .fps = FPS,
         .color_format = VK_FORMAT_R8G8B8A8_UNORM,
-        .codec = DVZ_VIDEO_CODEC_HEVC,
+        .codec = DVZ_VIDEO_CODEC_H264,
         .flags = 0,
     };
     return cfg;
@@ -2280,12 +2317,7 @@ static DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
 
 static const GUID* dvz_video_encoder_codec_guid(DvzVideoCodec codec)
 {
-    switch (codec)
-    {
-    case DVZ_VIDEO_CODEC_HEVC:
-    default:
-        return &NV_ENC_CODEC_HEVC_GUID;
-    }
+    return dvz_nvenc_profile(codec).codec_guid;
 }
 
 static void dvz_video_encoder_release(DvzVideoEncoder* enc)
@@ -2408,7 +2440,7 @@ static int dvz_video_encoder_start(
         rc = -1;
         goto fail;
     }
-    nvenc_init_hevc(&enc->nvenc, enc->cfg.width, enc->cfg.height, enc->cfg.fps);
+    nvenc_init_codec(&enc->nvenc, enc->cfg.codec, enc->cfg.width, enc->cfg.height, enc->cfg.fps);
     enc->nvenc_ready = true;
 
     alloc_rgba(&enc->rgba, enc->cfg.width, enc->cfg.height, PITCH_ALIGN);
@@ -2541,10 +2573,10 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     VkMemoryRequirements memReq;
     vkGetImageMemoryRequirements(vk.device, vk.image, &memReq);
 
-    bitstream_fp = fopen("out.h265", "wb");
+    bitstream_fp = fopen("out.h264", "wb");
     if (!bitstream_fp)
     {
-        perror("fopen out.h265");
+        perror("fopen out.h264");
         rc = 1;
         goto cleanup;
     }
@@ -2620,7 +2652,7 @@ cleanup:
     if (!skip_encode && encoded)
     {
         fprintf(
-            stderr, "Wrote out.h265 (%dx%d @ %dfps, %d frames)\n", WIDTH, HEIGHT, FPS, NFRAMES);
+            stderr, "Wrote out.h264 (%dx%d @ %dfps, %d frames)\n", WIDTH, HEIGHT, FPS, NFRAMES);
     }
     if (skip_encode)
     {
