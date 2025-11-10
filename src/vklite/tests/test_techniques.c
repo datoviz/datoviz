@@ -516,7 +516,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    VkSampleCountFlags sample_count = VK_SAMPLE_COUNT_8_BIT;
+    VkSampleCountFlags sample_count = VK_SAMPLE_COUNT_4_BIT;
 
     // Multisampled image.
     DvzImages msimg = {0};
@@ -596,7 +596,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
         datt, dvz_image_views_handle(&msdepth_view, 0),
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
-        datt, VK_RESOLVE_MODE_AVERAGE_BIT, dvz_image_views_handle(&proto.dview, 0),
+        datt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(&proto.dview, 0),
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
     DvzAttachment* satt = dvz_rendering_stencil(rendering);
@@ -604,7 +604,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
         satt, dvz_image_views_handle(&msdepth_view, 0),
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
-        satt, VK_RESOLVE_MODE_MIN_BIT, dvz_image_views_handle(&proto.dview, 0),
+        satt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(&proto.dview, 0),
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
     // Record the command buffer.
