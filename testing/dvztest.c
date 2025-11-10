@@ -21,7 +21,7 @@
 #include "../src/fileio/tests/test_fileio.h"
 #include "../src/math/tests/test_math.h"
 #include "../src/thread/tests/test_thread.h"
-#if defined(DVZ_ENABLE_CUDA) && DVZ_ENABLE_CUDA
+#if HAS_CUDA
 #include "../src/video/tests/test_video.h"
 #endif
 #include "../src/vk/tests/test_vk.h"
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     test_fileio(&suite);
     test_math(&suite);
     test_thread(&suite);
-#if defined(DVZ_ENABLE_CUDA) && DVZ_ENABLE_CUDA
+#if HAS_CUDA
     test_video(&suite);
 #endif
     test_vk(&suite);
