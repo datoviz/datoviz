@@ -123,6 +123,7 @@ DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboar
 
 - Routers support multiple subscribers. Internally they store a dynamic array of callbacks.
 - Backends (GLFW/Qt/others) own a router per window.
+- Pointer + keyboard are the initial event types; keep the router extensible so future touch, stylus, gesture, or controller events can reuse the same subscription mechanism. Document whether callbacks run on the backend’s thread (GLFW main thread, Qt UI thread) so subscribers know if they must be thread-safe.
 - Pointer + keyboard are the initial event types; keep the router extensible so future touch, stylus, gesture, or controller events can reuse the same subscription mechanism without redesigning the API.
 
 ### 3.2 Window Module (Header: `include/datoviz/window.h`)
@@ -138,6 +139,7 @@ typedef struct
     uint32_t height;
     const char* title;
     bool resizable;
+    float user_scale;     // optional multiplier applied on top of OS scale
 } DvzWindowConfig;
 
 typedef struct
@@ -168,11 +170,11 @@ DVZ_EXPORT int dvz_window_host_use_backend(DvzWindowHost* host, const char* name
 DVZ_EXPORT DvzWindow* dvz_window_create(DvzWindowHost* host, const DvzWindowConfig* cfg);
 DVZ_EXPORT void dvz_window_destroy(DvzWindow* window);
 DVZ_EXPORT void dvz_window_host_poll(DvzWindowHost* host);
+DVZ_EXPORT void dvz_window_host_request_frame(DvzWindowHost* host);
 DVZ_EXPORT bool dvz_window_surface(DvzWindow* window, VkInstance instance, DvzWindowSurface* out);
 DVZ_EXPORT DvzInputRouter* dvz_window_input(DvzWindow* window);
 DVZ_EXPORT void dvz_window_get_scale(DvzWindow* window, float* scale_x, float* scale_y);
 DVZ_EXPORT void dvz_window_get_size(DvzWindow* window, uint32_t* width, uint32_t* height);
-DVZ_EXPORT void dvz_window_host_request_frame(DvzWindowHost* host);
 ```
 
 - The host stores a pointer to the active backend (GLFW for now). Registry logic (similar to frame sinks) lives in `window_host.c`.
@@ -211,6 +213,20 @@ typedef struct
     VkFence render_fence;
     VkQueue render_queue;
 } DvzCanvasFrame;
+
+typedef struct
+{
+    VkImage image;
+    VkDeviceMemory memory;
+    VkDeviceSize size;
+    int memory_fd;
+    int wait_semaphore_fd;
+    VkSemaphore timeline_semaphore;
+    uint64_t wait_value;
+    VkSemaphore binary_semaphore;
+    VkFence render_fence;
+    VkQueue render_queue;
+} DvzFrameStreamResources;
 
 typedef void (*DvzCanvasDraw)(DvzCanvas* canvas, const DvzCanvasFrame* frame, void* user_data);
 
@@ -277,6 +293,7 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
 
 4. **Swapchain sink (`src/window/tests/test_swapchain_sink.c`)**
    - When Vulkan validation layers & a real GPU are available, instantiate the sink with a headless surface (e.g., via GLFW with hidden window), render a simple color, ensure `vkQueuePresentKHR` succeeds.
+   - Simulate `VK_ERROR_OUT_OF_DATE_KHR` / `VK_SUBOPTIMAL_KHR` (e.g., by resizing mid-test) to verify the sink marks itself for swapchain recreation before the next submit.
 
 All new tests should be registered in `testing/dvztest.c` and added to the unified runner.
 
