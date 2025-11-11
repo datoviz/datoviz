@@ -229,6 +229,13 @@ DVZ_EXPORT void dvz_window_get_size(DvzWindow* window, uint32_t* width, uint32_t
   - `surface()` calls `glfwCreateWindowSurface`.
   - `input_router()` returns the router tied to the window.
 
+#### Qt backend and VkInstance ownership
+
+- Qt support must keep Datoviz in charge of creating the Vulkan instance/device so we can share one `VkInstance` (and associated `DvzDevice`) across GLFW, Qt, headless, etc. Backends never allocate their own instances; instead, `dvz_window_surface()` receives the already-created `VkInstance` from the caller and uses it to build the surface.
+- The Qt backend therefore wraps the passed-in `VkInstance` inside a lightweight `QVulkanInstance` by calling `QVulkanInstance::setVkInstance(instance, vkGetInstanceProcAddr)`. That object is then attached to the `QWindow` via `QWindow::setVulkanInstance(&qt_inst)` (a.k.a. `setVulkanInstance()` in Qt shorthand). Because the `QVulkanInstance` simply references Datoviz’s instance, Qt will not try to create or destroy Vulkan state on its own.
+- When the application asks for a surface, the backend calls `QVulkanInstance::surfaceForWindow(window)` (which internally uses the already-set Vulkan instance) and copies the resulting `VkSurfaceKHR` plus DPI/scale information into `DvzWindowSurface`. This keeps lifetime ownership consistent: Datoviz still tears down the `VkInstance`/`VkDevice`, while Qt merely hosts the native window and forwards events.
+- Qt’s event loop is still externally driven (see §3.1). The backend only bridges input callbacks and surface creation; all device/queue selection stays inside `src/vk/` and `src/canvas/`, so users who embed Datoviz in a Qt application retain full control over which physical device, extensions, and validation layers are enabled.
+
 ### 3.3 Canvas Module (Header: `include/datoviz/canvas.h`)
 
 ```c
