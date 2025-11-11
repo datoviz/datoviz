@@ -210,6 +210,7 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to win
   - Mandatory swapchain sink (see below) bound to the window surface.
   - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`). Each call to `dvz_canvas_frame()` rotates through the available frames, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
+- Multiple canvases/windows: `DvzWindowHost` can create many `DvzWindow` objects, each with its own canvas. All canvases may share the same `DvzDevice` (multiple swapchains per device) or use separate devices. The window host’s event loop (`dvz_window_host_poll`) propagates GLFW/Qt events to every window’s input router; each canvas then renders and submits independently. Backend loops that are externally driven (Qt) simply forward events to the matching router, keeping canvases isolated from one another.
 
 ### 3.4 Swapchain Sink (Header: `include/datoviz/window/swapchain_sink.h`)
 
@@ -229,12 +230,12 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
 ```
 
 - Backend state holds: `VkSwapchainKHR`, per-image command buffers, acquire/present semaphores, and fences.
-- `start()` creates the swapchain using the optimal number of images derived from `VkSurfaceCapabilitiesKHR` (rather than hardcoding triple buffering), sets up image views, and records the blit/composite command buffers that move FrameStream images into swapchain images.
+- `start()` creates the swapchain using the optimal number of images derived from `VkSurfaceCapabilitiesKHR` (rather than hardcoding triple buffering), sets up image views, and records the blit/composite command buffers that move FrameStream images into swapchain images. Queue selection honors `vkGetPhysicalDeviceSurfaceSupportKHR`; if graphics and present families differ, two queues plus cross-queue semaphores are used.
 - `submit()`:
-  1. Acquire next swapchain image.
-  2. Wait on the FrameStream timeline/semaphore from `DvzFrameStreamResources`.
-  3. Submit the recorded blit command buffer, ensuring layout transitions from `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL` to `PRESENT_SRC_KHR`.
-  4. Present.
+  1. Acquire next swapchain image with per-image semaphore/fence.
+  2. Wait on the FrameStream timeline semaphore/Fd value exported by the renderer.
+  3. Submit the recorded blit command buffer on the graphics queue. If a dedicated present queue is required, signal an extra semaphore that the present queue then waits on.
+  4. Call `vkQueuePresentKHR` on the present-capable queue.
 - `stop()/destroy()` tear down all swapchain resources.
 
 ## 4. Tests
@@ -273,12 +274,15 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
      - Hook GLFW callbacks to emit pointer/keyboard events via the router.
      - Create Vulkan surface on demand.
    - Add `DVZ_WITH_GLFW` option + CMake logic to locate GLFW and define/skip the backend accordingly.
-   - Provide tests that use a fake backend (no GLFW) to validate the host/registry logic.
+- Provide tests that use a fake backend (no GLFW) to validate the host/registry logic.
 
 3. **Swapchain sink**
    - Implement `dvz_swapchain_sink_backend()` in `src/window/swapchain_sink.c`.
    - Register it inside `src/stream/sink_registry.c` (alongside the video sink).
-   - Extend `DvzFrameStreamResources` if needed (e.g., add `VkQueue queue; VkFence fence; VkSemaphore semaphore;` so sinks have the synchronization primitives required to wait/present).
+   - Extend `DvzFrameStreamResources` with synchronization payloads:
+     - Timeline semaphore handle + wait value (exported via `vkGetSemaphoreFdKHR` on Linux) so sinks can wait before consuming frames.
+     - Optional fallback binary semaphore/fence for platforms without timeline support.
+   - Store queue handles/family indices in the swapchain sink config so sinks can handle graphics vs present queues cleanly.
    - Unit tests: stub queue/swapchain to verify state transitions; real GPU test optional (guarded).
 
 4. **Canvas layer**
@@ -301,5 +305,10 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
 - Aim for minimal dependencies: input depends only on `common`; window depends on `input` + `stream` (for swapchain sink) but not on higher-level modules.
 - Provide sensible fallbacks when backend probes fail (e.g., headless builds without GLFW should still compile and run non-window tests).
 - Before merging future backends (Qt, SDL2, headless, etc.), ensure the registry and data structures are flexible enough (void pointers, backend-specific data slots).
+- Synchronization expectations:
+  - Renderers must signal a timeline semaphore per frame; FrameStream passes the handle + value to every sink.
+  - Video sink imports the semaphore (or waits on a CPU-side fence) before reading the image, then runs independently (CUDA/NVENC or CPU encoding).
+  - Swapchain sink waits on the same timeline value, performs the copy on its graphics queue, then uses binary semaphores to bridge to the present queue when needed.
+  - Multiple canvases/windows each maintain their own timeline/semaphore sets, so cross-window synchronization is unnecessary unless the application explicitly shares resources.
 
 Following this plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
