@@ -12,6 +12,17 @@ Keep it under version control and update it as the design evolves.
 - Layer a canvas module on top of the new window + FrameStream infrastructure so rendering can target windows, video encoders, or other sinks simultaneously.
 - Keep existing video-specific code inside `src/video/` while all generic presentation logic lives under the new `stream` module added earlier.
 
+## 1.1 Delivery Phases
+
+- **Phase 1 (implement now)**
+  - Input router with pointer, keyboard, and window-resize/scale events plus timeline semaphore export/import.
+  - Window host, GLFW backend, Qt stub (non-owning event loop), and surface helpers.
+  - Canvas module in charge of surface/swapchain creation, FrameStream wiring, swapchain sink, and optional video sink hookup.
+  - Basic timing (CPU timestamps) and single-view rendering (only `views[0]` populated even though the structs allow more).
+- **Phase 2+ (future work)**
+  - Additional backends (Qt event-loop integration, SDL2, headless, VR), multi-view rendering, high-precision display timing, metadata payloads, VR sinks, etc.
+  - These features are described below for architectural readiness but must not be implemented until explicitly scheduled.
+
 ## 2. Module Overview & File Layout
 
 ```
@@ -36,7 +47,6 @@ datoviz/
 │   └── CMakeLists.txt
 ├── src/window/
 │   ├── window_host.c              # Backend registry + shared helpers
-│   ├── window_surface.c           # Surface creation, swapchain caps
 │   ├── backend_glfw.c             # GLFW backend (window creation, events)
 │   ├── backend_qt.c               # Qt event bridge (stub until implemented)
 │   ├── backend_sdl.c              # Placeholder for SDL2 or headless backends
@@ -44,6 +54,8 @@ datoviz/
 │   │   └── test_window.c
 │   └── CMakeLists.txt
 ├── src/canvas/
+│   ├── window_surface.c           # Surface helpers shared across canvases
+│   ├── swapchain_sink.c           # Frame sink that presents to VkSurfaceKHR
 │   ├── canvas.c                   # Canvas public API, draw loop
 │   ├── canvas_internal.h          # Internal structs shared with tests
 │   ├── canvas_stream.c            # FrameStream wiring + sink attachment
@@ -56,6 +68,7 @@ datoviz/
 - `src/window/backend_glfw.c` will depend on GLFW; wrap usage behind CMake option `DVZ_WITH_GLFW`. Provide a stub backend that returns `false` from `probe()` when GLFW is unavailable so the rest of the system can still compile without GLFW.
 - Qt backend will arrive later; for now document the expected API in `backend_qt.c` and leave it returning “not implemented” until the integration layer exists.
 - Additional backends we want to support long-term include SDL2, direct Wayland/XCB hosts, Win32-specific windows, headless surfaces, and browser/WebGPU bridges. Keep the registry flexible so these can be plugged in without touching higher layers.
+- Surface creation, swapchain management, FrameStream wiring, and presentation code live under `src/canvas/`; the window module exposes enough information (surfaces, scale, input) without taking a dependency on Vulkan.
 
 ## 3. API Specification
 
@@ -106,8 +119,37 @@ typedef struct
     uint64_t timestamp_ns;
 } DvzKeyboardEvent;
 
+typedef enum
+{
+    DVZ_INPUT_POINTER,
+    DVZ_INPUT_KEYBOARD,
+    DVZ_INPUT_WINDOW_RESIZE,
+    DVZ_INPUT_WINDOW_SCALE,
+} DvzInputEventType;
+
+typedef struct
+{
+    DvzInputEventType type;
+    union
+    {
+        DvzPointerEvent pointer;
+        DvzKeyboardEvent keyboard;
+        struct
+        {
+            uint32_t width;
+            uint32_t height;
+        } resize;
+        struct
+        {
+            float scale_x;
+            float scale_y;
+        } scale;
+    } data;
+} DvzInputEvent;
+
 typedef void (*DvzPointerCallback)(const DvzPointerEvent* event, void* user_data);
 typedef void (*DvzKeyboardCallback)(const DvzKeyboardEvent* event, void* user_data);
+typedef void (*DvzInputEventCallback)(const DvzInputEvent* event, void* user_data);
 
 typedef struct DvzInputRouter DvzInputRouter;
 
@@ -117,14 +159,16 @@ DVZ_EXPORT void dvz_input_subscribe_pointer(
     DvzInputRouter* router, DvzPointerCallback cb, void* user_data);
 DVZ_EXPORT void dvz_input_subscribe_keyboard(
     DvzInputRouter* router, DvzKeyboardCallback cb, void* user_data);
+DVZ_EXPORT void dvz_input_subscribe_event(
+    DvzInputRouter* router, DvzInputEventCallback cb, void* user_data);
 DVZ_EXPORT void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerEvent* event);
 DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event);
+DVZ_EXPORT void dvz_input_emit_event(DvzInputRouter* router, const DvzInputEvent* event);
 ```
 
 - Routers support multiple subscribers. Internally they store a dynamic array of callbacks.
 - Backends (GLFW/Qt/others) own a router per window.
-- Pointer + keyboard are the initial event types; keep the router extensible so future touch, stylus, gesture, or controller events can reuse the same subscription mechanism. Document whether callbacks run on the backend’s thread (GLFW main thread, Qt UI thread) so subscribers know if they must be thread-safe.
-- Pointer + keyboard are the initial event types; keep the router extensible so future touch, stylus, gesture, or controller events can reuse the same subscription mechanism without redesigning the API.
+- Pointer, keyboard, resize, and scale events are required in Phase 1; other types can piggyback on the tagged `DvzInputEvent` union later. Document whether callbacks run on the backend’s thread (GLFW main thread, Qt UI thread) so subscribers know if they must be thread-safe.
 
 ### 3.2 Window Module (Header: `include/datoviz/window.h`)
 
@@ -194,8 +238,6 @@ typedef struct
 {
     DvzWindow* window;
     DvzDevice* device;
-    uint32_t width;
-    uint32_t height;
     VkFormat color_format;
     bool enable_video_sink;
     size_t timing_history;     // number of frame timing entries to retain (0 = default ring size)
@@ -213,14 +255,14 @@ typedef struct
 
 typedef struct
 {
-    uint32_t view_count;              // number of active views (1 for standard windows, 2+ for VR)
-    DvzFrameView views[4];            // left/right/multiview; keep upper-bound small for now
-    VkSemaphore timeline_semaphore;
+    uint32_t view_count;              // Phase 1 only requires view_count=1, but the array is future-proof.
+    DvzFrameView views[4];            // left/right/multiview; keep upper-bound small for now.
+    VkSemaphore timeline_semaphore;   // Export/import mandatory in Phase 1.
     uint64_t wait_value;
     VkSemaphore binary_semaphore;
     VkFence render_fence;
     VkQueue render_queue;
-    const void* metadata;             // optional per-frame data (e.g., VR poses, timing payloads)
+    const void* metadata;             // Optional per-frame data (e.g., VR poses, timing payloads) - future work.
     size_t metadata_size;
 } DvzFrameStreamResources;
 
@@ -245,17 +287,19 @@ dvz_canvas_timings(DvzCanvas* canvas, size_t* count);            // returns poin
 DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to window input
 ```
 
-- Canvas owns a `DvzFrameStream` created with the window’s physical extent (logical width/height multiplied by per-window DPI scale factors).
+- `DvzCanvasConfig` intentionally omits width/height; canvases derive physical extent from their window. If (later) we support headless/offscreen canvases, those fields can be reintroduced for the window-less path only.
+- Canvas owns a `DvzFrameStream` created with the window’s physical extent (logical width/height multiplied by per-window DPI scale factors). Update `include/datoviz/stream/frame_stream.h` so the official `DvzFrameStreamResources` definition matches the struct above; all sinks/tests must consume the same definition.
 - During `dvz_canvas_create`, it attaches sinks:
   - Mandatory swapchain sink (see below) bound to the window surface.
 - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames/views, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources` (including view metadata), and calls `dvz_frame_stream_submit()`.
-- High-precision timing: for every submitted frame the canvas records CPU submit time, GPU completion time (via timeline semaphore value + `vkGetCalibratedTimestampsEXT`), and presentation timestamps (`VK_GOOGLE_display_timing` when available). Users can fetch the latest entries via `dvz_canvas_timings()` to correlate GPU presentation with external instrumentation at microsecond resolution.
+- Timing roadmap: Phase 1 records CPU submit time plus the timeline semaphore value. Future work will add GPU completion timestamps (`vkGetCalibratedTimestampsEXT`) and presentation timestamps (`VK_GOOGLE_display_timing`) so experiments can correlate GPU presentation with external instrumentation at microsecond resolution.
+- `DvzFrameTiming` already exposes the future-ready fields so later work can populate them without breaking ABI; leave them zeroed until the advanced timing path lands.
 - Multiple canvases/windows: `DvzWindowHost` can create many `DvzWindow` objects, each with its own canvas. All canvases may share the same `DvzDevice` (multiple swapchains per device) or use separate devices. The window host’s event loop (`dvz_window_host_poll`) propagates GLFW/Qt events to every window’s input router; each canvas then renders and submits independently. Backend loops that are externally driven (Qt) simply forward events to the matching router, keeping canvases isolated from one another.
 - DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
 - Resizing: window backends emit resize callbacks (GLFW `glfwSetWindowSizeCallback`, Qt `resizeEvent`) and update internal logical + physical extents. These events must propagate via the router so canvases know to recreate FrameStream render targets and swapchains. While a resize is pending, canvas rendering/submission should pause until new resources (swapchain, exportable images) are ready, then resume using the updated sizes/scales.
 
-### 3.4 Swapchain Sink (Header: `include/datoviz/window/swapchain_sink.h`)
+### 3.4 Swapchain Sink (Header: `include/datoviz/canvas/swapchain_sink.h`)
 
 ```c
 typedef struct
@@ -285,7 +329,7 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
 ## 4. Tests
 
 1. **Input module (`src/input/tests/test_input.c`)**
-   - Create a router, subscribe dummy callbacks, emit pointer/keyboard events, ensure callbacks run in FIFO order.
+   - Create a router, subscribe dummy callbacks (pointer, keyboard, generic), emit pointer/keyboard/resize/scale events, ensure callbacks run in FIFO order.
    - Validate modifier bitmasks and default router state.
 
 2. **Window module (`src/window/tests/test_window.c`)**
@@ -298,9 +342,10 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
     - Use a mock window backend that provides a dummy surface and swapchain sink. Verify canvas creates a FrameStream, attaches the sink, and calls the draw callback.
     - Optional integration test (GLFW + headless swapchain) gated behind `DVZ_WITH_GLFW`.
     - Add resize scenarios: trigger a mock resize, ensure the canvas rebuilds its FrameStream resources/sink configuration before rendering resumes.
-    - Timing scenarios: mock the timestamp providers (CPU clock, timeline semaphore query) to validate that `dvz_canvas_timings()` reports consistent CPU/GPU/present intervals and enforces the configured history length.
+    - Timing scenarios: mock the CPU clock and timeline semaphore query to validate that `dvz_canvas_timings()` reports consistent values and enforces the configured history length. GPU/display timestamps remain future work.
+    - Timeline semaphores: ensure the canvas exports a timeline semaphore FD/handle and that the mock swapchain sink waits on it before presenting.
 
-4. **Swapchain sink (`src/window/tests/test_swapchain_sink.c`)**
+4. **Swapchain sink (`src/canvas/tests/test_swapchain_sink.c`)**
    - When Vulkan validation layers & a real GPU are available, instantiate the sink with a headless surface (e.g., via GLFW with hidden window), render a simple color, ensure `vkQueuePresentKHR` succeeds.
    - Simulate `VK_ERROR_OUT_OF_DATE_KHR` / `VK_SUBOPTIMAL_KHR` (e.g., by resizing mid-test) to verify the sink marks itself for swapchain recreation before the next submit.
 
@@ -326,9 +371,9 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
 - Provide tests that use a fake backend (no GLFW) to validate the host/registry logic.
 
 3. **Swapchain sink**
-   - Implement `dvz_swapchain_sink_backend()` in `src/window/swapchain_sink.c`.
+   - Implement `dvz_swapchain_sink_backend()` in `src/canvas/swapchain_sink.c`.
    - Register it inside `src/stream/sink_registry.c` (alongside the video sink).
-   - Extend `DvzFrameStreamResources` with synchronization payloads:
+   - Extend `DvzFrameStreamResources` (in `include/datoviz/stream/frame_stream.h`) with the view/timeline fields defined above so every sink shares the same struct:
      - Timeline semaphore handle + wait value (exported via `vkGetSemaphoreFdKHR` on Linux) so sinks can wait before consuming frames.
      - Optional fallback binary semaphore/fence for platforms without timeline support.
    - Store queue handles/family indices in the swapchain sink config so sinks can handle graphics vs present queues cleanly.
@@ -338,10 +383,10 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
    - Implement `dvz_canvas_create()`:
        - Fetch window surface info.
        - Create exportable render targets (color images + memory) sized using physical resolution (logical extent × scale) and rebuild them when scale changes.
-     - Create FrameStream with default config (width/height/format).
+     - Create a FrameStream whose width/height come from the window surface; off-screen canvases (if/when introduced) may override these values explicitly.
      - Attach swapchain sink (and optional video sink).
    - Provide APIs to set draw callbacks, pump frames, submit to the stream, and access input routers.
-   - Record per-frame CPU/GPU/present timestamps (using calibrated timestamps, timeline semaphores, and display-timing extensions) and expose them via `dvz_canvas_timings()`.
+   - Record per-frame CPU timestamps (Phase 1) and capture the timeline semaphore wait values; leave hooks for future GPU/display timing.
    - Add tests with mock sinks verifying the canvas rotates frames and calls callbacks.
 
 5. **Documentation & Integration**
@@ -352,11 +397,12 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
 ## 6. Notes & Constraints
 
 - Keep platform-specific code isolated; input + canvas must not include GLFW headers directly.
-- Aim for minimal dependencies: input depends only on `common`; window depends on `input` + `stream` (for swapchain sink) but not on higher-level modules.
+- Aim for minimal dependencies: input depends only on `common`; window depends on `input` (no Vulkan); canvas depends on `window` + `stream` + `vk` (since it owns surfaces and swapchains).
 - Provide sensible fallbacks when backend probes fail (e.g., headless builds without GLFW should still compile and run non-window tests).
 - Before merging future backends (Qt, SDL2, headless, etc.), ensure the registry and data structures are flexible enough (void pointers, backend-specific data slots).
 - Synchronization expectations:
   - Renderers must signal a timeline semaphore per frame; FrameStream passes the handle + value to every sink.
+  - Export/import (e.g., `vkGetSemaphoreFdKHR`) is required in Phase 1 so swapchain/video sinks can wait on renderer work from other processes or queues.
   - Video sink imports the semaphore (or waits on a CPU-side fence) before reading the image, then runs independently (CUDA/NVENC or CPU encoding).
   - Swapchain sink waits on the same timeline value, performs the copy on its graphics queue, then uses binary semaphores to bridge to the present queue when needed.
   - Multiple canvases/windows each maintain their own timeline/semaphore sets, so cross-window synchronization is unnecessary unless the application explicitly shares resources.
@@ -371,17 +417,18 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
 - Event-loop expectations:
   - Poll-based backends implement `poll_events()` so `dvz_window_host_poll()` drives them once per frame.
   - Backends living inside foreign loops expose `dvz_window_host_request_frame()` (or similar) so Datoviz can be driven externally without owning the loop.
+  - **Python/IPython/Jupyter note (future)**: embed integrations should hook `dvz_window_host_poll()` into the interpreter loop (e.g., `PyOS_InputHook`, IPython input hook manager, asyncio callbacks used by Jupyter). No C-level work is needed now, but ensure the host API stays non-blocking and re-entrant.
 - Input extensibility:
-  - Pointer/keyboard are the first-class events today, but the router/subscription API must remain open to touch, pen, gesture, and controller events. New event structs should reuse the same router plumbing rather than adding ad-hoc pathways per backend.
+  - Pointer, keyboard, resize, and scale events ship in Phase 1, but the router/subscription API must remain open to touch, pen, gesture, controller, and VR pose events. Extend the tagged `DvzInputEvent` union rather than adding ad-hoc pathways per backend.
 - VR readiness:
   - The multi-view `DvzFrameStreamResources` (view_count + metadata) allows future VR sinks (OpenXR/SteamVR) to consume per-eye images and pose data without breaking existing sinks.
   - VR backends register through the same window backend interface; instead of returning a `VkSurfaceKHR`, they expose XR swapchain descriptors via metadata and pair with a VR frame sink that submits frames to the XR runtime.
   - VR inputs (headset pose, controllers) route through `DvzInputRouter` using the same extensibility hooks, so no new event systems are needed.
 - Precision timing:
-  - Canvas records CPU timestamps via high-resolution clocks and GPU/present timestamps via `vkGetCalibratedTimestampsEXT`, timeline semaphore queries, or `VK_GOOGLE_display_timing`. Swapchain sinks should capture actual presentation times whenever the platform supports it.
-  - Expose the collected history through `dvz_canvas_timings()` so experiments can align GPU presentation with external measurement equipment at microsecond precision.
+  - Phase 1: record CPU timestamps and the timeline semaphore values that reflect GPU completion order.
+  - Future: add calibrated GPU timestamps and `VK_GOOGLE_display_timing` support so swapchain sinks can expose actual presentation times. All timing history should remain accessible through `dvz_canvas_timings()`.
 
-## 7. Future VR Integration
+## 7. Future VR Integration (Future Work Only)
 
 - **Window backend**: add an OpenXR (or similar) backend that plugs into the existing `DvzWindowBackend` registry. Instead of returning a `VkSurfaceKHR`, it publishes XR swapchain descriptors plus per-eye view/projection matrices via the metadata blob attached to `DvzFrameStreamResources`.
 - **FrameStream usage**: renderers write into multiview exportable images (one per eye). `view_count`/`views[]` already expose these images to sinks; the VR sink simply consumes view 0/1 (left/right) and submits them to the XR runtime via `xrEndFrame`.
@@ -389,4 +436,4 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
 - **Input**: headset pose and controllers emit events via `DvzInputRouter`, reusing the extensible event system described earlier (e.g., new `DvzPoseEvent`, `DvzControllerEvent` structs).
 - **Timing**: VR runtimes often supply predicted/presented timestamps. Store them in the frame metadata so scientific users can correlate headset presentation with external lab equipment using the same `dvz_canvas_timings()` API.
 
-Following this plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
+Following this phased plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
