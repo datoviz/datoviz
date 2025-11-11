@@ -49,7 +49,8 @@ datoviz/
 │   ├── window_host.c              # Backend registry + shared helpers
 │   ├── backend_glfw.c             # GLFW backend (window creation, events)
 │   ├── backend_qt.c               # Qt event bridge (stub until implemented)
-│   ├── backend_sdl.c              # Placeholder for SDL2 or headless backends
+│   ├── backend_headless.c         # Headless backend (network/tests/video)
+│   ├── backend_sdl.c              # Placeholder for SDL2 or additional backends
 │   ├── tests/
 │   │   └── test_window.c
 │   └── CMakeLists.txt
@@ -236,6 +237,13 @@ DVZ_EXPORT void dvz_window_get_size(DvzWindow* window, uint32_t* width, uint32_t
 - When the application asks for a surface, the backend calls `QVulkanInstance::surfaceForWindow(window)` (which internally uses the already-set Vulkan instance) and copies the resulting `VkSurfaceKHR` plus DPI/scale information into `DvzWindowSurface`. This keeps lifetime ownership consistent: Datoviz still tears down the `VkInstance`/`VkDevice`, while Qt merely hosts the native window and forwards events.
 - Qt’s event loop is still externally driven (see §3.1). The backend only bridges input callbacks and surface creation; all device/queue selection stays inside `src/vk/` and `src/canvas/`, so users who embed Datoviz in a Qt application retain full control over which physical device, extensions, and validation layers are enabled.
 
+#### Headless backend for video/network/testing
+
+- `backend_headless.c` provides a first-class backend for offscreen rendering. It does not create OS windows; instead, `create()` records the requested logical extent/DPI (defaults supplied via `DvzWindowConfig`) and allocates a `DvzInputRouter`.
+- `surface()` either builds a platform-specific offscreen surface (e.g., `VK_EXT_headless_surface`, `VK_KHR_display`, or a compositor-owned `VkSurfaceKHR`) or returns a null surface when only pure offscreen rendering is required. The canvas decides whether it needs a real surface (swapchain sink) or just exportable images for video.
+- Because there is no native event source, the backend exposes helpers such as `dvz_window_emit_pointer()`/`dvz_window_emit_keyboard()` so network listeners, scripted tests, or the video subsystem can inject events into the router. This is how VNC-style clients drive a remote renderer while keeping the rest of the stack unchanged.
+- The headless backend always reports a valid scale/extent so FrameStreams can size render targets. Presentation is optional: if a swapchain sink is attached, the swapchain may simply never present; if only the video sink is active, canvases render into exportable images and hand them to the video encoder.
+
 ### 3.3 Canvas Module (Header: `include/datoviz/canvas.h`)
 
 ```c
@@ -298,7 +306,7 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to win
 - Canvas owns a `DvzFrameStream` created with the window’s physical extent (logical width/height multiplied by per-window DPI scale factors). Update `include/datoviz/stream/frame_stream.h` so the official `DvzFrameStreamResources` definition matches the struct above; all sinks/tests must consume the same definition.
 - During `dvz_canvas_create`, it attaches sinks:
   - Mandatory swapchain sink (see below) bound to the window surface.
-- Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
+  - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided. The current `src/video/` module already performs offscreen rendering/encoding; when this roadmap item lands, that code becomes the concrete implementation behind the video sink so existing encoders can be reused by both headless and on-screen canvases.
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames/views, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources` (including view metadata), and calls `dvz_frame_stream_submit()`.
 - Timing roadmap: Phase 1 records CPU submit time plus the timeline semaphore value. Future work will add GPU completion timestamps (`vkGetCalibratedTimestampsEXT`) and presentation timestamps (`VK_GOOGLE_display_timing`) so experiments can correlate GPU presentation with external instrumentation at microsecond resolution.
 - `DvzFrameTiming` already exposes the future-ready fields so later work can populate them without breaking ABI; leave them zeroed until the advanced timing path lands.
