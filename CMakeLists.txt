@@ -38,11 +38,17 @@ set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds 
 set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "" "asan" "msan" "tsan" "off")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
 
-option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ON)
-
+set(_dvz_enable_cuda_default ON)
 if(APPLE)
-    set_property(CACHE DVZ_ENABLE_CUDA PROPERTY VALUE OFF)
+    set(_dvz_enable_cuda_default OFF)
 endif()
+
+option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ${_dvz_enable_cuda_default})
+
+# Track whether CUDA + NVENC support is available so subdirectories can make decisions.
+set(DVZ_HAS_CUDA 0)
+set(DVZ_NVENC_LIB "")
+set(DVZ_NVENC_LIB_DIR "")
 
 if(DVZ_ENABLE_CUDA)
     find_package(CUDAToolkit QUIET)
@@ -50,8 +56,42 @@ if(DVZ_ENABLE_CUDA)
     if(NOT CUDAToolkit_FOUND)
         message(WARNING "CUDA toolkit not found — disabling DVZ_ENABLE_CUDA")
         set(DVZ_ENABLE_CUDA OFF CACHE BOOL "Enable CUDA interop hooks and tests" FORCE)
+    else()
+        if(WIN32)
+            set(_dvz_nvenc_lib_dir "${PROJECT_SOURCE_DIR}/libs/nvenc/windows")
+        elseif(APPLE)
+            set(_dvz_nvenc_lib_dir "${PROJECT_SOURCE_DIR}/libs/nvenc/macos")
+        else()
+            set(_dvz_nvenc_lib_dir "${PROJECT_SOURCE_DIR}/libs/nvenc/linux")
+        endif()
+
+        set(_dvz_nvenc_names nvencodeapi nvencodeapi64)
+        if(UNIX AND NOT APPLE)
+            list(APPEND _dvz_nvenc_names nvidia-encode)
+        endif()
+
+        find_library(_dvz_nvenc_lib
+            NAMES ${_dvz_nvenc_names}
+            HINTS ${_dvz_nvenc_lib_dir}
+        )
+
+        if(_dvz_nvenc_lib)
+            set(DVZ_HAS_CUDA 1)
+            set(DVZ_NVENC_LIB "${_dvz_nvenc_lib}" CACHE FILEPATH "NVENC library resolved by CMake" FORCE)
+            set(DVZ_NVENC_LIB_DIR "${_dvz_nvenc_lib_dir}" CACHE PATH "Directory searched for NVENC" FORCE)
+        else()
+            message(WARNING "CUDA toolkit found but NVENC library missing — disabling DVZ_ENABLE_CUDA")
+            set(DVZ_ENABLE_CUDA OFF CACHE BOOL "Enable CUDA interop hooks and tests" FORCE)
+        endif()
     endif()
 endif()
+
+if(NOT DVZ_HAS_CUDA)
+    unset(DVZ_NVENC_LIB CACHE)
+    unset(DVZ_NVENC_LIB_DIR CACHE)
+endif()
+
+set(DVZ_HAS_CUDA "${DVZ_HAS_CUDA}" CACHE INTERNAL "CUDA availability flag" FORCE)
 
 # Third-party dependencies
 set(DVZ_WITH_MIMALLOC OFF)

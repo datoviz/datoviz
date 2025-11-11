@@ -188,8 +188,7 @@ endif()
 # -------------------------------------------------------------------------------------------------
 #
 set(HAS_CUDA 0)
-
-if(DVZ_ENABLE_CUDA)
+if(DEFINED DVZ_HAS_CUDA AND DVZ_HAS_CUDA)
     set(HAS_CUDA 1)
 endif()
 
