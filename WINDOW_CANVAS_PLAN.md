@@ -243,6 +243,7 @@ DVZ_EXPORT void dvz_window_get_size(DvzWindow* window, uint32_t* width, uint32_t
 - `surface()` either builds a platform-specific offscreen surface (e.g., `VK_EXT_headless_surface`, `VK_KHR_display`, or a compositor-owned `VkSurfaceKHR`) or returns a null surface when only pure offscreen rendering is required. The canvas decides whether it needs a real surface (swapchain sink) or just exportable images for video.
 - Because there is no native event source, the backend exposes helpers such as `dvz_window_emit_pointer()`/`dvz_window_emit_keyboard()` so network listeners, scripted tests, or the video subsystem can inject events into the router. This is how VNC-style clients drive a remote renderer while keeping the rest of the stack unchanged.
 - The headless backend always reports a valid scale/extent so FrameStreams can size render targets. Presentation is optional: if a swapchain sink is attached, the swapchain may simply never present; if only the video sink is active, canvases render into exportable images and hand them to the video encoder.
+- If `dvz_window_surface()` returns `false` (e.g., no swapchain-capable surface), canvases skip attaching the swapchain sink entirely and rely solely on video/offscreen sinks; the rest of the FrameStream logic stays unchanged.
 
 ### 3.3 Canvas Module (Header: `include/datoviz/canvas.h`)
 
