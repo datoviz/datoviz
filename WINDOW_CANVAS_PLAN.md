@@ -198,42 +198,50 @@ typedef struct
     uint32_t height;
     VkFormat color_format;
     bool enable_video_sink;
+    size_t timing_history;     // number of frame timing entries to retain (0 = default ring size)
 } DvzCanvasConfig;
 
 typedef struct
 {
     VkImage image;
+    VkImageView view;
     VkDeviceMemory memory;
     VkDeviceSize size;
     int memory_fd;
     int wait_semaphore_fd;
-    VkSemaphore timeline_semaphore;
-    uint64_t wait_value;
-    VkSemaphore binary_semaphore;
-    VkFence render_fence;
-    VkQueue render_queue;
-} DvzCanvasFrame;
+} DvzFrameView;
 
 typedef struct
 {
-    uint32_t view_count;              // number of views (1 for standard windows, 2+ for VR)
-    DvzCanvasFrame views[4];          // left/right or multiview; keep small for now
+    uint32_t view_count;              // number of active views (1 for standard windows, 2+ for VR)
+    DvzFrameView views[4];            // left/right/multiview; keep upper-bound small for now
     VkSemaphore timeline_semaphore;
     uint64_t wait_value;
     VkSemaphore binary_semaphore;
     VkFence render_fence;
     VkQueue render_queue;
-    const void* metadata;             // optional per-frame data (e.g., VR poses)
+    const void* metadata;             // optional per-frame data (e.g., VR poses, timing payloads)
     size_t metadata_size;
 } DvzFrameStreamResources;
 
-typedef void (*DvzCanvasDraw)(DvzCanvas* canvas, const DvzCanvasFrame* frame, void* user_data);
+typedef struct
+{
+    uint64_t frame_id;
+    double cpu_submit_us;             // host clock timestamp when submit happened
+    double gpu_complete_us;           // derived from timeline semaphore / calibrated timestamps
+    double present_start_us;          // when vkQueuePresentKHR was queued
+    double present_done_us;           // actual presentation time (if VK_GOOGLE_display_timing available)
+} DvzFrameTiming;
+
+typedef void (*DvzCanvasDraw)(DvzCanvas* canvas, const DvzFrameStreamResources* frame, void* user_data);
 
 DVZ_EXPORT DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg);
 DVZ_EXPORT void dvz_canvas_destroy(DvzCanvas* canvas);
 DVZ_EXPORT void dvz_canvas_set_draw_callback(DvzCanvas* canvas, DvzCanvasDraw cb, void* user_data);
 DVZ_EXPORT int dvz_canvas_frame(DvzCanvas* canvas);              // acquire + execute user draw
 DVZ_EXPORT int dvz_canvas_submit(DvzCanvas* canvas);             // flush + dvz_frame_stream_submit
+DVZ_EXPORT const DvzFrameTiming*
+dvz_canvas_timings(DvzCanvas* canvas, size_t* count);            // returns pointer to ring buffer
 DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to window input
 ```
 
@@ -241,8 +249,8 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to win
 - During `dvz_canvas_create`, it attaches sinks:
   - Mandatory swapchain sink (see below) bound to the window surface.
 - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
-- Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames/views, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources` (including view metadata), and calls `dvz_frame_stream_submit()`.
+- High-precision timing: for every submitted frame the canvas records CPU submit time, GPU completion time (via timeline semaphore value + `vkGetCalibratedTimestampsEXT`), and presentation timestamps (`VK_GOOGLE_display_timing` when available). Users can fetch the latest entries via `dvz_canvas_timings()` to correlate GPU presentation with external instrumentation at microsecond resolution.
 - Multiple canvases/windows: `DvzWindowHost` can create many `DvzWindow` objects, each with its own canvas. All canvases may share the same `DvzDevice` (multiple swapchains per device) or use separate devices. The window host’s event loop (`dvz_window_host_poll`) propagates GLFW/Qt events to every window’s input router; each canvas then renders and submits independently. Backend loops that are externally driven (Qt) simply forward events to the matching router, keeping canvases isolated from one another.
 - DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
 - Resizing: window backends emit resize callbacks (GLFW `glfwSetWindowSizeCallback`, Qt `resizeEvent`) and update internal logical + physical extents. These events must propagate via the router so canvases know to recreate FrameStream render targets and swapchains. While a resize is pending, canvas rendering/submission should pause until new resources (swapchain, exportable images) are ready, then resume using the updated sizes/scales.
@@ -290,6 +298,7 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
     - Use a mock window backend that provides a dummy surface and swapchain sink. Verify canvas creates a FrameStream, attaches the sink, and calls the draw callback.
     - Optional integration test (GLFW + headless swapchain) gated behind `DVZ_WITH_GLFW`.
     - Add resize scenarios: trigger a mock resize, ensure the canvas rebuilds its FrameStream resources/sink configuration before rendering resumes.
+    - Timing scenarios: mock the timestamp providers (CPU clock, timeline semaphore query) to validate that `dvz_canvas_timings()` reports consistent CPU/GPU/present intervals and enforces the configured history length.
 
 4. **Swapchain sink (`src/window/tests/test_swapchain_sink.c`)**
    - When Vulkan validation layers & a real GPU are available, instantiate the sink with a headless surface (e.g., via GLFW with hidden window), render a simple color, ensure `vkQueuePresentKHR` succeeds.
@@ -332,6 +341,7 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
      - Create FrameStream with default config (width/height/format).
      - Attach swapchain sink (and optional video sink).
    - Provide APIs to set draw callbacks, pump frames, submit to the stream, and access input routers.
+   - Record per-frame CPU/GPU/present timestamps (using calibrated timestamps, timeline semaphores, and display-timing extensions) and expose them via `dvz_canvas_timings()`.
    - Add tests with mock sinks verifying the canvas rotates frames and calls callbacks.
 
 5. **Documentation & Integration**
@@ -367,5 +377,16 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
   - The multi-view `DvzFrameStreamResources` (view_count + metadata) allows future VR sinks (OpenXR/SteamVR) to consume per-eye images and pose data without breaking existing sinks.
   - VR backends register through the same window backend interface; instead of returning a `VkSurfaceKHR`, they expose XR swapchain descriptors via metadata and pair with a VR frame sink that submits frames to the XR runtime.
   - VR inputs (headset pose, controllers) route through `DvzInputRouter` using the same extensibility hooks, so no new event systems are needed.
+- Precision timing:
+  - Canvas records CPU timestamps via high-resolution clocks and GPU/present timestamps via `vkGetCalibratedTimestampsEXT`, timeline semaphore queries, or `VK_GOOGLE_display_timing`. Swapchain sinks should capture actual presentation times whenever the platform supports it.
+  - Expose the collected history through `dvz_canvas_timings()` so experiments can align GPU presentation with external measurement equipment at microsecond precision.
+
+## 7. Future VR Integration
+
+- **Window backend**: add an OpenXR (or similar) backend that plugs into the existing `DvzWindowBackend` registry. Instead of returning a `VkSurfaceKHR`, it publishes XR swapchain descriptors plus per-eye view/projection matrices via the metadata blob attached to `DvzFrameStreamResources`.
+- **FrameStream usage**: renderers write into multiview exportable images (one per eye). `view_count`/`views[]` already expose these images to sinks; the VR sink simply consumes view 0/1 (left/right) and submits them to the XR runtime via `xrEndFrame`.
+- **Sinks**: implement `dvz_frame_sink_vr` that waits on the same timeline semaphore, performs any necessary layout transitions, and calls the XR runtime’s `xrEndFrame`/`xrWaitFrame`. Because it conforms to the generic sink interface, it can coexist with video encoders or debug windows if needed.
+- **Input**: headset pose and controllers emit events via `DvzInputRouter`, reusing the extensible event system described earlier (e.g., new `DvzPoseEvent`, `DvzControllerEvent` structs).
+- **Timing**: VR runtimes often supply predicted/presented timestamps. Store them in the frame metadata so scientific users can correlate headset presentation with external lab equipment using the same `dvz_canvas_timings()` API.
 
 Following this plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
