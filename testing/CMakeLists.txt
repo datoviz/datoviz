@@ -94,6 +94,7 @@ target_link_libraries(dvztest
     datoviz_fileio
     datoviz_math
     datoviz_thread
+    datoviz_stream
     datoviz_video
     datoviz_vk
     datoviz_vklite

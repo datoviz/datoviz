@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Public API                                                                                   */
+/*  Frame streams                                                                                */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,17 +16,4 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "axes.h"
-#include "color.h"
-#include "common.h"
-#include "drp.h"
-#include "dvzmath.h"
-#include "geom.h"
-#include "stream.h"
-#include "scene.h"
-#include "scene_data.h"
-#include "scene_graph.h"
-#include "video.h"
-#include "visuals.h"
-#include "vk.h"
-#include "vklite.h"
+#include "datoviz/stream/frame_stream.h"

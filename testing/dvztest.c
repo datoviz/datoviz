@@ -20,6 +20,7 @@
 #include "../src/ds/tests/test_ds.h"
 #include "../src/fileio/tests/test_fileio.h"
 #include "../src/math/tests/test_math.h"
+#include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
 #if HAS_CUDA
 #include "../src/video/tests/test_video.h"
@@ -42,6 +43,7 @@ int main(int argc, char** argv)
     test_ds(&suite);
     test_fileio(&suite);
     test_math(&suite);
+    test_stream(&suite);
     test_thread(&suite);
 #if HAS_CUDA
     test_video(&suite);

@@ -273,6 +273,7 @@ add_subdirectory(ds)
 add_subdirectory(fileio)
 add_subdirectory(math)
 add_subdirectory(thread)
+add_subdirectory(stream)
 add_subdirectory(video)
 add_subdirectory(vk)
 add_subdirectory(vklite)
@@ -287,6 +288,7 @@ set(DVZ_COMPONENTS
     datoviz_fileio
     datoviz_math
     datoviz_thread
+    datoviz_stream
     datoviz_video
     datoviz_vk
     datoviz_vklite

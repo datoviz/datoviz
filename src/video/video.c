@@ -326,7 +326,7 @@ static int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
 /*  Front-end API                                                                                */
 /*************************************************************************************************/
 
-DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
+DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
 {
     DvzVideoEncoderConfig cfg = {
         .width = WIDTH,
