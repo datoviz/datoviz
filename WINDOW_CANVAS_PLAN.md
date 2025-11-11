@@ -209,7 +209,7 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to win
 - During `dvz_canvas_create`, it attaches sinks:
   - Mandatory swapchain sink (see below) bound to the window surface.
   - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
-- Canvas keeps a triple-buffer set of exportable images (color targets) and their timeline values. Each call to `dvz_canvas_frame()` rotates through them, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
+- Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`). Each call to `dvz_canvas_frame()` rotates through the available frames, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
 
 ### 3.4 Swapchain Sink (Header: `include/datoviz/window/swapchain_sink.h`)
 
@@ -229,7 +229,7 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
 ```
 
 - Backend state holds: `VkSwapchainKHR`, per-image command buffers, acquire/present semaphores, and fences.
-- `start()` creates the swapchain (triple-buffered), image views, and pre-recorded command buffers that blit from the FrameStream image to the swapchain image.
+- `start()` creates the swapchain using the optimal number of images derived from `VkSurfaceCapabilitiesKHR` (rather than hardcoding triple buffering), sets up image views, and records the blit/composite command buffers that move FrameStream images into swapchain images.
 - `submit()`:
   1. Acquire next swapchain image.
   2. Wait on the FrameStream timeline/semaphore from `DvzFrameStreamResources`.
