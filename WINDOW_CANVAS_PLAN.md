@@ -216,16 +216,15 @@ typedef struct
 
 typedef struct
 {
-    VkImage image;
-    VkDeviceMemory memory;
-    VkDeviceSize size;
-    int memory_fd;
-    int wait_semaphore_fd;
+    uint32_t view_count;              // number of views (1 for standard windows, 2+ for VR)
+    DvzCanvasFrame views[4];          // left/right or multiview; keep small for now
     VkSemaphore timeline_semaphore;
     uint64_t wait_value;
     VkSemaphore binary_semaphore;
     VkFence render_fence;
     VkQueue render_queue;
+    const void* metadata;             // optional per-frame data (e.g., VR poses)
+    size_t metadata_size;
 } DvzFrameStreamResources;
 
 typedef void (*DvzCanvasDraw)(DvzCanvas* canvas, const DvzCanvasFrame* frame, void* user_data);
@@ -243,6 +242,7 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to win
   - Mandatory swapchain sink (see below) bound to the window surface.
 - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
+- Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames/views, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources` (including view metadata), and calls `dvz_frame_stream_submit()`.
 - Multiple canvases/windows: `DvzWindowHost` can create many `DvzWindow` objects, each with its own canvas. All canvases may share the same `DvzDevice` (multiple swapchains per device) or use separate devices. The window host’s event loop (`dvz_window_host_poll`) propagates GLFW/Qt events to every window’s input router; each canvas then renders and submits independently. Backend loops that are externally driven (Qt) simply forward events to the matching router, keeping canvases isolated from one another.
 - DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
 - Resizing: window backends emit resize callbacks (GLFW `glfwSetWindowSizeCallback`, Qt `resizeEvent`) and update internal logical + physical extents. These events must propagate via the router so canvases know to recreate FrameStream render targets and swapchains. While a resize is pending, canvas rendering/submission should pause until new resources (swapchain, exportable images) are ready, then resume using the updated sizes/scales.
@@ -363,5 +363,9 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
   - Backends living inside foreign loops expose `dvz_window_host_request_frame()` (or similar) so Datoviz can be driven externally without owning the loop.
 - Input extensibility:
   - Pointer/keyboard are the first-class events today, but the router/subscription API must remain open to touch, pen, gesture, and controller events. New event structs should reuse the same router plumbing rather than adding ad-hoc pathways per backend.
+- VR readiness:
+  - The multi-view `DvzFrameStreamResources` (view_count + metadata) allows future VR sinks (OpenXR/SteamVR) to consume per-eye images and pose data without breaking existing sinks.
+  - VR backends register through the same window backend interface; instead of returning a `VkSurfaceKHR`, they expose XR swapchain descriptors via metadata and pair with a VR frame sink that submits frames to the XR runtime.
+  - VR inputs (headset pose, controllers) route through `DvzInputRouter` using the same extensibility hooks, so no new event systems are needed.
 
 Following this plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
