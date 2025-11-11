@@ -164,6 +164,7 @@ DVZ_EXPORT void dvz_window_host_poll(DvzWindowHost* host);
 DVZ_EXPORT bool dvz_window_surface(DvzWindow* window, VkInstance instance, DvzWindowSurface* out);
 DVZ_EXPORT DvzInputRouter* dvz_window_input(DvzWindow* window);
 DVZ_EXPORT void dvz_window_get_scale(DvzWindow* window, float* scale_x, float* scale_y);
+DVZ_EXPORT void dvz_window_get_size(DvzWindow* window, uint32_t* width, uint32_t* height);
 ```
 
 - The host stores a pointer to the active backend (GLFW for now). Registry logic (similar to frame sinks) lives in `window_host.c`.
@@ -216,6 +217,8 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to win
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
 - Multiple canvases/windows: `DvzWindowHost` can create many `DvzWindow` objects, each with its own canvas. All canvases may share the same `DvzDevice` (multiple swapchains per device) or use separate devices. The window host’s event loop (`dvz_window_host_poll`) propagates GLFW/Qt events to every window’s input router; each canvas then renders and submits independently. Backend loops that are externally driven (Qt) simply forward events to the matching router, keeping canvases isolated from one another.
 - DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
+- DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
+- Resizing: window backends emit resize callbacks (GLFW `glfwSetWindowSizeCallback`, Qt `resizeEvent`) and update internal logical + physical extents. These events must propagate via the router so canvases know to recreate FrameStream render targets and swapchains. While a resize is pending, canvas rendering/submission should pause until new resources (swapchain, exportable images) are ready, then resume using the updated sizes/scales.
 
 ### 3.4 Swapchain Sink (Header: `include/datoviz/window/swapchain_sink.h`)
 
@@ -250,13 +253,15 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
    - Validate modifier bitmasks and default router state.
 
 2. **Window module (`src/window/tests/test_window.c`)**
-   - Mock backend (no GLFW) that simulates create/poll/destroy cycle; ensures host attaches/detaches cleanly.
-   - When GLFW is available (guard with `DVZ_WITH_GLFW`), spawn a hidden window, pump a few events, create/destroy a surface.
-   - Add DPI tests: feed fake scale values and ensure `dvz_window_surface()` returns the expected scale, and that scale-change events trigger callbacks.
+    - Mock backend (no GLFW) that simulates create/poll/destroy cycle; ensures host attaches/detaches cleanly.
+    - When GLFW is available (guard with `DVZ_WITH_GLFW`), spawn a hidden window, pump a few events, create/destroy a surface.
+    - Add DPI tests: feed fake scale values and ensure `dvz_window_surface()` returns the expected scale, and that scale-change events trigger callbacks.
+    - Add resize tests: simulate backend resize events and verify notifications propagate to canvases/sinks.
 
 3. **Canvas module (`src/canvas/tests/test_canvas.c`)**
-   - Use a mock window backend that provides a dummy surface and swapchain sink. Verify canvas creates a FrameStream, attaches the sink, and calls the draw callback.
-   - Optional integration test (GLFW + headless swapchain) gated behind `DVZ_WITH_GLFW`.
+    - Use a mock window backend that provides a dummy surface and swapchain sink. Verify canvas creates a FrameStream, attaches the sink, and calls the draw callback.
+    - Optional integration test (GLFW + headless swapchain) gated behind `DVZ_WITH_GLFW`.
+    - Add resize scenarios: trigger a mock resize, ensure the canvas rebuilds its FrameStream resources/sink configuration before rendering resumes.
 
 4. **Swapchain sink (`src/window/tests/test_swapchain_sink.c`)**
    - When Vulkan validation layers & a real GPU are available, instantiate the sink with a headless surface (e.g., via GLFW with hidden window), render a simple color, ensure `vkQueuePresentKHR` succeeds.
@@ -320,5 +325,9 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
   - Backends report per-window scale factors; canvases store them and rebuild swapchains/render targets when scale changes.
   - Input routers emit pointer positions in logical units (after dividing by scale) so camera/navigation code works uniformly on Retina, 4K, or standard monitors.
   - Provide optional user overrides (e.g., `DvzWindowConfig.user_scale`) to multiply the OS-reported scale for custom UI sizing.
+- Resizing expectations:
+  - Window backends notify canvases when logical size or DPI scale changes; canvases temporarily halt rendering, destroy old swapchains/render targets, and recreate them with the new extents.
+  - Swapchain sinks must handle `VK_ERROR_OUT_OF_DATE_KHR` / `VK_SUBOPTIMAL_KHR` by recreating their swapchains on demand.
+  - Tests should cover resize propagation to ensure no rendering occurs against destroyed swapchains.
 
 Following this plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
