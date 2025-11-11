@@ -41,7 +41,7 @@
 #error "DVZ_TEST_SPIRV_DIR must be defined when building vklite tests."
 #endif
 
-static inline void* dvz_test_shader_load(const char* filename, size_t* size_out)
+static inline void* dvz_test_shader_load(const char* filename, DvzSize* size_out)
 {
     if (!filename)
         return NULL;
@@ -69,7 +69,7 @@ static inline void* dvz_test_shader_load(const char* filename, size_t* size_out)
         return NULL;
 
     if (size_out)
-        *size_out = (size_t)shader_size;
+        *size_out = shader_size;
 
     return shader;
 }
