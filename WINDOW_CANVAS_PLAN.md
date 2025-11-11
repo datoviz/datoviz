@@ -59,6 +59,12 @@ datoviz/
 
 ## 3. API Specification
 
+### Event Loop Strategy
+
+- Poll-driven backends (GLFW, SDL) rely on `dvz_window_host_poll(host)`; applications call it once per frame. The host invokes the backend’s `poll_events()` (e.g., `glfwPollEvents`) and dispatches queued events to every window’s router.
+- External-loop backends (Qt) don’t want Datoviz to own the loop. Provide `dvz_window_host_request_frame(host)` (or backend-specific hooks) so Qt can request a render; the backend forwards Qt events directly without `poll()`.
+- Because canvases/renderers can run under either model, they should never assume control of the loop; they simply react to events and schedule work using the host API.
+
 ### 3.1 Input (Header: `include/datoviz/input/router.h` etc.)
 
 ```c
@@ -117,6 +123,7 @@ DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboar
 
 - Routers support multiple subscribers. Internally they store a dynamic array of callbacks.
 - Backends (GLFW/Qt/others) own a router per window.
+- Pointer + keyboard are the initial event types; keep the router extensible so future touch, stylus, gesture, or controller events can reuse the same subscription mechanism without redesigning the API.
 
 ### 3.2 Window Module (Header: `include/datoviz/window.h`)
 
@@ -165,6 +172,7 @@ DVZ_EXPORT bool dvz_window_surface(DvzWindow* window, VkInstance instance, DvzWi
 DVZ_EXPORT DvzInputRouter* dvz_window_input(DvzWindow* window);
 DVZ_EXPORT void dvz_window_get_scale(DvzWindow* window, float* scale_x, float* scale_y);
 DVZ_EXPORT void dvz_window_get_size(DvzWindow* window, uint32_t* width, uint32_t* height);
+DVZ_EXPORT void dvz_window_host_request_frame(DvzWindowHost* host);
 ```
 
 - The host stores a pointer to the active backend (GLFW for now). Registry logic (similar to frame sinks) lives in `window_host.c`.
@@ -197,6 +205,11 @@ typedef struct
     VkDeviceSize size;
     int memory_fd;
     int wait_semaphore_fd;
+    VkSemaphore timeline_semaphore;
+    uint64_t wait_value;
+    VkSemaphore binary_semaphore;
+    VkFence render_fence;
+    VkQueue render_queue;
 } DvzCanvasFrame;
 
 typedef void (*DvzCanvasDraw)(DvzCanvas* canvas, const DvzCanvasFrame* frame, void* user_data);
@@ -209,14 +222,12 @@ DVZ_EXPORT int dvz_canvas_submit(DvzCanvas* canvas);             // flush + dvz_
 DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);  // proxy to window input
 ```
 
-- Canvas owns a `DvzFrameStream` created with the window’s extent/format.
 - Canvas owns a `DvzFrameStream` created with the window’s physical extent (logical width/height multiplied by per-window DPI scale factors).
 - During `dvz_canvas_create`, it attaches sinks:
   - Mandatory swapchain sink (see below) bound to the window surface.
 - Optional video sink if `enable_video_sink` is true or `canvas->cfg.video_sink_config` is provided.
 - Canvas keeps a pool of exportable render targets sized according to the swapchain image count (usually `surface_caps.minImageCount + 1`, clamped to `maxImageCount`) and at physical resolution (logical × scale). Each call to `dvz_canvas_frame()` rotates through the available frames, letting the user record commands. `dvz_canvas_submit()` signals the timeline, updates `DvzFrameStreamResources`, and calls `dvz_frame_stream_submit()`.
 - Multiple canvases/windows: `DvzWindowHost` can create many `DvzWindow` objects, each with its own canvas. All canvases may share the same `DvzDevice` (multiple swapchains per device) or use separate devices. The window host’s event loop (`dvz_window_host_poll`) propagates GLFW/Qt events to every window’s input router; each canvas then renders and submits independently. Backend loops that are externally driven (Qt) simply forward events to the matching router, keeping canvases isolated from one another.
-- DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
 - DPI/scaling: window backends report per-monitor scale factors (e.g., via `glfwGetWindowContentScale` on macOS). These values live in `DvzWindowSurface.scale_x/scale_y` and should update when the window moves between monitors or the OS scale changes. Canvas uses the scale to size swapchains/render targets, while input routers pre-scale pointer coordinates so logical units remain consistent across displays. Support an optional user override factor in `DvzWindowConfig` to multiply the OS scale (e.g., forced 150% UI). When scale changes, the backend emits a resize/scale event so canvases can rebuild swapchains.
 - Resizing: window backends emit resize callbacks (GLFW `glfwSetWindowSizeCallback`, Qt `resizeEvent`) and update internal logical + physical extents. These events must propagate via the router so canvases know to recreate FrameStream render targets and swapchains. While a resize is pending, canvas rendering/submission should pause until new resources (swapchain, exportable images) are ready, then resume using the updated sizes/scales.
 
@@ -245,6 +256,7 @@ DVZ_EXPORT DvzSwapchainSinkConfig dvz_swapchain_sink_default_config(DvzWindow* w
   3. Submit the recorded blit command buffer on the graphics queue. If a dedicated present queue is required, signal an extra semaphore that the present queue then waits on.
   4. Call `vkQueuePresentKHR` on the present-capable queue.
 - `stop()/destroy()` tear down all swapchain resources.
+- Error handling: if `vkAcquireNextImageKHR` or `vkQueuePresentKHR` returns `VK_ERROR_OUT_OF_DATE_KHR` or `VK_SUBOPTIMAL_KHR`, flag the sink to rebuild its swapchain/images/views before the next submit (same path triggered by resize events).
 
 ## 4. Tests
 
@@ -329,5 +341,10 @@ All new tests should be registered in `testing/dvztest.c` and added to the unifi
   - Window backends notify canvases when logical size or DPI scale changes; canvases temporarily halt rendering, destroy old swapchains/render targets, and recreate them with the new extents.
   - Swapchain sinks must handle `VK_ERROR_OUT_OF_DATE_KHR` / `VK_SUBOPTIMAL_KHR` by recreating their swapchains on demand.
   - Tests should cover resize propagation to ensure no rendering occurs against destroyed swapchains.
+- Event-loop expectations:
+  - Poll-based backends implement `poll_events()` so `dvz_window_host_poll()` drives them once per frame.
+  - Backends living inside foreign loops expose `dvz_window_host_request_frame()` (or similar) so Datoviz can be driven externally without owning the loop.
+- Input extensibility:
+  - Pointer/keyboard are the first-class events today, but the router/subscription API must remain open to touch, pen, gesture, and controller events. New event structs should reuse the same router plumbing rather than adding ad-hoc pathways per backend.
 
 Following this plan keeps the new abstractions consistent with Datoviz’s modular architecture and gives future agents a clear roadmap for implementing the input/window/canvas stack. Update this file whenever major design decisions change.
