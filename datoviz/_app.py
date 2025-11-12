@@ -637,6 +637,7 @@ class App:
     def path(
         self,
         position: tp.Optional[np.ndarray] = None,
+        groups: Union[int, np.ndarray, None] = None,
         color: tp.Optional[np.ndarray] = None,
         linewidth: tp.Optional[np.ndarray] = None,
         cap: tp.Optional[str] = None,
@@ -670,17 +671,22 @@ class App:
         vs.Path
             The created path visual instance.
         """
-        return tp.cast(vs.Path,self._visual(
-            dvz.path,
-            vs.Path,
-            position=position,
+        c_visual = dvz.path(self.c_batch, 0)
+        visual = vs.Path(c_visual)
+        # Handle special case of position and groups
+        if position is not None:
+            assert groups is not None
+            visual.set_position(position, groups=groups)
+        # Handle the other attributes
+        visual.set_data(
             color=color,
             linewidth=linewidth,
             cap=cap,
             join=join,
             depth_test=depth_test,
             cull=cull,
-        ))
+        )
+        return visual
 
     def glyph(
         self,
