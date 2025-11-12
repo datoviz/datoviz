@@ -1,4 +1,5 @@
 imageio
+scikit-image
 matplotlib
 mkdocs-material
 mkdocstrings[python]

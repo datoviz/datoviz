@@ -1394,6 +1394,7 @@ python *args:
 examples filter="": && gallery
     @echo "Generating screenshots from examples..."
     @python tools/build_screenshots.py {{filter}}
+    @python tools/check_screenshots.py {{filter}}
 
 
 # Build the gallery Markdown files
