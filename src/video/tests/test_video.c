@@ -97,7 +97,7 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 #define WIDTH   1920
 #define HEIGHT  1080
 #define FPS     60
-#define SECONDS 60
+#define SECONDS 30
 #define NFRAMES (FPS * SECONDS)
 
 // Solid color to clear with Vulkan (uint8)
@@ -253,8 +253,13 @@ static void vk_init_and_make_image(VulkanCtx* vk)
         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
     };
 
+    VkPhysicalDeviceVulkan13Features features_1_3 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .synchronization2 = VK_TRUE,
+    };
     VkPhysicalDeviceTimelineSemaphoreFeatures timeline_features = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+        .pNext = &features_1_3,
         .timelineSemaphore = VK_TRUE,
     };
 
@@ -478,7 +483,7 @@ static void video_progress(int frame, int total)
 
 
 
-int test_video_2(TstSuite* suite, TstItem* tstitem)
+int test_video_nvenc(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -519,8 +524,8 @@ int test_video_2(TstSuite* suite, TstItem* tstitem)
     vkGetImageMemoryRequirements(vk.device, vk.image, &memReq);
 
     DvzVideoEncoderConfig vcfg = dvz_video_encoder_default_config();
-    vcfg.mp4_path = "out.mp4";
-    vcfg.raw_path = "out.h26x";
+    vcfg.mp4_path = "video_nvenc.mp4";
+    vcfg.raw_path = "video_nvenc.h26x";
     encoder = dvz_video_encoder_create(NULL, &vcfg);
     if (!encoder)
     {
@@ -575,6 +580,10 @@ cleanup:
         dvz_video_encoder_destroy(encoder);
         encoder = NULL;
     }
+    if (vk.device != VK_NULL_HANDLE)
+    {
+        vkDeviceWaitIdle(vk.device);
+    }
     if (bitstream_fp)
     {
         fclose(bitstream_fp);
@@ -614,10 +623,10 @@ cleanup:
 
 #if DVZ_HAS_KVZ
 
-#define KVZ_CPU_WIDTH  256u
-#define KVZ_CPU_HEIGHT 144u
-#define KVZ_CPU_FPS    30u
-#define KVZ_CPU_FRAMES 60u
+#define KVZ_CPU_WIDTH  WIDTH
+#define KVZ_CPU_HEIGHT HEIGHT
+#define KVZ_CPU_FPS    FPS
+#define KVZ_CPU_FRAMES NFRAMES
 
 typedef struct
 {
@@ -906,7 +915,7 @@ static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
 
 #endif // DVZ_HAS_KVZ
 
-int test_video_kvazaar_cpu(TstSuite* suite, TstItem* tstitem)
+int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
@@ -923,7 +932,7 @@ int test_video_kvazaar_cpu(TstSuite* suite, TstItem* tstitem)
     }
 
     int rc = 0;
-    const char* raw_path = "kvazaar_cpu_test.h26x";
+    const char* raw_path = "video_kvazaar.h26x";
     DvzDevice* device = (DvzDevice*)calloc(1, sizeof(DvzDevice));
     DvzGpu* gpu = (DvzGpu*)calloc(1, sizeof(DvzGpu));
     if (!device || !gpu)
@@ -944,6 +953,7 @@ int test_video_kvazaar_cpu(TstSuite* suite, TstItem* tstitem)
     cfg.fps = KVZ_CPU_FPS;
     cfg.codec = DVZ_VIDEO_CODEC_HEVC;
     cfg.mux = DVZ_VIDEO_MUX_MP4_POST;
+    cfg.mp4_path = "video_kvazaar.mp4";
     cfg.backend = "kvazaar";
     cfg.raw_path = raw_path;
 
@@ -973,6 +983,7 @@ int test_video_kvazaar_cpu(TstSuite* suite, TstItem* tstitem)
             rc = 1;
             goto cleanup;
         }
+        video_progress((int)(frame + 1), KVZ_CPU_FRAMES);
     }
     dvz_video_encoder_stop(encoder);
     dvz_video_encoder_destroy(encoder);
@@ -1030,8 +1041,8 @@ int test_video(TstSuite* suite)
     const char* tags = "video";
 
     TEST_SIMPLE(test_video_1);
-    TEST_SIMPLE(test_video_2);
-    TEST_SIMPLE(test_video_kvazaar_cpu);
+    TEST_SIMPLE(test_video_nvenc);
+    TEST_SIMPLE(test_video_kvazaar);
 
 
 
