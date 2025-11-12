@@ -186,9 +186,6 @@ class Visual:
                 value = to_enum(f'{enum_prefix}_{value}')
                 values = (value,)
 
-            elif prop_type == 'texture':
-                assert False, 'Setting texture via property is deprecated.'
-
             elif prop_type in dvz.VEC_TYPES:
                 assert hasattr(value, '__len__')
                 value = prop_type(*value)
