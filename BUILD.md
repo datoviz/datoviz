@@ -18,6 +18,7 @@ Versions of the various dependencies, including the bundled ones.
     * Dear ImGui: `v1.91.7-docking`
     * fpng: `v1.0.6`
     * glfw: `v3.4`
+    * Kvazaar: `external/kvazaar` (CPU HEVC encoder, optional)
     * msdf-atlas-gen: `master`
     * Tiny Obj Loader: `v2.0.0`
     * tinyxml2: `v10.0.0`
@@ -56,6 +57,16 @@ pip install -e .
 # Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
 ```
+
+## Kvazaar CPU backend
+
+Datoviz prefers NVIDIA's NVENC hardware encoder when CUDA support is detected. When no hardware video engine is available you can fall back to the bundled [Kvazaar](https://github.com/ultravideo/kvazaar) software encoder:
+
+1. Initialize the submodule once: `git submodule update --init external/kvazaar`.
+2. Keep the default `-DDVZ_ENABLE_KVAZAAR=ON` (or toggle it explicitly with CMake) to compile the library and expose the backend.
+3. Feed the video sink with exportable **host-visible, host-coherent, linear** Vulkan images. The CPU encoder maps the underlying `VkDeviceMemory`, so device-local-only images will cause `vkMapMemory` failures.
+
+The fallback backend emits Annex-B bitstreams by default (`cfg.raw_path`) and integrates with the existing MP4 muxers, so downstream tooling does not need to change.
 
 
 ## macOS (arm64)

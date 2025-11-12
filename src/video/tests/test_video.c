@@ -612,6 +612,411 @@ cleanup:
     return rc;
 }
 
+#if DVZ_HAS_KVZ
+
+#define KVZ_CPU_WIDTH  256u
+#define KVZ_CPU_HEIGHT 144u
+#define KVZ_CPU_FPS    30u
+#define KVZ_CPU_FRAMES 60u
+
+typedef struct
+{
+    VkInstance instance;
+    VkPhysicalDevice phys;
+    VkDevice device;
+    uint32_t queue_family;
+    VkQueue queue;
+    VkCommandPool cmd_pool;
+    VkCommandBuffer cmd;
+    VkImage image;
+    VkDeviceMemory memory;
+    VkDeviceSize memory_size;
+    VkImageLayout image_layout;
+} KvzCpuCtx;
+
+static bool kvz_cpu_pick_memory(
+    VkPhysicalDevice phys, uint32_t type_bits, VkMemoryPropertyFlags flags, uint32_t* index)
+{
+    VkPhysicalDeviceMemoryProperties props;
+    vkGetPhysicalDeviceMemoryProperties(phys, &props);
+    for (uint32_t i = 0; i < props.memoryTypeCount; ++i)
+    {
+        if ((type_bits & (1u << i)) && (props.memoryTypes[i].propertyFlags & flags) == flags)
+        {
+            *index = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+static void kvz_cpu_ctx_destroy(KvzCpuCtx* ctx)
+{
+    if (!ctx)
+    {
+        return;
+    }
+    if (ctx->device != VK_NULL_HANDLE)
+    {
+        vkDeviceWaitIdle(ctx->device);
+    }
+    if (ctx->memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(ctx->device, ctx->memory, NULL);
+        ctx->memory = VK_NULL_HANDLE;
+    }
+    if (ctx->image != VK_NULL_HANDLE)
+    {
+        vkDestroyImage(ctx->device, ctx->image, NULL);
+        ctx->image = VK_NULL_HANDLE;
+    }
+    if (ctx->cmd_pool != VK_NULL_HANDLE)
+    {
+        if (ctx->cmd != VK_NULL_HANDLE)
+        {
+            vkFreeCommandBuffers(ctx->device, ctx->cmd_pool, 1, &ctx->cmd);
+            ctx->cmd = VK_NULL_HANDLE;
+        }
+        vkDestroyCommandPool(ctx->device, ctx->cmd_pool, NULL);
+        ctx->cmd_pool = VK_NULL_HANDLE;
+    }
+    if (ctx->device != VK_NULL_HANDLE)
+    {
+        vkDestroyDevice(ctx->device, NULL);
+        ctx->device = VK_NULL_HANDLE;
+    }
+    if (ctx->instance != VK_NULL_HANDLE)
+    {
+        vkDestroyInstance(ctx->instance, NULL);
+        ctx->instance = VK_NULL_HANDLE;
+    }
+    memset(ctx, 0, sizeof(*ctx));
+}
+
+static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
+{
+    ANN(ctx);
+    if (volkInitialize() != VK_SUCCESS)
+    {
+        return false;
+    }
+    memset(ctx, 0, sizeof(*ctx));
+
+    VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO};
+    app.pApplicationName = "kvazaar_cpu_test";
+    app.apiVersion = VK_API_VERSION_1_2;
+
+    VkInstanceCreateInfo ici = {.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
+    ici.pApplicationInfo = &app;
+    if (vkCreateInstance(&ici, NULL, &ctx->instance) != VK_SUCCESS)
+    {
+        return false;
+    }
+    volkLoadInstance(ctx->instance);
+
+    uint32_t gpu_count = 0;
+    if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, NULL) != VK_SUCCESS ||
+        gpu_count == 0)
+    {
+        return false;
+    }
+    VkPhysicalDevice* devices = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * gpu_count);
+    if (!devices)
+    {
+        return false;
+    }
+    if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, devices) != VK_SUCCESS ||
+        gpu_count == 0)
+    {
+        free(devices);
+        return false;
+    }
+    ctx->phys = devices[0];
+    free(devices);
+
+    uint32_t family_count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(ctx->phys, &family_count, NULL);
+    VkQueueFamilyProperties* families =
+        (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * family_count);
+    if (!families)
+    {
+        return false;
+    }
+    vkGetPhysicalDeviceQueueFamilyProperties(ctx->phys, &family_count, families);
+    ctx->queue_family = 0;
+    for (uint32_t i = 0; i < family_count; ++i)
+    {
+        if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            ctx->queue_family = i;
+            break;
+        }
+    }
+    free(families);
+
+    float priority = 1.0f;
+    VkDeviceQueueCreateInfo qci = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
+    qci.queueFamilyIndex = ctx->queue_family;
+    qci.queueCount = 1;
+    qci.pQueuePriorities = &priority;
+
+    VkDeviceCreateInfo dci = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
+    dci.queueCreateInfoCount = 1;
+    dci.pQueueCreateInfos = &qci;
+    if (vkCreateDevice(ctx->phys, &dci, NULL, &ctx->device) != VK_SUCCESS)
+    {
+        return false;
+    }
+    volkLoadDevice(ctx->device);
+    vkGetDeviceQueue(ctx->device, ctx->queue_family, 0, &ctx->queue);
+
+    VkCommandPoolCreateInfo cpci = {.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
+    cpci.queueFamilyIndex = ctx->queue_family;
+    cpci.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    if (vkCreateCommandPool(ctx->device, &cpci, NULL, &ctx->cmd_pool) != VK_SUCCESS)
+    {
+        return false;
+    }
+    VkCommandBufferAllocateInfo cbai = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+    cbai.commandPool = ctx->cmd_pool;
+    cbai.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cbai.commandBufferCount = 1;
+    if (vkAllocateCommandBuffers(ctx->device, &cbai, &ctx->cmd) != VK_SUCCESS)
+    {
+        return false;
+    }
+
+    VkImageCreateInfo ici2 = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    ici2.imageType = VK_IMAGE_TYPE_2D;
+    ici2.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ici2.extent.width = KVZ_CPU_WIDTH;
+    ici2.extent.height = KVZ_CPU_HEIGHT;
+    ici2.extent.depth = 1;
+    ici2.mipLevels = 1;
+    ici2.arrayLayers = 1;
+    ici2.samples = VK_SAMPLE_COUNT_1_BIT;
+    ici2.tiling = VK_IMAGE_TILING_LINEAR;
+    ici2.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    ici2.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    if (vkCreateImage(ctx->device, &ici2, NULL, &ctx->image) != VK_SUCCESS)
+    {
+        return false;
+    }
+
+    VkMemoryRequirements mem_req;
+    vkGetImageMemoryRequirements(ctx->device, ctx->image, &mem_req);
+    uint32_t mem_index = UINT32_MAX;
+    if (!kvz_cpu_pick_memory(
+            ctx->phys, mem_req.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            &mem_index))
+    {
+        log_error("kvazaar CPU test: no HOST_VISIBLE|HOST_COHERENT memory type available");
+        return false;
+    }
+
+    VkMemoryAllocateInfo mai = {.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+    mai.allocationSize = mem_req.size;
+    mai.memoryTypeIndex = mem_index;
+    if (vkAllocateMemory(ctx->device, &mai, NULL, &ctx->memory) != VK_SUCCESS)
+    {
+        return false;
+    }
+    ctx->memory_size = mem_req.size;
+    if (vkBindImageMemory(ctx->device, ctx->image, ctx->memory, 0) != VK_SUCCESS)
+    {
+        return false;
+    }
+    ctx->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    return true;
+}
+
+static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
+{
+    ANN(ctx);
+    ANN(clr);
+    if (vkResetCommandBuffer(ctx->cmd, 0) != VK_SUCCESS)
+    {
+        return false;
+    }
+    VkCommandBufferBeginInfo begin = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    if (vkBeginCommandBuffer(ctx->cmd, &begin) != VK_SUCCESS)
+    {
+        return false;
+    }
+
+    VkImageMemoryBarrier barrier1 = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+    barrier1.oldLayout = ctx->image_layout;
+    barrier1.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier1.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier1.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier1.image = ctx->image;
+    barrier1.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier1.subresourceRange.baseMipLevel = 0;
+    barrier1.subresourceRange.levelCount = 1;
+    barrier1.subresourceRange.baseArrayLayer = 0;
+    barrier1.subresourceRange.layerCount = 1;
+    VkPipelineStageFlags src_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    if (ctx->image_layout != VK_IMAGE_LAYOUT_UNDEFINED)
+    {
+        src_stage = VK_PIPELINE_STAGE_HOST_BIT;
+        barrier1.srcAccessMask = VK_ACCESS_HOST_READ_BIT | VK_ACCESS_HOST_WRITE_BIT;
+    }
+    VkPipelineStageFlags dst_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    barrier1.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    vkCmdPipelineBarrier(ctx->cmd, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier1);
+
+    VkImageSubresourceRange range = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .levelCount = 1, .layerCount = 1};
+    vkCmdClearColorImage(
+        ctx->cmd, ctx->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clr, 1, &range);
+
+    VkImageMemoryBarrier barrier2 = {.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+    barrier2.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    barrier2.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+    barrier2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier2.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+    barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier2.image = ctx->image;
+    barrier2.subresourceRange = range;
+    vkCmdPipelineBarrier(
+        ctx->cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 0, NULL, 0, NULL,
+        1, &barrier2);
+
+    if (vkEndCommandBuffer(ctx->cmd) != VK_SUCCESS)
+    {
+        return false;
+    }
+    VkSubmitInfo submit = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO};
+    submit.commandBufferCount = 1;
+    submit.pCommandBuffers = &ctx->cmd;
+    if (vkQueueSubmit(ctx->queue, 1, &submit, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        return false;
+    }
+    if (vkQueueWaitIdle(ctx->queue) != VK_SUCCESS)
+    {
+        return false;
+    }
+    ctx->image_layout = VK_IMAGE_LAYOUT_GENERAL;
+    return true;
+}
+
+#endif // DVZ_HAS_KVZ
+
+int test_video_kvazaar_cpu(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+#if !DVZ_HAS_KVZ
+    log_warn("kvazaar backend disabled at build time; skipping CPU fallback test");
+    return 0;
+#else
+    KvzCpuCtx ctx = {0};
+    if (!kvz_cpu_ctx_init(&ctx))
+    {
+        log_warn("kvazaar CPU fallback test skipped (unable to initialize Vulkan)");
+        kvz_cpu_ctx_destroy(&ctx);
+        return 0;
+    }
+
+    int rc = 0;
+    const char* raw_path = "kvazaar_cpu_test.h26x";
+    DvzDevice* device = (DvzDevice*)calloc(1, sizeof(DvzDevice));
+    DvzGpu* gpu = (DvzGpu*)calloc(1, sizeof(DvzGpu));
+    if (!device || !gpu)
+    {
+        log_error("failed to allocate temporary dvz device for kvazaar test");
+        free(device);
+        free(gpu);
+        kvz_cpu_ctx_destroy(&ctx);
+        return 1;
+    }
+    device->vk_device = ctx.device;
+    device->gpu = gpu;
+    gpu->pdevice = ctx.phys;
+
+    DvzVideoEncoderConfig cfg = dvz_video_encoder_default_config();
+    cfg.width = KVZ_CPU_WIDTH;
+    cfg.height = KVZ_CPU_HEIGHT;
+    cfg.fps = KVZ_CPU_FPS;
+    cfg.codec = DVZ_VIDEO_CODEC_HEVC;
+    cfg.mux = DVZ_VIDEO_MUX_MP4_POST;
+    cfg.backend = "kvazaar";
+    cfg.raw_path = raw_path;
+
+    DvzVideoEncoder* encoder = dvz_video_encoder_create(device, &cfg);
+    if (!encoder)
+    {
+        log_error("failed to create kvazaar encoder");
+        rc = 1;
+        goto cleanup;
+    }
+    if (dvz_video_encoder_start(encoder, ctx.image, ctx.memory, ctx.memory_size, -1, -1, NULL) !=
+        0)
+    {
+        rc = 1;
+        goto cleanup;
+    }
+    for (uint32_t frame = 0; frame < KVZ_CPU_FRAMES; ++frame)
+    {
+        VkClearColorValue clr = frame_clear_color(frame, KVZ_CPU_FRAMES);
+        if (!kvz_cpu_record_clear(&ctx, &clr))
+        {
+            rc = 1;
+            goto cleanup;
+        }
+        if (dvz_video_encoder_submit(encoder, 0) != 0)
+        {
+            rc = 1;
+            goto cleanup;
+        }
+    }
+    dvz_video_encoder_stop(encoder);
+    dvz_video_encoder_destroy(encoder);
+    encoder = NULL;
+
+    FILE* fp = fopen(raw_path, "rb");
+    if (!fp)
+    {
+        log_error("kvazaar CPU test missing output bitstream");
+        rc = 1;
+        goto cleanup;
+    }
+    if (fseek(fp, 0, SEEK_END) != 0)
+    {
+        fclose(fp);
+        rc = 1;
+        goto cleanup;
+    }
+    long size = ftell(fp);
+    fclose(fp);
+    if (size <= 0)
+    {
+        log_error("kvazaar CPU test wrote empty bitstream");
+        rc = 1;
+        goto cleanup;
+    }
+    remove(raw_path);
+
+cleanup:
+    if (encoder)
+    {
+        dvz_video_encoder_destroy(encoder);
+    }
+    free(device);
+    free(gpu);
+    kvz_cpu_ctx_destroy(&ctx);
+    if (rc != 0)
+    {
+        return rc;
+    }
+    return 0;
+#endif
+}
+
 
 
 /*************************************************************************************************/
@@ -626,6 +1031,7 @@ int test_video(TstSuite* suite)
 
     TEST_SIMPLE(test_video_1);
     TEST_SIMPLE(test_video_2);
+    TEST_SIMPLE(test_video_kvazaar_cpu);
 
 
 

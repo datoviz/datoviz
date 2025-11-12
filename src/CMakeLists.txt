@@ -192,6 +192,11 @@ if(DEFINED DVZ_HAS_CUDA AND DVZ_HAS_CUDA)
     set(HAS_CUDA 1)
 endif()
 
+set(HAS_KVZ 0)
+if(DEFINED DVZ_HAS_KVZ AND DVZ_HAS_KVZ)
+    set(HAS_KVZ 1)
+endif()
+
 # Validation layers are enabled by default except for Release builds unless manually overridden.
 option(DVZ_USE_VALIDATION "Enable Vulkan validation layers and debug utils" ON)
 
@@ -220,6 +225,8 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     HAS_ZLIB=0
     HAS_OPENMP=${HAS_OPENMP}
     HAS_CUDA=${HAS_CUDA}
+    HAS_KVZ=${HAS_KVZ}
+    DVZ_HAS_KVZ=${HAS_KVZ}
 
     # Vulkan Memory Allocator uses Volk-loaded entry points.
     VMA_STATIC_VULKAN_FUNCTIONS=0

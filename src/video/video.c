@@ -285,7 +285,9 @@ static int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
         }
         if (fseeko(enc->fp, (off_t)sample.offset, SEEK_SET) != 0)
         {
-            log_error("failed to seek raw stream for mp4 mux");
+            log_error(
+                "failed to seek raw stream for mp4 mux (sample %zu, offset=%llu)", i,
+                (unsigned long long)sample.offset);
             free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
@@ -295,7 +297,8 @@ static int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
         size_t read = fread(buffer, 1, sample.size, enc->fp);
         if (read != sample.size)
         {
-            log_error("failed to read raw stream chunk for mp4 mux");
+            log_error(
+                "failed to read raw stream chunk for mp4 mux (sample %zu, size=%u)", i, sample.size);
             free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
@@ -305,7 +308,9 @@ static int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
         int err = mp4_h26x_write_nal(&writer, buffer, (int)sample.size, sample.duration);
         if (err != MP4E_STATUS_OK)
         {
-            log_error("minimp4 post-processing failed with status %d", err);
+            log_error(
+                "minimp4 post-processing failed with status %d (sample %zu, duration=%u)", err, i,
+                sample.duration);
             free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
@@ -417,7 +422,7 @@ int dvz_video_encoder_start(
     if (!bitstream_out && enc->mux == DVZ_VIDEO_MUX_MP4_POST)
     {
         const char* raw_path = enc->cfg.raw_path ? enc->cfg.raw_path : "out.h26x";
-        bitstream_out = fopen(raw_path, "wb");
+        bitstream_out = fopen(raw_path, "w+b"); // MP4 post-processing rereads this stream.
         if (!bitstream_out)
         {
             log_error("failed to open raw bitstream '%s': %s", raw_path, strerror(errno));

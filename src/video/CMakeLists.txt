@@ -4,6 +4,15 @@
 
 file(GLOB VIDEO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
 
+set(KVZ_IMPL "${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_kvazaar.c")
+set(KVZ_STUB "${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_kvazaar_stub.c")
+
+if(DVZ_HAS_KVZ)
+    list(REMOVE_ITEM VIDEO_SRC ${KVZ_STUB})
+else()
+    list(REMOVE_ITEM VIDEO_SRC ${KVZ_IMPL})
+endif()
+
 if(NOT DVZ_HAS_CUDA)
     list(FILTER VIDEO_SRC EXCLUDE REGEX ".*/encoder_backend_nvenc\\.c.*")
 endif()
@@ -24,6 +33,14 @@ target_compile_definitions(datoviz_video
     ${DVZ_COMPILE_DEFINITIONS}
     VK_NO_PROTOTYPES
 )
+
+if(DVZ_HAS_KVZ)
+    target_include_directories(datoviz_video
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/external/kvazaar/src
+    )
+    target_link_libraries(datoviz_video PUBLIC kvazaar::kvazaar)
+endif()
 
 if(WIN32)
     target_compile_definitions(datoviz_video PRIVATE DVZ_SHARED)

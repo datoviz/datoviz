@@ -49,6 +49,8 @@ option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ${_dvz_enable_cuda_
 set(DVZ_HAS_CUDA 0)
 set(DVZ_NVENC_LIB "")
 set(DVZ_NVENC_LIB_DIR "")
+option(DVZ_ENABLE_KVAZAAR "Enable Kvazaar software HEVC backend" ON)
+set(DVZ_HAS_KVZ 0)
 
 if(DVZ_ENABLE_CUDA)
     find_package(CUDAToolkit QUIET)
@@ -92,6 +94,64 @@ if(NOT DVZ_HAS_CUDA)
 endif()
 
 set(DVZ_HAS_CUDA "${DVZ_HAS_CUDA}" CACHE INTERNAL "CUDA availability flag" FORCE)
+
+if(DVZ_ENABLE_KVAZAAR)
+    set(_dvz_kvz_dir "${PROJECT_SOURCE_DIR}/external/kvazaar")
+    if(EXISTS "${_dvz_kvz_dir}/CMakeLists.txt")
+        if(DEFINED BUILD_SHARED_LIBS)
+            set(_dvz_prev_build_shared_libs "${BUILD_SHARED_LIBS}")
+            set(_dvz_prev_build_shared_libs_defined 1)
+        else()
+            set(_dvz_prev_build_shared_libs "")
+            set(_dvz_prev_build_shared_libs_defined 0)
+        endif()
+        if(DEFINED BUILD_TESTS)
+            set(_dvz_prev_build_tests "${BUILD_TESTS}")
+            set(_dvz_prev_build_tests_defined 1)
+        else()
+            set(_dvz_prev_build_tests "")
+            set(_dvz_prev_build_tests_defined 0)
+        endif()
+
+        set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+        set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(BUILD_KVAZAAR_BINARY OFF CACHE BOOL "" FORCE)
+        set(USE_CRYPTO OFF CACHE BOOL "" FORCE)
+
+        add_subdirectory(
+            "${_dvz_kvz_dir}"
+            "${CMAKE_CURRENT_BINARY_DIR}/external/kvazaar"
+            EXCLUDE_FROM_ALL)
+
+        if(TARGET kvazaar)
+            add_library(kvazaar::kvazaar ALIAS kvazaar)
+            set_target_properties(kvazaar PROPERTIES POSITION_INDEPENDENT_CODE ON)
+            set(DVZ_HAS_KVZ 1)
+        endif()
+
+        if(_dvz_prev_build_shared_libs_defined)
+            set(BUILD_SHARED_LIBS "${_dvz_prev_build_shared_libs}" CACHE BOOL "" FORCE)
+        else()
+            unset(BUILD_SHARED_LIBS CACHE)
+        endif()
+        if(_dvz_prev_build_tests_defined)
+            set(BUILD_TESTS "${_dvz_prev_build_tests}" CACHE BOOL "" FORCE)
+        else()
+            unset(BUILD_TESTS CACHE)
+        endif()
+        unset(BUILD_KVAZAAR_BINARY CACHE)
+        unset(USE_CRYPTO CACHE)
+
+        unset(_dvz_prev_build_shared_libs)
+        unset(_dvz_prev_build_shared_libs_defined)
+        unset(_dvz_prev_build_tests)
+        unset(_dvz_prev_build_tests_defined)
+    else()
+        message(WARNING "Kvazaar submodule missing — disable DVZ_ENABLE_KVAZAAR or run 'git submodule update --init external/kvazaar'")
+    endif()
+endif()
+
+set(DVZ_HAS_KVZ "${DVZ_HAS_KVZ}" CACHE INTERNAL "Kvazaar availability flag" FORCE)
 
 # Third-party dependencies
 set(DVZ_WITH_MIMALLOC OFF)
