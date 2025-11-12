@@ -167,6 +167,14 @@ DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboar
 DVZ_EXPORT void dvz_input_emit_event(DvzInputRouter* router, const DvzInputEvent* event);
 ```
 
+#### Legacy mouse/keyboard guidance
+
+- The v0.3 helpers (`v0.3/src/mouse.c`, `v0.3/src/keyboard.c`) stay valuable as **algorithm references**, not as drop-in APIs. They own their own callback registries and state machines, which conflicts with the router-first design above. Treat them as donor code for utilities that run *behind* the router.
+- **Mouse:** keep the timing heuristics (`DVZ_MOUSE_CLICK_MAX_DELAY`, `DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY`), drag-threshold logic, and gesture state transitions. Repackage them as a helper in `src/input/pointer.c` that consumes `DvzPointerEvent`s emitted by the router and optionally synthesizes higher-level gestures for subscribers that want them. Do *not* recreate `DvzMouseEvent` or `dvz_mouse_*()` entry points; gestures become an *opt-in layer* that listens to the router and publishes results via `dvz_input_emit_event()` using new `DvzInputEvent` tags (e.g., future `DVZ_INPUT_POINTER_GESTURE`). Keep the click/drag bookkeeping per router/window so headless and multi-window backends can operate independently.
+- **Keyboard:** salvage `_key_modifiers()` (modifier bitmask mapping) and the key enumeration coverage, but replace the custom callback list with thin helpers that translate backend keycodes into the `modifiers` field before calling `dvz_input_emit_keyboard()`. If higher layers need “currently pressed” tracking, provide an optional helper struct (living in `src/input/keyboard.c`) that subscribes to the router and maintains that state; the router itself stays stateless.
+- Both helpers must respect the router threading rules: any legacy-derived helper now subscribes to a router and runs in the backend thread that emitted the event. The router remains the only source of truth for delivering pointer/keyboard data to canvases, windows, headless injectors, or gesture recognizers.
+- Document legacy-derived constants/utilities in the new source files so future work knows they originated from v0.3. Do **not** reintroduce public headers under `include/datoviz/` until the Phase 1 APIs in this plan call for them.
+
 - Routers support multiple subscribers. Internally they store a dynamic array of callbacks.
 - Backends (GLFW/Qt/others) own a router per window.
 - Pointer, keyboard, resize, and scale events are required in Phase 1; other types can piggyback on the tagged `DvzInputEvent` union later. Document whether callbacks run on the backend’s thread (GLFW main thread, Qt UI thread) so subscribers know if they must be thread-safe.
