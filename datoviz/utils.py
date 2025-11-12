@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT
 import ctypes
 from collections.abc import Iterable
 from ctypes import c_char_p, c_uint8
+import typing as tp
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -627,10 +628,10 @@ def prepare_data_scalar(name: str, dtype: str, size: int, value: float) -> np.nd
 
 
 def image_flags(
-    unit: str = None,
-    mode: str = None,
-    rescale: str = None,
-    border: bool = None,
+    unit: tp.Optional[str] = None,
+    mode: tp.Optional[str] = None,
+    rescale: tp.Optional[str] = None,
+    border: tp.Optional[bool] = None,
 ) -> int:
     """
     Compute the image flags for rendering based on the provided options.
@@ -685,11 +686,11 @@ def image_flags(
 
 
 def mesh_flags(
-    indexed: bool = None,
-    textured: bool = None,
-    lighting: bool = None,
-    contour: bool = None,
-    isoline: bool = None,
+    indexed: tp.Optional[bool] = None,
+    textured: tp.Optional[bool] = None,
+    lighting: tp.Optional[bool] = None,
+    contour: tp.Optional[bool] = None,
+    isoline: tp.Optional[bool] = None,
 ) -> int:
     """
     Compute the C mesh flags based on the given options.
@@ -729,10 +730,10 @@ def mesh_flags(
 
 
 def sphere_flags(
-    textured: bool = None,
-    equal_rectangular: bool = None,
-    lighting: bool = None,
-    size_pixels: bool = None,
+    textured: tp.Optional[bool] = None,
+    equal_rectangular: tp.Optional[bool] = None,
+    lighting: tp.Optional[bool] = None,
+    size_pixels: tp.Optional[bool] = None,
 ) -> int:
     """
     Compute the C mesh flags based on the given options.
