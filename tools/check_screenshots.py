@@ -27,7 +27,7 @@ def collect_expected_screenshots()-> tp.List[Path]:
 def check_screenshots(filter=None) -> int:
     expected_screenshots = collect_expected_screenshots()
     error_count = 0
-    for image_path in tqdm(expected_screenshots, desc='Processing screenshots', unit='screenshot'):
+    for image_path in tqdm(expected_screenshots, desc='Checking screenshots', unit='screenshot'):
         relative_path = image_path.relative_to(EXPECTED_SCREENSHOTS_DIR)
         example_name = image_path.stem
 
@@ -66,5 +66,5 @@ if __name__ == '__main__':
         print(f'\n❌ Total screenshot mismatches: {error_count}')
         sys.exit(1)
     else:
-        print('\n✅ All screenshots match expected images.')
+        print('\n✅ All screenshots match expected ones.')
         sys.exit(0)
