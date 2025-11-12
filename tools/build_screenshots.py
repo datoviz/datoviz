@@ -9,7 +9,7 @@ EXAMPLES_DIR = Path('examples')
 SCREENSHOTS_DIR = Path('data/gallery')
 
 
-def collect_example_scripts():
+def collect_example_scripts() -> list[Path]:
     example_scripts = []
     for root, dirs, files in os.walk(EXAMPLES_DIR):
         # Skip directories starting with '_' or containing '~'
