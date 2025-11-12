@@ -20,7 +20,6 @@
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "fileio.h"
-#include "scene/visual.h"
 
 
 

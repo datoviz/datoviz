@@ -15,12 +15,6 @@
 /*************************************************************************************************/
 
 #include "scene/grid.h"
-#include "datoviz.h"
-#include "datoviz_protocol.h"
-#include "datoviz_types.h"
-#include "scene/graphics.h"
-#include "scene/viewset.h"
-#include "scene/visual.h"
 
 
 
@@ -30,10 +24,7 @@
 
 #define DEFAULT_SCALE     1.0f
 #define DEFAULT_LINEWIDTH 0.01f
-#define DEFAULT_COLOR                                                                             \
-    {                                                                                             \
-        0.5f, 0.5f, 0.5f, 1.0f                                                                    \
-    }
+#define DEFAULT_COLOR     {0.5f, 0.5f, 0.5f, 1.0f}
 #define DEFAULT_ELEVATION 0
 
 

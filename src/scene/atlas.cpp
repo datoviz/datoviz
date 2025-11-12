@@ -30,7 +30,6 @@ using namespace msdf_atlas;
 #include "_macros.h"
 #include "_pointer.h"
 #include "datoviz.h"
-#include "datoviz_protocol.h"
 #include "fileio.h"
 #include "scene/atlas.h"
 #include "scene/font.h"

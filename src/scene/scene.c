@@ -30,7 +30,6 @@
 #include "scene/panzoom.h"
 #include "scene/transform.h"
 #include "scene/viewset.h"
-#include "scene/visuals/pixel.h"
 
 
 

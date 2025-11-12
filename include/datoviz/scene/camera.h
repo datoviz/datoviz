@@ -19,22 +19,16 @@
 
 #include "_cglm.h"
 #include "_log.h"
+#include "datoviz_defaults.h"
 #include "datoviz_math.h"
 #include "datoviz_types.h"
 #include "scene/camera.h"
-#include "scene/mvp.h"
 
 
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
-
-#define DVZ_CAMERA_DEFAULT_ZRANGE   0.1, 100
-#define DVZ_CAMERA_DEFAULT_FOV      GLM_PI_4
-#define DVZ_CAMERA_DEFAULT_POSITION 0, 0, 4
-#define DVZ_CAMERA_DEFAULT_LOOKAT   0, 0, 0
-#define DVZ_CAMERA_DEFAULT_UP       0, 1, 0
 
 // HACK: work around mingw64 gcc warning on Windows
 // see https://stackoverflow.com/a/2754992/1595060

@@ -18,7 +18,7 @@
 #include "_cglm.h"
 #include "_log.h"
 #include "_macros.h"
-#include "datoviz.h"
+#include "datoviz_types.h"
 
 
 

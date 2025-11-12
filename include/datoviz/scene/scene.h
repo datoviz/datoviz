@@ -62,10 +62,7 @@ typedef struct DvzVisual DvzVisual;
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-// Default object IDs used for empty textures bound to unused texture descriptors.
-#define DVZ_SCENE_DEFAULT_TEX_ID     1
-#define DVZ_SCENE_DEFAULT_SAMPLER_ID 2
-#define DVZ_PANEL_GUI_MARGIN         20.0
+#define DVZ_PANEL_GUI_MARGIN 20.0
 
 
 /*************************************************************************************************/

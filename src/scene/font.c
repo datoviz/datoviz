@@ -18,7 +18,6 @@
 #include "_pointer.h"
 #include "_string_utils.h"
 #include "datoviz.h"
-#include "datoviz_protocol.h"
 #include "fileio.h"
 
 #if HAS_MSDF

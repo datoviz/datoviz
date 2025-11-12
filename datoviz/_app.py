@@ -46,9 +46,9 @@ class App:
     """
 
     c_flags: int = 0
-    c_app: dvz.DvzApp = None
-    c_batch: dvz.DvzBatch = None
-    c_scene: dvz.DvzScene = None
+    c_app: tp.Optional[dvz.DvzApp] = None
+    c_batch: tp.Optional[dvz.DvzBatch] = None
+    c_scene: tp.Optional[dvz.DvzScene] = None
 
     def __init__(
         self, c_flags: int = 0, offscreen: bool = False, background: tp.Optional[str] = None
@@ -222,10 +222,10 @@ class App:
             dtype = dtype or image.dtype
             assert 0 <= image.ndim - ndim <= 1
 
-        assert n_channels > 0
-        c_format = dtype_to_format(np.dtype(dtype).name, n_channels)
-        shape = dvz.uvec3(*shape)
-        width, height, depth = shape
+        assert n_channels > 0 # type: ignore
+        c_format = dtype_to_format(np.dtype(dtype).name, n_channels) # type: ignore
+        shape = dvz.uvec3(*shape)   # type: ignore
+        width, height, depth = shape # type: ignore
 
         interpolation = interpolation or cst.DEFAULT_INTERPOLATION
         c_filter = to_enum(f'filter_{interpolation}')
@@ -245,7 +245,7 @@ class App:
                 self.c_batch, c_format, c_filter, c_address_mode, width, height, depth, image, 0
             )
 
-        return Texture(c_texture, c_batch=self.c_batch, ndim=ndim)
+        return Texture(c_texture, c_batch=self.c_batch, ndim=ndim) # type: ignore
 
     def texture_1D(
         self,
@@ -332,8 +332,8 @@ class App:
 
     def _visual(
         self,
-        fn: tp.Callable = None,
-        cls: type = None,
+        fn: tp.Optional[tp.Callable] = None,
+        cls: tp.Optional[type] = None,
         c_visual=None,
         c_flags: int = 0,
         fixed=None,
@@ -362,8 +362,8 @@ class App:
         vs.Visual
             The created visual instance.
         """
-        c_visual = c_visual or fn(self.c_batch, c_flags)
-        visual = cls(c_visual)
+        c_visual = c_visual or fn(self.c_batch, c_flags)    # type: ignore
+        visual = cls(c_visual)  # type: ignore
         kwargs_f = {k: v for k, v in kwargs.items() if v is not None}
         visual.set_data(**kwargs_f)
         if fixed is not None:
@@ -372,14 +372,14 @@ class App:
 
     def basic(
         self,
-        topology: str = None,
-        position: np.ndarray = None,
-        color: np.ndarray = None,
-        group: np.ndarray = None,
-        size: float = None,
-        shape: ShapeCollection = None,
-        depth_test: bool = None,
-        cull: str = None,
+        topology: tp.Optional[str] = None,
+        position: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        group: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[float] = None,
+        shape: tp.Optional[ShapeCollection] = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Basic:
         """
         Create a basic visual.
@@ -420,7 +420,7 @@ class App:
             if not shape.c_merged:
                 shape.merge()
             c_visual = dvz.basic_shape(self.c_batch, shape.c_merged, c_topology, 0)
-        return self._visual(
+        return tp.cast(vs.Basic, self._visual(
             cls=vs.Basic,
             c_visual=c_visual,
             position=position,
@@ -429,15 +429,15 @@ class App:
             size=size,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def pixel(
         self,
-        position: np.ndarray = None,
-        color: np.ndarray = None,
-        size: float = None,
-        depth_test: bool = None,
-        cull: str = None,
+        position: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[float] = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Pixel:
         """
         Create a pixel visual.
@@ -460,7 +460,7 @@ class App:
         vs.Pixel
             The created pixel visual instance.
         """
-        return self._visual(
+        return tp.cast(vs.Pixel, self._visual(
             dvz.pixel,
             vs.Pixel,
             position=position,
@@ -468,15 +468,15 @@ class App:
             size=size,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def point(
         self,
-        position: np.ndarray = None,
-        color: np.ndarray = None,
-        size: np.ndarray = None,
-        depth_test: bool = None,
-        cull: str = None,
+        position: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[np.ndarray] = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Point:
         """
         Create a point visual.
@@ -499,7 +499,7 @@ class App:
         vs.Point
             The created point visual instance.
         """
-        return self._visual(
+        return tp.cast(vs.Point, self._visual(
             dvz.point,
             vs.Point,
             position=position,
@@ -507,23 +507,23 @@ class App:
             size=size,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def marker(
         self,
-        position: np.ndarray = None,
-        color: np.ndarray = None,
-        size: np.ndarray = None,
-        angle: np.ndarray = None,
-        edgecolor: Tuple[int, int, int, int] = None,
-        linewidth: float = None,
-        tex_scale: float = None,
-        mode: str = None,
-        aspect: str = None,
-        shape: str = None,
+        position: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[np.ndarray] = None,
+        angle: tp.Optional[np.ndarray] = None,
+        edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
+        linewidth: tp.Optional[float] = None,
+        tex_scale: tp.Optional[float] = None,
+        mode: tp.Optional[str] = None,
+        aspect: tp.Optional[str] = None,
+        shape: tp.Optional[str] = None,
         texture: tp.Optional[Texture] = None,
-        depth_test: bool = None,
-        cull: str = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Marker:
         """
         Create a marker visual.
@@ -563,7 +563,7 @@ class App:
         vs.Marker
             The created marker visual instance.
         """
-        return self._visual(
+        return tp.cast(vs.Marker, self._visual(
             dvz.marker,
             vs.Marker,
             position=position,
@@ -579,18 +579,18 @@ class App:
             texture=texture,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def segment(
         self,
-        initial: np.ndarray = None,
-        terminal: np.ndarray = None,
-        shift: np.ndarray = None,
-        color: np.ndarray = None,
-        linewidth: np.ndarray = None,
-        cap: str = None,
-        depth_test: bool = None,
-        cull: str = None,
+        initial: tp.Optional[np.ndarray] = None,
+        terminal: tp.Optional[np.ndarray] = None,
+        shift: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        linewidth: tp.Optional[np.ndarray] = None,
+        cap: tp.Optional[str] = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Segment:
         """
         Create a segment visual.
@@ -622,7 +622,7 @@ class App:
         vs.Segment
             The created segment visual instance.
         """
-        return self._visual(
+        return tp.cast(vs.Segment, self._visual(
             dvz.segment,
             vs.Segment,
             position=(initial, terminal),
@@ -632,7 +632,7 @@ class App:
             cap=cap,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def path(
         self,
@@ -691,20 +691,20 @@ class App:
     def glyph(
         self,
         font_size: int = cst.DEFAULT_FONT_SIZE,
-        position: np.ndarray = None,
-        axis: np.ndarray = None,
-        size: np.ndarray = None,
-        anchor: np.ndarray = None,
-        shift: np.ndarray = None,
-        texcoords: np.ndarray = None,
-        group_size: np.ndarray = None,
-        scale: np.ndarray = None,
-        angle: np.ndarray = None,
-        color: np.ndarray = None,
+        position: tp.Optional[np.ndarray] = None,
+        axis: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[np.ndarray] = None,
+        anchor: tp.Optional[np.ndarray] = None,
+        shift: tp.Optional[np.ndarray] = None,
+        texcoords: tp.Optional[np.ndarray] = None,
+        group_size: tp.Optional[np.ndarray] = None,
+        scale: tp.Optional[np.ndarray] = None,
+        angle: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
         bgcolor: tp.Optional[Tuple[int, int, int, int]] = None,
         texture: tp.Optional[Texture] = None,
-        depth_test: bool = None,
-        cull: str = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Glyph:
         """
         Create a glyph visual.
@@ -763,31 +763,31 @@ class App:
             angle=angle,
             color=color,
             bgcolor=bgcolor,
-            texture=texture,
-            depth_test=depth_test,
-            cull=cull,
+            texture=texture,        
+            depth_test=depth_test, # type: ignore
+            cull=cull, # type: ignore
         )
         return visual
 
     def image(
         self,
-        position: np.ndarray = None,
-        size: np.ndarray = None,
-        anchor: np.ndarray = None,
-        texcoords: np.ndarray = None,
-        facecolor: np.ndarray = None,
+        position: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[np.ndarray] = None,
+        anchor: tp.Optional[np.ndarray] = None,
+        texcoords: tp.Optional[np.ndarray] = None,
+        facecolor: tp.Optional[np.ndarray] = None,
         edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
-        permutation: Tuple[int, int] = None,
-        linewidth: float = None,
-        radius: float = None,
+        permutation: tp.Optional[Tuple[int, int]] = None,
+        linewidth: tp.Optional[float] = None,
+        radius: tp.Optional[float] = None,
         colormap: tp.Optional[str] = None,
         texture: tp.Optional[Texture] = None,
-        unit: str = None,
-        mode: str = None,
-        rescale: str = None,
-        border: bool = None,
-        depth_test: bool = None,
-        cull: str = None,
+        unit: tp.Optional[str] = None,
+        mode: tp.Optional[str] = None,
+        rescale: tp.Optional[str] = None,
+        border: tp.Optional[bool] = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Image:
         """
         Create an image visual.
@@ -856,7 +856,7 @@ class App:
             rescale=rescale,
             border=border,
         )
-        return self._visual(
+        return tp.cast(vs.Image, self._visual(
             dvz.image,
             vs.Image,
             c_flags=c_flags,
@@ -873,7 +873,7 @@ class App:
             texture=texture,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def wiggle(
         self,
@@ -910,7 +910,7 @@ class App:
         vs.Wiggle
             The created wiggle visual instance.
         """
-        return self._visual(
+        return tp.cast(vs.Wiggle, self._visual(
             dvz.wiggle,
             vs.Wiggle,
             bounds=bounds,
@@ -919,36 +919,36 @@ class App:
             xrange=xrange,
             scale=scale,
             texture=texture,
-        )
+        ))
 
     def mesh(
         self,
-        shape: ShapeCollection = None,
-        position: np.ndarray = None,
-        color: np.ndarray = None,
-        texcoords: np.ndarray = None,
-        normal: np.ndarray = None,
-        isoline: np.ndarray = None,
-        left: np.ndarray = None,
-        right: np.ndarray = None,
-        contour: Union[np.ndarray, bool] = None,
-        index: np.ndarray = None,
-        light_pos: Tuple[float, float, float, float] = None,
-        light_color: Tuple[int, int, int, int] = None,
+        shape: tp.Optional[ShapeCollection] = None,
+        position: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        texcoords: tp.Optional[np.ndarray] = None,
+        normal: tp.Optional[np.ndarray] = None,
+        isoline: tp.Optional[np.ndarray] = None,
+        left: tp.Optional[np.ndarray] = None,
+        right: tp.Optional[np.ndarray] = None,
+        contour: tp.Optional[Union[np.ndarray, bool]] = None,
+        index: tp.Optional[np.ndarray] = None,
+        light_pos: tp.Optional[Tuple[float, float, float, float]] = None,
+        light_color: tp.Optional[Tuple[int, int, int, int]] = None,
         ambient_params: tp.Optional[Tuple[float, float, float]] = None,
         diffuse_params: tp.Optional[Tuple[float, float, float]] = None,
         specular_params: tp.Optional[Tuple[float, float, float]] = None,
         emission_params: tp.Optional[Tuple[float, float, float]] = None,
-        shine: float = None,
-        emit: float = None,
+        shine: tp.Optional[float] = None,
+        emit: tp.Optional[float] = None,
         edgecolor: tp.Optional[Tuple[int, int, int, int]] = None,
-        linewidth: float = None,
-        density: int = None,
+        linewidth: tp.Optional[float] = None,
+        density: tp.Optional[int] = None,
         texture: tp.Optional[Texture] = None,
         indexed: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
-        depth_test: bool = None,
-        cull: str = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Mesh:
         """
         Create a mesh visual.
@@ -1065,7 +1065,7 @@ class App:
         else:
             c_visual = dvz.mesh(self.c_batch, c_flags)
 
-        return self._visual(
+        return tp.cast(vs.Mesh, self._visual(
             c_visual=c_visual,
             cls=vs.Mesh,
             position=position,
@@ -1093,13 +1093,13 @@ class App:
             depth_test=depth_test,
             cull=cull,
             **kwargs,
-        )
+        ))
 
     def sphere(
         self,
-        position: np.ndarray = None,
-        color: np.ndarray = None,
-        size: np.ndarray = None,
+        position: tp.Optional[np.ndarray] = None,
+        color: tp.Optional[np.ndarray] = None,
+        size: tp.Optional[np.ndarray] = None,
         light_pos: tp.Optional[Tuple[float, float, float, float]] = None,
         light_color: tp.Optional[Tuple[int, int, int, int]] = None,
         ambient_params: tp.Optional[Tuple[float, float, float]] = None,
@@ -1112,8 +1112,8 @@ class App:
         equal_rectangular: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
         size_pixels: tp.Optional[bool] = None,
-        depth_test: bool = None,
-        cull: str = None,
+        depth_test: tp.Optional[bool] = None,
+        cull: tp.Optional[str] = None,
     ) -> vs.Sphere:
         """
         Create a sphere visual.
@@ -1168,7 +1168,7 @@ class App:
             size_pixels=size_pixels,
             equal_rectangular=equal_rectangular,
         )
-        return self._visual(
+        return tp.cast(vs.Sphere, self._visual(
             dvz.sphere,
             vs.Sphere,
             c_flags=c_flags,
@@ -1186,23 +1186,23 @@ class App:
             texture=texture,
             depth_test=depth_test,
             cull=cull,
-        )
+        ))
 
     def volume(
         self,
-        bounds: Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]] = None,
-        permutation: Tuple[int, int, int] = None,
-        slice: int = None,
-        transfer: Tuple[float, float, float, float] = None,
+        bounds: tp.Optional[Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]] = None,
+        permutation: tp.Optional[Tuple[int, int, int]] = None,
+        slice: tp.Optional[int] = None,
+        transfer: tp.Optional[Tuple[float, float, float, float]] = None,
         texture: tp.Optional[Texture] = None,
-        mode: str = 'colormap',
+        mode: tp.Optional[str] = None,
     ) -> vs.Volume:
         """
         Create a volume visual.
 
         Parameters
         ----------
-        bounds : Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]]
+        bounds : Tuple[Tuple[float, float], Tuple[float, float], Tuple[float, float]], optional
             Bounds of the volume in normalized device coordinates, as three tuples
             (xmin, xmax), (ymin, ymax), (zmin, zmax).
         permutation : Tuple[int, int, int], optional
@@ -1223,7 +1223,7 @@ class App:
         """
         assert mode in cst.VOLUME_MODES
         c_flags = to_enum(f'volume_flags_{mode}')
-        return self._visual(
+        return tp.cast(vs.Volume, self._visual(
             dvz.volume,
             vs.Volume,
             c_flags=c_flags,
@@ -1232,7 +1232,7 @@ class App:
             slice=slice,
             transfer=transfer,
             texture=texture,
-        )
+        ))
 
     def slice(
         self,
