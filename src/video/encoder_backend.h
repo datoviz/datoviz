@@ -27,6 +27,7 @@
 /*  Backend interface                                                                            */
 /*************************************************************************************************/
 
+// Video backend struct.
 struct DvzVideoBackend
 {
     const char* name;
@@ -37,5 +38,7 @@ struct DvzVideoBackend
     int (*stop)(DvzVideoEncoder* enc);
     void (*destroy)(DvzVideoEncoder* enc);
 };
+
+
 
 const DvzVideoBackend* dvz_video_backend_pick(const DvzVideoEncoderConfig* cfg);

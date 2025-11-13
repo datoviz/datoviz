@@ -23,7 +23,7 @@
 
 
 /*************************************************************************************************/
-/*  Forward declarations                                                                          */
+/*  Forward declarations */
 /*************************************************************************************************/
 
 typedef struct DvzDevice DvzDevice;
@@ -34,9 +34,10 @@ typedef struct DvzVideoBackend DvzVideoBackend;
 
 
 /*************************************************************************************************/
-/*  Types                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
+// Mux sample.
 typedef struct
 {
     uint64_t offset;
@@ -44,6 +45,9 @@ typedef struct
     uint32_t duration;
 } DvzMuxSample;
 
+
+
+// Video encoder.
 typedef struct DvzVideoEncoder
 {
     DvzDevice* device;
@@ -84,24 +88,53 @@ typedef struct DvzVideoEncoder
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVideoEncoder*
-dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg);
+/**
+ *
+ */
+DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg);
+
+
+
+/**
+ *
+ */
 int dvz_video_encoder_start(
-    DvzVideoEncoder* enc,
-    VkImage image,
-    VkDeviceMemory memory,
-    VkDeviceSize memory_size,
-    int memory_fd,
-    int wait_semaphore_fd,
-    FILE* bitstream_out);
+    DvzVideoEncoder* enc, VkImage image, VkDeviceMemory memory, VkDeviceSize memory_size,
+    int memory_fd, int wait_semaphore_fd, FILE* bitstream_out);
+
+
+
+/**
+ *
+ */
 int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value);
+
+
+
+/**
+ *
+ */
 int dvz_video_encoder_stop(DvzVideoEncoder* enc);
+
+
+
+/**
+ *
+ */
 void dvz_video_encoder_destroy(DvzVideoEncoder* enc);
+
+
+
+/**
+ *
+ */
 uint32_t dvz_video_encoder_next_duration(DvzVideoEncoder* enc);
+
+
+
+/**
+ *
+ */
 void dvz_video_encoder_on_sample(
-    DvzVideoEncoder* enc,
-    const uint8_t* data,
-    uint32_t size,
-    uint64_t file_offset,
-    uint32_t duration,
-    bool keyframe);
+    DvzVideoEncoder* enc, const uint8_t* data, uint32_t size, uint64_t file_offset,
+    uint32_t duration, bool keyframe);
