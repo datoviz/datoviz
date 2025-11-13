@@ -868,17 +868,40 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
 
     // Step 4: graphics pipeline A — color
-    DvzGraphics* gfx_color = dvz_proto_graphics(&proto, vs_size, vs_spv, cs_size, fs_color_spv);
-    ANN(gfx_color);
+    DvzGraphics gfx_color = {0};
+    dvz_graphics(device, &gfx_color);
 
-    dvz_graphics_attachment_color(gfx_color, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    DvzShader vs_color = {0};
+    dvz_shader(device, vs_size, vs_spv, &vs_color);
+    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs_color));
 
-    dvz_graphics_vertex_binding(gfx_color, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
-    dvz_graphics_vertex_attr(gfx_color, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
-    dvz_graphics_vertex_attr(gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
+    DvzShader fs_color = {0};
+    dvz_shader(device, cs_size, fs_color_spv, &fs_color);
+    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs_color));
 
-    dvz_graphics_layout(gfx_color, dvz_slots_handle(slots));
-    AT(dvz_graphics_create(gfx_color) == 0);
+    dvz_graphics_attachment_color(&gfx_color, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_graphics_blend_color(
+        &gfx_color, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        VK_BLEND_OP_ADD, 0xF);
+    dvz_graphics_blend_alpha(
+        &gfx_color, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+
+    dvz_graphics_attachment_depth(&gfx_color, VK_FORMAT_D32_SFLOAT_S8_UINT);
+    dvz_graphics_attachment_stencil(&gfx_color, VK_FORMAT_D32_SFLOAT_S8_UINT);
+
+    dvz_graphics_vertex_binding(&gfx_color, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(&gfx_color, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
+    dvz_graphics_vertex_attr(&gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
+
+    dvz_graphics_viewport(
+        &gfx_color, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_scissor(
+        &gfx_color, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+
+    dvz_graphics_layout(&gfx_color, dvz_slots_handle(slots));
+    dvz_graphics_primitive(
+        &gfx_color, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+    AT(dvz_graphics_create(&gfx_color) == 0);
 
 
     // Step 5: graphics pipeline B — picking (same VS, different FS)
@@ -896,6 +919,8 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs_pick));
 
     dvz_graphics_attachment_color(&gfx_pick, 0, VK_FORMAT_R32_UINT);
+    // Integer attachments ignore blending, but we must still enable the write mask explicitly.
+    gfx_pick.blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
 
     dvz_graphics_vertex_binding(&gfx_pick, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(&gfx_pick, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
@@ -930,7 +955,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     /* COLOR PASS */
     dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, 0, gfx_color);
+    dvz_cmd_bind_graphics(cmds, 0, &gfx_color);
     dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
     dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds, 0);
@@ -999,7 +1024,9 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     // Step 9: cleanup
     dvz_buffer_destroy(&staging);
     dvz_graphics_destroy(&gfx_pick);
-    dvz_graphics_destroy(gfx_color);
+    dvz_graphics_destroy(&gfx_color);
+    dvz_shader_destroy(&vs_color);
+    dvz_shader_destroy(&fs_color);
     dvz_shader_destroy(&vs);
     dvz_shader_destroy(&fs_pick);
     dvz_buffer_destroy(&vbuf);
