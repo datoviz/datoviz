@@ -48,6 +48,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_technique_msaa);
     TEST_SIMPLE(test_technique_compute_graphics);
     TEST_SIMPLE(test_technique_picking);
+    TEST_SIMPLE(test_technique_wboit);
 
 
 

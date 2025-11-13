@@ -1012,3 +1012,447 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     return proto.bootstrap.instance.n_errors > 0;
 }
+
+
+
+int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // -----------------------------------------------------------------------------------------
+    // Proto & device
+    // -----------------------------------------------------------------------------------------
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+
+    DvzDevice* device = &proto.bootstrap.device;
+    ANN(device);
+    DvzVma* allocator = &proto.bootstrap.allocator;
+    ANN(allocator);
+
+    // -----------------------------------------------------------------------------------------
+    // Geometry: 3 triangles, each with position + color (alpha=0.5 in shader).
+    // FS will hardcode alpha=0.5; vertex color is RGB only or RGBA with A=1.
+    // -----------------------------------------------------------------------------------------
+    typedef struct
+    {
+        float pos[3];
+        float color[4];
+    } Vertex;
+
+    const Vertex vertices[] = {
+        // Red triangle (XY plane, z=+0.1)
+        {{-1.0f, -1.0f, 0.1f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+        {{1.0f, -1.0f, 0.1f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+        {{0.0f, 1.0f, 0.1f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+
+        // Green triangle (tilted around X)
+        {{-1.0f, -1.0f, -0.1f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+        {{1.0f, -1.0f, -0.1f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+        {{0.0f, 1.0f, 0.4f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+
+        // Blue triangle (tilted around Y)
+        {{-1.0f, -1.0f, -0.1f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+        {{-0.5f, 1.0f, 0.4f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+        {{1.0f, -1.0f, -0.1f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+    };
+    const uint32_t vertex_count = (uint32_t)(sizeof(vertices) / sizeof(vertices[0]));
+
+    // -----------------------------------------------------------------------------------------
+    // Vertex buffer (host-visible, no staging for simplicity).
+    // -----------------------------------------------------------------------------------------
+    DvzBuffer vbo = {0};
+    dvz_buffer(device, allocator, &vbo);
+    dvz_buffer_size(&vbo, sizeof(vertices));
+    dvz_buffer_usage(&vbo, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    dvz_buffer_flags(&vbo, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    AT(dvz_buffer_create(&vbo) == 0);
+    dvz_buffer_upload(&vbo, 0, sizeof(vertices), vertices);
+
+    // -----------------------------------------------------------------------------------------
+    // Accumulation images (color + weight) and views.
+    // -----------------------------------------------------------------------------------------
+    const uint32_t W = DVZ_PROTO_WIDTH;
+    const uint32_t H = DVZ_PROTO_HEIGHT;
+
+    // Color accumulation: RGBA16F
+    DvzImages accum_color = {0};
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &accum_color);
+    dvz_images_format(&accum_color, VK_FORMAT_R16G16B16A16_SFLOAT);
+    dvz_images_size(&accum_color, W, H, 1);
+    dvz_images_usage(
+        &accum_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    AT(dvz_images_create(&accum_color) == 0);
+
+    DvzImageViews accum_color_view = {0};
+    dvz_image_views(&accum_color, &accum_color_view);
+    dvz_image_views_type(&accum_color_view, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_aspect(&accum_color_view, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_image_views_mip(&accum_color_view, 0, 1);
+    dvz_image_views_layers(&accum_color_view, 0, 1);
+    dvz_image_views_create(&accum_color_view);
+
+    // Weight accumulation: R16F
+    DvzImages accum_weight = {0};
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &accum_weight);
+    dvz_images_format(&accum_weight, VK_FORMAT_R16_SFLOAT);
+    dvz_images_size(&accum_weight, W, H, 1);
+    dvz_images_usage(
+        &accum_weight, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    AT(dvz_images_create(&accum_weight) == 0);
+
+    DvzImageViews accum_weight_view = {0};
+    dvz_image_views(&accum_weight, &accum_weight_view);
+    dvz_image_views_type(&accum_weight_view, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_aspect(&accum_weight_view, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_image_views_mip(&accum_weight_view, 0, 1);
+    dvz_image_views_layers(&accum_weight_view, 0, 1);
+    dvz_image_views_create(&accum_weight_view);
+
+    // Depth buffer: reuse proto's depth-stencil image/view.
+    VkImageView depth_view = dvz_image_views_handle(&proto.dview, 0);
+
+    // -----------------------------------------------------------------------------------------
+    // Sampler for composite pass.
+    // -----------------------------------------------------------------------------------------
+    DvzSampler sampler = {0};
+    dvz_sampler(device, &sampler);
+    dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
+    dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_anisotropy(&sampler, 1.0f);
+    AT(dvz_sampler_create(&sampler) == 0);
+
+    // -----------------------------------------------------------------------------------------
+    // Shaders
+    // - Accum VS: input layout (location 0: vec3 pos, location 1: vec4 color)
+    // - Accum FS: WBOIT accumulation (writes to two color attachments).
+    // - Composite VS: fullscreen triangle (uses gl_VertexIndex, no VBO).
+    // - Composite FS: samples both accum textures and outputs final color.
+    // -----------------------------------------------------------------------------------------
+    DvzSize vs_size = 0, fs_size = 0;
+    uint32_t* vs_spv = NULL;
+    uint32_t* fs_spv = NULL;
+
+    // -----------------------------------------------------------------------------------------
+    // Accumulation graphics pipeline.
+    // -----------------------------------------------------------------------------------------
+    DvzGraphics g_accum = {0};
+    {
+        dvz_graphics(device, &g_accum);
+
+        // Shaders.
+        DvzShader vs = {0}, fs = {0};
+        vs_spv = dvz_test_shader_load("wboit_accum.vert.spv", &vs_size);
+        fs_spv = dvz_test_shader_load("wboit_accum.frag.spv", &fs_size);
+        dvz_shader(device, vs_size, vs_spv, &vs);
+        dvz_shader(device, fs_size, fs_spv, &fs);
+        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+
+        // Vertex input: binding 0, pos (loc 0), color (loc 1).
+        dvz_graphics_vertex_binding(
+            &g_accum, 0, (DvzSize)sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+        dvz_graphics_vertex_attr(
+            &g_accum, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos));
+        dvz_graphics_vertex_attr(
+            &g_accum, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color));
+
+        // Attachments: color0 = accum_color, color1 = accum_weight, depth.
+        dvz_graphics_attachment_color(&g_accum, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
+        dvz_graphics_attachment_color(&g_accum, 1, VK_FORMAT_R16_SFLOAT);
+        dvz_graphics_attachment_depth(&g_accum, VK_FORMAT_D32_SFLOAT_S8_UINT);
+
+        // Primitive + state.
+        dvz_graphics_primitive(
+            &g_accum, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_viewport(
+            &g_accum, 0, 0, (float)W, (float)H, 0.0f, 1.0f, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_scissor(&g_accum, 0, 0, W, H, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_depth(
+            &g_accum, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_cull_mode(&g_accum, VK_CULL_MODE_NONE, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Blending: additive for color + weight, WBOIT style.
+        {
+            vec4 blend_consts = {0, 0, 0, 0};
+            dvz_graphics_blend(&g_accum, VK_LOGIC_OP_COPY, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
+
+            // Attachment 0: accumColor += srcColor * alpha
+            dvz_graphics_blend_color(
+                &g_accum, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                    VK_COLOR_COMPONENT_A_BIT);
+            dvz_graphics_blend_alpha(
+                &g_accum, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
+
+            // Attachment 1: accumWeight += alpha
+            dvz_graphics_blend_color(
+                &g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                VK_COLOR_COMPONENT_R_BIT);
+            dvz_graphics_blend_alpha(
+                &g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
+        }
+
+        // No descriptors: empty pipeline layout.
+        DvzSlots slots = {0};
+        dvz_slots(device, &slots);
+        dvz_slots_create(&slots);
+        dvz_graphics_layout(&g_accum, dvz_slots_handle(&slots));
+
+        // Create pipeline.
+        AT(dvz_graphics_create(&g_accum) == 0);
+
+        // Cleanup temp.
+        dvz_slots_destroy(&slots);
+        dvz_shader_destroy(&vs);
+        dvz_shader_destroy(&fs);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+        vs_spv = fs_spv = NULL;
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // Composite graphics pipeline.
+    // -----------------------------------------------------------------------------------------
+    DvzGraphics g_comp = {0};
+    DvzSlots slots_comp = {0};
+    DvzDescriptors desc_comp = {0};
+    {
+        dvz_graphics(device, &g_comp);
+
+        // Shaders.
+        DvzShader vs = {0}, fs = {0};
+        vs_spv = dvz_test_shader_load("wboit_comp.vert.spv", &vs_size);
+        fs_spv = dvz_test_shader_load("wboit_comp.frag.spv", &fs_size);
+        dvz_shader(device, vs_size, vs_spv, &vs);
+        dvz_shader(device, fs_size, fs_spv, &fs);
+        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+
+        // Fullscreen triangle: no vertex attributes.
+
+        // Color attachment: final output (proto.img) format.
+        dvz_graphics_attachment_color(&g_comp, 0, VK_FORMAT_R8G8B8A8_UNORM);
+
+        // Primitive/state.
+        dvz_graphics_primitive(
+            &g_comp, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_viewport(
+            &g_comp, 0, 0, (float)W, (float)H, 0.0f, 1.0f, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_scissor(&g_comp, 0, 0, W, H, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_depth(&g_comp, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_cull_mode(&g_comp, VK_CULL_MODE_NONE, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // No blending: overwrite final color.
+        {
+            vec4 blend_consts = {0, 0, 0, 0};
+            dvz_graphics_blend(&g_comp, VK_LOGIC_OP_COPY, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
+            dvz_graphics_blend_color(
+                &g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+                VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                    VK_COLOR_COMPONENT_A_BIT);
+            dvz_graphics_blend_alpha(
+                &g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+        }
+
+        // Descriptors: set 0, binding 0 = accumColor, binding 1 = accumWeight.
+        dvz_slots(device, &slots_comp);
+        dvz_slots_binding(
+            &slots_comp, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        dvz_slots_binding(
+            &slots_comp, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        dvz_slots_create(&slots_comp);
+        dvz_graphics_layout(&g_comp, dvz_slots_handle(&slots_comp));
+
+        // Pipeline.
+        AT(dvz_graphics_create(&g_comp) == 0);
+
+        // Descriptors.
+        dvz_descriptors(&slots_comp, &desc_comp);
+        dvz_descriptors_image(
+            &desc_comp, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(&accum_color_view, 0), sampler.vk_sampler);
+        dvz_descriptors_image(
+            &desc_comp, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(&accum_weight_view, 0), sampler.vk_sampler);
+
+        dvz_shader_destroy(&vs);
+        dvz_shader_destroy(&fs);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+        vs_spv = fs_spv = NULL;
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // Renderings
+    // -----------------------------------------------------------------------------------------
+    // Accumulation rendering: writes to accum_color + accum_weight + depth.
+    DvzRendering accum_rendering = {0};
+    {
+        dvz_rendering(&accum_rendering);
+        dvz_rendering_area(&accum_rendering, 0, 0, W, H);
+
+        // Color 0: accumColor
+        DvzAttachment* a0 = dvz_rendering_color(&accum_rendering, 0);
+        dvz_attachment_image(
+            a0, dvz_image_views_handle(&accum_color_view, 0),
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(a0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(a0, (VkClearValue){.color = {.float32 = {0, 0, 0, 0}}});
+
+        // Color 1: accumWeight
+        DvzAttachment* a1 = dvz_rendering_color(&accum_rendering, 1);
+        dvz_attachment_image(
+            a1, dvz_image_views_handle(&accum_weight_view, 0),
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(a1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(a1, (VkClearValue){.color = {.float32 = {0, 0, 0, 0}}});
+
+        // Depth.
+        DvzAttachment* ad = dvz_rendering_depth(&accum_rendering);
+        dvz_attachment_image(ad, depth_view, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(ad, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(ad, (VkClearValue){.depthStencil = {1.0f, 0}});
+    }
+
+    // Composite rendering: use proto.rendering, writing to proto.img.
+    {
+        DvzAttachment* c0 = dvz_rendering_color(&proto.rendering, 0);
+        dvz_attachment_image(
+            c0, dvz_image_views_handle(&proto.view, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(c0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(c0, (VkClearValue){.color = {.float32 = DVZ_PROTO_CLEAR_COLOR}});
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // Command buffer + barriers.
+    // -----------------------------------------------------------------------------------------
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    ANN(cmds);
+    dvz_cmd_begin(cmds);
+
+    // Transition accum images: UNDEFINED -> COLOR_ATTACHMENT_OPTIMAL.
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+
+        VkImage img0 = dvz_image_handle(&accum_color, 0);
+        VkImage img1 = dvz_image_handle(&accum_weight, 0);
+
+        DvzBarrierImage* b0 = dvz_barriers_image(&barriers, img0);
+        dvz_barrier_image_stage(
+            b0, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dvz_barrier_image_access(b0, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            b0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(b0, VK_IMAGE_ASPECT_COLOR_BIT);
+        dvz_barrier_image_mip(b0, 0, 1);
+        dvz_barrier_image_layers(b0, 0, 1);
+
+        DvzBarrierImage* b1 = dvz_barriers_image(&barriers, img1);
+        dvz_barrier_image_stage(
+            b1, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dvz_barrier_image_access(b1, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            b1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(b1, VK_IMAGE_ASPECT_COLOR_BIT);
+        dvz_barrier_image_mip(b1, 0, 1);
+        dvz_barrier_image_layers(b1, 0, 1);
+
+        dvz_cmd_barriers(cmds, 0, &barriers);
+    }
+
+    // Pass 1: accumulation.
+    {
+        DvzSize offsets = 0;
+        dvz_cmd_rendering_begin(cmds, 0, &accum_rendering);
+        dvz_cmd_bind_graphics(cmds, 0, &g_accum);
+        dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbo, &offsets);
+        dvz_cmd_draw(cmds, 0, 0, vertex_count, 0, 1);
+        dvz_cmd_rendering_end(cmds, 0);
+    }
+
+    // Transition accum images: COLOR_ATTACHMENT_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL.
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+
+        VkImage img0 = dvz_image_handle(&accum_color, 0);
+        VkImage img1 = dvz_image_handle(&accum_weight, 0);
+
+        DvzBarrierImage* b0 = dvz_barriers_image(&barriers, img0);
+        dvz_barrier_image_stage(
+            b0, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+        dvz_barrier_image_access(
+            b0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+        dvz_barrier_image_layout(
+            b0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        dvz_barrier_image_aspect(b0, VK_IMAGE_ASPECT_COLOR_BIT);
+        dvz_barrier_image_mip(b0, 0, 1);
+        dvz_barrier_image_layers(b0, 0, 1);
+
+        DvzBarrierImage* b1 = dvz_barriers_image(&barriers, img1);
+        dvz_barrier_image_stage(
+            b1, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+        dvz_barrier_image_access(
+            b1, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+        dvz_barrier_image_layout(
+            b1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        dvz_barrier_image_aspect(b1, VK_IMAGE_ASPECT_COLOR_BIT);
+        dvz_barrier_image_mip(b1, 0, 1);
+        dvz_barrier_image_layers(b1, 0, 1);
+
+        dvz_cmd_barriers(cmds, 0, &barriers);
+    }
+
+    // Pass 2: composite full-screen.
+    {
+        dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
+        dvz_cmd_bind_graphics(cmds, 0, &g_comp);
+        dvz_cmd_bind_descriptors(
+            cmds, 0, VK_PIPELINE_BIND_POINT_GRAPHICS, &desc_comp, 0, 1, 0, NULL);
+        // Fullscreen triangle: 3 vertices from VS (gl_VertexIndex).
+        dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
+        dvz_cmd_rendering_end(cmds, 0);
+    }
+
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+
+    // -----------------------------------------------------------------------------------------
+    // Screenshot.
+    // -----------------------------------------------------------------------------------------
+    dvz_proto_screenshot(&proto, "build/technique_wboit.png");
+
+    // -----------------------------------------------------------------------------------------
+    // Cleanup.
+    // -----------------------------------------------------------------------------------------
+    dvz_buffer_destroy(&vbo);
+
+    dvz_image_views_destroy(&accum_color_view);
+    dvz_images_destroy(&accum_color);
+
+    dvz_image_views_destroy(&accum_weight_view);
+    dvz_images_destroy(&accum_weight);
+
+    dvz_sampler_destroy(&sampler);
+
+    dvz_graphics_destroy(&g_accum);
+    dvz_graphics_destroy(&g_comp);
+
+    dvz_proto_destroy(&proto);
+
+    return proto.bootstrap.instance.n_errors > 0;
+}

@@ -118,6 +118,8 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem);
 
 int test_technique_picking(TstSuite* suite, TstItem* tstitem);
 
+int test_technique_wboit(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vklite(TstSuite* suite);
