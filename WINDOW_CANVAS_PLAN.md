@@ -53,7 +53,6 @@ datoviz/
 │   ├── backend_glfw.c             # GLFW backend (window creation, events)
 │   ├── backend_qt.c               # Qt event bridge (stub until implemented)
 │   ├── backend_headless.c         # Headless backend (network/tests/video)
-│   ├── backend_sdl.c              # Placeholder for SDL2 or additional backends
 │   ├── tests/
 │   │   └── test_window.c
 │   └── CMakeLists.txt
