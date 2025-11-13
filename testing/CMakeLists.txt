@@ -37,7 +37,11 @@ file(GLOB TEST_SOURCES
 )
 
 if(NOT DVZ_HAS_CUDA)
-    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video\\.c.*")
+    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
+endif()
+
+if(NOT DVZ_HAS_KVZ)
+    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_kvazaar\\.c.*")
 endif()
 
 set(DVZ_TEST_SPIRV_DIR "${PROJECT_BINARY_DIR}/testing/spirv")
