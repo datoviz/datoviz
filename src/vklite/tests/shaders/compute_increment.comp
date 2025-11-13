@@ -1,0 +1,11 @@
+#version 450
+layout(local_size_x = 1) in;
+
+layout(std430, binding = 0) buffer Buf {
+    vec2 pos[];
+};
+
+void main() {
+    uint i = gl_GlobalInvocationID.x;
+    pos[i].x += 0.25;
+}

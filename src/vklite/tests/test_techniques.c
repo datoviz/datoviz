@@ -637,3 +637,289 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
 
     return proto.bootstrap.instance.n_errors > 0;
 }
+
+
+
+int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Initialize proto.
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+
+    DvzDevice* device = &proto.bootstrap.device;
+    ANN(device);
+
+    // Step 1: create storage/vertex buffer
+
+    // Positions of 4 vertices (square; triangle strip)
+    vec2 positions[4] = {
+        {-0.5f, -0.5f},
+        {0.5f, -0.5f},
+        {-0.5f, 0.5f},
+        {0.5f, 0.5f},
+    };
+
+    DvzBuffer buf = {0};
+    dvz_buffer(device, &proto.bootstrap.allocator, &buf);
+    dvz_buffer_size(&buf, sizeof(positions));
+    dvz_buffer_usage(
+        &buf, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+                  VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_flags(&buf, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    AT(dvz_buffer_create(&buf) == 0);
+
+    // Upload initial data
+    dvz_buffer_upload(&buf, 0, sizeof(positions), positions);
+
+
+    // Step 2: set up slots (descriptor layout)
+    DvzSlots slots = {0};
+    dvz_slots(device, &slots);
+    // set = 0, binding = 0, storage buffer
+    dvz_slots_binding(
+        &slots, 0, 0, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    dvz_slots_create(&slots);
+
+
+    // Step 3: create compute pipeline
+    DvzSize cs_size = 0;
+    uint32_t* cs_spv = dvz_test_shader_load("compute_increment.comp.spv", &cs_size);
+
+    DvzShader cs = {0};
+    dvz_shader(device, cs_size, cs_spv, &cs);
+
+    DvzCompute compute = {0};
+    dvz_compute(device, &compute);
+    dvz_compute_shader(&compute, dvz_shader_handle(&cs));
+    dvz_compute_layout(&compute, dvz_slots_handle(&slots));
+    AT(dvz_compute_create(&compute) == 0);
+
+    // Descriptors for compute
+    DvzDescriptors desc = {0};
+    dvz_descriptors(&slots, &desc);
+    dvz_descriptors_buffer(&desc, 0, 0, 0, dvz_buffer_handle(&buf), 0, sizeof(positions));
+
+
+    // Step 4: create graphics pipeline
+    DvzSize vs_size = 0, fs_size = 0;
+    uint32_t* vs_spv = dvz_test_shader_load("hello_compute.vert.spv", &vs_size);
+    uint32_t* fs_spv = dvz_test_shader_load("hello_compute.frag.spv", &fs_size);
+
+    DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
+    ANN(graphics);
+
+    // One color attachment, no depth/stencil needed
+    dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Vertex input: vec2
+    dvz_graphics_vertex_binding(graphics, 0, sizeof(vec2), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32_SFLOAT, 0);
+
+    // Layout: reuse same slots (even though graphics doesn't use the storage buffer)
+    dvz_graphics_layout(graphics, dvz_slots_handle(&slots));
+    dvz_graphics_primitive(
+        graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, DVZ_GRAPHICS_FLAGS_FIXED);
+    AT(dvz_graphics_create(graphics) == 0);
+
+
+    // Step 5: record command buffer
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    ANN(cmds);
+
+    dvz_cmd_begin(cmds);
+
+    // Compute pass
+    dvz_cmd_bind_compute(cmds, 0, &compute);
+    dvz_cmd_bind_descriptors(cmds, 0, VK_PIPELINE_BIND_POINT_COMPUTE, &desc, 0, 1, 0, NULL);
+
+    // Dispatch 4 workgroups → each vertex is shifted in compute shader
+    dvz_cmd_dispatch(cmds, 0, 4, 1, 1);
+
+    // Barrier: compute write → graphics vertex read
+    {
+        DvzBarrierBuffer* b =
+            dvz_barriers_buffer(&proto.barriers, dvz_buffer_handle(&buf), 0, sizeof(positions));
+        dvz_barrier_buffer_stage(
+            b, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT);
+        dvz_barrier_buffer_access(
+            b, VK_ACCESS_2_SHADER_WRITE_BIT, VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT);
+        dvz_cmd_barriers(cmds, 0, &proto.barriers);
+    }
+
+    // Graphics pass
+    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, 0, graphics);
+    dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &buf, (DvzSize[]){0});
+    dvz_cmd_draw(cmds, 0, 0, 4, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+
+
+    // Step 6: save screenshot
+    dvz_proto_screenshot(&proto, "build/technique_compute_graphics.png");
+
+
+    // Step 7: cleanup
+    dvz_slots_destroy(&slots);
+    dvz_shader_destroy(&cs);
+    dvz_compute_destroy(&compute);
+    dvz_graphics_destroy(graphics);
+    dvz_buffer_destroy(&buf);
+    dvz_proto_destroy(&proto);
+    dvz_free(cs_spv);
+    dvz_free(vs_spv);
+    dvz_free(fs_spv);
+
+    return proto.bootstrap.instance.n_errors > 0;
+}
+
+
+
+int test_technique_picking(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Initialize proto.
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+    DvzDevice* device = &proto.bootstrap.device;
+    ANN(device);
+
+    // Step 1: vertex buffer with 3 vertices and ID 42
+    typedef struct
+    {
+        vec2 pos;
+        uint32_t id;
+    } Vertex;
+    Vertex verts[3] = {
+        {{-0.5f, -0.5f}, 42},
+        {{0.5f, -0.5f}, 42},
+        {{0.0f, 0.5f}, 42},
+    };
+
+    DvzBuffer vbuf = {0};
+    dvz_buffer(device, &proto.bootstrap.allocator, &vbuf);
+    dvz_buffer_size(&vbuf, sizeof(verts));
+    dvz_buffer_usage(&vbuf, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_flags(&vbuf, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    AT(dvz_buffer_create(&vbuf) == 0);
+    dvz_buffer_upload(&vbuf, 0, sizeof(verts), verts);
+
+    // Step 2: picking attachment (R32_UINT)
+    DvzImages pickimg = {0};
+    dvz_images(device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &pickimg);
+    dvz_images_format(&pickimg, VK_FORMAT_R32_UINT);
+    dvz_images_size(&pickimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+    dvz_images_usage(
+        &pickimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    dvz_images_vma_flags(&pickimg, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+    AT(dvz_images_create(&pickimg) == 0);
+
+    DvzImageViews pickview = {0};
+    dvz_image_views(&pickimg, &pickview);
+    dvz_image_views_aspect(&pickview, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_image_views_type(&pickview, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_create(&pickview);
+
+    // Step 3: load shaders
+    DvzSize vs_size = 0, cs_size = 0, ps_size = 0;
+    uint32_t* vs_spv = dvz_test_shader_load("shared.vert.spv", &vs_size);
+    uint32_t* fs_color_spv = dvz_test_shader_load("color.frag.spv", &cs_size);
+    uint32_t* fs_pick_spv = dvz_test_shader_load("pick.frag.spv", &ps_size);
+
+    // Step 4: graphics pipeline A — color
+    DvzGraphics* gfx_color = dvz_proto_graphics(&proto, vs_size, vs_spv, cs_size, fs_color_spv);
+    ANN(gfx_color);
+
+    dvz_graphics_attachment_color(gfx_color, 0, VK_FORMAT_R8G8B8A8_UNORM);
+
+    dvz_graphics_vertex_binding(gfx_color, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(gfx_color, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
+    dvz_graphics_vertex_attr(gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
+
+    AT(dvz_graphics_create(gfx_color) == 0);
+
+    // Step 5: graphics pipeline B — picking (same VS, different FS)
+    DvzGraphics gfx_pick = {0};
+    dvz_graphics(device, &gfx_pick);
+
+    // Shared vertex shader.
+    DvzShader vs = {0};
+    dvz_shader(device, vs_size, vs_spv, &vs);
+    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+
+    // Picking fragment shader.
+    DvzShader fs_pick = {0};
+    dvz_shader(device, ps_size, fs_pick_spv, &fs_pick);
+    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs_pick));
+
+    dvz_graphics_attachment_color(&gfx_pick, 0, VK_FORMAT_R32_UINT);
+
+    dvz_graphics_vertex_binding(&gfx_pick, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(&gfx_pick, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
+    dvz_graphics_vertex_attr(&gfx_pick, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
+
+    dvz_graphics_layout(&gfx_pick, dvz_slots_handle(dvz_proto_slots(&proto)));
+
+    dvz_graphics_primitive(
+        &gfx_pick, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+
+    AT(dvz_graphics_create(&gfx_pick) == 0);
+
+    // Step 6: record command buffer
+
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    dvz_cmd_begin(cmds);
+
+    /* COLOR PASS */
+    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, 0, gfx_color);
+    dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
+
+    dvz_cmd_draw(cmds, 0, 3, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+
+    /* PICKING PASS */
+    DvzRendering pickrend = {0};
+    dvz_rendering(&pickrend);
+    dvz_rendering_area(&pickrend, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
+
+    DvzAttachment* patt = dvz_rendering_color(&pickrend, 0);
+    dvz_attachment_image(
+        patt, dvz_image_views_handle(&pickview, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(patt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(patt, (VkClearValue){.color = {.uint32 = {0}}});
+
+    dvz_cmd_rendering_begin(cmds, 0, &pickrend);
+    dvz_cmd_bind_graphics(cmds, 0, &gfx_pick);
+    dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
+    dvz_cmd_draw(cmds, 0, 3, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+
+    // Step 7: screenshot
+    dvz_proto_screenshot(&proto, "build/technique_picking_shared_vs.png");
+
+    // Step 8: cleanup
+    dvz_graphics_destroy(&gfx_pick);
+    dvz_shader_destroy(&vs);
+    dvz_shader_destroy(&fs_pick);
+
+    dvz_graphics_destroy(gfx_color);
+    dvz_free(vs_spv);
+    dvz_free(fs_color_spv);
+
+    dvz_buffer_destroy(&vbuf);
+    dvz_image_views_destroy(&pickview);
+    dvz_images_destroy(&pickimg);
+    dvz_proto_destroy(&proto);
+
+    return proto.bootstrap.instance.n_errors > 0;
+}

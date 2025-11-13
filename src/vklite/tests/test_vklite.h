@@ -75,6 +75,7 @@ static inline void* dvz_test_shader_load(const char* filename, DvzSize* size_out
 }
 
 
+
 /*************************************************************************************************/
 /*  Tests vklite                                                                                 */
 /*************************************************************************************************/
@@ -112,6 +113,10 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem);
 int test_technique_stencil(TstSuite* suite, TstItem* tstitem);
 
 int test_technique_msaa(TstSuite* suite, TstItem* tstitem);
+
+int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem);
+
+int test_technique_picking(TstSuite* suite, TstItem* tstitem);
 
 
 
