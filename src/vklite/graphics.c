@@ -517,11 +517,9 @@ void dvz_graphics_viewport(
 
 
 
-void dvz_graphics_blend(DvzGraphics* graphics, VkLogicOp op, vec4 constants, int flags)
+void dvz_graphics_blend(DvzGraphics* graphics, vec4 constants, int flags)
 {
     ANN(graphics);
-    graphics->blend.logicOpEnable = flags != 0;
-    graphics->blend.logicOp = op;
     glm_vec4_copy(constants, graphics->blend.blendConstants);
 
     if ((flags & DVZ_GRAPHICS_FLAGS_DYNAMIC) != 0)
@@ -537,6 +535,7 @@ void dvz_graphics_blend_color(
     VkColorComponentFlags mask)
 {
     ANN(graphics);
+    graphics->blend_attachments[idx].blendEnable = VK_TRUE;
     graphics->blend_attachments[idx].srcColorBlendFactor = src;
     graphics->blend_attachments[idx].dstColorBlendFactor = dst;
     graphics->blend_attachments[idx].colorBlendOp = op;
@@ -549,6 +548,7 @@ void dvz_graphics_blend_alpha(
     DvzGraphics* graphics, uint32_t idx, VkBlendFactor src, VkBlendFactor dst, VkBlendOp op)
 {
     ANN(graphics);
+    graphics->blend_attachments[idx].blendEnable = VK_TRUE;
     graphics->blend_attachments[idx].srcAlphaBlendFactor = src;
     graphics->blend_attachments[idx].dstAlphaBlendFactor = dst;
     graphics->blend_attachments[idx].alphaBlendOp = op;

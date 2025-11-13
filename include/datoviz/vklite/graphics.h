@@ -420,17 +420,14 @@ DVZ_EXPORT void dvz_graphics_viewport(
 
 
 /**
- * Set the blending parameters.
+ * Set the blending constants for the pipeline.
  *
  * @param graphics the graphics pipeline
- * @param enable whether to enable blending
- * @param op the logic operation
  * @param constants the blending constants
- * @param flags indicate whether the blending constants are fixed or dynamic state set in the
+ * @param flags indicate whether the blend constants are fixed or dynamic state set in the
  * command buffer
  */
-DVZ_EXPORT
-void dvz_graphics_blend(DvzGraphics* graphics, VkLogicOp op, vec4 constants, int flags);
+DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, vec4 constants, int flags);
 
 
 
