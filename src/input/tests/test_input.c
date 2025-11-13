@@ -30,9 +30,9 @@
 
 typedef struct
 {
-    DvzMouseEventType last_type;
+    DvzPointerEventType last_type;
     uint32_t count;
-    DvzMouseEventType history[16];
+    DvzPointerEventType history[16];
 } EventRecorder;
 
 
@@ -80,7 +80,7 @@ typedef struct
  * @return constructed pointer event
  */
 static DvzPointerEvent
-_make_event(DvzMouseEventType type, float x, float y, DvzMouseButton button, uint64_t timestamp)
+_make_event(DvzPointerEventType type, float x, float y, DvzPointerButton button, uint64_t timestamp)
 {
     DvzPointerEvent event = {0};
     event.type = type;
@@ -156,7 +156,7 @@ static void _recorder_reset(EventRecorder* recorder)
 {
     ANN(recorder);
     memset(recorder, 0, sizeof(*recorder));
-    recorder->last_type = DVZ_MOUSE_EVENT_NONE;
+    recorder->last_type = DVZ_POINTER_EVENT_NONE;
 }
 
 
@@ -164,7 +164,7 @@ static void _recorder_reset(EventRecorder* recorder)
 /**
  * Check whether an event recorder captured a given type.
  */
-static bool _recorder_contains(const EventRecorder* recorder, DvzMouseEventType type)
+static bool _recorder_contains(const EventRecorder* recorder, DvzPointerEventType type)
 {
     ANN(recorder);
     for (uint32_t i = 0; i < recorder->count; i++)
@@ -217,7 +217,7 @@ static void _record_wheel(DvzInputRouter* router, const DvzPointerEvent* event, 
     ANN(event);
     ANN(user_data);
     WheelRecorder* recorder = user_data;
-    if (event->type != DVZ_MOUSE_EVENT_WHEEL)
+    if (event->type != DVZ_POINTER_EVENT_WHEEL)
         return;
     recorder->last_dir[0] = event->content.w.dir[0];
     recorder->last_dir[1] = event->content.w.dir[1];
@@ -296,7 +296,7 @@ int test_router_callbacks(TstSuite* suite, TstItem* item)
     dvz_input_subscribe_pointer(router, _router_callback_one, &state);
     dvz_input_subscribe_pointer(router, _router_callback_two, &state);
     DvzPointerEvent event =
-        _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 5.0f, DVZ_MOUSE_BUTTON_LEFT, 1);
+        _make_event(DVZ_POINTER_EVENT_PRESS, 10.0f, 5.0f, DVZ_POINTER_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(state == 2);
     dvz_input_router_destroy(router);
@@ -316,7 +316,7 @@ int test_router_unsubscribe(TstSuite* suite, TstItem* item)
     dvz_input_subscribe_pointer(router, _unsubscribe_pointer, &recorder);
     dvz_input_subscribe_pointer(router, _follower_pointer, &recorder);
     DvzPointerEvent event =
-        _make_event(DVZ_MOUSE_EVENT_PRESS, 0.0f, 0.0f, DVZ_MOUSE_BUTTON_LEFT, 1);
+        _make_event(DVZ_POINTER_EVENT_PRESS, 0.0f, 0.0f, DVZ_POINTER_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(recorder.unsubscribe_calls == 1);
     AT(recorder.follower_calls == 1);
@@ -356,39 +356,39 @@ int test_pointer_gestures(TstSuite* suite, TstItem* item)
 
     uint64_t now = dvz_input_timestamp_ns();
     DvzPointerEvent press =
-        _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 10.0f, DVZ_MOUSE_BUTTON_LEFT, now);
+        _make_event(DVZ_POINTER_EVENT_PRESS, 10.0f, 10.0f, DVZ_POINTER_BUTTON_LEFT, now);
     _recorder_reset(&recorder);
     dvz_input_emit_pointer(router, &press);
     DvzPointerEvent release = press;
-    release.type = DVZ_MOUSE_EVENT_RELEASE;
+    release.type = DVZ_POINTER_EVENT_RELEASE;
     release.timestamp_ns = now + 50000000;
     dvz_input_emit_pointer(router, &release);
-    AT(_recorder_contains(&recorder, DVZ_MOUSE_EVENT_CLICK));
+    AT(_recorder_contains(&recorder, DVZ_POINTER_EVENT_CLICK));
 
     DvzPointerEvent press2 = press;
     press2.timestamp_ns = release.timestamp_ns + 10000000;
     dvz_input_emit_pointer(router, &press2);
     DvzPointerEvent release2 = press2;
-    release2.type = DVZ_MOUSE_EVENT_RELEASE;
+    release2.type = DVZ_POINTER_EVENT_RELEASE;
     release2.timestamp_ns = press2.timestamp_ns + 40000000;
     dvz_input_emit_pointer(router, &release2);
-    AT(_recorder_contains(&recorder, DVZ_MOUSE_EVENT_DOUBLE_CLICK));
+    AT(_recorder_contains(&recorder, DVZ_POINTER_EVENT_DOUBLE_CLICK));
 
     DvzPointerEvent drag_press = press;
     drag_press.timestamp_ns = release2.timestamp_ns + 100000000;
     _recorder_reset(&recorder);
     dvz_input_emit_pointer(router, &drag_press);
     DvzPointerEvent drag_move = drag_press;
-    drag_move.type = DVZ_MOUSE_EVENT_MOVE;
+    drag_move.type = DVZ_POINTER_EVENT_MOVE;
     drag_move.pos[0] += 30.0f;
     drag_move.pos[1] += 0.0f;
     drag_move.timestamp_ns = drag_press.timestamp_ns + 20000000;
     dvz_input_emit_pointer(router, &drag_move);
     DvzPointerEvent drag_release = drag_move;
-    drag_release.type = DVZ_MOUSE_EVENT_RELEASE;
+    drag_release.type = DVZ_POINTER_EVENT_RELEASE;
     drag_release.timestamp_ns = drag_move.timestamp_ns + 10000000;
     dvz_input_emit_pointer(router, &drag_release);
-    AT(_recorder_contains(&recorder, DVZ_MOUSE_EVENT_DRAG_STOP));
+    AT(_recorder_contains(&recorder, DVZ_POINTER_EVENT_DRAG_STOP));
 
     dvz_pointer_gesture_handler_destroy(gestures);
     dvz_input_router_destroy(router);

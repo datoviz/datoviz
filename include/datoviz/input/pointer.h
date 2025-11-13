@@ -30,9 +30,9 @@
 /*************************************************************************************************/
 
 // Gesture heuristics.
-#define DVZ_MOUSE_CLICK_MAX_DELAY        0.25
-#define DVZ_MOUSE_CLICK_MAX_SHIFT        5.0f
-#define DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY 0.2
+#define DVZ_POINTER_CLICK_MAX_DELAY        0.25
+#define DVZ_POINTER_CLICK_MAX_SHIFT        5.0f
+#define DVZ_POINTER_DOUBLE_CLICK_MAX_DELAY 0.2
 
 
 
@@ -42,8 +42,8 @@
 
 typedef struct DvzInputRouter DvzInputRouter;
 
-typedef struct DvzMouseWheelEvent DvzMouseWheelEvent;
-typedef struct DvzMouseDragEvent DvzMouseDragEvent;
+typedef struct DvzPointerWheelEvent DvzPointerWheelEvent;
+typedef struct DvzPointerDragEvent DvzPointerDragEvent;
 typedef union DvzPointerEventUnion DvzPointerEventUnion;
 typedef struct DvzPointerEvent DvzPointerEvent;
 typedef struct DvzPointerGestureHandler DvzPointerGestureHandler;
@@ -54,14 +54,14 @@ typedef struct DvzPointerGestureHandler DvzPointerGestureHandler;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzMouseWheelEvent
+struct DvzPointerWheelEvent
 {
     vec2 dir;
 };
 
 
 
-struct DvzMouseDragEvent
+struct DvzPointerDragEvent
 {
     vec2 press_pos;
     vec2 last_pos;
@@ -73,18 +73,18 @@ struct DvzMouseDragEvent
 
 union DvzPointerEventUnion
 {
-    DvzMouseWheelEvent w;
-    DvzMouseDragEvent d;
+    DvzPointerWheelEvent w;
+    DvzPointerDragEvent d;
 };
 
 
 
 struct DvzPointerEvent
 {
-    DvzMouseEventType type;
+    DvzPointerEventType type;
     DvzPointerEventUnion content;
     vec2 pos;
-    DvzMouseButton button;
+    DvzPointerButton button;
     int mods;
     float content_scale;
     uint64_t timestamp_ns;
@@ -100,9 +100,9 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Translate a GLFW mouse button into the Datoviz button enum.
+ * Translate a backend mouse button identifier into the Datoviz pointer button enum.
  */
-DVZ_EXPORT DvzMouseButton dvz_pointer_button_from_glfw(int button);
+DVZ_EXPORT DvzPointerButton dvz_pointer_button_from_glfw(int button);
 
 
 
@@ -117,8 +117,8 @@ DVZ_EXPORT uint64_t dvz_input_timestamp_ns(void);
  * Emit a normalized pointer event on the router.
  */
 DVZ_EXPORT void dvz_pointer_emit_position(
-    DvzInputRouter* router, DvzMouseEventType type, float raw_x, float raw_y, float window_x,
-    float window_y, DvzMouseButton button, int mods, float content_scale, uint64_t timestamp_ns,
+    DvzInputRouter* router, DvzPointerEventType type, float raw_x, float raw_y, float window_x,
+    float window_y, DvzPointerButton button, int mods, float content_scale, uint64_t timestamp_ns,
     void* user_data);
 
 

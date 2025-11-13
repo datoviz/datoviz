@@ -40,44 +40,44 @@ typedef enum
 
 
 
-// Mouse buttons
+// Pointer buttons
 // WARNING: these don't match to GLFW_MOUSE_BUTTON because the left button is 0 which
 // is inconvenient. Use _from_glfw_button() from input.c if needed.
 typedef enum
 {
-    DVZ_MOUSE_BUTTON_NONE = 0,
-    DVZ_MOUSE_BUTTON_LEFT = 1,
-    DVZ_MOUSE_BUTTON_MIDDLE = 2,
-    DVZ_MOUSE_BUTTON_RIGHT = 3,
-} DvzMouseButton;
+    DVZ_POINTER_BUTTON_NONE = 0,
+    DVZ_POINTER_BUTTON_LEFT = 1,
+    DVZ_POINTER_BUTTON_MIDDLE = 2,
+    DVZ_POINTER_BUTTON_RIGHT = 3,
+} DvzPointerButton;
 
 
 
-// Mouse states.
+// Pointer states.
 typedef enum
 {
-    DVZ_MOUSE_STATE_RELEASE = 0,
-    DVZ_MOUSE_STATE_PRESS = 1,
-    DVZ_MOUSE_STATE_CLICK = 3,
-    DVZ_MOUSE_STATE_CLICK_PRESS = 4,
-    DVZ_MOUSE_STATE_DOUBLE_CLICK = 5,
-    DVZ_MOUSE_STATE_DRAGGING = 11,
-} DvzMouseState;
+    DVZ_POINTER_STATE_RELEASE = 0,
+    DVZ_POINTER_STATE_PRESS = 1,
+    DVZ_POINTER_STATE_CLICK = 3,
+    DVZ_POINTER_STATE_CLICK_PRESS = 4,
+    DVZ_POINTER_STATE_DOUBLE_CLICK = 5,
+    DVZ_POINTER_STATE_DRAGGING = 11,
+} DvzPointerState;
 
 
 
-// Mouse events.
+// Pointer events.
 typedef enum
 {
-    DVZ_MOUSE_EVENT_NONE = -1,
-    DVZ_MOUSE_EVENT_RELEASE = 0,
-    DVZ_MOUSE_EVENT_PRESS = 1,
-    DVZ_MOUSE_EVENT_MOVE = 2,
-    DVZ_MOUSE_EVENT_CLICK = 3,
-    DVZ_MOUSE_EVENT_DOUBLE_CLICK = 5,
-    DVZ_MOUSE_EVENT_DRAG_START = 10,
-    DVZ_MOUSE_EVENT_DRAG = 11,
-    DVZ_MOUSE_EVENT_DRAG_STOP = 12,
-    DVZ_MOUSE_EVENT_WHEEL = 20,
-    DVZ_MOUSE_EVENT_ALL = 255,
-} DvzMouseEventType;
+    DVZ_POINTER_EVENT_NONE = -1,
+    DVZ_POINTER_EVENT_RELEASE = 0,
+    DVZ_POINTER_EVENT_PRESS = 1,
+    DVZ_POINTER_EVENT_MOVE = 2,
+    DVZ_POINTER_EVENT_CLICK = 3,
+    DVZ_POINTER_EVENT_DOUBLE_CLICK = 5,
+    DVZ_POINTER_EVENT_DRAG_START = 10,
+    DVZ_POINTER_EVENT_DRAG = 11,
+    DVZ_POINTER_EVENT_DRAG_STOP = 12,
+    DVZ_POINTER_EVENT_WHEEL = 20,
+    DVZ_POINTER_EVENT_ALL = 255,
+} DvzPointerEventType;
