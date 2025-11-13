@@ -20,7 +20,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-static int test_stream_attach_video(TstSuite* suite, TstItem* item)
+int test_stream_attach_video(TstSuite* suite, TstItem* item)
 {
     (void)item;
     ANN(suite);
@@ -35,6 +35,8 @@ static int test_stream_attach_video(TstSuite* suite, TstItem* item)
     dvz_stream_destroy(stream);
     return 0;
 }
+
+
 
 int test_stream(TstSuite* suite)
 {

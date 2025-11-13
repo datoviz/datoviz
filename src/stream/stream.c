@@ -19,7 +19,7 @@
 
 
 /*************************************************************************************************/
-/*  Types                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
 struct DvzStream
@@ -40,7 +40,7 @@ struct DvzStream
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void dvz_stream_reset_frame(DvzStreamFrame* frame)
+static void stream_reset_frame(DvzStreamFrame* frame)
 {
     ANN(frame);
     frame->image = VK_NULL_HANDLE;
@@ -50,7 +50,9 @@ static void dvz_stream_reset_frame(DvzStreamFrame* frame)
     frame->wait_semaphore_fd = -1;
 }
 
-static void dvz_stream_set_frame(DvzStream* stream, const DvzStreamFrame* frame)
+
+
+static void stream_set_frame(DvzStream* stream, const DvzStreamFrame* frame)
 {
     ANN(stream);
     if (frame)
@@ -60,12 +62,14 @@ static void dvz_stream_set_frame(DvzStream* stream, const DvzStreamFrame* frame)
     }
     else
     {
-        dvz_stream_reset_frame(&stream->frame);
+        stream_reset_frame(&stream->frame);
         stream->frame_valid = false;
     }
 }
 
-static DvzStreamSink* dvz_stream_sink_slot(DvzStream* stream)
+
+
+static DvzStreamSink* stream_sink_slot(DvzStream* stream)
 {
     ANN(stream);
     if (stream->sink_count == stream->sink_capacity)
@@ -90,7 +94,9 @@ static DvzStreamSink* dvz_stream_sink_slot(DvzStream* stream)
     return sink;
 }
 
-static void dvz_stream_release_sinks(DvzStream* stream)
+
+
+static void stream_release_sinks(DvzStream* stream)
 {
     if (!stream || !stream->sinks)
     {
@@ -134,16 +140,20 @@ DvzStreamConfig dvz_stream_default_config(void)
     return cfg;
 }
 
+
+
 DvzStream* dvz_stream_create(DvzDevice* device, const DvzStreamConfig* cfg)
 {
     DvzStream* stream = (DvzStream*)calloc(1, sizeof(DvzStream));
     ANN(stream);
     stream->device = device;
     stream->cfg = cfg ? *cfg : dvz_stream_default_config();
-    dvz_stream_reset_frame(&stream->frame);
+    stream_reset_frame(&stream->frame);
     stream->frame_valid = false;
     return stream;
 }
+
+
 
 void dvz_stream_destroy(DvzStream* stream)
 {
@@ -152,9 +162,11 @@ void dvz_stream_destroy(DvzStream* stream)
         return;
     }
     dvz_stream_stop(stream);
-    dvz_stream_release_sinks(stream);
+    stream_release_sinks(stream);
     free(stream);
 }
+
+
 
 int dvz_stream_attach_sink(
     DvzStream* stream, const DvzStreamSinkBackend* backend, const void* config)
@@ -176,7 +188,7 @@ int dvz_stream_attach_sink(
         return -1;
     }
 
-    DvzStreamSink* sink = dvz_stream_sink_slot(stream);
+    DvzStreamSink* sink = stream_sink_slot(stream);
     if (!sink)
     {
         return -1;
@@ -194,6 +206,8 @@ int dvz_stream_attach_sink(
     return 0;
 }
 
+
+
 int dvz_stream_attach_sink_name(DvzStream* stream, const char* backend_name, const void* config)
 {
     const DvzStreamSinkBackend* backend = dvz_stream_sink_pick(backend_name, config);
@@ -204,6 +218,8 @@ int dvz_stream_attach_sink_name(DvzStream* stream, const char* backend_name, con
     }
     return dvz_stream_attach_sink(stream, backend, config);
 }
+
+
 
 int dvz_stream_start(DvzStream* stream, const DvzStreamFrame* frame)
 {
@@ -222,7 +238,7 @@ int dvz_stream_start(DvzStream* stream, const DvzStreamFrame* frame)
         log_error("stream start requires a frame description");
         return -1;
     }
-    dvz_stream_set_frame(stream, frame);
+    stream_set_frame(stream, frame);
 
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
@@ -243,6 +259,8 @@ int dvz_stream_start(DvzStream* stream, const DvzStreamFrame* frame)
     stream->started = true;
     return 0;
 }
+
+
 
 int dvz_stream_submit(DvzStream* stream, uint64_t wait_value)
 {
@@ -270,6 +288,8 @@ int dvz_stream_submit(DvzStream* stream, uint64_t wait_value)
     return rc;
 }
 
+
+
 int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
 {
     ANN(stream);
@@ -284,7 +304,7 @@ int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
         return -1;
     }
 
-    dvz_stream_set_frame(stream, frame);
+    stream_set_frame(stream, frame);
 
     int rc = 0;
     for (size_t i = 0; i < stream->sink_count; ++i)
@@ -321,6 +341,8 @@ int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
     return rc;
 }
 
+
+
 int dvz_stream_stop(DvzStream* stream)
 {
     if (!stream)
@@ -345,7 +367,14 @@ int dvz_stream_stop(DvzStream* stream)
     return 0;
 }
 
-DvzDevice* dvz_stream_device(DvzStream* stream) { return stream ? stream->device : NULL; }
+
+
+DvzDevice* dvz_stream_device(DvzStream* stream)
+{ //
+    return stream ? stream->device : NULL;
+}
+
+
 
 const DvzStreamConfig* dvz_stream_config(DvzStream* stream)
 {

@@ -24,5 +24,8 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-int test_stream(TstSuite* suite);
+int test_stream_attach_video(TstSuite* suite, TstItem* item);
 
+
+
+int test_stream(TstSuite* suite);

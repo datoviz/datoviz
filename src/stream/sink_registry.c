@@ -19,9 +19,10 @@
 
 
 /*************************************************************************************************/
-/*  Registry                                                                                     */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
+// Stream sink registry.
 typedef struct
 {
     const DvzStreamSinkBackend** items;
@@ -31,7 +32,13 @@ typedef struct
 
 static DvzStreamSinkRegistry g_sink_registry = {0};
 
-static void dvz_stream_registry_reserve(size_t capacity)
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static void stream_registry_reserve(size_t capacity)
 {
     if (g_sink_registry.capacity >= capacity)
     {
@@ -54,7 +61,9 @@ static void dvz_stream_registry_reserve(size_t capacity)
     g_sink_registry.capacity = new_cap;
 }
 
-static bool dvz_stream_sink_registered(const char* name)
+
+
+static bool stream_sink_registered(const char* name)
 {
     if (!name)
     {
@@ -83,13 +92,15 @@ void dvz_stream_register_sink(const DvzStreamSinkBackend* backend)
     {
         return;
     }
-    if (dvz_stream_sink_registered(backend->name))
+    if (stream_sink_registered(backend->name))
     {
         return;
     }
-    dvz_stream_registry_reserve(g_sink_registry.count + 1);
+    stream_registry_reserve(g_sink_registry.count + 1);
     g_sink_registry.items[g_sink_registry.count++] = backend;
 }
+
+
 
 const DvzStreamSinkBackend* dvz_stream_sink_find(const char* name)
 {
@@ -107,6 +118,8 @@ const DvzStreamSinkBackend* dvz_stream_sink_find(const char* name)
     }
     return NULL;
 }
+
+
 
 const DvzStreamSinkBackend* dvz_stream_sink_pick(const char* name, const void* config)
 {
