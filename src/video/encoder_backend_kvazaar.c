@@ -11,13 +11,24 @@
 #include "encoder_backend.h"
 
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "_alloc.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/thread/thread.h"
 
 #include <volk.h>
 
@@ -61,7 +72,19 @@ typedef struct
     uint32_t width;
     uint32_t height;
     VkFormat format;
+    uint32_t convert_threads;
 } DvzVideoBackendKvazaar;
+
+typedef struct
+{
+    DvzVideoBackendKvazaar* state;
+    kvz_picture* picture;
+    const uint8_t* base;
+    size_t src_stride;
+    uint32_t row_start;
+    uint32_t row_end;
+    int result;
+} DvzKvazaarConvertJob;
 
 
 
@@ -74,6 +97,35 @@ static DvzVideoBackendKvazaar* kvazaar_state(DvzVideoEncoder* enc)
 static uint32_t kvazaar_min_u32(uint32_t a, uint32_t b)
 {
     return (a < b) ? a : b;
+}
+
+static uint32_t kvazaar_max_u32(uint32_t a, uint32_t b)
+{
+    return (a > b) ? a : b;
+}
+
+static uint32_t kvazaar_cpu_core_count(void)
+{
+#if defined(_WIN32)
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    return (info.dwNumberOfProcessors > 0) ? info.dwNumberOfProcessors : 1u;
+#elif defined(_SC_NPROCESSORS_ONLN)
+    long count = sysconf(_SC_NPROCESSORS_ONLN);
+    if (count < 1)
+    {
+#ifdef _SC_NPROCESSORS_CONF
+        count = sysconf(_SC_NPROCESSORS_CONF);
+#endif
+    }
+    if (count < 1)
+    {
+        count = 1;
+    }
+    return (uint32_t)count;
+#else
+    return 1;
+#endif
 }
 
 static inline uint8_t kvazaar_clamp(int value)
@@ -245,8 +297,13 @@ static kvz_picture* kvazaar_alloc_picture(DvzVideoBackendKvazaar* state)
     return state->api->picture_alloc((int32_t)state->width, (int32_t)state->height);
 }
 
-static bool kvazaar_convert_rgba_to_yuv(
-    DvzVideoBackendKvazaar* state, kvz_picture* picture, const uint8_t* base, size_t src_stride)
+static bool kvazaar_convert_rgba_to_yuv_rows(
+    DvzVideoBackendKvazaar* state,
+    kvz_picture* picture,
+    const uint8_t* base,
+    size_t src_stride,
+    uint32_t row_start,
+    uint32_t row_end)
 {
     ANN(state);
     ANN(picture);
@@ -265,13 +322,33 @@ static bool kvazaar_convert_rgba_to_yuv(
         log_error("kvazaar picture stride (%d) smaller than width (%u)", picture->stride, width);
         return false;
     }
+    if (row_end > height)
+    {
+        row_end = height;
+    }
+    if (row_start >= row_end)
+    {
+        return true;
+    }
+    if ((row_start & 1u) != 0)
+    {
+        row_start -= 1;
+    }
+    if ((row_end & 1u) != 0)
+    {
+        row_end -= 1;
+    }
+    if (row_end <= row_start)
+    {
+        return true;
+    }
     kvz_pixel* y_plane = picture->y;
     kvz_pixel* u_plane = picture->u;
     kvz_pixel* v_plane = picture->v;
     const int y_stride = picture->stride;
     const int uv_stride = picture->stride / 2;
 
-    for (uint32_t row = 0; row < height; row += 2)
+    for (uint32_t row = row_start; row < row_end; row += 2)
     {
         const uint8_t* row0 = base + (size_t)row * src_stride;
         const uint8_t* row1 = base + (size_t)(row + 1) * src_stride;
@@ -325,6 +402,86 @@ static bool kvazaar_convert_rgba_to_yuv(
         }
     }
     return true;
+}
+
+static void* kvazaar_convert_thread(void* user_data)
+{
+    DvzKvazaarConvertJob* job = (DvzKvazaarConvertJob*)user_data;
+    ANN(job);
+    job->result = kvazaar_convert_rgba_to_yuv_rows(
+                      job->state, job->picture, job->base, job->src_stride, job->row_start,
+                      job->row_end)
+                      ? 0
+                      : -1;
+    return NULL;
+}
+
+static bool kvazaar_convert_rgba_to_yuv(
+    DvzVideoBackendKvazaar* state, kvz_picture* picture, const uint8_t* base, size_t src_stride)
+{
+    ANN(state);
+    ANN(picture);
+    if (!base)
+    {
+        return false;
+    }
+    const uint32_t height = state->height;
+    if (state->convert_threads <= 1 || height <= 2)
+    {
+        return kvazaar_convert_rgba_to_yuv_rows(state, picture, base, src_stride, 0, height);
+    }
+
+    uint32_t row_pairs = height >> 1;
+    uint32_t thread_count = kvazaar_min_u32(state->convert_threads, row_pairs);
+    if (thread_count == 0)
+    {
+        return kvazaar_convert_rgba_to_yuv_rows(state, picture, base, src_stride, 0, height);
+    }
+    uint32_t rows_per_thread = ((row_pairs + thread_count - 1) / thread_count);
+    rows_per_thread = kvazaar_max_u32(rows_per_thread, 1u) << 1u;
+
+    DvzKvazaarConvertJob* jobs =
+        (DvzKvazaarConvertJob*)dvz_calloc(thread_count, sizeof(DvzKvazaarConvertJob));
+    DvzThread** threads = (DvzThread**)dvz_calloc(thread_count, sizeof(DvzThread*));
+    ANN(jobs);
+    ANN(threads);
+
+    uint32_t launched = 0;
+    for (uint32_t row = 0; row < height && launched < thread_count; row += rows_per_thread)
+    {
+        uint32_t row_end = row + rows_per_thread;
+        if (row_end > height)
+        {
+            row_end = height;
+        }
+        DvzKvazaarConvertJob* job = &jobs[launched];
+        job->state = state;
+        job->picture = picture;
+        job->base = base;
+        job->src_stride = src_stride;
+        job->row_start = row;
+        job->row_end = row_end;
+        job->result = -1;
+        threads[launched] = dvz_thread(kvazaar_convert_thread, job);
+        launched++;
+    }
+
+    bool ok = true;
+    for (uint32_t i = 0; i < launched; ++i)
+    {
+        if (threads[i])
+        {
+            dvz_thread_join(threads[i]);
+        }
+        if (jobs[i].result != 0)
+        {
+            ok = false;
+        }
+    }
+
+    dvz_free(threads);
+    dvz_free(jobs);
+    return ok;
 }
 
 static int kvazaar_emit_sample(
@@ -513,6 +670,14 @@ static int kvazaar_start(DvzVideoEncoder* enc)
     state->width = enc->cfg.width;
     state->height = enc->cfg.height;
     state->format = enc->cfg.color_format;
+    uint32_t cpu_cores = kvazaar_cpu_core_count();
+    uint32_t conversion_threads = (cpu_cores > 1) ? (cpu_cores / 2) : 1;
+    conversion_threads = kvazaar_min_u32(conversion_threads, state->height / 2);
+    if (conversion_threads == 0)
+    {
+        conversion_threads = 1;
+    }
+    state->convert_threads = conversion_threads;
     if (state->format != VK_FORMAT_R8G8B8A8_UNORM)
     {
         log_error("kvazaar backend currently only supports VK_FORMAT_R8G8B8A8_UNORM images");
@@ -546,7 +711,15 @@ static int kvazaar_start(DvzVideoEncoder* enc)
     cfg->target_bitrate = 0;
     cfg->qp = 22;
     cfg->rdo = 2;
-    cfg->threads = 0; // auto
+    if (cfg->threads <= 0)
+    {
+        const uint32_t cpu_threads = kvazaar_min_u32(cpu_cores, 64);
+        cfg->threads = (int32_t)(cpu_threads > 0 ? cpu_threads : 1);
+    }
+    log_debug(
+        "kvazaar backend using %d encoder threads and %u conversion workers",
+        cfg->threads,
+        state->convert_threads);
     cfg->aud_enable = 0;
     cfg->add_encoder_info = 0;
 
