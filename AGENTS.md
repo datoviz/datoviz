@@ -312,6 +312,12 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 
 ---
 
+## 🧾 **Coding Conventions**
+
+* Document every new module-level function with a short Doxygen-style docstring immediately above the definition. Start the block with `/**`, provide a one-sentence summary, leave a blank line, then add `@param`/`@return` tags (plus `@note`/`@see` when helpful). Keep the description line within the project's preferred width and treat it as the canonical explanation of the symbol's behavior.
+* Visually separate neighbouring top-level functions with three newline characters (two empty lines) to make each implementation stand out. Attach any descriptive comments directly above the function and keep extra text out of the blank space.
+* Reserve the `dvz_` prefix for symbols exposed via public headers. Internal `static` helpers should avoid `dvz_` (use `_dvz_` or no prefix) so the public naming space stays predictable.
+
 ## 🚧 Refactor Roadmap Guidance
 
 - **`vk` (in progress):** Focus on robustness (device creation, swapchains, command encoders). Keep its public headers limited to the Vulkan-facing API and push any shared helpers down to `src/common` if multiple modules will need them later.
