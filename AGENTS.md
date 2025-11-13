@@ -4,7 +4,7 @@
 
 This document provides essential rules and conventions for Codex (and other automated agents) to understand, modify, and extend the **Datoviz v0.4-dev** codebase.
 
-Datoviz is a **modular C scientific visualization library**, currently being **refactored for version 0.4** with a clean, maintainable, and testable architecture.
+Datoviz is a **modular C scientific visualization library**, currently being **refactored for version 0.4** with a clean, maintainable, and testable architecture. Backward compatibility with `v0.3` is not a constraint for the refactor; we prefer improving the architecture and cleaning up the codebase even if it means diverging from the old APIs.
 
 The goals:
 
