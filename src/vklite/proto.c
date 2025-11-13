@@ -157,6 +157,11 @@ void dvz_proto(DvzProto* proto)
 DvzSlots* dvz_proto_slots(DvzProto* proto)
 {
     ANN(proto);
+
+    DvzDevice* device = &proto->bootstrap.device;
+    ANN(device);
+
+    dvz_slots(device, &proto->slots);
     return &proto->slots;
 }
 
@@ -184,9 +189,6 @@ DvzGraphics* dvz_proto_graphics(
     dvz_shader(device, fs_size, fs_spv, &proto->fs);
     dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&proto->vs));
     dvz_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&proto->fs));
-
-    // Slots.
-    dvz_slots(device, &proto->slots);
 
     // Color attachment.
     dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);

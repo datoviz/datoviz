@@ -787,8 +787,14 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     // Initialize proto.
     DvzProto proto = {0};
     dvz_proto(&proto);
+
     DvzDevice* device = &proto.bootstrap.device;
     ANN(device);
+
+    DvzSlots* slots = dvz_proto_slots(&proto);
+    ANN(slots);
+    AT(dvz_slots_create(slots) == 0);
+
 
     // Step 1: vertex buffer with 3 vertices and ID 42
     typedef struct
@@ -810,6 +816,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     AT(dvz_buffer_create(&vbuf) == 0);
     dvz_buffer_upload(&vbuf, 0, sizeof(verts), verts);
 
+
     // Step 2: picking attachment (R32_UINT)
     DvzImages pickimg = {0};
     dvz_images(device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &pickimg);
@@ -826,11 +833,13 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_type(&pickview, VK_IMAGE_VIEW_TYPE_2D);
     dvz_image_views_create(&pickview);
 
+
     // Step 3: load shaders
     DvzSize vs_size = 0, cs_size = 0, ps_size = 0;
-    uint32_t* vs_spv = dvz_test_shader_load("shared.vert.spv", &vs_size);
-    uint32_t* fs_color_spv = dvz_test_shader_load("color.frag.spv", &cs_size);
+    uint32_t* vs_spv = dvz_test_shader_load("standard.vert.spv", &vs_size);
+    uint32_t* fs_color_spv = dvz_test_shader_load("standard.frag.spv", &cs_size);
     uint32_t* fs_pick_spv = dvz_test_shader_load("pick.frag.spv", &ps_size);
+
 
     // Step 4: graphics pipeline A — color
     DvzGraphics* gfx_color = dvz_proto_graphics(&proto, vs_size, vs_spv, cs_size, fs_color_spv);
@@ -842,7 +851,9 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_vertex_attr(gfx_color, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
     dvz_graphics_vertex_attr(gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
 
+    dvz_graphics_layout(gfx_color, dvz_slots_handle(slots));
     AT(dvz_graphics_create(gfx_color) == 0);
+
 
     // Step 5: graphics pipeline B — picking (same VS, different FS)
     DvzGraphics gfx_pick = {0};
@@ -864,15 +875,19 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_vertex_attr(&gfx_pick, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
     dvz_graphics_vertex_attr(&gfx_pick, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
 
-    dvz_graphics_layout(&gfx_pick, dvz_slots_handle(dvz_proto_slots(&proto)));
+    dvz_graphics_viewport(
+        &gfx_pick, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_scissor(
+        &gfx_pick, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_layout(&gfx_pick, dvz_slots_handle(slots));
 
     dvz_graphics_primitive(
         &gfx_pick, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
 
     AT(dvz_graphics_create(&gfx_pick) == 0);
 
-    // Step 6: record command buffer
 
+    // Step 6: record command buffer
     DvzCommands* cmds = dvz_proto_commands(&proto);
     dvz_cmd_begin(cmds);
 
@@ -904,22 +919,23 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_end(cmds);
     dvz_cmd_submit(cmds);
 
+
     // Step 7: screenshot
-    dvz_proto_screenshot(&proto, "build/technique_picking_shared_vs.png");
+    dvz_proto_screenshot(&proto, "build/technique_picking.png");
+
 
     // Step 8: cleanup
     dvz_graphics_destroy(&gfx_pick);
+    dvz_graphics_destroy(gfx_color);
     dvz_shader_destroy(&vs);
     dvz_shader_destroy(&fs_pick);
-
-    dvz_graphics_destroy(gfx_color);
-    dvz_free(vs_spv);
-    dvz_free(fs_color_spv);
-
     dvz_buffer_destroy(&vbuf);
     dvz_image_views_destroy(&pickview);
     dvz_images_destroy(&pickimg);
     dvz_proto_destroy(&proto);
+    dvz_free(vs_spv);
+    dvz_free(fs_color_spv);
+    dvz_free(fs_pick_spv);
 
     return proto.bootstrap.instance.n_errors > 0;
 }
