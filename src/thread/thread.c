@@ -49,7 +49,7 @@ DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data)
 {
     DvzThread* thread = (DvzThread*)dvz_calloc(1, sizeof(DvzThread));
     ANN(thread);
-    log_trace("creating thread");
+    // log_trace("creating thread");
     // if (tct_thrd_create(&thread->thread, callback, user_data) != tct_thrd_success)
     if (pthread_create(&thread->thread, NULL, callback, user_data))
         log_error("thread creation failed");
@@ -106,7 +106,7 @@ void dvz_thread_unlock(DvzThread* thread)
 void dvz_thread_join(DvzThread* thread)
 {
     ANN(thread);
-    log_trace("joining thread");
+    // log_trace("joining thread");
     // tct_thrd_join(thread->thread, NULL);
     pthread_join(thread->thread, NULL);
     dvz_mutex_destroy(&thread->lock);
