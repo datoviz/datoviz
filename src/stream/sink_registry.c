@@ -8,7 +8,7 @@
 /*  Stream sink registry                                                                         */
 /*************************************************************************************************/
 
-#include "datoviz/stream/frame_stream.h"
+#include "datoviz/stream.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -8,7 +8,7 @@
 /*  Stream implementation                                                                        */
 /*************************************************************************************************/
 
-#include "datoviz/stream/frame_stream.h"
+#include "datoviz/stream.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -78,7 +78,9 @@ static DvzStreamSink* dvz_stream_sink_slot(DvzStream* stream)
             log_error("failed to grow frame sink array");
             return NULL;
         }
-        memset(sinks + stream->sink_capacity, 0, (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink));
+        memset(
+            sinks + stream->sink_capacity, 0,
+            (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink));
         stream->sinks = sinks;
         stream->sink_capacity = new_cap;
     }
@@ -154,7 +156,8 @@ void dvz_stream_destroy(DvzStream* stream)
     free(stream);
 }
 
-int dvz_stream_attach_sink(DvzStream* stream, const DvzStreamSinkBackend* backend, const void* config)
+int dvz_stream_attach_sink(
+    DvzStream* stream, const DvzStreamSinkBackend* backend, const void* config)
 {
     ANN(stream);
     if (!backend)
@@ -230,7 +233,9 @@ int dvz_stream_start(DvzStream* stream, const DvzStreamFrame* frame)
         }
         if (sink->backend->start(sink, &stream->frame) != 0)
         {
-            log_error("frame sink '%s' failed to start", sink->backend->name ? sink->backend->name : "?");
+            log_error(
+                "frame sink '%s' failed to start",
+                sink->backend->name ? sink->backend->name : "?");
             return -1;
         }
         sink->started = true;
@@ -304,7 +309,9 @@ int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
             sink->started = false;
             if (sink->backend->start(sink, &stream->frame) != 0)
             {
-                log_error("failed to restart sink '%s' after frame update", sink->backend->name ? sink->backend->name : "?");
+                log_error(
+                    "failed to restart sink '%s' after frame update",
+                    sink->backend->name ? sink->backend->name : "?");
                 rc = -1;
                 continue;
             }
@@ -338,10 +345,7 @@ int dvz_stream_stop(DvzStream* stream)
     return 0;
 }
 
-DvzDevice* dvz_stream_device(DvzStream* stream)
-{
-    return stream ? stream->device : NULL;
-}
+DvzDevice* dvz_stream_device(DvzStream* stream) { return stream ? stream->device : NULL; }
 
 const DvzStreamConfig* dvz_stream_config(DvzStream* stream)
 {

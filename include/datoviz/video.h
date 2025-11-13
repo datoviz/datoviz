@@ -23,7 +23,7 @@
 #include <volk.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/stream/frame_stream.h"
+#include "datoviz/stream.h"
 
 
 
@@ -100,7 +100,8 @@ DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_default_config(void);
 /**
  * Return the default video sink configuration that wraps the encoder defaults.
  *
- * @returns a sink config whose encoder uses `dvz_video_encoder_default_config()` and null bitstream
+ * @returns a sink config whose encoder uses `dvz_video_encoder_default_config()` and null
+ * bitstream
  */
 DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void);
 

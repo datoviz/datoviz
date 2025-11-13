@@ -10,7 +10,7 @@
 
 #include "datoviz/video.h"
 
-#include "datoviz/stream/frame_stream.h"
+#include "datoviz/stream.h"
 
 #include <stdlib.h>
 
@@ -102,7 +102,8 @@ static int dvz_video_sink_create(DvzStreamSink* sink, const void* config)
     const DvzVideoSinkConfig* requested = dvz_video_sink_config(config);
     state->cfg = *requested;
 
-    state->encoder = dvz_video_encoder_create(dvz_stream_device(sink->stream), &state->cfg.encoder);
+    state->encoder =
+        dvz_video_encoder_create(dvz_stream_device(sink->stream), &state->cfg.encoder);
     if (!state->encoder)
     {
         log_error("failed to create video encoder for frame sink");
@@ -121,13 +122,8 @@ static int dvz_video_sink_start(DvzStreamSink* sink, const DvzStreamFrame* frame
         return -1;
     }
     return dvz_video_encoder_start(
-        state->encoder,
-        frame->image,
-        frame->memory,
-        frame->memory_size,
-        frame->memory_fd,
-        frame->wait_semaphore_fd,
-        state->cfg.bitstream);
+        state->encoder, frame->image, frame->memory, frame->memory_size, frame->memory_fd,
+        frame->wait_semaphore_fd, state->cfg.bitstream);
 }
 
 static int dvz_video_sink_submit(DvzStreamSink* sink, uint64_t wait_value)
@@ -155,10 +151,7 @@ static int dvz_video_sink_stop(DvzStreamSink* sink)
     return 0;
 }
 
-static void dvz_video_sink_destroy(DvzStreamSink* sink)
-{
-    dvz_video_sink_cleanup(sink);
-}
+static void dvz_video_sink_destroy(DvzStreamSink* sink) { dvz_video_sink_cleanup(sink); }
 
 
 

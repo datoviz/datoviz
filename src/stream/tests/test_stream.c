@@ -11,7 +11,7 @@
 #include "test_stream.h"
 
 #include "_alloc.h"
-#include "datoviz/stream/frame_stream.h"
+#include "datoviz/stream.h"
 #include "datoviz/video.h"
 
 
