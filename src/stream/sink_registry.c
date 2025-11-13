@@ -5,11 +5,12 @@
  */
 
 /*************************************************************************************************/
-/*  Frame sink registry                                                                          */
+/*  Stream sink registry                                                                         */
 /*************************************************************************************************/
 
 #include "datoviz/stream/frame_stream.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "_log.h"
@@ -18,31 +19,87 @@
 
 
 /*************************************************************************************************/
-/*  Built-in sinks                                                                               */
+/*  Registry                                                                                     */
 /*************************************************************************************************/
 
-extern const DvzFrameSinkBackend DVZ_FRAME_SINK_VIDEO_ENCODER;
+typedef struct
+{
+    const DvzStreamSinkBackend** items;
+    size_t count;
+    size_t capacity;
+} DvzStreamSinkRegistry;
 
-static const DvzFrameSinkBackend* const STREAM_SINKS[] = {
-    &DVZ_FRAME_SINK_VIDEO_ENCODER,
-};
-static const size_t STREAM_SINK_COUNT = sizeof(STREAM_SINKS) / sizeof(STREAM_SINKS[0]);
+static DvzStreamSinkRegistry g_sink_registry = {0};
+
+static void dvz_stream_registry_reserve(size_t capacity)
+{
+    if (g_sink_registry.capacity >= capacity)
+    {
+        return;
+    }
+    size_t new_cap = g_sink_registry.capacity == 0 ? 4 : g_sink_registry.capacity;
+    while (new_cap < capacity)
+    {
+        new_cap *= 2;
+    }
+    const DvzStreamSinkBackend** ptr =
+        (const DvzStreamSinkBackend**)realloc(g_sink_registry.items, new_cap * sizeof(*ptr));
+    if (!ptr)
+    {
+        log_error("failed to resize stream sink registry");
+        return;
+    }
+    memset(ptr + g_sink_registry.capacity, 0, (new_cap - g_sink_registry.capacity) * sizeof(*ptr));
+    g_sink_registry.items = ptr;
+    g_sink_registry.capacity = new_cap;
+}
+
+static bool dvz_stream_sink_registered(const char* name)
+{
+    if (!name)
+    {
+        return false;
+    }
+    for (size_t i = 0; i < g_sink_registry.count; ++i)
+    {
+        const DvzStreamSinkBackend* backend = g_sink_registry.items[i];
+        if (backend && backend->name && strcmp(backend->name, name) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 
 /*************************************************************************************************/
-/*  API                                                                                           */
+/*  API                                                                                          */
 /*************************************************************************************************/
 
-const DvzFrameSinkBackend* dvz_frame_sink_backend_find(const char* name)
+void dvz_stream_register_sink(const DvzStreamSinkBackend* backend)
+{
+    if (!backend || !backend->name || backend->name[0] == '\0')
+    {
+        return;
+    }
+    if (dvz_stream_sink_registered(backend->name))
+    {
+        return;
+    }
+    dvz_stream_registry_reserve(g_sink_registry.count + 1);
+    g_sink_registry.items[g_sink_registry.count++] = backend;
+}
+
+const DvzStreamSinkBackend* dvz_stream_sink_find(const char* name)
 {
     if (!name || name[0] == '\0')
     {
         return NULL;
     }
-    for (size_t i = 0; i < STREAM_SINK_COUNT; ++i)
+    for (size_t i = 0; i < g_sink_registry.count; ++i)
     {
-        const DvzFrameSinkBackend* backend = STREAM_SINKS[i];
+        const DvzStreamSinkBackend* backend = g_sink_registry.items[i];
         if (backend && backend->name && strcmp(backend->name, name) == 0)
         {
             return backend;
@@ -51,29 +108,29 @@ const DvzFrameSinkBackend* dvz_frame_sink_backend_find(const char* name)
     return NULL;
 }
 
-const DvzFrameSinkBackend* dvz_frame_sink_backend_pick(const char* name, const void* config)
+const DvzStreamSinkBackend* dvz_stream_sink_pick(const char* name, const void* config)
 {
     bool auto_pick = (name == NULL) || (strcmp(name, "auto") == 0);
 
     if (!auto_pick)
     {
-        const DvzFrameSinkBackend* backend = dvz_frame_sink_backend_find(name);
+        const DvzStreamSinkBackend* backend = dvz_stream_sink_find(name);
         if (backend)
         {
             if (!backend->probe || backend->probe(config))
             {
                 return backend;
             }
-            log_warn("frame sink backend '%s' unavailable, falling back to auto", name);
+            log_warn("stream sink backend '%s' unavailable, falling back to auto", name);
             auto_pick = true;
         }
     }
 
     if (auto_pick)
     {
-        for (size_t i = 0; i < STREAM_SINK_COUNT; ++i)
+        for (size_t i = 0; i < g_sink_registry.count; ++i)
         {
-            const DvzFrameSinkBackend* backend = STREAM_SINKS[i];
+            const DvzStreamSinkBackend* backend = g_sink_registry.items[i];
             if (!backend)
             {
                 continue;

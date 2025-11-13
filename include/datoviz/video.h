@@ -84,7 +84,7 @@ EXTERN_C_ON
 
 DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_default_config(void);
 DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void);
-DVZ_EXPORT const DvzFrameSinkBackend* dvz_video_sink_backend(void);
+DVZ_EXPORT const DvzStreamSinkBackend* dvz_stream_sink_video(void);
 
 
 

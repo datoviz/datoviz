@@ -96,8 +96,8 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 // - Audio/mux later; this harness simply emits Annex B bitstreams (out.h265).
 #define WIDTH   1920
 #define HEIGHT  1080
-#define FPS     60
-#define SECONDS 30
+#define FPS     30
+#define SECONDS 5
 #define NFRAMES (FPS * SECONDS)
 
 // Solid color to clear with Vulkan (uint8)

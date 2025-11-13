@@ -22,15 +22,11 @@
 /*  Extern backends                                                                              */
 /*************************************************************************************************/
 
-#if HAS_CUDA
 extern const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC;
-#endif
 extern const DvzVideoBackend DVZ_VIDEO_BACKEND_KVAZAAR;
 
 static const DvzVideoBackend* const BACKENDS[] = {
-#if HAS_CUDA
     &DVZ_VIDEO_BACKEND_NVENC,
-#endif
     &DVZ_VIDEO_BACKEND_KVAZAAR,
 };
 

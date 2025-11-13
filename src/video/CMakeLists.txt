@@ -2,23 +2,23 @@
 # Video library
 # -------------------------------------------------------------------------------------------------
 
-file(GLOB VIDEO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
-
-set(KVZ_IMPL "${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_kvazaar.c")
-set(KVZ_STUB "${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_kvazaar_stub.c")
+set(VIDEO_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/encoder_core.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_stub.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/encoder_mux_mp4.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/video_sink.c
+)
 
 if(DVZ_HAS_KVZ)
-    list(REMOVE_ITEM VIDEO_SRC ${KVZ_STUB})
-else()
-    list(REMOVE_ITEM VIDEO_SRC ${KVZ_IMPL})
+    list(APPEND VIDEO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_kvazaar.c)
 endif()
 
-if(NOT DVZ_HAS_CUDA)
-    list(FILTER VIDEO_SRC EXCLUDE REGEX ".*/encoder_backend_nvenc\\.c.*")
+if(DVZ_HAS_CUDA)
+    list(APPEND VIDEO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_nvenc.c)
 endif()
-add_library(datoviz_video OBJECT
-    ${VIDEO_SRC}
-)
+
+add_library(datoviz_video OBJECT ${VIDEO_SRC})
 
 target_include_directories(datoviz_video
     PUBLIC

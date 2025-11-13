@@ -84,7 +84,6 @@ typedef struct DvzVideoEncoder
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVideoEncoderConfig dvz_video_encoder_default_config(void);
 DvzVideoEncoder*
 dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg);
 int dvz_video_encoder_start(

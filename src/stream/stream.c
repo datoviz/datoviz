@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Frame stream implementation                                                                  */
+/*  Stream implementation                                                                        */
 /*************************************************************************************************/
 
 #include "datoviz/stream/frame_stream.h"
@@ -22,15 +22,16 @@
 /*  Types                                                                                        */
 /*************************************************************************************************/
 
-struct DvzFrameStream
+struct DvzStream
 {
     DvzDevice* device;
-    DvzFrameStreamConfig cfg;
-    DvzFrameSink* sinks;
+    DvzStreamConfig cfg;
+    DvzStreamSink* sinks;
     size_t sink_count;
     size_t sink_capacity;
     bool started;
-    DvzFrameStreamResources resources;
+    DvzStreamFrame frame;
+    bool frame_valid;
 };
 
 
@@ -39,30 +40,55 @@ struct DvzFrameStream
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static DvzFrameSink* dvz_frame_stream_sink_slot(DvzFrameStream* stream)
+static void dvz_stream_reset_frame(DvzStreamFrame* frame)
+{
+    ANN(frame);
+    frame->image = VK_NULL_HANDLE;
+    frame->memory = VK_NULL_HANDLE;
+    frame->memory_size = 0;
+    frame->memory_fd = -1;
+    frame->wait_semaphore_fd = -1;
+}
+
+static void dvz_stream_set_frame(DvzStream* stream, const DvzStreamFrame* frame)
+{
+    ANN(stream);
+    if (frame)
+    {
+        stream->frame = *frame;
+        stream->frame_valid = true;
+    }
+    else
+    {
+        dvz_stream_reset_frame(&stream->frame);
+        stream->frame_valid = false;
+    }
+}
+
+static DvzStreamSink* dvz_stream_sink_slot(DvzStream* stream)
 {
     ANN(stream);
     if (stream->sink_count == stream->sink_capacity)
     {
         size_t new_cap = stream->sink_capacity == 0 ? 2 : stream->sink_capacity * 2;
-        DvzFrameSink* sinks =
-            (DvzFrameSink*)realloc(stream->sinks, new_cap * sizeof(DvzFrameSink));
+        DvzStreamSink* sinks =
+            (DvzStreamSink*)realloc(stream->sinks, new_cap * sizeof(DvzStreamSink));
         if (!sinks)
         {
             log_error("failed to grow frame sink array");
             return NULL;
         }
-        memset(sinks + stream->sink_capacity, 0, (new_cap - stream->sink_capacity) * sizeof(DvzFrameSink));
+        memset(sinks + stream->sink_capacity, 0, (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink));
         stream->sinks = sinks;
         stream->sink_capacity = new_cap;
     }
-    DvzFrameSink* sink = &stream->sinks[stream->sink_count++];
+    DvzStreamSink* sink = &stream->sinks[stream->sink_count++];
     memset(sink, 0, sizeof(*sink));
     sink->stream = stream;
     return sink;
 }
 
-static void dvz_frame_stream_release_sinks(DvzFrameStream* stream)
+static void dvz_stream_release_sinks(DvzStream* stream)
 {
     if (!stream || !stream->sinks)
     {
@@ -70,7 +96,7 @@ static void dvz_frame_stream_release_sinks(DvzFrameStream* stream)
     }
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
-        DvzFrameSink* sink = &stream->sinks[i];
+        DvzStreamSink* sink = &stream->sinks[i];
         if (sink && sink->backend)
         {
             if (sink->started && sink->backend->stop)
@@ -92,12 +118,12 @@ static void dvz_frame_stream_release_sinks(DvzFrameStream* stream)
 
 
 /*************************************************************************************************/
-/*  API                                                                                           */
+/*  API                                                                                          */
 /*************************************************************************************************/
 
-DvzFrameStreamConfig dvz_frame_stream_default_config(void)
+DvzStreamConfig dvz_stream_default_config(void)
 {
-    DvzFrameStreamConfig cfg = {
+    DvzStreamConfig cfg = {
         .width = 1920,
         .height = 1080,
         .fps = 60,
@@ -106,33 +132,29 @@ DvzFrameStreamConfig dvz_frame_stream_default_config(void)
     return cfg;
 }
 
-DvzFrameStream* dvz_frame_stream_create(DvzDevice* device, const DvzFrameStreamConfig* cfg)
+DvzStream* dvz_stream_create(DvzDevice* device, const DvzStreamConfig* cfg)
 {
-    DvzFrameStream* stream = (DvzFrameStream*)calloc(1, sizeof(DvzFrameStream));
+    DvzStream* stream = (DvzStream*)calloc(1, sizeof(DvzStream));
     ANN(stream);
     stream->device = device;
-    stream->cfg = cfg ? *cfg : dvz_frame_stream_default_config();
-    stream->resources.image = VK_NULL_HANDLE;
-    stream->resources.memory = VK_NULL_HANDLE;
-    stream->resources.memory_size = 0;
-    stream->resources.memory_fd = -1;
-    stream->resources.wait_semaphore_fd = -1;
+    stream->cfg = cfg ? *cfg : dvz_stream_default_config();
+    dvz_stream_reset_frame(&stream->frame);
+    stream->frame_valid = false;
     return stream;
 }
 
-void dvz_frame_stream_destroy(DvzFrameStream* stream)
+void dvz_stream_destroy(DvzStream* stream)
 {
     if (!stream)
     {
         return;
     }
-    dvz_frame_stream_stop(stream);
-    dvz_frame_stream_release_sinks(stream);
+    dvz_stream_stop(stream);
+    dvz_stream_release_sinks(stream);
     free(stream);
 }
 
-int dvz_frame_stream_attach_sink(
-    DvzFrameStream* stream, const DvzFrameSinkBackend* backend, const void* config)
+int dvz_stream_attach_sink(DvzStream* stream, const DvzStreamSinkBackend* backend, const void* config)
 {
     ANN(stream);
     if (!backend)
@@ -151,7 +173,7 @@ int dvz_frame_stream_attach_sink(
         return -1;
     }
 
-    DvzFrameSink* sink = dvz_frame_stream_sink_slot(stream);
+    DvzStreamSink* sink = dvz_stream_sink_slot(stream);
     if (!sink)
     {
         return -1;
@@ -169,19 +191,18 @@ int dvz_frame_stream_attach_sink(
     return 0;
 }
 
-int dvz_frame_stream_attach_sink_named(
-    DvzFrameStream* stream, const char* backend_name, const void* config)
+int dvz_stream_attach_sink_name(DvzStream* stream, const char* backend_name, const void* config)
 {
-    const DvzFrameSinkBackend* backend = dvz_frame_sink_backend_pick(backend_name, config);
+    const DvzStreamSinkBackend* backend = dvz_stream_sink_pick(backend_name, config);
     if (!backend)
     {
         log_error("frame sink backend '%s' not found", backend_name ? backend_name : "auto");
         return -1;
     }
-    return dvz_frame_stream_attach_sink(stream, backend, config);
+    return dvz_stream_attach_sink(stream, backend, config);
 }
 
-int dvz_frame_stream_start(DvzFrameStream* stream, const DvzFrameStreamResources* resources)
+int dvz_stream_start(DvzStream* stream, const DvzStreamFrame* frame)
 {
     ANN(stream);
     if (stream->started)
@@ -193,19 +214,21 @@ int dvz_frame_stream_start(DvzFrameStream* stream, const DvzFrameStreamResources
     {
         log_warn("starting frame stream without sinks");
     }
-    if (resources)
+    if (!frame)
     {
-        stream->resources = *resources;
+        log_error("stream start requires a frame description");
+        return -1;
     }
+    dvz_stream_set_frame(stream, frame);
 
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
-        DvzFrameSink* sink = &stream->sinks[i];
+        DvzStreamSink* sink = &stream->sinks[i];
         if (!sink->backend || !sink->backend->start)
         {
             continue;
         }
-        if (sink->backend->start(sink, &stream->resources) != 0)
+        if (sink->backend->start(sink, &stream->frame) != 0)
         {
             log_error("frame sink '%s' failed to start", sink->backend->name ? sink->backend->name : "?");
             return -1;
@@ -216,7 +239,7 @@ int dvz_frame_stream_start(DvzFrameStream* stream, const DvzFrameStreamResources
     return 0;
 }
 
-int dvz_frame_stream_submit(DvzFrameStream* stream, uint64_t wait_value)
+int dvz_stream_submit(DvzStream* stream, uint64_t wait_value)
 {
     ANN(stream);
     if (!stream->started)
@@ -228,7 +251,7 @@ int dvz_frame_stream_submit(DvzFrameStream* stream, uint64_t wait_value)
     int rc = 0;
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
-        DvzFrameSink* sink = &stream->sinks[i];
+        DvzStreamSink* sink = &stream->sinks[i];
         if (!sink->backend || !sink->backend->submit)
         {
             continue;
@@ -242,7 +265,56 @@ int dvz_frame_stream_submit(DvzFrameStream* stream, uint64_t wait_value)
     return rc;
 }
 
-int dvz_frame_stream_stop(DvzFrameStream* stream)
+int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
+{
+    ANN(stream);
+    if (!stream->started)
+    {
+        log_error("cannot update stream before start");
+        return -1;
+    }
+    if (!frame)
+    {
+        log_error("stream update requires a frame description");
+        return -1;
+    }
+
+    dvz_stream_set_frame(stream, frame);
+
+    int rc = 0;
+    for (size_t i = 0; i < stream->sink_count; ++i)
+    {
+        DvzStreamSink* sink = &stream->sinks[i];
+        if (!sink->backend)
+        {
+            continue;
+        }
+        if (sink->backend->update)
+        {
+            int sink_rc = sink->backend->update(sink, &stream->frame);
+            if (sink_rc != 0)
+            {
+                rc = sink_rc;
+            }
+            continue;
+        }
+        if (sink->backend->stop && sink->backend->start)
+        {
+            sink->backend->stop(sink);
+            sink->started = false;
+            if (sink->backend->start(sink, &stream->frame) != 0)
+            {
+                log_error("failed to restart sink '%s' after frame update", sink->backend->name ? sink->backend->name : "?");
+                rc = -1;
+                continue;
+            }
+            sink->started = true;
+        }
+    }
+    return rc;
+}
+
+int dvz_stream_stop(DvzStream* stream)
 {
     if (!stream)
     {
@@ -255,7 +327,7 @@ int dvz_frame_stream_stop(DvzFrameStream* stream)
 
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
-        DvzFrameSink* sink = &stream->sinks[i];
+        DvzStreamSink* sink = &stream->sinks[i];
         if (sink->started && sink->backend && sink->backend->stop)
         {
             sink->backend->stop(sink);
@@ -266,13 +338,12 @@ int dvz_frame_stream_stop(DvzFrameStream* stream)
     return 0;
 }
 
-DvzDevice* dvz_frame_stream_device(DvzFrameStream* stream)
+DvzDevice* dvz_stream_device(DvzStream* stream)
 {
     return stream ? stream->device : NULL;
 }
 
-const DvzFrameStreamConfig* dvz_frame_stream_config(DvzFrameStream* stream)
+const DvzStreamConfig* dvz_stream_config(DvzStream* stream)
 {
     return stream ? &stream->cfg : NULL;
 }
-
