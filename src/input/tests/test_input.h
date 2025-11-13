@@ -26,9 +26,15 @@
 
 int test_router_callbacks(TstSuite* suite, TstItem* item);
 
+int test_router_unsubscribe(TstSuite* suite, TstItem* item);
+
 int test_keyboard_modifiers(TstSuite* suite, TstItem* item);
 
 int test_pointer_gestures(TstSuite* suite, TstItem* item);
+
+int test_pointer_wheel(TstSuite* suite, TstItem* item);
+
+int test_resize_scale_events(TstSuite* suite, TstItem* item);
 
 
 

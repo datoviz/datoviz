@@ -419,6 +419,40 @@ void dvz_pointer_emit_position(
 
 
 
+static DvzPointerEvent _make_wheel_event(
+    float raw_x, float raw_y, float window_x, float window_y, float dir_x, float dir_y, int mods,
+    float content_scale, uint64_t timestamp_ns, void* user_data)
+{
+    DvzPointerEvent event = {0};
+    event.type = DVZ_MOUSE_EVENT_WHEEL;
+    event.pos[0] = raw_x - window_x;
+    event.pos[1] = raw_y - window_y;
+    event.mods = mods;
+    event.content_scale = content_scale;
+    event.user_data = user_data;
+    event.timestamp_ns = timestamp_ns;
+    event.content.w.dir[0] = dir_x;
+    event.content.w.dir[1] = dir_y;
+    return event;
+}
+
+
+
+void dvz_pointer_emit_wheel(
+    DvzInputRouter* router, float raw_x, float raw_y, float window_x, float window_y, float dir_x,
+    float dir_y, int mods, float content_scale, uint64_t timestamp_ns, void* user_data)
+{
+    ANN(router);
+    if (timestamp_ns == 0)
+        timestamp_ns = dvz_input_timestamp_ns();
+    DvzPointerEvent event = _make_wheel_event(
+        raw_x, raw_y, window_x, window_y, dir_x, dir_y, mods, content_scale, timestamp_ns,
+        user_data);
+    dvz_input_emit_pointer(router, &event);
+}
+
+
+
 DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router)
 {
     ANN(router);

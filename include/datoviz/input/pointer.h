@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Pointer events                                                                              */
+/*  Pointer events                                                                               */
 /*************************************************************************************************/
 
 #pragma once
@@ -120,6 +120,15 @@ DVZ_EXPORT void dvz_pointer_emit_position(
     DvzInputRouter* router, DvzMouseEventType type, float raw_x, float raw_y, float window_x,
     float window_y, DvzMouseButton button, int mods, float content_scale, uint64_t timestamp_ns,
     void* user_data);
+
+
+
+/**
+ * Emit a wheel event with pixel deltas.
+ */
+DVZ_EXPORT void dvz_pointer_emit_wheel(
+    DvzInputRouter* router, float raw_x, float raw_y, float window_x, float window_y, float dir_x,
+    float dir_y, int mods, float content_scale, uint64_t timestamp_ns, void* user_data);
 
 
 

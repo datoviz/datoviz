@@ -14,9 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "test_input.h"
+#include <stdbool.h>
+#include <string.h>
+
 #include "_assertions.h"
 #include "datoviz/input.h"
+#include "test_input.h"
 #include "testing.h"
 
 
@@ -29,8 +32,36 @@ typedef struct
 {
     DvzMouseEventType last_type;
     uint32_t count;
-    DvzMouseEventType history[8];
+    DvzMouseEventType history[16];
 } EventRecorder;
+
+
+
+typedef struct
+{
+    uint32_t unsubscribe_calls;
+    uint32_t follower_calls;
+} DispatchRecorder;
+
+
+
+typedef struct
+{
+    float last_dir[2];
+    uint32_t wheel_count;
+} WheelRecorder;
+
+
+
+typedef struct
+{
+    DvzInputResizeEvent resize;
+    DvzInputScaleEvent scale;
+    uint32_t resize_calls;
+    uint32_t scale_calls;
+    uint32_t union_resize_calls;
+    uint32_t union_scale_calls;
+} WindowEventRecorder;
 
 
 
@@ -118,6 +149,138 @@ static void _record_event(DvzInputRouter* router, const DvzInputEvent* event, vo
 
 
 
+/**
+ * Reset an event recorder.
+ */
+static void _recorder_reset(EventRecorder* recorder)
+{
+    ANN(recorder);
+    memset(recorder, 0, sizeof(*recorder));
+    recorder->last_type = DVZ_MOUSE_EVENT_NONE;
+}
+
+
+
+/**
+ * Check whether an event recorder captured a given type.
+ */
+static bool _recorder_contains(const EventRecorder* recorder, DvzMouseEventType type)
+{
+    ANN(recorder);
+    for (uint32_t i = 0; i < recorder->count; i++)
+    {
+        if (recorder->history[i] == type)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Pointer callback from which we unsubscribe immediately.
+ */
+static void
+_unsubscribe_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    DispatchRecorder* recorder = user_data;
+    recorder->unsubscribe_calls++;
+    dvz_input_unsubscribe_pointer(router, _unsubscribe_pointer, user_data);
+}
+
+
+
+/**
+ * Pointer callback used to ensure we keep dispatching after an unsubscribe.
+ */
+static void
+_follower_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    DispatchRecorder* recorder = user_data;
+    recorder->follower_calls++;
+}
+
+
+
+/**
+ * Capture wheel payloads.
+ */
+static void _record_wheel(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    WheelRecorder* recorder = user_data;
+    if (event->type != DVZ_MOUSE_EVENT_WHEEL)
+        return;
+    recorder->last_dir[0] = event->content.w.dir[0];
+    recorder->last_dir[1] = event->content.w.dir[1];
+    recorder->wheel_count++;
+}
+
+
+
+/**
+ * Capture resize events.
+ */
+static void
+_record_resize(DvzInputRouter* router, const DvzInputResizeEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    WindowEventRecorder* recorder = user_data;
+    recorder->resize_calls++;
+    recorder->resize = *event;
+}
+
+
+
+/**
+ * Capture scale events.
+ */
+static void _record_scale(DvzInputRouter* router, const DvzInputScaleEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    WindowEventRecorder* recorder = user_data;
+    recorder->scale_calls++;
+    recorder->scale = *event;
+}
+
+
+
+/**
+ * Record window events via the union API.
+ */
+static void
+_record_window_union(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    WindowEventRecorder* recorder = user_data;
+    if (event->type == DVZ_INPUT_EVENT_RESIZE)
+    {
+        recorder->union_resize_calls++;
+        recorder->resize = event->content.resize;
+    }
+    else if (event->type == DVZ_INPUT_EVENT_SCALE)
+    {
+        recorder->union_scale_calls++;
+        recorder->scale = event->content.scale;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Test functions                                                                               */
 /*************************************************************************************************/
@@ -136,6 +299,27 @@ int test_router_callbacks(TstSuite* suite, TstItem* item)
         _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 5.0f, DVZ_MOUSE_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(state == 2);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Ensure unsubscribing from inside a callback does not stop dispatch.
+ */
+int test_router_unsubscribe(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    DvzInputRouter* router = dvz_input_router();
+    DispatchRecorder recorder = {0};
+    dvz_input_subscribe_pointer(router, _unsubscribe_pointer, &recorder);
+    dvz_input_subscribe_pointer(router, _follower_pointer, &recorder);
+    DvzPointerEvent event =
+        _make_event(DVZ_MOUSE_EVENT_PRESS, 0.0f, 0.0f, DVZ_MOUSE_BUTTON_LEFT, 1);
+    dvz_input_emit_pointer(router, &event);
+    AT(recorder.unsubscribe_calls == 1);
+    AT(recorder.follower_calls == 1);
     dvz_input_router_destroy(router);
     return 0;
 }
@@ -173,15 +357,13 @@ int test_pointer_gestures(TstSuite* suite, TstItem* item)
     uint64_t now = dvz_input_timestamp_ns();
     DvzPointerEvent press =
         _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 10.0f, DVZ_MOUSE_BUTTON_LEFT, now);
+    _recorder_reset(&recorder);
     dvz_input_emit_pointer(router, &press);
     DvzPointerEvent release = press;
     release.type = DVZ_MOUSE_EVENT_RELEASE;
     release.timestamp_ns = now + 50000000;
     dvz_input_emit_pointer(router, &release);
-    AT(recorder.last_type == DVZ_MOUSE_EVENT_CLICK);
-
-    recorder.count = 0;
-    recorder.last_type = DVZ_MOUSE_EVENT_NONE;
+    AT(_recorder_contains(&recorder, DVZ_MOUSE_EVENT_CLICK));
 
     DvzPointerEvent press2 = press;
     press2.timestamp_ns = release.timestamp_ns + 10000000;
@@ -190,13 +372,11 @@ int test_pointer_gestures(TstSuite* suite, TstItem* item)
     release2.type = DVZ_MOUSE_EVENT_RELEASE;
     release2.timestamp_ns = press2.timestamp_ns + 40000000;
     dvz_input_emit_pointer(router, &release2);
-    AT(recorder.last_type == DVZ_MOUSE_EVENT_DOUBLE_CLICK);
-
-    recorder.count = 0;
-    recorder.last_type = DVZ_MOUSE_EVENT_NONE;
+    AT(_recorder_contains(&recorder, DVZ_MOUSE_EVENT_DOUBLE_CLICK));
 
     DvzPointerEvent drag_press = press;
     drag_press.timestamp_ns = release2.timestamp_ns + 100000000;
+    _recorder_reset(&recorder);
     dvz_input_emit_pointer(router, &drag_press);
     DvzPointerEvent drag_move = drag_press;
     drag_move.type = DVZ_MOUSE_EVENT_MOVE;
@@ -208,9 +388,60 @@ int test_pointer_gestures(TstSuite* suite, TstItem* item)
     drag_release.type = DVZ_MOUSE_EVENT_RELEASE;
     drag_release.timestamp_ns = drag_move.timestamp_ns + 10000000;
     dvz_input_emit_pointer(router, &drag_release);
-    AT(recorder.last_type == DVZ_MOUSE_EVENT_DRAG_STOP);
+    AT(_recorder_contains(&recorder, DVZ_MOUSE_EVENT_DRAG_STOP));
 
     dvz_pointer_gesture_handler_destroy(gestures);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Ensure wheel helpers propagate deltas.
+ */
+int test_pointer_wheel(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    DvzInputRouter* router = dvz_input_router();
+    WheelRecorder recorder = {0};
+    dvz_input_subscribe_pointer(router, _record_wheel, &recorder);
+    dvz_pointer_emit_wheel(
+        router, 100.0f, 50.0f, 0.0f, 0.0f, 0.5f, -1.5f, DVZ_KEY_MODIFIER_SHIFT, 1.0f, 0, NULL);
+    AT(recorder.wheel_count == 1);
+    AT(recorder.last_dir[0] == 0.5f);
+    AT(recorder.last_dir[1] == -1.5f);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Validate resize/scale routing and union forwarding.
+ */
+int test_resize_scale_events(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    DvzInputRouter* router = dvz_input_router();
+    WindowEventRecorder recorder = {0};
+    dvz_input_subscribe_resize(router, _record_resize, &recorder);
+    dvz_input_subscribe_scale(router, _record_scale, &recorder);
+    dvz_input_subscribe_event(router, _record_window_union, &recorder);
+
+    DvzInputResizeEvent resize = {800, 600, 400, 300, 2.0f, 2.0f};
+    dvz_input_emit_resize(router, &resize);
+    AT(recorder.resize_calls == 1);
+    AT(recorder.union_resize_calls == 1);
+    AT(recorder.resize.framebuffer_width == 800);
+    AT(recorder.resize.content_scale_x == 2.0f);
+
+    DvzInputScaleEvent scale = {1.5f, 1.5f};
+    dvz_input_emit_scale(router, &scale);
+    AT(recorder.scale_calls == 1);
+    AT(recorder.union_scale_calls == 1);
+    AT(recorder.scale.content_scale_x == 1.5f);
+
     dvz_input_router_destroy(router);
     return 0;
 }
@@ -225,7 +456,10 @@ int test_input(TstSuite* suite)
     ANN(suite);
     const char* tags = "input";
     TEST_SIMPLE(test_router_callbacks);
+    TEST_SIMPLE(test_router_unsubscribe);
     TEST_SIMPLE(test_keyboard_modifiers);
     TEST_SIMPLE(test_pointer_gestures);
+    TEST_SIMPLE(test_pointer_wheel);
+    TEST_SIMPLE(test_resize_scale_events);
     return 0;
 }

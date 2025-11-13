@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "datoviz/common/macros.h"
 #include "datoviz/input/keyboard.h"
 #include "datoviz/input/pointer.h"
@@ -31,6 +33,8 @@ typedef enum DvzInputEventType
     DVZ_INPUT_EVENT_NONE = 0,
     DVZ_INPUT_EVENT_POINTER,
     DVZ_INPUT_EVENT_KEYBOARD,
+    DVZ_INPUT_EVENT_RESIZE,
+    DVZ_INPUT_EVENT_SCALE,
 } DvzInputEventType;
 
 
@@ -39,11 +43,15 @@ typedef enum DvzInputEventType
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzInputResizeEvent DvzInputResizeEvent;
+typedef struct DvzInputScaleEvent DvzInputScaleEvent;
 typedef struct DvzInputEvent DvzInputEvent;
 typedef struct DvzInputRouter DvzInputRouter;
 
 typedef void (*DvzPointerCallback)(DvzInputRouter*, const DvzPointerEvent*, void*);
 typedef void (*DvzKeyboardCallback)(DvzInputRouter*, const DvzKeyboardEvent*, void*);
+typedef void (*DvzResizeCallback)(DvzInputRouter*, const DvzInputResizeEvent*, void*);
+typedef void (*DvzScaleCallback)(DvzInputRouter*, const DvzInputScaleEvent*, void*);
 typedef void (*DvzInputCallback)(DvzInputRouter*, const DvzInputEvent*, void*);
 
 
@@ -52,6 +60,26 @@ typedef void (*DvzInputCallback)(DvzInputRouter*, const DvzInputEvent*, void*);
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzInputResizeEvent
+{
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint32_t window_width;
+    uint32_t window_height;
+    float content_scale_x;
+    float content_scale_y;
+};
+
+
+
+struct DvzInputScaleEvent
+{
+    float content_scale_x;
+    float content_scale_y;
+};
+
+
+
 struct DvzInputEvent
 {
     DvzInputEventType type;
@@ -59,6 +87,8 @@ struct DvzInputEvent
     {
         DvzPointerEvent pointer;
         DvzKeyboardEvent keyboard;
+        DvzInputResizeEvent resize;
+        DvzInputScaleEvent scale;
     } content;
 };
 
@@ -101,7 +131,7 @@ DVZ_EXPORT void dvz_input_unsubscribe_pointer(
 
 
 /**
- * Emit a pointer event.
+ * Emit a pointer event. Callbacks run synchronously on the emitting thread.
  */
 DVZ_EXPORT void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerEvent* event);
 
@@ -124,9 +154,56 @@ DVZ_EXPORT void dvz_input_unsubscribe_keyboard(
 
 
 /**
- * Emit a keyboard event.
+ * Emit a keyboard event. Callbacks run synchronously on the emitting thread.
  */
 DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event);
+
+
+
+/**
+ * Subscribe to resize events.
+ */
+DVZ_EXPORT void
+dvz_input_subscribe_resize(DvzInputRouter* router, DvzResizeCallback callback, void* user_data);
+
+
+
+/**
+ * Unsubscribe from resize events.
+ */
+DVZ_EXPORT void dvz_input_unsubscribe_resize(
+    DvzInputRouter* router, DvzResizeCallback callback, void* user_data);
+
+
+
+/**
+ * Emit a resize event. Callbacks run synchronously on the emitting thread.
+ */
+DVZ_EXPORT void
+dvz_input_emit_resize(DvzInputRouter* router, const DvzInputResizeEvent* event);
+
+
+
+/**
+ * Subscribe to content scale events.
+ */
+DVZ_EXPORT void
+dvz_input_subscribe_scale(DvzInputRouter* router, DvzScaleCallback callback, void* user_data);
+
+
+
+/**
+ * Unsubscribe from content scale events.
+ */
+DVZ_EXPORT void dvz_input_unsubscribe_scale(
+    DvzInputRouter* router, DvzScaleCallback callback, void* user_data);
+
+
+
+/**
+ * Emit a scale event. Callbacks run synchronously on the emitting thread.
+ */
+DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScaleEvent* event);
 
 
 

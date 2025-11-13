@@ -22,6 +22,7 @@
 #include "drp.h"
 #include "dvzmath.h"
 #include "geom.h"
+#include "input.h"
 #include "stream.h"
 #include "scene.h"
 #include "scene_data.h"
