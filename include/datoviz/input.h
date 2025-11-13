@@ -18,4 +18,6 @@
 
 #include "input/enums.h"
 #include "input/keycodes.h"
-#include "input/types.h"
+#include "input/pointer.h"
+#include "input/keyboard.h"
+#include "input/router.h"

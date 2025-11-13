@@ -69,6 +69,7 @@ typedef enum
 // Mouse events.
 typedef enum
 {
+    DVZ_MOUSE_EVENT_NONE = -1,
     DVZ_MOUSE_EVENT_RELEASE = 0,
     DVZ_MOUSE_EVENT_PRESS = 1,
     DVZ_MOUSE_EVENT_MOVE = 2,
