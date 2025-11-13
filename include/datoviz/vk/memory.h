@@ -134,6 +134,32 @@ DVZ_EXPORT void dvz_allocator_unmap(DvzVma* allocator, DvzAllocation* alloc);
 
 
 /**
+ * Flush mapped memory ranges so GPU sees the latest CPU writes.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ * @param offset the byte offset within the allocation
+ * @param size the number of bytes to flush
+ * @returns 0 on success, -1 on failure
+ */
+DVZ_EXPORT int dvz_allocator_flush(
+    DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size);
+
+
+/**
+ * Invalidate mapped memory ranges so the CPU sees the latest GPU writes.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ * @param offset the byte offset within the allocation
+ * @param size the number of bytes to invalidate
+ * @returns 0 on success, -1 on failure
+ */
+DVZ_EXPORT int dvz_allocator_invalidate(
+    DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size);
+
+
+/**
  * Export an allocation for another GPU API.
  *
  * @param allocator the allocator

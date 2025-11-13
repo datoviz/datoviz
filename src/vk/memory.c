@@ -225,6 +225,51 @@ void dvz_allocator_unmap(DvzVma* allocator, DvzAllocation* alloc)
 
 
 /*************************************************************************************************/
+/*  Flush / Invalidate                                                                           */
+/*************************************************************************************************/
+
+
+/**
+ * Flush mapped CPU memory ranges so the device sees the writes.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ * @param offset the byte offset within the allocation
+ * @param size the number of bytes to flush
+ * @returns 0 on success, -1 on failure
+ */
+int dvz_allocator_flush(
+    DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size)
+{
+    ANN(allocator);
+    ANN(alloc);
+
+    VkResult res = vmaFlushAllocation(allocator->vma, alloc->alloc, offset, size);
+    return res == VK_SUCCESS ? 0 : -1;
+}
+
+
+/**
+ * Invalidate mapped CPU memory ranges so the CPU sees the latest device writes.
+ *
+ * @param allocator the allocator
+ * @param alloc the allocation
+ * @param offset the byte offset within the allocation
+ * @param size the number of bytes to invalidate
+ * @returns 0 on success, -1 on failure
+ */
+int dvz_allocator_invalidate(
+    DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size)
+{
+    ANN(allocator);
+    ANN(alloc);
+
+    VkResult res = vmaInvalidateAllocation(allocator->vma, alloc->alloc, offset, size);
+    return res == VK_SUCCESS ? 0 : -1;
+}
+
+
+/*************************************************************************************************/
 /*  External                                                                                     */
 /*************************************************************************************************/
 

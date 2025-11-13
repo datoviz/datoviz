@@ -175,6 +175,11 @@ void dvz_buffer_upload(DvzBuffer* buffer, DvzSize offset, DvzSize size, const vo
     log_trace("buffer upload of %s", dvz_pretty_size(size));
     dvz_memcpy(POINTER_OFFSET(buffer->alloc.mmap, offset), size, data, size);
 
+    // if (dvz_allocator_flush(buffer->allocator, &buffer->alloc, offset, size) != 0)
+    // {
+    //     log_warn("failed to flush buffer upload of %s", dvz_pretty_size(size));
+    // }
+
     if (need_unmap)
     {
         dvz_buffer_unmap(buffer);
@@ -198,6 +203,12 @@ void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* 
 
     ANN(buffer->alloc.mmap);
     log_trace("buffer download of %s", dvz_pretty_size(size));
+
+    // if (dvz_allocator_invalidate(buffer->allocator, &buffer->alloc, offset, size) != 0)
+    // {
+    //     log_warn("failed to invalidate buffer download of %s", dvz_pretty_size(size));
+    // }
+
     dvz_memcpy(data, size, POINTER_OFFSET(buffer->alloc.mmap, offset), size);
 
     if (need_unmap)
