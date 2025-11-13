@@ -56,25 +56,6 @@
 
 
 
-/*************************************************************************************************/
-/*  Video tests                                                                                  */
-/*************************************************************************************************/
-
-int test_video_1(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-    ANN(tstitem);
-
-    return 0;
-}
-
-
-
-/*************************************************************************************************/
-/*  NVENC video encode                                                                           */
-/*************************************************************************************************/
-
-
 // ====== Params ======
 // Video settings cheat sheet:
 // - Prefer HEVC/H.265 when hardware encoders exist (NVENC, VideoToolbox, VA-API). Fall back to
@@ -94,6 +75,13 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 //     * Linux Intel/AMD: exportable VkImage → VA-API/AMF.
 //     * CPU fallback: convert to planar YUV420 and feed kvazaar (BSD) or x264/x265 (GPL).
 // - Audio/mux later; this harness simply emits Annex B bitstreams (out.h265).
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
 #define WIDTH   1920
 #define HEIGHT  1080
 #define FPS     30
@@ -105,6 +93,81 @@ int test_video_1(TstSuite* suite, TstItem* tstitem)
 #define CLEAR_G 128
 #define CLEAR_B 255
 #define CLEAR_A 255
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+// ====== Error helpers ======
+#define VK_CHECK(x)                                                                               \
+    do                                                                                            \
+    {                                                                                             \
+        VkResult _e = (x);                                                                        \
+        if (_e != VK_SUCCESS)                                                                     \
+        {                                                                                         \
+            fprintf(stderr, "Vulkan error %d at %s:%d\n", _e, __FILE__, __LINE__);                \
+            exit(1);                                                                              \
+        }                                                                                         \
+    } while (0)
+
+
+
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static void video_progress(int frame, int total)
+{
+    const int width = 40;
+    float ratio = (total > 0) ? (float)frame / (float)total : 1.0f;
+    if (ratio > 1.0f)
+        ratio = 1.0f;
+    int filled = (int)(ratio * width);
+    printf("\r[");
+    for (int i = 0; i < width; ++i)
+    {
+        putchar(i < filled ? '#' : ' ');
+    }
+    printf("] %d/%d", frame, total);
+    fflush(stdout);
+    if (frame >= total)
+    {
+        printf("\n");
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct
+{
+    VkInstance instance;
+    VkPhysicalDevice phys;
+    VkDevice device;
+    uint32_t queueFamily;
+    VkQueue queue;
+    VkCommandPool cmdPool;
+    VkCommandBuffer cmd;
+    VkImage image;
+    VkDeviceMemory memory;
+    int memory_fd;
+    VkSemaphore semaphore;
+    int semaphore_fd;
+    VkFence fence;
+    VkImageLayout image_layout;
+    uint64_t timeline_value;
+} VulkanCtx;
+
+
+
+/*************************************************************************************************/
+/*  Test video                                                                                   */
+/*************************************************************************************************/
 
 static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_frames)
 {
@@ -166,39 +229,8 @@ static VkClearColorValue frame_clear_color(uint32_t frame_idx, uint32_t total_fr
     return clr;
 }
 
-// ====== Error helpers ======
-#define VK_CHECK(x)                                                                               \
-    do                                                                                            \
-    {                                                                                             \
-        VkResult _e = (x);                                                                        \
-        if (_e != VK_SUCCESS)                                                                     \
-        {                                                                                         \
-            fprintf(stderr, "Vulkan error %d at %s:%d\n", _e, __FILE__, __LINE__);                \
-            exit(1);                                                                              \
-        }                                                                                         \
-    } while (0)
-
-// ====== Vulkan objects ======
-typedef struct
-{
-    VkInstance instance;
-    VkPhysicalDevice phys;
-    VkDevice device;
-    uint32_t queueFamily;
-    VkQueue queue;
-    VkCommandPool cmdPool;
-    VkCommandBuffer cmd;
-    VkImage image;
-    VkDeviceMemory memory;
-    int memory_fd;
-    VkSemaphore semaphore;
-    int semaphore_fd;
-    VkFence fence;
-    VkImageLayout image_layout;
-    uint64_t timeline_value;
-} VulkanCtx;
-
 static void vk_init_and_make_image(VulkanCtx* vk);
+
 static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr);
 
 static void vk_init_and_make_image(VulkanCtx* vk)
@@ -461,27 +493,11 @@ static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue*
     return signal_value;
 }
 
-static void video_progress(int frame, int total)
-{
-    const int width = 40;
-    float ratio = (total > 0) ? (float)frame / (float)total : 1.0f;
-    if (ratio > 1.0f)
-        ratio = 1.0f;
-    int filled = (int)(ratio * width);
-    printf("\r[");
-    for (int i = 0; i < width; ++i)
-    {
-        putchar(i < filled ? '#' : ' ');
-    }
-    printf("] %d/%d", frame, total);
-    fflush(stdout);
-    if (frame >= total)
-    {
-        printf("\n");
-    }
-}
 
 
+/*************************************************************************************************/
+/*  NVENC video encode                                                                           */
+/*************************************************************************************************/
 
 int test_video_nvenc(TstSuite* suite, TstItem* tstitem)
 {
