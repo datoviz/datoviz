@@ -34,6 +34,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Allocator & sanitizer options
 option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" OFF)
 option(DVZ_ENABLE_COVERAGE "Enable code coverage instrumentation for supported compilers" OFF)
+option(DVZ_ENABLE_GPROF "Enable gprof instrumentation (-pg) on supported compilers" OFF)
 set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds (asan, msan, tsan, or a comma-separated list)")
 set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "" "asan" "msan" "tsan" "off")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
@@ -44,6 +45,14 @@ if(APPLE)
 endif()
 
 option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ${_dvz_enable_cuda_default})
+
+if(DVZ_ENABLE_GPROF)
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C>:-pg>
+        $<$<COMPILE_LANGUAGE:CXX>:-pg>
+    )
+    add_link_options(-pg)
+endif()
 
 # Track whether CUDA + NVENC support is available so subdirectories can make decisions.
 set(DVZ_HAS_CUDA 0)

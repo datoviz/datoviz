@@ -315,6 +315,45 @@ build release="Debug":
 #
 
 [linux]
+build-gprof release="RelWithDebInfo":
+    @set -e
+    @unset CC
+    @unset CXX
+    @mkdir -p docs/images
+    @mkdir -p build-gprof
+    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-gprof/; fi
+    @cd build-gprof && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DDVZ_ENABLE_GPROF=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-gprof && ninja dvztest
+#
+
+[linux]
+run-gprof *args:
+    @set -e
+    @if [ ! -x "build-gprof/testing/dvztest" ]; then echo "build-gprof/testing/dvztest missing; run 'just build-gprof' first"; exit 1; fi
+    @cd build-gprof/testing && ./dvztest {{args}}
+    @if [ -f build-gprof/testing/gmon.out ]; then \
+        echo "Profile stored in build-gprof/testing/gmon.out"; \
+    else \
+        echo "warning: gmon.out not produced"; \
+    fi
+#
+
+[linux]
+gprof-report gmon="build-gprof/testing/gmon.out" out="build-gprof/testing/gprof.txt":
+    @set -e
+    @bin="build-gprof/testing/dvztest"; \
+    if [ ! -x "$bin" ]; then echo "$bin missing; run 'just build-gprof' first"; exit 1; fi; \
+    gmon_file="{{gmon}}"; \
+    if [ ! -f "$gmon_file" ]; then echo "profile '$gmon_file' not found"; exit 1; fi; \
+    out_file="{{out}}"; \
+    mkdir -p "$(dirname "$out_file")"; \
+    gprof "$bin" "$gmon_file" > "$out_file"; \
+    echo "Report written to $out_file"
+#
+
+
+
+[linux]
 _sanitizer-build name:
     @set -e
     @mkdir -p docs/images build-{{name}}
