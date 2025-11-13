@@ -120,6 +120,8 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem);
 
 int test_technique_wboit(TstSuite* suite, TstItem* tstitem);
 
+int test_technique_ssao(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_vklite(TstSuite* suite);

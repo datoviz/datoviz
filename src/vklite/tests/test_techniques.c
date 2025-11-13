@@ -1484,3 +1484,288 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
 
     return proto.bootstrap.instance.n_errors > 0;
 }
+
+
+
+int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    // Initialize proto (device, allocator, main color/depth, commands, etc.).
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+
+    DvzDevice* device = &proto.bootstrap.device;
+    ANN(device);
+
+
+    // Offscreen depth image (to be sampled by SSAO pass).
+
+    DvzImages depth_img = {0};
+    dvz_images(device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &depth_img);
+    dvz_images_format(&depth_img, VK_FORMAT_D32_SFLOAT);
+    dvz_images_size(&depth_img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
+    dvz_images_usage(
+        &depth_img, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    AT(dvz_images_create(&depth_img) == 0);
+
+    DvzImageViews depth_view = {0};
+    dvz_image_views(&depth_img, &depth_view);
+    dvz_image_views_type(&depth_view, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_aspect(&depth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_image_views_mip(&depth_view, 0, 1);
+    dvz_image_views_layers(&depth_view, 0, 1);
+    dvz_image_views_create(&depth_view);
+
+    // Sampler for depth texture.
+    DvzSampler sampler = {0};
+    dvz_sampler(device, &sampler);
+    dvz_sampler_min_filter(&sampler, VK_FILTER_NEAREST);
+    dvz_sampler_mag_filter(&sampler, VK_FILTER_NEAREST);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_anisotropy(&sampler, 1.0f);
+    AT(dvz_sampler_create(&sampler) == 0);
+
+
+    // PASS 1: depth-only pipeline writing depth into depth_img.
+
+    DvzGraphics depth_graphics = {0};
+    {
+        dvz_graphics(device, &depth_graphics);
+
+        // Shaders.
+        DvzSize vs_size = 0, fs_size = 0;
+        uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
+        uint32_t* fs_spv = dvz_test_shader_load("ssao_depth.frag.spv", &fs_size);
+
+        DvzShader vs = {0}, fs = {0};
+        dvz_shader(device, vs_size, vs_spv, &vs);
+        dvz_shader(device, fs_size, fs_spv, &fs);
+
+        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+
+        // Attachments: dummy color (proto.img) + our offscreen depth attachment format.
+        dvz_graphics_attachment_color(&depth_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_depth(&depth_graphics, VK_FORMAT_D32_SFLOAT);
+
+        // No blending, simple fullscreen triangles.
+        dvz_graphics_blend_color(
+            &depth_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT);
+        dvz_graphics_primitive(
+            &depth_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Viewport/scissor fixed.
+        dvz_graphics_viewport(
+            &depth_graphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 0, 1,
+            DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_scissor(
+            &depth_graphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Depth test/write ON.
+        dvz_graphics_depth(
+            &depth_graphics, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Slots: none (no descriptors for pass 1).
+        DvzSlots slots = {0};
+        dvz_slots(device, &slots);
+        AT(dvz_slots_create(&slots) == 0);
+        dvz_graphics_layout(&depth_graphics, dvz_slots_handle(&slots));
+
+        AT(dvz_graphics_create(&depth_graphics) == 0);
+
+        // Cleanup.
+        dvz_slots_destroy(&slots);
+        dvz_shader_destroy(&vs);
+        dvz_shader_destroy(&fs);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+    }
+
+    // Rendering for depth pass: color = proto.img (ignored), depth = depth_img.
+    DvzRendering depth_rendering = {0};
+    {
+        dvz_rendering(&depth_rendering);
+        dvz_rendering_area(&depth_rendering, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
+
+        // Color (dummy, uses proto main color image, but we don't care about its content here).
+        DvzAttachment* catt = dvz_rendering_color(&depth_rendering, 0);
+        dvz_attachment_image(
+            catt, dvz_image_views_handle(&proto.view, 0),
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(
+            catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+        // Depth.
+        DvzAttachment* datt = dvz_rendering_depth(&depth_rendering);
+        dvz_attachment_image(
+            datt, dvz_image_views_handle(&depth_view, 0),
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
+    }
+
+
+    // PASS 2: SSAO pipeline, sampling depth_img and writing AO to proto.img.
+
+    DvzGraphics ssao_graphics = {0};
+    DvzSlots ssao_slots = {0};
+    DvzDescriptors ssao_desc = {0};
+    {
+        dvz_graphics(device, &ssao_graphics);
+
+        // Shaders.
+        DvzSize vs_size = 0, fs_size = 0;
+        uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
+        uint32_t* fs_spv = dvz_test_shader_load("ssao.frag.spv", &fs_size);
+
+        DvzShader vs = {0}, fs = {0};
+        dvz_shader(device, vs_size, vs_spv, &vs);
+        dvz_shader(device, fs_size, fs_spv, &fs);
+
+        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+
+        // Color attachment: proto main color.
+        dvz_graphics_attachment_color(&ssao_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+
+        // No depth testing here (pure post-process).
+        dvz_graphics_depth(
+            &ssao_graphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        dvz_graphics_blend_color(
+            &ssao_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                VK_COLOR_COMPONENT_A_BIT);
+
+        dvz_graphics_primitive(
+            &ssao_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        dvz_graphics_viewport(
+            &ssao_graphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 0, 1,
+            DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_scissor(
+            &ssao_graphics, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, DVZ_GRAPHICS_FLAGS_FIXED);
+
+        // Descriptor set: combined image sampler for depthTex (set=0, binding=0).
+        dvz_slots(device, &ssao_slots);
+        dvz_slots_binding(
+            &ssao_slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        AT(dvz_slots_create(&ssao_slots) == 0);
+        dvz_graphics_layout(&ssao_graphics, dvz_slots_handle(&ssao_slots));
+
+        AT(dvz_graphics_create(&ssao_graphics) == 0);
+
+        // Descriptors.
+        dvz_descriptors(&ssao_slots, &ssao_desc);
+        dvz_descriptors_image(
+            &ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(&depth_view, 0), sampler.vk_sampler);
+
+        dvz_shader_destroy(&vs);
+        dvz_shader_destroy(&fs);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+    }
+
+    // Rendering for SSAO pass: color attachment = proto main image, no depth/stencil.
+    DvzRendering ssao_rendering = {0};
+    {
+        dvz_rendering(&ssao_rendering);
+        dvz_rendering_area(&ssao_rendering, 0, 0, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT);
+
+        DvzAttachment* catt = dvz_rendering_color(&ssao_rendering, 0);
+        dvz_attachment_image(
+            catt, dvz_image_views_handle(&proto.view, 0),
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(catt, (VkClearValue){.color = {.float32 = {0, 0, 0, 1}}});
+    }
+
+
+    // Command buffer recording.
+
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    ANN(cmds);
+
+    dvz_cmd_begin(cmds);
+
+    // Transition depth_img to DEPTH_STENCIL_ATTACHMENT_OPTIMAL for pass 1.
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&depth_img, 0));
+        dvz_barrier_image_stage(
+            bimg, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
+        dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
+        dvz_barrier_image_mip(bimg, 0, 1);
+        dvz_barrier_image_layers(bimg, 0, 1);
+        dvz_cmd_barriers(cmds, 0, &barriers);
+    }
+
+    // PASS 1: depth rendering.
+    dvz_cmd_rendering_begin(cmds, 0, &depth_rendering);
+    dvz_cmd_bind_graphics(cmds, 0, &depth_graphics);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+
+    // Transition depth_img to SHADER_READ_ONLY_OPTIMAL for SSAO sampling.
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&depth_img, 0));
+        dvz_barrier_image_stage(
+            bimg, VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+        dvz_barrier_image_access(
+            bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+        dvz_barrier_image_layout(
+            bimg, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
+        dvz_barrier_image_mip(bimg, 0, 1);
+        dvz_barrier_image_layers(bimg, 0, 1);
+        dvz_cmd_barriers(cmds, 0, &barriers);
+    }
+
+    // PASS 2: SSAO rendering into proto main color image.
+    dvz_cmd_rendering_begin(cmds, 0, &ssao_rendering);
+    dvz_cmd_bind_graphics(cmds, 0, &ssao_graphics);
+    dvz_cmd_bind_descriptors(cmds, 0, VK_PIPELINE_BIND_POINT_GRAPHICS, &ssao_desc, 0, 1, 0, NULL);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds, 0);
+
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+
+    // Screenshot: proto.img now contains AO.
+    dvz_proto_screenshot(&proto, "build/technique_ssao.png");
+
+
+    // Cleanup.
+
+    dvz_graphics_destroy(&depth_graphics);
+    dvz_graphics_destroy(&ssao_graphics);
+
+    dvz_image_views_destroy(&depth_view);
+    dvz_images_destroy(&depth_img);
+    dvz_sampler_destroy(&sampler);
+
+    dvz_slots_destroy(&ssao_slots);
+
+    dvz_proto_destroy(&proto);
+
+    return proto.bootstrap.instance.n_errors > 0;
+}
