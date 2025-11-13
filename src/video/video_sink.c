@@ -21,7 +21,7 @@
 
 
 /*************************************************************************************************/
-/*  Types                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
 typedef struct
@@ -36,7 +36,13 @@ typedef struct
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static DvzVideoSinkState* dvz_video_sink_state(DvzStreamSink* sink)
+/**
+ * Ensure the sink has an allocated encoder state structure.
+ *
+ * @param sink frame sink requesting the state
+ * @returns pointer to the backend state (freshly allocated if needed)
+ */
+static DvzVideoSinkState* video_sink_state(DvzStreamSink* sink)
 {
     ANN(sink);
     DvzVideoSinkState* state = (DvzVideoSinkState*)sink->backend_data;
@@ -49,7 +55,15 @@ static DvzVideoSinkState* dvz_video_sink_state(DvzStreamSink* sink)
     return state;
 }
 
-static const DvzVideoSinkConfig* dvz_video_sink_config(const void* config)
+
+
+/**
+ * Resolve the provided configuration or fall back to a static default.
+ *
+ * @param config optional user-provided sink configuration
+ * @returns the configuration that should drive this sink
+ */
+static const DvzVideoSinkConfig* video_sink_config(const void* config)
 {
     if (config)
     {
@@ -65,7 +79,14 @@ static const DvzVideoSinkConfig* dvz_video_sink_config(const void* config)
     return &default_cfg;
 }
 
-static void dvz_video_sink_cleanup(DvzStreamSink* sink)
+
+
+/**
+ * Release the encoder instance and drop the backend data blob.
+ *
+ * @param sink stream sink whose state should be freed
+ */
+static void video_sink_cleanup(DvzStreamSink* sink)
 {
     if (!sink || !sink->backend_data)
     {
@@ -87,19 +108,34 @@ static void dvz_video_sink_cleanup(DvzStreamSink* sink)
 /*  Backend callbacks                                                                            */
 /*************************************************************************************************/
 
-static bool dvz_video_sink_probe(const void* config)
+/**
+ * Always return true, the video sink remains available when linked in.
+ *
+ * @param config unused probe configuration
+ * @returns true indicating the backend can be used
+ */
+static bool video_sink_probe(const void* config)
 {
     (void)config;
     return true;
 }
 
-static int dvz_video_sink_create(DvzStreamSink* sink, const void* config)
+
+
+/**
+ * Initialize the video encoder and associate it with the sink state.
+ *
+ * @param sink stream sink owning the encoder
+ * @param config backend-config pointer
+ * @returns 0 when the encoder is ready or -1 when creation fails
+ */
+static int video_sink_create(DvzStreamSink* sink, const void* config)
 {
     ANN(sink);
-    DvzVideoSinkState* state = dvz_video_sink_state(sink);
+    DvzVideoSinkState* state = video_sink_state(sink);
     ANN(state);
 
-    const DvzVideoSinkConfig* requested = dvz_video_sink_config(config);
+    const DvzVideoSinkConfig* requested = video_sink_config(config);
     state->cfg = *requested;
 
     state->encoder =
@@ -112,7 +148,16 @@ static int dvz_video_sink_create(DvzStreamSink* sink, const void* config)
     return 0;
 }
 
-static int dvz_video_sink_start(DvzStreamSink* sink, const DvzStreamFrame* frame)
+
+
+/**
+ * Start encoding by passing the Vulkan frame to the encoder backend.
+ *
+ * @param sink stream sink that owns the encoder
+ * @param frame frame metadata describing the image and sync handles
+ * @returns backend return code (0 on success)
+ */
+static int video_sink_start(DvzStreamSink* sink, const DvzStreamFrame* frame)
 {
     ANN(sink);
     ANN(frame);
@@ -126,7 +171,16 @@ static int dvz_video_sink_start(DvzStreamSink* sink, const DvzStreamFrame* frame
         frame->wait_semaphore_fd, state->cfg.bitstream);
 }
 
-static int dvz_video_sink_submit(DvzStreamSink* sink, uint64_t wait_value)
+
+
+/**
+ * Forward the timeline submission to the encoder backend.
+ *
+ * @param sink stream sink containing the encoder
+ * @param wait_value timeline semaphore value
+ * @returns backend return code (0 on success)
+ */
+static int video_sink_submit(DvzStreamSink* sink, uint64_t wait_value)
 {
     ANN(sink);
     DvzVideoSinkState* state = (DvzVideoSinkState*)sink->backend_data;
@@ -137,7 +191,15 @@ static int dvz_video_sink_submit(DvzStreamSink* sink, uint64_t wait_value)
     return dvz_video_encoder_submit(state->encoder, wait_value);
 }
 
-static int dvz_video_sink_stop(DvzStreamSink* sink)
+
+
+/**
+ * Stop the encoder and return any backend error.
+ *
+ * @param sink stream sink owning the encoder
+ * @returns 0 when stopped successfully or a negative backend error
+ */
+static int video_sink_stop(DvzStreamSink* sink)
 {
     if (!sink)
     {
@@ -151,15 +213,25 @@ static int dvz_video_sink_stop(DvzStreamSink* sink)
     return 0;
 }
 
-static void dvz_video_sink_destroy(DvzStreamSink* sink) { dvz_video_sink_cleanup(sink); }
+
+
+/**
+ * Destroy the sink and clean up resources.
+ *
+ * @param sink stream sink being destroyed
+ */
+static void video_sink_destroy(DvzStreamSink* sink) { video_sink_cleanup(sink); }
 
 
 
-/*************************************************************************************************/
-/*  Public API                                                                                   */
-/*************************************************************************************************/
-
-static int dvz_video_sink_update(DvzStreamSink* sink, const DvzStreamFrame* frame)
+/**
+ * Restart encoding when a new frame description is provided.
+ *
+ * @param sink stream sink owning the encoder
+ * @param frame updated frame metadata
+ * @returns backend return code from `dvz_video_sink_start`
+ */
+static int video_sink_update(DvzStreamSink* sink, const DvzStreamFrame* frame)
 {
     ANN(sink);
     ANN(frame);
@@ -170,20 +242,33 @@ static int dvz_video_sink_update(DvzStreamSink* sink, const DvzStreamFrame* fram
     }
     dvz_video_encoder_stop(state->encoder);
     sink->started = false;
-    return dvz_video_sink_start(sink, frame);
+    return video_sink_start(sink, frame);
 }
+
+
 
 const DvzStreamSinkBackend DVZ_STREAM_SINK_VIDEO = {
     .name = "sink.video",
-    .probe = dvz_video_sink_probe,
-    .create = dvz_video_sink_create,
-    .start = dvz_video_sink_start,
-    .submit = dvz_video_sink_submit,
-    .stop = dvz_video_sink_stop,
-    .update = dvz_video_sink_update,
-    .destroy = dvz_video_sink_destroy,
+    .probe = video_sink_probe,
+    .create = video_sink_create,
+    .start = video_sink_start,
+    .submit = video_sink_submit,
+    .stop = video_sink_stop,
+    .update = video_sink_update,
+    .destroy = video_sink_destroy,
 };
 
+
+
+/*************************************************************************************************/
+/*  Public API                                                                                   */
+/*************************************************************************************************/
+
+/**
+ * Return the default sink configuration wrapping the encoder defaults.
+ *
+ * @returns sink configuration with default encoder settings and no bitstream file
+ */
 DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void)
 {
     DvzVideoSinkConfig cfg = {
@@ -193,6 +278,13 @@ DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void)
     return cfg;
 }
 
+
+
+/**
+ * Register and return the video sink backend descriptor.
+ *
+ * @returns pointer to the registered `sink.video` backend
+ */
 DVZ_EXPORT const DvzStreamSinkBackend* dvz_stream_sink_video(void)
 {
     dvz_stream_register_sink(&DVZ_STREAM_SINK_VIDEO);
