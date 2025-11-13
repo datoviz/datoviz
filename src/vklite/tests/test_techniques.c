@@ -834,6 +834,32 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_create(&pickview);
 
 
+
+    // Transition pickimg → COLOR_ATTACHMENT_OPTIMAL before using it as a render target.
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&pickimg, 0));
+        dvz_barrier_image_stage(
+            bimg, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_COLOR_BIT);
+        dvz_barrier_image_mip(bimg, 0, 1);
+        dvz_barrier_image_layers(bimg, 0, 1);
+
+        DvzCommands* cmds = dvz_proto_commands(&proto);
+        dvz_cmd_begin(cmds);
+        dvz_cmd_barriers(cmds, 0, &barriers);
+        dvz_cmd_end(cmds);
+        dvz_cmd_submit(cmds); // simple blocking submit in vklite
+    }
+
+
+
     // Step 3: load shaders
     DvzSize vs_size = 0, cs_size = 0, ps_size = 0;
     uint32_t* vs_spv = dvz_test_shader_load("standard.vert.spv", &vs_size);
@@ -887,6 +913,17 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     AT(dvz_graphics_create(&gfx_pick) == 0);
 
 
+    // Step 5.5: create staging buffer for reading back one uint32 ID
+    DvzBuffer staging = {0};
+    dvz_buffer(device, &proto.bootstrap.allocator, &staging);
+    dvz_buffer_size(&staging, sizeof(uint32_t));
+    dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_flags(
+        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                      VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT);
+    AT(dvz_buffer_create(&staging) == 0);
+
+
     // Step 6: record command buffer
     DvzCommands* cmds = dvz_proto_commands(&proto);
     dvz_cmd_begin(cmds);
@@ -895,8 +932,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
     dvz_cmd_bind_graphics(cmds, 0, gfx_color);
     dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
-
-    dvz_cmd_draw(cmds, 0, 3, 3, 0, 1);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds, 0);
 
     /* PICKING PASS */
@@ -913,18 +949,55 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_rendering_begin(cmds, 0, &pickrend);
     dvz_cmd_bind_graphics(cmds, 0, &gfx_pick);
     dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
-    dvz_cmd_draw(cmds, 0, 3, 3, 0, 1);
+    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds, 0);
 
+    /* TRANSITION pickimg → TRANSFER_SRC_OPTIMAL + COPY 1 PIXEL TO STAGING */
+
+    // Build a one-off barrier for pickimg.
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&pickimg, 0));
+    dvz_barrier_image_stage(
+        bimg, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+    dvz_barrier_image_access(
+        bimg, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
+    dvz_barrier_image_layout(
+        bimg, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_barrier_image_mip(bimg, 0, 1);
+    dvz_barrier_image_layers(bimg, 0, 1);
+
+    dvz_cmd_barriers(cmds, 0, &barriers);
+
+    // Define the region: 1 pixel at the center of the image.
+    DvzImageRegion region = {0};
+    dvz_image_region(&region);
+    dvz_image_region_offset(&region, DVZ_PROTO_WIDTH / 2, DVZ_PROTO_HEIGHT / 2, 0);
+    dvz_image_region_extent(&region, 1, 1, 1);
+    dvz_image_region_aspect(&region, VK_IMAGE_ASPECT_COLOR_BIT);
+
+    // Copy that pixel into the staging buffer.
+    dvz_cmd_copy_image_to_buffer(
+        cmds, 0, dvz_image_handle(&pickimg, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        dvz_buffer_handle(&staging), 0);
+
     dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
+    dvz_cmd_submit(cmds); // blocks until done in vklite
 
 
     // Step 7: screenshot
     dvz_proto_screenshot(&proto, "build/technique_picking.png");
 
 
-    // Step 8: cleanup
+    // Step 8: read back picked ID from staging buffer
+    uint32_t picked_id = 0;
+    dvz_buffer_download(&staging, 0, sizeof(uint32_t), &picked_id);
+    printf("Picked ID at center pixel = %u\n", picked_id);
+
+
+    // Step 9: cleanup
+    dvz_buffer_destroy(&staging);
     dvz_graphics_destroy(&gfx_pick);
     dvz_graphics_destroy(gfx_color);
     dvz_shader_destroy(&vs);
