@@ -136,8 +136,10 @@ VkPipelineLayout dvz_slots_handle(DvzSlots* slots)
 void dvz_slots_destroy(DvzSlots* slots)
 {
     ANN(slots);
-    ANN(slots->device);
+    if (!dvz_obj_is_created(&slots->obj))
+        return;
 
+    ANN(slots->device);
     VkDevice vkd = dvz_device_handle(slots->device);
     ANNVK(vkd);
 

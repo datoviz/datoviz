@@ -77,9 +77,11 @@ VkShaderModule dvz_shader_handle(DvzShader* shader)
 void dvz_shader_destroy(DvzShader* shader)
 {
     ANN(shader);
-    ANN(shader->device);
-    ANN(shader->buffer);
+    if (!dvz_obj_is_created(&shader->obj))
+        return;
 
+    ANN(shader->buffer);
+    ANN(shader->device);
     VkDevice vkd = dvz_device_handle(shader->device);
     ANNVK(vkd);
 

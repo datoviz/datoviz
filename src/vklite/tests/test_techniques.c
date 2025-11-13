@@ -1179,7 +1179,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         // Blending: additive for color + weight, WBOIT style.
         {
             vec4 blend_consts = {0, 0, 0, 0};
-            dvz_graphics_blend(&g_accum, VK_LOGIC_OP_COPY, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
+            dvz_graphics_blend(&g_accum, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
 
             // Attachment 0: accumColor += srcColor * alpha
             dvz_graphics_blend_color(
@@ -1192,7 +1192,8 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
             // Attachment 1: accumWeight += alpha
             dvz_graphics_blend_color(
                 &g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-                VK_COLOR_COMPONENT_R_BIT);
+                VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+                    VK_COLOR_COMPONENT_A_BIT);
             dvz_graphics_blend_alpha(
                 &g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
         }
@@ -1250,7 +1251,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         // No blending: overwrite final color.
         {
             vec4 blend_consts = {0, 0, 0, 0};
-            dvz_graphics_blend(&g_comp, VK_LOGIC_OP_COPY, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
+            dvz_graphics_blend(&g_comp, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
             dvz_graphics_blend_color(
                 &g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -1321,9 +1322,13 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_attachment_clear(ad, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
 
-    // Composite rendering: use proto.rendering, writing to proto.img.
+    // Composite rendering: color-only pass directly to proto.img.
+    DvzRendering composite_rendering = {0};
     {
-        DvzAttachment* c0 = dvz_rendering_color(&proto.rendering, 0);
+        dvz_rendering(&composite_rendering);
+        dvz_rendering_area(&composite_rendering, 0, 0, W, H);
+
+        DvzAttachment* c0 = dvz_rendering_color(&composite_rendering, 0);
         dvz_attachment_image(
             c0, dvz_image_views_handle(&proto.view, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(c0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -1419,7 +1424,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
 
     // Pass 2: composite full-screen.
     {
-        dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
+        dvz_cmd_rendering_begin(cmds, 0, &composite_rendering);
         dvz_cmd_bind_graphics(cmds, 0, &g_comp);
         dvz_cmd_bind_descriptors(
             cmds, 0, VK_PIPELINE_BIND_POINT_GRAPHICS, &desc_comp, 0, 1, 0, NULL);
@@ -1440,18 +1445,14 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     // -----------------------------------------------------------------------------------------
     dvz_buffer_destroy(&vbo);
-
     dvz_image_views_destroy(&accum_color_view);
     dvz_images_destroy(&accum_color);
-
     dvz_image_views_destroy(&accum_weight_view);
     dvz_images_destroy(&accum_weight);
-
+    dvz_slots_destroy(&slots_comp);
     dvz_sampler_destroy(&sampler);
-
     dvz_graphics_destroy(&g_accum);
     dvz_graphics_destroy(&g_comp);
-
     dvz_proto_destroy(&proto);
 
     return proto.bootstrap.instance.n_errors > 0;

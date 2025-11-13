@@ -648,14 +648,13 @@ int dvz_graphics_create(DvzGraphics* graphics)
 void dvz_graphics_destroy(DvzGraphics* graphics)
 {
     ANN(graphics);
-    ANN(graphics->device);
-
     if (!dvz_obj_is_created(&graphics->obj))
     {
-        log_trace("skip destruction of already-destroyed graphics");
+        // log_trace("skip destruction of already-destroyed graphics");
         return;
     }
 
+    ANN(graphics->device);
     if (graphics->vk_pipeline != VK_NULL_HANDLE)
     {
         log_trace("destroying graphics...");
