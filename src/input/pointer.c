@@ -4,6 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
+/*************************************************************************************************/
+/*  Pointer                                                                                      */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
 #include <math.h>
 #include <stdint.h>
 
@@ -13,7 +23,20 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 
-#define NULL_EVENT (DvzPointerEvent){0}
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define NULL_EVENT                                                                                \
+    (DvzPointerEvent) { 0 }
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
 
 struct DvzPointerGestureHandler
 {
@@ -27,6 +50,12 @@ struct DvzPointerGestureHandler
     double last_press;
     double last_click;
 };
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
 
 /**
  * Return the Euclidean distance between two vec2 values.
@@ -42,6 +71,8 @@ static float _vec2_distance(const vec2 a, const vec2 b)
     return (float)sqrtf(dx * dx + dy * dy);
 }
 
+
+
 /**
  * Copy the contents of one vec2 into another.
  *
@@ -53,6 +84,8 @@ static void _vec2_copy(const vec2 src, vec2 dst)
     dst[0] = src[0];
     dst[1] = src[1];
 }
+
+
 
 /**
  * Convert a nanosecond timestamp into seconds with a fallback.
@@ -68,6 +101,8 @@ static double _resolve_time(double fallback, uint64_t timestamp)
     return fallback;
 }
 
+
+
 /**
  * Query the wall-clock time in nanoseconds.
  *
@@ -80,60 +115,6 @@ static uint64_t _now_ns(void)
     return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
 }
 
-/**
- * Translate a GLFW-style button index to the Datoviz enum.
- */
-DVZ_EXPORT DvzMouseButton dvz_pointer_button_from_glfw(int button)
-{
-    if (button == 0)
-        return DVZ_MOUSE_BUTTON_LEFT;
-    if (button == 1)
-        return DVZ_MOUSE_BUTTON_RIGHT;
-    if (button == 2)
-        return DVZ_MOUSE_BUTTON_MIDDLE;
-    return DVZ_MOUSE_BUTTON_NONE;
-}
-
-
-/**
- * Return a monotonic timestamp in nanoseconds.
- */
-DVZ_EXPORT uint64_t dvz_input_timestamp_ns(void)
-{
-    return _now_ns();
-}
-
-
-/**
- * Emit a normalized pointer event on the router.
- */
-DVZ_EXPORT void dvz_pointer_emit_position(
-    DvzInputRouter* router,
-    DvzMouseEventType type,
-    float raw_x,
-    float raw_y,
-    float window_x,
-    float window_y,
-    DvzMouseButton button,
-    int mods,
-    float content_scale,
-    uint64_t timestamp_ns,
-    void* user_data)
-{
-    ANN(router);
-    if (timestamp_ns == 0)
-        timestamp_ns = dvz_input_timestamp_ns();
-    DvzPointerEvent event = {0};
-    event.type = type;
-    event.pos[0] = raw_x - window_x;
-    event.pos[1] = raw_y - window_y;
-    event.button = button;
-    event.mods = mods;
-    event.content_scale = content_scale;
-    event.user_data = user_data;
-    event.timestamp_ns = timestamp_ns;
-    dvz_input_emit_pointer(router, &event);
-}
 
 
 /**
@@ -153,6 +134,10 @@ static void _emit_gesture_event(DvzPointerGestureHandler* handler, const DvzPoin
 }
 
 
+/*************************************************************************************************/
+/*  State machine                                                                                */
+/*************************************************************************************************/
+
 /**
  * Update the pointer state for a wheel event.
  *
@@ -160,8 +145,8 @@ static void _emit_gesture_event(DvzPointerGestureHandler* handler, const DvzPoin
  * @param event incoming wheel event
  * @return event to forward
  */
-static DvzPointerEvent _after_wheel(
-    DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static DvzPointerEvent
+_after_wheel(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 {
     ANN(handler);
     ANN(event);
@@ -173,6 +158,7 @@ static DvzPointerEvent _after_wheel(
 }
 
 
+
 /**
  * Update the pointer state for a move event and report drags.
  *
@@ -180,8 +166,7 @@ static DvzPointerEvent _after_wheel(
  * @param event incoming move event
  * @return event to forward (drag start/move or original)
  */
-static DvzPointerEvent _after_move(
-    DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 {
     ANN(handler);
     ANN(event);
@@ -237,6 +222,7 @@ static DvzPointerEvent _after_move(
 }
 
 
+
 /**
  * Update the pointer state for a press event, handling double-click latency.
  *
@@ -244,8 +230,8 @@ static DvzPointerEvent _after_move(
  * @param event incoming press event
  * @return event to forward or NULL_EVENT to drop
  */
-static DvzPointerEvent _after_press(
-    DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static DvzPointerEvent
+_after_press(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 {
     ANN(handler);
     ANN(event);
@@ -275,9 +261,8 @@ static DvzPointerEvent _after_press(
         break;
 
     case DVZ_MOUSE_STATE_CLICK:
-        handler->state =
-            (delay <= DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY) ? DVZ_MOUSE_STATE_CLICK_PRESS
-                                                        : DVZ_MOUSE_STATE_PRESS;
+        handler->state = (delay <= DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY) ? DVZ_MOUSE_STATE_CLICK_PRESS
+                                                                     : DVZ_MOUSE_STATE_PRESS;
         break;
 
     case DVZ_MOUSE_STATE_CLICK_PRESS:
@@ -289,6 +274,7 @@ static DvzPointerEvent _after_press(
 }
 
 
+
 /**
  * Update the pointer state for a release event and detect clicks/drags.
  *
@@ -296,8 +282,8 @@ static DvzPointerEvent _after_press(
  * @param event incoming release event
  * @return event to forward or NULL_EVENT when suppressed
  */
-static DvzPointerEvent _after_release(
-    DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static DvzPointerEvent
+_after_release(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 {
     ANN(handler);
     ANN(event);
@@ -333,9 +319,8 @@ static DvzPointerEvent _after_release(
         if (delay <= DVZ_MOUSE_CLICK_MAX_DELAY)
         {
             handler->state = DVZ_MOUSE_STATE_CLICK;
-            ev.type = (prev == DVZ_MOUSE_STATE_CLICK_PRESS)
-                          ? DVZ_MOUSE_EVENT_DOUBLE_CLICK
-                          : DVZ_MOUSE_EVENT_CLICK;
+            ev.type = (prev == DVZ_MOUSE_STATE_CLICK_PRESS) ? DVZ_MOUSE_EVENT_DOUBLE_CLICK
+                                                            : DVZ_MOUSE_EVENT_CLICK;
             handler->last_click = handler->time;
         }
         else
@@ -352,15 +337,9 @@ static DvzPointerEvent _after_release(
 }
 
 
-/**
- * Router callback that drives the gesture interpreter.
- *
- * @param router input router instance
- * @param event pointer event from the backend
- * @param user_data gesture handler instance
- */
-static void _pointer_router_callback(
-    DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+
+static void
+_pointer_router_callback(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
 {
     ANN(router);
     ANN(event);
@@ -396,10 +375,51 @@ static void _pointer_router_callback(
 }
 
 
-/**
- * Attach the legacy gesture interpreter to the router.
- */
-DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router)
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+DvzMouseButton dvz_pointer_button_from_glfw(int button)
+{
+    if (button == 0)
+        return DVZ_MOUSE_BUTTON_LEFT;
+    if (button == 1)
+        return DVZ_MOUSE_BUTTON_RIGHT;
+    if (button == 2)
+        return DVZ_MOUSE_BUTTON_MIDDLE;
+    return DVZ_MOUSE_BUTTON_NONE;
+}
+
+
+
+uint64_t dvz_input_timestamp_ns(void) { return _now_ns(); }
+
+
+
+void dvz_pointer_emit_position(
+    DvzInputRouter* router, DvzMouseEventType type, float raw_x, float raw_y, float window_x,
+    float window_y, DvzMouseButton button, int mods, float content_scale, uint64_t timestamp_ns,
+    void* user_data)
+{
+    ANN(router);
+    if (timestamp_ns == 0)
+        timestamp_ns = dvz_input_timestamp_ns();
+    DvzPointerEvent event = {0};
+    event.type = type;
+    event.pos[0] = raw_x - window_x;
+    event.pos[1] = raw_y - window_y;
+    event.button = button;
+    event.mods = mods;
+    event.content_scale = content_scale;
+    event.user_data = user_data;
+    event.timestamp_ns = timestamp_ns;
+    dvz_input_emit_pointer(router, &event);
+}
+
+
+
+DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router)
 {
     ANN(router);
     DvzPointerGestureHandler* handler =
@@ -411,10 +431,8 @@ DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter*
 }
 
 
-/**
- * Destroy the gesture interpreter.
- */
-DVZ_EXPORT void dvz_pointer_gesture_handler_destroy(DvzPointerGestureHandler* handler)
+
+void dvz_pointer_gesture_handler_destroy(DvzPointerGestureHandler* handler)
 {
     if (handler == NULL)
         return;

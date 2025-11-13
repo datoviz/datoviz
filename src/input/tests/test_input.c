@@ -4,10 +4,26 @@
  * SPDX-License-Identifier: MIT
  */
 
+/*************************************************************************************************/
+/*  Testing input                                                                                */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include "test_input.h"
 #include "_assertions.h"
 #include "datoviz/input.h"
 #include "testing.h"
-#include "test_input.h"
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
 
 typedef struct
 {
@@ -15,6 +31,12 @@ typedef struct
     uint32_t count;
     DvzMouseEventType history[8];
 } EventRecorder;
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
 
 /**
  * Create a pointer event template.
@@ -26,8 +48,8 @@ typedef struct
  * @param timestamp timestamp value
  * @return constructed pointer event
  */
-static DvzPointerEvent _make_event(
-    DvzMouseEventType type, float x, float y, DvzMouseButton button, uint64_t timestamp)
+static DvzPointerEvent
+_make_event(DvzMouseEventType type, float x, float y, DvzMouseButton button, uint64_t timestamp)
 {
     DvzPointerEvent event = {0};
     event.type = type;
@@ -40,11 +62,12 @@ static DvzPointerEvent _make_event(
 }
 
 
+
 /**
  * Validate that the first pointer callback runs first.
  */
-static void _router_callback_one(
-    DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void
+_router_callback_one(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
 {
     ANN(router);
     ANN(event);
@@ -58,11 +81,12 @@ static void _router_callback_one(
 }
 
 
+
 /**
  * Validate that the second pointer callback sees the first callback run.
  */
-static void _router_callback_two(
-    DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+static void
+_router_callback_two(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
 {
     ANN(router);
     ANN(event);
@@ -76,11 +100,11 @@ static void _router_callback_two(
 }
 
 
+
 /**
  * Record pointer events emitted through the union callbacks.
  */
-static void _record_event(
-    DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+static void _record_event(DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
 {
     ANN(router);
     ANN(event);
@@ -93,17 +117,23 @@ static void _record_event(
 }
 
 
+
+/*************************************************************************************************/
+/*  Test functions                                                                               */
+/*************************************************************************************************/
+
 /**
  * Ensure pointer subscriptions respect insertion order.
  */
-static int test_router_callbacks(TstSuite* suite, TstItem* item)
+int test_router_callbacks(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
     int state = 0;
     dvz_input_subscribe_pointer(router, _router_callback_one, &state);
     dvz_input_subscribe_pointer(router, _router_callback_two, &state);
-    DvzPointerEvent event = _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 5.0f, DVZ_MOUSE_BUTTON_LEFT, 1);
+    DvzPointerEvent event =
+        _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 5.0f, DVZ_MOUSE_BUTTON_LEFT, 1);
     dvz_input_emit_pointer(router, &event);
     AT(state == 2);
     dvz_input_router_destroy(router);
@@ -111,10 +141,11 @@ static int test_router_callbacks(TstSuite* suite, TstItem* item)
 }
 
 
+
 /**
  * Verify modifier bit tracking works for shift.
  */
-static int test_keyboard_modifiers(TstSuite* suite, TstItem* item)
+int test_keyboard_modifiers(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
     DvzKeyboardModifierState* state = dvz_keyboard_modifier_state();
@@ -127,10 +158,11 @@ static int test_keyboard_modifiers(TstSuite* suite, TstItem* item)
 }
 
 
+
 /**
  * Confirm gesture detection emits clicks, double-clicks, and drags.
  */
-static int test_pointer_gestures(TstSuite* suite, TstItem* item)
+int test_pointer_gestures(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
     DvzInputRouter* router = dvz_input_router();
@@ -139,8 +171,8 @@ static int test_pointer_gestures(TstSuite* suite, TstItem* item)
     dvz_input_subscribe_event(router, _record_event, &recorder);
 
     uint64_t now = dvz_input_timestamp_ns();
-    DvzPointerEvent press = _make_event(
-        DVZ_MOUSE_EVENT_PRESS, 10.0f, 10.0f, DVZ_MOUSE_BUTTON_LEFT, now);
+    DvzPointerEvent press =
+        _make_event(DVZ_MOUSE_EVENT_PRESS, 10.0f, 10.0f, DVZ_MOUSE_BUTTON_LEFT, now);
     dvz_input_emit_pointer(router, &press);
     DvzPointerEvent release = press;
     release.type = DVZ_MOUSE_EVENT_RELEASE;
@@ -182,6 +214,7 @@ static int test_pointer_gestures(TstSuite* suite, TstItem* item)
     dvz_input_router_destroy(router);
     return 0;
 }
+
 
 
 /**

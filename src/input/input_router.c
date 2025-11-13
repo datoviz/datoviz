@@ -4,6 +4,16 @@
  * SPDX-License-Identifier: MIT
  */
 
+/*************************************************************************************************/
+/*  Input router                                                                                 */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -11,11 +21,19 @@
 #include "_assertions.h"
 #include "datoviz/input/router.h"
 
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
 typedef struct DvzPointerSubscription
 {
     DvzPointerCallback callback;
     void* user_data;
 } DvzPointerSubscription;
+
+
 
 typedef struct DvzKeyboardSubscription
 {
@@ -23,11 +41,15 @@ typedef struct DvzKeyboardSubscription
     void* user_data;
 } DvzKeyboardSubscription;
 
+
+
 typedef struct DvzEventSubscription
 {
     DvzInputCallback callback;
     void* user_data;
 } DvzEventSubscription;
+
+
 
 struct DvzInputRouter
 {
@@ -44,8 +66,14 @@ struct DvzInputRouter
     uint32_t event_capacity;
 };
 
-static void _ensure_capacity(
-    uint32_t item_size, void** data, uint32_t* capacity, uint32_t min_capacity)
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static void
+_ensure_capacity(uint32_t item_size, void** data, uint32_t* capacity, uint32_t min_capacity)
 {
     if (*capacity >= min_capacity)
         return;
@@ -56,10 +84,13 @@ static void _ensure_capacity(
     *capacity = new_capacity;
 }
 
-/**
- * Create a new router instance.
- */
-DVZ_EXPORT DvzInputRouter* dvz_input_router(void)
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+DvzInputRouter* dvz_input_router(void)
 {
     DvzInputRouter* router = (DvzInputRouter*)dvz_calloc(1, sizeof(DvzInputRouter));
     ANN(router);
@@ -67,10 +98,8 @@ DVZ_EXPORT DvzInputRouter* dvz_input_router(void)
 }
 
 
-/**
- * Destroy a router.
- */
-DVZ_EXPORT void dvz_input_router_destroy(DvzInputRouter* router)
+
+void dvz_input_router_destroy(DvzInputRouter* router)
 {
     ANN(router);
     if (router->pointer_subs != NULL)
@@ -83,10 +112,8 @@ DVZ_EXPORT void dvz_input_router_destroy(DvzInputRouter* router)
 }
 
 
-/**
- * Subscribe to pointer events.
- */
-DVZ_EXPORT void dvz_input_subscribe_pointer(
+
+void dvz_input_subscribe_pointer(
     DvzInputRouter* router, DvzPointerCallback callback, void* user_data)
 {
     ANN(router);
@@ -98,10 +125,8 @@ DVZ_EXPORT void dvz_input_subscribe_pointer(
 }
 
 
-/**
- * Unsubscribe from pointer events.
- */
-DVZ_EXPORT void dvz_input_unsubscribe_pointer(
+
+void dvz_input_unsubscribe_pointer(
     DvzInputRouter* router, DvzPointerCallback callback, void* user_data)
 {
     ANN(router);
@@ -121,11 +146,8 @@ DVZ_EXPORT void dvz_input_unsubscribe_pointer(
 }
 
 
-/**
- * Emit a pointer event.
- */
-DVZ_EXPORT void dvz_input_emit_pointer(
-    DvzInputRouter* router, const DvzPointerEvent* event)
+
+void dvz_input_emit_pointer(DvzInputRouter* router, const DvzPointerEvent* event)
 {
     ANN(router);
     ANN(event);
@@ -137,10 +159,8 @@ DVZ_EXPORT void dvz_input_emit_pointer(
 }
 
 
-/**
- * Subscribe to keyboard events.
- */
-DVZ_EXPORT void dvz_input_subscribe_keyboard(
+
+void dvz_input_subscribe_keyboard(
     DvzInputRouter* router, DvzKeyboardCallback callback, void* user_data)
 {
     ANN(router);
@@ -148,14 +168,13 @@ DVZ_EXPORT void dvz_input_subscribe_keyboard(
     _ensure_capacity(
         sizeof(DvzKeyboardSubscription), (void**)&router->keyboard_subs,
         &router->keyboard_capacity, router->keyboard_count + 1);
-    router->keyboard_subs[router->keyboard_count++] = (DvzKeyboardSubscription){callback, user_data};
+    router->keyboard_subs[router->keyboard_count++] =
+        (DvzKeyboardSubscription){callback, user_data};
 }
 
 
-/**
- * Unsubscribe from keyboard events.
- */
-DVZ_EXPORT void dvz_input_unsubscribe_keyboard(
+
+void dvz_input_unsubscribe_keyboard(
     DvzInputRouter* router, DvzKeyboardCallback callback, void* user_data)
 {
     ANN(router);
@@ -175,11 +194,8 @@ DVZ_EXPORT void dvz_input_unsubscribe_keyboard(
 }
 
 
-/**
- * Emit a keyboard event.
- */
-DVZ_EXPORT void dvz_input_emit_keyboard(
-    DvzInputRouter* router, const DvzKeyboardEvent* event)
+
+void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event)
 {
     ANN(router);
     ANN(event);
@@ -191,11 +207,8 @@ DVZ_EXPORT void dvz_input_emit_keyboard(
 }
 
 
-/**
- * Subscribe to union-style input events.
- */
-DVZ_EXPORT void dvz_input_subscribe_event(
-    DvzInputRouter* router, DvzInputCallback callback, void* user_data)
+
+void dvz_input_subscribe_event(DvzInputRouter* router, DvzInputCallback callback, void* user_data)
 {
     ANN(router);
     ANN(callback);
@@ -206,10 +219,8 @@ DVZ_EXPORT void dvz_input_subscribe_event(
 }
 
 
-/**
- * Unsubscribe from union-style input events.
- */
-DVZ_EXPORT void dvz_input_unsubscribe_event(
+
+void dvz_input_unsubscribe_event(
     DvzInputRouter* router, DvzInputCallback callback, void* user_data)
 {
     ANN(router);
@@ -229,11 +240,8 @@ DVZ_EXPORT void dvz_input_unsubscribe_event(
 }
 
 
-/**
- * Emit a union input event.
- */
-DVZ_EXPORT void dvz_input_emit_event(
-    DvzInputRouter* router, const DvzInputEvent* event)
+
+void dvz_input_emit_event(DvzInputRouter* router, const DvzInputEvent* event)
 {
     ANN(router);
     ANN(event);
