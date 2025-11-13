@@ -89,14 +89,27 @@ typedef struct DvzVideoEncoder
 /*************************************************************************************************/
 
 /**
+ * Allocate and configure an encoder instance backed by the given device.
  *
+ * @param device Vulkan device used for image/memory imports (may be NULL)
+ * @param cfg optional encoder configuration, falls back to `dvz_video_encoder_default_config()`
+ * @returns a new encoder handle or NULL on allocation failure
  */
 DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg);
 
 
 
 /**
+ * Start encoding using the current frame and synchronization details.
  *
+ * @param enc encoder handle
+ * @param image GPU image that contains the rendered frame
+ * @param memory backing memory imported for the image
+ * @param memory_size size of the imported memory
+ * @param memory_fd optional DMA-BUF fd representing the memory (platform-specific)
+ * @param wait_semaphore_fd timeline semaphore where sinks wait for the frame
+ * @param bitstream_out optional FILE to write Annex B streams when post-muxing
+ * @returns 0 on success or a negative error when setup or backend start fails
  */
 int dvz_video_encoder_start(
     DvzVideoEncoder* enc, VkImage image, VkDeviceMemory memory, VkDeviceSize memory_size,
@@ -105,35 +118,54 @@ int dvz_video_encoder_start(
 
 
 /**
+ * Submit the encoded frame to the chosen backend and update timeline progress.
  *
+ * @param enc encoder handle
+ * @param wait_value timeline semaphore value to signal the encoder/writer
+ * @returns 0 when submission succeeded or a negative error from the backend
  */
 int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value);
 
 
 
 /**
+ * Stop the encoder and flush any pending output before destruction.
  *
+ * @param enc encoder handle
+ * @returns 0 on success or a negative backend error
  */
 int dvz_video_encoder_stop(DvzVideoEncoder* enc);
 
 
 
 /**
+ * Destroy the encoder and release all associated resources.
  *
+ * @param enc encoder handle (NULL-safe)
  */
 void dvz_video_encoder_destroy(DvzVideoEncoder* enc);
 
 
 
 /**
+ * Compute the next sample duration in 90 kHz ticks for the current encoder config.
  *
+ * @param enc encoder instance
+ * @returns encoded sample duration or 0 when durations are unavailable
  */
 uint32_t dvz_video_encoder_next_duration(DvzVideoEncoder* enc);
 
 
 
 /**
+ * Notify the encoder that a new encoded sample is available, for muxing or streaming.
  *
+ * @param enc encoder instance
+ * @param data pointer to the encoded bitstream
+ * @param size buffer size in bytes
+ * @param file_offset offset inside temporary bitstream when post muxing
+ * @param duration sample duration in 90 kHz ticks
+ * @param keyframe true when the sample is a keyframe
  */
 void dvz_video_encoder_on_sample(
     DvzVideoEncoder* enc, const uint8_t* data, uint32_t size, uint64_t file_offset,
