@@ -449,6 +449,7 @@ int test_video_nvenc(TstSuite* suite, TstItem* tstitem)
     vkGetImageMemoryRequirements(vk.device, vk.image, &memReq);
 
     DvzVideoEncoderConfig vcfg = dvz_video_encoder_default_config();
+    vcfg.fps = DVZ_TEST_VIDEO_FPS;
     vcfg.mp4_path = "video_nvenc.mp4";
     vcfg.raw_path = "video_nvenc.h26x";
     encoder = dvz_video_encoder_create(NULL, &vcfg);
