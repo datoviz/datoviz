@@ -132,7 +132,8 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     volkLoadInstance(ctx->instance);
 
     uint32_t gpu_count = 0;
-    if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, NULL) != VK_SUCCESS || gpu_count == 0)
+    if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, NULL) != VK_SUCCESS ||
+        gpu_count == 0)
     {
         return false;
     }
@@ -194,7 +195,8 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
         return false;
     }
 
-    VkCommandBufferAllocateInfo cmd_alloc = {.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
+    VkCommandBufferAllocateInfo cmd_alloc = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
     cmd_alloc.commandPool = ctx->cmd_pool;
     cmd_alloc.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     cmd_alloc.commandBufferCount = 1;
@@ -268,8 +270,10 @@ static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
         ctx->cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0,
         NULL, 1, &barrier);
 
-    VkImageSubresourceRange range = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .levelCount = 1, .layerCount = 1};
-    vkCmdClearColorImage(ctx->cmd, ctx->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clr, 1, &range);
+    VkImageSubresourceRange range = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .levelCount = 1, .layerCount = 1};
+    vkCmdClearColorImage(
+        ctx->cmd, ctx->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, clr, 1, &range);
 
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
@@ -317,7 +321,7 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
     }
 
     int rc = 0;
-    const char* raw_path = "video_kvazaar.h26x";
+    const char* mp4_path = "video_kvazaar.mp4";
     DvzDevice* device = (DvzDevice*)calloc(1, sizeof(DvzDevice));
     DvzGpu* gpu = (DvzGpu*)calloc(1, sizeof(DvzGpu));
     if (!device || !gpu)
@@ -337,10 +341,10 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
     cfg.height = DVZ_TEST_VIDEO_HEIGHT;
     cfg.fps = DVZ_TEST_VIDEO_FPS;
     cfg.codec = DVZ_VIDEO_CODEC_HEVC;
-    cfg.mux = DVZ_VIDEO_MUX_MP4_POST;
-    cfg.mp4_path = "video_kvazaar.mp4";
+    cfg.mux = DVZ_VIDEO_MUX_MP4_STREAMING;
+    cfg.mp4_path = mp4_path;
     cfg.backend = "kvazaar";
-    cfg.raw_path = raw_path;
+    cfg.raw_path = NULL;
 
     DvzVideoEncoder* encoder = dvz_video_encoder_create(device, &cfg);
     if (!encoder)
@@ -374,10 +378,10 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
     dvz_video_encoder_destroy(encoder);
     encoder = NULL;
 
-    FILE* fp = fopen(raw_path, "rb");
+    FILE* fp = fopen(mp4_path, "rb");
     if (!fp)
     {
-        log_error("kvazaar CPU test missing output bitstream");
+        log_error("kvazaar CPU test missing mp4 output");
         rc = 1;
         goto cleanup;
     }
@@ -391,11 +395,10 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
     fclose(fp);
     if (size <= 0)
     {
-        log_error("kvazaar CPU test wrote empty bitstream");
+        log_error("kvazaar CPU test wrote empty mp4");
         rc = 1;
         goto cleanup;
     }
-    remove(raw_path);
 
 cleanup:
     if (encoder)
