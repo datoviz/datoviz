@@ -21,7 +21,7 @@ void main()
 
     float occlusion = 0.0;
     float radius = 4.0;     // in pixels
-    float bias   = 0.02;    // depth bias
+    float bias   = 0.002;   // depth bias tuned for our synthetic depth ramp
 
     for (int i = 0; i < 8; ++i)
     {

@@ -1019,6 +1019,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     uint32_t picked_id = 0;
     dvz_buffer_download(&staging, 0, sizeof(uint32_t), &picked_id);
     printf("Picked ID at center pixel = %u\n", picked_id);
+    AT(picked_id == 42);
 
 
     // Step 9: cleanup
@@ -1695,6 +1696,8 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     ANN(cmds);
 
     dvz_cmd_begin(cmds);
+    // Ensure proto color/depth attachments are transitioned before use in this test.
+    dvz_cmd_barriers(cmds, 0, &proto.barriers);
 
     // Transition depth_img to DEPTH_STENCIL_ATTACHMENT_OPTIMAL for pass 1.
     {
