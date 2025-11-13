@@ -318,6 +318,24 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * Visually separate neighbouring top-level functions with three newline characters (two empty lines) to make each implementation stand out. Attach any descriptive comments directly above the function and keep extra text out of the blank space.
 * Reserve the `dvz_` prefix for symbols exposed via public headers. Internal `static` helpers should avoid `dvz_` (use `_dvz_` or no prefix) so the public naming space stays predictable.
 
+### 🧱 **C File Organization**
+
+* Structure every `*.c` implementation like the Vulkan modules (`src/vk/*`, `src/vklite/*`) so the separators, sections, and spacing are immediately recognizable.
+* Use delimiter blocks for each section, e.g.
+
+  ```
+  /*************************************************************************************************/
+  /*  Section Name                                                                               */
+  /*************************************************************************************************/
+  ```
+
+  Keep the section title left-aligned inside the middle comment line and repeat the delimiter before and after blocks.
+* Organize the sections in the same order every file: `Includes`, `Constants`, `Macros`, `Typedefs`, `Structs`, `Function prototypes`/`Helpers`, and finally `Functions`. If a section is empty, omit it rather than leaving a placeholder.
+* Lines should stay within 100 characters whenever possible to keep the delimiters readable and to match the Vulkan-style formatting.
+* Maintain a visual gap of two blank lines (three newline characters) between every top-level definition—structs, enums, or functions—to match the spacing seen in the Vulkan files.
+
+These rules should be followed carefully whenever Codex edits or creates C source files.
+
 ## 🚧 Refactor Roadmap Guidance
 
 - **`vk` (in progress):** Focus on robustness (device creation, swapchains, command encoders). Keep its public headers limited to the Vulkan-facing API and push any shared helpers down to `src/common` if multiple modules will need them later.
