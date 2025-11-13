@@ -8,13 +8,12 @@
 /*  Kvazaar backend placeholder                                                                  */
 /*************************************************************************************************/
 
-#include "encoder_backend.h"
-
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <volk.h>
 
 #if defined(_WIN32)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -29,31 +28,17 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/thread/thread.h"
-
-#include <volk.h>
-
 #include "datoviz/vk/device.h"
+#include "encoder_backend.h"
 #include "kvazaar.h"
 
 
 
 /*************************************************************************************************/
-/*  Forward declarations                                                                         */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
 
-static bool kvazaar_probe(const DvzVideoEncoderConfig* cfg);
-static int kvazaar_init(DvzVideoEncoder* enc);
-static int kvazaar_start(DvzVideoEncoder* enc);
-static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value);
-static int kvazaar_stop(DvzVideoEncoder* enc);
-static void kvazaar_destroy(DvzVideoEncoder* enc);
-
-
-
-/*************************************************************************************************/
-/*  Helpers                                                                                      */
-/*************************************************************************************************/
-
+// Kvazaar video backend.
 typedef struct
 {
     const kvz_api* api;
@@ -75,6 +60,9 @@ typedef struct
     uint32_t convert_threads;
 } DvzVideoBackendKvazaar;
 
+
+
+// RGBA YUV conversion job.
 typedef struct
 {
     DvzVideoBackendKvazaar* state;
@@ -87,6 +75,10 @@ typedef struct
 } DvzKvazaarConvertJob;
 
 
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
 
 static DvzVideoBackendKvazaar* kvazaar_state(DvzVideoEncoder* enc)
 {
@@ -604,22 +596,6 @@ static void kvazaar_drain(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
 /*  Public backend                                                                               */
 /*************************************************************************************************/
 
-const DvzVideoBackend DVZ_VIDEO_BACKEND_KVAZAAR = {
-    .name = "kvazaar",
-    .probe = kvazaar_probe,
-    .init = kvazaar_init,
-    .start = kvazaar_start,
-    .submit = kvazaar_submit,
-    .stop = kvazaar_stop,
-    .destroy = kvazaar_destroy,
-};
-
-
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
 static bool kvazaar_probe(const DvzVideoEncoderConfig* cfg)
 {
     if (!cfg)
@@ -900,3 +876,15 @@ static void kvazaar_destroy(DvzVideoEncoder* enc)
     free(state);
     enc->backend_data = NULL;
 }
+
+
+
+const DvzVideoBackend DVZ_VIDEO_BACKEND_KVAZAAR = {
+    .name = "kvazaar",
+    .probe = kvazaar_probe,
+    .init = kvazaar_init,
+    .start = kvazaar_start,
+    .submit = kvazaar_submit,
+    .stop = kvazaar_stop,
+    .destroy = kvazaar_destroy,
+};

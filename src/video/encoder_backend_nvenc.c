@@ -8,8 +8,10 @@
 /*  NVENC backend                                                                                */
 /*************************************************************************************************/
 
+#include "_alloc.h"
+#include "_log.h"
+#include "datoviz/common/macros.h"
 #include "encoder_backend.h"
-
 #include <cuda.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -27,28 +29,37 @@
 #pragma GCC diagnostic pop
 #endif
 
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
 #undef NV_ENC_INITIALIZE_PARAMS_VER
 #define NV_ENC_INITIALIZE_PARAMS_VER (NVENCAPI_STRUCT_VERSION(7) | (1u << 31))
+
 #undef NV_ENC_PRESET_CONFIG_VER
 #define NV_ENC_PRESET_CONFIG_VER (NVENCAPI_STRUCT_VERSION(5) | (1u << 31))
+
 #undef NV_ENC_CONFIG_VER
 #define NV_ENC_CONFIG_VER (NVENCAPI_STRUCT_VERSION(9) | (1u << 31))
+
 #undef NV_ENC_PIC_PARAMS_VER
 #define NV_ENC_PIC_PARAMS_VER (NVENCAPI_STRUCT_VERSION(7) | (1u << 31))
+
 #undef NV_ENC_LOCK_BITSTREAM_VER
 #define NV_ENC_LOCK_BITSTREAM_VER (NVENCAPI_STRUCT_VERSION(2) | (1u << 31))
-#include "_alloc.h"
-#include "_log.h"
-#include "datoviz/common/macros.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants & macros                                                                           */
-/*************************************************************************************************/
 
 #define PITCH_ALIGN          256
 #define NVENC_INVALID_OFFSET UINT64_MAX
+
+static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
 
 #define CU_CHECK(x)                                                                               \
     do                                                                                            \
@@ -184,6 +195,7 @@ static const char* PTX = ".version 7.8\n"
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+// CUDA context.
 typedef struct
 {
     CUcontext cuCtx;
@@ -195,6 +207,9 @@ typedef struct
     CUstream stream;
 } CudaCtx;
 
+
+
+// NVENC context.
 typedef struct
 {
     NV_ENCODE_API_FUNCTION_LIST api;
@@ -203,6 +218,9 @@ typedef struct
     NV_ENC_CONFIG encCfg;
 } NvEncCtx;
 
+
+
+// NVENC IO.
 typedef struct
 {
     NV_ENC_REGISTERED_PTR regPtr;
@@ -210,6 +228,9 @@ typedef struct
     NV_ENC_OUTPUT_PTR bitstreams[4];
 } NvEncIO;
 
+
+
+// RGBA buffer.
 typedef struct
 {
     CUdeviceptr dptr;
@@ -217,6 +238,9 @@ typedef struct
     size_t size;
 } RgbaBuf;
 
+
+
+// NV12 buffer.
 typedef struct
 {
     CUdeviceptr dptr;
@@ -224,6 +248,21 @@ typedef struct
     size_t size;
 } Nv12Buf;
 
+
+
+typedef struct
+{
+    const GUID* codec_guid;
+    const GUID* preset_guid;
+    NV_ENC_TUNING_INFO tuning;
+    uint32_t qp_intra;
+    uint32_t qp_inter_p;
+    uint32_t qp_inter_b;
+} DvzNvencProfile;
+
+
+
+// NVENC video backend.
 typedef struct
 {
     CudaCtx cuda;
@@ -438,10 +477,6 @@ static void launch_rgba_to_nv12(CudaCtx* cu, RgbaBuf* rb, Nv12Buf* nb, uint32_t 
 
 
 
-static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
-
-
-
 static void nvenc_load_api(void)
 {
     memset(&g_nvenc, 0, sizeof(g_nvenc));
@@ -499,19 +534,7 @@ static bool nvenc_supports_codec(void* hEncoder, const GUID* codec)
 
 
 
-typedef struct
-{
-    const GUID* codec_guid;
-    const GUID* preset_guid;
-    NV_ENC_TUNING_INFO tuning;
-    uint32_t qp_intra;
-    uint32_t qp_inter_p;
-    uint32_t qp_inter_b;
-} DvzNvencProfile;
-
-
-
-static DvzNvencProfile dvz_nvenc_profile(DvzVideoCodec codec)
+static DvzNvencProfile nvenc_profile(DvzVideoCodec codec)
 {
     DvzNvencProfile prof = {
         .codec_guid = &NV_ENC_CODEC_H264_GUID,
@@ -554,7 +577,7 @@ static void nvenc_init_codec(
     NvEncCtx* nctx, DvzVideoCodec codec_sel, uint32_t width, uint32_t height, uint32_t fps)
 {
     ANN(nctx);
-    DvzNvencProfile prof = dvz_nvenc_profile(codec_sel);
+    DvzNvencProfile prof = nvenc_profile(codec_sel);
 
     memset(&nctx->init, 0, sizeof(nctx->init));
     nctx->init.version = (uint32_t)NV_ENC_INITIALIZE_PARAMS_VER;
@@ -786,7 +809,7 @@ static int nvenc_start(DvzVideoEncoder* enc)
     }
 
     nvenc_open_session_cuda(&state->nvenc, state->cuda.cuCtx);
-    if (!nvenc_supports_codec(state->nvenc.hEncoder, dvz_nvenc_profile(enc->cfg.codec).codec_guid))
+    if (!nvenc_supports_codec(state->nvenc.hEncoder, nvenc_profile(enc->cfg.codec).codec_guid))
     {
         log_warn("requested video codec not supported");
         return -1;

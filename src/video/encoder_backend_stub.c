@@ -12,18 +12,31 @@
 
 #include "_log.h"
 
+
+
+/*************************************************************************************************/
+/*  NVENC video backend stubs                                                                    */
+/*************************************************************************************************/
+
 #if !HAS_CUDA
+
+
+
 static bool nvenc_probe(const DvzVideoEncoderConfig* cfg)
 {
     (void)cfg;
     return false;
 }
 
+
+
 static int nvenc_init(DvzVideoEncoder* enc)
 {
     (void)enc;
     return -1;
 }
+
+
 
 static int nvenc_start(DvzVideoEncoder* enc)
 {
@@ -32,6 +45,8 @@ static int nvenc_start(DvzVideoEncoder* enc)
     return -1;
 }
 
+
+
 static int nvenc_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
 {
     (void)enc;
@@ -39,16 +54,19 @@ static int nvenc_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
     return -1;
 }
 
+
+
 static int nvenc_stop(DvzVideoEncoder* enc)
 {
     (void)enc;
     return 0;
 }
 
-static void nvenc_destroy(DvzVideoEncoder* enc)
-{
-    (void)enc;
-}
+
+
+static void nvenc_destroy(DvzVideoEncoder* enc) { (void)enc; }
+
+
 
 const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC = {
     .name = "nvenc",
@@ -59,20 +77,36 @@ const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC = {
     .stop = nvenc_stop,
     .destroy = nvenc_destroy,
 };
+
+
+
 #endif
 
+
+
+/*************************************************************************************************/
+/*  NVENC video backend stubs                                                                    */
+/*************************************************************************************************/
+
 #if !HAS_KVZ
+
+
+
 static bool kvazaar_probe(const DvzVideoEncoderConfig* cfg)
 {
     (void)cfg;
     return false;
 }
 
+
+
 static int kvazaar_init(DvzVideoEncoder* enc)
 {
     (void)enc;
     return -1;
 }
+
+
 
 static int kvazaar_start(DvzVideoEncoder* enc)
 {
@@ -81,6 +115,8 @@ static int kvazaar_start(DvzVideoEncoder* enc)
     return -1;
 }
 
+
+
 static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
 {
     (void)enc;
@@ -88,16 +124,19 @@ static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
     return -1;
 }
 
+
+
 static int kvazaar_stop(DvzVideoEncoder* enc)
 {
     (void)enc;
     return 0;
 }
 
-static void kvazaar_destroy(DvzVideoEncoder* enc)
-{
-    (void)enc;
-}
+
+
+static void kvazaar_destroy(DvzVideoEncoder* enc) { (void)enc; }
+
+
 
 const DvzVideoBackend DVZ_VIDEO_BACKEND_KVAZAAR = {
     .name = "kvazaar",
@@ -108,4 +147,7 @@ const DvzVideoBackend DVZ_VIDEO_BACKEND_KVAZAAR = {
     .stop = kvazaar_stop,
     .destroy = kvazaar_destroy,
 };
+
+
+
 #endif
