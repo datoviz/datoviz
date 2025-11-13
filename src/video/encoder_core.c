@@ -24,7 +24,7 @@
 
 
 /*************************************************************************************************/
-/*  NVENC video encode                                                                           */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
 // ====== Params ======
@@ -46,10 +46,10 @@
 //     * Linux Intel/AMD: exportable VkImage → VA-API/AMF.
 //     * CPU fallback: convert to planar YUV420 and feed kvazaar (BSD) or x264/x265 (GPL).
 // - Audio/mux later; this harness simply emits Annex B bitstreams (out.h265).
-#define WIDTH   1920
-#define HEIGHT  1080
-#define FPS     60
-#define SECONDS 60
+
+#define WIDTH  1920
+#define HEIGHT 1080
+#define FPS    60
 
 
 
@@ -57,26 +57,43 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static uint32_t dvz_video_encoder_next_duration_internal(DvzVideoEncoder* enc);
-static void dvz_video_encoder_release(DvzVideoEncoder* enc);
-
-static uint32_t dvz_video_encoder_next_duration_internal(DvzVideoEncoder* enc)
+static void video_encoder_release(DvzVideoEncoder* enc)
 {
-    if (!enc || enc->mp4_frame_duration_den == 0)
+    if (!enc)
     {
-        return 0;
+        return;
     }
-    enc->mp4_frame_duration_accum += enc->mp4_frame_duration_num;
-    uint32_t duration = (uint32_t)(enc->mp4_frame_duration_accum / enc->mp4_frame_duration_den);
-    enc->mp4_frame_duration_accum -=
-        (uint64_t)duration * (uint64_t)enc->mp4_frame_duration_den;
-    enc->mp4_frame_duration_last = duration;
-    return duration;
-}
 
-uint32_t dvz_video_encoder_next_duration(DvzVideoEncoder* enc)
-{
-    return dvz_video_encoder_next_duration_internal(enc);
+    if (enc->backend && enc->backend->destroy)
+    {
+        enc->backend->destroy(enc);
+        enc->backend_data = NULL;
+    }
+
+    dvz_video_encoder_close_mp4(enc);
+    if (enc->mp4_path_owned)
+    {
+        free(enc->mp4_path_owned);
+        enc->mp4_path_owned = NULL;
+    }
+    free(enc->mux_samples);
+    enc->mux_samples = NULL;
+    enc->mux_sample_capacity = 0;
+    enc->mux_sample_count = 0;
+
+    if (enc->own_bitstream_fp && enc->fp)
+    {
+        fclose(enc->fp);
+    }
+    enc->own_bitstream_fp = false;
+    enc->fp = NULL;
+    enc->image = VK_NULL_HANDLE;
+    enc->memory = VK_NULL_HANDLE;
+    enc->memory_size = 0;
+    enc->memory_fd = -1;
+    enc->wait_semaphore_fd = -1;
+    enc->started = false;
+    enc->frame_idx = 0;
 }
 
 
@@ -85,7 +102,7 @@ uint32_t dvz_video_encoder_next_duration(DvzVideoEncoder* enc)
 /*  Front-end API                                                                                */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
+DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
 {
     DvzVideoEncoderConfig cfg = {
         .width = WIDTH,
@@ -101,6 +118,8 @@ DVZ_EXPORT DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
     };
     return cfg;
 }
+
+
 
 DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg)
 {
@@ -123,14 +142,11 @@ DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncod
     return enc;
 }
 
+
+
 int dvz_video_encoder_start(
-    DvzVideoEncoder* enc,
-    VkImage image,
-    VkDeviceMemory memory,
-    VkDeviceSize memory_size,
-    int memory_fd,
-    int wait_semaphore_fd,
-    FILE* bitstream_out)
+    DvzVideoEncoder* enc, VkImage image, VkDeviceMemory memory, VkDeviceSize memory_size,
+    int memory_fd, int wait_semaphore_fd, FILE* bitstream_out)
 {
     ANN(enc);
     if (enc->started)
@@ -198,9 +214,11 @@ int dvz_video_encoder_start(
     return 0;
 
 fail:
-    dvz_video_encoder_release(enc);
+    video_encoder_release(enc);
     return rc;
 }
+
+
 
 int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
 {
@@ -216,6 +234,8 @@ int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
     }
     return rc;
 }
+
+
 
 int dvz_video_encoder_stop(DvzVideoEncoder* enc)
 {
@@ -234,9 +254,11 @@ int dvz_video_encoder_stop(DvzVideoEncoder* enc)
         dvz_video_encoder_mux_post(enc);
         fseeko(enc->fp, 0, SEEK_END);
     }
-    dvz_video_encoder_release(enc);
+    video_encoder_release(enc);
     return 0;
 }
+
+
 
 void dvz_video_encoder_destroy(DvzVideoEncoder* enc)
 {
@@ -260,12 +282,8 @@ void dvz_video_encoder_destroy(DvzVideoEncoder* enc)
 /*************************************************************************************************/
 
 void dvz_video_encoder_on_sample(
-    DvzVideoEncoder* enc,
-    const uint8_t* data,
-    uint32_t size,
-    uint64_t file_offset,
-    uint32_t duration,
-    bool keyframe)
+    DvzVideoEncoder* enc, const uint8_t* data, uint32_t size, uint64_t file_offset,
+    uint32_t duration, bool keyframe)
 {
     (void)keyframe;
     if (!enc || size == 0)
@@ -279,41 +297,17 @@ void dvz_video_encoder_on_sample(
     }
 }
 
-static void dvz_video_encoder_release(DvzVideoEncoder* enc)
+
+
+uint32_t dvz_video_encoder_next_duration(DvzVideoEncoder* enc)
 {
-    if (!enc)
+    if (!enc || enc->mp4_frame_duration_den == 0)
     {
-        return;
+        return 0;
     }
-
-    if (enc->backend && enc->backend->destroy)
-    {
-        enc->backend->destroy(enc);
-        enc->backend_data = NULL;
-    }
-
-    dvz_video_encoder_close_mp4(enc);
-    if (enc->mp4_path_owned)
-    {
-        free(enc->mp4_path_owned);
-        enc->mp4_path_owned = NULL;
-    }
-    free(enc->mux_samples);
-    enc->mux_samples = NULL;
-    enc->mux_sample_capacity = 0;
-    enc->mux_sample_count = 0;
-
-    if (enc->own_bitstream_fp && enc->fp)
-    {
-        fclose(enc->fp);
-    }
-    enc->own_bitstream_fp = false;
-    enc->fp = NULL;
-    enc->image = VK_NULL_HANDLE;
-    enc->memory = VK_NULL_HANDLE;
-    enc->memory_size = 0;
-    enc->memory_fd = -1;
-    enc->wait_semaphore_fd = -1;
-    enc->started = false;
-    enc->frame_idx = 0;
+    enc->mp4_frame_duration_accum += enc->mp4_frame_duration_num;
+    uint32_t duration = (uint32_t)(enc->mp4_frame_duration_accum / enc->mp4_frame_duration_den);
+    enc->mp4_frame_duration_accum -= (uint64_t)duration * (uint64_t)enc->mp4_frame_duration_den;
+    enc->mp4_frame_duration_last = duration;
+    return duration;
 }

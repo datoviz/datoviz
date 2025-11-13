@@ -247,11 +247,15 @@ typedef struct
 
 static inline uint32_t align_up(uint32_t v, uint32_t a) { return (v + a - 1) & ~(a - 1); }
 
+
+
 static DvzVideoBackendNvenc* nvenc_state(DvzVideoEncoder* enc)
 {
     ANN(enc);
     return (DvzVideoBackendNvenc*)enc->backend_data;
 }
+
+
 
 static void nvenc_state_free(DvzVideoBackendNvenc* state)
 {
@@ -335,6 +339,8 @@ static void nvenc_state_free(DvzVideoBackendNvenc* state)
     memset(state, 0, sizeof(*state));
 }
 
+
+
 static void
 cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, size_t alloc_size)
 {
@@ -369,6 +375,8 @@ cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, 
     CU_CHECK(cuModuleGetFunction(&cu->cuFun, cu->cuMod, "rgba2nv12"));
 }
 
+
+
 static void alloc_nv12(Nv12Buf* nb, uint32_t w, uint32_t h, uint32_t pitch_align)
 {
     uint32_t pitch = align_up(w, pitch_align);
@@ -380,6 +388,8 @@ static void alloc_nv12(Nv12Buf* nb, uint32_t w, uint32_t h, uint32_t pitch_align
     nb->size = total;
 }
 
+
+
 static void alloc_rgba(RgbaBuf* rb, uint32_t w, uint32_t h, uint32_t pitch_align)
 {
     uint32_t pitch = align_up(w * 4, pitch_align);
@@ -388,6 +398,8 @@ static void alloc_rgba(RgbaBuf* rb, uint32_t w, uint32_t h, uint32_t pitch_align
     rb->pitch = pitch;
     rb->size = total;
 }
+
+
 
 static void copy_array_to_linear_rgba(CudaCtx* cu, RgbaBuf* rb, uint32_t w, uint32_t h)
 {
@@ -402,6 +414,8 @@ static void copy_array_to_linear_rgba(CudaCtx* cu, RgbaBuf* rb, uint32_t w, uint
     c2d.Height = h;
     CU_CHECK(cuMemcpy2DAsync(&c2d, cu->stream));
 }
+
+
 
 static void launch_rgba_to_nv12(CudaCtx* cu, RgbaBuf* rb, Nv12Buf* nb, uint32_t w, uint32_t h)
 {
@@ -422,7 +436,11 @@ static void launch_rgba_to_nv12(CudaCtx* cu, RgbaBuf* rb, Nv12Buf* nb, uint32_t 
     CU_CHECK(cuStreamSynchronize(cu->stream));
 }
 
+
+
 static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
+
+
 
 static void nvenc_load_api(void)
 {
@@ -430,6 +448,8 @@ static void nvenc_load_api(void)
     g_nvenc.version = (uint32_t)NV_ENCODE_API_FUNCTION_LIST_VER;
     NVENC_API_CALL(NvEncodeAPICreateInstance(&g_nvenc));
 }
+
+
 
 static bool nvenc_guid_equal(const GUID* a, const GUID* b)
 {
@@ -439,6 +459,8 @@ static bool nvenc_guid_equal(const GUID* a, const GUID* b)
         a->Data1 == b->Data1 && a->Data2 == b->Data2 && a->Data3 == b->Data3 &&
         memcmp(a->Data4, b->Data4, sizeof(a->Data4)) == 0);
 }
+
+
 
 static bool nvenc_supports_codec(void* hEncoder, const GUID* codec)
 {
@@ -475,6 +497,8 @@ static bool nvenc_supports_codec(void* hEncoder, const GUID* codec)
     return ok;
 }
 
+
+
 typedef struct
 {
     const GUID* codec_guid;
@@ -484,6 +508,8 @@ typedef struct
     uint32_t qp_inter_p;
     uint32_t qp_inter_b;
 } DvzNvencProfile;
+
+
 
 static DvzNvencProfile dvz_nvenc_profile(DvzVideoCodec codec)
 {
@@ -508,6 +534,8 @@ static DvzNvencProfile dvz_nvenc_profile(DvzVideoCodec codec)
     return prof;
 }
 
+
+
 static void nvenc_open_session_cuda(NvEncCtx* nctx, CUcontext cuCtx)
 {
     ANN(nctx);
@@ -519,6 +547,8 @@ static void nvenc_open_session_cuda(NvEncCtx* nctx, CUcontext cuCtx)
     NVENC_API_CALL(g_nvenc.nvEncOpenEncodeSessionEx(&open, &nctx->hEncoder));
     nctx->api = g_nvenc;
 }
+
+
 
 static void nvenc_init_codec(
     NvEncCtx* nctx, DvzVideoCodec codec_sel, uint32_t width, uint32_t height, uint32_t fps)
@@ -578,6 +608,8 @@ static void nvenc_init_codec(
     NVENC_API_CALL(g_nvenc.nvEncInitializeEncoder(nctx->hEncoder, &nctx->init));
 }
 
+
+
 static void nvenc_create_bitstreams(NvEncCtx* nctx, NvEncIO* io, int count)
 {
     for (int i = 0; i < count; i++)
@@ -588,6 +620,8 @@ static void nvenc_create_bitstreams(NvEncCtx* nctx, NvEncIO* io, int count)
         io->bitstreams[i] = c.bitstreamBuffer;
     }
 }
+
+
 
 static void nvenc_register_input(
     NvEncCtx* nctx, NvEncIO* io, CUdeviceptr nv12_base, uint32_t pitch, uint32_t w, uint32_t h)
@@ -605,6 +639,8 @@ static void nvenc_register_input(
     io->regPtr = rr.registeredResource;
 }
 
+
+
 static NV_ENC_INPUT_PTR nvenc_map_input(NvEncCtx* nctx, NvEncIO* io)
 {
     NV_ENC_MAP_INPUT_RESOURCE m = {0};
@@ -614,6 +650,8 @@ static NV_ENC_INPUT_PTR nvenc_map_input(NvEncCtx* nctx, NvEncIO* io)
     io->mappedInput = m.mappedResource;
     return io->mappedInput;
 }
+
+
 
 static void nvenc_write_spspps(NvEncCtx* nctx, DvzVideoEncoder* enc, DvzVideoBackendNvenc* state)
 {
@@ -638,6 +676,8 @@ static void nvenc_write_spspps(NvEncCtx* nctx, DvzVideoEncoder* enc, DvzVideoBac
         dvz_video_encoder_on_sample(enc, header, header_size, NVENC_INVALID_OFFSET, 0, true);
     }
 }
+
+
 
 static void nvenc_encode_frame(
     DvzVideoEncoder* enc, DvzVideoBackendNvenc* state, uint32_t frame_idx, uint32_t duration)
@@ -685,6 +725,8 @@ static void nvenc_encode_frame(
     NVENC_API_CALL(g_nvenc.nvEncUnlockBitstream(nctx->hEncoder, state->bitstream));
 }
 
+
+
 static void nvenc_flush(NvEncCtx* nctx)
 {
     ANN(nctx);
@@ -706,6 +748,8 @@ static bool nvenc_probe(const DvzVideoEncoderConfig* cfg)
     return true;
 }
 
+
+
 static int nvenc_init(DvzVideoEncoder* enc)
 {
     ANN(enc);
@@ -719,6 +763,8 @@ static int nvenc_init(DvzVideoEncoder* enc)
     nvenc_load_api();
     return 0;
 }
+
+
 
 static int nvenc_start(DvzVideoEncoder* enc)
 {
@@ -761,6 +807,8 @@ static int nvenc_start(DvzVideoEncoder* enc)
     return 0;
 }
 
+
+
 static int nvenc_submit(DvzVideoEncoder* enc, uint64_t wait_value)
 {
     ANN(enc);
@@ -782,6 +830,8 @@ static int nvenc_submit(DvzVideoEncoder* enc, uint64_t wait_value)
     return 0;
 }
 
+
+
 static int nvenc_stop(DvzVideoEncoder* enc)
 {
     ANN(enc);
@@ -794,6 +844,8 @@ static int nvenc_stop(DvzVideoEncoder* enc)
     return 0;
 }
 
+
+
 static void nvenc_destroy(DvzVideoEncoder* enc)
 {
     if (!enc || !enc->backend_data)
@@ -805,6 +857,8 @@ static void nvenc_destroy(DvzVideoEncoder* enc)
     free(state);
     enc->backend_data = NULL;
 }
+
+
 
 const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC = {
     .name = "nvenc",

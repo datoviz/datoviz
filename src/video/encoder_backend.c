@@ -36,7 +36,7 @@ static const DvzVideoBackend* const BACKENDS[] = {
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static const DvzVideoBackend* dvz_video_backend_find(const char* name)
+static const DvzVideoBackend* video_backend_find(const char* name)
 {
     if (!name || name[0] == '\0')
     {
@@ -53,6 +53,8 @@ static const DvzVideoBackend* dvz_video_backend_find(const char* name)
     return NULL;
 }
 
+
+
 const DvzVideoBackend* dvz_video_backend_pick(const DvzVideoEncoderConfig* cfg)
 {
     const char* sel = (cfg && cfg->backend) ? cfg->backend : "auto";
@@ -60,7 +62,7 @@ const DvzVideoBackend* dvz_video_backend_pick(const DvzVideoEncoderConfig* cfg)
 
     if (!auto_pick)
     {
-        const DvzVideoBackend* backend = dvz_video_backend_find(sel);
+        const DvzVideoBackend* backend = video_backend_find(sel);
         if (backend)
         {
             if (!backend->probe || backend->probe(cfg))

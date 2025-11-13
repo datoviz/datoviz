@@ -38,7 +38,7 @@
 
 
 /*************************************************************************************************/
-/*  Forward declarations                                                                          */
+/*  Forward declarations                                                                         */
 /*************************************************************************************************/
 
 static bool kvazaar_probe(const DvzVideoEncoderConfig* cfg);
@@ -94,15 +94,15 @@ static DvzVideoBackendKvazaar* kvazaar_state(DvzVideoEncoder* enc)
     return (DvzVideoBackendKvazaar*)enc->backend_data;
 }
 
-static uint32_t kvazaar_min_u32(uint32_t a, uint32_t b)
-{
-    return (a < b) ? a : b;
-}
 
-static uint32_t kvazaar_max_u32(uint32_t a, uint32_t b)
-{
-    return (a > b) ? a : b;
-}
+
+static uint32_t kvazaar_min_u32(uint32_t a, uint32_t b) { return (a < b) ? a : b; }
+
+
+
+static uint32_t kvazaar_max_u32(uint32_t a, uint32_t b) { return (a > b) ? a : b; }
+
+
 
 static uint32_t kvazaar_cpu_core_count(void)
 {
@@ -128,6 +128,8 @@ static uint32_t kvazaar_cpu_core_count(void)
 #endif
 }
 
+
+
 static inline uint8_t kvazaar_clamp(int value)
 {
     if (value < 0)
@@ -140,6 +142,8 @@ static inline uint8_t kvazaar_clamp(int value)
     }
     return (uint8_t)value;
 }
+
+
 
 static bool kvazaar_is_keyframe(const kvz_frame_info* info, bool force_idr)
 {
@@ -159,6 +163,8 @@ static bool kvazaar_is_keyframe(const kvz_frame_info* info, bool force_idr)
     return (info->slice_type == KVZ_SLICE_I) || force_idr;
 }
 
+
+
 static int kvazaar_map_image(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
 {
     ANN(enc);
@@ -168,10 +174,12 @@ static int kvazaar_map_image(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state
         log_error("kvazaar backend requires a valid Vulkan device and memory handle");
         return -1;
     }
-    VkResult res = vkMapMemory(state->device, enc->memory, 0, enc->memory_size, 0, &state->mapped_ptr);
+    VkResult res =
+        vkMapMemory(state->device, enc->memory, 0, enc->memory_size, 0, &state->mapped_ptr);
     if (res != VK_SUCCESS || !state->mapped_ptr)
     {
-        log_error("kvazaar backend requires host-visible memory (vkMapMemory failed with %d)", res);
+        log_error(
+            "kvazaar backend requires host-visible memory (vkMapMemory failed with %d)", res);
         return -1;
     }
     state->mapped = true;
@@ -181,7 +189,8 @@ static int kvazaar_map_image(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state
     state->mapped_range.offset = 0;
     state->mapped_range.size = enc->memory_size;
 
-    VkImageSubresource sub = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .arrayLayer = 0};
+    VkImageSubresource sub = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, .mipLevel = 0, .arrayLayer = 0};
     vkGetImageSubresourceLayout(state->device, enc->image, &sub, &state->layout);
     if (state->layout.rowPitch == 0)
     {
@@ -190,6 +199,8 @@ static int kvazaar_map_image(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state
     }
     return 0;
 }
+
+
 
 static void kvazaar_unmap_image(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
 {
@@ -202,6 +213,8 @@ static void kvazaar_unmap_image(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* st
     state->mapped_ptr = NULL;
 }
 
+
+
 static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
 {
     ANN(state);
@@ -211,7 +224,8 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
     }
     if (!vkImportSemaphoreFdKHR || !vkWaitSemaphores)
     {
-        log_warn("timeline semaphore import unavailable; kvazaar backend will fall back to vkDeviceWaitIdle");
+        log_warn("timeline semaphore import unavailable; kvazaar backend will fall back to "
+                 "vkDeviceWaitIdle");
         return 0;
     }
     VkSemaphoreTypeCreateInfo timeline_info = {
@@ -220,7 +234,8 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
         .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
         .initialValue = 0,
     };
-    VkSemaphoreCreateInfo sci = {.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, .pNext = &timeline_info};
+    VkSemaphoreCreateInfo sci = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, .pNext = &timeline_info};
     VkResult res = vkCreateSemaphore(state->device, &sci, NULL, &state->wait_semaphore);
     if (res != VK_SUCCESS)
     {
@@ -239,7 +254,9 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
     res = vkImportSemaphoreFdKHR(state->device, &import_info);
     if (res != VK_SUCCESS)
     {
-        log_error("vkImportSemaphoreFdKHR failed (%d); kvazaar backend cannot wait on GPU timeline", res);
+        log_error(
+            "vkImportSemaphoreFdKHR failed (%d); kvazaar backend cannot wait on GPU timeline",
+            res);
         vkDestroySemaphore(state->device, state->wait_semaphore, NULL);
         state->wait_semaphore = VK_NULL_HANDLE;
         return -1;
@@ -247,6 +264,8 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
     state->wait_semaphore_ready = true;
     return 0;
 }
+
+
 
 static int kvazaar_wait_for_signal(DvzVideoBackendKvazaar* state, uint64_t wait_value)
 {
@@ -283,6 +302,8 @@ static int kvazaar_wait_for_signal(DvzVideoBackendKvazaar* state, uint64_t wait_
     return 0;
 }
 
+
+
 static kvz_picture* kvazaar_alloc_picture(DvzVideoBackendKvazaar* state)
 {
     ANN(state);
@@ -292,18 +313,17 @@ static kvz_picture* kvazaar_alloc_picture(DvzVideoBackendKvazaar* state)
     }
     if (state->api->picture_alloc_csp)
     {
-        return state->api->picture_alloc_csp(KVZ_CSP_420, (int32_t)state->width, (int32_t)state->height);
+        return state->api->picture_alloc_csp(
+            KVZ_CSP_420, (int32_t)state->width, (int32_t)state->height);
     }
     return state->api->picture_alloc((int32_t)state->width, (int32_t)state->height);
 }
 
+
+
 static bool kvazaar_convert_rgba_to_yuv_rows(
-    DvzVideoBackendKvazaar* state,
-    kvz_picture* picture,
-    const uint8_t* base,
-    size_t src_stride,
-    uint32_t row_start,
-    uint32_t row_end)
+    DvzVideoBackendKvazaar* state, kvz_picture* picture, const uint8_t* base, size_t src_stride,
+    uint32_t row_start, uint32_t row_end)
 {
     ANN(state);
     ANN(picture);
@@ -404,17 +424,21 @@ static bool kvazaar_convert_rgba_to_yuv_rows(
     return true;
 }
 
+
+
 static void* kvazaar_convert_thread(void* user_data)
 {
     DvzKvazaarConvertJob* job = (DvzKvazaarConvertJob*)user_data;
     ANN(job);
-    job->result = kvazaar_convert_rgba_to_yuv_rows(
-                      job->state, job->picture, job->base, job->src_stride, job->row_start,
-                      job->row_end)
-                      ? 0
-                      : -1;
+    job->result =
+        kvazaar_convert_rgba_to_yuv_rows(
+            job->state, job->picture, job->base, job->src_stride, job->row_start, job->row_end)
+            ? 0
+            : -1;
     return NULL;
 }
+
+
 
 static bool kvazaar_convert_rgba_to_yuv(
     DvzVideoBackendKvazaar* state, kvz_picture* picture, const uint8_t* base, size_t src_stride)
@@ -484,8 +508,11 @@ static bool kvazaar_convert_rgba_to_yuv(
     return ok;
 }
 
+
+
 static int kvazaar_emit_sample(
-    DvzVideoEncoder* enc, kvz_data_chunk* chunks, uint32_t total_size, uint32_t duration, bool keyframe)
+    DvzVideoEncoder* enc, kvz_data_chunk* chunks, uint32_t total_size, uint32_t duration,
+    bool keyframe)
 {
     ANN(enc);
     if (!chunks || total_size == 0)
@@ -529,6 +556,8 @@ static int kvazaar_emit_sample(
     return 0;
 }
 
+
+
 static void kvazaar_drain(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
 {
     ANN(enc);
@@ -544,7 +573,8 @@ static void kvazaar_drain(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
         kvz_picture* pic_src = NULL;
         kvz_frame_info info = {0};
         uint32_t len_out = 0;
-        if (!state->api->encoder_encode(state->encoder, NULL, &chunks, &len_out, &pic_rec, &pic_src, &info))
+        if (!state->api->encoder_encode(
+                state->encoder, NULL, &chunks, &len_out, &pic_rec, &pic_src, &info))
         {
             log_error("kvazaar flush failed");
             state->api->picture_free(pic_rec);
@@ -567,6 +597,8 @@ static void kvazaar_drain(DvzVideoEncoder* enc, DvzVideoBackendKvazaar* state)
         }
     }
 }
+
+
 
 /*************************************************************************************************/
 /*  Public backend                                                                               */
@@ -601,11 +633,14 @@ static bool kvazaar_probe(const DvzVideoEncoderConfig* cfg)
     }
     if ((cfg->width % 2) != 0 || (cfg->height % 2) != 0)
     {
-        log_warn("kvazaar backend requires even width/height (got %ux%u)", cfg->width, cfg->height);
+        log_warn(
+            "kvazaar backend requires even width/height (got %ux%u)", cfg->width, cfg->height);
         return false;
     }
     return true;
 }
+
+
 
 static int kvazaar_init(DvzVideoEncoder* enc)
 {
@@ -642,6 +677,8 @@ static int kvazaar_init(DvzVideoEncoder* enc)
     enc->backend_data = state;
     return 0;
 }
+
+
 
 static int kvazaar_start(DvzVideoEncoder* enc)
 {
@@ -717,8 +754,7 @@ static int kvazaar_start(DvzVideoEncoder* enc)
         cfg->threads = (int32_t)(cpu_threads > 0 ? cpu_threads : 1);
     }
     log_debug(
-        "kvazaar backend using %d encoder threads and %u conversion workers",
-        cfg->threads,
+        "kvazaar backend using %d encoder threads and %u conversion workers", cfg->threads,
         state->convert_threads);
     cfg->aud_enable = 0;
     cfg->add_encoder_info = 0;
@@ -754,6 +790,8 @@ static int kvazaar_start(DvzVideoEncoder* enc)
     return 0;
 }
 
+
+
 static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
 {
     ANN(enc);
@@ -776,9 +814,8 @@ static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
         log_error("failed to allocate kvazaar picture");
         return -1;
     }
-    const uint8_t* base = state->mapped
-                              ? ((const uint8_t*)state->mapped_ptr + (size_t)state->layout.offset)
-                              : NULL;
+    const uint8_t* base =
+        state->mapped ? ((const uint8_t*)state->mapped_ptr + (size_t)state->layout.offset) : NULL;
     if (!kvazaar_convert_rgba_to_yuv(state, picture, base, (size_t)state->layout.rowPitch))
     {
         state->api->picture_free(picture);
@@ -791,7 +828,8 @@ static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
     kvz_picture* pic_src = NULL;
     kvz_frame_info info = {0};
     uint32_t len_out = 0;
-    if (!state->api->encoder_encode(state->encoder, picture, &chunks, &len_out, &pic_rec, &pic_src, &info))
+    if (!state->api->encoder_encode(
+            state->encoder, picture, &chunks, &len_out, &pic_rec, &pic_src, &info))
     {
         log_error("kvazaar encoder_encode failed");
         state->api->picture_free(picture);
@@ -803,7 +841,8 @@ static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
     uint32_t duration = dvz_video_encoder_next_duration(enc);
     if (chunks && len_out > 0)
     {
-        kvazaar_emit_sample(enc, chunks, len_out, duration, kvazaar_is_keyframe(&info, enc->frame_idx == 0));
+        kvazaar_emit_sample(
+            enc, chunks, len_out, duration, kvazaar_is_keyframe(&info, enc->frame_idx == 0));
     }
     state->api->picture_free(picture);
     state->api->picture_free(pic_rec);
@@ -811,6 +850,8 @@ static int kvazaar_submit(DvzVideoEncoder* enc, uint64_t timeline_value)
     state->api->chunk_free(chunks);
     return 0;
 }
+
+
 
 static int kvazaar_stop(DvzVideoEncoder* enc)
 {
@@ -826,6 +867,8 @@ static int kvazaar_stop(DvzVideoEncoder* enc)
     kvazaar_drain(enc, state);
     return 0;
 }
+
+
 
 static void kvazaar_destroy(DvzVideoEncoder* enc)
 {

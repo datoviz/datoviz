@@ -16,26 +16,32 @@
 
 #define MINIMP4_IMPLEMENTATION
 #if defined(__clang__)
-#    pragma clang diagnostic push
-#    pragma clang diagnostic ignored "-Weverything"
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #elif defined(__GNUC__)
-#    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wall"
-#    pragma GCC diagnostic ignored "-Wextra"
-#    pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wextra"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 #include "../../external/minimp4.h"
 #if defined(__clang__)
-#    pragma clang diagnostic pop
+#pragma clang diagnostic pop
 #elif defined(__GNUC__)
-#    pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
 #endif
 
 #include "_alloc.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 
-static int dvz_mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* token)
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static int mp4_write_cb(int64_t offset, const void* buffer, size_t size, void* token)
 {
     FILE* fp = (FILE*)token;
     if (!fp)
@@ -53,6 +59,12 @@ static int dvz_mp4_write_cb(int64_t offset, const void* buffer, size_t size, voi
     return (written == size) ? MP4E_STATUS_OK : MP4E_STATUS_FILE_WRITE_ERROR;
 }
 
+
+
+/*************************************************************************************************/
+/*  Mux functions                                                                                */
+/*************************************************************************************************/
+
 bool dvz_video_encoder_open_mp4_stream(DvzVideoEncoder* enc)
 {
     ANN(enc);
@@ -64,7 +76,7 @@ bool dvz_video_encoder_open_mp4_stream(DvzVideoEncoder* enc)
         log_error("failed to open mp4 output '%s': %s", mp4_path, strerror(errno));
         return false;
     }
-    enc->mp4_mux = MP4E_open(1, 0, enc->mp4_fp, dvz_mp4_write_cb);
+    enc->mp4_mux = MP4E_open(1, 0, enc->mp4_fp, mp4_write_cb);
     if (!enc->mp4_mux)
     {
         log_error("failed to initialize minimp4 muxer");
@@ -90,6 +102,8 @@ bool dvz_video_encoder_open_mp4_stream(DvzVideoEncoder* enc)
     return true;
 }
 
+
+
 void dvz_video_encoder_close_mp4(DvzVideoEncoder* enc)
 {
     if (!enc)
@@ -112,6 +126,8 @@ void dvz_video_encoder_close_mp4(DvzVideoEncoder* enc)
         enc->mp4_fp = NULL;
     }
 }
+
+
 
 void dvz_video_encoder_mux_sample(
     DvzVideoEncoder* enc, const uint8_t* data, uint32_t size, uint32_t duration)
@@ -140,6 +156,8 @@ void dvz_video_encoder_mux_sample(
     }
 }
 
+
+
 void dvz_video_encoder_record_sample(
     DvzVideoEncoder* enc, uint64_t offset, uint32_t size, uint32_t duration)
 {
@@ -164,6 +182,8 @@ void dvz_video_encoder_record_sample(
         (DvzMuxSample){.offset = offset, .size = size, .duration = duration};
 }
 
+
+
 int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
 {
     ANN(enc);
@@ -179,7 +199,7 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
         return -1;
     }
 
-    MP4E_mux_t* mux = MP4E_open(1, 0, mp4_fp, dvz_mp4_write_cb);
+    MP4E_mux_t* mux = MP4E_open(1, 0, mp4_fp, mp4_write_cb);
     if (!mux)
     {
         log_error("failed to initialize minimp4 muxer");
@@ -231,7 +251,8 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
         if (read != sample.size)
         {
             log_error(
-                "failed to read raw stream chunk for mp4 mux (sample %zu, size=%u)", i, sample.size);
+                "failed to read raw stream chunk for mp4 mux (sample %zu, size=%u)", i,
+                sample.size);
             free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
