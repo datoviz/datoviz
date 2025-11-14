@@ -62,6 +62,27 @@ option(DVZ_ENABLE_KVAZAAR "Enable Kvazaar software HEVC backend" ON)
 option(DVZ_WITH_GLFW "Enable the GLFW window backend" OFF)
 set(DVZ_HAS_KVZ 0)
 
+set(DVZ_GLFW_DIR "${PROJECT_SOURCE_DIR}/external/glfw")
+if(DVZ_WITH_GLFW)
+    if(EXISTS "${DVZ_GLFW_DIR}/CMakeLists.txt")
+        set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
+        add_subdirectory(
+            "${DVZ_GLFW_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}/external/glfw"
+            EXCLUDE_FROM_ALL)
+
+        if(TARGET glfw)
+            add_library(glfw::glfw ALIAS glfw)
+        endif()
+    else()
+        message(WARNING "GLFW submodule missing — disable DVZ_WITH_GLFW or run 'git submodule update --init external/glfw'")
+    endif()
+endif()
+
 if(DVZ_ENABLE_CUDA)
     find_package(CUDAToolkit QUIET)
 
