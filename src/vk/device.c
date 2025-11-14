@@ -315,8 +315,7 @@ int dvz_device_create(DvzDevice* device)
     ASSERT(qfn > 0);
 
     // Device creation info structure.
-    VkDeviceCreateInfo device_info = {0};
-    device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    device->info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
     // Queue family info.
     VkDeviceQueueCreateInfo queue_families_info[DVZ_MAX_QUEUE_FAMILIES] = {0};
@@ -328,19 +327,20 @@ int dvz_device_create(DvzDevice* device)
         return 1;
     }
     ASSERT(qfn > 0);
-    device_info.queueCreateInfoCount = qfn;
-    device_info.pQueueCreateInfos = queue_families_info;
+    device->info.queueCreateInfoCount = qfn;
+    device->info.pQueueCreateInfos = queue_families_info;
 
     // Extensions.
-    device_info.enabledExtensionCount = device->req_extension_count;
-    device_info.ppEnabledExtensionNames = (const char* const*)device->req_extensions;
+    device->info.enabledExtensionCount = device->req_extension_count;
+    device->info.ppEnabledExtensionNames = (const char* const*)device->req_extensions;
 
     // Features using v2 API with features structs chain.
-    device_info.pNext = &device->features;
+    device->info.pNext = &device->features;
 
     // Create the device.
     log_trace("creating the Vulkan device");
-    VK_RETURN_RESULT(vkCreateDevice(device->gpu->pdevice, &device_info, NULL, &device->vk_device));
+    VK_RETURN_RESULT(
+        vkCreateDevice(device->gpu->pdevice, &device->info, NULL, &device->vk_device));
     if (out)
         return out;
     volkLoadDevice(device->vk_device);
@@ -461,9 +461,11 @@ void dvz_device_request_canvas_extensions(DvzDevice* device)
     ANN(device);
 
     dvz_device_request_extension(device, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    dvz_device_request_extension(device, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
-    dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
-    dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+
+    // NOTE: already core in Vulkan 1.3, so not needed.
+    // dvz_device_request_extension(device, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    // dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    // dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
 
 #if OS_LINUX
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);

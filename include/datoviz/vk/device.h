@@ -45,6 +45,7 @@ struct DvzDevice
     DvzGpu* gpu;
 
     DvzQueues queues;
+    VkDeviceCreateInfo info;
 
     uint32_t req_extension_count;
     char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
