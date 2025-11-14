@@ -1803,6 +1803,14 @@ static void flush_bits(bit_reader_t *bs, int n)
     bs->cache_free_bits += n;
     if (bs->cache_free_bits >= 0)
     {
+
+        // NOTE: addition to silence static analyzer warning
+        assert(bs->buf != NULL);
+        if (!bs->buf)
+        {
+            return;
+        }
+
         bs->cache |= ((uint32_t)LOAD_SHORT(*bs->buf)) << bs->cache_free_bits;
         bs->buf++;
         bs->cache_free_bits -= 16;
