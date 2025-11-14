@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Canvas swapchain sink (stub)                                                                 */
+/*  Canvas swapchain sink                                                                        */
 /*************************************************************************************************/
 
 
@@ -23,21 +23,35 @@
 #include <unistd.h>
 #endif
 
+#include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "../vk/macros.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
 
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MAX_SURFACE_FORMATS 32
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct DvzCanvasSwapchainSlot DvzCanvasSwapchainSlot;
 typedef struct DvzCanvasSwapchainState DvzCanvasSwapchainState;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
 
 struct DvzCanvasSwapchainSlot
 {
@@ -119,7 +133,8 @@ static VkSurfaceKHR canvas_surface_handle(DvzCanvas* canvas)
 
 
 
-static VkExtent2D canvas_surface_extent(const DvzCanvas* canvas, const VkSurfaceCapabilitiesKHR* caps)
+static VkExtent2D
+canvas_surface_extent(const DvzCanvas* canvas, const VkSurfaceCapabilitiesKHR* caps)
 {
     ANN(canvas);
     VkExtent2D extent = canvas->surface ? canvas->surface->extent : (VkExtent2D){0, 0};
@@ -228,8 +243,7 @@ static void canvas_cmd_transition(
 
 
 
-static void canvas_cmd_copy_full(
-    VkCommandBuffer cmd, VkImage src, VkImage dst, VkExtent2D extent)
+static void canvas_cmd_copy_full(VkCommandBuffer cmd, VkImage src, VkImage dst, VkExtent2D extent)
 {
     if (cmd == VK_NULL_HANDLE || src == VK_NULL_HANDLE || dst == VK_NULL_HANDLE)
     {
@@ -258,14 +272,13 @@ static void canvas_cmd_copy_full(
             },
     };
     vkCmdCopyImage(
-        cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-        &region);
+        cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1, &region);
 }
 
 
 
-static int canvas_slot_begin_recording(
-    DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
+static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
 {
     ANN(swapchain);
     ANN(slot);
@@ -281,8 +294,9 @@ static int canvas_slot_begin_recording(
         .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
     };
     VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &begin_info));
-    canvas_cmd_transition(cmd, slot->offscreen_image, slot->offscreen_layout,
-                          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    canvas_cmd_transition(
+        cmd, slot->offscreen_image, slot->offscreen_layout,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     slot->commands_recording = true;
     return 0;
@@ -290,7 +304,8 @@ static int canvas_slot_begin_recording(
 
 
 
-static int canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
+static int
+canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
 {
     ANN(swapchain);
     ANN(slot);
@@ -305,18 +320,19 @@ static int canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvas
         return -1;
     }
     VkCommandBuffer cmd = slot->command_buffer;
-    canvas_cmd_transition(cmd, slot->offscreen_image, slot->offscreen_layout,
-                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    canvas_cmd_transition(
+        cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    canvas_cmd_transition(cmd, slot->swapchain_image, slot->swapchain_layout,
-                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    canvas_cmd_transition(
+        cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     canvas_cmd_copy_full(cmd, slot->offscreen_image, slot->swapchain_image, swapchain->extent);
-    canvas_cmd_transition(cmd, slot->offscreen_image, slot->offscreen_layout,
-                          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    canvas_cmd_transition(
+        cmd, slot->offscreen_image, slot->offscreen_layout,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    canvas_cmd_transition(cmd, slot->swapchain_image, slot->swapchain_layout,
-                          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    canvas_cmd_transition(
+        cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
     slot->commands_recording = false;
@@ -361,6 +377,19 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     {
         min_count = caps.maxImageCount;
     }
+
+
+    // Enumerate the formats supported by the surface.
+    uint32_t fcount = 0;
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, NULL));
+    if (fcount == 0)
+        return -1;
+    if (fcount > MAX_SURFACE_FORMATS)
+        fcount = MAX_SURFACE_FORMATS;
+
+    VkSurfaceFormatKHR formats[MAX_SURFACE_FORMATS] = {0};
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, formats));
+
 
     VkSwapchainCreateInfoKHR info = {0};
     info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -410,8 +439,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     {
         free(swapchain->swapchain_layouts);
     }
-    swapchain->swapchain_layouts =
-        (VkImageLayout*)calloc(count, sizeof(VkImageLayout));
+    swapchain->swapchain_layouts = (VkImageLayout*)calloc(count, sizeof(VkImageLayout));
     ANN(swapchain->swapchain_layouts);
     for (uint32_t i = 0; i < count; ++i)
     {
@@ -419,8 +447,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     }
 
     free(swapchain->slots);
-    swapchain->slots =
-        (DvzCanvasSwapchainSlot*)calloc(count, sizeof(DvzCanvasSwapchainSlot));
+    swapchain->slots = (DvzCanvasSwapchainSlot*)calloc(count, sizeof(DvzCanvasSwapchainSlot));
     ANN(swapchain->slots);
     swapchain->image_count = count;
     swapchain->active_slot = NULL;
@@ -478,14 +505,16 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         };
 
-        if (dvz_allocator_image(&canvas->allocator, &img_info, 0, &slot->offscreen_alloc,
-                                &slot->offscreen_image) != 0)
+        if (dvz_allocator_image(
+                &canvas->allocator, &img_info, 0, &slot->offscreen_alloc,
+                &slot->offscreen_image) != 0)
         {
             log_error("failed to allocate offscreen canvas image");
             continue;
         }
 
-        if (dvz_allocator_export(&canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) != 0)
+        if (dvz_allocator_export(&canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) !=
+            0)
         {
             log_error("failed to export canvas render target");
             slot->memory_fd = -1;
@@ -562,7 +591,8 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
         for (uint32_t i = 0; i < swapchain->image_count; ++i)
         {
             canvas_destroy_slot(
-                device, swapchain->command_pool, &swapchain->slots[i], &swapchain->canvas->allocator);
+                device, swapchain->command_pool, &swapchain->slots[i],
+                &swapchain->canvas->allocator);
         }
         free(swapchain->slots);
         swapchain->slots = NULL;
@@ -669,7 +699,8 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
         .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
         .queueFamilyIndex = canvas->swapchain->queue_family,
     };
-    VK_CHECK_RESULT(vkCreateCommandPool(device, &pool_info, NULL, &canvas->swapchain->command_pool));
+    VK_CHECK_RESULT(
+        vkCreateCommandPool(device, &pool_info, NULL, &canvas->swapchain->command_pool));
     return 0;
 }
 
@@ -753,10 +784,9 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     {
         return -1;
     }
-    if (canvas->surface &&
-        (canvas->surface->extent.width != state->extent.width ||
-         canvas->surface->extent.height != state->extent.height ||
-         canvas_surface_format(canvas) != state->format))
+    if (canvas->surface && (canvas->surface->extent.width != state->extent.width ||
+                            canvas->surface->extent.height != state->extent.height ||
+                            canvas_surface_format(canvas) != state->format))
     {
         state->dirty = true;
     }
@@ -864,8 +894,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     VkSemaphore wait_semaphores[] = {state->active_slot->image_available};
     VkPipelineStageFlags wait_stages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT};
-    VkSemaphore signal_semaphores[] = {canvas->timeline_semaphore,
-                                       state->active_slot->render_finished};
+    VkSemaphore signal_semaphores[] = {
+        canvas->timeline_semaphore, state->active_slot->render_finished};
     uint64_t signal_values[] = {wait_value};
     VkTimelineSemaphoreSubmitInfo timeline_info = {
         .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
