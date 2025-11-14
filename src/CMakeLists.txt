@@ -281,6 +281,7 @@ add_subdirectory(fileio)
 add_subdirectory(math)
 add_subdirectory(thread)
 add_subdirectory(input)
+add_subdirectory(window)
 add_subdirectory(stream)
 add_subdirectory(video)
 add_subdirectory(vk)
@@ -297,6 +298,7 @@ set(DVZ_COMPONENTS
     datoviz_math
     datoviz_thread
     datoviz_input
+    datoviz_window
     datoviz_stream
     datoviz_video
     datoviz_vk
@@ -312,6 +314,10 @@ target_link_libraries(datoviz
 
 if(DVZ_THREADING_TARGET)
     target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
+endif()
+
+if(DVZ_WINDOW_GLFW_ENABLED AND TARGET glfw)
+    target_link_libraries(datoviz PRIVATE glfw)
 endif()
 
 if(DVZ_WITH_MIMALLOC)

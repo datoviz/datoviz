@@ -59,6 +59,7 @@ set(DVZ_HAS_CUDA 0)
 set(DVZ_NVENC_LIB "")
 set(DVZ_NVENC_LIB_DIR "")
 option(DVZ_ENABLE_KVAZAAR "Enable Kvazaar software HEVC backend" ON)
+option(DVZ_WITH_GLFW "Enable the GLFW window backend" OFF)
 set(DVZ_HAS_KVZ 0)
 
 if(DVZ_ENABLE_CUDA)

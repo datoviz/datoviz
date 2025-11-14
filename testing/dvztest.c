@@ -23,6 +23,7 @@
 #include "../src/math/tests/test_math.h"
 #include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
+#include "../src/window/tests/test_window.h"
 #if HAS_CUDA
 #include "../src/video/tests/test_video.h"
 #endif
@@ -47,6 +48,7 @@ int main(int argc, char** argv)
     test_stream(&suite);
     test_thread(&suite);
     test_input(&suite);
+    test_window(&suite);
 #if HAS_CUDA
     test_video(&suite);
 #endif

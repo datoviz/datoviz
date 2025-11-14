@@ -99,6 +99,7 @@ target_link_libraries(dvztest
     datoviz_math
     datoviz_thread
     datoviz_input
+    datoviz_window
     datoviz_stream
     datoviz_video
     datoviz_vk
@@ -199,6 +200,8 @@ endif()
 if(_dvz_compile_definitions)
     target_compile_definitions(dvztest PRIVATE ${_dvz_compile_definitions})
 endif()
+
+target_compile_definitions(dvztest PRIVATE DVZ_WITH_GLFW=${DVZ_WINDOW_GLFW_ENABLED})
 
 target_compile_definitions(dvztest PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
 
