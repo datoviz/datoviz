@@ -486,6 +486,10 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         };
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cb_info, &slot->command_buffer));
 
+        VkExternalMemoryImageCreateInfoKHR external_info = {
+            .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
+        external_info.handleTypes = canvas->allocator.external;
+
         VkImageCreateInfo img_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType = VK_IMAGE_TYPE_2D,
@@ -503,6 +507,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .pNext = &external_info,
         };
 
         if (dvz_allocator_image(
