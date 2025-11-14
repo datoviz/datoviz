@@ -17,6 +17,7 @@
 #include "canvas_internal.h"
 
 #include "_assertions.h"
+#include "test_canvas.h"
 #include "testing.h"
 
 

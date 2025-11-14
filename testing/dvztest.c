@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 
+#include "../src/canvas/tests/test_canvas.h"
 #include "../src/common/tests/test_common.h"
 #include "../src/ds/tests/test_ds.h"
 #include "../src/fileio/tests/test_fileio.h"
@@ -49,6 +50,7 @@ int main(int argc, char** argv)
     test_thread(&suite);
     test_input(&suite);
     test_window(&suite);
+    test_canvas(&suite);
 #if HAS_CUDA
     test_video(&suite);
 #endif
