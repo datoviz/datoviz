@@ -69,7 +69,8 @@ static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
         {                                                                                         \
             const char* _s = NULL;                                                                \
             cuGetErrorName(_e, &_s);                                                              \
-            fprintf(stderr, "CUDA error %s at %s:%d\n", _s ? _s : "?", __FILE__, __LINE__);       \
+            dvz_fprintf(                                                                          \
+                stderr, "CUDA error %s at %s:%d\n", _s ? _s : "?", __FILE__, __LINE__);           \
             exit(1);                                                                              \
         }                                                                                         \
     } while (0)
@@ -80,7 +81,7 @@ static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
         NVENCSTATUS _s = (x);                                                                     \
         if (_s != NV_ENC_SUCCESS)                                                                 \
         {                                                                                         \
-            fprintf(stderr, "NVENC error %d at %s:%d\n", (int)_s, __FILE__, __LINE__);            \
+            dvz_fprintf(stderr, "NVENC error %d at %s:%d\n", (int)_s, __FILE__, __LINE__);         \
             exit(1);                                                                              \
         }                                                                                         \
     } while (0)

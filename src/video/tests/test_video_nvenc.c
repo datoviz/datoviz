@@ -102,7 +102,7 @@
         VkResult _e = (x);                                                                        \
         if (_e != VK_SUCCESS)                                                                     \
         {                                                                                         \
-            fprintf(stderr, "Vulkan error %d at %s:%d\n", _e, __FILE__, __LINE__);                \
+            dvz_fprintf(stderr, "Vulkan error %d at %s:%d\n", _e, __FILE__, __LINE__);             \
             exit(1);                                                                              \
         }                                                                                         \
     } while (0)
@@ -215,7 +215,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     if (!vkGetMemoryFdKHR || !vkGetSemaphoreFdKHR)
     {
-        fprintf(stderr, "Required external memory/semaphore extensions not available\n");
+        dvz_fprintf(stderr, "Required external memory/semaphore extensions not available\n");
         exit(1);
     }
 
@@ -288,7 +288,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     }
     if (memTypeIdx == UINT32_MAX)
     {
-        fprintf(stderr, "No suitable memory type\n");
+        dvz_fprintf(stderr, "No suitable memory type\n");
         exit(1);
     }
 
@@ -310,7 +310,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     VK_CHECK(vkGetMemoryFdKHR(vk->device, &getfd, &vk->memory_fd));
     if (vk->memory_fd < 0)
     {
-        fprintf(stderr, "Failed to export memory FD\n");
+        dvz_fprintf(stderr, "Failed to export memory FD\n");
         exit(1);
     }
 
@@ -536,7 +536,7 @@ cleanup:
     if (!skip_encode && encoded)
     {
         const char* mp4_path = vcfg.mp4_path ? vcfg.mp4_path : "out.mp4";
-        fprintf(
+        dvz_fprintf(
             stderr, "Wrote %s (%dx%d @ %dfps, %d frames)\n", mp4_path, WIDTH, HEIGHT, FPS,
             NFRAMES);
     }
