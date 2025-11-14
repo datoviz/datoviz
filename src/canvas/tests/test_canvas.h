@@ -30,6 +30,8 @@ int test_canvas_frame_pool(TstSuite* suite, TstItem* item);
 
 int test_canvas_timings(TstSuite* suite, TstItem* item);
 
+int test_canvas_glfw(TstSuite* suite, TstItem* item);
+
 
 
 int test_canvas(TstSuite* suite);
