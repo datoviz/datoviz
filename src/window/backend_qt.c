@@ -17,6 +17,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 
 
 
@@ -24,7 +25,7 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static bool _dvz_qt_probe(DvzWindowBackend* backend, DvzWindowHost* host)
+static bool _qt_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 {
     (void)backend;
     (void)host;
@@ -34,8 +35,7 @@ static bool _dvz_qt_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 
-static bool
-_dvz_qt_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
+static bool _qt_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
 {
     (void)backend;
     (void)window;
@@ -45,7 +45,7 @@ _dvz_qt_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConf
 
 
 
-static void _dvz_qt_destroy(DvzWindowBackend* backend, DvzWindow* window)
+static void _qt_destroy(DvzWindowBackend* backend, DvzWindow* window)
 {
     (void)backend;
     (void)window;
@@ -65,9 +65,9 @@ void dvz_window_register_qt_backend(DvzWindowHost* host)
         .user_data = NULL,
         .procs =
             {
-                .probe = _dvz_qt_probe,
-                .create = _dvz_qt_create,
-                .destroy = _dvz_qt_destroy,
+                .probe = _qt_probe,
+                .create = _qt_create,
+                .destroy = _qt_destroy,
                 .poll = NULL,
                 .request_frame = NULL,
             },

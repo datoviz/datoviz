@@ -64,11 +64,11 @@ struct DvzWindowBackend
 
 
 
+EXTERN_C_ON
+
 /*************************************************************************************************/
 /*  Backend helpers                                                                              */
 /*************************************************************************************************/
-
-EXTERN_C_ON
 
 /**
  * Access the router attached to the window.
@@ -126,5 +126,7 @@ DVZ_EXPORT void dvz_window_backend_emit_resize(
  */
 DVZ_EXPORT void
 dvz_window_backend_emit_scale(DvzWindow* window, float content_scale_x, float content_scale_y);
+
+
 
 EXTERN_C_OFF

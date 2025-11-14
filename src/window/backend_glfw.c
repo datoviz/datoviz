@@ -34,18 +34,18 @@ typedef struct DvzGlfwBackendState
     uint32_t window_count;
 } DvzGlfwBackendState;
 
-static DvzGlfwBackendState _dvz_glfw_state = {0};
+static DvzGlfwBackendState _glfw_state = {0};
 
-static DvzWindow* _dvz_glfw_window(GLFWwindow* handle)
+static DvzWindow* _glfw_window(GLFWwindow* handle)
 {
     return (DvzWindow*)glfwGetWindowUserPointer(handle);
 }
 
 
 
-static bool _dvz_glfw_init(void)
+static bool _glfw_init(void)
 {
-    if (_dvz_glfw_state.initialized)
+    if (_glfw_state.initialized)
         return true;
     if (!glfwInit())
     {
@@ -53,27 +53,27 @@ static bool _dvz_glfw_init(void)
         return false;
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    _dvz_glfw_state.initialized = true;
+    _glfw_state.initialized = true;
     return true;
 }
 
 
 
-static void _dvz_glfw_shutdown(void)
+static void _glfw_shutdown(void)
 {
-    if (_dvz_glfw_state.window_count == 0 && _dvz_glfw_state.initialized)
+    if (_glfw_state.window_count == 0 && _glfw_state.initialized)
     {
         glfwTerminate();
-        _dvz_glfw_state.initialized = false;
+        _glfw_state.initialized = false;
     }
 }
 
 
 
-static void _dvz_glfw_emit_pointer(
-    GLFWwindow* handle, DvzPointerEventType type, DvzPointerButton button, int mods)
+static void
+_glfw_emit_pointer(GLFWwindow* handle, DvzPointerEventType type, DvzPointerButton button, int mods)
 {
-    DvzWindow* window = _dvz_glfw_window(handle);
+    DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
     DvzInputRouter* router = dvz_window_backend_router(window);
@@ -92,28 +92,28 @@ static void _dvz_glfw_emit_pointer(
 
 
 
-static void _dvz_glfw_cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos)
+static void _glfw_cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos)
 {
     (void)xpos;
     (void)ypos;
-    _dvz_glfw_emit_pointer(handle, DVZ_POINTER_EVENT_MOVE, DVZ_POINTER_BUTTON_NONE, 0);
+    _glfw_emit_pointer(handle, DVZ_POINTER_EVENT_MOVE, DVZ_POINTER_BUTTON_NONE, 0);
 }
 
 
 
-static void _dvz_glfw_mouse_button_callback(GLFWwindow* handle, int button, int action, int mods)
+static void _glfw_mouse_button_callback(GLFWwindow* handle, int button, int action, int mods)
 {
     DvzPointerButton dvz_button = dvz_pointer_button_from_glfw(button);
     DvzPointerEventType type =
         (action == GLFW_PRESS) ? DVZ_POINTER_EVENT_PRESSED : DVZ_POINTER_EVENT_RELEASED;
-    _dvz_glfw_emit_pointer(handle, type, dvz_button, mods);
+    _glfw_emit_pointer(handle, type, dvz_button, mods);
 }
 
 
 
-static void _dvz_glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
+static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
 {
-    DvzWindow* window = _dvz_glfw_window(handle);
+    DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
     DvzInputRouter* router = dvz_window_backend_router(window);
@@ -133,10 +133,10 @@ static void _dvz_glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
 
 
 
-static void _dvz_glfw_key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods)
+static void _glfw_key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods)
 {
     (void)scancode;
-    DvzWindow* window = _dvz_glfw_window(handle);
+    DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
     DvzInputRouter* router = dvz_window_backend_router(window);
@@ -156,9 +156,9 @@ static void _dvz_glfw_key_callback(GLFWwindow* handle, int key, int scancode, in
 
 
 
-static void _dvz_glfw_framebuffer_callback(GLFWwindow* handle, int width, int height)
+static void _glfw_framebuffer_callback(GLFWwindow* handle, int width, int height)
 {
-    DvzWindow* window = _dvz_glfw_window(handle);
+    DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
     int win_width = 0;
@@ -174,9 +174,9 @@ static void _dvz_glfw_framebuffer_callback(GLFWwindow* handle, int width, int he
 
 
 
-static void _dvz_glfw_scale_callback(GLFWwindow* handle, float scale_x, float scale_y)
+static void _glfw_scale_callback(GLFWwindow* handle, float scale_x, float scale_y)
 {
-    DvzWindow* window = _dvz_glfw_window(handle);
+    DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
     dvz_window_backend_emit_scale(window, scale_x, scale_y);
@@ -184,7 +184,7 @@ static void _dvz_glfw_scale_callback(GLFWwindow* handle, float scale_x, float sc
 
 
 
-static bool _dvz_glfw_probe(DvzWindowBackend* backend, DvzWindowHost* host)
+static bool _glfw_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 {
     (void)backend;
     (void)host;
@@ -194,12 +194,12 @@ static bool _dvz_glfw_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 static bool
-_dvz_glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
+_glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
 {
     (void)backend;
     ANN(window);
     ANN(config);
-    if (!_dvz_glfw_init())
+    if (!_glfw_init())
         return false;
     GLFWwindow* handle = glfwCreateWindow(
         (int)config->width, (int)config->height, config->title ? config->title : "", NULL, NULL);
@@ -209,12 +209,12 @@ _dvz_glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowCo
         return false;
     }
     glfwSetWindowUserPointer(handle, window);
-    glfwSetCursorPosCallback(handle, _dvz_glfw_cursor_pos_callback);
-    glfwSetMouseButtonCallback(handle, _dvz_glfw_mouse_button_callback);
-    glfwSetScrollCallback(handle, _dvz_glfw_scroll_callback);
-    glfwSetKeyCallback(handle, _dvz_glfw_key_callback);
-    glfwSetFramebufferSizeCallback(handle, _dvz_glfw_framebuffer_callback);
-    glfwSetWindowContentScaleCallback(handle, _dvz_glfw_scale_callback);
+    glfwSetCursorPosCallback(handle, _glfw_cursor_pos_callback);
+    glfwSetMouseButtonCallback(handle, _glfw_mouse_button_callback);
+    glfwSetScrollCallback(handle, _glfw_scroll_callback);
+    glfwSetKeyCallback(handle, _glfw_key_callback);
+    glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
+    glfwSetWindowContentScaleCallback(handle, _glfw_scale_callback);
     dvz_window_backend_set_handle(window, handle);
     int fb_width = 0;
     int fb_height = 0;
@@ -228,13 +228,13 @@ _dvz_glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowCo
     dvz_window_backend_emit_resize(
         window, (uint32_t)fb_width, (uint32_t)fb_height, (uint32_t)win_width, (uint32_t)win_height,
         scale_x, scale_y);
-    _dvz_glfw_state.window_count++;
+    _glfw_state.window_count++;
     return true;
 }
 
 
 
-static void _dvz_glfw_destroy(DvzWindowBackend* backend, DvzWindow* window)
+static void _glfw_destroy(DvzWindowBackend* backend, DvzWindow* window)
 {
     (void)backend;
     if (window == NULL)
@@ -242,18 +242,18 @@ static void _dvz_glfw_destroy(DvzWindowBackend* backend, DvzWindow* window)
     GLFWwindow* handle = (GLFWwindow*)dvz_window_backend_handle(window);
     if (handle != NULL)
         glfwDestroyWindow(handle);
-    if (_dvz_glfw_state.window_count > 0)
-        _dvz_glfw_state.window_count--;
-    _dvz_glfw_shutdown();
+    if (_glfw_state.window_count > 0)
+        _glfw_state.window_count--;
+    _glfw_shutdown();
 }
 
 
 
-static void _dvz_glfw_poll(DvzWindowBackend* backend, DvzWindowHost* host)
+static void _glfw_poll(DvzWindowBackend* backend, DvzWindowHost* host)
 {
     (void)backend;
     (void)host;
-    if (_dvz_glfw_state.initialized)
+    if (_glfw_state.initialized)
         glfwPollEvents();
 }
 
@@ -268,13 +268,13 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
     DvzWindowBackend backend = {
         .name = "glfw",
         .type = DVZ_BACKEND_GLFW,
-        .user_data = &_dvz_glfw_state,
+        .user_data = &_glfw_state,
         .procs =
             {
-                .probe = _dvz_glfw_probe,
-                .create = _dvz_glfw_create,
-                .destroy = _dvz_glfw_destroy,
-                .poll = _dvz_glfw_poll,
+                .probe = _glfw_probe,
+                .create = _glfw_create,
+                .destroy = _glfw_destroy,
+                .poll = _glfw_poll,
                 .request_frame = NULL,
             },
     };
@@ -283,7 +283,7 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
 
 #else
 
-static bool _dvz_glfw_disabled_probe(DvzWindowBackend* backend, DvzWindowHost* host)
+static bool _glfw_disabled_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 {
     (void)backend;
     (void)host;
@@ -304,7 +304,7 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
         .user_data = NULL,
         .procs =
             {
-                .probe = _dvz_glfw_disabled_probe,
+                .probe = _glfw_disabled_probe,
                 .create = NULL,
                 .destroy = NULL,
                 .poll = NULL,
@@ -313,5 +313,7 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
     };
     dvz_window_host_register_backend(host, &backend);
 }
+
+
 
 #endif

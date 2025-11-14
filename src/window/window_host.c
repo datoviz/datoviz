@@ -86,18 +86,22 @@ struct DvzWindowHost
 /*  Forward declarations                                                                         */
 /*************************************************************************************************/
 
-static void _dvz_window_register_builtins(DvzWindowHost* host);
+static void _window_register_builtins(DvzWindowHost* host);
 
-static DvzWindowBackendSlot* _dvz_window_pick_backend(DvzWindowHost* host, DvzBackend backend);
+static DvzWindowBackendSlot* _window_pick_backend(DvzWindowHost* host, DvzBackend backend);
 
-static void _dvz_window_array_add(DvzWindowHost* host, DvzWindow* window);
+static void _window_array_add(DvzWindowHost* host, DvzWindow* window);
 
-static void _dvz_window_array_remove(DvzWindowHost* host, DvzWindow* window);
+static void _window_array_remove(DvzWindowHost* host, DvzWindow* window);
 
-static void _dvz_window_host_clear_windows(DvzWindowHost* host);
+static void _window_host_clear_windows(DvzWindowHost* host);
+
+
 
 void dvz_window_register_headless_backend(DvzWindowHost* host);
+
 void dvz_window_register_glfw_backend(DvzWindowHost* host);
+
 void dvz_window_register_qt_backend(DvzWindowHost* host);
 
 
@@ -107,7 +111,7 @@ void dvz_window_register_qt_backend(DvzWindowHost* host);
 /*************************************************************************************************/
 
 static void
-_dvz_window_reserve(void** array, uint32_t* capacity, size_t item_size, uint32_t min_capacity)
+_window_reserve(void** array, uint32_t* capacity, size_t item_size, uint32_t min_capacity)
 {
     ANN(array);
     ANN(capacity);
@@ -128,7 +132,7 @@ _dvz_window_reserve(void** array, uint32_t* capacity, size_t item_size, uint32_t
 
 
 
-static void _dvz_window_register_builtins(DvzWindowHost* host)
+static void _window_register_builtins(DvzWindowHost* host)
 {
     ANN(host);
     dvz_window_register_headless_backend(host);
@@ -138,7 +142,7 @@ static void _dvz_window_register_builtins(DvzWindowHost* host)
 
 
 
-static DvzWindowBackendSlot* _dvz_window_find_slot(DvzWindowHost* host, DvzBackend backend)
+static DvzWindowBackendSlot* _window_find_slot(DvzWindowHost* host, DvzBackend backend)
 {
     ANN(host);
     for (uint32_t i = 0; i < host->backend_count; i++)
@@ -152,21 +156,21 @@ static DvzWindowBackendSlot* _dvz_window_find_slot(DvzWindowHost* host, DvzBacke
 
 
 
-static DvzWindowBackendSlot* _dvz_window_pick_backend(DvzWindowHost* host, DvzBackend backend)
+static DvzWindowBackendSlot* _window_pick_backend(DvzWindowHost* host, DvzBackend backend)
 {
     ANN(host);
     DvzBackend requested = backend;
     if (requested == DVZ_BACKEND_NONE)
         requested = DVZ_BACKEND_GLFW;
 
-    DvzWindowBackendSlot* slot = _dvz_window_find_slot(host, requested);
+    DvzWindowBackendSlot* slot = _window_find_slot(host, requested);
     if (slot != NULL && slot->available)
         return slot;
 
     if (requested != DVZ_BACKEND_OFFSCREEN)
     {
         log_warn("backend %d unavailable, falling back to offscreen", (int)requested);
-        slot = _dvz_window_find_slot(host, DVZ_BACKEND_OFFSCREEN);
+        slot = _window_find_slot(host, DVZ_BACKEND_OFFSCREEN);
         if (slot != NULL && slot->available)
             return slot;
     }
@@ -178,11 +182,11 @@ static DvzWindowBackendSlot* _dvz_window_pick_backend(DvzWindowHost* host, DvzBa
 
 
 
-static void _dvz_window_array_add(DvzWindowHost* host, DvzWindow* window)
+static void _window_array_add(DvzWindowHost* host, DvzWindow* window)
 {
     ANN(host);
     ANN(window);
-    _dvz_window_reserve(
+    _window_reserve(
         (void**)&host->windows, &host->window_capacity, sizeof(DvzWindow*),
         host->window_count + 1);
     host->windows[host->window_count++] = window;
@@ -190,7 +194,7 @@ static void _dvz_window_array_add(DvzWindowHost* host, DvzWindow* window)
 
 
 
-static void _dvz_window_array_remove(DvzWindowHost* host, DvzWindow* window)
+static void _window_array_remove(DvzWindowHost* host, DvzWindow* window)
 {
     ANN(host);
     ANN(window);
@@ -207,7 +211,7 @@ static void _dvz_window_array_remove(DvzWindowHost* host, DvzWindow* window)
 
 
 
-static void _dvz_window_host_clear_windows(DvzWindowHost* host)
+static void _window_host_clear_windows(DvzWindowHost* host)
 {
     ANN(host);
     while (host->window_count > 0)
@@ -218,7 +222,7 @@ static void _dvz_window_host_clear_windows(DvzWindowHost* host)
 
 
 
-static void _dvz_window_setup_config(DvzWindow* window, const DvzWindowConfig* config)
+static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* config)
 {
     ANN(window);
     ANN(config);
@@ -275,7 +279,7 @@ DvzWindowHost* dvz_window_host(void)
     host->windows = dvz_calloc(host->window_capacity, sizeof(DvzWindow*));
     ANN(host->backends);
     ANN(host->windows);
-    _dvz_window_register_builtins(host);
+    _window_register_builtins(host);
     return host;
 }
 
@@ -288,7 +292,7 @@ void dvz_window_host_destroy(DvzWindowHost* host)
 {
     if (host == NULL)
         return;
-    _dvz_window_host_clear_windows(host);
+    _window_host_clear_windows(host);
     dvz_free(host->windows);
     dvz_free(host->backends);
     dvz_free(host);
@@ -303,7 +307,7 @@ void dvz_window_host_register_backend(DvzWindowHost* host, const DvzWindowBacken
 {
     ANN(host);
     ANN(backend);
-    _dvz_window_reserve(
+    _window_reserve(
         (void**)&host->backends, &host->backend_capacity, sizeof(DvzWindowBackendSlot),
         host->backend_count + 1);
     DvzWindowBackendSlot* slot = &host->backends[host->backend_count++];
@@ -331,7 +335,7 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
 {
     ANN(host);
     DvzWindowConfig chosen = config ? *config : dvz_window_default_config();
-    DvzWindowBackendSlot* slot = _dvz_window_pick_backend(host, backend);
+    DvzWindowBackendSlot* slot = _window_pick_backend(host, backend);
     if (slot == NULL || !slot->available || slot->backend.procs.create == NULL)
     {
         log_error("cannot create window, backend unavailable");
@@ -343,7 +347,7 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
     window->host = host;
     window->router = dvz_input_router();
     ANN(window->router);
-    _dvz_window_setup_config(window, &chosen);
+    _window_setup_config(window, &chosen);
     window->backend_slot = slot;
     if (!slot->backend.procs.create(&slot->backend, window, &window->config))
     {
@@ -355,7 +359,7 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
             return dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &chosen);
         return NULL;
     }
-    _dvz_window_array_add(host, window);
+    _window_array_add(host, window);
     return window;
 }
 
@@ -371,7 +375,7 @@ void dvz_window_destroy(DvzWindow* window)
     if (window->backend_slot != NULL && window->backend_slot->backend.procs.destroy != NULL)
         window->backend_slot->backend.procs.destroy(&window->backend_slot->backend, window);
     dvz_input_router_destroy(window->router);
-    _dvz_window_array_remove(window->host, window);
+    _window_array_remove(window->host, window);
     dvz_free(window);
 }
 

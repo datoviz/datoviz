@@ -66,4 +66,6 @@ DVZ_EXPORT bool dvz_window_frame_pending(const DvzWindow* window);
 
 DVZ_EXPORT DvzBackend dvz_window_backend_type(const DvzWindow* window);
 
+
+
 EXTERN_C_OFF

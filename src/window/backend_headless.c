@@ -16,6 +16,7 @@
 
 #include "_assertions.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 
 
 
@@ -23,7 +24,7 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static bool _dvz_headless_probe(DvzWindowBackend* backend, DvzWindowHost* host)
+static bool _headless_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 {
     (void)backend;
     (void)host;
@@ -33,7 +34,7 @@ static bool _dvz_headless_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 static bool
-_dvz_headless_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
+_headless_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
 {
     (void)backend;
     ANN(window);
@@ -52,7 +53,7 @@ _dvz_headless_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWind
 
 
 
-static void _dvz_headless_destroy(DvzWindowBackend* backend, DvzWindow* window)
+static void _headless_destroy(DvzWindowBackend* backend, DvzWindow* window)
 {
     (void)backend;
     (void)window;
@@ -72,9 +73,9 @@ void dvz_window_register_headless_backend(DvzWindowHost* host)
         .user_data = NULL,
         .procs =
             {
-                .probe = _dvz_headless_probe,
-                .create = _dvz_headless_create,
-                .destroy = _dvz_headless_destroy,
+                .probe = _headless_probe,
+                .create = _headless_create,
+                .destroy = _headless_destroy,
                 .poll = NULL,
                 .request_frame = NULL,
             },
