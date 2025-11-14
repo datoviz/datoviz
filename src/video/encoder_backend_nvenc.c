@@ -392,10 +392,14 @@ cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, 
     CU_CHECK(cuCtxCreate(&cu->cuCtx, 0, dev));
     CU_CHECK(cuStreamCreate(&cu->stream, CU_STREAM_DEFAULT));
 
-    CUDA_EXTERNAL_MEMORY_HANDLE_DESC hdesc = {0};
-    hdesc.type = CU_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD;
-    hdesc.handle.fd = mem_fd;
-    hdesc.size = alloc_size;
+    CUDA_EXTERNAL_MEMORY_HANDLE_DESC hdesc = {
+        .type = CU_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD,
+        .handle = {
+            .fd = mem_fd,
+        },
+        .size = alloc_size,
+        .flags = 0,
+    };
     CU_CHECK(cuImportExternalMemory(&cu->extMem, &hdesc));
 
     CUDA_EXTERNAL_MEMORY_MIPMAPPED_ARRAY_DESC mdesc = {0};
@@ -707,7 +711,6 @@ static void nvenc_encode_frame(
     DvzVideoEncoder* enc, DvzVideoBackendNvenc* state, uint32_t frame_idx, uint32_t duration)
 {
     NvEncCtx* nctx = &state->nvenc;
-    NvEncIO* io = &state->io;
     NV_ENC_PIC_PARAMS pp = {0};
     pp.version = (uint32_t)NV_ENC_PIC_PARAMS_VER;
     pp.inputBuffer = state->mapped_in;
@@ -802,9 +805,13 @@ static int nvenc_start(DvzVideoEncoder* enc)
 
     if (enc->wait_semaphore_fd >= 0)
     {
-        CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC shdesc = {0};
-        shdesc.type = CU_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD;
-        shdesc.handle.fd = enc->wait_semaphore_fd;
+        CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC shdesc = {
+            .type = CU_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD,
+            .handle = {
+                .fd = enc->wait_semaphore_fd,
+            },
+            .flags = 0,
+        };
         CU_CHECK(cuImportExternalSemaphore(&state->wait_semaphore, &shdesc));
         state->wait_semaphore_ready = true;
     }

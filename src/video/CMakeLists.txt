@@ -22,10 +22,14 @@ add_library(datoviz_video OBJECT ${VIDEO_SRC})
 
 target_include_directories(datoviz_video
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src/common
-    ${PROJECT_SOURCE_DIR}/external
-    ${PROJECT_SOURCE_DIR}/external/volk
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/src/common
+)
+
+target_include_directories(datoviz_video
+    SYSTEM PUBLIC
+        ${PROJECT_SOURCE_DIR}/external
+        ${PROJECT_SOURCE_DIR}/external/volk
 )
 
 target_compile_definitions(datoviz_video

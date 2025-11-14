@@ -16,7 +16,7 @@
 
 MUTE_ON
 #define MINIMP4_IMPLEMENTATION
-#include "../../external/minimp4.h"
+#include "minimp4.h"
 MUTE_OFF
 
 #include "_alloc.h"
