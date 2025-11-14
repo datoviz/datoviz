@@ -5,6 +5,7 @@ target_include_directories(datoviz_window
     PUBLIC
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/external/volk
 )
 
 target_compile_definitions(datoviz_window PUBLIC ${COMPILE_DEFINITIONS})

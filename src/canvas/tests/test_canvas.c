@@ -121,7 +121,22 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 #if DVZ_WITH_GLFW
     DvzInstance instance = {0};
     dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+
+    // Instance extensions.
     dvz_instance_request_extension(&instance, VK_KHR_SURFACE_EXTENSION_NAME);
+
+    // Additional ones for glfw.
+    dvz_window_glfw_init();
+    uint32_t ext_count = 0;
+    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
+    for (uint32_t i = 0; i < ext_count; i++)
+    {
+        dvz_instance_request_extension(&instance, extensions[i]);
+    }
+
     dvz_instance_create(&instance, VK_API_VERSION_1_3);
     AT(dvz_instance_has_extension(&instance, VK_KHR_SURFACE_EXTENSION_NAME));
 
@@ -149,17 +164,8 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     // Device extensions required for the canvas.
     dvz_device_request_canvas_extensions(&device);
 
-    // Additional ones for glfw.
-    uint32_t ext_count = 0;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    for (uint32_t i = 0; i < ext_count; i++)
-    {
-        dvz_device_request_extension(&device, extensions[i]);
-    }
     AT(dvz_device_create(&device) == 0);
 
-    DvzWindowHost* host = dvz_window_host();
-    ANN(host);
     DvzWindowConfig window_cfg = dvz_window_default_config();
     window_cfg.title = "canvas-glfw-test";
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);

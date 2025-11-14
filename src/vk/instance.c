@@ -426,6 +426,7 @@ void dvz_instance_request_extension(DvzInstance* instance, const char* extension
 
     ANN(instance->req_extensions);
     ASSERT(instance->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
+    log_trace("request instance extensions %s", extension);
 
     if (!dvz_strings_contains(instance->req_extension_count, instance->req_extensions, extension))
     {

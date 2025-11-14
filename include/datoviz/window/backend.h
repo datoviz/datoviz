@@ -129,6 +129,13 @@ DVZ_EXPORT void dvz_window_backend_set_payload(DvzWindow* window, void* payload)
 DVZ_EXPORT void* dvz_window_backend_payload(const DvzWindow* window);
 
 
+/**
+ * Initialize GLFW so instance extensions can be queried before a window exists.
+ *
+ * @returns true when GLFW is initialized, false when the backend is unavailable
+ */
+DVZ_EXPORT bool dvz_window_glfw_init(void);
+
 
 /**
  * Emit a resize event and refresh the cached surface state.

@@ -23,6 +23,8 @@
 #include "window_internal.h"
 
 
+#include <volk.h>
+
 
 #if DVZ_WITH_GLFW
 #define GLFW_INCLUDE_NONE
@@ -217,6 +219,28 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
     glfwSetWindowContentScaleCallback(handle, _glfw_scale_callback);
     dvz_window_backend_set_handle(window, handle);
+
+    VkInstance vk_instance = volkGetLoadedInstance();
+    if (vk_instance == VK_NULL_HANDLE)
+    {
+        log_error("Vulkan instance not loaded before creating GLFW surface");
+        glfwDestroyWindow(handle);
+        return false;
+    }
+
+    VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+    VkResult res = glfwCreateWindowSurface(vk_instance, handle, NULL, &vk_surface);
+    if (res != VK_SUCCESS)
+    {
+        log_error("glfwCreateWindowSurface() failed (%d)", res);
+        glfwDestroyWindow(handle);
+        return false;
+    }
+
+    DvzWindowSurface* surface = dvz_window_backend_surface(window);
+    ANN(surface);
+    surface->instance = vk_instance;
+    surface->surface = vk_surface;
     int fb_width = 0;
     int fb_height = 0;
     glfwGetFramebufferSize(handle, &fb_width, &fb_height);
@@ -240,6 +264,14 @@ static void _glfw_destroy(DvzWindowBackend* backend, DvzWindow* window)
     (void)backend;
     if (window == NULL)
         return;
+    DvzWindowSurface* surface = dvz_window_backend_surface(window);
+    ANN(surface);
+    if (surface->surface != VK_NULL_HANDLE && surface->instance != VK_NULL_HANDLE)
+    {
+        vkDestroySurfaceKHR(surface->instance, surface->surface, NULL);
+        surface->surface = VK_NULL_HANDLE;
+        surface->instance = VK_NULL_HANDLE;
+    }
     GLFWwindow* handle = (GLFWwindow*)dvz_window_backend_handle(window);
     if (handle != NULL)
         glfwDestroyWindow(handle);
@@ -318,3 +350,19 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
 
 
 #endif
+
+
+/**
+ * Ensure GLFW is initialized so extensions can be queried before a window exists.
+ *
+ * @returns true when GLFW is initialized, false otherwise
+ */
+DVZ_EXPORT bool dvz_window_glfw_init(void)
+{
+#if DVZ_WITH_GLFW
+    return _glfw_init();
+#else
+    log_warn("GLFW backend disabled, cannot initialize");
+    return false;
+#endif
+}

@@ -434,6 +434,7 @@ void dvz_device_request_extension(DvzDevice* device, const char* extension)
 
     ANN(device->req_extensions);
     ASSERT(device->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
+    log_trace("request device extensions %s", extension);
 
     if (!dvz_strings_contains(device->req_extension_count, device->req_extensions, extension))
     {
