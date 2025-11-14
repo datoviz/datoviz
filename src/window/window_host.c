@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/window.h"
+#include "window_internal.h"
 
 
 
@@ -37,48 +38,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzWindowBackendSlot DvzWindowBackendSlot;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzWindowBackendSlot
-{
-    DvzWindowBackend backend;
-    bool available;
-    bool probed;
-};
-
-
-
-struct DvzWindow
-{
-    DvzWindowHost* host;
-    DvzWindowBackendSlot* backend_slot;
-    void* backend_handle;
-    void* backend_payload;
-    DvzInputRouter* router;
-    DvzWindowConfig config;
-    DvzWindowSurface surface;
-    char title[DVZ_WINDOW_TITLE_MAX];
-    bool frame_pending;
-    void* user_data;
-};
-
-
-
-struct DvzWindowHost
-{
-    DvzWindow** windows;
-    uint32_t window_count;
-    uint32_t window_capacity;
-
-    DvzWindowBackendSlot* backends;
-    uint32_t backend_count;
-    uint32_t backend_capacity;
-};
 
 
 
@@ -117,9 +76,7 @@ _window_reserve(void** array, uint32_t* capacity, size_t item_size, uint32_t min
     void* ptr = dvz_realloc(*array, item_size * new_capacity);
     ANN(ptr);
     dvz_memset(
-        POINTER_OFFSET(ptr, item_size * (*capacity)),
-        item_size * (new_capacity - *capacity),
-        0,
+        POINTER_OFFSET(ptr, item_size * (*capacity)), item_size * (new_capacity - *capacity), 0,
         item_size * (new_capacity - *capacity));
     *array = ptr;
     *capacity = new_capacity;

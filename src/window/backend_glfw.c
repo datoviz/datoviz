@@ -20,6 +20,7 @@
 #include "datoviz/input/keyboard.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/window.h"
+#include "window_internal.h"
 
 
 
@@ -105,7 +106,7 @@ static void _glfw_mouse_button_callback(GLFWwindow* handle, int button, int acti
 {
     DvzPointerButton dvz_button = dvz_pointer_button_from_glfw(button);
     DvzPointerEventType type =
-        (action == GLFW_PRESS) ? DVZ_POINTER_EVENT_PRESSED : DVZ_POINTER_EVENT_RELEASED;
+        (action == GLFW_PRESS) ? DVZ_POINTER_EVENT_PRESS : DVZ_POINTER_EVENT_RELEASE;
     _glfw_emit_pointer(handle, type, dvz_button, mods);
 }
 

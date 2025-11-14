@@ -22,11 +22,11 @@
 #include <unistd.h>
 #endif
 
+#include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
-#include "../vk/macros.h"
 #include "datoviz/video.h"
 
 
@@ -57,9 +57,9 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 
 static const char* const CANVAS_REQUIRED_EXTENSIONS[] = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-    VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
-    VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+// VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+// VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+// VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
 #if OS_LINUX
     VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
     VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
@@ -75,8 +75,8 @@ static bool canvas_device_check_extensions(const DvzCanvas* canvas)
 {
     ANN(canvas);
     ANN(canvas->device);
-    const size_t required_count = sizeof(CANVAS_REQUIRED_EXTENSIONS) /
-                                  sizeof(CANVAS_REQUIRED_EXTENSIONS[0]);
+    const size_t required_count =
+        sizeof(CANVAS_REQUIRED_EXTENSIONS) / sizeof(CANVAS_REQUIRED_EXTENSIONS[0]);
     for (size_t i = 0; i < required_count; ++i)
     {
         const char* name = CANVAS_REQUIRED_EXTENSIONS[i];
@@ -467,8 +467,8 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     }
 
     dvz_canvas_frame_pool_init(&canvas->frame_pool, 1);
-    size_t timing_history = resolved.timing_history > 0 ? resolved.timing_history
-                                                        : DVZ_CANVAS_DEFAULT_TIMING_HISTORY;
+    size_t timing_history =
+        resolved.timing_history > 0 ? resolved.timing_history : DVZ_CANVAS_DEFAULT_TIMING_HISTORY;
     dvz_canvas_timings_init(&canvas->timings, timing_history);
 
     if (dvz_canvas_stream_prepare(canvas) != 0)
@@ -526,8 +526,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
  * @param callback draw callback pointer
  * @param user_data user data forwarded to the callback
  */
-void
-dvz_canvas_set_draw_callback(DvzCanvas* canvas, DvzCanvasDraw callback, void* user_data)
+void dvz_canvas_set_draw_callback(DvzCanvas* canvas, DvzCanvasDraw callback, void* user_data)
 {
     ANN(canvas);
     canvas->draw_callback = callback;
@@ -656,8 +655,7 @@ DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas)
  * @param enable true to enable, false to disable
  * @param cfg optional sink configuration
  */
-int dvz_canvas_configure_video_sink(
-    DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg)
+int dvz_canvas_configure_video_sink(DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg)
 {
     ANN(canvas);
     return dvz_canvas_stream_enable_video(canvas, enable, cfg);

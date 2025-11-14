@@ -14,17 +14,27 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#ifndef HAS_GLFW
+#define HAS_GLFW 0
+#endif
+
 #include "canvas_internal.h"
 
 #include "_assertions.h"
 #include "datoviz/canvas.h"
-#include "datoviz/window.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/window.h"
 #include "test_canvas.h"
 #include "testing.h"
+
+#if HAS_GLFW
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#endif
 
 
 
@@ -94,32 +104,58 @@ int test_canvas_timings(TstSuite* suite, TstItem* item)
     return 0;
 }
 
-#ifndef DVZ_WITH_GLFW
-#define DVZ_WITH_GLFW 0
-#endif
 
-#if DVZ_WITH_GLFW
+
+/**
+ * Exercise the GLFW-backed canvas and ensure the frame submission path works.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
 int test_canvas_glfw(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
     (void)item;
 
+#if DVZ_WITH_GLFW
     DvzInstance instance = {0};
     dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    dvz_instance_request_extension(&instance, VK_KHR_SURFACE_EXTENSION_NAME);
     dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    AT(dvz_instance_has_extension(&instance, VK_KHR_SURFACE_EXTENSION_NAME));
 
     uint32_t gpu_count = 0;
     DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
     ANN(gpus);
+
     DvzGpu* gpu = &gpus[0];
+    ANN(gpu);
+
+    VkPhysicalDeviceProperties* props = dvz_gpu_properties10(gpu);
+    log_debug("device name: %s", props->deviceName);
 
     DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
     ANN(caps);
 
+    // Create the device.
     DvzDevice device = {0};
     dvz_gpu_device(gpu, &device);
     dvz_queues(caps, &device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
+    fet12->timelineSemaphore = true;
+
+    // Device extensions required for the canvas.
     dvz_device_request_canvas_extensions(&device);
+
+    // Additional ones for glfw.
+    uint32_t ext_count = 0;
+    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
+    for (uint32_t i = 0; i < ext_count; i++)
+    {
+        dvz_device_request_extension(&device, extensions[i]);
+    }
     AT(dvz_device_create(&device) == 0);
 
     DvzWindowHost* host = dvz_window_host();
@@ -152,16 +188,10 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     dvz_window_host_destroy(host);
     dvz_device_destroy(&device);
     dvz_instance_destroy(&instance);
-    return 0;
-}
-#else
-int test_canvas_glfw(TstSuite* suite, TstItem* item)
-{
-    ANN(suite);
-    (void)item;
-    return 0;
-}
 #endif
+
+    return 0;
+}
 
 
 
