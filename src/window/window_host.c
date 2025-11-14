@@ -129,7 +129,6 @@ static void _window_register_builtins(DvzWindowHost* host)
     ANN(host);
     dvz_window_register_headless_backend(host);
     dvz_window_register_glfw_backend(host);
-    dvz_window_register_qt_backend(host);
 }
 
 
