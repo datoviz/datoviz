@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/input.h"
 #include "test_input.h"
@@ -155,7 +156,7 @@ static void _record_event(DvzInputRouter* router, const DvzInputEvent* event, vo
 static void _recorder_reset(EventRecorder* recorder)
 {
     ANN(recorder);
-    memset(recorder, 0, sizeof(*recorder));
+    dvz_memset(recorder, sizeof(*recorder), 0, sizeof(*recorder));
     recorder->last_type = DVZ_POINTER_EVENT_NONE;
 }
 

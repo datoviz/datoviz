@@ -375,7 +375,7 @@ static void nvenc_state_free(DvzVideoBackendNvenc* state)
         cuCtxDestroy(state->cuda.cuCtx);
         state->cuda.cuCtx = NULL;
     }
-    memset(state, 0, sizeof(*state));
+    dvz_memset(state, sizeof(*state), 0, sizeof(*state));
 }
 
 
@@ -384,7 +384,7 @@ static void
 cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, size_t alloc_size)
 {
     ANN(cu);
-    memset(cu, 0, sizeof(*cu));
+    dvz_memset(cu, sizeof(*cu), 0, sizeof(*cu));
     CUdevice dev;
     CU_CHECK(cuInit(0));
     CU_CHECK(cuDeviceGet(&dev, 0));
@@ -479,7 +479,7 @@ static void launch_rgba_to_nv12(CudaCtx* cu, RgbaBuf* rb, Nv12Buf* nb, uint32_t 
 
 static void nvenc_load_api(void)
 {
-    memset(&g_nvenc, 0, sizeof(g_nvenc));
+    dvz_memset(&g_nvenc, sizeof(g_nvenc), 0, sizeof(g_nvenc));
     g_nvenc.version = (uint32_t)NV_ENCODE_API_FUNCTION_LIST_VER;
     NVENC_API_CALL(NvEncodeAPICreateInstance(&g_nvenc));
 }
@@ -579,7 +579,7 @@ static void nvenc_init_codec(
     ANN(nctx);
     DvzNvencProfile prof = nvenc_profile(codec_sel);
 
-    memset(&nctx->init, 0, sizeof(nctx->init));
+    dvz_memset(&nctx->init, sizeof(nctx->init), 0, sizeof(nctx->init));
     nctx->init.version = (uint32_t)NV_ENC_INITIALIZE_PARAMS_VER;
     nctx->init.encodeGUID = *prof.codec_guid;
     nctx->init.presetGUID = *prof.preset_guid;

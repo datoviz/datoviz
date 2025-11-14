@@ -107,7 +107,7 @@ static void kvz_cpu_ctx_destroy(KvzCpuCtx* ctx)
         vkDestroyInstance(ctx->instance, NULL);
         ctx->instance = VK_NULL_HANDLE;
     }
-    memset(ctx, 0, sizeof(*ctx));
+    dvz_memset(ctx, sizeof(*ctx), 0, sizeof(*ctx));
 }
 
 static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
@@ -117,7 +117,7 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     {
         return false;
     }
-    memset(ctx, 0, sizeof(*ctx));
+    dvz_memset(ctx, sizeof(*ctx), 0, sizeof(*ctx));
 
     VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO};
     app.pApplicationName = "kvazaar_cpu_test";

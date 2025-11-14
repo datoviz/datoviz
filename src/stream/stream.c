@@ -82,14 +82,16 @@ static DvzStreamSink* stream_sink_slot(DvzStream* stream)
             log_error("failed to grow frame sink array");
             return NULL;
         }
-        memset(
-            sinks + stream->sink_capacity, 0,
+        dvz_memset(
+            sinks + stream->sink_capacity,
+            (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink),
+            0,
             (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink));
         stream->sinks = sinks;
         stream->sink_capacity = new_cap;
     }
     DvzStreamSink* sink = &stream->sinks[stream->sink_count++];
-    memset(sink, 0, sizeof(*sink));
+    dvz_memset(sink, sizeof(*sink), 0, sizeof(*sink));
     sink->stream = stream;
     return sink;
 }
@@ -200,7 +202,7 @@ int dvz_stream_attach_sink(
     {
         log_error("failed to create frame sink '%s'", backend->name ? backend->name : "?");
         stream->sink_count -= 1;
-        memset(sink, 0, sizeof(*sink));
+        dvz_memset(sink, sizeof(*sink), 0, sizeof(*sink));
         return -1;
     }
     return 0;

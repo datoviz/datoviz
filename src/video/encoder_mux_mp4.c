@@ -79,7 +79,7 @@ bool dvz_video_encoder_open_mp4_stream(DvzVideoEncoder* enc)
             return false;
         }
     }
-    memset(enc->mp4_writer, 0, sizeof(*enc->mp4_writer));
+    dvz_memset(enc->mp4_writer, sizeof(*enc->mp4_writer), 0, sizeof(*enc->mp4_writer));
     mp4_h26x_write_init(
         enc->mp4_writer, enc->mp4_mux, (int)enc->cfg.width, (int)enc->cfg.height,
         enc->cfg.codec == DVZ_VIDEO_CODEC_HEVC);

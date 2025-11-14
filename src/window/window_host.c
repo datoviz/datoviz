@@ -116,8 +116,11 @@ _window_reserve(void** array, uint32_t* capacity, size_t item_size, uint32_t min
     }
     void* ptr = dvz_realloc(*array, item_size * new_capacity);
     ANN(ptr);
-    memset(
-        POINTER_OFFSET(ptr, item_size * (*capacity)), 0, item_size * (new_capacity - *capacity));
+    dvz_memset(
+        POINTER_OFFSET(ptr, item_size * (*capacity)),
+        item_size * (new_capacity - *capacity),
+        0,
+        item_size * (new_capacity - *capacity));
     *array = ptr;
     *capacity = new_capacity;
 }
@@ -302,7 +305,7 @@ void dvz_window_host_register_backend(DvzWindowHost* host, const DvzWindowBacken
         (void**)&host->backends, &host->backend_capacity, sizeof(DvzWindowBackendSlot),
         host->backend_count + 1);
     DvzWindowBackendSlot* slot = &host->backends[host->backend_count++];
-    memset(slot, 0, sizeof(*slot));
+    dvz_memset(slot, sizeof(*slot), 0, sizeof(*slot));
     slot->backend = *backend;
     if (slot->backend.procs.probe != NULL)
     {

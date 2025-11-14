@@ -526,7 +526,7 @@ static int kvazaar_emit_sample(
             log_error("kvazaar chunk list larger than reported total size");
             return -1;
         }
-        memcpy(buffer + copied, chunk->data, chunk->len);
+        dvz_memcpy(buffer + copied, chunk->len, chunk->data, chunk->len);
         copied += chunk->len;
     }
 

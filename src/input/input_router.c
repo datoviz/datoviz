@@ -121,7 +121,8 @@ static void _dispatch_pointer_subs(DvzInputRouter* router, const DvzPointerEvent
     DvzPointerSubscription* subs =
         (DvzPointerSubscription*)dvz_malloc(sizeof(DvzPointerSubscription) * count);
     ANN(subs);
-    memcpy(subs, router->pointer_subs, sizeof(DvzPointerSubscription) * count);
+    size_t bytes = sizeof(DvzPointerSubscription) * count;
+    dvz_memcpy(subs, bytes, router->pointer_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzPointerSubscription* sub = &subs[i];
@@ -143,7 +144,8 @@ static void _dispatch_keyboard_subs(DvzInputRouter* router, const DvzKeyboardEve
     DvzKeyboardSubscription* subs =
         (DvzKeyboardSubscription*)dvz_malloc(sizeof(DvzKeyboardSubscription) * count);
     ANN(subs);
-    memcpy(subs, router->keyboard_subs, sizeof(DvzKeyboardSubscription) * count);
+    size_t bytes = sizeof(DvzKeyboardSubscription) * count;
+    dvz_memcpy(subs, bytes, router->keyboard_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzKeyboardSubscription* sub = &subs[i];
@@ -165,7 +167,8 @@ static void _dispatch_resize_subs(DvzInputRouter* router, const DvzInputResizeEv
     DvzResizeSubscription* subs =
         (DvzResizeSubscription*)dvz_malloc(sizeof(DvzResizeSubscription) * count);
     ANN(subs);
-    memcpy(subs, router->resize_subs, sizeof(DvzResizeSubscription) * count);
+    size_t bytes = sizeof(DvzResizeSubscription) * count;
+    dvz_memcpy(subs, bytes, router->resize_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzResizeSubscription* sub = &subs[i];
@@ -187,7 +190,8 @@ static void _dispatch_scale_subs(DvzInputRouter* router, const DvzInputScaleEven
     DvzScaleSubscription* subs =
         (DvzScaleSubscription*)dvz_malloc(sizeof(DvzScaleSubscription) * count);
     ANN(subs);
-    memcpy(subs, router->scale_subs, sizeof(DvzScaleSubscription) * count);
+    size_t bytes = sizeof(DvzScaleSubscription) * count;
+    dvz_memcpy(subs, bytes, router->scale_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzScaleSubscription* sub = &subs[i];
@@ -209,7 +213,8 @@ static void _dispatch_event_subs(DvzInputRouter* router, const DvzInputEvent* ev
     DvzEventSubscription* subs =
         (DvzEventSubscription*)dvz_malloc(sizeof(DvzEventSubscription) * count);
     ANN(subs);
-    memcpy(subs, router->event_subs, sizeof(DvzEventSubscription) * count);
+    size_t bytes = sizeof(DvzEventSubscription) * count;
+    dvz_memcpy(subs, bytes, router->event_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzEventSubscription* sub = &subs[i];

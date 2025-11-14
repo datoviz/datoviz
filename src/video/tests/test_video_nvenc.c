@@ -145,7 +145,7 @@ static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue*
 static void vk_init_and_make_image(VulkanCtx* vk)
 {
     VK_CHECK(volkInitialize());
-    memset(vk, 0, sizeof(*vk));
+    dvz_memset(vk, sizeof(*vk), 0, sizeof(*vk));
     vk->memory_fd = -1;
     vk->semaphore_fd = -1;
     vk->timeline_value = 0;
