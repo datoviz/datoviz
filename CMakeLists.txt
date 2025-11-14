@@ -40,6 +40,7 @@ set_property(CACHE DVZ_SANITIZER PROPERTY STRINGS "" "asan" "msan" "tsan" "off")
 option(DVZ_USE_MIMALLOC_RELEASE_DEFAULT "Use mimalloc as the default allocator in Release builds" ON)
 
 set(_dvz_enable_cuda_default ON)
+
 if(APPLE)
     set(_dvz_enable_cuda_default OFF)
 endif()
@@ -59,15 +60,17 @@ set(DVZ_HAS_CUDA 0)
 set(DVZ_NVENC_LIB "")
 set(DVZ_NVENC_LIB_DIR "")
 option(DVZ_ENABLE_KVAZAAR "Enable Kvazaar software HEVC backend" ON)
-option(DVZ_WITH_GLFW "Enable the GLFW window backend" OFF)
+option(DVZ_WITH_GLFW "Enable the GLFW window backend" ON)
 set(DVZ_HAS_KVZ 0)
 
 set(DVZ_GLFW_DIR "${PROJECT_SOURCE_DIR}/external/glfw")
+
 if(DVZ_WITH_GLFW)
     if(EXISTS "${DVZ_GLFW_DIR}/CMakeLists.txt")
         set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
         set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
         set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+        set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
         set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
         add_subdirectory(
@@ -99,6 +102,7 @@ if(DVZ_ENABLE_CUDA)
         endif()
 
         set(_dvz_nvenc_names nvencodeapi nvencodeapi64)
+
         if(UNIX AND NOT APPLE)
             list(APPEND _dvz_nvenc_names nvidia-encode)
         endif()
@@ -128,6 +132,7 @@ set(DVZ_HAS_CUDA "${DVZ_HAS_CUDA}" CACHE INTERNAL "CUDA availability flag" FORCE
 
 if(DVZ_ENABLE_KVAZAAR)
     set(_dvz_kvz_dir "${PROJECT_SOURCE_DIR}/external/kvazaar")
+
     if(EXISTS "${_dvz_kvz_dir}/CMakeLists.txt")
         if(DEFINED BUILD_SHARED_LIBS)
             set(_dvz_prev_build_shared_libs "${BUILD_SHARED_LIBS}")
@@ -136,6 +141,7 @@ if(DVZ_ENABLE_KVAZAAR)
             set(_dvz_prev_build_shared_libs "")
             set(_dvz_prev_build_shared_libs_defined 0)
         endif()
+
         if(DEFINED BUILD_TESTS)
             set(_dvz_prev_build_tests "${BUILD_TESTS}")
             set(_dvz_prev_build_tests_defined 1)
@@ -165,11 +171,13 @@ if(DVZ_ENABLE_KVAZAAR)
         else()
             unset(BUILD_SHARED_LIBS CACHE)
         endif()
+
         if(_dvz_prev_build_tests_defined)
             set(BUILD_TESTS "${_dvz_prev_build_tests}" CACHE BOOL "" FORCE)
         else()
             unset(BUILD_TESTS CACHE)
         endif()
+
         unset(BUILD_KVAZAAR_BINARY CACHE)
         unset(USE_CRYPTO CACHE)
 
