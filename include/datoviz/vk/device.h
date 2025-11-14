@@ -146,6 +146,15 @@ DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 
 
 
+/**
+ * Request all extensions required by the canvas/presentation layer.
+ *
+ * @param device device that will serve canvases
+ */
+DVZ_EXPORT void dvz_device_request_canvas_extensions(DvzDevice* device);
+
+
+
 /*************************************************************************************************/
 /*  Extensions & features                                                                        */
 /*************************************************************************************************/

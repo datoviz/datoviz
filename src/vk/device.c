@@ -456,6 +456,26 @@ bool dvz_device_has_extension(DvzDevice* device, const char* extension)
 
 
 
+void dvz_device_request_canvas_extensions(DvzDevice* device)
+{
+    ANN(device);
+
+    dvz_device_request_extension(device, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+
+#if OS_LINUX
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+#elif OS_WINDOWS
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME);
+#endif
+}
+
+
+
 VkPhysicalDeviceFeatures* dvz_device_request_features10(DvzDevice* device)
 {
     ANN(device);
