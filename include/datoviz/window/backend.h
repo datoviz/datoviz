@@ -129,4 +129,14 @@ dvz_window_backend_emit_scale(DvzWindow* window, float content_scale_x, float co
 
 
 
+/*************************************************************************************************/
+/*  Backend registration                                                                         */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_window_register_headless_backend(DvzWindowHost* host);
+DVZ_EXPORT void dvz_window_register_glfw_backend(DvzWindowHost* host);
+DVZ_EXPORT void dvz_window_register_qt_backend(DvzWindowHost* host);
+
+
+
 EXTERN_C_OFF

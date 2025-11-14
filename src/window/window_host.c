@@ -98,14 +98,6 @@ static void _window_host_clear_windows(DvzWindowHost* host);
 
 
 
-void dvz_window_register_headless_backend(DvzWindowHost* host);
-
-void dvz_window_register_glfw_backend(DvzWindowHost* host);
-
-void dvz_window_register_qt_backend(DvzWindowHost* host);
-
-
-
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
