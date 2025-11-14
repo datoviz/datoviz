@@ -7,6 +7,8 @@ target_include_directories(datoviz_canvas
         ${PROJECT_SOURCE_DIR}/src/common
         ${PROJECT_SOURCE_DIR}/src/window
         ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/src/vk
+        ${PROJECT_SOURCE_DIR}/external
         ${PROJECT_SOURCE_DIR}/external/volk
 )
 

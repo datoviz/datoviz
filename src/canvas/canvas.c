@@ -18,11 +18,15 @@
 
 #include <stdlib.h>
 #include <string.h>
+#if OS_LINUX
+#include <unistd.h>
+#endif
 
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
+#include "../vk/macros.h"
 #include "datoviz/video.h"
 
 
@@ -48,6 +52,205 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
         cfg.color_format = canvas->cfg.color_format;
     }
     return cfg;
+}
+
+
+static const char* const CANVAS_REQUIRED_EXTENSIONS[] = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+    VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+    VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+#if OS_LINUX
+    VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+    VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+#elif OS_WINDOWS
+    VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
+    VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
+#endif
+};
+
+
+
+static bool canvas_device_check_extensions(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    ANN(canvas->device);
+    const size_t required_count = sizeof(CANVAS_REQUIRED_EXTENSIONS) /
+                                  sizeof(CANVAS_REQUIRED_EXTENSIONS[0]);
+    for (size_t i = 0; i < required_count; ++i)
+    {
+        const char* name = CANVAS_REQUIRED_EXTENSIONS[i];
+        if (!name || name[0] == '\0')
+        {
+            continue;
+        }
+        if (!dvz_device_has_extension(canvas->device, name))
+        {
+            log_error("canvas device missing required extension '%s'", name);
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void)
+{
+#if OS_LINUX
+    return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+#elif OS_WINDOWS
+    return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+#else
+    return 0;
+#endif
+}
+
+
+
+static VkExternalSemaphoreHandleTypeFlags canvas_external_semaphore_handle_type(void)
+{
+#if OS_LINUX
+    return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
+#elif OS_WINDOWS
+    return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+#else
+    return 0;
+#endif
+}
+
+
+
+static int canvas_create_allocator(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (canvas->allocator_ready)
+    {
+        return 0;
+    }
+    VkExternalMemoryHandleTypeFlagsKHR handle_type = canvas_external_memory_handle_type();
+    if (handle_type == 0)
+    {
+        log_error("platform does not support exporting canvas render targets");
+        return -1;
+    }
+    if (dvz_device_allocator(canvas->device, handle_type, &canvas->allocator) != 0)
+    {
+        log_error("failed to create canvas allocator");
+        return -1;
+    }
+    canvas->allocator_ready = true;
+    return 0;
+}
+
+
+
+static void canvas_destroy_allocator(DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->allocator_ready)
+    {
+        return;
+    }
+    dvz_allocator_destroy(&canvas->allocator);
+    canvas->allocator_ready = false;
+}
+
+
+
+static int canvas_create_timeline(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (canvas->timeline_ready)
+    {
+        return 0;
+    }
+    VkExternalSemaphoreHandleTypeFlags handle_type = canvas_external_semaphore_handle_type();
+    if (handle_type == 0)
+    {
+        log_error("platform does not support exporting canvas timeline semaphores");
+        return -1;
+    }
+
+    VkDevice vk_device = dvz_device_handle(canvas->device);
+    ANNVK(vk_device);
+
+    VkSemaphoreTypeCreateInfo type_info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+        .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
+        .initialValue = 0,
+    };
+    VkExportSemaphoreCreateInfo export_info = {
+        .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
+        .handleTypes = handle_type,
+    };
+    type_info.pNext = &export_info;
+    VkSemaphoreCreateInfo info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+        .pNext = &type_info,
+    };
+
+    VkResult res = vkCreateSemaphore(vk_device, &info, NULL, &canvas->timeline_semaphore);
+    if (res != VK_SUCCESS)
+    {
+        log_error("failed to create canvas timeline semaphore (%d)", res);
+        canvas->timeline_semaphore = VK_NULL_HANDLE;
+        return -1;
+    }
+
+#if OS_LINUX
+    VkSemaphoreGetFdInfoKHR fd_info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+        .semaphore = canvas->timeline_semaphore,
+        .handleType = handle_type,
+    };
+    res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &canvas->timeline_semaphore_fd);
+    if (res != VK_SUCCESS)
+    {
+        log_error("failed to export canvas timeline semaphore FD (%d)", res);
+        vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
+        canvas->timeline_semaphore = VK_NULL_HANDLE;
+        canvas->timeline_semaphore_fd = -1;
+        return -1;
+    }
+#elif OS_WINDOWS
+    log_error("timeline semaphore export not implemented on this platform");
+    vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
+    canvas->timeline_semaphore = VK_NULL_HANDLE;
+    return -1;
+#else
+    log_error("timeline semaphore export unsupported on this platform");
+    vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
+    canvas->timeline_semaphore = VK_NULL_HANDLE;
+    return -1;
+#endif
+
+    canvas->timeline_ready = true;
+    canvas->timeline_value = 0;
+    return 0;
+}
+
+
+
+static void canvas_destroy_timeline(DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->timeline_ready)
+    {
+        return;
+    }
+    VkDevice vk_device = dvz_device_handle(canvas->device);
+    if (canvas->timeline_semaphore != VK_NULL_HANDLE)
+    {
+        vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
+        canvas->timeline_semaphore = VK_NULL_HANDLE;
+    }
+#if OS_LINUX
+    if (canvas->timeline_semaphore_fd >= 0)
+    {
+        close(canvas->timeline_semaphore_fd);
+    }
+#endif
+    canvas->timeline_semaphore_fd = -1;
+    canvas->timeline_ready = false;
 }
 
 
@@ -221,6 +424,11 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
         log_error("canvas creation requires a valid window handle");
         return NULL;
     }
+    if (!resolved.device)
+    {
+        log_error("canvas creation requires a valid device handle");
+        return NULL;
+    }
 
     DvzCanvas* canvas = (DvzCanvas*)calloc(1, sizeof(DvzCanvas));
     ANN(canvas);
@@ -233,6 +441,20 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->video_sink_enabled = false;
     canvas->stream_started = false;
     canvas->swapchain_sink_attached = false;
+    canvas->timeline_semaphore_fd = -1;
+
+    if (!canvas_device_check_extensions(canvas))
+    {
+        log_error("canvas device missing required extensions");
+        dvz_canvas_destroy(canvas);
+        return NULL;
+    }
+
+    if (canvas_create_allocator(canvas) != 0 || canvas_create_timeline(canvas) != 0)
+    {
+        dvz_canvas_destroy(canvas);
+        return NULL;
+    }
 
     dvz_canvas_window_surface_refresh(canvas);
     DvzStreamConfig stream_cfg = canvas_stream_config(canvas);
@@ -258,6 +480,13 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     {
         dvz_canvas_configure_video_sink(canvas, true, NULL);
     }
+
+    if (dvz_canvas_swapchain_init(canvas) != 0)
+    {
+        log_error("failed to initialize canvas swapchain state");
+        dvz_canvas_destroy(canvas);
+        return NULL;
+    }
     return canvas;
 }
 
@@ -274,12 +503,15 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     {
         return;
     }
+    dvz_canvas_swapchain_destroy(canvas);
     dvz_canvas_stream_enable_video(canvas, false, NULL);
     if (canvas->stream)
     {
         dvz_stream_destroy(canvas->stream);
         canvas->stream = NULL;
     }
+    canvas_destroy_timeline(canvas);
+    canvas_destroy_allocator(canvas);
     dvz_canvas_frame_pool_release(&canvas->frame_pool);
     dvz_canvas_timings_release(&canvas->timings);
     free(canvas);
@@ -326,6 +558,12 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         return -1;
     }
 
+    if (dvz_canvas_swapchain_acquire(canvas, frame) != 0)
+    {
+        log_warn("unable to acquire canvas frame from swapchain");
+        return -1;
+    }
+
     if (dvz_canvas_stream_start(canvas, frame) != 0)
     {
         return -1;
@@ -359,7 +597,12 @@ int dvz_canvas_submit(DvzCanvas* canvas)
 
     DvzClock clock = dvz_clock();
     dvz_clock_tick(&clock);
-    int result = dvz_canvas_stream_submit(canvas, canvas->frame_id);
+    uint64_t wait_value = canvas->timeline_value + 1;
+    int result = dvz_canvas_stream_submit(canvas, wait_value);
+    if (result == 0)
+    {
+        canvas->timeline_value = wait_value;
+    }
     double elapsed = dvz_clock_interval(&clock) * 1e6;
     dvz_canvas_timings_record(&canvas->timings, canvas->frame_id, elapsed);
     return result;

@@ -25,6 +25,8 @@
 #include "datoviz/canvas.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/stream.h"
+#include "datoviz/vk/device.h"
+#include "datoviz/vk/memory.h"
 #include "datoviz/window.h"
 
 
@@ -36,6 +38,7 @@
 typedef struct DvzCanvasFramePool DvzCanvasFramePool;
 typedef struct DvzCanvasTimingState DvzCanvasTimingState;
 typedef struct DvzCanvasSurfaceInfo DvzCanvasSurfaceInfo;
+typedef struct DvzCanvasSwapchain DvzCanvasSwapchain;
 
 
 
@@ -77,6 +80,13 @@ struct DvzCanvas
     void* draw_user_data;
     uint64_t frame_id;
     bool video_sink_enabled;
+    DvzVma allocator;
+    bool allocator_ready;
+    VkSemaphore timeline_semaphore;
+    int timeline_semaphore_fd;
+    uint64_t timeline_value;
+    bool timeline_ready;
+    DvzCanvasSwapchain* swapchain;
 };
 
 
@@ -130,3 +140,13 @@ int dvz_canvas_stream_enable_video(
     DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
 
 const DvzStreamSinkBackend* dvz_canvas_swapchain_sink_backend(void);
+
+int dvz_canvas_swapchain_init(DvzCanvas* canvas);
+
+void dvz_canvas_swapchain_destroy(DvzCanvas* canvas);
+
+int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame);
+
+int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value);
+
+void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
