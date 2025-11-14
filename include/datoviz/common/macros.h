@@ -114,45 +114,53 @@
 /*  Mute macros                                                                                  */
 /*************************************************************************************************/
 
+// NOTE: we need to disable automatic formatting otherwise clang-format messes up this list of
+// pragmas.
+
+// clang-format off
 #if CC_GCC
-#define MUTE_ON                                                                                   \
-    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")        \
-        _Pragma("GCC diagnostic ignored \"-Wundef\"")                                             \
-            _Pragma("GCC diagnostic ignored \"-Wcast-qual\"")                                     \
-                _Pragma("GCC diagnostic ignored \"-Wredundant-decls\"")                           \
-                    _Pragma("GCC diagnostic ignored \"-Wcast-qual\"")                             \
-                        _Pragma("GCC diagnostic ignored \"-Wunused\"") _Pragma(                   \
-                            "GCC diagnostic ignored \"-Wunused-parameter\"")                      \
-                            _Pragma("GCC diagnostic ignored \"-Wstrict-overflow\"") _Pragma(      \
-                                "GCC diagnostic ignored \"-Wswitch-default\"")                    \
-                                _Pragma("GCC diagnostic ignored \"-Wmissing-braces\"") _Pragma(   \
-                                    "GCC diagnostic ignored \"-Wmissing-field-initializers\"")    \
-                                    _Pragma("GCC diagnostic ignored \"-Wpedantic\"") _Pragma(     \
-                                        "GCC diagnostic ignored \"-Wimplicit-fallthrough\"")      \
-                                        _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")      \
-                                            _Pragma("GCC diagnostic ignored \"-Wshadow\"")
-
-
+#define MUTE_ON \
+_Pragma("GCC diagnostic push") \
+_Pragma("GCC diagnostic ignored \"-Wsign-conversion\"") \
+_Pragma("GCC diagnostic ignored \"-Wundef\"") \
+_Pragma("GCC diagnostic ignored \"-Wcast-qual\"") \
+_Pragma("GCC diagnostic ignored \"-Wredundant-decls\"") \
+_Pragma("GCC diagnostic ignored \"-Wcast-qual\"") \
+_Pragma("GCC diagnostic ignored \"-Wunused\"") \
+_Pragma("GCC diagnostic ignored \"-Wunused-parameter\"") \
+_Pragma("GCC diagnostic ignored \"-Wstrict-overflow\"") \
+_Pragma("GCC diagnostic ignored \"-Wswitch-default\"") \
+_Pragma("GCC diagnostic ignored \"-Wmissing-braces\"") \
+_Pragma("GCC diagnostic ignored \"-Wmissing-field-initializers\"") \
+_Pragma("GCC diagnostic ignored \"-Wpedantic\"") \
+_Pragma("GCC diagnostic ignored \"-Wimplicit-fallthrough\"") \
+_Pragma("GCC diagnostic ignored \"-Wsign-compare\"") \
+_Pragma("GCC diagnostic ignored \"-Wshadow\"")
 
 #define MUTE_OFF _Pragma("GCC diagnostic pop")
 #elif CC_CLANG
-#define MUTE_ON                                                                                   \
-    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")    \
-        _Pragma("clang diagnostic ignored \"-Wcast-qual\"") _Pragma(                              \
-            "clang diagnostic ignored \"-Wredundant-decls\"")                                     \
-            _Pragma("clang diagnostic ignored \"-Wcast-qual\"") _Pragma(                          \
-                "clang diagnostic ignored \"-Wstrict-overflow\"")                                 \
-                _Pragma("clang diagnostic ignored \"-Wswitch-default\"") _Pragma(                 \
-                    "clang diagnostic ignored \"-Wcast-align\"")                                  \
-                    _Pragma("clang diagnostic ignored \"-Wundef\"") _Pragma(                      \
-                        "clang diagnostic ignored \"-Wmissing-braces\"")                          \
-                        _Pragma("clang diagnostic ignored \"-Wnullability-extension\"") _Pragma(  \
-                            "clang diagnostic ignored \"-Wunguarded-availability-new\"")          \
-                            _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")     \
-                                _Pragma(                                                          \
-                                    "clang diagnostic ignored \"-Wnullability-completeness\"")
-_Pragma("clang diagnostic ignored \"-Wmissing-field-initializers\"")
-    _Pragma("clang diagnostic ignored \"-Wunused-private-field\"")
+#define MUTE_ON \
+_Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Wsign-conversion\"") \
+_Pragma("clang diagnostic ignored \"-Wcast-qual\"") \
+_Pragma("clang diagnostic ignored \"-Wredundant-decls\"") \
+_Pragma("clang diagnostic ignored \"-Wcast-qual\"") \
+_Pragma("clang diagnostic ignored \"-Wstrict-overflow\"") \
+_Pragma("clang diagnostic ignored \"-Wswitch-default\"") \
+_Pragma("clang diagnostic ignored \"-Wcast-align\"") \
+_Pragma("clang diagnostic ignored \"-Wundef\"") \
+_Pragma("clang diagnostic ignored \"-Wmissing-braces\"") \
+_Pragma("clang diagnostic ignored \"-Wnullability-extension\"") \
+_Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"") \
+_Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"") \
+_Pragma("clang diagnostic ignored \"-Wnullability-completeness\"") \
+_Pragma("clang diagnostic ignored \"-Wpedantic\"") \
+_Pragma("clang diagnostic ignored \"-Wsign-compare\"") \
+_Pragma("clang diagnostic ignored \"-Wpedantic\"") \
+_Pragma("clang diagnostic ignored \"-Wmissing-field-initializers\"") \
+_Pragma("clang diagnostic ignored \"-Wunused-private-field\"") \
+_Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"") \
+_Pragma("clang diagnostic ignored \"-Wshadow\"")
 
 #define MUTE_OFF _Pragma("clang diagnostic pop")
 #else
@@ -162,6 +170,7 @@ _Pragma("clang diagnostic ignored \"-Wmissing-field-initializers\"")
 #define MUTE_OFF
 // #pragma warning(pop)
 #endif
+// clang-format on
 
 
 
