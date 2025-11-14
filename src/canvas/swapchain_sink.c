@@ -181,7 +181,8 @@ static VkPipelineStageFlags canvas_stage_for_layout(VkImageLayout layout)
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
         return VK_PIPELINE_STAGE_TRANSFER_BIT;
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-        return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        // must overlap the wait mask used for image_available
+        return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
     default:
         return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
     }
@@ -214,9 +215,7 @@ static void canvas_cmd_transition(
     VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout, VkImageLayout new_layout)
 {
     if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
-    {
         return;
-    }
 
     VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -234,10 +233,49 @@ static void canvas_cmd_transition(
                 .layerCount = 1,
             },
     };
+
     barrier.srcAccessMask = canvas_access_for_layout(old_layout);
     barrier.dstAccessMask = canvas_access_for_layout(new_layout);
+
     VkPipelineStageFlags src_stage = canvas_stage_for_layout(old_layout);
     VkPipelineStageFlags dst_stage = canvas_stage_for_layout(new_layout);
+
+    vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
+}
+
+
+
+static void canvas_cmd_transition_swapchain(
+    VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout, VkImageLayout new_layout)
+{
+    if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
+        return;
+
+    VkImageMemoryBarrier barrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .oldLayout = old_layout,
+        .newLayout = new_layout,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+    };
+
+    barrier.srcAccessMask = canvas_access_for_layout(old_layout);
+    barrier.dstAccessMask = canvas_access_for_layout(new_layout);
+
+    VkPipelineStageFlags src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                     VK_PIPELINE_STAGE_TRANSFER_BIT; // same as pWaitDstStageMask
+
+    VkPipelineStageFlags dst_stage = canvas_stage_for_layout(new_layout);
+
     vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
 }
 
@@ -323,7 +361,7 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
     canvas_cmd_transition(
         cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    canvas_cmd_transition(
+    canvas_cmd_transition_swapchain(
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     canvas_cmd_copy_full(cmd, slot->offscreen_image, slot->swapchain_image, swapchain->extent);
@@ -331,7 +369,7 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
         cmd, slot->offscreen_image, slot->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    canvas_cmd_transition(
+    canvas_cmd_transition_swapchain(
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
