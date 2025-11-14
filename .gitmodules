@@ -13,3 +13,6 @@
 [submodule "external/kvazaar"]
 	path = external/kvazaar
 	url = https://github.com/ultravideo/kvazaar
+[submodule "external/glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw
