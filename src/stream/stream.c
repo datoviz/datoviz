@@ -46,6 +46,9 @@ static void stream_reset_frame(DvzStreamFrame* frame)
     frame->image = VK_NULL_HANDLE;
     frame->memory = VK_NULL_HANDLE;
     frame->memory_size = 0;
+    frame->command_buffer = VK_NULL_HANDLE;
+    frame->extent = (VkExtent2D){0, 0};
+    frame->handles_dirty = false;
     frame->memory_fd = -1;
     frame->wait_semaphore_fd = -1;
 }

@@ -28,3 +28,12 @@ typedef enum
     DVZ_CANVAS_FLAGS_PICK = 0x0020,
     DVZ_CANVAS_FLAGS_PUSH_SCALE = 0x0040, // HACK: shaders expect a push constant with scaling
 } DvzCanvasFlags;
+
+
+
+// Canvas frame acquisition status codes.
+typedef enum
+{
+    DVZ_CANVAS_FRAME_READY = 0,
+    DVZ_CANVAS_FRAME_WAIT_SURFACE = 1,
+} DvzCanvasFrameStatus;

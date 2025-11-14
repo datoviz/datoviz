@@ -131,7 +131,8 @@ dvz_canvas_set_draw_callback(DvzCanvas* canvas, DvzCanvasDraw callback, void* us
  * Acquire a new frame, refresh swapchain-backed metadata, and run the draw callback.
  *
  * @param canvas canvas handle
- * @returns 0 on success or a negative error code when acquisition fails
+ * @returns DVZ_CANVAS_FRAME_READY when a frame is ready, DVZ_CANVAS_FRAME_WAIT_SURFACE when the
+ * surface is unavailable, or a negative error code when acquisition fails
  */
 DVZ_EXPORT int dvz_canvas_frame(DvzCanvas* canvas);
 

@@ -58,6 +58,9 @@ typedef struct
     VkImage image;
     VkDeviceMemory memory;
     VkDeviceSize memory_size;
+    VkCommandBuffer command_buffer;
+    VkExtent2D extent;
+    bool handles_dirty;
     int memory_fd;
     int wait_semaphore_fd;
 } DvzStreamFrame;
@@ -97,4 +100,3 @@ struct DvzStreamSinkBackend
     int (*update)(DvzStreamSink* sink, const DvzStreamFrame* frame);
     void (*destroy)(DvzStreamSink* sink);
 };
-

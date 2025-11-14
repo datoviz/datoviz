@@ -558,15 +558,37 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         return -1;
     }
 
-    if (dvz_canvas_swapchain_acquire(canvas, frame) != 0)
+    int acquire_rc = dvz_canvas_swapchain_acquire(canvas, frame);
+    if (acquire_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+    {
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (acquire_rc != 0)
     {
         log_warn("unable to acquire canvas frame from swapchain");
         return -1;
     }
 
+    bool stream_was_started = canvas->stream_started;
     if (dvz_canvas_stream_start(canvas, frame) != 0)
     {
         return -1;
+    }
+    bool stream_started_now = !stream_was_started && canvas->stream_started;
+    if (stream_started_now)
+    {
+        dvz_canvas_swapchain_handles_refreshed(canvas);
+        frame->handles_dirty = false;
+    }
+    else if (canvas->stream_started && frame->handles_dirty)
+    {
+        if (dvz_stream_update(canvas->stream, frame) != 0)
+        {
+            log_error("failed to refresh canvas stream frame handles");
+            return -1;
+        }
+        dvz_canvas_swapchain_handles_refreshed(canvas);
+        frame->handles_dirty = false;
     }
 
     if (canvas->draw_callback)
@@ -574,7 +596,7 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         canvas->draw_callback(canvas, frame, canvas->draw_user_data);
     }
     canvas->frame_id++;
-    return 0;
+    return DVZ_CANVAS_FRAME_READY;
 }
 
 

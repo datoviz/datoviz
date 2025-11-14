@@ -42,13 +42,19 @@ typedef struct DvzCanvasSwapchainState DvzCanvasSwapchainState;
 struct DvzCanvasSwapchainSlot
 {
     VkImage offscreen_image;
+    VkImage swapchain_image;
     DvzAllocation offscreen_alloc;
     VkSemaphore image_available;
     VkSemaphore render_finished;
     VkFence in_flight;
-    int memory_fd;
+    VkCommandBuffer command_buffer;
+    VkImageLayout offscreen_layout;
+    VkImageLayout swapchain_layout;
     uint32_t image_index;
+    int memory_fd;
     bool ready;
+    bool commands_recording;
+    bool handles_dirty;
 };
 
 
@@ -62,11 +68,16 @@ struct DvzCanvasSwapchain
     VkExtent2D extent;
     uint32_t image_count;
     DvzCanvasSwapchainSlot* slots;
-    uint32_t current_image;
+    VkImage* swapchain_images;
+    VkImageLayout* swapchain_layouts;
+    uint32_t frame_index;
     bool dirty;
     VkQueue queue;
     DvzQueue* queue_ref;
     DvzCanvasSwapchainSlot* active_slot;
+    VkCommandPool command_pool;
+    uint32_t queue_family;
+    uint64_t export_serial;
 };
 
 
@@ -143,6 +154,181 @@ static VkFormat canvas_surface_format(const DvzCanvas* canvas)
 
 
 
+static VkPipelineStageFlags canvas_stage_for_layout(VkImageLayout layout)
+{
+    switch (layout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        return VK_PIPELINE_STAGE_TRANSFER_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+        return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    default:
+        return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+    }
+}
+
+
+
+static VkAccessFlags canvas_access_for_layout(VkImageLayout layout)
+{
+    switch (layout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        return 0;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return VK_ACCESS_TRANSFER_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        return VK_ACCESS_TRANSFER_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+        return 0;
+    default:
+        return 0;
+    }
+}
+
+
+
+static void canvas_cmd_transition(
+    VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout, VkImageLayout new_layout)
+{
+    if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
+    VkImageMemoryBarrier barrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .oldLayout = old_layout,
+        .newLayout = new_layout,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+    };
+    barrier.srcAccessMask = canvas_access_for_layout(old_layout);
+    barrier.dstAccessMask = canvas_access_for_layout(new_layout);
+    VkPipelineStageFlags src_stage = canvas_stage_for_layout(old_layout);
+    VkPipelineStageFlags dst_stage = canvas_stage_for_layout(new_layout);
+    vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
+}
+
+
+
+static void canvas_cmd_copy_full(
+    VkCommandBuffer cmd, VkImage src, VkImage dst, VkExtent2D extent)
+{
+    if (cmd == VK_NULL_HANDLE || src == VK_NULL_HANDLE || dst == VK_NULL_HANDLE)
+    {
+        return;
+    }
+    VkImageCopy region = {
+        .srcSubresource =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .mipLevel = 0,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+        .dstSubresource =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .mipLevel = 0,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+        .extent =
+            {
+                .width = extent.width,
+                .height = extent.height,
+                .depth = 1,
+            },
+    };
+    vkCmdCopyImage(
+        cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+        &region);
+}
+
+
+
+static int canvas_slot_begin_recording(
+    DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
+{
+    ANN(swapchain);
+    ANN(slot);
+    VkCommandBuffer cmd = slot->command_buffer;
+    if (cmd == VK_NULL_HANDLE)
+    {
+        log_error("canvas swapchain slot missing command buffer");
+        return -1;
+    }
+    VK_CHECK_RESULT(vkResetCommandBuffer(cmd, 0));
+    VkCommandBufferBeginInfo begin_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+    };
+    VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &begin_info));
+    canvas_cmd_transition(cmd, slot->offscreen_image, slot->offscreen_layout,
+                          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    slot->commands_recording = true;
+    return 0;
+}
+
+
+
+static int canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
+{
+    ANN(swapchain);
+    ANN(slot);
+    if (!slot->commands_recording || slot->command_buffer == VK_NULL_HANDLE)
+    {
+        return 0;
+    }
+    if (slot->swapchain_image == VK_NULL_HANDLE)
+    {
+        log_error("canvas slot missing swapchain image");
+        slot->commands_recording = false;
+        return -1;
+    }
+    VkCommandBuffer cmd = slot->command_buffer;
+    canvas_cmd_transition(cmd, slot->offscreen_image, slot->offscreen_layout,
+                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    slot->offscreen_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    canvas_cmd_transition(cmd, slot->swapchain_image, slot->swapchain_layout,
+                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    canvas_cmd_copy_full(cmd, slot->offscreen_image, slot->swapchain_image, swapchain->extent);
+    canvas_cmd_transition(cmd, slot->offscreen_image, slot->offscreen_layout,
+                          VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    canvas_cmd_transition(cmd, slot->swapchain_image, slot->swapchain_layout,
+                          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
+    slot->commands_recording = false;
+    if (swapchain->swapchain_layouts && slot->image_index < swapchain->image_count)
+    {
+        swapchain->swapchain_layouts[slot->image_index] = slot->swapchain_layout;
+    }
+    return 0;
+}
+
+
+
 static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 {
     ANN(swapchain);
@@ -215,14 +401,30 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     VkImage* images = (VkImage*)calloc(count, sizeof(VkImage));
     ANN(images);
     vkGetSwapchainImagesKHR(device, swapchain->handle, &count, images);
+    if (swapchain->swapchain_images)
+    {
+        free(swapchain->swapchain_images);
+    }
+    swapchain->swapchain_images = images;
+    if (swapchain->swapchain_layouts)
+    {
+        free(swapchain->swapchain_layouts);
+    }
+    swapchain->swapchain_layouts =
+        (VkImageLayout*)calloc(count, sizeof(VkImageLayout));
+    ANN(swapchain->swapchain_layouts);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        swapchain->swapchain_layouts[i] = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
 
     free(swapchain->slots);
     swapchain->slots =
         (DvzCanvasSwapchainSlot*)calloc(count, sizeof(DvzCanvasSwapchainSlot));
     ANN(swapchain->slots);
     swapchain->image_count = count;
-    swapchain->current_image = 0;
     swapchain->active_slot = NULL;
+    swapchain->export_serial++;
 
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
@@ -235,6 +437,28 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     for (uint32_t i = 0; i < count; ++i)
     {
         DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
+        dvz_memset(slot, sizeof(*slot), 0, sizeof(*slot));
+        slot->swapchain_image = VK_NULL_HANDLE;
+        slot->image_index = UINT32_MAX;
+        slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+        slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+        slot->handles_dirty = true;
+        slot->commands_recording = false;
+        slot->memory_fd = -1;
+
+        if (swapchain->command_pool == VK_NULL_HANDLE)
+        {
+            log_error("canvas swapchain missing command pool");
+            continue;
+        }
+        VkCommandBufferAllocateInfo cb_info = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool = swapchain->command_pool,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1,
+        };
+        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cb_info, &slot->command_buffer));
+
         VkImageCreateInfo img_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType = VK_IMAGE_TYPE_2D,
@@ -273,14 +497,14 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->ready = true;
     }
 
-    free(images);
     swapchain->dirty = false;
     return VK_SUCCESS;
 }
 
 
 
-static void canvas_destroy_slot(VkDevice device, DvzCanvasSwapchainSlot* slot, DvzVma* allocator)
+static void canvas_destroy_slot(
+    VkDevice device, VkCommandPool command_pool, DvzCanvasSwapchainSlot* slot, DvzVma* allocator)
 {
     if (!slot)
     {
@@ -314,6 +538,14 @@ static void canvas_destroy_slot(VkDevice device, DvzCanvasSwapchainSlot* slot, D
     }
 #endif
     slot->ready = false;
+    slot->swapchain_image = VK_NULL_HANDLE;
+    slot->commands_recording = false;
+    slot->handles_dirty = true;
+    if (slot->command_buffer != VK_NULL_HANDLE && command_pool != VK_NULL_HANDLE)
+    {
+        vkFreeCommandBuffers(device, command_pool, 1, &slot->command_buffer);
+        slot->command_buffer = VK_NULL_HANDLE;
+    }
 }
 
 
@@ -329,7 +561,8 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     {
         for (uint32_t i = 0; i < swapchain->image_count; ++i)
         {
-            canvas_destroy_slot(device, &swapchain->slots[i], &swapchain->canvas->allocator);
+            canvas_destroy_slot(
+                device, swapchain->command_pool, &swapchain->slots[i], &swapchain->canvas->allocator);
         }
         free(swapchain->slots);
         swapchain->slots = NULL;
@@ -340,9 +573,19 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
         vkDestroySwapchainKHR(device, swapchain->handle, NULL);
         swapchain->handle = VK_NULL_HANDLE;
     }
+    if (swapchain->swapchain_images)
+    {
+        free(swapchain->swapchain_images);
+        swapchain->swapchain_images = NULL;
+    }
+    if (swapchain->swapchain_layouts)
+    {
+        free(swapchain->swapchain_layouts);
+        swapchain->swapchain_layouts = NULL;
+    }
     swapchain->image_count = 0;
-    swapchain->current_image = 0;
     swapchain->active_slot = NULL;
+    swapchain->frame_index = 0;
     swapchain->dirty = true;
 }
 
@@ -372,10 +615,6 @@ static int canvas_swapchain_ensure(DvzCanvas* canvas)
     {
         return -1;
     }
-    if (state->image_count == 0)
-    {
-        return -1;
-    }
     if (!state->dirty && state->handle != VK_NULL_HANDLE)
     {
         return 0;
@@ -383,11 +622,15 @@ static int canvas_swapchain_ensure(DvzCanvas* canvas)
 
     canvas_swapchain_cleanup(state);
     VkResult res = canvas_create_swapchain(state);
-    if (res != VK_SUCCESS)
+    if (res == VK_SUCCESS)
     {
-        return -1;
+        return 0;
     }
-    return 0;
+    if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_ERROR_SURFACE_LOST_KHR)
+    {
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    return -1;
 }
 
 
@@ -414,10 +657,19 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->canvas = canvas;
     canvas->swapchain->handle = VK_NULL_HANDLE;
     canvas->swapchain->dirty = true;
+    canvas->swapchain->frame_index = 0;
     canvas->swapchain->queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
     ANN(canvas->swapchain->queue_ref);
     canvas->swapchain->queue = dvz_queue_handle(canvas->swapchain->queue_ref);
     ANNVK(canvas->swapchain->queue);
+    canvas->swapchain->queue_family = dvz_queue_family(canvas->swapchain->queue_ref);
+    VkDevice device = canvas_device_handle(canvas);
+    VkCommandPoolCreateInfo pool_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = canvas->swapchain->queue_family,
+    };
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &pool_info, NULL, &canvas->swapchain->command_pool));
     return 0;
 }
 
@@ -434,7 +686,13 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas)
     {
         return;
     }
+    VkDevice device = canvas_device_handle(canvas);
     canvas_swapchain_cleanup(canvas->swapchain);
+    if (canvas->swapchain->command_pool != VK_NULL_HANDLE)
+    {
+        vkDestroyCommandPool(device, canvas->swapchain->command_pool, NULL);
+        canvas->swapchain->command_pool = VK_NULL_HANDLE;
+    }
     free(canvas->swapchain);
     canvas->swapchain = NULL;
 }
@@ -453,6 +711,28 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas)
         return;
     }
     canvas->swapchain->dirty = true;
+}
+
+
+
+bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->swapchain || !canvas->swapchain->active_slot)
+    {
+        return false;
+    }
+    return canvas->swapchain->active_slot->handles_dirty;
+}
+
+
+
+void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->swapchain || !canvas->swapchain->active_slot)
+    {
+        return;
+    }
+    canvas->swapchain->active_slot->handles_dirty = false;
 }
 
 
@@ -480,22 +760,33 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     {
         state->dirty = true;
     }
-    if (canvas_swapchain_ensure(canvas) != 0)
+
+    int ensure_rc = canvas_swapchain_ensure(canvas);
+    if (ensure_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+    {
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (ensure_rc != 0)
     {
         return -1;
     }
 
+    if (state->image_count == 0)
+    {
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+
     VkDevice device = canvas_device_handle(canvas);
-    uint32_t slot_idx = state->current_image % state->image_count;
+    uint32_t slot_idx = state->frame_index % state->image_count;
     DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
 
+    uint32_t image_index = 0;
     VkResult res = vkAcquireNextImageKHR(
-        device, state->handle, UINT64_MAX, slot->image_available, VK_NULL_HANDLE,
-        &slot->image_index);
-    if (res == VK_ERROR_OUT_OF_DATE_KHR)
+        device, state->handle, UINT64_MAX, slot->image_available, VK_NULL_HANDLE, &image_index);
+    if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
-        return -1;
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
     }
     if (res != VK_SUCCESS)
     {
@@ -503,6 +794,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         return -1;
     }
 
+    state->frame_index = (state->frame_index + 1) % state->image_count;
     if (!slot->ready)
     {
         return -1;
@@ -510,13 +802,36 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 
     vkWaitForFences(device, 1, &slot->in_flight, VK_TRUE, UINT64_MAX);
     vkResetFences(device, 1, &slot->in_flight);
+    slot->image_index = image_index;
+    if (state->swapchain_images && image_index < state->image_count)
+    {
+        slot->swapchain_image = state->swapchain_images[image_index];
+    }
+    else
+    {
+        slot->swapchain_image = VK_NULL_HANDLE;
+    }
+    if (state->swapchain_layouts && image_index < state->image_count)
+    {
+        slot->swapchain_layout = state->swapchain_layouts[image_index];
+    }
+    else
+    {
+        slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    }
 
-    state->current_image = (state->current_image + 1) % state->image_count;
+    if (canvas_slot_begin_recording(state, slot) != 0)
+    {
+        return -1;
+    }
+
     state->active_slot = slot;
-
     frame->image = slot->offscreen_image;
     frame->memory = slot->offscreen_alloc.info.deviceMemory;
     frame->memory_size = slot->offscreen_alloc.info.size;
+    frame->command_buffer = slot->command_buffer;
+    frame->extent = state->extent;
+    frame->handles_dirty = slot->handles_dirty;
     frame->memory_fd = slot->memory_fd;
     frame->wait_semaphore_fd = canvas->timeline_semaphore_fd;
     return 0;
@@ -540,9 +855,15 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         return -1;
     }
 
-    VkDevice device = canvas_device_handle(canvas);
+    if (canvas_slot_finish_recording(state, state->active_slot) != 0)
+    {
+        state->active_slot = NULL;
+        return -1;
+    }
+    VkCommandBuffer cmd = state->active_slot->command_buffer;
     VkSemaphore wait_semaphores[] = {state->active_slot->image_available};
-    VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkPipelineStageFlags wait_stages[] = {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT};
     VkSemaphore signal_semaphores[] = {canvas->timeline_semaphore,
                                        state->active_slot->render_finished};
     uint64_t signal_values[] = {wait_value};
@@ -557,8 +878,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = wait_semaphores,
         .pWaitDstStageMask = wait_stages,
-        .commandBufferCount = 0,
-        .pCommandBuffers = NULL,
+        .commandBufferCount = (cmd != VK_NULL_HANDLE) ? 1U : 0U,
+        .pCommandBuffers = (cmd != VK_NULL_HANDLE) ? &cmd : NULL,
         .signalSemaphoreCount = 2,
         .pSignalSemaphores = signal_semaphores,
     };
