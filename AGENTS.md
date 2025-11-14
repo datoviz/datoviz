@@ -317,6 +317,7 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * Document every new module-level function with a short Doxygen-style docstring immediately above the definition. Start the block with `/**`, provide a one-sentence summary, leave a blank line, then add `@param` tags for every argument and an `@return` tag whenever the function returns a value (plus `@note`/`@see` when helpful). Use a single space between the leading `*` and tag identifiers (e.g., ` * @param ...`), avoid extra spacing, keep the description line within the project's preferred width, and treat it as the canonical explanation of the symbol's behavior.
 * Visually separate neighbouring top-level functions with three newline characters (two empty lines) to make each implementation stand out. Attach any descriptive comments directly above the function and keep extra text out of the blank space.
 * Reserve the `dvz_` prefix for symbols exposed via public headers. Internal `static` helpers should avoid `dvz_` (use `_dvz_` or no prefix) so the public naming space stays predictable.
+* Prefer `dvz_memcpy()` / `dvz_memset()` from `src/common/_alloc.h` / `_compat.h` over `memcpy()` / `memset()` so every copy or fill goes through the shared allocator wrappers.
 
 ### 🧱 **C File Organization**
 
