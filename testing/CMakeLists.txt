@@ -100,6 +100,7 @@ target_link_libraries(dvztest
     datoviz_thread
     datoviz_input
     datoviz_window
+    datoviz_canvas
     datoviz_stream
     datoviz_video
     datoviz_vk
@@ -135,6 +136,7 @@ target_include_directories(dvztest
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/src/canvas
     ${PROJECT_SOURCE_DIR}/external/volk
 )
 

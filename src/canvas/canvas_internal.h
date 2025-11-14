@@ -1,0 +1,132 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Canvas internals                                                                             */
+/*************************************************************************************************/
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include <volk.h>
+
+#include "datoviz/canvas.h"
+#include "datoviz/common/macros.h"
+#include "datoviz/stream.h"
+#include "datoviz/window.h"
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzCanvasFramePool DvzCanvasFramePool;
+typedef struct DvzCanvasTimingState DvzCanvasTimingState;
+typedef struct DvzCanvasSurfaceInfo DvzCanvasSurfaceInfo;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzCanvasFramePool
+{
+    DvzStreamFrame* frames;
+    uint32_t frame_count;
+    uint32_t current_index;
+};
+
+
+
+struct DvzCanvasTimingState
+{
+    DvzFrameTiming* samples;
+    size_t capacity;
+    size_t count;
+    size_t head;
+};
+
+
+
+struct DvzCanvas
+{
+    DvzCanvasConfig cfg;
+    DvzWindow* window;
+    const DvzWindowSurface* surface;
+    DvzDevice* device;
+    DvzStream* stream;
+    bool stream_started;
+    bool swapchain_sink_attached;
+    DvzCanvasFramePool frame_pool;
+    DvzCanvasTimingState timings;
+    DvzCanvasDraw draw_callback;
+    void* draw_user_data;
+    uint64_t frame_id;
+    bool video_sink_enabled;
+};
+
+
+
+/*************************************************************************************************/
+/*  Surface info                                                                                 */
+/*************************************************************************************************/
+
+struct DvzCanvasSurfaceInfo
+{
+    VkExtent2D extent;
+    VkFormat format;
+    float scale_x;
+    float scale_y;
+};
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+void dvz_canvas_frame_pool_init(DvzCanvasFramePool* pool, uint32_t frame_count);
+
+void dvz_canvas_frame_pool_release(DvzCanvasFramePool* pool);
+
+DvzStreamFrame* dvz_canvas_frame_pool_current(DvzCanvasFramePool* pool);
+
+DvzStreamFrame* dvz_canvas_frame_pool_rotate(DvzCanvasFramePool* pool);
+
+void dvz_canvas_timings_init(DvzCanvasTimingState* timings, size_t capacity);
+
+void dvz_canvas_timings_release(DvzCanvasTimingState* timings);
+
+void dvz_canvas_timings_record(
+    DvzCanvasTimingState* timings, uint64_t frame_id, double cpu_submit_us);
+
+const DvzFrameTiming* dvz_canvas_timings_view(const DvzCanvasTimingState* timings, size_t* count);
+
+void dvz_canvas_window_surface_refresh(DvzCanvas* canvas);
+
+DvzCanvasSurfaceInfo dvz_canvas_window_surface_info(const DvzCanvas* canvas);
+
+int dvz_canvas_stream_prepare(DvzCanvas* canvas);
+
+int dvz_canvas_stream_start(DvzCanvas* canvas, const DvzStreamFrame* frame);
+
+int dvz_canvas_stream_submit(DvzCanvas* canvas, uint64_t wait_value);
+
+int dvz_canvas_stream_enable_video(
+    DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
+
+const DvzStreamSinkBackend* dvz_canvas_swapchain_sink_backend(void);

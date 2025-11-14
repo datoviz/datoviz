@@ -282,6 +282,7 @@ add_subdirectory(math)
 add_subdirectory(thread)
 add_subdirectory(input)
 add_subdirectory(window)
+add_subdirectory(canvas)
 add_subdirectory(stream)
 add_subdirectory(video)
 add_subdirectory(vk)
@@ -299,6 +300,7 @@ set(DVZ_COMPONENTS
     datoviz_thread
     datoviz_input
     datoviz_window
+    datoviz_canvas
     datoviz_stream
     datoviz_video
     datoviz_vk
