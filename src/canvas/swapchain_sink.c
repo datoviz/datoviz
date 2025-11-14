@@ -896,17 +896,28 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         return -1;
     }
     VkCommandBuffer cmd = state->active_slot->command_buffer;
+
     VkSemaphore wait_semaphores[] = {state->active_slot->image_available};
+
     VkPipelineStageFlags wait_stages[] = {
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT};
+
     VkSemaphore signal_semaphores[] = {
-        canvas->timeline_semaphore, state->active_slot->render_finished};
-    uint64_t signal_values[] = {wait_value};
+        state->active_slot->render_finished, // binary
+        canvas->timeline_semaphore           // timeline
+    };
+
+    uint64_t signal_values[] = {
+        0,         // ignored for binary semaphore
+        wait_value // real timeline increment
+    };
+
     VkTimelineSemaphoreSubmitInfo timeline_info = {
         .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
-        .signalSemaphoreValueCount = 1,
+        .signalSemaphoreValueCount = 2,
         .pSignalSemaphoreValues = signal_values,
     };
+
     VkSubmitInfo submit_info = {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .pNext = &timeline_info,
@@ -918,6 +929,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         .signalSemaphoreCount = 2,
         .pSignalSemaphores = signal_semaphores,
     };
+
 
     VkQueue queue = state->queue;
     VkResult submit_res = vkQueueSubmit(queue, 1, &submit_info, state->active_slot->in_flight);
