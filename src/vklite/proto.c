@@ -250,7 +250,7 @@ void dvz_proto_transition(
     dvz_barrier_image_access(bimg, 0, access);
     dvz_barrier_image_layout(bimg, 0, layout);
 
-    dvz_cmd_barriers(cmds, 0, barriers);
+    dvz_cmd_barriers(cmds, barriers);
 
     // End the command buffer.
     dvz_cmd_end(cmds);
@@ -300,14 +300,14 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
         bimg, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
     dvz_barrier_image_layout(
         bimg, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    dvz_cmd_barriers(cmds, 0, barriers);
+    dvz_cmd_barriers(cmds, barriers);
 
     // Copy image to buffer.
     DvzImageRegion region = {0};
     dvz_image_region(&region);
     dvz_image_region_extent(&region, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
     dvz_cmd_copy_image_to_buffer(
-        cmds, 0, dvz_image_handle(&proto->img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, dvz_image_handle(&proto->img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(staging), 0);
 
     // End the command buffer.

@@ -126,7 +126,13 @@
                             _Pragma("GCC diagnostic ignored \"-Wstrict-overflow\"") _Pragma(      \
                                 "GCC diagnostic ignored \"-Wswitch-default\"")                    \
                                 _Pragma("GCC diagnostic ignored \"-Wmissing-braces\"") _Pragma(   \
-                                    "GCC diagnostic ignored \"-Wmissing-field-initializers\"")
+                                    "GCC diagnostic ignored \"-Wmissing-field-initializers\"")    \
+                                    _Pragma("GCC diagnostic ignored \"-Wpedantic\"") _Pragma(     \
+                                        "GCC diagnostic ignored \"-Wimplicit-fallthrough\"")      \
+                                        _Pragma("GCC diagnostic ignored \"-Wsign-compare\"")      \
+                                            _Pragma("GCC diagnostic ignored \"-Wshadow\"")
+
+
 
 #define MUTE_OFF _Pragma("GCC diagnostic pop")
 #elif CC_CLANG

@@ -116,7 +116,7 @@ void dvz_descriptors_image(
 
 
 void dvz_cmd_bind_descriptors(
-    DvzCommands* cmds, uint32_t idx, VkPipelineBindPoint bind_point, DvzDescriptors* descriptors,
+    DvzCommands* cmds, VkPipelineBindPoint bind_point, DvzDescriptors* descriptors,
     uint32_t first_set, uint32_t set_count, uint32_t dynamic_count, uint32_t* dynamic_idxs)
 {
     ANN(cmds);
@@ -125,8 +125,11 @@ void dvz_cmd_bind_descriptors(
     DvzSlots* slots = descriptors->slots;
     ANN(slots);
 
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
+
     vkCmdBindDescriptorSets(
-        cmds->cmds[idx], bind_point, slots->pipeline_layout, //
+        cmd, bind_point, slots->pipeline_layout, //
         first_set, set_count, &descriptors->vk_descriptors[first_set], dynamic_count,
         dynamic_idxs);
 }

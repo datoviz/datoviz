@@ -117,7 +117,7 @@ DVZ_EXPORT void dvz_descriptors_image(
  * @param dynamic_idxs the indices of the dynamic uniforms
  */
 DVZ_EXPORT void dvz_cmd_bind_descriptors(
-    DvzCommands* cmds, uint32_t idx, VkPipelineBindPoint bind_point, DvzDescriptors* descriptors,
+    DvzCommands* cmds, VkPipelineBindPoint bind_point, DvzDescriptors* descriptors,
     uint32_t first_set, uint32_t set_count, uint32_t dynamic_count, uint32_t* dynamic_idxs);
 
 

@@ -14,22 +14,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+MUTE_ON
 #define MINIMP4_IMPLEMENTATION
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wextra"
-#pragma GCC diagnostic ignored "-Wpedantic"
-#endif
 #include "../../external/minimp4.h"
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+MUTE_OFF
 
 #include "_alloc.h"
 #include "_log.h"

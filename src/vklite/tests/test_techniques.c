@@ -69,11 +69,11 @@ int test_technique_triangle(TstSuite* suite, TstItem* tstitem)
     DvzCommands* cmds = dvz_proto_commands(&proto);
     ANN(cmds);
     dvz_cmd_begin(cmds);
-    dvz_cmd_barriers(cmds, 0, &proto.barriers);
-    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_barriers(cmds, &proto.barriers);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
     dvz_cmd_end(cmds);
 
     // Submit the command buffer.
@@ -279,14 +279,14 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
 
     // Initial barrier for the texture: inner rendering.
-    dvz_cmd_barriers(cmds, 0, &ibarriers); // image transition of inner image for render
+    dvz_cmd_barriers(cmds, &ibarriers); // image transition of inner image for render
 
     // Inner rendering.
     {
-        dvz_cmd_rendering_begin(cmds, 0, &irendering);
-        dvz_cmd_bind_graphics(cmds, 0, &igraphics);
-        dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-        dvz_cmd_rendering_end(cmds, 0);
+        dvz_cmd_rendering_begin(cmds, &irendering);
+        dvz_cmd_bind_graphics(cmds, &igraphics);
+        dvz_cmd_draw(cmds, 0, 3, 0, 1);
+        dvz_cmd_rendering_end(cmds);
     }
 
     // Now, need to transition inner image from render to texture.
@@ -299,18 +299,18 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         dvz_barrier_image_layout(
             ibimg, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        dvz_cmd_barriers(cmds, 0, &ibarriers);
+        dvz_cmd_barriers(cmds, &ibarriers);
     }
 
     // Outer rendering.
-    dvz_cmd_barriers(cmds, 0, &proto.barriers); // image transition of outer image for render
+    dvz_cmd_barriers(cmds, &proto.barriers); // image transition of outer image for render
     {
-        dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-        dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
+        dvz_cmd_rendering_begin(cmds, &proto.rendering);
+        dvz_cmd_bind_graphics(cmds, &proto.graphics);
         dvz_cmd_bind_descriptors(
-            cmds, 0, VK_PIPELINE_BIND_POINT_GRAPHICS, &proto.desc, 0, 1, 0, NULL);
-        dvz_cmd_draw(cmds, 0, 0, 6, 0, 1);
-        dvz_cmd_rendering_end(cmds, 0);
+            cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &proto.desc, 0, 1, 0, NULL);
+        dvz_cmd_draw(cmds, 0, 6, 0, 1);
+        dvz_cmd_rendering_end(cmds);
     }
 
     dvz_cmd_end(cmds);
@@ -474,19 +474,19 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     DvzCommands* cmds = dvz_proto_commands(&proto);
     ANN(cmds);
     dvz_cmd_begin(cmds);
-    dvz_cmd_barriers(cmds, 0, &proto.barriers);
+    dvz_cmd_barriers(cmds, &proto.barriers);
 
     // Mask rendering.
-    dvz_cmd_rendering_begin(cmds, 0, &mrendering);
-    dvz_cmd_bind_graphics(cmds, 0, &mgraphics);
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &mrendering);
+    dvz_cmd_bind_graphics(cmds, &mgraphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
 
     // Triangle rendering.
-    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
 
     dvz_cmd_end(cmds);
 
@@ -613,11 +613,11 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
     // NOTE: prevent a write after write sync hazard: we don't do the initial image transition on
     // the resolve image since it is written by the MSAA rendering
-    // dvz_cmd_barriers(cmds, 0, &proto.barriers);
-    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, 0, &proto.graphics);
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    // dvz_cmd_barriers(cmds, &proto.barriers);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
     dvz_cmd_end(cmds);
 
     // Submit the command buffer.
@@ -732,11 +732,11 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
 
     // Compute pass
-    dvz_cmd_bind_compute(cmds, 0, &compute);
-    dvz_cmd_bind_descriptors(cmds, 0, VK_PIPELINE_BIND_POINT_COMPUTE, &desc, 0, 1, 0, NULL);
+    dvz_cmd_bind_compute(cmds, &compute);
+    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_COMPUTE, &desc, 0, 1, 0, NULL);
 
     // Dispatch 4 workgroups → each vertex is shifted in compute shader
-    dvz_cmd_dispatch(cmds, 0, 4, 1, 1);
+    dvz_cmd_dispatch(cmds, 4, 1, 1);
 
     // Barrier: compute write → graphics vertex read
     {
@@ -746,15 +746,15 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
             b, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT);
         dvz_barrier_buffer_access(
             b, VK_ACCESS_2_SHADER_WRITE_BIT, VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT);
-        dvz_cmd_barriers(cmds, 0, &proto.barriers);
+        dvz_cmd_barriers(cmds, &proto.barriers);
     }
 
     // Graphics pass
-    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, 0, graphics);
-    dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &buf, (DvzSize[]){0});
-    dvz_cmd_draw(cmds, 0, 0, 4, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, graphics);
+    dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &buf, (DvzSize[]){0});
+    dvz_cmd_draw(cmds, 0, 4, 0, 1);
+    dvz_cmd_rendering_end(cmds);
     dvz_cmd_end(cmds);
     dvz_cmd_submit(cmds);
 
@@ -853,7 +853,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
         DvzCommands* cmds = dvz_proto_commands(&proto);
         dvz_cmd_begin(cmds);
-        dvz_cmd_barriers(cmds, 0, &barriers);
+        dvz_cmd_barriers(cmds, &barriers);
         dvz_cmd_end(cmds);
         dvz_cmd_submit(cmds); // simple blocking submit in vklite
     }
@@ -954,11 +954,11 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
 
     /* COLOR PASS */
-    dvz_cmd_rendering_begin(cmds, 0, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, 0, &gfx_color);
-    dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, &gfx_color);
+    dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbuf, (DvzSize[]){0});
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
 
     /* PICKING PASS */
     DvzRendering pickrend = {0};
@@ -971,11 +971,11 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_attachment_ops(patt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(patt, (VkClearValue){.color = {.uint32 = {0}}});
 
-    dvz_cmd_rendering_begin(cmds, 0, &pickrend);
-    dvz_cmd_bind_graphics(cmds, 0, &gfx_pick);
-    dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbuf, (DvzSize[]){0});
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &pickrend);
+    dvz_cmd_bind_graphics(cmds, &gfx_pick);
+    dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbuf, (DvzSize[]){0});
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
 
     /* TRANSITION pickimg → TRANSFER_SRC_OPTIMAL + COPY 1 PIXEL TO STAGING */
 
@@ -993,7 +993,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_barrier_image_mip(bimg, 0, 1);
     dvz_barrier_image_layers(bimg, 0, 1);
 
-    dvz_cmd_barriers(cmds, 0, &barriers);
+    dvz_cmd_barriers(cmds, &barriers);
 
     // Define the region: 1 pixel at the center of the image.
     DvzImageRegion region = {0};
@@ -1004,7 +1004,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     // Copy that pixel into the staging buffer.
     dvz_cmd_copy_image_to_buffer(
-        cmds, 0, dvz_image_handle(&pickimg, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, dvz_image_handle(&pickimg, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(&staging), 0);
 
     dvz_cmd_end(cmds);
@@ -1400,17 +1400,17 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_barrier_image_mip(b1, 0, 1);
         dvz_barrier_image_layers(b1, 0, 1);
 
-        dvz_cmd_barriers(cmds, 0, &barriers);
+        dvz_cmd_barriers(cmds, &barriers);
     }
 
     // Pass 1: accumulation.
     {
         DvzSize offsets = 0;
-        dvz_cmd_rendering_begin(cmds, 0, &accum_rendering);
-        dvz_cmd_bind_graphics(cmds, 0, &g_accum);
-        dvz_cmd_bind_vertex_buffers(cmds, 0, 0, 1, &vbo, &offsets);
-        dvz_cmd_draw(cmds, 0, 0, vertex_count, 0, 1);
-        dvz_cmd_rendering_end(cmds, 0);
+        dvz_cmd_rendering_begin(cmds, &accum_rendering);
+        dvz_cmd_bind_graphics(cmds, &g_accum);
+        dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbo, &offsets);
+        dvz_cmd_draw(cmds, 0, vertex_count, 0, 1);
+        dvz_cmd_rendering_end(cmds);
     }
 
     // Transition accum images: COLOR_ATTACHMENT_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL.
@@ -1447,18 +1447,17 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_barrier_image_mip(b1, 0, 1);
         dvz_barrier_image_layers(b1, 0, 1);
 
-        dvz_cmd_barriers(cmds, 0, &barriers);
+        dvz_cmd_barriers(cmds, &barriers);
     }
 
     // Pass 2: composite full-screen.
     {
-        dvz_cmd_rendering_begin(cmds, 0, &composite_rendering);
-        dvz_cmd_bind_graphics(cmds, 0, &g_comp);
-        dvz_cmd_bind_descriptors(
-            cmds, 0, VK_PIPELINE_BIND_POINT_GRAPHICS, &desc_comp, 0, 1, 0, NULL);
+        dvz_cmd_rendering_begin(cmds, &composite_rendering);
+        dvz_cmd_bind_graphics(cmds, &g_comp);
+        dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &desc_comp, 0, 1, 0, NULL);
         // Fullscreen triangle: 3 vertices from VS (gl_VertexIndex).
-        dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-        dvz_cmd_rendering_end(cmds, 0);
+        dvz_cmd_draw(cmds, 0, 3, 0, 1);
+        dvz_cmd_rendering_end(cmds);
     }
 
     dvz_cmd_end(cmds);
@@ -1697,7 +1696,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     dvz_cmd_begin(cmds);
     // Ensure proto color/depth attachments are transitioned before use in this test.
-    dvz_cmd_barriers(cmds, 0, &proto.barriers);
+    dvz_cmd_barriers(cmds, &proto.barriers);
 
     // Transition depth_img to DEPTH_STENCIL_ATTACHMENT_OPTIMAL for pass 1.
     {
@@ -1714,14 +1713,14 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_barrier_image_mip(bimg, 0, 1);
         dvz_barrier_image_layers(bimg, 0, 1);
-        dvz_cmd_barriers(cmds, 0, &barriers);
+        dvz_cmd_barriers(cmds, &barriers);
     }
 
     // PASS 1: depth rendering.
-    dvz_cmd_rendering_begin(cmds, 0, &depth_rendering);
-    dvz_cmd_bind_graphics(cmds, 0, &depth_graphics);
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &depth_rendering);
+    dvz_cmd_bind_graphics(cmds, &depth_graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
 
     // Transition depth_img to SHADER_READ_ONLY_OPTIMAL for SSAO sampling.
     {
@@ -1740,15 +1739,15 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_barrier_image_mip(bimg, 0, 1);
         dvz_barrier_image_layers(bimg, 0, 1);
-        dvz_cmd_barriers(cmds, 0, &barriers);
+        dvz_cmd_barriers(cmds, &barriers);
     }
 
     // PASS 2: SSAO rendering into proto main color image.
-    dvz_cmd_rendering_begin(cmds, 0, &ssao_rendering);
-    dvz_cmd_bind_graphics(cmds, 0, &ssao_graphics);
-    dvz_cmd_bind_descriptors(cmds, 0, VK_PIPELINE_BIND_POINT_GRAPHICS, &ssao_desc, 0, 1, 0, NULL);
-    dvz_cmd_draw(cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds, 0);
+    dvz_cmd_rendering_begin(cmds, &ssao_rendering);
+    dvz_cmd_bind_graphics(cmds, &ssao_graphics);
+    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &ssao_desc, 0, 1, 0, NULL);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
 
     dvz_cmd_end(cmds);
     dvz_cmd_submit(cmds);

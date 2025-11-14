@@ -445,10 +445,14 @@ void dvz_image_region_layers(DvzImageRegion* region, uint32_t base_layer, uint32
 
 
 void dvz_cmd_copy_buffer_to_image(
-    DvzCommands* cmds, uint32_t idx, VkBuffer buffer, DvzSize offset, //
+    DvzCommands* cmds, VkBuffer buffer, DvzSize offset, //
     VkImage img, VkImageLayout layout, DvzImageRegion* region)
 {
     ANN(cmds);
+
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
 
     region->bufferOffset = offset;
 
@@ -458,16 +462,19 @@ void dvz_cmd_copy_buffer_to_image(
     info.dstImageLayout = layout;
     info.regionCount = 1;
     info.pRegions = region;
-    vkCmdCopyBufferToImage2(cmds->cmds[idx], &info);
+    vkCmdCopyBufferToImage2(cmd, &info);
 }
 
 
 
 void dvz_cmd_copy_image_to_buffer(
-    DvzCommands* cmds, uint32_t idx, VkImage img, VkImageLayout layout, DvzImageRegion* region,
-    VkBuffer buffer, DvzSize offset)
+    DvzCommands* cmds, VkImage img, VkImageLayout layout, DvzImageRegion* region, VkBuffer buffer,
+    DvzSize offset)
 {
     ANN(cmds);
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
 
     region->bufferOffset = offset;
 
@@ -477,5 +484,5 @@ void dvz_cmd_copy_image_to_buffer(
     info.dstBuffer = buffer;
     info.regionCount = 1;
     info.pRegions = region;
-    vkCmdCopyImageToBuffer2(cmds->cmds[idx], &info);
+    vkCmdCopyImageToBuffer2(cmd, &info);
 }

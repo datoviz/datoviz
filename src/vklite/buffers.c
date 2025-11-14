@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <volk.h>
 
+#include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -277,26 +278,34 @@ void dvz_buffer_views(
 
 
 void dvz_cmd_bind_vertex_buffers(
-    DvzCommands* cmds, uint32_t idx, uint32_t first_binding, uint32_t binding_count,
-    DvzBuffer* buffers, DvzSize* offsets)
+    DvzCommands* cmds, uint32_t first_binding, uint32_t binding_count, DvzBuffer* buffers,
+    DvzSize* offsets)
 {
     ANN(cmds);
     ANN(buffers);
     ANN(offsets);
     ASSERT(binding_count > 0);
-    ASSERT(idx < cmds->count);
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
 
     VkBuffer vk_buffers[DVZ_MAX_VERTEX_BINDINGS] = {0};
     for (uint32_t i = 0; i < binding_count; i++)
     {
         vk_buffers[i] = buffers[i].vk_buffer;
     }
-    vkCmdBindVertexBuffers(cmds->cmds[idx], first_binding, binding_count, vk_buffers, offsets);
+    vkCmdBindVertexBuffers(cmd, first_binding, binding_count, vk_buffers, offsets);
 }
 
 
 
-void dvz_cmd_bind_index_buffer(DvzCommands* cmds, uint32_t idx, DvzBuffer* buffer, DvzSize offset)
+void dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize offset)
 {
-    vkCmdBindIndexBuffer(cmds->cmds[idx], buffer->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
+    ANN(cmds);
+    ANN(buffer);
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
+
+    vkCmdBindIndexBuffer(cmd, buffer->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
 }

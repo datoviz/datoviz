@@ -156,11 +156,11 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     DvzCommands cmds = {0};
     dvz_commands(device, queue, 1, &cmds);
     dvz_cmd_begin(&cmds);
-    dvz_cmd_barriers(&cmds, 0, &barriers);
-    dvz_cmd_rendering_begin(&cmds, 0, &rendering);
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
-    dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(&cmds, 0);
+    dvz_cmd_barriers(&cmds, &barriers);
+    dvz_cmd_rendering_begin(&cmds, &rendering);
+    dvz_cmd_bind_graphics(&cmds, &graphics);
+    dvz_cmd_draw(&cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(&cmds);
     dvz_cmd_end(&cmds);
 
     // Submit the command buffer.
@@ -187,14 +187,14 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         bimg, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
     dvz_barrier_image_layout(
         bimg, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    dvz_cmd_barriers(&cmds, 0, &barriers);
+    dvz_cmd_barriers(&cmds, &barriers);
 
     // Copy image to buffer.
     DvzImageRegion region = {0};
     dvz_image_region(&region);
     dvz_image_region_extent(&region, WIDTH, HEIGHT, 1);
     dvz_cmd_copy_image_to_buffer(
-        &cmds, 0, dvz_image_handle(&img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        &cmds, dvz_image_handle(&img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(&staging), 0);
 
     // End the command buffer.

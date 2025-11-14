@@ -166,13 +166,12 @@ void dvz_compute_destroy(DvzCompute* compute)
 
 
 
-void dvz_cmd_bind_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute)
+void dvz_cmd_bind_compute(DvzCommands* cmds, DvzCompute* compute)
 {
     ANN(cmds);
     ANN(compute);
 
-    ASSERT(idx < cmds->count);
-    VkCommandBuffer cmd = cmds->cmds[idx];
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
 
     // Bind the compute pipeline.
@@ -181,12 +180,11 @@ void dvz_cmd_bind_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute)
 
 
 
-void dvz_cmd_dispatch(DvzCommands* cmds, uint32_t idx, uint32_t nx, uint32_t ny, uint32_t nz)
+void dvz_cmd_dispatch(DvzCommands* cmds, uint32_t nx, uint32_t ny, uint32_t nz)
 {
     ANN(cmds);
 
-    ASSERT(idx < cmds->count);
-    VkCommandBuffer cmd = cmds->cmds[idx];
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
 
     vkCmdDispatch(cmd, nx, ny, nz);

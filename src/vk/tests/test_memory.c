@@ -21,11 +21,11 @@
 
 #include "_assertions.h"
 #include "_log.h"
-#include "vulkan_core.h"
+#include <volk.h>
 
 #if HAS_CUDA
-#include <cuda_runtime_api.h>
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 #endif
 
 #include "datoviz/vk/bootstrap.h"

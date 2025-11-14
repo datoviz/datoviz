@@ -402,7 +402,6 @@ dvz_image_region_layers(DvzImageRegion* region, uint32_t base_layer, uint32_t la
  * Copy a GPU buffer to a GPU image.
  *
  * @param cmds the command buffers
- * @param idx the command buffer index
  * @param buffer the source buffer
  * @param offset the offset in the source buffer
  * @param img the target image
@@ -410,7 +409,7 @@ dvz_image_region_layers(DvzImageRegion* region, uint32_t base_layer, uint32_t la
  * @param region the image region
  */
 DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
-    DvzCommands* cmds, uint32_t idx, VkBuffer buffer, DvzSize offset, //
+    DvzCommands* cmds, VkBuffer buffer, DvzSize offset, //
     VkImage img, VkImageLayout layout, DvzImageRegion* region);
 
 
@@ -419,7 +418,6 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
  * Copy a GPU image to a GPU buffer.
  *
  * @param cmds the set of command buffers to record
- * @param idx the index of the command buffer to record
  * @param tex_offset the texture offset
  * @param shape the texture shape
  * @param images the image
@@ -427,8 +425,8 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
  * @param buf_offset the buffer offset
  */
 DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
-    DvzCommands* cmds, uint32_t idx, VkImage img, VkImageLayout layout, DvzImageRegion* region,
-    VkBuffer buffer, DvzSize offset);
+    DvzCommands* cmds, VkImage img, VkImageLayout layout, DvzImageRegion* region, VkBuffer buffer,
+    DvzSize offset);
 
 
 

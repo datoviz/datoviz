@@ -499,10 +499,9 @@ DVZ_EXPORT void dvz_graphics_destroy(DvzGraphics* graphics);
  * Bind a graphics pipeline.
  *
  * @param cmds the set of command buffers to record
- * @param idx the index of the command buffer to record
  * @param graphics the graphics pipeline
  */
-DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics);
+DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, DvzGraphics* graphics);
 
 
 

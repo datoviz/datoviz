@@ -316,10 +316,9 @@ DVZ_EXPORT DvzBarrierImage* dvz_barriers_image(DvzBarriers* barriers, VkImage im
  * Record a set of barriers in a command buffer.
  *
  * @param cmds the command buffers
- * @param idx the command buffer index
  * @param barriers the set of barriers
  */
-DVZ_EXPORT void dvz_cmd_barriers(DvzCommands* cmds, uint32_t idx, DvzBarriers* barriers);
+DVZ_EXPORT void dvz_cmd_barriers(DvzCommands* cmds, DvzBarriers* barriers);
 
 
 

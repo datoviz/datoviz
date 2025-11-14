@@ -668,13 +668,13 @@ void dvz_graphics_destroy(DvzGraphics* graphics)
 
 
 
-void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics)
+void dvz_cmd_bind_graphics(DvzCommands* cmds, DvzGraphics* graphics)
 {
     ANN(cmds);
     ANN(graphics);
 
-    ASSERT(idx < cmds->count);
-    VkCommandBuffer cmd = cmds->cmds[idx];
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
 
     // Bind the graphics pipeline.
