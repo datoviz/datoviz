@@ -169,7 +169,7 @@ static VkFormat canvas_surface_format(const DvzCanvas* canvas)
 
 
 
-static VkPipelineStageFlags canvas_stage_for_layout(VkImageLayout layout)
+static VkPipelineStageFlags2 canvas_stage_for_layout(VkImageLayout layout)
 {
     switch (layout)
     {
@@ -190,7 +190,7 @@ static VkPipelineStageFlags canvas_stage_for_layout(VkImageLayout layout)
 
 
 
-static VkAccessFlags canvas_access_for_layout(VkImageLayout layout)
+static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
 {
     switch (layout)
     {
@@ -217,31 +217,36 @@ static void canvas_cmd_transition(
     if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
         return;
 
-    VkImageMemoryBarrier barrier = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    VkImageMemoryBarrier2 barrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .pNext = NULL,
+        .srcStageMask = canvas_stage_for_layout(old_layout),
+        .srcAccessMask = canvas_access_for_layout(old_layout),
+        .dstStageMask = canvas_stage_for_layout(new_layout),
+        .dstAccessMask = canvas_access_for_layout(new_layout),
         .oldLayout = old_layout,
         .newLayout = new_layout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
-        .pNext = NULL,
         .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
+        {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        },
     };
 
-    barrier.srcAccessMask = canvas_access_for_layout(old_layout);
-    barrier.dstAccessMask = canvas_access_for_layout(new_layout);
+    VkDependencyInfo dep = {
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .pNext = NULL,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &barrier,
+    };
 
-    VkPipelineStageFlags src_stage = canvas_stage_for_layout(old_layout);
-    VkPipelineStageFlags dst_stage = canvas_stage_for_layout(new_layout);
-
-    vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
+    vkCmdPipelineBarrier2(cmd, &dep);
 }
 
 
@@ -252,33 +257,37 @@ static void canvas_cmd_transition_swapchain(
     if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
         return;
 
-    VkImageMemoryBarrier barrier = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+    VkImageMemoryBarrier2 barrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+        .pNext = NULL,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                        VK_PIPELINE_STAGE_TRANSFER_BIT, // same as pWaitDstStageMask
+        .srcAccessMask = canvas_access_for_layout(old_layout),
+        .dstStageMask = canvas_stage_for_layout(new_layout),
+        .dstAccessMask = canvas_access_for_layout(new_layout),
         .oldLayout = old_layout,
         .newLayout = new_layout,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
-        .pNext = NULL,
         .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
+        {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        },
     };
 
-    barrier.srcAccessMask = canvas_access_for_layout(old_layout);
-    barrier.dstAccessMask = canvas_access_for_layout(new_layout);
+    VkDependencyInfo dep = {
+        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+        .pNext = NULL,
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &barrier,
+    };
 
-    VkPipelineStageFlags src_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                                     VK_PIPELINE_STAGE_TRANSFER_BIT; // same as pWaitDstStageMask
-
-    VkPipelineStageFlags dst_stage = canvas_stage_for_layout(new_layout);
-
-    vkCmdPipelineBarrier(cmd, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
+    vkCmdPipelineBarrier2(cmd, &dep);
 }
 
 

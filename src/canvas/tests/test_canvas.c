@@ -157,6 +157,9 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
     fet12->timelineSemaphore = true;
 
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
+    features->synchronization2 = true;
+
     // Device extensions required for the canvas.
     dvz_device_request_canvas_extensions(&device);
 
