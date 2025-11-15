@@ -48,7 +48,7 @@ static DvzVideoSinkState* video_sink_state(DvzStreamSink* sink)
     DvzVideoSinkState* state = (DvzVideoSinkState*)sink->backend_data;
     if (!state)
     {
-        state = (DvzVideoSinkState*)calloc(1, sizeof(DvzVideoSinkState));
+        state = (DvzVideoSinkState*)dvz_calloc(1, sizeof(DvzVideoSinkState));
         ANN(state);
         sink->backend_data = state;
     }
@@ -98,7 +98,7 @@ static void video_sink_cleanup(DvzStreamSink* sink)
         dvz_video_encoder_destroy(state->encoder);
         state->encoder = NULL;
     }
-    free(state);
+    dvz_free(state);
     sink->backend_data = NULL;
 }
 

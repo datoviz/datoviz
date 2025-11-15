@@ -262,7 +262,7 @@ void dvz_canvas_frame_pool_init(DvzCanvasFramePool* pool, uint32_t frame_count)
     ANN(pool);
     dvz_canvas_frame_pool_release(pool);
     pool->frame_count = frame_count > 0 ? frame_count : 1;
-    pool->frames = (DvzStreamFrame*)calloc(pool->frame_count, sizeof(DvzStreamFrame));
+        pool->frames = (DvzStreamFrame*)dvz_calloc(pool->frame_count, sizeof(DvzStreamFrame));
     ANN(pool->frames);
     pool->current_index = 0;
 }
@@ -277,7 +277,7 @@ void dvz_canvas_frame_pool_release(DvzCanvasFramePool* pool)
     }
     if (pool->frames)
     {
-        free(pool->frames);
+        dvz_free(pool->frames);
         pool->frames = NULL;
     }
     pool->frame_count = 0;
@@ -324,7 +324,7 @@ void dvz_canvas_timings_init(DvzCanvasTimingState* timings, size_t capacity)
     timings->head = 0;
     if (capacity > 0)
     {
-        timings->samples = (DvzFrameTiming*)calloc(capacity, sizeof(DvzFrameTiming));
+        timings->samples = (DvzFrameTiming*)dvz_calloc(capacity, sizeof(DvzFrameTiming));
         ANN(timings->samples);
     }
 }
@@ -339,7 +339,7 @@ void dvz_canvas_timings_release(DvzCanvasTimingState* timings)
     }
     if (timings->samples)
     {
-        free(timings->samples);
+        dvz_free(timings->samples);
         timings->samples = NULL;
     }
     timings->capacity = 0;
@@ -428,7 +428,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
         return NULL;
     }
 
-    DvzCanvas* canvas = (DvzCanvas*)calloc(1, sizeof(DvzCanvas));
+    DvzCanvas* canvas = (DvzCanvas*)dvz_calloc(1, sizeof(DvzCanvas));
     ANN(canvas);
     canvas->cfg = resolved;
     canvas->window = resolved.window;
@@ -460,7 +460,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     if (!canvas->stream)
     {
         log_error("failed to allocate stream for canvas");
-        free(canvas);
+        dvz_free(canvas);
         return NULL;
     }
 
@@ -512,7 +512,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     canvas_destroy_allocator(canvas);
     dvz_canvas_frame_pool_release(&canvas->frame_pool);
     dvz_canvas_timings_release(&canvas->timings);
-    free(canvas);
+    dvz_free(canvas);
 }
 
 

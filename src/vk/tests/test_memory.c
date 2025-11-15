@@ -19,6 +19,7 @@
 #include <unistd.h>
 #endif
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include <volk.h>
@@ -255,7 +256,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     vkDeviceWaitIdle(device.vk_device); // ensure write visible
 
     /******************* CUDA reads and checks *******************/
-    uint32_t* host_copy = (uint32_t*)malloc(SIZE);
+    uint32_t* host_copy = (uint32_t*)dvz_malloc(SIZE);
     ANN(host_copy);
     cerr = cudaMemcpy(host_copy, cuda_ptr, SIZE, cudaMemcpyDeviceToHost);
     if (cerr != cudaSuccess)
@@ -276,7 +277,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         if (out == 0)
             log_info("CUDA->Vulkan->CUDA sync verified OK (Vulkan write visible in CUDA)");
     }
-    free(host_copy);
+    dvz_free(host_copy);
 
     /******************* Cleanup *******************/
 cleanup_cuda_mem:
@@ -414,7 +415,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
 
-    uint32_t* host_init = (uint32_t*)malloc(SIZE);
+    uint32_t* host_init = (uint32_t*)dvz_malloc(SIZE);
     if (host_init == NULL)
     {
         log_error("unable to allocate host staging buffer for CUDA initialization");
@@ -425,7 +426,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
         host_init[i] = i * 7 + 3;
 
     curet = cuMemcpyHtoD(cuda_ptr, host_init, SIZE);
-    free(host_init);
+    dvz_free(host_init);
     host_init = NULL;
     if (cuda_check(curet, "cuMemcpyHtoD"))
     {
@@ -519,7 +520,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     vkDeviceWaitIdle(device.vk_device);
 
     /******************* Check from CUDA *******************/
-    uint32_t* host_verify = (uint32_t*)malloc(SIZE);
+    uint32_t* host_verify = (uint32_t*)dvz_malloc(SIZE);
     if (host_verify == NULL)
     {
         log_error("unable to allocate host buffer for CUDA verification");
@@ -529,7 +530,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     curet = cuMemcpyDtoH(host_verify, cuda_ptr, SIZE);
     if (cuda_check(curet, "cuMemcpyDtoH"))
     {
-        free(host_verify);
+        dvz_free(host_verify);
         out = 3;
         goto cleanup_vulkan;
     }
@@ -537,7 +538,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     curet = cuCtxSynchronize();
     if (cuda_check(curet, "cuCtxSynchronize (after device readback)"))
     {
-        free(host_verify);
+        dvz_free(host_verify);
         out = 3;
         goto cleanup_vulkan;
     }
@@ -557,7 +558,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     if (out == 0)
         log_info("CUDA->Vulkan->CUDA import path verified OK");
 
-    free(host_verify);
+    dvz_free(host_verify);
 
 cleanup_vulkan:
     if (vk_buffer != VK_NULL_HANDLE)

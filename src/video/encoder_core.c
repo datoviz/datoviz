@@ -73,10 +73,10 @@ static void video_encoder_release(DvzVideoEncoder* enc)
     dvz_video_encoder_close_mp4(enc);
     if (enc->mp4_path_owned)
     {
-        free(enc->mp4_path_owned);
+        dvz_free(enc->mp4_path_owned);
         enc->mp4_path_owned = NULL;
     }
-    free(enc->mux_samples);
+    dvz_free(enc->mux_samples);
     enc->mux_samples = NULL;
     enc->mux_sample_capacity = 0;
     enc->mux_sample_count = 0;
@@ -123,7 +123,7 @@ DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
 
 DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncoderConfig* cfg)
 {
-    DvzVideoEncoder* enc = (DvzVideoEncoder*)calloc(1, sizeof(DvzVideoEncoder));
+    DvzVideoEncoder* enc = (DvzVideoEncoder*)dvz_calloc(1, sizeof(DvzVideoEncoder));
     ANN(enc);
     enc->device = device;
     enc->cfg = cfg ? *cfg : dvz_video_encoder_default_config();
@@ -135,7 +135,7 @@ DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncod
     if (!enc->backend || !enc->backend->init || enc->backend->init(enc) != 0)
     {
         log_error("failed to initialize video backend");
-        free(enc);
+        dvz_free(enc);
         return NULL;
     }
 
@@ -269,10 +269,10 @@ void dvz_video_encoder_destroy(DvzVideoEncoder* enc)
     dvz_video_encoder_stop(enc);
     if (enc->mp4_writer)
     {
-        free(enc->mp4_writer);
+        dvz_free(enc->mp4_writer);
         enc->mp4_writer = NULL;
     }
-    free(enc);
+    dvz_free(enc);
 }
 
 

@@ -515,7 +515,7 @@ static bool nvenc_supports_codec(void* hEncoder, const GUID* codec)
     {
         return false;
     }
-    GUID* guids = (GUID*)calloc(count, sizeof(GUID));
+    GUID* guids = (GUID*)dvz_calloc(count, sizeof(GUID));
     if (!guids)
     {
         return false;
@@ -533,7 +533,7 @@ static bool nvenc_supports_codec(void* hEncoder, const GUID* codec)
             }
         }
     }
-    free(guids);
+    dvz_free(guids);
     return ok;
 }
 
@@ -784,7 +784,8 @@ static int nvenc_init(DvzVideoEncoder* enc)
     {
         return 0;
     }
-    DvzVideoBackendNvenc* state = (DvzVideoBackendNvenc*)calloc(1, sizeof(DvzVideoBackendNvenc));
+    DvzVideoBackendNvenc* state =
+        (DvzVideoBackendNvenc*)dvz_calloc(1, sizeof(DvzVideoBackendNvenc));
     ANN(state);
     enc->backend_data = state;
     nvenc_load_api();
@@ -885,7 +886,7 @@ static void nvenc_destroy(DvzVideoEncoder* enc)
     }
     DvzVideoBackendNvenc* state = nvenc_state(enc);
     nvenc_state_free(state);
-    free(state);
+    dvz_free(state);
     enc->backend_data = NULL;
 }
 

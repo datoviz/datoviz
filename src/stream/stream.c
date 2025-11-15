@@ -122,7 +122,7 @@ static void stream_release_sinks(DvzStream* stream)
             }
         }
     }
-    free(stream->sinks);
+    dvz_free(stream->sinks);
     stream->sinks = NULL;
     stream->sink_count = 0;
     stream->sink_capacity = 0;
@@ -149,7 +149,7 @@ DvzStreamConfig dvz_stream_default_config(void)
 
 DvzStream* dvz_stream_create(DvzDevice* device, const DvzStreamConfig* cfg)
 {
-    DvzStream* stream = (DvzStream*)calloc(1, sizeof(DvzStream));
+    DvzStream* stream = (DvzStream*)dvz_calloc(1, sizeof(DvzStream));
     ANN(stream);
     stream->device = device;
     stream->cfg = cfg ? *cfg : dvz_stream_default_config();
@@ -168,7 +168,7 @@ void dvz_stream_destroy(DvzStream* stream)
     }
     dvz_stream_stop(stream);
     stream_release_sinks(stream);
-    free(stream);
+    dvz_free(stream);
 }
 
 

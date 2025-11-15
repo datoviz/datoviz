@@ -72,7 +72,7 @@ bool dvz_video_encoder_open_mp4_stream(DvzVideoEncoder* enc)
     }
     if (!enc->mp4_writer)
     {
-        enc->mp4_writer = (mp4_h26x_writer_t*)calloc(1, sizeof(mp4_h26x_writer_t));
+        enc->mp4_writer = (mp4_h26x_writer_t*)dvz_calloc(1, sizeof(mp4_h26x_writer_t));
         if (!enc->mp4_writer)
         {
             log_error("failed to allocate mp4 writer");
@@ -215,7 +215,7 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
             if (!new_buf)
             {
                 log_error("failed to grow mux scratch buffer");
-                free(buffer);
+                dvz_free(buffer);
                 mp4_h26x_write_close(&writer);
                 MP4E_close(mux);
                 fclose(mp4_fp);
@@ -229,7 +229,7 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
             log_error(
                 "failed to seek raw stream for mp4 mux (sample %zu, offset=%llu)", i,
                 (unsigned long long)sample.offset);
-            free(buffer);
+            dvz_free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
             fclose(mp4_fp);
@@ -241,7 +241,7 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
             log_error(
                 "failed to read raw stream chunk for mp4 mux (sample %zu, size=%u)", i,
                 sample.size);
-            free(buffer);
+            dvz_free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
             fclose(mp4_fp);
@@ -253,14 +253,14 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
             log_error(
                 "minimp4 post-processing failed with status %d (sample %zu, duration=%u)", err, i,
                 sample.duration);
-            free(buffer);
+            dvz_free(buffer);
             mp4_h26x_write_close(&writer);
             MP4E_close(mux);
             fclose(mp4_fp);
             return -1;
         }
     }
-    free(buffer);
+    dvz_free(buffer);
     mp4_h26x_write_close(&writer);
     MP4E_close(mux);
     fclose(mp4_fp);

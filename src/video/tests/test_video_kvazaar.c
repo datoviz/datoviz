@@ -137,7 +137,8 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     {
         return false;
     }
-    VkPhysicalDevice* devices = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * gpu_count);
+    VkPhysicalDevice* devices =
+        (VkPhysicalDevice*)dvz_malloc(sizeof(VkPhysicalDevice) * gpu_count);
     if (!devices)
     {
         return false;
@@ -145,16 +146,16 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     if (vkEnumeratePhysicalDevices(ctx->instance, &gpu_count, devices) != VK_SUCCESS ||
         gpu_count == 0)
     {
-        free(devices);
+        dvz_free(devices);
         return false;
     }
     ctx->phys = devices[0];
-    free(devices);
+    dvz_free(devices);
 
     uint32_t queue_family_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(ctx->phys, &queue_family_count, NULL);
-    VkQueueFamilyProperties* queue_props =
-        (VkQueueFamilyProperties*)malloc(queue_family_count * sizeof(VkQueueFamilyProperties));
+    VkQueueFamilyProperties* queue_props = (VkQueueFamilyProperties*)dvz_malloc(
+        queue_family_count * sizeof(VkQueueFamilyProperties));
     if (!queue_props)
     {
         return false;
@@ -169,7 +170,7 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
             break;
         }
     }
-    free(queue_props);
+    dvz_free(queue_props);
 
     float priority = 1.0f;
     VkDeviceQueueCreateInfo queue_info = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};
@@ -328,13 +329,13 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
 
     int rc = 0;
     const char* mp4_path = "video_kvazaar.mp4";
-    DvzDevice* device = (DvzDevice*)calloc(1, sizeof(DvzDevice));
-    DvzGpu* gpu = (DvzGpu*)calloc(1, sizeof(DvzGpu));
+    DvzDevice* device = (DvzDevice*)dvz_calloc(1, sizeof(DvzDevice));
+    DvzGpu* gpu = (DvzGpu*)dvz_calloc(1, sizeof(DvzGpu));
     if (!device || !gpu)
     {
         log_error("failed to allocate temporary dvz device for kvazaar test");
-        free(device);
-        free(gpu);
+        dvz_free(device);
+        dvz_free(gpu);
         kvz_cpu_ctx_destroy(&ctx);
         return 1;
     }
@@ -411,8 +412,8 @@ cleanup:
     {
         dvz_video_encoder_destroy(encoder);
     }
-    free(device);
-    free(gpu);
+    dvz_free(device);
+    dvz_free(gpu);
     kvz_cpu_ctx_destroy(&ctx);
     return rc;
 }

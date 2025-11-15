@@ -488,27 +488,28 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
     uint32_t count = 0;
     vkGetSwapchainImagesKHR(device, swapchain->handle, &count, NULL);
-    VkImage* images = (VkImage*)calloc(count, sizeof(VkImage));
+    VkImage* images = (VkImage*)dvz_calloc(count, sizeof(VkImage));
     ANN(images);
     vkGetSwapchainImagesKHR(device, swapchain->handle, &count, images);
     if (swapchain->swapchain_images)
     {
-        free(swapchain->swapchain_images);
+        dvz_free(swapchain->swapchain_images);
     }
     swapchain->swapchain_images = images;
     if (swapchain->swapchain_layouts)
     {
-        free(swapchain->swapchain_layouts);
+        dvz_free(swapchain->swapchain_layouts);
     }
-    swapchain->swapchain_layouts = (VkImageLayout*)calloc(count, sizeof(VkImageLayout));
+    swapchain->swapchain_layouts = (VkImageLayout*)dvz_calloc(count, sizeof(VkImageLayout));
     ANN(swapchain->swapchain_layouts);
     for (uint32_t i = 0; i < count; ++i)
     {
         swapchain->swapchain_layouts[i] = VK_IMAGE_LAYOUT_UNDEFINED;
     }
 
-    free(swapchain->slots);
-    swapchain->slots = (DvzCanvasSwapchainSlot*)calloc(count, sizeof(DvzCanvasSwapchainSlot));
+    dvz_free(swapchain->slots);
+    swapchain->slots = (DvzCanvasSwapchainSlot*)dvz_calloc(
+        count, sizeof(DvzCanvasSwapchainSlot));
     ANN(swapchain->slots);
     swapchain->image_count = count;
     swapchain->active_slot = NULL;
@@ -647,7 +648,7 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
                 device, swapchain->command_pool, &swapchain->slots[i],
                 &swapchain->canvas->allocator);
         }
-        free(swapchain->slots);
+        dvz_free(swapchain->slots);
         swapchain->slots = NULL;
     }
     if (swapchain->handle != VK_NULL_HANDLE)
@@ -658,12 +659,12 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     }
     if (swapchain->swapchain_images)
     {
-        free(swapchain->swapchain_images);
+        dvz_free(swapchain->swapchain_images);
         swapchain->swapchain_images = NULL;
     }
     if (swapchain->swapchain_layouts)
     {
-        free(swapchain->swapchain_layouts);
+        dvz_free(swapchain->swapchain_layouts);
         swapchain->swapchain_layouts = NULL;
     }
     swapchain->image_count = 0;
@@ -735,7 +736,7 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     {
         return 0;
     }
-    canvas->swapchain = (DvzCanvasSwapchain*)calloc(1, sizeof(DvzCanvasSwapchain));
+    canvas->swapchain = (DvzCanvasSwapchain*)dvz_calloc(1, sizeof(DvzCanvasSwapchain));
     ANN(canvas->swapchain);
     canvas->swapchain->canvas = canvas;
     canvas->swapchain->handle = VK_NULL_HANDLE;
@@ -777,7 +778,7 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas)
         vkDestroyCommandPool(device, canvas->swapchain->command_pool, NULL);
         canvas->swapchain->command_pool = VK_NULL_HANDLE;
     }
-    free(canvas->swapchain);
+    dvz_free(canvas->swapchain);
     canvas->swapchain = NULL;
 }
 
@@ -1020,7 +1021,7 @@ static int canvas_swapchain_create(DvzStreamSink* sink, const void* config)
         return -1;
     }
     DvzCanvasSwapchainState* state =
-        (DvzCanvasSwapchainState*)calloc(1, sizeof(DvzCanvasSwapchainState));
+        (DvzCanvasSwapchainState*)dvz_calloc(1, sizeof(DvzCanvasSwapchainState));
     ANN(state);
     state->canvas = canvas;
     sink->backend_data = state;
@@ -1079,7 +1080,7 @@ static void canvas_swapchain_destroy(DvzStreamSink* sink)
     {
         return;
     }
-    free(sink->backend_data);
+    dvz_free(sink->backend_data);
     sink->backend_data = NULL;
 }
 

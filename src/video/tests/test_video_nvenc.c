@@ -161,14 +161,15 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     uint32_t np = 0;
     VK_CHECK(vkEnumeratePhysicalDevices(vk->instance, &np, NULL));
-    VkPhysicalDevice* pds = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * np);
+    VkPhysicalDevice* pds = (VkPhysicalDevice*)dvz_malloc(sizeof(VkPhysicalDevice) * np);
     VK_CHECK(vkEnumeratePhysicalDevices(vk->instance, &np, pds));
     vk->phys = pds[0];
-    free(pds);
+    dvz_free(pds);
 
     uint32_t nqf = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(vk->phys, &nqf, NULL);
-    VkQueueFamilyProperties* qfp = (VkQueueFamilyProperties*)malloc(sizeof(*qfp) * nqf);
+    VkQueueFamilyProperties* qfp =
+        (VkQueueFamilyProperties*)dvz_malloc(sizeof(*qfp) * nqf);
     vkGetPhysicalDeviceQueueFamilyProperties(vk->phys, &nqf, qfp);
     vk->queueFamily = 0;
     for (uint32_t i = 0; i < nqf; i++)
@@ -179,7 +180,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
             break;
         }
     }
-    free(qfp);
+    dvz_free(qfp);
 
     float priority = 1.0f;
     VkDeviceQueueCreateInfo qci = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO};

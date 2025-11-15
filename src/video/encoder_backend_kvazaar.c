@@ -511,7 +511,7 @@ static int kvazaar_emit_sample(
     {
         return 0;
     }
-    uint8_t* buffer = (uint8_t*)malloc(total_size);
+    uint8_t* buffer = (uint8_t*)dvz_malloc(total_size);
     if (!buffer)
     {
         log_error("failed to allocate temporary buffer for kvazaar sample (%u bytes)", total_size);
@@ -522,7 +522,7 @@ static int kvazaar_emit_sample(
     {
         if (copied + chunk->len > total_size)
         {
-            free(buffer);
+            dvz_free(buffer);
             log_error("kvazaar chunk list larger than reported total size");
             return -1;
         }
@@ -544,7 +544,7 @@ static int kvazaar_emit_sample(
         fwrite(buffer, 1, total_size, enc->fp);
     }
     dvz_video_encoder_on_sample(enc, buffer, total_size, file_offset, duration, keyframe);
-    free(buffer);
+    dvz_free(buffer);
     return 0;
 }
 
@@ -645,7 +645,7 @@ static int kvazaar_init(DvzVideoEncoder* enc)
     }
 
     DvzVideoBackendKvazaar* state =
-        (DvzVideoBackendKvazaar*)calloc(1, sizeof(DvzVideoBackendKvazaar));
+        (DvzVideoBackendKvazaar*)dvz_calloc(1, sizeof(DvzVideoBackendKvazaar));
     ANN(state);
     state->api = api;
     state->cfg = cfg;
@@ -873,7 +873,7 @@ static void kvazaar_destroy(DvzVideoEncoder* enc)
         state->wait_semaphore_ready = false;
     }
     kvazaar_unmap_image(enc, state);
-    free(state);
+    dvz_free(state);
     enc->backend_data = NULL;
 }
 
