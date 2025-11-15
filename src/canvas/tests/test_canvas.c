@@ -171,6 +171,7 @@ int test_canvas_defaults(TstSuite* suite, TstItem* item)
     AT(cfg.window == NULL);
     AT(cfg.device == NULL);
     AT(cfg.color_format == VK_FORMAT_B8G8R8A8_UNORM);
+    AT(cfg.present_mode == VK_PRESENT_MODE_FIFO_KHR);
     AT(!cfg.enable_video_sink);
     AT(cfg.timing_history == DVZ_CANVAS_DEFAULT_TIMING_HISTORY);
     return 0;
@@ -299,6 +300,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
     cfg.device = &device;
+    cfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     cfg.timing_history = 1;
 
     log_trace("creating canvas");
@@ -333,7 +335,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_submit(canvas) == 0);
 
-        dvz_device_wait(&device);
+        // dvz_device_wait(&device);
         dvz_window_host_poll(host);
     } while (interactive_loop && keep_running);
 
@@ -342,8 +344,8 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         dvz_input_unsubscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
     }
 
+    dvz_device_wait(&device);
     dvz_canvas_set_draw_callback(canvas, NULL, NULL);
-
     dvz_canvas_destroy(canvas);
 
     dvz_window_destroy(window);

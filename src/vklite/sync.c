@@ -340,7 +340,7 @@ void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore)
     VkSemaphoreCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     VK_CHECK_RESULT(vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
-    log_trace("created semaphore %x", semaphore->vk_semaphore);
+    log_trace("created semaphore %#x", semaphore->vk_semaphore);
     dvz_obj_created(&semaphore->obj);
 }
 
@@ -363,7 +363,7 @@ void dvz_semaphore_timeline(DvzDevice* device, uint64_t value, DvzSemaphore* sem
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     info.pNext = &timeline_info;
     VK_CHECK_RESULT(vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
-    log_trace("created timeline semaphore %x", semaphore->vk_semaphore);
+    log_trace("created timeline semaphore %#x", semaphore->vk_semaphore);
     dvz_obj_created(&semaphore->obj);
 }
 

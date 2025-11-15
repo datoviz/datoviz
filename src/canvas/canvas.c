@@ -401,6 +401,7 @@ DvzCanvasConfig dvz_canvas_default_config(void)
         .window = NULL,
         .device = NULL,
         .color_format = VK_FORMAT_B8G8R8A8_UNORM,
+        .present_mode = VK_PRESENT_MODE_FIFO_KHR,
         .enable_video_sink = false,
         .timing_history = DVZ_CANVAS_DEFAULT_TIMING_HISTORY,
     };

@@ -81,6 +81,7 @@ struct DvzCanvasSwapchain
     VkFormat format;
     VkColorSpaceKHR color_space;
     VkExtent2D extent;
+    VkPresentModeKHR present_mode;
     uint32_t image_count;
     DvzCanvasSwapchainSlot* slots;
     VkImage* swapchain_images;
@@ -166,6 +167,57 @@ static VkFormat canvas_surface_format(const DvzCanvas* canvas)
         return canvas->surface->format;
     }
     return VK_FORMAT_B8G8R8A8_UNORM;
+}
+
+
+
+static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
+{
+    ANN(canvas);
+
+    DvzGpu* gpu = canvas_gpu(canvas);
+    VkSurfaceKHR surface = canvas_surface_handle(canvas);
+    if (!gpu || surface == VK_NULL_HANDLE)
+    {
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    uint32_t count = 0;
+    VK_CHECK_RESULT(
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, NULL));
+    if (count == 0)
+    {
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkPresentModeKHR* modes = (VkPresentModeKHR*)dvz_calloc(count, sizeof(VkPresentModeKHR));
+    ANN(modes);
+    VK_CHECK_RESULT(
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, modes));
+
+    VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
+    VkPresentModeKHR requested = canvas->cfg.present_mode;
+    bool supported = false;
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (modes[i] == requested)
+        {
+            supported = true;
+            break;
+        }
+    }
+
+    if (supported)
+    {
+        resolved = requested;
+    }
+    else if (requested != VK_PRESENT_MODE_FIFO_KHR)
+    {
+        log_warn("canvas present mode %d unsupported, falling back to FIFO", requested);
+    }
+
+    dvz_free(modes);
+    return resolved;
 }
 
 
@@ -335,7 +387,7 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
     ANN(swapchain);
     ANN(slot);
     VkCommandBuffer cmd = slot->command_buffer;
-    log_trace("canvas_slot_begin_recording");
+    // log_trace("canvas_slot_begin_recording");
     if (cmd == VK_NULL_HANDLE)
     {
         log_error("canvas swapchain slot missing command buffer");
@@ -362,7 +414,7 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
 {
     ANN(swapchain);
     ANN(slot);
-    log_trace("canvas_slot_finish_recording");
+    // log_trace("canvas_slot_finish_recording");
     if (!slot->commands_recording || slot->command_buffer == VK_NULL_HANDLE)
     {
         return 0;
@@ -393,7 +445,7 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-    log_trace("end command buffer");
+    // log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
     slot->commands_recording = false;
@@ -452,6 +504,8 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, formats));
 
 
+    VkPresentModeKHR present_mode = canvas_select_present_mode(canvas);
+
     VkSwapchainCreateInfoKHR info = {0};
     info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     info.surface = surface;
@@ -465,7 +519,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     info.preTransform = caps.currentTransform;
     info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    info.presentMode = present_mode;
     info.clipped = VK_TRUE;
     info.oldSwapchain = swapchain->handle;
 
@@ -485,6 +539,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     swapchain->format = info.imageFormat;
     swapchain->color_space = info.imageColorSpace;
     swapchain->extent = extent;
+    swapchain->present_mode = present_mode;
 
     uint32_t count = 0;
     vkGetSwapchainImagesKHR(device, swapchain->handle, &count, NULL);
@@ -508,8 +563,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     }
 
     dvz_free(swapchain->slots);
-    swapchain->slots = (DvzCanvasSwapchainSlot*)dvz_calloc(
-        count, sizeof(DvzCanvasSwapchainSlot));
+    swapchain->slots = (DvzCanvasSwapchainSlot*)dvz_calloc(count, sizeof(DvzCanvasSwapchainSlot));
     ANN(swapchain->slots);
     swapchain->image_count = count;
     swapchain->active_slot = NULL;
@@ -934,7 +988,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 {
     ANN(canvas);
-    log_trace("dvz_canvas_swapchain_present");
+    // log_trace("dvz_canvas_swapchain_present");
     DvzCanvasSwapchain* state = canvas_state(canvas);
     if (!state || !state->active_slot)
     {
@@ -965,7 +1019,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
-    log_trace("submit");
+    // log_trace("submit");
     dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
 
     uint32_t index = state->active_slot->image_index;
@@ -981,7 +1035,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         .pImageIndices = &index,
     };
 
-    log_trace("present");
+    // log_trace("present");
     VkResult present_res = vkQueuePresentKHR(queue, &present_info);
     if (present_res == VK_ERROR_OUT_OF_DATE_KHR || present_res == VK_SUBOPTIMAL_KHR)
     {

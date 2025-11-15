@@ -59,6 +59,7 @@ typedef struct
     DvzWindow* window;
     DvzDevice* device;
     VkFormat color_format;
+    VkPresentModeKHR present_mode;
     bool enable_video_sink;
     size_t timing_history;
 } DvzCanvasConfig;
