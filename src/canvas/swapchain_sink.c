@@ -321,6 +321,7 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
     ANN(swapchain);
     ANN(slot);
     VkCommandBuffer cmd = slot->command_buffer;
+    log_trace("canvas_slot_begin_recording");
     if (cmd == VK_NULL_HANDLE)
     {
         log_error("canvas swapchain slot missing command buffer");
@@ -347,6 +348,7 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
 {
     ANN(swapchain);
     ANN(slot);
+    log_trace("canvas_slot_finish_recording");
     if (!slot->commands_recording || slot->command_buffer == VK_NULL_HANDLE)
     {
         return 0;
@@ -928,6 +930,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 {
     ANN(canvas);
+    log_trace("dvz_canvas_swapchain_present");
     DvzCanvasSwapchain* state = canvas_state(canvas);
     if (!state || !state->active_slot)
     {
