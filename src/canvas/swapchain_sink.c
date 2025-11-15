@@ -224,6 +224,7 @@ static void canvas_cmd_transition(
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
+        .pNext = NULL,
         .subresourceRange =
             {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -258,6 +259,7 @@ static void canvas_cmd_transition_swapchain(
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
+        .pNext = NULL,
         .subresourceRange =
             {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -360,21 +362,28 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
         return -1;
     }
     VkCommandBuffer cmd = slot->command_buffer;
+
     canvas_cmd_transition(
         cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     canvas_cmd_transition_swapchain(
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
     canvas_cmd_copy_full(cmd, slot->offscreen_image, slot->swapchain_image, swapchain->extent);
+
     canvas_cmd_transition(
         cmd, slot->offscreen_image, slot->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     canvas_cmd_transition_swapchain(
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
+
     slot->commands_recording = false;
     if (swapchain->swapchain_layouts && slot->image_index < swapchain->image_count)
     {
@@ -563,9 +572,8 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         }
 
         slot->memory_fd = -1;
-        if (use_external &&
-            dvz_allocator_export(&canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) !=
-                0)
+        if (use_external && dvz_allocator_export(
+                                &canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) != 0)
         {
             log_warn("failed to export canvas render target");
             slot->memory_fd = -1;
@@ -979,6 +987,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 
 
     VkQueue queue = state->queue;
+    log_trace("submit");
     VkResult submit_res = vkQueueSubmit(queue, 1, &submit_info, state->active_slot->in_flight);
     if (submit_res != VK_SUCCESS)
     {
@@ -997,6 +1006,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         .pImageIndices = &index,
     };
 
+    log_trace("present");
     VkResult present_res = vkQueuePresentKHR(queue, &present_info);
     if (present_res == VK_ERROR_OUT_OF_DATE_KHR || present_res == VK_SUBOPTIMAL_KHR)
     {
