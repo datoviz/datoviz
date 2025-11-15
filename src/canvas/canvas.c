@@ -55,31 +55,23 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 }
 
 
-static const char* const CANVAS_REQUIRED_EXTENSIONS[] = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-// VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-// VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
-// VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
-#if OS_UNIX
-    VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
-    VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
-#elif OS_WINDOWS
-    VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
-    VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
-#endif
-};
+static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void);
+static VkExternalSemaphoreHandleTypeFlags canvas_external_semaphore_handle_type(void);
 
 
-
-static bool canvas_device_check_extensions(const DvzCanvas* canvas)
+static bool canvas_device_check_extensions(DvzCanvas* canvas)
 {
     ANN(canvas);
     ANN(canvas->device);
-    const size_t required_count =
-        sizeof(CANVAS_REQUIRED_EXTENSIONS) / sizeof(CANVAS_REQUIRED_EXTENSIONS[0]);
+
+    const char* const required_extensions[] = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    };
+    const size_t required_count = sizeof(required_extensions) / sizeof(required_extensions[0]);
+    bool ok = true;
     for (size_t i = 0; i < required_count; ++i)
     {
-        const char* name = CANVAS_REQUIRED_EXTENSIONS[i];
+        const char* name = required_extensions[i];
         if (!name || name[0] == '\0')
         {
             continue;
@@ -87,17 +79,61 @@ static bool canvas_device_check_extensions(const DvzCanvas* canvas)
         if (!dvz_device_has_extension(canvas->device, name))
         {
             log_error("canvas device missing required extension '%s'", name);
-            return false;
+            ok = false;
         }
     }
-    return true;
+
+    canvas->supports_external_memory = false;
+    VkExternalMemoryHandleTypeFlagsKHR mem_handle = canvas_external_memory_handle_type();
+    if (mem_handle != 0 &&
+        dvz_device_has_extension(canvas->device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME))
+    {
+        if (
+#if OS_UNIX
+            dvz_device_has_extension(canvas->device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME)
+#elif OS_WINDOWS
+            dvz_device_has_extension(canvas->device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME)
+#endif
+        )
+        {
+            canvas->supports_external_memory = true;
+        }
+    }
+
+    canvas->supports_external_semaphore = false;
+    VkExternalSemaphoreHandleTypeFlags sem_handle = canvas_external_semaphore_handle_type();
+    if (sem_handle != 0 &&
+        dvz_device_has_extension(canvas->device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME))
+    {
+        if (
+#if OS_UNIX
+            dvz_device_has_extension(canvas->device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME)
+#elif OS_WINDOWS
+            dvz_device_has_extension(
+                canvas->device, VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME)
+#endif
+        )
+        {
+            canvas->supports_external_semaphore = true;
+        }
+    }
+
+    if (canvas->cfg.enable_video_sink &&
+        (!canvas->supports_external_memory || !canvas->supports_external_semaphore))
+    {
+        log_warn("video sink requested but required external memory/semaphore extensions missing");
+    }
+
+    return ok;
 }
 
 
 
 static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void)
 {
-#if OS_UNIX
+#if OS_MACOS
+    return 0;
+#elif OS_LINUX
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
 #elif OS_WINDOWS
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
@@ -110,7 +146,9 @@ static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(voi
 
 static VkExternalSemaphoreHandleTypeFlags canvas_external_semaphore_handle_type(void)
 {
-#if OS_UNIX
+#if OS_MACOS
+    return 0;
+#elif OS_LINUX
     return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
 #elif OS_WINDOWS
     return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
@@ -128,12 +166,8 @@ static int canvas_create_allocator(DvzCanvas* canvas)
     {
         return 0;
     }
-    VkExternalMemoryHandleTypeFlagsKHR handle_type = canvas_external_memory_handle_type();
-    if (handle_type == 0)
-    {
-        log_error("platform does not support exporting canvas render targets");
-        return -1;
-    }
+    VkExternalMemoryHandleTypeFlagsKHR handle_type =
+        canvas->supports_external_memory ? canvas_external_memory_handle_type() : 0;
     if (dvz_device_allocator(canvas->device, handle_type, &canvas->allocator) != 0)
     {
         log_error("failed to create canvas allocator");
@@ -164,12 +198,6 @@ static int canvas_create_timeline(DvzCanvas* canvas)
     {
         return 0;
     }
-    VkExternalSemaphoreHandleTypeFlags handle_type = canvas_external_semaphore_handle_type();
-    if (handle_type == 0)
-    {
-        log_error("platform does not support exporting canvas timeline semaphores");
-        return -1;
-    }
 
     VkDevice vk_device = dvz_device_handle(canvas->device);
     ANNVK(vk_device);
@@ -179,11 +207,16 @@ static int canvas_create_timeline(DvzCanvas* canvas)
         .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
         .initialValue = 0,
     };
+    VkExternalSemaphoreHandleTypeFlags handle_type =
+        canvas->supports_external_semaphore ? canvas_external_semaphore_handle_type() : 0;
     VkExportSemaphoreCreateInfo export_info = {
         .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
         .handleTypes = handle_type,
     };
-    type_info.pNext = &export_info;
+    if (handle_type != 0)
+    {
+        type_info.pNext = &export_info;
+    }
     VkSemaphoreCreateInfo info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         .pNext = &type_info,
@@ -197,32 +230,27 @@ static int canvas_create_timeline(DvzCanvas* canvas)
         return -1;
     }
 
-#if OS_UNIX
-    VkSemaphoreGetFdInfoKHR fd_info = {
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
-        .semaphore = canvas->timeline_semaphore,
-        .handleType = handle_type,
-    };
-    res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &canvas->timeline_semaphore_fd);
-    if (res != VK_SUCCESS)
+    canvas->timeline_semaphore_fd = -1;
+    if (handle_type != 0)
     {
-        log_error("failed to export canvas timeline semaphore FD (%d)", res);
-        vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
-        canvas->timeline_semaphore = VK_NULL_HANDLE;
-        canvas->timeline_semaphore_fd = -1;
-        return -1;
-    }
+#if OS_UNIX
+        VkSemaphoreGetFdInfoKHR fd_info = {
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+            .semaphore = canvas->timeline_semaphore,
+            .handleType = handle_type,
+        };
+        res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &canvas->timeline_semaphore_fd);
+        if (res != VK_SUCCESS)
+        {
+            log_warn("failed to export canvas timeline semaphore FD (%d)", res);
+            canvas->timeline_semaphore_fd = -1;
+        }
 #elif OS_WINDOWS
-    log_error("timeline semaphore export not implemented on this platform");
-    vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
-    canvas->timeline_semaphore = VK_NULL_HANDLE;
-    return -1;
+        log_warn("timeline semaphore export not implemented on Windows");
 #else
-    log_error("timeline semaphore export unsupported on this platform");
-    vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
-    canvas->timeline_semaphore = VK_NULL_HANDLE;
-    return -1;
+        log_warn("timeline semaphore export unsupported on this platform");
 #endif
+    }
 
     canvas->timeline_ready = true;
     canvas->timeline_value = 0;

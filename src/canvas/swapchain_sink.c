@@ -526,8 +526,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
         VkExternalMemoryImageCreateInfoKHR external_info = {
             .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
-        external_info.handleTypes = canvas->allocator.external;
-
         VkImageCreateInfo img_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType = VK_IMAGE_TYPE_2D,
@@ -545,8 +543,14 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .pNext = &external_info,
+            .pNext = NULL,
         };
+        bool use_external = canvas->allocator.external != 0;
+        if (use_external)
+        {
+            external_info.handleTypes = canvas->allocator.external;
+            img_info.pNext = &external_info;
+        }
 
         if (dvz_allocator_image(
                 &canvas->allocator, &img_info, 0, &slot->offscreen_alloc,
@@ -556,10 +560,12 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             continue;
         }
 
-        if (dvz_allocator_export(&canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) !=
-            0)
+        slot->memory_fd = -1;
+        if (use_external &&
+            dvz_allocator_export(&canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) !=
+                0)
         {
-            log_error("failed to export canvas render target");
+            log_warn("failed to export canvas render target");
             slot->memory_fd = -1;
         }
 
