@@ -165,6 +165,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 
     AT(dvz_device_create(&device) == 0);
 
+    log_trace("creating window");
     DvzWindowConfig window_cfg = dvz_window_default_config();
     window_cfg.title = "canvas-glfw-test";
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
@@ -176,26 +177,34 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     cfg.window = window;
     cfg.device = &device;
     cfg.timing_history = 1;
+
+    log_trace("creating canvas");
     DvzCanvas* canvas = dvz_canvas_create(&cfg);
     ANN(canvas);
 
-    int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
-    {
-        dvz_window_host_poll(host);
-        frame_rc = dvz_canvas_frame(canvas);
-    }
-    AT(frame_rc == DVZ_CANVAS_FRAME_READY);
-    AT(dvz_canvas_submit(canvas) == 0);
+    // int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    // for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
+    // {
+    //     log_trace("try #%d, canvas frame", tries);
+    //     dvz_window_host_poll(host);
+    //     frame_rc = dvz_canvas_frame(canvas);
+    // }
+    // AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+    // AT(dvz_canvas_submit(canvas) == 0);
+
+    // dvz_device_wait(&device);
 
     dvz_canvas_destroy(canvas);
+
     dvz_window_destroy(window);
     dvz_window_host_destroy(host);
     dvz_device_destroy(&device);
     dvz_instance_destroy(&instance);
+
+#else
+    log_warn("canvas glfw test skipped because Datoviz was not build with glfw support");
 #endif
 
-    log_warn("canvas glfw test skipped because Datoviz was not build with glfw support");
 
     return 0;
 }

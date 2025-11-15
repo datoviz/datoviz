@@ -548,14 +548,8 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         return -1;
     }
 
-    DvzStreamFrame* frame = dvz_canvas_frame_pool_rotate(&canvas->frame_pool);
-    if (!frame)
-    {
-        log_error("canvas frame pool unavailable");
-        return -1;
-    }
-
-    int acquire_rc = dvz_canvas_swapchain_acquire(canvas, frame);
+    DvzStreamFrame frame_data = {0};
+    int acquire_rc = dvz_canvas_swapchain_acquire(canvas, &frame_data);
     if (acquire_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
     {
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
@@ -565,6 +559,14 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         log_warn("unable to acquire canvas frame from swapchain");
         return -1;
     }
+
+    DvzStreamFrame* frame = dvz_canvas_frame_pool_rotate(&canvas->frame_pool);
+    if (!frame)
+    {
+        log_error("canvas frame pool unavailable");
+        return -1;
+    }
+    *frame = frame_data;
 
     bool stream_was_started = canvas->stream_started;
     if (dvz_canvas_stream_start(canvas, frame) != 0)

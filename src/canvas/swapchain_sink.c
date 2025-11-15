@@ -231,13 +231,13 @@ static void canvas_cmd_transition(
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
         .subresourceRange =
-        {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1,
-        },
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
     };
 
     VkDependencyInfo dep = {
@@ -272,13 +272,13 @@ static void canvas_cmd_transition_swapchain(
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = image,
         .subresourceRange =
-        {
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .baseArrayLayer = 0,
-            .layerCount = 1,
-        },
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
     };
 
     VkDependencyInfo dep = {
@@ -636,6 +636,7 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     {
         return;
     }
+    log_trace("canvas swapchain cleanup");
     VkDevice device = canvas_device_handle(swapchain->canvas);
     if (swapchain->slots)
     {
@@ -951,16 +952,15 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 
     DvzSubmit submit = {0};
     dvz_submit(&submit);
-    dvz_submit_wait(
-        &submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
+    dvz_submit_wait(&submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
     if (cmd != VK_NULL_HANDLE)
     {
         dvz_submit_command(&submit, cmd);
     }
+    dvz_submit_signal(&submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
     dvz_submit_signal(
-        &submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
-    dvz_submit_signal(
-        &submit, canvas->timeline_semaphore.vk_semaphore, wait_value, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+        &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
+        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
     log_trace("submit");
