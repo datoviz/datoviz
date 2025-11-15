@@ -324,12 +324,11 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 
     do
     {
-        int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
-        for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
+        dvz_window_host_poll(host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
         {
-            log_trace("try #%d, canvas frame", tries);
-            dvz_window_host_poll(host);
-            frame_rc = dvz_canvas_frame(canvas);
+            continue;
         }
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_submit(canvas) == 0);
