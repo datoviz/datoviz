@@ -102,7 +102,7 @@
         VkResult _e = (x);                                                                        \
         if (_e != VK_SUCCESS)                                                                     \
         {                                                                                         \
-            dvz_fprintf(stderr, "Vulkan error %d at %s:%d\n", _e, __FILE__, __LINE__);             \
+            dvz_fprintf(stderr, "Vulkan error %d at %s:%d\n", _e, __FILE__, __LINE__);            \
             exit(1);                                                                              \
         }                                                                                         \
     } while (0)
@@ -161,15 +161,14 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     uint32_t np = 0;
     VK_CHECK(vkEnumeratePhysicalDevices(vk->instance, &np, NULL));
-    VkPhysicalDevice* pds = (VkPhysicalDevice*)dvz_malloc(sizeof(VkPhysicalDevice) * np);
+    VkPhysicalDevice* pds = (VkPhysicalDevice*)dvz_calloc(np, sizeof(VkPhysicalDevice));
     VK_CHECK(vkEnumeratePhysicalDevices(vk->instance, &np, pds));
     vk->phys = pds[0];
     dvz_free(pds);
 
     uint32_t nqf = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(vk->phys, &nqf, NULL);
-    VkQueueFamilyProperties* qfp =
-        (VkQueueFamilyProperties*)dvz_malloc(sizeof(*qfp) * nqf);
+    VkQueueFamilyProperties* qfp = (VkQueueFamilyProperties*)dvz_calloc(nqf, sizeof(*qfp));
     vkGetPhysicalDeviceQueueFamilyProperties(vk->phys, &nqf, qfp);
     vk->queueFamily = 0;
     for (uint32_t i = 0; i < nqf; i++)

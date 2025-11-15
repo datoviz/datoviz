@@ -137,8 +137,7 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     {
         return false;
     }
-    VkPhysicalDevice* devices =
-        (VkPhysicalDevice*)dvz_malloc(sizeof(VkPhysicalDevice) * gpu_count);
+    VkPhysicalDevice* devices = (VkPhysicalDevice*)dvz_calloc(gpu_count, sizeof(VkPhysicalDevice));
     if (!devices)
     {
         return false;
@@ -154,8 +153,8 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
 
     uint32_t queue_family_count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(ctx->phys, &queue_family_count, NULL);
-    VkQueueFamilyProperties* queue_props = (VkQueueFamilyProperties*)dvz_malloc(
-        queue_family_count * sizeof(VkQueueFamilyProperties));
+    VkQueueFamilyProperties* queue_props =
+        (VkQueueFamilyProperties*)dvz_calloc(queue_family_count, sizeof(VkQueueFamilyProperties));
     if (!queue_props)
     {
         return false;
