@@ -72,7 +72,7 @@ Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `ma
 ### ⏩ Planned activation order
 
 1. `vk` (finishing now; keep changes tightly scoped to Vulkan internals and their headers).
-2. `vklite` (thin convenience layer on top of raw Vulkan helpers).
+2. `vklite` (thin convenience layer on top of raw Vulkan helpers). Prefer using the `vklite` wrappers instead of raw Vulkan C API calls whenever you add new platform-facing code.
 3. `canvas` and GPU data management (buffer/image uploads, staging, synchronization helpers).
 4. Remaining high-level systems: client/protocol, visualization components, scene/renderer APIs, etc.
 
@@ -342,7 +342,7 @@ These rules should be followed carefully whenever Codex edits or creates C sourc
 ## 🚧 Refactor Roadmap Guidance
 
 - **`vk` (in progress):** Focus on robustness (device creation, swapchains, command encoders). Keep its public headers limited to the Vulkan-facing API and push any shared helpers down to `src/common` if multiple modules will need them later.
-- **`vklite` (next):** Acts as a friendlier façade over raw Vulkan. Once vk is stable, mirror the existing module template (OBJECT library + public headers + tests) before wiring it into `src/CMakeLists.txt`.
+- **`vklite` (next):** Acts as a friendlier façade over raw Vulkan and should be the entry point for any new Vulkan-facing work; prefer the `vklite` helpers rather than invoking raw Vulkan C API calls directly. Once vk is stable, mirror the existing module template (OBJECT library + public headers + tests) before wiring it into `src/CMakeLists.txt`.
 - **`canvas` & GPU data management:** Will introduce higher-level drawing surfaces plus buffer/image orchestration. Expect tight coupling with `vk`; reuse the established include/linking rules.
 - **Remaining subsystems (client/protocol, scientific visualization, scene/renderer APIs):** Leave existing directories as placeholders. When their turn comes, follow the same staged bring-up process: add CMake object libs, public headers, and tests before integrating with the main shared library.
 
