@@ -55,14 +55,24 @@ file(GLOB DVZ_VKLITE_TEST_SHADERS
 if(DVZ_VKLITE_TEST_SHADERS)
     file(MAKE_DIRECTORY "${DVZ_TEST_SPIRV_DIR}")
 
-    find_program(DVZ_GLSLC_EXECUTABLE
-        NAMES glslc
-        HINTS
+    set(_dvz_glslc_hints
         "$ENV{VULKAN_SDK}/bin"
         "$ENV{VULKAN_SDK}/Bin"
-        "${PROJECT_SOURCE_DIR}/bin/vulkan/linux"
-        "${PROJECT_SOURCE_DIR}/bin/vulkan/macos"
-        "${PROJECT_SOURCE_DIR}/bin/vulkan/windows"
+    )
+
+    if(APPLE)
+        list(APPEND _dvz_glslc_hints "${PROJECT_SOURCE_DIR}/bin/vulkan/macos")
+    endif()
+
+    if(WIN32)
+        list(APPEND _dvz_glslc_hints "${PROJECT_SOURCE_DIR}/bin/vulkan/windows")
+    endif()
+
+    list(APPEND _dvz_glslc_hints "${PROJECT_SOURCE_DIR}/bin/vulkan/linux")
+
+    find_program(DVZ_GLSLC_EXECUTABLE
+        NAMES glslc
+        HINTS ${_dvz_glslc_hints}
     )
 
     if(NOT DVZ_GLSLC_EXECUTABLE)

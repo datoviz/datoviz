@@ -391,9 +391,9 @@ build release="Debug": # && bundledeps
     @mkdir -p docs/images
     @mkdir -p build/src
     @mkdir -p build/testing
-    @cp -a libs/vulkan/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/* build/src/
-    @cp -a libs/vulkan/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/* build/testing/
-    @cp -a libs/shaderc/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/libshaderc*dylib build/src/
+    #@cp -a libs/vulkan/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/* build/src/
+    #@cp -a libs/vulkan/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/* build/testing/
+    #@cp -a libs/shaderc/macos_$([[ "$(arch)" == "aarch64" || "$(arch)" == "arm64" ]] && echo "arm64" || echo "x86_64")/libshaderc*dylib build/src/
     cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}} -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     cd build/ && ninja
 #
