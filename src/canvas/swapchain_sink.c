@@ -29,6 +29,7 @@
 #include "_log.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/sync.h"
 
 
 
@@ -58,9 +59,9 @@ struct DvzCanvasSwapchainSlot
     VkImage offscreen_image;
     VkImage swapchain_image;
     DvzAllocation offscreen_alloc;
-    VkSemaphore image_available;
-    VkSemaphore render_finished;
-    VkFence in_flight;
+    DvzSemaphore image_available;
+    DvzSemaphore render_finished;
+    DvzFence in_flight;
     VkCommandBuffer command_buffer;
     VkImageLayout offscreen_layout;
     VkImageLayout swapchain_layout;
@@ -513,12 +514,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
-    VkSemaphoreCreateInfo sem_info = {.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-    VkFenceCreateInfo fence_info = {
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .flags = VK_FENCE_CREATE_SIGNALED_BIT,
-    };
-
     for (uint32_t i = 0; i < count; ++i)
     {
         DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
@@ -588,9 +583,9 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             slot->memory_fd = -1;
         }
 
-        VK_CHECK_RESULT(vkCreateSemaphore(device, &sem_info, NULL, &slot->image_available));
-        VK_CHECK_RESULT(vkCreateSemaphore(device, &sem_info, NULL, &slot->render_finished));
-        VK_CHECK_RESULT(vkCreateFence(device, &fence_info, NULL, &slot->in_flight));
+        dvz_semaphore(canvas->device, &slot->image_available);
+        dvz_semaphore(canvas->device, &slot->render_finished);
+        dvz_fence(canvas->device, true, &slot->in_flight);
         slot->ready = true;
     }
 
@@ -612,21 +607,9 @@ static void canvas_destroy_slot(
         dvz_allocator_destroy_image(allocator, &slot->offscreen_alloc, slot->offscreen_image);
         slot->offscreen_image = VK_NULL_HANDLE;
     }
-    if (slot->image_available != VK_NULL_HANDLE)
-    {
-        vkDestroySemaphore(device, slot->image_available, NULL);
-        slot->image_available = VK_NULL_HANDLE;
-    }
-    if (slot->render_finished != VK_NULL_HANDLE)
-    {
-        vkDestroySemaphore(device, slot->render_finished, NULL);
-        slot->render_finished = VK_NULL_HANDLE;
-    }
-    if (slot->in_flight != VK_NULL_HANDLE)
-    {
-        vkDestroyFence(device, slot->in_flight, NULL);
-        slot->in_flight = VK_NULL_HANDLE;
-    }
+    dvz_semaphore_destroy(&slot->image_available);
+    dvz_semaphore_destroy(&slot->render_finished);
+    dvz_fence_destroy(&slot->in_flight);
 #if OS_UNIX
     if (slot->memory_fd >= 0)
     {
@@ -880,7 +863,8 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 
     uint32_t image_index = 0;
     VkResult res = vkAcquireNextImageKHR(
-        device, state->handle, UINT64_MAX, slot->image_available, VK_NULL_HANDLE, &image_index);
+        device, state->handle, UINT64_MAX, slot->image_available.vk_semaphore, VK_NULL_HANDLE,
+        &image_index);
     if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
@@ -898,8 +882,8 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         return -1;
     }
 
-    vkWaitForFences(device, 1, &slot->in_flight, VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &slot->in_flight);
+    dvz_fence_wait(&slot->in_flight);
+    dvz_fence_reset(&slot->in_flight);
     slot->image_index = image_index;
     if (state->swapchain_images && image_index < state->image_count)
     {
@@ -961,55 +945,35 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     }
     VkCommandBuffer cmd = state->active_slot->command_buffer;
 
-    VkSemaphore wait_semaphores[] = {state->active_slot->image_available};
+    VkPipelineStageFlags2 wait_stage =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+    VkPipelineStageFlags2 signal_stage = wait_stage;
 
-    VkPipelineStageFlags wait_stages[] = {
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT};
-
-    VkSemaphore signal_semaphores[] = {
-        state->active_slot->render_finished, // binary
-        canvas->timeline_semaphore           // timeline
-    };
-
-    uint64_t signal_values[] = {
-        0,         // ignored for binary semaphore
-        wait_value // real timeline increment
-    };
-
-    VkTimelineSemaphoreSubmitInfo timeline_info = {
-        .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
-        .signalSemaphoreValueCount = 2,
-        .pSignalSemaphoreValues = signal_values,
-    };
-
-    VkSubmitInfo submit_info = {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .pNext = &timeline_info,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = wait_semaphores,
-        .pWaitDstStageMask = wait_stages,
-        .commandBufferCount = (cmd != VK_NULL_HANDLE) ? 1U : 0U,
-        .pCommandBuffers = (cmd != VK_NULL_HANDLE) ? &cmd : NULL,
-        .signalSemaphoreCount = 2,
-        .pSignalSemaphores = signal_semaphores,
-    };
-
+    DvzSubmit submit = {0};
+    dvz_submit(&submit);
+    dvz_submit_wait(
+        &submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
+    if (cmd != VK_NULL_HANDLE)
+    {
+        dvz_submit_command(&submit, cmd);
+    }
+    dvz_submit_signal(
+        &submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
+    dvz_submit_signal(
+        &submit, canvas->timeline_semaphore.vk_semaphore, wait_value, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
     log_trace("submit");
-    VkResult submit_res = vkQueueSubmit(queue, 1, &submit_info, state->active_slot->in_flight);
-    if (submit_res != VK_SUCCESS)
-    {
-        log_error("queue submit failed (%d)", submit_res);
-        state->active_slot = NULL;
-        return -1;
-    }
+    dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
 
     uint32_t index = state->active_slot->image_index;
+    VkSemaphore present_wait_semaphores[] = {
+        state->active_slot->render_finished.vk_semaphore,
+    };
     VkPresentInfoKHR present_info = {
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .waitSemaphoreCount = 1,
-        .pWaitSemaphores = &state->active_slot->render_finished,
+        .pWaitSemaphores = present_wait_semaphores,
         .swapchainCount = 1,
         .pSwapchains = &state->handle,
         .pImageIndices = &index,

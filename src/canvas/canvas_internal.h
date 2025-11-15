@@ -28,6 +28,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/window.h"
+#include "datoviz/vklite/sync.h"
 
 
 
@@ -84,7 +85,7 @@ struct DvzCanvas
     bool supports_external_semaphore;
     DvzVma allocator;
     bool allocator_ready;
-    VkSemaphore timeline_semaphore;
+    DvzSemaphore timeline_semaphore;
     int timeline_semaphore_fd;
     uint64_t timeline_value;
     bool timeline_ready;

@@ -199,44 +199,19 @@ static int canvas_create_timeline(DvzCanvas* canvas)
         return 0;
     }
 
-    VkDevice vk_device = dvz_device_handle(canvas->device);
-    ANNVK(vk_device);
-
-    VkSemaphoreTypeCreateInfo type_info = {
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
-        .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
-        .initialValue = 0,
-    };
-    VkExternalSemaphoreHandleTypeFlags handle_type =
-        canvas->supports_external_semaphore ? canvas_external_semaphore_handle_type() : 0;
-    VkExportSemaphoreCreateInfo export_info = {
-        .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
-        .handleTypes = handle_type,
-    };
-    if (handle_type != 0)
-    {
-        type_info.pNext = &export_info;
-    }
-    VkSemaphoreCreateInfo info = {
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-        .pNext = &type_info,
-    };
-
-    VkResult res = vkCreateSemaphore(vk_device, &info, NULL, &canvas->timeline_semaphore);
-    if (res != VK_SUCCESS)
-    {
-        log_error("failed to create canvas timeline semaphore (%d)", res);
-        canvas->timeline_semaphore = VK_NULL_HANDLE;
-        return -1;
-    }
+    dvz_semaphore_timeline(canvas->device, 0, &canvas->timeline_semaphore);
 
     canvas->timeline_semaphore_fd = -1;
+    VkExternalSemaphoreHandleTypeFlags handle_type =
+        canvas->supports_external_semaphore ? canvas_external_semaphore_handle_type() : 0;
     if (handle_type != 0)
     {
+        VkDevice vk_device = dvz_device_handle(canvas->device);
+        VkResult res = VK_NOT_READY;
 #if OS_UNIX
         VkSemaphoreGetFdInfoKHR fd_info = {
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
-            .semaphore = canvas->timeline_semaphore,
+            .semaphore = canvas->timeline_semaphore.vk_semaphore,
             .handleType = handle_type,
         };
         res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &canvas->timeline_semaphore_fd);
@@ -265,12 +240,7 @@ static void canvas_destroy_timeline(DvzCanvas* canvas)
     {
         return;
     }
-    VkDevice vk_device = dvz_device_handle(canvas->device);
-    if (canvas->timeline_semaphore != VK_NULL_HANDLE)
-    {
-        vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
-        canvas->timeline_semaphore = VK_NULL_HANDLE;
-    }
+    dvz_semaphore_destroy(&canvas->timeline_semaphore);
 #if OS_UNIX
     if (canvas->timeline_semaphore_fd >= 0)
     {
