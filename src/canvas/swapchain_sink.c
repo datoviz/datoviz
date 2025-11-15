@@ -694,6 +694,7 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
         return;
     }
     VkDevice device = canvas_device_handle(swapchain->canvas);
+    vkDeviceWaitIdle(device);
     if (swapchain->slots)
     {
         for (uint32_t i = 0; i < swapchain->image_count; ++i)
@@ -707,7 +708,6 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     }
     if (swapchain->handle != VK_NULL_HANDLE)
     {
-        vkDeviceWaitIdle(device);
         vkDestroySwapchainKHR(device, swapchain->handle, NULL);
         swapchain->handle = VK_NULL_HANDLE;
     }
@@ -918,6 +918,9 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     uint32_t slot_idx = state->frame_index % state->image_count;
     DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
 
+    dvz_fence_wait(&slot->in_flight);
+    dvz_fence_reset(&slot->in_flight);
+
     uint32_t image_index = 0;
     VkResult res = vkAcquireNextImageKHR(
         device, state->handle, UINT64_MAX, slot->image_available.vk_semaphore, VK_NULL_HANDLE,
@@ -938,9 +941,6 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     {
         return -1;
     }
-
-    dvz_fence_wait(&slot->in_flight);
-    dvz_fence_reset(&slot->in_flight);
     slot->image_index = image_index;
     if (state->swapchain_images && image_index < state->image_count)
     {
