@@ -274,7 +274,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
     cfg.device = &device;
-    cfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+    cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
     cfg.timing_history = 1;
 
     log_trace("creating canvas");
@@ -313,17 +313,14 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_submit(canvas) == 0);
         submit_count++;
-
-        // dvz_device_wait(&device);
-        dvz_window_host_poll(host);
     } while (interactive_loop && keep_running);
+
+    dvz_device_wait(&device);
 
     if (interactive_loop && router)
     {
         dvz_input_unsubscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
     }
-
-    dvz_device_wait(&device);
 
     double elapsed_s = dvz_clock_interval(&loop_clock);
     if (submit_count > 0 && elapsed_s > 0.0)
@@ -334,9 +331,9 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
             "canvas GLFW average FPS: %.2f (%zu %s over %.2fs)", avg_fps, submit_count,
             frame_label, elapsed_s);
     }
+
     dvz_canvas_set_draw_callback(canvas, NULL, NULL);
     dvz_canvas_destroy(canvas);
-
     dvz_window_destroy(window);
     dvz_window_host_destroy(host);
     dvz_device_destroy(&device);
