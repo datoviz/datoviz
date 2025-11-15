@@ -119,7 +119,7 @@ static void _dispatch_pointer_subs(DvzInputRouter* router, const DvzPointerEvent
         return;
     uint32_t count = router->pointer_count;
     DvzPointerSubscription* subs =
-        (DvzPointerSubscription*)dvz_malloc(sizeof(DvzPointerSubscription) * count);
+        (DvzPointerSubscription*)dvz_calloc(count, sizeof(DvzPointerSubscription));
     ANN(subs);
     size_t bytes = sizeof(DvzPointerSubscription) * count;
     dvz_memcpy(subs, bytes, router->pointer_subs, bytes);
@@ -142,7 +142,7 @@ static void _dispatch_keyboard_subs(DvzInputRouter* router, const DvzKeyboardEve
         return;
     uint32_t count = router->keyboard_count;
     DvzKeyboardSubscription* subs =
-        (DvzKeyboardSubscription*)dvz_malloc(sizeof(DvzKeyboardSubscription) * count);
+        (DvzKeyboardSubscription*)dvz_calloc(count, sizeof(DvzKeyboardSubscription));
     ANN(subs);
     size_t bytes = sizeof(DvzKeyboardSubscription) * count;
     dvz_memcpy(subs, bytes, router->keyboard_subs, bytes);
@@ -165,7 +165,7 @@ static void _dispatch_resize_subs(DvzInputRouter* router, const DvzInputResizeEv
         return;
     uint32_t count = router->resize_count;
     DvzResizeSubscription* subs =
-        (DvzResizeSubscription*)dvz_malloc(sizeof(DvzResizeSubscription) * count);
+        (DvzResizeSubscription*)dvz_calloc(count, sizeof(DvzResizeSubscription));
     ANN(subs);
     size_t bytes = sizeof(DvzResizeSubscription) * count;
     dvz_memcpy(subs, bytes, router->resize_subs, bytes);
@@ -188,7 +188,7 @@ static void _dispatch_scale_subs(DvzInputRouter* router, const DvzInputScaleEven
         return;
     uint32_t count = router->scale_count;
     DvzScaleSubscription* subs =
-        (DvzScaleSubscription*)dvz_malloc(sizeof(DvzScaleSubscription) * count);
+        (DvzScaleSubscription*)dvz_calloc(count, sizeof(DvzScaleSubscription));
     ANN(subs);
     size_t bytes = sizeof(DvzScaleSubscription) * count;
     dvz_memcpy(subs, bytes, router->scale_subs, bytes);
@@ -211,7 +211,7 @@ static void _dispatch_event_subs(DvzInputRouter* router, const DvzInputEvent* ev
         return;
     uint32_t count = router->event_count;
     DvzEventSubscription* subs =
-        (DvzEventSubscription*)dvz_malloc(sizeof(DvzEventSubscription) * count);
+        (DvzEventSubscription*)dvz_calloc(count, sizeof(DvzEventSubscription));
     ANN(subs);
     size_t bytes = sizeof(DvzEventSubscription) * count;
     dvz_memcpy(subs, bytes, router->event_subs, bytes);
