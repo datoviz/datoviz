@@ -62,6 +62,7 @@ set(DVZ_NVENC_LIB_DIR "")
 option(DVZ_ENABLE_KVAZAAR "Enable Kvazaar software HEVC backend" ON)
 option(DVZ_WITH_GLFW "Enable the GLFW window backend" ON)
 set(DVZ_HAS_KVZ 0)
+set(DVZ_HAS_GLFW 0)
 
 set(DVZ_GLFW_DIR "${PROJECT_SOURCE_DIR}/external/glfw")
 
@@ -79,12 +80,19 @@ if(DVZ_WITH_GLFW)
             EXCLUDE_FROM_ALL)
 
         if(TARGET glfw)
+            set(DVZ_HAS_GLFW 1)
             add_library(glfw::glfw ALIAS glfw)
         endif()
     else()
         message(WARNING "GLFW submodule missing — disable DVZ_WITH_GLFW or run 'git submodule update --init external/glfw'")
     endif()
 endif()
+
+if(DVZ_WITH_GLFW AND NOT DVZ_HAS_GLFW)
+    message(WARNING "DVZ_WITH_GLFW is ON but GLFW was not built; falling back to headless window backend.")
+endif()
+
+set(DVZ_HAS_GLFW "${DVZ_HAS_GLFW}" CACHE INTERNAL "GLFW availability flag" FORCE)
 
 if(DVZ_ENABLE_CUDA)
     find_package(CUDAToolkit QUIET)

@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#if OS_LINUX
+#if OS_UNIX
 #include <unistd.h>
 #endif
 
@@ -60,7 +60,7 @@ static const char* const CANVAS_REQUIRED_EXTENSIONS[] = {
 // VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
 // VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
 // VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
-#if OS_LINUX
+#if OS_UNIX
     VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
     VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
 #elif OS_WINDOWS
@@ -97,7 +97,7 @@ static bool canvas_device_check_extensions(const DvzCanvas* canvas)
 
 static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void)
 {
-#if OS_LINUX
+#if OS_UNIX
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
 #elif OS_WINDOWS
     return VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
@@ -110,7 +110,7 @@ static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(voi
 
 static VkExternalSemaphoreHandleTypeFlags canvas_external_semaphore_handle_type(void)
 {
-#if OS_LINUX
+#if OS_UNIX
     return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
 #elif OS_WINDOWS
     return VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT;
@@ -197,7 +197,7 @@ static int canvas_create_timeline(DvzCanvas* canvas)
         return -1;
     }
 
-#if OS_LINUX
+#if OS_UNIX
     VkSemaphoreGetFdInfoKHR fd_info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
         .semaphore = canvas->timeline_semaphore,
@@ -243,7 +243,7 @@ static void canvas_destroy_timeline(DvzCanvas* canvas)
         vkDestroySemaphore(vk_device, canvas->timeline_semaphore, NULL);
         canvas->timeline_semaphore = VK_NULL_HANDLE;
     }
-#if OS_LINUX
+#if OS_UNIX
     if (canvas->timeline_semaphore_fd >= 0)
     {
         close(canvas->timeline_semaphore_fd);

@@ -26,7 +26,7 @@
 #include <volk.h>
 
 
-#if DVZ_WITH_GLFW
+#if DVZ_HAS_GLFW
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -359,7 +359,7 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
  */
 DVZ_EXPORT bool dvz_window_glfw_init(void)
 {
-#if DVZ_WITH_GLFW
+#if DVZ_HAS_GLFW
     return _glfw_init();
 #else
     log_warn("GLFW backend disabled, cannot initialize");

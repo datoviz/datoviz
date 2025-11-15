@@ -205,7 +205,7 @@ void dvz_box_normalize_1D(
         target_min = target.zmin;
     }
 
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
 #pragma omp parallel for
 #endif
     for (uint32_t i = 0; i < count; i++)
@@ -226,7 +226,7 @@ void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* p
     double scale_y =
         source.ymax != source.ymin ? (target.ymax - target.ymin) / (source.ymax - source.ymin) : 1;
 
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
 #pragma omp parallel for
 #endif
     for (uint32_t i = 0; i < count; i++)
@@ -249,7 +249,7 @@ void dvz_box_normalize_polygon(
     double scale_y =
         source.ymax != source.ymin ? (target.ymax - target.ymin) / (source.ymax - source.ymin) : 1;
 
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
 #pragma omp parallel for
 #endif
     for (uint32_t i = 0; i < count; i++)
@@ -273,7 +273,7 @@ void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* p
     double scale_z =
         source.zmax != source.zmin ? (target.zmax - target.zmin) / (source.zmax - source.zmin) : 1;
 
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
 #pragma omp parallel for
 #endif
     for (uint32_t i = 0; i < count; i++)

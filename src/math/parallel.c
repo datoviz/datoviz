@@ -33,7 +33,7 @@ static int NUM_THREADS;
 
 int dvz_num_procs(void)
 {
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
     return omp_get_num_procs();
 #else
     return 0;
@@ -44,7 +44,7 @@ int dvz_num_procs(void)
 
 void dvz_threads_set(int num_threads)
 {
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
     int num_procs = dvz_num_procs();
     if (num_threads <= 0)
     {
@@ -63,7 +63,7 @@ void dvz_threads_set(int num_threads)
 
 int dvz_threads_get(void)
 {
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
     return NUM_THREADS;
 #else
     return 0;
@@ -74,7 +74,7 @@ int dvz_threads_get(void)
 
 void dvz_threads_default(void)
 {
-#if HAS_OPENMP
+#if DVZ_HAS_OPENMP
     // Set number of threads from DVZ_NUM_THREADS env variable.
     char* env = getenv("DVZ_NUM_THREADS");
     if (env == NULL)

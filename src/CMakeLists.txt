@@ -9,11 +9,14 @@
 set(OS_LINUX 0)
 set(OS_MACOS 0)
 set(OS_WINDOWS 0)
+set(OS_UNIX 0)
 
 if(UNIX AND NOT APPLE)
     set(OS_LINUX 1)
+    set(OS_UNIX 1)
 elseif(APPLE)
     set(OS_MACOS 1)
+    set(OS_UNIX 1)
 elseif(WIN32)
     set(OS_WINDOWS 1)
 endif()
@@ -46,7 +49,7 @@ set(DVZ_COMPILE_OPTIONS_CXX "")
 set(DVZ_COMPILE_OPTIONS_OBJC "")
 
 # Default: OpenMP remains disabled until detection is reintroduced.
-set(HAS_OPENMP 0)
+set(DVZ_HAS_OPENMP 0)
 set(DVZ_FPNG_NO_SSE 1)
 
 if(CC_GCC OR CC_CLANG)
@@ -98,7 +101,7 @@ if(CC_GCC)
         set(DVZ_FPNG_NO_SSE 1)
     endif()
 
-    if(HAS_OPENMP AND OpenMP_CXX_FLAGS)
+    if(DVZ_HAS_OPENMP AND OpenMP_CXX_FLAGS)
         separate_arguments(_dvz_openmp_flags NATIVE_COMMAND "${OpenMP_CXX_FLAGS}")
         list(APPEND DVZ_COMMON_COMPILE_OPTIONS ${_dvz_openmp_flags})
     endif()
@@ -156,7 +159,7 @@ set(DVZ_COMMON_COMPILE_OPTIONS "${DVZ_COMMON_COMPILE_OPTIONS}" CACHE INTERNAL "D
 set(DVZ_COMPILE_OPTIONS_C "${DVZ_COMPILE_OPTIONS_C}" CACHE INTERNAL "Datoviz C compiler options" FORCE)
 set(DVZ_COMPILE_OPTIONS_CXX "${DVZ_COMPILE_OPTIONS_CXX}" CACHE INTERNAL "Datoviz C++ compiler options" FORCE)
 set(DVZ_COMPILE_OPTIONS_OBJC "${DVZ_COMPILE_OPTIONS_OBJC}" CACHE INTERNAL "Datoviz Objective-C compiler options" FORCE)
-set(HAS_OPENMP "${HAS_OPENMP}" CACHE INTERNAL "OpenMP availability flag" FORCE)
+set(DVZ_HAS_OPENMP "${DVZ_HAS_OPENMP}" CACHE INTERNAL "OpenMP availability flag" FORCE)
 
 # -------------------------------------------------------------------------------------------------
 # Create the library
@@ -187,17 +190,7 @@ endif()
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
 #
-set(HAS_CUDA 0)
-
-if(DEFINED DVZ_HAS_CUDA AND DVZ_HAS_CUDA)
-    set(HAS_CUDA 1)
-endif()
-
-set(HAS_KVZ 0)
-
-if(DEFINED DVZ_HAS_KVZ AND DVZ_HAS_KVZ)
-    set(HAS_KVZ 1)
-endif()
+set(DVZ_HAS_ZLIB 0)
 
 # Validation layers are enabled by default except for Release builds unless manually overridden.
 option(DVZ_USE_VALIDATION "Enable Vulkan validation layers and debug utils" ON)
@@ -217,19 +210,19 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     OS_LINUX=${OS_LINUX}
     OS_MACOS=${OS_MACOS}
     OS_WINDOWS=${OS_WINDOWS}
+    OS_UNIX=${OS_UNIX}
 
     # Compiler.
     CC_MSVC=${CC_MSVC}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
 
-    # TODO: ZLIB
-    HAS_ZLIB=0
-    HAS_OPENMP=${HAS_OPENMP}
-    HAS_CUDA=${HAS_CUDA}
-    HAS_GLFW=${DVZ_WINDOW_GLFW_ENABLED}
-    HAS_KVZ=${HAS_KVZ}
-    DVZ_HAS_KVZ=${HAS_KVZ}
+    # Feature availability.
+    DVZ_HAS_ZLIB=${DVZ_HAS_ZLIB}
+    DVZ_HAS_OPENMP=${DVZ_HAS_OPENMP}
+    DVZ_HAS_CUDA=${DVZ_HAS_CUDA}
+    DVZ_HAS_GLFW=${DVZ_HAS_GLFW}
+    DVZ_HAS_KVZ=${DVZ_HAS_KVZ}
 
     # Vulkan Memory Allocator uses Volk-loaded entry points.
     VMA_STATIC_VULKAN_FUNCTIONS=0
@@ -321,7 +314,7 @@ if(DVZ_THREADING_TARGET)
     target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
 endif()
 
-if(DVZ_WINDOW_GLFW_ENABLED AND TARGET glfw)
+if(DVZ_HAS_GLFW AND TARGET glfw)
     target_link_libraries(datoviz PRIVATE glfw)
 endif()
 

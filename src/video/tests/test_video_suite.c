@@ -20,7 +20,7 @@ int test_video_1(TstSuite* suite, TstItem* item)
     return 0;
 }
 
-#if !(defined(HAS_CUDA) && HAS_CUDA)
+#if !(defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA)
 int test_video_nvenc(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -48,7 +48,7 @@ int test_video(TstSuite* suite)
 
     TEST_SIMPLE(test_video_1);
 
-#if defined(HAS_CUDA) && HAS_CUDA
+#if defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA
     TEST_SIMPLE(test_video_nvenc);
 #endif
 

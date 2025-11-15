@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#if OS_LINUX
+#if OS_UNIX
 #include <unistd.h>
 #endif
 
@@ -602,7 +602,7 @@ static void canvas_destroy_slot(
         vkDestroyFence(device, slot->in_flight, NULL);
         slot->in_flight = VK_NULL_HANDLE;
     }
-#if OS_LINUX
+#if OS_UNIX
     if (slot->memory_fd >= 0)
     {
         close(slot->memory_fd);

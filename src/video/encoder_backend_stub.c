@@ -18,7 +18,7 @@
 /*  NVENC video backend stubs                                                                    */
 /*************************************************************************************************/
 
-#if !HAS_CUDA
+#if !DVZ_HAS_CUDA
 
 
 
@@ -88,7 +88,7 @@ const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC = {
 /*  NVENC video backend stubs                                                                    */
 /*************************************************************************************************/
 
-#if !HAS_KVZ
+#if !DVZ_HAS_KVZ
 
 
 

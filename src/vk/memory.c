@@ -71,8 +71,9 @@ static VmaAllocatorCreateFlags _set_vma_flags(DvzDevice* device)
 #define ENSURE_EXTERNAL                                                                           \
     if (allocator->external == 0)                                                                 \
     {                                                                                             \
-        log_warn("unable to use external feature as the external flag was not set at allocator "  \
-                 "creation");                                                                     \
+        log_warn(                                                                                 \
+            "unable to use external feature as the external flag was not set at allocator "       \
+            "creation");                                                                          \
         return -1;                                                                                \
     }
 
@@ -288,11 +289,12 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
     VkDevice vkd = allocator->device->vk_device;
     ANNVK(vkd);
 
-#if OS_MACOS || OS_LINUX
+#if OS_UNIX
     if (!dvz_device_has_extension(allocator->device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME))
     {
-        log_error("VK_KHR_external_memory_fd extension not enabled on device; cannot export "
-                  "memory FD");
+        log_error(
+            "VK_KHR_external_memory_fd extension not enabled on device; cannot export "
+            "memory FD");
         return -1;
     }
 
@@ -312,8 +314,9 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
 #elif OS_WINDOWS
     if (!dvz_device_has_extension(allocator->device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME))
     {
-        log_error("VK_KHR_external_memory_win32 extension not enabled on device; cannot export "
-                  "memory handle");
+        log_error(
+            "VK_KHR_external_memory_win32 extension not enabled on device; cannot export "
+            "memory handle");
         return -1;
     }
 
@@ -366,8 +369,9 @@ int dvz_allocator_import_buffer(
     external_info.handleTypes = allocator->external;
     if (info->pNext != NULL)
     {
-        log_error("info.pNext must be NULL, otherwise need to iterate through the next chain and "
-                  "set external_info to the last one. PR welcome");
+        log_error(
+            "info.pNext must be NULL, otherwise need to iterate through the next chain and "
+            "set external_info to the last one. PR welcome");
     }
     else
     {
@@ -379,7 +383,7 @@ int dvz_allocator_import_buffer(
     alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
     alloc_info.flags = flags;
 
-#if OS_MACOS || OS_LINUX
+#if OS_UNIX
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
     import_info.handleType = allocator->external;
     import_info.fd = handle;
@@ -430,8 +434,9 @@ int dvz_allocator_import_image(
     external_info.handleTypes = allocator->external;
     if (info->pNext != NULL)
     {
-        log_error("info.pNext must be NULL, otherwise need to iterate through the next chain and "
-                  "set external_info to the last one. PR welcome");
+        log_error(
+            "info.pNext must be NULL, otherwise need to iterate through the next chain and "
+            "set external_info to the last one. PR welcome");
     }
     else
     {
@@ -443,7 +448,7 @@ int dvz_allocator_import_image(
     alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
     alloc_info.flags = flags;
 
-#if OS_MACOS || OS_LINUX
+#if OS_UNIX
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
     import_info.handleType = allocator->external;
     import_info.fd = handle;

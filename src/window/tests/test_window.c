@@ -118,11 +118,11 @@ int test_window_frame_requests(TstSuite* suite, TstItem* item)
 
 
 
-#ifndef DVZ_WITH_GLFW
-#define DVZ_WITH_GLFW 0
+#ifndef DVZ_HAS_GLFW
+#define DVZ_HAS_GLFW 0
 #endif
 
-#if !DVZ_WITH_GLFW
+#if !DVZ_HAS_GLFW
 /**
  * Requesting GLFW should fall back to the headless backend when it is unavailable.
  */

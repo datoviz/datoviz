@@ -14,10 +14,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#ifndef HAS_GLFW
-#define HAS_GLFW 0
-#endif
-
 #include "canvas_internal.h"
 
 #include "_assertions.h"
@@ -30,7 +26,7 @@
 #include "test_canvas.h"
 #include "testing.h"
 
-#if HAS_GLFW
+#if DVZ_HAS_GLFW
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -118,7 +114,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     ANN(suite);
     (void)item;
 
-#if DVZ_WITH_GLFW
+#if DVZ_HAS_GLFW
     DvzInstance instance = {0};
     dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
 
@@ -195,6 +191,8 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     dvz_device_destroy(&device);
     dvz_instance_destroy(&instance);
 #endif
+
+    log_warn("canvas glfw test skipped because Datoviz was not build with glfw support");
 
     return 0;
 }

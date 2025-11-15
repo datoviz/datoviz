@@ -23,7 +23,7 @@
 #include "_log.h"
 #include <volk.h>
 
-#if HAS_CUDA
+#if DVZ_HAS_CUDA
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #endif
@@ -34,7 +34,7 @@
 #include "test_vk.h"
 #include "testing.h"
 
-#if HAS_CUDA
+#if DVZ_HAS_CUDA
 static int cuda_check(CUresult res, const char* label)
 {
     if (res != CUDA_SUCCESS)
@@ -120,7 +120,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-#if HAS_CUDA
+#if DVZ_HAS_CUDA
     cudaError_t cerr;
     int device_count = 0;
     cerr = cudaGetDeviceCount(&device_count);
@@ -291,7 +291,7 @@ cleanup_vulkan:
 
     return out;
 #else
-    log_warn("test_memory_cuda skipped because HAS_CUDA=0");
+    log_warn("test_memory_cuda skipped because DVZ_HAS_CUDA=0");
     return -1;
 #endif
 }
@@ -303,7 +303,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-#if HAS_CUDA
+#if DVZ_HAS_CUDA
     int out = 0;
     CUresult curet = CUDA_SUCCESS;
     CUdevice cu_device = 0;
@@ -581,7 +581,7 @@ cleanup:
 
     return out;
 #else
-    log_warn("test_memory_cuda_2 skipped because HAS_CUDA=0");
+    log_warn("test_memory_cuda_2 skipped because DVZ_HAS_CUDA=0");
     return -1;
 #endif
 }

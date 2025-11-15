@@ -468,7 +468,7 @@ void dvz_device_request_canvas_extensions(DvzDevice* device)
     // dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
     // dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
 
-#if OS_LINUX
+#if OS_UNIX
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
 #elif OS_WINDOWS

@@ -14,7 +14,7 @@
 #include "datoviz/fileio/fileio.h"
 #include "fpng.h"
 
-#if HAS_ZLIB
+#if DVZ_HAS_ZLIB
 #include <zlib.h>
 #endif
 
@@ -188,7 +188,7 @@ char* dvz_parse_npy(DvzSize size, char* npy_bytes)
 char* dvz_read_gz(const char* filename, DvzSize* size)
 {
 
-#if HAS_ZLIB
+#if DVZ_HAS_ZLIB
     if (!filename || !size)
     {
         dvz_fprintf(stderr, "Error: Invalid arguments.\n");

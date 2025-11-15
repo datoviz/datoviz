@@ -203,7 +203,7 @@ if(_dvz_compile_definitions)
     target_compile_definitions(dvztest PRIVATE ${_dvz_compile_definitions})
 endif()
 
-target_compile_definitions(dvztest PRIVATE DVZ_WITH_GLFW=${DVZ_WINDOW_GLFW_ENABLED})
+target_compile_definitions(dvztest PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
 
 target_compile_definitions(dvztest PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
 

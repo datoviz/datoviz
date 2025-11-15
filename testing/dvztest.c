@@ -25,7 +25,7 @@
 #include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
 #include "../src/window/tests/test_window.h"
-#if HAS_CUDA
+#if DVZ_HAS_CUDA
 #include "../src/video/tests/test_video.h"
 #endif
 #include "../src/vk/tests/test_vk.h"
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     test_input(&suite);
     test_window(&suite);
     test_canvas(&suite);
-#if HAS_CUDA
+#if DVZ_HAS_CUDA
     test_video(&suite);
 #endif
     test_vk(&suite);
