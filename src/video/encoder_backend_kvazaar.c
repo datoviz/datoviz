@@ -254,6 +254,10 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
         return -1;
     }
     state->wait_semaphore_ready = true;
+#if OS_UNIX
+    close(enc->wait_semaphore_fd);
+#endif
+    enc->wait_semaphore_fd = -1;
     return 0;
 }
 

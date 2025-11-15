@@ -290,11 +290,9 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     if (video_env && video_env[0] != '\0' && video_env[0] != '0')
     {
         DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
-        bool has_external_memory = canvas->supports_external_memory;
+        bool has_external_memory = canvas->supports_external_memory && canvas->allocator.external != 0;
         bool has_external_semaphore = canvas->supports_external_semaphore;
-        bool has_export_handles =
-            canvas->allocator.external != 0 && canvas->timeline_semaphore_fd >= 0;
-        if (has_external_memory && has_external_semaphore && has_export_handles)
+        if (has_external_memory && has_external_semaphore)
         {
             DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
             sink_cfg.encoder.backend = "nvenc";
@@ -315,9 +313,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         }
         else
         {
-            log_warn(
-                "video sink requested but canvas lacks exported handles (mem=%d sem=%d)",
-                has_external_memory && has_export_handles, has_external_semaphore);
+            log_warn("video sink requested but canvas lacks external memory/semaphore support");
         }
     }
 

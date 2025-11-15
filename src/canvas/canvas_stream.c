@@ -143,9 +143,9 @@ int dvz_canvas_stream_enable_video(
     ANN(canvas->stream);
     if (enable)
     {
-        if (canvas->allocator.external == 0 || canvas->timeline_semaphore_fd < 0)
+        if (canvas->allocator.external == 0 || !canvas->supports_external_semaphore)
         {
-            log_error("video sink requires exported memory and timeline handles");
+            log_error("video sink requires external memory/semaphore support");
             return -1;
         }
         if (canvas->video_sink_enabled)

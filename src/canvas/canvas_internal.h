@@ -86,7 +86,6 @@ struct DvzCanvas
     DvzVma allocator;
     bool allocator_ready;
     DvzSemaphore timeline_semaphore;
-    int timeline_semaphore_fd;
     uint64_t timeline_value;
     bool timeline_ready;
     DvzCanvasSwapchain* swapchain;
@@ -157,3 +156,5 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
 bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas);
 
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);
+
+VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);

@@ -56,7 +56,6 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 
 
 static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void);
-static VkExternalSemaphoreHandleTypeFlags canvas_external_semaphore_handle_type(void);
 
 
 static bool canvas_device_check_extensions(DvzCanvas* canvas)
@@ -101,7 +100,7 @@ static bool canvas_device_check_extensions(DvzCanvas* canvas)
     }
 
     canvas->supports_external_semaphore = false;
-    VkExternalSemaphoreHandleTypeFlags sem_handle = canvas_external_semaphore_handle_type();
+    VkExternalSemaphoreHandleTypeFlags sem_handle = dvz_canvas_timeline_handle_type();
     if (sem_handle != 0 &&
         dvz_device_has_extension(canvas->device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME))
     {
@@ -144,7 +143,7 @@ static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(voi
 
 
 
-static VkExternalSemaphoreHandleTypeFlags canvas_external_semaphore_handle_type(void)
+VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void)
 {
 #if OS_MACOS
     return 0;
@@ -200,32 +199,9 @@ static int canvas_create_timeline(DvzCanvas* canvas)
     }
 
     VkExternalSemaphoreHandleTypeFlags handle_type =
-        canvas->supports_external_semaphore ? canvas_external_semaphore_handle_type() : 0;
+        canvas->supports_external_semaphore ? dvz_canvas_timeline_handle_type() : 0;
     dvz_semaphore_timeline(canvas->device, 0, &canvas->timeline_semaphore, handle_type);
 
-    canvas->timeline_semaphore_fd = -1;
-    if (handle_type != 0)
-    {
-        VkDevice vk_device = dvz_device_handle(canvas->device);
-        VkResult res = VK_NOT_READY;
-#if OS_UNIX
-        VkSemaphoreGetFdInfoKHR fd_info = {
-            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
-            .semaphore = canvas->timeline_semaphore.vk_semaphore,
-            .handleType = handle_type,
-        };
-        res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &canvas->timeline_semaphore_fd);
-        if (res != VK_SUCCESS)
-        {
-            log_warn("failed to export canvas timeline semaphore FD (%d)", res);
-            canvas->timeline_semaphore_fd = -1;
-        }
-#elif OS_WINDOWS
-        log_warn("timeline semaphore export not implemented on Windows");
-#else
-        log_warn("timeline semaphore export unsupported on this platform");
-#endif
-    }
 
     canvas->timeline_ready = true;
     canvas->timeline_value = 0;
@@ -241,13 +217,6 @@ static void canvas_destroy_timeline(DvzCanvas* canvas)
         return;
     }
     dvz_semaphore_destroy(&canvas->timeline_semaphore);
-#if OS_UNIX
-    if (canvas->timeline_semaphore_fd >= 0)
-    {
-        close(canvas->timeline_semaphore_fd);
-    }
-#endif
-    canvas->timeline_semaphore_fd = -1;
     canvas->timeline_ready = false;
 }
 
@@ -440,8 +409,6 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->video_sink_enabled = false;
     canvas->stream_started = false;
     canvas->swapchain_sink_attached = false;
-    canvas->timeline_semaphore_fd = -1;
-
     if (!canvas_device_check_extensions(canvas))
     {
         log_error("canvas device missing required extensions");

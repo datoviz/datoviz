@@ -31,6 +31,8 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/sync.h"
 
+static int canvas_export_timeline_fd(DvzCanvas* canvas);
+
 
 
 /*************************************************************************************************/
@@ -1010,7 +1012,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     frame->extent = state->extent;
     frame->handles_dirty = slot->handles_dirty;
     frame->memory_fd = slot->memory_fd;
-    frame->wait_semaphore_fd = canvas->timeline_semaphore_fd;
+    frame->wait_semaphore_fd = -1;
     return 0;
 }
 
@@ -1085,7 +1087,62 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     }
 
     state->active_slot = NULL;
+    if (canvas->video_sink_enabled)
+    {
+        int fd = canvas_export_timeline_fd(canvas);
+        if (fd >= 0)
+        {
+            DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+            if (frame)
+            {
+#if OS_UNIX
+                if (frame->wait_semaphore_fd >= 0)
+                {
+                    close(frame->wait_semaphore_fd);
+                }
+#endif
+                frame->wait_semaphore_fd = fd;
+            }
+        }
+        else
+        {
+            log_warn("canvas timeline semaphore export failed for video sink");
+        }
+    }
     return 0;
+}
+
+
+static int canvas_export_timeline_fd(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas->timeline_ready || !canvas->supports_external_semaphore)
+    {
+        return -1;
+    }
+#if OS_UNIX
+    VkDevice vk_device = dvz_device_handle(canvas->device);
+    VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
+    if (handle_type == 0)
+    {
+        return -1;
+    }
+    VkSemaphoreGetFdInfoKHR fd_info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+        .semaphore = canvas->timeline_semaphore.vk_semaphore,
+        .handleType = handle_type,
+    };
+    int fd = -1;
+    VkResult res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &fd);
+    if (res != VK_SUCCESS)
+    {
+        log_warn("vkGetSemaphoreFdKHR failed for timeline semaphore (%d)", res);
+        return -1;
+    }
+    return fd;
+#else
+    return -1;
+#endif
 }
 
 

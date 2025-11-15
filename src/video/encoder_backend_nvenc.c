@@ -19,6 +19,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if OS_UNIX
+#include <unistd.h>
+#endif
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
@@ -815,6 +818,10 @@ static int nvenc_start(DvzVideoEncoder* enc)
         };
         CU_CHECK(cuImportExternalSemaphore(&state->wait_semaphore, &shdesc));
         state->wait_semaphore_ready = true;
+#if OS_UNIX
+        close(enc->wait_semaphore_fd);
+#endif
+        enc->wait_semaphore_fd = -1;
     }
 
     nvenc_open_session_cuda(&state->nvenc, state->cuda.cuCtx);
