@@ -18,6 +18,8 @@
 #include <stdlib.h>
 
 #include "_assertions.h"
+#include "_log.h"
+#include "_time_utils.h"
 #include "datoviz/canvas.h"
 #include "datoviz/input/keycodes.h"
 #include "datoviz/vk/device.h"
@@ -75,36 +77,10 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
         return;
     }
 
-    VkDevice vk_device = dvz_device_handle(ctx->device);
-    ANN(vk_device);
-
-    VkImageViewCreateInfo view_info = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .image = frame->image,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = ctx->format,
-        .components =
-            {
-                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
-            },
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-    };
-
-    VkImageView image_view = VK_NULL_HANDLE;
-    VkResult create_res = vkCreateImageView(vk_device, &view_info, NULL, &image_view);
-    if (create_res != VK_SUCCESS)
+    VkImageView image_view = frame->image_view;
+    if (image_view == VK_NULL_HANDLE)
     {
-        log_error("failed to create temporary image view for canvas clear (%d)", create_res);
+        log_error("canvas frame missing image view");
         return;
     }
 
@@ -123,8 +99,6 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
 
     dvz_cmd_rendering_begin(&cmds, &rendering);
     dvz_cmd_rendering_end(&cmds);
-
-    vkDestroyImageView(vk_device, image_view, NULL);
 }
 
 
@@ -324,6 +298,10 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         dvz_input_subscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
     }
 
+    DvzClock loop_clock = dvz_clock();
+    dvz_clock_tick(&loop_clock);
+    size_t submit_count = 0;
+
     do
     {
         dvz_window_host_poll(host);
@@ -334,6 +312,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         }
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_submit(canvas) == 0);
+        submit_count++;
 
         // dvz_device_wait(&device);
         dvz_window_host_poll(host);
@@ -345,6 +324,16 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     }
 
     dvz_device_wait(&device);
+
+    double elapsed_s = dvz_clock_interval(&loop_clock);
+    if (submit_count > 0 && elapsed_s > 0.0)
+    {
+        double avg_fps = (double)submit_count / elapsed_s;
+        const char* frame_label = submit_count == 1 ? "frame" : "frames";
+        log_info(
+            "canvas GLFW average FPS: %.2f (%zu %s over %.2fs)", avg_fps, submit_count,
+            frame_label, elapsed_s);
+    }
     dvz_canvas_set_draw_callback(canvas, NULL, NULL);
     dvz_canvas_destroy(canvas);
 

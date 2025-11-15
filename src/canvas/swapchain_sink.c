@@ -57,6 +57,7 @@ typedef struct DvzCanvasSwapchainState DvzCanvasSwapchainState;
 struct DvzCanvasSwapchainSlot
 {
     VkImage offscreen_image;
+    VkImageView offscreen_view;
     VkImage swapchain_image;
     DvzAllocation offscreen_alloc;
     DvzSemaphore image_available;
@@ -575,6 +576,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     {
         DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
         dvz_memset(slot, sizeof(*slot), 0, sizeof(*slot));
+        slot->offscreen_view = VK_NULL_HANDLE;
         slot->swapchain_image = VK_NULL_HANDLE;
         slot->image_index = UINT32_MAX;
         slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -632,6 +634,36 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             continue;
         }
 
+        VkImageViewCreateInfo offscreen_view_info = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image = slot->offscreen_image,
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .format = swapchain->format,
+            .components =
+                {
+                    .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                    .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+                },
+            .subresourceRange =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+        };
+        VkResult view_res = vkCreateImageView(device, &offscreen_view_info, NULL, &slot->offscreen_view);
+        if (view_res != VK_SUCCESS)
+        {
+            log_error("failed to create offscreen image view (%d)", view_res);
+            dvz_allocator_destroy_image(&canvas->allocator, &slot->offscreen_alloc, slot->offscreen_image);
+            slot->offscreen_image = VK_NULL_HANDLE;
+            continue;
+        }
+
         slot->memory_fd = -1;
         if (use_external && dvz_allocator_export(
                                 &canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) != 0)
@@ -658,6 +690,11 @@ static void canvas_destroy_slot(
     if (!slot)
     {
         return;
+    }
+    if (slot->offscreen_view != VK_NULL_HANDLE)
+    {
+        vkDestroyImageView(device, slot->offscreen_view, NULL);
+        slot->offscreen_view = VK_NULL_HANDLE;
     }
     if (slot->offscreen_image != VK_NULL_HANDLE)
     {
@@ -969,6 +1006,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     frame->memory = slot->offscreen_alloc.info.deviceMemory;
     frame->memory_size = slot->offscreen_alloc.info.size;
     frame->command_buffer = slot->command_buffer;
+    frame->image_view = slot->offscreen_view;
     frame->extent = state->extent;
     frame->handles_dirty = slot->handles_dirty;
     frame->memory_fd = slot->memory_fd;

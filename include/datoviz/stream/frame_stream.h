@@ -59,6 +59,7 @@ typedef struct
     VkDeviceMemory memory;
     VkDeviceSize memory_size;
     VkCommandBuffer command_buffer;
+    VkImageView image_view;
     VkExtent2D extent;
     bool handles_dirty;
     int memory_fd;
