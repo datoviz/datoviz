@@ -288,10 +288,16 @@ static bool kvz_cpu_record_clear(KvzCpuCtx* ctx, const VkClearColorValue* clr)
         return false;
     }
 
-    VkSubmitInfo submit = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO};
-    submit.commandBufferCount = 1;
-    submit.pCommandBuffers = &ctx->cmd;
-    if (vkQueueSubmit(ctx->queue, 1, &submit, VK_NULL_HANDLE) != VK_SUCCESS)
+    VkCommandBufferSubmitInfo cmd_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+        .commandBuffer = ctx->cmd,
+    };
+    VkSubmitInfo2 submit = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .commandBufferInfoCount = 1,
+        .pCommandBufferInfos = &cmd_info,
+    };
+    if (vkQueueSubmit2(ctx->queue, 1, &submit, VK_NULL_HANDLE) != VK_SUCCESS)
     {
         return false;
     }

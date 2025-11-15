@@ -161,11 +161,19 @@ void dvz_cmd_submit(DvzCommands* cmds)
     ANNVK(vk_queue);
 
     // Submit.
-    VkSubmitInfo info = {0};
-    info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    info.commandBufferCount = cmds->count;
-    info.pCommandBuffers = cmds->cmds;
-    vkQueueSubmit(vk_queue, 1, &info, VK_NULL_HANDLE);
+    VkCommandBufferSubmitInfo submit_cmds[DVZ_MAX_SWAPCHAIN_IMAGES] = {0};
+    for (uint32_t i = 0; i < cmds->count; ++i)
+    {
+        submit_cmds[i].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+        submit_cmds[i].commandBuffer = cmds->cmds[i];
+    }
+
+    VkSubmitInfo2 info = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .commandBufferInfoCount = cmds->count,
+        .pCommandBufferInfos = submit_cmds,
+    };
+    vkQueueSubmit2(vk_queue, 1, &info, VK_NULL_HANDLE);
 
     // Wait.
     dvz_queue_wait(queue);

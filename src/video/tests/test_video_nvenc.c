@@ -379,24 +379,27 @@ static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue*
     VK_CHECK(vkEndCommandBuffer(vk->cmd));
 
     uint64_t signal_value = ++vk->timeline_value;
-    VkTimelineSemaphoreSubmitInfo timeline_info = {
-        .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
-        .pNext = NULL,
-        .waitSemaphoreValueCount = 0,
-        .pWaitSemaphoreValues = NULL,
-        .signalSemaphoreValueCount = (vk->semaphore != VK_NULL_HANDLE) ? 1u : 0u,
-        .pSignalSemaphoreValues = (vk->semaphore != VK_NULL_HANDLE) ? &signal_value : NULL,
+    VkCommandBufferSubmitInfo cmd_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+        .commandBuffer = vk->cmd,
     };
-    VkSemaphore signal_sems[1] = {vk->semaphore};
-    VkSubmitInfo submit = {
-        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .pNext = (vk->semaphore != VK_NULL_HANDLE) ? &timeline_info : NULL,
-        .commandBufferCount = 1,
-        .pCommandBuffers = &vk->cmd,
-        .signalSemaphoreCount = (vk->semaphore != VK_NULL_HANDLE) ? 1u : 0u,
-        .pSignalSemaphores = (vk->semaphore != VK_NULL_HANDLE) ? signal_sems : NULL,
+    VkSemaphoreSubmitInfo signal_info = {0};
+    VkSubmitInfo2 submit = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .commandBufferInfoCount = 1,
+        .pCommandBufferInfos = &cmd_info,
     };
-    VK_CHECK(vkQueueSubmit(vk->queue, 1, &submit, vk->fence));
+    if (vk->semaphore != VK_NULL_HANDLE)
+    {
+        signal_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+        signal_info.semaphore = vk->semaphore;
+        signal_info.stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+        signal_info.value = signal_value;
+        signal_info.deviceIndex = 0;
+        submit.signalSemaphoreInfoCount = 1;
+        submit.pSignalSemaphoreInfos = &signal_info;
+    }
+    VK_CHECK(vkQueueSubmit2(vk->queue, 1, &submit, vk->fence));
 
     vk->image_layout = VK_IMAGE_LAYOUT_GENERAL;
     return signal_value;
