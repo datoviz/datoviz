@@ -583,7 +583,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->image_index = UINT32_MAX;
         slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
         slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-        slot->handles_dirty = true;
+        slot->handles_dirty = false;
         slot->commands_recording = false;
         slot->memory_fd = -1;
 
@@ -716,7 +716,7 @@ static void canvas_destroy_slot(
     slot->ready = false;
     slot->swapchain_image = VK_NULL_HANDLE;
     slot->commands_recording = false;
-    slot->handles_dirty = true;
+    slot->handles_dirty = false;
     if (slot->command_buffer != VK_NULL_HANDLE && command_pool != VK_NULL_HANDLE)
     {
         vkFreeCommandBuffers(device, command_pool, 1, &slot->command_buffer);

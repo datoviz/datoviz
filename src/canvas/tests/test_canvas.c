@@ -95,7 +95,7 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
     DvzAttachment* catt = dvz_rendering_color(&rendering, 0);
     dvz_attachment_image(catt, image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-    dvz_attachment_clear(catt, (VkClearValue){.color.float32 = {0.18f, 0.25f, 0.4f, 1.0f}});
+    dvz_attachment_clear(catt, (VkClearValue){.color.float32 = {1, 0, 0, 1}});
 
     dvz_cmd_rendering_begin(&cmds, &rendering);
     dvz_cmd_rendering_end(&cmds);
@@ -290,7 +290,8 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     if (video_env && video_env[0] != '\0' && video_env[0] != '0')
     {
         DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
-        bool has_external_memory = canvas->supports_external_memory && canvas->allocator.external != 0;
+        bool has_external_memory =
+            canvas->supports_external_memory && canvas->allocator.external != 0;
         bool has_external_semaphore = canvas->supports_external_semaphore;
         if (has_external_memory && has_external_semaphore)
         {

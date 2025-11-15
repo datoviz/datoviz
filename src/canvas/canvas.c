@@ -470,6 +470,10 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         return;
     }
     dvz_canvas_swapchain_destroy(canvas);
+    if (canvas->stream)
+    {
+        dvz_stream_stop(canvas->stream);
+    }
     dvz_canvas_stream_enable_video(canvas, false, NULL);
     if (canvas->stream)
     {
