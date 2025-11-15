@@ -22,6 +22,7 @@
 #include "_time_utils.h"
 #include "datoviz/canvas.h"
 #include "datoviz/input/keycodes.h"
+#include "datoviz/video.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
@@ -43,7 +44,6 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                     */
 /*************************************************************************************************/
-
 
 typedef struct CanvasGlfwClearContext
 {
@@ -131,8 +131,6 @@ static void canvas_glfw_keyboard_callback(
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
-
-
 
 /**
  * Validate the default canvas configuration.
@@ -287,12 +285,56 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
+    bool record_video = false;
+    const char* video_env = getenv("DVZ_CANVAS_GLFW_VIDEO");
+    if (video_env && video_env[0] != '\0' && video_env[0] != '0')
+    {
+        DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
+        bool has_external_memory = canvas->supports_external_memory;
+        bool has_external_semaphore = canvas->supports_external_semaphore;
+        bool has_export_handles =
+            canvas->allocator.external != 0 && canvas->timeline_semaphore_fd >= 0;
+        if (has_external_memory && has_external_semaphore && has_export_handles)
+        {
+            DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+            sink_cfg.encoder.backend = "nvenc";
+            sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 1920;
+            sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 1080;
+            sink_cfg.encoder.fps = 60;
+            sink_cfg.encoder.mp4_path = "canvas.mp4";
+            sink_cfg.bitstream = NULL;
+            if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) == 0)
+            {
+                record_video = true;
+                log_info("canvas GLFW recording will be written to canvas.mp4");
+            }
+            else
+            {
+                log_warn("canvas GLFW video sink could not be enabled");
+            }
+        }
+        else
+        {
+            log_warn(
+                "video sink requested but canvas lacks exported handles (mem=%d sem=%d)",
+                has_external_memory && has_export_handles, has_external_semaphore);
+        }
+    }
+
     bool interactive_loop = false;
     bool keep_running = true;
     DvzInputRouter* router = dvz_canvas_input(canvas);
-    // Set DVZ_CANVAS_GLFW_LOOP=1 to keep drawing until Escape requests exit.
     const char* loop_env = getenv("DVZ_CANVAS_GLFW_LOOP");
-    if (loop_env && loop_env[0] != '\0' && loop_env[0] != '0' && router)
+    bool keep_looping = false;
+    if (loop_env && loop_env[0] != '\0' && loop_env[0] != '0')
+    {
+        keep_looping = true;
+    }
+    if (record_video)
+    {
+        keep_looping = true;
+    }
+    if (keep_looping && router)
     {
         interactive_loop = true;
         dvz_input_subscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);

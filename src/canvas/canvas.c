@@ -199,11 +199,11 @@ static int canvas_create_timeline(DvzCanvas* canvas)
         return 0;
     }
 
-    dvz_semaphore_timeline(canvas->device, 0, &canvas->timeline_semaphore);
-
-    canvas->timeline_semaphore_fd = -1;
     VkExternalSemaphoreHandleTypeFlags handle_type =
         canvas->supports_external_semaphore ? canvas_external_semaphore_handle_type() : 0;
+    dvz_semaphore_timeline(canvas->device, 0, &canvas->timeline_semaphore, handle_type);
+
+    canvas->timeline_semaphore_fd = -1;
     if (handle_type != 0)
     {
         VkDevice vk_device = dvz_device_handle(canvas->device);

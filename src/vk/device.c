@@ -464,9 +464,9 @@ void dvz_device_request_canvas_extensions(DvzDevice* device)
     dvz_device_request_extension(device, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
     // NOTE: already core in Vulkan 1.3, so not needed.
-    // dvz_device_request_extension(device, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
-    // dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
-    // dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
 
 #if OS_UNIX
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);

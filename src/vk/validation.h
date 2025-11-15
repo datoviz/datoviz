@@ -61,6 +61,8 @@ static const char* DVZ_VALIDATION_IGNORES[] = {
     "Internal Warning: Setting VkPhysicalDevice",
     "Attempting to enable extension VK_EXT_debug_utils",
     "DebugPrintf logs to the Information message severity",
+
+    "Attempting to enable deprecated extension",
 };
 
 static const VkValidationFeatureEnableEXT DVZ_VALIDATION_FEATURES[] = {

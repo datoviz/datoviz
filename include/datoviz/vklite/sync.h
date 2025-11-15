@@ -393,8 +393,11 @@ DVZ_EXPORT void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore);
  * @param device the device
  * @param value the initial value
  * @param[out] the created semaphore
+ * @param handle_type external semaphore handle type required for export (0 when unused)
  */
-DVZ_EXPORT void dvz_semaphore_timeline(DvzDevice* device, uint64_t value, DvzSemaphore* semaphore);
+DVZ_EXPORT void dvz_semaphore_timeline(
+    DvzDevice* device, uint64_t value, DvzSemaphore* semaphore,
+    VkExternalSemaphoreHandleTypeFlags handle_type);
 
 
 
