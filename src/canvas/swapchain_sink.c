@@ -949,7 +949,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 
     VkPipelineStageFlags2 wait_stage =
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-    VkPipelineStageFlags2 signal_stage = wait_stage;
+    VkPipelineStageFlags2 signal_stage = wait_stage | VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 
     DvzSubmit submit = {0};
     dvz_submit(&submit);
