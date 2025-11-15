@@ -15,13 +15,17 @@
 /*************************************************************************************************/
 
 #include "canvas_internal.h"
+#include <stdlib.h>
 
 #include "_assertions.h"
 #include "datoviz/canvas.h"
+#include "datoviz/input/keycodes.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/rendering.h"
 #include "datoviz/window.h"
 #include "test_canvas.h"
 #include "testing.h"
@@ -35,8 +39,126 @@
 
 
 /*************************************************************************************************/
+/*  Helpers                                                                                     */
+/*************************************************************************************************/
+
+
+typedef struct CanvasGlfwClearContext
+{
+    DvzDevice* device;
+    VkFormat format;
+} CanvasGlfwClearContext;
+
+
+
+/**
+ * Record a fullscreen clear command for the current canvas command buffer.
+ *
+ * @param canvas owning canvas (unused)
+ * @param frame stream frame that carries the command buffer and extent
+ * @param user_data unused pointer
+ */
+static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
+{
+    (void)canvas;
+    ANN(frame);
+
+    VkCommandBuffer cmd = frame->command_buffer;
+    if (cmd == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
+    CanvasGlfwClearContext* ctx = (CanvasGlfwClearContext*)user_data;
+    if (!ctx || !ctx->device)
+    {
+        return;
+    }
+
+    VkDevice vk_device = dvz_device_handle(ctx->device);
+    ANN(vk_device);
+
+    VkImageViewCreateInfo view_info = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .image = frame->image,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = ctx->format,
+        .components =
+            {
+                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
+            },
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            },
+    };
+
+    VkImageView image_view = VK_NULL_HANDLE;
+    VkResult create_res = vkCreateImageView(vk_device, &view_info, NULL, &image_view);
+    if (create_res != VK_SUCCESS)
+    {
+        log_error("failed to create temporary image view for canvas clear (%d)", create_res);
+        return;
+    }
+
+    DvzCommands cmds = {0};
+    cmds.cmds[0] = cmd;
+    cmds.count = 1;
+    cmds.current = 0;
+
+    DvzRendering rendering = {0};
+    dvz_rendering(&rendering);
+    dvz_rendering_area(&rendering, 0, 0, frame->extent.width, frame->extent.height);
+    DvzAttachment* catt = dvz_rendering_color(&rendering, 0);
+    dvz_attachment_image(catt, image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(catt, (VkClearValue){.color.float32 = {0.18f, 0.25f, 0.4f, 1.0f}});
+
+    dvz_cmd_rendering_begin(&cmds, &rendering);
+    dvz_cmd_rendering_end(&cmds);
+
+    vkDestroyImageView(vk_device, image_view, NULL);
+}
+
+
+
+/**
+ * Stop the interactive GLFW loop when Escape is pressed.
+ *
+ * @param router input router emitting the event (unused)
+ * @param event observed keyboard event
+ * @param user_data pointer to the boolean guard used by the running loop
+ */
+static void canvas_glfw_keyboard_callback(
+    DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
+{
+    ANN(router);
+    if (!event || !user_data)
+    {
+        return;
+    }
+
+    if (event->type == DVZ_KEYBOARD_EVENT_PRESS && event->key == DVZ_KEY_ESCAPE)
+    {
+        bool* keep_running = (bool*)user_data;
+        *keep_running = false;
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+
 
 /**
  * Validate the default canvas configuration.
@@ -159,6 +281,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 
     VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
     features->synchronization2 = true;
+    features->dynamicRendering = true;
 
     // Device extensions required for the canvas.
     dvz_device_request_canvas_extensions(&device);
@@ -182,17 +305,45 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     DvzCanvas* canvas = dvz_canvas_create(&cfg);
     ANN(canvas);
 
-    int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
-    {
-        log_trace("try #%d, canvas frame", tries);
-        dvz_window_host_poll(host);
-        frame_rc = dvz_canvas_frame(canvas);
-    }
-    AT(frame_rc == DVZ_CANVAS_FRAME_READY);
-    AT(dvz_canvas_submit(canvas) == 0);
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &device,
+        .format = cfg.color_format,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
-    dvz_device_wait(&device);
+    bool interactive_loop = false;
+    bool keep_running = true;
+    DvzInputRouter* router = dvz_canvas_input(canvas);
+    // Set DVZ_CANVAS_GLFW_LOOP=1 to keep drawing until Escape requests exit.
+    const char* loop_env = getenv("DVZ_CANVAS_GLFW_LOOP");
+    if (loop_env && loop_env[0] != '\0' && loop_env[0] != '0' && router)
+    {
+        interactive_loop = true;
+        dvz_input_subscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
+    }
+
+    do
+    {
+        int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
+        for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
+        {
+            log_trace("try #%d, canvas frame", tries);
+            dvz_window_host_poll(host);
+            frame_rc = dvz_canvas_frame(canvas);
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+
+        dvz_device_wait(&device);
+        dvz_window_host_poll(host);
+    } while (interactive_loop && keep_running);
+
+    if (interactive_loop && router)
+    {
+        dvz_input_unsubscribe_keyboard(router, canvas_glfw_keyboard_callback, &keep_running);
+    }
+
+    dvz_canvas_set_draw_callback(canvas, NULL, NULL);
 
     dvz_canvas_destroy(canvas);
 
