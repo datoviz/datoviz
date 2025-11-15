@@ -175,17 +175,17 @@ static VkPipelineStageFlags2 canvas_stage_for_layout(VkImageLayout layout)
     switch (layout)
     {
     case VK_IMAGE_LAYOUT_UNDEFINED:
-        return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        return VK_PIPELINE_STAGE_2_NONE;
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-        return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        return VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-        return VK_PIPELINE_STAGE_TRANSFER_BIT;
+        return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-        // must overlap the wait mask used for image_available
-        return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+        return VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
     default:
-        return VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        return VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
     }
 }
 
@@ -198,11 +198,11 @@ static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
     case VK_IMAGE_LAYOUT_UNDEFINED:
         return 0;
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-        return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        return VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-        return VK_ACCESS_TRANSFER_READ_BIT;
+        return VK_ACCESS_2_TRANSFER_READ_BIT;
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-        return VK_ACCESS_TRANSFER_WRITE_BIT;
+        return VK_ACCESS_2_TRANSFER_WRITE_BIT;
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
         return 0;
     default:
@@ -258,11 +258,13 @@ static void canvas_cmd_transition_swapchain(
     if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
         return;
 
+    VkPipelineStageFlags2 release_stage =
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+
     VkImageMemoryBarrier2 barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
         .pNext = NULL,
-        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-                        VK_PIPELINE_STAGE_TRANSFER_BIT, // same as pWaitDstStageMask
+        .srcStageMask = release_stage, // same as pWaitDstStageMask
         .srcAccessMask = canvas_access_for_layout(old_layout),
         .dstStageMask = canvas_stage_for_layout(new_layout),
         .dstAccessMask = canvas_access_for_layout(new_layout),
@@ -636,7 +638,6 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     {
         return;
     }
-    log_trace("canvas swapchain cleanup");
     VkDevice device = canvas_device_handle(swapchain->canvas);
     if (swapchain->slots)
     {
@@ -947,7 +948,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     VkCommandBuffer cmd = state->active_slot->command_buffer;
 
     VkPipelineStageFlags2 wait_stage =
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     VkPipelineStageFlags2 signal_stage = wait_stage;
 
     DvzSubmit submit = {0};
@@ -960,7 +961,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     dvz_submit_signal(&submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
     dvz_submit_signal(
         &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
-        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+        VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
     log_trace("submit");

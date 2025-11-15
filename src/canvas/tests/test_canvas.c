@@ -182,17 +182,17 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     DvzCanvas* canvas = dvz_canvas_create(&cfg);
     ANN(canvas);
 
-    // int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    // for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
-    // {
-    //     log_trace("try #%d, canvas frame", tries);
-    //     dvz_window_host_poll(host);
-    //     frame_rc = dvz_canvas_frame(canvas);
-    // }
-    // AT(frame_rc == DVZ_CANVAS_FRAME_READY);
-    // AT(dvz_canvas_submit(canvas) == 0);
+    int frame_rc = DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    for (int tries = 0; tries < 5 && frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE; ++tries)
+    {
+        log_trace("try #%d, canvas frame", tries);
+        dvz_window_host_poll(host);
+        frame_rc = dvz_canvas_frame(canvas);
+    }
+    AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
 
-    // dvz_device_wait(&device);
+    dvz_device_wait(&device);
 
     dvz_canvas_destroy(canvas);
 
