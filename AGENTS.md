@@ -318,7 +318,7 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * Visually separate neighbouring top-level functions with three newline characters (two empty lines) to make each implementation stand out. Attach any descriptive comments directly above the function and keep extra text out of the blank space.
 * Reserve the `dvz_` prefix for symbols exposed via public headers. Internal `static` helpers should avoid `dvz_` (use `_dvz_` or no prefix) so the public naming space stays predictable.
 * Prefer `dvz_memcpy()` / `dvz_memset()` from `src/common/_alloc.h` / `_compat.h` over `memcpy()` / `memset()` so every copy or fill goes through the shared allocator wrappers.
-* Never call `malloc`, `calloc`, or `free` directly; rely on the allocation/deallocation helpers declared in `_alloc.h` and `_compat.h` (for example `dvz_malloc`, `dvz_calloc`, `dvz_free`) so every allocation flows through the datoviz allocator.
+* Never call `malloc`, `calloc`, or `free` directly; rely on the allocation/deallocation helpers declared in `_alloc.h` and `_compat.h` (prefer `dvz_calloc` over `dvz_malloc` when zeroed memory suffices, alongside `dvz_free`) so every allocation flows through the datoviz allocator. All structs should be zero-initialized before use, reinforcing the `dvz_calloc` preference (or `dvz_memset()` after allocation when needed).
 * Favor `dvz_fprintf()` / `dvz_vfprintf()` over `fprintf()` / `vfprintf()` (from `src/common/_compat.h`) to keep logging and error reporting within the safe compatibility layer.
 
 ### 🧱 **C File Organization**
