@@ -132,17 +132,17 @@ void dvz_sampler_destroy(DvzSampler* sampler)
 {
     ANN(sampler);
 
-    DvzDevice* device = sampler->device;
-    ANN(device);
-
     if (!dvz_obj_is_created(&sampler->obj))
     {
         log_trace("skip destruction of already-destroyed sampler");
         return;
     }
-    log_trace("destroy sampler");
+
+    DvzDevice* device = sampler->device;
+    ANN(device);
     if (sampler->vk_sampler != VK_NULL_HANDLE)
     {
+        log_trace("destroy sampler");
         vkDestroySampler(dvz_device_handle(device), sampler->vk_sampler, NULL);
         sampler->vk_sampler = VK_NULL_HANDLE;
     }

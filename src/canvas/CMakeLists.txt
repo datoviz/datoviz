@@ -3,13 +3,13 @@ add_library(datoviz_canvas OBJECT ${CANVAS_SRC})
 
 target_include_directories(datoviz_canvas
     PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/src/common
-        ${PROJECT_SOURCE_DIR}/src/window
-        ${PROJECT_SOURCE_DIR}/src/canvas
-        ${PROJECT_SOURCE_DIR}/src/vk
-        ${PROJECT_SOURCE_DIR}/external
-        ${PROJECT_SOURCE_DIR}/external/volk
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/src/window
+    ${PROJECT_SOURCE_DIR}/src/canvas
+    ${PROJECT_SOURCE_DIR}/src/vk
+    ${PROJECT_SOURCE_DIR}/external
+    ${PROJECT_SOURCE_DIR}/external/volk
 )
 
 target_compile_definitions(datoviz_canvas PUBLIC ${COMPILE_DEFINITIONS})
@@ -27,6 +27,7 @@ if(DVZ_CANVAS_SHADER_SOURCES)
 
     if(NOT DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR)
         find_program(_dvz_shader_validator glslangValidator)
+
         if(_dvz_shader_validator)
             set(DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR "${_dvz_shader_validator}" CACHE FILEPATH "glslangValidator for canvas shaders" FORCE)
         endif()
@@ -53,19 +54,19 @@ if(DVZ_CANVAS_SHADER_SOURCES)
             OUTPUT ${_dvz_shader_spv} ${_dvz_shader_header}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DVZ_CANVAS_SHADER_OUT_DIR}
             COMMAND ${DVZ_CANVAS_SHADER_GLSLANG_VALIDATOR}
-                -V
-                ${_dvz_shader}
-                -o
-                ${_dvz_shader_spv}
+            -V
+            ${_dvz_shader}
+            -o
+            ${_dvz_shader_spv}
             COMMAND ${Python_EXECUTABLE}
-                ${PROJECT_SOURCE_DIR}/tools/spirv_to_c.py
-                --input
-                ${_dvz_shader_spv}
-                --output
-                ${_dvz_shader_header}
-                --symbol
-                dvz_canvas_${_dvz_shader_base}_spv
-            DEPENDS ${_dvz_shader} ${PROJECT_SOURCE_DIR}/scripts/spirv_to_c.py
+            ${PROJECT_SOURCE_DIR}/tools/spirv_to_c.py
+            --input
+            ${_dvz_shader_spv}
+            --output
+            ${_dvz_shader_header}
+            --symbol
+            dvz_canvas_${_dvz_shader_base}_spv
+            DEPENDS ${_dvz_shader} ${PROJECT_SOURCE_DIR}/tools/spirv_to_c.py
             COMMENT "Compiling canvas shader ${_dvz_shader_name}"
             VERBATIM
         )
