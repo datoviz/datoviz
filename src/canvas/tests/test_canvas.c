@@ -142,7 +142,7 @@ int test_canvas_defaults(TstSuite* suite, TstItem* item)
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     AT(cfg.window == NULL);
     AT(cfg.device == NULL);
-    AT(cfg.color_format == VK_FORMAT_B8G8R8A8_UNORM);
+    AT(cfg.color_format == VK_FORMAT_UNDEFINED);
     AT(cfg.present_mode == VK_PRESENT_MODE_FIFO_KHR);
     AT(!cfg.enable_video_sink);
     AT(cfg.timing_history == DVZ_CANVAS_DEFAULT_TIMING_HISTORY);

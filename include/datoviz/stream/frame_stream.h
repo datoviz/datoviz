@@ -22,6 +22,7 @@
 
 #include <volk.h>
 
+#include "datoviz/vk/enums.h"
 #include "datoviz/common/macros.h"
 
 

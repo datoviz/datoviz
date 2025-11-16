@@ -28,6 +28,7 @@
 #include "_log.h"
 #include "_time_utils.h"
 #include "datoviz/video.h"
+#include "datoviz/vk/enums.h"
 
 
 
@@ -43,11 +44,8 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
     {
         cfg.width = canvas->surface->extent.width;
         cfg.height = canvas->surface->extent.height;
-        cfg.color_format = (canvas->cfg.color_format != VK_FORMAT_UNDEFINED)
-                               ? canvas->cfg.color_format
-                               : canvas->surface->format;
     }
-    else if (canvas->cfg.color_format != VK_FORMAT_UNDEFINED)
+    if (canvas->cfg.color_format != VK_FORMAT_UNDEFINED)
     {
         cfg.color_format = canvas->cfg.color_format;
     }
@@ -369,7 +367,7 @@ DvzCanvasConfig dvz_canvas_default_config(void)
     DvzCanvasConfig cfg = {
         .window = NULL,
         .device = NULL,
-        .color_format = VK_FORMAT_B8G8R8A8_UNORM,
+        .color_format = VK_FORMAT_UNDEFINED,
         .present_mode = VK_PRESENT_MODE_FIFO_KHR,
         .enable_video_sink = false,
         .timing_history = DVZ_CANVAS_DEFAULT_TIMING_HISTORY,

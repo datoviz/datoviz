@@ -138,6 +138,12 @@ static int video_sink_create(DvzStreamSink* sink, const void* config)
     const DvzVideoSinkConfig* requested = video_sink_config(config);
     state->cfg = *requested;
 
+    const DvzStreamConfig* stream_cfg = dvz_stream_config(sink->stream);
+    if (stream_cfg)
+    {
+        state->cfg.encoder.color_format = stream_cfg->color_format;
+    }
+
     state->encoder =
         dvz_video_encoder_create(dvz_stream_device(sink->stream), &state->cfg.encoder);
     if (!state->encoder)

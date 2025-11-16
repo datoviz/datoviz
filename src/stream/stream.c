@@ -141,7 +141,7 @@ DvzStreamConfig dvz_stream_default_config(void)
         .width = 1920,
         .height = 1080,
         .fps = 60,
-        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
+        .color_format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     return cfg;
 }

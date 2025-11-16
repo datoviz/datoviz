@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/vk/enums.h"
 
 
 
@@ -108,7 +109,7 @@ DvzVideoEncoderConfig dvz_video_encoder_default_config(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = FPS,
-        .color_format = VK_FORMAT_R8G8B8A8_UNORM,
+        .color_format = DVZ_DEFAULT_COLOR_FORMAT,
         .codec = DVZ_VIDEO_CODEC_HEVC,
         .mux = DVZ_VIDEO_MUX_MP4_STREAMING,
         .mp4_path = "out.mp4",

@@ -30,6 +30,7 @@
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/sync.h"
+#include "datoviz/vk/enums.h"
 
 static int canvas_export_timeline_fd(DvzCanvas* canvas);
 
@@ -350,37 +351,45 @@ static void canvas_cmd_transition_swapchain(
 
 
 
-static void canvas_cmd_copy_full(VkCommandBuffer cmd, VkImage src, VkImage dst, VkExtent2D extent)
+static void canvas_cmd_blit_swapchain(
+    VkCommandBuffer cmd, VkImage src, VkImage dst, VkExtent2D extent)
 {
-    if (cmd == VK_NULL_HANDLE || src == VK_NULL_HANDLE || dst == VK_NULL_HANDLE)
+    if (cmd == VK_NULL_HANDLE || src == VK_NULL_HANDLE || dst == VK_NULL_HANDLE ||
+        extent.width == 0 || extent.height == 0)
     {
         return;
     }
-    VkImageCopy region = {
-        .srcSubresource =
+    VkImageSubresourceLayers opt = {
+        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+        .mipLevel = 0,
+        .baseArrayLayer = 0,
+        .layerCount = 1,
+    };
+    VkImageBlit blit = {
+        .srcSubresource = opt,
+        .dstSubresource = opt,
+        .srcOffsets =
             {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .mipLevel = 0,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
+                {0, 0, 0},
+                {
+                    (int32_t)extent.width,
+                    (int32_t)extent.height,
+                    1,
+                },
             },
-        .dstSubresource =
+        .dstOffsets =
             {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .mipLevel = 0,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-        .extent =
-            {
-                .width = extent.width,
-                .height = extent.height,
-                .depth = 1,
+                {0, 0, 0},
+                {
+                    (int32_t)extent.width,
+                    (int32_t)extent.height,
+                    1,
+                },
             },
     };
-    vkCmdCopyImage(
-        cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        1, &region);
+    vkCmdBlitImage(
+        cmd, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
 }
 
 
@@ -437,7 +446,7 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-    canvas_cmd_copy_full(cmd, slot->offscreen_image, slot->swapchain_image, swapchain->extent);
+    canvas_cmd_blit_swapchain(cmd, slot->offscreen_image, slot->swapchain_image, swapchain->extent);
 
     canvas_cmd_transition(
         cmd, slot->offscreen_image, slot->offscreen_layout,
@@ -605,7 +614,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         VkImageCreateInfo img_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType = VK_IMAGE_TYPE_2D,
-            .format = swapchain->format,
+            .format = DVZ_DEFAULT_COLOR_FORMAT,
             .extent =
                 {
                     .width = extent.width,
@@ -640,7 +649,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = slot->offscreen_image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = swapchain->format,
+            .format = DVZ_DEFAULT_COLOR_FORMAT,
             .components =
                 {
                     .r = VK_COMPONENT_SWIZZLE_IDENTITY,
