@@ -73,14 +73,10 @@ EXTERN_C_ON
  *
  * The status is INIT when the command buffers are initialized, and CREATED when they are filled.
  *
- * !!! note
- *     We use the following convention in vklite and elsewhere in datoviz: the queue #0 is the MAIN
- *     queue with support for graphics, compute, and transfers.
- *
  * @param device the device
  * @param queue the queue
  * @param count the number of command buffers to create
- * @param[out] cmds the create command buffers
+ * @param[out] cmds the created command buffers
  */
 DVZ_EXPORT void
 dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cmds);
@@ -160,6 +156,17 @@ DVZ_EXPORT void dvz_cmd_submit(DvzCommands* cmds);
  * @param cmds the set of command buffers
  */
 DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
+
+
+
+/**
+ * Wrap an existing Vulkan command buffer in a DvzCommands struct.
+ *
+ * @param device the device
+ * @param vk_cmd the Vulkan command buffer
+ * @param[out] cmds the created command buffers
+ */
+DVZ_EXPORT void dvz_commands_wrap(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds);
 
 
 

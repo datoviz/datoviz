@@ -85,9 +85,7 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
     }
 
     DvzCommands cmds = {0};
-    cmds.cmds[0] = cmd;
-    cmds.count = 1;
-    cmds.current = 0;
+    dvz_commands_wrap(canvas->device, cmd, &cmds);
 
     DvzRendering rendering = {0};
     dvz_rendering(&rendering);

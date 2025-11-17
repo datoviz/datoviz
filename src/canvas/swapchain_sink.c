@@ -387,12 +387,15 @@ static void canvas_cmd_copy_frame(
     DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot, VkCommandBuffer cmd)
 {
     ANN(swapchain);
+    ANN(swapchain->canvas);
     ANN(slot);
     ANNVK(cmd);
+
     if (swapchain->extent.width == 0 || swapchain->extent.height == 0)
     {
         return;
     }
+
     VkImage src = slot->offscreen_image;
     VkImage dst = slot->swapchain_image;
     if (src == VK_NULL_HANDLE || dst == VK_NULL_HANDLE)
@@ -401,9 +404,7 @@ static void canvas_cmd_copy_frame(
     }
 
     DvzCommands cmds = {0};
-    cmds.cmds[0] = cmd;
-    cmds.count = 1;
-    cmds.current = 0;
+    dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
 
     if (swapchain->frame_format == swapchain->format)
     {

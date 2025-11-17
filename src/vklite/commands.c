@@ -192,3 +192,18 @@ void dvz_commands_destroy(DvzCommands* cmds)
     log_trace("destroy commands");
     dvz_obj_destroyed(&cmds->obj);
 }
+
+
+
+void dvz_commands_wrap(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds)
+{
+
+    ANN(cmds);
+    ANN(device);
+
+    cmds->device = device;
+    cmds->count = 1;
+    cmds->cmds[0] = vk_cmd;
+
+    dvz_obj_created(&cmds->obj);
+}
