@@ -263,6 +263,31 @@ void dvz_images_destroy(DvzImages* img)
 
 
 
+void dvz_images_wrap(
+    DvzDevice* device, DvzVma* allocator, VkImageType type, VkImage vk_image, DvzImages* img)
+{
+    ANN(device);
+    ANN(allocator);
+    ANN(img);
+
+    img->device = device;
+    img->allocator = allocator;
+    img->count = 1;
+
+    // Default values.
+    img->info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    img->info.imageType = type;
+    img->info.mipLevels = 1;
+    img->info.arrayLayers = 1;
+    img->info.samples = VK_SAMPLE_COUNT_1_BIT;
+
+    img->vk_images[0] = vk_image;
+
+    dvz_obj_created(&img->obj);
+}
+
+
+
 /*************************************************************************************************/
 /*  Image views                                                                                  */
 /*************************************************************************************************/

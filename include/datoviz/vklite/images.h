@@ -257,6 +257,20 @@ DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
 
 
 
+/**
+ * Wrap an existing Vulkan image into a DvzImages struct.
+ *
+ * @param device the device
+ * @param allocator the VMA allocator
+ * @param type the image type (1D, 2D, or 3D)
+ * @param vk_image the Vulkan image handle
+ * @param[out] images the initialized images
+ */
+DVZ_EXPORT void dvz_images_wrap(
+    DvzDevice* device, DvzVma* allocator, VkImageType type, VkImage vk_image, DvzImages* img);
+
+
+
 /*************************************************************************************************/
 /*  Image views                                                                                  */
 /*************************************************************************************************/
