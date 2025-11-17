@@ -400,49 +400,22 @@ static void canvas_cmd_copy_frame(
         return;
     }
 
+    DvzCommands cmds = {0};
+    cmds.cmds[0] = cmd;
+    cmds.count = 1;
+    cmds.current = 0;
+
     if (swapchain->frame_format == swapchain->format)
     {
-        VkImageCopy2 region = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2,
-            .srcSubresource =
-                {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .mipLevel = 0,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-                },
-            .dstSubresource =
-                {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .mipLevel = 0,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-                },
-            .extent =
-                {
-                    .width = swapchain->extent.width,
-                    .height = swapchain->extent.height,
-                    .depth = 1,
-                },
-        };
-        VkCopyImageInfo2 info = {
-            .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2,
-            .srcImage = src,
-            .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            .dstImage = dst,
-            .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            .regionCount = 1,
-            .pRegions = &region,
-        };
-        vkCmdCopyImage2(cmd, &info);
+        DvzImageCopy copy = {0};
+        dvz_cmd_copy_source(
+            &copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, swapchain->extent.width,
+            swapchain->extent.height, 1);
+        dvz_cmd_copy_destination(&copy, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
+        dvz_cmd_copy_image(&cmds, &copy);
     }
     else
     {
-        DvzCommands cmds = {0};
-        cmds.cmds[0] = cmd;
-        cmds.count = 1;
-        cmds.current = 0;
-
         DvzImageBlit blit = {0};
         dvz_cmd_blit_source(
             &blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
