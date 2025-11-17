@@ -65,6 +65,10 @@ struct DvzCanvasSwapchainSlot
     VkImageView offscreen_view;
     VkImage swapchain_image;
     VkImageView swapchain_view;
+    DvzImages offscreen_images;
+    DvzImageViews offscreen_views;
+    DvzImages swapchain_images;
+    DvzImageViews swapchain_views;
     DvzAllocation offscreen_alloc;
     DvzSemaphore image_available;
     DvzSemaphore render_finished;
@@ -298,88 +302,52 @@ static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
     }
 }
 
+static void canvas_cmd_pipeline_barrier(
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
+    VkImageLayout new_layout, VkPipelineStageFlags2 src_stage)
+{
+    if (!canvas || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE ||
+        old_layout == new_layout)
+    {
+        return;
+    }
+
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(canvas->device, cmd, &cmds);
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, image);
+    dvz_barrier_image_stage(bimg, src_stage, canvas_stage_for_layout(new_layout));
+    dvz_barrier_image_access(
+        bimg, canvas_access_for_layout(old_layout), canvas_access_for_layout(new_layout));
+    dvz_barrier_image_layout(bimg, old_layout, new_layout);
+
+    dvz_cmd_barriers(&cmds, &barriers);
+}
 
 
 static void canvas_cmd_transition(
-    VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout, VkImageLayout new_layout)
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
+    VkImageLayout new_layout)
 {
-    if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
-        return;
-
-    VkImageMemoryBarrier2 barrier = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .pNext = NULL,
-        .srcStageMask = canvas_stage_for_layout(old_layout),
-        .srcAccessMask = canvas_access_for_layout(old_layout),
-        .dstStageMask = canvas_stage_for_layout(new_layout),
-        .dstAccessMask = canvas_access_for_layout(new_layout),
-        .oldLayout = old_layout,
-        .newLayout = new_layout,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = image,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-    };
-
-    VkDependencyInfo dep = {
-        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .pNext = NULL,
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier,
-    };
-
-    vkCmdPipelineBarrier2(cmd, &dep);
+    canvas_cmd_pipeline_barrier(
+        canvas, cmd, image, old_layout, new_layout,
+        canvas_stage_for_layout(old_layout));
 }
-
 
 
 static void canvas_cmd_transition_swapchain(
-    VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout, VkImageLayout new_layout)
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
+    VkImageLayout new_layout)
 {
-    if (old_layout == new_layout || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE)
-        return;
-
     VkPipelineStageFlags2 release_stage =
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-
-    VkImageMemoryBarrier2 barrier = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-        .pNext = NULL,
-        .srcStageMask = release_stage, // same as pWaitDstStageMask
-        .srcAccessMask = canvas_access_for_layout(old_layout),
-        .dstStageMask = canvas_stage_for_layout(new_layout),
-        .dstAccessMask = canvas_access_for_layout(new_layout),
-        .oldLayout = old_layout,
-        .newLayout = new_layout,
-        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = image,
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-    };
-
-    VkDependencyInfo dep = {
-        .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-        .pNext = NULL,
-        .imageMemoryBarrierCount = 1,
-        .pImageMemoryBarriers = &barrier,
-    };
-
-    vkCmdPipelineBarrier2(cmd, &dep);
+    canvas_cmd_pipeline_barrier(
+        canvas, cmd, image, old_layout, new_layout, release_stage);
 }
+
+
 
 
 
@@ -442,36 +410,23 @@ canvas_slot_create_swapchain_view(DvzCanvasSwapchain* swapchain, DvzCanvasSwapch
     {
         return VK_SUCCESS;
     }
-    VkImageViewCreateInfo info = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .image = slot->swapchain_image,
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = swapchain->format,
-        .components =
-            {
-                .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-                .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-                .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-                .a = VK_COMPONENT_SWIZZLE_IDENTITY,
-            },
-        .subresourceRange =
-            {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-    };
-    VkDevice device = canvas_device_handle(swapchain->canvas);
-    VkResult res = vkCreateImageView(device, &info, NULL, &slot->swapchain_view);
-    if (res != VK_SUCCESS)
+    slot->swapchain_images = (DvzImages){0};
+    slot->swapchain_views = (DvzImageViews){0};
+    dvz_images_wrap(
+        swapchain->canvas->device, &swapchain->canvas->allocator, VK_IMAGE_TYPE_2D,
+        slot->swapchain_image, &slot->swapchain_images);
+    dvz_images_format(&slot->swapchain_images, swapchain->format);
+    dvz_image_views(&slot->swapchain_images, &slot->swapchain_views);
+    dvz_image_views_create(&slot->swapchain_views);
+    slot->swapchain_view = dvz_image_views_handle(&slot->swapchain_views, 0);
+    if (slot->swapchain_view == VK_NULL_HANDLE)
     {
-        log_error("failed to create swapchain image view (%d)", res);
-        slot->swapchain_view = VK_NULL_HANDLE;
-        return res;
+        log_error("failed to create swapchain image view");
+        slot->swapchain_images = (DvzImages){0};
+        slot->swapchain_views = (DvzImageViews){0};
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
-    return res;
+    return VK_SUCCESS;
 }
 
 
@@ -487,14 +442,12 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
         log_error("canvas swapchain slot missing command buffer");
         return -1;
     }
-    VK_CHECK_RESULT(vkResetCommandBuffer(cmd, 0));
-    VkCommandBufferBeginInfo begin_info = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-    };
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &begin_info));
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
+    dvz_cmd_reset(&cmds);
+    dvz_cmd_begin(&cmds);
     canvas_cmd_transition(
-        cmd, slot->offscreen_image, slot->offscreen_layout,
+        swapchain->canvas, cmd, slot->offscreen_image, slot->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     slot->commands_recording = true;
@@ -522,23 +475,29 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
     VkCommandBuffer cmd = slot->command_buffer;
 
     canvas_cmd_transition(
-        cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        swapchain->canvas, cmd, slot->offscreen_image, slot->offscreen_layout,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     canvas_cmd_transition_swapchain(
-        cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        swapchain->canvas, cmd, slot->swapchain_image, slot->swapchain_layout,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
     canvas_cmd_copy_frame(swapchain, slot, cmd);
 
     canvas_cmd_transition_swapchain(
-        cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        swapchain->canvas, cmd, slot->swapchain_image, slot->swapchain_layout,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     canvas_cmd_transition(
-        cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_GENERAL);
+        swapchain->canvas, cmd, slot->offscreen_image, slot->offscreen_layout,
+        VK_IMAGE_LAYOUT_GENERAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_GENERAL;
 
     // log_trace("end command buffer");
-    VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
+    dvz_cmd_end(&cmds);
 
     slot->commands_recording = false;
     if (swapchain->swapchain_layouts && slot->image_index < swapchain->image_count)
@@ -730,35 +689,23 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             continue;
         }
 
-        VkImageViewCreateInfo offscreen_view_info = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = slot->offscreen_image,
-            .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = frame_format,
-            .components =
-                {
-                    .r = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .g = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .b = VK_COMPONENT_SWIZZLE_IDENTITY,
-                    .a = VK_COMPONENT_SWIZZLE_IDENTITY,
-                },
-            .subresourceRange =
-                {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = 1,
-                    .baseArrayLayer = 0,
-                    .layerCount = 1,
-                },
-        };
-        VkResult view_res =
-            vkCreateImageView(device, &offscreen_view_info, NULL, &slot->offscreen_view);
-        if (view_res != VK_SUCCESS)
+        slot->offscreen_images = (DvzImages){0};
+        slot->offscreen_views = (DvzImageViews){0};
+        dvz_images_wrap(
+            canvas->device, &canvas->allocator, VK_IMAGE_TYPE_2D, slot->offscreen_image,
+            &slot->offscreen_images);
+        dvz_images_format(&slot->offscreen_images, frame_format);
+        dvz_image_views(&slot->offscreen_images, &slot->offscreen_views);
+        dvz_image_views_create(&slot->offscreen_views);
+        slot->offscreen_view = dvz_image_views_handle(&slot->offscreen_views, 0);
+        if (slot->offscreen_view == VK_NULL_HANDLE)
         {
-            log_error("failed to create offscreen image view (%d)", view_res);
+            log_error("failed to create offscreen image view");
             dvz_allocator_destroy_image(
                 &canvas->allocator, &slot->offscreen_alloc, slot->offscreen_image);
             slot->offscreen_image = VK_NULL_HANDLE;
+            slot->offscreen_images = (DvzImages){0};
+            slot->offscreen_views = (DvzImageViews){0};
             continue;
         }
 
@@ -789,15 +736,19 @@ static void canvas_destroy_slot(
     {
         return;
     }
-    if (slot->offscreen_view != VK_NULL_HANDLE)
+    if (slot->offscreen_views.img)
     {
-        vkDestroyImageView(device, slot->offscreen_view, NULL);
+        dvz_image_views_destroy(&slot->offscreen_views);
         slot->offscreen_view = VK_NULL_HANDLE;
+        slot->offscreen_images = (DvzImages){0};
+        slot->offscreen_views = (DvzImageViews){0};
     }
-    if (slot->swapchain_view != VK_NULL_HANDLE)
+    if (slot->swapchain_views.img)
     {
-        vkDestroyImageView(device, slot->swapchain_view, NULL);
+        dvz_image_views_destroy(&slot->swapchain_views);
         slot->swapchain_view = VK_NULL_HANDLE;
+        slot->swapchain_images = (DvzImages){0};
+        slot->swapchain_views = (DvzImageViews){0};
     }
     if (slot->offscreen_image != VK_NULL_HANDLE)
     {
