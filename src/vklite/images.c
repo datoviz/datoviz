@@ -489,6 +489,69 @@ void dvz_cmd_copy_image_to_buffer(
 
 
 
+void dvz_cmd_copy_source(
+    DvzImageCopy* copy, VkImage image, VkImageLayout layout, //
+    int32_t x, int32_t y, int32_t z, uint32_t width, uint32_t height, uint32_t depth)
+{
+    ANN(copy);
+
+    copy->info.srcImage = image;
+    copy->info.srcImageLayout = layout;
+
+    copy->copy.srcOffset.x = x;
+    copy->copy.srcOffset.y = y;
+    copy->copy.srcOffset.z = z;
+
+    copy->copy.extent.width = width;
+    copy->copy.extent.height = height;
+    copy->copy.extent.depth = depth;
+
+    copy->copy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy->copy.srcSubresource.baseArrayLayer = 0;
+    copy->copy.srcSubresource.layerCount = 1;
+    copy->copy.srcSubresource.mipLevel = 0;
+}
+
+
+
+void dvz_cmd_copy_destination(
+    DvzImageCopy* copy, VkImage image, VkImageLayout layout, int32_t x, int32_t y, int32_t z)
+{
+    ANN(copy);
+
+    copy->info.dstImage = image;
+    copy->info.dstImageLayout = layout;
+
+    copy->copy.dstOffset.x = x;
+    copy->copy.dstOffset.y = y;
+    copy->copy.dstOffset.z = z;
+
+    copy->copy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy->copy.dstSubresource.baseArrayLayer = 0;
+    copy->copy.dstSubresource.layerCount = 1;
+    copy->copy.dstSubresource.mipLevel = 0;
+}
+
+
+
+void dvz_cmd_copy_image(DvzCommands* cmds, DvzImageCopy* copy)
+{
+    ANN(cmds);
+    ANN(copy);
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
+
+    copy->info.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2;
+    copy->info.regionCount = 1;
+    copy->info.pRegions = &copy->copy;
+    copy->copy.sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2;
+
+    vkCmdCopyImage2(cmd, &copy->info);
+}
+
+
+
 void dvz_cmd_blit_source(
     DvzImageBlit* blit, VkImage image, VkImageLayout layout, //
     int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1)
@@ -545,7 +608,7 @@ void dvz_cmd_blit_filter(DvzImageBlit* blit, VkFilter filter)
 
 
 
-void dvz_cmd_blit(DvzCommands* cmds, DvzImageBlit* blit)
+void dvz_cmd_blit_image(DvzCommands* cmds, DvzImageBlit* blit)
 {
     ANN(blit);
 

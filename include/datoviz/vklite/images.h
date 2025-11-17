@@ -45,6 +45,7 @@ typedef struct DvzImages DvzImages;
 typedef struct DvzImageViews DvzImageViews;
 typedef struct VkBufferImageCopy2 DvzImageRegion;
 typedef struct DvzImageBlit DvzImageBlit;
+typedef struct DvzImageCopy DvzImageCopy;
 
 
 
@@ -102,6 +103,14 @@ struct DvzImageBlit
 {
     VkBlitImageInfo2 info;
     VkImageBlit2 blit;
+};
+
+
+
+struct DvzImageCopy
+{
+    VkCopyImageInfo2 info;
+    VkImageCopy2 copy;
 };
 
 
@@ -440,7 +449,50 @@ DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
 
 
 /**
- * Define the source of the blit operation.
+ * Define the source of an image copy operation.
+ *
+ * @param copy the copy structure
+ * @param image the source image
+ * @param layout the source image layout
+ * @param x the source offset x
+ * @param y the source offset y
+ * @param z the source offset z
+ * @param width the width
+ * @param height the height
+ * @param depth the depth
+ */
+DVZ_EXPORT void dvz_cmd_copy_source(
+    DvzImageCopy* copy, VkImage image, VkImageLayout layout, //
+    int32_t x, int32_t y, int32_t z, uint32_t width, uint32_t height, uint32_t depth);
+
+
+
+/**
+ * Define the destination of an image copy operation.
+ *
+ * @param copy the copy structure
+ * @param image the source image
+ * @param layout the source image layout
+ * @param x the destination offset x
+ * @param y the destination offset y
+ * @param z the destination offset z
+ */
+DVZ_EXPORT void dvz_cmd_copy_destination(
+    DvzImageCopy* copy, VkImage image, VkImageLayout layout, int32_t x, int32_t y, int32_t z);
+
+
+
+/**
+ * End an image copy operation.
+ *
+ * @param copy the copy structure
+ */
+DVZ_EXPORT void dvz_cmd_copy_image(DvzCommands* cmds, DvzImageCopy* copy);
+
+
+
+/**
+ * Define the source of a blit operation.
  *
  * @param blit the blit structure
  * @param image the source image
@@ -459,7 +511,7 @@ DVZ_EXPORT void dvz_cmd_blit_source(
 
 
 /**
- * Define the destination of the blit operation.
+ * Define the destination of a blit operation.
  *
  * @param blit the blit structure
  * @param image the source image
@@ -488,11 +540,11 @@ DVZ_EXPORT void dvz_cmd_blit_filter(DvzImageBlit* blit, VkFilter filter);
 
 
 /**
- * End a blit operation.
+ * End an image blit operation.
  *
  * @param blit the blit structure
  */
-DVZ_EXPORT void dvz_cmd_blit(DvzCommands* cmds, DvzImageBlit* blit);
+DVZ_EXPORT void dvz_cmd_blit_image(DvzCommands* cmds, DvzImageBlit* blit);
 
 
 

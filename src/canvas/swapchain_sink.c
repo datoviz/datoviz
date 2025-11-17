@@ -445,13 +445,13 @@ static void canvas_cmd_copy_frame(
 
         DvzImageBlit blit = {0};
         dvz_cmd_blit_source(
-            &blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, (int32_t)swapchain->extent.width,
-            (int32_t)swapchain->extent.height, 1);
+            &blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
+            (int32_t)swapchain->extent.width, (int32_t)swapchain->extent.height, 1);
         dvz_cmd_blit_destination(
             &blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
             (int32_t)swapchain->extent.width, (int32_t)swapchain->extent.height, 1);
         dvz_cmd_blit_filter(&blit, VK_FILTER_NEAREST);
-        dvz_cmd_blit(&cmds, &blit);
+        dvz_cmd_blit_image(&cmds, &blit);
     }
 }
 
@@ -499,8 +499,6 @@ canvas_slot_create_swapchain_view(DvzCanvasSwapchain* swapchain, DvzCanvasSwapch
     }
     return res;
 }
-
-
 
 
 
