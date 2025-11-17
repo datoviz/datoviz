@@ -185,6 +185,22 @@ DVZ_EXPORT void dvz_cmd_rendering_begin(DvzCommands* cmds, DvzRendering* renderi
 
 
 /**
+ * Set up a default rendering.
+ *
+ * @param cmds the command buffers
+ * @param image_view the Vulkan image view
+ * @param width the image width
+ * @param height the image height
+ * @param clear_value the clear value
+ * @param rendering the rendering
+ */
+DVZ_EXPORT void dvz_cmd_rendering_default(
+    DvzCommands* cmds, VkImageView image_view, uint32_t width, uint32_t height,
+    VkClearValue clear_value, DvzRendering* rendering);
+
+
+
+/**
  * End a rendering.
  *
  * @param cmds the command buffers

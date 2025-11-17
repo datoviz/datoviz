@@ -156,6 +156,23 @@ void dvz_cmd_rendering_begin(DvzCommands* cmds, DvzRendering* rendering)
 
 
 
+void dvz_cmd_rendering_default(
+    DvzCommands* cmds, VkImageView image_view, uint32_t width, uint32_t height,
+    VkClearValue clear_value, DvzRendering* rendering)
+{
+    ANN(cmds);
+    ANN(rendering);
+
+    dvz_rendering(rendering);
+    dvz_rendering_area(rendering, 0, 0, width, height);
+    DvzAttachment* catt = dvz_rendering_color(rendering, 0);
+    dvz_attachment_image(catt, image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    dvz_attachment_clear(catt, clear_value);
+}
+
+
+
 void dvz_cmd_rendering_end(DvzCommands* cmds)
 {
     ANN(cmds);

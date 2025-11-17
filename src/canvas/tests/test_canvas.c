@@ -88,13 +88,9 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
     dvz_commands_wrap(canvas->device, cmd, &cmds);
 
     DvzRendering rendering = {0};
-    dvz_rendering(&rendering);
-    dvz_rendering_area(&rendering, 0, 0, frame->extent.width, frame->extent.height);
-    DvzAttachment* catt = dvz_rendering_color(&rendering, 0);
-    dvz_attachment_image(catt, image_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-    dvz_attachment_clear(catt, (VkClearValue){.color.float32 = {1, 0, 0, 1}});
-
+    dvz_cmd_rendering_default(
+        &cmds, image_view, frame->extent.width, frame->extent.height,
+        (VkClearValue){.color.float32 = {1, 0, 0, 1}}, &rendering);
     dvz_cmd_rendering_begin(&cmds, &rendering);
     dvz_cmd_rendering_end(&cmds);
 }
