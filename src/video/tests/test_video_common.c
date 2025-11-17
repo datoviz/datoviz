@@ -14,10 +14,10 @@
 
 VkClearColorValue dvz_test_video_clear_color(uint32_t frame_idx, uint32_t total_frames)
 {
-    VkClearColorValue clr = {.float32 = {DVZ_TEST_VIDEO_CLEAR_R / 255.0f,
-                                         DVZ_TEST_VIDEO_CLEAR_G / 255.0f,
-                                         DVZ_TEST_VIDEO_CLEAR_B / 255.0f,
-                                         1.0f}};
+    VkClearColorValue clr = {
+        .float32 = {
+            DVZ_TEST_VIDEO_CLEAR_R / 255.0f, DVZ_TEST_VIDEO_CLEAR_G / 255.0f,
+            DVZ_TEST_VIDEO_CLEAR_B / 255.0f, 1.0f}};
     if (total_frames == 0)
     {
         return clr;
