@@ -44,6 +44,7 @@ typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzImages DvzImages;
 typedef struct DvzImageViews DvzImageViews;
 typedef struct VkBufferImageCopy2 DvzImageRegion;
+typedef struct DvzImageBlit DvzImageBlit;
 
 
 
@@ -93,6 +94,14 @@ struct DvzImageViews
     VkImageViewCreateInfo info;
 
     VkImageView vk_views[DVZ_MAX_IMAGES];
+};
+
+
+
+struct DvzImageBlit
+{
+    VkBlitImageInfo2 info;
+    VkImageBlit2 blit;
 };
 
 
@@ -427,6 +436,63 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
 DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
     DvzCommands* cmds, VkImage img, VkImageLayout layout, DvzImageRegion* region, VkBuffer buffer,
     DvzSize offset);
+
+
+
+/**
+ * Define the source of the blit operation.
+ *
+ * @param blit the blit structure
+ * @param image the source image
+ * @param layout the source image layout
+ * @param x0 the source onset x
+ * @param y0 the source onset y
+ * @param z0 the source onset z
+ * @param x1 the source offset x
+ * @param y1 the source offset y
+ * @param z1 the source offset z
+ */
+DVZ_EXPORT void dvz_cmd_blit_source(
+    DvzImageBlit* blit, VkImage image, VkImageLayout layout, //
+    int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1);
+
+
+
+/**
+ * Define the destination of the blit operation.
+ *
+ * @param blit the blit structure
+ * @param image the source image
+ * @param layout the source image layout
+ * @param x0 the destination onset x
+ * @param y0 the destination onset y
+ * @param z0 the destination onset z
+ * @param x1 the destination offset x
+ * @param y1 the destination offset y
+ * @param z1 the destination offset z
+ */
+DVZ_EXPORT void dvz_cmd_blit_destination(
+    DvzImageBlit* blit, VkImage image, VkImageLayout layout, //
+    int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1);
+
+
+
+/**
+ * Set the filter of a blit operation.
+ *
+ * @param blit the blit structure
+ * @param filter the filter
+ */
+DVZ_EXPORT void dvz_cmd_blit_filter(DvzImageBlit* blit, VkFilter filter);
+
+
+
+/**
+ * End a blit operation.
+ *
+ * @param blit the blit structure
+ */
+DVZ_EXPORT void dvz_cmd_blit(DvzCommands* cmds, DvzImageBlit* blit);
 
 
 

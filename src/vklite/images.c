@@ -486,3 +486,76 @@ void dvz_cmd_copy_image_to_buffer(
     info.pRegions = region;
     vkCmdCopyImageToBuffer2(cmd, &info);
 }
+
+
+
+void dvz_cmd_blit_source(
+    DvzImageBlit* blit, VkImage image, VkImageLayout layout, //
+    int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1)
+{
+    ANN(blit);
+
+    blit->info.srcImage = image;
+    blit->info.srcImageLayout = layout;
+
+    blit->blit.srcOffsets[0].x = x0;
+    blit->blit.srcOffsets[0].y = y0;
+    blit->blit.srcOffsets[0].z = z0;
+    blit->blit.srcOffsets[1].x = x1;
+    blit->blit.srcOffsets[1].y = y1;
+    blit->blit.srcOffsets[1].z = z1;
+
+    blit->blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blit->blit.srcSubresource.baseArrayLayer = 0;
+    blit->blit.srcSubresource.layerCount = 1;
+    blit->blit.srcSubresource.mipLevel = 0;
+}
+
+
+
+void dvz_cmd_blit_destination(
+    DvzImageBlit* blit, VkImage image, VkImageLayout layout, //
+    int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1, int32_t z1)
+{
+    ANN(blit);
+
+    blit->info.dstImage = image;
+    blit->info.dstImageLayout = layout;
+
+    blit->blit.dstOffsets[0].x = x0;
+    blit->blit.dstOffsets[0].y = y0;
+    blit->blit.dstOffsets[0].z = z0;
+    blit->blit.dstOffsets[1].x = x1;
+    blit->blit.dstOffsets[1].y = y1;
+    blit->blit.dstOffsets[1].z = z1;
+
+    blit->blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blit->blit.dstSubresource.baseArrayLayer = 0;
+    blit->blit.dstSubresource.layerCount = 1;
+    blit->blit.dstSubresource.mipLevel = 0;
+}
+
+
+
+void dvz_cmd_blit_filter(DvzImageBlit* blit, VkFilter filter)
+{
+    ANN(blit);
+    blit->info.filter = filter;
+}
+
+
+
+void dvz_cmd_blit(DvzCommands* cmds, DvzImageBlit* blit)
+{
+    ANN(blit);
+
+    VkCommandBuffer cmd = dvz_commands_handle(cmds);
+    ANNVK(cmd);
+
+    blit->info.sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2;
+    blit->info.regionCount = 1;
+    blit->info.pRegions = &blit->blit;
+    blit->blit.sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2;
+
+    vkCmdBlitImage2(cmd, &blit->info);
+}
