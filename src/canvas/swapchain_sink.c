@@ -31,18 +31,10 @@
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
-#include "datoviz/vklite/descriptors.h"
-#include "datoviz/vklite/graphics.h"
-#include "datoviz/vklite/rendering.h"
-#include "datoviz/vklite/sampler.h"
-#include "datoviz/vklite/shader.h"
-#include "datoviz/vklite/slots.h"
+#include "datoviz/vklite/images.h"
 #include "datoviz/vklite/sync.h"
 
 static int canvas_export_timeline_fd(DvzCanvas* canvas);
-
-#include "swizzle_frag_spirv.h"
-#include "swizzle_vert_spirv.h"
 
 
 
@@ -85,8 +77,6 @@ struct DvzCanvasSwapchainSlot
     bool ready;
     bool commands_recording;
     bool handles_dirty;
-    DvzDescriptors swizzle_descriptors;
-    bool swizzle_descriptor_ready;
 };
 
 
@@ -111,13 +101,7 @@ struct DvzCanvasSwapchain
     VkCommandPool command_pool;
     uint32_t queue_family;
     uint64_t export_serial;
-    DvzGraphics swizzle_graphics;
-    DvzSlots swizzle_slots;
-    DvzDescriptors swizzle_descriptors;
-    DvzSampler swizzle_sampler;
-    DvzShader swizzle_vs;
-    DvzShader swizzle_fs;
-    bool swizzle_ready;
+    VkFormat frame_format;
 };
 
 
@@ -195,6 +179,26 @@ static VkFormat canvas_surface_format(const DvzCanvas* canvas)
 
 
 
+static VkFormat canvas_frame_format(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (canvas->stream)
+    {
+        const DvzStreamConfig* stream_cfg = dvz_stream_config(canvas->stream);
+        if (stream_cfg && stream_cfg->color_format != VK_FORMAT_UNDEFINED)
+        {
+            return stream_cfg->color_format;
+        }
+    }
+    if (canvas->cfg.color_format != VK_FORMAT_UNDEFINED)
+    {
+        return canvas->cfg.color_format;
+    }
+    return DVZ_DEFAULT_COLOR_FORMAT;
+}
+
+
+
 static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -260,6 +264,10 @@ static VkPipelineStageFlags2 canvas_stage_for_layout(VkImageLayout layout)
         return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
         return VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        return VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
     default:
         return VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
     }
@@ -281,6 +289,10 @@ static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
         return VK_ACCESS_2_TRANSFER_WRITE_BIT;
     case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
         return 0;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        return VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT;
     default:
         return 0;
     }
@@ -371,6 +383,80 @@ static void canvas_cmd_transition_swapchain(
 
 
 
+static void canvas_cmd_copy_frame(
+    DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot, VkCommandBuffer cmd)
+{
+    ANN(swapchain);
+    ANN(slot);
+    ANNVK(cmd);
+    if (swapchain->extent.width == 0 || swapchain->extent.height == 0)
+    {
+        return;
+    }
+    VkImage src = slot->offscreen_image;
+    VkImage dst = slot->swapchain_image;
+    if (src == VK_NULL_HANDLE || dst == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
+    if (swapchain->frame_format == swapchain->format)
+    {
+        VkImageCopy2 region = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2,
+            .srcSubresource =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel = 0,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+            .dstSubresource =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel = 0,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+            .extent =
+                {
+                    .width = swapchain->extent.width,
+                    .height = swapchain->extent.height,
+                    .depth = 1,
+                },
+        };
+        VkCopyImageInfo2 info = {
+            .sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2,
+            .srcImage = src,
+            .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            .dstImage = dst,
+            .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .regionCount = 1,
+            .pRegions = &region,
+        };
+        vkCmdCopyImage2(cmd, &info);
+    }
+    else
+    {
+        DvzCommands cmds = {0};
+        cmds.cmds[0] = cmd;
+        cmds.count = 1;
+        cmds.current = 0;
+
+        DvzImageBlit blit = {0};
+        dvz_cmd_blit_source(
+            &blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, (int32_t)swapchain->extent.width,
+            (int32_t)swapchain->extent.height, 1);
+        dvz_cmd_blit_destination(
+            &blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
+            (int32_t)swapchain->extent.width, (int32_t)swapchain->extent.height, 1);
+        dvz_cmd_blit_filter(&blit, VK_FILTER_NEAREST);
+        dvz_cmd_blit(&cmds, &blit);
+    }
+}
+
+
+
 static VkResult
 canvas_slot_create_swapchain_view(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
 {
@@ -411,151 +497,10 @@ canvas_slot_create_swapchain_view(DvzCanvasSwapchain* swapchain, DvzCanvasSwapch
         slot->swapchain_view = VK_NULL_HANDLE;
         return res;
     }
-    if (!slot->swizzle_descriptor_ready && swapchain->swizzle_ready)
-    {
-        dvz_descriptors(&swapchain->swizzle_slots, &slot->swizzle_descriptors);
-        dvz_descriptors_image(
-            &slot->swizzle_descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            slot->offscreen_view, swapchain->swizzle_sampler.vk_sampler);
-        slot->swizzle_descriptor_ready = true;
-    }
     return res;
 }
 
 
-
-static void canvas_swapchain_swizzle_destroy(DvzCanvasSwapchain* swapchain)
-{
-    if (!swapchain)
-    {
-        return;
-    }
-    log_trace("destroy swapchain swizzle");
-    dvz_graphics_destroy(&swapchain->swizzle_graphics);
-    dvz_shader_destroy(&swapchain->swizzle_vs);
-    dvz_shader_destroy(&swapchain->swizzle_fs);
-    dvz_sampler_destroy(&swapchain->swizzle_sampler);
-    dvz_slots_destroy(&swapchain->swizzle_slots);
-    swapchain->swizzle_ready = false;
-}
-
-
-
-static int canvas_swapchain_swizzle_create(DvzCanvasSwapchain* swapchain)
-{
-    if (!swapchain || !swapchain->canvas || !swapchain->canvas->device)
-    {
-        return -1;
-    }
-    // if (swapchain->handle != VK_NULL_HANDLE)
-    //     canvas_swapchain_swizzle_destroy(swapchain);
-    DvzDevice* device = swapchain->canvas->device;
-    dvz_slots(device, &swapchain->swizzle_slots);
-    dvz_slots_binding(
-        &swapchain->swizzle_slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    if (dvz_slots_create(&swapchain->swizzle_slots) != 0)
-    {
-        return -1;
-    }
-    dvz_descriptors(&swapchain->swizzle_slots, &swapchain->swizzle_descriptors);
-
-    dvz_sampler(device, &swapchain->swizzle_sampler);
-    dvz_sampler_min_filter(&swapchain->swizzle_sampler, VK_FILTER_NEAREST);
-    dvz_sampler_mag_filter(&swapchain->swizzle_sampler, VK_FILTER_NEAREST);
-    dvz_sampler_address_mode(
-        &swapchain->swizzle_sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(
-        &swapchain->swizzle_sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(
-        &swapchain->swizzle_sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    if (dvz_sampler_create(&swapchain->swizzle_sampler) != 0)
-    {
-        log_error("unable to create swizzle sampler");
-        canvas_swapchain_swizzle_destroy(swapchain);
-        return -1;
-    }
-
-    if (dvz_shader(
-            device, (DvzSize)dvz_canvas_swizzle_vert_spv_size,
-            (const uint32_t*)dvz_canvas_swizzle_vert_spv, &swapchain->swizzle_vs) != 0)
-    {
-        log_error("unable to create swizzle vertex sampler");
-        canvas_swapchain_swizzle_destroy(swapchain);
-        return -1;
-    }
-    if (dvz_shader(
-            device, (DvzSize)dvz_canvas_swizzle_frag_spv_size,
-            (const uint32_t*)dvz_canvas_swizzle_frag_spv, &swapchain->swizzle_fs) != 0)
-    {
-        log_error("unable to create swizzle fragment sampler");
-        canvas_swapchain_swizzle_destroy(swapchain);
-        return -1;
-    }
-
-    dvz_graphics(device, &swapchain->swizzle_graphics);
-    dvz_graphics_shader(
-        &swapchain->swizzle_graphics, VK_SHADER_STAGE_VERTEX_BIT,
-        dvz_shader_handle(&swapchain->swizzle_vs));
-    dvz_graphics_shader(
-        &swapchain->swizzle_graphics, VK_SHADER_STAGE_FRAGMENT_BIT,
-        dvz_shader_handle(&swapchain->swizzle_fs));
-    dvz_graphics_attachment_color(&swapchain->swizzle_graphics, 0, swapchain->format);
-    dvz_graphics_primitive(
-        &swapchain->swizzle_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        DVZ_GRAPHICS_FLAGS_FIXED);
-    dvz_graphics_viewport(
-        &swapchain->swizzle_graphics, 0.0f, 0.0f, (float)swapchain->extent.width,
-        (float)swapchain->extent.height, 0.0f, 1.0f, 0);
-    dvz_graphics_scissor(
-        &swapchain->swizzle_graphics, 0, 0, swapchain->extent.width, swapchain->extent.height, 0);
-    swapchain->swizzle_graphics.layout = dvz_slots_handle(&swapchain->swizzle_slots);
-    if (dvz_graphics_create(&swapchain->swizzle_graphics) != 0)
-    {
-        canvas_swapchain_swizzle_destroy(swapchain);
-        return -1;
-    }
-
-    swapchain->swizzle_ready = true;
-    return 0;
-}
-
-
-
-static void canvas_swapchain_swizzle_run(
-    DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot, VkCommandBuffer cmd)
-{
-    if (!swapchain || !slot || !cmd || !swapchain->swizzle_ready ||
-        slot->swapchain_view == VK_NULL_HANDLE || slot->offscreen_view == VK_NULL_HANDLE ||
-        swapchain->extent.width == 0 || swapchain->extent.height == 0)
-    {
-        return;
-    }
-    DvzCommands cmds = {0};
-    cmds.cmds[0] = cmd;
-    cmds.count = 1;
-    cmds.current = 0;
-
-    DvzRendering rendering = {0};
-    dvz_rendering(&rendering);
-    dvz_rendering_area(&rendering, 0, 0, swapchain->extent.width, swapchain->extent.height);
-    DvzAttachment* catt = dvz_rendering_color(&rendering, 0);
-    dvz_attachment_image(catt, slot->swapchain_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE);
-
-    dvz_cmd_rendering_begin(&cmds, &rendering);
-    dvz_cmd_bind_graphics(&cmds, &swapchain->swizzle_graphics);
-    if (!slot->swizzle_descriptor_ready)
-    {
-        log_error("swapchain slot missing swizzle descriptor");
-        dvz_cmd_rendering_end(&cmds);
-        return;
-    }
-    dvz_cmd_bind_descriptors(
-        &cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &slot->swizzle_descriptors, 0, 1, 0, NULL);
-    vkCmdDraw(cmd, 3, 1, 0, 0);
-    dvz_cmd_rendering_end(&cmds);
-}
 
 
 
@@ -605,24 +550,20 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
     VkCommandBuffer cmd = slot->command_buffer;
 
     canvas_cmd_transition(
-        cmd, slot->offscreen_image, slot->offscreen_layout,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    slot->offscreen_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    slot->offscreen_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     canvas_cmd_transition_swapchain(
-        cmd, slot->swapchain_image, slot->swapchain_layout,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    slot->swapchain_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    slot->swapchain_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-    canvas_swapchain_swizzle_run(swapchain, slot, cmd);
+    canvas_cmd_copy_frame(swapchain, slot, cmd);
 
-    canvas_cmd_transition(
-        cmd, slot->offscreen_image, slot->offscreen_layout,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-    slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     canvas_cmd_transition_swapchain(
         cmd, slot->swapchain_image, slot->swapchain_layout, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    canvas_cmd_transition(
+        cmd, slot->offscreen_image, slot->offscreen_layout, VK_IMAGE_LAYOUT_GENERAL);
+    slot->offscreen_layout = VK_IMAGE_LAYOUT_GENERAL;
 
     // log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
@@ -684,6 +625,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
 
     VkPresentModeKHR present_mode = canvas_select_present_mode(canvas);
+    VkFormat frame_format = canvas_frame_format(canvas);
 
     VkSwapchainCreateInfoKHR info = {0};
     info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -719,6 +661,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     swapchain->color_space = info.imageColorSpace;
     swapchain->extent = extent;
     swapchain->present_mode = present_mode;
+    swapchain->frame_format = frame_format;
 
     uint32_t count = 0;
     vkGetSwapchainImagesKHR(device, swapchain->handle, &count, NULL);
@@ -764,7 +707,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->handles_dirty = false;
         slot->commands_recording = false;
         slot->memory_fd = -1;
-        slot->swizzle_descriptor_ready = false;
 
         if (swapchain->command_pool == VK_NULL_HANDLE)
         {
@@ -784,7 +726,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         VkImageCreateInfo img_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .imageType = VK_IMAGE_TYPE_2D,
-            .format = DVZ_DEFAULT_COLOR_FORMAT,
+            .format = frame_format,
             .extent =
                 {
                     .width = extent.width,
@@ -820,7 +762,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
             .image = slot->offscreen_image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = DVZ_DEFAULT_COLOR_FORMAT,
+            .format = frame_format,
             .components =
                 {
                     .r = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -862,12 +804,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->ready = true;
     }
 
-    if (canvas_swapchain_swizzle_create(swapchain) != 0)
-    {
-        log_error("failed to initialize canvas swizzle pass");
-        canvas_swapchain_swizzle_destroy(swapchain);
-        return VK_ERROR_INITIALIZATION_FAILED;
-    }
     swapchain->dirty = false;
     return VK_SUCCESS;
 }
@@ -925,7 +861,6 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     {
         return;
     }
-    canvas_swapchain_swizzle_destroy(swapchain);
     VkDevice device = canvas_device_handle(swapchain->canvas);
     vkDeviceWaitIdle(device);
     if (swapchain->slots)
@@ -1029,6 +964,7 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->handle = VK_NULL_HANDLE;
     canvas->swapchain->dirty = true;
     canvas->swapchain->frame_index = 0;
+    canvas->swapchain->frame_format = canvas_frame_format(canvas);
     canvas->swapchain->queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
     ANN(canvas->swapchain->queue_ref);
     canvas->swapchain->queue = dvz_queue_handle(canvas->swapchain->queue_ref);
