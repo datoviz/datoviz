@@ -1,3 +1,7 @@
 {
-        "typeCheckingMode": "basic"
+        "typeCheckingMode": "basic",
+        "exclude": [
+                "./datoviz/_ctypes.py",
+                "./datoviz/backends/pyqt6.py"
+        ]
 }

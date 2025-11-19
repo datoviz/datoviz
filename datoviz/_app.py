@@ -222,10 +222,13 @@ class App:
             dtype = dtype or image.dtype
             assert 0 <= image.ndim - ndim <= 1
 
-        assert n_channels > 0 # type: ignore
-        c_format = dtype_to_format(np.dtype(dtype).name, n_channels) # type: ignore
-        shape = dvz.uvec3(*shape)   # type: ignore
-        width, height, depth = shape # type: ignore
+        assert n_channels is not None, 'n_channels must be specified'
+        assert shape is not None, 'shape must be specified'
+
+        assert n_channels > 0
+        c_format = dtype_to_format(np.dtype(dtype).name, n_channels)
+        shape = dvz.uvec3(*shape)
+        width, height, depth = shape    # type: ignore
 
         interpolation = interpolation or cst.DEFAULT_INTERPOLATION
         c_filter = to_enum(f'filter_{interpolation}')
@@ -764,8 +767,8 @@ class App:
             color=color,
             bgcolor=bgcolor,
             texture=texture,        
-            depth_test=depth_test, # type: ignore
-            cull=cull, # type: ignore
+            depth_test=depth_test,
+            cull=cull,
         )
         return visual
 

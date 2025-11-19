@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 
 import ctypes
 from typing import List, Tuple, Union
+import typing as tp
 
 import numpy as np
 
@@ -43,9 +44,9 @@ WHITE = dvz.cvec4(255, 255, 255, 255)
 
 def _shape_transform(
     c_shape: dvz.Shape,
-    offset: Tuple[float, float, float] = None,
-    scale: Union[float, Tuple[float, float, float]] = None,
-    transform: Mat4 = None,
+    offset: tp.Optional[Tuple[float, float, float]] = None,
+    scale: Union[float, Tuple[float, float, float], None] = None,
+    transform: tp.Optional[Mat4] = None,
 ) -> None:
     """
     Apply transformations to a shape.
@@ -68,7 +69,7 @@ def _shape_transform(
     if scale is not None:
         if isinstance(scale, float):
             scale = (scale, scale, scale)
-        dvz.shape_scale(c_shape, dvz.vec3(*scale))
+        dvz.shape_scale(c_shape, dvz.vec3(*scale))  # type: ignore
     if offset is not None:
         dvz.shape_translate(c_shape, dvz.vec3(*offset))
     # TODO
@@ -82,7 +83,7 @@ def _shape_transform(
     dvz.shape_end(c_shape)
 
 
-def merge_shapes(c_shapes: List[dvz.Shape]) -> dvz.Shape:
+def merge_shapes(c_shapes: List[dvz.Shape]) -> tp.Optional[dvz.Shape]:
     """
     Merge multiple shapes into a single shape.
 
@@ -109,8 +110,8 @@ def merge_shapes(c_shapes: List[dvz.Shape]) -> dvz.Shape:
 
 def unindex(
     c_shape: dvz.Shape,
-    contour: str = None,
-    indexing: str = None,
+    contour: tp.Optional[str] = None,
+    indexing: tp.Optional[str] = None,
 ) -> None:
     """
     Unindex a shape, optionally applying contour and indexing flags.
@@ -163,8 +164,8 @@ class ShapeCollection:
         The merged shape, if applicable.
     """
 
-    c_shapes: List[dvz.Shape] = None
-    c_merged: dvz.Shape = None
+    c_shapes: tp.Optional[tp.List[dvz.Shape]] = None
+    c_merged: tp.Optional[dvz.Shape] = None
 
     def __init__(self) -> None:
         """
@@ -188,6 +189,7 @@ class ShapeCollection:
         if self.c_merged:
             return dvz.shape_vertex_count(self.c_merged)
         else:
+            assert self.c_shapes is not None, "Shape collection C object MUST NOT be None."
             return sum(dvz.shape_vertex_count(s) for s in self.c_shapes)
 
     def index_count(self) -> int:
@@ -202,14 +204,15 @@ class ShapeCollection:
         if self.c_merged:
             return dvz.shape_index_count(self.c_merged)
         else:
+            assert self.c_shapes is not None, "Shape collection C object MUST NOT be None."
             return sum(dvz.shape_index_count(s) for s in self.c_shapes)
 
     def add(
         self,
         c_shape: dvz.Shape,
-        offset: Tuple[float, float, float] = None,
-        scale: Union[float, Tuple[float, float, float]] = None,
-        transform: Mat4 = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: Union[float, Tuple[float, float, float], None] = None,
+        transform: tp.Optional[Mat4] = None,
     ) -> None:
         """
         Add a shape to the collection with optional transformations.
@@ -226,13 +229,15 @@ class ShapeCollection:
             A 4x4 transformation matrix, by default None.
         """
         _shape_transform(c_shape, offset=offset, scale=scale, transform=transform)
+
+        assert self.c_shapes is not None, "Shape collection C object MUST NOT be None."
         self.c_shapes.append(c_shape)
 
     def transform(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: Union[float, Tuple[float, float, float]] = None,
-        transform: Mat4 = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: Union[float, Tuple[float, float, float], None] = None,
+        transform: tp.Optional[Mat4] = None,
     ):
         """
         Transform the shape collection.
@@ -249,6 +254,7 @@ class ShapeCollection:
         if self.c_merged:
             _shape_transform(self.c_merged, offset=offset, scale=scale, transform=transform)
         else:
+            assert self.c_shapes is not None, "Shape collection C object MUST NOT be None."
             for s in self.c_shapes:
                 _shape_transform(s, offset=offset, scale=scale, transform=transform)
 
@@ -256,12 +262,14 @@ class ShapeCollection:
         """
         Merge all shapes in the collection into a single shape.
         """
+        assert self.c_shapes is not None, "Shape collection C object MUST NOT be None."
         self.c_merged = merge_shapes(self.c_shapes)
 
     def destroy(self) -> None:
         """
         Destroy all shapes in the collection and release resources.
         """
+        assert self.c_shapes is not None, "Shape collection C object MUST NOT be None."
         for c_shape in self.c_shapes:
             if c_shape:
                 # print("destroy shape", c_shape)
@@ -277,13 +285,13 @@ class ShapeCollection:
     def add_custom(
         self,
         positions: np.ndarray,
-        normals: np.ndarray = None,
-        colors: np.ndarray = None,
-        texcoords: np.ndarray = None,
-        indices: np.ndarray = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
+        normals: tp.Optional[np.ndarray] = None,
+        colors: tp.Optional[np.ndarray] = None,
+        texcoords: tp.Optional[np.ndarray] = None,
+        indices: tp.Optional[np.ndarray] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: Union[float, Tuple[float, float, float], None] = None,
+        transform: tp.Optional[Mat4] = None,
     ):
         """
         Add a custom shape to the collection with optional transformations.
@@ -323,10 +331,10 @@ class ShapeCollection:
     def add_obj(
         self,
         file_path: str,
-        contour: str = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
+        contour: tp.Optional[str] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
     ) -> None:
         """
         Add a shape from an OBJ file to the collection.
@@ -351,10 +359,10 @@ class ShapeCollection:
 
     def add_square(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a square shape to the collection.
@@ -378,10 +386,10 @@ class ShapeCollection:
     def add_disc(
         self,
         count: int = DEFAULT_SIZE,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a disc shape to the collection.
@@ -409,10 +417,10 @@ class ShapeCollection:
         count: int = DEFAULT_SIZE,
         angle_start: float = 0,
         angle_stop: float = 2 * np.pi,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a disc shape to the collection.
@@ -441,10 +449,10 @@ class ShapeCollection:
 
     def add_cube(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a cube shape to the collection.
@@ -469,12 +477,12 @@ class ShapeCollection:
 
     def add_sphere(
         self,
-        rows: int = None,
-        cols: int = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        rows: tp.Optional[int] = None,
+        cols: tp.Optional[int] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a sphere shape to the collection.
@@ -503,11 +511,11 @@ class ShapeCollection:
 
     def add_cylinder(
         self,
-        count: int = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        count: tp.Optional[int] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a cylinder shape to the collection.
@@ -533,11 +541,11 @@ class ShapeCollection:
 
     def add_cone(
         self,
-        count: int = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        count: tp.Optional[int] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a cone shape to the collection.
@@ -563,14 +571,14 @@ class ShapeCollection:
 
     def add_arrow(
         self,
-        count: int = None,
-        head_length: float = None,
-        head_radius: float = None,
-        shaft_radius: float = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        count: tp.Optional[int] = None,
+        head_length: tp.Optional[float] = None,
+        head_radius: tp.Optional[float] = None,
+        shaft_radius: tp.Optional[float] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a 3D arrow (a cylinder and a cone), total length is 1.
@@ -607,9 +615,9 @@ class ShapeCollection:
 
     def add_gizmo(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
     ) -> None:
         """
         Add a gizmo shape to the collection.
@@ -630,13 +638,13 @@ class ShapeCollection:
 
     def add_torus(
         self,
-        count_radial: int = None,
-        count_tubular: int = None,
-        tube_radius: float = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        count_radial: tp.Optional[int] = None,
+        count_tubular: tp.Optional[int] = None,
+        tube_radius: tp.Optional[float] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a torus shape to the collection.
@@ -668,10 +676,10 @@ class ShapeCollection:
 
     def add_tetrahedron(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a tetrahedron shape to the collection.
@@ -701,10 +709,10 @@ class ShapeCollection:
 
     def add_hexahedron(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a hexahedron shape to the collection.
@@ -734,10 +742,10 @@ class ShapeCollection:
 
     def add_octahedron(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add an octahedron shape to the collection.
@@ -767,10 +775,10 @@ class ShapeCollection:
 
     def add_dodecahedron(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add a dodecahedron shape to the collection.
@@ -800,10 +808,10 @@ class ShapeCollection:
 
     def add_icosahedron(
         self,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
     ) -> None:
         """
         Add an icosahedron shape to the collection.
@@ -834,12 +842,12 @@ class ShapeCollection:
     def add_polygon(
         self,
         points: np.ndarray,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
-        contour: str = None,
-        indexing: str = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
+        color: tp.Optional[Color] = None,
+        contour: tp.Optional[str] = None,
+        indexing: tp.Optional[str] = None,
     ) -> None:
         """
         Add a polygon shape to the collection.
@@ -884,13 +892,13 @@ class ShapeCollection:
         self,
         heights: np.ndarray,
         colors: np.ndarray,
-        contour: str = None,
-        indexing: str = None,
-        u: Tuple[float, float, float] = None,
-        v: Tuple[float, float, float] = None,
-        offset: Tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
+        contour: tp.Optional[str] = None,
+        indexing: tp.Optional[str] = None,
+        u: tp.Optional[Tuple[float, float, float]] = None,
+        v: tp.Optional[Tuple[float, float, float]] = None,
+        offset: tp.Optional[Tuple[float, float, float]] = None,
+        scale: tp.Optional[float] = None,
+        transform: tp.Optional[Mat4] = None,
     ) -> None:
         """
         Add a surface shape to the collection.

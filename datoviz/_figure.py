@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 from typing import TYPE_CHECKING, Optional, Tuple
+import typing as tp
 
 if TYPE_CHECKING:
     from ._app import App
@@ -37,8 +38,8 @@ class Colorbar:
         The panel in which the colorbar is displayed.
     """
 
-    c_colorbar: dvz.DvzColorbar = None
-    colorbar_panel: 'Panel' = None
+    c_colorbar: tp.Optional[dvz.DvzColorbar] = None
+    colorbar_panel: tp.Optional['Panel'] = None
 
     def __init__(self, c_colorbar: dvz.DvzColorbar, colorbar_panel: 'Panel'):
         """
@@ -108,9 +109,10 @@ class Figure:
         The underlying C figure object.
     """
 
-    c_figure: dvz.DvzFigure = None
-    _app: 'App' = None
-    colorbar: Colorbar = None
+    c_figure: tp.Optional[dvz.DvzFigure] = None
+    _app: tp.Optional['App'] = None
+    # FIXME colorbar is defined as a property AND as a function, name conflict
+    colorbar: tp.Optional[Colorbar] = None # type: ignore
 
     def __init__(self, c_figure: dvz.DvzFigure, app: Optional['App'] = None) -> None:
         """
@@ -146,18 +148,20 @@ class Figure:
         ----------
         fullscreen : True for fullscreen mode, False for window mode.
         """
+        assert self._app is not None, "Figure must be associated with an App to set fullscreen."
+        
         dvz.app_fullscreen(self._app.c_app, self.figure_id(), fullscreen)
 
     def panel(
         self,
-        offset: Tuple[float, float] = None,
-        size: Tuple[float, float] = None,
-        background: Tuple[
+        offset: tp.Optional[Tuple[float, float]] = None,
+        size: tp.Optional[Tuple[float, float]] = None,
+        background: tp.Optional[Tuple[
             Tuple[int, int, int, int],
             Tuple[int, int, int, int],
             Tuple[int, int, int, int],
             Tuple[int, int, int, int],
-        ] = None,
+        ]] = None,
     ) -> Panel:
         """
         Create a new panel in the figure.
@@ -181,6 +185,8 @@ class Figure:
         if not offset and not size:
             c_panel = dvz.panel_default(self.c_figure)
         else:
+            assert offset is not None, "Offset must be provided if size is provided."
+            assert size is not None, "Size must be provided if offset is provided."
             x, y = offset
             w, h = size
             c_panel = dvz.panel(self.c_figure, x, y, w, h)
@@ -230,6 +236,7 @@ class Figure:
         colorbar_panel.margins(m // 2, m // 2, m // 2, m // 2)
         return colorbar_panel
 
+    # FIXME colorbar is defined as a property AND as a function, name conflict
     def colorbar(
         self,
         cmap: str = 'hsv',
@@ -262,6 +269,8 @@ class Figure:
         Colorbar
             The created colorbar instance.
         """
+        assert self._app is not None, "Figure must be associated with an App to create a colorbar."
+
         c_cmap = to_enum(f'cmap_{cmap}')
         c_colorbar = dvz.colorbar(self._app.c_batch, c_cmap, dmin, dmax, 0)
 
@@ -273,5 +282,6 @@ class Figure:
         """
         Destroy the figure.
         """
-        if self.c_colorbar:
-            dvz.colorbar_destroy(self.c_colorbar)
+        # FIXME self.c_colorbar doesnt exist!
+        if self.c_colorbar: # type: ignore
+            dvz.colorbar_destroy(self.c_colorbar) # type: ignore

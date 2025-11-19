@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+import typing as tp
 from typing import Any, Optional, Tuple
 
 from . import _ctypes as dvz
@@ -33,7 +34,7 @@ class Event:
     """
 
     c_ev: Any = None
-    event_type: str = None
+    event_type: tp.Optional[str] = None
 
     def __init__(self, c_ev: Any, event_type: str) -> None:
         """
@@ -120,7 +121,9 @@ class Event:
             mouse event.
         """
         if self.is_mouse():
-            return button_name(self.button())
+            button = self.button()
+            assert button is not None, 'button should not be None'
+            return button_name(button)
 
     def pos(self) -> Optional[Tuple[float, float]]:
         """
@@ -211,7 +214,9 @@ class Event:
             The name of the key, or None if not a keyboard event.
         """
         if self.is_keyboard():
-            return key_name(self.key())
+            key_code = self.key()
+            assert key_code is not None, 'key_code should not be None'
+            return key_name(key_code)
 
     # Timer
     # ---------------------------------------------------------------------------------------------

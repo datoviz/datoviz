@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 from typing import Tuple
+import typing as tp
 
 from . import _ctypes as dvz
 
@@ -31,10 +32,10 @@ class Panzoom:
         The panel to which the panzoom interactivity is attached.
     """
 
-    c_panzoom: dvz.DvzPanzoom = None
-    c_panel: dvz.DvzPanel = None
+    c_panzoom: tp.Optional[dvz.DvzPanzoom] = None
+    c_panel: tp.Optional[dvz.DvzPanel] = None
 
-    def __init__(self, c_panzoom: dvz.DvzPanzoom, c_panel: dvz.DvzPanel = None) -> None:
+    def __init__(self, c_panzoom: dvz.DvzPanzoom, c_panel: tp.Optional[dvz.DvzPanel] = None) -> None:
         """
         Initialize a Panzoom instance.
 
@@ -75,10 +76,10 @@ class Ortho:
         The panel to which the ortho interactivity is attached.
     """
 
-    c_ortho: dvz.DvzOrtho = None
-    c_panel: dvz.DvzPanel = None
+    c_ortho: tp.Optional[dvz.DvzOrtho] = None
+    c_panel: tp.Optional[dvz.DvzPanel] = None
 
-    def __init__(self, c_ortho: dvz.DvzOrtho, c_panel: dvz.DvzPanel = None) -> None:
+    def __init__(self, c_ortho: dvz.DvzOrtho, c_panel: tp.Optional[dvz.DvzPanel] = None) -> None:
         """
         Initialize an Ortho instance.
 
@@ -106,10 +107,10 @@ class Arcball:
         The panel to which the arcball interactivity is attached.
     """
 
-    c_arcball: dvz.DvzArcball = None
-    c_panel: dvz.DvzPanel = None
+    c_arcball: tp.Optional[dvz.DvzArcball] = None
+    c_panel: tp.Optional[dvz.DvzPanel] = None
 
-    def __init__(self, c_arcball: dvz.DvzArcball, c_panel: dvz.DvzPanel = None) -> None:
+    def __init__(self, c_arcball: dvz.DvzArcball, c_panel: tp.Optional[dvz.DvzPanel] = None) -> None:
         """
         Initialize an Arcball instance.
 
@@ -168,10 +169,10 @@ class Camera:
         The panel to which the camera interactivity is attached.
     """
 
-    c_camera: dvz.DvzCamera = None
-    c_panel: dvz.DvzPanel = None
+    c_camera: tp.Optional[dvz.DvzCamera] = None
+    c_panel: tp.Optional[dvz.DvzPanel] = None
 
-    def __init__(self, c_camera: dvz.DvzCamera, c_panel: dvz.DvzPanel = None) -> None:
+    def __init__(self, c_camera: dvz.DvzCamera, c_panel: tp.Optional[dvz.DvzPanel] = None) -> None:
         """
         Initialize a Camera instance.
 
@@ -201,9 +202,9 @@ class Camera:
 
     def set(
         self,
-        position: Tuple[float, float, float] = None,
-        lookat: Tuple[float, float, float] = None,
-        up: Tuple[float, float, float] = None,
+        position: tp.Optional[Tuple[float, float, float]] = None,
+        lookat: tp.Optional[Tuple[float, float, float]] = None,
+        up: tp.Optional[Tuple[float, float, float]] = None,
     ) -> None:
         """
         Set the camera parameters.
@@ -245,8 +246,8 @@ class Fly:
 
     """
 
-    c_fly: dvz.DvzFly = None
-    c_panel: dvz.DvzPanel = None
+    c_fly: tp.Optional[dvz.DvzFly] = None
+    c_panel: tp.Optional[dvz.DvzPanel] = None
 
     def __init__(self, c_fly, c_panel=None):
         """Initialize a fly camera controller."""

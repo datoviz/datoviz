@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+import typing as tp
 import numpy as np
 
 from . import _ctypes as dvz
@@ -35,10 +36,10 @@ class Axes:
         The underlying C panel object.
     """
 
-    c_axes: dvz.DvzAxes = None
-    c_ref: dvz.DvzRef = None
-    c_panzoom: dvz.DvzPanzoom = None
-    c_panel: dvz.DvzPanel = None
+    c_axes: tp.Optional[dvz.DvzAxes] = None
+    c_ref: tp.Optional[dvz.DvzRef] = None
+    c_panzoom: tp.Optional[dvz.DvzPanzoom] = None
+    c_panel: tp.Optional[dvz.DvzPanel] = None
 
     def __init__(
         self,
@@ -117,7 +118,7 @@ class Axes:
         xmin, xmax, ymin, ymax = xmin.value, xmax.value, ymin.value, ymax.value
         return (xmin, xmax), (ymin, ymax)
 
-    def normalize(self, x: np.ndarray, y: np.ndarray = None, z: np.ndarray = None):
+    def normalize(self, x: np.ndarray, y: tp.Optional[np.ndarray] = None, z: tp.Optional[np.ndarray] = None):
         """
         Normalize input coordinates to a standard range.
 
