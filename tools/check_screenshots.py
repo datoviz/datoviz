@@ -1,10 +1,10 @@
 import os
-import subprocess
 import sys
 from pathlib import Path
 import typing as tp
 import skimage.io
 import numpy as np
+import typing as tp 
 
 from tqdm import tqdm
 
@@ -47,7 +47,7 @@ def check_screenshots(filter=None) -> int:
 
         # structural similarity index to compare images perceptually - score between -1.0 and 1.0
         score_np = skimage.metrics.structural_similarity(expected_image, generated_image, channel_axis=2)
-        score = float(score_np)
+        score = float(tp.cast(np.float64, score_np))
 
         # tolerance threshold - 1.0 is exact match
         # Make this number less than 1.0 to allow for minor differences due to compression, etc.
