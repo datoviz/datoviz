@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 from typing import Tuple
+import typing as tp
 
 import numpy as np
 
@@ -33,12 +34,13 @@ class Texture:
         The underlying C app object.
     """
 
-    c_texture: dvz.DvzTexture = None
-    c_batch: dvz.DvzApp = None
-    ndim: int = None
+    c_texture: tp.Optional[dvz.DvzTexture] = None
+    c_batch: tp.Optional[dvz.DvzApp] = None
+    ndim: tp.Optional[int] = None
+
 
     def __init__(
-        self, c_texture: dvz.DvzTexture, c_batch: dvz.DvzApp = None, ndim: int = None
+        self, c_texture: dvz.DvzTexture, c_batch: tp.Optional[dvz.DvzApp] = None, ndim: tp.Optional[int] = None
     ) -> None:
         """
         Initialize a Texture instance.
@@ -57,7 +59,7 @@ class Texture:
         self.c_batch = c_batch
         self.ndim = ndim
 
-    def data(self, image: np.ndarray, offset: Tuple[int, int, int] = None):
+    def data(self, image: np.ndarray, offset: tp.Optional[Tuple[int, int, int]] = None):
         """
         Upload an image to the texture with an optional offset.
 
