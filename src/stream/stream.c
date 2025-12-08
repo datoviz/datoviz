@@ -32,6 +32,7 @@ struct DvzStream
     bool started;
     DvzStreamFrame frame;
     bool frame_valid;
+    DvzStreamSinkRegistry* sink_registry;
 };
 
 
@@ -147,14 +148,25 @@ DvzStreamConfig dvz_stream_default_config(void)
 
 
 
-DvzStream* dvz_stream_create(DvzDevice* device, const DvzStreamConfig* cfg)
+/**
+ * Allocate a stream tied to a Vulkan device and the requested configuration.
+ *
+ * @param device the device that owns the stream (may be NULL if not required)
+ * @param sink_registry registry that holds available sink backends
+ * @param cfg optional configuration, falls back to the default when NULL
+ * @returns a new stream handle or NULL when allocation fails
+ */
+DvzStream* dvz_stream_create(
+    DvzDevice* device, DvzStreamSinkRegistry* sink_registry, const DvzStreamConfig* cfg)
 {
+    ANN(sink_registry);
     DvzStream* stream = (DvzStream*)dvz_calloc(1, sizeof(DvzStream));
     ANN(stream);
     stream->device = device;
     stream->cfg = cfg ? *cfg : dvz_stream_default_config();
     stream_reset_frame(&stream->frame);
     stream->frame_valid = false;
+    stream->sink_registry = sink_registry;
     return stream;
 }
 
@@ -215,7 +227,10 @@ int dvz_stream_attach_sink(
 
 int dvz_stream_attach_sink_name(DvzStream* stream, const char* backend_name, const void* config)
 {
-    const DvzStreamSinkBackend* backend = dvz_stream_sink_pick(backend_name, config);
+    ANN(stream);
+    ANN(stream->sink_registry);
+    const DvzStreamSinkBackend* backend =
+        dvz_stream_sink_registry_pick(stream->sink_registry, backend_name, config);
     if (!backend)
     {
         log_error("frame sink backend '%s' not found", backend_name ? backend_name : "auto");

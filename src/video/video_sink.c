@@ -287,12 +287,13 @@ DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void)
 
 
 /**
- * Register and return the video sink backend descriptor.
+ * Return the video sink backend descriptor.
  *
- * @returns pointer to the registered `sink.video` backend
+ * @returns pointer to the `sink.video` backend
  */
 DVZ_EXPORT const DvzStreamSinkBackend* dvz_stream_sink_video(void)
 {
-    dvz_stream_register_sink(&DVZ_STREAM_SINK_VIDEO);
+    dvz_stream_sink_registry_register(
+        dvz_stream_sink_registry_default(), &DVZ_STREAM_SINK_VIDEO);
     return &DVZ_STREAM_SINK_VIDEO;
 }

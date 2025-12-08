@@ -28,21 +28,16 @@
 
 static void canvas_register_swapchain_sink(void)
 {
-    static bool registered = false;
-    if (registered)
-    {
-        return;
-    }
     const DvzStreamSinkBackend* backend = dvz_canvas_swapchain_sink_backend();
     if (backend)
     {
-        dvz_stream_register_sink(backend);
+        dvz_stream_sink_registry_register(
+            dvz_stream_sink_registry_default(), backend);
     }
     else
     {
         log_warn("swapchain sink backend unavailable");
     }
-    registered = true;
 }
 
 
@@ -152,6 +147,8 @@ int dvz_canvas_stream_enable_video(
         {
             return 0;
         }
+        dvz_stream_sink_registry_register(
+            dvz_stream_sink_registry_default(), dvz_stream_sink_video());
         if (canvas->stream_started)
         {
             log_error("cannot enable video sink after canvas stream start");

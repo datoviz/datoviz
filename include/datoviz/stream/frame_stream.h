@@ -35,6 +35,7 @@ typedef struct DvzDevice DvzDevice;
 typedef struct DvzStream DvzStream;
 typedef struct DvzStreamSinkBackend DvzStreamSinkBackend;
 typedef struct DvzStreamSink DvzStreamSink;
+typedef struct DvzStreamSinkRegistry DvzStreamSinkRegistry;
 
 
 

@@ -26,7 +26,10 @@ int test_stream_attach_video(TstSuite* suite, TstItem* item)
     ANN(suite);
 
     DvzStreamConfig cfg = dvz_stream_default_config();
-    DvzStream* stream = dvz_stream_create(NULL, &cfg);
+    dvz_stream_sink_registry_register(
+        dvz_stream_sink_registry_default(), dvz_stream_sink_video());
+    DvzStream* stream =
+        dvz_stream_create(NULL, dvz_stream_sink_registry_default(), &cfg);
     AT(stream != NULL);
 
     DvzVideoSinkConfig vc = dvz_video_sink_default_config();

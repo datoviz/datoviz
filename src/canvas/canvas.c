@@ -407,6 +407,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->video_sink_enabled = false;
     canvas->stream_started = false;
     canvas->swapchain_sink_attached = false;
+
     if (!canvas_device_check_extensions(canvas))
     {
         log_error("canvas device missing required extensions");
@@ -422,7 +423,8 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
 
     dvz_canvas_window_surface_refresh(canvas);
     DvzStreamConfig stream_cfg = canvas_stream_config(canvas);
-    canvas->stream = dvz_stream_create(canvas->device, &stream_cfg);
+    canvas->stream = dvz_stream_create(
+        canvas->device, dvz_stream_sink_registry_default(), &stream_cfg);
     if (!canvas->stream)
     {
         log_error("failed to allocate stream for canvas");

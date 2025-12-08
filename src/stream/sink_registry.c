@@ -18,63 +18,70 @@
 #include "datoviz/common/macros.h"
 
 
-
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-// Stream sink registry.
-typedef struct
+struct DvzStreamSinkRegistry
 {
     const DvzStreamSinkBackend** items;
     size_t count;
     size_t capacity;
-} DvzStreamSinkRegistry;
+};
 
-static DvzStreamSinkRegistry g_sink_registry = {0};
 
+static DvzStreamSinkRegistry* g_stream_sink_registry = NULL;
+
+
+static DvzStreamSinkRegistry* stream_sink_registry_global(void)
+{
+    if (g_stream_sink_registry == NULL)
+    {
+        g_stream_sink_registry = dvz_stream_sink_registry_create();
+    }
+    return g_stream_sink_registry;
+}
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void stream_registry_reserve(size_t capacity)
+static void stream_registry_reserve(DvzStreamSinkRegistry* registry, size_t capacity)
 {
-    if (g_sink_registry.capacity >= capacity)
+    if (!registry || registry->capacity >= capacity)
     {
         return;
     }
-    size_t new_cap = g_sink_registry.capacity == 0 ? 4 : g_sink_registry.capacity;
+    size_t new_cap = (registry->capacity == 0) ? 4 : registry->capacity;
     while (new_cap < capacity)
     {
         new_cap *= 2;
     }
     const DvzStreamSinkBackend** ptr =
-        (const DvzStreamSinkBackend**)dvz_realloc(g_sink_registry.items, new_cap * sizeof(*ptr));
+        (const DvzStreamSinkBackend**)dvz_realloc(registry->items, new_cap * sizeof(*ptr));
     if (!ptr)
     {
         log_error("failed to resize stream sink registry");
         return;
     }
     dvz_memset(
-        ptr + g_sink_registry.capacity, (new_cap - g_sink_registry.capacity) * sizeof(*ptr), 0,
-        (new_cap - g_sink_registry.capacity) * sizeof(*ptr));
-    g_sink_registry.items = ptr;
-    g_sink_registry.capacity = new_cap;
+        ptr + registry->capacity, (new_cap - registry->capacity) * sizeof(*ptr), 0,
+        (new_cap - registry->capacity) * sizeof(*ptr));
+    registry->items = ptr;
+    registry->capacity = new_cap;
 }
 
 
-
-static bool stream_sink_registered(const char* name)
+static bool stream_sink_registered(DvzStreamSinkRegistry* registry, const char* name)
 {
-    if (!name)
+    if (!registry || !name)
     {
         return false;
     }
-    for (size_t i = 0; i < g_sink_registry.count; ++i)
+    for (size_t i = 0; i < registry->count; ++i)
     {
-        const DvzStreamSinkBackend* backend = g_sink_registry.items[i];
+        const DvzStreamSinkBackend* backend = registry->items[i];
         if (backend && backend->name && strcmp(backend->name, name) == 0)
         {
             return true;
@@ -84,36 +91,111 @@ static bool stream_sink_registered(const char* name)
 }
 
 
-
 /*************************************************************************************************/
 /*  API                                                                                          */
 /*************************************************************************************************/
 
-void dvz_stream_register_sink(const DvzStreamSinkBackend* backend)
+/**
+ * Allocate a stream sink registry instance.
+ *
+ * @returns allocated registry or NULL on failure
+ */
+DVZ_EXPORT DvzStreamSinkRegistry* dvz_stream_sink_registry_create(void)
 {
-    if (!backend || !backend->name || backend->name[0] == '\0')
+    DvzStreamSinkRegistry* registry =
+        (DvzStreamSinkRegistry*)dvz_calloc(1, sizeof(DvzStreamSinkRegistry));
+    if (!registry)
+    {
+        log_error("failed to allocate stream sink registry");
+        return NULL;
+    }
+    return registry;
+}
+
+
+/**
+ * Destroy a stream sink registry and free its internal storage.
+ *
+ * @param registry registry to destroy (NULL-safe)
+ */
+DVZ_EXPORT void dvz_stream_sink_registry_destroy(DvzStreamSinkRegistry* registry)
+{
+    if (!registry)
     {
         return;
     }
-    if (stream_sink_registered(backend->name))
+    dvz_free(registry->items);
+    dvz_free(registry);
+}
+
+
+/**
+ * Return the shared, lazily initialized sink registry.
+ *
+ * @returns global registry instance (may be NULL if allocation failed)
+ */
+DVZ_EXPORT DvzStreamSinkRegistry* dvz_stream_sink_registry_default(void)
+{
+    return stream_sink_registry_global();
+}
+
+
+/**
+ * Destroy the shared registry created by dvz_stream_sink_registry_default().
+ *
+ * @note Only use when tearing down the global state (tests, etc.).
+ */
+DVZ_EXPORT void dvz_stream_sink_registry_default_destroy(void)
+{
+    if (!g_stream_sink_registry)
     {
         return;
     }
-    stream_registry_reserve(g_sink_registry.count + 1);
-    g_sink_registry.items[g_sink_registry.count++] = backend;
+    dvz_stream_sink_registry_destroy(g_stream_sink_registry);
+    g_stream_sink_registry = NULL;
 }
 
 
 
-const DvzStreamSinkBackend* dvz_stream_sink_find(const char* name)
+/**
+ * Register a sink backend for later attachment by name or automatic selection.
+ *
+ * @param registry registry that owns the backend database
+ * @param backend backend descriptor with callbacks and a unique name
+ */
+DVZ_EXPORT void dvz_stream_sink_registry_register(
+    DvzStreamSinkRegistry* registry, const DvzStreamSinkBackend* backend)
 {
-    if (!name || name[0] == '\0')
+    if (!registry || !backend || !backend->name || backend->name[0] == '\0')
+    {
+        return;
+    }
+    if (stream_sink_registered(registry, backend->name))
+    {
+        return;
+    }
+    stream_registry_reserve(registry, registry->count + 1);
+    registry->items[registry->count++] = backend;
+}
+
+
+/**
+ * Find a registered sink backend by name.
+ *
+ * @param registry registry to query
+ * @param name backend name to look up
+ * @returns the backend descriptor or NULL when no match is found
+ */
+DVZ_EXPORT const DvzStreamSinkBackend* dvz_stream_sink_registry_find(
+    DvzStreamSinkRegistry* registry, const char* name)
+{
+    if (!registry || !name || name[0] == '\0')
     {
         return NULL;
     }
-    for (size_t i = 0; i < g_sink_registry.count; ++i)
+    for (size_t i = 0; i < registry->count; ++i)
     {
-        const DvzStreamSinkBackend* backend = g_sink_registry.items[i];
+        const DvzStreamSinkBackend* backend = registry->items[i];
         if (backend && backend->name && strcmp(backend->name, name) == 0)
         {
             return backend;
@@ -123,14 +205,29 @@ const DvzStreamSinkBackend* dvz_stream_sink_find(const char* name)
 }
 
 
-
-const DvzStreamSinkBackend* dvz_stream_sink_pick(const char* name, const void* config)
+/**
+ * Pick a sink backend by name or probe registered backends automatically.
+ *
+ * @param registry registry to query
+ * @param name requested backend name, "auto", or NULL for automatic selection
+ * @param config configuration forwarded to the backend probe callbacks
+ * @returns the selected backend or NULL when none are available
+ */
+DVZ_EXPORT const DvzStreamSinkBackend*
+dvz_stream_sink_registry_pick(
+    DvzStreamSinkRegistry* registry, const char* name, const void* config)
 {
+    if (!registry)
+    {
+        return NULL;
+    }
+
     bool auto_pick = (name == NULL) || (strcmp(name, "auto") == 0);
 
     if (!auto_pick)
     {
-        const DvzStreamSinkBackend* backend = dvz_stream_sink_find(name);
+        const DvzStreamSinkBackend* backend =
+            dvz_stream_sink_registry_find(registry, name);
         if (backend)
         {
             if (!backend->probe || backend->probe(config))
@@ -144,9 +241,9 @@ const DvzStreamSinkBackend* dvz_stream_sink_pick(const char* name, const void* c
 
     if (auto_pick)
     {
-        for (size_t i = 0; i < g_sink_registry.count; ++i)
+        for (size_t i = 0; i < registry->count; ++i)
         {
-            const DvzStreamSinkBackend* backend = g_sink_registry.items[i];
+            const DvzStreamSinkBackend* backend = registry->items[i];
             if (!backend)
             {
                 continue;
