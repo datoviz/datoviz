@@ -51,16 +51,14 @@ static void stream_registry_reserve(size_t capacity)
         new_cap *= 2;
     }
     const DvzStreamSinkBackend** ptr =
-        (const DvzStreamSinkBackend**)realloc(g_sink_registry.items, new_cap * sizeof(*ptr));
+        (const DvzStreamSinkBackend**)dvz_realloc(g_sink_registry.items, new_cap * sizeof(*ptr));
     if (!ptr)
     {
         log_error("failed to resize stream sink registry");
         return;
     }
     dvz_memset(
-        ptr + g_sink_registry.capacity,
-        (new_cap - g_sink_registry.capacity) * sizeof(*ptr),
-        0,
+        ptr + g_sink_registry.capacity, (new_cap - g_sink_registry.capacity) * sizeof(*ptr), 0,
         (new_cap - g_sink_registry.capacity) * sizeof(*ptr));
     g_sink_registry.items = ptr;
     g_sink_registry.capacity = new_cap;

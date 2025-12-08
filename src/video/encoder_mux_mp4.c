@@ -157,7 +157,7 @@ void dvz_video_encoder_record_sample(
     {
         size_t new_cap = enc->mux_sample_capacity == 0 ? 128 : enc->mux_sample_capacity * 2;
         DvzMuxSample* samples =
-            (DvzMuxSample*)realloc(enc->mux_samples, new_cap * sizeof(DvzMuxSample));
+            (DvzMuxSample*)dvz_realloc(enc->mux_samples, new_cap * sizeof(DvzMuxSample));
         if (!samples)
         {
             log_error("failed to grow mux sample buffer");
@@ -211,7 +211,7 @@ int dvz_video_encoder_mux_post(DvzVideoEncoder* enc)
         }
         if (sample.size > buffer_size)
         {
-            uint8_t* new_buf = (uint8_t*)realloc(buffer, sample.size);
+            uint8_t* new_buf = (uint8_t*)dvz_realloc(buffer, sample.size);
             if (!new_buf)
             {
                 log_error("failed to grow mux scratch buffer");

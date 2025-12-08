@@ -19,10 +19,10 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "datoviz/color/types.h"
 #include "datoviz/math/mock.h"
 #include "datoviz/math/rand.h"
 #include "datoviz/math/types.h"
-#include "datoviz/color/types.h"
 
 
 
@@ -236,7 +236,7 @@ DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono)
 // DvzColor* dvz_mock_cmap(uint32_t count, DvzColormap cmap, DvzAlpha alpha)
 // {
 //     ASSERT(count > 0);
-//     DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
+//     DvzColor* color = (DvzColor*)dvz_calloc(count, sizeof(DvzColor));
 //     for (uint32_t i = 0; i < count; i++)
 //     {
 //         dvz_colormap_scale(cmap, i, 0, count, color[i]);

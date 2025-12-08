@@ -80,7 +80,7 @@ static DvzStreamSink* stream_sink_slot(DvzStream* stream)
     {
         size_t new_cap = stream->sink_capacity == 0 ? 2 : stream->sink_capacity * 2;
         DvzStreamSink* sinks =
-            (DvzStreamSink*)realloc(stream->sinks, new_cap * sizeof(DvzStreamSink));
+            (DvzStreamSink*)dvz_realloc(stream->sinks, new_cap * sizeof(DvzStreamSink));
         if (!sinks)
         {
             log_error("failed to grow frame sink array");
@@ -88,8 +88,7 @@ static DvzStreamSink* stream_sink_slot(DvzStream* stream)
         }
         dvz_memset(
             sinks + stream->sink_capacity,
-            (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink),
-            0,
+            (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink), 0,
             (new_cap - stream->sink_capacity) * sizeof(DvzStreamSink));
         stream->sinks = sinks;
         stream->sink_capacity = new_cap;
