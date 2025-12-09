@@ -358,6 +358,9 @@ DvzAlpha = ctypes.c_uint8
 # ===============================================================================
 
 DVZ_DEFAULT_FORMAT = 44
+DVZ_CAMERA_DEFAULT_ZRANGE = 0.1
+DVZ_SCENE_DEFAULT_TEX_ID = 1
+DVZ_SCENE_DEFAULT_SAMPLER_ID = 2
 DVZ_BUFFER_TYPE_COUNT = 6
 CMAP_NAT = 144
 CMAP_USR_OFS = 144
@@ -392,7 +395,7 @@ KB = 1024
 DVZ_REQUEST_VERSION = 1
 DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 3
-DVZ_VERSION_PATCH = 2
+DVZ_VERSION_PATCH = 3
 
 
 # ===============================================================================
