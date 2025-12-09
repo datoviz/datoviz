@@ -3211,6 +3211,54 @@ scene_run.argtypes = [
 
 
 # -------------------------------------------------------------------------------------------------
+scene_step = dvz.dvz_scene_step
+scene_step.__doc__ = """
+Run a single non-blocking iteration of the scene event loop.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+app : DvzApp*
+    the app
+
+Returns
+-------
+result : bool
+     true if the scene is still running, false otherwise
+"""
+scene_step.argtypes = [
+    ctypes.POINTER(DvzScene),  # DvzScene* scene
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+scene_step.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+scene_is_running = dvz.dvz_scene_is_running
+scene_is_running.__doc__ = """
+Check whether the scene is currently running.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+app : DvzApp*
+    the app
+
+Returns
+-------
+result : bool
+     true if the scene is running, false otherwise
+"""
+scene_is_running.argtypes = [
+    ctypes.POINTER(DvzScene),  # DvzScene* scene
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+scene_is_running.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
 scene_mouse = dvz.dvz_scene_mouse
 scene_mouse.__doc__ = """
 Manually pass a mouse event to the scene.
@@ -8745,6 +8793,48 @@ app_run.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     ctypes.c_uint64,  # uint64_t frame_count
 ]
+
+
+# -------------------------------------------------------------------------------------------------
+app_step = dvz.dvz_app_step
+app_step.__doc__ = """
+Run one non-blocking iteration of the application event loop.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+
+Returns
+-------
+result : bool
+     true if the application is still running, false otherwise
+"""
+app_step.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+app_step.restype = ctypes.c_bool
+
+
+# -------------------------------------------------------------------------------------------------
+app_is_running = dvz.dvz_app_is_running
+app_is_running.__doc__ = """
+Return whether the application event loop is running.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+
+Returns
+-------
+result : bool
+     true if running, false otherwise
+"""
+app_is_running.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+app_is_running.restype = ctypes.c_bool
 
 
 # -------------------------------------------------------------------------------------------------

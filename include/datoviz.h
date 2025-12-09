@@ -314,6 +314,28 @@ DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count
 
 
 /**
+ * Run a single non-blocking iteration of the scene event loop.
+ *
+ * @param scene the scene
+ * @param app the app
+ * @returns true if the scene is still running, false otherwise
+ */
+DVZ_EXPORT bool dvz_scene_step(DvzScene* scene, DvzApp* app);
+
+
+
+/**
+ * Check whether the scene is currently running.
+ *
+ * @param scene the scene
+ * @param app the app
+ * @returns true if the scene is running, false otherwise
+ */
+DVZ_EXPORT bool dvz_scene_is_running(DvzScene* scene, DvzApp* app);
+
+
+
+/**
  * Manually pass a mouse event to the scene.
  *
  * @param scene the scene

@@ -77,6 +77,7 @@ struct DvzApp
     DvzBatch* batch;
     DvzTimer* timer;
     DvzList* payloads;
+    bool has_started;
     bool is_running;
 
     // Offscreen GUI.

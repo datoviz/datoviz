@@ -1819,11 +1819,10 @@ static void _scene_on_keyboard(DvzApp* app, DvzId window_id, DvzKeyboardEvent* e
 
 
 
-void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
+static void _scene_prepare(DvzScene* scene, DvzApp* app)
 {
     ANN(scene);
     ANN(app);
-
     // HACK: so that callbacks below have access to the app to submit to the presenter.
     // TODO: remove, no longer needed
     scene->app = app;
@@ -1881,9 +1880,31 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
             }
         }
     }
+}
 
-    // Run the app.
+
+
+void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
+{
+    _scene_prepare(scene, app);
     dvz_app_run(app, frame_count);
+}
+
+
+
+bool dvz_scene_step(DvzScene* scene, DvzApp* app)
+{
+    _scene_prepare(scene, app);
+    return dvz_app_step(app);
+}
+
+
+
+bool dvz_scene_is_running(DvzScene* scene, DvzApp* app)
+{
+    ANN(scene);
+    ANN(app);
+    return dvz_app_is_running(app);
 }
 
 

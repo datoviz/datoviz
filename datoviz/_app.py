@@ -7,9 +7,8 @@ SPDX-License-Identifier: MIT
 # App
 
 # -------------------------------------------------------------------------------------------------
-# Imports
-# -------------------------------------------------------------------------------------------------
-
+import ctypes
+import functools
 import typing as tp
 from typing import Tuple, Union
 
@@ -23,6 +22,37 @@ from ._figure import Figure
 from ._texture import Texture
 from .shape_collection import ShapeCollection
 from .utils import dtype_to_format, image_flags, mesh_flags, sphere_flags, to_enum
+
+
+@functools.lru_cache(None)
+def _scene_step_fn():
+    fn = getattr(dvz.dvz, 'dvz_scene_step', None)
+    if fn is None:
+        raise RuntimeError('dvz_scene_step is missing, rebuild the datoviz library.')
+    fn.argtypes = [ctypes.POINTER(dvz.DvzScene), ctypes.POINTER(dvz.DvzApp)]
+    fn.restype = ctypes.c_bool
+    return fn
+
+
+@functools.lru_cache(None)
+def _app_step_fn():
+    fn = getattr(dvz.dvz, 'dvz_app_step', None)
+    if fn is None:
+        raise RuntimeError('dvz_app_step is missing, rebuild the datoviz library.')
+    fn.argtypes = [ctypes.POINTER(dvz.DvzApp)]
+    fn.restype = ctypes.c_bool
+    return fn
+
+
+@functools.lru_cache(None)
+def _app_is_running_fn():
+    fn = getattr(dvz.dvz, 'dvz_app_is_running', None)
+    if fn is None:
+        raise RuntimeError('dvz_app_is_running is missing, rebuild the datoviz library.')
+    fn.argtypes = [ctypes.POINTER(dvz.DvzApp)]
+    fn.restype = ctypes.c_bool
+    return fn
+
 
 # -------------------------------------------------------------------------------------------------
 # App
@@ -137,6 +167,38 @@ class App:
             Number of frames to run. 0 for infinite, by default 0.
         """
         dvz.scene_run(self.c_scene, self.c_app, frame_count)
+
+    def step(self) -> bool:
+        """
+        Run a single non-blocking iteration of the event loop.
+
+        Returns
+        -------
+        bool
+            True if the scene is still running, False otherwise.
+        """
+        if self.c_scene is None or self.c_app is None:
+            return False
+        return bool(_scene_step_fn()(self.c_scene, self.c_app))
+
+    def is_running(self) -> bool:
+        """
+        Return whether the event loop is currently running.
+        """
+        if self.c_app is None:
+            return False
+        return bool(_app_is_running_fn()(self.c_app))
+
+    def enable_ipython(self) -> None:
+        """
+        Enable IPython inputhook integration for this app.
+
+        This automatically calls `%gui datoviz` when running inside IPython and kicks the event
+        loop once so the window opens immediately. In a plain Python shell this is a no-op.
+        """
+        from . import ipython as dvz_ipy
+
+        dvz_ipy.enable(self)
 
     def screenshot(self, figure: Figure, png_path: str) -> None:
         """

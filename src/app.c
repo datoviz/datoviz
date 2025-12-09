@@ -270,6 +270,25 @@ void dvz_app_frame(DvzApp* app)
 
 
 
+static void _app_start(DvzApp* app)
+{
+    ANN(app);
+    if (app->client == NULL)
+        return;
+
+    if (!app->has_started)
+    {
+        // Emit a window init event once.
+        dvz_client_event(app->client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_INIT});
+        app->has_started = true;
+    }
+
+    // Submit all pending requests before running frames.
+    dvz_app_submit(app);
+}
+
+
+
 void dvz_app_on_frame(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
 {
     ANN(app);
@@ -509,12 +528,8 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
         ANN(app->prt->rd);
         ANN(app->prt->rd->ctx);
 
-        // Emit a window init event.
-        dvz_client_event(app->client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_INIT});
-
-        // Submit all pending requests that were emitted during the initialization of the
-        // application, before calling dvz_app_run().
-        dvz_app_submit(app);
+        // Perform one-time startup work.
+        _app_start(app);
 
         // Start the event loop.
         app->is_running = true;
@@ -552,10 +567,58 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
             if (capture != NULL)
             {
-                dvz_app_screenshot(app, canvas_id, capture);
+        dvz_app_screenshot(app, canvas_id, capture);
             }
         }
     }
+}
+
+
+
+bool dvz_app_step(DvzApp* app)
+{
+    ANN(app);
+    ANN(app->host);
+
+    if (app->client == NULL)
+        return false;
+
+    ANN(app->prt);
+    ANN(app->prt->rd);
+    ANN(app->prt->rd->ctx);
+
+    // Perform one-time startup work.
+    _app_start(app);
+
+    // Run a single frame.
+    int window_count = dvz_client_frame(app->client);
+
+    bool requested_stop = dvz_atomic_get(app->client->to_stop) == 1;
+
+    if (requested_stop)
+    {
+        dvz_client_stop(app->client);
+        app->is_running = false;
+        dvz_context_wait(app->prt->rd->ctx);
+        return false;
+    }
+
+    if (window_count == 0)
+    {
+        app->is_running = false;
+        return true;
+    }
+
+    app->is_running = true;
+    return true;
+}
+
+
+
+bool dvz_app_is_running(DvzApp* app)
+{
+    ANN(app);
+    return app->is_running;
 }
 
 

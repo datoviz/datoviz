@@ -179,6 +179,26 @@ DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t frame_count);
 
 
 /**
+ * Run one non-blocking iteration of the application event loop.
+ *
+ * @param app the app
+ * @returns true if the application is still running, false otherwise
+ */
+DVZ_EXPORT bool dvz_app_step(DvzApp* app);
+
+
+
+/**
+ * Return whether the application event loop is running.
+ *
+ * @param app the app
+ * @returns true if running, false otherwise
+ */
+DVZ_EXPORT bool dvz_app_is_running(DvzApp* app);
+
+
+
+/**
  * Submit the current batch to the application.
  *
  * @param app the app
