@@ -150,3 +150,24 @@ pos = camera.position()
 Each mode provides access to its state (e.g. position, rotation) and can be reset or manually adjusted.
 
 More interactive features and fine-grained control will be added in future versions.
+
+---
+
+## IPython integration (terminal)
+
+Datoviz can keep windows responsive while you stay at the IPython prompt. Call `app.enable_ipython()` after creating your scene; it registers `%gui datoviz` and hands the event loop over to IPython.
+
+```python
+import datoviz as dvz
+app = dvz.App(background='white')
+fig = app.figure(800, 600)
+panel = fig.panel()
+# build visuals here
+app.enable_ipython()  # non-blocking in IPython; no-op otherwise
+```
+
+Usage tips:
+
+- Start with `ipython -i examples/features/ipython_integration.py`.
+- The script exposes helpers (e.g., `jitter_points()`, `recolor()`) so you can update visuals live.
+- `%gui datoviz` runs under the hood; the window stays responsive while you type at the prompt.

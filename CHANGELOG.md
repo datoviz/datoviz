@@ -10,6 +10,11 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * Integration with other GPU APIs such as CUDA/CuPy.
 
 
+## v0.3.3 (?) [UNRELEASED, DEVELOPMENT]
+
+* IPython terminal integration via `%gui datoviz` and `App.enable_ipython()`, plus a new interactive example (`examples/features/ipython_integration.py`).
+
+
 ## v0.3.2 (2025-10-16) [LATEST]
 
 ### Backends
