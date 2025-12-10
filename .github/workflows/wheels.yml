@@ -231,7 +231,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   wheel-macosx_x86_64:
-    runs-on: macos-13
+    runs-on: macos-15-intel
 
     # Skip nightly build if there was no new commit on dev since last nightly build.
     needs: check-if-needed
