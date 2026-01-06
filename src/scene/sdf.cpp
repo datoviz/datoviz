@@ -83,7 +83,7 @@ float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
     uint32_t w = width;
     uint32_t h = height;
 
-#if (HAS_MSDF && !MSDFGEN_DISABLE_SVG)
+#if (HAS_MSDF && !defined(MSDFGEN_DISABLE_SVG))
     // Build the Shape.
     Shape shape;
     buildShapeFromSvgPath(shape, svg_path);
@@ -118,7 +118,7 @@ float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
     uint32_t w = width;
     uint32_t h = height;
 
-#if (HAS_MSDF && !MSDFGEN_DISABLE_SVG)
+#if (HAS_MSDF && !defined(MSDFGEN_DISABLE_SVG))
     // Build the Shape.
     Shape shape;
     buildShapeFromSvgPath(shape, svg_path);
