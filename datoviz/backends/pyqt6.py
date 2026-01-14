@@ -7,6 +7,7 @@ PyQt6 backend
 # -------------------------------------------------------------------------------------------------
 
 import ctypes
+import typing as tp
 
 try:
     from PyQt6.QtCore import Qt
@@ -153,10 +154,20 @@ class QtFigure(Figure, QWidget):
 # Qt offscreen server
 # -------------------------------------------------------------------------------------------------
 
+        # HACK: this will change in the next version
+        if background == 'white':
+            c_flags |= dvz.APP_FLAGS_WHITE_BACKGROUND
+
 
 class QtServer(dvz.App):
-    def __init__(self):
-        self.c_server = dvz.server(0)
+    def __init__(self, background: tp.Optional[str] = None, c_flags: int = 0):
+
+        # HACK: this will change in the next version
+        if background == 'white':
+            c_flags |= dvz.APP_FLAGS_WHITE_BACKGROUND
+
+        self.c_server = dvz.server(c_flags)
+
         self.c_scene = dvz.scene(None)
         self.c_batch = dvz.scene_batch(self.c_scene)
 
