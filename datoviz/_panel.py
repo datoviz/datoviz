@@ -78,8 +78,31 @@ class Panel:
         self._figure = figure
         assert figure is not None, "You need to provide a figure when creating a panel."
         self._app = figure._app
+        self._layered: tp.Dict[int, tp.List[Visual]] = {}
+        self._visual_layer: tp.Dict[Visual, int] = {}
+        self._draw_list: tp.List[Visual] = []
+        self._last_layer_key: tp.Optional[int] = None
 
-    def add(self, visual: Visual) -> None:
+    def _layer_keys(self) -> tp.List[int]:
+        keys = sorted(self._layered.keys())
+        if -1 in keys:
+            keys = [key for key in keys if key != -1] + [-1]
+        return keys
+
+    def _rebuild(self) -> None:
+        for visual in list(self._draw_list):
+            dvz.panel_remove(self.c_panel, visual.c_visual)
+        self._draw_list.clear()
+
+        keys = self._layer_keys()
+        for layer in keys:
+            for visual in self._layered[layer]:
+                dvz.panel_visual(self.c_panel, visual.c_visual, 0)
+                self._draw_list.append(visual)
+
+        self._last_layer_key = keys[-1] if keys else None
+
+    def add(self, visual: Visual, layer: int = 0) -> None:
         """
         Add a visual to the panel.
 
@@ -87,9 +110,23 @@ class Panel:
         ----------
         visual : Visual
             The visual to add.
+        layer : int, optional
+            Layer index for draw order. Lower layers are drawn first. Layer -1 is always last.
         """
         assert visual
-        dvz.panel_visual(self.c_panel, visual.c_visual, 0)
+        self._visual_layer[visual] = layer
+        self._layered.setdefault(layer, []).append(visual)
+
+        keys = self._layer_keys()
+        last_layer = keys[-1] if keys else None
+
+        if layer == last_layer:
+            dvz.panel_visual(self.c_panel, visual.c_visual, 0)
+            self._draw_list.append(visual)
+            self._last_layer_key = last_layer
+            return
+
+        self._rebuild()
 
     def remove(self, visual: Visual) -> None:
         """
@@ -101,7 +138,14 @@ class Panel:
             The visual to remove.
         """
         assert visual
+        layer = self._visual_layer.pop(visual, None)
+        if layer is not None and layer in self._layered:
+            self._layered[layer].remove(visual)
+            if not self._layered[layer]:
+                del self._layered[layer]
         dvz.panel_remove(self.c_panel, visual.c_visual)
+        if visual in self._draw_list:
+            self._draw_list.remove(visual)
 
     def update(self) -> None:
         """
