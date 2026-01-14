@@ -870,7 +870,7 @@ ctypes:
 #
 
 pytest:
-    @pytest tests.py
+    @sh -c 'if command -v uv >/dev/null 2>&1; then uv run pytest tests.py; else pytest tests.py; fi'
 #
 
 
