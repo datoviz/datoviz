@@ -96,6 +96,12 @@ lint.ignore = [
 [tool.ruff.lint.per-file-ignores]
 "examples/*.py" = ["D103"]
 
+[dependency-groups]
+dev = [
+    "pyparsing>=3.1.4",
+    "tqdm>=4.67.1",
+]
+
 #    "F",      # TODO: enable Pyflakes rules
 #    "C408",   # Unnecessary `dict()` call (rewrite as a literal)
 #    "PIE790", # Unnecessary `pass` statement
