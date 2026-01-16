@@ -235,7 +235,8 @@ jobs:
 
     # Skip nightly build if there was no new commit on dev since last nightly build.
     needs: check-if-needed
-    if: ${{ needs.check-if-needed.outputs.should_run == 'true' }}
+    # Disabled: always skip this job.
+    if: ${{ false }}
     env:
       DVZ_NIGHTLY_TAG: ${{ needs.check-if-needed.outputs.nightly_tag }}
 
