@@ -913,7 +913,12 @@ renamewheel platform_tag='':
     TAG="cp3-none-$PLATFORM_TAG"
 
     echo "Rename $WHEELPATH"
-    python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    if command -v uvx >/dev/null 2>&1; then
+        uvx --with wheel python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    else
+        python -m pip install -q --upgrade wheel
+        python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    fi
     rm $WHEELPATH
 #
 
@@ -1000,8 +1005,15 @@ checkwheel path="":
     [ -f "{{path}}" ] && cp {{path}} $TESTDIR || cp dist/datoviz-*.whl $TESTDIR
 
     # Virtual env
-    python -m venv $TESTDIR/venv
+    if command -v uv >/dev/null 2>&1; then
+        uv venv $TESTDIR/venv
+    else
+        python -m venv $TESTDIR/venv
+    fi
     cd $TESTDIR
+    if ! $TESTDIR/venv/$BINDIR/python -m pip --version >/dev/null 2>&1; then
+        $TESTDIR/venv/$BINDIR/python -m ensurepip --upgrade
+    fi
     $TESTDIR/venv/$BINDIR/python -m pip install --isolated --upgrade pip wheel
     # NOTE: --isolated fixes the pip error 'Can not perform a '--user' install'
     $TESTDIR/venv/$BINDIR/python -m pip install --isolated $TESTDIR/datoviz-*.whl
