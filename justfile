@@ -913,11 +913,16 @@ renamewheel platform_tag='':
     TAG="cp3-none-$PLATFORM_TAG"
 
     echo "Rename $WHEELPATH"
-    if command -v uvx >/dev/null 2>&1; then
-        uvx --with wheel python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
-    else
+    if python -m wheel --version >/dev/null 2>&1; then
+        python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    elif python -m pip --version >/dev/null 2>&1; then
         python -m pip install -q --upgrade wheel
         python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    elif [ -z "${GITHUB_ACTIONS:-}" ] && command -v uvx >/dev/null 2>&1; then
+        uvx --with wheel python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    else
+        echo "wheel is not available; install python wheel or uvx." >&2
+        exit 1
     fi
     rm $WHEELPATH
 #
