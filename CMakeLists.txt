@@ -361,10 +361,8 @@ set(HAS_MSDF 0)
 if(DATOVIZ_WITH_MSDF)
     set(HAS_MSDF 1)
 
-    set(MSDFGEN_CORE_ONLY OFF)
-    set(MSDFGEN_BUILD_STANDALONE OFF)
-    set(MSDFGEN_USE_SKIA OFF)
-    set(MSDFGEN_DISABLE_SVG OFF)
+    # WARNING: msdfgen-atlas defaults MSDFGEN_DISABLE_SVG to ON, so we set this at project scope in advance
+    set(MSDFGEN_DISABLE_SVG OFF CACHE BOOL "Disable SVG functionality")
 
     set(MSDF_ATLAS_BUILD_STANDALONE OFF)
     set(MSDF_ATLAS_USE_VCPKG ${OS_WINDOWS})
