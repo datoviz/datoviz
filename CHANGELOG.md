@@ -9,13 +9,35 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * More Vulkan/graphics features: multipass rendering, antialiasing, order-independent transparency...
 * Integration with other GPU APIs such as CUDA/CuPy.
 
+## v0.3.4 (?) [UNRELEASED, DEVELOPMENT]
 
-## v0.3.3 (?) [UNRELEASED, DEVELOPMENT]
+## v0.3.3 (2026-01-XX) [LATEST]
+
+### Backends
+
+* Add white background option in experimental PyQt integration.
+
+### Python API
 
 * IPython terminal integration via `%gui datoviz` and `App.enable_ipython()`, plus a new interactive example (`examples/features/ipython_integration.py`).
+* Typing fixes by @jeromeetienne in the Python API.
+
+### Scene
+
+* Minimal layer system to control draw order.
+
+### Visuals
+
+#### Path
+
+* Fix Path visual creation with groups.
+
+### Build
+
+* Add experimental tool to automatically check generated screenshots against reference images.
 
 
-## v0.3.2 (2025-10-16) [LATEST]
+## v0.3.2 (2025-10-16)
 
 ### Backends
 
@@ -35,8 +57,8 @@ Ongoing developments planned for v0.4.0 (2026) include:
 
 ### Scene
 
-* Fix visual resizing bug ([#114](https://github.com/datoviz/datoviz/issues/114))
-* Fix viewport positioning ([#115](https://github.com/datoviz/datoviz/issues/115))
+* Fix visual resizing bug ([#114](https://github.com/datoviz/datoviz/issues/114)).
+* Fix viewport positioning ([#115](https://github.com/datoviz/datoviz/issues/115)).
 
 ### Colormaps
 
