@@ -1,6 +1,6 @@
 [submodule "data"]
 	path = data
-	url = https://github.com/datoviz/data
+	url = git@github.com:datoviz/data.git
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
