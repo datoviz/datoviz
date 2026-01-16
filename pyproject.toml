@@ -96,6 +96,12 @@ dev = [
     "pyparsing>=3.1.4",
     "pytest>=8.3.5",
     "tqdm>=4.67.1",
+    "twine>=5.1.1",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.6.12",
+    "mkdocstrings[python]>=0.29.0",
+    "mkdocs-material-extensions>=1.3.1",
+    "pymdown-extensions>=10.14.3",
 ]
 
 #    "F",      # TODO: enable Pyflakes rules

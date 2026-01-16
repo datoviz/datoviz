@@ -143,7 +143,17 @@ upload:
 
     tag=$(git describe --tags --abbrev=0)
     artifacts_dir="release_artifacts/$tag"
-    twine upload $artifacts_dir/*.whl
+    if python -m twine --version >/dev/null 2>&1; then
+        python -m twine upload $artifacts_dir/*.whl
+    elif python -m pip --version >/dev/null 2>&1; then
+        python -m pip install -q --upgrade twine
+        python -m twine upload $artifacts_dir/*.whl
+    elif [ -z "${GITHUB_ACTIONS:-}" ] && command -v uvx >/dev/null 2>&1; then
+        uvx --with twine python -m twine upload $artifacts_dir/*.whl
+    else
+        echo "twine is not available; install python twine or uvx." >&2
+        exit 1
+    fi
 #
 
 wheels:
@@ -1449,7 +1459,17 @@ doc: #gallery #headers
 #
 
 serve:
-    @mkdocs serve -a localhost:8294
+    @if python -m mkdocs --version >/dev/null 2>&1; then \
+        python -m mkdocs serve -a localhost:8294; \
+    elif python -m pip --version >/dev/null 2>&1; then \
+        python -m pip install -q --upgrade mkdocs; \
+        python -m mkdocs serve -a localhost:8294; \
+    elif [ -z "${GITHUB_ACTIONS:-}" ] && command -v uvx >/dev/null 2>&1; then \
+        uvx --with mkdocs python -m mkdocs serve -a localhost:8294; \
+    else \
+        echo "mkdocs is not available; install python mkdocs or uvx." >&2; \
+        exit 1; \
+    fi
 #
 
 # Publish the mkdocs website on GitHub Pages.
@@ -1468,7 +1488,17 @@ publish:
 
     pushd ../datoviz.github.io
     git pull
-    mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
+    if python -m mkdocs --version >/dev/null 2>&1; then \
+        python -m mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main; \
+    elif python -m pip --version >/dev/null 2>&1; then \
+        python -m pip install -q --upgrade mkdocs mkdocs-material mkdocstrings[python] mkdocs-material-extensions pymdown-extensions; \
+        python -m mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main; \
+    elif [ -z "${GITHUB_ACTIONS:-}" ] && command -v uvx >/dev/null 2>&1; then \
+        uvx --with mkdocs --with mkdocs-material --with "mkdocstrings[python]" --with mkdocs-material-extensions --with pymdown-extensions python -m mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main; \
+    else \
+        echo "mkdocs is not available; install python mkdocs or uvx." >&2; \
+        exit 1; \
+    fi
     popd
 #
 
