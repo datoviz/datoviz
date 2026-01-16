@@ -24,11 +24,6 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.3.5",
-]
-
 [tool.setuptools]
 packages = ["datoviz"]
 package-data = {"datoviz" = [

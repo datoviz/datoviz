@@ -564,7 +564,14 @@ wheel almalinux="0":
     fi
 
     # Build the wheel
-    pip3 wheel wheel/ -w "dist/" --no-deps
+    if command -v uv >/dev/null 2>&1; then
+        if ! uv run python -m pip --version >/dev/null 2>&1; then
+            uv run python -m ensurepip --upgrade
+        fi
+        uv run python -m pip wheel wheel/ -w "dist/" --no-deps
+    else
+        python3 -m pip wheel wheel/ -w "dist/" --no-deps
+    fi
 
     # Rename the wheel
     if [ "{{almalinux}}" != "0" ]; then
