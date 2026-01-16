@@ -177,9 +177,11 @@ dvz_scene
 dvz_scene_batch
 dvz_scene_destroy
 dvz_scene_figure
+dvz_scene_is_running
 dvz_scene_mouse
 dvz_scene_render
 dvz_scene_run
+dvz_scene_step
 dvz_sdf_from_svg
 dvz_sdf_to_rgb
 dvz_server
@@ -271,6 +273,7 @@ dvz_app_batch
 dvz_app_destroy
 dvz_app_frame
 dvz_app_gui
+dvz_app_is_running
 dvz_app_keyboard
 dvz_app_mouse
 dvz_app_on_frame
@@ -280,6 +283,7 @@ dvz_app_on_resize
 dvz_app_on_timer
 dvz_app_run
 dvz_app_screenshot
+dvz_app_step
 dvz_app_stop
 dvz_app_submit
 dvz_app_timer
