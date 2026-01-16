@@ -1129,7 +1129,12 @@ buildwheel args='':
 # -------------------------------------------------------------------------------------------------
 
 headers:
-    @python tools/parse_headers.py
+    @if command -v uvx >/dev/null 2>&1; then \
+        uvx --with tqdm --with pyparsing python tools/parse_headers.py; \
+    else \
+        python -m pip install -q --upgrade tqdm pyparsing; \
+        python tools/parse_headers.py; \
+    fi
 #
 
 
