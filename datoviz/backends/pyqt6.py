@@ -154,11 +154,6 @@ class QtFigure(Figure, QWidget):
 # Qt offscreen server
 # -------------------------------------------------------------------------------------------------
 
-        # HACK: this will change in the next version
-        if background == 'white':
-            c_flags |= dvz.APP_FLAGS_WHITE_BACKGROUND
-
-
 class QtServer(dvz.App):
     def __init__(self, background: tp.Optional[str] = None, c_flags: int = 0):
 
