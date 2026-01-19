@@ -72,14 +72,33 @@ static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent* ev)
     *((float*)ev->user_data) = ev->pos[0];
 }
 
+typedef struct MouseOrder
+{
+    int idx;
+    int order[4];
+} MouseOrder;
+
+static void _on_mouse_order(DvzMouse* mouse, DvzMouseEvent* ev)
+{
+    ANN(mouse);
+    ANN(ev->user_data);
+
+    MouseOrder* order = (MouseOrder*)ev->user_data;
+    if (order->idx < (int)(sizeof(order->order) / sizeof(order->order[0])))
+        order->order[order->idx++] = ev->type;
+}
+
 int test_mouse_press(TstSuite* suite)
 {
     DvzMouse* mouse = dvz_mouse();
 
     int res = 0;
     float resp = 0;
+    MouseOrder order = {0};
     dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_PRESS, _on_mouse_press, &res);
     dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_CLICK, _on_mouse_click, &resp);
+    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_CLICK, _on_mouse_order, &order);
+    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_RELEASE, _on_mouse_order, &order);
 
     // Mouse press.
     DvzMouseButton button = DVZ_MOUSE_BUTTON_LEFT;
@@ -98,6 +117,10 @@ int test_mouse_press(TstSuite* suite)
 
     // Should trigger click.
     AT(resp == 2);
+    AT(order.idx == 2);
+    AT(order.order[0] == DVZ_MOUSE_EVENT_CLICK);
+    AT(order.order[1] == DVZ_MOUSE_EVENT_RELEASE);
+    order.idx = 0;
 
     // Minor mouse movement.
     pos[0] = 1;
@@ -110,6 +133,9 @@ int test_mouse_press(TstSuite* suite)
     dvz_mouse_press(mouse, button, 0);
     dvz_mouse_release(mouse, button, 0);
     AT(resp == 1);
+    AT(order.idx == 2);
+    AT(order.order[0] == DVZ_MOUSE_EVENT_CLICK);
+    AT(order.order[1] == DVZ_MOUSE_EVENT_RELEASE);
 
     // Destroy the resources.
     dvz_mouse_destroy(mouse);
@@ -174,9 +200,12 @@ int test_mouse_drag(TstSuite* suite)
 
     float res = 0;
     int resi = 0;
+    MouseOrder order = {0};
     dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG, _on_mouse_drag, &res);
     dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_START, _on_mouse_drag, &res);
     dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_STOP, _on_mouse_drag_stop, &resi);
+    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_STOP, _on_mouse_order, &order);
+    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_RELEASE, _on_mouse_order, &order);
 
     // Mouse press.
     DvzMouseButton button = DVZ_MOUSE_BUTTON_LEFT;
@@ -199,6 +228,9 @@ int test_mouse_drag(TstSuite* suite)
     // Mouse release.
     dvz_mouse_release(mouse, button, 0);
     AT(resi == (int)DVZ_MOUSE_BUTTON_LEFT);
+    AT(order.idx == 2);
+    AT(order.order[0] == DVZ_MOUSE_EVENT_DRAG_STOP);
+    AT(order.order[1] == DVZ_MOUSE_EVENT_RELEASE);
 
     // Destroy the resources.
     dvz_mouse_destroy(mouse);
