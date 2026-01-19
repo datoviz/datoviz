@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 [tool.setuptools]
-packages = ["datoviz"]
+packages = ["datoviz", "datoviz.backends"]
 package-data = {"datoviz" = [
     "lib*",
     "*.so",
