@@ -75,7 +75,7 @@ static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent* ev)
 typedef struct MouseOrder
 {
     int idx;
-    int order[4];
+    DvzMouseEventType order[4];
 } MouseOrder;
 
 static void _on_mouse_order(DvzMouse* mouse, DvzMouseEvent* ev)
