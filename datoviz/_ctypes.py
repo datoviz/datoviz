@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 # WARNING: DO NOT EDIT: automatically-generated file
 
-__version__ = "0.3.4-dev"
+__version__ = "0.3.4"
 
 
 # ===============================================================================
@@ -395,7 +395,7 @@ KB = 1024
 DVZ_REQUEST_VERSION = 1
 DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 3
-DVZ_VERSION_PATCH = 3
+DVZ_VERSION_PATCH = 4
 
 
 # ===============================================================================
