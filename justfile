@@ -349,6 +349,7 @@ manylinux release="Release":
     RUN \
         mkdir -p wheel wheel/datoviz && \
         cp datoviz/*.py wheel/datoviz/ && \
+        cp -a datoviz/backends wheel/datoviz/ && \
         cp pyproject.toml wheel/ && \
         cp build/libdatoviz.so wheel/datoviz/ && \
         cp -a libs/shaderc/linux/*.so* wheel/datoviz/ && \
@@ -558,6 +559,7 @@ wheel almalinux="0":
 
     # Copy the Python projects files
     cp datoviz/*.py wheel/datoviz/
+    cp -a datoviz/backends wheel/datoviz/
     cp pyproject.toml wheel/
 
     # Copy libdatoviz
@@ -782,6 +784,7 @@ wheel arg='': checkstructs
 
     # Copy the header files.
     cp datoviz/*.py $DVZDIR
+    cp -a datoviz/backends $DVZDIR
     cp pyproject.toml $PKGROOT/
     cp build/libdatoviz.dylib $DVZDIR
     cp build/libvulkan.1.dylib $DVZDIR
@@ -951,6 +954,7 @@ wheel: checkstructs && showwheel
 
     # Copy the header files.
     cp datoviz/*.py "$DVZDIR"
+    cp -a datoviz/backends "$DVZDIR"
     cp pyproject.toml "$PKGROOT/"
     cp build/*.dll "$DVZDIR"
 
@@ -1034,7 +1038,7 @@ checkwheel path="":
     $TESTDIR/venv/$BINDIR/python -m pip install --isolated $TESTDIR/datoviz-*.whl
 
     # Run the demo from the wheel
-    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/$BINDIR/python -c "import datoviz; datoviz.demo()"
+    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/$BINDIR/python -c "import datoviz; from datoviz.backends.pyqt6 import QtServer; datoviz.demo()"
 
     # Return 0 iff the file exists and if sufficiently large
     res=1

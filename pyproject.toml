@@ -10,7 +10,7 @@ dependencies = [
  "requests",
  "platformdirs",
 ]
-version = "0.3.3"
+version = "0.3.4"
 description = "Datoviz: high-performance rendering for scientific data visualization"
 authors = [
     { name = "Cyrille Rossant", email = "cyrille.rossant@gmail.com" }
@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 [tool.setuptools]
-packages = ["datoviz"]
+packages = ["datoviz", "datoviz.backends"]
 package-data = {"datoviz" = [
     "lib*",
     "*.so",

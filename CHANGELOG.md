@@ -9,9 +9,13 @@ Ongoing developments planned for v0.4.0 (2026) include:
 * More Vulkan/graphics features: multipass rendering, antialiasing, order-independent transparency...
 * Integration with other GPU APIs such as CUDA/CuPy.
 
-## v0.3.4 (?) [UNRELEASED, DEVELOPMENT]
+## v0.3.5 (?) [UNRELEASED, DEVELOPMENT]
 
-## v0.3.3 (2026-01-XX) [LATEST]
+## v0.3.4 (2026-01-19) [LATEST]
+
+* Bug fix: restore the missing `datoviz.backends` submodule required by the experimental PyQt6 backend.
+
+## v0.3.3 (2026-01-16)
 
 ### Backends
 
