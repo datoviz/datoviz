@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 # WARNING: DO NOT EDIT: automatically-generated file
 
-__version__ = "0.3.4"
+__version__ = "0.3.5-dev"
 
 
 # ===============================================================================
