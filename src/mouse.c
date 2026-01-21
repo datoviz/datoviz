@@ -55,9 +55,11 @@ static void _callbacks(DvzMouse* mouse, DvzMouseEvent* event)
 /*  Mouse state transitions                                                                      */
 /*************************************************************************************************/
 
-static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int mods)
+static bool _after_release(
+    DvzMouse* mouse, DvzMouseButton button, int mods, DvzMouseEvent* derived)
 {
     ANN(mouse);
+    ANN(derived);
 
     // Old state.
     DvzMouseState state = mouse->state;
@@ -68,18 +70,13 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
     // Delay since the last click.
     double delay = mouse->time - mouse->last_press;
 
-    // Generate the press event, may be modified below.
-    DvzMouseEvent ev = {0};
-    ev.type = DVZ_MOUSE_EVENT_RELEASE;
-    ev.mods = mods;
-    ev.button = button;
-    glm_vec2_copy(mouse->cur_pos, ev.pos); // ev.pos always contains the current position
+    *derived = NULL_EVENT;
 
     switch (state)
     {
     case DVZ_MOUSE_STATE_RELEASE:
     case DVZ_MOUSE_STATE_CLICK:
-        return NULL_EVENT;
+        return false;
         break;
 
     case DVZ_MOUSE_STATE_DOUBLE_CLICK:
@@ -89,8 +86,11 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
     case DVZ_MOUSE_STATE_DRAGGING:
         // Drag stop.
         mouse->state = DVZ_MOUSE_STATE_RELEASE;
-        ev.type = DVZ_MOUSE_EVENT_DRAG_STOP;
-        glm_vec2_copy(mouse->press_pos, ev.content.d.press_pos);
+        derived->type = DVZ_MOUSE_EVENT_DRAG_STOP;
+        derived->mods = mods;
+        derived->button = button;
+        glm_vec2_copy(mouse->cur_pos, derived->pos); // ev.pos always contains the current position
+        glm_vec2_copy(mouse->press_pos, derived->content.d.press_pos);
         break;
 
     case DVZ_MOUSE_STATE_PRESS:
@@ -99,8 +99,11 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
         {
             // Click.
             mouse->state = DVZ_MOUSE_STATE_CLICK;
-            ev.type = state == DVZ_MOUSE_STATE_CLICK_PRESS ? DVZ_MOUSE_EVENT_DOUBLE_CLICK
-                                                           : DVZ_MOUSE_EVENT_CLICK;
+            derived->type = state == DVZ_MOUSE_STATE_CLICK_PRESS ? DVZ_MOUSE_EVENT_DOUBLE_CLICK
+                                                                 : DVZ_MOUSE_EVENT_CLICK;
+            derived->mods = mods;
+            derived->button = button;
+            glm_vec2_copy(mouse->cur_pos, derived->pos);
 
 
             // Record the time of the last click.
@@ -116,7 +119,7 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
         break;
     }
 
-    return ev;
+    return true;
 }
 
 
@@ -318,9 +321,23 @@ DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
-    DvzMouseEvent ev = _after_release(mouse, button, mods);
-    _callbacks(mouse, &ev);
-    return ev;
+    DvzMouseEvent derived = NULL_EVENT;
+    bool emit_release = _after_release(mouse, button, mods, &derived);
+    if (derived.type != 0)
+    {
+        _callbacks(mouse, &derived);
+    }
+    if (emit_release)
+    {
+        DvzMouseEvent ev = {0};
+        ev.type = DVZ_MOUSE_EVENT_RELEASE;
+        ev.mods = mods;
+        ev.button = button;
+        glm_vec2_copy(mouse->cur_pos, ev.pos); // ev.pos always contains the current position
+        _callbacks(mouse, &ev);
+        return derived.type != 0 ? derived : ev;
+    }
+    return derived;
 }
 
 
