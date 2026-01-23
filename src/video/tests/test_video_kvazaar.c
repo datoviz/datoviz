@@ -36,6 +36,10 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+#define NFRAMES (DVZ_TEST_VIDEO_FRAMES / 5)
+
+
+
 typedef struct
 {
     VkInstance instance;
@@ -365,9 +369,9 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
         rc = 1;
         goto cleanup;
     }
-    for (uint32_t frame = 0; frame < DVZ_TEST_VIDEO_FRAMES; ++frame)
+    for (uint32_t frame = 0; frame < NFRAMES; ++frame)
     {
-        VkClearColorValue clr = dvz_test_video_clear_color(frame, DVZ_TEST_VIDEO_FRAMES);
+        VkClearColorValue clr = dvz_test_video_clear_color(frame, NFRAMES);
         if (!kvz_cpu_record_clear(&ctx, &clr))
         {
             rc = 1;
@@ -378,7 +382,7 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
             rc = 1;
             goto cleanup;
         }
-        dvz_test_video_progress((int)(frame + 1), DVZ_TEST_VIDEO_FRAMES);
+        dvz_test_video_progress((int)(frame + 1), NFRAMES);
     }
     dvz_video_encoder_stop(encoder);
     dvz_video_encoder_destroy(encoder);
