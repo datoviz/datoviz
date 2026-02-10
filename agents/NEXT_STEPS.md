@@ -31,6 +31,12 @@ The plan is organized so each step can be executed by Codex in small, testable i
     5. Public profiling API for timing and performance counters.
     6. External memory/sync interop is generic and extensible beyond CUDA.
     7. Borrowed vs owned resource lifetimes are explicit and validated.
+    8. Thread-safety guarantees are documented and enforced.
+    9. Deterministic compute/reduction behavior is available when requested.
+    10. WGSL is the DRP shader language; native runtimes may additionally accept
+        SPIR-V behind capability flags without changing the DRP contract.
+    11. Memory budget reporting, OOM handling, and leak detection are mandatory.
+    12. Data layout, alignment, and stride guarantees are documented and validated.
 
 
 ## Current baseline snapshot (branch reality)
@@ -52,7 +58,8 @@ The plan is organized so each step can be executed by Codex in small, testable i
 7. `native interop` (advanced APIs for Vulkan/CUDA interop).
 8. `memory manager` (explicit allocation policies, large-resource handling).
 9. `profiling` (public API for timing and counters).
-8. `tests` split by layer:
+10. `shader pipeline` (WGSL for DRP; optional SPIR-V native ingestion).
+11. `tests` split by layer:
    1. DRP contract tests.
    2. Semantic/validation conformance tests shared across runtimes.
    3. Native backend translation and end-to-end rendering tests.
@@ -105,6 +112,9 @@ Define a small, stable DRP subset required to draw a basic frame.
 2. Versioned binary/text representation rules.
 3. Validation spec section with explicit error codes.
 4. Capability schema covering precision/format requirements (including FP64).
+5. WGSL shader module ingestion rules and validation requirements.
+6. Data layout, alignment, and stride rules for buffers and textures.
+4. Capability schema covering precision/format requirements (including FP64).
 
 ### Tests
 1. Roundtrip encode/decode tests for each message kind.
@@ -127,6 +137,9 @@ Implement a runtime that consumes DRP v2 and enforces API semantics independent 
 3. Validation rules for command order and object usage.
 4. Command recording abstraction for backend submission.
 5. Explicit owned vs borrowed resource lifetimes with validation.
+6. Thread-safety rules for core runtime APIs (documented and tested).
+7. Deterministic compute/reduction mode with validation hooks.
+8. Memory budget reporting and OOM/eviction handling with explicit errors.
 
 ### Deliverables
 1. Runtime module (new `src/...` namespace dedicated to DRP execution).
@@ -155,6 +168,7 @@ Map runtime operations to Vulkan efficiently while staying behind backend interf
 4. Command buffer recording and submission.
 5. Minimal swapchain/offscreen path for presentable output.
 6. Deterministic headless rendering path with readback.
+7. Native SPIR-V ingestion path behind capability flags (WGSL remains DRP source).
 
 ### Deliverables
 1. Vulkan backend implementation module.
@@ -166,6 +180,7 @@ Map runtime operations to Vulkan efficiently while staying behind backend interf
 2. Upload buffer -> draw -> readback assertions.
 3. Validation-on tests run clean for supported platforms.
 4. Deterministic headless readback hash is stable across runs.
+5. Deterministic compute/reduction fixtures (native).
 
 ### Exit criteria
 1. DRP fixture can render a known image through runtime + Vulkan backend.
@@ -183,6 +198,8 @@ Provide Vulkan/CUDA interop without contaminating DRP or browser paths.
 3. Export/import semaphores/fences for explicit cross-API sync.
 4. Explicit ownership rules for Datoviz-owned export and user-owned import.
 5. Opt-in access (for example `DVZ_ENABLE_NATIVE`) and clear API labeling.
+6. Generic external memory/sync interop path (extensible beyond CUDA).
+7. Versioned structs and ABI stability notes for native interop.
 6. Generic external memory/sync interop path (extensible beyond CUDA).
 7. Versioned structs and ABI stability notes for native interop.
 
@@ -244,6 +261,7 @@ Reach a practical renderer baseline suitable for stabilization.
 3. Texture sampling and basic sampler states.
 4. Compute pass (mandatory).
 5. Explicit synchronization model represented in runtime semantics.
+6. Thread-safe submission model documented for power users.
 
 ### Deliverables
 1. Expanded DRP command coverage documentation.
@@ -282,6 +300,7 @@ Ensure architecture remains high-performance and operationally stable.
 1. Stress tests for create/destroy churn.
 2. Long-run replay tests.
 3. Error injection tests (invalid DRP streams, device capability mismatch).
+4. OOM/eviction and resource leak detection tests.
 
 ### Exit criteria
 1. Benchmarks tracked in CI artifacts.
@@ -317,6 +336,7 @@ Add advanced memory and streaming capabilities once v1 is stabilized.
 1. Zero-copy streaming and persistent mapped buffers for large datasets.
 2. Sparse/virtualized buffers and textures for out-of-core rendering.
 3. Advanced memory placement and aliasing policies for large allocations.
+4. Multi-GPU device selection, affinity, and explicit device group workflows.
 
 ### Deliverables
 1. Memory manager extensions and capability reporting for sparse/virtual resources.
@@ -353,25 +373,32 @@ Use this workflow for every task:
 2. `T002`: Add DRP versioning fields and compatibility checks.
 3. `T003`: Implement DRP parser/encoder with roundtrip tests.
 4. `T004`: Add DRP validation error code framework.
-5. `T005`: Introduce semantic-core object registry with generation-safe handles.
-6. `T006`: Add mock backend interface and semantic-core unit tests.
-7. `T007`: Implement native runtime command dispatcher for minimal draw path.
-8. `T008`: Build Vulkan backend adapter for buffer lifecycle.
-9. `T009`: Build Vulkan backend adapter for texture/sampler lifecycle.
-10. `T010`: Build Vulkan backend adapter for render pipeline and draw.
-11. `T011`: Add first headless native end-to-end DRP fixture rendering test.
-12. `T012`: Add native interop public headers, capability flags, and opt-in gating.
-13. `T013`: Implement native interop buffer/image export/import with sync primitives.
-14. `T014`: Add native interop tests with platform capability coverage.
-15. `T015`: Add compute pass path (mandatory) with basic fixtures.
-16. `T016`: Add browser JS runtime DRP decoder and minimal draw fixture.
-17. `T017`: Add WASM -> JS DRP transport API (minimal command stream).
-18. `T018`: Add capability model and unsupported-feature reporting with native/browser parity tests.
-19. `T019`: Add present path integration where needed with canvas/window (native).
-20. `T020`: Add browser conformance replay suite for shared DRP fixtures.
-21. `T021`: Add profiling API and timing/counter exposure.
-22. `T022`: Add microbenchmark harness and baseline capture (native) + browser timing smoke metrics.
-23. `T023`: Stabilization pass (bug fixes + docs + compatibility notes).
+5. `T005`: Define capability schema for precision/format requirements (including FP64).
+6. `T006`: Define data layout/alignment/stride rules and validation.
+7. `T007`: Define WGSL ingestion rules and validation for DRP shader modules.
+8. `T008`: Introduce semantic-core object registry with generation-safe handles.
+9. `T009`: Add mock backend interface and semantic-core unit tests.
+10. `T010`: Implement native runtime command dispatcher for minimal draw path.
+11. `T011`: Build Vulkan backend adapter for buffer lifecycle.
+12. `T012`: Build Vulkan backend adapter for texture/sampler lifecycle.
+13. `T013`: Build Vulkan backend adapter for render pipeline and draw.
+14. `T014`: Add first headless native end-to-end DRP fixture rendering test.
+15. `T015`: Add native interop public headers, capability flags, and opt-in gating.
+16. `T016`: Implement native interop buffer/image export/import with sync primitives.
+17. `T017`: Add native interop tests with platform capability coverage.
+18. `T018`: Add native SPIR-V ingestion behind capability flags.
+19. `T019`: Add compute pass path (mandatory) with basic fixtures.
+20. `T020`: Add deterministic compute/reduction fixtures and validation mode.
+21. `T021`: Document and test thread-safety guarantees for runtime and submission.
+22. `T022`: Add memory budget reporting and OOM/eviction handling tests.
+23. `T023`: Add browser JS runtime DRP decoder and minimal draw fixture.
+24. `T024`: Add WASM -> JS DRP transport API (minimal command stream).
+25. `T025`: Add capability model and unsupported-feature reporting with native/browser parity tests.
+26. `T026`: Add present path integration where needed with canvas/window (native).
+27. `T027`: Add browser conformance replay suite for shared DRP fixtures.
+28. `T028`: Add profiling API and timing/counter exposure.
+29. `T029`: Add microbenchmark harness and baseline capture (native) + browser timing smoke metrics.
+30. `T030`: Stabilization pass (bug fixes + docs + compatibility notes).
 
 
 ## Post-v1 backlog (power-user memory)
@@ -379,6 +406,7 @@ Use this workflow for every task:
 1. `P001`: Add zero-copy streaming and persistent mapped buffer support.
 2. `P002`: Add sparse/virtualized buffer and texture resource support.
 3. `P003`: Add advanced memory placement/aliasing policies with validation.
+4. `P004`: Add multi-GPU device selection and explicit affinity workflows.
 
 
 ## Acceptance gates by phase
@@ -434,6 +462,10 @@ Use this workflow for every task:
 7. Compute is available and validated in the v1 renderer slice.
 8. FP64 capability reporting is present and respected where supported.
 9. Public profiling API is available for power users.
-10. Deterministic headless/offscreen rendering with readback is stable.
-11. Performance baseline is established and tracked (native, plus browser smoke metrics).
-12. Renderer API/behavior is stable enough to start standalone Scene API development.
+10. Thread-safety guarantees are documented and tested.
+11. Deterministic headless/offscreen rendering with readback is stable.
+12. Deterministic compute/reduction mode is available for power users.
+13. Memory budget reporting and OOM handling are validated.
+14. Data layout, alignment, and stride guarantees are documented and enforced.
+15. Performance baseline is established and tracked (native, plus browser smoke metrics).
+16. Renderer API/behavior is stable enough to start standalone Scene API development.
