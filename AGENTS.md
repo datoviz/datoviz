@@ -8,7 +8,7 @@ Datoviz is a **modular C scientific visualization library**, currently being **r
 
 The goals:
 
-* One shared library: **`libdatoviz.so`**
+* One shared library target: **`datoviz`** (`libdatoviz` with platform-specific extension)
 * Modular **object libraries** per component
 * Clear boundary between **public API** and **internal code**
 * Unified **test runner** for all modules
@@ -18,9 +18,12 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
 
 ### 🏗️ Current refactor status (v0.4-dev)
 
-* ✅ Core runtime modules (`common`, `ds`, `fileio`, `math`, `thread`) have been fully ported to the v0.4 architecture and already ship inside `libdatoviz.so`.
-* 🚧 The Vulkan backend (`vk`) is being actively rebuilt; expect frequent changes inside `src/vk`, `include/datoviz/vk*`, and build glue. Treat it as an **active module**.
-* ⏭️ Upcoming components will land in this order: `vklite`, `canvas`, GPU data management (buffer/image abstractions), and then the higher-level layers (client/protocol, scientific visualization, renderer/scene APIs). Keep their directories untouched unless you are explicitly asked to bring them online.
+* ✅ Active modules currently linked into `libdatoviz` are: `common`, `ds`, `fileio`, `math`, `thread`,
+  `input`, `window`, `canvas`, `stream`, `video`, `vk`, and `vklite`.
+* 🚧 Vulkan-related modules (`vk`, `vklite`, `canvas`, `stream`, `video`) are still evolving quickly;
+  expect frequent API/internal adjustments in these directories.
+* ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, and higher-level
+  renderer/scene/client layers); keep them untouched unless explicitly requested.
 
 ---
 
@@ -52,10 +55,16 @@ datoviz/
 │   │   └── tests/
 │   ├── thread/                 # Threading primitives
 │   │   ├── atomic.cpp fifo.c thread.c
-│   ├── vk/                     # Vulkan backend (device, swapchain, commands; WIP)
+│   ├── input/                  # Input/router module
+│   ├── window/                 # Window backends and event plumbing
+│   ├── canvas/                 # Canvas/frame management
+│   ├── stream/                 # Frame stream/sink registry
+│   ├── video/                  # Video encoder backends and sink
+│   ├── vk/                     # Vulkan backend (core Vulkan helpers)
+│   ├── vklite/                 # Higher-level Vulkan convenience layer
 │   ├── empty.c                 # Keeps the shared library non-empty
 │   └── CMakeLists.txt          # Collects object modules into libdatoviz
-│       (additional module folders exist but are currently placeholders)
+│       (additional module folders exist; some are placeholders)
 │
 ├── testing/
 │   ├── testing.h               # Minimal test framework (suite/item API)
@@ -67,20 +76,21 @@ datoviz/
 └── CMakeLists.txt              # Root build definition
 ```
 
-Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `math`, `thread`, and the in-progress `vk` backend**. All other module directories are scaffolding; leave them untouched unless you are explicitly resurrecting them as part of the staged refactor.
+Modules currently compiled into `libdatoviz`: **`common`, `ds`, `fileio`, `math`, `thread`, `input`,
+`window`, `canvas`, `stream`, `video`, `vk`, `vklite`**. Modules such as `color`/`wasm` are currently
+not linked and should remain untouched unless explicitly requested.
 
 ### ⏩ Planned activation order
 
-1. `vk` (finishing now; keep changes tightly scoped to Vulkan internals and their headers).
-2. `vklite` (thin convenience layer on top of raw Vulkan helpers). Prefer using the `vklite` wrappers instead of raw Vulkan C API calls whenever you add new platform-facing code.
-3. `canvas` and GPU data management (buffer/image uploads, staging, synchronization helpers).
-4. Remaining high-level systems: client/protocol, visualization components, scene/renderer APIs, etc.
+1. Stabilize currently active modules (`vk`, `vklite`, `canvas`, `stream`, `video`, plus window/input integration).
+2. Keep non-activated modules as scaffolding unless a task explicitly brings one online.
+3. Continue staged bring-up of higher-level systems (renderer/scene/client layers) only when requested.
 
 ---
 
 ## ⚙️ **Build System (CMake)**
 
-* Active modules (`src/common`, `src/ds`, `src/fileio`, `src/math`, `src/thread`) build as **OBJECT libraries** that glob both C and C++ sources:
+* Modules build as **OBJECT libraries** that glob both C and C++ sources:
 
   ```cmake
   file(GLOB MATH_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
@@ -93,11 +103,14 @@ Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `ma
           ${PROJECT_SOURCE_DIR}/external/cglm/include
   )
 
-  target_compile_definitions(datoviz_math PUBLIC ${COMPILE_DEFINITIONS})
+  target_compile_definitions(datoviz_math PUBLIC ${DVZ_COMPILE_DEFINITIONS})
   ```
 
 * `src/common/CMakeLists.txt` publishes its directory with `INTERFACE` usage requirements so any consumer of `datoviz_common` can include `_alloc.h`, `_macros.h`, etc.
-* `src/vk/CMakeLists.txt` follows the same OBJECT-library pattern (`datoviz_vk`), pulls in `${PROJECT_SOURCE_DIR}/external/volk` and links against the `datoviz_volk` OBJECT target (Volk `vulkan-sdk-1.4.328.1`) so the Vulkan entry points are resolved via Volk instead of platform-specific loader binaries. The project no longer bundles `libs/vulkan/`; expect a system ICD to be present at runtime.
+* `src/vk/CMakeLists.txt` follows the same OBJECT-library pattern (`datoviz_vk`), uses
+  `${PROJECT_SOURCE_DIR}/external/volk`, and links with `datoviz_volk` so Vulkan entry points are resolved
+  via Volk. The repository also contains `libs/vulkan`/`libs/shaderc` assets used by some packaging/test
+  workflows (especially in `justfile` recipes).
 
 * The root `src/CMakeLists.txt` assembles the shared library and registers the active modules:
 
@@ -109,7 +122,13 @@ Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `ma
   add_subdirectory(fileio)
   add_subdirectory(math)
   add_subdirectory(thread)
+  add_subdirectory(input)
+  add_subdirectory(window)
+  add_subdirectory(canvas)
+  add_subdirectory(stream)
+  add_subdirectory(video)
   add_subdirectory(vk)
+  add_subdirectory(vklite)
 
   target_link_libraries(datoviz
       PRIVATE
@@ -118,7 +137,14 @@ Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `ma
           datoviz_fileio
           datoviz_math
           datoviz_thread
+          datoviz_input
+          datoviz_window
+          datoviz_canvas
+          datoviz_stream
+          datoviz_video
           datoviz_vk
+          datoviz_vklite
+          datoviz_volk
   )
 
   target_include_directories(datoviz
@@ -127,7 +153,11 @@ Modules currently compiled into `libdatoviz.so`: **`common`, `ds`, `fileio`, `ma
   )
   ```
 
-`COMPILE_DEFINITIONS` is assembled in `src/CMakeLists.txt` (OS/compiler switches, `LOG_USE_COLOR`, `ENABLE_VALIDATION_LAYERS`, `DEBUG`) and applied `PUBLIC` to every module and to `dvztest`.
+`DVZ_COMPILE_DEFINITIONS` is assembled in `src/CMakeLists.txt` (OS/compiler switches, `LOG_USE_COLOR`,
+`ENABLE_VALIDATION_LAYERS`, `DEBUG`, `VK_NO_PROTOTYPES`, feature flags), exported through a global property,
+and then applied to registered targets in the top-level `CMakeLists.txt` (`src` modules and testing targets).
+Some existing module `CMakeLists.txt` files still reference `${COMPILE_DEFINITIONS}` as legacy wiring;
+do not copy that pattern in new code—use `${DVZ_COMPILE_DEFINITIONS}` instead.
 
 ## 🛠️ **Build & Test Commands**
 
@@ -135,7 +165,7 @@ The top-level `justfile` provides the primary workflow; Codex should stick to:
 
 * `just clean` — remove generated build artifacts so the next build starts fresh.
 * `just build` — configure (if needed) and compile the active targets through CMake.
-* `just test` — execute the unified `dvztest` suite after a successful build.
+* `just test [filter]` — execute the unified `dvztest` suite after a successful build (platform recipe).
 
 Run these commands from the repository root. Other `just` recipes exist but are currently out of scope.
 
@@ -149,7 +179,9 @@ Run these commands from the repository root. Other `just` recipes exist but are 
 | Module source file | `src/math/vec.c`             | `#include "datoviz/math/vec.h"`     | Implementations rely on public headers                       |
 | Test helpers       | `src/common/tests/test_common.h` | `#include "testing.h"`           | Each module keeps optional `tests/` headers alongside sources |
 
-Headers are installed under `/usr/include/datoviz/`. They currently expect `_macros.h` (and friends) to be reachable through the build tree; keep `${PROJECT_SOURCE_DIR}/src/common` on include paths until the public/private split is revisited.
+Headers are installed under `${CMAKE_INSTALL_PREFIX}/include/datoviz/`. They currently expect `_macros.h`
+(and friends) to be reachable through the build tree; keep `${PROJECT_SOURCE_DIR}/src/common` on include
+paths until the public/private split is revisited.
 
 ```c
 #include <datoviz/datoviz.h>
@@ -170,7 +202,9 @@ Headers are installed under `/usr/include/datoviz/`. They currently expect `_mac
 
 ### ⚠ Reserved Identifier Note
 
-Filenames starting with `_` are **legal**, but **identifiers** (macros, functions, variables) starting with `_` are **not** — avoid defining `_alloc()` or `_ALLOC_H_` inside code.
+Filenames starting with `_` are **legal**. In this codebase, internal helpers often use `_dvz_*`; keep using
+that existing convention for internal symbols. Avoid introducing reserved forms such as double-underscore
+identifiers (`__name`) or underscore-capital names (`_NAME`) in new code.
 
 ---
 
@@ -181,7 +215,8 @@ Filenames starting with `_` are **legal**, but **identifiers** (macros, function
 * All test sources live under `src/<module>/tests/*.c*`.
 * Each module provides an entry-point (for example `int test_common(TstSuite* suite)`) that appends its test cases to the shared `TstSuite`.
 * Assertions use the helpers in `testing.h` (`AT`, `AC`, `ACn`, `TEST_SIMPLE`, etc.).
-* A single runner executable, **`dvztest`**, builds the suite, runs optional filters, and prints colourful summaries.
+* A single runner executable, **`dvztest`**, builds the suite, runs optional filters, prints summaries,
+  and now lists failing test names explicitly when failures occur.
 
 ### Example
 
@@ -213,6 +248,19 @@ int test_common(TstSuite* suite)
 ```c
 // testing/dvztest.c
 #include "../src/common/tests/test_common.h"
+#include "../src/ds/tests/test_ds.h"
+#include "../src/fileio/tests/test_fileio.h"
+#include "../src/math/tests/test_math.h"
+#include "../src/stream/tests/test_stream.h"
+#include "../src/thread/tests/test_thread.h"
+#include "../src/input/tests/test_input.h"
+#include "../src/window/tests/test_window.h"
+#include "../src/canvas/tests/test_canvas.h"
+#if DVZ_HAS_CUDA
+#include "../src/video/tests/test_video.h"
+#endif
+#include "../src/vk/tests/test_vk.h"
+#include "../src/vklite/tests/test_vklite.h"
 #include "testing.h"
 
 int main(int argc, char** argv)
@@ -220,9 +268,21 @@ int main(int argc, char** argv)
     TstSuite suite = tst_suite();
 
     test_common(&suite);
+    test_ds(&suite);
+    test_fileio(&suite);
+    test_math(&suite);
+    test_stream(&suite);
+    test_thread(&suite);
+    test_input(&suite);
+    test_window(&suite);
+    test_canvas(&suite);
+#if DVZ_HAS_CUDA
+    test_video(&suite);
+#endif
+    test_vk(&suite);
+    test_vklite(&suite);
 
-    const char* filter = (argc >= 2) ? argv[1] : NULL;
-    tst_suite_run(&suite, filter);
+    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
     tst_suite_destroy(&suite);
     return 0;
 }
@@ -243,13 +303,28 @@ file(GLOB TEST_SOURCES
 )
 
 add_executable(dvztest ${TEST_SOURCES})
-target_link_libraries(dvztest PRIVATE datoviz_common testing)
+target_link_libraries(dvztest PRIVATE
+    datoviz_common
+    datoviz_ds
+    datoviz_fileio
+    datoviz_math
+    datoviz_thread
+    datoviz_input
+    datoviz_window
+    datoviz_canvas
+    datoviz_stream
+    datoviz_video
+    datoviz_vk
+    datoviz_vklite
+    datoviz_volk
+    testing
+)
 target_include_directories(dvztest PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${PROJECT_SOURCE_DIR}/src/common
 )
-target_compile_definitions(dvztest PRIVATE ${COMPILE_DEFINITIONS})
+target_compile_definitions(dvztest PRIVATE ${DVZ_COMPILE_DEFINITIONS})
 add_test(NAME dvztest COMMAND dvztest)
 ```
 
@@ -302,13 +377,14 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 
 ## 🧠 **Design Philosophy**
 
-* **Single shared library** (`libdatoviz.so`)
+* **Single shared library target** (`datoviz` / `libdatoviz.*`)
 * **Explicit modular dependencies**
 * **Consistent naming and include structure**
 * **Public headers live in `include/datoviz/`; shared `_*.h` stay in `src/common` and remain reachable via include dirs**
 * **One unified test executable** (`dvztest`)
 * **Public headers cleanly grouped by module**
-* **Roadmap discipline** — activate one module at a time (vk → vklite → canvas/GPU data → renderer/scene/client layers) and keep untouched modules pristine scaffolds until their turn.
+* **Roadmap discipline** — stabilize active modules first; keep non-activated modules as scaffolding until
+  explicitly requested.
 
 ---
 
@@ -320,6 +396,7 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * Prefer `dvz_memcpy()` / `dvz_memset()` from `src/common/_alloc.h` / `_compat.h` over `memcpy()` / `memset()` so every copy or fill goes through the shared allocator wrappers.
 * Never call `malloc`, `calloc`, or `free` directly; rely on the allocation/deallocation helpers declared in `_alloc.h` and `_compat.h` (prefer `dvz_calloc` over `dvz_malloc` when zeroed memory suffices, alongside `dvz_free`) so every allocation flows through the datoviz allocator. All structs should be zero-initialized before use, reinforcing the `dvz_calloc` preference (or `dvz_memset()` after allocation when needed).
 * Favor `dvz_fprintf()` / `dvz_vfprintf()` over `fprintf()` / `vfprintf()` (from `src/common/_compat.h`) to keep logging and error reporting within the safe compatibility layer.
+* Prefer C-style function signatures throughout the codebase, including C++ translation units (`*.cpp`): avoid C++ standard library types (`std::vector`, `std::string`, references, templates) in function signatures and favor plain C arguments (pointers, counts, POD structs) instead.
 
 ### 🧱 **C File Organization**
 
@@ -341,10 +418,13 @@ These rules should be followed carefully whenever Codex edits or creates C sourc
 
 ## 🚧 Refactor Roadmap Guidance
 
-- **`vk` (in progress):** Focus on robustness (device creation, swapchains, command encoders). Keep its public headers limited to the Vulkan-facing API and push any shared helpers down to `src/common` if multiple modules will need them later.
-- **`vklite` (next):** Acts as a friendlier façade over raw Vulkan and should be the entry point for any new Vulkan-facing work; prefer the `vklite` helpers rather than invoking raw Vulkan C API calls directly. Once vk is stable, mirror the existing module template (OBJECT library + public headers + tests) before wiring it into `src/CMakeLists.txt`.
-- **`canvas` & GPU data management:** Will introduce higher-level drawing surfaces plus buffer/image orchestration. Expect tight coupling with `vk`; reuse the established include/linking rules.
-- **Remaining subsystems (client/protocol, scientific visualization, scene/renderer APIs):** Leave existing directories as placeholders. When their turn comes, follow the same staged bring-up process: add CMake object libs, public headers, and tests before integrating with the main shared library.
+- **Active graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`):** prioritize robustness,
+  resource-lifetime correctness, and clear public/internal boundaries.
+- **Cross-module helpers:** if multiple modules need the same low-level utility, move it to `src/common`
+  instead of duplicating it.
+- **Scaffolding modules (`color`, `wasm`, and higher-level renderer/scene/client layers):** keep untouched
+  unless explicitly asked to activate them; when activated, follow the standard pattern (OBJECT lib + public
+  headers + tests + integration in `src/CMakeLists.txt` and `testing/dvztest.c`).
 
 ---
 
@@ -366,7 +446,8 @@ When generating or editing code:
 
    * Glob sources with `file(GLOB ... "*.c*")` so C and C++ files are captured.
    * Always add `${PROJECT_SOURCE_DIR}/include` and `${PROJECT_SOURCE_DIR}/src/common` as PUBLIC include dirs; bolt on `${PROJECT_SOURCE_DIR}/external/...` paths when you use vendored deps (e.g. cglm).
-   * Build modules with `add_library(datoviz_<name> OBJECT ...)` and link them into `libdatoviz.so` from `src/CMakeLists.txt`.
+   * Build modules with `add_library(datoviz_<name> OBJECT ...)` and link them into `datoviz` from `src/CMakeLists.txt`.
+   * Prefer `${DVZ_COMPILE_DEFINITIONS}` for module target definitions; avoid introducing new ad-hoc compile-definition variables.
 
 4. **Tests:**
 
@@ -384,9 +465,9 @@ When generating or editing code:
 
    * Only install `include/datoviz/`.
 
-7. **Don’t define identifiers starting with `_`.**
+7. **Use leading underscores carefully.**
 
-   * Filenames can start with `_`, but identifiers (macros/functions) cannot.
+   * Keep the existing `_dvz_*` internal naming convention, but avoid introducing reserved forms such as `__name` and `_NAME`.
 
 ---
 
@@ -420,7 +501,7 @@ Before submitting a PR or automated refactor:
            ${PROJECT_SOURCE_DIR}/src/common
    )
 
-   target_compile_definitions(datoviz_geom PUBLIC ${COMPILE_DEFINITIONS})
+   target_compile_definitions(datoviz_geom PUBLIC ${DVZ_COMPILE_DEFINITIONS})
    ```
 3. Add tests under `src/geom/tests/` and expose `int test_geom(TstSuite* suite)`.
 4. Update `src/CMakeLists.txt` (`add_subdirectory(geom)` + link `datoviz_geom` into `datoviz`).
