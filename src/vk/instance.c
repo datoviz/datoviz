@@ -40,24 +40,39 @@
 // Consistency check.
 #define MAX_COUNT 1024
 
+
+
+static bool _volk_initialized = false;
+static bool _volk_ready = false;
+
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void volk_init(void)
+/**
+ * Initialize Volk once and report whether Vulkan loader entry points are available.
+ *
+ * @return true when Volk initialization succeeds
+ */
+static bool _dvz_volk_init(void)
 {
-    log_trace("initializing volk");
-    static bool volk_initialized = false;
-    if (volk_initialized)
-        return;
+    if (_volk_initialized)
+    {
+        return _volk_ready;
+    }
 
+    log_trace("initializing volk");
     VkResult res = volkInitialize();
+    _volk_initialized = true;
     if (res != VK_SUCCESS)
     {
         check_result(res);
-        return;
+        _volk_ready = false;
+        return false;
     }
-    volk_initialized = true;
+
+    _volk_ready = true;
+    return true;
 }
 
 
@@ -69,7 +84,7 @@ static void volk_init(void)
 void dvz_instance(DvzInstance* instance, int flags)
 {
     ANN(instance);
-    volk_init();
+    _dvz_volk_init();
     instance->flags = flags;
     instance->obj.type = DVZ_OBJECT_TYPE_INSTANCE;
     dvz_obj_init(&instance->obj);
@@ -144,6 +159,11 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 {
     ANN(instance);
     instance->vk_version = vk_version;
+    if (!_dvz_volk_init())
+    {
+        log_error("cannot create Vulkan instance because Volk initialization failed");
+        return 1;
+    }
 
     dvz_instance_probe_extensions(instance);
     dvz_instance_probe_layers(instance);
@@ -275,6 +295,12 @@ void dvz_instance_probe_layers(DvzInstance* instance)
 {
     ANN(instance);
 
+    if (!_dvz_volk_init())
+    {
+        log_error("cannot probe Vulkan layers because Volk initialization failed");
+        return;
+    }
+
     if (instance->layer_count > 0)
         return;
 
@@ -358,6 +384,12 @@ void dvz_instance_request_layer(DvzInstance* instance, const char* layer)
 void dvz_instance_probe_extensions(DvzInstance* instance)
 {
     ANN(instance);
+
+    if (!_dvz_volk_init())
+    {
+        log_error("cannot probe Vulkan instance extensions because Volk initialization failed");
+        return;
+    }
 
     if (instance->extension_count > 0)
         return;

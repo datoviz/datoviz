@@ -1536,8 +1536,18 @@ ttest test_name="": tsan
 
 [macos]
 test test_name="":
-    @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
-        VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/testing/dvztest {{test_name}}; \
+    @ARCH="$(arch)"; \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+        VK_ARCH="arm64"; \
+    else \
+        VK_ARCH="x86_64"; \
+    fi; \
+    VK_ROOT="$(pwd)/libs/vulkan/macos_$VK_ARCH"; \
+    if [ -f "$VK_ROOT/MoltenVK_icd.json" ]; then \
+        DYLD_LIBRARY_PATH="$VK_ROOT${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" \
+        VK_DRIVER_FILES="$VK_ROOT/MoltenVK_icd.json" \
+        VK_ICD_FILENAMES="$VK_ROOT/MoltenVK_icd.json" \
+        ./build/testing/dvztest {{test_name}}; \
     else \
         ./build/testing/dvztest {{test_name}}; \
     fi

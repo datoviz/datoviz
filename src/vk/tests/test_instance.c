@@ -42,6 +42,7 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
     // Call the function under test.
     uint32_t count = 0;
     char** layers = dvz_instance_supported_layers(&instance, &count);
+    AT(count > 0);
     log_info("Found %u supported Vulkan layers:", count);
 
     for (uint32_t i = 0; i < count; i++)
@@ -69,6 +70,7 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
     // Call the function under test.
     uint32_t count = 0;
     char** extensions = dvz_instance_supported_extensions(&instance, &count);
+    AT(count > 0);
     log_info("Found %u supported Vulkan instance extensions:", count);
 
     for (uint32_t i = 0; i < count; i++)
@@ -94,20 +96,31 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
     dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
     dvz_instance_info(&instance, "Instance test", 42);
 
-    // Add one layer.
-    dvz_instance_request_layer(&instance, "VK_LAYER_KHRONOS_synchronization2");
+    // Probe capabilities before requesting optional extensions/layers.
+    dvz_instance_probe_layers(&instance);
+    dvz_instance_probe_extensions(&instance);
 
-    // Add one extension.
-    dvz_instance_request_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    bool has_validation = dvz_instance_has_layer(&instance, "VK_LAYER_KHRONOS_validation");
+    bool has_debug_utils = dvz_instance_has_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    bool has_portability =
+        dvz_instance_has_extension(&instance, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
-    AT(instance.req_extension_count == 1);
-    AT(instance.req_layer_count == 1);
+    if (has_debug_utils)
+    {
+        dvz_instance_request_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    AT(instance.req_extension_count == (has_debug_utils ? 1 : 0));
+    AT(instance.req_layer_count == 0);
 
     // Create the instance.
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    AT(rc == 0);
 
-    AT(instance.req_layer_count == 2);     // add validation layer
-    AT(instance.req_extension_count == 2); // debug extension is already there, but add portability
+    uint32_t expected_layer_count = has_validation ? 1 : 0;
+    uint32_t expected_ext_count = (has_debug_utils ? 1 : 0) + (has_portability ? 1 : 0);
+    AT(instance.req_layer_count == expected_layer_count);
+    AT(instance.req_extension_count == expected_ext_count);
 
     // Get Vulkan instance handle.
     VkInstance vk_instance = dvz_instance_handle(&instance);
@@ -116,5 +129,25 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
     // Destroy the instance.
     dvz_instance_destroy(&instance);
 
+    return 0;
+}
+
+
+
+int test_instance_creation_invalid_layer(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzInstance instance = {0};
+    dvz_instance(&instance, 0);
+    dvz_instance_info(&instance, "Invalid layer test", 1);
+    dvz_instance_request_layer(&instance, "VK_LAYER_DATOVIZ_DOES_NOT_EXIST");
+
+    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    AT(rc != 0);
+    AT(dvz_instance_handle(&instance) == VK_NULL_HANDLE);
+
+    dvz_instance_destroy(&instance);
     return 0;
 }
