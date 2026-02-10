@@ -64,7 +64,7 @@ static void print_res_end(int index, const char* name, int res)
 
 
 
-static void print_end(int index, int res)
+static void print_end(int index, int res, const char** failed_tests, uint32_t failed_count)
 {
     printf("--------------------------------------------------\n");
     if (index > 0 && res == 0)
@@ -73,6 +73,16 @@ static void print_end(int index, int res)
         printf("\x1b[31m%d/%d tests FAILED.\x1b[0m\n", res, index);
     else
         printf("\x1b[31mThere were no tests.\x1b[0m\n");
+
+    if (res > 0 && failed_tests != NULL && failed_count > 0)
+    {
+        printf("\x1b[31mFailed tests:\x1b[0m\n");
+        for (uint32_t i = 0; i < failed_count; ++i)
+        {
+            const char* name = failed_tests[i];
+            printf("  - %s\n", name != NULL ? name : "(unnamed)");
+        }
+    }
 }
 
 
@@ -183,6 +193,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
 
     int total_res = 0;
     int index = 0;
+    std::vector<const char*> failed_tests;
 
     // Second step: Execute grouped tests
     for (auto& group : grouped_tests)
@@ -203,6 +214,10 @@ void tst_suite_run(TstSuite* suite, const char* match)
             int res = item->test(suite, item);
             print_res_end(index, item->name, res);
             total_res += (res == 0 ? 0 : 1);
+            if (res != 0)
+            {
+                failed_tests.push_back(item->name);
+            }
             ++index;
         }
 
@@ -225,6 +240,10 @@ void tst_suite_run(TstSuite* suite, const char* match)
         int res = item->test(suite, item);
         print_res_end(index, item->name, res);
         total_res += (res == 0 ? 0 : 1);
+        if (res != 0)
+        {
+            failed_tests.push_back(item->name);
+        }
         ++index;
 
         if (item->teardown != NULL)
@@ -234,7 +253,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
     }
 
     // TODO: mark as PASS or FAIL depending on the res
-    print_end(index, total_res);
+    print_end(index, total_res, failed_tests.data(), (uint32_t)failed_tests.size());
 }
 
 
