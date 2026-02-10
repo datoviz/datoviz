@@ -359,6 +359,17 @@ Use this workflow for every task:
 4. Merge only if acceptance criteria are met.
 
 
+## AI execution guide (how to use agents for coding)
+
+1. Always select exactly one task ID from the backlog before coding.
+2. Confirm scope: list files to change, tests to add/update, and acceptance commands.
+3. Keep patches small and reviewable (prefer 5-15 files).
+4. Run the relevant tests and report failures verbatim; if tests cannot be run,
+   state why explicitly.
+5. Do not proceed to the next milestone until the current gate is green.
+6. If a task’s acceptance criteria are not met, do not mark it done.
+
+
 ## Task sizing rules for Codex
 
 1. One PR/task should be 1 logical change, ideally 5 to 15 files.
