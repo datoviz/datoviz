@@ -27,4 +27,6 @@
 #include "vklite/sampler.h"
 #include "vklite/shader.h"
 #include "vklite/slots.h"
+#include "vklite/surface.h"
+#include "vklite/swapchain.h"
 #include "vklite/sync.h"

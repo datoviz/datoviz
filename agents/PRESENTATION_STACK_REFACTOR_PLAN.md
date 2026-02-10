@@ -31,9 +31,29 @@ Primary objective:
 2. Canvas currently owns raw Vulkan presentation logic in `src/canvas/swapchain_sink.c`:
    `vkGetPhysicalDeviceSurface*`, `vkCreateSwapchainKHR`, `vkGetSwapchainImagesKHR`,
    `vkAcquireNextImageKHR`, `vkQueuePresentKHR`.
-3. `include/datoviz/vklite/surface.h` and `include/datoviz/vklite/swapchain.h` do not exist yet.
+3. `include/datoviz/vklite/surface.h` and `include/datoviz/vklite/swapchain.h` now exist and
+   freeze the public presentation API surface for M1.
 4. Video sink integration already exists via stream sinks (`src/video/video_sink.c`) and uses
    timeline/value-based synchronization.
+
+### PRES-000 baseline verification (code-audited)
+
+1. Verified raw presentation call sites in `src/canvas/swapchain_sink.c`:
+   `vkGetPhysicalDeviceSurfaceCapabilitiesKHR`, `vkGetPhysicalDeviceSurfaceFormatsKHR`,
+   `vkGetPhysicalDeviceSurfacePresentModesKHR`, `vkCreateSwapchainKHR`,
+   `vkGetSwapchainImagesKHR`, `vkAcquireNextImageKHR`, `vkQueuePresentKHR`,
+   `vkDestroySwapchainKHR`.
+2. Verified native surface destroy remains in window backend:
+   `src/window/backend_glfw.c` calls `vkDestroySurfaceKHR`, which matches target ownership.
+3. Verified stream/video wait-value path is active:
+   `dvz_canvas_stream_submit()` forwards `wait_value` to `dvz_stream_submit()`,
+   then `src/video/video_sink.c` forwards it to encoder backends via
+   `dvz_video_encoder_submit(wait_value)`.
+4. Verified handle export path currently originates in canvas presentation code:
+   `src/canvas/swapchain_sink.c` writes `frame->memory_fd` and exports `frame->wait_semaphore_fd`
+   from the canvas timeline semaphore.
+5. Result: current branch still matches pre-migration architecture; M2 migration must remove the
+   raw swapchain/surface Vulkan call sites from canvas while preserving stream/video semantics.
 
 
 ## Target architecture (for this phase)
