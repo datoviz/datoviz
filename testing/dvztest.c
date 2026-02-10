@@ -16,6 +16,7 @@
 
 #include <stddef.h>
 
+#include "_log.h"
 #include "../src/canvas/tests/test_canvas.h"
 #include "../src/common/tests/test_common.h"
 #include "../src/ds/tests/test_ds.h"
@@ -40,6 +41,8 @@
 
 int main(int argc, char** argv)
 {
+    log_set_level_env();
+
     TstSuite suite = tst_suite();
 
     test_common(&suite);

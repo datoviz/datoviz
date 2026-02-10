@@ -198,6 +198,14 @@ static void _lock(void* udata, int lock)
         dvz_mutex_unlock(&mutex);
 }
 
+
+
+/**
+ * Set the logger level from the DVZ_LOG_LEVEL environment variable.
+ *
+ * @param void This function has no arguments.
+ * @return void This function does not return a value.
+ */
 void log_set_level_env(void)
 {
     const char* level = getenv("DVZ_LOG_LEVEL");
