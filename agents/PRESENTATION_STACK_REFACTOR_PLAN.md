@@ -57,7 +57,7 @@ Primary objective:
 
 ## API and contract model
 
-## Public API (minimal additions)
+### Public API (minimal additions)
 
 Planned public headers:
 1. `include/datoviz/vklite/surface.h`
@@ -78,11 +78,46 @@ Planned public functions:
 9. `dvz_swapchain_present()`
 10. `dvz_swapchain_destroy()`
 
+Proposed public signatures (freeze before M1 implementation):
+```c
+typedef enum DvzPresentStatus
+{
+    DVZ_PRESENT_STATUS_OK = 0,
+    DVZ_PRESENT_STATUS_RECREATE,
+    DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT,
+    DVZ_PRESENT_STATUS_DEVICE_LOST,
+    DVZ_PRESENT_STATUS_ERROR,
+} DvzPresentStatus;
+
+bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family);
+bool dvz_surface_wrap_native(DvzSurface* surface, VkSurfaceKHR surface_khr, DvzWindow* window);
+bool dvz_surface_refresh(DvzSurface* surface);
+void dvz_surface_destroy(DvzSurface* surface);
+
+bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surface);
+bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config);
+DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size);
+DvzPresentStatus dvz_swapchain_acquire(
+    DvzSwapchain* swapchain, VkSemaphore image_available, uint64_t timeout_ns, uint32_t* image_idx);
+DvzPresentStatus dvz_swapchain_present(
+    DvzSwapchain* swapchain, VkQueue present_queue, uint32_t image_idx, VkSemaphore render_finished);
+void dvz_swapchain_destroy(DvzSwapchain* swapchain);
+```
+
+API semantics and ownership:
+1. `dvz_surface_wrap_native()` never creates or destroys `VkSurfaceKHR`; ownership remains in `window`.
+2. `dvz_surface_destroy()` only clears cached capabilities/formats/modes; it must never destroy native surface.
+3. `dvz_swapchain_destroy()` always destroys swapchain and swapchain image views owned by `vklite`.
+4. `dvz_swapchain_acquire()` and `dvz_swapchain_present()` never allocate heap memory in steady-state.
+5. `DVZ_PRESENT_STATUS_RECREATE` is the only recoverable resize/out-of-date signal returned to canvas.
+6. `DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT` is returned when window extent is zero and frame must be skipped.
+7. Any failure path must emit a diagnostic with object id, frame index, and Vulkan result code.
+
 Public API non-goals:
 1. No new public video API is required for this phase unless a concrete blocker appears.
 2. Video synchronization specifics are internal integration contracts, validated by tests.
 
-## Internal integration contracts (must be explicit in code comments/tests)
+### Internal integration contracts (must be explicit in code comments/tests)
 
 1. Ownership/lifecycle contract:
    1. `window` owns native surface lifetime.
@@ -97,12 +132,126 @@ Public API non-goals:
    1. Live screencast mode requires presentation + video synchronization path.
    2. Offline/headless mode must support encoding without swapchain present dependency.
 
+Synchronization ordering invariants:
+1. Live mode ordering per frame `N`:
+   1. `acquire(N)` completes.
+   2. draw callback enqueues GPU work for `N`.
+   3. stream submit signals timeline value `wait_value(N)`.
+   4. video sink receives `wait_value(N)` before handle export for frame `N` is consumed.
+   5. present for frame `N` is submitted after render-finished semaphore for `N`.
+2. Offline/headless ordering per frame `N`:
+   1. draw callback enqueues GPU work for `N`.
+   2. stream submit signals timeline value `wait_value(N)`.
+   3. video sink waits on `wait_value(N)` or explicit fallback semaphore before encode.
+   4. no swapchain present is required.
+3. Handle-refresh invariants on recreate:
+   1. any changed handle (`memory_fd`, `wait_semaphore_fd`, image metadata) invalidates previous sink bindings.
+   2. sink registry receives refresh notification before next encode submission.
+   3. frame `N+1` must not encode using handles exported before latest recreate boundary.
+
+### Presentation state machine contract
+
+Runtime states:
+1. `UNINITIALIZED`
+2. `READY`
+3. `ACQUIRE_PENDING`
+4. `DRAW_PENDING`
+5. `PRESENT_PENDING`
+6. `RECREATE_PENDING`
+7. `SUSPENDED_ZERO_EXTENT`
+8. `FATAL_DEVICE_LOST`
+
+Transition rules:
+1. `UNINITIALIZED -> READY` after successful surface/swapchain init.
+2. `READY -> ACQUIRE_PENDING` at frame begin in live mode.
+3. `ACQUIRE_PENDING -> DRAW_PENDING` on `DVZ_PRESENT_STATUS_OK` from acquire.
+4. `ACQUIRE_PENDING -> RECREATE_PENDING` on `DVZ_PRESENT_STATUS_RECREATE`.
+5. `ACQUIRE_PENDING -> SUSPENDED_ZERO_EXTENT` on `DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT`.
+6. `DRAW_PENDING -> PRESENT_PENDING` after stream submit success in live mode.
+7. `DRAW_PENDING -> READY` after stream submit success in offline/headless mode.
+8. `PRESENT_PENDING -> READY` on `DVZ_PRESENT_STATUS_OK` from present.
+9. `PRESENT_PENDING -> RECREATE_PENDING` on `DVZ_PRESENT_STATUS_RECREATE`.
+10. `RECREATE_PENDING -> READY` after recreate success and handle-refresh completion.
+11. `SUSPENDED_ZERO_EXTENT -> RECREATE_PENDING` when extent becomes non-zero.
+12. any state -> `FATAL_DEVICE_LOST` on unrecoverable device loss.
+
+Vulkan result mapping:
+1. `VK_SUCCESS` maps to `DVZ_PRESENT_STATUS_OK`.
+2. `VK_SUBOPTIMAL_KHR` and `VK_ERROR_OUT_OF_DATE_KHR` map to `DVZ_PRESENT_STATUS_RECREATE`.
+3. zero extent maps to `DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT` without Vulkan submit/present calls.
+4. `VK_ERROR_DEVICE_LOST` maps to `DVZ_PRESENT_STATUS_DEVICE_LOST`.
+5. all other non-success results map to `DVZ_PRESENT_STATUS_ERROR`.
+
 
 ## Non-goals for this refactor phase
 
 1. No DRP/WebGPU command model work in this document.
 2. No scene/renderer high-level API rewrite in this document.
 3. No rearchitecture of stream/video subsystem beyond synchronization and lifecycle correctness.
+
+
+## Migration map (file/symbol level)
+
+Moves from canvas to vklite:
+1. Move surface capability queries out of `src/canvas/swapchain_sink.c` into `src/vklite/surface.c`.
+2. Move swapchain create/recreate image enumeration out of `src/canvas/swapchain_sink.c` into
+   `src/vklite/swapchain.c`.
+3. Move acquire/present Vulkan entrypoint usage out of `src/canvas/swapchain_sink.c` into
+   `src/vklite/swapchain.c`.
+
+Canvas responsibilities that remain in place:
+1. Frame loop orchestration in `src/canvas/*` remains authoritative.
+2. Offscreen render-target and copy/blit policy in `src/canvas/*` remains in canvas.
+3. Stream sink submission ordering and callback wiring remain in canvas/stream integration code.
+
+Expected raw Vulkan presentation call sites after migration:
+1. Allowed in `src/vklite/surface.c` and `src/vklite/swapchain.c`.
+2. Not allowed in `src/canvas/*`.
+
+Deletion/deprecation targets by M5:
+1. Remove duplicate/obsolete canvas helpers that duplicate `vklite` surface/swapchain logic.
+2. Remove direct includes in canvas that are only needed for raw swapchain/surface Vulkan calls.
+3. Update comments and plan references that still describe canvas-owned swapchain internals.
+
+
+## Test matrix and environment gating
+
+Build/test commands (canonical):
+1. `just clean`
+2. `just build`
+3. `./dvztest vklite`
+4. `./dvztest canvas`
+5. `./dvztest stream`
+6. `./dvztest video`
+
+Test matrix:
+1. `vklite_surface_query`:
+   1. Preconditions: Vulkan instance/device available.
+   2. Assertions: queried formats/modes/capabilities are cached and refreshable.
+2. `vklite_swapchain_recreate`:
+   1. Preconditions: window+surface available.
+   2. Assertions: recreate destroys old image views, builds new views, and returns expected status.
+3. `canvas_present_recovery`:
+   1. Preconditions: live mode with swapchain path.
+   2. Assertions: `OUT_OF_DATE/SUBOPTIMAL` transitions to recreate path and resumes steady-state.
+4. `canvas_zero_extent_suspend`:
+   1. Preconditions: resizable window.
+   2. Assertions: zero extent produces skip state, non-zero extent resumes without crash/leak.
+5. `video_wait_value_propagation`:
+   1. Preconditions: video sink configured.
+   2. Assertions: sink observes monotonically increasing `wait_value` aligned to submitted frames.
+6. `video_handle_refresh_after_recreate`:
+   1. Preconditions: recreate event during live capture.
+   2. Assertions: sink refresh triggers before next encode, stale handles are never consumed.
+7. `offline_headless_encode`:
+   1. Preconditions: headless/offline path enabled.
+   2. Assertions: encode succeeds without swapchain present dependency.
+
+Environment gating policy:
+1. If required Vulkan capabilities are missing, test must skip with explicit reason string.
+2. If platform lacks desktop presentation support, live-only tests skip and headless tests still run.
+3. If encoder backend is unavailable, video tests skip with explicit backend/capability reason.
+4. Skip is valid; silent pass/fail without capability report is not valid.
 
 
 ## Milestone plan
@@ -143,11 +292,12 @@ Introduce vklite surface/swapchain public API and core implementation.
 
 ### Tests
 1. Build with new headers/sources.
-2. Add vklite tests for surface query and swapchain create/recreate basics.
+2. Add and run `vklite_surface_query` and `vklite_swapchain_recreate` tests.
 
 ### Exit criteria
 1. New vklite presentation headers compile and are exported.
 2. vklite can acquire/present through its own API.
+3. Core vklite tests pass before canvas migration begins.
 
 
 ## M2 - Canvas migration and boundary enforcement
@@ -163,12 +313,14 @@ Make canvas orchestration-only for presentation flow.
 4. Enforce lifecycle ordering during destroy/recreate paths.
 
 ### Tests
-1. Canvas frame acquire/submit smoke tests.
-2. Resize and out-of-date recovery tests.
+1. Run `canvas_present_recovery`.
+2. Run `canvas_zero_extent_suspend`.
+3. Run presentation-layer regression tests from M1 after migration.
 
 ### Exit criteria
 1. No raw Vulkan swapchain/surface calls remain in canvas.
 2. Acquire/present works through canvas using vklite-backed path.
+3. Presentation regression tests remain green post-migration.
 
 
 ## M3 - Synchronization and video integration hardening
@@ -185,9 +337,9 @@ Finalize synchronization semantics and video sink integration.
 4. Ensure external semaphore fallback behavior is explicit and logged.
 
 ### Tests
-1. Live capture synchronization smoke test (presentation + video sink).
-2. Handle-change/recreate tests verifying sink refresh correctness.
-3. Backend behavior checks for timeline wait/fallback paths.
+1. Run `video_wait_value_propagation`.
+2. Run `video_handle_refresh_after_recreate`.
+3. Run backend behavior checks for timeline wait/fallback paths.
 
 ### Exit criteria
 1. Video encoding does not consume stale handles after recreate/resize.
@@ -207,8 +359,8 @@ Validate both supported capture modes as first-class workflows.
 3. Add/adjust tests and runbook notes for both modes.
 
 ### Tests
-1. Live desktop capture test path.
-2. Offline/headless encode test path.
+1. Run live desktop capture validation path with capability gating.
+2. Run `offline_headless_encode`.
 
 ### Exit criteria
 1. Both modes pass with explicit capability checks and expected behavior.
@@ -241,37 +393,41 @@ Finalize implementation quality and remove obsolete logic.
 ## Agent task board
 
 1. `PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
-2. `PRES-010` Add public vklite presentation headers and exports.
-3. `PRES-020` Implement `vklite` surface wrapper.
-4. `PRES-030` Implement `vklite` swapchain wrapper.
-5. `PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
-6. `PRES-050` Migrate canvas presentation path to vklite API.
-7. `PRES-055` Implement deterministic handle-refresh and sink-restart policy.
-8. `PRES-060` Harden resize/out-of-date/zero-extent state machine.
-9. `PRES-070` Finalize queue/semaphore/fence ownership rules.
-10. `PRES-075` Finalize video synchronization and sink ordering contract.
-11. `PRES-080` Add presentation-layer tests (surface/swapchain/recreate/recovery).
-12. `PRES-085` Add capture-mode validation tests (live + offline/headless).
-13. `PRES-090` Cleanup dead code and boundary violations.
-14. `PRES-100` Final validation gate.
+2. `PRES-005` Freeze API signatures, return semantics, and state-machine mapping in headers/docs.
+3. `PRES-010` Add public vklite presentation headers and exports.
+4. `PRES-020` Implement `vklite` surface wrapper.
+5. `PRES-030` Implement `vklite` swapchain wrapper.
+6. `PRES-080` Add presentation-layer tests (surface/swapchain/recreate/recovery).
+7. `PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
+8. `PRES-050` Migrate canvas presentation path to vklite API.
+9. `PRES-055` Implement deterministic handle-refresh and sink-restart policy.
+10. `PRES-060` Harden resize/out-of-date/zero-extent state machine.
+11. `PRES-070` Finalize queue/semaphore/fence ownership rules.
+12. `PRES-075` Finalize video synchronization and sink ordering contract.
+13. `PRES-085` Add capture-mode validation tests (live + offline/headless).
+14. `PRES-090` Cleanup dead code and boundary violations.
+15. `PRES-100` Final validation gate.
 
 
 ## Canonical execution order
 
 1. M0 (`PRES-000`)
-2. M1 (`PRES-010`, `PRES-020`, `PRES-030`)
+2. M1 (`PRES-005`, `PRES-010`, `PRES-020`, `PRES-030`, `PRES-080`)
 3. M2 (`PRES-040`, `PRES-050`)
 4. M3 (`PRES-055`, `PRES-060`, `PRES-070`, `PRES-075`)
-5. M4 (`PRES-080`, `PRES-085`)
+5. M4 (`PRES-085`)
 6. M5 (`PRES-090`, `PRES-100`)
 
 
 ## Completion checklist
 
 1. Vklite surface/swapchain public headers and sources are present and wired.
-2. Canvas no longer directly uses raw Vulkan swapchain/surface APIs.
-3. Window/canvas/vklite ownership and destroy/recreate ordering are enforced.
-4. Synchronization contract (`wait_value`, handle refresh, sink ordering) is implemented.
-5. Live screencast and offline/headless capture modes are both validated.
-6. `just build` and required `dvztest` filters pass.
-7. Plan artifacts and code comments reflect final behavior.
+2. Public API signatures and return semantics are frozen and reflected in headers.
+3. Canvas no longer directly uses raw Vulkan swapchain/surface APIs.
+4. Window/canvas/vklite ownership and destroy/recreate ordering are enforced.
+5. Synchronization contract (`wait_value`, handle refresh, sink ordering) is implemented.
+6. Presentation state machine behavior matches documented transition and result mapping rules.
+7. Live screencast and offline/headless capture modes are both validated.
+8. `just build` and required `dvztest` filters pass.
+9. Test gating emits explicit skip reasons when capabilities are missing.
+10. Plan artifacts and code comments reflect final behavior.
