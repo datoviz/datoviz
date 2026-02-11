@@ -188,8 +188,7 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
         log_info("  [%02u] %s", i, extensions[i]);
     }
 
-    // Free the array of strings.
-    dvz_free_strings(count, extensions);
+    // NOTE: `extensions` is owned by `gpu` and released in dvz_instance_destroy().
 
     dvz_instance_destroy(&instance);
     return 0;
