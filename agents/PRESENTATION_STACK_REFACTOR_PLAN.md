@@ -11,6 +11,39 @@ Primary objective:
    encoding paths.
 
 
+## Progress tracking (live)
+
+Legend:
+1. `[x]` done
+2. `[~]` in progress
+3. `[ ]` not started
+
+Current status:
+1. Current milestone: `M1 - VKLite presentation API bring-up`
+2. Current task: `PRES-080 - Add presentation-layer tests (surface/swapchain/recreate/recovery)`
+3. Last completed task: `PRES-030 - Implement vklite swapchain wrapper`
+4. Last updated: `2026-02-11`
+5. Note: pre-`PRES-080` API/implementation polish applied (`dvz_swapchain_device()`, enum warning
+   cleanup, zero-extent normalization).
+
+Task board status:
+1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
+2. `[x] PRES-005` Freeze API signatures, return semantics, and state-machine mapping in headers/docs.
+3. `[x] PRES-010` Add public vklite presentation headers and exports.
+4. `[x] PRES-020` Implement `vklite` surface wrapper.
+5. `[x] PRES-030` Implement `vklite` swapchain wrapper.
+6. `[~] PRES-080` Add presentation-layer tests (surface/swapchain/recreate/recovery).
+7. `[ ] PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
+8. `[ ] PRES-050` Migrate canvas presentation path to vklite API.
+9. `[ ] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
+10. `[ ] PRES-060` Harden resize/out-of-date/zero-extent state machine.
+11. `[ ] PRES-070` Finalize queue/semaphore/fence ownership rules.
+12. `[ ] PRES-075` Finalize video synchronization and sink ordering contract.
+13. `[ ] PRES-085` Add capture-mode validation tests (live + offline/headless).
+14. `[ ] PRES-090` Cleanup dead code and boundary violations.
+15. `[ ] PRES-100` Final validation gate.
+
+
 ## Ground rules
 
 1. Module boundaries are the source of truth:
