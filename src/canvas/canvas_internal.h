@@ -157,4 +157,6 @@ bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas);
 
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);
 
+void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index);
+
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);

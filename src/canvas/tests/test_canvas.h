@@ -32,6 +32,10 @@ int test_canvas_timings(TstSuite* suite, TstItem* item);
 
 int test_canvas_glfw(TstSuite* suite, TstItem* item);
 
+int test_canvas_swapchain_failfast_slot_init(TstSuite* suite, TstItem* item);
+
+int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item);
+
 
 
 int test_canvas(TstSuite* suite);

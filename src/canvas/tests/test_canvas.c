@@ -17,6 +17,7 @@
 #include "canvas_internal.h"
 #include <stdlib.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
@@ -50,6 +51,18 @@ typedef struct CanvasGlfwClearContext
     DvzDevice* device;
     VkFormat format;
 } CanvasGlfwClearContext;
+
+
+
+typedef struct CanvasGlfwFixture
+{
+    DvzInstance instance;
+    DvzWindowHost* host;
+    DvzDevice device;
+    DvzWindow* window;
+    DvzCanvas* canvas;
+    bool device_initialized;
+} CanvasGlfwFixture;
 
 
 
@@ -123,6 +136,165 @@ static void canvas_glfw_keyboard_callback(
 
 
 /*************************************************************************************************/
+/*  Test fixtures                                                                                */
+/*************************************************************************************************/
+
+/**
+ * Initialize a GLFW-backed canvas fixture for integration tests.
+ *
+ * @param fixture fixture storage to initialize
+ * @param[out] skipped true when the environment cannot run the fixture and the test should skip
+ * @return 0 on success, -1 on setup failure
+ */
+static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
+{
+    ANN(fixture);
+    ANN(skipped);
+
+    *skipped = false;
+    dvz_memset(fixture, sizeof(*fixture), 0, sizeof(*fixture));
+
+#if !DVZ_HAS_GLFW
+    *skipped = true;
+    log_warn("canvas glfw fixture skipped because Datoviz was not build with glfw support");
+    return 0;
+#else
+    dvz_instance(&fixture->instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    dvz_instance_request_extension(&fixture->instance, VK_KHR_SURFACE_EXTENSION_NAME);
+
+    fixture->host = dvz_window_host();
+    ANN(fixture->host);
+
+    if (!dvz_window_glfw_init())
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because GLFW could not initialize");
+        return 0;
+    }
+
+    uint32_t ext_count = 0;
+    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
+    if (extensions == NULL || ext_count == 0)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because GLFW returned no Vulkan instance extensions");
+        return 0;
+    }
+    for (uint32_t i = 0; i < ext_count; i++)
+    {
+        dvz_instance_request_extension(&fixture->instance, extensions[i]);
+    }
+
+    if (dvz_instance_create(&fixture->instance, VK_API_VERSION_1_3) != 0)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because Vulkan instance creation failed");
+        return 0;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&fixture->instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because no Vulkan GPU was found");
+        return 0;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    dvz_gpu_device(gpu, &fixture->device);
+    fixture->device_initialized = true;
+    dvz_queues(caps, &fixture->device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&fixture->device);
+    fet12->timelineSemaphore = true;
+
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&fixture->device);
+    features->synchronization2 = true;
+    features->dynamicRendering = true;
+
+    dvz_device_request_canvas_extensions(&fixture->device);
+    if (dvz_device_create(&fixture->device) != 0)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because Vulkan device creation failed");
+        return 0;
+    }
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-glfw-test";
+    fixture->window = dvz_window_create(fixture->host, DVZ_BACKEND_GLFW, &window_cfg);
+    if (fixture->window == NULL || dvz_window_backend_type(fixture->window) != DVZ_BACKEND_GLFW)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because GLFW window creation failed");
+        return 0;
+    }
+
+    dvz_window_host_poll(fixture->host);
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = fixture->window;
+    cfg.device = &fixture->device;
+    cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    cfg.timing_history = 1;
+
+    fixture->canvas = dvz_canvas_create(&cfg);
+    if (fixture->canvas == NULL)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because canvas creation failed");
+        return 0;
+    }
+    return 0;
+#endif
+}
+
+
+
+/**
+ * Destroy all resources owned by a GLFW canvas fixture.
+ *
+ * @param fixture fixture storage to cleanup
+ */
+static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
+{
+    if (fixture == NULL)
+    {
+        return;
+    }
+
+    dvz_canvas_swapchain_test_fail_slot(-1);
+    if (fixture->canvas != NULL)
+    {
+        dvz_canvas_set_draw_callback(fixture->canvas, NULL, NULL);
+        dvz_canvas_destroy(fixture->canvas);
+        fixture->canvas = NULL;
+    }
+    if (fixture->window != NULL)
+    {
+        dvz_window_destroy(fixture->window);
+        fixture->window = NULL;
+    }
+    if (fixture->host != NULL)
+    {
+        dvz_window_host_destroy(fixture->host);
+        fixture->host = NULL;
+    }
+    if (fixture->device_initialized)
+    {
+        dvz_device_destroy(&fixture->device);
+        fixture->device_initialized = false;
+    }
+    dvz_instance_destroy(&fixture->instance);
+}
+
+
+
+/*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
@@ -186,6 +358,130 @@ int test_canvas_timings(TstSuite* suite, TstItem* item)
     AT(samples != NULL);
     AT(count == 4);
     dvz_canvas_timings_release(&timings);
+    return 0;
+}
+
+
+
+/**
+ * Ensure slot initialization failures abort swapchain creation without partial-frame progression.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_swapchain_failfast_slot_init(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    dvz_canvas_swapchain_test_fail_slot(0);
+    dvz_window_host_poll(fixture.host);
+    int frame_rc = dvz_canvas_frame(canvas);
+    AT(frame_rc < 0);
+
+    dvz_canvas_swapchain_test_fail_slot(-1);
+    bool resumed = false;
+    for (uint32_t i = 0; i < 12; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        resumed = true;
+        break;
+    }
+    AT(resumed);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Validate explicit out-of-date recovery on GLFW: recreate and resume frame submissions.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+    uint64_t frame_id_before = canvas->frame_id;
+    uint64_t timeline_before = canvas->timeline_value;
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    bool got_first_submit = false;
+    bool got_recovery_submit = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+
+        if (!got_first_submit)
+        {
+            got_first_submit = true;
+            dvz_canvas_swapchain_mark_out_of_date(canvas);
+            continue;
+        }
+
+        got_recovery_submit = true;
+        break;
+    }
+    AT(got_first_submit);
+    AT(got_recovery_submit);
+    AT(canvas->frame_id >= frame_id_before + 2);
+    AT(canvas->timeline_value >= timeline_before + 2);
+
+    canvas_glfw_fixture_destroy(&fixture);
     return 0;
 }
 
@@ -454,6 +750,8 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_defaults);
     TEST_SIMPLE(test_canvas_frame_pool);
     TEST_SIMPLE(test_canvas_timings);
+    TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
+    TEST_SIMPLE(test_canvas_glfw_present_recovery);
     TEST_SIMPLE(test_canvas_glfw);
     return 0;
 }

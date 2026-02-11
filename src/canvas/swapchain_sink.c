@@ -91,14 +91,8 @@ struct DvzCanvasSwapchain
     DvzSurface surface_wrapper;
     DvzSwapchain swapchain_wrapper;
     bool wrappers_ready;
-    VkSwapchainKHR handle;
-    VkFormat format;
-    VkColorSpaceKHR color_space;
-    VkExtent2D extent;
-    VkPresentModeKHR present_mode;
     uint32_t image_count;
     DvzCanvasSwapchainSlot* slots;
-    VkImage* swapchain_images;
     VkImageLayout* swapchain_layouts;
     uint32_t frame_index;
     bool dirty;
@@ -116,6 +110,10 @@ struct DvzCanvasSwapchainState
 {
     DvzCanvas* canvas;
 };
+
+
+
+static int32_t canvas_test_fail_slot_index = -1;
 
 
 
@@ -305,7 +303,8 @@ static void canvas_cmd_copy_frame(
     ANN(slot);
     ANNVK(cmd);
 
-    if (swapchain->extent.width == 0 || swapchain->extent.height == 0)
+    VkExtent2D extent = swapchain->swapchain_wrapper.extent;
+    if (extent.width == 0 || extent.height == 0)
     {
         return;
     }
@@ -320,12 +319,12 @@ static void canvas_cmd_copy_frame(
     DvzCommands cmds = {0};
     dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
 
-    if (swapchain->frame_format == swapchain->format)
+    if (swapchain->frame_format == swapchain->swapchain_wrapper.image_format)
     {
         DvzImageCopy copy = {0};
         dvz_cmd_copy_source(
-            &copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, swapchain->extent.width,
-            swapchain->extent.height, 1);
+            &copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, extent.width, extent.height,
+            1);
         dvz_cmd_copy_destination(&copy, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
         dvz_cmd_copy_image(&cmds, &copy);
     }
@@ -334,10 +333,10 @@ static void canvas_cmd_copy_frame(
         DvzImageBlit blit = {0};
         dvz_cmd_blit_source(
             &blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
-            (int32_t)swapchain->extent.width, (int32_t)swapchain->extent.height, 1);
+            (int32_t)extent.width, (int32_t)extent.height, 1);
         dvz_cmd_blit_destination(
             &blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
-            (int32_t)swapchain->extent.width, (int32_t)swapchain->extent.height, 1);
+            (int32_t)extent.width, (int32_t)extent.height, 1);
         dvz_cmd_blit_filter(&blit, VK_FILTER_NEAREST);
         dvz_cmd_blit_image(&cmds, &blit);
     }
@@ -513,14 +512,8 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
-    swapchain->handle = swapchain->swapchain_wrapper.handle;
-    swapchain->format = swapchain->swapchain_wrapper.image_format;
-    swapchain->color_space = swapchain->swapchain_wrapper.color_space;
-    swapchain->extent = swapchain->swapchain_wrapper.extent;
-    swapchain->present_mode = swapchain->swapchain_wrapper.present_mode;
     swapchain->frame_format = frame_format;
     uint32_t count = swapchain->swapchain_wrapper.image_count;
-    swapchain->swapchain_images = swapchain->swapchain_wrapper.images;
     if (swapchain->swapchain_layouts)
     {
         dvz_free(swapchain->swapchain_layouts);
@@ -556,6 +549,13 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->handles_dirty = false;
         slot->commands_recording = false;
         slot->memory_fd = -1;
+
+        if (canvas_test_fail_slot_index >= 0 && (int32_t)i == canvas_test_fail_slot_index)
+        {
+            log_warn("forcing canvas slot initialization failure at slot %u for testing", i);
+            slot_init_failed = true;
+            break;
+        }
 
         slot->command_buffer = dvz_command_buffer_alloc(canvas->device, swapchain->queue_family);
         if (slot->command_buffer == VK_NULL_HANDLE)
@@ -717,8 +717,6 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
         swapchain->slots = NULL;
     }
     dvz_swapchain_destroy(&swapchain->swapchain_wrapper);
-    swapchain->handle = VK_NULL_HANDLE;
-    swapchain->swapchain_images = NULL;
     if (swapchain->swapchain_layouts)
     {
         dvz_free(swapchain->swapchain_layouts);
@@ -756,7 +754,7 @@ static int canvas_swapchain_ensure(DvzCanvas* canvas)
     {
         return -1;
     }
-    if (!state->dirty && state->handle != VK_NULL_HANDLE)
+    if (!state->dirty && state->swapchain_wrapper.handle != VK_NULL_HANDLE)
     {
         return 0;
     }
@@ -796,7 +794,6 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain = (DvzCanvasSwapchain*)dvz_calloc(1, sizeof(DvzCanvasSwapchain));
     ANN(canvas->swapchain);
     canvas->swapchain->canvas = canvas;
-    canvas->swapchain->handle = VK_NULL_HANDLE;
     canvas->swapchain->dirty = true;
     canvas->swapchain->frame_index = 0;
     canvas->swapchain->frame_format = canvas_frame_format(canvas);
@@ -869,6 +866,18 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas)
 
 
 
+/**
+ * Configure a test-only slot index that forces swapchain slot initialization failure.
+ *
+ * @param slot_index slot index to fail, or -1 to disable forced failure
+ */
+void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index)
+{
+    canvas_test_fail_slot_index = slot_index;
+}
+
+
+
 bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas)
 {
     if (!canvas || !canvas->swapchain || !canvas->swapchain->active_slot)
@@ -907,9 +916,12 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     {
         return -1;
     }
-    if (canvas->surface && (canvas->surface->extent.width != state->extent.width ||
-                            canvas->surface->extent.height != state->extent.height ||
-                            canvas_surface_format(canvas) != state->format))
+    VkExtent2D current_extent = state->swapchain_wrapper.extent;
+    if (
+        canvas->surface && state->swapchain_wrapper.ready &&
+        (canvas->surface->extent.width != current_extent.width ||
+         canvas->surface->extent.height != current_extent.height ||
+         canvas_surface_format(canvas) != state->swapchain_wrapper.image_format))
     {
         state->dirty = true;
     }
@@ -996,7 +1008,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     frame->memory_size = slot->offscreen_alloc.info.size;
     frame->command_buffer = slot->command_buffer;
     frame->image_view = slot->offscreen_view;
-    frame->extent = state->extent;
+    frame->extent = state->swapchain_wrapper.extent;
     frame->handles_dirty = slot->handles_dirty;
     frame->memory_fd = slot->memory_fd;
     frame->wait_semaphore_fd = -1;
