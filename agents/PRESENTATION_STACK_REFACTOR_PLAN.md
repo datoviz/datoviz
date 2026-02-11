@@ -20,12 +20,13 @@ Legend:
 
 Current status:
 1. Current milestone: `M3 - Synchronization and video integration hardening`
-2. Current task: `PRES-070 - Finalize queue/semaphore/fence ownership rules`
+2. Current task: `PRES-090 - Cleanup dead code and boundary violations`
 3. Last completed task:
-   `PRES-060 - Harden resize/out-of-date/zero-extent state machine`
+   `PRES-070 - Finalize queue/semaphore/fence ownership rules`
 4. Last updated: `2026-02-11`
 5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
-   hardening/tests landed for fail-fast slot init, GLFW present recovery, and handle refresh order.
+   hardening/tests landed for fail-fast slot init, GLFW present recovery, handle refresh order,
+   queue-submit error propagation, and startup-time timeline-handle wiring for video sinks.
 
 Task board status:
 1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
@@ -40,11 +41,24 @@ Task board status:
 9. `[x] PRES-082` Add end-to-end present recovery test (OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume).
 10. `[x] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
 11. `[x] PRES-060` Harden resize/out-of-date/zero-extent state machine.
-12. `[~] PRES-070` Finalize queue/semaphore/fence ownership rules.
-13. `[ ] PRES-075` Finalize video synchronization and sink ordering contract.
+12. `[x] PRES-070` Finalize queue/semaphore/fence ownership rules.
+13. `[~] PRES-075` Finalize video synchronization and sink ordering contract.
 14. `[ ] PRES-085` Add capture-mode validation tests (live + offline/headless).
-15. `[ ] PRES-090` Cleanup dead code and boundary violations.
+15. `[~] PRES-090` Cleanup dead code and boundary violations.
 16. `[ ] PRES-100` Final validation gate.
+
+Immediate next actions:
+1. `PRES-075`:
+   1. Add a canvas/video integration test that asserts the first started video sink frame has a
+      valid timeline wait-handle path (or an explicit fallback path) before first encode submit.
+   2. Add a negative-path test for timeline handle export/import failure that validates deterministic
+      fallback behavior and diagnostics.
+   3. Document startup/recreate sync-handle ordering in code comments adjacent to stream start/update.
+2. `PRES-090`:
+   1. Continue reducing `src/canvas/swapchain_sink.c` by extracting recreate/cleanup/acquire helpers
+      while preserving current behavior.
+   2. Remove any now-redundant includes/comments that still imply post-present handle export.
+   3. Keep canvas/vklite regression filters green after each extraction step.
 
 
 ## Ground rules
@@ -110,8 +124,14 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
 3. `PRES-055` completed: deterministic handle-refresh policy is in place and tested.
 4. `PRES-060` completed: canvas swapchain path now uses an explicit runtime-state model and enforces
    deterministic `DEVICE_LOST -> FATAL_DEVICE_LOST` transition handling.
-5. `PRES-070` is in progress: ownership semantics are now codified in present-path comments and
-   guarded by state transitions/tests, but a final documentation sweep is still pending.
+5. `PRES-070` completed: queue/semaphore/fence ownership is now enforced with explicit submit-failure
+   handling (`vkQueueSubmit2` result propagation into canvas runtime transitions, including
+   `DEVICE_LOST` fatal handling).
+6. `PRES-075` is in progress: timeline wait-semaphore handle export is now prepared before stream
+   start/update (instead of post-present), improving startup-time video synchronization semantics;
+   remaining contract/test closure is pending.
+7. `PRES-090` is in progress: dead/unused swapchain sink state was removed and slot setup has been
+   extracted into a dedicated helper to reduce monolithic complexity.
 
 
 ## Target architecture (for this phase)
