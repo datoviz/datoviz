@@ -469,6 +469,11 @@ When generating or editing code:
 
    * Keep the existing `_dvz_*` internal naming convention, but avoid introducing reserved forms such as `__name` and `_NAME`.
 
+8. **Collaboration preference (repo-wide).**
+
+   * When a reusable behavior is needed, prefer improving/exposing the public API instead of adding a new private helper.
+   * If a private helper is still needed, do not use the `dvz_` prefix (reserved for public API symbols) and avoid introducing new `_dvz_*` names.
+
 ---
 
 ## ✅ **Checklist for Codex**

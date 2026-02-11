@@ -50,6 +50,14 @@ static bool _glfw_init(void)
 {
     if (_glfw_state.initialized)
         return true;
+#if defined(__APPLE__)
+#ifdef GLFW_COCOA_MENUBAR
+    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_FALSE);
+#endif
+#ifdef GLFW_COCOA_CHDIR_RESOURCES
+    glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
+#endif
+#endif
     if (!glfwInit())
     {
         log_error("glfwInit() failed");

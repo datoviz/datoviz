@@ -427,19 +427,29 @@ void dvz_device_destroy(DvzDevice* device)
 /*  Extensions & features                                                                        */
 /*************************************************************************************************/
 
-void dvz_device_request_extension(DvzDevice* device, const char* extension)
+bool dvz_device_request_extension(DvzDevice* device, const char* extension)
 {
     ANN(device);
     ANN(extension);
 
     ANN(device->req_extensions);
     ASSERT(device->req_extension_count < DVZ_MAX_REQ_EXTENSIONS - 1);
+
+    if (device->gpu != NULL && !dvz_gpu_has_extension(device->gpu, extension))
+    {
+        log_trace("skip unsupported device extension %s", extension);
+        return false;
+    }
+
     log_trace("request device extensions %s", extension);
 
     if (!dvz_strings_contains(device->req_extension_count, device->req_extensions, extension))
     {
         device->req_extensions[device->req_extension_count++] = dvz_strdup(extension);
+        return true;
     }
+
+    return false;
 }
 
 
@@ -468,7 +478,7 @@ void dvz_device_request_canvas_extensions(DvzDevice* device)
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
 
-#if OS_UNIX
+#if OS_LINUX
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
     dvz_device_request_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
 #elif OS_WINDOWS

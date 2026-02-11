@@ -165,8 +165,9 @@ DVZ_EXPORT void dvz_device_request_canvas_extensions(DvzDevice* device);
  *
  * @param device the device
  * @param extension the requested extension
+ * @returns whether the extension was requested
  */
-DVZ_EXPORT void dvz_device_request_extension(DvzDevice* device, const char* extension);
+DVZ_EXPORT bool dvz_device_request_extension(DvzDevice* device, const char* extension);
 
 
 
