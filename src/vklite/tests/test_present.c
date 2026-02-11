@@ -289,34 +289,8 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         gpus = dvz_instance_gpus(&fixture->instance, &gpu_count);
         if (gpus == NULL || gpu_count == 0)
         {
-            const uint32_t versions[] = {VK_API_VERSION_1_2, VK_API_VERSION_1_1};
-            bool found_gpu = false;
-            for (uint32_t i = 0; i < 2; i++)
-            {
-                uint32_t version = versions[i];
-                log_warn(
-                    "vklite present tests: retrying Vulkan instance with API version %u.%u",
-                    VK_API_VERSION_MAJOR(version), VK_API_VERSION_MINOR(version));
-                dvz_instance_destroy(&fixture->instance);
-                fixture->instance_created = false;
-                if (!_present_instance_create(
-                        &fixture->instance, extensions, ext_count, version, true))
-                {
-                    continue;
-                }
-                fixture->instance_created = true;
-                gpus = dvz_instance_gpus(&fixture->instance, &gpu_count);
-                if (gpus != NULL && gpu_count > 0)
-                {
-                    found_gpu = true;
-                    break;
-                }
-            }
-            if (!found_gpu)
-            {
-                log_warn("vklite present tests skipped because no Vulkan GPU is available");
-                return false;
-            }
+            log_warn("vklite present tests skipped because no Vulkan GPU is available");
+            return false;
         }
     }
     fixture->gpu = &gpus[0];
