@@ -6,6 +6,9 @@ MAINTAINER := "Cyrille Rossant <cyrille.rossant@gmail.com>"
 DESCRIPTION := "A C library for high-performance GPU scientific visualization"
 TEMPLATES_DIR := "templates"
 
+# Use a non-system shell so macOS keeps DYLD_* variables from direnv/.envrc.
+set shell := ["bash", "-cu"]
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1536,21 +1539,7 @@ ttest test_name="": tsan
 
 [macos]
 test test_name="":
-    @ARCH="$(arch)"; \
-    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-        VK_ARCH="arm64"; \
-    else \
-        VK_ARCH="x86_64"; \
-    fi; \
-    VK_ROOT="$(pwd)/libs/vulkan/macos_$VK_ARCH"; \
-    if [ -f "$VK_ROOT/MoltenVK_icd.json" ]; then \
-        DYLD_LIBRARY_PATH="$VK_ROOT${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" \
-        VK_DRIVER_FILES="$VK_ROOT/MoltenVK_icd.json" \
-        VK_ICD_FILENAMES="$VK_ROOT/MoltenVK_icd.json" \
-        ./build/testing/dvztest {{test_name}}; \
-    else \
-        ./build/testing/dvztest {{test_name}}; \
-    fi
+    ./build/testing/dvztest {{test_name}}
 #
 
 [windows]

@@ -77,6 +77,16 @@ if [ "${_dvz_uname}" = "Darwin" ]; then
     else
         export DYLD_LIBRARY_PATH="${VULKAN_SDK}/lib"
     fi
+
+    # Keep a fallback search path as some launch contexts may ignore DYLD_LIBRARY_PATH.
+    if [ -n "${DYLD_FALLBACK_LIBRARY_PATH:-}" ]; then
+        case ":${DYLD_FALLBACK_LIBRARY_PATH}:" in
+            *:"${VULKAN_SDK}/lib":*) ;;
+            *) export DYLD_FALLBACK_LIBRARY_PATH="${VULKAN_SDK}/lib:${DYLD_FALLBACK_LIBRARY_PATH}" ;;
+        esac
+    else
+        export DYLD_FALLBACK_LIBRARY_PATH="${VULKAN_SDK}/lib"
+    fi
 else
     if [ -n "${LD_LIBRARY_PATH:-}" ]; then
         case ":${LD_LIBRARY_PATH}:" in
@@ -94,6 +104,9 @@ if [ -n "${VK_LAYER_PATH:-}" ]; then
 fi
 if [ -n "${VK_ICD_FILENAMES:-}" ]; then
     echo "datoviz: VK_ICD_FILENAMES set to ${VK_ICD_FILENAMES}" >&2
+fi
+if [ -n "${DYLD_FALLBACK_LIBRARY_PATH:-}" ]; then
+    echo "datoviz: DYLD_FALLBACK_LIBRARY_PATH set to ${DYLD_FALLBACK_LIBRARY_PATH}" >&2
 fi
 
 unset _dvz_vulkan_sdk_root

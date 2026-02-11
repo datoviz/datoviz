@@ -474,6 +474,11 @@ When generating or editing code:
    * When a reusable behavior is needed, prefer improving/exposing the public API instead of adding a new private helper.
    * If a private helper is still needed, do not use the `dvz_` prefix (reserved for public API symbols) and avoid introducing new `_dvz_*` names.
 
+9. **Treat vendored code as read-only by default.**
+
+   * Do not modify files under `external/` unless the task explicitly asks for changes there.
+   * Prefer fixing Datoviz-owned code (`src/`, `include/`, `testing/`, build wiring) instead of patching vendored dependencies.
+
 ---
 
 ## ✅ **Checklist for Codex**
@@ -483,6 +488,7 @@ Before submitting a PR or automated refactor:
 * [ ] New source in `src/<module>/` → uses `add_library(datoviz_<module> OBJECT ...)`
 * [ ] Internal shared code → `src/common/_*.{c,h}`
 * [ ] No new includes inside `include/datoviz/` unless public API
+* [ ] `external/` unchanged unless explicitly requested in the task
 * [ ] Test added under `src/<module>/tests/`
 * [ ] Builds with `cmake -B build && cmake --build build`
 * [ ] `./dvztest [filter]` passes (re-enable `enable_testing()` if you want `ctest`)
