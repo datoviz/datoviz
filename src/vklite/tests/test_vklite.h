@@ -104,6 +104,8 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem* tstitem);
+
 
 
 /*************************************************************************************************/

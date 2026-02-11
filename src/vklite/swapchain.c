@@ -127,11 +127,6 @@ static VkPresentModeKHR _swapchain_resolve_present_mode(const DvzSwapchain* swap
     ANN(swapchain->surface);
 
     VkPresentModeKHR requested = swapchain->config.present_mode;
-    if (requested == 0)
-    {
-        return swapchain->surface->preferred_present_mode;
-    }
-
     if (_swapchain_has_present_mode(swapchain->surface, requested))
     {
         return requested;
@@ -357,8 +352,9 @@ bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config)
 {
     ANN(swapchain);
 
+    bool is_zeroed = _swapchain_config_is_zeroed(config);
     swapchain->config = config;
-    if (_swapchain_config_is_zeroed(config))
+    if (is_zeroed)
     {
         swapchain->config.clipped = true;
     }
@@ -366,7 +362,7 @@ bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config)
     {
         swapchain->config.color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     }
-    if (swapchain->config.present_mode == 0)
+    if (is_zeroed)
     {
         swapchain->config.present_mode = VK_PRESENT_MODE_FIFO_KHR;
     }
@@ -518,10 +514,17 @@ DvzPresentStatus dvz_swapchain_acquire(
         !swapchain->ready || swapchain->handle == VK_NULL_HANDLE ||
         swapchain->device == VK_NULL_HANDLE)
     {
+        log_error(
+            "swapchain acquire invalid state (ready=%d has_handle=%d has_device=%d)",
+            swapchain->ready ? 1 : 0, swapchain->handle != VK_NULL_HANDLE ? 1 : 0,
+            swapchain->device != VK_NULL_HANDLE ? 1 : 0);
         return DVZ_PRESENT_STATUS_ERROR;
     }
     if (swapchain->extent.width == 0 || swapchain->extent.height == 0)
     {
+        log_warn(
+            "swapchain acquire skipped because extent is zero (%ux%u)", swapchain->extent.width,
+            swapchain->extent.height);
         return DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT;
     }
 
@@ -532,7 +535,14 @@ DvzPresentStatus dvz_swapchain_acquire(
     if (status == DVZ_PRESENT_STATUS_OK)
     {
         swapchain->current_image = *image_idx;
+        return status;
     }
+    if (status == DVZ_PRESENT_STATUS_RECREATE)
+    {
+        log_warn("swapchain acquire requires recreate (%d)", res);
+        return status;
+    }
+    log_error("swapchain acquire failed (%d)", res);
     return status;
 }
 
@@ -554,6 +564,10 @@ DvzPresentStatus dvz_swapchain_present(
 
     if (!swapchain->ready || swapchain->handle == VK_NULL_HANDLE || present_queue == VK_NULL_HANDLE)
     {
+        log_error(
+            "swapchain present invalid state (ready=%d has_handle=%d has_queue=%d image=%u)",
+            swapchain->ready ? 1 : 0, swapchain->handle != VK_NULL_HANDLE ? 1 : 0,
+            present_queue != VK_NULL_HANDLE ? 1 : 0, image_idx);
         return DVZ_PRESENT_STATUS_ERROR;
     }
 
@@ -568,7 +582,18 @@ DvzPresentStatus dvz_swapchain_present(
     };
 
     VkResult res = vkQueuePresentKHR(present_queue, &present_info);
-    return _swapchain_status_from_result(res);
+    DvzPresentStatus status = _swapchain_status_from_result(res);
+    if (status == DVZ_PRESENT_STATUS_OK)
+    {
+        return status;
+    }
+    if (status == DVZ_PRESENT_STATUS_RECREATE)
+    {
+        log_warn("swapchain present requires recreate (%d), image=%u", res, image_idx);
+        return status;
+    }
+    log_error("swapchain present failed (%d), image=%u", res, image_idx);
+    return status;
 }
 
 

@@ -210,6 +210,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
 {
     ANN(surface);
     ANN(surface->gpu);
+    surface->ready = false;
 
     if (surface->handle == VK_NULL_HANDLE)
     {

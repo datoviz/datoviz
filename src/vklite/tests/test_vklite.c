@@ -43,6 +43,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_graphics_1);
     TEST_SIMPLE(test_vklite_surface_query);
     TEST_SIMPLE(test_vklite_swapchain_recreate);
+    TEST_SIMPLE(test_vklite_swapchain_config_present_mode_immediate);
 
     TEST_SIMPLE(test_technique_triangle);
     TEST_SIMPLE(test_technique_render_texture);

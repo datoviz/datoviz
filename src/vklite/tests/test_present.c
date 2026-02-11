@@ -485,3 +485,55 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
     _present_fixture_destroy(&fixture);
     return 0;
 }
+
+
+
+/**
+ * Verify IMMEDIATE present mode is preserved when explicitly requested by config.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture))
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzSurface surface = {0};
+    DvzSwapchain swapchain = {0};
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
+    if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
+    {
+        log_warn("vklite swapchain config test skipped because native surface is unavailable");
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
+    AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
+
+    DvzSwapchainConfig cfg = {0};
+    cfg.image_format = surface.preferred_format.format;
+    cfg.color_space = surface.preferred_format.colorSpace;
+    cfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+    cfg.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    cfg.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    cfg.clipped = true;
+    AT(dvz_swapchain_config(&swapchain, cfg));
+    AT(swapchain.config.present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR);
+
+    dvz_swapchain_destroy(&swapchain);
+    dvz_surface_destroy(&surface);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}
