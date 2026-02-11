@@ -169,6 +169,20 @@ The top-level `justfile` provides the primary workflow; Codex should stick to:
 
 Run these commands from the repository root. Other `just` recipes exist but are currently out of scope.
 
+### Sandbox note (macOS + Vulkan)
+
+When running tests that depend on Vulkan/GLFW/Metal (for example `vk`, `vklite`, `canvas`, `window`, or
+filters such as `test_canvas_glfw`), do not rely on a strict sandboxed runtime. On macOS, sandboxed
+execution can block Cocoa/Metal/LaunchServices access and make Vulkan initialization fail or hang.
+
+Use:
+
+* `direnv exec . just test [filter]` so the repo Vulkan environment from `.envrc` is applied.
+* An unsandboxed/escalated command execution context for these graphics tests.
+
+Keep regular non-graphics checks in sandbox when possible, but prefer unsandboxed execution for Vulkan-path
+validation.
+
 ### Public vs Internal Includes
 
 | Type               | Include Path                 | Example                             | Notes                                                        |
