@@ -535,6 +535,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
 
+    bool handles_changed = swapchain->export_serial > 1;
     bool slot_init_failed = false;
     for (uint32_t i = 0; i < count; ++i)
     {
@@ -546,7 +547,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->image_index = UINT32_MAX;
         slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
         slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-        slot->handles_dirty = false;
+        slot->handles_dirty = handles_changed;
         slot->commands_recording = false;
         slot->memory_fd = -1;
 

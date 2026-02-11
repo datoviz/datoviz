@@ -244,6 +244,16 @@ void dvz_canvas_frame_pool_release(DvzCanvasFramePool* pool)
     }
     if (pool->frames)
     {
+#if OS_UNIX
+        for (uint32_t i = 0; i < pool->frame_count; i++)
+        {
+            if (pool->frames[i].wait_semaphore_fd >= 0)
+            {
+                close(pool->frames[i].wait_semaphore_fd);
+                pool->frames[i].wait_semaphore_fd = -1;
+            }
+        }
+#endif
         dvz_free(pool->frames);
         pool->frames = NULL;
     }

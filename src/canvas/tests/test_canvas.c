@@ -136,6 +136,148 @@ static void canvas_glfw_keyboard_callback(
 
 
 /*************************************************************************************************/
+/*  Refresh probe                                                                                */
+/*************************************************************************************************/
+
+typedef struct CanvasRefreshProbeState
+{
+    bool awaiting_refresh;
+    bool saw_update_since_refresh;
+    uint32_t start_count;
+    uint32_t update_count;
+    uint32_t submit_count;
+    uint32_t stale_submit_count;
+    int latest_memory_fd;
+    int latest_wait_semaphore_fd;
+    bool latest_handles_dirty;
+} CanvasRefreshProbeState;
+
+
+
+/**
+ * Track stream-frame metadata observed by the refresh probe sink.
+ *
+ * @param state probe state to update
+ * @param frame stream frame observed by start/update callbacks
+ * @param is_update true for update callback, false for start callback
+ * @return 0 on success
+ */
+static int
+canvas_refresh_probe_apply_frame(CanvasRefreshProbeState* state, const DvzStreamFrame* frame, bool is_update)
+{
+    ANN(state);
+    ANN(frame);
+
+    state->latest_memory_fd = frame->memory_fd;
+    state->latest_wait_semaphore_fd = frame->wait_semaphore_fd;
+    state->latest_handles_dirty = frame->handles_dirty;
+    if (is_update)
+    {
+        state->update_count++;
+        if (frame->handles_dirty)
+        {
+            state->saw_update_since_refresh = true;
+        }
+    }
+    else
+    {
+        state->start_count++;
+    }
+    return 0;
+}
+
+
+
+static bool canvas_refresh_probe_probe(const void* config)
+{
+    return config != NULL;
+}
+
+
+
+static int canvas_refresh_probe_create(DvzStreamSink* sink, const void* config)
+{
+    ANN(sink);
+    ANN(config);
+    void* state = NULL;
+    dvz_memcpy(&state, sizeof(state), &config, sizeof(config));
+    sink->backend_data = state;
+    return 0;
+}
+
+
+
+static int canvas_refresh_probe_start(DvzStreamSink* sink, const DvzStreamFrame* frame)
+{
+    ANN(sink);
+    CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
+    return canvas_refresh_probe_apply_frame(state, frame, false);
+}
+
+
+
+static int canvas_refresh_probe_submit(DvzStreamSink* sink, uint64_t wait_value)
+{
+    (void)wait_value;
+    ANN(sink);
+    CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
+    ANN(state);
+    state->submit_count++;
+    if (state->awaiting_refresh)
+    {
+        if (!state->saw_update_since_refresh)
+        {
+            state->stale_submit_count++;
+        }
+        else
+        {
+            state->awaiting_refresh = false;
+        }
+    }
+    return 0;
+}
+
+
+
+static int canvas_refresh_probe_stop(DvzStreamSink* sink)
+{
+    ANN(sink);
+    return 0;
+}
+
+
+
+static int canvas_refresh_probe_update(DvzStreamSink* sink, const DvzStreamFrame* frame)
+{
+    ANN(sink);
+    CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
+    return canvas_refresh_probe_apply_frame(state, frame, true);
+}
+
+
+
+static void canvas_refresh_probe_destroy(DvzStreamSink* sink)
+{
+    ANN(sink);
+    sink->backend_data = NULL;
+}
+
+
+
+static const DvzStreamSinkBackend CANVAS_REFRESH_PROBE_BACKEND = {
+    .name = "canvas_refresh_probe",
+    .probe = canvas_refresh_probe_probe,
+    .create = canvas_refresh_probe_create,
+    .start = canvas_refresh_probe_start,
+    .submit = canvas_refresh_probe_submit,
+    .stop = canvas_refresh_probe_stop,
+    .update = canvas_refresh_probe_update,
+    .destroy = canvas_refresh_probe_destroy,
+};
+
+
+
+/*************************************************************************************************/
 /*  Test fixtures                                                                                */
 /*************************************************************************************************/
 
@@ -488,6 +630,98 @@ int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Validate stream sinks refresh frame handles before post-recreate submissions.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_handle_refresh_order(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    bool first_submit_done = false;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        first_submit_done = true;
+        break;
+    }
+    AT(first_submit_done);
+    AT(probe.start_count > 0);
+    AT(probe.submit_count > 0);
+
+    probe.awaiting_refresh = true;
+    probe.saw_update_since_refresh = false;
+    dvz_canvas_swapchain_mark_out_of_date(canvas);
+
+    bool post_recreate_submit_done = false;
+    uint32_t submits_before = probe.submit_count;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        if (probe.submit_count > submits_before)
+        {
+            post_recreate_submit_done = true;
+            break;
+        }
+    }
+
+    AT(post_recreate_submit_done);
+    AT(probe.update_count > 0);
+    AT(probe.saw_update_since_refresh);
+    AT(probe.stale_submit_count == 0);
+    AT(!probe.awaiting_refresh);
+    AT(probe.latest_handles_dirty);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Exercise the GLFW-backed canvas and ensure the frame submission path works.
  *
  * @param suite The owning test suite.
@@ -752,6 +986,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_timings);
     TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
     TEST_SIMPLE(test_canvas_glfw_present_recovery);
+    TEST_SIMPLE(test_canvas_handle_refresh_order);
     TEST_SIMPLE(test_canvas_glfw);
     return 0;
 }
