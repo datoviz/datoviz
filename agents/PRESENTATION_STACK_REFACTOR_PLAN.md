@@ -19,9 +19,9 @@ Legend:
 3. `[ ]` not started
 
 Current status:
-1. Current milestone: `M1 - VKLite presentation API bring-up`
+1. Current milestone: `M2 - Canvas migration and boundary enforcement`
 2. Current task: `PRES-040 - Integrate window-canvas-vklite surface handoff and lifecycle`
-3. Last completed task: `PRES-080 - Add presentation-layer tests (surface/swapchain/recreate/recovery)`
+3. Last completed task: `PRES-080 - Add vklite presentation-layer tests (surface/swapchain/recreate)`
 4. Last updated: `2026-02-11`
 5. Note: pre-`PRES-080` API/implementation polish applied (`dvz_swapchain_device()`, enum warning
    cleanup, zero-extent normalization).
@@ -32,7 +32,7 @@ Task board status:
 3. `[x] PRES-010` Add public vklite presentation headers and exports.
 4. `[x] PRES-020` Implement `vklite` surface wrapper.
 5. `[x] PRES-030` Implement `vklite` swapchain wrapper.
-6. `[x] PRES-080` Add presentation-layer tests (surface/swapchain/recreate/recovery).
+6. `[x] PRES-080` Add vklite presentation-layer tests (surface/swapchain/recreate).
 7. `[~] PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
 8. `[ ] PRES-050` Migrate canvas presentation path to vklite API.
 9. `[ ] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
@@ -125,11 +125,12 @@ Planned public functions:
 3. `dvz_surface_refresh()`
 4. `dvz_surface_destroy()`
 5. `dvz_swapchain_init()`
-6. `dvz_swapchain_config()`
-7. `dvz_swapchain_recreate()`
-8. `dvz_swapchain_acquire()`
-9. `dvz_swapchain_present()`
-10. `dvz_swapchain_destroy()`
+6. `dvz_swapchain_device()`
+7. `dvz_swapchain_config()`
+8. `dvz_swapchain_recreate()`
+9. `dvz_swapchain_acquire()`
+10. `dvz_swapchain_present()`
+11. `dvz_swapchain_destroy()`
 
 Proposed public signatures (freeze before M1 implementation):
 ```c
