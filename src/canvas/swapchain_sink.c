@@ -42,7 +42,7 @@ static int canvas_export_timeline_fd(DvzCanvas* canvas);
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define MAX_SURFACE_FORMATS 32
+#define MAX_SURFACE_FORMATS 256
 
 
 
@@ -215,8 +215,13 @@ static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
     }
 
     uint32_t count = 0;
-    VK_CHECK_RESULT(
-        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, NULL));
+    VkResult modes_res =
+        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, NULL);
+    if (modes_res != VK_SUCCESS && modes_res != VK_INCOMPLETE)
+    {
+        log_error("failed to query surface present mode count (%d)", modes_res);
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
     if (count == 0)
     {
         return VK_PRESENT_MODE_FIFO_KHR;
@@ -224,8 +229,17 @@ static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 
     VkPresentModeKHR* modes = (VkPresentModeKHR*)dvz_calloc(count, sizeof(VkPresentModeKHR));
     ANN(modes);
-    VK_CHECK_RESULT(
-        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, modes));
+    modes_res = vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, modes);
+    if (modes_res != VK_SUCCESS && modes_res != VK_INCOMPLETE)
+    {
+        log_error("failed to query surface present modes (%d)", modes_res);
+        dvz_free(modes);
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+    if (modes_res == VK_INCOMPLETE)
+    {
+        log_warn("surface present mode list was incomplete; using partial result");
+    }
 
     VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
     VkPresentModeKHR requested = canvas->cfg.present_mode;
@@ -306,8 +320,7 @@ static void canvas_cmd_pipeline_barrier(
     DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
     VkImageLayout new_layout, VkPipelineStageFlags2 src_stage)
 {
-    if (!canvas || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE ||
-        old_layout == new_layout)
+    if (!canvas || cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE || old_layout == new_layout)
     {
         return;
     }
@@ -332,8 +345,7 @@ static void canvas_cmd_transition(
     VkImageLayout new_layout)
 {
     canvas_cmd_pipeline_barrier(
-        canvas, cmd, image, old_layout, new_layout,
-        canvas_stage_for_layout(old_layout));
+        canvas, cmd, image, old_layout, new_layout, canvas_stage_for_layout(old_layout));
 }
 
 
@@ -343,11 +355,8 @@ static void canvas_cmd_transition_swapchain(
 {
     VkPipelineStageFlags2 release_stage =
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-    canvas_cmd_pipeline_barrier(
-        canvas, cmd, image, old_layout, new_layout, release_stage);
+    canvas_cmd_pipeline_barrier(canvas, cmd, image, old_layout, new_layout, release_stage);
 }
-
-
 
 
 
@@ -545,14 +554,29 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
     // Enumerate the formats supported by the surface.
     uint32_t fcount = 0;
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, NULL));
+    VkResult formats_res =
+        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, NULL);
+    if (formats_res != VK_SUCCESS && formats_res != VK_INCOMPLETE)
+    {
+        log_error("failed to query surface format count (%d)", formats_res);
+        return formats_res;
+    }
     if (fcount == 0)
         return -1;
     if (fcount > MAX_SURFACE_FORMATS)
         fcount = MAX_SURFACE_FORMATS;
 
     VkSurfaceFormatKHR formats[MAX_SURFACE_FORMATS] = {0};
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, formats));
+    formats_res = vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, formats);
+    if (formats_res != VK_SUCCESS && formats_res != VK_INCOMPLETE)
+    {
+        log_error("failed to query surface formats (%d)", formats_res);
+        return formats_res;
+    }
+    if (formats_res == VK_INCOMPLETE)
+    {
+        log_warn("surface format list was incomplete; using partial result");
+    }
 
 
     VkPresentModeKHR present_mode = canvas_select_present_mode(canvas);
