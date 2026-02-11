@@ -19,13 +19,13 @@ Legend:
 3. `[ ]` not started
 
 Current status:
-1. Current milestone: `M2 - Canvas migration and boundary enforcement`
-2. Current task: `PRES-040 - Integrate window-canvas-vklite surface handoff and lifecycle`
+1. Current milestone: `M3 - Synchronization and video integration hardening`
+2. Current task: `PRES-060 - Harden resize/out-of-date/zero-extent state machine`
 3. Last completed task:
-   `PRES-080 - Add vklite presentation-layer tests (surface/swapchain/recreate + API contract guards)`
+   `PRES-055 - Implement deterministic handle-refresh and sink-restart policy`
 4. Last updated: `2026-02-11`
-5. Note: pre-`PRES-080` API/implementation polish applied (`dvz_swapchain_device()`, enum warning
-   cleanup, zero-extent normalization).
+5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
+   hardening/tests landed for fail-fast slot init, GLFW present recovery, and handle refresh order.
 
 Task board status:
 1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
@@ -35,11 +35,11 @@ Task board status:
 5. `[x] PRES-030` Implement `vklite` swapchain wrapper.
 6. `[x] PRES-080`
    Add vklite presentation-layer tests (surface/swapchain/recreate + API contract guards).
-7. `[~] PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
-8. `[ ] PRES-050` Migrate canvas presentation path to vklite API.
-9. `[ ] PRES-082` Add end-to-end present recovery test (OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume).
-10. `[ ] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
-11. `[ ] PRES-060` Harden resize/out-of-date/zero-extent state machine.
+7. `[x] PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
+8. `[x] PRES-050` Migrate canvas presentation path to vklite API.
+9. `[x] PRES-082` Add end-to-end present recovery test (OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume).
+10. `[x] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
+11. `[~] PRES-060` Harden resize/out-of-date/zero-extent state machine.
 12. `[ ] PRES-070` Finalize queue/semaphore/fence ownership rules.
 13. `[ ] PRES-075` Finalize video synchronization and sink ordering contract.
 14. `[ ] PRES-085` Add capture-mode validation tests (live + offline/headless).
@@ -60,19 +60,25 @@ Task board status:
 6. Build and tests must stay green at each milestone.
 
 
-## Current baseline snapshot (branch reality)
+## Current implementation snapshot (branch reality)
 
-Baseline snapshot date: `2026-02-11` (verified by `PRES-000` audit).
+Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
 
 1. Active modules in `src/CMakeLists.txt`: `input`, `window`, `canvas`, `stream`, `video`, `vk`,
    `vklite`.
-2. Canvas currently owns raw Vulkan presentation logic in `src/canvas/swapchain_sink.c`:
-   `vkGetPhysicalDeviceSurface*`, `vkCreateSwapchainKHR`, `vkGetSwapchainImagesKHR`,
-   `vkAcquireNextImageKHR`, `vkQueuePresentKHR`.
+2. Raw Vulkan surface/swapchain call sites now live in `src/vklite/surface.c` and
+   `src/vklite/swapchain.c`; canvas no longer calls those entrypoints directly.
 3. `include/datoviz/vklite/surface.h` and `include/datoviz/vklite/swapchain.h` now exist and
    freeze the public presentation API surface for M1.
-4. Video sink integration already exists via stream sinks (`src/video/video_sink.c`) and uses
-   timeline/value-based synchronization.
+4. Canvas uses `DvzSurface`/`DvzSwapchain` wrappers for create/recreate/acquire/present and exports
+   frame handles to stream/video sinks via `DvzStreamFrame`.
+5. Canvas tests now include:
+   1. fail-fast slot initialization rollback (`test_canvas_swapchain_failfast_slot_init`)
+   2. GLFW out-of-date recovery (`test_canvas_glfw_present_recovery`)
+   3. handle refresh ordering contract (`test_canvas_handle_refresh_order`)
+6. `vklite` presentation tests include resolved recreate-state coverage
+   (`test_vklite_swapchain_recreate_resolved_state`).
+7. Frame pool release closes lingering exported wait semaphore FDs on Unix.
 
 ### PRES-000 baseline verification (code-audited)
 
@@ -92,6 +98,15 @@ Baseline snapshot date: `2026-02-11` (verified by `PRES-000` audit).
    from the canvas timeline semaphore.
 5. Result: current branch still matches pre-migration architecture; M2 migration must remove the
    raw swapchain/surface Vulkan call sites from canvas while preserving stream/video semantics.
+
+### Post-M2/M3 status delta (code-audited)
+
+1. `PRES-040`/`PRES-050` completed: canvas swapchain flow is wrapper-based (`dvz_surface_*`,
+   `dvz_swapchain_*`) with no direct surface/swapchain Vulkan calls in `src/canvas/*`.
+2. `PRES-082` completed: GLFW recovery test validates out-of-date -> recreate -> resume flow.
+3. `PRES-055` completed: deterministic handle-refresh policy is in place and tested.
+4. `PRES-060` is partially complete: zero-extent/out-of-date return path is functional, but explicit
+   runtime state-machine representation and device-lost transition hardening are still open.
 
 
 ## Target architecture (for this phase)
@@ -373,16 +388,19 @@ Make canvas orchestration-only for presentation flow.
 4. Enforce lifecycle ordering during destroy/recreate paths.
 
 ### Tests
-1. Run `canvas_present_recovery`.
+1. Run `test_canvas_glfw_present_recovery`.
 2. Run `canvas_zero_extent_suspend`.
 3. Run presentation-layer regression tests from M1 after migration.
-4. Run `canvas_present_recovery` with forced/induced `OUT_OF_DATE` and assert recreate + resume.
+4. Run the forced/induced `OUT_OF_DATE` path and assert recreate + resume.
+5. Run `test_canvas_swapchain_failfast_slot_init`.
 
 ### Exit criteria
 1. No raw Vulkan swapchain/surface calls remain in canvas.
 2. Acquire/present works through canvas using vklite-backed path.
 3. Presentation regression tests remain green post-migration.
 4. End-to-end recovery path is validated (`OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume`).
+
+Status: complete.
 
 
 ## M3 - Synchronization and video integration hardening
@@ -402,10 +420,13 @@ Finalize synchronization semantics and video sink integration.
 1. Run `video_wait_value_propagation`.
 2. Run `video_handle_refresh_after_recreate`.
 3. Run backend behavior checks for timeline wait/fallback paths.
+4. Run `test_canvas_handle_refresh_order` (refresh-before-submit contract).
 
 ### Exit criteria
 1. Video encoding does not consume stale handles after recreate/resize.
 2. Synchronization behavior is deterministic and documented.
+
+Status: in progress (`PRES-055` done, `PRES-060`/`PRES-070`/`PRES-075` pending).
 
 
 ## M4 - Capture modes completion (live and offline/headless)
