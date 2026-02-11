@@ -537,3 +537,61 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
     _present_fixture_destroy(&fixture);
     return 0;
 }
+
+
+
+/**
+ * Verify partial swapchain config keeps deterministic defaults for unspecified fields.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzSwapchain swapchain = {0};
+    DvzSwapchainConfig cfg = {0};
+    cfg.image_format = VK_FORMAT_B8G8R8A8_UNORM;
+    cfg.clipped = true;
+
+    AT(dvz_swapchain_config(&swapchain, cfg));
+    AT(swapchain.config.image_format == VK_FORMAT_B8G8R8A8_UNORM);
+    AT(swapchain.config.color_space == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR);
+    // VK_PRESENT_MODE_IMMEDIATE_KHR has enum value 0; only fully-zeroed configs default to FIFO.
+    AT(swapchain.config.present_mode == 0);
+    AT(
+        swapchain.config.image_usage ==
+        (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT));
+    AT(swapchain.config.composite_alpha == VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+
+    return 0;
+}
+
+
+
+/**
+ * Verify present returns an error when image index is out of range.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzSwapchain swapchain = {0};
+    swapchain.ready = true;
+    swapchain.image_count = 1;
+    swapchain.handle = (VkSwapchainKHR)(uintptr_t)0x1;
+
+    DvzPresentStatus status =
+        dvz_swapchain_present(&swapchain, (VkQueue)(uintptr_t)0x1, 1, VK_NULL_HANDLE);
+    AT(status == DVZ_PRESENT_STATUS_ERROR);
+
+    return 0;
+}

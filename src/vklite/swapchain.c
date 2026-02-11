@@ -196,47 +196,79 @@ static bool _swapchain_config_is_zeroed(DvzSwapchainConfig config)
 
 
 
-static void _swapchain_destroy_views(DvzSwapchain* swapchain)
+/**
+ * Destroy swapchain image arrays and optional image views.
+ *
+ * @param device logical device used to destroy image views
+ * @param image_count number of image/view entries
+ * @param images swapchain image array pointer
+ * @param image_views swapchain image view array pointer
+ */
+static void _swapchain_destroy_image_arrays(
+    VkDevice device, uint32_t image_count, VkImage** images, VkImageView** image_views)
 {
-    ANN(swapchain);
+    ANN(images);
+    ANN(image_views);
 
-    if (swapchain->image_views != NULL && swapchain->device != VK_NULL_HANDLE)
+    if (*image_views != NULL && device != VK_NULL_HANDLE)
     {
-        for (uint32_t i = 0; i < swapchain->image_count; i++)
+        for (uint32_t i = 0; i < image_count; i++)
         {
-            if (swapchain->image_views[i] != VK_NULL_HANDLE)
+            if ((*image_views)[i] != VK_NULL_HANDLE)
             {
-                vkDestroyImageView(swapchain->device, swapchain->image_views[i], NULL);
+                vkDestroyImageView(device, (*image_views)[i], NULL);
             }
         }
     }
 
-    dvz_free(swapchain->image_views);
-    swapchain->image_views = NULL;
-    dvz_free(swapchain->images);
-    swapchain->images = NULL;
+    dvz_free(*image_views);
+    *image_views = NULL;
+    dvz_free(*images);
+    *images = NULL;
+}
+
+
+
+static void _swapchain_destroy_views(DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+
+    _swapchain_destroy_image_arrays(
+        swapchain->device, swapchain->image_count, &swapchain->images, &swapchain->image_views);
     swapchain->image_count = 0;
 }
 
 
 
-static bool _swapchain_build_views(DvzSwapchain* swapchain, VkFormat format)
+/**
+ * Build image views for a swapchain image array.
+ *
+ * @param device logical device used to create image views
+ * @param image_count number of images in the array
+ * @param images swapchain image array
+ * @param format image format used to create views
+ * @param[out] image_views allocated view array
+ * @return true when all image views are created
+ */
+static bool _swapchain_build_views(
+    VkDevice device, uint32_t image_count, VkImage* images, VkFormat format, VkImageView** image_views)
 {
-    ANN(swapchain);
+    ANN(images);
+    ANN(image_views);
 
-    if (swapchain->image_count == 0 || swapchain->images == NULL)
+    if (device == VK_NULL_HANDLE || image_count == 0)
     {
         return false;
     }
 
-    swapchain->image_views = (VkImageView*)dvz_calloc(swapchain->image_count, sizeof(VkImageView));
-    ANN(swapchain->image_views);
+    *image_views = (VkImageView*)dvz_calloc(image_count, sizeof(VkImageView));
+    ANN(*image_views);
 
-    for (uint32_t i = 0; i < swapchain->image_count; i++)
+    for (uint32_t i = 0; i < image_count; i++)
     {
         VkImageViewCreateInfo view_info = {
             .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-            .image = swapchain->images[i],
+            .image = images[i],
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
             .format = format,
             .subresourceRange =
@@ -249,7 +281,7 @@ static bool _swapchain_build_views(DvzSwapchain* swapchain, VkFormat format)
                 },
         };
 
-        VkResult res = vkCreateImageView(swapchain->device, &view_info, NULL, &swapchain->image_views[i]);
+        VkResult res = vkCreateImageView(device, &view_info, NULL, &(*image_views)[i]);
         if (res != VK_SUCCESS)
         {
             log_error("swapchain image view creation failed (%d)", res);
@@ -437,7 +469,12 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     };
 
     VkSwapchainKHR old_swapchain = swapchain->handle;
-    VkResult res = vkCreateSwapchainKHR(swapchain->device, &create_info, NULL, &swapchain->handle);
+    VkSwapchainKHR new_swapchain = VK_NULL_HANDLE;
+    uint32_t new_image_count = 0;
+    VkImage* new_images = NULL;
+    VkImageView* new_image_views = NULL;
+
+    VkResult res = vkCreateSwapchainKHR(swapchain->device, &create_info, NULL, &new_swapchain);
     DvzPresentStatus status = _swapchain_status_from_result(res);
     if (status != DVZ_PRESENT_STATUS_OK)
     {
@@ -445,48 +482,52 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
         return status;
     }
 
+    res = vkGetSwapchainImagesKHR(swapchain->device, new_swapchain, &new_image_count, NULL);
+    status = _swapchain_status_from_result(res);
+    if (status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error("swapchain image count query failed (%d)", res);
+        vkDestroySwapchainKHR(swapchain->device, new_swapchain, NULL);
+        return status;
+    }
+    if (new_image_count == 0)
+    {
+        log_error("swapchain image count query returned zero images");
+        vkDestroySwapchainKHR(swapchain->device, new_swapchain, NULL);
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    new_images = (VkImage*)dvz_calloc(new_image_count, sizeof(VkImage));
+    ANN(new_images);
+    res = vkGetSwapchainImagesKHR(
+        swapchain->device, new_swapchain, &new_image_count, new_images);
+    status = _swapchain_status_from_result(res);
+    if (status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error("swapchain image query failed (%d)", res);
+        _swapchain_destroy_image_arrays(swapchain->device, new_image_count, &new_images, &new_image_views);
+        vkDestroySwapchainKHR(swapchain->device, new_swapchain, NULL);
+        return status;
+    }
+
+    if (!_swapchain_build_views(
+            swapchain->device, new_image_count, new_images, format.format, &new_image_views))
+    {
+        _swapchain_destroy_image_arrays(swapchain->device, new_image_count, &new_images, &new_image_views);
+        vkDestroySwapchainKHR(swapchain->device, new_swapchain, NULL);
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    _swapchain_destroy_views(swapchain);
     if (old_swapchain != VK_NULL_HANDLE)
     {
         vkDestroySwapchainKHR(swapchain->device, old_swapchain, NULL);
     }
 
-    _swapchain_destroy_views(swapchain);
-
-    res = vkGetSwapchainImagesKHR(swapchain->device, swapchain->handle, &swapchain->image_count, NULL);
-    status = _swapchain_status_from_result(res);
-    if (status != DVZ_PRESENT_STATUS_OK)
-    {
-        log_error("swapchain image count query failed (%d)", res);
-        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
-        swapchain->handle = VK_NULL_HANDLE;
-        swapchain->ready = false;
-        return status;
-    }
-
-    swapchain->images = (VkImage*)dvz_calloc(swapchain->image_count, sizeof(VkImage));
-    ANN(swapchain->images);
-    res = vkGetSwapchainImagesKHR(
-        swapchain->device, swapchain->handle, &swapchain->image_count, swapchain->images);
-    status = _swapchain_status_from_result(res);
-    if (status != DVZ_PRESENT_STATUS_OK)
-    {
-        log_error("swapchain image query failed (%d)", res);
-        _swapchain_destroy_views(swapchain);
-        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
-        swapchain->handle = VK_NULL_HANDLE;
-        swapchain->ready = false;
-        return status;
-    }
-
-    if (!_swapchain_build_views(swapchain, format.format))
-    {
-        _swapchain_destroy_views(swapchain);
-        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
-        swapchain->handle = VK_NULL_HANDLE;
-        swapchain->ready = false;
-        return DVZ_PRESENT_STATUS_ERROR;
-    }
-
+    swapchain->handle = new_swapchain;
+    swapchain->image_count = new_image_count;
+    swapchain->images = new_images;
+    swapchain->image_views = new_image_views;
     swapchain->extent = extent;
     swapchain->current_image = UINT32_MAX;
     swapchain->ready = true;
@@ -568,6 +609,13 @@ DvzPresentStatus dvz_swapchain_present(
             "swapchain present invalid state (ready=%d has_handle=%d has_queue=%d image=%u)",
             swapchain->ready ? 1 : 0, swapchain->handle != VK_NULL_HANDLE ? 1 : 0,
             present_queue != VK_NULL_HANDLE ? 1 : 0, image_idx);
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+    if (image_idx >= swapchain->image_count)
+    {
+        log_error(
+            "swapchain present image index %u out of range (image_count=%u)", image_idx,
+            swapchain->image_count);
         return DVZ_PRESENT_STATUS_ERROR;
     }
 

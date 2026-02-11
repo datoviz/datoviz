@@ -106,6 +106,10 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tstitem);
+
+int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstitem);
+
 
 
 /*************************************************************************************************/
