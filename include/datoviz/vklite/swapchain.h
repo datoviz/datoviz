@@ -33,7 +33,6 @@
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzSwapchain DvzSwapchain;
 typedef struct DvzSwapchainConfig DvzSwapchainConfig;
-typedef enum DvzPresentStatus DvzPresentStatus;
 
 
 
@@ -41,14 +40,14 @@ typedef enum DvzPresentStatus DvzPresentStatus;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-enum DvzPresentStatus
+typedef enum DvzPresentStatus
 {
     DVZ_PRESENT_STATUS_OK = 0,
     DVZ_PRESENT_STATUS_RECREATE,
     DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT,
     DVZ_PRESENT_STATUS_DEVICE_LOST,
     DVZ_PRESENT_STATUS_ERROR,
-};
+} DvzPresentStatus;
 
 
 
@@ -101,8 +100,20 @@ EXTERN_C_ON
  * @param gpu physical GPU used by the logical device
  * @param surface surface wrapper used for capability and extent data
  * @return true when initialization succeeds
+ * @note This call does not bind a VkDevice. Call dvz_swapchain_device() before recreate/acquire/present.
  */
 DVZ_EXPORT bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surface);
+
+
+
+/**
+ * Bind the Vulkan logical device used by swapchain create/destroy/acquire paths.
+ *
+ * @param swapchain swapchain wrapper to configure
+ * @param device logical device used to issue swapchain API calls
+ * @return true when binding succeeds
+ */
+DVZ_EXPORT bool dvz_swapchain_device(DvzSwapchain* swapchain, VkDevice device);
 
 
 
@@ -123,6 +134,7 @@ DVZ_EXPORT bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig
  * @param swapchain swapchain wrapper to recreate
  * @param size target extent as {width, height}
  * @return present status mapping recreate outcome
+ * @note Returns DVZ_PRESENT_STATUS_ERROR when swapchain device binding is missing.
  */
 DVZ_EXPORT DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size);
 

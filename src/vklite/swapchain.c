@@ -1,0 +1,599 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Swapchain                                                                                    */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <volk.h>
+
+#include "_alloc.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vklite/swapchain.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_SWAPCHAIN_DEFAULT_IMAGE_USAGE                                                        \
+    (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static DvzPresentStatus _swapchain_status_from_result(VkResult result)
+{
+    switch (result)
+    {
+    case VK_SUCCESS:
+        return DVZ_PRESENT_STATUS_OK;
+    case VK_SUBOPTIMAL_KHR:
+    case VK_ERROR_OUT_OF_DATE_KHR:
+        return DVZ_PRESENT_STATUS_RECREATE;
+    case VK_ERROR_DEVICE_LOST:
+        return DVZ_PRESENT_STATUS_DEVICE_LOST;
+    default:
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+}
+
+
+
+static uint32_t _swapchain_clamp_extent(uint32_t value, uint32_t min, uint32_t max)
+{
+    if (value < min)
+    {
+        return min;
+    }
+    if (value > max)
+    {
+        return max;
+    }
+    return value;
+}
+
+
+
+static bool _swapchain_has_present_mode(const DvzSurface* surface, VkPresentModeKHR mode)
+{
+    ANN(surface);
+
+    for (uint32_t i = 0; i < surface->present_mode_count; i++)
+    {
+        if (surface->present_modes[i] == mode)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+static VkSurfaceFormatKHR _swapchain_resolve_format(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    ANN(swapchain->surface);
+
+    VkSurfaceFormatKHR resolved = swapchain->surface->preferred_format;
+    VkFormat requested_format = swapchain->config.image_format;
+    VkColorSpaceKHR requested_space = swapchain->config.color_space;
+
+    if (
+        requested_format == VK_FORMAT_UNDEFINED ||
+        swapchain->surface->format_count == 0 ||
+        swapchain->surface->formats == NULL)
+    {
+        return resolved;
+    }
+
+    for (uint32_t i = 0; i < swapchain->surface->format_count; i++)
+    {
+        VkSurfaceFormatKHR candidate = swapchain->surface->formats[i];
+        if (candidate.format != requested_format)
+        {
+            continue;
+        }
+        if (requested_space == 0 || candidate.colorSpace == requested_space)
+        {
+            return candidate;
+        }
+    }
+
+    return resolved;
+}
+
+
+
+static VkPresentModeKHR _swapchain_resolve_present_mode(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    ANN(swapchain->surface);
+
+    VkPresentModeKHR requested = swapchain->config.present_mode;
+    if (requested == 0)
+    {
+        return swapchain->surface->preferred_present_mode;
+    }
+
+    if (_swapchain_has_present_mode(swapchain->surface, requested))
+    {
+        return requested;
+    }
+
+    log_warn("requested present mode %d unsupported; using preferred mode", requested);
+    return swapchain->surface->preferred_present_mode;
+}
+
+
+
+static VkExtent2D _swapchain_resolve_extent(const DvzSwapchain* swapchain, uvec2 size)
+{
+    ANN(swapchain);
+    ANN(swapchain->surface);
+
+    VkSurfaceCapabilitiesKHR caps = swapchain->surface->capabilities;
+    if (caps.currentExtent.width != UINT32_MAX && caps.currentExtent.height != UINT32_MAX)
+    {
+        return caps.currentExtent;
+    }
+
+    VkExtent2D extent = {
+        .width = size[0],
+        .height = size[1],
+    };
+    extent.width =
+        _swapchain_clamp_extent(extent.width, caps.minImageExtent.width, caps.maxImageExtent.width);
+    extent.height = _swapchain_clamp_extent(
+        extent.height, caps.minImageExtent.height, caps.maxImageExtent.height);
+    return extent;
+}
+
+
+
+static uint32_t _swapchain_resolve_image_count(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    ANN(swapchain->surface);
+
+    VkSurfaceCapabilitiesKHR caps = swapchain->surface->capabilities;
+    uint32_t count = swapchain->config.min_image_count;
+    if (count == 0)
+    {
+        count = caps.minImageCount + 1;
+    }
+    if (count < caps.minImageCount)
+    {
+        count = caps.minImageCount;
+    }
+    if (caps.maxImageCount > 0 && count > caps.maxImageCount)
+    {
+        count = caps.maxImageCount;
+    }
+    return count;
+}
+
+
+
+static bool _swapchain_config_is_zeroed(DvzSwapchainConfig config)
+{
+    return (
+        config.image_format == VK_FORMAT_UNDEFINED && config.color_space == 0 &&
+        config.present_mode == 0 && config.image_usage == 0 && config.composite_alpha == 0 &&
+        config.min_image_count == 0 && !config.clipped);
+}
+
+
+
+static void _swapchain_destroy_views(DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+
+    if (swapchain->image_views != NULL && swapchain->device != VK_NULL_HANDLE)
+    {
+        for (uint32_t i = 0; i < swapchain->image_count; i++)
+        {
+            if (swapchain->image_views[i] != VK_NULL_HANDLE)
+            {
+                vkDestroyImageView(swapchain->device, swapchain->image_views[i], NULL);
+            }
+        }
+    }
+
+    dvz_free(swapchain->image_views);
+    swapchain->image_views = NULL;
+    dvz_free(swapchain->images);
+    swapchain->images = NULL;
+    swapchain->image_count = 0;
+}
+
+
+
+static bool _swapchain_build_views(DvzSwapchain* swapchain, VkFormat format)
+{
+    ANN(swapchain);
+
+    if (swapchain->image_count == 0 || swapchain->images == NULL)
+    {
+        return false;
+    }
+
+    swapchain->image_views = (VkImageView*)dvz_calloc(swapchain->image_count, sizeof(VkImageView));
+    ANN(swapchain->image_views);
+
+    for (uint32_t i = 0; i < swapchain->image_count; i++)
+    {
+        VkImageViewCreateInfo view_info = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image = swapchain->images[i],
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .format = format,
+            .subresourceRange =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+        };
+
+        VkResult res = vkCreateImageView(swapchain->device, &view_info, NULL, &swapchain->image_views[i]);
+        if (res != VK_SUCCESS)
+        {
+            log_error("swapchain image view creation failed (%d)", res);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+
+static DvzPresentStatus _swapchain_refresh_surface(DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    ANN(swapchain->surface);
+
+    if (!dvz_surface_refresh(swapchain->surface))
+    {
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    if (!swapchain->surface->ready)
+    {
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    return DVZ_PRESENT_STATUS_OK;
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Initialize a swapchain wrapper from a GPU and surface.
+ *
+ * @param swapchain swapchain wrapper to initialize
+ * @param gpu physical GPU used by the logical device
+ * @param surface surface wrapper used for capability and extent data
+ * @return true when initialization succeeds
+ */
+bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surface)
+{
+    ANN(swapchain);
+    ANN(gpu);
+    ANN(surface);
+
+    dvz_memset(swapchain, sizeof(*swapchain), 0, sizeof(*swapchain));
+    swapchain->gpu = gpu;
+    swapchain->surface = surface;
+    swapchain->device = VK_NULL_HANDLE;
+    swapchain->handle = VK_NULL_HANDLE;
+    swapchain->config = (DvzSwapchainConfig){
+        .image_format = VK_FORMAT_UNDEFINED,
+        .color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+        .present_mode = VK_PRESENT_MODE_FIFO_KHR,
+        .image_usage = DVZ_SWAPCHAIN_DEFAULT_IMAGE_USAGE,
+        .composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        .min_image_count = 0,
+        .clipped = true,
+    };
+    swapchain->ready = false;
+    return true;
+}
+
+
+
+/**
+ * Bind the Vulkan logical device used by swapchain create/destroy/acquire paths.
+ *
+ * @param swapchain swapchain wrapper to configure
+ * @param device logical device used to issue swapchain API calls
+ * @return true when binding succeeds
+ */
+bool dvz_swapchain_device(DvzSwapchain* swapchain, VkDevice device)
+{
+    ANN(swapchain);
+    if (device == VK_NULL_HANDLE)
+    {
+        log_error("cannot bind null VkDevice to swapchain");
+        return false;
+    }
+    swapchain->device = device;
+    return true;
+}
+
+
+
+/**
+ * Set swapchain creation parameters.
+ *
+ * @param swapchain swapchain wrapper to configure
+ * @param config desired swapchain configuration
+ * @return true when configuration is accepted
+ */
+bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config)
+{
+    ANN(swapchain);
+
+    swapchain->config = config;
+    if (_swapchain_config_is_zeroed(config))
+    {
+        swapchain->config.clipped = true;
+    }
+    if (swapchain->config.color_space == 0)
+    {
+        swapchain->config.color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    }
+    if (swapchain->config.present_mode == 0)
+    {
+        swapchain->config.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    }
+    if (swapchain->config.image_usage == 0)
+    {
+        swapchain->config.image_usage = DVZ_SWAPCHAIN_DEFAULT_IMAGE_USAGE;
+    }
+    if (swapchain->config.composite_alpha == 0)
+    {
+        swapchain->config.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    }
+    return true;
+}
+
+
+
+/**
+ * Recreate swapchain images and image views for a new extent.
+ *
+ * @param swapchain swapchain wrapper to recreate
+ * @param size target extent as {width, height}
+ * @return present status mapping recreate outcome
+ */
+DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
+{
+    ANN(swapchain);
+    ANN(swapchain->gpu);
+    ANN(swapchain->surface);
+
+    if (swapchain->surface->handle == VK_NULL_HANDLE)
+    {
+        log_error("swapchain recreate requires a valid wrapped surface");
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+    if (swapchain->device == VK_NULL_HANDLE)
+    {
+        log_error("swapchain recreate requires a valid device handle");
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    DvzPresentStatus refresh_status = _swapchain_refresh_surface(swapchain);
+    if (refresh_status != DVZ_PRESENT_STATUS_OK)
+    {
+        return refresh_status;
+    }
+
+    VkExtent2D extent = _swapchain_resolve_extent(swapchain, size);
+    if (extent.width == 0 || extent.height == 0)
+    {
+        return DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT;
+    }
+
+    VkSurfaceFormatKHR format = _swapchain_resolve_format(swapchain);
+    VkPresentModeKHR present_mode = _swapchain_resolve_present_mode(swapchain);
+    uint32_t min_image_count = _swapchain_resolve_image_count(swapchain);
+
+    VkSwapchainCreateInfoKHR create_info = {
+        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .surface = swapchain->surface->handle,
+        .minImageCount = min_image_count,
+        .imageFormat = format.format,
+        .imageColorSpace = format.colorSpace,
+        .imageExtent = extent,
+        .imageArrayLayers = 1,
+        .imageUsage = swapchain->config.image_usage,
+        .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .preTransform = swapchain->surface->capabilities.currentTransform,
+        .compositeAlpha = swapchain->config.composite_alpha,
+        .presentMode = present_mode,
+        .clipped = swapchain->config.clipped,
+        .oldSwapchain = swapchain->handle,
+    };
+
+    VkSwapchainKHR old_swapchain = swapchain->handle;
+    VkResult res = vkCreateSwapchainKHR(swapchain->device, &create_info, NULL, &swapchain->handle);
+    DvzPresentStatus status = _swapchain_status_from_result(res);
+    if (status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error("swapchain creation failed (%d)", res);
+        return status;
+    }
+
+    if (old_swapchain != VK_NULL_HANDLE)
+    {
+        vkDestroySwapchainKHR(swapchain->device, old_swapchain, NULL);
+    }
+
+    _swapchain_destroy_views(swapchain);
+
+    res = vkGetSwapchainImagesKHR(swapchain->device, swapchain->handle, &swapchain->image_count, NULL);
+    status = _swapchain_status_from_result(res);
+    if (status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error("swapchain image count query failed (%d)", res);
+        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
+        swapchain->handle = VK_NULL_HANDLE;
+        swapchain->ready = false;
+        return status;
+    }
+
+    swapchain->images = (VkImage*)dvz_calloc(swapchain->image_count, sizeof(VkImage));
+    ANN(swapchain->images);
+    res = vkGetSwapchainImagesKHR(
+        swapchain->device, swapchain->handle, &swapchain->image_count, swapchain->images);
+    status = _swapchain_status_from_result(res);
+    if (status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error("swapchain image query failed (%d)", res);
+        _swapchain_destroy_views(swapchain);
+        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
+        swapchain->handle = VK_NULL_HANDLE;
+        swapchain->ready = false;
+        return status;
+    }
+
+    if (!_swapchain_build_views(swapchain, format.format))
+    {
+        _swapchain_destroy_views(swapchain);
+        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
+        swapchain->handle = VK_NULL_HANDLE;
+        swapchain->ready = false;
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    swapchain->extent = extent;
+    swapchain->current_image = UINT32_MAX;
+    swapchain->ready = true;
+    return DVZ_PRESENT_STATUS_OK;
+}
+
+
+
+/**
+ * Acquire the next image index from the swapchain.
+ *
+ * @param swapchain swapchain wrapper
+ * @param image_available semaphore signaled by Vulkan when image is available
+ * @param timeout_ns timeout value passed to Vulkan acquire call
+ * @param[out] image_idx output image index
+ * @return present status mapping acquire outcome
+ */
+DvzPresentStatus dvz_swapchain_acquire(
+    DvzSwapchain* swapchain, VkSemaphore image_available, uint64_t timeout_ns, uint32_t* image_idx)
+{
+    ANN(swapchain);
+    ANN(image_idx);
+
+    if (
+        !swapchain->ready || swapchain->handle == VK_NULL_HANDLE ||
+        swapchain->device == VK_NULL_HANDLE)
+    {
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+    if (swapchain->extent.width == 0 || swapchain->extent.height == 0)
+    {
+        return DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT;
+    }
+
+    VkResult res = vkAcquireNextImageKHR(
+        swapchain->device, swapchain->handle, timeout_ns, image_available, VK_NULL_HANDLE,
+        image_idx);
+    DvzPresentStatus status = _swapchain_status_from_result(res);
+    if (status == DVZ_PRESENT_STATUS_OK)
+    {
+        swapchain->current_image = *image_idx;
+    }
+    return status;
+}
+
+
+
+/**
+ * Present a previously rendered image.
+ *
+ * @param swapchain swapchain wrapper
+ * @param present_queue queue used for present submission
+ * @param image_idx image index to present
+ * @param render_finished semaphore waited before presentation
+ * @return present status mapping present outcome
+ */
+DvzPresentStatus dvz_swapchain_present(
+    DvzSwapchain* swapchain, VkQueue present_queue, uint32_t image_idx, VkSemaphore render_finished)
+{
+    ANN(swapchain);
+
+    if (!swapchain->ready || swapchain->handle == VK_NULL_HANDLE || present_queue == VK_NULL_HANDLE)
+    {
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
+
+    VkSemaphore wait_semaphores[] = {render_finished};
+    VkPresentInfoKHR present_info = {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = (render_finished == VK_NULL_HANDLE) ? 0 : 1,
+        .pWaitSemaphores = (render_finished == VK_NULL_HANDLE) ? NULL : wait_semaphores,
+        .swapchainCount = 1,
+        .pSwapchains = &swapchain->handle,
+        .pImageIndices = &image_idx,
+    };
+
+    VkResult res = vkQueuePresentKHR(present_queue, &present_info);
+    return _swapchain_status_from_result(res);
+}
+
+
+
+/**
+ * Destroy swapchain resources owned by vklite.
+ *
+ * @param swapchain swapchain wrapper to destroy
+ */
+void dvz_swapchain_destroy(DvzSwapchain* swapchain)
+{
+    if (swapchain == NULL)
+    {
+        return;
+    }
+
+    _swapchain_destroy_views(swapchain);
+
+    if (swapchain->handle != VK_NULL_HANDLE && swapchain->device != VK_NULL_HANDLE)
+    {
+        vkDestroySwapchainKHR(swapchain->device, swapchain->handle, NULL);
+    }
+
+    swapchain->handle = VK_NULL_HANDLE;
+    swapchain->extent = (VkExtent2D){0, 0};
+    swapchain->current_image = UINT32_MAX;
+    swapchain->ready = false;
+}

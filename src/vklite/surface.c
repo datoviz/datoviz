@@ -1,0 +1,317 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Surface                                                                                      */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <volk.h>
+
+#include "_alloc.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vklite/surface.h"
+#include "datoviz/window.h"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static void _surface_cache_clear(DvzSurface* surface)
+{
+    ANN(surface);
+
+    dvz_free(surface->formats);
+    surface->formats = NULL;
+    surface->format_count = 0;
+
+    dvz_free(surface->present_modes);
+    surface->present_modes = NULL;
+    surface->present_mode_count = 0;
+}
+
+
+
+static uint32_t _surface_clamp_extent(uint32_t value, uint32_t min, uint32_t max)
+{
+    if (value < min)
+    {
+        return min;
+    }
+    if (value > max)
+    {
+        return max;
+    }
+    return value;
+}
+
+
+
+static void _surface_pick_defaults(DvzSurface* surface)
+{
+    ANN(surface);
+
+    surface->preferred_format = (VkSurfaceFormatKHR){
+        .format = VK_FORMAT_B8G8R8A8_UNORM,
+        .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+    };
+    if (surface->format_count > 0)
+    {
+        surface->preferred_format = surface->formats[0];
+        for (uint32_t i = 0; i < surface->format_count; i++)
+        {
+            VkSurfaceFormatKHR candidate = surface->formats[i];
+            if (
+                candidate.format == VK_FORMAT_B8G8R8A8_UNORM &&
+                candidate.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                surface->preferred_format = candidate;
+                break;
+            }
+        }
+    }
+
+    surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    if (surface->present_mode_count > 0)
+    {
+        surface->preferred_present_mode = surface->present_modes[0];
+        for (uint32_t i = 0; i < surface->present_mode_count; i++)
+        {
+            VkPresentModeKHR candidate = surface->present_modes[i];
+            if (candidate == VK_PRESENT_MODE_MAILBOX_KHR)
+            {
+                surface->preferred_present_mode = candidate;
+                return;
+            }
+            if (candidate == VK_PRESENT_MODE_FIFO_KHR)
+            {
+                surface->preferred_present_mode = candidate;
+            }
+        }
+    }
+}
+
+
+
+static bool _surface_update_extent(DvzSurface* surface)
+{
+    ANN(surface);
+
+    VkExtent2D extent = surface->capabilities.currentExtent;
+    if (extent.width != UINT32_MAX && extent.height != UINT32_MAX)
+    {
+        surface->extent = extent;
+        return true;
+    }
+
+    if (surface->window == NULL)
+    {
+        surface->extent = (VkExtent2D){0, 0};
+        return true;
+    }
+
+    const DvzWindowSurface* ws = dvz_window_surface(surface->window);
+    if (ws == NULL)
+    {
+        surface->extent = (VkExtent2D){0, 0};
+        return true;
+    }
+
+    extent = ws->extent;
+    extent.width = _surface_clamp_extent(
+        extent.width, surface->capabilities.minImageExtent.width,
+        surface->capabilities.maxImageExtent.width);
+    extent.height = _surface_clamp_extent(
+        extent.height, surface->capabilities.minImageExtent.height,
+        surface->capabilities.maxImageExtent.height);
+    surface->extent = extent;
+    return true;
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Initialize a surface wrapper for a GPU queue family.
+ *
+ * @param surface surface wrapper to initialize
+ * @param gpu physical GPU queried for capabilities
+ * @param queue_family queue family used for present support queries
+ * @return true when initialization succeeds
+ */
+bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family)
+{
+    ANN(surface);
+    ANN(gpu);
+
+    dvz_memset(surface, sizeof(*surface), 0, sizeof(*surface));
+    surface->gpu = gpu;
+    surface->queue_family = queue_family;
+    surface->handle = VK_NULL_HANDLE;
+    surface->extent = (VkExtent2D){0, 0};
+    surface->preferred_format = (VkSurfaceFormatKHR){
+        .format = VK_FORMAT_B8G8R8A8_UNORM,
+        .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+    };
+    surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    surface->ready = false;
+    return true;
+}
+
+
+
+/**
+ * Attach a native surface created by the window module to a surface wrapper.
+ *
+ * @param surface surface wrapper to configure
+ * @param surface_khr native Vulkan surface handle owned by the window module
+ * @param window window owning the native surface
+ * @return true when the wrapper accepts the native surface
+ */
+bool dvz_surface_wrap_native(DvzSurface* surface, VkSurfaceKHR surface_khr, DvzWindow* window)
+{
+    ANN(surface);
+
+    if (surface_khr == VK_NULL_HANDLE)
+    {
+        log_error("cannot wrap a null Vulkan surface");
+        return false;
+    }
+
+    surface->handle = surface_khr;
+    surface->window = window;
+    return dvz_surface_refresh(surface);
+}
+
+
+
+/**
+ * Refresh cached capabilities, formats, and present modes.
+ *
+ * @param surface surface wrapper to refresh
+ * @return true when refresh succeeds
+ */
+bool dvz_surface_refresh(DvzSurface* surface)
+{
+    ANN(surface);
+    ANN(surface->gpu);
+
+    if (surface->handle == VK_NULL_HANDLE)
+    {
+        log_error("cannot refresh surface wrapper without a native handle");
+        return false;
+    }
+
+    _surface_cache_clear(surface);
+
+    VkBool32 supports_present = VK_FALSE;
+    VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(
+        surface->gpu->pdevice, surface->queue_family, surface->handle, &supports_present);
+    if (res != VK_SUCCESS)
+    {
+        log_error("surface present support query failed (%d)", res);
+        return false;
+    }
+    if (!supports_present)
+    {
+        log_error("queue family %u has no present support for the wrapped surface", surface->queue_family);
+        return false;
+    }
+
+    res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+        surface->gpu->pdevice, surface->handle, &surface->capabilities);
+    if (res != VK_SUCCESS)
+    {
+        log_error("surface capability query failed (%d)", res);
+        return false;
+    }
+
+    res = vkGetPhysicalDeviceSurfaceFormatsKHR(
+        surface->gpu->pdevice, surface->handle, &surface->format_count, NULL);
+    if (res != VK_SUCCESS)
+    {
+        log_error("surface format count query failed (%d)", res);
+        return false;
+    }
+    if (surface->format_count > 0)
+    {
+        surface->formats = (VkSurfaceFormatKHR*)dvz_calloc(surface->format_count, sizeof(VkSurfaceFormatKHR));
+        ANN(surface->formats);
+        res = vkGetPhysicalDeviceSurfaceFormatsKHR(
+            surface->gpu->pdevice, surface->handle, &surface->format_count, surface->formats);
+        if (res != VK_SUCCESS)
+        {
+            log_error("surface format query failed (%d)", res);
+            _surface_cache_clear(surface);
+            return false;
+        }
+    }
+
+    res = vkGetPhysicalDeviceSurfacePresentModesKHR(
+        surface->gpu->pdevice, surface->handle, &surface->present_mode_count, NULL);
+    if (res != VK_SUCCESS)
+    {
+        log_error("surface present mode count query failed (%d)", res);
+        _surface_cache_clear(surface);
+        return false;
+    }
+    if (surface->present_mode_count > 0)
+    {
+        surface->present_modes =
+            (VkPresentModeKHR*)dvz_calloc(surface->present_mode_count, sizeof(VkPresentModeKHR));
+        ANN(surface->present_modes);
+        res = vkGetPhysicalDeviceSurfacePresentModesKHR(
+            surface->gpu->pdevice, surface->handle, &surface->present_mode_count,
+            surface->present_modes);
+        if (res != VK_SUCCESS)
+        {
+            log_error("surface present mode query failed (%d)", res);
+            _surface_cache_clear(surface);
+            return false;
+        }
+    }
+
+    _surface_pick_defaults(surface);
+    _surface_update_extent(surface);
+    surface->ready = true;
+    return true;
+}
+
+
+
+/**
+ * Destroy a surface wrapper cache.
+ *
+ * @param surface surface wrapper to destroy
+ */
+void dvz_surface_destroy(DvzSurface* surface)
+{
+    if (surface == NULL)
+    {
+        return;
+    }
+
+    _surface_cache_clear(surface);
+    surface->capabilities = (VkSurfaceCapabilitiesKHR){0};
+    surface->preferred_format = (VkSurfaceFormatKHR){0};
+    surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    surface->extent = (VkExtent2D){0, 0};
+    surface->window = NULL;
+    surface->handle = VK_NULL_HANDLE;
+    surface->ready = false;
+}
