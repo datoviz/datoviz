@@ -37,7 +37,6 @@
 #include "datoviz/vklite/swapchain.h"
 #include "datoviz/vklite/sync.h"
 
-static int canvas_export_timeline_fd(DvzCanvas* canvas);
 static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain);
 
 
@@ -67,8 +66,6 @@ struct DvzCanvasSwapchainSlot
     VkImageView swapchain_view;
     DvzImages offscreen_images;
     DvzImageViews offscreen_views;
-    DvzImages swapchain_images;
-    DvzImageViews swapchain_views;
     DvzAllocation offscreen_alloc;
     DvzSemaphore image_available;
     DvzSemaphore render_finished;
@@ -97,7 +94,6 @@ struct DvzCanvasSwapchain
     uint32_t frame_index;
     bool dirty;
     VkQueue queue;
-    DvzQueue* queue_ref;
     DvzCanvasSwapchainSlot* active_slot;
     uint32_t queue_family;
     uint64_t export_serial;
@@ -511,6 +507,124 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
 
 
 
+/**
+ * Initialize a single swapchain slot and its per-frame resources.
+ *
+ * @param swapchain swapchain owning the slot
+ * @param slot slot structure to initialize
+ * @param slot_index index of the slot in the swapchain slot array
+ * @param extent render extent used to allocate offscreen images
+ * @param frame_format render target format used by the canvas stream
+ * @param handles_changed true when exported handles changed after a recreate
+ * @return true on success or false on failure
+ */
+static bool canvas_slot_init(
+    DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot, uint32_t slot_index,
+    VkExtent2D extent, VkFormat frame_format, bool handles_changed)
+{
+    ANN(swapchain);
+    ANN(slot);
+    DvzCanvas* canvas = swapchain->canvas;
+    ANN(canvas);
+
+    dvz_memset(slot, sizeof(*slot), 0, sizeof(*slot));
+    slot->offscreen_view = VK_NULL_HANDLE;
+    slot->swapchain_image = VK_NULL_HANDLE;
+    slot->swapchain_view = VK_NULL_HANDLE;
+    slot->image_index = UINT32_MAX;
+    slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    slot->handles_dirty = handles_changed;
+    slot->commands_recording = false;
+    slot->memory_fd = -1;
+
+    if (canvas_test_fail_slot_index >= 0 && (int32_t)slot_index == canvas_test_fail_slot_index)
+    {
+        log_warn(
+            "forcing canvas slot initialization failure at slot %u for testing", slot_index);
+        return false;
+    }
+
+    slot->command_buffer = dvz_command_buffer_alloc(canvas->device, swapchain->queue_family);
+    if (slot->command_buffer == VK_NULL_HANDLE)
+    {
+        log_error("failed to allocate canvas command buffer for slot %u", slot_index);
+        return false;
+    }
+
+    VkExternalMemoryImageCreateInfoKHR external_info = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
+    VkImageCreateInfo img_info = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = frame_format,
+        .extent =
+            {
+                .width = extent.width,
+                .height = extent.height,
+                .depth = 1,
+            },
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                 VK_IMAGE_USAGE_SAMPLED_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .pNext = NULL,
+    };
+    bool use_external = canvas->allocator.external != 0;
+    if (use_external)
+    {
+        external_info.handleTypes = canvas->allocator.external;
+        img_info.pNext = &external_info;
+    }
+
+    if (dvz_allocator_image(
+            &canvas->allocator, &img_info, 0, &slot->offscreen_alloc, &slot->offscreen_image) !=
+        0)
+    {
+        log_error("failed to allocate offscreen canvas image for slot %u", slot_index);
+        return false;
+    }
+
+    slot->offscreen_images = (DvzImages){0};
+    slot->offscreen_views = (DvzImageViews){0};
+    dvz_images_wrap(
+        canvas->device, &canvas->allocator, VK_IMAGE_TYPE_2D, slot->offscreen_image,
+        &slot->offscreen_images);
+    dvz_images_format(&slot->offscreen_images, frame_format);
+    dvz_image_views(&slot->offscreen_images, &slot->offscreen_views);
+    dvz_image_views_create(&slot->offscreen_views);
+    slot->offscreen_view = dvz_image_views_handle(&slot->offscreen_views, 0);
+    if (slot->offscreen_view == VK_NULL_HANDLE)
+    {
+        log_error("failed to create offscreen image view for slot %u", slot_index);
+        dvz_allocator_destroy_image(
+            &canvas->allocator, &slot->offscreen_alloc, slot->offscreen_image);
+        slot->offscreen_image = VK_NULL_HANDLE;
+        slot->offscreen_images = (DvzImages){0};
+        slot->offscreen_views = (DvzImageViews){0};
+        return false;
+    }
+
+    if (use_external && dvz_allocator_export(
+                            &canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) != 0)
+    {
+        log_warn("failed to export canvas render target");
+        slot->memory_fd = -1;
+    }
+
+    dvz_semaphore(canvas->device, &slot->image_available);
+    dvz_semaphore(canvas->device, &slot->render_finished);
+    dvz_fence(canvas->device, true, &slot->in_flight);
+    slot->ready = true;
+    return true;
+}
+
+
+
 static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 {
     ANN(swapchain);
@@ -624,104 +738,12 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     bool slot_init_failed = false;
     for (uint32_t i = 0; i < count; ++i)
     {
-        DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
-        dvz_memset(slot, sizeof(*slot), 0, sizeof(*slot));
-        slot->offscreen_view = VK_NULL_HANDLE;
-        slot->swapchain_image = VK_NULL_HANDLE;
-        slot->swapchain_view = VK_NULL_HANDLE;
-        slot->image_index = UINT32_MAX;
-        slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-        slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-        slot->handles_dirty = handles_changed;
-        slot->commands_recording = false;
-        slot->memory_fd = -1;
-
-        if (canvas_test_fail_slot_index >= 0 && (int32_t)i == canvas_test_fail_slot_index)
+        if (!canvas_slot_init(
+                swapchain, &swapchain->slots[i], i, extent, frame_format, handles_changed))
         {
-            log_warn("forcing canvas slot initialization failure at slot %u for testing", i);
             slot_init_failed = true;
             break;
         }
-
-        slot->command_buffer = dvz_command_buffer_alloc(canvas->device, swapchain->queue_family);
-        if (slot->command_buffer == VK_NULL_HANDLE)
-        {
-            log_error("failed to allocate canvas command buffer for slot %u", i);
-            slot_init_failed = true;
-            break;
-        }
-
-        VkExternalMemoryImageCreateInfoKHR external_info = {
-            .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
-        VkImageCreateInfo img_info = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-            .imageType = VK_IMAGE_TYPE_2D,
-            .format = frame_format,
-            .extent =
-                {
-                    .width = extent.width,
-                    .height = extent.height,
-                    .depth = 1,
-                },
-            .mipLevels = 1,
-            .arrayLayers = 1,
-            .samples = VK_SAMPLE_COUNT_1_BIT,
-            .tiling = VK_IMAGE_TILING_OPTIMAL,
-            .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-                     VK_IMAGE_USAGE_SAMPLED_BIT,
-            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .pNext = NULL,
-        };
-        bool use_external = canvas->allocator.external != 0;
-        if (use_external)
-        {
-            external_info.handleTypes = canvas->allocator.external;
-            img_info.pNext = &external_info;
-        }
-
-        if (dvz_allocator_image(
-                &canvas->allocator, &img_info, 0, &slot->offscreen_alloc,
-                &slot->offscreen_image) != 0)
-        {
-            log_error("failed to allocate offscreen canvas image for slot %u", i);
-            slot_init_failed = true;
-            break;
-        }
-
-        slot->offscreen_images = (DvzImages){0};
-        slot->offscreen_views = (DvzImageViews){0};
-        dvz_images_wrap(
-            canvas->device, &canvas->allocator, VK_IMAGE_TYPE_2D, slot->offscreen_image,
-            &slot->offscreen_images);
-        dvz_images_format(&slot->offscreen_images, frame_format);
-        dvz_image_views(&slot->offscreen_images, &slot->offscreen_views);
-        dvz_image_views_create(&slot->offscreen_views);
-        slot->offscreen_view = dvz_image_views_handle(&slot->offscreen_views, 0);
-        if (slot->offscreen_view == VK_NULL_HANDLE)
-        {
-            log_error("failed to create offscreen image view for slot %u", i);
-            dvz_allocator_destroy_image(
-                &canvas->allocator, &slot->offscreen_alloc, slot->offscreen_image);
-            slot->offscreen_image = VK_NULL_HANDLE;
-            slot->offscreen_images = (DvzImages){0};
-            slot->offscreen_views = (DvzImageViews){0};
-            slot_init_failed = true;
-            break;
-        }
-
-        slot->memory_fd = -1;
-        if (use_external && dvz_allocator_export(
-                                &canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) != 0)
-        {
-            log_warn("failed to export canvas render target");
-            slot->memory_fd = -1;
-        }
-
-        dvz_semaphore(canvas->device, &slot->image_available);
-        dvz_semaphore(canvas->device, &slot->render_finished);
-        dvz_fence(canvas->device, true, &slot->in_flight);
-        slot->ready = true;
     }
     if (slot_init_failed)
     {
@@ -753,8 +775,6 @@ static void canvas_destroy_slot(
         slot->offscreen_views = (DvzImageViews){0};
     }
     slot->swapchain_view = VK_NULL_HANDLE;
-    slot->swapchain_images = (DvzImages){0};
-    slot->swapchain_views = (DvzImageViews){0};
     if (slot->offscreen_image != VK_NULL_HANDLE)
     {
         dvz_allocator_destroy_image(allocator, &slot->offscreen_alloc, slot->offscreen_image);
@@ -901,11 +921,11 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->frame_index = 0;
     canvas->swapchain->frame_format = canvas_frame_format(canvas);
     canvas->swapchain->runtime_state = DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
-    canvas->swapchain->queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
-    ANN(canvas->swapchain->queue_ref);
-    canvas->swapchain->queue = dvz_queue_handle(canvas->swapchain->queue_ref);
+    DvzQueue* queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
+    ANN(queue_ref);
+    canvas->swapchain->queue = dvz_queue_handle(queue_ref);
     ANNVK(canvas->swapchain->queue);
-    canvas->swapchain->queue_family = dvz_queue_family(canvas->swapchain->queue_ref);
+    canvas->swapchain->queue_family = dvz_queue_family(queue_ref);
     DvzGpu* gpu = canvas_gpu(canvas);
     ANN(gpu);
     if (!dvz_surface_init(&canvas->swapchain->surface_wrapper, gpu, canvas->swapchain->queue_family))
@@ -1261,7 +1281,22 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 
     VkQueue queue = state->queue;
     // log_trace("submit");
-    dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
+    int32_t submit_res = dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
+    if (submit_res == VK_ERROR_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "queue submit");
+        state->active_slot = NULL;
+        return -1;
+    }
+    if (submit_res != VK_SUCCESS)
+    {
+        log_error(
+            "failed to submit canvas frame (frame=%u image=%u vk=%d)", state->frame_index,
+            state->active_slot->image_index, submit_res);
+        state->active_slot = NULL;
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "submit failed");
+        return -1;
+    }
 
     uint32_t index = state->active_slot->image_index;
 
@@ -1298,46 +1333,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     {
         canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "present success");
     }
-    if (canvas->video_sink_enabled)
-    {
-        int fd = canvas_export_timeline_fd(canvas);
-        if (fd >= 0)
-        {
-            DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
-            if (frame)
-            {
-#if OS_UNIX
-                if (frame->wait_semaphore_fd >= 0)
-                {
-                    close(frame->wait_semaphore_fd);
-                }
-#endif
-                frame->wait_semaphore_fd = fd;
-            }
-        }
-        else
-        {
-            log_warn("canvas timeline semaphore export failed for video sink");
-        }
-    }
     return 0;
-}
-
-
-
-static int canvas_export_timeline_fd(DvzCanvas* canvas)
-{
-    ANN(canvas);
-    if (!canvas->timeline_ready || !canvas->supports_external_semaphore)
-    {
-        return -1;
-    }
-#if OS_UNIX
-    VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
-    return dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
-#else
-    return -1;
-#endif
 }
 
 

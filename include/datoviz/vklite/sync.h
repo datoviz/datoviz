@@ -508,8 +508,9 @@ DVZ_EXPORT void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd);
  * @param submit the submission
  * @param queue the queue
  * @param fence the fence that is signaled once all commands have completed
+ * @return Vulkan result code cast to int32_t (VK_SUCCESS on success)
  */
-DVZ_EXPORT void dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence);
+DVZ_EXPORT int32_t dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence);
 
 
 

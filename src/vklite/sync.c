@@ -538,9 +538,9 @@ void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd)
 
 
 
-void dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence)
+int32_t dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence)
 {
     ANN(submit);
     ANNVK(queue);
-    vkQueueSubmit2(queue, 1, &submit->info, fence);
+    return (int32_t)vkQueueSubmit2(queue, 1, &submit->info, fence);
 }

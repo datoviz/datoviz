@@ -208,6 +208,43 @@ static int canvas_create_timeline(DvzCanvas* canvas)
 
 
 
+static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFrame* frame)
+{
+    ANN(canvas);
+    ANN(frame);
+
+    if (!canvas->video_sink_enabled)
+    {
+        return 0;
+    }
+    if (!canvas->timeline_ready || !canvas->supports_external_semaphore)
+    {
+        log_error("video sink timeline export unavailable");
+        return -1;
+    }
+
+#if OS_UNIX
+    VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
+    int fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
+    if (fd < 0)
+    {
+        log_error("failed to export canvas timeline semaphore for video sync");
+        return -1;
+    }
+    if (frame->wait_semaphore_fd >= 0)
+    {
+        close(frame->wait_semaphore_fd);
+    }
+    frame->wait_semaphore_fd = fd;
+    return 0;
+#else
+    log_error("video sink timeline export unsupported on this platform");
+    return -1;
+#endif
+}
+
+
+
 static void canvas_destroy_timeline(DvzCanvas* canvas)
 {
     if (!canvas || !canvas->timeline_ready)
@@ -549,6 +586,13 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         return -1;
     }
     *frame = frame_data;
+
+    bool needs_video_sync_refresh =
+        canvas->video_sink_enabled && (!canvas->stream_started || frame->handles_dirty);
+    if (needs_video_sync_refresh && canvas_prepare_video_wait_semaphore_fd(canvas, frame) != 0)
+    {
+        return -1;
+    }
 
     bool stream_was_started = canvas->stream_started;
     if (dvz_canvas_stream_start(canvas, frame) != 0)
