@@ -55,6 +55,26 @@ static DvzPresentStatus _swapchain_status_from_result(VkResult result)
 
 
 
+static const char* _swapchain_status_name(DvzPresentStatus status)
+{
+    switch (status)
+    {
+    case DVZ_PRESENT_STATUS_OK:
+        return "OK";
+    case DVZ_PRESENT_STATUS_RECREATE:
+        return "RECREATE";
+    case DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT:
+        return "SKIP_ZERO_EXTENT";
+    case DVZ_PRESENT_STATUS_DEVICE_LOST:
+        return "DEVICE_LOST";
+    case DVZ_PRESENT_STATUS_ERROR:
+    default:
+        return "ERROR";
+    }
+}
+
+
+
 static uint32_t _swapchain_clamp_extent(uint32_t value, uint32_t min, uint32_t max)
 {
     if (value < min)
@@ -481,7 +501,9 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     DvzPresentStatus status = _swapchain_status_from_result(res);
     if (status != DVZ_PRESENT_STATUS_OK)
     {
-        log_error("swapchain creation failed (%d)", res);
+        log_error(
+            "swapchain create failed (swapchain=%p extent=%ux%u vk=%d status=%s)",
+            (void*)swapchain, extent.width, extent.height, res, _swapchain_status_name(status));
         return status;
     }
 
@@ -489,7 +511,9 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     status = _swapchain_status_from_result(res);
     if (status != DVZ_PRESENT_STATUS_OK)
     {
-        log_error("swapchain image count query failed (%d)", res);
+        log_error(
+            "swapchain image count query failed (swapchain=%p vk=%d status=%s)", (void*)swapchain,
+            res, _swapchain_status_name(status));
         vkDestroySwapchainKHR(swapchain->device, new_swapchain, NULL);
         return status;
     }
@@ -507,7 +531,9 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     status = _swapchain_status_from_result(res);
     if (status != DVZ_PRESENT_STATUS_OK)
     {
-        log_error("swapchain image query failed (%d)", res);
+        log_error(
+            "swapchain image query failed (swapchain=%p vk=%d status=%s)", (void*)swapchain, res,
+            _swapchain_status_name(status));
         _swapchain_destroy_image_arrays(swapchain->device, new_image_count, &new_images, &new_image_views);
         vkDestroySwapchainKHR(swapchain->device, new_swapchain, NULL);
         return status;
@@ -586,10 +612,14 @@ DvzPresentStatus dvz_swapchain_acquire(
     }
     if (status == DVZ_PRESENT_STATUS_RECREATE)
     {
-        log_warn("swapchain acquire requires recreate (%d)", res);
+        log_warn(
+            "swapchain acquire requires recreate (swapchain=%p image=%u vk=%d status=%s)",
+            (void*)swapchain, *image_idx, res, _swapchain_status_name(status));
         return status;
     }
-    log_error("swapchain acquire failed (%d)", res);
+    log_error(
+        "swapchain acquire failed (swapchain=%p image=%u vk=%d status=%s)", (void*)swapchain,
+        *image_idx, res, _swapchain_status_name(status));
     return status;
 }
 
@@ -643,10 +673,14 @@ DvzPresentStatus dvz_swapchain_present(
     }
     if (status == DVZ_PRESENT_STATUS_RECREATE)
     {
-        log_warn("swapchain present requires recreate (%d), image=%u", res, image_idx);
+        log_warn(
+            "swapchain present requires recreate (swapchain=%p image=%u vk=%d status=%s)",
+            (void*)swapchain, image_idx, res, _swapchain_status_name(status));
         return status;
     }
-    log_error("swapchain present failed (%d), image=%u", res, image_idx);
+    log_error(
+        "swapchain present failed (swapchain=%p image=%u vk=%d status=%s)", (void*)swapchain,
+        image_idx, res, _swapchain_status_name(status));
     return status;
 }
 

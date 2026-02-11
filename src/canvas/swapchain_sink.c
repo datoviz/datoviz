@@ -950,13 +950,16 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     }
     if (acquire_status != DVZ_PRESENT_STATUS_OK)
     {
-        log_error("failed to acquire swapchain image (%d)", acquire_status);
+        log_error(
+            "failed to acquire swapchain image (frame=%u slot=%u status=%d)", state->frame_index,
+            slot_idx, acquire_status);
         return -1;
     }
 
     state->frame_index = (state->frame_index + 1) % state->image_count;
     if (!slot->ready)
     {
+        log_error("acquired swapchain slot %u is not ready", slot_idx);
         return -1;
     }
     slot->image_index = image_index;
@@ -1057,7 +1060,9 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     }
     else if (present_status != DVZ_PRESENT_STATUS_OK)
     {
-        log_error("failed to present swapchain image (%d)", present_status);
+        log_error(
+            "failed to present swapchain image (frame=%u image=%u status=%d)", state->frame_index,
+            index, present_status);
         state->active_slot = NULL;
         return -1;
     }

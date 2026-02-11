@@ -595,3 +595,72 @@ int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstite
 
     return 0;
 }
+
+
+
+/**
+ * Verify recreate persists the resolved swapchain state selected against surface capabilities.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture))
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzSurface surface = {0};
+    DvzSwapchain swapchain = {0};
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
+    if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
+    {
+        log_warn("vklite resolved state test skipped because native surface is unavailable");
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
+    AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
+    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(&fixture.device)));
+
+    DvzSwapchainConfig cfg = {0};
+    cfg.image_format = VK_FORMAT_B8G8R8A8_UNORM;
+    cfg.color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    cfg.present_mode = (VkPresentModeKHR)999;
+    cfg.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    cfg.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    cfg.clipped = true;
+    AT(dvz_swapchain_config(&swapchain, cfg));
+
+    uvec2 size = {window_surface->extent.width, window_surface->extent.height};
+    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, size);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        log_warn("vklite resolved state test skipped because window extent is zero");
+        dvz_swapchain_destroy(&swapchain);
+        dvz_surface_destroy(&surface);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    AT(status == DVZ_PRESENT_STATUS_OK);
+    AT(swapchain.image_format != VK_FORMAT_UNDEFINED);
+    AT(swapchain.image_format == swapchain.surface->preferred_format.format);
+    AT(swapchain.color_space == swapchain.surface->preferred_format.colorSpace);
+    AT(swapchain.present_mode == swapchain.surface->preferred_present_mode);
+
+    dvz_swapchain_destroy(&swapchain);
+    dvz_surface_destroy(&surface);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}

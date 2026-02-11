@@ -110,6 +110,8 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
 
 int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tstitem);
+
 
 
 /*************************************************************************************************/
