@@ -21,7 +21,8 @@ Legend:
 Current status:
 1. Current milestone: `M2 - Canvas migration and boundary enforcement`
 2. Current task: `PRES-040 - Integrate window-canvas-vklite surface handoff and lifecycle`
-3. Last completed task: `PRES-080 - Add vklite presentation-layer tests (surface/swapchain/recreate)`
+3. Last completed task:
+   `PRES-080 - Add vklite presentation-layer tests (surface/swapchain/recreate + API contract guards)`
 4. Last updated: `2026-02-11`
 5. Note: pre-`PRES-080` API/implementation polish applied (`dvz_swapchain_device()`, enum warning
    cleanup, zero-extent normalization).
@@ -32,16 +33,18 @@ Task board status:
 3. `[x] PRES-010` Add public vklite presentation headers and exports.
 4. `[x] PRES-020` Implement `vklite` surface wrapper.
 5. `[x] PRES-030` Implement `vklite` swapchain wrapper.
-6. `[x] PRES-080` Add vklite presentation-layer tests (surface/swapchain/recreate).
+6. `[x] PRES-080`
+   Add vklite presentation-layer tests (surface/swapchain/recreate + API contract guards).
 7. `[~] PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
 8. `[ ] PRES-050` Migrate canvas presentation path to vklite API.
-9. `[ ] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
-10. `[ ] PRES-060` Harden resize/out-of-date/zero-extent state machine.
-11. `[ ] PRES-070` Finalize queue/semaphore/fence ownership rules.
-12. `[ ] PRES-075` Finalize video synchronization and sink ordering contract.
-13. `[ ] PRES-085` Add capture-mode validation tests (live + offline/headless).
-14. `[ ] PRES-090` Cleanup dead code and boundary violations.
-15. `[ ] PRES-100` Final validation gate.
+9. `[ ] PRES-082` Add end-to-end present recovery test (OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume).
+10. `[ ] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
+11. `[ ] PRES-060` Harden resize/out-of-date/zero-extent state machine.
+12. `[ ] PRES-070` Finalize queue/semaphore/fence ownership rules.
+13. `[ ] PRES-075` Finalize video synchronization and sink ordering contract.
+14. `[ ] PRES-085` Add capture-mode validation tests (live + offline/headless).
+15. `[ ] PRES-090` Cleanup dead code and boundary violations.
+16. `[ ] PRES-100` Final validation gate.
 
 
 ## Ground rules
@@ -58,6 +61,8 @@ Task board status:
 
 
 ## Current baseline snapshot (branch reality)
+
+Baseline snapshot date: `2026-02-11` (verified by `PRES-000` audit).
 
 1. Active modules in `src/CMakeLists.txt`: `input`, `window`, `canvas`, `stream`, `video`, `vk`,
    `vklite`.
@@ -112,14 +117,14 @@ Task board status:
 
 ### Public API (minimal additions)
 
-Planned public headers:
+Finalized public headers:
 1. `include/datoviz/vklite/surface.h`
 2. `include/datoviz/vklite/swapchain.h`
 
-Planned `vklite.h` update:
+Finalized `vklite.h` update:
 1. Include the two headers above from `include/datoviz/vklite.h`.
 
-Planned public functions:
+Finalized public functions:
 1. `dvz_surface_init()`
 2. `dvz_surface_wrap_native()`
 3. `dvz_surface_refresh()`
@@ -132,7 +137,7 @@ Planned public functions:
 10. `dvz_swapchain_present()`
 11. `dvz_swapchain_destroy()`
 
-Proposed public signatures (freeze before M1 implementation):
+Finalized public signatures (implemented in M1):
 ```c
 typedef enum DvzPresentStatus
 {
@@ -149,6 +154,7 @@ bool dvz_surface_refresh(DvzSurface* surface);
 void dvz_surface_destroy(DvzSurface* surface);
 
 bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surface);
+bool dvz_swapchain_device(DvzSwapchain* swapchain, VkDevice device);
 bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config);
 DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size);
 DvzPresentStatus dvz_swapchain_acquire(
@@ -370,11 +376,13 @@ Make canvas orchestration-only for presentation flow.
 1. Run `canvas_present_recovery`.
 2. Run `canvas_zero_extent_suspend`.
 3. Run presentation-layer regression tests from M1 after migration.
+4. Run `canvas_present_recovery` with forced/induced `OUT_OF_DATE` and assert recreate + resume.
 
 ### Exit criteria
 1. No raw Vulkan swapchain/surface calls remain in canvas.
 2. Acquire/present works through canvas using vklite-backed path.
 3. Presentation regression tests remain green post-migration.
+4. End-to-end recovery path is validated (`OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume`).
 
 
 ## M3 - Synchronization and video integration hardening
@@ -446,28 +454,32 @@ Finalize implementation quality and remove obsolete logic.
 
 ## Agent task board
 
+Canonical status and progress are tracked in the live task board above. This section defines the
+immutable task ID inventory and wording.
+
 1. `PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
 2. `PRES-005` Freeze API signatures, return semantics, and state-machine mapping in headers/docs.
 3. `PRES-010` Add public vklite presentation headers and exports.
 4. `PRES-020` Implement `vklite` surface wrapper.
 5. `PRES-030` Implement `vklite` swapchain wrapper.
-6. `PRES-080` Add presentation-layer tests (surface/swapchain/recreate/recovery).
+6. `PRES-080` Add presentation-layer tests (surface/swapchain/recreate + API contract guards).
 7. `PRES-040` Integrate window-canvas-vklite surface handoff and lifecycle.
 8. `PRES-050` Migrate canvas presentation path to vklite API.
-9. `PRES-055` Implement deterministic handle-refresh and sink-restart policy.
-10. `PRES-060` Harden resize/out-of-date/zero-extent state machine.
-11. `PRES-070` Finalize queue/semaphore/fence ownership rules.
-12. `PRES-075` Finalize video synchronization and sink ordering contract.
-13. `PRES-085` Add capture-mode validation tests (live + offline/headless).
-14. `PRES-090` Cleanup dead code and boundary violations.
-15. `PRES-100` Final validation gate.
+9. `PRES-082` Add end-to-end present recovery test (OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume).
+10. `PRES-055` Implement deterministic handle-refresh and sink-restart policy.
+11. `PRES-060` Harden resize/out-of-date/zero-extent state machine.
+12. `PRES-070` Finalize queue/semaphore/fence ownership rules.
+13. `PRES-075` Finalize video synchronization and sink ordering contract.
+14. `PRES-085` Add capture-mode validation tests (live + offline/headless).
+15. `PRES-090` Cleanup dead code and boundary violations.
+16. `PRES-100` Final validation gate.
 
 
 ## Canonical execution order
 
 1. M0 (`PRES-000`)
 2. M1 (`PRES-005`, `PRES-010`, `PRES-020`, `PRES-030`, `PRES-080`)
-3. M2 (`PRES-040`, `PRES-050`)
+3. M2 (`PRES-040`, `PRES-050`, `PRES-082`)
 4. M3 (`PRES-055`, `PRES-060`, `PRES-070`, `PRES-075`)
 5. M4 (`PRES-085`)
 6. M5 (`PRES-090`, `PRES-100`)
@@ -481,7 +493,8 @@ Finalize implementation quality and remove obsolete logic.
 4. Window/canvas/vklite ownership and destroy/recreate ordering are enforced.
 5. Synchronization contract (`wait_value`, handle refresh, sink ordering) is implemented.
 6. Presentation state machine behavior matches documented transition and result mapping rules.
-7. Live screencast and offline/headless capture modes are both validated.
-8. `just build` and required `dvztest` filters pass.
-9. Test gating emits explicit skip reasons when capabilities are missing.
-10. Plan artifacts and code comments reflect final behavior.
+7. End-to-end present recovery (`OUT_OF_DATE/SUBOPTIMAL -> recreate -> resume`) is validated.
+8. Live screencast and offline/headless capture modes are both validated.
+9. `just build` and required `dvztest` filters pass.
+10. Test gating emits explicit skip reasons when capabilities are missing.
+11. Plan artifacts and code comments reflect final behavior.
