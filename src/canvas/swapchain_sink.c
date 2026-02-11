@@ -27,6 +27,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
@@ -103,7 +104,6 @@ struct DvzCanvasSwapchain
     VkQueue queue;
     DvzQueue* queue_ref;
     DvzCanvasSwapchainSlot* active_slot;
-    VkCommandPool command_pool;
     uint32_t queue_family;
     uint64_t export_serial;
     VkFormat frame_format;
@@ -550,6 +550,13 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
 
+    VkCommandPool command_pool = dvz_device_command_pool(canvas->device, swapchain->queue_family);
+    if (command_pool == VK_NULL_HANDLE)
+    {
+        log_error("canvas swapchain missing command pool");
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
     for (uint32_t i = 0; i < count; ++i)
     {
         DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
@@ -564,14 +571,9 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->commands_recording = false;
         slot->memory_fd = -1;
 
-        if (swapchain->command_pool == VK_NULL_HANDLE)
-        {
-            log_error("canvas swapchain missing command pool");
-            continue;
-        }
         VkCommandBufferAllocateInfo cb_info = {
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .commandPool = swapchain->command_pool,
+            .commandPool = command_pool,
             .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1,
         };
@@ -706,15 +708,20 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     {
         return;
     }
-    VkDevice device = canvas_device_handle(swapchain->canvas);
-    vkDeviceWaitIdle(device);
+    DvzCanvas* canvas = swapchain->canvas;
+    if (canvas == NULL || canvas->device == NULL)
+    {
+        return;
+    }
+    VkDevice device = canvas_device_handle(canvas);
+    VkCommandPool command_pool = dvz_device_command_pool(canvas->device, swapchain->queue_family);
+    dvz_device_wait(canvas->device);
     if (swapchain->slots)
     {
         for (uint32_t i = 0; i < swapchain->image_count; ++i)
         {
             canvas_destroy_slot(
-                device, swapchain->command_pool, &swapchain->slots[i],
-                &swapchain->canvas->allocator);
+                device, command_pool, &swapchain->slots[i], &canvas->allocator);
         }
         dvz_free(swapchain->slots);
         swapchain->slots = NULL;
@@ -828,14 +835,6 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
         return -1;
     }
     canvas->swapchain->wrappers_ready = true;
-    VkDevice device = canvas_device_handle(canvas);
-    VkCommandPoolCreateInfo pool_info = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        .queueFamilyIndex = canvas->swapchain->queue_family,
-    };
-    VK_CHECK_RESULT(
-        vkCreateCommandPool(device, &pool_info, NULL, &canvas->swapchain->command_pool));
     return 0;
 }
 
@@ -852,13 +851,7 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas)
     {
         return;
     }
-    VkDevice device = canvas_device_handle(canvas);
     canvas_swapchain_cleanup(canvas->swapchain);
-    if (canvas->swapchain->command_pool != VK_NULL_HANDLE)
-    {
-        vkDestroyCommandPool(device, canvas->swapchain->command_pool, NULL);
-        canvas->swapchain->command_pool = VK_NULL_HANDLE;
-    }
     if (canvas->swapchain->wrappers_ready)
     {
         dvz_swapchain_destroy(&canvas->swapchain->swapchain_wrapper);
@@ -1116,25 +1109,8 @@ static int canvas_export_timeline_fd(DvzCanvas* canvas)
         return -1;
     }
 #if OS_UNIX
-    VkDevice vk_device = dvz_device_handle(canvas->device);
     VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
-    if (handle_type == 0)
-    {
-        return -1;
-    }
-    VkSemaphoreGetFdInfoKHR fd_info = {
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
-        .semaphore = canvas->timeline_semaphore.vk_semaphore,
-        .handleType = handle_type,
-    };
-    int fd = -1;
-    VkResult res = vkGetSemaphoreFdKHR(vk_device, &fd_info, &fd);
-    if (res != VK_SUCCESS)
-    {
-        log_warn("vkGetSemaphoreFdKHR failed for timeline semaphore (%d)", res);
-        return -1;
-    }
-    return fd;
+    return dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
 #else
     return -1;
 #endif

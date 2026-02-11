@@ -18,6 +18,7 @@
 
 #include "../src/vk/macros.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sync.h"
 #include "vulkan/vulkan_core.h"
@@ -413,9 +414,47 @@ void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value)
 
 uint64_t dvz_semaphore_query(DvzSemaphore* semaphore)
 {
+    ANN(semaphore);
     uint64_t current = 0;
     vkGetSemaphoreCounterValue(semaphore->device->vk_device, semaphore->vk_semaphore, &current);
     return current;
+}
+
+
+
+/**
+ * Export a semaphore as a Unix file descriptor.
+ *
+ * @param semaphore semaphore to export
+ * @param handle_type external handle type requested by the caller
+ * @return file descriptor on success, -1 on failure or unsupported platforms
+ */
+int dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type)
+{
+    ANN(semaphore);
+#if OS_UNIX
+    if (handle_type == 0)
+    {
+        return -1;
+    }
+
+    VkSemaphoreGetFdInfoKHR fd_info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+        .semaphore = semaphore->vk_semaphore,
+        .handleType = handle_type,
+    };
+    int fd = -1;
+    VkResult res = vkGetSemaphoreFdKHR(semaphore->device->vk_device, &fd_info, &fd);
+    if (res != VK_SUCCESS)
+    {
+        log_warn("vkGetSemaphoreFdKHR failed for semaphore (%d)", res);
+        return -1;
+    }
+    return fd;
+#else
+    (void)handle_type;
+    return -1;
+#endif
 }
 
 

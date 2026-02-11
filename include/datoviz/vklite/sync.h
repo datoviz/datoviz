@@ -432,6 +432,18 @@ DVZ_EXPORT uint64_t dvz_semaphore_query(DvzSemaphore* semaphore);
 
 
 /**
+ * Export a semaphore as a Unix file descriptor.
+ *
+ * @param semaphore semaphore to export
+ * @param handle_type external handle type requested by the caller
+ * @returns file descriptor on success, -1 on failure or unsupported platforms
+ */
+DVZ_EXPORT int
+dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type);
+
+
+
+/**
  * Destroy semaphore.
  *
  * @param semaphore the semaphore
