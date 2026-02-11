@@ -370,6 +370,9 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     DvzClock loop_clock = dvz_clock();
     dvz_clock_tick(&loop_clock);
     size_t submit_count = 0;
+    bool recovery_forced = false;
+    bool recovery_resumed = false;
+    const size_t target_submits = interactive_loop ? 1 : 2;
 
     do
     {
@@ -382,7 +385,17 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_submit(canvas) == 0);
         submit_count++;
-    } while (interactive_loop && keep_running);
+        if (!recovery_forced)
+        {
+            dvz_canvas_swapchain_mark_out_of_date(canvas);
+            recovery_forced = true;
+            continue;
+        }
+        recovery_resumed = true;
+    } while ((interactive_loop && keep_running) || (!interactive_loop && submit_count < target_submits));
+
+    AT(recovery_forced);
+    AT(recovery_resumed);
 
     dvz_device_wait(&device);
 

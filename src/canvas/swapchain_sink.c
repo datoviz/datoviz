@@ -32,6 +32,8 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/vklite/surface.h"
+#include "datoviz/vklite/swapchain.h"
 #include "datoviz/vklite/sync.h"
 
 static int canvas_export_timeline_fd(DvzCanvas* canvas);
@@ -41,10 +43,6 @@ static int canvas_export_timeline_fd(DvzCanvas* canvas);
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
-
-#define MAX_SURFACE_FORMATS 256
-
-
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
@@ -88,6 +86,9 @@ struct DvzCanvasSwapchainSlot
 struct DvzCanvasSwapchain
 {
     DvzCanvas* canvas;
+    DvzSurface surface_wrapper;
+    DvzSwapchain swapchain_wrapper;
+    bool wrappers_ready;
     VkSwapchainKHR handle;
     VkFormat format;
     VkColorSpaceKHR color_space;
@@ -147,22 +148,10 @@ static VkSurfaceKHR canvas_surface_handle(DvzCanvas* canvas)
 
 
 
-static VkExtent2D
-canvas_surface_extent(const DvzCanvas* canvas, const VkSurfaceCapabilitiesKHR* caps)
+static VkExtent2D canvas_surface_extent(const DvzCanvas* canvas)
 {
     ANN(canvas);
     VkExtent2D extent = canvas->surface ? canvas->surface->extent : (VkExtent2D){0, 0};
-    if (caps)
-    {
-        if (extent.width < caps->minImageExtent.width)
-            extent.width = caps->minImageExtent.width;
-        if (extent.height < caps->minImageExtent.height)
-            extent.height = caps->minImageExtent.height;
-        if (extent.width > caps->maxImageExtent.width)
-            extent.width = caps->maxImageExtent.width;
-        if (extent.height > caps->maxImageExtent.height)
-            extent.height = caps->maxImageExtent.height;
-    }
     return extent;
 }
 
@@ -206,64 +195,11 @@ static VkFormat canvas_frame_format(const DvzCanvas* canvas)
 static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 {
     ANN(canvas);
-
-    DvzGpu* gpu = canvas_gpu(canvas);
-    VkSurfaceKHR surface = canvas_surface_handle(canvas);
-    if (!gpu || surface == VK_NULL_HANDLE)
+    if (canvas->cfg.present_mode != 0)
     {
-        return VK_PRESENT_MODE_FIFO_KHR;
+        return canvas->cfg.present_mode;
     }
-
-    uint32_t count = 0;
-    VkResult modes_res =
-        vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, NULL);
-    if (modes_res != VK_SUCCESS && modes_res != VK_INCOMPLETE)
-    {
-        log_error("failed to query surface present mode count (%d)", modes_res);
-        return VK_PRESENT_MODE_FIFO_KHR;
-    }
-    if (count == 0)
-    {
-        return VK_PRESENT_MODE_FIFO_KHR;
-    }
-
-    VkPresentModeKHR* modes = (VkPresentModeKHR*)dvz_calloc(count, sizeof(VkPresentModeKHR));
-    ANN(modes);
-    modes_res = vkGetPhysicalDeviceSurfacePresentModesKHR(gpu->pdevice, surface, &count, modes);
-    if (modes_res != VK_SUCCESS && modes_res != VK_INCOMPLETE)
-    {
-        log_error("failed to query surface present modes (%d)", modes_res);
-        dvz_free(modes);
-        return VK_PRESENT_MODE_FIFO_KHR;
-    }
-    if (modes_res == VK_INCOMPLETE)
-    {
-        log_warn("surface present mode list was incomplete; using partial result");
-    }
-
-    VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
-    VkPresentModeKHR requested = canvas->cfg.present_mode;
-    bool supported = false;
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        if (modes[i] == requested)
-        {
-            supported = true;
-            break;
-        }
-    }
-
-    if (supported)
-    {
-        resolved = requested;
-    }
-    else if (requested != VK_PRESENT_MODE_FIFO_KHR)
-    {
-        log_warn("canvas present mode %d unsupported, falling back to FIFO", requested);
-    }
-
-    dvz_free(modes);
-    return resolved;
+    return VK_PRESENT_MODE_FIFO_KHR;
 }
 
 
@@ -411,28 +347,18 @@ static void canvas_cmd_copy_frame(
 static VkResult
 canvas_slot_create_swapchain_view(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSlot* slot)
 {
-    if (!swapchain || !slot || slot->swapchain_image == VK_NULL_HANDLE)
+    if (!swapchain || !slot || slot->image_index >= swapchain->swapchain_wrapper.image_count)
     {
-        return VK_SUCCESS;
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
-    if (slot->swapchain_view != VK_NULL_HANDLE)
+    if (swapchain->swapchain_wrapper.image_views == NULL)
     {
-        return VK_SUCCESS;
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
-    slot->swapchain_images = (DvzImages){0};
-    slot->swapchain_views = (DvzImageViews){0};
-    dvz_images_wrap(
-        swapchain->canvas->device, &swapchain->canvas->allocator, VK_IMAGE_TYPE_2D,
-        slot->swapchain_image, &slot->swapchain_images);
-    dvz_images_format(&slot->swapchain_images, swapchain->format);
-    dvz_image_views(&slot->swapchain_images, &slot->swapchain_views);
-    dvz_image_views_create(&slot->swapchain_views);
-    slot->swapchain_view = dvz_image_views_handle(&slot->swapchain_views, 0);
+    slot->swapchain_view = swapchain->swapchain_wrapper.image_views[slot->image_index];
     if (slot->swapchain_view == VK_NULL_HANDLE)
     {
-        log_error("failed to create swapchain image view");
-        slot->swapchain_images = (DvzImages){0};
-        slot->swapchain_views = (DvzImageViews){0};
+        log_error("swapchain image view %u is unavailable", slot->image_index);
         return VK_ERROR_INITIALIZATION_FAILED;
     }
     return VK_SUCCESS;
@@ -524,9 +450,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     DvzCanvas* canvas = swapchain->canvas;
     ANN(canvas);
 
-    DvzGpu* gpu = canvas_gpu(canvas);
-    ANN(gpu);
-
     VkSurfaceKHR surface = canvas_surface_handle(canvas);
     if (surface == VK_NULL_HANDLE)
     {
@@ -535,9 +458,19 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         return VK_ERROR_SURFACE_LOST_KHR;
     }
 
-    VkSurfaceCapabilitiesKHR caps = {0};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu->pdevice, surface, &caps);
-    VkExtent2D extent = canvas_surface_extent(canvas, &caps);
+    if (!swapchain->wrappers_ready)
+    {
+        log_error("canvas swapchain wrappers are not initialized");
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+    if (!dvz_surface_wrap_native(&swapchain->surface_wrapper, surface, canvas->window))
+    {
+        log_warn("canvas surface wrapper refresh failed, postponing swapchain creation");
+        swapchain->dirty = true;
+        return VK_ERROR_SURFACE_LOST_KHR;
+    }
+
+    VkExtent2D extent = canvas_surface_extent(canvas);
     if (extent.width == 0 || extent.height == 0)
     {
         log_warn("window surface extent is zero, waiting before creating swapchain");
@@ -545,89 +478,57 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         return VK_ERROR_SURFACE_LOST_KHR;
     }
 
-    uint32_t min_count = caps.minImageCount + 1;
-    if (caps.maxImageCount > 0 && min_count > caps.maxImageCount)
-    {
-        min_count = caps.maxImageCount;
-    }
-
-
-    // Enumerate the formats supported by the surface.
-    uint32_t fcount = 0;
-    VkResult formats_res =
-        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, NULL);
-    if (formats_res != VK_SUCCESS && formats_res != VK_INCOMPLETE)
-    {
-        log_error("failed to query surface format count (%d)", formats_res);
-        return formats_res;
-    }
-    if (fcount == 0)
-        return -1;
-    if (fcount > MAX_SURFACE_FORMATS)
-        fcount = MAX_SURFACE_FORMATS;
-
-    VkSurfaceFormatKHR formats[MAX_SURFACE_FORMATS] = {0};
-    formats_res = vkGetPhysicalDeviceSurfaceFormatsKHR(gpu->pdevice, surface, &fcount, formats);
-    if (formats_res != VK_SUCCESS && formats_res != VK_INCOMPLETE)
-    {
-        log_error("failed to query surface formats (%d)", formats_res);
-        return formats_res;
-    }
-    if (formats_res == VK_INCOMPLETE)
-    {
-        log_warn("surface format list was incomplete; using partial result");
-    }
-
-
-    VkPresentModeKHR present_mode = canvas_select_present_mode(canvas);
-    VkFormat frame_format = canvas_frame_format(canvas);
-
-    VkSwapchainCreateInfoKHR info = {0};
-    info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    info.surface = surface;
-    info.minImageCount = min_count;
-    info.imageFormat = canvas_surface_format(canvas);
-    info.imageColorSpace =
+    DvzSwapchainConfig config = {0};
+    config.image_format = canvas_surface_format(canvas);
+    config.color_space =
         canvas->surface ? canvas->surface->color_space : VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    info.imageExtent = extent;
-    info.imageArrayLayers = 1;
-    info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    info.preTransform = caps.currentTransform;
-    info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    info.presentMode = present_mode;
-    info.clipped = VK_TRUE;
-    info.oldSwapchain = swapchain->handle;
+    config.present_mode = canvas_select_present_mode(canvas);
+    config.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    config.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    config.min_image_count = 0;
+    config.clipped = true;
+    dvz_swapchain_config(&swapchain->swapchain_wrapper, config);
 
-    VkDevice device = canvas_device_handle(canvas);
-    VkResult swapchain_res = vkCreateSwapchainKHR(device, &info, NULL, &swapchain->handle);
-    if (swapchain_res != VK_SUCCESS)
+    VkFormat frame_format = canvas_frame_format(canvas);
+    uvec2 size = {extent.width, extent.height};
+    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain->swapchain_wrapper, size);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
-        log_error("failed to create swapchain (%d)", swapchain_res);
-        return swapchain_res;
+        log_warn("window surface extent is zero, waiting before creating swapchain");
+        swapchain->dirty = true;
+        return VK_ERROR_SURFACE_LOST_KHR;
+    }
+    if (status == DVZ_PRESENT_STATUS_RECREATE)
+    {
+        swapchain->dirty = true;
+        return VK_ERROR_OUT_OF_DATE_KHR;
+    }
+    if (status == DVZ_PRESENT_STATUS_DEVICE_LOST)
+    {
+        return VK_ERROR_DEVICE_LOST;
+    }
+    if (status != DVZ_PRESENT_STATUS_OK)
+    {
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
 
-    if (info.oldSwapchain != VK_NULL_HANDLE)
-    {
-        vkDestroySwapchainKHR(device, info.oldSwapchain, NULL);
-    }
-
-    swapchain->format = info.imageFormat;
-    swapchain->color_space = info.imageColorSpace;
-    swapchain->extent = extent;
-    swapchain->present_mode = present_mode;
+    swapchain->handle = swapchain->swapchain_wrapper.handle;
+    swapchain->format =
+        swapchain->swapchain_wrapper.config.image_format != VK_FORMAT_UNDEFINED
+            ? swapchain->swapchain_wrapper.config.image_format
+            : swapchain->surface_wrapper.preferred_format.format;
+    swapchain->color_space =
+        swapchain->swapchain_wrapper.config.color_space != 0
+            ? swapchain->swapchain_wrapper.config.color_space
+            : swapchain->surface_wrapper.preferred_format.colorSpace;
+    swapchain->extent = swapchain->swapchain_wrapper.extent;
+    swapchain->present_mode =
+        swapchain->swapchain_wrapper.config.present_mode != 0
+            ? swapchain->swapchain_wrapper.config.present_mode
+            : swapchain->surface_wrapper.preferred_present_mode;
     swapchain->frame_format = frame_format;
-
-    uint32_t count = 0;
-    vkGetSwapchainImagesKHR(device, swapchain->handle, &count, NULL);
-    VkImage* images = (VkImage*)dvz_calloc(count, sizeof(VkImage));
-    ANN(images);
-    vkGetSwapchainImagesKHR(device, swapchain->handle, &count, images);
-    if (swapchain->swapchain_images)
-    {
-        dvz_free(swapchain->swapchain_images);
-    }
-    swapchain->swapchain_images = images;
+    uint32_t count = swapchain->swapchain_wrapper.image_count;
+    swapchain->swapchain_images = swapchain->swapchain_wrapper.images;
     if (swapchain->swapchain_layouts)
     {
         dvz_free(swapchain->swapchain_layouts);
@@ -674,6 +575,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1,
         };
+        VkDevice device = canvas_device_handle(canvas);
         VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cb_info, &slot->command_buffer));
 
         VkExternalMemoryImageCreateInfoKHR external_info = {
@@ -767,13 +669,9 @@ static void canvas_destroy_slot(
         slot->offscreen_images = (DvzImages){0};
         slot->offscreen_views = (DvzImageViews){0};
     }
-    if (slot->swapchain_views.img)
-    {
-        dvz_image_views_destroy(&slot->swapchain_views);
-        slot->swapchain_view = VK_NULL_HANDLE;
-        slot->swapchain_images = (DvzImages){0};
-        slot->swapchain_views = (DvzImageViews){0};
-    }
+    slot->swapchain_view = VK_NULL_HANDLE;
+    slot->swapchain_images = (DvzImages){0};
+    slot->swapchain_views = (DvzImageViews){0};
     if (slot->offscreen_image != VK_NULL_HANDLE)
     {
         dvz_allocator_destroy_image(allocator, &slot->offscreen_alloc, slot->offscreen_image);
@@ -821,16 +719,9 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
         dvz_free(swapchain->slots);
         swapchain->slots = NULL;
     }
-    if (swapchain->handle != VK_NULL_HANDLE)
-    {
-        vkDestroySwapchainKHR(device, swapchain->handle, NULL);
-        swapchain->handle = VK_NULL_HANDLE;
-    }
-    if (swapchain->swapchain_images)
-    {
-        dvz_free(swapchain->swapchain_images);
-        swapchain->swapchain_images = NULL;
-    }
+    dvz_swapchain_destroy(&swapchain->swapchain_wrapper);
+    swapchain->handle = VK_NULL_HANDLE;
+    swapchain->swapchain_images = NULL;
     if (swapchain->swapchain_layouts)
     {
         dvz_free(swapchain->swapchain_layouts);
@@ -917,6 +808,26 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->queue = dvz_queue_handle(canvas->swapchain->queue_ref);
     ANNVK(canvas->swapchain->queue);
     canvas->swapchain->queue_family = dvz_queue_family(canvas->swapchain->queue_ref);
+    DvzGpu* gpu = canvas_gpu(canvas);
+    ANN(gpu);
+    if (!dvz_surface_init(&canvas->swapchain->surface_wrapper, gpu, canvas->swapchain->queue_family))
+    {
+        log_error("failed to initialize canvas surface wrapper");
+        return -1;
+    }
+    if (!dvz_swapchain_init(
+            &canvas->swapchain->swapchain_wrapper, gpu, &canvas->swapchain->surface_wrapper))
+    {
+        log_error("failed to initialize canvas swapchain wrapper");
+        return -1;
+    }
+    if (!dvz_swapchain_device(
+            &canvas->swapchain->swapchain_wrapper, dvz_device_handle(canvas->device)))
+    {
+        log_error("failed to bind device to canvas swapchain wrapper");
+        return -1;
+    }
+    canvas->swapchain->wrappers_ready = true;
     VkDevice device = canvas_device_handle(canvas);
     VkCommandPoolCreateInfo pool_info = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -947,6 +858,12 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas)
     {
         vkDestroyCommandPool(device, canvas->swapchain->command_pool, NULL);
         canvas->swapchain->command_pool = VK_NULL_HANDLE;
+    }
+    if (canvas->swapchain->wrappers_ready)
+    {
+        dvz_swapchain_destroy(&canvas->swapchain->swapchain_wrapper);
+        dvz_surface_destroy(&canvas->swapchain->surface_wrapper);
+        canvas->swapchain->wrappers_ready = false;
     }
     dvz_free(canvas->swapchain);
     canvas->swapchain = NULL;
@@ -1030,7 +947,6 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
     }
 
-    VkDevice device = canvas_device_handle(canvas);
     uint32_t slot_idx = state->frame_index % state->image_count;
     DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
 
@@ -1038,17 +954,21 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     dvz_fence_reset(&slot->in_flight);
 
     uint32_t image_index = 0;
-    VkResult res = vkAcquireNextImageKHR(
-        device, state->handle, UINT64_MAX, slot->image_available.vk_semaphore, VK_NULL_HANDLE,
-        &image_index);
-    if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
+    DvzPresentStatus acquire_status = dvz_swapchain_acquire(
+        &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
+    if (acquire_status == DVZ_PRESENT_STATUS_RECREATE)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
     }
-    if (res != VK_SUCCESS)
+    if (acquire_status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
-        log_error("failed to acquire swapchain image (%d)", res);
+        dvz_canvas_swapchain_mark_out_of_date(canvas);
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (acquire_status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error("failed to acquire swapchain image (%d)", acquire_status);
         return -1;
     }
 
@@ -1058,9 +978,9 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         return -1;
     }
     slot->image_index = image_index;
-    if (state->swapchain_images && image_index < state->image_count)
+    if (state->swapchain_wrapper.images && image_index < state->swapchain_wrapper.image_count)
     {
-        slot->swapchain_image = state->swapchain_images[image_index];
+        slot->swapchain_image = state->swapchain_wrapper.images[image_index];
     }
     else
     {
@@ -1145,27 +1065,19 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
 
     uint32_t index = state->active_slot->image_index;
-    VkSemaphore present_wait_semaphores[] = {
-        state->active_slot->render_finished.vk_semaphore,
-    };
-    VkPresentInfoKHR present_info = {
-        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-        .waitSemaphoreCount = 1,
-        .pWaitSemaphores = present_wait_semaphores,
-        .swapchainCount = 1,
-        .pSwapchains = &state->handle,
-        .pImageIndices = &index,
-    };
 
     // log_trace("present");
-    VkResult present_res = vkQueuePresentKHR(queue, &present_info);
-    if (present_res == VK_ERROR_OUT_OF_DATE_KHR || present_res == VK_SUBOPTIMAL_KHR)
+    DvzPresentStatus present_status = dvz_swapchain_present(
+        &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
+    if (present_status == DVZ_PRESENT_STATUS_RECREATE)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
     }
-    else
+    else if (present_status != DVZ_PRESENT_STATUS_OK)
     {
-        VK_CHECK_RESULT(present_res);
+        log_error("failed to present swapchain image (%d)", present_status);
+        state->active_slot = NULL;
+        return -1;
     }
 
     state->active_slot = NULL;
