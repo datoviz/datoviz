@@ -76,6 +76,9 @@ struct DvzSwapchain
     VkSwapchainKHR handle;
     DvzSwapchainConfig config;
     VkExtent2D extent;
+    VkFormat image_format;
+    VkColorSpaceKHR color_space;
+    VkPresentModeKHR present_mode;
     uint32_t image_count;
     VkImage* images;
     VkImageView* image_views;

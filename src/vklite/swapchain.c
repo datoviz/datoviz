@@ -346,6 +346,9 @@ bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surfac
         .min_image_count = 0,
         .clipped = true,
     };
+    swapchain->image_format = VK_FORMAT_UNDEFINED;
+    swapchain->color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR;
     swapchain->ready = false;
     return true;
 }
@@ -529,6 +532,9 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     swapchain->images = new_images;
     swapchain->image_views = new_image_views;
     swapchain->extent = extent;
+    swapchain->image_format = format.format;
+    swapchain->color_space = format.colorSpace;
+    swapchain->present_mode = present_mode;
     swapchain->current_image = UINT32_MAX;
     swapchain->ready = true;
     return DVZ_PRESENT_STATUS_OK;
@@ -667,6 +673,9 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
 
     swapchain->handle = VK_NULL_HANDLE;
     swapchain->extent = (VkExtent2D){0, 0};
+    swapchain->image_format = VK_FORMAT_UNDEFINED;
+    swapchain->color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR;
     swapchain->current_image = UINT32_MAX;
     swapchain->ready = false;
 }

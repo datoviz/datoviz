@@ -38,6 +38,7 @@
 #include "datoviz/vklite/sync.h"
 
 static int canvas_export_timeline_fd(DvzCanvas* canvas);
+static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain);
 
 
 
@@ -513,19 +514,10 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     }
 
     swapchain->handle = swapchain->swapchain_wrapper.handle;
-    swapchain->format =
-        swapchain->swapchain_wrapper.config.image_format != VK_FORMAT_UNDEFINED
-            ? swapchain->swapchain_wrapper.config.image_format
-            : swapchain->surface_wrapper.preferred_format.format;
-    swapchain->color_space =
-        swapchain->swapchain_wrapper.config.color_space != 0
-            ? swapchain->swapchain_wrapper.config.color_space
-            : swapchain->surface_wrapper.preferred_format.colorSpace;
+    swapchain->format = swapchain->swapchain_wrapper.image_format;
+    swapchain->color_space = swapchain->swapchain_wrapper.color_space;
     swapchain->extent = swapchain->swapchain_wrapper.extent;
-    swapchain->present_mode =
-        swapchain->swapchain_wrapper.config.present_mode != 0
-            ? swapchain->swapchain_wrapper.config.present_mode
-            : swapchain->surface_wrapper.preferred_present_mode;
+    swapchain->present_mode = swapchain->swapchain_wrapper.present_mode;
     swapchain->frame_format = frame_format;
     uint32_t count = swapchain->swapchain_wrapper.image_count;
     swapchain->swapchain_images = swapchain->swapchain_wrapper.images;
@@ -550,6 +542,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
 
+    bool slot_init_failed = false;
     for (uint32_t i = 0; i < count; ++i)
     {
         DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
@@ -567,8 +560,9 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->command_buffer = dvz_command_buffer_alloc(canvas->device, swapchain->queue_family);
         if (slot->command_buffer == VK_NULL_HANDLE)
         {
-            log_error("failed to allocate canvas command buffer");
-            continue;
+            log_error("failed to allocate canvas command buffer for slot %u", i);
+            slot_init_failed = true;
+            break;
         }
 
         VkExternalMemoryImageCreateInfoKHR external_info = {
@@ -604,8 +598,9 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
                 &canvas->allocator, &img_info, 0, &slot->offscreen_alloc,
                 &slot->offscreen_image) != 0)
         {
-            log_error("failed to allocate offscreen canvas image");
-            continue;
+            log_error("failed to allocate offscreen canvas image for slot %u", i);
+            slot_init_failed = true;
+            break;
         }
 
         slot->offscreen_images = (DvzImages){0};
@@ -619,13 +614,14 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->offscreen_view = dvz_image_views_handle(&slot->offscreen_views, 0);
         if (slot->offscreen_view == VK_NULL_HANDLE)
         {
-            log_error("failed to create offscreen image view");
+            log_error("failed to create offscreen image view for slot %u", i);
             dvz_allocator_destroy_image(
                 &canvas->allocator, &slot->offscreen_alloc, slot->offscreen_image);
             slot->offscreen_image = VK_NULL_HANDLE;
             slot->offscreen_images = (DvzImages){0};
             slot->offscreen_views = (DvzImageViews){0};
-            continue;
+            slot_init_failed = true;
+            break;
         }
 
         slot->memory_fd = -1;
@@ -640,6 +636,11 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         dvz_semaphore(canvas->device, &slot->render_finished);
         dvz_fence(canvas->device, true, &slot->in_flight);
         slot->ready = true;
+    }
+    if (slot_init_failed)
+    {
+        canvas_swapchain_cleanup(swapchain);
+        return VK_ERROR_INITIALIZATION_FAILED;
     }
 
     swapchain->dirty = false;
@@ -843,7 +844,6 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas)
     canvas_swapchain_cleanup(canvas->swapchain);
     if (canvas->swapchain->wrappers_ready)
     {
-        dvz_swapchain_destroy(&canvas->swapchain->swapchain_wrapper);
         dvz_surface_destroy(&canvas->swapchain->surface_wrapper);
         canvas->swapchain->wrappers_ready = false;
     }
