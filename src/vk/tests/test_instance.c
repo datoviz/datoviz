@@ -101,7 +101,8 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
     dvz_instance_probe_extensions(&instance);
 
     bool has_validation = dvz_instance_has_layer(&instance, "VK_LAYER_KHRONOS_validation");
-    bool has_debug_utils = dvz_instance_has_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    bool has_debug_utils =
+        dvz_instance_has_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     bool has_portability =
         dvz_instance_has_extension(&instance, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
@@ -134,7 +135,7 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_instance_creation_invalid_layer(TstSuite* suite, TstItem* tstitem)
+int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);

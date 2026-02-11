@@ -39,7 +39,7 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem);
 
 int test_instance_creation(TstSuite* suite, TstItem* tstitem);
 
-int test_instance_creation_invalid_layer(TstSuite* suite, TstItem* tstitem);
+int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem);
 
 
 
