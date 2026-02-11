@@ -84,6 +84,29 @@ dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cm
 
 
 /**
+ * Allocate a single primary command buffer from the device command pool of a queue family.
+ *
+ * @param device the device
+ * @param queue_family queue family index used to select the command pool
+ * @returns the allocated command buffer, or VK_NULL_HANDLE on failure
+ */
+DVZ_EXPORT VkCommandBuffer dvz_command_buffer_alloc(DvzDevice* device, uint32_t queue_family);
+
+
+
+/**
+ * Free a single command buffer from the device command pool of a queue family.
+ *
+ * @param device the device
+ * @param queue_family queue family index used to select the command pool
+ * @param cmd command buffer to free
+ */
+DVZ_EXPORT void
+dvz_command_buffer_free(DvzDevice* device, uint32_t queue_family, VkCommandBuffer cmd);
+
+
+
+/**
  * Return the Vulkan handle of the currently-selected command buffers.
  *
  * @param cmds the set of command buffers

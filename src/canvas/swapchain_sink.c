@@ -550,13 +550,6 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
 
-    VkCommandPool command_pool = dvz_device_command_pool(canvas->device, swapchain->queue_family);
-    if (command_pool == VK_NULL_HANDLE)
-    {
-        log_error("canvas swapchain missing command pool");
-        return VK_ERROR_INITIALIZATION_FAILED;
-    }
-
     for (uint32_t i = 0; i < count; ++i)
     {
         DvzCanvasSwapchainSlot* slot = &swapchain->slots[i];
@@ -571,14 +564,12 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         slot->commands_recording = false;
         slot->memory_fd = -1;
 
-        VkCommandBufferAllocateInfo cb_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .commandPool = command_pool,
-            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = 1,
-        };
-        VkDevice device = canvas_device_handle(canvas);
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cb_info, &slot->command_buffer));
+        slot->command_buffer = dvz_command_buffer_alloc(canvas->device, swapchain->queue_family);
+        if (slot->command_buffer == VK_NULL_HANDLE)
+        {
+            log_error("failed to allocate canvas command buffer");
+            continue;
+        }
 
         VkExternalMemoryImageCreateInfoKHR external_info = {
             .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
@@ -658,7 +649,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
 
 static void canvas_destroy_slot(
-    VkDevice device, VkCommandPool command_pool, DvzCanvasSwapchainSlot* slot, DvzVma* allocator)
+    DvzDevice* device, uint32_t queue_family, DvzCanvasSwapchainSlot* slot, DvzVma* allocator)
 {
     if (!slot)
     {
@@ -693,9 +684,9 @@ static void canvas_destroy_slot(
     slot->swapchain_image = VK_NULL_HANDLE;
     slot->commands_recording = false;
     slot->handles_dirty = false;
-    if (slot->command_buffer != VK_NULL_HANDLE && command_pool != VK_NULL_HANDLE)
+    if (slot->command_buffer != VK_NULL_HANDLE)
     {
-        vkFreeCommandBuffers(device, command_pool, 1, &slot->command_buffer);
+        dvz_command_buffer_free(device, queue_family, slot->command_buffer);
         slot->command_buffer = VK_NULL_HANDLE;
     }
 }
@@ -713,15 +704,13 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     {
         return;
     }
-    VkDevice device = canvas_device_handle(canvas);
-    VkCommandPool command_pool = dvz_device_command_pool(canvas->device, swapchain->queue_family);
     dvz_device_wait(canvas->device);
     if (swapchain->slots)
     {
         for (uint32_t i = 0; i < swapchain->image_count; ++i)
         {
             canvas_destroy_slot(
-                device, command_pool, &swapchain->slots[i], &canvas->allocator);
+                canvas->device, swapchain->queue_family, &swapchain->slots[i], &canvas->allocator);
         }
         dvz_free(swapchain->slots);
         swapchain->slots = NULL;

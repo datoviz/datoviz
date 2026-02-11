@@ -56,6 +56,68 @@ void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommand
 
 
 
+/**
+ * Allocate a single primary command buffer from the device command pool of a queue family.
+ *
+ * @param device the device
+ * @param queue_family queue family index used to select the command pool
+ * @return the allocated command buffer, or VK_NULL_HANDLE on failure
+ */
+VkCommandBuffer dvz_command_buffer_alloc(DvzDevice* device, uint32_t queue_family)
+{
+    ANN(device);
+
+    VkCommandPool cpool = dvz_device_command_pool(device, queue_family);
+    if (cpool == VK_NULL_HANDLE)
+    {
+        log_error("missing command pool for queue family %u", queue_family);
+        return VK_NULL_HANDLE;
+    }
+
+    VkCommandBuffer cmd = VK_NULL_HANDLE;
+    VkCommandBufferAllocateInfo info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = cpool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1,
+    };
+    VkResult res = vkAllocateCommandBuffers(dvz_device_handle(device), &info, &cmd);
+    if (res != VK_SUCCESS)
+    {
+        check_result(res);
+        return VK_NULL_HANDLE;
+    }
+    return cmd;
+}
+
+
+
+/**
+ * Free a single command buffer from the device command pool of a queue family.
+ *
+ * @param device the device
+ * @param queue_family queue family index used to select the command pool
+ * @param cmd command buffer to free
+ */
+void dvz_command_buffer_free(DvzDevice* device, uint32_t queue_family, VkCommandBuffer cmd)
+{
+    ANN(device);
+    if (cmd == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
+    VkCommandPool cpool = dvz_device_command_pool(device, queue_family);
+    if (cpool == VK_NULL_HANDLE)
+    {
+        log_warn("skip command buffer free: missing command pool for queue family %u", queue_family);
+        return;
+    }
+    vkFreeCommandBuffers(dvz_device_handle(device), cpool, 1, &cmd);
+}
+
+
+
 VkCommandBuffer dvz_commands_handle(DvzCommands* cmds)
 {
     ANN(cmds);
