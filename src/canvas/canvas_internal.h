@@ -44,6 +44,22 @@ typedef struct DvzCanvasSwapchain DvzCanvasSwapchain;
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED = 0,
+    DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE,
+    DVZ_CANVAS_PRESENT_STATE_READY,
+    DVZ_CANVAS_PRESENT_STATE_ACQUIRED,
+    DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING,
+    DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST,
+} DvzCanvasPresentRuntimeState;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -158,5 +174,13 @@ bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas);
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);
 
 void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index);
+
+void dvz_canvas_swapchain_test_force_recreate_status(int32_t status);
+
+void dvz_canvas_swapchain_test_force_acquire_status(int32_t status);
+
+void dvz_canvas_swapchain_test_force_present_status(int32_t status);
+
+DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas);
 
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);

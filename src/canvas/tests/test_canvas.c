@@ -30,6 +30,7 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/rendering.h"
+#include "datoviz/vklite/swapchain.h"
 #include "datoviz/window.h"
 #include "test_canvas.h"
 #include "testing.h"
@@ -147,6 +148,9 @@ typedef struct CanvasRefreshProbeState
     uint32_t update_count;
     uint32_t submit_count;
     uint32_t stale_submit_count;
+    uint32_t wait_value_count;
+    uint32_t wait_value_non_monotonic;
+    uint64_t last_wait_value;
     int latest_memory_fd;
     int latest_wait_semaphore_fd;
     bool latest_handles_dirty;
@@ -218,11 +222,16 @@ static int canvas_refresh_probe_start(DvzStreamSink* sink, const DvzStreamFrame*
 
 static int canvas_refresh_probe_submit(DvzStreamSink* sink, uint64_t wait_value)
 {
-    (void)wait_value;
     ANN(sink);
     CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
     ANN(state);
     state->submit_count++;
+    state->wait_value_count++;
+    if (state->last_wait_value > 0 && wait_value != state->last_wait_value + 1)
+    {
+        state->wait_value_non_monotonic++;
+    }
+    state->last_wait_value = wait_value;
     if (state->awaiting_refresh)
     {
         if (!state->saw_update_since_refresh)
@@ -722,6 +731,228 @@ int test_canvas_handle_refresh_order(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Validate that submit wait values are propagated monotonically to stream sinks.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_video_wait_value_propagation(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    uint32_t submits = 0;
+    for (uint32_t i = 0; i < 32 && submits < 3; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        submits++;
+        AT(probe.last_wait_value == canvas->timeline_value);
+    }
+
+    AT(submits == 3);
+    AT(probe.wait_value_count >= submits);
+    AT(probe.wait_value_non_monotonic == 0);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Ensure sink handle refresh and submit wait-value continuity after forced recreate.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    bool first_submit_done = false;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        first_submit_done = true;
+        break;
+    }
+    AT(first_submit_done);
+
+    probe.awaiting_refresh = true;
+    probe.saw_update_since_refresh = false;
+    uint64_t wait_before = probe.last_wait_value;
+    uint32_t submit_before = probe.submit_count;
+    dvz_canvas_swapchain_mark_out_of_date(canvas);
+
+    bool resumed = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        if (probe.submit_count > submit_before)
+        {
+            resumed = true;
+            break;
+        }
+    }
+
+    AT(resumed);
+    AT(probe.update_count > 0);
+    AT(probe.saw_update_since_refresh);
+    AT(probe.stale_submit_count == 0);
+    AT(probe.last_wait_value > wait_before);
+    AT(probe.wait_value_non_monotonic == 0);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Verify that device loss moves the canvas presentation runtime into a fatal state.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    bool ready = false;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        ready = true;
+        break;
+    }
+    AT(ready);
+
+    dvz_canvas_swapchain_test_force_present_status(DVZ_PRESENT_STATUS_DEVICE_LOST);
+    AT(dvz_canvas_submit(canvas) < 0);
+    AT(
+        dvz_canvas_swapchain_runtime_state(canvas) ==
+        DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
+
+    dvz_window_host_poll(fixture.host);
+    int frame_rc = dvz_canvas_frame(canvas);
+    AT(frame_rc < 0);
+
+    dvz_canvas_swapchain_mark_out_of_date(canvas);
+    AT(
+        dvz_canvas_swapchain_runtime_state(canvas) ==
+        DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
+
+    dvz_canvas_swapchain_test_force_recreate_status(-1);
+    dvz_canvas_swapchain_test_force_acquire_status(-1);
+    dvz_canvas_swapchain_test_force_present_status(-1);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Exercise the GLFW-backed canvas and ensure the frame submission path works.
  *
  * @param suite The owning test suite.
@@ -987,6 +1218,9 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
     TEST_SIMPLE(test_canvas_glfw_present_recovery);
     TEST_SIMPLE(test_canvas_handle_refresh_order);
+    TEST_SIMPLE(test_canvas_video_wait_value_propagation);
+    TEST_SIMPLE(test_canvas_video_handle_refresh_after_recreate);
+    TEST_SIMPLE(test_canvas_device_lost_fatal_transition);
     TEST_SIMPLE(test_canvas_glfw);
     return 0;
 }

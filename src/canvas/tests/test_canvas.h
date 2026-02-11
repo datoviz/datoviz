@@ -38,6 +38,12 @@ int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item);
 
 int test_canvas_handle_refresh_order(TstSuite* suite, TstItem* item);
 
+int test_canvas_video_wait_value_propagation(TstSuite* suite, TstItem* item);
+
+int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* item);
+
+int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item);
+
 
 
 int test_canvas(TstSuite* suite);

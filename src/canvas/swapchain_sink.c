@@ -102,6 +102,7 @@ struct DvzCanvasSwapchain
     uint32_t queue_family;
     uint64_t export_serial;
     VkFormat frame_format;
+    DvzCanvasPresentRuntimeState runtime_state;
 };
 
 
@@ -114,6 +115,9 @@ struct DvzCanvasSwapchainState
 
 
 static int32_t canvas_test_fail_slot_index = -1;
+static int32_t canvas_test_force_recreate_status = -1;
+static int32_t canvas_test_force_acquire_status = -1;
+static int32_t canvas_test_force_present_status = -1;
 
 
 
@@ -125,6 +129,69 @@ static VkDevice canvas_device_handle(const DvzCanvas* canvas)
 {
     ANN(canvas);
     return dvz_device_handle(canvas->device);
+}
+
+
+
+static const char* canvas_runtime_state_name(DvzCanvasPresentRuntimeState state)
+{
+    switch (state)
+    {
+    case DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED:
+        return "UNINITIALIZED";
+    case DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE:
+        return "WAIT_SURFACE";
+    case DVZ_CANVAS_PRESENT_STATE_READY:
+        return "READY";
+    case DVZ_CANVAS_PRESENT_STATE_ACQUIRED:
+        return "ACQUIRED";
+    case DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING:
+        return "PRESENT_PENDING";
+    case DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST:
+        return "FATAL_DEVICE_LOST";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+
+
+static void canvas_runtime_transition(
+    DvzCanvasSwapchain* swapchain, DvzCanvasPresentRuntimeState state, const char* reason)
+{
+    ANN(swapchain);
+    if (swapchain->runtime_state == state)
+    {
+        return;
+    }
+    log_debug(
+        "canvas present state %s -> %s (%s)",
+        canvas_runtime_state_name(swapchain->runtime_state), canvas_runtime_state_name(state),
+        reason ? reason : "no reason");
+    swapchain->runtime_state = state;
+}
+
+
+
+static void canvas_runtime_device_lost(DvzCanvasSwapchain* swapchain, const char* reason)
+{
+    ANN(swapchain);
+    canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST, reason);
+}
+
+
+
+static bool canvas_test_consume_forced_status(int32_t* forced_status, DvzPresentStatus* status)
+{
+    ANN(forced_status);
+    ANN(status);
+    if (*forced_status < 0)
+    {
+        return false;
+    }
+    *status = (DvzPresentStatus)(*forced_status);
+    *forced_status = -1;
+    return true;
 }
 
 
@@ -455,18 +522,24 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     {
         log_warn("canvas surface unavailable, postponing swapchain creation");
         swapchain->dirty = true;
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface unavailable");
         return VK_ERROR_SURFACE_LOST_KHR;
     }
 
     if (!swapchain->wrappers_ready)
     {
         log_error("canvas swapchain wrappers are not initialized");
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "wrappers unavailable");
         return VK_ERROR_INITIALIZATION_FAILED;
     }
     if (!dvz_surface_wrap_native(&swapchain->surface_wrapper, surface, canvas->window))
     {
         log_warn("canvas surface wrapper refresh failed, postponing swapchain creation");
         swapchain->dirty = true;
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface wrap failed");
         return VK_ERROR_SURFACE_LOST_KHR;
     }
 
@@ -475,6 +548,8 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     {
         log_warn("window surface extent is zero, waiting before creating swapchain");
         swapchain->dirty = true;
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface extent zero");
         return VK_ERROR_SURFACE_LOST_KHR;
     }
 
@@ -491,24 +566,34 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
     VkFormat frame_format = canvas_frame_format(canvas);
     uvec2 size = {extent.width, extent.height};
-    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain->swapchain_wrapper, size);
+    DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
+    if (!canvas_test_consume_forced_status(&canvas_test_force_recreate_status, &status))
+    {
+        status = dvz_swapchain_recreate(&swapchain->swapchain_wrapper, size);
+    }
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("window surface extent is zero, waiting before creating swapchain");
         swapchain->dirty = true;
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "recreate: zero extent");
         return VK_ERROR_SURFACE_LOST_KHR;
     }
     if (status == DVZ_PRESENT_STATUS_RECREATE)
     {
         swapchain->dirty = true;
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "recreate requested");
         return VK_ERROR_OUT_OF_DATE_KHR;
     }
     if (status == DVZ_PRESENT_STATUS_DEVICE_LOST)
     {
+        canvas_runtime_device_lost(swapchain, "swapchain recreate");
         return VK_ERROR_DEVICE_LOST;
     }
     if (status != DVZ_PRESENT_STATUS_OK)
     {
+        canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "recreate failed");
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
@@ -641,10 +726,13 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     if (slot_init_failed)
     {
         canvas_swapchain_cleanup(swapchain);
+        canvas_runtime_transition(
+            swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "slot initialization failed");
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
     swapchain->dirty = false;
+    canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_READY, "swapchain created");
     return VK_SUCCESS;
 }
 
@@ -727,6 +815,10 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
     swapchain->active_slot = NULL;
     swapchain->frame_index = 0;
     swapchain->dirty = true;
+    if (swapchain->runtime_state != DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "cleanup");
+    }
 }
 
 
@@ -755,8 +847,13 @@ static int canvas_swapchain_ensure(DvzCanvas* canvas)
     {
         return -1;
     }
+    if (state->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        return -1;
+    }
     if (!state->dirty && state->swapchain_wrapper.handle != VK_NULL_HANDLE)
     {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "ensure existing");
         return 0;
     }
 
@@ -768,7 +865,12 @@ static int canvas_swapchain_ensure(DvzCanvas* canvas)
     }
     if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_ERROR_SURFACE_LOST_KHR)
     {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "ensure recreate");
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (res == VK_ERROR_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "ensure recreate");
     }
     return -1;
 }
@@ -798,6 +900,7 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->dirty = true;
     canvas->swapchain->frame_index = 0;
     canvas->swapchain->frame_format = canvas_frame_format(canvas);
+    canvas->swapchain->runtime_state = DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
     canvas->swapchain->queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
     ANN(canvas->swapchain->queue_ref);
     canvas->swapchain->queue = dvz_queue_handle(canvas->swapchain->queue_ref);
@@ -808,21 +911,29 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     if (!dvz_surface_init(&canvas->swapchain->surface_wrapper, gpu, canvas->swapchain->queue_family))
     {
         log_error("failed to initialize canvas surface wrapper");
+        canvas_runtime_transition(
+            canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface init failed");
         return -1;
     }
     if (!dvz_swapchain_init(
             &canvas->swapchain->swapchain_wrapper, gpu, &canvas->swapchain->surface_wrapper))
     {
         log_error("failed to initialize canvas swapchain wrapper");
+        canvas_runtime_transition(
+            canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "swapchain init failed");
         return -1;
     }
     if (!dvz_swapchain_device(
             &canvas->swapchain->swapchain_wrapper, dvz_device_handle(canvas->device)))
     {
         log_error("failed to bind device to canvas swapchain wrapper");
+        canvas_runtime_transition(
+            canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "swapchain device bind failed");
         return -1;
     }
     canvas->swapchain->wrappers_ready = true;
+    canvas_runtime_transition(
+        canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "initialized wrappers");
     return 0;
 }
 
@@ -845,6 +956,8 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas)
         dvz_surface_destroy(&canvas->swapchain->surface_wrapper);
         canvas->swapchain->wrappers_ready = false;
     }
+    canvas_runtime_transition(
+        canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED, "destroy swapchain");
     dvz_free(canvas->swapchain);
     canvas->swapchain = NULL;
 }
@@ -862,7 +975,13 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas)
     {
         return;
     }
+    if (canvas->swapchain->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        return;
+    }
     canvas->swapchain->dirty = true;
+    canvas_runtime_transition(
+        canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "marked out of date");
 }
 
 
@@ -875,6 +994,59 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas)
 void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index)
 {
     canvas_test_fail_slot_index = slot_index;
+}
+
+
+
+/**
+ * Force the next swapchain recreate call to return a specific present status.
+ *
+ * @param status Present status to inject once, or -1 to disable
+ */
+void dvz_canvas_swapchain_test_force_recreate_status(int32_t status)
+{
+    canvas_test_force_recreate_status = status;
+}
+
+
+
+/**
+ * Force the next swapchain acquire call to return a specific present status.
+ *
+ * @param status Present status to inject once, or -1 to disable
+ */
+void dvz_canvas_swapchain_test_force_acquire_status(int32_t status)
+{
+    canvas_test_force_acquire_status = status;
+}
+
+
+
+/**
+ * Force the next swapchain present call to return a specific present status.
+ *
+ * @param status Present status to inject once, or -1 to disable
+ */
+void dvz_canvas_swapchain_test_force_present_status(int32_t status)
+{
+    canvas_test_force_present_status = status;
+}
+
+
+
+/**
+ * Return the current canvas presentation runtime state.
+ *
+ * @param canvas canvas owning the swapchain
+ * @returns the current runtime state or UNINITIALIZED if unavailable
+ */
+DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->swapchain)
+    {
+        return DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
+    }
+    return canvas->swapchain->runtime_state;
 }
 
 
@@ -917,6 +1089,11 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     {
         return -1;
     }
+    if (state->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        log_error("canvas swapchain acquire aborted after device loss");
+        return -1;
+    }
     VkExtent2D current_extent = state->swapchain_wrapper.extent;
     if (
         canvas->surface && state->swapchain_wrapper.ready &&
@@ -930,6 +1107,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     int ensure_rc = canvas_swapchain_ensure(canvas);
     if (ensure_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
     {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire wait surface");
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
     }
     if (ensure_rc != 0)
@@ -939,6 +1117,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 
     if (state->image_count == 0)
     {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire no images");
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
     }
 
@@ -949,17 +1128,28 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     dvz_fence_reset(&slot->in_flight);
 
     uint32_t image_index = 0;
-    DvzPresentStatus acquire_status = dvz_swapchain_acquire(
-        &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
+    DvzPresentStatus acquire_status = DVZ_PRESENT_STATUS_OK;
+    if (!canvas_test_consume_forced_status(&canvas_test_force_acquire_status, &acquire_status))
+    {
+        acquire_status = dvz_swapchain_acquire(
+            &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
+    }
     if (acquire_status == DVZ_PRESENT_STATUS_RECREATE)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire recreate");
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
     }
     if (acquire_status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire zero extent");
         return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (acquire_status == DVZ_PRESENT_STATUS_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "swapchain acquire");
+        return -1;
     }
     if (acquire_status != DVZ_PRESENT_STATUS_OK)
     {
@@ -1004,6 +1194,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     }
 
     state->active_slot = slot;
+    canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_ACQUIRED, "acquire success");
     frame->image = slot->offscreen_image;
     frame->memory = slot->offscreen_alloc.info.deviceMemory;
     frame->memory_size = slot->offscreen_alloc.info.size;
@@ -1034,10 +1225,18 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     {
         return -1;
     }
+    if (state->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        log_error("canvas swapchain present aborted after device loss");
+        state->active_slot = NULL;
+        return -1;
+    }
+    canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING, "submit+present");
 
     if (canvas_slot_finish_recording(state, state->active_slot) != 0)
     {
         state->active_slot = NULL;
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "recording failed");
         return -1;
     }
     VkCommandBuffer cmd = state->active_slot->command_buffer;
@@ -1046,6 +1245,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
     VkPipelineStageFlags2 signal_stage = wait_stage | VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 
+    // Ownership contract: one slot owns one fence + per-frame semaphores; the main queue is used
+    // for both submit and present, and slot synchronization primitives are reset on next acquire.
     DvzSubmit submit = {0};
     dvz_submit(&submit);
     dvz_submit_wait(&submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
@@ -1065,11 +1266,22 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     uint32_t index = state->active_slot->image_index;
 
     // log_trace("present");
-    DvzPresentStatus present_status = dvz_swapchain_present(
-        &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
+    DvzPresentStatus present_status = DVZ_PRESENT_STATUS_OK;
+    if (!canvas_test_consume_forced_status(&canvas_test_force_present_status, &present_status))
+    {
+        present_status = dvz_swapchain_present(
+            &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
+    }
     if (present_status == DVZ_PRESENT_STATUS_RECREATE)
     {
         dvz_canvas_swapchain_mark_out_of_date(canvas);
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "present recreate");
+    }
+    else if (present_status == DVZ_PRESENT_STATUS_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "swapchain present");
+        state->active_slot = NULL;
+        return -1;
     }
     else if (present_status != DVZ_PRESENT_STATUS_OK)
     {
@@ -1077,10 +1289,15 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
             "failed to present swapchain image (frame=%u image=%u status=%d)", state->frame_index,
             index, present_status);
         state->active_slot = NULL;
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "present failed");
         return -1;
     }
 
     state->active_slot = NULL;
+    if (state->runtime_state != DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE)
+    {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "present success");
+    }
     if (canvas->video_sink_enabled)
     {
         int fd = canvas_export_timeline_fd(canvas);
