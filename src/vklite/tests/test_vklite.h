@@ -100,6 +100,10 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem);
+
+int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem);
+
 
 
 /*************************************************************************************************/
