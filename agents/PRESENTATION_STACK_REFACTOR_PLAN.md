@@ -27,7 +27,8 @@ Current status:
 5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
    hardening/tests landed for fail-fast slot init, GLFW present recovery, handle refresh order,
    queue-submit error propagation, startup-time timeline-handle wiring for video sinks, and
-   deterministic wait-handle fallback on export failure with instance-scoped test controls.
+   deterministic wait-handle fallback on export failure with instance-scoped test controls; recreate
+   update-path fallback coverage landed in canvas tests.
 
 Task board status:
 1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
@@ -50,7 +51,8 @@ Task board status:
 
 Immediate next actions:
 1. `PRES-075`:
-   1. Validate wait-handle export fallback behavior on recreate/update paths in addition to first start.
+   1. [x] Validate wait-handle export fallback behavior on recreate/update paths in addition to first
+      start.
    2. Keep the real video sink startup/submit integration test enabled and deterministic across
       environments where a backend is available (skip when unavailable).
 2. `PRES-090`:
@@ -93,7 +95,9 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    6. wait-handle export fallback (`test_canvas_video_wait_handle_export_fallback`)
    7. real video sink startup/submit integration (`test_canvas_video_sink_start_submit_integration`)
    8. post-recreate refresh + wait continuity (`test_canvas_video_handle_refresh_after_recreate`)
-   9. device-lost fatal transition (`test_canvas_device_lost_fatal_transition`)
+   9. recreate/update-path wait-handle export fallback
+      (`test_canvas_video_wait_handle_export_fallback_after_recreate`)
+   10. device-lost fatal transition (`test_canvas_device_lost_fatal_transition`)
 6. `vklite` presentation tests include resolved recreate-state coverage
    (`test_vklite_swapchain_recreate_resolved_state`).
 7. Frame pool release closes lingering exported wait semaphore FDs on Unix.
