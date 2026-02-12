@@ -1122,6 +1122,305 @@ static int canvas_handle_acquire_status(
 
 
 /*************************************************************************************************/
+/*  Acquire/Present helper dispatch                                                              */
+/*************************************************************************************************/
+
+/**
+ * Ensure swapchain readiness before attempting image acquire.
+ *
+ * @param canvas canvas owning the swapchain
+ * @param state swapchain runtime state
+ * @return 0 when acquire can proceed, wait-surface code on transient states, -1 on failure
+ */
+static int canvas_swapchain_prepare_acquire(DvzCanvas* canvas, DvzCanvasSwapchain* state)
+{
+    ANN(canvas);
+    ANN(state);
+
+    int ensure_rc = canvas_swapchain_ensure(canvas);
+    if (ensure_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+    {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire wait surface");
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (ensure_rc != 0)
+    {
+        return -1;
+    }
+    if (state->image_count == 0)
+    {
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire no images");
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Bind acquired swapchain image resources into the selected slot.
+ *
+ * @param state canvas swapchain state
+ * @param slot slot selected for acquisition
+ * @param slot_idx slot index used by this frame
+ * @param image_index image index returned by swapchain acquire
+ * @return 0 on success or -1 on failure
+ */
+static int canvas_slot_bind_acquired_image(
+    DvzCanvasSwapchain* state, DvzCanvasSwapchainSlot* slot, uint32_t slot_idx, uint32_t image_index)
+{
+    ANN(state);
+    ANN(slot);
+
+    if (!slot->ready)
+    {
+        log_error("acquired swapchain slot %u is not ready", slot_idx);
+        return -1;
+    }
+
+    slot->image_index = image_index;
+    if (state->swapchain_wrapper.images && image_index < state->swapchain_wrapper.image_count)
+    {
+        slot->swapchain_image = state->swapchain_wrapper.images[image_index];
+    }
+    else
+    {
+        slot->swapchain_image = VK_NULL_HANDLE;
+    }
+    if (canvas_slot_create_swapchain_view(state, slot) != VK_SUCCESS)
+    {
+        log_error("failed to create swapchain image view");
+        return -1;
+    }
+    if (state->swapchain_layouts && image_index < state->image_count)
+    {
+        slot->swapchain_layout = state->swapchain_layouts[image_index];
+    }
+    else
+    {
+        slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Populate stream-frame metadata from the active canvas slot.
+ *
+ * @param state canvas swapchain state
+ * @param slot acquired slot with frame resources
+ * @param frame destination stream frame
+ */
+static void canvas_frame_from_slot(
+    DvzCanvasSwapchain* state, DvzCanvasSwapchainSlot* slot, DvzStreamFrame* frame)
+{
+    ANN(state);
+    ANN(slot);
+    ANN(frame);
+
+    frame->image = slot->offscreen_image;
+    frame->memory = slot->offscreen_alloc.info.deviceMemory;
+    frame->memory_size = slot->offscreen_alloc.info.size;
+    frame->command_buffer = slot->command_buffer;
+    frame->image_view = slot->offscreen_view;
+    frame->extent = state->swapchain_wrapper.extent;
+    frame->handles_dirty = slot->handles_dirty;
+    frame->memory_fd = slot->memory_fd;
+    frame->wait_semaphore_fd = -1;
+}
+
+
+
+/**
+ * Submit the active slot command buffer and timeline signal to the queue.
+ *
+ * @param canvas canvas owning the timeline semaphore
+ * @param state canvas swapchain state with active slot selected
+ * @param wait_value timeline value to signal on submit
+ * @param[out] queue_out queue used for submission/presentation
+ * @return 0 on success or -1 on failure
+ */
+static int canvas_submit_active_slot(
+    DvzCanvas* canvas, DvzCanvasSwapchain* state, uint64_t wait_value, VkQueue* queue_out)
+{
+    ANN(canvas);
+    ANN(state);
+    ANN(state->active_slot);
+    ANN(queue_out);
+
+    VkCommandBuffer cmd = state->active_slot->command_buffer;
+    VkPipelineStageFlags2 wait_stage =
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    VkPipelineStageFlags2 signal_stage = wait_stage | VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+
+    // Ownership contract: one slot owns one fence + per-frame semaphores; the main queue is used
+    // for both submit and present, and slot synchronization primitives are reset on next acquire.
+    DvzSubmit submit = {0};
+    dvz_submit(&submit);
+    dvz_submit_wait(&submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
+    if (cmd != VK_NULL_HANDLE)
+    {
+        dvz_submit_command(&submit, cmd);
+    }
+    dvz_submit_signal(&submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
+    dvz_submit_signal(
+        &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
+        VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+
+    VkQueue queue = state->queue;
+    int32_t submit_res = dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
+    if (canvas_handle_submit_status(state, submit_res) != 0)
+    {
+        return -1;
+    }
+    *queue_out = queue;
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Acquire/Present flow helpers                                                                 */
+/*************************************************************************************************/
+
+/**
+ * Mark the swapchain dirty when the live surface extent/format changed since last recreate.
+ *
+ * @param canvas canvas owning the surface
+ * @param state swapchain runtime state to update
+ */
+static void canvas_swapchain_sync_surface_changes(DvzCanvas* canvas, DvzCanvasSwapchain* state)
+{
+    ANN(canvas);
+    ANN(state);
+
+    VkExtent2D current_extent = state->swapchain_wrapper.extent;
+    if (
+        canvas->surface && state->swapchain_wrapper.ready &&
+        (canvas->surface->extent.width != current_extent.width ||
+         canvas->surface->extent.height != current_extent.height ||
+         canvas_surface_format(canvas) != state->swapchain_wrapper.image_format))
+    {
+        state->dirty = true;
+    }
+}
+
+
+
+/**
+ * Select the acquire slot for the current frame and prepare its fence for reuse.
+ *
+ * @param state canvas swapchain state
+ * @param[out] slot_idx_out selected slot index
+ * @param[out] slot_out selected slot pointer
+ */
+static void canvas_select_acquire_slot(
+    DvzCanvasSwapchain* state, uint32_t* slot_idx_out, DvzCanvasSwapchainSlot** slot_out)
+{
+    ANN(state);
+    ANN(slot_idx_out);
+    ANN(slot_out);
+
+    uint32_t slot_idx = state->frame_index % state->image_count;
+    DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
+    dvz_fence_wait(&slot->in_flight);
+    dvz_fence_reset(&slot->in_flight);
+
+    *slot_idx_out = slot_idx;
+    *slot_out = slot;
+}
+
+
+
+/**
+ * Acquire next swapchain image for the selected slot and map status transitions.
+ *
+ * @param canvas canvas owning the swapchain
+ * @param state canvas swapchain state
+ * @param slot slot selected for acquire
+ * @param slot_idx slot index selected for acquire
+ * @param[out] image_index_out acquired image index on success
+ * @return 0 on success, wait-surface code on transient status, -1 on failure
+ */
+static int canvas_acquire_image_for_slot(
+    DvzCanvas* canvas, DvzCanvasSwapchain* state, DvzCanvasSwapchainSlot* slot, uint32_t slot_idx,
+    uint32_t* image_index_out)
+{
+    ANN(canvas);
+    ANN(state);
+    ANN(slot);
+    ANN(image_index_out);
+
+    uint32_t image_index = 0;
+    DvzPresentStatus acquire_status = DVZ_PRESENT_STATUS_OK;
+    if (!canvas_test_consume_forced_status(&state->test_force_acquire_status, &acquire_status))
+    {
+        acquire_status = dvz_swapchain_acquire(
+            &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
+    }
+    int acquire_status_rc = canvas_handle_acquire_status(canvas, state, acquire_status, slot_idx);
+    if (acquire_status_rc != 0)
+    {
+        return acquire_status_rc;
+    }
+    *image_index_out = image_index;
+    return 0;
+}
+
+
+
+/**
+ * Check whether present can proceed with the current active slot.
+ *
+ * @param state canvas swapchain state
+ * @return 0 when present can proceed, -1 otherwise
+ */
+static int canvas_present_preflight(DvzCanvasSwapchain* state)
+{
+    ANN(state);
+    if (!state->active_slot)
+    {
+        return -1;
+    }
+    if (state->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        log_error("canvas swapchain present aborted after device loss");
+        state->active_slot = NULL;
+        return -1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Dispatch swapchain present for the active slot and process wrapper status.
+ *
+ * @param canvas canvas owning the swapchain
+ * @param state canvas swapchain state
+ * @param queue queue used for presentation
+ * @return 0 on success or -1 on failure
+ */
+static int canvas_dispatch_present(DvzCanvas* canvas, DvzCanvasSwapchain* state, VkQueue queue)
+{
+    ANN(canvas);
+    ANN(state);
+    ANN(state->active_slot);
+
+    uint32_t index = state->active_slot->image_index;
+    DvzPresentStatus present_status = DVZ_PRESENT_STATUS_OK;
+    if (!canvas_test_consume_forced_status(&state->test_force_present_status, &present_status))
+    {
+        present_status = dvz_swapchain_present(
+            &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
+    }
+    return canvas_handle_present_status(canvas, state, present_status, index);
+}
+
+
+
+/*************************************************************************************************/
 /*  Swapchain API                                                                                */
 /*************************************************************************************************/
 
@@ -1375,79 +1674,29 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         log_error("canvas swapchain acquire aborted after device loss");
         return -1;
     }
-    VkExtent2D current_extent = state->swapchain_wrapper.extent;
-    if (
-        canvas->surface && state->swapchain_wrapper.ready &&
-        (canvas->surface->extent.width != current_extent.width ||
-         canvas->surface->extent.height != current_extent.height ||
-         canvas_surface_format(canvas) != state->swapchain_wrapper.image_format))
+    canvas_swapchain_sync_surface_changes(canvas, state);
+
+    int prepare_rc = canvas_swapchain_prepare_acquire(canvas, state);
+    if (prepare_rc != 0)
     {
-        state->dirty = true;
+        return prepare_rc;
     }
 
-    int ensure_rc = canvas_swapchain_ensure(canvas);
-    if (ensure_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
-    {
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire wait surface");
-        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    }
-    if (ensure_rc != 0)
-    {
-        return -1;
-    }
-
-    if (state->image_count == 0)
-    {
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire no images");
-        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    }
-
-    uint32_t slot_idx = state->frame_index % state->image_count;
-    DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
-
-    dvz_fence_wait(&slot->in_flight);
-    dvz_fence_reset(&slot->in_flight);
+    uint32_t slot_idx = 0;
+    DvzCanvasSwapchainSlot* slot = NULL;
+    canvas_select_acquire_slot(state, &slot_idx, &slot);
 
     uint32_t image_index = 0;
-    DvzPresentStatus acquire_status = DVZ_PRESENT_STATUS_OK;
-    if (!canvas_test_consume_forced_status(&state->test_force_acquire_status, &acquire_status))
-    {
-        acquire_status = dvz_swapchain_acquire(
-            &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
-    }
-    int acquire_status_rc = canvas_handle_acquire_status(canvas, state, acquire_status, slot_idx);
+    int acquire_status_rc = canvas_acquire_image_for_slot(canvas, state, slot, slot_idx, &image_index);
     if (acquire_status_rc != 0)
     {
         return acquire_status_rc;
     }
 
     state->frame_index = (state->frame_index + 1) % state->image_count;
-    if (!slot->ready)
+    if (canvas_slot_bind_acquired_image(state, slot, slot_idx, image_index) != 0)
     {
-        log_error("acquired swapchain slot %u is not ready", slot_idx);
         return -1;
-    }
-    slot->image_index = image_index;
-    if (state->swapchain_wrapper.images && image_index < state->swapchain_wrapper.image_count)
-    {
-        slot->swapchain_image = state->swapchain_wrapper.images[image_index];
-    }
-    else
-    {
-        slot->swapchain_image = VK_NULL_HANDLE;
-    }
-    if (canvas_slot_create_swapchain_view(state, slot) != VK_SUCCESS)
-    {
-        log_error("failed to create swapchain image view");
-        return -1;
-    }
-    if (state->swapchain_layouts && image_index < state->image_count)
-    {
-        slot->swapchain_layout = state->swapchain_layouts[image_index];
-    }
-    else
-    {
-        slot->swapchain_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     }
 
     if (canvas_slot_begin_recording(state, slot) != 0)
@@ -1457,15 +1706,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 
     state->active_slot = slot;
     canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_ACQUIRED, "acquire success");
-    frame->image = slot->offscreen_image;
-    frame->memory = slot->offscreen_alloc.info.deviceMemory;
-    frame->memory_size = slot->offscreen_alloc.info.size;
-    frame->command_buffer = slot->command_buffer;
-    frame->image_view = slot->offscreen_view;
-    frame->extent = state->swapchain_wrapper.extent;
-    frame->handles_dirty = slot->handles_dirty;
-    frame->memory_fd = slot->memory_fd;
-    frame->wait_semaphore_fd = -1;
+    canvas_frame_from_slot(state, slot, frame);
     return 0;
 }
 
@@ -1483,14 +1724,12 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     ANN(canvas);
     // log_trace("dvz_canvas_swapchain_present");
     DvzCanvasSwapchain* state = canvas_state(canvas);
-    if (!state || !state->active_slot)
+    if (!state)
     {
         return -1;
     }
-    if (state->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    if (canvas_present_preflight(state) != 0)
     {
-        log_error("canvas swapchain present aborted after device loss");
-        state->active_slot = NULL;
         return -1;
     }
     canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING, "submit+present");
@@ -1501,44 +1740,15 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "recording failed");
         return -1;
     }
-    VkCommandBuffer cmd = state->active_slot->command_buffer;
-
-    VkPipelineStageFlags2 wait_stage =
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-    VkPipelineStageFlags2 signal_stage = wait_stage | VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
-
-    // Ownership contract: one slot owns one fence + per-frame semaphores; the main queue is used
-    // for both submit and present, and slot synchronization primitives are reset on next acquire.
-    DvzSubmit submit = {0};
-    dvz_submit(&submit);
-    dvz_submit_wait(&submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
-    if (cmd != VK_NULL_HANDLE)
-    {
-        dvz_submit_command(&submit, cmd);
-    }
-    dvz_submit_signal(&submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
-    dvz_submit_signal(
-        &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
-        VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
-
-    VkQueue queue = state->queue;
+    VkQueue queue = VK_NULL_HANDLE;
     // log_trace("submit");
-    int32_t submit_res = dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
-    if (canvas_handle_submit_status(state, submit_res) != 0)
+    if (canvas_submit_active_slot(canvas, state, wait_value, &queue) != 0)
     {
         return -1;
     }
 
-    uint32_t index = state->active_slot->image_index;
-
     // log_trace("present");
-    DvzPresentStatus present_status = DVZ_PRESENT_STATUS_OK;
-    if (!canvas_test_consume_forced_status(&state->test_force_present_status, &present_status))
-    {
-        present_status = dvz_swapchain_present(
-            &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
-    }
-    if (canvas_handle_present_status(canvas, state, present_status, index) != 0)
+    if (canvas_dispatch_present(canvas, state, queue) != 0)
     {
         return -1;
     }
