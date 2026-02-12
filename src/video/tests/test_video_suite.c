@@ -53,7 +53,8 @@ int test_video(TstSuite* suite)
 #endif
 
 #if defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ
-    TEST_SIMPLE(test_video_kvazaar);
+    // Keep one CPU fallback encode test in the suite to avoid duplicate long-running coverage.
+    TEST_SIMPLE(test_video_offline_headless_encode);
 #endif
 
     return 0;

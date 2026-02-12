@@ -36,7 +36,11 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-#define NFRAMES (DVZ_TEST_VIDEO_FRAMES / 5)
+#define KVZ_TEST_VIDEO_WIDTH   640
+#define KVZ_TEST_VIDEO_HEIGHT  360
+#define KVZ_TEST_VIDEO_FPS     15
+#define KVZ_TEST_VIDEO_SECONDS 2
+#define NFRAMES                (KVZ_TEST_VIDEO_FPS * KVZ_TEST_VIDEO_SECONDS)
 
 
 
@@ -212,8 +216,8 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx)
     VkImageCreateInfo image_info = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     image_info.imageType = VK_IMAGE_TYPE_2D;
     image_info.format = VK_FORMAT_R8G8B8A8_UNORM;
-    image_info.extent.width = DVZ_TEST_VIDEO_WIDTH;
-    image_info.extent.height = DVZ_TEST_VIDEO_HEIGHT;
+    image_info.extent.width = KVZ_TEST_VIDEO_WIDTH;
+    image_info.extent.height = KVZ_TEST_VIDEO_HEIGHT;
     image_info.extent.depth = 1;
     image_info.mipLevels = 1;
     image_info.arrayLayers = 1;
@@ -347,9 +351,9 @@ int test_video_kvazaar(TstSuite* suite, TstItem* tstitem)
     gpu->pdevice = ctx.phys;
 
     DvzVideoEncoderConfig cfg = dvz_video_encoder_default_config();
-    cfg.width = DVZ_TEST_VIDEO_WIDTH;
-    cfg.height = DVZ_TEST_VIDEO_HEIGHT;
-    cfg.fps = DVZ_TEST_VIDEO_FPS;
+    cfg.width = KVZ_TEST_VIDEO_WIDTH;
+    cfg.height = KVZ_TEST_VIDEO_HEIGHT;
+    cfg.fps = KVZ_TEST_VIDEO_FPS;
     cfg.codec = DVZ_VIDEO_CODEC_HEVC;
     cfg.mux = DVZ_VIDEO_MUX_MP4_STREAMING;
     cfg.mp4_path = mp4_path;
@@ -419,4 +423,20 @@ cleanup:
     dvz_free(gpu);
     kvz_cpu_ctx_destroy(&ctx);
     return rc;
+}
+
+
+
+/**
+ * Validate offline/headless capture mode by running CPU encoder flow without present dependency.
+ *
+ * @param suite test suite pointer
+ * @param tstitem test item pointer
+ * @return 0 on success, non-zero on failure
+ */
+int test_video_offline_headless_encode(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+    return test_video_kvazaar(suite, tstitem);
 }

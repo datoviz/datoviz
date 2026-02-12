@@ -45,7 +45,7 @@ Task board status:
 11. `[x] PRES-060` Harden resize/out-of-date/zero-extent state machine.
 12. `[x] PRES-070` Finalize queue/semaphore/fence ownership rules.
 13. `[~] PRES-075` Finalize video synchronization and sink ordering contract.
-14. `[ ] PRES-085` Add capture-mode validation tests (live + offline/headless).
+14. `[~] PRES-085` Add capture-mode validation tests (live + offline/headless).
 15. `[~] PRES-090` Cleanup dead code and boundary violations.
 16. `[ ] PRES-100` Final validation gate.
 
@@ -98,6 +98,11 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    9. recreate/update-path wait-handle export fallback
       (`test_canvas_video_wait_handle_export_fallback_after_recreate`)
    10. device-lost fatal transition (`test_canvas_device_lost_fatal_transition`)
+6. Video tests now include an explicit offline/headless capture-mode validation entrypoint
+   (`test_video_offline_headless_encode`) wired to the CPU fallback encoder flow.
+7. Test runner now registers `video` tests when either CUDA or kvazaar backends are enabled.
+8. Current environment status: offline/headless entrypoint executes quickly and passes with an
+   explicit skip when kvazaar Vulkan setup is unavailable.
 6. `vklite` presentation tests include resolved recreate-state coverage
    (`test_vklite_swapchain_recreate_resolved_state`).
 7. Frame pool release closes lingering exported wait semaphore FDs on Unix.

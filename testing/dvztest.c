@@ -26,7 +26,7 @@
 #include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
 #include "../src/window/tests/test_window.h"
-#if DVZ_HAS_CUDA
+#if (defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA) || (defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ)
 #include "../src/video/tests/test_video.h"
 #endif
 #include "../src/vk/tests/test_vk.h"
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     test_input(&suite);
     test_window(&suite);
     test_canvas(&suite);
-#if DVZ_HAS_CUDA
+#if (defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA) || (defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ)
     test_video(&suite);
 #endif
     test_vk(&suite);
