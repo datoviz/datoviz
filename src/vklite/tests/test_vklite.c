@@ -15,6 +15,8 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
+#include "_log.h"
+#include "datoviz/vk/instance.h"
 
 #include "test_vklite.h"
 #include "testing.h"
@@ -25,11 +27,47 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
+/**
+ * Probe whether the current runtime can create a Vulkan instance for vklite tests.
+ *
+ * @returns true when the runtime can create a Vulkan instance, false otherwise
+ */
+static bool _vklite_runtime_available(void)
+{
+    DvzInstance instance = {0};
+    dvz_instance(&instance, 0);
+    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    if (rc != 0)
+    {
+        log_warn("vklite tests skipped because Vulkan instance creation failed (%d)", rc);
+        return false;
+    }
+    dvz_instance_destroy(&instance);
+    return true;
+}
+
+
+
+static int test_vklite_runtime_unavailable(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    log_warn("vklite tests skipped because Vulkan runtime is unavailable");
+    return 0;
+}
+
+
+
 int test_vklite(TstSuite* suite)
 {
     ANN(suite);
 
     const char* tags = "vklite";
+    if (!_vklite_runtime_available())
+    {
+        TEST_SIMPLE(test_vklite_runtime_unavailable);
+        return 0;
+    }
 
     TEST_SIMPLE(test_vklite_commands_1);
     TEST_SIMPLE(test_vklite_sampler_1);

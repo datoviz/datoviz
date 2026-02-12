@@ -15,6 +15,8 @@
 /*************************************************************************************************/
 
 #include "_assertions.h"
+#include "_log.h"
+#include "datoviz/vk/instance.h"
 
 #include "test_vk.h"
 #include "testing.h"
@@ -55,11 +57,47 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
+/**
+ * Probe whether the current runtime can create a Vulkan instance for vk test coverage.
+ *
+ * @returns true when the runtime can create a Vulkan instance, false otherwise
+ */
+static bool _vk_runtime_available(void)
+{
+    DvzInstance instance = {0};
+    dvz_instance(&instance, 0);
+    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    if (rc != 0)
+    {
+        log_warn("vk tests skipped because Vulkan instance creation failed (%d)", rc);
+        return false;
+    }
+    dvz_instance_destroy(&instance);
+    return true;
+}
+
+
+
+static int test_vk_runtime_unavailable(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    log_warn("vk tests skipped because Vulkan runtime is unavailable");
+    return 0;
+}
+
+
+
 int test_vk(TstSuite* suite)
 {
     ANN(suite);
 
     const char* tags = "vk";
+    if (!_vk_runtime_available())
+    {
+        TEST_SIMPLE(test_vk_runtime_unavailable);
+        return 0;
+    }
 
     TEST_SIMPLE(test_instance_layers);
     TEST_SIMPLE(test_instance_extensions);
