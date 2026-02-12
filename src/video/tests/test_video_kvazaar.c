@@ -426,17 +426,3 @@ cleanup:
 }
 
 
-
-/**
- * Validate offline/headless capture mode by running CPU encoder flow without present dependency.
- *
- * @param suite test suite pointer
- * @param tstitem test item pointer
- * @return 0 on success, non-zero on failure
- */
-int test_video_offline_headless_encode(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-    ANN(tstitem);
-    return test_video_kvazaar(suite, tstitem);
-}

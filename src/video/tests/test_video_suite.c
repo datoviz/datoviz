@@ -53,9 +53,9 @@ int test_video(TstSuite* suite)
 #endif
 
 #if defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ
-    // Keep one CPU fallback encode test in the suite to avoid duplicate long-running coverage.
-    TEST_SIMPLE(test_video_offline_headless_encode);
+    TEST_SIMPLE(test_video_kvazaar);
 #endif
+    TEST_SIMPLE(test_video_offline_headless_encode);
 
     return 0;
 }
