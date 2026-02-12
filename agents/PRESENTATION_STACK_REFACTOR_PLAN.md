@@ -138,7 +138,9 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    startup/submit integration tests; recreate/update fallback closure is pending.
 7. `PRES-090` is in progress: dead/unused swapchain sink state was removed, slot setup and
    submit/present/acquire status handling were extracted into dedicated helpers, wrapper init
-   failure paths now tear down partial state, and test controls are now instance-scoped.
+   failure paths now tear down partial state, recreate preflight/config/status flow was split into
+   dedicated helpers, cleanup internals now use focused slot-state/runtime reset helpers, and test
+   controls are now instance-scoped.
 
 
 ## Target architecture (for this phase)

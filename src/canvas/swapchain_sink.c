@@ -624,9 +624,17 @@ static bool canvas_slot_init(
 
 
 
-static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
+/**
+ * Resolve and validate the native surface wrapper state before swapchain creation.
+ *
+ * @param swapchain canvas swapchain state to initialize
+ * @param[out] extent resolved non-zero surface extent
+ * @return VK_SUCCESS when the surface is ready, Vulkan error code otherwise
+ */
+static VkResult canvas_swapchain_prepare_surface(DvzCanvasSwapchain* swapchain, VkExtent2D* extent)
 {
     ANN(swapchain);
+    ANN(extent);
     DvzCanvas* canvas = swapchain->canvas;
     ANN(canvas);
 
@@ -656,8 +664,8 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         return VK_ERROR_SURFACE_LOST_KHR;
     }
 
-    VkExtent2D extent = canvas_surface_extent(canvas);
-    if (extent.width == 0 || extent.height == 0)
+    *extent = canvas_surface_extent(canvas);
+    if (extent->width == 0 || extent->height == 0)
     {
         log_warn("window surface extent is zero, waiting before creating swapchain");
         swapchain->dirty = true;
@@ -665,6 +673,21 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
             swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface extent zero");
         return VK_ERROR_SURFACE_LOST_KHR;
     }
+    return VK_SUCCESS;
+}
+
+
+
+/**
+ * Configure the vklite swapchain wrapper from current canvas surface settings.
+ *
+ * @param swapchain canvas swapchain state being recreated
+ */
+static void canvas_swapchain_apply_config(DvzCanvasSwapchain* swapchain)
+{
+    ANN(swapchain);
+    DvzCanvas* canvas = swapchain->canvas;
+    ANN(canvas);
 
     DvzSwapchainConfig config = {0};
     config.image_format = canvas_surface_format(canvas);
@@ -676,14 +699,21 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     config.min_image_count = 0;
     config.clipped = true;
     dvz_swapchain_config(&swapchain->swapchain_wrapper, config);
+}
 
-    VkFormat frame_format = canvas_frame_format(canvas);
-    uvec2 size = {extent.width, extent.height};
-    DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
-    if (!canvas_test_consume_forced_status(&swapchain->test_force_recreate_status, &status))
-    {
-        status = dvz_swapchain_recreate(&swapchain->swapchain_wrapper, size);
-    }
+
+
+/**
+ * Translate wrapper recreate status into canvas swapchain creation result.
+ *
+ * @param swapchain canvas swapchain state receiving status transitions
+ * @param status status returned by dvz_swapchain_recreate()
+ * @return VK_SUCCESS on ready, Vulkan error code otherwise
+ */
+static VkResult
+canvas_swapchain_handle_recreate_status(DvzCanvasSwapchain* swapchain, DvzPresentStatus status)
+{
+    ANN(swapchain);
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("window surface extent is zero, waiting before creating swapchain");
@@ -709,8 +739,26 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "recreate failed");
         return VK_ERROR_INITIALIZATION_FAILED;
     }
+    return VK_SUCCESS;
+}
 
-    swapchain->frame_format = frame_format;
+
+
+/**
+ * Allocate and initialize per-image slot/layout state after a successful wrapper recreate.
+ *
+ * @param swapchain canvas swapchain state receiving slot resources
+ * @param extent render extent used for per-slot offscreen image allocation
+ * @param frame_format render target format used by the canvas stream
+ * @return true on success or false on initialization failure
+ */
+static bool canvas_swapchain_init_slot_state(
+    DvzCanvasSwapchain* swapchain, VkExtent2D extent, VkFormat frame_format)
+{
+    ANN(swapchain);
+    DvzCanvas* canvas = swapchain->canvas;
+    ANN(canvas);
+
     uint32_t count = swapchain->swapchain_wrapper.image_count;
     if (swapchain->swapchain_layouts)
     {
@@ -732,19 +780,49 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
 
     dvz_canvas_frame_pool_init(&canvas->frame_pool, swapchain->image_count);
 
-
     bool handles_changed = swapchain->export_serial > 1;
-    bool slot_init_failed = false;
     for (uint32_t i = 0; i < count; ++i)
     {
         if (!canvas_slot_init(
                 swapchain, &swapchain->slots[i], i, extent, frame_format, handles_changed))
         {
-            slot_init_failed = true;
-            break;
+            return false;
         }
     }
-    if (slot_init_failed)
+    return true;
+}
+
+
+
+static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
+{
+    ANN(swapchain);
+    DvzCanvas* canvas = swapchain->canvas;
+    ANN(canvas);
+
+    VkExtent2D extent = {0};
+    VkResult surface_rc = canvas_swapchain_prepare_surface(swapchain, &extent);
+    if (surface_rc != VK_SUCCESS)
+    {
+        return surface_rc;
+    }
+    canvas_swapchain_apply_config(swapchain);
+
+    VkFormat frame_format = canvas_frame_format(canvas);
+    uvec2 size = {extent.width, extent.height};
+    DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
+    if (!canvas_test_consume_forced_status(&swapchain->test_force_recreate_status, &status))
+    {
+        status = dvz_swapchain_recreate(&swapchain->swapchain_wrapper, size);
+    }
+    VkResult recreate_rc = canvas_swapchain_handle_recreate_status(swapchain, status);
+    if (recreate_rc != VK_SUCCESS)
+    {
+        return recreate_rc;
+    }
+
+    swapchain->frame_format = frame_format;
+    if (!canvas_swapchain_init_slot_state(swapchain, extent, frame_format))
     {
         canvas_swapchain_cleanup(swapchain);
         canvas_runtime_transition(
@@ -802,6 +880,51 @@ static void canvas_destroy_slot(
 
 
 
+/**
+ * Release per-slot and per-image layout resources owned by the canvas swapchain.
+ *
+ * @param swapchain canvas swapchain state to teardown
+ */
+static void canvas_swapchain_release_slot_state(DvzCanvasSwapchain* swapchain)
+{
+    ANN(swapchain);
+    DvzCanvas* canvas = swapchain->canvas;
+    ANN(canvas);
+    if (swapchain->slots)
+    {
+        for (uint32_t i = 0; i < swapchain->image_count; ++i)
+        {
+            canvas_destroy_slot(
+                canvas->device, swapchain->queue_family, &swapchain->slots[i], &canvas->allocator);
+        }
+        dvz_free(swapchain->slots);
+        swapchain->slots = NULL;
+    }
+    if (swapchain->swapchain_layouts)
+    {
+        dvz_free(swapchain->swapchain_layouts);
+        swapchain->swapchain_layouts = NULL;
+    }
+}
+
+
+
+/**
+ * Reset canvas swapchain runtime fields after cleanup.
+ *
+ * @param swapchain canvas swapchain state to reset
+ */
+static void canvas_swapchain_reset_runtime(DvzCanvasSwapchain* swapchain)
+{
+    ANN(swapchain);
+    swapchain->image_count = 0;
+    swapchain->active_slot = NULL;
+    swapchain->frame_index = 0;
+    swapchain->dirty = true;
+}
+
+
+
 static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
 {
     if (!swapchain)
@@ -814,26 +937,9 @@ static void canvas_swapchain_cleanup(DvzCanvasSwapchain* swapchain)
         return;
     }
     dvz_device_wait(canvas->device);
-    if (swapchain->slots)
-    {
-        for (uint32_t i = 0; i < swapchain->image_count; ++i)
-        {
-            canvas_destroy_slot(
-                canvas->device, swapchain->queue_family, &swapchain->slots[i], &canvas->allocator);
-        }
-        dvz_free(swapchain->slots);
-        swapchain->slots = NULL;
-    }
+    canvas_swapchain_release_slot_state(swapchain);
     dvz_swapchain_destroy(&swapchain->swapchain_wrapper);
-    if (swapchain->swapchain_layouts)
-    {
-        dvz_free(swapchain->swapchain_layouts);
-        swapchain->swapchain_layouts = NULL;
-    }
-    swapchain->image_count = 0;
-    swapchain->active_slot = NULL;
-    swapchain->frame_index = 0;
-    swapchain->dirty = true;
+    canvas_swapchain_reset_runtime(swapchain);
     if (swapchain->runtime_state != DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
     {
         canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "cleanup");
