@@ -26,7 +26,8 @@ Current status:
 4. Last updated: `2026-02-12`
 5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
    hardening/tests landed for fail-fast slot init, GLFW present recovery, handle refresh order,
-   queue-submit error propagation, and startup-time timeline-handle wiring for video sinks.
+   queue-submit error propagation, startup-time timeline-handle wiring for video sinks, and
+   deterministic wait-handle fallback on export failure.
 
 Task board status:
 1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
@@ -49,18 +50,13 @@ Task board status:
 
 Immediate next actions:
 1. `PRES-075`:
-   1. Add a canvas/video integration test that asserts the first started video sink frame has a
-      valid timeline wait-handle path (or an explicit fallback path) before first encode submit.
-   2. Add a negative-path test for timeline handle export/import failure that validates deterministic
-      fallback behavior and diagnostics.
-   3. Document startup/recreate sync-handle ordering in code comments adjacent to stream start/update.
+   1. Extend first-frame wait-handle coverage from probe-based tests to a real video sink startup
+      path when a deterministic CI-safe backend fixture is available.
+   2. Validate wait-handle export fallback behavior on recreate/update paths in addition to first start.
 2. `PRES-090`:
    1. Continue reducing `src/canvas/swapchain_sink.c` by extracting recreate/cleanup/acquire helpers
       while preserving current behavior.
-   2. Remove any now-redundant includes/comments that still imply post-present handle export.
-3. Keep canvas/vklite regression filters green after each extraction step.
-4. Harden wrapper init failure teardown so partial `surface`/`swapchain` setup cannot leak or leave
-   dangling canvas swapchain state.
+   2. Keep canvas/vklite regression filters green after each extraction step.
 
 
 ## Ground rules
@@ -130,10 +126,12 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    handling (`vkQueueSubmit2` result propagation into canvas runtime transitions, including
    `DEVICE_LOST` fatal handling).
 6. `PRES-075` is in progress: timeline wait-semaphore handle export is now prepared before stream
-   start/update (instead of post-present), improving startup-time video synchronization semantics;
-   remaining contract/test closure is pending.
-7. `PRES-090` is in progress: dead/unused swapchain sink state was removed, slot setup has been
-   extracted into a dedicated helper, and wrapper init failure paths now tear down partial state.
+   start/update (instead of post-present), startup/recreate ordering comments are in place, and
+   first-start + forced-export-failure probe tests are now implemented; remaining sink-specific
+   integration closure is pending.
+7. `PRES-090` is in progress: dead/unused swapchain sink state was removed, slot setup and
+   submit/present status handling were extracted into dedicated helpers, and wrapper init failure
+   paths now tear down partial state.
 
 
 ## Target architecture (for this phase)

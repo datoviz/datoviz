@@ -897,6 +897,80 @@ static int canvas_swapchain_ensure(DvzCanvas* canvas)
 
 
 
+/**
+ * Handle queue-submit status for a canvas frame submission.
+ *
+ * @param state canvas swapchain state receiving the submission result
+ * @param submit_res submission result code returned by the queue submit wrapper
+ * @return 0 when submission can proceed to present, -1 otherwise
+ */
+static int canvas_handle_submit_status(DvzCanvasSwapchain* state, int32_t submit_res)
+{
+    ANN(state);
+    ANN(state->active_slot);
+
+    if (submit_res == VK_ERROR_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "queue submit");
+        state->active_slot = NULL;
+        return -1;
+    }
+    if (submit_res != VK_SUCCESS)
+    {
+        log_error(
+            "failed to submit canvas frame (frame=%u image=%u vk=%d)", state->frame_index,
+            state->active_slot->image_index, submit_res);
+        state->active_slot = NULL;
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "submit failed");
+        return -1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Handle swapchain present status transitions and failure reporting.
+ *
+ * @param canvas canvas owning the swapchain state
+ * @param state canvas swapchain state receiving the present result
+ * @param present_status present result status from vklite
+ * @param image_index swapchain image index associated with the present call
+ * @return 0 when present handling completed, -1 on fatal or hard failure
+ */
+static int canvas_handle_present_status(
+    DvzCanvas* canvas, DvzCanvasSwapchain* state, DvzPresentStatus present_status,
+    uint32_t image_index)
+{
+    ANN(canvas);
+    ANN(state);
+
+    if (present_status == DVZ_PRESENT_STATUS_RECREATE)
+    {
+        dvz_canvas_swapchain_mark_out_of_date(canvas);
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "present recreate");
+        return 0;
+    }
+    if (present_status == DVZ_PRESENT_STATUS_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "swapchain present");
+        state->active_slot = NULL;
+        return -1;
+    }
+    if (present_status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error(
+            "failed to present swapchain image (frame=%u image=%u status=%d)", state->frame_index,
+            image_index, present_status);
+        state->active_slot = NULL;
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "present failed");
+        return -1;
+    }
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Swapchain API                                                                                */
 /*************************************************************************************************/
@@ -1295,19 +1369,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     VkQueue queue = state->queue;
     // log_trace("submit");
     int32_t submit_res = dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
-    if (submit_res == VK_ERROR_DEVICE_LOST)
+    if (canvas_handle_submit_status(state, submit_res) != 0)
     {
-        canvas_runtime_device_lost(state, "queue submit");
-        state->active_slot = NULL;
-        return -1;
-    }
-    if (submit_res != VK_SUCCESS)
-    {
-        log_error(
-            "failed to submit canvas frame (frame=%u image=%u vk=%d)", state->frame_index,
-            state->active_slot->image_index, submit_res);
-        state->active_slot = NULL;
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "submit failed");
         return -1;
     }
 
@@ -1320,24 +1383,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         present_status = dvz_swapchain_present(
             &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
     }
-    if (present_status == DVZ_PRESENT_STATUS_RECREATE)
+    if (canvas_handle_present_status(canvas, state, present_status, index) != 0)
     {
-        dvz_canvas_swapchain_mark_out_of_date(canvas);
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "present recreate");
-    }
-    else if (present_status == DVZ_PRESENT_STATUS_DEVICE_LOST)
-    {
-        canvas_runtime_device_lost(state, "swapchain present");
-        state->active_slot = NULL;
-        return -1;
-    }
-    else if (present_status != DVZ_PRESENT_STATUS_OK)
-    {
-        log_error(
-            "failed to present swapchain image (frame=%u image=%u status=%d)", state->frame_index,
-            index, present_status);
-        state->active_slot = NULL;
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "present failed");
         return -1;
     }
 

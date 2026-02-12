@@ -36,6 +36,10 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static bool canvas_test_force_wait_semaphore_export_failure = false;
+
+
+
 static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -225,15 +229,20 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
 
 #if OS_UNIX
     VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
-    int fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
-    if (fd < 0)
+    int fd = -1;
+    if (!canvas_test_force_wait_semaphore_export_failure)
     {
-        log_error("failed to export canvas timeline semaphore for video sync");
-        return -1;
+        fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
     }
     if (frame->wait_semaphore_fd >= 0)
     {
         close(frame->wait_semaphore_fd);
+        frame->wait_semaphore_fd = -1;
+    }
+    if (fd < 0)
+    {
+        log_warn("video sink timeline export failed, continuing without wait semaphore handle");
+        return 0;
     }
     frame->wait_semaphore_fd = fd;
     return 0;
@@ -241,6 +250,18 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
     log_error("video sink timeline export unsupported on this platform");
     return -1;
 #endif
+}
+
+
+
+/**
+ * Force timeline wait-semaphore FD export failure in tests.
+ *
+ * @param enabled true to force export failure, false to restore normal behavior
+ */
+void dvz_canvas_test_force_wait_semaphore_export_failure(bool enabled)
+{
+    canvas_test_force_wait_semaphore_export_failure = enabled;
 }
 
 
@@ -587,6 +608,8 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     }
     *frame = frame_data;
 
+    // Sync-handle ordering contract: prepare the timeline wait handle before stream start/update so
+    // video sinks always see the latest semaphore handle during their start/update callback.
     bool needs_video_sync_refresh =
         canvas->video_sink_enabled && (!canvas->stream_started || frame->handles_dirty);
     if (needs_video_sync_refresh && canvas_prepare_video_wait_semaphore_fd(canvas, frame) != 0)
@@ -599,6 +622,8 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     {
         return -1;
     }
+    // If the stream starts on this frame, sinks consumed the frame in start(); otherwise a handle
+    // refresh must be propagated through update() before the next submit().
     bool stream_started_now = !stream_was_started && canvas->stream_started;
     if (stream_started_now)
     {

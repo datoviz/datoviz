@@ -184,3 +184,5 @@ void dvz_canvas_swapchain_test_force_present_status(int32_t status);
 DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas);
 
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);
+
+void dvz_canvas_test_force_wait_semaphore_export_failure(bool enabled);

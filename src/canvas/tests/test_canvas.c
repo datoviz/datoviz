@@ -419,6 +419,7 @@ static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
     }
 
     dvz_canvas_swapchain_test_fail_slot(-1);
+    dvz_canvas_test_force_wait_semaphore_export_failure(false);
     if (fixture->canvas != NULL)
     {
         dvz_canvas_set_draw_callback(fixture->canvas, NULL, NULL);
@@ -784,6 +785,154 @@ int test_canvas_video_wait_value_propagation(TstSuite* suite, TstItem* item)
     AT(submits == 3);
     AT(probe.wait_value_count >= submits);
     AT(probe.wait_value_non_monotonic == 0);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Ensure first stream start observes a ready timeline wait-semaphore FD when video sync is enabled.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_video_wait_handle_ready_on_first_start(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
+    {
+        log_warn("canvas wait-handle readiness test skipped (no exportable external semaphore)");
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    canvas->video_sink_enabled = true;
+    bool frame_ready = false;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        frame_ready = true;
+        break;
+    }
+
+    AT(frame_ready);
+    AT(probe.start_count > 0);
+    AT(probe.latest_wait_semaphore_fd >= 0);
+    DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    AT(frame != NULL);
+    AT(frame->wait_semaphore_fd >= 0);
+    AT(dvz_canvas_submit(canvas) == 0);
+    canvas->video_sink_enabled = false;
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Validate deterministic fallback when timeline wait-semaphore export fails at frame start.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    if (!canvas->supports_external_semaphore || dvz_canvas_timeline_handle_type() == 0)
+    {
+        log_warn("canvas wait-handle fallback test skipped (no exportable external semaphore)");
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    canvas->video_sink_enabled = true;
+    dvz_canvas_test_force_wait_semaphore_export_failure(true);
+    bool frame_ready = false;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        frame_ready = true;
+        break;
+    }
+
+    AT(frame_ready);
+    AT(probe.start_count > 0);
+    AT(probe.latest_wait_semaphore_fd < 0);
+    DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    AT(frame != NULL);
+    AT(frame->wait_semaphore_fd < 0);
+    AT(dvz_canvas_submit(canvas) == 0);
+    dvz_canvas_test_force_wait_semaphore_export_failure(false);
+    canvas->video_sink_enabled = false;
 
     canvas_glfw_fixture_destroy(&fixture);
     return 0;
@@ -1219,6 +1368,8 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_glfw_present_recovery);
     TEST_SIMPLE(test_canvas_handle_refresh_order);
     TEST_SIMPLE(test_canvas_video_wait_value_propagation);
+    TEST_SIMPLE(test_canvas_video_wait_handle_ready_on_first_start);
+    TEST_SIMPLE(test_canvas_video_wait_handle_export_fallback);
     TEST_SIMPLE(test_canvas_video_handle_refresh_after_recreate);
     TEST_SIMPLE(test_canvas_device_lost_fatal_transition);
     TEST_SIMPLE(test_canvas_glfw);
