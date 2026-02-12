@@ -52,6 +52,8 @@ int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* it
 
 int test_canvas_video_sink_disable_rebuild(TstSuite* suite, TstItem* item);
 
+int test_canvas_capture_api(TstSuite* suite, TstItem* item);
+
 int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item);
 
 

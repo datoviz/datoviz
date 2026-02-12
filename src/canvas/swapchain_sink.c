@@ -31,6 +31,7 @@
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/surface.h"
@@ -92,6 +93,7 @@ struct DvzCanvasSwapchain
     DvzCanvasSwapchainSlot* slots;
     VkImageLayout* swapchain_layouts;
     uint32_t frame_index;
+    uint32_t last_presented_slot_index;
     bool dirty;
     VkQueue queue;
     DvzCanvasSwapchainSlot* active_slot;
@@ -920,6 +922,7 @@ static void canvas_swapchain_reset_runtime(DvzCanvasSwapchain* swapchain)
     swapchain->image_count = 0;
     swapchain->active_slot = NULL;
     swapchain->frame_index = 0;
+    swapchain->last_presented_slot_index = UINT32_MAX;
     swapchain->dirty = true;
 }
 
@@ -1442,6 +1445,7 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->canvas = canvas;
     canvas->swapchain->dirty = true;
     canvas->swapchain->frame_index = 0;
+    canvas->swapchain->last_presented_slot_index = UINT32_MAX;
     canvas->swapchain->frame_format = canvas_frame_format(canvas);
     canvas->swapchain->runtime_state = DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
     canvas->swapchain->test_fail_slot_index = -1;
@@ -1654,6 +1658,138 @@ void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas)
 
 
 /**
+ * Capture the latest presented canvas frame into caller-managed RGBA storage.
+ *
+ * @param canvas canvas whose latest presented slot should be captured
+ * @param width expected frame width
+ * @param height expected frame height
+ * @param out_rgba destination buffer
+ * @param out_size destination buffer size in bytes
+ * @returns 0 on success or -1 on failure
+ */
+int dvz_canvas_swapchain_capture_rgba_into(
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+{
+    ANN(canvas);
+    ANN(out_rgba);
+    DvzCanvasSwapchain* state = canvas_state(canvas);
+    if (!state || state->image_count == 0)
+    {
+        log_error("canvas capture requires an initialized swapchain");
+        return -1;
+    }
+    if (state->active_slot != NULL)
+    {
+        log_error("canvas capture cannot run while a frame is currently acquired");
+        return -1;
+    }
+    if (state->last_presented_slot_index == UINT32_MAX || state->last_presented_slot_index >= state->image_count)
+    {
+        log_error("canvas capture requires at least one successful present");
+        return -1;
+    }
+
+    VkExtent2D extent = state->swapchain_wrapper.extent;
+    if (extent.width == 0 || extent.height == 0)
+    {
+        log_error("canvas capture requires a non-zero swapchain extent");
+        return -1;
+    }
+    size_t expected_size = (size_t)extent.width * (size_t)extent.height * 4;
+    if (width != extent.width || height != extent.height)
+    {
+        log_error(
+            "canvas capture dimension mismatch, expected %ux%u but got %ux%u", extent.width,
+            extent.height, width, height);
+        return -1;
+    }
+    if (out_size < expected_size)
+    {
+        log_error(
+            "canvas capture destination buffer too small (%zu < %zu)", out_size, expected_size);
+        return -1;
+    }
+
+    DvzCanvasSwapchainSlot* slot = &state->slots[state->last_presented_slot_index];
+    if (slot->offscreen_image == VK_NULL_HANDLE)
+    {
+        log_error("canvas capture source image is unavailable");
+        return -1;
+    }
+
+    dvz_device_wait(canvas->device);
+
+    DvzBuffer staging = {0};
+    dvz_buffer(canvas->device, &canvas->allocator, &staging);
+    dvz_buffer_size(&staging, expected_size);
+    dvz_buffer_flags(
+        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    if (dvz_buffer_create(&staging) != 0)
+    {
+        log_error("failed to allocate staging buffer for canvas capture");
+        return -1;
+    }
+
+    VkCommandBuffer cmd = dvz_command_buffer_alloc(canvas->device, state->queue_family);
+    if (cmd == VK_NULL_HANDLE)
+    {
+        dvz_buffer_destroy(&staging);
+        log_error("failed to allocate command buffer for canvas capture");
+        return -1;
+    }
+
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(canvas->device, cmd, &cmds);
+    dvz_cmd_reset(&cmds);
+    dvz_cmd_begin(&cmds);
+
+    VkImageLayout original_layout = slot->offscreen_layout;
+    if (original_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+    {
+        original_layout = VK_IMAGE_LAYOUT_GENERAL;
+    }
+    canvas_cmd_transition(
+        canvas, cmd, slot->offscreen_image, original_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+    DvzImageRegion region = {0};
+    dvz_image_region(&region);
+    dvz_image_region_extent(&region, width, height, 1);
+    dvz_cmd_copy_image_to_buffer(
+        &cmds, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        dvz_buffer_handle(&staging), 0);
+
+    canvas_cmd_transition(
+        canvas, cmd, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, original_layout);
+    dvz_cmd_end(&cmds);
+
+    DvzFence fence = {0};
+    dvz_fence(canvas->device, false, &fence);
+    DvzSubmit submit = {0};
+    dvz_submit(&submit);
+    dvz_submit_command(&submit, cmd);
+    int32_t submit_rc = dvz_submit_send(&submit, state->queue, fence.vk_fence);
+    if (submit_rc != VK_SUCCESS)
+    {
+        dvz_fence_destroy(&fence);
+        dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
+        dvz_buffer_destroy(&staging);
+        log_error("failed to submit canvas capture copy commands (%d)", submit_rc);
+        return -1;
+    }
+    dvz_fence_wait(&fence);
+
+    dvz_buffer_download(&staging, 0, expected_size, out_rgba);
+
+    dvz_fence_destroy(&fence);
+    dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
+    dvz_buffer_destroy(&staging);
+    return 0;
+}
+
+
+
+/**
  * Acquire the next swapchain image and populate the stream frame metadata.
  *
  * @param canvas canvas owning the swapchain
@@ -1753,6 +1889,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
         return -1;
     }
 
+    state->last_presented_slot_index =
+        (state->frame_index + state->image_count - 1) % state->image_count;
     state->active_slot = NULL;
     if (state->runtime_state != DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE)
     {

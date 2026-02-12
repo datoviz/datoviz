@@ -27,6 +27,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
+#include "datoviz/fileio/fileio.h"
 #include "datoviz/video.h"
 #include "datoviz/vk/enums.h"
 
@@ -697,6 +698,104 @@ DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas)
         return NULL;
     }
     return dvz_window_router(canvas->window);
+}
+
+
+
+/**
+ * Capture the latest presented frame into caller-managed RGBA storage.
+ *
+ * @param canvas canvas to capture
+ * @param width expected frame width
+ * @param height expected frame height
+ * @param out_rgba destination RGBA buffer
+ * @param out_size destination buffer size in bytes
+ * @returns 0 on success or a negative error code
+ */
+int dvz_canvas_capture_rgba_into(
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+{
+    ANN(canvas);
+    ANN(out_rgba);
+    if (width == 0 || height == 0)
+    {
+        log_error("canvas capture requires non-zero dimensions");
+        return -1;
+    }
+    return dvz_canvas_swapchain_capture_rgba_into(canvas, width, height, out_rgba, out_size);
+}
+
+
+
+/**
+ * Capture the latest presented frame into a newly allocated RGBA buffer.
+ *
+ * @param canvas canvas to capture
+ * @param out_width destination width
+ * @param out_height destination height
+ * @param out_rgba destination pointer receiving allocated RGBA pixels
+ * @returns 0 on success or a negative error code
+ */
+int dvz_canvas_capture_rgba(
+    DvzCanvas* canvas, uint32_t* out_width, uint32_t* out_height, uint8_t** out_rgba)
+{
+    ANN(canvas);
+    ANN(out_width);
+    ANN(out_height);
+    ANN(out_rgba);
+    *out_width = 0;
+    *out_height = 0;
+    *out_rgba = NULL;
+
+    DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
+    uint32_t width = surface.extent.width;
+    uint32_t height = surface.extent.height;
+    if (width == 0 || height == 0)
+    {
+        log_error("canvas capture requires a non-zero surface extent");
+        return -1;
+    }
+
+    size_t byte_count = (size_t)width * (size_t)height * 4;
+    uint8_t* rgba = (uint8_t*)dvz_calloc(byte_count, sizeof(uint8_t));
+    ANN(rgba);
+    if (dvz_canvas_capture_rgba_into(canvas, width, height, rgba, byte_count) != 0)
+    {
+        dvz_free(rgba);
+        return -1;
+    }
+
+    *out_width = width;
+    *out_height = height;
+    *out_rgba = rgba;
+    return 0;
+}
+
+
+
+/**
+ * Capture the latest presented frame into a PNG file.
+ *
+ * @param canvas canvas to capture
+ * @param path output png path
+ * @returns 0 on success or a negative error code
+ */
+int dvz_canvas_capture_png(DvzCanvas* canvas, const char* path)
+{
+    ANN(canvas);
+    ANN(path);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    if (dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) != 0)
+    {
+        return -1;
+    }
+
+    int rc = dvz_write_png(path, width, height, rgba);
+    dvz_free(rgba);
+    return rc;
 }
 
 

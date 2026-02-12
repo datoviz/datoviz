@@ -15,7 +15,11 @@
 /*************************************************************************************************/
 
 #include "canvas_internal.h"
+#include <sys/stat.h>
 #include <stdlib.h>
+#if OS_UNIX
+#include <unistd.h>
+#endif
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -1267,6 +1271,100 @@ cleanup:
 
 
 /**
+ * Validate raw and PNG capture APIs on the latest presented canvas frame.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_capture_api(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    bool submitted = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        submitted = true;
+        break;
+    }
+    AT(submitted);
+
+    DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
+    uint32_t width = surface.extent.width;
+    uint32_t height = surface.extent.height;
+    AT(width > 0);
+    AT(height > 0);
+
+    size_t byte_count = (size_t)width * (size_t)height * 4;
+    uint8_t* scratch = (uint8_t*)dvz_calloc(byte_count, sizeof(uint8_t));
+    ANN(scratch);
+    AT(dvz_canvas_capture_rgba_into(canvas, width, height, scratch, byte_count) == 0);
+    AT(dvz_canvas_capture_rgba_into(canvas, width + 1, height, scratch, byte_count) != 0);
+
+    uint64_t sum = 0;
+    for (size_t i = 0; i < byte_count; ++i)
+    {
+        sum += scratch[i];
+    }
+    AT(sum > 0);
+    dvz_free(scratch);
+
+    uint32_t out_width = 0;
+    uint32_t out_height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &out_width, &out_height, &rgba) == 0);
+    ANN(rgba);
+    AT(out_width == width);
+    AT(out_height == height);
+    AT(rgba[0] + rgba[1] + rgba[2] + rgba[3] > 0);
+    dvz_free(rgba);
+
+    const char* png_path = "/tmp/dvz_canvas_capture_api.png";
+#if OS_UNIX
+    unlink(png_path);
+#endif
+    AT(dvz_canvas_capture_png(canvas, png_path) == 0);
+    struct stat st = {0};
+    AT(stat(png_path, &st) == 0);
+    AT(st.st_size > 0);
+#if OS_UNIX
+    unlink(png_path);
+#endif
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Ensure sink handle refresh and submit wait-value continuity after forced recreate.
  *
  * @param suite The owning test suite.
@@ -1699,6 +1797,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_video_wait_handle_export_fallback_after_recreate);
     TEST_SIMPLE(test_canvas_video_sink_start_submit_integration);
     TEST_SIMPLE(test_canvas_video_sink_disable_rebuild);
+    TEST_SIMPLE(test_canvas_capture_api);
     TEST_SIMPLE(test_canvas_video_handle_refresh_after_recreate);
     TEST_SIMPLE(test_canvas_device_lost_fatal_transition);
     TEST_SIMPLE(test_canvas_glfw);

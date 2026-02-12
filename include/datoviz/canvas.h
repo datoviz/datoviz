@@ -160,6 +160,48 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);
 
 
 /**
+ * Capture the latest presented canvas frame into a caller-provided RGBA buffer.
+ *
+ * @param canvas canvas handle
+ * @param width expected frame width in pixels
+ * @param height expected frame height in pixels
+ * @param out_rgba destination buffer receiving RGBA8 pixels
+ * @param out_size size of `out_rgba` in bytes
+ * @returns 0 on success or a negative error code
+ */
+DVZ_EXPORT int dvz_canvas_capture_rgba_into(
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size);
+
+
+
+/**
+ * Capture the latest presented canvas frame into a newly allocated RGBA buffer.
+ *
+ * @param canvas canvas handle
+ * @param out_width destination width in pixels
+ * @param out_height destination height in pixels
+ * @param out_rgba destination pointer receiving an allocated RGBA8 buffer
+ * @returns 0 on success or a negative error code
+ * @note caller owns `*out_rgba` and must release it with `dvz_free()`
+ */
+DVZ_EXPORT int
+dvz_canvas_capture_rgba(
+    DvzCanvas* canvas, uint32_t* out_width, uint32_t* out_height, uint8_t** out_rgba);
+
+
+
+/**
+ * Capture the latest presented canvas frame and write it to a PNG file.
+ *
+ * @param canvas canvas handle
+ * @param path output file path
+ * @returns 0 on success or a negative error code
+ */
+DVZ_EXPORT int dvz_canvas_capture_png(DvzCanvas* canvas, const char* path);
+
+
+
+/**
  * Enable or disable the video sink attached to the canvas stream.
  *
  * @param canvas canvas owning the stream
