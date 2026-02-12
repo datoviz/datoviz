@@ -941,6 +941,94 @@ int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item
 
 
 /**
+ * Validate real video sink start+submit integration when backend and external handles are available.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+
+    if (
+        !canvas->supports_external_memory || !canvas->supports_external_semaphore ||
+        dvz_canvas_timeline_handle_type() == 0)
+    {
+        log_warn("canvas video sink integration skipped (external memory/semaphore unsupported)");
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    sink_cfg.encoder.backend = "auto";
+    sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 640;
+    sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 480;
+    sink_cfg.encoder.fps = 30;
+    sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
+    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_video_sink_test.mp4";
+    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_video_sink_test.h26x";
+    if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
+    {
+        log_warn("canvas video sink integration skipped (sink could not be enabled)");
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = &fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    bool submitted = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        if (frame_rc != DVZ_CANVAS_FRAME_READY)
+        {
+            log_warn("canvas video sink integration skipped (video backend unavailable)");
+            canvas_glfw_fixture_destroy(&fixture);
+            return 0;
+        }
+
+        DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+        AT(frame != NULL);
+        AT(frame->memory_fd >= 0);
+        AT(frame->wait_semaphore_fd >= 0);
+        AT(dvz_canvas_submit(canvas) == 0);
+        submitted = true;
+        break;
+    }
+
+    AT(submitted);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Ensure sink handle refresh and submit wait-value continuity after forced recreate.
  *
  * @param suite The owning test suite.
@@ -1370,6 +1458,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_video_wait_value_propagation);
     TEST_SIMPLE(test_canvas_video_wait_handle_ready_on_first_start);
     TEST_SIMPLE(test_canvas_video_wait_handle_export_fallback);
+    TEST_SIMPLE(test_canvas_video_sink_start_submit_integration);
     TEST_SIMPLE(test_canvas_video_handle_refresh_after_recreate);
     TEST_SIMPLE(test_canvas_device_lost_fatal_transition);
     TEST_SIMPLE(test_canvas_glfw);

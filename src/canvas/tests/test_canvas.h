@@ -44,6 +44,8 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstSuite* suite, TstItem*
 
 int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item);
 
+int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* item);
+
 int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* item);
 
 int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item);

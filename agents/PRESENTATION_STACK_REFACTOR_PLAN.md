@@ -27,7 +27,7 @@ Current status:
 5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
    hardening/tests landed for fail-fast slot init, GLFW present recovery, handle refresh order,
    queue-submit error propagation, startup-time timeline-handle wiring for video sinks, and
-   deterministic wait-handle fallback on export failure.
+   deterministic wait-handle fallback on export failure with instance-scoped test controls.
 
 Task board status:
 1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
@@ -50,12 +50,12 @@ Task board status:
 
 Immediate next actions:
 1. `PRES-075`:
-   1. Extend first-frame wait-handle coverage from probe-based tests to a real video sink startup
-      path when a deterministic CI-safe backend fixture is available.
-   2. Validate wait-handle export fallback behavior on recreate/update paths in addition to first start.
+   1. Validate wait-handle export fallback behavior on recreate/update paths in addition to first start.
+   2. Keep the real video sink startup/submit integration test enabled and deterministic across
+      environments where a backend is available (skip when unavailable).
 2. `PRES-090`:
-   1. Continue reducing `src/canvas/swapchain_sink.c` by extracting recreate/cleanup/acquire helpers
-      while preserving current behavior.
+   1. Continue reducing `src/canvas/swapchain_sink.c` by extracting recreate/cleanup helpers while
+      preserving current behavior.
    2. Keep canvas/vklite regression filters green after each extraction step.
 
 
@@ -89,8 +89,11 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    2. GLFW out-of-date recovery (`test_canvas_glfw_present_recovery`)
    3. handle refresh ordering contract (`test_canvas_handle_refresh_order`)
    4. wait-value propagation (`test_canvas_video_wait_value_propagation`)
-   5. post-recreate refresh + wait continuity (`test_canvas_video_handle_refresh_after_recreate`)
-   6. device-lost fatal transition (`test_canvas_device_lost_fatal_transition`)
+   5. first-start wait-handle readiness (`test_canvas_video_wait_handle_ready_on_first_start`)
+   6. wait-handle export fallback (`test_canvas_video_wait_handle_export_fallback`)
+   7. real video sink startup/submit integration (`test_canvas_video_sink_start_submit_integration`)
+   8. post-recreate refresh + wait continuity (`test_canvas_video_handle_refresh_after_recreate`)
+   9. device-lost fatal transition (`test_canvas_device_lost_fatal_transition`)
 6. `vklite` presentation tests include resolved recreate-state coverage
    (`test_vklite_swapchain_recreate_resolved_state`).
 7. Frame pool release closes lingering exported wait semaphore FDs on Unix.
@@ -127,11 +130,11 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    `DEVICE_LOST` fatal handling).
 6. `PRES-075` is in progress: timeline wait-semaphore handle export is now prepared before stream
    start/update (instead of post-present), startup/recreate ordering comments are in place, and
-   first-start + forced-export-failure probe tests are now implemented; remaining sink-specific
-   integration closure is pending.
+   first-start + forced-export-failure coverage now includes both probe-based and real video sink
+   startup/submit integration tests; recreate/update fallback closure is pending.
 7. `PRES-090` is in progress: dead/unused swapchain sink state was removed, slot setup and
-   submit/present status handling were extracted into dedicated helpers, and wrapper init failure
-   paths now tear down partial state.
+   submit/present/acquire status handling were extracted into dedicated helpers, wrapper init
+   failure paths now tear down partial state, and test controls are now instance-scoped.
 
 
 ## Target architecture (for this phase)

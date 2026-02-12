@@ -970,6 +970,51 @@ static int canvas_handle_present_status(
 
 
 
+/**
+ * Handle swapchain acquire status transitions and failure reporting.
+ *
+ * @param canvas canvas owning the swapchain state
+ * @param state canvas swapchain state receiving the acquire result
+ * @param acquire_status acquire result status from vklite
+ * @param slot_idx slot index selected for the acquire call
+ * @return 0 when acquire can proceed, wait-surface code on transient recreate/extent states, -1
+ * otherwise
+ */
+static int canvas_handle_acquire_status(
+    DvzCanvas* canvas, DvzCanvasSwapchain* state, DvzPresentStatus acquire_status, uint32_t slot_idx)
+{
+    ANN(canvas);
+    ANN(state);
+
+    if (acquire_status == DVZ_PRESENT_STATUS_RECREATE)
+    {
+        dvz_canvas_swapchain_mark_out_of_date(canvas);
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire recreate");
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (acquire_status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        dvz_canvas_swapchain_mark_out_of_date(canvas);
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire zero extent");
+        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    if (acquire_status == DVZ_PRESENT_STATUS_DEVICE_LOST)
+    {
+        canvas_runtime_device_lost(state, "swapchain acquire");
+        return -1;
+    }
+    if (acquire_status != DVZ_PRESENT_STATUS_OK)
+    {
+        log_error(
+            "failed to acquire swapchain image (frame=%u slot=%u status=%d)", state->frame_index,
+            slot_idx, acquire_status);
+        return -1;
+    }
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Swapchain API                                                                                */
 /*************************************************************************************************/
@@ -1264,29 +1309,10 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         acquire_status = dvz_swapchain_acquire(
             &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
     }
-    if (acquire_status == DVZ_PRESENT_STATUS_RECREATE)
+    int acquire_status_rc = canvas_handle_acquire_status(canvas, state, acquire_status, slot_idx);
+    if (acquire_status_rc != 0)
     {
-        dvz_canvas_swapchain_mark_out_of_date(canvas);
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire recreate");
-        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    }
-    if (acquire_status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
-    {
-        dvz_canvas_swapchain_mark_out_of_date(canvas);
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire zero extent");
-        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
-    }
-    if (acquire_status == DVZ_PRESENT_STATUS_DEVICE_LOST)
-    {
-        canvas_runtime_device_lost(state, "swapchain acquire");
-        return -1;
-    }
-    if (acquire_status != DVZ_PRESENT_STATUS_OK)
-    {
-        log_error(
-            "failed to acquire swapchain image (frame=%u slot=%u status=%d)", state->frame_index,
-            slot_idx, acquire_status);
-        return -1;
+        return acquire_status_rc;
     }
 
     state->frame_index = (state->frame_index + 1) % state->image_count;
