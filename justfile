@@ -1547,6 +1547,25 @@ test test_name="":
     ./build/testing/dvztest.exe {{test_name}}
 #
 
+[linux]
+canvas *args:
+    ./build/testing/dvz_live_canvas {{args}}
+#
+
+[macos]
+canvas *args:
+    @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
+        VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" ./build/testing/dvz_live_canvas {{args}}; \
+    else \
+        ./build/testing/dvz_live_canvas {{args}}; \
+    fi
+#
+
+[windows]
+canvas *args:
+    ./build/testing/dvz_live_canvas.exe {{args}}
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Info

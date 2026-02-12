@@ -131,8 +131,51 @@ if(DVZ_WITH_MIMALLOC)
     target_link_libraries(dvztest PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
 endif()
 
+# Build the interactive canvas smoke app: dvz_live_canvas
+add_executable(dvz_live_canvas dvz_live_canvas.c)
+
+target_link_libraries(dvz_live_canvas
+    PRIVATE
+    datoviz_common
+    datoviz_ds
+    datoviz_fileio
+    datoviz_math
+    datoviz_thread
+    datoviz_input
+    datoviz_window
+    datoviz_canvas
+    datoviz_stream
+    datoviz_video
+    datoviz_vk
+    datoviz_vklite
+    datoviz_volk
+)
+
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(dvz_live_canvas PRIVATE ${DVZ_THREADING_TARGET})
+endif()
+
+if(DVZ_WITH_MIMALLOC)
+    target_link_libraries(dvz_live_canvas PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+endif()
+
+target_include_directories(dvz_live_canvas
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/src/canvas
+    ${PROJECT_SOURCE_DIR}/external/volk
+)
+
+if(_dvz_compile_definitions)
+    target_compile_definitions(dvz_live_canvas PRIVATE ${_dvz_compile_definitions})
+endif()
+
+target_compile_definitions(dvz_live_canvas PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
+
 # Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
-foreach(_dvz_test_target testing dvztest dvz_public_header_probe)
+foreach(_dvz_test_target testing dvztest dvz_live_canvas dvz_public_header_probe)
     if(TARGET ${_dvz_test_target})
         set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_test_target})
     endif()
@@ -157,6 +200,10 @@ endif()
 if(APPLE)
     # Let executables resolve bundled dylibs located next to them.
     set_target_properties(dvztest PROPERTIES
+        BUILD_RPATH "${_dvz_runtime_rpath}"
+        INSTALL_RPATH "${_dvz_runtime_rpath}"
+    )
+    set_target_properties(dvz_live_canvas PROPERTIES
         BUILD_RPATH "${_dvz_runtime_rpath}"
         INSTALL_RPATH "${_dvz_runtime_rpath}"
     )
@@ -265,7 +312,7 @@ if(NOT WIN32)
 endif()
 
 if(DVZ_SANITIZER_FLAGS)
-    foreach(_target testing dvztest dvz_public_header_probe)
+    foreach(_target testing dvztest dvz_live_canvas dvz_public_header_probe)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE
                 $<$<AND:$<CONFIG:Debug>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:${DVZ_SANITIZER_FLAGS}>

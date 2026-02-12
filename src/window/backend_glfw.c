@@ -46,13 +46,32 @@ static DvzWindow* _glfw_window(GLFWwindow* handle)
 
 
 
+/**
+ * Log the latest GLFW error message when available.
+ */
+static void _glfw_log_error(const char* context)
+{
+    const char* message = NULL;
+    int code = glfwGetError(&message);
+    if (message != NULL)
+    {
+        log_error("%s (GLFW %d: %s)", context, code, message);
+    }
+    else
+    {
+        log_error("%s", context);
+    }
+}
+
+
+
 static bool _glfw_init(void)
 {
     if (_glfw_state.initialized)
         return true;
 #if defined(__APPLE__)
 #ifdef GLFW_COCOA_MENUBAR
-    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_FALSE);
+    glfwInitHint(GLFW_COCOA_MENUBAR, GLFW_TRUE);
 #endif
 #ifdef GLFW_COCOA_CHDIR_RESOURCES
     glfwInitHint(GLFW_COCOA_CHDIR_RESOURCES, GLFW_FALSE);
@@ -60,7 +79,7 @@ static bool _glfw_init(void)
 #endif
     if (!glfwInit())
     {
-        log_error("glfwInit() failed");
+        _glfw_log_error("glfwInit() failed");
         return false;
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -216,7 +235,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
         (int)config->width, (int)config->height, config->title ? config->title : "", NULL, NULL);
     if (handle == NULL)
     {
-        log_error("failed to create GLFW window");
+        _glfw_log_error("failed to create GLFW window");
         return false;
     }
     glfwSetWindowUserPointer(handle, window);
