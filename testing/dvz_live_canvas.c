@@ -54,6 +54,8 @@
 #define DVZ_CANVAS_DEFAULT_BG_B 0.16f
 #define DVZ_CANVAS_DEFAULT_BG_A 1.00f
 #define DVZ_CANVAS_DEFAULT_FPS  60
+#define DVZ_CANVAS_DEFAULT_WIDTH 1024
+#define DVZ_CANVAS_DEFAULT_HEIGHT 640
 
 
 
@@ -111,8 +113,8 @@ typedef struct DvzCanvasApp
 static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
 {
     ANN(options);
-    options->width = DVZ_WINDOW_DEFAULT_WIDTH;
-    options->height = DVZ_WINDOW_DEFAULT_HEIGHT;
+    options->width = DVZ_CANVAS_DEFAULT_WIDTH;
+    options->height = DVZ_CANVAS_DEFAULT_HEIGHT;
     options->bg[0] = DVZ_CANVAS_DEFAULT_BG_R;
     options->bg[1] = DVZ_CANVAS_DEFAULT_BG_G;
     options->bg[2] = DVZ_CANVAS_DEFAULT_BG_B;

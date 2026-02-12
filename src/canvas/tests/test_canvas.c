@@ -108,7 +108,7 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
     DvzRendering rendering = {0};
     dvz_cmd_rendering_default(
         &cmds, image_view, frame->extent.width, frame->extent.height,
-        (VkClearValue){.color.float32 = {1, 0, 0, 1}}, &rendering);
+        (VkClearValue){.color.float32 = {0.08f, 0.12f, 0.16f, 1.00f}}, &rendering);
     dvz_cmd_rendering_begin(&cmds, &rendering);
     dvz_cmd_rendering_end(&cmds);
 }
