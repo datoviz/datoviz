@@ -28,4 +28,12 @@ int test_stream_attach_video(TstSuite* suite, TstItem* item);
 
 
 
+int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item);
+
+
+
+int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item);
+
+
+
 int test_stream(TstSuite* suite);

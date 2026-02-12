@@ -272,6 +272,15 @@ int dvz_stream_start(DvzStream* stream, const DvzStreamFrame* frame)
             log_error(
                 "frame sink '%s' failed to start",
                 sink->backend->name ? sink->backend->name : "?");
+            for (size_t j = 0; j < i; ++j)
+            {
+                DvzStreamSink* prev = &stream->sinks[j];
+                if (prev->started && prev->backend && prev->backend->stop)
+                {
+                    prev->backend->stop(prev);
+                }
+                prev->started = false;
+            }
             return -1;
         }
         sink->started = true;
@@ -300,7 +309,7 @@ int dvz_stream_submit(DvzStream* stream, uint64_t wait_value)
             continue;
         }
         int sink_rc = sink->backend->submit(sink, wait_value);
-        if (sink_rc != 0)
+        if (sink_rc != 0 && rc == 0)
         {
             rc = sink_rc;
         }
