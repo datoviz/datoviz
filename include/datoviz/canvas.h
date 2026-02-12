@@ -165,6 +165,7 @@ DVZ_EXPORT DvzInputRouter* dvz_canvas_input(DvzCanvas* canvas);
  * @param canvas canvas owning the stream
  * @param enable true to enable, false to detach an existing sink
  * @param cfg optional configuration passed to the sink (NULL uses defaults)
+ * @note toggling this option rebuilds the internal stream so sinks restart on the next frame
  * @returns 0 on success or a negative sink error
  */
 DVZ_EXPORT int
