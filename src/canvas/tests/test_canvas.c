@@ -1054,13 +1054,14 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
     ANN(suite);
     (void)item;
 
+    const char* skip_reason = NULL;
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
     if (skipped)
     {
-        canvas_glfw_fixture_destroy(&fixture);
-        return 0;
+        skip_reason = "GLFW fixture unavailable";
+        goto cleanup;
     }
 
     DvzCanvas* canvas = fixture.canvas;
@@ -1070,9 +1071,8 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
         !canvas->supports_external_memory || !canvas->supports_external_semaphore ||
         dvz_canvas_timeline_handle_type() == 0)
     {
-        log_warn("canvas video sink integration skipped (external memory/semaphore unsupported)");
-        canvas_glfw_fixture_destroy(&fixture);
-        return 0;
+        skip_reason = "external memory/semaphore unsupported";
+        goto cleanup;
     }
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
@@ -1086,9 +1086,8 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
     sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_video_sink_test.h26x";
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
-        log_warn("canvas video sink integration skipped (sink could not be enabled)");
-        canvas_glfw_fixture_destroy(&fixture);
-        return 0;
+        skip_reason = "sink could not be enabled";
+        goto cleanup;
     }
 
     CanvasGlfwClearContext clear_ctx = {
@@ -1108,9 +1107,8 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
         }
         if (frame_rc != DVZ_CANVAS_FRAME_READY)
         {
-            log_warn("canvas video sink integration skipped (video backend unavailable)");
-            canvas_glfw_fixture_destroy(&fixture);
-            return 0;
+            skip_reason = "video backend unavailable";
+            break;
         }
 
         DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
@@ -1122,8 +1120,20 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
         break;
     }
 
-    AT(submitted);
+    if (!submitted && skip_reason == NULL)
+    {
+        skip_reason = "submit path not reached within frame budget";
+    }
 
+cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas video sink integration skipped (%s)", skip_reason);
+    }
+    else
+    {
+        AT(submitted);
+    }
     canvas_glfw_fixture_destroy(&fixture);
     return 0;
 }

@@ -19,16 +19,18 @@ Legend:
 3. `[ ]` not started
 
 Current status:
-1. Current milestone: `M3 - Synchronization and video integration hardening`
-2. Current task: `PRES-090 - Cleanup dead code and boundary violations`
+1. Current milestone: `M5 - Final validation gate`
+2. Current task: `PRES-100 - Final validation gate`
 3. Last completed task:
-   `PRES-070 - Finalize queue/semaphore/fence ownership rules`
+   `PRES-100 - Final validation gate`
 4. Last updated: `2026-02-12`
 5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
    hardening/tests landed for fail-fast slot init, GLFW present recovery, handle refresh order,
    queue-submit error propagation, startup-time timeline-handle wiring for video sinks, and
    deterministic wait-handle fallback on export failure with instance-scoped test controls; recreate
-   update-path fallback coverage landed in canvas tests.
+   update-path fallback coverage landed in canvas tests. M5 validation now passes with
+   `just build`, `direnv exec . just test canvas`, `direnv exec . just test vklite`, and targeted
+   video checks (`test_video_offline_headless_encode`, `test_video_kvazaar`).
 
 Task board status:
 1. `[x] PRES-000` Baseline verification of current raw Vulkan call sites and handle flow.
@@ -44,21 +46,16 @@ Task board status:
 10. `[x] PRES-055` Implement deterministic handle-refresh and sink-restart policy.
 11. `[x] PRES-060` Harden resize/out-of-date/zero-extent state machine.
 12. `[x] PRES-070` Finalize queue/semaphore/fence ownership rules.
-13. `[~] PRES-075` Finalize video synchronization and sink ordering contract.
-14. `[~] PRES-085` Add capture-mode validation tests (live + offline/headless).
-15. `[~] PRES-090` Cleanup dead code and boundary violations.
-16. `[ ] PRES-100` Final validation gate.
+13. `[x] PRES-075` Finalize video synchronization and sink ordering contract.
+14. `[x] PRES-085` Add capture-mode validation tests (live + offline/headless).
+15. `[x] PRES-090` Cleanup dead code and boundary violations.
+16. `[x] PRES-100` Final validation gate.
 
 Immediate next actions:
-1. `PRES-075`:
-   1. [x] Validate wait-handle export fallback behavior on recreate/update paths in addition to first
-      start.
-   2. Keep the real video sink startup/submit integration test enabled and deterministic across
-      environments where a backend is available (skip when unavailable).
-2. `PRES-090`:
-   1. Continue reducing `src/canvas/swapchain_sink.c` by extracting recreate/cleanup helpers while
-      preserving current behavior.
-   2. Keep canvas/vklite regression filters green after each extraction step.
+1. `Presentation-stack plan complete for this phase`:
+   1. [x] M3 synchronization contract hardening complete (`PRES-075`).
+   2. [x] M4 capture-mode validation complete (`PRES-085`).
+   3. [x] M5 cleanup/final validation complete (`PRES-090`, `PRES-100`).
 
 
 ## Ground rules
@@ -98,14 +95,15 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
    9. recreate/update-path wait-handle export fallback
       (`test_canvas_video_wait_handle_export_fallback_after_recreate`)
    10. device-lost fatal transition (`test_canvas_device_lost_fatal_transition`)
-6. Video tests now include an explicit offline/headless capture-mode validation entrypoint
-   (`test_video_offline_headless_encode`) wired to the CPU fallback encoder flow.
+6. Video tests now include an explicit backend-neutral offline/headless capture-mode validation
+   entrypoint (`test_video_offline_headless_encode`) plus backend-specific tests (`test_video_kvazaar`,
+   `test_video_nvenc`).
 7. Test runner now registers `video` tests when either CUDA or kvazaar backends are enabled.
-8. Current environment status: offline/headless entrypoint executes quickly and passes with an
-   explicit skip when kvazaar Vulkan setup is unavailable.
-6. `vklite` presentation tests include resolved recreate-state coverage
+8. Current environment status: offline/headless entrypoint executes quickly and backend-specific
+   tests pass or skip explicitly by capability.
+9. `vklite` presentation tests include resolved recreate-state coverage
    (`test_vklite_swapchain_recreate_resolved_state`).
-7. Frame pool release closes lingering exported wait semaphore FDs on Unix.
+10. Frame pool release closes lingering exported wait semaphore FDs on Unix.
 
 ### PRES-000 baseline verification (code-audited)
 
@@ -137,17 +135,21 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
 5. `PRES-070` completed: queue/semaphore/fence ownership is now enforced with explicit submit-failure
    handling (`vkQueueSubmit2` result propagation into canvas runtime transitions, including
    `DEVICE_LOST` fatal handling).
-6. `PRES-075` is in progress: timeline wait-semaphore handle export is now prepared before stream
+6. `PRES-075` completed: timeline wait-semaphore handle export is prepared before stream
    start/update (instead of post-present), startup/recreate ordering comments are in place, and
    first-start + forced-export-failure coverage now includes both probe-based and real video sink
-   startup/submit integration tests; recreate/update fallback closure is pending.
-7. `PRES-090` is in progress: dead/unused swapchain sink state was removed, slot setup and
+   startup/submit integration tests, including recreate/update fallback closure.
+7. `PRES-085` completed: capture-mode validation is split into backend-neutral offline/headless
+   contract coverage and backend-specific encoder paths, with explicit capability-based skip reasons.
+8. `PRES-090` completed: dead/unused swapchain sink state was removed, slot setup and
    submit/present/acquire status handling were extracted into dedicated helpers, wrapper init
    failure paths now tear down partial state, recreate preflight/config/status flow was split into
    dedicated helpers, cleanup internals now use focused slot-state/runtime reset helpers, acquire
    and submit dispatch now use dedicated helper paths, acquire slot selection/status mapping and
    present dispatch/preflight are split into focused helpers, and test controls are now
    instance-scoped.
+9. `PRES-100` completed: final validation gate is green for build, canvas, vklite, and targeted
+   video tests in the current environment.
 
 
 ## Target architecture (for this phase)
