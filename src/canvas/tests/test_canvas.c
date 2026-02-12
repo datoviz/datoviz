@@ -418,8 +418,8 @@ static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
         return;
     }
 
-    dvz_canvas_swapchain_test_fail_slot(-1);
-    dvz_canvas_test_force_wait_semaphore_export_failure(false);
+    dvz_canvas_swapchain_test_fail_slot(fixture->canvas, -1);
+    dvz_canvas_test_force_wait_semaphore_export_failure(fixture->canvas, false);
     if (fixture->canvas != NULL)
     {
         dvz_canvas_set_draw_callback(fixture->canvas, NULL, NULL);
@@ -545,12 +545,12 @@ int test_canvas_swapchain_failfast_slot_init(TstSuite* suite, TstItem* item)
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
-    dvz_canvas_swapchain_test_fail_slot(0);
+    dvz_canvas_swapchain_test_fail_slot(canvas, 0);
     dvz_window_host_poll(fixture.host);
     int frame_rc = dvz_canvas_frame(canvas);
     AT(frame_rc < 0);
 
-    dvz_canvas_swapchain_test_fail_slot(-1);
+    dvz_canvas_swapchain_test_fail_slot(canvas, -1);
     bool resumed = false;
     for (uint32_t i = 0; i < 12; i++)
     {
@@ -909,7 +909,7 @@ int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item
     AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
 
     canvas->video_sink_enabled = true;
-    dvz_canvas_test_force_wait_semaphore_export_failure(true);
+    dvz_canvas_test_force_wait_semaphore_export_failure(canvas, true);
     bool frame_ready = false;
     for (uint32_t i = 0; i < 16; i++)
     {
@@ -931,7 +931,7 @@ int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item
     AT(frame != NULL);
     AT(frame->wait_semaphore_fd < 0);
     AT(dvz_canvas_submit(canvas) == 0);
-    dvz_canvas_test_force_wait_semaphore_export_failure(false);
+    dvz_canvas_test_force_wait_semaphore_export_failure(canvas, false);
     canvas->video_sink_enabled = false;
 
     canvas_glfw_fixture_destroy(&fixture);
@@ -1076,7 +1076,7 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
     }
     AT(ready);
 
-    dvz_canvas_swapchain_test_force_present_status(DVZ_PRESENT_STATUS_DEVICE_LOST);
+    dvz_canvas_swapchain_test_force_present_status(canvas, DVZ_PRESENT_STATUS_DEVICE_LOST);
     AT(dvz_canvas_submit(canvas) < 0);
     AT(
         dvz_canvas_swapchain_runtime_state(canvas) ==
@@ -1091,9 +1091,9 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
         dvz_canvas_swapchain_runtime_state(canvas) ==
         DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
 
-    dvz_canvas_swapchain_test_force_recreate_status(-1);
-    dvz_canvas_swapchain_test_force_acquire_status(-1);
-    dvz_canvas_swapchain_test_force_present_status(-1);
+    dvz_canvas_swapchain_test_force_recreate_status(canvas, -1);
+    dvz_canvas_swapchain_test_force_acquire_status(canvas, -1);
+    dvz_canvas_swapchain_test_force_present_status(canvas, -1);
 
     canvas_glfw_fixture_destroy(&fixture);
     return 0;

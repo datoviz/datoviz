@@ -104,6 +104,7 @@ struct DvzCanvas
     DvzSemaphore timeline_semaphore;
     uint64_t timeline_value;
     bool timeline_ready;
+    bool test_force_wait_semaphore_export_failure;
     DvzCanvasSwapchain* swapchain;
 };
 
@@ -173,16 +174,16 @@ bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas);
 
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);
 
-void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index);
+void dvz_canvas_swapchain_test_fail_slot(DvzCanvas* canvas, int32_t slot_index);
 
-void dvz_canvas_swapchain_test_force_recreate_status(int32_t status);
+void dvz_canvas_swapchain_test_force_recreate_status(DvzCanvas* canvas, int32_t status);
 
-void dvz_canvas_swapchain_test_force_acquire_status(int32_t status);
+void dvz_canvas_swapchain_test_force_acquire_status(DvzCanvas* canvas, int32_t status);
 
-void dvz_canvas_swapchain_test_force_present_status(int32_t status);
+void dvz_canvas_swapchain_test_force_present_status(DvzCanvas* canvas, int32_t status);
 
 DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas);
 
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);
 
-void dvz_canvas_test_force_wait_semaphore_export_failure(bool enabled);
+void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool enabled);

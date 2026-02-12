@@ -411,6 +411,7 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * Never call `malloc`, `calloc`, or `free` directly; rely on the allocation/deallocation helpers declared in `_alloc.h` and `_compat.h` (prefer `dvz_calloc` over `dvz_malloc` when zeroed memory suffices, alongside `dvz_free`) so every allocation flows through the datoviz allocator. All structs should be zero-initialized before use, reinforcing the `dvz_calloc` preference (or `dvz_memset()` after allocation when needed).
 * Favor `dvz_fprintf()` / `dvz_vfprintf()` over `fprintf()` / `vfprintf()` (from `src/common/_compat.h`) to keep logging and error reporting within the safe compatibility layer.
 * Prefer C-style function signatures throughout the codebase, including C++ translation units (`*.cpp`): avoid C++ standard library types (`std::vector`, `std::string`, references, templates) in function signatures and favor plain C arguments (pointers, counts, POD structs) instead.
+* Avoid file-scope mutable state. Keep runtime and test-control state inside owning objects (`DvzCanvas`, `DvzCanvasSwapchain`, etc.) so behavior stays instance-scoped and test-safe.
 
 ### 🧱 **C File Organization**
 
@@ -492,6 +493,11 @@ When generating or editing code:
 
    * Do not modify files under `external/` unless the task explicitly asks for changes there.
    * Prefer fixing Datoviz-owned code (`src/`, `include/`, `testing/`, build wiring) instead of patching vendored dependencies.
+
+10. **Test hooks and fault injection must be instance-scoped.**
+
+   * Avoid global toggles for tests/fault injection; wire controls through the object under test.
+   * Reset test-control flags in fixture lifecycle helpers to avoid cross-test leakage.
 
 ---
 

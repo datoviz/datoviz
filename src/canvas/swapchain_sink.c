@@ -99,6 +99,10 @@ struct DvzCanvasSwapchain
     uint64_t export_serial;
     VkFormat frame_format;
     DvzCanvasPresentRuntimeState runtime_state;
+    int32_t test_fail_slot_index;
+    int32_t test_force_recreate_status;
+    int32_t test_force_acquire_status;
+    int32_t test_force_present_status;
 };
 
 
@@ -107,13 +111,6 @@ struct DvzCanvasSwapchainState
 {
     DvzCanvas* canvas;
 };
-
-
-
-static int32_t canvas_test_fail_slot_index = -1;
-static int32_t canvas_test_force_recreate_status = -1;
-static int32_t canvas_test_force_acquire_status = -1;
-static int32_t canvas_test_force_present_status = -1;
 
 
 
@@ -538,7 +535,9 @@ static bool canvas_slot_init(
     slot->commands_recording = false;
     slot->memory_fd = -1;
 
-    if (canvas_test_fail_slot_index >= 0 && (int32_t)slot_index == canvas_test_fail_slot_index)
+    if (
+        swapchain->test_fail_slot_index >= 0 &&
+        (int32_t)slot_index == swapchain->test_fail_slot_index)
     {
         log_warn(
             "forcing canvas slot initialization failure at slot %u for testing", slot_index);
@@ -681,7 +680,7 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
     VkFormat frame_format = canvas_frame_format(canvas);
     uvec2 size = {extent.width, extent.height};
     DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
-    if (!canvas_test_consume_forced_status(&canvas_test_force_recreate_status, &status))
+    if (!canvas_test_consume_forced_status(&swapchain->test_force_recreate_status, &status))
     {
         status = dvz_swapchain_recreate(&swapchain->swapchain_wrapper, size);
     }
@@ -995,6 +994,10 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->frame_index = 0;
     canvas->swapchain->frame_format = canvas_frame_format(canvas);
     canvas->swapchain->runtime_state = DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
+    canvas->swapchain->test_fail_slot_index = -1;
+    canvas->swapchain->test_force_recreate_status = -1;
+    canvas->swapchain->test_force_acquire_status = -1;
+    canvas->swapchain->test_force_present_status = -1;
     DvzQueue* queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
     ANN(queue_ref);
     canvas->swapchain->queue = dvz_queue_handle(queue_ref);
@@ -1096,11 +1099,16 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas)
 /**
  * Configure a test-only slot index that forces swapchain slot initialization failure.
  *
+ * @param canvas canvas whose swapchain test controls are updated
  * @param slot_index slot index to fail, or -1 to disable forced failure
  */
-void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index)
+void dvz_canvas_swapchain_test_fail_slot(DvzCanvas* canvas, int32_t slot_index)
 {
-    canvas_test_fail_slot_index = slot_index;
+    if (!canvas || !canvas->swapchain)
+    {
+        return;
+    }
+    canvas->swapchain->test_fail_slot_index = slot_index;
 }
 
 
@@ -1108,11 +1116,16 @@ void dvz_canvas_swapchain_test_fail_slot(int32_t slot_index)
 /**
  * Force the next swapchain recreate call to return a specific present status.
  *
+ * @param canvas canvas whose swapchain test controls are updated
  * @param status Present status to inject once, or -1 to disable
  */
-void dvz_canvas_swapchain_test_force_recreate_status(int32_t status)
+void dvz_canvas_swapchain_test_force_recreate_status(DvzCanvas* canvas, int32_t status)
 {
-    canvas_test_force_recreate_status = status;
+    if (!canvas || !canvas->swapchain)
+    {
+        return;
+    }
+    canvas->swapchain->test_force_recreate_status = status;
 }
 
 
@@ -1120,11 +1133,16 @@ void dvz_canvas_swapchain_test_force_recreate_status(int32_t status)
 /**
  * Force the next swapchain acquire call to return a specific present status.
  *
+ * @param canvas canvas whose swapchain test controls are updated
  * @param status Present status to inject once, or -1 to disable
  */
-void dvz_canvas_swapchain_test_force_acquire_status(int32_t status)
+void dvz_canvas_swapchain_test_force_acquire_status(DvzCanvas* canvas, int32_t status)
 {
-    canvas_test_force_acquire_status = status;
+    if (!canvas || !canvas->swapchain)
+    {
+        return;
+    }
+    canvas->swapchain->test_force_acquire_status = status;
 }
 
 
@@ -1132,11 +1150,16 @@ void dvz_canvas_swapchain_test_force_acquire_status(int32_t status)
 /**
  * Force the next swapchain present call to return a specific present status.
  *
+ * @param canvas canvas whose swapchain test controls are updated
  * @param status Present status to inject once, or -1 to disable
  */
-void dvz_canvas_swapchain_test_force_present_status(int32_t status)
+void dvz_canvas_swapchain_test_force_present_status(DvzCanvas* canvas, int32_t status)
 {
-    canvas_test_force_present_status = status;
+    if (!canvas || !canvas->swapchain)
+    {
+        return;
+    }
+    canvas->swapchain->test_force_present_status = status;
 }
 
 
@@ -1236,7 +1259,7 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 
     uint32_t image_index = 0;
     DvzPresentStatus acquire_status = DVZ_PRESENT_STATUS_OK;
-    if (!canvas_test_consume_forced_status(&canvas_test_force_acquire_status, &acquire_status))
+    if (!canvas_test_consume_forced_status(&state->test_force_acquire_status, &acquire_status))
     {
         acquire_status = dvz_swapchain_acquire(
             &state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
@@ -1378,7 +1401,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
 
     // log_trace("present");
     DvzPresentStatus present_status = DVZ_PRESENT_STATUS_OK;
-    if (!canvas_test_consume_forced_status(&canvas_test_force_present_status, &present_status))
+    if (!canvas_test_consume_forced_status(&state->test_force_present_status, &present_status))
     {
         present_status = dvz_swapchain_present(
             &state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);

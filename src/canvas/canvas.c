@@ -36,10 +36,6 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static bool canvas_test_force_wait_semaphore_export_failure = false;
-
-
-
 static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -230,7 +226,7 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
 #if OS_UNIX
     VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
     int fd = -1;
-    if (!canvas_test_force_wait_semaphore_export_failure)
+    if (!canvas->test_force_wait_semaphore_export_failure)
     {
         fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
     }
@@ -257,11 +253,16 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
 /**
  * Force timeline wait-semaphore FD export failure in tests.
  *
+ * @param canvas canvas whose test flag should be updated
  * @param enabled true to force export failure, false to restore normal behavior
  */
-void dvz_canvas_test_force_wait_semaphore_export_failure(bool enabled)
+void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool enabled)
 {
-    canvas_test_force_wait_semaphore_export_failure = enabled;
+    if (!canvas)
+    {
+        return;
+    }
+    canvas->test_force_wait_semaphore_export_failure = enabled;
 }
 
 
@@ -475,6 +476,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->video_sink_enabled = false;
     canvas->stream_started = false;
     canvas->swapchain_sink_attached = false;
+    canvas->test_force_wait_semaphore_export_failure = false;
 
     if (!canvas_device_check_extensions(canvas))
     {
