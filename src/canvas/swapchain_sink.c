@@ -928,33 +928,46 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->queue_family = dvz_queue_family(queue_ref);
     DvzGpu* gpu = canvas_gpu(canvas);
     ANN(gpu);
+    bool surface_initialized = false;
+    bool swapchain_initialized = false;
     if (!dvz_surface_init(&canvas->swapchain->surface_wrapper, gpu, canvas->swapchain->queue_family))
     {
         log_error("failed to initialize canvas surface wrapper");
-        canvas_runtime_transition(
-            canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface init failed");
-        return -1;
+        goto swapchain_init_failed;
     }
+    surface_initialized = true;
     if (!dvz_swapchain_init(
             &canvas->swapchain->swapchain_wrapper, gpu, &canvas->swapchain->surface_wrapper))
     {
         log_error("failed to initialize canvas swapchain wrapper");
-        canvas_runtime_transition(
-            canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "swapchain init failed");
-        return -1;
+        goto swapchain_init_failed;
     }
+    swapchain_initialized = true;
     if (!dvz_swapchain_device(
             &canvas->swapchain->swapchain_wrapper, dvz_device_handle(canvas->device)))
     {
         log_error("failed to bind device to canvas swapchain wrapper");
-        canvas_runtime_transition(
-            canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "swapchain device bind failed");
-        return -1;
+        goto swapchain_init_failed;
     }
     canvas->swapchain->wrappers_ready = true;
     canvas_runtime_transition(
         canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "initialized wrappers");
     return 0;
+
+swapchain_init_failed:
+    canvas_runtime_transition(
+        canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "wrapper init failed");
+    if (swapchain_initialized)
+    {
+        dvz_swapchain_destroy(&canvas->swapchain->swapchain_wrapper);
+    }
+    if (surface_initialized)
+    {
+        dvz_surface_destroy(&canvas->swapchain->surface_wrapper);
+    }
+    dvz_free(canvas->swapchain);
+    canvas->swapchain = NULL;
+    return -1;
 }
 
 

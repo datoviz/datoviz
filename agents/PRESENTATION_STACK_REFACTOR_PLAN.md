@@ -23,7 +23,7 @@ Current status:
 2. Current task: `PRES-090 - Cleanup dead code and boundary violations`
 3. Last completed task:
    `PRES-070 - Finalize queue/semaphore/fence ownership rules`
-4. Last updated: `2026-02-11`
+4. Last updated: `2026-02-12`
 5. Note: M2 migration is complete in code (canvas now uses `vklite` wrappers only); follow-up
    hardening/tests landed for fail-fast slot init, GLFW present recovery, handle refresh order,
    queue-submit error propagation, and startup-time timeline-handle wiring for video sinks.
@@ -58,7 +58,9 @@ Immediate next actions:
    1. Continue reducing `src/canvas/swapchain_sink.c` by extracting recreate/cleanup/acquire helpers
       while preserving current behavior.
    2. Remove any now-redundant includes/comments that still imply post-present handle export.
-   3. Keep canvas/vklite regression filters green after each extraction step.
+3. Keep canvas/vklite regression filters green after each extraction step.
+4. Harden wrapper init failure teardown so partial `surface`/`swapchain` setup cannot leak or leave
+   dangling canvas swapchain state.
 
 
 ## Ground rules
@@ -130,8 +132,8 @@ Snapshot date: `2026-02-11` (post-M2 verification + M3 partial hardening).
 6. `PRES-075` is in progress: timeline wait-semaphore handle export is now prepared before stream
    start/update (instead of post-present), improving startup-time video synchronization semantics;
    remaining contract/test closure is pending.
-7. `PRES-090` is in progress: dead/unused swapchain sink state was removed and slot setup has been
-   extracted into a dedicated helper to reduce monolithic complexity.
+7. `PRES-090` is in progress: dead/unused swapchain sink state was removed, slot setup has been
+   extracted into a dedicated helper, and wrapper init failure paths now tear down partial state.
 
 
 ## Target architecture (for this phase)
