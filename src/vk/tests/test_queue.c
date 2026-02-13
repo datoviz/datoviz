@@ -40,13 +40,14 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
 
     // Get a GPU.
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
     ANN(gpu);
 
@@ -71,7 +72,7 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
             log_info("  VK_QUEUE_VIDEO_ENCODE_BIT_KHR");
     }
 
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
     return 0;
 }
 

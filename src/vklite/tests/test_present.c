@@ -56,15 +56,12 @@ typedef struct DvzVklitePresentFixture
     DvzWindowHost* host;
     DvzWindow* window;
 
-    DvzInstance instance;
+    DvzInstance* instance;
     DvzGpu* gpu;
-    DvzDevice device;
+    DvzDevice* device;
 
     VkQueue queue;
     uint32_t queue_family;
-
-    bool instance_created;
-    bool device_created;
 } DvzVklitePresentFixture;
 
 
@@ -91,16 +88,16 @@ static void _present_fixture_destroy(DvzVklitePresentFixture* fixture)
         fixture->host = NULL;
     }
 
-    if (fixture->device_created)
+    if (fixture->device != NULL)
     {
-        dvz_device_destroy(&fixture->device);
-        fixture->device_created = false;
+        dvz_device_destroy(fixture->device);
+        fixture->device = NULL;
     }
 
-    if (fixture->instance_created)
+    if (fixture->instance != NULL)
     {
-        dvz_instance_destroy(&fixture->instance);
-        fixture->instance_created = false;
+        dvz_instance_destroy(fixture->instance);
+        fixture->instance = NULL;
     }
 }
 
@@ -114,60 +111,29 @@ static void _present_fixture_destroy(DvzVklitePresentFixture* fixture)
  * @param ext_count number of extension names
  * @return true when Vulkan instance creation succeeds
  */
-static bool _present_instance_create(
-    DvzInstance* instance, const char** extensions, uint32_t ext_count, uint32_t vk_version,
-    bool force_portability)
+static DvzInstance* _present_instance_create(
+    const char** extensions, uint32_t ext_count, uint32_t vk_version, bool force_portability)
 {
-    ANN(instance);
-
-    // Retries reuse the same fixture storage; force a clean instance state each attempt.
-    dvz_memset(instance, sizeof(*instance), 0, sizeof(*instance));
-    dvz_instance(instance, 0);
-    dvz_instance_request_extension(instance, VK_KHR_SURFACE_EXTENSION_NAME);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    cfg.vk_version = vk_version;
+    dvz_instance_config_request_extension(&cfg, VK_KHR_SURFACE_EXTENSION_NAME);
     for (uint32_t i = 0; i < ext_count; i++)
     {
-        dvz_instance_request_extension(instance, extensions[i]);
+        dvz_instance_config_request_extension(&cfg, extensions[i]);
     }
 
-    // On macOS + MoltenVK, explicit portability enumeration is required to list physical devices.
-    dvz_instance_probe_extensions(instance);
-    uint32_t supported_ext_count = 0;
-    char** supported_ext = dvz_instance_supported_extensions(instance, &supported_ext_count);
-    bool has_portability =
-        dvz_instance_has_extension(instance, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    log_warn(
-        "vklite present tests: Vulkan instance supports %u extensions, portability=%d",
-        supported_ext_count, has_portability ? 1 : 0);
-    if (!has_portability && supported_ext_count > 0)
-    {
-        for (uint32_t i = 0; i < supported_ext_count && i < 12; i++)
-        {
-            if (supported_ext[i] != NULL)
-            {
-                log_warn("vklite present tests: ext[%u]=%s", i, supported_ext[i]);
-            }
-        }
-    }
     if (force_portability)
     {
-        if (has_portability)
-        {
-            log_warn("vklite present tests: forcing portability enumeration extension");
-            dvz_instance_portability(instance);
-        }
-        else
-        {
-            log_warn(
-                "vklite present tests: portability extension unavailable, cannot force retry "
-                "path");
-        }
+        log_warn("vklite present tests: forcing portability enumeration extension request");
+        cfg.portability = true;
     }
-    else if (has_portability)
+    else
     {
-        dvz_instance_portability(instance);
+        cfg.portability = true;
     }
 
-    return dvz_instance_create(instance, vk_version) == 0;
+    return dvz_instance_create_from_config(&cfg);
 }
 
 
@@ -260,33 +226,32 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         return false;
 #endif
     }
-    if (!_present_instance_create(
-            &fixture->instance, extensions, ext_count, VK_API_VERSION_1_3, false))
+    fixture->instance =
+        _present_instance_create(extensions, ext_count, VK_API_VERSION_1_3, false);
+    if (fixture->instance == NULL)
     {
         log_warn("vklite present tests skipped because Vulkan instance creation failed");
         return false;
     }
-    fixture->instance_created = true;
 
     uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&fixture->instance, &gpu_count);
+    DvzGpu* gpus = dvz_instance_gpus(fixture->instance, &gpu_count);
     if (gpus == NULL || gpu_count == 0)
     {
         log_warn(
             "vklite present tests: no Vulkan GPU found on first attempt, retrying with explicit "
             "portability setup");
-        dvz_instance_destroy(&fixture->instance);
-        fixture->instance_created = false;
-        if (!_present_instance_create(
-                &fixture->instance, extensions, ext_count, VK_API_VERSION_1_3, true))
+        dvz_instance_destroy(fixture->instance);
+        fixture->instance =
+            _present_instance_create(extensions, ext_count, VK_API_VERSION_1_3, true);
+        if (fixture->instance == NULL)
         {
             log_warn(
                 "vklite present tests skipped because Vulkan instance recreation failed "
                 "during portability retry");
             return false;
         }
-        fixture->instance_created = true;
-        gpus = dvz_instance_gpus(&fixture->instance, &gpu_count);
+        gpus = dvz_instance_gpus(fixture->instance, &gpu_count);
         if (gpus == NULL || gpu_count == 0)
         {
             log_warn("vklite present tests skipped because no Vulkan GPU is available");
@@ -295,15 +260,21 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
     }
     fixture->gpu = &gpus[0];
 
-    dvz_gpu_device(fixture->gpu, &fixture->device);
-    dvz_queues(dvz_gpu_queue_caps(fixture->gpu), &fixture->device.queues);
-    dvz_device_request_canvas_extensions(&fixture->device);
-    if (dvz_device_create(&fixture->device) != 0)
+    DvzQueues queues = {0};
+    dvz_queues(dvz_gpu_queue_caps(fixture->gpu), &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(fixture->gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    dvz_device_config_enable_canvas_extensions(&dcfg, true);
+    fixture->device = dvz_device_create_from_config(&dcfg);
+    if (fixture->device == NULL)
     {
         log_warn("vklite present tests skipped because Vulkan device creation failed");
         return false;
     }
-    fixture->device_created = true;
 
     DvzWindowConfig cfg = dvz_window_default_config();
     cfg.title = "vklite-present-test";
@@ -317,7 +288,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         return false;
     }
 
-    DvzQueue* queue_ref = dvz_device_queue(&fixture->device, DVZ_QUEUE_MAIN);
+    DvzQueue* queue_ref = dvz_device_queue(fixture->device, DVZ_QUEUE_MAIN);
     if (queue_ref == NULL)
     {
         log_warn("vklite present tests skipped because main queue is unavailable");
@@ -461,7 +432,7 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
     DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, size);
     AT(status == DVZ_PRESENT_STATUS_ERROR);
 
-    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(&fixture.device)));
+    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
     status = dvz_swapchain_recreate(&swapchain, size);
 
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
@@ -631,7 +602,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
     AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
     AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
-    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(&fixture.device)));
+    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
 
     DvzSwapchainConfig cfg = {0};
     cfg.image_format = VK_FORMAT_B8G8R8A8_UNORM;

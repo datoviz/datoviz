@@ -34,15 +34,15 @@
  */
 static bool _vklite_runtime_available(void)
 {
-    DvzInstance instance = {0};
-    dvz_instance(&instance, 0);
-    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
-    if (rc != 0)
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    if (instance == NULL)
     {
-        log_warn("vklite tests skipped because Vulkan instance creation failed (%d)", rc);
+        log_warn("vklite tests skipped because Vulkan instance creation failed");
         return false;
     }
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
     return true;
 }
 

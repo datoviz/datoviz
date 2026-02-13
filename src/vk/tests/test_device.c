@@ -40,31 +40,34 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    AT(instance != NULL);
 
     // Obtain a GPU.
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
 
     // Query the queues.
     DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
 
     // Initialize a device.
-    DvzDevice device = {0};
-    dvz_gpu_device(gpu, &device);
-
-    // Find an adequate set of queues to request.
-    dvz_queues(qc, &device.queues);
-
-    // Create the device.
-    dvz_device_create(&device);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    AT(device != NULL);
 
     // Cleanup.
-    dvz_device_destroy(&device);
-    dvz_instance_destroy(&instance);
+    dvz_device_destroy(device);
+    dvz_instance_destroy(instance);
     return 0;
 }
 
@@ -76,53 +79,57 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    AT(instance != NULL);
 
     // Obtain a GPU.
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
 
     // Initialize a device.
-    DvzDevice device = {0};
-    dvz_gpu_device(gpu, &device);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
 
     // Device extensions.
     dvz_gpu_probe_extensions(gpu);
     uint32_t extension_count = 0;
     char** extensions = dvz_gpu_supported_extensions(gpu, &extension_count);
     dvz_strings_show(extension_count, extensions);
-    dvz_device_request_extension(&device, "VK_KHR_dynamic_rendering");
+    dvz_device_config_request_extension(&dcfg, "VK_KHR_dynamic_rendering");
 
     // Queue requests.
     DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
     AT(qc);
-    dvz_device_request_queues(&device, 0, 1);
-    dvz_device_request_queues(&device, 1, 1);
+    dvz_device_config_request_queue(&dcfg, 0, 1);
+    dvz_device_config_request_queue(&dcfg, 1, 1);
 
     // Features.
-    VkPhysicalDeviceFeatures* features10 = dvz_device_request_features10(&device);
-    VkPhysicalDeviceVulkan11Features* features11 = dvz_device_request_features11(&device);
-    VkPhysicalDeviceVulkan12Features* features12 = dvz_device_request_features12(&device);
-    VkPhysicalDeviceVulkan13Features* features13 = dvz_device_request_features13(&device);
-
-    features10->depthClamp = true;
-    features11->multiview = true;
-    features12->bufferDeviceAddress = true;
-    features13->dynamicRendering = true;
+    VkPhysicalDeviceFeatures features10 = {0};
+    VkPhysicalDeviceVulkan11Features features11 = {0};
+    VkPhysicalDeviceVulkan12Features features12 = {0};
+    VkPhysicalDeviceVulkan13Features features13 = {0};
+    features10.depthClamp = true;
+    features11.multiview = true;
+    features12.bufferDeviceAddress = true;
+    features13.dynamicRendering = true;
+    dvz_device_config_set_features10(&dcfg, &features10);
+    dvz_device_config_set_features11(&dcfg, &features11);
+    dvz_device_config_set_features12(&dcfg, &features12);
+    dvz_device_config_set_features13(&dcfg, &features13);
 
     // Create the device.
-    dvz_device_create(&device);
-    AT(device.vk_device != VK_NULL_HANDLE);
+    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    AT(device != NULL);
+    AT(device->vk_device != VK_NULL_HANDLE);
 
     // Get queue.
-    DvzQueue* queue = dvz_device_queue(&device, DVZ_QUEUE_MAIN);
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     AT(queue != NULL);
 
     // Cleanup.
-    dvz_device_destroy(&device);
-    dvz_instance_destroy(&instance);
+    dvz_device_destroy(device);
+    dvz_instance_destroy(instance);
     return 0;
 }

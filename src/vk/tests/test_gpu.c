@@ -38,12 +38,13 @@ int test_gpu_props(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
 
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
 
     dvz_gpu_probe_properties(gpu);
@@ -68,7 +69,7 @@ int test_gpu_props(TstSuite* suite, TstItem* tstitem)
     VkPhysicalDeviceVulkan13Properties* props13 = dvz_gpu_properties13(gpu);
     log_info("max buffer size: %s", dvz_pretty_size(props13->maxBufferSize));
 
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
     return 0;
 }
 
@@ -80,12 +81,13 @@ int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
 
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
 
     dvz_gpu_probe_memprops(gpu);
@@ -121,7 +123,7 @@ int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
 
     log_info("total VRAM: %s", dvz_pretty_size(dvz_gpu_vram(gpu)));
 
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
     return 0;
 }
 
@@ -133,12 +135,13 @@ int test_gpu_features(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
 
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
 
     dvz_gpu_probe_features(gpu);
@@ -155,7 +158,7 @@ int test_gpu_features(TstSuite* suite, TstItem* tstitem)
     VkPhysicalDeviceVulkan13Features* features13 = dvz_gpu_features13(gpu);
     log_info("dynamic rendering: %d", features13->dynamicRendering);
 
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
     return 0;
 }
 
@@ -167,12 +170,13 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Create an instance.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
 
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
 
     // Probe GPU extensions.
     DvzGpu* gpu = &gpus[0];
@@ -190,6 +194,6 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
 
     // NOTE: `extensions` is owned by `gpu` and released in dvz_instance_destroy().
 
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
     return 0;
 }

@@ -35,13 +35,15 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstance instance = {0};
-    dvz_instance(&instance, 0);
-    dvz_instance_probe_layers(&instance);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
+    dvz_instance_probe_layers(instance);
 
     // Call the function under test.
     uint32_t count = 0;
-    char** layers = dvz_instance_supported_layers(&instance, &count);
+    char** layers = dvz_instance_supported_layers(instance, &count);
     AT(count > 0);
     log_info("Found %u supported Vulkan layers:", count);
 
@@ -51,7 +53,7 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
     }
 
     // Free.
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
 
     return 0;
 }
@@ -63,13 +65,15 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstance instance = {0};
-    dvz_instance(&instance, 0);
-    dvz_instance_probe_extensions(&instance);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
+    dvz_instance_probe_extensions(instance);
 
     // Call the function under test.
     uint32_t count = 0;
-    char** extensions = dvz_instance_supported_extensions(&instance, &count);
+    char** extensions = dvz_instance_supported_extensions(instance, &count);
     AT(count > 0);
     log_info("Found %u supported Vulkan instance extensions:", count);
 
@@ -79,7 +83,7 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
     }
 
     // Free the array of strings.
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
 
     return 0;
 }
@@ -91,44 +95,20 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    // Initialize the instance structure.
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_info(&instance, "Instance test", 42);
-
-    // Probe capabilities before requesting optional extensions/layers.
-    dvz_instance_probe_layers(&instance);
-    dvz_instance_probe_extensions(&instance);
-
-    bool has_validation = dvz_instance_has_layer(&instance, "VK_LAYER_KHRONOS_validation");
-    bool has_debug_utils =
-        dvz_instance_has_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    bool has_portability =
-        dvz_instance_has_extension(&instance, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-
-    if (has_debug_utils)
-    {
-        dvz_instance_request_extension(&instance, VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-
-    AT(instance.req_extension_count == (has_debug_utils ? 1 : 0));
-    AT(instance.req_layer_count == 0);
-
-    // Create the instance.
-    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
-    AT(rc == 0);
-
-    uint32_t expected_layer_count = has_validation ? 1 : 0;
-    uint32_t expected_ext_count = (has_debug_utils ? 1 : 0) + (has_portability ? 1 : 0);
-    AT(instance.req_layer_count == expected_layer_count);
-    AT(instance.req_extension_count == expected_ext_count);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    cfg.app_name = "Instance test";
+    cfg.app_version = 42;
+    AT(dvz_instance_config_request_extension(&cfg, VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance != NULL);
 
     // Get Vulkan instance handle.
-    VkInstance vk_instance = dvz_instance_handle(&instance);
+    VkInstance vk_instance = dvz_instance_handle(instance);
     ANNVK(vk_instance);
 
     // Destroy the instance.
-    dvz_instance_destroy(&instance);
+    dvz_instance_destroy(instance);
 
     return 0;
 }
@@ -140,15 +120,12 @@ int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzInstance instance = {0};
-    dvz_instance(&instance, 0);
-    dvz_instance_info(&instance, "Invalid layer test", 1);
-    dvz_instance_request_layer(&instance, "VK_LAYER_DATOVIZ_DOES_NOT_EXIST");
-
-    int rc = dvz_instance_create(&instance, VK_API_VERSION_1_3);
-    AT(rc != 0);
-    AT(dvz_instance_handle(&instance) == VK_NULL_HANDLE);
-
-    dvz_instance_destroy(&instance);
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    cfg.app_name = "Invalid layer test";
+    cfg.app_version = 1;
+    AT(dvz_instance_config_request_layer(&cfg, "VK_LAYER_DATOVIZ_DOES_NOT_EXIST"));
+    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    AT(instance == NULL);
     return 0;
 }

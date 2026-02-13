@@ -86,13 +86,12 @@ typedef struct DvzCanvasAppOptions
 typedef struct DvzCanvasApp
 {
     DvzCanvasAppOptions options;
-    DvzInstance instance;
+    DvzInstance* instance;
     DvzWindowHost* host;
-    DvzDevice device;
+    DvzDevice* device;
     DvzWindow* window;
     DvzCanvas* canvas;
     DvzVideoSinkConfig video_cfg;
-    bool device_initialized;
     bool running;
     bool recording;
     bool toggle_record_requested;
@@ -389,7 +388,8 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
     if (options->backend == DVZ_BACKEND_OFFSCREEN &&
         options->render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT)
     {
-        dvz_fprintf(stderr, "invalid combination: --backend offscreen requires --mode offscreen\\n");
+        dvz_fprintf(
+            stderr, "invalid combination: --backend offscreen requires --mode offscreen\\n");
         return false;
     }
     return true;
@@ -443,7 +443,8 @@ static void _dvz_canvas_screenshot_path(DvzCanvasApp* app, char* out_path, size_
     ANN(app);
     ANN(out_path);
     ASSERT(out_len > 0);
-    const char* base = app->options.screenshot_base ? app->options.screenshot_base : "canvas_capture";
+    const char* base =
+        app->options.screenshot_base ? app->options.screenshot_base : "canvas_capture";
     int n = dvz_snprintf(out_path, out_len, "%s_%04u.png", base, app->screenshot_index++);
     if (n < 0 || (size_t)n >= out_len)
     {
@@ -690,11 +691,12 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 #endif
     }
 
-    dvz_instance(&app->instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
     if (app->options.backend == DVZ_BACKEND_GLFW)
     {
 #if DVZ_HAS_GLFW
-        dvz_instance_request_extension(&app->instance, VK_KHR_SURFACE_EXTENSION_NAME);
+        dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
         uint32_t ext_count = 0;
         const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
         if (extensions == NULL || ext_count == 0)
@@ -704,19 +706,20 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         }
         for (uint32_t i = 0; i < ext_count; ++i)
         {
-            dvz_instance_request_extension(&app->instance, extensions[i]);
+            dvz_instance_config_request_extension(&icfg, extensions[i]);
         }
 #endif
     }
 
-    if (dvz_instance_create(&app->instance, VK_API_VERSION_1_3) != 0)
+    app->instance = dvz_instance_create_from_config(&icfg);
+    if (app->instance == NULL)
     {
         dvz_fprintf(stderr, "failed to create Vulkan instance\\n");
         return false;
     }
 
     uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&app->instance, &gpu_count);
+    DvzGpu* gpus = dvz_instance_gpus(app->instance, &gpu_count);
     if (gpus == NULL || gpu_count == 0)
     {
         dvz_fprintf(stderr, "no Vulkan GPU available\\n");
@@ -727,21 +730,28 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
     ANN(caps);
 
-    dvz_gpu_device(gpu, &app->device);
-    app->device_initialized = true;
-    dvz_queues(caps, &app->device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&app->device);
-    fet12->timelineSemaphore = true;
-    VkPhysicalDeviceVulkan13Features* fet13 = dvz_device_request_features13(&app->device);
-    fet13->synchronization2 = true;
-    fet13->dynamicRendering = true;
+    DvzQueues queues = {0};
+    dvz_queues(caps, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    VkPhysicalDeviceVulkan12Features fet12 = {0};
+    fet12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &fet12);
+    VkPhysicalDeviceVulkan13Features fet13 = {0};
+    fet13.synchronization2 = true;
+    fet13.dynamicRendering = true;
+    dvz_device_config_set_features13(&dcfg, &fet13);
 
     if (app->options.backend == DVZ_BACKEND_GLFW)
     {
-        dvz_device_request_canvas_extensions(&app->device);
+        dvz_device_config_enable_canvas_extensions(&dcfg, true);
     }
-    if (dvz_device_create(&app->device) != 0)
+    app->device = dvz_device_create_from_config(&dcfg);
+    if (app->device == NULL)
     {
         dvz_fprintf(stderr, "failed to create Vulkan device\\n");
         return false;
@@ -791,7 +801,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 
     DvzCanvasConfig ccfg = dvz_canvas_default_config();
     ccfg.window = app->window;
-    ccfg.device = &app->device;
+    ccfg.device = app->device;
     ccfg.render_mode = app->options.render_mode;
     ccfg.present_mode = app->options.present_mode;
     ccfg.enable_video_sink = false;
@@ -845,12 +855,16 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
         dvz_window_host_destroy(app->host);
         app->host = NULL;
     }
-    if (app->device_initialized)
+    if (app->device != NULL)
     {
-        dvz_device_destroy(&app->device);
-        app->device_initialized = false;
+        dvz_device_destroy(app->device);
+        app->device = NULL;
     }
-    dvz_instance_destroy(&app->instance);
+    if (app->instance != NULL)
+    {
+        dvz_instance_destroy(app->instance);
+        app->instance = NULL;
+    }
 }
 
 
@@ -937,7 +951,10 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
         }
     }
 
-    dvz_device_wait(&app->device);
+    if (app->device != NULL)
+    {
+        dvz_device_wait(app->device);
+    }
     return 0;
 }
 
