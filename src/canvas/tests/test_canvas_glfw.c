@@ -842,7 +842,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstSuite* suite
 
 
 /**
- * Validate real video sink start+submit integration when backend and external handles are available.
+ * Validate real video sink start+submit integration when backend/handles are available.
  *
  * @param suite The owning test suite.
  * @param item  The test item (unused).
@@ -1523,7 +1523,9 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
             continue;
         }
         recovery_resumed = true;
-    } while ((interactive_loop && keep_running) || (!interactive_loop && submit_count < target_submits));
+    } while (
+        (interactive_loop && keep_running) ||
+        (!interactive_loop && submit_count < target_submits));
 
     AT(recovery_forced);
     AT(recovery_resumed);

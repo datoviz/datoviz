@@ -80,7 +80,8 @@ typedef struct CanvasLiveGapProbeState
  * @return 0 on success
  */
 static int
-canvas_refresh_probe_apply_frame(CanvasRefreshProbeState* state, const DvzStreamFrame* frame, bool is_update)
+canvas_refresh_probe_apply_frame(
+    CanvasRefreshProbeState* state, const DvzStreamFrame* frame, bool is_update)
 {
     ANN(state);
     ANN(frame);
@@ -294,6 +295,108 @@ static int canvas_refresh_probe_submit(DvzStreamSink* sink, uint64_t wait_value)
 
 
 
+/**
+ * Create a default Vulkan instance/device pair for offscreen canvas tests.
+ *
+ * @param[out] out_instance destination instance pointer
+ * @param[out] out_device destination device pointer
+ * @param[out] skip_reason optional skip reason when initialization fails
+ * @return true on success, false when setup is unavailable
+ */
+static bool canvas_test_create_instance_device(
+    DvzInstance** out_instance, DvzDevice** out_device, const char** skip_reason)
+{
+    ANN(out_instance);
+    ANN(out_device);
+    if (skip_reason != NULL)
+    {
+        *skip_reason = NULL;
+    }
+
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    if (instance == NULL)
+    {
+        if (skip_reason != NULL)
+        {
+            *skip_reason = "Vulkan instance creation failed";
+        }
+        return false;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        if (skip_reason != NULL)
+        {
+            *skip_reason = "no Vulkan GPU found";
+        }
+        dvz_instance_destroy(instance);
+        return false;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    DvzQueues queues = {0};
+    dvz_queues(caps, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+
+    VkPhysicalDeviceVulkan12Features fet12 = {0};
+    fet12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &fet12);
+
+    VkPhysicalDeviceVulkan13Features features = {0};
+    features.synchronization2 = true;
+    features.dynamicRendering = true;
+    dvz_device_config_set_features13(&dcfg, &features);
+
+    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    if (device == NULL)
+    {
+        if (skip_reason != NULL)
+        {
+            *skip_reason = "Vulkan device creation failed";
+        }
+        dvz_instance_destroy(instance);
+        return false;
+    }
+
+    *out_instance = instance;
+    *out_device = device;
+    return true;
+}
+
+
+
+/**
+ * Destroy an instance/device pair created for canvas tests.
+ *
+ * @param instance instance pointer
+ * @param device device pointer
+ */
+static void canvas_test_destroy_instance_device(DvzInstance* instance, DvzDevice* device)
+{
+    if (device != NULL)
+    {
+        dvz_device_destroy(device);
+    }
+    if (instance != NULL)
+    {
+        dvz_instance_destroy(instance);
+    }
+}
+
+
+
 static int canvas_refresh_probe_stop(DvzStreamSink* sink)
 {
     ANN(sink);
@@ -407,46 +510,15 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     ANN(suite);
     (void)item;
 
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        log_warn("canvas offscreen test skipped because Vulkan instance creation failed");
-        goto offscreen_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        log_warn("canvas offscreen test skipped because no Vulkan GPU was found");
-        goto offscreen_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        log_warn("canvas offscreen test skipped because Vulkan device creation failed");
         goto offscreen_cleanup;
     }
 
@@ -466,7 +538,7 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -528,6 +600,10 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     dvz_free(rgba);
 
 offscreen_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas offscreen test skipped (%s)", skip_reason);
+    }
     if (canvas != NULL)
     {
         dvz_canvas_destroy(canvas);
@@ -540,11 +616,7 @@ offscreen_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -559,47 +631,15 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstSuite* suite, TstIte
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
     bool enabled = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_video_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_video_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_video_cleanup;
     }
 
@@ -619,7 +659,7 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstSuite* suite, TstIte
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -691,11 +731,7 @@ offscreen_video_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -710,46 +746,14 @@ static int test_canvas_offscreen_state_on_stream_submit_failure(TstSuite* suite,
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_submit_fail_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_submit_fail_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_submit_fail_cleanup;
     }
 
@@ -769,7 +773,7 @@ static int test_canvas_offscreen_state_on_stream_submit_failure(TstSuite* suite,
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -820,11 +824,7 @@ offscreen_submit_fail_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -839,46 +839,14 @@ static int test_canvas_offscreen_state_device_lost(TstSuite* suite, TstItem* ite
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_device_lost_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_device_lost_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_device_lost_cleanup;
     }
 
@@ -898,7 +866,7 @@ static int test_canvas_offscreen_state_device_lost(TstSuite* suite, TstItem* ite
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -936,11 +904,7 @@ offscreen_device_lost_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -955,46 +919,14 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstSuite* suite, Ts
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_clean_handles_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_clean_handles_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_clean_handles_cleanup;
     }
 
@@ -1014,7 +946,7 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstSuite* suite, Ts
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -1059,11 +991,7 @@ offscreen_clean_handles_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -1078,46 +1006,14 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstSuite* su
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_live_wait_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_live_wait_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_live_wait_cleanup;
     }
 
@@ -1137,7 +1033,7 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstSuite* su
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -1198,11 +1094,7 @@ offscreen_live_wait_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -1217,46 +1109,14 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstSuite* sui
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_order_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_order_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_order_cleanup;
     }
 
@@ -1276,7 +1136,7 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstSuite* sui
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -1354,11 +1214,7 @@ offscreen_order_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 
@@ -1373,46 +1229,14 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstSuite* s
     (void)item;
 
     const char* skip_reason = NULL;
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        skip_reason = "Vulkan instance creation failed";
-        goto offscreen_video_wait_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        skip_reason = "no Vulkan GPU found";
-        goto offscreen_video_wait_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        skip_reason = "Vulkan device creation failed";
         goto offscreen_video_wait_cleanup;
     }
 
@@ -1432,7 +1256,7 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstSuite* s
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
@@ -1532,11 +1356,7 @@ offscreen_video_wait_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 /**
@@ -1547,46 +1367,15 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstSuite* suite, Ts
     ANN(suite);
     (void)item;
 
-    DvzInstance instance = {0};
-    DvzDevice device = {0};
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
 
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
-        log_warn("present/offscreen guard test skipped because Vulkan instance creation failed");
-        goto guard_cleanup;
-    }
-
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
-    {
-        log_warn("present/offscreen guard test skipped because no Vulkan GPU was found");
-        goto guard_cleanup;
-    }
-
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
-
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    if (dvz_device_create(&device) != 0)
-    {
-        log_warn("present/offscreen guard test skipped because Vulkan device creation failed");
         goto guard_cleanup;
     }
 
@@ -1606,12 +1395,16 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstSuite* suite, Ts
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
     canvas = dvz_canvas_create(&cfg);
     AT(canvas == NULL);
 
 guard_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("present/offscreen guard test skipped (%s)", skip_reason);
+    }
     if (canvas != NULL)
     {
         dvz_canvas_destroy(canvas);
@@ -1624,11 +1417,7 @@ guard_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
-    {
-        dvz_device_destroy(&device);
-    }
-    dvz_instance_destroy(&instance);
+    canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
 /**
