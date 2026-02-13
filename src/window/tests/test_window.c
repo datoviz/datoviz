@@ -264,6 +264,77 @@ int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify wrap API rejects invalid arguments and invalid handle tuples.
+ */
+int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* wrap_window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
+    ANN(wrap_window);
+    DvzWindow* offscreen_window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    ANN(offscreen_window);
+
+    DvzWindowExternalSurfaceInfo valid = {
+        .instance = (VkInstance)0x1,
+        .surface = (VkSurfaceKHR)0x2,
+        .extent = {.width = 320, .height = 240},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    DvzWindowExternalSurfaceInfo invalid_tuple = valid;
+    invalid_tuple.instance = VK_NULL_HANDLE;
+
+    AT(dvz_window_wrap_attach_surface(NULL, &valid) == -1);
+    AT(dvz_window_wrap_attach_surface(wrap_window, NULL) == -1);
+    AT(dvz_window_wrap_attach_surface(wrap_window, &invalid_tuple) == -1);
+    AT(dvz_window_wrap_attach_surface(wrap_window, &(DvzWindowExternalSurfaceInfo){0}) == -1);
+    AT(dvz_window_wrap_attach_surface(offscreen_window, &valid) == -1);
+
+    AT(dvz_window_wrap_update_surface(NULL, &valid) == -1);
+    AT(dvz_window_wrap_update_surface(wrap_window, NULL) == -1);
+    AT(dvz_window_wrap_update_surface(wrap_window, &invalid_tuple) == -1);
+    AT(dvz_window_wrap_update_surface(offscreen_window, &valid) == -1);
+
+    dvz_window_wrap_detach_surface(NULL);
+    dvz_window_wrap_detach_surface(offscreen_window);
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
+ * Verify extension query APIs reject invalid input and unavailable backends.
+ */
+int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    const char* name = VK_KHR_SURFACE_EXTENSION_NAME;
+    AT(dvz_window_wrap_set_required_extensions(NULL, 1, &name) == -1);
+    AT(dvz_window_wrap_set_required_extensions(host, 1, NULL) == -1);
+    AT(dvz_window_wrap_set_required_extensions(host, 0, NULL) == 0);
+    AT(dvz_window_host_required_extensions(NULL, DVZ_BACKEND_WRAP, 0, NULL) == -1);
+    AT(dvz_window_host_required_extensions(host, DVZ_BACKEND_QT, 0, NULL) == -1);
+    AT(dvz_window_host_required_extensions(host, DVZ_BACKEND_WRAP, 1, NULL) == -1);
+    AT(dvz_window_host_required_extension_count(NULL, DVZ_BACKEND_WRAP) == 0);
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
  * Register the window tests to the suite.
  */
 int test_window(TstSuite* suite)
@@ -278,5 +349,7 @@ int test_window(TstSuite* suite)
     TEST_SIMPLE(test_window_wrap_attach_detach);
     TEST_SIMPLE(test_window_required_extensions_headless);
     TEST_SIMPLE(test_window_required_extensions_wrap);
+    TEST_SIMPLE(test_window_wrap_invalid_args);
+    TEST_SIMPLE(test_window_required_extensions_invalid_args);
     return 0;
 }

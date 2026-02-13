@@ -40,6 +40,10 @@ int test_window_required_extensions_headless(TstSuite* suite, TstItem* item);
 
 int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item);
 
+int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item);
+
+int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item);
+
 
 
 int test_window(TstSuite* suite);

@@ -178,18 +178,34 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
         return 0;
     }
 
-    uint32_t ext_count = 0;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    if (extensions == NULL || ext_count == 0)
+    uint32_t ext_count = dvz_window_host_required_extension_count(fixture->host, DVZ_BACKEND_GLFW);
+    if (ext_count == 0)
     {
         *skipped = true;
         log_warn("canvas glfw fixture skipped because GLFW returned no Vulkan instance extensions");
+        return 0;
+    }
+    const char** extensions = dvz_calloc(ext_count, sizeof(char*));
+    if (extensions == NULL)
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because extension-list allocation failed");
+        return 0;
+    }
+    int written =
+        dvz_window_host_required_extensions(fixture->host, DVZ_BACKEND_GLFW, ext_count, extensions);
+    if (written != (int)ext_count)
+    {
+        dvz_free((void*)extensions);
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because required-extension query failed");
         return 0;
     }
     for (uint32_t i = 0; i < ext_count; i++)
     {
         dvz_instance_config_request_extension(&icfg, extensions[i]);
     }
+    dvz_free((void*)extensions);
 
     fixture->instance = dvz_instance_create(&icfg);
     if (fixture->instance == NULL)
@@ -1351,11 +1367,23 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         goto canvas_glfw_cleanup;
     }
 
-    uint32_t ext_count = 0;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    if (extensions == NULL || ext_count == 0)
+    uint32_t ext_count = dvz_window_host_required_extension_count(host, DVZ_BACKEND_GLFW);
+    if (ext_count == 0)
     {
         log_warn("canvas glfw test skipped because GLFW returned no Vulkan instance extensions");
+        goto canvas_glfw_cleanup;
+    }
+    const char** extensions = dvz_calloc(ext_count, sizeof(char*));
+    if (extensions == NULL)
+    {
+        log_warn("canvas glfw test skipped because extension-list allocation failed");
+        goto canvas_glfw_cleanup;
+    }
+    int written = dvz_window_host_required_extensions(host, DVZ_BACKEND_GLFW, ext_count, extensions);
+    if (written != (int)ext_count)
+    {
+        dvz_free((void*)extensions);
+        log_warn("canvas glfw test skipped because required-extension query failed");
         goto canvas_glfw_cleanup;
     }
 
@@ -1363,6 +1391,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     {
         dvz_instance_config_request_extension(&icfg, extensions[i]);
     }
+    dvz_free((void*)extensions);
 
     instance = dvz_instance_create(&icfg);
     if (instance == NULL)
