@@ -44,6 +44,10 @@ int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item);
 
 int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item);
 
+int test_window_wrap_replace_surface(TstSuite* suite, TstItem* item);
+
+int test_window_wrap_owned_surface_null_lifecycle(TstSuite* suite, TstItem* item);
+
 
 
 int test_window(TstSuite* suite);

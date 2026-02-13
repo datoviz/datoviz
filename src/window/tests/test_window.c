@@ -335,6 +335,99 @@ int test_window_required_extensions_invalid_args(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify wrap update can replace an existing external surface and apply new metadata.
+ */
+int test_window_wrap_replace_surface(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
+    ANN(window);
+
+    DvzWindowExternalSurfaceInfo first = {
+        .instance = (VkInstance)0x100,
+        .surface = (VkSurfaceKHR)0x200,
+        .extent = {.width = 640, .height = 480},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_attach_surface(window, &first) == 0);
+    const DvzWindowSurface* surface = dvz_window_surface(window);
+    ANN(surface);
+    AT(surface->instance == first.instance);
+    AT(surface->surface == first.surface);
+
+    DvzWindowExternalSurfaceInfo second = {
+        .instance = (VkInstance)0x300,
+        .surface = (VkSurfaceKHR)0x400,
+        .extent = {.width = 800, .height = 600},
+        .scale_x = 2.0f,
+        .scale_y = 2.0f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_update_surface(window, &second) == 0);
+    surface = dvz_window_surface(window);
+    ANN(surface);
+    AT(surface->instance == second.instance);
+    AT(surface->surface == second.surface);
+    AT(surface->extent.width == second.extent.width);
+    AT(surface->extent.height == second.extent.height);
+    AT(surface->scale_x == second.scale_x);
+    AT(surface->scale_y == second.scale_y);
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
+ * Verify owned-by-dataviz lifecycle is safe when the wrap surface transitions to null handles.
+ */
+int test_window_wrap_owned_surface_null_lifecycle(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
+    ANN(window);
+
+    DvzWindowExternalSurfaceInfo attached = {
+        .instance = (VkInstance)0x111,
+        .surface = (VkSurfaceKHR)0x222,
+        .extent = {.width = 320, .height = 240},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_attach_surface(window, &attached) == 0);
+
+    DvzWindowExternalSurfaceInfo owned_null = {
+        .instance = VK_NULL_HANDLE,
+        .surface = VK_NULL_HANDLE,
+        .extent = {.width = 320, .height = 240},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = true,
+    };
+    AT(dvz_window_wrap_update_surface(window, &owned_null) == 0);
+    const DvzWindowSurface* surface = dvz_window_surface(window);
+    ANN(surface);
+    AT(surface->instance == VK_NULL_HANDLE);
+    AT(surface->surface == VK_NULL_HANDLE);
+
+    dvz_window_destroy(window);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
  * Register the window tests to the suite.
  */
 int test_window(TstSuite* suite)
@@ -351,5 +444,7 @@ int test_window(TstSuite* suite)
     TEST_SIMPLE(test_window_required_extensions_wrap);
     TEST_SIMPLE(test_window_wrap_invalid_args);
     TEST_SIMPLE(test_window_required_extensions_invalid_args);
+    TEST_SIMPLE(test_window_wrap_replace_surface);
+    TEST_SIMPLE(test_window_wrap_owned_surface_null_lifecycle);
     return 0;
 }
