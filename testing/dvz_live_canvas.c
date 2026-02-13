@@ -69,6 +69,7 @@ typedef struct DvzCanvasAppOptions
     DvzCanvasRenderMode render_mode;
     uint32_t width;
     uint32_t height;
+    uint32_t max_frames;
     float bg[4];
     int fps;
     VkPresentModeKHR present_mode;
@@ -120,6 +121,7 @@ static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
     options->render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
     options->width = DVZ_CANVAS_DEFAULT_WIDTH;
     options->height = DVZ_CANVAS_DEFAULT_HEIGHT;
+    options->max_frames = 0;
     options->bg[0] = DVZ_CANVAS_DEFAULT_BG_R;
     options->bg[1] = DVZ_CANVAS_DEFAULT_BG_G;
     options->bg[2] = DVZ_CANVAS_DEFAULT_BG_B;
@@ -215,7 +217,7 @@ static void _dvz_canvas_usage(void)
     dvz_fprintf(
         stderr,
         "usage: dvz_live_canvas [--backend glfw|offscreen] [--width N] [--height N]\n"
-        "                  [--bg r,g,b,a] [--fps N]\n"
+        "                  [--mode present|offscreen] [--frames N] [--bg r,g,b,a] [--fps N]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
         "                  [--start-recording] [--screenshots base]\n"
@@ -236,6 +238,8 @@ static void _dvz_canvas_usage(void)
 static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* options)
 {
     ANN(options);
+    bool mode_explicit = false;
+    bool backend_explicit = false;
     for (int i = 1; i < argc; ++i)
     {
         const char* arg = argv[i];
@@ -266,15 +270,14 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         }
         else if (strcmp(arg, "--backend") == 0)
         {
+            backend_explicit = true;
             if (strcmp(value, "glfw") == 0)
             {
                 options->backend = DVZ_BACKEND_GLFW;
-                options->render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
             }
             else if (strcmp(value, "offscreen") == 0)
             {
                 options->backend = DVZ_BACKEND_OFFSCREEN;
-                options->render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
             }
             else
             {
@@ -282,9 +285,31 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
                 return false;
             }
         }
+        else if (strcmp(arg, "--mode") == 0)
+        {
+            mode_explicit = true;
+            if (strcmp(value, "present") == 0)
+            {
+                options->render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+            }
+            else if (strcmp(value, "offscreen") == 0)
+            {
+                options->render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+            }
+            else
+            {
+                dvz_fprintf(stderr, "invalid mode: %s\\n", value);
+                return false;
+            }
+        }
         else if (strcmp(arg, "--height") == 0)
         {
             if (!_dvz_canvas_parse_u32(value, &options->height))
+                return false;
+        }
+        else if (strcmp(arg, "--frames") == 0)
+        {
+            if (!_dvz_canvas_parse_u32(value, &options->max_frames))
                 return false;
         }
         else if (strcmp(arg, "--bg") == 0)
@@ -353,6 +378,19 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
             dvz_fprintf(stderr, "unknown argument: %s\\n", arg);
             return false;
         }
+    }
+
+    if (!mode_explicit && backend_explicit)
+    {
+        options->render_mode = options->backend == DVZ_BACKEND_OFFSCREEN
+                                   ? DVZ_CANVAS_RENDER_MODE_OFFSCREEN
+                                   : DVZ_CANVAS_RENDER_MODE_PRESENT;
+    }
+    if (options->backend == DVZ_BACKEND_OFFSCREEN &&
+        options->render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT)
+    {
+        dvz_fprintf(stderr, "invalid combination: --backend offscreen requires --mode offscreen\\n");
+        return false;
     }
     return true;
 }
@@ -424,11 +462,6 @@ static void _dvz_canvas_toggle_recording(DvzCanvasApp* app)
 {
     ANN(app);
     ANN(app->canvas);
-    if (dvz_canvas_render_mode(app->canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
-    {
-        dvz_fprintf(stderr, "recording is not supported yet in offscreen canvas mode\\n");
-        return;
-    }
 
     if (!app->recording)
     {
@@ -748,7 +781,9 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     }
 #endif
 
-    if (app->options.backend == DVZ_BACKEND_OFFSCREEN && app->options.duration_s <= 0.0)
+    if (
+        app->options.backend == DVZ_BACKEND_OFFSCREEN && app->options.duration_s <= 0.0 &&
+        app->options.max_frames == 0)
     {
         app->options.duration_s = 5.0;
         dvz_fprintf(stderr, "offscreen backend selected, defaulting duration to %.1fs\\n", 5.0);
@@ -833,6 +868,7 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
     ANN(app->canvas);
 
     time_t start_time = time(NULL);
+    uint64_t submitted_frames = 0;
 
     if (app->options.start_recording)
     {
@@ -882,6 +918,11 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
         if (dvz_canvas_submit(app->canvas) != 0)
         {
             dvz_fprintf(stderr, "canvas submit error\\n");
+            break;
+        }
+        submitted_frames++;
+        if (app->options.max_frames > 0 && submitted_frames >= app->options.max_frames)
+        {
             break;
         }
 

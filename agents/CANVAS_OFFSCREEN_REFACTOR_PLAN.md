@@ -20,12 +20,13 @@ Legend:
 3. `[ ]` not started
 
 Current status:
-1. Current milestone: `M1 - Mode plumbing and sink gating`
-2. Current task: `OFFS-070 - Harden synchronization and handle-refresh semantics across mode changes`
-3. Last completed task: `OFFS-060 - Implement deterministic frame lifecycle/state machine for offscreen mode`
+1. Current milestone: `M5 - Cleanup and validation gate`
+2. Current task: `OFFS-090 - Cleanup dead paths and boundary violations`
+3. Last completed task: `OFFS-085 - Add end-to-end distributed/live-image smoke validation hooks`
 4. Last updated: `2026-02-13`
 5. Note: OFFS-070 now covers wait-value monotonicity across live/video rebuilds and explicit offscreen
    start/update ordering.
+6. Note: OFFS-090 cleanup started by removing stale `dvz_live_canvas` offscreen-recording rejection.
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
@@ -36,17 +37,17 @@ Task board status:
 6. `[x] OFFS-040` Add transport-oriented live-image sink contract/API.
 7. `[x] OFFS-050` Wire CPU readback and video capture contracts to offscreen mode.
 8. `[x] OFFS-060` Implement deterministic frame lifecycle/state machine for offscreen mode.
-9. `[~] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
+9. `[x] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
 10. `[x] OFFS-080` Add canvas offscreen tests (headless + capability-gated).
-11. `[ ] OFFS-085` Add end-to-end distributed/live-image smoke validation hooks.
-12. `[ ] OFFS-090` Cleanup dead paths and boundary violations.
+11. `[x] OFFS-085` Add end-to-end distributed/live-image smoke validation hooks.
+12. `[~] OFFS-090` Cleanup dead paths and boundary violations.
 13. `[ ] OFFS-100` Final validation gate.
 
 Immediate next actions:
-1. `M3 lifecycle hardening`:
-   1. [x] formalize offscreen runtime state transitions (`READY`, `DRAW_PENDING`, `OUTPUT_PENDING`).
-   2. [~] align stream start/update/submit ordering between present and offscreen modes.
-   3. [x] add deterministic tests for wait-value monotonicity and recovery semantics in offscreen mode.
+1. `M5 cleanup + validation`:
+   1. [ ] remove dead present/offscreen coupling paths and tighten diagnostics.
+   2. [ ] run final validation matrix (`just build`, `just test canvas`, `just test stream`, `just test video`).
+   3. [ ] run targeted `dvz_live_canvas` smoke checks for both modes on capable hosts.
 
 
 ## Ground rules
@@ -71,7 +72,7 @@ Snapshot date: `2026-02-13`.
 1. `canvas` frame flow currently calls swapchain acquire then stream submit/present path.
 2. Swapchain sink is attached by default and treated as mandatory for stream setup.
 3. Headless/offscreen window backend exists in `window` but does not create platform surfaces.
-4. `dvz_live_canvas` is currently GLFW-only and does not expose backend/mode selection.
+4. `dvz_live_canvas` supports explicit backend and render-mode selection, plus frame-count smoke loops.
 5. Video capture supports external-handle and CPU-readback strategies but is integrated through
    current canvas stream lifecycle, which still assumes present-oriented frame acquisition.
 
@@ -295,6 +296,13 @@ Expose mode selection in tooling and validate headless operator workflows.
 ### Exit criteria
 1. Offscreen workflows are runnable without code changes.
 2. Developer/test automation can rely on stable headless path.
+
+Headless smoke runbook:
+1. Build: `just build`
+2. Offscreen smoke (fixed frame count): `direnv exec . just canvas-smoke-offscreen frames=8`
+3. Optional artifact smoke:
+   1. screenshot path: `direnv exec . just canvas --backend offscreen --mode offscreen --frames 8 --screenshots offscreen_smoke`
+   2. video path (capability-gated): `direnv exec . just canvas --backend offscreen --mode offscreen --frames 16 --record smoke.mp4 --start-recording --record-mode cpu`
 
 
 ## M5 - Cleanup and validation gate

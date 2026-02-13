@@ -1567,6 +1567,27 @@ canvas *args:
 #
 
 
+[linux]
+canvas-smoke-offscreen frames="8":
+    ./build/testing/dvz_live_canvas --backend offscreen --mode offscreen --frames {{frames}}
+#
+
+[macos]
+canvas-smoke-offscreen frames="8":
+    @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
+        VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" \
+            ./build/testing/dvz_live_canvas --backend offscreen --mode offscreen --frames {{frames}}; \
+    else \
+        ./build/testing/dvz_live_canvas --backend offscreen --mode offscreen --frames {{frames}}; \
+    fi
+#
+
+[windows]
+canvas-smoke-offscreen frames="8":
+    ./build/testing/dvz_live_canvas.exe --backend offscreen --mode offscreen --frames {{frames}}
+#
+
+
 # -------------------------------------------------------------------------------------------------
 # Info
 # -------------------------------------------------------------------------------------------------
