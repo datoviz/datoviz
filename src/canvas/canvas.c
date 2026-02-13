@@ -559,6 +559,24 @@ void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool
 
 
 
+/**
+ * Force an offscreen submit status in tests.
+ *
+ * @param canvas canvas whose submit hook should be updated
+ * @param status VkResult value encoded as int32_t, or -1 to disable forcing
+ */
+void dvz_canvas_test_force_offscreen_submit_status(DvzCanvas* canvas, int32_t status)
+{
+    if (!canvas)
+    {
+        return;
+    }
+    canvas->test_force_offscreen_submit_status = status;
+    canvas->test_force_offscreen_submit_status_set = true;
+}
+
+
+
 static void canvas_destroy_timeline(DvzCanvas* canvas)
 {
     if (!canvas || !canvas->timeline_ready)
@@ -904,6 +922,8 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->offscreen_ready = false;
     canvas->offscreen_runtime_state = DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED;
     canvas->test_force_wait_semaphore_export_failure = false;
+    canvas->test_force_offscreen_submit_status = -1;
+    canvas->test_force_offscreen_submit_status_set = false;
 
     if (!canvas_device_check_extensions(canvas))
     {
@@ -1131,6 +1151,7 @@ int dvz_canvas_submit(DvzCanvas* canvas)
     DvzClock clock = dvz_clock();
     dvz_clock_tick(&clock);
     uint64_t wait_value = canvas->timeline_value + 1;
+    bool offscreen_submit_signaled = false;
     if (canvas_is_offscreen_mode(canvas))
     {
         if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
@@ -1159,7 +1180,17 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         dvz_submit_signal(
             &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
             VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
-        int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, VK_NULL_HANDLE);
+        int32_t submit_rc = 0;
+        if (canvas->test_force_offscreen_submit_status_set)
+        {
+            submit_rc = canvas->test_force_offscreen_submit_status;
+            canvas->test_force_offscreen_submit_status_set = false;
+            canvas->test_force_offscreen_submit_status = -1;
+        }
+        else
+        {
+            submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, VK_NULL_HANDLE);
+        }
         if (submit_rc != VK_SUCCESS)
         {
             if (submit_rc == VK_ERROR_DEVICE_LOST)
@@ -1175,19 +1206,28 @@ int dvz_canvas_submit(DvzCanvas* canvas)
             log_error("offscreen canvas submit failed (%d)", submit_rc);
             return -1;
         }
+        offscreen_submit_signaled = true;
     }
     int result = dvz_canvas_stream_submit(canvas, wait_value);
-    if (result == 0)
+    if (canvas_is_offscreen_mode(canvas))
     {
-        canvas->timeline_value = wait_value;
-        if (canvas_is_offscreen_mode(canvas))
+        if (offscreen_submit_signaled)
+        {
+            canvas->timeline_value = wait_value;
+        }
+        if (result == 0)
         {
             canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, "submit done");
         }
+        else
+        {
+            canvas_offscreen_transition(
+                canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "stream submit failed");
+        }
     }
-    else if (canvas_is_offscreen_mode(canvas))
+    else if (result == 0)
     {
-        canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "stream submit failed");
+        canvas->timeline_value = wait_value;
     }
     double elapsed = dvz_clock_interval(&clock) * 1e6;
     dvz_canvas_timings_record(&canvas->timings, canvas->frame_id, elapsed);

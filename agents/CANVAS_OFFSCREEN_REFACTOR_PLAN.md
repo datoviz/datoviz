@@ -24,7 +24,7 @@ Current status:
 2. Current task: `OFFS-060 - Implement deterministic frame lifecycle/state machine for offscreen mode`
 3. Last completed task: `OFFS-050 - Wire CPU readback and video capture contracts to offscreen mode`
 4. Last updated: `2026-02-13`
-5. Note: offscreen runtime states (`READY`, `DRAW_PENDING`, `OUTPUT_PENDING`) are now wired in canvas.
+5. Note: offscreen runtime states are wired, including stream-failure and forced device-loss transitions.
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.

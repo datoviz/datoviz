@@ -122,6 +122,8 @@ struct DvzCanvas
     uint64_t timeline_value;
     bool timeline_ready;
     bool test_force_wait_semaphore_export_failure;
+    int32_t test_force_offscreen_submit_status;
+    bool test_force_offscreen_submit_status_set;
     VkImage offscreen_image;
     VkImageView offscreen_view;
     DvzAllocation offscreen_alloc;
@@ -230,3 +232,5 @@ DvzCanvasOffscreenRuntimeState dvz_canvas_offscreen_runtime_state(const DvzCanva
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);
 
 void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool enabled);
+
+void dvz_canvas_test_force_offscreen_submit_status(DvzCanvas* canvas, int32_t status);
