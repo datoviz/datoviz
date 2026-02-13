@@ -41,6 +41,35 @@ static void canvas_register_swapchain_sink(void)
 
 
 
+static void canvas_register_offscreen_sink(void)
+{
+    const DvzStreamSinkBackend* backend = dvz_canvas_offscreen_sink_backend();
+    if (backend)
+    {
+        dvz_stream_sink_registry_register(dvz_stream_sink_registry_default(), backend);
+    }
+    else
+    {
+        log_warn("offscreen sink backend unavailable");
+    }
+}
+
+
+
+static const DvzStreamSinkBackend* canvas_primary_sink_backend(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
+    {
+        canvas_register_offscreen_sink();
+        return dvz_canvas_offscreen_sink_backend();
+    }
+    canvas_register_swapchain_sink();
+    return dvz_canvas_swapchain_sink_backend();
+}
+
+
+
 /**
  * Build stream configuration from the current canvas surface metadata.
  *
@@ -104,6 +133,10 @@ static int canvas_capture_rgba_callback(
 static bool canvas_has_external_video_support(const DvzCanvas* canvas)
 {
     ANN(canvas);
+    if (canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
+    {
+        return false;
+    }
     return canvas->allocator.external != 0 && canvas->supports_external_semaphore;
 }
 
@@ -163,17 +196,16 @@ static int canvas_create_stream_with_sinks(
         return -1;
     }
 
-    canvas_register_swapchain_sink();
-    const DvzStreamSinkBackend* swapchain_backend = dvz_canvas_swapchain_sink_backend();
-    if (!swapchain_backend)
+    const DvzStreamSinkBackend* primary_backend = canvas_primary_sink_backend(canvas);
+    if (!primary_backend)
     {
-        log_error("swapchain sink backend unavailable");
+        log_error("canvas primary sink backend unavailable");
         dvz_stream_destroy(stream);
         return -1;
     }
-    if (dvz_stream_attach_sink(stream, swapchain_backend, canvas) != 0)
+    if (dvz_stream_attach_sink(stream, primary_backend, canvas) != 0)
     {
-        log_error("failed to attach swapchain sink to canvas stream");
+        log_error("failed to attach primary sink to canvas stream");
         dvz_stream_destroy(stream);
         return -1;
     }
@@ -241,7 +273,7 @@ canvas_rebuild_stream(
 
     canvas->stream = replacement;
     canvas->stream_started = false;
-    canvas->swapchain_sink_attached = true;
+    canvas->primary_sink_attached = true;
     canvas->video_sink_enabled = enable_video;
     canvas->video_capture_mode = enable_video ? capture_mode : DVZ_VIDEO_CAPTURE_AUTO;
 
@@ -268,21 +300,20 @@ int dvz_canvas_stream_prepare(DvzCanvas* canvas)
 {
     ANN(canvas);
     ANN(canvas->stream);
-    canvas_register_swapchain_sink();
-    if (!canvas->swapchain_sink_attached)
+    if (!canvas->primary_sink_attached)
     {
-        const DvzStreamSinkBackend* backend = dvz_canvas_swapchain_sink_backend();
+        const DvzStreamSinkBackend* backend = canvas_primary_sink_backend(canvas);
         if (!backend)
         {
-            log_error("swapchain sink backend unavailable");
+            log_error("primary sink backend unavailable");
             return -1;
         }
         if (dvz_stream_attach_sink(canvas->stream, backend, canvas) != 0)
         {
-            log_error("failed to attach swapchain sink to canvas stream");
+            log_error("failed to attach primary sink to canvas stream");
             return -1;
         }
-        canvas->swapchain_sink_attached = true;
+        canvas->primary_sink_attached = true;
     }
     return 0;
 }
@@ -352,6 +383,11 @@ int dvz_canvas_stream_enable_video(
 
     if (enable)
     {
+        if (canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
+        {
+            log_error("video sink is not yet supported in offscreen canvas mode");
+            return -1;
+        }
         DvzVideoCaptureMode capture_mode = canvas_resolve_video_capture_mode(canvas, cfg);
         if (
             capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL &&

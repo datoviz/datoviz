@@ -57,13 +57,22 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void);
 
 
+
+static bool canvas_is_offscreen_mode(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    return canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+}
+
+
+
 static bool canvas_device_check_extensions(DvzCanvas* canvas)
 {
     ANN(canvas);
     ANN(canvas->device);
 
     const char* const required_extensions[] = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        canvas_is_offscreen_mode(canvas) ? NULL : VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
     const size_t required_count = sizeof(required_extensions) / sizeof(required_extensions[0]);
     bool ok = true;
@@ -293,8 +302,13 @@ void dvz_canvas_frame_pool_init(DvzCanvasFramePool* pool, uint32_t frame_count)
     ANN(pool);
     dvz_canvas_frame_pool_release(pool);
     pool->frame_count = frame_count > 0 ? frame_count : 1;
-        pool->frames = (DvzStreamFrame*)dvz_calloc(pool->frame_count, sizeof(DvzStreamFrame));
+    pool->frames = (DvzStreamFrame*)dvz_calloc(pool->frame_count, sizeof(DvzStreamFrame));
     ANN(pool->frames);
+    for (uint32_t i = 0; i < pool->frame_count; i++)
+    {
+        pool->frames[i].memory_fd = -1;
+        pool->frames[i].wait_semaphore_fd = -1;
+    }
     pool->current_index = 0;
 }
 
@@ -427,6 +441,21 @@ const DvzFrameTiming* dvz_canvas_timings_view(const DvzCanvasTimingState* timing
 
 
 
+static void canvas_init_offscreen_frame(const DvzCanvas* canvas, DvzStreamFrame* frame)
+{
+    ANN(canvas);
+    ANN(frame);
+    dvz_memset(frame, sizeof(*frame), 0, sizeof(*frame));
+    frame->memory_fd = -1;
+    frame->wait_semaphore_fd = -1;
+    if (canvas->surface)
+    {
+        frame->extent = canvas->surface->extent;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Public API                                                                                   */
 /*************************************************************************************************/
@@ -441,6 +470,7 @@ DvzCanvasConfig dvz_canvas_default_config(void)
     DvzCanvasConfig cfg = {
         .window = NULL,
         .device = NULL,
+        .render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT,
         .color_format = VK_FORMAT_UNDEFINED,
         .present_mode = VK_PRESENT_MODE_FIFO_KHR,
         .enable_video_sink = false,
@@ -459,6 +489,12 @@ DvzCanvasConfig dvz_canvas_default_config(void)
 DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
 {
     DvzCanvasConfig resolved = cfg ? *cfg : dvz_canvas_default_config();
+    if (
+        resolved.render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT &&
+        resolved.render_mode != DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
+    {
+        resolved.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+    }
     if (!resolved.window)
     {
         log_error("canvas creation requires a valid window handle");
@@ -467,6 +503,13 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     if (!resolved.device)
     {
         log_error("canvas creation requires a valid device handle");
+        return NULL;
+    }
+    if (
+        resolved.render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT &&
+        dvz_window_backend_type(resolved.window) == DVZ_BACKEND_OFFSCREEN)
+    {
+        log_error("present render mode requires a presentation-capable window backend");
         return NULL;
     }
 
@@ -480,7 +523,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->frame_id = 0;
     canvas->video_sink_enabled = false;
     canvas->stream_started = false;
-    canvas->swapchain_sink_attached = false;
+    canvas->primary_sink_attached = false;
     canvas->test_force_wait_semaphore_export_failure = false;
 
     if (!canvas_device_check_extensions(canvas))
@@ -514,7 +557,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
 
     if (dvz_canvas_stream_prepare(canvas) != 0)
     {
-        log_warn("canvas stream preparation failed; swapchain sink unavailable");
+        log_warn("canvas stream preparation failed; primary sink unavailable");
     }
 
     if (resolved.enable_video_sink)
@@ -522,7 +565,9 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
         dvz_canvas_configure_video_sink(canvas, true, NULL);
     }
 
-    if (dvz_canvas_swapchain_init(canvas) != 0)
+    if (
+        !canvas_is_offscreen_mode(canvas) &&
+        dvz_canvas_swapchain_init(canvas) != 0)
     {
         log_error("failed to initialize canvas swapchain state");
         dvz_canvas_destroy(canvas);
@@ -595,25 +640,38 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         return -1;
     }
 
-    DvzStreamFrame frame_data = {0};
-    int acquire_rc = dvz_canvas_swapchain_acquire(canvas, &frame_data);
-    if (acquire_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+    DvzStreamFrame* frame = NULL;
+    if (canvas_is_offscreen_mode(canvas))
     {
-        return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+        frame = dvz_canvas_frame_pool_rotate(&canvas->frame_pool);
+        if (!frame)
+        {
+            log_error("canvas frame pool unavailable");
+            return -1;
+        }
+        canvas_init_offscreen_frame(canvas, frame);
     }
-    if (acquire_rc != 0)
+    else
     {
-        log_warn("unable to acquire canvas frame from swapchain");
-        return -1;
+        DvzStreamFrame frame_data = {0};
+        int acquire_rc = dvz_canvas_swapchain_acquire(canvas, &frame_data);
+        if (acquire_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            return DVZ_CANVAS_FRAME_WAIT_SURFACE;
+        }
+        if (acquire_rc != 0)
+        {
+            log_warn("unable to acquire canvas frame from swapchain");
+            return -1;
+        }
+        frame = dvz_canvas_frame_pool_rotate(&canvas->frame_pool);
+        if (!frame)
+        {
+            log_error("canvas frame pool unavailable");
+            return -1;
+        }
+        *frame = frame_data;
     }
-
-    DvzStreamFrame* frame = dvz_canvas_frame_pool_rotate(&canvas->frame_pool);
-    if (!frame)
-    {
-        log_error("canvas frame pool unavailable");
-        return -1;
-    }
-    *frame = frame_data;
 
     // Sync-handle ordering contract: prepare the timeline wait handle before stream start/update so
     // video sinks always see the latest semaphore handle during their start/update callback.
@@ -633,12 +691,12 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     // If the stream starts on this frame, sinks consumed the frame in start(); otherwise a handle
     // refresh must be propagated through update() before the next submit().
     bool stream_started_now = !stream_was_started && canvas->stream_started;
-    if (stream_started_now)
+    if (!canvas_is_offscreen_mode(canvas) && stream_started_now)
     {
         dvz_canvas_swapchain_handles_refreshed(canvas);
         frame->handles_dirty = false;
     }
-    else if (canvas->stream_started && frame->handles_dirty)
+    else if (!canvas_is_offscreen_mode(canvas) && canvas->stream_started && frame->handles_dirty)
     {
         if (dvz_stream_update(canvas->stream, frame) != 0)
         {
@@ -691,6 +749,20 @@ int dvz_canvas_submit(DvzCanvas* canvas)
 
 
 /**
+ * Return the render mode currently configured on the canvas.
+ *
+ * @param canvas canvas handle
+ * @returns canvas render mode
+ */
+DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    return canvas->cfg.render_mode;
+}
+
+
+
+/**
  * Return the input router tied to the canvas window.
  *
  * @param canvas canvas owning the router
@@ -722,6 +794,11 @@ int dvz_canvas_capture_rgba_into(
 {
     ANN(canvas);
     ANN(out_rgba);
+    if (canvas_is_offscreen_mode(canvas))
+    {
+        log_error("canvas capture is not implemented yet for offscreen render mode");
+        return -1;
+    }
     if (width == 0 || height == 0)
     {
         log_error("canvas capture requires non-zero dimensions");
@@ -751,6 +828,11 @@ int dvz_canvas_capture_rgba(
     *out_width = 0;
     *out_height = 0;
     *out_rgba = NULL;
+    if (canvas_is_offscreen_mode(canvas))
+    {
+        log_error("canvas capture is not implemented yet for offscreen render mode");
+        return -1;
+    }
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
     uint32_t width = surface.extent.width;

@@ -37,3 +37,12 @@ typedef enum
     DVZ_CANVAS_FRAME_READY = 0,
     DVZ_CANVAS_FRAME_WAIT_SURFACE = 1,
 } DvzCanvasFrameStatus;
+
+
+
+// Canvas render mode.
+typedef enum
+{
+    DVZ_CANVAS_RENDER_MODE_PRESENT = 0,
+    DVZ_CANVAS_RENDER_MODE_OFFSCREEN = 1,
+} DvzCanvasRenderMode;

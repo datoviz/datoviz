@@ -90,7 +90,7 @@ struct DvzCanvas
     DvzDevice* device;
     DvzStream* stream;
     bool stream_started;
-    bool swapchain_sink_attached;
+    bool primary_sink_attached;
     DvzCanvasFramePool frame_pool;
     DvzCanvasTimingState timings;
     DvzCanvasDraw draw_callback;
@@ -160,6 +160,8 @@ int dvz_canvas_stream_enable_video(
     DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
 
 const DvzStreamSinkBackend* dvz_canvas_swapchain_sink_backend(void);
+
+const DvzStreamSinkBackend* dvz_canvas_offscreen_sink_backend(void);
 
 int dvz_canvas_swapchain_init(DvzCanvas* canvas);
 

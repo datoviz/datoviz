@@ -58,6 +58,7 @@ typedef struct
 {
     DvzWindow* window;
     DvzDevice* device;
+    DvzCanvasRenderMode render_mode;
     VkFormat color_format;
     VkPresentModeKHR present_mode;
     bool enable_video_sink;
@@ -146,6 +147,16 @@ DVZ_EXPORT int dvz_canvas_frame(DvzCanvas* canvas);
  * @returns 0 when submission succeeds, <0 when the stream submission fails
  */
 DVZ_EXPORT int dvz_canvas_submit(DvzCanvas* canvas);
+
+
+
+/**
+ * Return the configured render mode for a canvas.
+ *
+ * @param canvas canvas handle
+ * @returns render mode currently used by the canvas
+ */
+DVZ_EXPORT DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas);
 
 
 
