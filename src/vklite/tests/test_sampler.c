@@ -16,10 +16,10 @@
 
 #include <stdbool.h>
 
+#include "../../vk/_device.h"
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vklite/sampler.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -41,12 +41,12 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
 
     // Create a device with support for samplerAnisotropy.
-    VkPhysicalDeviceFeatures* features = dvz_device_request_features10(&bootstrap.device);
+    VkPhysicalDeviceFeatures* features = dvz_device_request_features10(bootstrap.device);
     features->samplerAnisotropy = true;
-    dvz_device_create(&bootstrap.device);
+    dvz_device_build(bootstrap.device);
 
     DvzSampler sampler = {0};
-    dvz_sampler(&bootstrap.device, &sampler);
+    dvz_sampler(bootstrap.device, &sampler);
     dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
     dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
     dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);

@@ -36,7 +36,7 @@ static bool _vklite_runtime_available(void)
 {
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = 0;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)
     {
         log_warn("vklite tests skipped because Vulkan instance creation failed");

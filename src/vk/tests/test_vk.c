@@ -66,7 +66,7 @@ static bool _vk_runtime_available(void)
 {
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = 0;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     if (instance == NULL)
     {
         log_warn("vk tests skipped because Vulkan instance creation failed");

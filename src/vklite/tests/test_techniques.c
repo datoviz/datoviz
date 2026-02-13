@@ -87,7 +87,7 @@ int test_technique_triangle(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -128,7 +128,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     // Inner graphics pipeline (triangle).
     DvzGraphics igraphics = {0};
     {
-        DvzDevice* device = &proto.bootstrap.device;
+        DvzDevice* device = proto.bootstrap.device;
         ANN(device);
 
         // Load the shaders.
@@ -194,7 +194,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     DvzImageViews tex_view = {0};
     {
         ANN(&tex);
-        dvz_images(&proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &tex);
+        dvz_images(proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &tex);
         dvz_images_format(&tex, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_images_size(&tex, DVZ_PROTO_WIDTH / 2, DVZ_PROTO_HEIGHT / 2, 1);
         dvz_images_usage(&tex, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
@@ -227,7 +227,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     DvzSampler sampler = {0};
     {
         ANN(&sampler);
-        dvz_sampler(&proto.bootstrap.device, &sampler);
+        dvz_sampler(proto.bootstrap.device, &sampler);
         dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
         dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
         dvz_sampler_address_mode(
@@ -330,7 +330,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -347,7 +347,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     // Mask pipeline.
     DvzGraphics mgraphics = {0};
     {
-        DvzDevice* device = &proto.bootstrap.device;
+        DvzDevice* device = proto.bootstrap.device;
         ANN(device);
 
         // Initialize the graphics pipeline.
@@ -502,7 +502,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -526,7 +526,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     {
         ANN(&msimg);
         dvz_images(
-            &proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msimg);
+            proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msimg);
         dvz_images_format(&msimg, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_images_samples(&msimg, sample_count);
         dvz_images_size(&msimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
@@ -540,7 +540,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
 
         ANN(&msdepth);
         dvz_images(
-            &proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msdepth);
+            proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msdepth);
         dvz_images_format(&msdepth, VK_FORMAT_D32_SFLOAT_S8_UINT);
         dvz_images_samples(&msdepth, sample_count);
         dvz_images_size(&msdepth, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
@@ -635,7 +635,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -649,7 +649,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = &proto.bootstrap.device;
+    DvzDevice* device = proto.bootstrap.device;
     ANN(device);
 
     // Step 1: create storage/vertex buffer
@@ -774,7 +774,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -788,7 +788,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = &proto.bootstrap.device;
+    DvzDevice* device = proto.bootstrap.device;
     ANN(device);
 
     DvzSlots* slots = dvz_proto_slots(&proto);
@@ -1038,7 +1038,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_free(fs_color_spv);
     dvz_free(fs_pick_spv);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -1054,7 +1054,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = &proto.bootstrap.device;
+    DvzDevice* device = proto.bootstrap.device;
     ANN(device);
     DvzVma* allocator = &proto.bootstrap.allocator;
     ANN(allocator);
@@ -1482,7 +1482,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_destroy(&g_comp);
     dvz_proto_destroy(&proto);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }
 
 
@@ -1496,7 +1496,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = &proto.bootstrap.device;
+    DvzDevice* device = proto.bootstrap.device;
     ANN(device);
 
 
@@ -1769,5 +1769,5 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     dvz_proto_destroy(&proto);
 
-    return proto.bootstrap.instance.n_errors > 0;
+    return dvz_bootstrap_error_count(&proto.bootstrap) > 0;
 }

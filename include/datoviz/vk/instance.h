@@ -20,9 +20,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
-#include "datoviz/vk/gpu.h"
-
 MUTE_ON
 #define VMA_EXTERNAL_MEMORY 1
 #include "vk_mem_alloc.h"
@@ -46,56 +43,9 @@ MUTE_OFF
 /*************************************************************************************************/
 
 typedef struct DvzInstance DvzInstance;
-typedef struct DvzGpu DvzGpu;
 typedef struct DvzInstanceConfig DvzInstanceConfig;
 
 typedef struct VkInstance_T* VkInstance;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzInstance
-{
-    DvzObject obj;
-    bool is_heap_allocated;
-
-    VkInstance vk_instance;
-    uint32_t vk_version;
-
-    // Instance creation structures.
-    bool flags;
-    bool portability;
-    VkInstanceCreateInfo info_inst;
-    VkDebugUtilsMessengerCreateInfoEXT info_debug;
-    VkValidationFeaturesEXT validation_features;
-
-    // Requested layers and extensions.
-    uint32_t req_layer_count;
-    uint32_t req_extension_count;
-    char* req_layers[DVZ_MAX_REQ_LAYERS];
-    char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
-
-    // All supported instance layers and extensions.
-    uint32_t layer_count;
-    uint32_t extension_count;
-    char** layers;
-    char** extensions;
-
-    // Application info.
-    char* name;
-    uint32_t version;
-
-    // Validation.
-    VkDebugUtilsMessengerEXT debug_messenger;
-    uint32_t n_errors;
-
-    // GPUs
-    uint32_t gpu_count;
-    DvzGpu gpus[DVZ_MAX_GPUS];
-};
 
 
 
@@ -168,66 +118,7 @@ dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extens
  * @param cfg the instance configuration
  * @returns a created instance on success, `NULL` on failure
  */
-DVZ_EXPORT DvzInstance* dvz_instance_create_from_config(const DvzInstanceConfig* cfg);
-
-
-
-/**
- * Initialize an instance.
- *
- * @param instance the instance
- * @param flags the instance flags
- */
-DVZ_EXPORT void dvz_instance(DvzInstance* instance, int flags);
-
-
-
-/**
- * Set the instance application name and version.
- *
- * @param instance the instance
- * @param name the application name
- * @param version the application version
- */
-DVZ_EXPORT void dvz_instance_info(DvzInstance* instance, const char* name, uint32_t version);
-
-
-
-/**
- * Set the instance portability enumeration extension/creation flag if the system supports it.
- *
- * @param instance the instance
- */
-DVZ_EXPORT void dvz_instance_portability(DvzInstance* instance);
-
-
-
-/**
- * Set up validation before instance creation.
- *
- * @param instance the instance.
- */
-DVZ_EXPORT void dvz_instance_validation_pre(DvzInstance* instance);
-
-
-
-/**
- * Set up validation after instance creation.
- *
- * @param instance the instance.
- */
-DVZ_EXPORT void dvz_instance_validation_post(DvzInstance* instance);
-
-
-
-/**
- * Create the instance.
- *
- * @param instance the instance
- * @param vk_version the Vulkan API version
- * @returns the instance creation result
- */
-DVZ_EXPORT int dvz_instance_create(DvzInstance* instance, uint32_t vk_version);
+DVZ_EXPORT DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg);
 
 
 
@@ -247,6 +138,16 @@ DVZ_EXPORT VkInstance dvz_instance_handle(DvzInstance* instance);
  * @param instance the instance
  */
 DVZ_EXPORT void dvz_instance_destroy(DvzInstance* instance);
+
+
+
+/**
+ * Return the validation error counter accumulated by an instance.
+ *
+ * @param instance the instance
+ * @returns the number of validation errors reported through the debug callback
+ */
+DVZ_EXPORT uint32_t dvz_instance_error_count(DvzInstance* instance);
 
 
 
@@ -285,27 +186,6 @@ DVZ_EXPORT bool dvz_instance_has_layer(DvzInstance* instance, const char* layer)
 
 
 
-/**
- * Add an instance layer.
- *
- * @param instance the instance
- * @param layer the layer name
- */
-DVZ_EXPORT void dvz_instance_request_layer(DvzInstance* instance, const char* layer);
-
-
-
-/**
- * Set the requested layers before instance creation.
- *
- * @param instance the instance
- * @param count number of requested layers
- * @param layers array of layer names
- */
-// DVZ_EXPORT void dvz_instance_layers(DvzInstance* instance, uint32_t count, const char** layers);
-
-
-
 /*************************************************************************************************/
 /*  Extensions                                                                                   */
 /*************************************************************************************************/
@@ -340,23 +220,3 @@ DVZ_EXPORT char** dvz_instance_supported_extensions(DvzInstance* instance, uint3
 DVZ_EXPORT bool dvz_instance_has_extension(DvzInstance* instance, const char* extension);
 
 
-
-/**
- * Add an instance extension.
- *
- * @param instance the instance
- * @param extension the extension name.
- */
-DVZ_EXPORT void dvz_instance_request_extension(DvzInstance* instance, const char* extension);
-
-
-
-/**
- * Set the requested extensions before instance creation.
- *
- * @param instance the instance
- * @param count number of requested extensions
- * @param extensions array of extension names
- */
-// DVZ_EXPORT void
-// dvz_instance_extensions(DvzInstance* instance, uint32_t count, const char** extensions);

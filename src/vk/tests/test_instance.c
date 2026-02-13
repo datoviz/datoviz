@@ -37,7 +37,7 @@ int test_instance_layers(TstSuite* suite, TstItem* tstitem)
 
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = 0;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
     dvz_instance_probe_layers(instance);
 
@@ -67,7 +67,7 @@ int test_instance_extensions(TstSuite* suite, TstItem* tstitem)
 
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = 0;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
     dvz_instance_probe_extensions(instance);
 
@@ -100,7 +100,7 @@ int test_instance_creation(TstSuite* suite, TstItem* tstitem)
     cfg.app_name = "Instance test";
     cfg.app_version = 42;
     AT(dvz_instance_config_request_extension(&cfg, VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
     // Get Vulkan instance handle.
@@ -125,7 +125,7 @@ int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem)
     cfg.app_name = "Invalid layer test";
     cfg.app_version = 1;
     AT(dvz_instance_config_request_layer(&cfg, "VK_LAYER_DATOVIZ_DOES_NOT_EXIST"));
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance == NULL);
     return 0;
 }

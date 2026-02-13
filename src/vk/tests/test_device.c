@@ -18,9 +18,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../_device.h"
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
@@ -42,7 +42,7 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig icfg = dvz_instance_default_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
 
     // Obtain a GPU.
@@ -62,7 +62,7 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
         DvzQueue* queue = &queues.queues[i];
         dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
     }
-    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    DvzDevice* device = dvz_device_create(&dcfg);
     AT(device != NULL);
 
     // Cleanup.
@@ -81,7 +81,7 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig icfg = dvz_instance_default_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
 
     // Obtain a GPU.
@@ -120,7 +120,7 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
     dvz_device_config_set_features13(&dcfg, &features13);
 
     // Create the device.
-    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    DvzDevice* device = dvz_device_create(&dcfg);
     AT(device != NULL);
     AT(device->vk_device != VK_NULL_HANDLE);
 

@@ -54,7 +54,7 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     DvzBuffer buffer = {0};
     DvzSize size = 65536;
 
-    dvz_buffer(&bootstrap.device, &bootstrap.allocator, &buffer);
+    dvz_buffer(bootstrap.device, &bootstrap.allocator, &buffer);
     dvz_buffer_size(&buffer, size);
     dvz_buffer_flags(&buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -121,7 +121,7 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
     DvzBuffer buffer = {0};
     DvzSize size = 65536;
 
-    dvz_buffer(&bootstrap.device, &bootstrap.allocator, &buffer);
+    dvz_buffer(bootstrap.device, &bootstrap.allocator, &buffer);
     dvz_buffer_size(&buffer, size);
     dvz_buffer_flags(&buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);

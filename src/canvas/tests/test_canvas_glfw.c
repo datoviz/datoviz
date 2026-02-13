@@ -191,7 +191,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
         dvz_instance_config_request_extension(&icfg, extensions[i]);
     }
 
-    fixture->instance = dvz_instance_create_from_config(&icfg);
+    fixture->instance = dvz_instance_create(&icfg);
     if (fixture->instance == NULL)
     {
         *skipped = true;
@@ -228,7 +228,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     features.dynamicRendering = true;
     dvz_device_config_set_features13(&dcfg, &features);
     dvz_device_config_enable_canvas_extensions(&dcfg, true);
-    fixture->device = dvz_device_create_from_config(&dcfg);
+    fixture->device = dvz_device_create(&dcfg);
     if (fixture->device == NULL)
     {
         *skipped = true;
@@ -1364,7 +1364,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
         dvz_instance_config_request_extension(&icfg, extensions[i]);
     }
 
-    instance = dvz_instance_create_from_config(&icfg);
+    instance = dvz_instance_create(&icfg);
     if (instance == NULL)
     {
         log_warn("canvas glfw test skipped because Vulkan instance creation failed");
@@ -1407,7 +1407,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     features.dynamicRendering = true;
     dvz_device_config_set_features13(&dcfg, &features);
     dvz_device_config_enable_canvas_extensions(&dcfg, true);
-    device = dvz_device_create_from_config(&dcfg);
+    device = dvz_device_create(&dcfg);
     if (device == NULL)
     {
         log_warn("canvas glfw test skipped because Vulkan device creation failed");

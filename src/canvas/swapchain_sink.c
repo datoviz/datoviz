@@ -23,11 +23,11 @@
 #include <unistd.h>
 #endif
 
+#include "../vk/_device.h"
 #include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"

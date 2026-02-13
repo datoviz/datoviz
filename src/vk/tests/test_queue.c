@@ -42,7 +42,7 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
     // Get a GPU.

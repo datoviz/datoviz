@@ -17,10 +17,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "../../vk/_device.h"
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
@@ -121,23 +121,23 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
 
     // Create a device with support for LocalSizeId.
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&bootstrap.device);
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(bootstrap.device);
     features->maintenance4 = true;
-    dvz_device_create(&bootstrap.device);
+    dvz_device_build(bootstrap.device);
 
     // Create a basic compute shader.
     DvzShader shader = {0};
-    dvz_shader(&bootstrap.device, sizeof(minimal_compute), (uint32_t*)minimal_compute, &shader);
+    dvz_shader(bootstrap.device, sizeof(minimal_compute), (uint32_t*)minimal_compute, &shader);
 
     // Create slots.
     DvzSlots slots = {0};
-    dvz_slots(&bootstrap.device, &slots);
+    dvz_slots(bootstrap.device, &slots);
     dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     dvz_slots_create(&slots);
 
     // Create a compute pipeline.
     DvzCompute compute = {0};
-    dvz_compute(&bootstrap.device, &compute);
+    dvz_compute(bootstrap.device, &compute);
     dvz_compute_shader(&compute, dvz_shader_handle(&shader));
     dvz_compute_layout(&compute, dvz_slots_handle(&slots));
     AT(dvz_compute_create(&compute) == 0);

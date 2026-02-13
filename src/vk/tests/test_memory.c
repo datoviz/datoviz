@@ -19,6 +19,7 @@
 #include <unistd.h>
 #endif
 
+#include "../_device.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -147,7 +148,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     // IMPORTANT: need external memory instance extension.
     dvz_instance_config_request_extension(
         &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
-    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    DvzInstance* instance = dvz_instance_create(&icfg);
     if (instance == NULL)
     {
         out = 1;
@@ -173,7 +174,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     }
     // IMPORTANT: need external memory device extension.
     dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    DvzDevice* device = dvz_device_create(&dcfg);
     if (device == NULL)
     {
         out = 1;
@@ -476,7 +477,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     icfg.flags = 0;
     dvz_instance_config_request_extension(
         &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
-    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    DvzInstance* instance = dvz_instance_create(&icfg);
     if (instance == NULL)
     {
         out = 1;
@@ -499,7 +500,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
         dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
     }
     dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    DvzDevice* device = dvz_device_create(&dcfg);
     if (device == NULL)
     {
         out = 1;

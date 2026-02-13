@@ -61,9 +61,10 @@ typedef struct DvzBootstrap DvzBootstrap;
 struct DvzBootstrap
 {
     int flags;
-    DvzInstance instance;
+    uint32_t validation_error_count;
+    DvzInstance* instance;
     DvzGpu* gpu;
-    DvzDevice device;
+    DvzDevice* device;
     DvzVma allocator;
 };
 
@@ -124,6 +125,16 @@ DVZ_EXPORT DvzDevice* dvz_bootstrap_device(DvzBootstrap* bootstrap);
  * @returns the allocator
  */
 DVZ_EXPORT DvzVma* dvz_bootstrap_allocator(DvzBootstrap* bootstrap);
+
+
+
+/**
+ * Return the bootstrap validation error count.
+ *
+ * @param bootstrap the bootstrap
+ * @returns the validation error count
+ */
+DVZ_EXPORT uint32_t dvz_bootstrap_error_count(DvzBootstrap* bootstrap);
 
 
 

@@ -17,13 +17,13 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "../../vk/_device.h"
 #include "../../vk/tests/test_vk.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
@@ -58,7 +58,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
 
-    DvzDevice* device = &bootstrap.device;
+    DvzDevice* device = bootstrap.device;
     ANN(device);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
@@ -68,7 +68,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
     features->dynamicRendering = true;
     features->synchronization2 = true;
-    AT(dvz_device_create(device) == 0);
+    AT(dvz_device_build(device) == 0);
     dvz_device_allocator(device, 0, &bootstrap.allocator);
 
     // Graphics setup.
@@ -91,7 +91,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Slots.
     DvzSlots slots = {0};
-    dvz_slots(&bootstrap.device, &slots);
+    dvz_slots(bootstrap.device, &slots);
     AT(dvz_slots_create(&slots) == 0);
     dvz_graphics_layout(&graphics, dvz_slots_handle(&slots));
 
@@ -121,7 +121,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Image to render to.
     DvzImages img = {0};
-    dvz_images(&bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
+    dvz_images(bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
     dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&img, WIDTH, HEIGHT, 1);
     dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
@@ -169,7 +169,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Staging buffer for screenshot.
     DvzBuffer staging = {0};
     DvzSize screenshot_size = WIDTH * HEIGHT * 4;
-    dvz_buffer(&bootstrap.device, &bootstrap.allocator, &staging);
+    dvz_buffer(bootstrap.device, &bootstrap.allocator, &staging);
     dvz_buffer_size(&staging, screenshot_size);
     dvz_buffer_flags(
         &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);

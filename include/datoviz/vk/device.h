@@ -21,7 +21,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/vk/instance.h"
 #include "queues.h"
 
@@ -35,34 +34,7 @@
 
 
 
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzDevice
-{
-    DvzObject obj;
-    bool is_heap_allocated;
-    DvzGpu* gpu;
-
-    DvzQueues queues;
-    VkDeviceCreateInfo info;
-
-    uint32_t req_extension_count;
-    char* req_extensions[DVZ_MAX_REQ_EXTENSIONS];
-
-    VkPhysicalDeviceFeatures2 features;
-    VkPhysicalDeviceVulkan11Features features11;
-    VkPhysicalDeviceVulkan12Features features12;
-    VkPhysicalDeviceVulkan13Features features13;
-
-    VkDevice vk_device;
-    VkCommandPool cpools[DVZ_MAX_QUEUE_FAMILIES];
-    VkDescriptorPool dpool;
-};
-
-
-
+typedef struct DvzDevice DvzDevice;
 typedef struct DvzDeviceQueueRequest DvzDeviceQueueRequest;
 typedef struct DvzDeviceConfig DvzDeviceConfig;
 
@@ -193,38 +165,7 @@ DVZ_EXPORT void dvz_device_config_set_features13(
  * @param cfg the device configuration
  * @returns a created device on success, `NULL` on failure
  */
-DVZ_EXPORT DvzDevice* dvz_device_create_from_config(const DvzDeviceConfig* cfg);
-
-
-
-/**
- * Prepare creating a (logical) device from a GPU (physical device).
- *
- * @param gpu the GPU
- * @param[out] device the device
- */
-DVZ_EXPORT void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
-
-
-
-/**
- * Manually request a number of queues from a queue family.
- *
- * @param device the device
- * @param family the queue family index
- * @param count the number of queues requested
- */
-DVZ_EXPORT void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t count);
-
-
-
-/**
- * Create the logical device after requesting queues.
- *
- * @param device the device
- * @returns the result code
- */
-DVZ_EXPORT int dvz_device_create(DvzDevice* device);
+DVZ_EXPORT DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg);
 
 
 
@@ -279,30 +220,6 @@ DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 
 
 /**
- * Request all extensions required by the canvas/presentation layer.
- *
- * @param device device that will serve canvases
- */
-DVZ_EXPORT void dvz_device_request_canvas_extensions(DvzDevice* device);
-
-
-
-/*************************************************************************************************/
-/*  Extensions & features                                                                        */
-/*************************************************************************************************/
-
-/**
- * Request device extension.
- *
- * @param device the device
- * @param extension the requested extension
- * @returns whether the extension was requested
- */
-DVZ_EXPORT bool dvz_device_request_extension(DvzDevice* device, const char* extension);
-
-
-
-/**
  * Return whether a device was created with support for a given extension or not.
  *
  * @param device the device
@@ -310,43 +227,3 @@ DVZ_EXPORT bool dvz_device_request_extension(DvzDevice* device, const char* exte
  * @returns whether the device has support for the extension
  */
 DVZ_EXPORT bool dvz_device_has_extension(DvzDevice* device, const char* extension);
-
-
-
-/**
- * Request features for Vulkan 1.0.
- *
- * @param device the device
- * @returns the features struct to use to enable individual features
- */
-DVZ_EXPORT VkPhysicalDeviceFeatures* dvz_device_request_features10(DvzDevice* device);
-
-
-
-/**
- * Request features for Vulkan 1.1.
- *
- * @param device the device
- * @returns the features struct to use to enable individual features
- */
-DVZ_EXPORT VkPhysicalDeviceVulkan11Features* dvz_device_request_features11(DvzDevice* device);
-
-
-
-/**
- * Request features for Vulkan 1.2.
- *
- * @param device the device
- * @returns the features struct to use to enable individual features
- */
-DVZ_EXPORT VkPhysicalDeviceVulkan12Features* dvz_device_request_features12(DvzDevice* device);
-
-
-
-/**
- * Request features for Vulkan 1.3.
- *
- * @param device the device
- * @returns the features struct to use to enable individual features
- */
-DVZ_EXPORT VkPhysicalDeviceVulkan13Features* dvz_device_request_features13(DvzDevice* device);

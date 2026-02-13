@@ -16,6 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz/vk/instance.h"
+#include "datoviz/vk/bootstrap.h"
 #include "testing.h"
 
 
@@ -25,7 +27,7 @@
 /*************************************************************************************************/
 
 // A test should fail (return 1) if there are validation errors.
-#define RETURN_VALIDATION return bootstrap.instance.n_errors > 0;
+#define RETURN_VALIDATION return dvz_bootstrap_error_count(&bootstrap) > 0;
 
 
 

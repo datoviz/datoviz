@@ -133,7 +133,7 @@ static DvzInstance* _present_instance_create(
         cfg.portability = true;
     }
 
-    return dvz_instance_create_from_config(&cfg);
+    return dvz_instance_create(&cfg);
 }
 
 
@@ -269,7 +269,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
     }
     dvz_device_config_enable_canvas_extensions(&dcfg, true);
-    fixture->device = dvz_device_create_from_config(&dcfg);
+    fixture->device = dvz_device_create(&dcfg);
     if (fixture->device == NULL)
     {
         log_warn("vklite present tests skipped because Vulkan device creation failed");

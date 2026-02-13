@@ -23,6 +23,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_instance.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/instance.h"
@@ -179,7 +180,7 @@ bool dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* e
  * @param cfg instance configuration
  * @return created instance, or `NULL` on failure
  */
-DvzInstance* dvz_instance_create_from_config(const DvzInstanceConfig* cfg)
+DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg)
 {
     ANN(cfg);
     DvzInstance* instance = (DvzInstance*)dvz_calloc(1, sizeof(DvzInstance));
@@ -209,7 +210,7 @@ DvzInstance* dvz_instance_create_from_config(const DvzInstanceConfig* cfg)
         vk_version = VK_API_VERSION_1_3;
     }
 
-    if (dvz_instance_create(instance, vk_version) != 0)
+    if (dvz_instance_build(instance, vk_version) != 0)
     {
         dvz_instance_destroy(instance);
         return NULL;
@@ -295,7 +296,7 @@ void dvz_instance_validation_post(DvzInstance* instance)
 
 
 
-int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
+int dvz_instance_build(DvzInstance* instance, uint32_t vk_version)
 {
     ANN(instance);
     instance->vk_version = vk_version;
@@ -383,7 +384,14 @@ VkInstance dvz_instance_handle(DvzInstance* instance)
 
 void dvz_instance_destroy(DvzInstance* instance)
 {
-    ANN(instance);
+    if (instance == NULL)
+    {
+        return;
+    }
+    if (instance->obj.status == DVZ_OBJECT_STATUS_DESTROYED)
+    {
+        return;
+    }
     bool is_heap_allocated = instance->is_heap_allocated;
 
     DVZ_FREE_STRING_CONTAINER(instance->layer_count, instance->layers)
@@ -393,6 +401,16 @@ void dvz_instance_destroy(DvzInstance* instance)
     // the heap.
     dvz_free_strings(instance->req_layer_count, instance->req_layers);
     dvz_free_strings(instance->req_extension_count, instance->req_extensions);
+    for (uint32_t i = 0; i < DVZ_MAX_REQ_LAYERS; i++)
+    {
+        instance->req_layers[i] = NULL;
+    }
+    for (uint32_t i = 0; i < DVZ_MAX_REQ_EXTENSIONS; i++)
+    {
+        instance->req_extensions[i] = NULL;
+    }
+    instance->req_layer_count = 0;
+    instance->req_extension_count = 0;
 
     DvzGpu* gpu = NULL;
     for (uint32_t i = 0; i < instance->gpu_count; i++)
@@ -416,11 +434,13 @@ void dvz_instance_destroy(DvzInstance* instance)
         {
             log_trace("destroy debug utils messenger");
             vkDestroyDebugUtilsMessengerEXT(vki, instance->debug_messenger, NULL);
+            instance->debug_messenger = VK_NULL_HANDLE;
         }
 
         // Destroy Vulkan instance.
         log_trace("destroy instance");
         vkDestroyInstance(vki, NULL);
+        instance->vk_instance = VK_NULL_HANDLE;
     }
 
     dvz_obj_destroyed(&instance->obj);
@@ -429,6 +449,20 @@ void dvz_instance_destroy(DvzInstance* instance)
     {
         dvz_free(instance);
     }
+}
+
+
+
+/**
+ * Return the number of validation errors tracked by an instance.
+ *
+ * @param instance the instance
+ * @return the number of validation errors
+ */
+uint32_t dvz_instance_error_count(DvzInstance* instance)
+{
+    ANN(instance);
+    return instance->n_errors;
 }
 
 

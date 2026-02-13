@@ -40,7 +40,7 @@ int test_gpu_props(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
     uint32_t count = 0;
@@ -83,7 +83,7 @@ int test_gpu_memprops(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
     uint32_t count = 0;
@@ -137,7 +137,7 @@ int test_gpu_features(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
     uint32_t count = 0;
@@ -172,7 +172,7 @@ int test_gpu_extensions(TstSuite* suite, TstItem* tstitem)
     // Create an instance.
     DvzInstanceConfig cfg = dvz_instance_default_config();
     cfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&cfg);
+    DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
     uint32_t count = 0;

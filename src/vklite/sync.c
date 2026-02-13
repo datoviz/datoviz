@@ -17,6 +17,7 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
+#include "../vk/_device.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/vklite/rendering.h"

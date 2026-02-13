@@ -19,10 +19,10 @@
 #include <volk.h>
 
 #include "_assertions.h"
+#include "_device.h"
+#include "_instance.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
-#include "datoviz/vk/device.h"
-#include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 
 MUTE_ON

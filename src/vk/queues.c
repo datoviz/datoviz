@@ -20,7 +20,8 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/vk/instance.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/queues.h"
 #include "macros.h"
 
 

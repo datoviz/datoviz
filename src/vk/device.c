@@ -20,6 +20,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_device.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
@@ -258,7 +259,11 @@ static void create_dpool(DvzDevice* device)
 static void destroy_dpool(DvzDevice* device)
 {
     ANN(device);
-    ANNVK(device->vk_device);
+    if (device->vk_device == VK_NULL_HANDLE)
+    {
+        device->dpool = VK_NULL_HANDLE;
+        return;
+    }
     if (device->dpool != VK_NULL_HANDLE)
     {
         log_trace("destroy descriptor pool");
@@ -449,7 +454,7 @@ void dvz_device_config_set_features13(
  * @param cfg device configuration
  * @return created device, or `NULL` on failure
  */
-DvzDevice* dvz_device_create_from_config(const DvzDeviceConfig* cfg)
+DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)
 {
     ANN(cfg);
     ANN(cfg->gpu);
@@ -512,7 +517,7 @@ DvzDevice* dvz_device_create_from_config(const DvzDeviceConfig* cfg)
         features13->pNext = dvz_device_request_features12(device);
     }
 
-    if (dvz_device_create(device) != 0)
+    if (dvz_device_build(device) != 0)
     {
         dvz_device_destroy(device);
         return NULL;
@@ -569,7 +574,7 @@ void dvz_device_request_queues(DvzDevice* device, uint32_t family, uint32_t coun
 
 
 
-int dvz_device_create(DvzDevice* device)
+int dvz_device_build(DvzDevice* device)
 {
     ANN(device);
 
@@ -678,22 +683,43 @@ void dvz_device_wait(DvzDevice* device)
 
 void dvz_device_destroy(DvzDevice* device)
 {
-    ANN(device);
+    if (device == NULL)
+    {
+        return;
+    }
+    if (device->obj.status == DVZ_OBJECT_STATUS_DESTROYED)
+    {
+        return;
+    }
     bool is_heap_allocated = device->is_heap_allocated;
 
-    // Destroy pools.
-    destroy_dpool(device);
-    destroy_cpools(device);
-
-    // Destroy device.
     if (device->vk_device != VK_NULL_HANDLE)
     {
+        // Destroy pools.
+        destroy_dpool(device);
+        destroy_cpools(device);
+
+        // Destroy device.
         log_trace("destroying the device");
         vkDestroyDevice(device->vk_device, NULL);
+        device->vk_device = VK_NULL_HANDLE;
         log_trace("device destroyed");
+    }
+    else
+    {
+        device->dpool = VK_NULL_HANDLE;
+        for (uint32_t i = 0; i < DVZ_MAX_QUEUE_FAMILIES; i++)
+        {
+            device->cpools[i] = VK_NULL_HANDLE;
+        }
     }
 
     dvz_free_strings(device->req_extension_count, device->req_extensions);
+    for (uint32_t i = 0; i < DVZ_MAX_REQ_EXTENSIONS; i++)
+    {
+        device->req_extensions[i] = NULL;
+    }
+    device->req_extension_count = 0;
     dvz_obj_destroyed(&device->obj);
 
     if (is_heap_allocated)

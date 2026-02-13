@@ -18,13 +18,13 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
+#include "../vk/_device.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "cglm/include/cglm/types.h"
 #include "cglm/include/cglm/vec4.h"
 #include "datoviz/common/obj.h"
-#include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 

@@ -711,7 +711,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 #endif
     }
 
-    app->instance = dvz_instance_create_from_config(&icfg);
+    app->instance = dvz_instance_create(&icfg);
     if (app->instance == NULL)
     {
         dvz_fprintf(stderr, "failed to create Vulkan instance\\n");
@@ -750,7 +750,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     {
         dvz_device_config_enable_canvas_extensions(&dcfg, true);
     }
-    app->device = dvz_device_create_from_config(&dcfg);
+    app->device = dvz_device_create(&dcfg);
     if (app->device == NULL)
     {
         dvz_fprintf(stderr, "failed to create Vulkan device\\n");

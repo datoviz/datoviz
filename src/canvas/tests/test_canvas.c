@@ -315,7 +315,7 @@ static bool canvas_test_create_instance_device(
 
     DvzInstanceConfig icfg = dvz_instance_default_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    DvzInstance* instance = dvz_instance_create(&icfg);
     if (instance == NULL)
     {
         if (skip_reason != NULL)
@@ -359,7 +359,7 @@ static bool canvas_test_create_instance_device(
     features.dynamicRendering = true;
     dvz_device_config_set_features13(&dcfg, &features);
 
-    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    DvzDevice* device = dvz_device_create(&dcfg);
     if (device == NULL)
     {
         if (skip_reason != NULL)

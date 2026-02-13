@@ -76,7 +76,7 @@ int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap(&bootstrap, 0);
 
     DvzShader shader = {0};
-    dvz_shader(&bootstrap.device, sizeof(shader_spirv), (uint32_t*)shader_spirv, &shader);
+    dvz_shader(bootstrap.device, sizeof(shader_spirv), (uint32_t*)shader_spirv, &shader);
 
     dvz_shader_destroy(&shader);
     dvz_bootstrap_destroy(&bootstrap);

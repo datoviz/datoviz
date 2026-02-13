@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 
+#include "../vk/_device.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/common/macros.h"
@@ -45,7 +46,7 @@ void dvz_proto(DvzProto* proto)
 
     dvz_bootstrap(bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
 
-    DvzDevice* device = &bootstrap->device;
+    DvzDevice* device = bootstrap->device;
     ANN(device);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
@@ -58,7 +59,7 @@ void dvz_proto(DvzProto* proto)
     VkPhysicalDeviceVulkan13Features* fet13 = dvz_device_request_features13(device);
     fet13->dynamicRendering = true;
     fet13->synchronization2 = true;
-    dvz_device_create(device);
+    dvz_device_build(device);
     dvz_device_allocator(device, 0, &bootstrap->allocator);
 
 
@@ -158,7 +159,7 @@ DvzSlots* dvz_proto_slots(DvzProto* proto)
 {
     ANN(proto);
 
-    DvzDevice* device = &proto->bootstrap.device;
+    DvzDevice* device = proto->bootstrap.device;
     ANN(device);
 
     dvz_slots(device, &proto->slots);
@@ -175,7 +176,7 @@ DvzGraphics* dvz_proto_graphics(
     DvzGraphics* graphics = &proto->graphics;
     ANN(graphics);
 
-    DvzDevice* device = &proto->bootstrap.device;
+    DvzDevice* device = proto->bootstrap.device;
     ANN(device);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
@@ -274,7 +275,7 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
     DvzSize screenshot_size = DVZ_PROTO_WIDTH * DVZ_PROTO_HEIGHT * 4;
     ASSERT(screenshot_size > 0);
 
-    dvz_buffer(&proto->bootstrap.device, &proto->bootstrap.allocator, staging);
+    dvz_buffer(proto->bootstrap.device, &proto->bootstrap.allocator, staging);
     dvz_buffer_size(staging, screenshot_size);
     dvz_buffer_flags(
         staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
