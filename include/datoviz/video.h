@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -56,6 +57,28 @@ typedef enum
 
 
 
+// Video capture strategy used by the sink.
+typedef enum
+{
+    DVZ_VIDEO_CAPTURE_AUTO = 0,           // choose the best available path at runtime
+    DVZ_VIDEO_CAPTURE_EXTERNAL = 1,       // use external memory/semaphore interop
+    DVZ_VIDEO_CAPTURE_CPU_READBACK = 2,   // read back RGBA to CPU before encoding
+} DvzVideoCaptureMode;
+
+
+
+// CPU readback callback used by video sinks running in CPU capture mode.
+typedef int (*DvzVideoSinkCaptureFn)(
+    void* user_data, uint32_t* out_width, uint32_t* out_height, size_t* out_stride,
+    uint8_t** out_rgba);
+
+
+
+// CPU readback release callback for buffers returned by DvzVideoSinkCaptureFn.
+typedef void (*DvzVideoSinkReleaseFn)(void* user_data, uint8_t* rgba);
+
+
+
 // Video encoder config.
 typedef struct
 {
@@ -78,6 +101,10 @@ typedef struct
 {
     DvzVideoEncoderConfig encoder;
     FILE* bitstream;
+    DvzVideoCaptureMode capture_mode;
+    DvzVideoSinkCaptureFn capture_rgba;
+    DvzVideoSinkReleaseFn release_rgba;
+    void* capture_user_data;
 } DvzVideoSinkConfig;
 
 

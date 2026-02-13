@@ -74,6 +74,7 @@ const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC = {
     .init = nvenc_init,
     .start = nvenc_start,
     .submit = nvenc_submit,
+    .submit_rgba = NULL,
     .stop = nvenc_stop,
     .destroy = nvenc_destroy,
 };
@@ -144,6 +145,7 @@ const DvzVideoBackend DVZ_VIDEO_BACKEND_KVAZAAR = {
     .init = kvazaar_init,
     .start = kvazaar_start,
     .submit = kvazaar_submit,
+    .submit_rgba = NULL,
     .stop = kvazaar_stop,
     .destroy = kvazaar_destroy,
 };

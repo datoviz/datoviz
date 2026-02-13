@@ -238,6 +238,42 @@ int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
 
 
 
+/**
+ * Submit a CPU RGBA frame to the backend.
+ *
+ * @param enc encoder handle
+ * @param rgba input RGBA buffer
+ * @param width frame width in pixels
+ * @param height frame height in pixels
+ * @param stride source row stride in bytes
+ * @param wait_value optional timeline value associated with the frame
+ * @returns 0 when submission succeeded or a negative backend error
+ */
+int dvz_video_encoder_submit_rgba(
+    DvzVideoEncoder* enc, const uint8_t* rgba, uint32_t width, uint32_t height, size_t stride,
+    uint64_t wait_value)
+{
+    ANN(enc);
+    ANN(rgba);
+    if (width == 0 || height == 0 || stride == 0)
+    {
+        log_error("invalid CPU frame dimensions for video submission");
+        return -1;
+    }
+    if (!enc->started || !enc->backend || !enc->backend->submit_rgba)
+    {
+        return -1;
+    }
+    int rc = enc->backend->submit_rgba(enc, rgba, width, height, stride, wait_value);
+    if (rc == 0)
+    {
+        enc->frame_idx += 1;
+    }
+    return rc;
+}
+
+
+
 int dvz_video_encoder_stop(DvzVideoEncoder* enc)
 {
     if (!enc)

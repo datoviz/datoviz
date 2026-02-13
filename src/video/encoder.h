@@ -129,6 +129,23 @@ int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value);
 
 
 /**
+ * Submit a CPU RGBA frame to the backend.
+ *
+ * @param enc encoder handle
+ * @param rgba input RGBA buffer
+ * @param width frame width in pixels
+ * @param height frame height in pixels
+ * @param stride source row stride in bytes
+ * @param wait_value optional timeline value associated with this frame
+ * @returns 0 when submission succeeded or a negative backend error
+ */
+int dvz_video_encoder_submit_rgba(
+    DvzVideoEncoder* enc, const uint8_t* rgba, uint32_t width, uint32_t height, size_t stride,
+    uint64_t wait_value);
+
+
+
+/**
  * Stop the encoder and flush any pending output before destruction.
  *
  * @param enc encoder handle

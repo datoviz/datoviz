@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "encoder.h"
@@ -35,6 +36,9 @@ struct DvzVideoBackend
     int (*init)(DvzVideoEncoder* enc);
     int (*start)(DvzVideoEncoder* enc);
     int (*submit)(DvzVideoEncoder* enc, uint64_t timeline_value);
+    int (*submit_rgba)(
+        DvzVideoEncoder* enc, const uint8_t* rgba, uint32_t width, uint32_t height, size_t stride,
+        uint64_t timeline_value);
     int (*stop)(DvzVideoEncoder* enc);
     void (*destroy)(DvzVideoEncoder* enc);
 };

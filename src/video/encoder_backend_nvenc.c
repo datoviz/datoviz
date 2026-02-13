@@ -918,6 +918,7 @@ const DvzVideoBackend DVZ_VIDEO_BACKEND_NVENC = {
     .init = nvenc_init,
     .start = nvenc_start,
     .submit = nvenc_submit,
+    .submit_rgba = NULL,
     .stop = nvenc_stop,
     .destroy = nvenc_destroy,
 };

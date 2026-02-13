@@ -97,6 +97,7 @@ struct DvzCanvas
     void* draw_user_data;
     uint64_t frame_id;
     bool video_sink_enabled;
+    DvzVideoCaptureMode video_capture_mode;
     bool supports_external_memory;
     bool supports_external_semaphore;
     DvzVma allocator;

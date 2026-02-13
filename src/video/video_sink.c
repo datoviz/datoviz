@@ -28,6 +28,7 @@ typedef struct
 {
     DvzVideoEncoder* encoder;
     DvzVideoSinkConfig cfg;
+    DvzVideoCaptureMode resolved_capture_mode;
 } DvzVideoSinkState;
 
 
@@ -77,6 +78,24 @@ static const DvzVideoSinkConfig* video_sink_config(const void* config)
         initialized = true;
     }
     return &default_cfg;
+}
+
+
+
+/**
+ * Resolve sink capture mode from the requested configuration.
+ *
+ * @param cfg sink configuration
+ * @returns requested capture mode when explicit, or EXTERNAL as default for AUTO
+ */
+static DvzVideoCaptureMode video_sink_resolve_capture_mode(const DvzVideoSinkConfig* cfg)
+{
+    ANN(cfg);
+    if (cfg->capture_mode == DVZ_VIDEO_CAPTURE_AUTO)
+    {
+        return DVZ_VIDEO_CAPTURE_EXTERNAL;
+    }
+    return cfg->capture_mode;
 }
 
 
@@ -137,6 +156,15 @@ static int video_sink_create(DvzStreamSink* sink, const void* config)
 
     const DvzVideoSinkConfig* requested = video_sink_config(config);
     state->cfg = *requested;
+    state->resolved_capture_mode = video_sink_resolve_capture_mode(&state->cfg);
+    if (state->resolved_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK)
+    {
+        const char* backend = state->cfg.encoder.backend;
+        if (backend == NULL || backend[0] == '\0' || strcmp(backend, "auto") == 0)
+        {
+            state->cfg.encoder.backend = "kvazaar";
+        }
+    }
 
     const DvzStreamConfig* stream_cfg = dvz_stream_config(sink->stream);
     if (stream_cfg)
@@ -172,6 +200,11 @@ static int video_sink_start(DvzStreamSink* sink, const DvzStreamFrame* frame)
     {
         return -1;
     }
+    if (state->resolved_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK)
+    {
+        return dvz_video_encoder_start(
+            state->encoder, VK_NULL_HANDLE, VK_NULL_HANDLE, 0, -1, -1, state->cfg.bitstream);
+    }
     return dvz_video_encoder_start(
         state->encoder, frame->image, frame->memory, frame->memory_size, frame->memory_fd,
         frame->wait_semaphore_fd, state->cfg.bitstream);
@@ -193,6 +226,54 @@ static int video_sink_submit(DvzStreamSink* sink, uint64_t wait_value)
     if (!state || !state->encoder)
     {
         return -1;
+    }
+    if (state->resolved_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK)
+    {
+        if (!state->cfg.capture_rgba)
+        {
+            log_error("CPU readback capture mode requires capture_rgba callback");
+            return -1;
+        }
+        uint32_t width = 0;
+        uint32_t height = 0;
+        size_t stride = 0;
+        uint8_t* rgba = NULL;
+        if (state->cfg.capture_rgba(
+                state->cfg.capture_user_data, &width, &height, &stride, &rgba) != 0)
+        {
+            return -1;
+        }
+        if (rgba == NULL || width == 0 || height == 0)
+        {
+            log_error("CPU readback capture callback returned invalid frame");
+            if (rgba)
+            {
+                if (state->cfg.release_rgba)
+                {
+                    state->cfg.release_rgba(state->cfg.capture_user_data, rgba);
+                }
+                else
+                {
+                    dvz_free(rgba);
+                }
+            }
+            return -1;
+        }
+        if (stride == 0)
+        {
+            stride = (size_t)width * 4;
+        }
+        int rc =
+            dvz_video_encoder_submit_rgba(state->encoder, rgba, width, height, stride, wait_value);
+        if (state->cfg.release_rgba)
+        {
+            state->cfg.release_rgba(state->cfg.capture_user_data, rgba);
+        }
+        else
+        {
+            dvz_free(rgba);
+        }
+        return rc;
     }
     return dvz_video_encoder_submit(state->encoder, wait_value);
 }
@@ -246,6 +327,7 @@ static int video_sink_update(DvzStreamSink* sink, const DvzStreamFrame* frame)
     {
         return -1;
     }
+    state->resolved_capture_mode = video_sink_resolve_capture_mode(&state->cfg);
     dvz_video_encoder_stop(state->encoder);
     sink->started = false;
     return video_sink_start(sink, frame);
@@ -280,6 +362,10 @@ DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void)
     DvzVideoSinkConfig cfg = {
         .encoder = dvz_video_encoder_default_config(),
         .bitstream = NULL,
+        .capture_mode = DVZ_VIDEO_CAPTURE_AUTO,
+        .capture_rgba = NULL,
+        .release_rgba = NULL,
+        .capture_user_data = NULL,
     };
     return cfg;
 }

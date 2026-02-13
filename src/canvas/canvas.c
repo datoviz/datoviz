@@ -218,6 +218,10 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
     {
         return 0;
     }
+    if (canvas->video_capture_mode != DVZ_VIDEO_CAPTURE_EXTERNAL)
+    {
+        return 0;
+    }
     if (!canvas->timeline_ready || !canvas->supports_external_semaphore)
     {
         log_error("video sink timeline export unavailable");
@@ -614,7 +618,8 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     // Sync-handle ordering contract: prepare the timeline wait handle before stream start/update so
     // video sinks always see the latest semaphore handle during their start/update callback.
     bool needs_video_sync_refresh =
-        canvas->video_sink_enabled && (!canvas->stream_started || frame->handles_dirty);
+        canvas->video_sink_enabled && canvas->video_capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL &&
+        (!canvas->stream_started || frame->handles_dirty);
     if (needs_video_sync_refresh && canvas_prepare_video_wait_semaphore_fd(canvas, frame) != 0)
     {
         return -1;

@@ -74,6 +74,7 @@ typedef struct DvzCanvasAppOptions
     const char* title;
     const char* record_path;
     const char* screenshot_base;
+    DvzVideoCaptureMode record_mode;
     bool start_recording;
 } DvzCanvasAppOptions;
 
@@ -125,6 +126,7 @@ static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
     options->title = "Datoviz Canvas";
     options->record_path = "canvas.mp4";
     options->screenshot_base = "canvas_capture";
+    options->record_mode = DVZ_VIDEO_CAPTURE_AUTO;
     options->start_recording = false;
 }
 
@@ -210,7 +212,8 @@ static void _dvz_canvas_usage(void)
         stderr,
         "usage: dvz_live_canvas [--width N] [--height N] [--bg r,g,b,a] [--fps N]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
-        "                  [--record path.mp4] [--start-recording] [--screenshots base]\n"
+        "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
+        "                  [--start-recording] [--screenshots base]\n"
         "\n"
         "hotkeys: Esc quit, S screenshot, R toggle recording\n");
 }
@@ -285,6 +288,26 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         else if (strcmp(arg, "--screenshots") == 0)
         {
             options->screenshot_base = value;
+        }
+        else if (strcmp(arg, "--record-mode") == 0)
+        {
+            if (strcmp(value, "auto") == 0)
+            {
+                options->record_mode = DVZ_VIDEO_CAPTURE_AUTO;
+            }
+            else if (strcmp(value, "external") == 0)
+            {
+                options->record_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
+            }
+            else if (strcmp(value, "cpu") == 0)
+            {
+                options->record_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
+            }
+            else
+            {
+                dvz_fprintf(stderr, "invalid record mode: %s\\n", value);
+                return false;
+            }
         }
         else if (strcmp(arg, "--present") == 0)
         {
@@ -390,6 +413,7 @@ static void _dvz_canvas_toggle_recording(DvzCanvasApp* app)
         app->video_cfg.encoder.fps = (uint32_t)app->options.fps;
         app->video_cfg.encoder.mp4_path = app->options.record_path;
         app->video_cfg.bitstream = NULL;
+        app->video_cfg.capture_mode = app->options.record_mode;
         int rc = dvz_canvas_configure_video_sink(app->canvas, true, &app->video_cfg);
         if (rc == 0)
         {

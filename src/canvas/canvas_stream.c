@@ -66,16 +66,88 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 
 
 /**
+ * Capture the current canvas frame into a temporary RGBA buffer.
+ *
+ * @param user_data canvas pointer
+ * @param out_width destination width
+ * @param out_height destination height
+ * @param out_stride destination row stride in bytes
+ * @param out_rgba destination pointer receiving a freshly allocated RGBA buffer
+ * @returns 0 on success or -1 when capture fails
+ */
+static int canvas_capture_rgba_callback(
+    void* user_data, uint32_t* out_width, uint32_t* out_height, size_t* out_stride,
+    uint8_t** out_rgba)
+{
+    DvzCanvas* canvas = (DvzCanvas*)user_data;
+    ANN(canvas);
+    ANN(out_width);
+    ANN(out_height);
+    ANN(out_stride);
+    ANN(out_rgba);
+    int rc = dvz_canvas_capture_rgba(canvas, out_width, out_height, out_rgba);
+    if (rc == 0)
+    {
+        *out_stride = (size_t)(*out_width) * 4;
+    }
+    return rc;
+}
+
+
+
+/**
+ * Return whether the canvas can run external-handle video capture.
+ *
+ * @param canvas canvas instance
+ * @returns true when external memory and semaphore exports are available
+ */
+static bool canvas_has_external_video_support(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    return canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+}
+
+
+
+/**
+ * Resolve the requested capture mode against runtime canvas capabilities.
+ *
+ * @param canvas canvas instance
+ * @param cfg optional sink configuration
+ * @returns the effective capture mode to use
+ */
+static DvzVideoCaptureMode
+canvas_resolve_video_capture_mode(const DvzCanvas* canvas, const DvzVideoSinkConfig* cfg)
+{
+    ANN(canvas);
+    DvzVideoCaptureMode requested = DVZ_VIDEO_CAPTURE_AUTO;
+    if (cfg)
+    {
+        requested = cfg->capture_mode;
+    }
+    if (requested == DVZ_VIDEO_CAPTURE_AUTO)
+    {
+        return canvas_has_external_video_support(canvas) ? DVZ_VIDEO_CAPTURE_EXTERNAL
+                                                         : DVZ_VIDEO_CAPTURE_CPU_READBACK;
+    }
+    return requested;
+}
+
+
+
+/**
  * Create a new canvas stream with required sinks.
  *
  * @param canvas canvas owning the stream
  * @param enable_video true to attach the video sink
  * @param cfg optional video sink configuration when enable_video is true
+ * @param capture_mode resolved capture mode for the video sink
  * @param out_stream destination pointer receiving the new stream on success
  * @returns 0 on success or -1 when stream/sink setup fails
  */
 static int canvas_create_stream_with_sinks(
-    DvzCanvas* canvas, bool enable_video, const DvzVideoSinkConfig* cfg, DvzStream** out_stream)
+    DvzCanvas* canvas, bool enable_video, const DvzVideoSinkConfig* cfg,
+    DvzVideoCaptureMode capture_mode, DvzStream** out_stream)
 {
     ANN(canvas);
     ANN(out_stream);
@@ -117,7 +189,14 @@ static int canvas_create_stream_with_sinks(
             dvz_stream_destroy(stream);
             return -1;
         }
-        if (dvz_stream_attach_sink(stream, video_backend, cfg) != 0)
+        DvzVideoSinkConfig sink_cfg = cfg ? *cfg : dvz_video_sink_default_config();
+        sink_cfg.capture_mode = capture_mode;
+        if (capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK && sink_cfg.capture_rgba == NULL)
+        {
+            sink_cfg.capture_rgba = canvas_capture_rgba_callback;
+            sink_cfg.capture_user_data = canvas;
+        }
+        if (dvz_stream_attach_sink(stream, video_backend, &sink_cfg) != 0)
         {
             log_error("failed to attach video sink to canvas stream");
             dvz_stream_destroy(stream);
@@ -137,15 +216,18 @@ static int canvas_create_stream_with_sinks(
  * @param canvas canvas owning the stream
  * @param enable_video true to keep/attach video sink, false to detach it
  * @param cfg optional video sink configuration used when enable_video is true
+ * @param capture_mode resolved capture mode for the rebuilt video sink
  * @returns 0 on success or -1 when rebuilding fails
  */
 static int
-canvas_rebuild_stream(DvzCanvas* canvas, bool enable_video, const DvzVideoSinkConfig* cfg)
+canvas_rebuild_stream(
+    DvzCanvas* canvas, bool enable_video, const DvzVideoSinkConfig* cfg,
+    DvzVideoCaptureMode capture_mode)
 {
     ANN(canvas);
 
     DvzStream* replacement = NULL;
-    if (canvas_create_stream_with_sinks(canvas, enable_video, cfg, &replacement) != 0)
+    if (canvas_create_stream_with_sinks(canvas, enable_video, cfg, capture_mode, &replacement) != 0)
     {
         return -1;
     }
@@ -161,6 +243,7 @@ canvas_rebuild_stream(DvzCanvas* canvas, bool enable_video, const DvzVideoSinkCo
     canvas->stream_started = false;
     canvas->swapchain_sink_attached = true;
     canvas->video_sink_enabled = enable_video;
+    canvas->video_capture_mode = enable_video ? capture_mode : DVZ_VIDEO_CAPTURE_AUTO;
 
     if (previous)
     {
@@ -269,16 +352,19 @@ int dvz_canvas_stream_enable_video(
 
     if (enable)
     {
-        if (canvas->allocator.external == 0 || !canvas->supports_external_semaphore)
+        DvzVideoCaptureMode capture_mode = canvas_resolve_video_capture_mode(canvas, cfg);
+        if (
+            capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL &&
+            !canvas_has_external_video_support(canvas))
         {
             log_error("video sink requires external memory/semaphore support");
             return -1;
         }
-        if (canvas->video_sink_enabled)
+        if (canvas->video_sink_enabled && canvas->video_capture_mode == capture_mode)
         {
             return 0;
         }
-        return canvas_rebuild_stream(canvas, true, cfg);
+        return canvas_rebuild_stream(canvas, true, cfg, capture_mode);
     }
 
     if (!canvas->video_sink_enabled)
@@ -286,5 +372,5 @@ int dvz_canvas_stream_enable_video(
         return 0;
     }
 
-    return canvas_rebuild_stream(canvas, false, NULL);
+    return canvas_rebuild_stream(canvas, false, NULL, DVZ_VIDEO_CAPTURE_AUTO);
 }
