@@ -1468,6 +1468,340 @@ offscreen_live_wait_cleanup:
     dvz_instance_destroy(&instance);
     return 0;
 }
+
+
+
+/**
+ * Validate offscreen stream ordering: start() once per stream lifecycle and no update() calls.
+ */
+static int test_canvas_offscreen_start_update_order_across_rebuild(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance instance = {0};
+    DvzDevice device = {0};
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    bool device_initialized = false;
+
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    {
+        skip_reason = "Vulkan instance creation failed";
+        goto offscreen_order_cleanup;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        skip_reason = "no Vulkan GPU found";
+        goto offscreen_order_cleanup;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    dvz_gpu_device(gpu, &device);
+    device_initialized = true;
+    dvz_queues(caps, &device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
+    fet12->timelineSemaphore = true;
+
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
+    features->synchronization2 = true;
+    features->dynamicRendering = true;
+
+    if (dvz_device_create(&device) != 0)
+    {
+        skip_reason = "Vulkan device creation failed";
+        goto offscreen_order_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-offscreen-order-test";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_order_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = &device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.timing_history = 4;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+
+    CanvasRefreshProbeState probe = {
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+    }
+    AT(probe.start_count >= 1);
+    AT(probe.update_count == 0);
+    AT(probe.submit_count >= 2);
+    AT(probe.wait_value_non_monotonic == 0);
+
+    CanvasLiveProbeState live_probe = {0};
+    DvzCanvasLiveImageSinkConfig live_cfg = {
+        .callback = canvas_live_probe_callback,
+        .user_data = &live_probe,
+    };
+    AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
+
+    probe = (CanvasRefreshProbeState){
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(probe.start_count >= 1);
+    AT(probe.update_count == 0);
+    AT(probe.submit_count >= 1);
+    AT(probe.wait_value_non_monotonic == 0);
+
+    AT(dvz_canvas_configure_live_image_sink(canvas, false, NULL) == 0);
+
+    probe = (CanvasRefreshProbeState){
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(probe.start_count >= 1);
+    AT(probe.update_count == 0);
+    AT(probe.submit_count >= 1);
+    AT(probe.wait_value_non_monotonic == 0);
+
+offscreen_order_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas offscreen start/update ordering test skipped (%s)", skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    if (device_initialized)
+    {
+        dvz_device_destroy(&device);
+    }
+    dvz_instance_destroy(&instance);
+    return 0;
+}
+
+
+
+/**
+ * Validate offscreen video-sink rebuild keeps wait values strictly increasing.
+ */
+static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance instance = {0};
+    DvzDevice device = {0};
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    bool device_initialized = false;
+
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    {
+        skip_reason = "Vulkan instance creation failed";
+        goto offscreen_video_wait_cleanup;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        skip_reason = "no Vulkan GPU found";
+        goto offscreen_video_wait_cleanup;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    dvz_gpu_device(gpu, &device);
+    device_initialized = true;
+    dvz_queues(caps, &device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
+    fet12->timelineSemaphore = true;
+
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
+    features->synchronization2 = true;
+    features->dynamicRendering = true;
+
+    if (dvz_device_create(&device) != 0)
+    {
+        skip_reason = "Vulkan device creation failed";
+        goto offscreen_video_wait_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-offscreen-video-wait-test";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_video_wait_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = &device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.timing_history = 4;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+
+    CanvasRefreshProbeState probe = {
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
+    sink_cfg.encoder.backend = "auto";
+    sink_cfg.encoder.width = 320;
+    sink_cfg.encoder.height = 240;
+    sink_cfg.encoder.fps = 30;
+    sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
+    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_offscreen_video_wait_test.mp4";
+    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_offscreen_video_wait_test.h26x";
+    if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
+    {
+        skip_reason = "video backend unavailable";
+        goto offscreen_video_wait_cleanup;
+    }
+    probe = (CanvasRefreshProbeState){
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+    }
+    uint64_t wait_before_disable = probe.last_wait_value;
+    AT(probe.wait_value_count >= 2);
+    AT(probe.wait_value_non_monotonic == 0);
+
+    AT(dvz_canvas_configure_video_sink(canvas, false, NULL) == 0);
+
+    probe = (CanvasRefreshProbeState){
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+    }
+    AT(probe.wait_value_count >= 2);
+    AT(probe.wait_value_non_monotonic == 0);
+
+    if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
+    {
+        skip_reason = "video backend unavailable after rebuild";
+        goto offscreen_video_wait_cleanup;
+    }
+    probe = (CanvasRefreshProbeState){
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+    }
+    AT(probe.wait_value_count >= 2);
+    AT(probe.wait_value_non_monotonic == 0);
+    AT(probe.last_wait_value > wait_before_disable);
+
+offscreen_video_wait_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas offscreen video-wait monotonic test skipped (%s)", skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    if (device_initialized)
+    {
+        dvz_device_destroy(&device);
+    }
+    dvz_instance_destroy(&instance);
+    return 0;
+}
 /**
  * Validate that present mode cannot be created on an offscreen window backend.
  */
@@ -2838,6 +3172,8 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_offscreen_state_device_lost);
     TEST_SIMPLE(test_canvas_offscreen_handles_clean_after_rebuild);
     TEST_SIMPLE(test_canvas_offscreen_live_wait_monotonic_across_rebuild);
+    TEST_SIMPLE(test_canvas_offscreen_start_update_order_across_rebuild);
+    TEST_SIMPLE(test_canvas_offscreen_video_wait_monotonic_across_rebuild);
     TEST_SIMPLE(test_canvas_present_mode_rejects_offscreen_window);
     TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
     TEST_SIMPLE(test_canvas_glfw_present_recovery);

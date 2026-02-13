@@ -1106,12 +1106,26 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     // If the stream starts on this frame, sinks consumed the frame in start(); otherwise a handle
     // refresh must be propagated through update() before the next submit().
     bool stream_started_now = !stream_was_started && canvas->stream_started;
-    if (!canvas_is_offscreen_mode(canvas) && stream_started_now)
+    if (canvas_is_offscreen_mode(canvas))
+    {
+        // Offscreen contract: frame metadata stays stable within a stream lifecycle, so canvas
+        // never routes per-frame metadata through stream->update() in this mode.
+        if (stream_started_now && frame->handles_dirty)
+        {
+            frame->handles_dirty = false;
+        }
+        else if (frame->handles_dirty)
+        {
+            log_warn("offscreen frame reported dirty handles; clearing without stream update");
+            frame->handles_dirty = false;
+        }
+    }
+    else if (stream_started_now)
     {
         dvz_canvas_swapchain_handles_refreshed(canvas);
         frame->handles_dirty = false;
     }
-    else if (!canvas_is_offscreen_mode(canvas) && canvas->stream_started && frame->handles_dirty)
+    else if (canvas->stream_started && frame->handles_dirty)
     {
         if (dvz_stream_update(canvas->stream, frame) != 0)
         {

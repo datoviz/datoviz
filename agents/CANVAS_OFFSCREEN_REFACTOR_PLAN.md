@@ -24,7 +24,8 @@ Current status:
 2. Current task: `OFFS-070 - Harden synchronization and handle-refresh semantics across mode changes`
 3. Last completed task: `OFFS-060 - Implement deterministic frame lifecycle/state machine for offscreen mode`
 4. Last updated: `2026-02-13`
-5. Note: OFFS-070 adds offscreen monotonic wait-value coverage across submit failure and sink rebuilds.
+5. Note: OFFS-070 now covers wait-value monotonicity across live/video rebuilds and explicit offscreen
+   start/update ordering.
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
