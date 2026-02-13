@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <string.h>
+
 #include "test_window.h"
 #include "_assertions.h"
 #include "datoviz/window.h"
@@ -150,6 +152,118 @@ int test_window_fallback(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure wrap windows can be created and selected explicitly.
+ */
+int test_window_wrap_create(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
+    ANN(window);
+    AT(dvz_window_backend_type(window) == DVZ_BACKEND_WRAP);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
+ * Verify wrap external-surface attach, update, and detach APIs.
+ */
+int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
+    ANN(window);
+
+    DvzWindowExternalSurfaceInfo info = {
+        .instance = (VkInstance)0x1,
+        .surface = (VkSurfaceKHR)0x2,
+        .extent = {.width = 640, .height = 480},
+        .scale_x = 2.0f,
+        .scale_y = 1.5f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_attach_surface(window, &info) == 0);
+    const DvzWindowSurface* surface = dvz_window_surface(window);
+    ANN(surface);
+    AT(surface->instance == info.instance);
+    AT(surface->surface == info.surface);
+    AT(surface->extent.width == info.extent.width);
+    AT(surface->extent.height == info.extent.height);
+    AT(surface->scale_x == info.scale_x);
+    AT(surface->scale_y == info.scale_y);
+
+    DvzWindowExternalSurfaceInfo update_loss = {
+        .instance = VK_NULL_HANDLE,
+        .surface = VK_NULL_HANDLE,
+        .extent = {.width = 640, .height = 480},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_update_surface(window, &update_loss) == 0);
+    surface = dvz_window_surface(window);
+    AT(surface->instance == VK_NULL_HANDLE);
+    AT(surface->surface == VK_NULL_HANDLE);
+
+    AT(dvz_window_wrap_attach_surface(window, &info) == 0);
+    dvz_window_wrap_detach_surface(window);
+    surface = dvz_window_surface(window);
+    AT(surface->instance == VK_NULL_HANDLE);
+    AT(surface->surface == VK_NULL_HANDLE);
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
+ * Verify required-extension query returns empty set for the headless backend.
+ */
+int test_window_required_extensions_headless(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    AT(dvz_window_host_required_extension_count(host, DVZ_BACKEND_OFFSCREEN) == 0);
+    AT(dvz_window_host_required_extensions(host, DVZ_BACKEND_OFFSCREEN, 0, NULL) == 0);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
+ * Verify wrap backend extension list roundtrips through host query APIs.
+ */
+int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    const char* required[] = {VK_KHR_SURFACE_EXTENSION_NAME, "VK_EXT_metal_surface"};
+    AT(dvz_window_wrap_set_required_extensions(host, 2, required) == 0);
+    AT(dvz_window_host_required_extension_count(host, DVZ_BACKEND_WRAP) == 2);
+    const char* out[2] = {0};
+    AT(dvz_window_host_required_extensions(host, DVZ_BACKEND_WRAP, 2, out) == 2);
+    AT(strcmp(out[0], required[0]) == 0);
+    AT(strcmp(out[1], required[1]) == 0);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
  * Register the window tests to the suite.
  */
 int test_window(TstSuite* suite)
@@ -160,5 +274,9 @@ int test_window(TstSuite* suite)
     TEST_SIMPLE(test_window_resize_events);
     TEST_SIMPLE(test_window_frame_requests);
     TEST_SIMPLE(test_window_fallback);
+    TEST_SIMPLE(test_window_wrap_create);
+    TEST_SIMPLE(test_window_wrap_attach_detach);
+    TEST_SIMPLE(test_window_required_extensions_headless);
+    TEST_SIMPLE(test_window_required_extensions_wrap);
     return 0;
 }

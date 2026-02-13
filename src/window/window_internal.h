@@ -39,6 +39,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzWindowBackendSlot DvzWindowBackendSlot;
+typedef struct DvzWindowWrapBackendState DvzWindowWrapBackendState;
 
 
 
@@ -55,6 +56,14 @@ struct DvzWindowBackendSlot
 
 
 
+struct DvzWindowWrapBackendState
+{
+    uint32_t extension_count;
+    char** extensions;
+};
+
+
+
 struct DvzWindow
 {
     DvzWindowHost* host;
@@ -64,6 +73,7 @@ struct DvzWindow
     DvzInputRouter* router;
     DvzWindowConfig config;
     DvzWindowSurface surface;
+    bool backend_owns_surface;
     char title[DVZ_WINDOW_TITLE_MAX];
     bool frame_pending;
     void* user_data;
@@ -80,4 +90,5 @@ struct DvzWindowHost
     DvzWindowBackendSlot* backends;
     uint32_t backend_count;
     uint32_t backend_capacity;
+    DvzWindowWrapBackendState wrap_state;
 };

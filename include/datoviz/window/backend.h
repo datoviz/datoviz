@@ -29,6 +29,7 @@
 
 typedef struct DvzWindowBackend DvzWindowBackend;
 typedef struct DvzWindowBackendProcs DvzWindowBackendProcs;
+typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
 typedef bool (*DvzWindowBackendProbe)(DvzWindowBackend* backend, DvzWindowHost* host);
 typedef bool (*DvzWindowBackendCreate)(
@@ -36,6 +37,10 @@ typedef bool (*DvzWindowBackendCreate)(
 typedef void (*DvzWindowBackendDestroy)(DvzWindowBackend* backend, DvzWindow* window);
 typedef void (*DvzWindowBackendPoll)(DvzWindowBackend* backend, DvzWindowHost* host);
 typedef void (*DvzWindowBackendRequestFrame)(DvzWindowBackend* backend, DvzWindow* window);
+typedef uint32_t (*DvzWindowBackendRequiredExtensionCount)(
+    DvzWindowBackend* backend, DvzWindowHost* host);
+typedef const char* (*DvzWindowBackendRequiredExtensionAt)(
+    DvzWindowBackend* backend, DvzWindowHost* host, uint32_t index);
 
 
 
@@ -50,6 +55,8 @@ struct DvzWindowBackendProcs
     DvzWindowBackendDestroy destroy;
     DvzWindowBackendPoll poll;
     DvzWindowBackendRequestFrame request_frame;
+    DvzWindowBackendRequiredExtensionCount required_extension_count;
+    DvzWindowBackendRequiredExtensionAt required_extension_at;
 };
 
 
@@ -60,6 +67,18 @@ struct DvzWindowBackend
     DvzBackend type;
     void* user_data;
     DvzWindowBackendProcs procs;
+};
+
+
+
+struct DvzWindowExternalSurfaceInfo
+{
+    VkInstance instance;
+    VkSurfaceKHR surface;
+    VkExtent2D extent;
+    float scale_x;
+    float scale_y;
+    bool owned_by_datoviz;
 };
 
 
@@ -137,6 +156,79 @@ DVZ_EXPORT void* dvz_window_backend_payload(const DvzWindow* window);
 DVZ_EXPORT bool dvz_window_glfw_init(void);
 
 
+
+/**
+ * Configure the required Vulkan instance extensions for the wrap backend.
+ *
+ * @param host host that owns the wrap backend state
+ * @param count number of extension names passed in extensions
+ * @param extensions extension-name array or NULL when count is zero
+ * @returns 0 on success, -1 on invalid input or allocation failure
+ */
+DVZ_EXPORT int
+dvz_window_wrap_set_required_extensions(DvzWindowHost* host, uint32_t count, const char* const* extensions);
+
+
+
+/**
+ * Attach an externally-created Vulkan surface to a wrap window.
+ *
+ * @param window target window created with DVZ_BACKEND_WRAP
+ * @param info external surface description
+ * @returns 0 on success, -1 on invalid args/backend mismatch/invalid handles
+ */
+DVZ_EXPORT int
+dvz_window_wrap_attach_surface(DvzWindow* window, const DvzWindowExternalSurfaceInfo* info);
+
+
+
+/**
+ * Update the externally-managed Vulkan surface associated with a wrap window.
+ *
+ * @param window target window created with DVZ_BACKEND_WRAP
+ * @param info external surface description
+ * @returns 0 on success, -1 on invalid args/backend mismatch/rejected update
+ */
+DVZ_EXPORT int
+dvz_window_wrap_update_surface(DvzWindow* window, const DvzWindowExternalSurfaceInfo* info);
+
+
+
+/**
+ * Detach the external Vulkan surface from a wrap window.
+ *
+ * @param window target window created with DVZ_BACKEND_WRAP
+ */
+DVZ_EXPORT void dvz_window_wrap_detach_surface(DvzWindow* window);
+
+
+
+/**
+ * Query the required Vulkan instance extension count for a backend.
+ *
+ * @param host host that contains the backend registry
+ * @param backend backend to query
+ * @returns required extension count, or 0 on unavailable backend
+ */
+DVZ_EXPORT uint32_t
+dvz_window_host_required_extension_count(DvzWindowHost* host, DvzBackend backend);
+
+
+
+/**
+ * Query backend-required Vulkan instance extension names.
+ *
+ * @param host host that contains the backend registry
+ * @param backend backend to query
+ * @param capacity maximum number of names that can be written in out_extensions
+ * @param out_extensions output array of extension names
+ * @returns number of names written, or -1 on invalid input/backend unavailable
+ */
+DVZ_EXPORT int dvz_window_host_required_extensions(
+    DvzWindowHost* host, DvzBackend backend, uint32_t capacity, const char** out_extensions);
+
+
+
 /**
  * Emit a resize event and refresh the cached surface state.
  *
@@ -185,6 +277,15 @@ DVZ_EXPORT void dvz_window_register_headless_backend(DvzWindowHost* host);
  * @param host host that should expose the GLFW backend
  */
 DVZ_EXPORT void dvz_window_register_glfw_backend(DvzWindowHost* host);
+
+
+
+/**
+ * Register the built-in wrap backend on the host.
+ *
+ * @param host host that should expose the wrap backend
+ */
+DVZ_EXPORT void dvz_window_register_wrap_backend(DvzWindowHost* host);
 
 
 

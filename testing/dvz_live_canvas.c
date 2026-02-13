@@ -21,6 +21,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
@@ -677,38 +678,49 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     app->options = options;
     app->running = true;
 
-    if (app->options.backend == DVZ_BACKEND_GLFW)
+    app->host = dvz_window_host();
+    if (app->host == NULL)
     {
-#if DVZ_HAS_GLFW
-        if (!dvz_window_glfw_init())
-        {
-            dvz_fprintf(stderr, "unable to initialize GLFW\\n");
-            return false;
-        }
-#else
-        dvz_fprintf(stderr, "GLFW backend requested but Datoviz was built without GLFW\\n");
+        dvz_fprintf(stderr, "failed to create window host\\n");
         return false;
-#endif
+    }
+
+    if (app->options.backend == DVZ_BACKEND_GLFW && !dvz_window_glfw_init())
+    {
+        dvz_fprintf(stderr, "unable to initialize GLFW\\n");
+        return false;
     }
 
     DvzInstanceConfig icfg = dvz_instance_default_config();
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
-    if (app->options.backend == DVZ_BACKEND_GLFW)
+    uint32_t ext_count =
+        dvz_window_host_required_extension_count(app->host, app->options.backend);
+    if (ext_count > 0)
     {
-#if DVZ_HAS_GLFW
-        dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
-        uint32_t ext_count = 0;
-        const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-        if (extensions == NULL || ext_count == 0)
+        const char** extensions = dvz_calloc(ext_count, sizeof(char*));
+        if (extensions == NULL)
         {
-            dvz_fprintf(stderr, "GLFW returned no required Vulkan instance extensions\\n");
+            dvz_fprintf(stderr, "failed to allocate backend extension list\\n");
             return false;
         }
-        for (uint32_t i = 0; i < ext_count; ++i)
+        int written = dvz_window_host_required_extensions(
+            app->host, app->options.backend, ext_count, extensions);
+        if (written != (int)ext_count)
+        {
+            dvz_fprintf(stderr, "failed to query required backend extensions\\n");
+            dvz_free((void*)extensions);
+            return false;
+        }
+        for (uint32_t i = 0; i < ext_count; i++)
         {
             dvz_instance_config_request_extension(&icfg, extensions[i]);
         }
-#endif
+        dvz_free((void*)extensions);
+    }
+    else if (app->options.backend != DVZ_BACKEND_OFFSCREEN)
+    {
+        dvz_fprintf(stderr, "requested backend exposes no Vulkan instance extensions\\n");
+        return false;
     }
 
     app->instance = dvz_instance_create(&icfg);
@@ -756,9 +768,6 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         dvz_fprintf(stderr, "failed to create Vulkan device\\n");
         return false;
     }
-
-    app->host = dvz_window_host();
-    ANN(app->host);
 
     DvzWindowConfig wcfg = dvz_window_default_config();
     wcfg.width = app->options.width;

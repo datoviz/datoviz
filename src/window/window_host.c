@@ -54,6 +54,7 @@ static void _window_array_add(DvzWindowHost* host, DvzWindow* window);
 static void _window_array_remove(DvzWindowHost* host, DvzWindow* window);
 
 static void _window_host_clear_windows(DvzWindowHost* host);
+static void _window_wrap_state_clear(DvzWindowHost* host);
 
 
 
@@ -89,6 +90,7 @@ static void _window_register_builtins(DvzWindowHost* host)
     ANN(host);
     dvz_window_register_headless_backend(host);
     dvz_window_register_glfw_backend(host);
+    dvz_window_register_wrap_backend(host);
 }
 
 
@@ -173,6 +175,31 @@ static void _window_host_clear_windows(DvzWindowHost* host)
 
 
 
+/**
+ * Release extension strings owned by the wrap backend state.
+ *
+ * @param host window host whose wrap state is cleared
+ */
+static void _window_wrap_state_clear(DvzWindowHost* host)
+{
+    ANN(host);
+    DvzWindowWrapBackendState* state = &host->wrap_state;
+    if (state->extensions == NULL)
+    {
+        state->extension_count = 0;
+        return;
+    }
+    for (uint32_t i = 0; i < state->extension_count; i++)
+    {
+        dvz_free(state->extensions[i]);
+    }
+    dvz_free(state->extensions);
+    state->extensions = NULL;
+    state->extension_count = 0;
+}
+
+
+
 static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* config)
 {
     ANN(window);
@@ -192,6 +219,7 @@ static void _window_setup_config(DvzWindow* window, const DvzWindowConfig* confi
     window->surface.surface = VK_NULL_HANDLE;
     window->surface.format = VK_FORMAT_B8G8R8A8_UNORM;
     window->surface.color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    window->backend_owns_surface = false;
 }
 
 
@@ -244,6 +272,7 @@ void dvz_window_host_destroy(DvzWindowHost* host)
     if (host == NULL)
         return;
     _window_host_clear_windows(host);
+    _window_wrap_state_clear(host);
     dvz_free(host->windows);
     dvz_free(host->backends);
     dvz_free(host);
@@ -428,6 +457,63 @@ DvzBackend dvz_window_backend_type(const DvzWindow* window)
 {
     ANN(window);
     return (window->backend_slot != NULL) ? window->backend_slot->backend.type : DVZ_BACKEND_NONE;
+}
+
+
+
+/**
+ * Query how many Vulkan instance extensions are required by a given backend.
+ *
+ * @param host host that contains the backend registry
+ * @param backend backend identifier to query
+ * @return required extension count, or 0 when backend is unavailable
+ */
+uint32_t dvz_window_host_required_extension_count(DvzWindowHost* host, DvzBackend backend)
+{
+    if (host == NULL)
+        return 0;
+    DvzWindowBackendSlot* slot = _window_find_slot(host, backend);
+    if (slot == NULL || !slot->available || slot->backend.procs.required_extension_count == NULL)
+        return 0;
+    return slot->backend.procs.required_extension_count(&slot->backend, host);
+}
+
+
+
+/**
+ * Query backend-required Vulkan instance extension names.
+ *
+ * @param host host that contains the backend registry
+ * @param backend backend identifier to query
+ * @param capacity maximum number of entries writable to out_extensions
+ * @param out_extensions output array receiving extension names
+ * @return number of written extensions, or -1 on invalid input/backend unavailable
+ */
+int dvz_window_host_required_extensions(
+    DvzWindowHost* host, DvzBackend backend, uint32_t capacity, const char** out_extensions)
+{
+    if (host == NULL)
+        return -1;
+    if (capacity > 0 && out_extensions == NULL)
+        return -1;
+
+    DvzWindowBackendSlot* slot = _window_find_slot(host, backend);
+    if (slot == NULL || !slot->available || slot->backend.procs.required_extension_count == NULL ||
+        slot->backend.procs.required_extension_at == NULL)
+    {
+        return -1;
+    }
+
+    uint32_t required = slot->backend.procs.required_extension_count(&slot->backend, host);
+    uint32_t written = required < capacity ? required : capacity;
+    for (uint32_t i = 0; i < written; i++)
+    {
+        const char* extension = slot->backend.procs.required_extension_at(&slot->backend, host, i);
+        if (extension == NULL)
+            return -1;
+        out_extensions[i] = extension;
+    }
+    return (int)written;
 }
 
 

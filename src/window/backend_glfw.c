@@ -223,6 +223,52 @@ static bool _glfw_probe(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 
+/**
+ * Return the number of Vulkan instance extensions required by GLFW.
+ *
+ * @param backend GLFW backend descriptor
+ * @param host window host querying extension requirements
+ * @return number of required extensions, or 0 when unavailable
+ */
+static uint32_t _glfw_required_extension_count(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    (void)backend;
+    (void)host;
+    if (!_glfw_init())
+        return 0;
+    uint32_t ext_count = 0;
+    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
+    if (extensions == NULL)
+        return 0;
+    return ext_count;
+}
+
+
+
+/**
+ * Return one Vulkan instance extension name required by GLFW.
+ *
+ * @param backend GLFW backend descriptor
+ * @param host window host querying extension requirements
+ * @param index extension index to resolve
+ * @return extension name at index, or NULL when unavailable
+ */
+static const char*
+_glfw_required_extension_at(DvzWindowBackend* backend, DvzWindowHost* host, uint32_t index)
+{
+    (void)backend;
+    (void)host;
+    if (!_glfw_init())
+        return NULL;
+    uint32_t ext_count = 0;
+    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
+    if (extensions == NULL || index >= ext_count)
+        return NULL;
+    return extensions[index];
+}
+
+
+
 static bool
 _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
 {
@@ -336,6 +382,8 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
                 .destroy = _glfw_destroy,
                 .poll = _glfw_poll,
                 .request_frame = NULL,
+                .required_extension_count = _glfw_required_extension_count,
+                .required_extension_at = _glfw_required_extension_at,
             },
     };
     dvz_window_host_register_backend(host, &backend);
@@ -348,6 +396,42 @@ static bool _glfw_disabled_probe(DvzWindowBackend* backend, DvzWindowHost* host)
     (void)backend;
     (void)host;
     return false;
+}
+
+
+
+/**
+ * Return GLFW extension requirements when GLFW support is disabled.
+ *
+ * @param backend disabled backend descriptor
+ * @param host window host querying extension requirements
+ * @return always 0 when GLFW is disabled
+ */
+static uint32_t
+_glfw_disabled_required_extension_count(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    (void)backend;
+    (void)host;
+    return 0;
+}
+
+
+
+/**
+ * Return one GLFW extension name when GLFW support is disabled.
+ *
+ * @param backend disabled backend descriptor
+ * @param host window host querying extension requirements
+ * @param index extension index to resolve
+ * @return always NULL when GLFW is disabled
+ */
+static const char*
+_glfw_disabled_required_extension_at(DvzWindowBackend* backend, DvzWindowHost* host, uint32_t index)
+{
+    (void)backend;
+    (void)host;
+    (void)index;
+    return NULL;
 }
 
 
@@ -369,6 +453,8 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
                 .destroy = NULL,
                 .poll = NULL,
                 .request_frame = NULL,
+                .required_extension_count = _glfw_disabled_required_extension_count,
+                .required_extension_at = _glfw_disabled_required_extension_at,
             },
     };
     dvz_window_host_register_backend(host, &backend);

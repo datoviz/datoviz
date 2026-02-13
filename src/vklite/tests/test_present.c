@@ -207,9 +207,28 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         return false;
     }
 
-    uint32_t ext_count = 0;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    if (extensions == NULL || ext_count == 0)
+    uint32_t ext_count = dvz_window_host_required_extension_count(fixture->host, DVZ_BACKEND_GLFW);
+    const char** extensions = NULL;
+    bool extensions_allocated = false;
+    if (ext_count > 0)
+    {
+        extensions = dvz_calloc(ext_count, sizeof(char*));
+        if (extensions == NULL)
+        {
+            log_warn("vklite present tests skipped because extension-list allocation failed");
+            return false;
+        }
+        extensions_allocated = true;
+        int written =
+            dvz_window_host_required_extensions(fixture->host, DVZ_BACKEND_GLFW, ext_count, extensions);
+        if (written != (int)ext_count)
+        {
+            log_warn("vklite present tests skipped because required-extension query failed");
+            dvz_free((void*)extensions);
+            return false;
+        }
+    }
+    if (ext_count == 0)
     {
 #if OS_MACOS
         static const char* macos_fallback_extensions[] = {
@@ -223,11 +242,15 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         ext_count = 2;
 #else
         log_warn("vklite present tests skipped because GLFW returned no Vulkan extensions");
+        if (extensions_allocated)
+            dvz_free((void*)extensions);
         return false;
 #endif
     }
     fixture->instance =
         _present_instance_create(extensions, ext_count, VK_API_VERSION_1_3, false);
+    if (extensions_allocated)
+        dvz_free((void*)extensions);
     if (fixture->instance == NULL)
     {
         log_warn("vklite present tests skipped because Vulkan instance creation failed");

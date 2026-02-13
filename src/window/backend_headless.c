@@ -62,6 +62,41 @@ static void _headless_destroy(DvzWindowBackend* backend, DvzWindow* window)
 
 
 /**
+ * Return how many Vulkan instance extensions are required by the headless backend.
+ *
+ * @param backend headless backend descriptor
+ * @param host window host querying extension requirements
+ * @return always 0 for the headless backend
+ */
+static uint32_t _headless_required_extension_count(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    (void)backend;
+    (void)host;
+    return 0;
+}
+
+
+
+/**
+ * Return one Vulkan instance extension name for the headless backend.
+ *
+ * @param backend headless backend descriptor
+ * @param host window host querying extension requirements
+ * @param index extension index to resolve
+ * @return NULL because headless requires no WSI extensions
+ */
+static const char*
+_headless_required_extension_at(DvzWindowBackend* backend, DvzWindowHost* host, uint32_t index)
+{
+    (void)backend;
+    (void)host;
+    (void)index;
+    return NULL;
+}
+
+
+
+/**
  * Register the built-in headless backend.
  */
 void dvz_window_register_headless_backend(DvzWindowHost* host)
@@ -78,6 +113,8 @@ void dvz_window_register_headless_backend(DvzWindowHost* host)
                 .destroy = _headless_destroy,
                 .poll = NULL,
                 .request_frame = NULL,
+                .required_extension_count = _headless_required_extension_count,
+                .required_extension_at = _headless_required_extension_at,
             },
     };
     dvz_window_host_register_backend(host, &backend);

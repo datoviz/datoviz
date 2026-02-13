@@ -32,6 +32,14 @@ int test_window_frame_requests(TstSuite* suite, TstItem* item);
 
 int test_window_fallback(TstSuite* suite, TstItem* item);
 
+int test_window_wrap_create(TstSuite* suite, TstItem* item);
+
+int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item);
+
+int test_window_required_extensions_headless(TstSuite* suite, TstItem* item);
+
+int test_window_required_extensions_wrap(TstSuite* suite, TstItem* item);
+
 
 
 int test_window(TstSuite* suite);
