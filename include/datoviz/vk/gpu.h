@@ -80,17 +80,6 @@ DVZ_EXPORT DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count);
 
 
 
-/**
- * Create a logical device from a physical GPU device.
- *
- * @param gpu the GPU
- * @param[out] device the created logical device
- * @returns the creation result
- */
-// DVZ_EXPORT int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device);
-
-
-
 /*************************************************************************************************/
 /*  GPU properties                                                                               */
 /*************************************************************************************************/

@@ -258,6 +258,32 @@ Deliverables:
 3. ensure no public struct layout leaks remain.
 
 Exit criteria:
+1. build passes and Vulkan-path suites pass in a runtime-capable environment.
+2. public `instance/device` headers expose only opaque runtime handles and config/query APIs.
+3. legacy runtime builder/mutation APIs are internal-only.
+
+
+## Implementation status (current)
+
+Completed:
+1. Public `DvzInstance` and `DvzDevice` runtime struct layouts are removed from
+   `include/datoviz/vk/instance.h` and `include/datoviz/vk/device.h`.
+2. Public API constructors are config-first:
+   1. `DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg)`
+   2. `DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)`
+3. Public config helper APIs for queue/extension/feature requests are retained.
+4. Legacy runtime builder APIs (`dvz_instance_build`, `dvz_device_build`,
+   `dvz_device_request_features*`, etc.) are now internal-only through private headers
+   (`src/vk/_instance.h`, `src/vk/_device.h`).
+5. `DvzBootstrap` now owns pointer-based runtime objects (`DvzInstance*`, `DvzDevice*`) rather
+   than embedded public structs.
+6. Teardown path is hardened (idempotent/null-safe destroy behavior for instance/device).
+7. Active call sites/tests in vk/vklite/canvas/testing are migrated to the new public config
+   create/destroy flow.
+
+Notes:
+1. Runtime-dependent test execution still depends on local Vulkan/Metal availability; in
+   non-capable environments the runtime-unavailable paths are expected.
 1. green build/tests on supported runtime environments.
 2. ownership model is consistent across all active runtime objects.
 
