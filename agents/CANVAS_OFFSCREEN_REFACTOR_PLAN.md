@@ -20,32 +20,32 @@ Legend:
 3. `[ ]` not started
 
 Current status:
-1. Current milestone: `M0 - Baseline and contract freeze`
-2. Current task: `OFFS-000 - Baseline verification`
-3. Last completed task: `none`
+1. Current milestone: `M1 - Mode plumbing and sink gating`
+2. Current task: `OFFS-080 - Add canvas offscreen tests`
+3. Last completed task: `OFFS-030 - Add offscreen frame sink backend for no-present execution`
 4. Last updated: `2026-02-13`
-5. Note: plan initialized; implementation not started.
+5. Note: foundational mode plumbing is implemented; output/capture contracts are still pending.
 
 Task board status:
-1. `[ ] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
-2. `[ ] OFFS-005` Freeze offscreen mode API and runtime contracts.
-3. `[ ] OFFS-010` Add explicit canvas render mode plumbing (present vs offscreen).
-4. `[ ] OFFS-020` Make swapchain sink optional and mode-gated.
-5. `[ ] OFFS-030` Add offscreen frame sink backend for no-present execution.
+1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
+2. `[x] OFFS-005` Freeze offscreen mode API and runtime contracts.
+3. `[x] OFFS-010` Add explicit canvas render mode plumbing (present vs offscreen).
+4. `[x] OFFS-020` Make swapchain sink optional and mode-gated.
+5. `[x] OFFS-030` Add offscreen frame sink backend for no-present execution.
 6. `[ ] OFFS-040` Add transport-oriented live-image sink contract/API.
 7. `[ ] OFFS-050` Wire CPU readback and video capture contracts to offscreen mode.
 8. `[ ] OFFS-060` Implement deterministic frame lifecycle/state machine for offscreen mode.
 9. `[ ] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
-10. `[ ] OFFS-080` Add canvas offscreen tests (headless + capability-gated).
+10. `[~] OFFS-080` Add canvas offscreen tests (headless + capability-gated).
 11. `[ ] OFFS-085` Add end-to-end distributed/live-image smoke validation hooks.
 12. `[ ] OFFS-090` Cleanup dead paths and boundary violations.
 13. `[ ] OFFS-100` Final validation gate.
 
 Immediate next actions:
-1. `M0 contract baseline`:
-   1. [ ] audit current canvas frame/submit call graph and mode assumptions.
-   2. [ ] freeze minimal public API additions and no-regression promises.
-   3. [ ] define tests that fail today and should pass after OFFS migration.
+1. `M1 stabilization`:
+   1. [ ] run full canvas/vklite tests and validate present-mode regression coverage.
+   2. [ ] extend offscreen tests with explicit WAIT_SURFACE non-regression assertions.
+   3. [ ] document current offscreen limitations (capture/video pending OFFS-050).
 
 
 ## Ground rules
