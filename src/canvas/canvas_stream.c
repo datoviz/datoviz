@@ -148,7 +148,11 @@ static int canvas_capture_rgba_callback(
 static bool canvas_has_external_video_support(const DvzCanvas* canvas)
 {
     ANN(canvas);
+#if OS_UNIX
     return canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+#else
+    return false;
+#endif
 }
 
 
@@ -443,7 +447,9 @@ int dvz_canvas_stream_enable_video(
             capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL &&
             !canvas_has_external_video_support(canvas))
         {
-            log_error("video sink requires external memory/semaphore support");
+            log_error(
+                "video sink external capture requires exportable external memory and semaphore "
+                "handles on this platform");
             return -1;
         }
         if (canvas->video_sink_enabled && canvas->video_capture_mode == capture_mode)

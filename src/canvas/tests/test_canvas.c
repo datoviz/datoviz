@@ -754,7 +754,12 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     DvzVideoSinkConfig external_cfg = dvz_video_sink_default_config();
     external_cfg.capture_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
     int external_video_rc = dvz_canvas_configure_video_sink(canvas, true, &external_cfg);
-    bool external_supported = canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+    bool external_supported =
+#if OS_UNIX
+        canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+#else
+        false;
+#endif
     if (external_supported)
     {
         AT(external_video_rc == 0);

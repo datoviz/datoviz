@@ -21,13 +21,16 @@ Legend:
 
 Current status:
 1. Current milestone: `M5 - Cleanup and validation gate`
-2. Current task: `OFFS-090 - Cleanup dead paths and boundary violations`
-3. Last completed task: `OFFS-085 - Add end-to-end distributed/live-image smoke validation hooks`
+2. Current task: `OFFS-100 - Final validation gate`
+3. Last completed task: `OFFS-090 - Cleanup dead paths and boundary violations`
 4. Last updated: `2026-02-13`
 5. Note: OFFS-070 now covers wait-value monotonicity across live/video rebuilds and explicit offscreen
    start/update ordering.
 6. Note: OFFS-090 cleanup started by removing stale `dvz_live_canvas` offscreen-recording rejection
    and mode-coupled external video gating (now capability-based in offscreen too).
+7. Note: external video capture support is now gated by actual platform/export-handle capability.
+8. Note: `canvas-smoke-offscreen` currently fails on this host with `VK_ERROR_INCOMPATIBLE_DRIVER`
+   (MoltenVK reports Metal unavailable); keep it capability-gated in validation reporting.
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
@@ -41,14 +44,14 @@ Task board status:
 9. `[x] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
 10. `[x] OFFS-080` Add canvas offscreen tests (headless + capability-gated).
 11. `[x] OFFS-085` Add end-to-end distributed/live-image smoke validation hooks.
-12. `[~] OFFS-090` Cleanup dead paths and boundary violations.
-13. `[ ] OFFS-100` Final validation gate.
+12. `[x] OFFS-090` Cleanup dead paths and boundary violations.
+13. `[~] OFFS-100` Final validation gate.
 
 Immediate next actions:
 1. `M5 cleanup + validation`:
-   1. [ ] remove dead present/offscreen coupling paths and tighten diagnostics.
-   2. [ ] run final validation matrix (`just build`, `just test canvas`, `just test stream`, `just test video`).
-   3. [ ] run targeted `dvz_live_canvas` smoke checks for both modes on capable hosts.
+   1. [x] remove dead present/offscreen coupling paths and tighten diagnostics.
+   2. [~] run final validation matrix (`just build`, `just test canvas`, `just test stream`, `just test video`).
+   3. [~] run targeted `dvz_live_canvas` smoke checks for both modes on capable hosts.
 
 
 ## Ground rules
