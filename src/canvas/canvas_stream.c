@@ -56,6 +56,21 @@ static void canvas_register_offscreen_sink(void)
 
 
 
+static void canvas_register_live_image_sink(void)
+{
+    const DvzStreamSinkBackend* backend = dvz_canvas_live_image_sink_backend();
+    if (backend)
+    {
+        dvz_stream_sink_registry_register(dvz_stream_sink_registry_default(), backend);
+    }
+    else
+    {
+        log_warn("live-image sink backend unavailable");
+    }
+}
+
+
+
 static const DvzStreamSinkBackend* canvas_primary_sink_backend(DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -180,7 +195,8 @@ canvas_resolve_video_capture_mode(const DvzCanvas* canvas, const DvzVideoSinkCon
  */
 static int canvas_create_stream_with_sinks(
     DvzCanvas* canvas, bool enable_video, const DvzVideoSinkConfig* cfg,
-    DvzVideoCaptureMode capture_mode, DvzStream** out_stream)
+    DvzVideoCaptureMode capture_mode, bool enable_live,
+    const DvzCanvasLiveImageSinkConfig* live_cfg, DvzStream** out_stream)
 {
     ANN(canvas);
     ANN(out_stream);
@@ -236,6 +252,24 @@ static int canvas_create_stream_with_sinks(
         }
     }
 
+    if (enable_live)
+    {
+        canvas_register_live_image_sink();
+        const DvzStreamSinkBackend* live_backend = dvz_canvas_live_image_sink_backend();
+        if (!live_backend)
+        {
+            log_error("live-image sink backend unavailable");
+            dvz_stream_destroy(stream);
+            return -1;
+        }
+        if (dvz_stream_attach_sink(stream, live_backend, live_cfg) != 0)
+        {
+            log_error("failed to attach live-image sink to canvas stream");
+            dvz_stream_destroy(stream);
+            return -1;
+        }
+    }
+
     *out_stream = stream;
     return 0;
 }
@@ -254,12 +288,14 @@ static int canvas_create_stream_with_sinks(
 static int
 canvas_rebuild_stream(
     DvzCanvas* canvas, bool enable_video, const DvzVideoSinkConfig* cfg,
-    DvzVideoCaptureMode capture_mode)
+    DvzVideoCaptureMode capture_mode, bool enable_live,
+    const DvzCanvasLiveImageSinkConfig* live_cfg)
 {
     ANN(canvas);
 
     DvzStream* replacement = NULL;
-    if (canvas_create_stream_with_sinks(canvas, enable_video, cfg, capture_mode, &replacement) != 0)
+    if (canvas_create_stream_with_sinks(
+            canvas, enable_video, cfg, capture_mode, enable_live, live_cfg, &replacement) != 0)
     {
         return -1;
     }
@@ -276,6 +312,7 @@ canvas_rebuild_stream(
     canvas->primary_sink_attached = true;
     canvas->video_sink_enabled = enable_video;
     canvas->video_capture_mode = enable_video ? capture_mode : DVZ_VIDEO_CAPTURE_AUTO;
+    canvas->live_image_sink_enabled = enable_live;
 
     if (previous)
     {
@@ -400,7 +437,12 @@ int dvz_canvas_stream_enable_video(
         {
             return 0;
         }
-        return canvas_rebuild_stream(canvas, true, cfg, capture_mode);
+        canvas->video_sink_cfg = cfg ? *cfg : dvz_video_sink_default_config();
+        canvas->video_sink_cfg.capture_mode = capture_mode;
+        canvas->video_sink_cfg_valid = true;
+        return canvas_rebuild_stream(
+            canvas, true, &canvas->video_sink_cfg, capture_mode, canvas->live_image_sink_enabled,
+            canvas->live_image_sink_enabled ? &canvas->live_image_sink_cfg : NULL);
     }
 
     if (!canvas->video_sink_enabled)
@@ -408,5 +450,57 @@ int dvz_canvas_stream_enable_video(
         return 0;
     }
 
-    return canvas_rebuild_stream(canvas, false, NULL, DVZ_VIDEO_CAPTURE_AUTO);
+    canvas->video_sink_cfg_valid = false;
+    return canvas_rebuild_stream(
+        canvas, false, NULL, DVZ_VIDEO_CAPTURE_AUTO, canvas->live_image_sink_enabled,
+        canvas->live_image_sink_enabled ? &canvas->live_image_sink_cfg : NULL);
+}
+
+
+
+/**
+ * Enable or disable the live-image sink on the canvas stream.
+ *
+ * @param canvas canvas owning the stream
+ * @param enable requested state
+ * @param cfg sink configuration when enabling
+ * @returns 0 on success or -1 when enabling/disabling fails
+ */
+int dvz_canvas_stream_enable_live_image(
+    DvzCanvas* canvas, bool enable, const DvzCanvasLiveImageSinkConfig* cfg)
+{
+    ANN(canvas);
+    ANN(canvas->stream);
+
+    if (enable)
+    {
+        if (!cfg || !cfg->callback)
+        {
+            log_error("live-image sink requires a valid callback");
+            return -1;
+        }
+        canvas->live_image_sink_cfg = *cfg;
+        if (canvas->live_image_sink_enabled)
+        {
+            return 0;
+        }
+        return canvas_rebuild_stream(
+            canvas, canvas->video_sink_enabled,
+            canvas->video_sink_enabled && canvas->video_sink_cfg_valid ? &canvas->video_sink_cfg
+                                                                       : NULL,
+            canvas->video_sink_enabled ? canvas->video_capture_mode : DVZ_VIDEO_CAPTURE_AUTO, true,
+            &canvas->live_image_sink_cfg);
+    }
+
+    if (!canvas->live_image_sink_enabled)
+    {
+        return 0;
+    }
+
+    return canvas_rebuild_stream(
+        canvas, canvas->video_sink_enabled,
+        canvas->video_sink_enabled && canvas->video_sink_cfg_valid ? &canvas->video_sink_cfg
+                                                                   : NULL,
+        canvas->video_sink_enabled ? canvas->video_capture_mode : DVZ_VIDEO_CAPTURE_AUTO, false,
+        NULL);
 }

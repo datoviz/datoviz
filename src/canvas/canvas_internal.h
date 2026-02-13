@@ -98,6 +98,10 @@ struct DvzCanvas
     uint64_t frame_id;
     bool video_sink_enabled;
     DvzVideoCaptureMode video_capture_mode;
+    DvzVideoSinkConfig video_sink_cfg;
+    bool video_sink_cfg_valid;
+    bool live_image_sink_enabled;
+    DvzCanvasLiveImageSinkConfig live_image_sink_cfg;
     bool supports_external_memory;
     bool supports_external_semaphore;
     DvzVma allocator;
@@ -159,9 +163,14 @@ int dvz_canvas_stream_submit(DvzCanvas* canvas, uint64_t wait_value);
 int dvz_canvas_stream_enable_video(
     DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
 
+int dvz_canvas_stream_enable_live_image(
+    DvzCanvas* canvas, bool enable, const DvzCanvasLiveImageSinkConfig* cfg);
+
 const DvzStreamSinkBackend* dvz_canvas_swapchain_sink_backend(void);
 
 const DvzStreamSinkBackend* dvz_canvas_offscreen_sink_backend(void);
+
+const DvzStreamSinkBackend* dvz_canvas_live_image_sink_backend(void);
 
 int dvz_canvas_swapchain_init(DvzCanvas* canvas);
 

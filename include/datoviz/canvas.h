@@ -79,6 +79,37 @@ typedef struct
 
 
 
+// Live-image frame payload forwarded by the optional canvas live sink.
+typedef struct
+{
+    uint64_t frame_id;
+    uint64_t wait_value;
+    VkFormat color_format;
+    VkImage image;
+    VkImageView image_view;
+    VkCommandBuffer command_buffer;
+    VkExtent2D extent;
+    bool handles_dirty;
+    int memory_fd;
+    int wait_semaphore_fd;
+} DvzCanvasLiveImageFrame;
+
+
+
+typedef int (*DvzCanvasLiveImageCallback)(
+    const DvzCanvasLiveImageFrame* frame, void* user_data);
+
+
+
+// Configuration for the optional live-image sink.
+typedef struct
+{
+    DvzCanvasLiveImageCallback callback;
+    void* user_data;
+} DvzCanvasLiveImageSinkConfig;
+
+
+
 typedef void (*DvzCanvasDraw)(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data);
 
 
@@ -223,6 +254,20 @@ DVZ_EXPORT int dvz_canvas_capture_png(DvzCanvas* canvas, const char* path);
  */
 DVZ_EXPORT int
 dvz_canvas_configure_video_sink(DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
+
+
+
+/**
+ * Enable or disable the live-image sink attached to the canvas stream.
+ *
+ * @param canvas canvas owning the stream
+ * @param enable true to enable, false to detach the sink
+ * @param cfg required configuration when enabling, ignored when disabling
+ * @note toggling this option rebuilds the internal stream so sinks restart on the next frame
+ * @returns 0 on success or a negative sink error
+ */
+DVZ_EXPORT int dvz_canvas_configure_live_image_sink(
+    DvzCanvas* canvas, bool enable, const DvzCanvasLiveImageSinkConfig* cfg);
 
 
 

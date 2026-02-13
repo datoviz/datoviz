@@ -162,6 +162,16 @@ typedef struct CanvasRefreshProbeState
 
 
 
+typedef struct CanvasLiveProbeState
+{
+    uint32_t callback_count;
+    uint64_t last_wait_value;
+    uint32_t non_monotonic_wait_count;
+    uint32_t zero_extent_count;
+} CanvasLiveProbeState;
+
+
+
 /**
  * Track stream-frame metadata observed by the refresh probe sink.
  *
@@ -190,6 +200,33 @@ canvas_refresh_probe_apply_frame(CanvasRefreshProbeState* state, const DvzStream
     else
     {
         state->start_count++;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Count and validate metadata events observed via the live-image sink callback.
+ *
+ * @param frame callback frame payload
+ * @param user_data callback state
+ * @returns 0 on success
+ */
+static int canvas_live_probe_callback(const DvzCanvasLiveImageFrame* frame, void* user_data)
+{
+    ANN(frame);
+    CanvasLiveProbeState* state = (CanvasLiveProbeState*)user_data;
+    ANN(state);
+    state->callback_count++;
+    if (state->last_wait_value > 0 && frame->wait_value != state->last_wait_value + 1)
+    {
+        state->non_monotonic_wait_count++;
+    }
+    state->last_wait_value = frame->wait_value;
+    if (frame->extent.width == 0 || frame->extent.height == 0)
+    {
+        state->zero_extent_count++;
     }
     return 0;
 }
@@ -590,12 +627,24 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     canvas = dvz_canvas_create(&cfg);
     AT(canvas != NULL);
     AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN);
+    AT(dvz_canvas_configure_video_sink(canvas, true, NULL) < 0);
+    CanvasLiveProbeState live_probe = {0};
+    DvzCanvasLiveImageSinkConfig live_cfg = {
+        .callback = canvas_live_probe_callback,
+        .user_data = &live_probe,
+    };
+    AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
 
     for (uint32_t i = 0; i < 3; ++i)
     {
-        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        int frame_rc = dvz_canvas_frame(canvas);
+        AT(frame_rc != DVZ_CANVAS_FRAME_WAIT_SURFACE);
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         AT(dvz_canvas_submit(canvas) == 0);
     }
+    AT(live_probe.callback_count == 3);
+    AT(live_probe.non_monotonic_wait_count == 0);
+    AT(live_probe.zero_extent_count == 0);
 
     uint32_t width = 0;
     uint32_t height = 0;
@@ -604,6 +653,98 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     AT(rgba == NULL);
 
 offscreen_cleanup:
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    if (device_initialized)
+    {
+        dvz_device_destroy(&device);
+    }
+    dvz_instance_destroy(&instance);
+    return 0;
+}
+/**
+ * Validate that present mode cannot be created on an offscreen window backend.
+ */
+static int test_canvas_present_mode_rejects_offscreen_window(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzInstance instance = {0};
+    DvzDevice device = {0};
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    bool device_initialized = false;
+
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    {
+        log_warn("present/offscreen guard test skipped because Vulkan instance creation failed");
+        goto guard_cleanup;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        log_warn("present/offscreen guard test skipped because no Vulkan GPU was found");
+        goto guard_cleanup;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    dvz_gpu_device(gpu, &device);
+    device_initialized = true;
+    dvz_queues(caps, &device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
+    fet12->timelineSemaphore = true;
+
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
+    features->synchronization2 = true;
+    features->dynamicRendering = true;
+
+    if (dvz_device_create(&device) != 0)
+    {
+        log_warn("present/offscreen guard test skipped because Vulkan device creation failed");
+        goto guard_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-offscreen-guard-test";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        log_warn("present/offscreen guard test skipped because headless window creation failed");
+        goto guard_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = &device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas == NULL);
+
+guard_cleanup:
     if (canvas != NULL)
     {
         dvz_canvas_destroy(canvas);
@@ -1896,6 +2037,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_frame_pool);
     TEST_SIMPLE(test_canvas_timings);
     TEST_SIMPLE(test_canvas_offscreen_mode_headless);
+    TEST_SIMPLE(test_canvas_present_mode_rejects_offscreen_window);
     TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
     TEST_SIMPLE(test_canvas_glfw_present_recovery);
     TEST_SIMPLE(test_canvas_handle_refresh_order);

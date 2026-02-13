@@ -522,6 +522,8 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->draw_user_data = NULL;
     canvas->frame_id = 0;
     canvas->video_sink_enabled = false;
+    canvas->video_sink_cfg_valid = false;
+    canvas->live_image_sink_enabled = false;
     canvas->stream_started = false;
     canvas->primary_sink_attached = false;
     canvas->test_force_wait_semaphore_export_failure = false;
@@ -898,6 +900,23 @@ int dvz_canvas_configure_video_sink(DvzCanvas* canvas, bool enable, const DvzVid
 {
     ANN(canvas);
     return dvz_canvas_stream_enable_video(canvas, enable, cfg);
+}
+
+
+
+/**
+ * Enable or disable the live-image sink on the canvas stream.
+ *
+ * @param canvas canvas associated with the stream
+ * @param enable true to enable, false to disable
+ * @param cfg required sink configuration when enabling
+ * @returns 0 on success or a negative sink error
+ */
+int dvz_canvas_configure_live_image_sink(
+    DvzCanvas* canvas, bool enable, const DvzCanvasLiveImageSinkConfig* cfg)
+{
+    ANN(canvas);
+    return dvz_canvas_stream_enable_live_image(canvas, enable, cfg);
 }
 
 
