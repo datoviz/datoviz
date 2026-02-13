@@ -65,6 +65,8 @@
 
 typedef struct DvzCanvasAppOptions
 {
+    DvzBackend backend;
+    DvzCanvasRenderMode render_mode;
     uint32_t width;
     uint32_t height;
     float bg[4];
@@ -114,6 +116,8 @@ typedef struct DvzCanvasApp
 static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
 {
     ANN(options);
+    options->backend = DVZ_BACKEND_GLFW;
+    options->render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
     options->width = DVZ_CANVAS_DEFAULT_WIDTH;
     options->height = DVZ_CANVAS_DEFAULT_HEIGHT;
     options->bg[0] = DVZ_CANVAS_DEFAULT_BG_R;
@@ -210,7 +214,8 @@ static void _dvz_canvas_usage(void)
 {
     dvz_fprintf(
         stderr,
-        "usage: dvz_live_canvas [--width N] [--height N] [--bg r,g,b,a] [--fps N]\n"
+        "usage: dvz_live_canvas [--backend glfw|offscreen] [--width N] [--height N]\n"
+        "                  [--bg r,g,b,a] [--fps N]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
         "                  [--start-recording] [--screenshots base]\n"
@@ -258,6 +263,24 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         {
             if (!_dvz_canvas_parse_u32(value, &options->width))
                 return false;
+        }
+        else if (strcmp(arg, "--backend") == 0)
+        {
+            if (strcmp(value, "glfw") == 0)
+            {
+                options->backend = DVZ_BACKEND_GLFW;
+                options->render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+            }
+            else if (strcmp(value, "offscreen") == 0)
+            {
+                options->backend = DVZ_BACKEND_OFFSCREEN;
+                options->render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+            }
+            else
+            {
+                dvz_fprintf(stderr, "invalid backend: %s\\n", value);
+                return false;
+            }
         }
         else if (strcmp(arg, "--height") == 0)
         {
@@ -401,6 +424,11 @@ static void _dvz_canvas_toggle_recording(DvzCanvasApp* app)
 {
     ANN(app);
     ANN(app->canvas);
+    if (dvz_canvas_render_mode(app->canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
+    {
+        dvz_fprintf(stderr, "recording is not supported yet in offscreen canvas mode\\n");
+        return;
+    }
 
     if (!app->recording)
     {
@@ -610,35 +638,42 @@ static void _dvz_canvas_poll_keyboard_shortcuts(DvzCanvasApp* app)
 static bool _dvz_canvas_init(DvzCanvasApp* app)
 {
     ANN(app);
-
-#if !DVZ_HAS_GLFW
-    dvz_fprintf(stderr, "dvz_live_canvas requires Datoviz built with GLFW support\\n");
-    return false;
-#else
     DvzCanvasAppOptions options = app->options;
     dvz_memset(app, sizeof(*app), 0, sizeof(*app));
     app->options = options;
     app->running = true;
 
-    if (!dvz_window_glfw_init())
+    if (app->options.backend == DVZ_BACKEND_GLFW)
     {
-        dvz_fprintf(stderr, "unable to initialize GLFW\\n");
+#if DVZ_HAS_GLFW
+        if (!dvz_window_glfw_init())
+        {
+            dvz_fprintf(stderr, "unable to initialize GLFW\\n");
+            return false;
+        }
+#else
+        dvz_fprintf(stderr, "GLFW backend requested but Datoviz was built without GLFW\\n");
         return false;
+#endif
     }
 
     dvz_instance(&app->instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_request_extension(&app->instance, VK_KHR_SURFACE_EXTENSION_NAME);
-
-    uint32_t ext_count = 0;
-    const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    if (extensions == NULL || ext_count == 0)
+    if (app->options.backend == DVZ_BACKEND_GLFW)
     {
-        dvz_fprintf(stderr, "GLFW returned no required Vulkan instance extensions\\n");
-        return false;
-    }
-    for (uint32_t i = 0; i < ext_count; ++i)
-    {
-        dvz_instance_request_extension(&app->instance, extensions[i]);
+#if DVZ_HAS_GLFW
+        dvz_instance_request_extension(&app->instance, VK_KHR_SURFACE_EXTENSION_NAME);
+        uint32_t ext_count = 0;
+        const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
+        if (extensions == NULL || ext_count == 0)
+        {
+            dvz_fprintf(stderr, "GLFW returned no required Vulkan instance extensions\\n");
+            return false;
+        }
+        for (uint32_t i = 0; i < ext_count; ++i)
+        {
+            dvz_instance_request_extension(&app->instance, extensions[i]);
+        }
+#endif
     }
 
     if (dvz_instance_create(&app->instance, VK_API_VERSION_1_3) != 0)
@@ -669,7 +704,10 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     fet13->synchronization2 = true;
     fet13->dynamicRendering = true;
 
-    dvz_device_request_canvas_extensions(&app->device);
+    if (app->options.backend == DVZ_BACKEND_GLFW)
+    {
+        dvz_device_request_canvas_extensions(&app->device);
+    }
     if (dvz_device_create(&app->device) != 0)
     {
         dvz_fprintf(stderr, "failed to create Vulkan device\\n");
@@ -683,33 +721,43 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     wcfg.width = app->options.width;
     wcfg.height = app->options.height;
     wcfg.title = app->options.title;
-    app->window = dvz_window_create(app->host, DVZ_BACKEND_GLFW, &wcfg);
-    if (app->window == NULL || dvz_window_backend_type(app->window) != DVZ_BACKEND_GLFW)
+    app->window = dvz_window_create(app->host, app->options.backend, &wcfg);
+    if (app->window == NULL || dvz_window_backend_type(app->window) != app->options.backend)
     {
-        dvz_fprintf(stderr, "failed to create GLFW window\\n");
+        dvz_fprintf(stderr, "failed to create requested window backend\\n");
         return false;
     }
 #if DVZ_HAS_GLFW
-    GLFWwindow* handle = (GLFWwindow*)dvz_window_backend_handle(app->window);
-    dvz_window_set_user_data(app->window, app);
-    if (handle != NULL)
+    if (app->options.backend == DVZ_BACKEND_GLFW)
     {
-        glfwShowWindow(handle);
-#ifdef GLFW_FOCUS_ON_SHOW
-        glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
-#endif
-        glfwSetKeyCallback(handle, _dvz_canvas_glfw_key_callback);
-        glfwFocusWindow(handle);
-        if (glfwGetWindowAttrib(handle, GLFW_FOCUSED) == GLFW_FALSE)
+        GLFWwindow* handle = (GLFWwindow*)dvz_window_backend_handle(app->window);
+        dvz_window_set_user_data(app->window, app);
+        if (handle != NULL)
         {
-            glfwRequestWindowAttention(handle);
+            glfwShowWindow(handle);
+#ifdef GLFW_FOCUS_ON_SHOW
+            glfwSetWindowAttrib(handle, GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
+#endif
+            glfwSetKeyCallback(handle, _dvz_canvas_glfw_key_callback);
+            glfwFocusWindow(handle);
+            if (glfwGetWindowAttrib(handle, GLFW_FOCUSED) == GLFW_FALSE)
+            {
+                glfwRequestWindowAttention(handle);
+            }
         }
     }
 #endif
 
+    if (app->options.backend == DVZ_BACKEND_OFFSCREEN && app->options.duration_s <= 0.0)
+    {
+        app->options.duration_s = 5.0;
+        dvz_fprintf(stderr, "offscreen backend selected, defaulting duration to %.1fs\\n", 5.0);
+    }
+
     DvzCanvasConfig ccfg = dvz_canvas_default_config();
     ccfg.window = app->window;
     ccfg.device = &app->device;
+    ccfg.render_mode = app->options.render_mode;
     ccfg.present_mode = app->options.present_mode;
     ccfg.enable_video_sink = false;
     app->canvas = dvz_canvas_create(&ccfg);
@@ -727,7 +775,6 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         dvz_input_subscribe_keyboard(router, _dvz_canvas_keyboard, app);
     }
     return true;
-#endif
 }
 
 
