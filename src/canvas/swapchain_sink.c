@@ -1658,20 +1658,26 @@ void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas)
 
 
 /**
- * Capture the latest presented canvas frame into caller-managed RGBA storage.
+ * Validate capture preconditions and resolve the source slot.
  *
- * @param canvas canvas whose latest presented slot should be captured
+ * @param canvas canvas owning the swapchain
  * @param width expected frame width
  * @param height expected frame height
- * @param out_rgba destination buffer
  * @param out_size destination buffer size in bytes
- * @returns 0 on success or -1 on failure
+ * @param state_out resolved swapchain state on success
+ * @param slot_out resolved source slot on success
+ * @param expected_size_out expected destination size in bytes on success
+ * @returns 0 when capture preconditions are satisfied, or -1 on failure
  */
-int dvz_canvas_swapchain_capture_rgba_into(
-    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+static int canvas_capture_validate(
+    DvzCanvas* canvas, uint32_t width, uint32_t height, size_t out_size, DvzCanvasSwapchain** state_out,
+    DvzCanvasSwapchainSlot** slot_out, size_t* expected_size_out)
 {
     ANN(canvas);
-    ANN(out_rgba);
+    ANN(state_out);
+    ANN(slot_out);
+    ANN(expected_size_out);
+
     DvzCanvasSwapchain* state = canvas_state(canvas);
     if (!state || state->image_count == 0)
     {
@@ -1695,6 +1701,7 @@ int dvz_canvas_swapchain_capture_rgba_into(
         log_error("canvas capture requires a non-zero swapchain extent");
         return -1;
     }
+
     size_t expected_size = (size_t)extent.width * (size_t)extent.height * 4;
     if (width != extent.width || height != extent.height)
     {
@@ -1705,8 +1712,7 @@ int dvz_canvas_swapchain_capture_rgba_into(
     }
     if (out_size < expected_size)
     {
-        log_error(
-            "canvas capture destination buffer too small (%zu < %zu)", out_size, expected_size);
+        log_error("canvas capture destination buffer too small (%zu < %zu)", out_size, expected_size);
         return -1;
     }
 
@@ -1717,24 +1723,65 @@ int dvz_canvas_swapchain_capture_rgba_into(
         return -1;
     }
 
-    dvz_device_wait(canvas->device);
+    *state_out = state;
+    *slot_out = slot;
+    *expected_size_out = expected_size;
+    return 0;
+}
 
-    DvzBuffer staging = {0};
-    dvz_buffer(canvas->device, &canvas->allocator, &staging);
-    dvz_buffer_size(&staging, expected_size);
+
+
+/**
+ * Create a host-visible staging buffer for capture readback.
+ *
+ * @param canvas canvas providing device and allocator
+ * @param size staging buffer size in bytes
+ * @param staging output staging buffer
+ * @returns 0 on success or -1 on allocation failure
+ */
+static int canvas_capture_create_staging(DvzCanvas* canvas, size_t size, DvzBuffer* staging)
+{
+    ANN(canvas);
+    ANN(staging);
+
+    dvz_buffer(canvas->device, &canvas->allocator, staging);
+    dvz_buffer_size(staging, size);
     dvz_buffer_flags(
-        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
-    dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    if (dvz_buffer_create(&staging) != 0)
+        staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    if (dvz_buffer_create(staging) != 0)
     {
         log_error("failed to allocate staging buffer for canvas capture");
         return -1;
     }
+    return 0;
+}
+
+
+
+/**
+ * Record and submit capture copy commands from offscreen image to staging buffer.
+ *
+ * @param canvas canvas owning device resources
+ * @param state swapchain state providing queue metadata
+ * @param slot source slot containing the offscreen image
+ * @param width capture width
+ * @param height capture height
+ * @param staging destination staging buffer
+ * @returns 0 on success or -1 on command submission failure
+ */
+static int canvas_capture_copy_to_staging(
+    DvzCanvas* canvas, DvzCanvasSwapchain* state, DvzCanvasSwapchainSlot* slot, uint32_t width,
+    uint32_t height, DvzBuffer* staging)
+{
+    ANN(canvas);
+    ANN(state);
+    ANN(slot);
+    ANN(staging);
 
     VkCommandBuffer cmd = dvz_command_buffer_alloc(canvas->device, state->queue_family);
     if (cmd == VK_NULL_HANDLE)
     {
-        dvz_buffer_destroy(&staging);
         log_error("failed to allocate command buffer for canvas capture");
         return -1;
     }
@@ -1757,7 +1804,7 @@ int dvz_canvas_swapchain_capture_rgba_into(
     dvz_image_region_extent(&region, width, height, 1);
     dvz_cmd_copy_image_to_buffer(
         &cmds, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
-        dvz_buffer_handle(&staging), 0);
+        dvz_buffer_handle(staging), 0);
 
     canvas_cmd_transition(
         canvas, cmd, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, original_layout);
@@ -1773,16 +1820,56 @@ int dvz_canvas_swapchain_capture_rgba_into(
     {
         dvz_fence_destroy(&fence);
         dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
-        dvz_buffer_destroy(&staging);
         log_error("failed to submit canvas capture copy commands (%d)", submit_rc);
         return -1;
     }
+
     dvz_fence_wait(&fence);
+    dvz_fence_destroy(&fence);
+    dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
+    return 0;
+}
+
+
+
+/**
+ * Capture the latest presented canvas frame into caller-managed RGBA storage.
+ *
+ * @param canvas canvas whose latest presented slot should be captured
+ * @param width expected frame width
+ * @param height expected frame height
+ * @param out_rgba destination buffer
+ * @param out_size destination buffer size in bytes
+ * @returns 0 on success or -1 on failure
+ */
+int dvz_canvas_swapchain_capture_rgba_into(
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+{
+    ANN(canvas);
+    ANN(out_rgba);
+    DvzCanvasSwapchain* state = NULL;
+    DvzCanvasSwapchainSlot* slot = NULL;
+    size_t expected_size = 0;
+    if (canvas_capture_validate(canvas, width, height, out_size, &state, &slot, &expected_size) != 0)
+    {
+        return -1;
+    }
+
+    dvz_device_wait(canvas->device);
+
+    DvzBuffer staging = {0};
+    if (canvas_capture_create_staging(canvas, expected_size, &staging) != 0)
+    {
+        return -1;
+    }
+    if (canvas_capture_copy_to_staging(canvas, state, slot, width, height, &staging) != 0)
+    {
+        dvz_buffer_destroy(&staging);
+        return -1;
+    }
 
     dvz_buffer_download(&staging, 0, expected_size, out_rgba);
 
-    dvz_fence_destroy(&fence);
-    dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
     dvz_buffer_destroy(&staging);
     return 0;
 }

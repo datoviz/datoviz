@@ -470,7 +470,7 @@ Finalize synchronization semantics and video sink integration.
 1. Video encoding does not consume stale handles after recreate/resize.
 2. Synchronization behavior is deterministic and documented.
 
-Status: in progress (`PRES-055`/`PRES-060` done, `PRES-070`/`PRES-075` pending).
+Status: complete (`PRES-055`, `PRES-060`, `PRES-070`, and `PRES-075` done).
 
 
 ## M4 - Capture modes completion (live and offline/headless)
