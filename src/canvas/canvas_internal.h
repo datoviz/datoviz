@@ -28,6 +28,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/window.h"
+#include "datoviz/vklite/images.h"
 #include "datoviz/vklite/sync.h"
 
 
@@ -110,6 +111,19 @@ struct DvzCanvas
     uint64_t timeline_value;
     bool timeline_ready;
     bool test_force_wait_semaphore_export_failure;
+    VkImage offscreen_image;
+    VkImageView offscreen_view;
+    DvzAllocation offscreen_alloc;
+    DvzImages offscreen_images;
+    DvzImageViews offscreen_views;
+    VkImageLayout offscreen_layout;
+    VkCommandBuffer offscreen_command_buffer;
+    VkQueue offscreen_queue;
+    uint32_t offscreen_queue_family;
+    VkExtent2D offscreen_extent;
+    VkFormat offscreen_format;
+    int offscreen_memory_fd;
+    bool offscreen_ready;
     DvzCanvasSwapchain* swapchain;
 };
 

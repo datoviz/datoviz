@@ -649,8 +649,17 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     uint32_t width = 0;
     uint32_t height = 0;
     uint8_t* rgba = NULL;
-    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) < 0);
-    AT(rgba == NULL);
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 320);
+    AT(height == 240);
+    uint64_t sum = 0;
+    for (size_t i = 0; i < (size_t)width * (size_t)height * 4; ++i)
+    {
+        sum += rgba[i];
+    }
+    AT(sum > 0);
+    dvz_free(rgba);
 
 offscreen_cleanup:
     if (canvas != NULL)

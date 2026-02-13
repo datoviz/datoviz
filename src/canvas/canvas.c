@@ -30,6 +30,10 @@
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/video.h"
 #include "datoviz/vk/enums.h"
+#include "datoviz/vk/queues.h"
+#include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/images.h"
 
 
 
@@ -55,6 +59,7 @@ static DvzStreamConfig canvas_stream_config(const DvzCanvas* canvas)
 
 
 static VkExternalMemoryHandleTypeFlagsKHR canvas_external_memory_handle_type(void);
+static void canvas_init_offscreen_frame(const DvzCanvas* canvas, DvzStreamFrame* frame);
 
 
 
@@ -65,6 +70,236 @@ static bool canvas_is_offscreen_mode(const DvzCanvas* canvas)
 }
 
 
+
+static VkPipelineStageFlags2 canvas_stage_for_layout(VkImageLayout layout)
+{
+    switch (layout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        return VK_PIPELINE_STAGE_2_NONE;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        return VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    default:
+        return VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    }
+}
+
+
+
+static VkAccessFlags2 canvas_access_for_layout(VkImageLayout layout)
+{
+    switch (layout)
+    {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        return 0;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return VK_ACCESS_2_TRANSFER_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        return VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        return VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT;
+    default:
+        return 0;
+    }
+}
+
+
+
+static void canvas_cmd_transition_image(
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImage image, VkImageLayout old_layout,
+    VkImageLayout new_layout)
+{
+    ANN(canvas);
+    if (cmd == VK_NULL_HANDLE || image == VK_NULL_HANDLE || old_layout == new_layout)
+    {
+        return;
+    }
+
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(canvas->device, cmd, &cmds);
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, image);
+    dvz_barrier_image_stage(
+        bimg, canvas_stage_for_layout(old_layout), canvas_stage_for_layout(new_layout));
+    dvz_barrier_image_access(
+        bimg, canvas_access_for_layout(old_layout), canvas_access_for_layout(new_layout));
+    dvz_barrier_image_layout(bimg, old_layout, new_layout);
+    dvz_cmd_barriers(&cmds, &barriers);
+}
+
+
+
+static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
+{
+    if (!canvas || !canvas->offscreen_ready)
+    {
+        return;
+    }
+    dvz_device_wait(canvas->device);
+    if (canvas->offscreen_views.img)
+    {
+        dvz_image_views_destroy(&canvas->offscreen_views);
+        canvas->offscreen_views = (DvzImageViews){0};
+        canvas->offscreen_images = (DvzImages){0};
+    }
+    if (canvas->offscreen_image != VK_NULL_HANDLE)
+    {
+        dvz_allocator_destroy_image(&canvas->allocator, &canvas->offscreen_alloc, canvas->offscreen_image);
+        canvas->offscreen_image = VK_NULL_HANDLE;
+    }
+    if (canvas->offscreen_command_buffer != VK_NULL_HANDLE)
+    {
+        dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, canvas->offscreen_command_buffer);
+        canvas->offscreen_command_buffer = VK_NULL_HANDLE;
+    }
+#if OS_UNIX
+    if (canvas->offscreen_memory_fd >= 0)
+    {
+        close(canvas->offscreen_memory_fd);
+        canvas->offscreen_memory_fd = -1;
+    }
+#endif
+    canvas->offscreen_view = VK_NULL_HANDLE;
+    canvas->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    canvas->offscreen_extent = (VkExtent2D){0, 0};
+    canvas->offscreen_format = VK_FORMAT_UNDEFINED;
+    canvas->offscreen_ready = false;
+}
+
+
+
+static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D extent, VkFormat format)
+{
+    ANN(canvas);
+    if (extent.width == 0 || extent.height == 0)
+    {
+        log_error("offscreen canvas requires non-zero extent");
+        return -1;
+    }
+
+    DvzQueue* queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
+    ANN(queue_ref);
+    canvas->offscreen_queue_family = dvz_queue_family(queue_ref);
+    canvas->offscreen_queue = dvz_queue_handle(queue_ref);
+    canvas->offscreen_command_buffer =
+        dvz_command_buffer_alloc(canvas->device, canvas->offscreen_queue_family);
+    if (canvas->offscreen_command_buffer == VK_NULL_HANDLE)
+    {
+        log_error("failed to allocate offscreen canvas command buffer");
+        return -1;
+    }
+
+    VkExternalMemoryImageCreateInfoKHR external_info = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
+    VkImageCreateInfo img_info = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = format,
+        .extent = {.width = extent.width, .height = extent.height, .depth = 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                 VK_IMAGE_USAGE_SAMPLED_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .pNext = NULL,
+    };
+    bool use_external = canvas->allocator.external != 0;
+    if (use_external)
+    {
+        external_info.handleTypes = canvas->allocator.external;
+        img_info.pNext = &external_info;
+    }
+
+    if (dvz_allocator_image(&canvas->allocator, &img_info, 0, &canvas->offscreen_alloc, &canvas->offscreen_image) != 0)
+    {
+        log_error("failed to allocate offscreen canvas image");
+        return -1;
+    }
+
+    dvz_images_wrap(
+        canvas->device, &canvas->allocator, VK_IMAGE_TYPE_2D, canvas->offscreen_image,
+        &canvas->offscreen_images);
+    dvz_images_format(&canvas->offscreen_images, format);
+    dvz_image_views(&canvas->offscreen_images, &canvas->offscreen_views);
+    dvz_image_views_create(&canvas->offscreen_views);
+    canvas->offscreen_view = dvz_image_views_handle(&canvas->offscreen_views, 0);
+    if (canvas->offscreen_view == VK_NULL_HANDLE)
+    {
+        log_error("failed to create offscreen canvas image view");
+        canvas_offscreen_destroy_resources(canvas);
+        return -1;
+    }
+
+    canvas->offscreen_memory_fd = -1;
+    if (use_external && dvz_allocator_export(&canvas->allocator, &canvas->offscreen_alloc, &canvas->offscreen_memory_fd) != 0)
+    {
+        log_warn("failed to export offscreen canvas image memory handle");
+        canvas->offscreen_memory_fd = -1;
+    }
+
+    canvas->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    canvas->offscreen_extent = extent;
+    canvas->offscreen_format = format;
+    canvas->offscreen_ready = true;
+    return 0;
+}
+
+
+
+static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* frame)
+{
+    ANN(canvas);
+    ANN(frame);
+    VkExtent2D extent = canvas->surface ? canvas->surface->extent : (VkExtent2D){0, 0};
+    VkFormat format =
+        canvas->cfg.color_format != VK_FORMAT_UNDEFINED ? canvas->cfg.color_format : DVZ_DEFAULT_COLOR_FORMAT;
+    if (
+        !canvas->offscreen_ready || canvas->offscreen_extent.width != extent.width ||
+        canvas->offscreen_extent.height != extent.height || canvas->offscreen_format != format)
+    {
+        canvas_offscreen_destroy_resources(canvas);
+        if (canvas_offscreen_create_resources(canvas, extent, format) != 0)
+        {
+            return -1;
+        }
+    }
+
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, &cmds);
+    dvz_cmd_reset(&cmds);
+    dvz_cmd_begin(&cmds);
+    canvas_cmd_transition_image(
+        canvas, canvas->offscreen_command_buffer, canvas->offscreen_image, canvas->offscreen_layout,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    canvas->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    canvas_init_offscreen_frame(canvas, frame);
+    frame->image = canvas->offscreen_image;
+    frame->image_view = canvas->offscreen_view;
+    frame->command_buffer = canvas->offscreen_command_buffer;
+    frame->extent = canvas->offscreen_extent;
+    frame->memory = VK_NULL_HANDLE;
+    frame->memory_size = 0;
+    frame->memory_fd = canvas->offscreen_memory_fd;
+    frame->handles_dirty = false;
+    return 0;
+}
 
 static bool canvas_device_check_extensions(DvzCanvas* canvas)
 {
@@ -456,6 +691,102 @@ static void canvas_init_offscreen_frame(const DvzCanvas* canvas, DvzStreamFrame*
 
 
 
+static int canvas_offscreen_capture_rgba_into(
+    DvzCanvas* canvas, uint32_t width, uint32_t height, uint8_t* out_rgba, size_t out_size)
+{
+    ANN(canvas);
+    ANN(out_rgba);
+    if (!canvas->offscreen_ready || canvas->offscreen_image == VK_NULL_HANDLE)
+    {
+        log_error("offscreen canvas capture requires a prepared frame");
+        return -1;
+    }
+    if (width != canvas->offscreen_extent.width || height != canvas->offscreen_extent.height)
+    {
+        log_error(
+            "offscreen capture dimension mismatch, expected %ux%u but got %ux%u",
+            canvas->offscreen_extent.width, canvas->offscreen_extent.height, width, height);
+        return -1;
+    }
+    size_t expected_size = (size_t)width * (size_t)height * 4;
+    if (out_size < expected_size)
+    {
+        log_error(
+            "offscreen capture destination buffer too small (%zu < %zu)", out_size,
+            expected_size);
+        return -1;
+    }
+    if (canvas->timeline_value > 0)
+    {
+        dvz_semaphore_wait(&canvas->timeline_semaphore, canvas->timeline_value);
+    }
+
+    DvzBuffer staging = {0};
+    dvz_buffer(canvas->device, &canvas->allocator, &staging);
+    dvz_buffer_size(&staging, expected_size);
+    dvz_buffer_flags(
+        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    if (dvz_buffer_create(&staging) != 0)
+    {
+        log_error("failed to allocate staging buffer for offscreen capture");
+        return -1;
+    }
+
+    VkCommandBuffer cmd = dvz_command_buffer_alloc(canvas->device, canvas->offscreen_queue_family);
+    if (cmd == VK_NULL_HANDLE)
+    {
+        dvz_buffer_destroy(&staging);
+        log_error("failed to allocate command buffer for offscreen capture");
+        return -1;
+    }
+
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(canvas->device, cmd, &cmds);
+    dvz_cmd_reset(&cmds);
+    dvz_cmd_begin(&cmds);
+    VkImageLayout original_layout = canvas->offscreen_layout;
+    if (original_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+    {
+        original_layout = VK_IMAGE_LAYOUT_GENERAL;
+    }
+    canvas_cmd_transition_image(
+        canvas, cmd, canvas->offscreen_image, original_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    DvzImageRegion region = {0};
+    dvz_image_region(&region);
+    dvz_image_region_extent(&region, width, height, 1);
+    dvz_cmd_copy_image_to_buffer(
+        &cmds, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        dvz_buffer_handle(&staging), 0);
+    canvas_cmd_transition_image(
+        canvas, cmd, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, original_layout);
+    dvz_cmd_end(&cmds);
+
+    DvzFence fence = {0};
+    dvz_fence(canvas->device, false, &fence);
+    DvzSubmit submit = {0};
+    dvz_submit(&submit);
+    dvz_submit_command(&submit, cmd);
+    int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, fence.vk_fence);
+    if (submit_rc != VK_SUCCESS)
+    {
+        dvz_fence_destroy(&fence);
+        dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, cmd);
+        dvz_buffer_destroy(&staging);
+        log_error("failed to submit offscreen capture copy commands (%d)", submit_rc);
+        return -1;
+    }
+    dvz_fence_wait(&fence);
+    dvz_fence_destroy(&fence);
+    dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, cmd);
+
+    dvz_buffer_download(&staging, 0, expected_size, out_rgba);
+    dvz_buffer_destroy(&staging);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Public API                                                                                   */
 /*************************************************************************************************/
@@ -526,6 +857,8 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->live_image_sink_enabled = false;
     canvas->stream_started = false;
     canvas->primary_sink_attached = false;
+    canvas->offscreen_memory_fd = -1;
+    canvas->offscreen_ready = false;
     canvas->test_force_wait_semaphore_export_failure = false;
 
     if (!canvas_device_check_extensions(canvas))
@@ -602,6 +935,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         dvz_stream_destroy(canvas->stream);
         canvas->stream = NULL;
     }
+    canvas_offscreen_destroy_resources(canvas);
     canvas_destroy_timeline(canvas);
     canvas_destroy_allocator(canvas);
     dvz_canvas_frame_pool_release(&canvas->frame_pool);
@@ -651,7 +985,11 @@ int dvz_canvas_frame(DvzCanvas* canvas)
             log_error("canvas frame pool unavailable");
             return -1;
         }
-        canvas_init_offscreen_frame(canvas, frame);
+        if (canvas_offscreen_prepare_frame(canvas, frame) != 0)
+        {
+            log_error("failed to prepare offscreen canvas frame");
+            return -1;
+        }
     }
     else
     {
@@ -738,6 +1076,34 @@ int dvz_canvas_submit(DvzCanvas* canvas)
     DvzClock clock = dvz_clock();
     dvz_clock_tick(&clock);
     uint64_t wait_value = canvas->timeline_value + 1;
+    if (canvas_is_offscreen_mode(canvas))
+    {
+        if (!canvas->offscreen_ready || canvas->offscreen_command_buffer == VK_NULL_HANDLE)
+        {
+            log_error("offscreen canvas submit requires prepared offscreen resources");
+            return -1;
+        }
+        canvas_cmd_transition_image(
+            canvas, canvas->offscreen_command_buffer, canvas->offscreen_image, canvas->offscreen_layout,
+            VK_IMAGE_LAYOUT_GENERAL);
+        canvas->offscreen_layout = VK_IMAGE_LAYOUT_GENERAL;
+        DvzCommands cmds = {0};
+        dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, &cmds);
+        dvz_cmd_end(&cmds);
+
+        DvzSubmit submit = {0};
+        dvz_submit(&submit);
+        dvz_submit_command(&submit, canvas->offscreen_command_buffer);
+        dvz_submit_signal(
+            &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
+            VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+        int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, VK_NULL_HANDLE);
+        if (submit_rc != VK_SUCCESS)
+        {
+            log_error("offscreen canvas submit failed (%d)", submit_rc);
+            return -1;
+        }
+    }
     int result = dvz_canvas_stream_submit(canvas, wait_value);
     if (result == 0)
     {
@@ -798,8 +1164,7 @@ int dvz_canvas_capture_rgba_into(
     ANN(out_rgba);
     if (canvas_is_offscreen_mode(canvas))
     {
-        log_error("canvas capture is not implemented yet for offscreen render mode");
-        return -1;
+        return canvas_offscreen_capture_rgba_into(canvas, width, height, out_rgba, out_size);
     }
     if (width == 0 || height == 0)
     {
@@ -830,11 +1195,6 @@ int dvz_canvas_capture_rgba(
     *out_width = 0;
     *out_height = 0;
     *out_rgba = NULL;
-    if (canvas_is_offscreen_mode(canvas))
-    {
-        log_error("canvas capture is not implemented yet for offscreen render mode");
-        return -1;
-    }
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
     uint32_t width = surface.extent.width;

@@ -24,7 +24,7 @@ Current status:
 2. Current task: `OFFS-050 - Wire CPU readback and video capture contracts to offscreen mode`
 3. Last completed task: `OFFS-040 - Add transport-oriented live-image sink contract/API`
 4. Last updated: `2026-02-13`
-5. Note: foundational mode plumbing and offscreen contract tests are implemented.
+5. Note: offscreen CPU readback path is implemented; offscreen video contract remains pending.
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
@@ -33,7 +33,7 @@ Task board status:
 4. `[x] OFFS-020` Make swapchain sink optional and mode-gated.
 5. `[x] OFFS-030` Add offscreen frame sink backend for no-present execution.
 6. `[x] OFFS-040` Add transport-oriented live-image sink contract/API.
-7. `[ ] OFFS-050` Wire CPU readback and video capture contracts to offscreen mode.
+7. `[~] OFFS-050` Wire CPU readback and video capture contracts to offscreen mode.
 8. `[ ] OFFS-060` Implement deterministic frame lifecycle/state machine for offscreen mode.
 9. `[ ] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
 10. `[x] OFFS-080` Add canvas offscreen tests (headless + capability-gated).
