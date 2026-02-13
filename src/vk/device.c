@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stddef.h>
+#include <string.h>
 #include <volk.h>
 
 #include "_alloc.h"
@@ -40,6 +41,30 @@ static inline int32_t array_index_of(uint32_t n, uint32_t* array, uint32_t x)
         if (array[i] == x)
             return (int32_t)i;
     return -1;
+}
+
+
+
+/**
+ * Return whether a string is already present in a fixed-size string list.
+ *
+ * @param count number of strings in the list
+ * @param values list of string values
+ * @param value queried string value
+ * @return true when the string exists in the list
+ */
+static bool _dvz_has_config_string(uint32_t count, const char* const* values, const char* value)
+{
+    ANN(values);
+    ANN(value);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (values[i] != NULL && strcmp(values[i], value) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -248,12 +273,262 @@ static void destroy_dpool(DvzDevice* device)
 /*  Device                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Return default configuration values for creating a device.
+ *
+ * @param gpu source GPU
+ * @return initialized device configuration with sensible defaults
+ */
+DvzDeviceConfig dvz_device_default_config(DvzGpu* gpu)
+{
+    INIT(DvzDeviceConfig, cfg);
+    cfg.gpu = gpu;
+    return cfg;
+}
+
+
+
+/**
+ * Add a queue request to a device configuration.
+ *
+ * @param cfg device configuration
+ * @param family queue family index
+ * @param count number of requested queues
+ * @return true when the request has been applied
+ */
+bool dvz_device_config_request_queue(DvzDeviceConfig* cfg, uint32_t family, uint32_t count)
+{
+    ANN(cfg);
+    if (count == 0)
+    {
+        return false;
+    }
+    if (family >= DVZ_MAX_QUEUE_FAMILIES)
+    {
+        return false;
+    }
+    for (uint32_t i = 0; i < cfg->queue_request_count; i++)
+    {
+        if (cfg->queue_requests[i].family == family)
+        {
+            cfg->queue_requests[i].count += count;
+            return true;
+        }
+    }
+    if (cfg->queue_request_count >= DVZ_MAX_QUEUE_FAMILIES)
+    {
+        return false;
+    }
+    cfg->queue_requests[cfg->queue_request_count++] = (DvzDeviceQueueRequest){
+        .family = family,
+        .count = count,
+    };
+    return true;
+}
+
+
+
+/**
+ * Add an extension request to a device configuration.
+ *
+ * @param cfg device configuration
+ * @param extension extension name to request
+ * @return true when the request has been appended
+ */
+bool dvz_device_config_request_extension(DvzDeviceConfig* cfg, const char* extension)
+{
+    ANN(cfg);
+    ANN(extension);
+    if (cfg->extension_count >= DVZ_MAX_REQ_EXTENSIONS)
+    {
+        return false;
+    }
+    if (_dvz_has_config_string(cfg->extension_count, cfg->extensions, extension))
+    {
+        return false;
+    }
+    cfg->extensions[cfg->extension_count++] = extension;
+    return true;
+}
+
+
+
+/**
+ * Toggle canvas extension requests on a device configuration.
+ *
+ * @param cfg device configuration
+ * @param enabled whether canvas extensions should be requested
+ */
+void dvz_device_config_enable_canvas_extensions(DvzDeviceConfig* cfg, bool enabled)
+{
+    ANN(cfg);
+    cfg->enable_canvas_extensions = enabled;
+}
+
+
+
+/**
+ * Copy Vulkan 1.0 features into a device configuration.
+ *
+ * @param cfg device configuration
+ * @param features Vulkan 1.0 features
+ */
+void dvz_device_config_set_features10(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceFeatures* features)
+{
+    ANN(cfg);
+    ANN(features);
+    dvz_memcpy(
+        &cfg->features10, sizeof(VkPhysicalDeviceFeatures), features,
+        sizeof(VkPhysicalDeviceFeatures));
+    cfg->has_features10 = true;
+}
+
+
+
+/**
+ * Copy Vulkan 1.1 features into a device configuration.
+ *
+ * @param cfg device configuration
+ * @param features Vulkan 1.1 features
+ */
+void dvz_device_config_set_features11(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan11Features* features)
+{
+    ANN(cfg);
+    ANN(features);
+    dvz_memcpy(
+        &cfg->features11, sizeof(VkPhysicalDeviceVulkan11Features), features,
+        sizeof(VkPhysicalDeviceVulkan11Features));
+    cfg->has_features11 = true;
+}
+
+
+
+/**
+ * Copy Vulkan 1.2 features into a device configuration.
+ *
+ * @param cfg device configuration
+ * @param features Vulkan 1.2 features
+ */
+void dvz_device_config_set_features12(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan12Features* features)
+{
+    ANN(cfg);
+    ANN(features);
+    dvz_memcpy(
+        &cfg->features12, sizeof(VkPhysicalDeviceVulkan12Features), features,
+        sizeof(VkPhysicalDeviceVulkan12Features));
+    cfg->has_features12 = true;
+}
+
+
+
+/**
+ * Copy Vulkan 1.3 features into a device configuration.
+ *
+ * @param cfg device configuration
+ * @param features Vulkan 1.3 features
+ */
+void dvz_device_config_set_features13(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan13Features* features)
+{
+    ANN(cfg);
+    ANN(features);
+    dvz_memcpy(
+        &cfg->features13, sizeof(VkPhysicalDeviceVulkan13Features), features,
+        sizeof(VkPhysicalDeviceVulkan13Features));
+    cfg->has_features13 = true;
+}
+
+
+
+/**
+ * Create a logical device from a configuration in one step.
+ *
+ * @param cfg device configuration
+ * @return created device, or `NULL` on failure
+ */
+DvzDevice* dvz_device_create_from_config(const DvzDeviceConfig* cfg)
+{
+    ANN(cfg);
+    ANN(cfg->gpu);
+    DvzDevice* device = (DvzDevice*)dvz_calloc(1, sizeof(DvzDevice));
+    if (device == NULL)
+    {
+        log_error("unable to allocate device");
+        return NULL;
+    }
+
+    dvz_gpu_device(cfg->gpu, device);
+    device->is_heap_allocated = true;
+
+    for (uint32_t i = 0; i < cfg->queue_request_count; i++)
+    {
+        dvz_device_request_queues(
+            device, cfg->queue_requests[i].family, cfg->queue_requests[i].count);
+    }
+    for (uint32_t i = 0; i < cfg->extension_count; i++)
+    {
+        dvz_device_request_extension(device, cfg->extensions[i]);
+    }
+    if (cfg->enable_canvas_extensions)
+    {
+        dvz_device_request_canvas_extensions(device);
+    }
+
+    if (cfg->has_features10)
+    {
+        dvz_memcpy(
+            dvz_device_request_features10(device), sizeof(VkPhysicalDeviceFeatures),
+            &cfg->features10,
+            sizeof(VkPhysicalDeviceFeatures));
+    }
+    if (cfg->has_features11)
+    {
+        VkPhysicalDeviceVulkan11Features* features11 = dvz_device_request_features11(device);
+        dvz_memcpy(
+            features11, sizeof(VkPhysicalDeviceVulkan11Features), &cfg->features11,
+            sizeof(VkPhysicalDeviceVulkan11Features));
+        features11->sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+        features11->pNext = NULL;
+    }
+    if (cfg->has_features12)
+    {
+        VkPhysicalDeviceVulkan12Features* features12 = dvz_device_request_features12(device);
+        dvz_memcpy(
+            features12, sizeof(VkPhysicalDeviceVulkan12Features), &cfg->features12,
+            sizeof(VkPhysicalDeviceVulkan12Features));
+        features12->sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        features12->pNext = dvz_device_request_features11(device);
+    }
+    if (cfg->has_features13)
+    {
+        VkPhysicalDeviceVulkan13Features* features13 = dvz_device_request_features13(device);
+        dvz_memcpy(
+            features13, sizeof(VkPhysicalDeviceVulkan13Features), &cfg->features13,
+            sizeof(VkPhysicalDeviceVulkan13Features));
+        features13->sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        features13->pNext = dvz_device_request_features12(device);
+    }
+
+    if (dvz_device_create(device) != 0)
+    {
+        dvz_device_destroy(device);
+        return NULL;
+    }
+    return device;
+}
+
+
+
 void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
 {
     ANN(gpu);
     ANN(device);
 
     device->gpu = gpu;
+    device->is_heap_allocated = false;
 
     // Features using v2 API with features structs chain.
     fill_features(device);
@@ -404,6 +679,7 @@ void dvz_device_wait(DvzDevice* device)
 void dvz_device_destroy(DvzDevice* device)
 {
     ANN(device);
+    bool is_heap_allocated = device->is_heap_allocated;
 
     // Destroy pools.
     destroy_dpool(device);
@@ -419,6 +695,11 @@ void dvz_device_destroy(DvzDevice* device)
 
     dvz_free_strings(device->req_extension_count, device->req_extensions);
     dvz_obj_destroyed(&device->obj);
+
+    if (is_heap_allocated)
+    {
+        dvz_free(device);
+    }
 }
 
 

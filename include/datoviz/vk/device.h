@@ -42,6 +42,7 @@
 struct DvzDevice
 {
     DvzObject obj;
+    bool is_heap_allocated;
     DvzGpu* gpu;
 
     DvzQueues queues;
@@ -62,9 +63,139 @@ struct DvzDevice
 
 
 
+typedef struct DvzDeviceQueueRequest DvzDeviceQueueRequest;
+typedef struct DvzDeviceConfig DvzDeviceConfig;
+
+struct DvzDeviceQueueRequest
+{
+    uint32_t family;
+    uint32_t count;
+};
+
+
+
+struct DvzDeviceConfig
+{
+    DvzGpu* gpu;
+    bool enable_canvas_extensions;
+    uint32_t queue_request_count;
+    DvzDeviceQueueRequest queue_requests[DVZ_MAX_QUEUE_FAMILIES];
+    uint32_t extension_count;
+    const char* extensions[DVZ_MAX_REQ_EXTENSIONS];
+    bool has_features10;
+    bool has_features11;
+    bool has_features12;
+    bool has_features13;
+    VkPhysicalDeviceFeatures features10;
+    VkPhysicalDeviceVulkan11Features features11;
+    VkPhysicalDeviceVulkan12Features features12;
+    VkPhysicalDeviceVulkan13Features features13;
+};
+
+
+
 /*************************************************************************************************/
 /*  Device                                                                                       */
 /*************************************************************************************************/
+
+/**
+ * Return default configuration values for creating a device.
+ *
+ * @param gpu the source GPU
+ * @returns the default device configuration
+ */
+DVZ_EXPORT DvzDeviceConfig dvz_device_default_config(DvzGpu* gpu);
+
+
+
+/**
+ * Add a queue request to a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param family the queue family index
+ * @param count the number of queues requested
+ * @returns whether the request was added
+ */
+DVZ_EXPORT bool
+dvz_device_config_request_queue(DvzDeviceConfig* cfg, uint32_t family, uint32_t count);
+
+
+
+/**
+ * Add an extension request to a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param extension the extension name
+ * @returns whether the extension was added
+ */
+DVZ_EXPORT bool
+dvz_device_config_request_extension(DvzDeviceConfig* cfg, const char* extension);
+
+
+
+/**
+ * Toggle canvas extension requests on a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param enabled whether canvas extensions should be requested
+ */
+DVZ_EXPORT void dvz_device_config_enable_canvas_extensions(DvzDeviceConfig* cfg, bool enabled);
+
+
+
+/**
+ * Copy Vulkan 1.0 features into a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param features the Vulkan 1.0 feature struct
+ */
+DVZ_EXPORT void
+dvz_device_config_set_features10(DvzDeviceConfig* cfg, const VkPhysicalDeviceFeatures* features);
+
+
+
+/**
+ * Copy Vulkan 1.1 features into a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param features the Vulkan 1.1 feature struct
+ */
+DVZ_EXPORT void dvz_device_config_set_features11(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan11Features* features);
+
+
+
+/**
+ * Copy Vulkan 1.2 features into a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param features the Vulkan 1.2 feature struct
+ */
+DVZ_EXPORT void dvz_device_config_set_features12(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan12Features* features);
+
+
+
+/**
+ * Copy Vulkan 1.3 features into a device configuration.
+ *
+ * @param cfg the device configuration
+ * @param features the Vulkan 1.3 feature struct
+ */
+DVZ_EXPORT void dvz_device_config_set_features13(
+    DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan13Features* features);
+
+
+
+/**
+ * Create and initialize a heap-allocated device from a configuration.
+ *
+ * @param cfg the device configuration
+ * @returns a created device on success, `NULL` on failure
+ */
+DVZ_EXPORT DvzDevice* dvz_device_create_from_config(const DvzDeviceConfig* cfg);
+
+
 
 /**
  * Prepare creating a (logical) device from a GPU (physical device).

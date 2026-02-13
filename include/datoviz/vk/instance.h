@@ -47,6 +47,7 @@ MUTE_OFF
 
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
+typedef struct DvzInstanceConfig DvzInstanceConfig;
 
 typedef struct VkInstance_T* VkInstance;
 
@@ -59,12 +60,14 @@ typedef struct VkInstance_T* VkInstance;
 struct DvzInstance
 {
     DvzObject obj;
+    bool is_heap_allocated;
 
     VkInstance vk_instance;
     uint32_t vk_version;
 
     // Instance creation structures.
     bool flags;
+    bool portability;
     VkInstanceCreateInfo info_inst;
     VkDebugUtilsMessengerCreateInfoEXT info_debug;
     VkValidationFeaturesEXT validation_features;
@@ -96,6 +99,21 @@ struct DvzInstance
 
 
 
+struct DvzInstanceConfig
+{
+    int flags;
+    uint32_t vk_version;
+    const char* app_name;
+    uint32_t app_version;
+    bool portability;
+    uint32_t layer_count;
+    const char* layers[DVZ_MAX_REQ_LAYERS];
+    uint32_t extension_count;
+    const char* extensions[DVZ_MAX_REQ_EXTENSIONS];
+};
+
+
+
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
@@ -111,6 +129,48 @@ typedef enum
 /*************************************************************************************************/
 /*  Instance                                                                                     */
 /*************************************************************************************************/
+
+/**
+ * Return default configuration values for creating an instance.
+ *
+ * @returns the default instance configuration
+ */
+DVZ_EXPORT DvzInstanceConfig dvz_instance_default_config(void);
+
+
+
+/**
+ * Add an instance layer request to a configuration.
+ *
+ * @param cfg the instance configuration
+ * @param layer the layer name
+ * @returns whether the layer was added to the request list
+ */
+DVZ_EXPORT bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const char* layer);
+
+
+
+/**
+ * Add an instance extension request to a configuration.
+ *
+ * @param cfg the instance configuration
+ * @param extension the extension name
+ * @returns whether the extension was added to the request list
+ */
+DVZ_EXPORT bool
+dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extension);
+
+
+
+/**
+ * Create and initialize a heap-allocated instance from a configuration.
+ *
+ * @param cfg the instance configuration
+ * @returns a created instance on success, `NULL` on failure
+ */
+DVZ_EXPORT DvzInstance* dvz_instance_create_from_config(const DvzInstanceConfig* cfg);
+
+
 
 /**
  * Initialize an instance.

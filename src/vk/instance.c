@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <volk.h>
 
 #include "_alloc.h"
@@ -77,15 +78,154 @@ static bool _dvz_volk_init(void)
 
 
 
+/**
+ * Return whether a string is already present in a fixed-size string list.
+ *
+ * @param count number of strings in the list
+ * @param values list of string values
+ * @param value queried string value
+ * @return true when the string exists in the list
+ */
+static bool _dvz_has_config_string(uint32_t count, const char* const* values, const char* value)
+{
+    ANN(values);
+    ANN(value);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (values[i] != NULL && strcmp(values[i], value) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Instance                                                                                     */
 /*************************************************************************************************/
+
+/**
+ * Return default configuration values for creating an instance.
+ *
+ * @return initialized instance configuration with sensible defaults
+ */
+DvzInstanceConfig dvz_instance_default_config(void)
+{
+    INIT(DvzInstanceConfig, cfg);
+    cfg.vk_version = VK_API_VERSION_1_3;
+    cfg.portability = true;
+    return cfg;
+}
+
+
+
+/**
+ * Add an instance layer request to a configuration.
+ *
+ * @param cfg the instance configuration
+ * @param layer layer name to request
+ * @return true when the request has been appended
+ */
+bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const char* layer)
+{
+    ANN(cfg);
+    ANN(layer);
+    if (cfg->layer_count >= DVZ_MAX_REQ_LAYERS)
+    {
+        log_warn("too many requested instance layers");
+        return false;
+    }
+    if (_dvz_has_config_string(cfg->layer_count, cfg->layers, layer))
+    {
+        return false;
+    }
+    cfg->layers[cfg->layer_count++] = layer;
+    return true;
+}
+
+
+
+/**
+ * Add an instance extension request to a configuration.
+ *
+ * @param cfg the instance configuration
+ * @param extension extension name to request
+ * @return true when the request has been appended
+ */
+bool dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extension)
+{
+    ANN(cfg);
+    ANN(extension);
+    if (cfg->extension_count >= DVZ_MAX_REQ_EXTENSIONS)
+    {
+        log_warn("too many requested instance extensions");
+        return false;
+    }
+    if (_dvz_has_config_string(cfg->extension_count, cfg->extensions, extension))
+    {
+        return false;
+    }
+    cfg->extensions[cfg->extension_count++] = extension;
+    return true;
+}
+
+
+
+/**
+ * Create an instance from configuration in one step.
+ *
+ * @param cfg instance configuration
+ * @return created instance, or `NULL` on failure
+ */
+DvzInstance* dvz_instance_create_from_config(const DvzInstanceConfig* cfg)
+{
+    ANN(cfg);
+    DvzInstance* instance = (DvzInstance*)dvz_calloc(1, sizeof(DvzInstance));
+    if (instance == NULL)
+    {
+        log_error("unable to allocate instance");
+        return NULL;
+    }
+
+    dvz_instance(instance, cfg->flags);
+    instance->is_heap_allocated = true;
+    instance->portability = cfg->portability;
+    dvz_instance_info(instance, cfg->app_name, cfg->app_version);
+
+    for (uint32_t i = 0; i < cfg->layer_count; i++)
+    {
+        dvz_instance_request_layer(instance, cfg->layers[i]);
+    }
+    for (uint32_t i = 0; i < cfg->extension_count; i++)
+    {
+        dvz_instance_request_extension(instance, cfg->extensions[i]);
+    }
+
+    uint32_t vk_version = cfg->vk_version;
+    if (vk_version == 0)
+    {
+        vk_version = VK_API_VERSION_1_3;
+    }
+
+    if (dvz_instance_create(instance, vk_version) != 0)
+    {
+        dvz_instance_destroy(instance);
+        return NULL;
+    }
+    return instance;
+}
+
+
 
 void dvz_instance(DvzInstance* instance, int flags)
 {
     ANN(instance);
     _dvz_volk_init();
     instance->flags = flags;
+    instance->is_heap_allocated = false;
+    instance->portability = true;
     instance->obj.type = DVZ_OBJECT_TYPE_INSTANCE;
     dvz_obj_init(&instance->obj);
 }
@@ -192,7 +332,7 @@ int dvz_instance_create(DvzInstance* instance, uint32_t vk_version)
 
     // Add portability enumeration extension and creation flag if "VK_KHR_portability_enumeration"
     // is in the supported instance extensions.
-    if (has_portability)
+    if (has_portability && instance->portability)
     {
         dvz_instance_portability(instance);
     }
@@ -244,6 +384,7 @@ VkInstance dvz_instance_handle(DvzInstance* instance)
 void dvz_instance_destroy(DvzInstance* instance)
 {
     ANN(instance);
+    bool is_heap_allocated = instance->is_heap_allocated;
 
     DVZ_FREE_STRING_CONTAINER(instance->layer_count, instance->layers)
     DVZ_FREE_STRING_CONTAINER(instance->extension_count, instance->extensions)
@@ -283,6 +424,11 @@ void dvz_instance_destroy(DvzInstance* instance)
     }
 
     dvz_obj_destroyed(&instance->obj);
+
+    if (is_heap_allocated)
+    {
+        dvz_free(instance);
+    }
 }
 
 
