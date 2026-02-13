@@ -50,7 +50,8 @@ For all runtime objects:
 2. `*_destroy(NULL)` is always safe.
 3. Config is POD, by-value or const pointer input, with default helper:
    1. `DvzXConfig dvz_x_default_config(void)`.
-4. "Request feature/extension" builder calls become config fields, not post-hoc mutable internals.
+4. "Request feature/extension" builder calls stay available as config helper APIs (and/or direct config
+   fields), never as post-hoc runtime mutation on live objects.
 5. Query APIs return immutable snapshots or typed handles, never internal raw struct pointers.
 
 
@@ -65,9 +66,9 @@ For all runtime objects:
 3. `void dvz_instance_destroy(DvzInstance* instance)`
    -> unchanged name, now frees heap object
 4. `void dvz_instance_request_layer(...)`
-   -> config field: `DvzInstanceConfig.layers[]` / count
+   -> config helper: `dvz_instance_config_request_layer(&cfg, ...)`
 5. `void dvz_instance_request_extension(...)`
-   -> config field: `DvzInstanceConfig.extensions[]` / count
+   -> config helper: `dvz_instance_config_request_extension(&cfg, ...)`
 6. `void dvz_instance_validation_pre/post(...)`
    -> internalized (no public builder-stage API)
 7. `DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)`
@@ -79,11 +80,11 @@ For all runtime objects:
 1. `void dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)`
    -> removed from public API
 2. `void dvz_device_request_queues(...)`
-   -> config field: `DvzDeviceConfig.queue_requests[]`
+   -> config helper: `dvz_device_config_request_queue(&cfg, ...)`
 3. `bool dvz_device_request_extension(...)`
-   -> config field: `DvzDeviceConfig.extensions[]`
+   -> config helper: `dvz_device_config_request_extension(&cfg, ...)`
 4. `VkPhysicalDeviceVulkan1xFeatures* dvz_device_request_featuresXX(...)`
-   -> config field group in `DvzDeviceConfig.features`
+   -> config helper group and/or explicit fields in `DvzDeviceConfig.features`
 5. `int dvz_device_create(DvzDevice* device)`
    -> `DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)`
 6. `void dvz_device_destroy(DvzDevice* device)`
@@ -117,6 +118,7 @@ Required adjustments:
    3. portability flag
    4. requested layers/extensions arrays
    5. Vulkan API version
+   6. optional helper APIs to append requested layers/extensions safely
 2. `DvzDeviceConfig`
    1. `const DvzInstance* instance`
    2. `uint32_t gpu_index`
@@ -124,6 +126,62 @@ Required adjustments:
    4. extension list
    5. feature bundle (`features10/11/12/13`)
    6. convenience booleans (`enable_canvas_extensions`, etc.)
+   7. optional helper APIs for queue/extension/feature requests
+
+
+## Config vs runtime split
+
+1. Config-building phase:
+   1. caller mutates `DvzInstanceConfig`/`DvzDeviceConfig` directly and/or through helper APIs.
+   2. this is where request-layer/request-extension/request-feature operations live.
+2. Runtime phase:
+   1. `dvz_instance_create()` / `dvz_device_create()` consume finalized configs.
+   2. no request/builder mutation APIs exist on live runtime objects.
+   3. runtime objects are managed only through create/destroy and narrow runtime operations.
+
+
+## Proposed concrete API surface
+
+1. Instance config/builders:
+   1. `DvzInstanceConfig dvz_instance_default_config(void)`
+   2. `bool dvz_instance_config_request_layer(DvzInstanceConfig* cfg, const char* layer_name)`
+   3. `bool dvz_instance_config_request_extension(DvzInstanceConfig* cfg, const char* extension_name)`
+2. Instance runtime:
+   1. `DvzInstance* dvz_instance_create(const DvzInstanceConfig* cfg)`
+   2. `void dvz_instance_destroy(DvzInstance* instance)`
+   3. `const DvzGpuInfo* dvz_instance_gpus(const DvzInstance* instance, uint32_t* gpu_count)`
+3. Device config/builders:
+   1. `DvzDeviceConfig dvz_device_default_config(const DvzInstance* instance)`
+   2. `bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index)`
+   3. `bool dvz_device_config_request_queue(DvzDeviceConfig* cfg, DvzQueueType type, uint32_t count)`
+   4. `bool dvz_device_config_request_extension(DvzDeviceConfig* cfg, const char* extension_name)`
+   5. `void dvz_device_config_enable_canvas_extensions(DvzDeviceConfig* cfg, bool enabled)`
+   6. `void dvz_device_config_set_features10(DvzDeviceConfig* cfg, const VkPhysicalDeviceFeatures* f10)`
+   7. `void dvz_device_config_set_features11(DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan11Features* f11)`
+   8. `void dvz_device_config_set_features12(DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan12Features* f12)`
+   9. `void dvz_device_config_set_features13(DvzDeviceConfig* cfg, const VkPhysicalDeviceVulkan13Features* f13)`
+4. Device runtime:
+   1. `DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)`
+   2. `void dvz_device_destroy(DvzDevice* device)`
+5. Rules:
+   1. all `*_config_request_*` APIs are valid only before `*_create()`.
+   2. runtime objects do not expose `request_*` APIs.
+   3. helper functions and direct field assignment on config structs may coexist.
+
+
+## Usage sketch
+
+1. Instance:
+   1. `DvzInstanceConfig icfg = dvz_instance_default_config();`
+   2. `dvz_instance_config_request_layer(&icfg, "VK_LAYER_KHRONOS_validation");`
+   3. `dvz_instance_config_request_extension(&icfg, "VK_EXT_debug_utils");`
+   4. `DvzInstance* instance = dvz_instance_create(&icfg);`
+2. Device:
+   1. `DvzDeviceConfig dcfg = dvz_device_default_config(instance);`
+   2. `dvz_device_config_set_gpu_index(&dcfg, 0);`
+   3. `dvz_device_config_request_queue(&dcfg, DVZ_QUEUE_GRAPHICS, 1);`
+   4. `dvz_device_config_enable_canvas_extensions(&dcfg, true);`
+   5. `DvzDevice* device = dvz_device_create(&dcfg);`
 
 
 ## Public header refactor checklist
@@ -145,7 +203,7 @@ Required adjustments:
    2. `src/vk/device_internal.h`
 2. keep allocator, object lifecycle, and feature wiring semantics unchanged internally first.
 3. add constructor helpers to build runtime objects from configs.
-4. remove dead builder paths after call-site migration.
+4. remove dead runtime-mutation builder paths after call-site migration while retaining config helpers.
 
 
 ## Migration phases
