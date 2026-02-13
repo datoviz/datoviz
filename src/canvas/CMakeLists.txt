@@ -12,7 +12,7 @@ target_include_directories(datoviz_canvas
     ${PROJECT_SOURCE_DIR}/external/volk
 )
 
-target_compile_definitions(datoviz_canvas PUBLIC ${COMPILE_DEFINITIONS})
+target_compile_definitions(datoviz_canvas PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
 set(DVZ_CANVAS_SHADER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/shaders")
 file(GLOB DVZ_CANVAS_SHADER_SOURCES
