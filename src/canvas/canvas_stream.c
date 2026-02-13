@@ -239,6 +239,28 @@ static int canvas_create_stream_with_sinks(
         }
         DvzVideoSinkConfig sink_cfg = cfg ? *cfg : dvz_video_sink_default_config();
         sink_cfg.capture_mode = capture_mode;
+        if (cfg == NULL)
+        {
+            if (stream_cfg.width > 0)
+            {
+                sink_cfg.encoder.width = stream_cfg.width;
+            }
+            if (stream_cfg.height > 0)
+            {
+                sink_cfg.encoder.height = stream_cfg.height;
+            }
+        }
+        else
+        {
+            if (sink_cfg.encoder.width == 0 && stream_cfg.width > 0)
+            {
+                sink_cfg.encoder.width = stream_cfg.width;
+            }
+            if (sink_cfg.encoder.height == 0 && stream_cfg.height > 0)
+            {
+                sink_cfg.encoder.height = stream_cfg.height;
+            }
+        }
         if (capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK && sink_cfg.capture_rgba == NULL)
         {
             sink_cfg.capture_rgba = canvas_capture_rgba_callback;
@@ -420,11 +442,6 @@ int dvz_canvas_stream_enable_video(
 
     if (enable)
     {
-        if (canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
-        {
-            log_error("video sink is not yet supported in offscreen canvas mode");
-            return -1;
-        }
         DvzVideoCaptureMode capture_mode = canvas_resolve_video_capture_mode(canvas, cfg);
         if (
             capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL &&

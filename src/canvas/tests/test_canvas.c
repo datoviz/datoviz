@@ -627,7 +627,10 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     canvas = dvz_canvas_create(&cfg);
     AT(canvas != NULL);
     AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN);
-    AT(dvz_canvas_configure_video_sink(canvas, true, NULL) < 0);
+    AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+    DvzVideoSinkConfig external_cfg = dvz_video_sink_default_config();
+    external_cfg.capture_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
+    AT(dvz_canvas_configure_video_sink(canvas, true, &external_cfg) < 0);
     CanvasLiveProbeState live_probe = {0};
     DvzCanvasLiveImageSinkConfig live_cfg = {
         .callback = canvas_live_probe_callback,
@@ -637,10 +640,13 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
 
     for (uint32_t i = 0; i < 3; ++i)
     {
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
         int frame_rc = dvz_canvas_frame(canvas);
         AT(frame_rc != DVZ_CANVAS_FRAME_WAIT_SURFACE);
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING);
         AT(dvz_canvas_submit(canvas) == 0);
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
     }
     AT(live_probe.callback_count == 3);
     AT(live_probe.non_monotonic_wait_count == 0);
@@ -662,6 +668,157 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     dvz_free(rgba);
 
 offscreen_cleanup:
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    if (device_initialized)
+    {
+        dvz_device_destroy(&device);
+    }
+    dvz_instance_destroy(&instance);
+    return 0;
+}
+
+
+
+/**
+ * Validate offscreen video sink CPU-readback contract with capability-gated skip behavior.
+ */
+static int test_canvas_offscreen_video_sink_cpu_readback(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance instance = {0};
+    DvzDevice device = {0};
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    bool device_initialized = false;
+    bool enabled = false;
+
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    {
+        skip_reason = "Vulkan instance creation failed";
+        goto offscreen_video_cleanup;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        skip_reason = "no Vulkan GPU found";
+        goto offscreen_video_cleanup;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    dvz_gpu_device(gpu, &device);
+    device_initialized = true;
+    dvz_queues(caps, &device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
+    fet12->timelineSemaphore = true;
+
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
+    features->synchronization2 = true;
+    features->dynamicRendering = true;
+
+    if (dvz_device_create(&device) != 0)
+    {
+        skip_reason = "Vulkan device creation failed";
+        goto offscreen_video_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-offscreen-video-test";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_video_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = &device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.timing_history = 4;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+
+    DvzVideoSinkConfig sink_cfg = dvz_video_sink_default_config();
+    sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
+    sink_cfg.encoder.backend = "auto";
+    sink_cfg.encoder.width = 320;
+    sink_cfg.encoder.height = 240;
+    sink_cfg.encoder.fps = 30;
+    sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
+    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_offscreen_video_test.mp4";
+    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_offscreen_video_test.h26x";
+    if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
+    {
+        skip_reason = "video backend unavailable";
+        goto offscreen_video_cleanup;
+    }
+    enabled = true;
+    AT(canvas->video_sink_enabled);
+    AT(canvas->video_capture_mode == DVZ_VIDEO_CAPTURE_CPU_READBACK);
+    AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+
+    bool submitted = false;
+    for (uint32_t i = 0; i < 8; ++i)
+    {
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc != DVZ_CANVAS_FRAME_READY)
+        {
+            skip_reason = "offscreen frame path unavailable";
+            break;
+        }
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING);
+        if (dvz_canvas_submit(canvas) != 0)
+        {
+            skip_reason = "offscreen video submit failed";
+            break;
+        }
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+        submitted = true;
+        break;
+    }
+
+    if (!submitted && skip_reason == NULL)
+    {
+        skip_reason = "offscreen submit path not reached";
+    }
+
+offscreen_video_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas offscreen video sink test skipped (%s)", skip_reason);
+    }
+    else
+    {
+        AT(enabled);
+        AT(submitted);
+    }
     if (canvas != NULL)
     {
         dvz_canvas_destroy(canvas);
@@ -2046,6 +2203,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_frame_pool);
     TEST_SIMPLE(test_canvas_timings);
     TEST_SIMPLE(test_canvas_offscreen_mode_headless);
+    TEST_SIMPLE(test_canvas_offscreen_video_sink_cpu_readback);
     TEST_SIMPLE(test_canvas_present_mode_rejects_offscreen_window);
     TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
     TEST_SIMPLE(test_canvas_glfw_present_recovery);

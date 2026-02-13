@@ -71,6 +71,44 @@ static bool canvas_is_offscreen_mode(const DvzCanvas* canvas)
 
 
 
+static const char* canvas_offscreen_state_name(DvzCanvasOffscreenRuntimeState state)
+{
+    switch (state)
+    {
+    case DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED:
+        return "UNINITIALIZED";
+    case DVZ_CANVAS_OFFSCREEN_STATE_READY:
+        return "READY";
+    case DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING:
+        return "DRAW_PENDING";
+    case DVZ_CANVAS_OFFSCREEN_STATE_OUTPUT_PENDING:
+        return "OUTPUT_PENDING";
+    case DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST:
+        return "FATAL_DEVICE_LOST";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+
+
+static void canvas_offscreen_transition(
+    DvzCanvas* canvas, DvzCanvasOffscreenRuntimeState state, const char* reason)
+{
+    ANN(canvas);
+    if (canvas->offscreen_runtime_state == state)
+    {
+        return;
+    }
+    log_debug(
+        "canvas offscreen state %s -> %s (%s)",
+        canvas_offscreen_state_name(canvas->offscreen_runtime_state),
+        canvas_offscreen_state_name(state), reason ? reason : "no reason");
+    canvas->offscreen_runtime_state = state;
+}
+
+
+
 static VkPipelineStageFlags2 canvas_stage_for_layout(VkImageLayout layout)
 {
     switch (layout)
@@ -177,6 +215,7 @@ static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
     canvas->offscreen_extent = (VkExtent2D){0, 0};
     canvas->offscreen_format = VK_FORMAT_UNDEFINED;
     canvas->offscreen_ready = false;
+    canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED, "resources destroyed");
 }
 
 
@@ -278,6 +317,10 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
         {
             return -1;
         }
+    }
+    if (canvas->timeline_ready && canvas->timeline_value > 0)
+    {
+        dvz_semaphore_wait(&canvas->timeline_semaphore, canvas->timeline_value);
     }
 
     DvzCommands cmds = {0};
@@ -859,6 +902,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->primary_sink_attached = false;
     canvas->offscreen_memory_fd = -1;
     canvas->offscreen_ready = false;
+    canvas->offscreen_runtime_state = DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED;
     canvas->test_force_wait_semaphore_export_failure = false;
 
     if (!canvas_device_check_extensions(canvas))
@@ -907,6 +951,10 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
         log_error("failed to initialize canvas swapchain state");
         dvz_canvas_destroy(canvas);
         return NULL;
+    }
+    if (canvas_is_offscreen_mode(canvas))
+    {
+        canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, "initialized");
     }
     return canvas;
 }
@@ -979,14 +1027,21 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     DvzStreamFrame* frame = NULL;
     if (canvas_is_offscreen_mode(canvas))
     {
+        if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        {
+            log_error("offscreen canvas frame aborted after device loss");
+            return -1;
+        }
         frame = dvz_canvas_frame_pool_rotate(&canvas->frame_pool);
         if (!frame)
         {
             log_error("canvas frame pool unavailable");
             return -1;
         }
+        canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "frame begin");
         if (canvas_offscreen_prepare_frame(canvas, frame) != 0)
         {
+            canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, "frame prepare failed");
             log_error("failed to prepare offscreen canvas frame");
             return -1;
         }
@@ -1078,11 +1133,18 @@ int dvz_canvas_submit(DvzCanvas* canvas)
     uint64_t wait_value = canvas->timeline_value + 1;
     if (canvas_is_offscreen_mode(canvas))
     {
+        if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        {
+            log_error("offscreen canvas submit aborted after device loss");
+            return -1;
+        }
         if (!canvas->offscreen_ready || canvas->offscreen_command_buffer == VK_NULL_HANDLE)
         {
             log_error("offscreen canvas submit requires prepared offscreen resources");
             return -1;
         }
+        canvas_offscreen_transition(
+            canvas, DVZ_CANVAS_OFFSCREEN_STATE_OUTPUT_PENDING, "submit begin");
         canvas_cmd_transition_image(
             canvas, canvas->offscreen_command_buffer, canvas->offscreen_image, canvas->offscreen_layout,
             VK_IMAGE_LAYOUT_GENERAL);
@@ -1100,6 +1162,16 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, VK_NULL_HANDLE);
         if (submit_rc != VK_SUCCESS)
         {
+            if (submit_rc == VK_ERROR_DEVICE_LOST)
+            {
+                canvas_offscreen_transition(
+                    canvas, DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST, "submit device lost");
+            }
+            else
+            {
+                canvas_offscreen_transition(
+                    canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "submit failed");
+            }
             log_error("offscreen canvas submit failed (%d)", submit_rc);
             return -1;
         }
@@ -1108,6 +1180,14 @@ int dvz_canvas_submit(DvzCanvas* canvas)
     if (result == 0)
     {
         canvas->timeline_value = wait_value;
+        if (canvas_is_offscreen_mode(canvas))
+        {
+            canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, "submit done");
+        }
+    }
+    else if (canvas_is_offscreen_mode(canvas))
+    {
+        canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "stream submit failed");
     }
     double elapsed = dvz_clock_interval(&clock) * 1e6;
     dvz_canvas_timings_record(&canvas->timings, canvas->frame_id, elapsed);
@@ -1126,6 +1206,23 @@ DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas)
 {
     ANN(canvas);
     return canvas->cfg.render_mode;
+}
+
+
+
+/**
+ * Return the current offscreen runtime state for diagnostics/tests.
+ *
+ * @param canvas canvas handle
+ * @returns offscreen runtime state or UNINITIALIZED when canvas is null
+ */
+DvzCanvasOffscreenRuntimeState dvz_canvas_offscreen_runtime_state(const DvzCanvas* canvas)
+{
+    if (!canvas)
+    {
+        return DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED;
+    }
+    return canvas->offscreen_runtime_state;
 }
 
 

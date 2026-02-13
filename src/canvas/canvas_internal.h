@@ -60,6 +60,17 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED = 0,
+    DVZ_CANVAS_OFFSCREEN_STATE_READY,
+    DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING,
+    DVZ_CANVAS_OFFSCREEN_STATE_OUTPUT_PENDING,
+    DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST,
+} DvzCanvasOffscreenRuntimeState;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -124,6 +135,7 @@ struct DvzCanvas
     VkFormat offscreen_format;
     int offscreen_memory_fd;
     bool offscreen_ready;
+    DvzCanvasOffscreenRuntimeState offscreen_runtime_state;
     DvzCanvasSwapchain* swapchain;
 };
 
@@ -212,6 +224,8 @@ void dvz_canvas_swapchain_test_force_acquire_status(DvzCanvas* canvas, int32_t s
 void dvz_canvas_swapchain_test_force_present_status(DvzCanvas* canvas, int32_t status);
 
 DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas);
+
+DvzCanvasOffscreenRuntimeState dvz_canvas_offscreen_runtime_state(const DvzCanvas* canvas);
 
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);
 
