@@ -35,6 +35,8 @@
 #include "test_vklite.h"
 #include "testing.h"
 
+#include <volk.h>
+
 #ifndef DVZ_HAS_GLFW
 #define DVZ_HAS_GLFW 0
 #endif
@@ -658,3 +660,119 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
     _present_fixture_destroy(&fixture);
     return 0;
 }
+
+
+
+/**
+ * Verify wrap backend supports present-path setup with an externally-managed native surface.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+#if DVZ_HAS_GLFW
+int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture))
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzWindowConfig cfg = dvz_window_default_config();
+    cfg.title = "vklite-wrap-external-surface";
+    cfg.width = 320;
+    cfg.height = 240;
+    DvzWindow* wrap_window = dvz_window_create(fixture.host, DVZ_BACKEND_WRAP, &cfg);
+    if (wrap_window == NULL || dvz_window_backend_type(wrap_window) != DVZ_BACKEND_WRAP)
+    {
+        log_warn("vklite wrap present test skipped because wrap window creation failed");
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    GLFWwindow* external_handle = glfwCreateWindow((int)cfg.width, (int)cfg.height, cfg.title, NULL, NULL);
+    if (external_handle == NULL)
+    {
+        log_warn("vklite wrap present test skipped because external GLFW window creation failed");
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    VkSurfaceKHR external_surface = VK_NULL_HANDLE;
+    VkInstance instance = dvz_instance_handle(fixture.instance);
+    VkResult surface_res = glfwCreateWindowSurface(instance, external_handle, NULL, &external_surface);
+    if (surface_res != VK_SUCCESS || external_surface == VK_NULL_HANDLE)
+    {
+        log_warn(
+            "vklite wrap present test skipped because external GLFW surface creation failed (%d)",
+            (int)surface_res);
+        glfwDestroyWindow(external_handle);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzWindowExternalSurfaceInfo info = {
+        .instance = instance,
+        .surface = external_surface,
+        .extent = {.width = cfg.width, .height = cfg.height},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_attach_surface(wrap_window, &info) == 0);
+
+    DvzSurface surface = {0};
+    DvzSwapchain swapchain = {0};
+    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_wrap_native(&surface, external_surface, wrap_window));
+    AT(_swapchain_prepare(&swapchain, &fixture, &surface));
+    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
+
+    uvec2 size = {cfg.width, cfg.height};
+    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, size);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        log_warn("vklite wrap present test skipped because wrap-window extent is zero");
+        dvz_swapchain_destroy(&swapchain);
+        dvz_surface_destroy(&surface);
+        dvz_window_wrap_detach_surface(wrap_window);
+        vkDestroySurfaceKHR(instance, external_surface, NULL);
+        glfwDestroyWindow(external_handle);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    AT(status == DVZ_PRESENT_STATUS_OK);
+    AT(swapchain.ready);
+    AT(swapchain.handle != VK_NULL_HANDLE);
+    const DvzWindowSurface* window_surface = dvz_window_surface(wrap_window);
+    ANN(window_surface);
+    AT(window_surface->surface == external_surface);
+
+    dvz_swapchain_destroy(&swapchain);
+    dvz_surface_destroy(&surface);
+    dvz_window_wrap_detach_surface(wrap_window);
+    window_surface = dvz_window_surface(wrap_window);
+    ANN(window_surface);
+    AT(window_surface->surface == VK_NULL_HANDLE);
+    AT(window_surface->instance == VK_NULL_HANDLE);
+
+    vkDestroySurfaceKHR(instance, external_surface, NULL);
+    glfwDestroyWindow(external_handle);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}
+#else
+int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+    log_warn("vklite wrap present test skipped because Datoviz was built without GLFW support");
+    return 0;
+}
+#endif

@@ -85,6 +85,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_swapchain_config_defaults_partial);
     TEST_SIMPLE(test_vklite_swapchain_present_invalid_index);
     TEST_SIMPLE(test_vklite_swapchain_recreate_resolved_state);
+    TEST_SIMPLE(test_vklite_wrap_backend_external_surface_present);
 
     TEST_SIMPLE(test_technique_triangle);
     TEST_SIMPLE(test_technique_render_texture);

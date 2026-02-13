@@ -112,6 +112,8 @@ int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstite
 
 int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem);
+
 
 
 /*************************************************************************************************/
