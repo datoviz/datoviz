@@ -148,10 +148,6 @@ static int canvas_capture_rgba_callback(
 static bool canvas_has_external_video_support(const DvzCanvas* canvas)
 {
     ANN(canvas);
-    if (canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
-    {
-        return false;
-    }
     return canvas->allocator.external != 0 && canvas->supports_external_semaphore;
 }
 

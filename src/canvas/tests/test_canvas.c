@@ -753,7 +753,17 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
     DvzVideoSinkConfig external_cfg = dvz_video_sink_default_config();
     external_cfg.capture_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
-    AT(dvz_canvas_configure_video_sink(canvas, true, &external_cfg) < 0);
+    int external_video_rc = dvz_canvas_configure_video_sink(canvas, true, &external_cfg);
+    bool external_supported = canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+    if (external_supported)
+    {
+        AT(external_video_rc == 0);
+        AT(dvz_canvas_configure_video_sink(canvas, false, NULL) == 0);
+    }
+    else
+    {
+        AT(external_video_rc < 0);
+    }
     CanvasLiveProbeState live_probe = {0};
     DvzCanvasLiveImageSinkConfig live_cfg = {
         .callback = canvas_live_probe_callback,

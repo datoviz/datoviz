@@ -26,7 +26,8 @@ Current status:
 4. Last updated: `2026-02-13`
 5. Note: OFFS-070 now covers wait-value monotonicity across live/video rebuilds and explicit offscreen
    start/update ordering.
-6. Note: OFFS-090 cleanup started by removing stale `dvz_live_canvas` offscreen-recording rejection.
+6. Note: OFFS-090 cleanup started by removing stale `dvz_live_canvas` offscreen-recording rejection
+   and mode-coupled external video gating (now capability-based in offscreen too).
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
