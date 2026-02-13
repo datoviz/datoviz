@@ -24,7 +24,7 @@ Current status:
 2. Current task: `OFFS-070 - Harden synchronization and handle-refresh semantics across mode changes`
 3. Last completed task: `OFFS-060 - Implement deterministic frame lifecycle/state machine for offscreen mode`
 4. Last updated: `2026-02-13`
-5. Note: offscreen runtime states are wired, including stream-failure and forced device-loss transitions.
+5. Note: OFFS-070 adds offscreen monotonic wait-value coverage across submit failure and sink rebuilds.
 
 Task board status:
 1. `[x] OFFS-000` Baseline verification of canvas/swapchain coupling and headless gaps.
@@ -43,9 +43,9 @@ Task board status:
 
 Immediate next actions:
 1. `M3 lifecycle hardening`:
-   1. [ ] formalize offscreen runtime state transitions (`READY`, `DRAW_PENDING`, `OUTPUT_PENDING`).
-   2. [ ] align stream start/update/submit ordering between present and offscreen modes.
-   3. [ ] add deterministic tests for wait-value monotonicity and recovery semantics in offscreen mode.
+   1. [x] formalize offscreen runtime state transitions (`READY`, `DRAW_PENDING`, `OUTPUT_PENDING`).
+   2. [~] align stream start/update/submit ordering between present and offscreen modes.
+   3. [x] add deterministic tests for wait-value monotonicity and recovery semantics in offscreen mode.
 
 
 ## Ground rules
