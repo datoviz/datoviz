@@ -44,6 +44,33 @@ DVZ_COLOR_CVEC4 = 1
 ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
 DvzColor = 'cvec4' if DVZ_COLOR_CVEC4 else 'vec4'
 DvzAlpha = 'ctypes.c_uint8' if DVZ_COLOR_CVEC4 else 'ctypes.c_float'
+VK_HANDLE_TYPES = {
+    'VkInstance',
+    'VkPhysicalDevice',
+    'VkDevice',
+    'VkQueue',
+    'VkCommandPool',
+    'VkCommandBuffer',
+    'VkSemaphore',
+    'VkFence',
+    'VkSurfaceKHR',
+    'VkSwapchainKHR',
+    'VkImage',
+    'VkImageView',
+    'VkBuffer',
+    'VkSampler',
+    'VkRenderPass',
+    'VkFramebuffer',
+    'VkDescriptorPool',
+    'VkDescriptorSetLayout',
+    'VkDescriptorSet',
+    'VkPipelineLayout',
+    'VkPipeline',
+    'VkPipelineCache',
+    'VkShaderModule',
+    'VkEvent',
+    'VkQueryPool',
+}
 
 MTYPE_MAPPING = {
     'vec2': 'Tuple[float, float]',
@@ -102,6 +129,12 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
     if type.startswith('vec') or type[1:].startswith('vec') or type.startswith('mat'):
         return type
 
+    elif type == 'size_t':
+        return 'ctypes.c_size_t'
+
+    elif type == 'ssize_t':
+        return 'ctypes.c_ssize_t'
+
     elif type == 'DvzIndex':
         return 'ctypes.c_uint32'
 
@@ -116,6 +149,12 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
 
     elif type == 'void':
         return 'None'
+
+    elif type in VK_HANDLE_TYPES:
+        return 'ctypes.c_void_p'
+
+    elif type.startswith('Vk'):
+        return 'ctypes.c_void_p'
 
     else:
         return type
@@ -183,6 +222,8 @@ def cpointer_to_ndpointer(type, unsigned=None, ndpointer=True):
     assert '*' in type
     assert type.endswith('*')
     btype = type[:-1]
+    if '*' in btype:
+        return 'ctypes.c_void_p'
     dtype = c_to_dtype(btype, unsigned=unsigned)
     if dtype and ndpointer:
         if isinstance(dtype, tuple):
@@ -478,7 +519,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
 if __name__ == '__main__':
     headers_json_path = ROOT_DIR / 'build/headers.json'
     output_path = ROOT_DIR / 'datoviz/_ctypes.py'
-    version_path = ROOT_DIR / 'include/datoviz_version.h'
+    version_path = ROOT_DIR / 'include/datoviz/common/version.h'
 
     # with open(headers_json_path) as file:
     #     data = json.load(file)

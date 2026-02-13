@@ -67,6 +67,11 @@ if not LIB_PATH.exists():
     LIB_PATH = DATOVIZ_DIR / LIB_NAME
 
 if not LIB_PATH.exists():
+    DATOVIZ_DIR = (FILE_DIR / '../build/src/').resolve()
+    LIB_DIR = DATOVIZ_DIR
+    LIB_PATH = DATOVIZ_DIR / LIB_NAME
+
+if not LIB_PATH.exists():
     raise RuntimeError(f'Unable to find `{LIB_PATH}`.')
 
 
@@ -315,6 +320,22 @@ mat4 = make_vector_type('mat4', ctypes.c_float, 4 * 4)
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 DvzShaderStageFlags = ctypes.c_int32
+DvzBackend = ctypes.c_int32
+DvzKeyboardEventType = ctypes.c_int32
+DvzPointerButton = ctypes.c_int32
+DvzPointerEventType = ctypes.c_int32
+DvzWindowBackendProbe = ctypes.c_void_p
+DvzWindowBackendCreate = ctypes.c_void_p
+DvzWindowBackendDestroy = ctypes.c_void_p
+DvzWindowBackendPoll = ctypes.c_void_p
+DvzWindowBackendRequestFrame = ctypes.c_void_p
+DvzWindowBackendRequiredExtensionCount = ctypes.c_void_p
+DvzWindowBackendRequiredExtensionAt = ctypes.c_void_p
+VmaAllocator = ctypes.c_void_p
+VmaAllocation = ctypes.c_void_p
+VmaAllocationCreateFlags = ctypes.c_uint32
+VmaAllocationInfo = ctypes.c_void_p
+VmaMemoryUsage = ctypes.c_int32
 
 
 # HACK: mock structs for Qt/Vulkan wrappers
@@ -340,6 +361,13 @@ class VkRenderPass(ctypes.Structure):
 
 class VkCommandBuffer(ctypes.Structure):
     pass
+
+
+class VkExtent2D(ctypes.Structure):
+    _fields_ = [
+        ('width', ctypes.c_uint32),
+        ('height', ctypes.c_uint32),
+    ]
 
 
 DEFAULT_CLEAR_COLOR = cvec4()

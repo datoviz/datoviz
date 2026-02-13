@@ -9,6 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from pyparsing import (
+    Combine,
     Group,
     Keyword,
     Literal,
@@ -249,10 +250,12 @@ def parse_functions(text):
     dtype = Word(alphanums + '_*')
     identifier = Word(alphanums, alphanums + '_')
     ellipsis = Literal('...')('ellipsis')
+    ptr_const = (Literal('const*') ^ Literal('*const') ^ Combine(const + Optional(Literal('*'))))
     argType = (
         Optional(const('const'))
         + Optional(unsigned('unsigned'))
         + dtype('dtype')
+        + Optional(ptr_const('ptr_const'))
         + Optional(identifier('name'))
     )
     argDecl = Group(argType | ellipsis) + Optional(COMMA)
@@ -280,7 +283,10 @@ def parse_functions(text):
         # Detect if there is are out params.
         out_params = re.findall(r'@param\[out\]\s+(\w+)\s', item.docstring)
         for i, entry in enumerate(item.args):
-            b = Bunch(dtype=entry.dtype, name=entry.name)
+            dtype = entry.dtype
+            if getattr(entry, 'ptr_const', None) and '*' in entry.ptr_const:
+                dtype += '*'
+            b = Bunch(dtype=dtype, name=entry.name)
             if entry.ellipsis:
                 b.varargs = True
             if entry.const:
@@ -299,6 +305,8 @@ def parse_functions(text):
                     )
                 b['docstring'] = dox['params'][i][1]
             args.append(b)
+        if item.name == 'dvz_window_wrap_set_required_extensions' and len(args) >= 3:
+            args[2].dtype = 'char**'
         funcs[item.name] = Bunch(
             name=item.name,
             args=args,
