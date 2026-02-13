@@ -1169,6 +1169,129 @@ offscreen_device_lost_cleanup:
     dvz_instance_destroy(&instance);
     return 0;
 }
+
+
+
+/**
+ * Validate offscreen frames keep clean handle metadata across stream rebuild toggles.
+ */
+static int test_canvas_offscreen_handles_clean_after_rebuild(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance instance = {0};
+    DvzDevice device = {0};
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    bool device_initialized = false;
+
+    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    {
+        skip_reason = "Vulkan instance creation failed";
+        goto offscreen_clean_handles_cleanup;
+    }
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        skip_reason = "no Vulkan GPU found";
+        goto offscreen_clean_handles_cleanup;
+    }
+
+    DvzGpu* gpu = &gpus[0];
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
+    ANN(caps);
+
+    dvz_gpu_device(gpu, &device);
+    device_initialized = true;
+    dvz_queues(caps, &device.queues);
+
+    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
+    fet12->timelineSemaphore = true;
+
+    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
+    features->synchronization2 = true;
+    features->dynamicRendering = true;
+
+    if (dvz_device_create(&device) != 0)
+    {
+        skip_reason = "Vulkan device creation failed";
+        goto offscreen_clean_handles_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-offscreen-clean-handles-test";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_clean_handles_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = &device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.timing_history = 4;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+
+    DvzCanvasLiveImageSinkConfig live_cfg = {
+        .callback = canvas_live_probe_callback,
+        .user_data = &(CanvasLiveProbeState){0},
+    };
+    AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
+
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+        AT(frame != NULL);
+        AT(!frame->handles_dirty);
+        AT(dvz_canvas_submit(canvas) == 0);
+    }
+
+    AT(dvz_canvas_configure_live_image_sink(canvas, false, NULL) == 0);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    AT(frame != NULL);
+    AT(!frame->handles_dirty);
+    AT(dvz_canvas_submit(canvas) == 0);
+
+offscreen_clean_handles_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas offscreen clean-handles test skipped (%s)", skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    if (device_initialized)
+    {
+        dvz_device_destroy(&device);
+    }
+    dvz_instance_destroy(&instance);
+    return 0;
+}
 /**
  * Validate that present mode cannot be created on an offscreen window backend.
  */
@@ -2248,7 +2371,7 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
     dvz_canvas_swapchain_test_force_present_status(canvas, DVZ_PRESENT_STATUS_DEVICE_LOST);
     AT(dvz_canvas_submit(canvas) < 0);
     AT(
-        dvz_canvas_swapchain_runtime_state(canvas) ==
+        dvz_canvas_present_runtime_state(canvas) ==
         DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
 
     dvz_window_host_poll(fixture.host);
@@ -2257,7 +2380,7 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
 
     dvz_canvas_swapchain_mark_out_of_date(canvas);
     AT(
-        dvz_canvas_swapchain_runtime_state(canvas) ==
+        dvz_canvas_present_runtime_state(canvas) ==
         DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
 
     dvz_canvas_swapchain_test_force_recreate_status(canvas, -1);
@@ -2537,6 +2660,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_offscreen_video_sink_cpu_readback);
     TEST_SIMPLE(test_canvas_offscreen_state_on_stream_submit_failure);
     TEST_SIMPLE(test_canvas_offscreen_state_device_lost);
+    TEST_SIMPLE(test_canvas_offscreen_handles_clean_after_rebuild);
     TEST_SIMPLE(test_canvas_present_mode_rejects_offscreen_window);
     TEST_SIMPLE(test_canvas_swapchain_failfast_slot_init);
     TEST_SIMPLE(test_canvas_glfw_present_recovery);

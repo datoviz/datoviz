@@ -45,33 +45,6 @@ typedef struct DvzCanvasSwapchain DvzCanvasSwapchain;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-typedef enum
-{
-    DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED = 0,
-    DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE,
-    DVZ_CANVAS_PRESENT_STATE_READY,
-    DVZ_CANVAS_PRESENT_STATE_ACQUIRED,
-    DVZ_CANVAS_PRESENT_STATE_PRESENT_PENDING,
-    DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST,
-} DvzCanvasPresentRuntimeState;
-
-
-
-typedef enum
-{
-    DVZ_CANVAS_OFFSCREEN_STATE_UNINITIALIZED = 0,
-    DVZ_CANVAS_OFFSCREEN_STATE_READY,
-    DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING,
-    DVZ_CANVAS_OFFSCREEN_STATE_OUTPUT_PENDING,
-    DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST,
-} DvzCanvasOffscreenRuntimeState;
-
-
-
-/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 

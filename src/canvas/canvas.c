@@ -1251,6 +1251,23 @@ DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas)
 
 
 /**
+ * Return the current present runtime state for diagnostics/tests.
+ *
+ * @param canvas canvas handle
+ * @returns present runtime state or UNINITIALIZED when unavailable
+ */
+DvzCanvasPresentRuntimeState dvz_canvas_present_runtime_state(const DvzCanvas* canvas)
+{
+    if (!canvas)
+    {
+        return DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
+    }
+    return dvz_canvas_swapchain_runtime_state(canvas);
+}
+
+
+
+/**
  * Return the current offscreen runtime state for diagnostics/tests.
  *
  * @param canvas canvas handle

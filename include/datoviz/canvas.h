@@ -192,6 +192,27 @@ DVZ_EXPORT DvzCanvasRenderMode dvz_canvas_render_mode(const DvzCanvas* canvas);
 
 
 /**
+ * Return the present-mode runtime state for diagnostics.
+ *
+ * @param canvas canvas handle
+ * @returns present runtime state, or UNINITIALIZED when unavailable
+ */
+DVZ_EXPORT DvzCanvasPresentRuntimeState dvz_canvas_present_runtime_state(const DvzCanvas* canvas);
+
+
+
+/**
+ * Return the offscreen-mode runtime state for diagnostics.
+ *
+ * @param canvas canvas handle
+ * @returns offscreen runtime state, or UNINITIALIZED when unavailable
+ */
+DVZ_EXPORT DvzCanvasOffscreenRuntimeState
+dvz_canvas_offscreen_runtime_state(const DvzCanvas* canvas);
+
+
+
+/**
  * Expose the input router owned by the canvas window.
  *
  * @param canvas canvas owning the router

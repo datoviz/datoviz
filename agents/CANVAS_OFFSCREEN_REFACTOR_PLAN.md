@@ -21,8 +21,8 @@ Legend:
 
 Current status:
 1. Current milestone: `M1 - Mode plumbing and sink gating`
-2. Current task: `OFFS-060 - Implement deterministic frame lifecycle/state machine for offscreen mode`
-3. Last completed task: `OFFS-050 - Wire CPU readback and video capture contracts to offscreen mode`
+2. Current task: `OFFS-070 - Harden synchronization and handle-refresh semantics across mode changes`
+3. Last completed task: `OFFS-060 - Implement deterministic frame lifecycle/state machine for offscreen mode`
 4. Last updated: `2026-02-13`
 5. Note: offscreen runtime states are wired, including stream-failure and forced device-loss transitions.
 
@@ -34,8 +34,8 @@ Task board status:
 5. `[x] OFFS-030` Add offscreen frame sink backend for no-present execution.
 6. `[x] OFFS-040` Add transport-oriented live-image sink contract/API.
 7. `[x] OFFS-050` Wire CPU readback and video capture contracts to offscreen mode.
-8. `[~] OFFS-060` Implement deterministic frame lifecycle/state machine for offscreen mode.
-9. `[ ] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
+8. `[x] OFFS-060` Implement deterministic frame lifecycle/state machine for offscreen mode.
+9. `[~] OFFS-070` Harden synchronization and handle-refresh semantics across mode changes.
 10. `[x] OFFS-080` Add canvas offscreen tests (headless + capability-gated).
 11. `[ ] OFFS-085` Add end-to-end distributed/live-image smoke validation hooks.
 12. `[ ] OFFS-090` Cleanup dead paths and boundary violations.
