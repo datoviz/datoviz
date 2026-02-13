@@ -62,12 +62,11 @@ typedef struct CanvasGlfwClearContext
 
 typedef struct CanvasGlfwFixture
 {
-    DvzInstance instance;
+    DvzInstance* instance;
     DvzWindowHost* host;
-    DvzDevice device;
+    DvzDevice* device;
     DvzWindow* window;
     DvzCanvas* canvas;
-    bool device_initialized;
 } CanvasGlfwFixture;
 
 
@@ -165,8 +164,9 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     log_warn("canvas glfw fixture skipped because Datoviz was not build with glfw support");
     return 0;
 #else
-    dvz_instance(&fixture->instance, DVZ_INSTANCE_VALIDATION_FLAGS);
-    dvz_instance_request_extension(&fixture->instance, VK_KHR_SURFACE_EXTENSION_NAME);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
 
     fixture->host = dvz_window_host();
     ANN(fixture->host);
@@ -188,10 +188,11 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     }
     for (uint32_t i = 0; i < ext_count; i++)
     {
-        dvz_instance_request_extension(&fixture->instance, extensions[i]);
+        dvz_instance_config_request_extension(&icfg, extensions[i]);
     }
 
-    if (dvz_instance_create(&fixture->instance, VK_API_VERSION_1_3) != 0)
+    fixture->instance = dvz_instance_create_from_config(&icfg);
+    if (fixture->instance == NULL)
     {
         *skipped = true;
         log_warn("canvas glfw fixture skipped because Vulkan instance creation failed");
@@ -199,7 +200,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     }
 
     uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&fixture->instance, &gpu_count);
+    DvzGpu* gpus = dvz_instance_gpus(fixture->instance, &gpu_count);
     if (gpus == NULL || gpu_count == 0)
     {
         *skipped = true;
@@ -211,19 +212,24 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
     ANN(caps);
 
-    dvz_gpu_device(gpu, &fixture->device);
-    fixture->device_initialized = true;
-    dvz_queues(caps, &fixture->device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&fixture->device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&fixture->device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    dvz_device_request_canvas_extensions(&fixture->device);
-    if (dvz_device_create(&fixture->device) != 0)
+    DvzQueues queues = {0};
+    dvz_queues(caps, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    VkPhysicalDeviceVulkan12Features fet12 = {0};
+    fet12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &fet12);
+    VkPhysicalDeviceVulkan13Features features = {0};
+    features.synchronization2 = true;
+    features.dynamicRendering = true;
+    dvz_device_config_set_features13(&dcfg, &features);
+    dvz_device_config_enable_canvas_extensions(&dcfg, true);
+    fixture->device = dvz_device_create_from_config(&dcfg);
+    if (fixture->device == NULL)
     {
         *skipped = true;
         log_warn("canvas glfw fixture skipped because Vulkan device creation failed");
@@ -244,7 +250,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = fixture->window;
-    cfg.device = &fixture->device;
+    cfg.device = fixture->device;
     cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
     cfg.timing_history = 1;
 
@@ -291,12 +297,16 @@ static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
         dvz_window_host_destroy(fixture->host);
         fixture->host = NULL;
     }
-    if (fixture->device_initialized)
+    if (fixture->device != NULL)
     {
-        dvz_device_destroy(&fixture->device);
-        fixture->device_initialized = false;
+        dvz_device_destroy(fixture->device);
+        fixture->device = NULL;
     }
-    dvz_instance_destroy(&fixture->instance);
+    if (fixture->instance != NULL)
+    {
+        dvz_instance_destroy(fixture->instance);
+        fixture->instance = NULL;
+    }
 }
 
 
@@ -329,7 +339,7 @@ int test_canvas_swapchain_failfast_slot_init(TstSuite* suite, TstItem* item)
     ANN(canvas);
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -389,7 +399,7 @@ int test_canvas_glfw_present_recovery(TstSuite* suite, TstItem* item)
     uint64_t timeline_before = canvas->timeline_value;
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -453,7 +463,7 @@ int test_canvas_handle_refresh_order(TstSuite* suite, TstItem* item)
     ANN(canvas);
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -545,7 +555,7 @@ int test_canvas_video_wait_value_propagation(TstSuite* suite, TstItem* item)
     ANN(canvas);
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -613,7 +623,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstSuite* suite, TstItem*
     }
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -686,7 +696,7 @@ int test_canvas_video_wait_handle_export_fallback(TstSuite* suite, TstItem* item
     }
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -761,7 +771,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstSuite* suite
     }
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -880,7 +890,7 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
     }
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -964,7 +974,7 @@ int test_canvas_video_sink_disable_rebuild(TstSuite* suite, TstItem* item)
     }
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -1080,7 +1090,7 @@ int test_canvas_capture_api(TstSuite* suite, TstItem* item)
     ANN(canvas);
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -1174,7 +1184,7 @@ int test_canvas_video_handle_refresh_after_recreate(TstSuite* suite, TstItem* it
     ANN(canvas);
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -1265,7 +1275,7 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
     ANN(canvas);
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &fixture.device,
+        .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -1323,18 +1333,16 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     (void)item;
 
 #if DVZ_HAS_GLFW
-    DvzInstance instance = {0};
-    dvz_instance(&instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    DvzInstance* instance = NULL;
 
     DvzWindowHost* host = dvz_window_host();
     ANN(host);
-    DvzDevice device = {0};
+    DvzDevice* device = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
-    bool device_initialized = false;
-
-    // Instance extensions.
-    dvz_instance_request_extension(&instance, VK_KHR_SURFACE_EXTENSION_NAME);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
 
     // Additional ones for glfw.
     if (!dvz_window_glfw_init())
@@ -1353,19 +1361,20 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 
     for (uint32_t i = 0; i < ext_count; i++)
     {
-        dvz_instance_request_extension(&instance, extensions[i]);
+        dvz_instance_config_request_extension(&icfg, extensions[i]);
     }
 
-    if (dvz_instance_create(&instance, VK_API_VERSION_1_3) != 0)
+    instance = dvz_instance_create_from_config(&icfg);
+    if (instance == NULL)
     {
         log_warn("canvas glfw test skipped because Vulkan instance creation failed");
         goto canvas_glfw_cleanup;
     }
 
-    AT(dvz_instance_has_extension(&instance, VK_KHR_SURFACE_EXTENSION_NAME));
+    AT(dvz_instance_has_extension(instance, VK_KHR_SURFACE_EXTENSION_NAME));
 
     uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
     if (gpus == NULL || gpu_count == 0)
     {
         log_warn("canvas glfw test skipped because no Vulkan GPU was found");
@@ -1382,21 +1391,24 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     ANN(caps);
 
     // Create the device.
-    dvz_gpu_device(gpu, &device);
-    device_initialized = true;
-    dvz_queues(caps, &device.queues);
-
-    VkPhysicalDeviceVulkan12Features* fet12 = dvz_device_request_features12(&device);
-    fet12->timelineSemaphore = true;
-
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(&device);
-    features->synchronization2 = true;
-    features->dynamicRendering = true;
-
-    // Device extensions required for the canvas.
-    dvz_device_request_canvas_extensions(&device);
-
-    if (dvz_device_create(&device) != 0)
+    DvzQueues queues = {0};
+    dvz_queues(caps, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    VkPhysicalDeviceVulkan12Features fet12 = {0};
+    fet12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &fet12);
+    VkPhysicalDeviceVulkan13Features features = {0};
+    features.synchronization2 = true;
+    features.dynamicRendering = true;
+    dvz_device_config_set_features13(&dcfg, &features);
+    dvz_device_config_enable_canvas_extensions(&dcfg, true);
+    device = dvz_device_create_from_config(&dcfg);
+    if (device == NULL)
     {
         log_warn("canvas glfw test skipped because Vulkan device creation failed");
         goto canvas_glfw_cleanup;
@@ -1416,7 +1428,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 
     DvzCanvasConfig cfg = dvz_canvas_default_config();
     cfg.window = window;
-    cfg.device = &device;
+    cfg.device = device;
     cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
     cfg.timing_history = 1;
 
@@ -1429,7 +1441,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     }
 
     CanvasGlfwClearContext clear_ctx = {
-        .device = &device,
+        .device = device,
         .format = cfg.color_format,
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
@@ -1516,7 +1528,10 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     AT(recovery_forced);
     AT(recovery_resumed);
 
-    dvz_device_wait(&device);
+    if (device != NULL)
+    {
+        dvz_device_wait(device);
+    }
 
     if (interactive_loop && router)
     {
@@ -1547,11 +1562,14 @@ canvas_glfw_cleanup:
     {
         dvz_window_host_destroy(host);
     }
-    if (device_initialized)
+    if (device != NULL)
     {
-        dvz_device_destroy(&device);
+        dvz_device_destroy(device);
     }
-    dvz_instance_destroy(&instance);
+    if (instance != NULL)
+    {
+        dvz_instance_destroy(instance);
+    }
 
 #else
     log_warn("canvas glfw test skipped because Datoviz was not build with glfw support");
@@ -1560,4 +1578,3 @@ canvas_glfw_cleanup:
 
     return 0;
 }
-

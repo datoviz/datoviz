@@ -142,32 +142,48 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     int out = 0;
 
     /******************* Vulkan setup *******************/
-    DvzInstance instance = {0};
-    dvz_instance(&instance, 0);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = 0;
     // IMPORTANT: need external memory instance extension.
-    dvz_instance_request_extension(&instance, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    dvz_instance_config_request_extension(
+        &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    if (instance == NULL)
+    {
+        out = 1;
+        goto cleanup_vulkan;
+    }
 
     // Obtain a GPU.
     uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     DvzGpu* gpu = &gpus[0];
 
     // Query the queues.
     DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
 
     // Initialize a device.
-    DvzDevice device = {0};
-    dvz_gpu_device(gpu, &device);
-    dvz_queues(qc, &device.queues);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
     // IMPORTANT: need external memory device extension.
-    dvz_device_request_extension(&device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    dvz_device_create(&device);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    if (device == NULL)
+    {
+        out = 1;
+        goto cleanup_vulkan;
+    }
 
     // Memory allocator.
     DvzVma allocator = {0};
     // IMPORTANT: need to pass the external memory handle type when creating the allocator.
-    dvz_device_allocator(&device, handle_type, &allocator);
+    dvz_device_allocator(device, handle_type, &allocator);
 
     // Create a mappable buffer.
     VkBufferCreateInfo buf_info = {
@@ -253,7 +269,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     for (uint32_t i = 0; i < N; i++)
         ptr[i] += 1; // add 1 again (now should be i + 2)
     dvz_allocator_unmap(&allocator, &alloc);
-    vkDeviceWaitIdle(device.vk_device); // ensure write visible
+    vkDeviceWaitIdle(device->vk_device); // ensure write visible
 
     /******************* CUDA reads and checks *******************/
     uint32_t* host_copy = (uint32_t*)dvz_malloc(SIZE);
@@ -287,8 +303,14 @@ cleanup_fd:
 cleanup_vulkan:
     dvz_allocator_destroy_buffer(&allocator, &alloc, vk_buffer);
     dvz_allocator_destroy(&allocator);
-    dvz_device_destroy(&device);
-    dvz_instance_destroy(&instance);
+    if (device != NULL)
+    {
+        dvz_device_destroy(device);
+    }
+    if (instance != NULL)
+    {
+        dvz_instance_destroy(instance);
+    }
 
     return out;
 #else
@@ -450,26 +472,42 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     }
 
     /******************* Vulkan setup *******************/
-    DvzInstance instance = {0};
-    dvz_instance(&instance, 0);
-    dvz_instance_request_extension(&instance, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
-    dvz_instance_create(&instance, VK_API_VERSION_1_3);
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = 0;
+    dvz_instance_config_request_extension(
+        &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+    DvzInstance* instance = dvz_instance_create_from_config(&icfg);
+    if (instance == NULL)
+    {
+        out = 1;
+        goto cleanup;
+    }
 
     uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(&instance, &gpu_count);
+    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
     ANN(gpus);
     DvzGpu* gpu = &gpus[0];
 
     DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
 
-    DvzDevice device = {0};
-    dvz_gpu_device(gpu, &device);
-    dvz_queues(qc, &device.queues);
-    dvz_device_request_extension(&device, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    dvz_device_create(&device);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    DvzDevice* device = dvz_device_create_from_config(&dcfg);
+    if (device == NULL)
+    {
+        out = 1;
+        goto cleanup;
+    }
 
     DvzVma allocator = {0};
-    dvz_device_allocator(&device, handle_type, &allocator);
+    dvz_device_allocator(device, handle_type, &allocator);
 
     VkBuffer vk_buffer = VK_NULL_HANDLE;
     DvzAllocation alloc = {0};
@@ -517,7 +555,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     for (uint32_t i = 0; i < N; i++)
         ptr[i] += vulkan_delta;
     dvz_allocator_unmap(&allocator, &alloc);
-    vkDeviceWaitIdle(device.vk_device);
+    vkDeviceWaitIdle(device->vk_device);
 
     /******************* Check from CUDA *******************/
     uint32_t* host_verify = (uint32_t*)dvz_malloc(SIZE);
@@ -565,8 +603,14 @@ cleanup_vulkan:
         dvz_allocator_destroy_buffer(&allocator, &alloc, vk_buffer);
     if (allocator.vma != NULL)
         dvz_allocator_destroy(&allocator);
-    dvz_device_destroy(&device);
-    dvz_instance_destroy(&instance);
+    if (device != NULL)
+    {
+        dvz_device_destroy(device);
+    }
+    if (instance != NULL)
+    {
+        dvz_instance_destroy(instance);
+    }
 
 cleanup:
     if (fd >= 0)
