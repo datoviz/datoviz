@@ -664,7 +664,8 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
 
 
 /**
- * Verify wrap backend supports present-path setup with an externally-managed native surface.
+ * Verify wrap backend supports present-path setup, surface loss, and restore with an external
+ * native surface.
  *
  * @param suite test suite
  * @param tstitem current test item
@@ -754,6 +755,41 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     ANN(window_surface);
     AT(window_surface->surface == external_surface);
 
+    DvzWindowExternalSurfaceInfo loss = {
+        .instance = VK_NULL_HANDLE,
+        .surface = VK_NULL_HANDLE,
+        .extent = {.width = cfg.width, .height = cfg.height},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    AT(dvz_window_wrap_update_surface(wrap_window, &loss) == 0);
+    window_surface = dvz_window_surface(wrap_window);
+    ANN(window_surface);
+    AT(window_surface->instance == VK_NULL_HANDLE);
+    AT(window_surface->surface == VK_NULL_HANDLE);
+
+    AT(dvz_window_wrap_update_surface(wrap_window, &info) == 0);
+    window_surface = dvz_window_surface(wrap_window);
+    ANN(window_surface);
+    AT(window_surface->instance == instance);
+    AT(window_surface->surface == external_surface);
+
+    status = dvz_swapchain_recreate(&swapchain, size);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        log_warn("vklite wrap present test skipped during restore because extent is zero");
+        dvz_swapchain_destroy(&swapchain);
+        dvz_surface_destroy(&surface);
+        dvz_window_wrap_detach_surface(wrap_window);
+        vkDestroySurfaceKHR(instance, external_surface, NULL);
+        glfwDestroyWindow(external_handle);
+        dvz_window_destroy(wrap_window);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+    AT(status == DVZ_PRESENT_STATUS_OK);
+
     dvz_swapchain_destroy(&swapchain);
     dvz_surface_destroy(&surface);
     dvz_window_wrap_detach_surface(wrap_window);
@@ -764,6 +800,7 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
 
     vkDestroySurfaceKHR(instance, external_surface, NULL);
     glfwDestroyWindow(external_handle);
+    dvz_window_destroy(wrap_window);
     _present_fixture_destroy(&fixture);
     return 0;
 }
