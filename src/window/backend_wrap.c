@@ -161,7 +161,16 @@ static void _wrap_destroy_owned_surface(DvzWindow* window)
     ANN(surface);
     if (!window->backend_owns_surface)
         return;
-    if (surface->instance == VK_NULL_HANDLE || surface->surface == VK_NULL_HANDLE)
+    bool instance_set = surface->instance != VK_NULL_HANDLE;
+    bool surface_set = surface->surface != VK_NULL_HANDLE;
+    if (instance_set != surface_set)
+    {
+        log_warn(
+            "wrap backend owned surface has inconsistent handles during teardown "
+            "(instance_set=%d surface_set=%d)",
+            instance_set, surface_set);
+    }
+    if (!instance_set || !surface_set)
         return;
     vkDestroySurfaceKHR(surface->instance, surface->surface, NULL);
 }

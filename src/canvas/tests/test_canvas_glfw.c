@@ -39,6 +39,7 @@
 #include "_test_canvas_probe.h"
 #include "test_canvas.h"
 #include "testing.h"
+#include "wrap_surface_fixture.h"
 
 #if DVZ_HAS_GLFW
 #define GLFW_INCLUDE_NONE
@@ -68,6 +69,20 @@ typedef struct CanvasGlfwFixture
     DvzWindow* window;
     DvzCanvas* canvas;
 } CanvasGlfwFixture;
+
+
+
+#if DVZ_HAS_GLFW
+typedef struct CanvasWrapSurfaceFixture
+{
+    DvzWindow* wrap_window;
+    GLFWwindow* external_handle;
+    VkSurfaceKHR external_surface;
+    DvzWindowExternalSurfaceInfo info;
+    uint32_t width;
+    uint32_t height;
+} CanvasWrapSurfaceFixture;
+#endif
 
 
 
@@ -324,6 +339,100 @@ static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
         fixture->instance = NULL;
     }
 }
+
+
+
+#if DVZ_HAS_GLFW
+/**
+ * Initialize a wrap window and external GLFW surface for canvas integration tests.
+ *
+ * @param fixture shared GLFW/Vulkan fixture with host and instance
+ * @param cfg window config used for wrap window and external GLFW handle
+ * @param wrap output wrap-surface fixture storage
+ * @return true on success, false when setup should be skipped
+ */
+static bool _canvas_wrap_surface_fixture_create(
+    CanvasGlfwFixture* fixture, const DvzWindowConfig* cfg, CanvasWrapSurfaceFixture* wrap)
+{
+    ANN(fixture);
+    ANN(cfg);
+    ANN(wrap);
+    dvz_memset(wrap, sizeof(*wrap), 0, sizeof(*wrap));
+
+    wrap->wrap_window = dvz_window_create(fixture->host, DVZ_BACKEND_WRAP, cfg);
+    if (wrap->wrap_window == NULL || dvz_window_backend_type(wrap->wrap_window) != DVZ_BACKEND_WRAP)
+    {
+        log_warn("canvas wrap test skipped because wrap window creation failed");
+        return false;
+    }
+
+    wrap->external_handle = glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
+    if (wrap->external_handle == NULL)
+    {
+        log_warn("canvas wrap test skipped because external GLFW window creation failed");
+        return false;
+    }
+
+    VkInstance instance = dvz_instance_handle(fixture->instance);
+    VkResult surface_res =
+        glfwCreateWindowSurface(instance, wrap->external_handle, NULL, &wrap->external_surface);
+    if (surface_res != VK_SUCCESS || wrap->external_surface == VK_NULL_HANDLE)
+    {
+        log_warn(
+            "canvas wrap test skipped because external GLFW surface creation failed (%d)",
+            (int)surface_res);
+        return false;
+    }
+
+    wrap->info = dvz_test_wrap_surface_info(
+        instance, wrap->external_surface, cfg->width, cfg->height, 1.0f, 1.0f, false);
+    if (dvz_window_wrap_attach_surface(wrap->wrap_window, &wrap->info) != 0)
+    {
+        log_warn("canvas wrap test skipped because wrap attach_surface() failed");
+        return false;
+    }
+
+    wrap->width = cfg->width;
+    wrap->height = cfg->height;
+    return true;
+}
+
+
+
+/**
+ * Destroy wrap external-surface resources used by canvas integration tests.
+ *
+ * @param fixture shared GLFW/Vulkan fixture with host and instance
+ * @param wrap wrap-surface fixture storage
+ */
+static void _canvas_wrap_surface_fixture_destroy(
+    CanvasGlfwFixture* fixture, CanvasWrapSurfaceFixture* wrap)
+{
+    if (fixture == NULL || wrap == NULL)
+    {
+        return;
+    }
+    if (wrap->wrap_window != NULL)
+    {
+        dvz_window_wrap_detach_surface(wrap->wrap_window);
+    }
+    if (wrap->external_surface != VK_NULL_HANDLE && fixture->instance != NULL)
+    {
+        vkDestroySurfaceKHR(dvz_instance_handle(fixture->instance), wrap->external_surface, NULL);
+        wrap->external_surface = VK_NULL_HANDLE;
+    }
+    if (wrap->external_handle != NULL)
+    {
+        glfwDestroyWindow(wrap->external_handle);
+        wrap->external_handle = NULL;
+    }
+    if (wrap->wrap_window != NULL)
+    {
+        dvz_window_destroy(wrap->wrap_window);
+        wrap->wrap_window = NULL;
+    }
+}
+#endif
 
 
 
@@ -1332,6 +1441,153 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
 
     canvas_glfw_fixture_destroy(&fixture);
     return 0;
+}
+
+
+
+/**
+ * Validate wrap-backend canvas present flow through external-surface loss and restore.
+ *
+ * @param suite The owning test suite.
+ * @param item  The test item (unused).
+ * @return int  Zero on success.
+ */
+int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+#if DVZ_HAS_GLFW
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    if (fixture.canvas != NULL)
+    {
+        dvz_canvas_set_draw_callback(fixture.canvas, NULL, NULL);
+        dvz_canvas_destroy(fixture.canvas);
+        fixture.canvas = NULL;
+    }
+    if (fixture.window != NULL)
+    {
+        dvz_window_destroy(fixture.window);
+        fixture.window = NULL;
+    }
+
+    uint32_t ext_count = dvz_window_host_required_extension_count(fixture.host, DVZ_BACKEND_GLFW);
+    if (ext_count > 0)
+    {
+        const char** extensions = dvz_calloc(ext_count, sizeof(char*));
+        ANN(extensions);
+        AT(dvz_window_host_required_extensions(fixture.host, DVZ_BACKEND_GLFW, ext_count, extensions) == (int)ext_count);
+        AT(dvz_window_wrap_set_required_extensions(fixture.host, ext_count, extensions) == 0);
+        AT(dvz_window_host_required_extension_count(fixture.host, DVZ_BACKEND_WRAP) == ext_count);
+        dvz_free((void*)extensions);
+    }
+
+    DvzWindowConfig cfg = dvz_test_wrap_window_config("canvas-wrap-external-surface", 320, 240);
+    CanvasWrapSurfaceFixture wrap = {0};
+    if (!_canvas_wrap_surface_fixture_create(&fixture, &cfg, &wrap))
+    {
+        _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvasConfig canvas_cfg = dvz_canvas_default_config();
+    canvas_cfg.window = wrap.wrap_window;
+    canvas_cfg.device = fixture.device;
+    canvas_cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    canvas_cfg.timing_history = 1;
+    fixture.canvas = dvz_canvas_create(&canvas_cfg);
+    if (fixture.canvas == NULL)
+    {
+        log_warn("canvas wrap test skipped because canvas creation failed");
+        _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(fixture.canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    bool initial_submit = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        initial_submit = true;
+        break;
+    }
+    AT(initial_submit);
+
+    DvzWindowExternalSurfaceInfo loss =
+        dvz_test_wrap_surface_info(VK_NULL_HANDLE, VK_NULL_HANDLE, cfg.width, cfg.height, 1.0f, 1.0f, false);
+    AT(dvz_window_wrap_update_surface(wrap.wrap_window, &loss) == 0);
+
+    bool saw_wait_surface = false;
+    for (uint32_t i = 0; i < 12; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            saw_wait_surface = true;
+            continue;
+        }
+        if (frame_rc == DVZ_CANVAS_FRAME_READY)
+        {
+            AT(dvz_canvas_submit(fixture.canvas) == 0);
+        }
+    }
+    AT(saw_wait_surface);
+
+    AT(dvz_window_wrap_update_surface(wrap.wrap_window, &wrap.info) == 0);
+    dvz_canvas_swapchain_mark_out_of_date(fixture.canvas);
+
+    bool restored_submit = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        restored_submit = true;
+        break;
+    }
+    AT(restored_submit);
+
+    if (fixture.canvas != NULL)
+    {
+        dvz_canvas_set_draw_callback(fixture.canvas, NULL, NULL);
+        dvz_canvas_destroy(fixture.canvas);
+        fixture.canvas = NULL;
+    }
+    _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+#else
+    log_warn("canvas wrap test skipped because Datoviz was not build with glfw support");
+    return 0;
+#endif
 }
 
 
