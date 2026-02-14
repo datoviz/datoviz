@@ -46,6 +46,12 @@ if(APPLE)
 endif()
 
 option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ${_dvz_enable_cuda_default})
+option(DVZ_BUILD_CORE "Build the datoviz core layer (common/ds/fileio/math/thread)" ON)
+option(DVZ_BUILD_VK "Build the Vulkan layer (vk/vklite)" ON)
+option(DVZ_BUILD_CANVAS "Build the canvas layer (input/window/stream/video/canvas)" ON)
+option(DVZ_BUILD_DRP2 "Build the DRP2 layer" OFF)
+option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
+option(DVZ_BUILD_SCENE "Build the scene layer" OFF)
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
@@ -310,6 +316,33 @@ if(DVZ_ENABLE_COVERAGE)
     endif()
 endif()
 
+include(CMakePackageConfigHelpers)
+set(_dvz_package_dir "${CMAKE_CURRENT_BINARY_DIR}/cmake")
+
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/packages/DatovizConfig.cmake.in"
+    "${_dvz_package_dir}/DatovizConfig.cmake"
+    INSTALL_DESTINATION "lib/cmake/datoviz"
+)
+
+write_basic_package_version_file(
+    "${_dvz_package_dir}/DatovizConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(EXPORT DatovizTargets
+    FILE DatovizTargets.cmake
+    NAMESPACE datoviz::
+    DESTINATION lib/cmake/datoviz
+)
+
+install(FILES
+    "${_dvz_package_dir}/DatovizConfig.cmake"
+    "${_dvz_package_dir}/DatovizConfigVersion.cmake"
+    DESTINATION lib/cmake/datoviz
+)
+
 # Configuration summary.
 message(STATUS "")
 message(STATUS "---------------- Datoviz build configuration ----------------")
@@ -327,6 +360,12 @@ message(STATUS "DVZ_ENABLE_COVERAGE: ${DVZ_ENABLE_COVERAGE}")
 message(STATUS "DVZ_USE_MIMALLOC_RELEASE_DEFAULT: ${DVZ_USE_MIMALLOC_RELEASE_DEFAULT}")
 message(STATUS "DVZ_ENABLE_CUDA: ${DVZ_ENABLE_CUDA}")
 message(STATUS "DVZ_WITH_MIMALLOC (detected): ${DVZ_WITH_MIMALLOC}")
+message(STATUS "DVZ_BUILD_CORE: ${DVZ_BUILD_CORE}")
+message(STATUS "DVZ_BUILD_VK: ${DVZ_BUILD_VK}")
+message(STATUS "DVZ_BUILD_CANVAS: ${DVZ_BUILD_CANVAS}")
+message(STATUS "DVZ_BUILD_DRP2: ${DVZ_BUILD_DRP2}")
+message(STATUS "DVZ_BUILD_WEBGPU: ${DVZ_BUILD_WEBGPU}")
+message(STATUS "DVZ_BUILD_SCENE: ${DVZ_BUILD_SCENE}")
 
 if(DEFINED DVZ_USE_VALIDATION)
     message(STATUS "DVZ_USE_VALIDATION: ${DVZ_USE_VALIDATION} (Release configs disable validation unless explicitly ON)")
@@ -337,3 +376,11 @@ message(STATUS "")
 
 # Install headers and library
 install(DIRECTORY include/ DESTINATION include)
+
+if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
+    install(FILES
+        ${PROJECT_SOURCE_DIR}/external/vk_mem_alloc.h
+        ${PROJECT_SOURCE_DIR}/external/volk/volk.h
+        DESTINATION include
+    )
+endif()

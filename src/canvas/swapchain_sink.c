@@ -657,7 +657,8 @@ static VkResult canvas_swapchain_prepare_surface(DvzCanvasSwapchain* swapchain, 
             swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "wrappers unavailable");
         return VK_ERROR_INITIALIZATION_FAILED;
     }
-    if (!dvz_surface_wrap_native(&swapchain->surface_wrapper, surface, canvas->window))
+    VkExtent2D extent_hint = canvas_surface_extent(canvas);
+    if (!dvz_surface_wrap_native(&swapchain->surface_wrapper, surface, &extent_hint))
     {
         log_warn("canvas surface wrapper refresh failed, postponing swapchain creation");
         swapchain->dirty = true;

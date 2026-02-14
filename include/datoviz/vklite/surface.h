@@ -21,7 +21,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/window/types.h"
 
 
 
@@ -31,7 +30,6 @@
 
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzSurface DvzSurface;
-typedef struct DvzWindow DvzWindow;
 
 
 
@@ -42,10 +40,11 @@ typedef struct DvzWindow DvzWindow;
 struct DvzSurface
 {
     DvzGpu* gpu;
-    DvzWindow* window;
     VkSurfaceKHR handle;
     uint32_t queue_family;
     VkExtent2D extent;
+    VkExtent2D extent_hint;
+    bool has_extent_hint;
     VkSurfaceCapabilitiesKHR capabilities;
     uint32_t format_count;
     VkSurfaceFormatKHR* formats;
@@ -83,11 +82,21 @@ DVZ_EXPORT bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queu
  *
  * @param surface surface wrapper to configure
  * @param surface_khr native Vulkan surface handle owned by the window module
- * @param window window owning the native surface
+ * @param extent_hint optional extent used when the surface reports variable extent
  * @return true when the wrapper accepts the native surface
  */
-DVZ_EXPORT bool
-dvz_surface_wrap_native(DvzSurface* surface, VkSurfaceKHR surface_khr, DvzWindow* window);
+DVZ_EXPORT bool dvz_surface_wrap_native(
+    DvzSurface* surface, VkSurfaceKHR surface_khr, const VkExtent2D* extent_hint);
+
+
+
+/**
+ * Update the extent hint used when a wrapped surface reports variable extent.
+ *
+ * @param surface surface wrapper to update
+ * @param extent_hint optional extent override, NULL clears the hint
+ */
+DVZ_EXPORT void dvz_surface_set_extent_hint(DvzSurface* surface, const VkExtent2D* extent_hint);
 
 
 

@@ -172,9 +172,11 @@ add_library(datoviz SHARED
 
 # Output name
 set_target_properties(datoviz PROPERTIES OUTPUT_NAME "datoviz")
+set_target_properties(datoviz PROPERTIES EXPORT_NAME datoviz)
 
 # Install rule
 install(TARGETS datoviz
+    EXPORT DatovizTargets
     LIBRARY DESTINATION lib
 )
 
@@ -267,6 +269,10 @@ set_property(GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS "${DVZ_COMPILE_DEFINITIONS}
 #
 add_subdirectory(${PROJECT_SOURCE_DIR}/external/volk ${CMAKE_CURRENT_BINARY_DIR}/external/volk EXCLUDE_FROM_ALL)
 
+if(DVZ_BUILD_VK OR DVZ_BUILD_CANVAS)
+    find_package(Vulkan REQUIRED)
+endif()
+
 # -------------------------------------------------------------------------------------------------
 # Components
 # -------------------------------------------------------------------------------------------------
@@ -292,90 +298,142 @@ set(DVZ_CANVAS_COMPONENTS
     datoviz_video
 )
 
-add_subdirectory(common)
-add_subdirectory(ds)
-add_subdirectory(fileio)
-add_subdirectory(math)
-add_subdirectory(thread)
-add_subdirectory(input)
-add_subdirectory(window)
-add_subdirectory(canvas)
-add_subdirectory(stream)
-add_subdirectory(video)
-add_subdirectory(vk)
-add_subdirectory(vklite)
+if(NOT DVZ_BUILD_CORE AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
+    message(FATAL_ERROR "DVZ_BUILD_VK/DVZ_BUILD_CANVAS require DVZ_BUILD_CORE=ON.")
+endif()
+
+if(NOT DVZ_BUILD_VK AND DVZ_BUILD_CANVAS)
+    message(FATAL_ERROR "DVZ_BUILD_CANVAS requires DVZ_BUILD_VK=ON.")
+endif()
+
+if(DVZ_BUILD_CORE)
+    add_subdirectory(common)
+    add_subdirectory(ds)
+    add_subdirectory(fileio)
+    add_subdirectory(math)
+    add_subdirectory(thread)
+endif()
+
+if(DVZ_BUILD_CANVAS)
+    add_subdirectory(input)
+    add_subdirectory(window)
+    add_subdirectory(canvas)
+    add_subdirectory(stream)
+    add_subdirectory(video)
+endif()
+
+if(DVZ_BUILD_VK)
+    add_subdirectory(vk)
+    add_subdirectory(vklite)
+endif()
 
 # -------------------------------------------------------------------------------------------------
 # Layered targets
 # -------------------------------------------------------------------------------------------------
 #
-set(DVZ_COMPONENTS
-    ${DVZ_CORE_COMPONENTS}
-    ${DVZ_VK_COMPONENTS}
-    ${DVZ_CANVAS_COMPONENTS}
-)
+set(DVZ_COMPONENTS)
 
-add_library(datoviz_core SHARED "empty.c")
-set_target_properties(datoviz_core PROPERTIES OUTPUT_NAME "datoviz_core")
+if(DVZ_BUILD_CORE)
+    list(APPEND DVZ_COMPONENTS ${DVZ_CORE_COMPONENTS})
+endif()
+if(DVZ_BUILD_VK)
+    list(APPEND DVZ_COMPONENTS ${DVZ_VK_COMPONENTS})
+endif()
+if(DVZ_BUILD_CANVAS)
+    list(APPEND DVZ_COMPONENTS ${DVZ_CANVAS_COMPONENTS})
+endif()
 
-target_link_libraries(datoviz_core
-    PRIVATE
-    ${DVZ_CORE_COMPONENTS}
-)
+if(DVZ_BUILD_CORE)
+    add_library(datoviz_core SHARED "empty.c")
+    set_target_properties(datoviz_core PROPERTIES OUTPUT_NAME "datoviz_core")
+    set_target_properties(datoviz_core PROPERTIES EXPORT_NAME core)
 
-target_compile_definitions(datoviz_core PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+    target_link_libraries(datoviz_core
+        PRIVATE
+        ${DVZ_CORE_COMPONENTS}
+    )
+
+    target_compile_definitions(datoviz_core PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
 target_include_directories(datoviz_core
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
-add_library(datoviz_vk_layer SHARED "empty.c")
-set_target_properties(datoviz_vk_layer PROPERTIES OUTPUT_NAME "datoviz_vk")
+    add_library(datoviz::core ALIAS datoviz_core)
+endif()
 
-target_link_libraries(datoviz_vk_layer
-    PRIVATE
-    datoviz_core
-    ${DVZ_VK_COMPONENTS}
-    # Temporary bridge: vklite surface code currently depends on window internals.
-    # Window internals also pull input router symbols.
-    datoviz_input
-    datoviz_window
-    datoviz_volk
-)
+if(DVZ_BUILD_VK)
+    add_library(datoviz_vk_layer SHARED "empty.c")
+    set_target_properties(datoviz_vk_layer PROPERTIES OUTPUT_NAME "datoviz_vk")
+    set_target_properties(datoviz_vk_layer PROPERTIES EXPORT_NAME vk)
 
-target_compile_definitions(datoviz_vk_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+    target_link_libraries(datoviz_vk_layer
+        PRIVATE
+        datoviz_core
+        ${DVZ_VK_COMPONENTS}
+        datoviz_volk
+    )
+
+    if(TARGET Vulkan::Headers)
+        target_link_libraries(datoviz_vk_layer PUBLIC Vulkan::Headers)
+    elseif(TARGET Vulkan::Vulkan)
+        target_link_libraries(datoviz_vk_layer PUBLIC Vulkan::Vulkan)
+    endif()
+
+    target_compile_definitions(datoviz_vk_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
 target_include_directories(datoviz_vk_layer
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
-add_library(datoviz_canvas_layer SHARED "empty.c")
-set_target_properties(datoviz_canvas_layer PROPERTIES OUTPUT_NAME "datoviz_canvas")
+    add_library(datoviz::vk ALIAS datoviz_vk_layer)
+endif()
 
-target_link_libraries(datoviz_canvas_layer
-    PRIVATE
-    datoviz_core
-    datoviz_vk_layer
-    ${DVZ_CANVAS_COMPONENTS}
-    datoviz_volk
-)
+if(DVZ_BUILD_CANVAS)
+    add_library(datoviz_canvas_layer SHARED "empty.c")
+    set_target_properties(datoviz_canvas_layer PROPERTIES OUTPUT_NAME "datoviz_canvas")
+    set_target_properties(datoviz_canvas_layer PROPERTIES EXPORT_NAME canvas)
 
-target_compile_definitions(datoviz_canvas_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+    target_link_libraries(datoviz_canvas_layer
+        PRIVATE
+        datoviz_core
+        datoviz_vk_layer
+        ${DVZ_CANVAS_COMPONENTS}
+        datoviz_volk
+    )
+
+    target_compile_definitions(datoviz_canvas_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
 
 target_include_directories(datoviz_canvas_layer
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
-add_library(datoviz::core ALIAS datoviz_core)
-add_library(datoviz::vk ALIAS datoviz_vk_layer)
-add_library(datoviz::canvas ALIAS datoviz_canvas_layer)
+    add_library(datoviz::canvas ALIAS datoviz_canvas_layer)
+endif()
 
-install(TARGETS datoviz_core datoviz_vk_layer datoviz_canvas_layer
-    LIBRARY DESTINATION lib
-)
+set(DVZ_LAYER_TARGETS "")
+if(TARGET datoviz_core)
+    list(APPEND DVZ_LAYER_TARGETS datoviz_core)
+endif()
+if(TARGET datoviz_vk_layer)
+    list(APPEND DVZ_LAYER_TARGETS datoviz_vk_layer)
+endif()
+if(TARGET datoviz_canvas_layer)
+    list(APPEND DVZ_LAYER_TARGETS datoviz_canvas_layer)
+endif()
+
+if(DVZ_LAYER_TARGETS)
+    install(TARGETS ${DVZ_LAYER_TARGETS}
+        EXPORT DatovizTargets
+        LIBRARY DESTINATION lib
+    )
+endif()
 
 # -------------------------------------------------------------------------------------------------
 # Aggregate target
@@ -384,33 +442,47 @@ install(TARGETS datoviz_core datoviz_vk_layer datoviz_canvas_layer
 target_link_libraries(datoviz
     PRIVATE
     ${DVZ_COMPONENTS}
-    datoviz_volk
 )
+
+if(TARGET datoviz_volk AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
+    target_link_libraries(datoviz PRIVATE datoviz_volk)
+endif()
 
 target_include_directories(datoviz
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 add_library(datoviz::datoviz ALIAS datoviz)
 
 if(DVZ_THREADING_TARGET)
-    target_link_libraries(datoviz_core PRIVATE ${DVZ_THREADING_TARGET})
+    if(TARGET datoviz_core)
+        target_link_libraries(datoviz_core PRIVATE ${DVZ_THREADING_TARGET})
+    endif()
     target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
 endif()
 
 if(DVZ_HAS_GLFW AND TARGET glfw)
-    target_link_libraries(datoviz_canvas_layer PRIVATE glfw)
-    target_link_libraries(datoviz PRIVATE glfw)
+    if(TARGET datoviz_canvas_layer)
+        target_link_libraries(datoviz_canvas_layer PRIVATE glfw)
+    endif()
+    if(DVZ_BUILD_CANVAS)
+        target_link_libraries(datoviz PRIVATE glfw)
+    endif()
 endif()
 
 if(DVZ_WITH_MIMALLOC)
-    target_link_libraries(datoviz_core PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    if(TARGET datoviz_core)
+        target_link_libraries(datoviz_core PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+    if(DVZ_BUILD_CORE)
+        target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
 endif()
 
 if(APPLE)
-    foreach(_dvz_layer datoviz_core datoviz_vk_layer datoviz_canvas_layer)
+    foreach(_dvz_layer ${DVZ_LAYER_TARGETS})
         if(TARGET ${_dvz_layer})
             set_target_properties(${_dvz_layer} PROPERTIES
                 BUILD_RPATH "@loader_path"

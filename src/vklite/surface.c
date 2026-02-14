@@ -21,7 +21,6 @@
 #include "_log.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vklite/surface.h"
-#include "datoviz/window.h"
 
 
 
@@ -116,20 +115,13 @@ static bool _surface_update_extent(DvzSurface* surface)
         return true;
     }
 
-    if (surface->window == NULL)
+    if (!surface->has_extent_hint)
     {
         surface->extent = (VkExtent2D){0, 0};
         return true;
     }
 
-    const DvzWindowSurface* ws = dvz_window_surface(surface->window);
-    if (ws == NULL)
-    {
-        surface->extent = (VkExtent2D){0, 0};
-        return true;
-    }
-
-    extent = ws->extent;
+    extent = surface->extent_hint;
     extent.width = _surface_clamp_extent(
         extent.width, surface->capabilities.minImageExtent.width,
         surface->capabilities.maxImageExtent.width);
@@ -164,6 +156,8 @@ bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family)
     surface->queue_family = queue_family;
     surface->handle = VK_NULL_HANDLE;
     surface->extent = (VkExtent2D){0, 0};
+    surface->extent_hint = (VkExtent2D){0, 0};
+    surface->has_extent_hint = false;
     surface->preferred_format = (VkSurfaceFormatKHR){
         .format = VK_FORMAT_B8G8R8A8_UNORM,
         .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
@@ -180,10 +174,11 @@ bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family)
  *
  * @param surface surface wrapper to configure
  * @param surface_khr native Vulkan surface handle owned by the window module
- * @param window window owning the native surface
+ * @param extent_hint optional extent used when the surface reports variable extent
  * @return true when the wrapper accepts the native surface
  */
-bool dvz_surface_wrap_native(DvzSurface* surface, VkSurfaceKHR surface_khr, DvzWindow* window)
+bool dvz_surface_wrap_native(
+    DvzSurface* surface, VkSurfaceKHR surface_khr, const VkExtent2D* extent_hint)
 {
     ANN(surface);
 
@@ -194,8 +189,37 @@ bool dvz_surface_wrap_native(DvzSurface* surface, VkSurfaceKHR surface_khr, DvzW
     }
 
     surface->handle = surface_khr;
-    surface->window = window;
+    surface->extent_hint = (VkExtent2D){0, 0};
+    surface->has_extent_hint = false;
+    if (extent_hint != NULL)
+    {
+        surface->extent_hint = *extent_hint;
+        surface->has_extent_hint = true;
+    }
     return dvz_surface_refresh(surface);
+}
+
+
+
+/**
+ * Update the extent hint used when a wrapped surface reports variable extent.
+ *
+ * @param surface surface wrapper to update
+ * @param extent_hint optional extent override, NULL clears the hint
+ */
+void dvz_surface_set_extent_hint(DvzSurface* surface, const VkExtent2D* extent_hint)
+{
+    ANN(surface);
+    if (extent_hint != NULL)
+    {
+        surface->extent_hint = *extent_hint;
+        surface->has_extent_hint = true;
+    }
+    else
+    {
+        surface->extent_hint = (VkExtent2D){0, 0};
+        surface->has_extent_hint = false;
+    }
 }
 
 
@@ -312,7 +336,8 @@ void dvz_surface_destroy(DvzSurface* surface)
     surface->preferred_format = (VkSurfaceFormatKHR){0};
     surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
     surface->extent = (VkExtent2D){0, 0};
-    surface->window = NULL;
+    surface->extent_hint = (VkExtent2D){0, 0};
+    surface->has_extent_hint = false;
     surface->handle = VK_NULL_HANDLE;
     surface->ready = false;
 }

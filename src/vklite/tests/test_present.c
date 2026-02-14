@@ -502,7 +502,7 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
     }
 
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
+    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
 
     AT(surface.ready);
     AT(surface.handle != VK_NULL_HANDLE);
@@ -553,7 +553,7 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
     }
 
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
+    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
     AT(_swapchain_prepare(&swapchain, &fixture, &surface));
 
     // Device binding is required before recreate.
@@ -622,7 +622,7 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
     }
 
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
+    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
     AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
 
     DvzSwapchainConfig cfg = {0};
@@ -734,7 +734,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
     }
 
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, fixture.window));
+    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
     AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
     AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
 
@@ -816,7 +816,8 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     DvzSurface surface = {0};
     DvzSwapchain swapchain = {0};
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, wrap.external_surface, wrap.wrap_window));
+    VkExtent2D wrap_extent = {.width = wrap.size[0], .height = wrap.size[1]};
+    AT(dvz_surface_wrap_native(&surface, wrap.external_surface, &wrap_extent));
     AT(_swapchain_prepare(&swapchain, &fixture, &surface));
     AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
 
