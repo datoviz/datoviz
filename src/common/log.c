@@ -27,6 +27,7 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -59,6 +60,8 @@ static struct
 {
     void* udata;
     log_LockFn lock;
+    void* intercept_udata;
+    log_InterceptFn intercept;
     FILE* fp;
     int level;
     int quiet;
@@ -120,6 +123,19 @@ void log_set_level(int level)
 
 void log_set_quiet(int enable) { L.quiet = enable ? 1 : 0; }
 
+/**
+ * Register a log interception callback.
+ *
+ * @param fn callback invoked with fully formatted log messages
+ * @param udata opaque pointer forwarded to the callback
+ * @return void this function does not return a value
+ */
+void log_set_intercept(log_InterceptFn fn, void* udata)
+{
+    L.intercept = fn;
+    L.intercept_udata = udata;
+}
+
 void log_log(int level, const char* file, int line, const char* fmt, ...)
 {
     if (level < L.level)
@@ -135,10 +151,23 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     struct tm* lt = localtime(&t);
     uint32_t tid = get_thread_idx() % 1000;
 
-    /* Log to stderr */
-    if (!L.quiet)
+    char msg[2048] = {0};
+    va_list msg_args;
+    va_start(msg_args, fmt);
+    MUTE_NONLITERAL_ON
+    dvz_vsnprintf(msg, sizeof(msg), fmt, msg_args);
+    MUTE_NONLITERAL_OFF
+    va_end(msg_args);
+
+    bool suppress_output = false;
+    if (L.intercept)
     {
-        va_list args;
+        suppress_output = L.intercept(L.intercept_udata, level, file, line, msg) != 0;
+    }
+
+    /* Log to stderr */
+    if (!L.quiet && !suppress_output)
+    {
         char buf[24] = {0};
         clock_t uptime = (clock() / (CLOCKS_PER_SEC / 1000)) % 1000;
         buf[strftime(buf, sizeof(buf), "%H:%M:%S.    ", lt)] = '\0';
@@ -152,11 +181,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
 #else
         dvz_fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
 #endif
-        va_start(args, fmt);
-        MUTE_NONLITERAL_ON
-        dvz_vfprintf(stderr, fmt, args);
-        MUTE_NONLITERAL_OFF
-        va_end(args);
+        dvz_fprintf(stderr, "%s", msg);
 #ifdef LOG_USE_COLOR
         dvz_fprintf(stderr, "\x1b[0m");
 #endif
@@ -165,17 +190,12 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     }
 
     /* Log to file */
-    if (L.fp)
+    if (L.fp && !suppress_output)
     {
-        va_list args;
         char buf[32] = {0};
         buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
         dvz_fprintf(L.fp, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
-        va_start(args, fmt);
-        MUTE_NONLITERAL_ON
-        dvz_vfprintf(L.fp, fmt, args);
-        MUTE_NONLITERAL_OFF
-        va_end(args);
+        dvz_fprintf(L.fp, "%s", msg);
         dvz_fprintf(L.fp, "\n");
         fflush(L.fp);
     }

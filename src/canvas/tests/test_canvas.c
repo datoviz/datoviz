@@ -547,7 +547,7 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
     DvzVideoSinkConfig external_cfg = dvz_video_sink_default_config();
     external_cfg.capture_mode = DVZ_VIDEO_CAPTURE_EXTERNAL;
-    int external_video_rc = dvz_canvas_configure_video_sink(canvas, true, &external_cfg);
+    int external_video_rc = -1;
     bool external_supported =
 #if OS_UNIX
         canvas->allocator.external != 0 && canvas->supports_external_semaphore;
@@ -556,12 +556,15 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
 #endif
     if (external_supported)
     {
+        external_video_rc = dvz_canvas_configure_video_sink(canvas, true, &external_cfg);
         AT(external_video_rc == 0);
         AT(dvz_canvas_configure_video_sink(canvas, false, NULL) == 0);
     }
     else
     {
-        AT(external_video_rc < 0);
+        AT_EXPECTED_ERROR(
+            suite,
+            (external_video_rc = dvz_canvas_configure_video_sink(canvas, true, &external_cfg)) < 0);
     }
     CanvasLiveProbeState live_probe = {0};
     DvzCanvasLiveImageSinkConfig live_cfg = {
@@ -844,6 +847,7 @@ static int test_canvas_offscreen_state_device_lost(TstSuite* suite, TstItem* ite
     DvzWindowHost* host = NULL;
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
+    bool capture_active = false;
 
     if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
     {
@@ -875,8 +879,12 @@ static int test_canvas_offscreen_state_device_lost(TstSuite* suite, TstItem* ite
     AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING);
 
+    tst_log_capture_begin(suite);
+    capture_active = true;
     dvz_canvas_test_force_offscreen_submit_status(canvas, VK_ERROR_DEVICE_LOST);
+    tst_expect_error_begin(suite);
     int submit_rc = dvz_canvas_submit(canvas);
+    AT(tst_expect_error_end(suite) == 0);
     if (
         submit_rc >= 0 ||
         dvz_canvas_offscreen_runtime_state(canvas) != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
@@ -884,10 +892,20 @@ static int test_canvas_offscreen_state_device_lost(TstSuite* suite, TstItem* ite
         skip_reason = "forced offscreen device-loss submit path unavailable";
         goto offscreen_device_lost_cleanup;
     }
+
+    tst_expect_error_begin(suite);
     AT(dvz_canvas_frame(canvas) < 0);
+    AT(tst_expect_error_end(suite) == 0);
+    tst_expect_error_begin(suite);
     AT(dvz_canvas_submit(canvas) < 0);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(tst_log_capture_count(suite) >= 3);
 
 offscreen_device_lost_cleanup:
+    if (capture_active)
+    {
+        tst_log_capture_end(suite);
+    }
     if (skip_reason != NULL)
     {
         log_warn("canvas offscreen device-lost state test skipped (%s)", skip_reason);
@@ -1397,7 +1415,11 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstSuite* suite, Ts
     cfg.window = window;
     cfg.device = device;
     cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+    tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
     canvas = dvz_canvas_create(&cfg);
+    AT(tst_expect_error_end(suite) == 0);
+    tst_log_capture_end(suite);
     AT(canvas == NULL);
 
 guard_cleanup:

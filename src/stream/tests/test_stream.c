@@ -16,6 +16,8 @@
 
 #include "test_stream.h"
 
+#include <string.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/stream.h"
@@ -113,6 +115,31 @@ static void _stream_mock_destroy(DvzStreamSink* sink)
 
 
 
+/**
+ * Return whether captured logs contain a message fragment.
+ *
+ * @param suite test suite that owns the captured logs
+ * @param needle message fragment to search for
+ * @return true when at least one captured log contains the fragment
+ */
+static bool _stream_log_contains(TstSuite* suite, const char* needle)
+{
+    ANN(suite);
+    ANN(needle);
+    uint32_t count = tst_log_capture_count(suite);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        const TstLogRecord* rec = tst_log_capture_get(suite, i);
+        if (rec != NULL && strstr(rec->message, needle) != NULL)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
@@ -180,8 +207,14 @@ int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
     AT(dvz_stream_attach_sink(stream, &sink_ok, &ok_state) == 0);
     AT(dvz_stream_attach_sink(stream, &sink_fail, &fail_state) == 0);
 
+    tst_log_capture_begin(suite);
+
     DvzStreamFrame frame = {0};
+    tst_expect_error_begin(suite);
     AT(dvz_stream_start(stream, &frame) != 0);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(tst_log_capture_count(suite) > 0);
+    AT(_stream_log_contains(suite, "failed to start"));
 
     AT(ok_state.create_count == 1);
     AT(ok_state.start_count == 1);
@@ -190,7 +223,10 @@ int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
     AT(fail_state.start_count == 1);
     AT(fail_state.stop_count == 0);
 
+    tst_expect_error_begin(suite);
     AT(dvz_stream_submit(stream, 1) != 0);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(_stream_log_contains(suite, "not started"));
 
     dvz_stream_destroy(stream);
 
@@ -198,6 +234,7 @@ int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
     AT(ok_state.destroy_count == 1);
     AT(fail_state.destroy_count == 1);
 
+    tst_log_capture_end(suite);
     dvz_stream_sink_registry_destroy(registry);
     return 0;
 }
@@ -260,12 +297,15 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
     DvzStreamFrame frame = {0};
     AT(dvz_stream_start(stream, &frame) == 0);
 
+    tst_log_capture_begin(suite);
     int rc = dvz_stream_submit(stream, 1);
     AT(rc == -2);
+    AT(tst_log_capture_count(suite) == 0);
     AT(sink0_state.submit_count == 1);
     AT(sink1_state.submit_count == 1);
     AT(sink2_state.submit_count == 1);
 
+    tst_log_capture_end(suite);
     dvz_stream_destroy(stream);
     dvz_stream_sink_registry_destroy(registry);
     return 0;

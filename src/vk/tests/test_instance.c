@@ -125,7 +125,7 @@ int test_instance_invalid_layer(TstSuite* suite, TstItem* tstitem)
     cfg.app_name = "Invalid layer test";
     cfg.app_version = 1;
     AT(dvz_instance_config_request_layer(&cfg, "VK_LAYER_DATOVIZ_DOES_NOT_EXIST"));
-    DvzInstance* instance = dvz_instance_create(&cfg);
-    AT(instance == NULL);
+    DvzInstance* instance = NULL;
+    AT_EXPECTED_ERROR(suite, (instance = dvz_instance_create(&cfg)) == NULL);
     return 0;
 }

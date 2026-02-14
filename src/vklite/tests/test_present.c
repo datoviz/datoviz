@@ -558,8 +558,11 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
 
     // Device binding is required before recreate.
     uvec2 size = {window_surface->extent.width, window_surface->extent.height};
-    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, size);
+    DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
+    tst_expect_error_begin(suite);
+    status = dvz_swapchain_recreate(&swapchain, size);
     AT(status == DVZ_PRESENT_STATUS_ERROR);
+    (void)tst_expect_error_end(suite);
 
     AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
     status = dvz_swapchain_recreate(&swapchain, size);
@@ -689,9 +692,11 @@ int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstite
     swapchain.image_count = 1;
     swapchain.handle = (VkSwapchainKHR)(uintptr_t)0x1;
 
-    DvzPresentStatus status =
-        dvz_swapchain_present(&swapchain, (VkQueue)(uintptr_t)0x1, 1, VK_NULL_HANDLE);
+    DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
+    tst_expect_error_begin(suite);
+    status = dvz_swapchain_present(&swapchain, (VkQueue)(uintptr_t)0x1, 1, VK_NULL_HANDLE);
     AT(status == DVZ_PRESENT_STATUS_ERROR);
+    (void)tst_expect_error_end(suite);
 
     return 0;
 }

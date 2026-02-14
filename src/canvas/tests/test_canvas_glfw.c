@@ -1260,7 +1260,8 @@ int test_canvas_capture_api(TstSuite* suite, TstItem* item)
     uint8_t* scratch = (uint8_t*)dvz_calloc(byte_count, sizeof(uint8_t));
     ANN(scratch);
     AT(dvz_canvas_capture_rgba_into(canvas, width, height, scratch, byte_count) == 0);
-    AT(dvz_canvas_capture_rgba_into(canvas, width + 1, height, scratch, byte_count) != 0);
+    AT_EXPECTED_ERROR(
+        suite, dvz_canvas_capture_rgba_into(canvas, width + 1, height, scratch, byte_count) != 0);
 
     uint64_t sum = 0;
     for (size_t i = 0; i < byte_count; ++i)
@@ -1435,14 +1436,19 @@ int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item)
     AT(ready);
 
     dvz_canvas_swapchain_test_force_present_status(canvas, DVZ_PRESENT_STATUS_DEVICE_LOST);
+    tst_expect_error_begin(suite);
     AT(dvz_canvas_submit(canvas) < 0);
+    (void)tst_expect_error_end(suite);
     AT(
         dvz_canvas_present_runtime_state(canvas) ==
         DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST);
 
     dvz_window_host_poll(fixture.host);
-    int frame_rc = dvz_canvas_frame(canvas);
+    int frame_rc = 0;
+    tst_expect_error_begin(suite);
+    frame_rc = dvz_canvas_frame(canvas);
     AT(frame_rc < 0);
+    (void)tst_expect_error_end(suite);
 
     dvz_canvas_swapchain_mark_out_of_date(canvas);
     AT(

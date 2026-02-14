@@ -21,6 +21,7 @@ extern "C"
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 
 
@@ -29,6 +30,8 @@ extern "C"
                             : (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
 
     typedef void (*log_LockFn)(void* udata, int lock);
+    typedef int (*log_InterceptFn)(
+        void* udata, int level, const char* file, int line, const char* message);
 
     enum
     {
@@ -60,6 +63,7 @@ extern "C"
     void log_set_fp(FILE* fp);
     void log_set_level(int level);
     void log_set_quiet(int enable);
+    void log_set_intercept(log_InterceptFn fn, void* udata);
 
     void log_log(int level, const char* file, int line, const char* fmt, ...);
 
