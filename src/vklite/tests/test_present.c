@@ -364,6 +364,115 @@ static bool _swapchain_prepare(
 
 
 
+#if DVZ_HAS_GLFW
+typedef struct DvzVkliteWrapSurfaceFixture
+{
+    DvzWindow* wrap_window;
+    GLFWwindow* external_handle;
+    VkSurfaceKHR external_surface;
+    DvzWindowExternalSurfaceInfo info;
+    uvec2 size;
+} DvzVkliteWrapSurfaceFixture;
+
+
+
+/**
+ * Initialize a wrap window and external GLFW surface for present-path tests.
+ *
+ * @param fixture parent Vulkan present fixture
+ * @param cfg window configuration used for both wrap and external GLFW windows
+ * @param wrap output wrap-surface fixture storage
+ * @return true on success, false when setup should skip
+ */
+static bool _wrap_surface_fixture_create(
+    DvzVklitePresentFixture* fixture, const DvzWindowConfig* cfg, DvzVkliteWrapSurfaceFixture* wrap)
+{
+    ANN(fixture);
+    ANN(cfg);
+    ANN(wrap);
+    dvz_memset(wrap, sizeof(*wrap), 0, sizeof(*wrap));
+
+    wrap->wrap_window = dvz_window_create(fixture->host, DVZ_BACKEND_WRAP, cfg);
+    if (wrap->wrap_window == NULL || dvz_window_backend_type(wrap->wrap_window) != DVZ_BACKEND_WRAP)
+    {
+        log_warn("vklite wrap present test skipped because wrap window creation failed");
+        return false;
+    }
+
+    wrap->external_handle = glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
+    if (wrap->external_handle == NULL)
+    {
+        log_warn("vklite wrap present test skipped because external GLFW window creation failed");
+        return false;
+    }
+
+    VkInstance instance = dvz_instance_handle(fixture->instance);
+    VkResult surface_res =
+        glfwCreateWindowSurface(instance, wrap->external_handle, NULL, &wrap->external_surface);
+    if (surface_res != VK_SUCCESS || wrap->external_surface == VK_NULL_HANDLE)
+    {
+        log_warn(
+            "vklite wrap present test skipped because external GLFW surface creation failed (%d)",
+            (int)surface_res);
+        return false;
+    }
+
+    wrap->info = (DvzWindowExternalSurfaceInfo){
+        .instance = instance,
+        .surface = wrap->external_surface,
+        .extent = {.width = cfg->width, .height = cfg->height},
+        .scale_x = 1.0f,
+        .scale_y = 1.0f,
+        .owned_by_datoviz = false,
+    };
+    if (dvz_window_wrap_attach_surface(wrap->wrap_window, &wrap->info) != 0)
+    {
+        log_warn("vklite wrap present test skipped because wrap attach_surface() failed");
+        return false;
+    }
+
+    wrap->size[0] = cfg->width;
+    wrap->size[1] = cfg->height;
+    return true;
+}
+
+
+
+/**
+ * Destroy wrap external-surface test resources.
+ *
+ * @param fixture parent Vulkan present fixture
+ * @param wrap wrap-surface fixture storage
+ */
+static void
+_wrap_surface_fixture_destroy(DvzVklitePresentFixture* fixture, DvzVkliteWrapSurfaceFixture* wrap)
+{
+    if (fixture == NULL || wrap == NULL)
+        return;
+    if (wrap->wrap_window != NULL)
+    {
+        dvz_window_wrap_detach_surface(wrap->wrap_window);
+    }
+    if (wrap->external_surface != VK_NULL_HANDLE && fixture->instance != NULL)
+    {
+        vkDestroySurfaceKHR(dvz_instance_handle(fixture->instance), wrap->external_surface, NULL);
+        wrap->external_surface = VK_NULL_HANDLE;
+    }
+    if (wrap->external_handle != NULL)
+    {
+        glfwDestroyWindow(wrap->external_handle);
+        wrap->external_handle = NULL;
+    }
+    if (wrap->wrap_window != NULL)
+    {
+        dvz_window_destroy(wrap->wrap_window);
+        wrap->wrap_window = NULL;
+    }
+}
+#endif
+
+
+
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
@@ -684,66 +793,43 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
         return 0;
     }
 
+    uint32_t ext_count = dvz_window_host_required_extension_count(fixture.host, DVZ_BACKEND_GLFW);
+    if (ext_count > 0)
+    {
+        const char** extensions = dvz_calloc(ext_count, sizeof(char*));
+        ANN(extensions);
+        AT(dvz_window_host_required_extensions(fixture.host, DVZ_BACKEND_GLFW, ext_count, extensions) == (int)ext_count);
+        AT(dvz_window_wrap_set_required_extensions(fixture.host, ext_count, extensions) == 0);
+        AT(dvz_window_host_required_extension_count(fixture.host, DVZ_BACKEND_WRAP) == ext_count);
+        dvz_free((void*)extensions);
+    }
+
     DvzWindowConfig cfg = dvz_window_default_config();
     cfg.title = "vklite-wrap-external-surface";
     cfg.width = 320;
     cfg.height = 240;
-    DvzWindow* wrap_window = dvz_window_create(fixture.host, DVZ_BACKEND_WRAP, &cfg);
-    if (wrap_window == NULL || dvz_window_backend_type(wrap_window) != DVZ_BACKEND_WRAP)
+    DvzVkliteWrapSurfaceFixture wrap = {0};
+    if (!_wrap_surface_fixture_create(&fixture, &cfg, &wrap))
     {
-        log_warn("vklite wrap present test skipped because wrap window creation failed");
+        _wrap_surface_fixture_destroy(&fixture, &wrap);
         _present_fixture_destroy(&fixture);
         return 0;
     }
-
-    GLFWwindow* external_handle = glfwCreateWindow((int)cfg.width, (int)cfg.height, cfg.title, NULL, NULL);
-    if (external_handle == NULL)
-    {
-        log_warn("vklite wrap present test skipped because external GLFW window creation failed");
-        _present_fixture_destroy(&fixture);
-        return 0;
-    }
-
-    VkSurfaceKHR external_surface = VK_NULL_HANDLE;
-    VkInstance instance = dvz_instance_handle(fixture.instance);
-    VkResult surface_res = glfwCreateWindowSurface(instance, external_handle, NULL, &external_surface);
-    if (surface_res != VK_SUCCESS || external_surface == VK_NULL_HANDLE)
-    {
-        log_warn(
-            "vklite wrap present test skipped because external GLFW surface creation failed (%d)",
-            (int)surface_res);
-        glfwDestroyWindow(external_handle);
-        _present_fixture_destroy(&fixture);
-        return 0;
-    }
-
-    DvzWindowExternalSurfaceInfo info = {
-        .instance = instance,
-        .surface = external_surface,
-        .extent = {.width = cfg.width, .height = cfg.height},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
-    AT(dvz_window_wrap_attach_surface(wrap_window, &info) == 0);
 
     DvzSurface surface = {0};
     DvzSwapchain swapchain = {0};
     AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, external_surface, wrap_window));
+    AT(dvz_surface_wrap_native(&surface, wrap.external_surface, wrap.wrap_window));
     AT(_swapchain_prepare(&swapchain, &fixture, &surface));
     AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
 
-    uvec2 size = {cfg.width, cfg.height};
-    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, size);
+    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, wrap.size);
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite wrap present test skipped because wrap-window extent is zero");
         dvz_swapchain_destroy(&swapchain);
         dvz_surface_destroy(&surface);
-        dvz_window_wrap_detach_surface(wrap_window);
-        vkDestroySurfaceKHR(instance, external_surface, NULL);
-        glfwDestroyWindow(external_handle);
+        _wrap_surface_fixture_destroy(&fixture, &wrap);
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -751,9 +837,9 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     AT(status == DVZ_PRESENT_STATUS_OK);
     AT(swapchain.ready);
     AT(swapchain.handle != VK_NULL_HANDLE);
-    const DvzWindowSurface* window_surface = dvz_window_surface(wrap_window);
+    const DvzWindowSurface* window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
-    AT(window_surface->surface == external_surface);
+    AT(window_surface->surface == wrap.external_surface);
 
     DvzWindowExternalSurfaceInfo loss = {
         .instance = VK_NULL_HANDLE,
@@ -763,28 +849,25 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
         .scale_y = 1.0f,
         .owned_by_datoviz = false,
     };
-    AT(dvz_window_wrap_update_surface(wrap_window, &loss) == 0);
-    window_surface = dvz_window_surface(wrap_window);
+    AT(dvz_window_wrap_update_surface(wrap.wrap_window, &loss) == 0);
+    window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
     AT(window_surface->instance == VK_NULL_HANDLE);
     AT(window_surface->surface == VK_NULL_HANDLE);
 
-    AT(dvz_window_wrap_update_surface(wrap_window, &info) == 0);
-    window_surface = dvz_window_surface(wrap_window);
+    AT(dvz_window_wrap_update_surface(wrap.wrap_window, &wrap.info) == 0);
+    window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
-    AT(window_surface->instance == instance);
-    AT(window_surface->surface == external_surface);
+    AT(window_surface->instance == wrap.info.instance);
+    AT(window_surface->surface == wrap.external_surface);
 
-    status = dvz_swapchain_recreate(&swapchain, size);
+    status = dvz_swapchain_recreate(&swapchain, wrap.size);
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite wrap present test skipped during restore because extent is zero");
         dvz_swapchain_destroy(&swapchain);
         dvz_surface_destroy(&surface);
-        dvz_window_wrap_detach_surface(wrap_window);
-        vkDestroySurfaceKHR(instance, external_surface, NULL);
-        glfwDestroyWindow(external_handle);
-        dvz_window_destroy(wrap_window);
+        _wrap_surface_fixture_destroy(&fixture, &wrap);
         _present_fixture_destroy(&fixture);
         return 0;
     }
@@ -792,15 +875,13 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
 
     dvz_swapchain_destroy(&swapchain);
     dvz_surface_destroy(&surface);
-    dvz_window_wrap_detach_surface(wrap_window);
-    window_surface = dvz_window_surface(wrap_window);
+    dvz_window_wrap_detach_surface(wrap.wrap_window);
+    window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
     AT(window_surface->surface == VK_NULL_HANDLE);
     AT(window_surface->instance == VK_NULL_HANDLE);
 
-    vkDestroySurfaceKHR(instance, external_surface, NULL);
-    glfwDestroyWindow(external_handle);
-    dvz_window_destroy(wrap_window);
+    _wrap_surface_fixture_destroy(&fixture, &wrap);
     _present_fixture_destroy(&fixture);
     return 0;
 }
