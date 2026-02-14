@@ -93,6 +93,22 @@ EXTERN_C_ON
 
 #define TEST_SIMPLE(test) TEST(test, tags, NULL, NULL, TST_ITEM_FLAGS_NONE)
 
+#define AT_EXPECTED_ERROR(suite, x)                                                               \
+    do                                                                                            \
+    {                                                                                             \
+        tst_expect_error_begin((suite));                                                          \
+        AT((x));                                                                                  \
+        (void)tst_expect_error_end((suite));                                                      \
+    } while (0)
+
+#define AT_EXPECTED_ERROR_STRICT(suite, x)                                                        \
+    do                                                                                            \
+    {                                                                                             \
+        tst_expect_error_begin((suite));                                                          \
+        AT((x));                                                                                  \
+        AT(tst_expect_error_end((suite)) == 0);                                                   \
+    } while (0)
+
 
 
 /*************************************************************************************************/
@@ -113,6 +129,7 @@ typedef enum
 
 typedef struct TstItem TstItem;
 typedef struct TstSuite TstSuite;
+typedef struct TstLogRecord TstLogRecord;
 
 typedef int (*TstFunction)(TstSuite* suite, TstItem* item);
 
@@ -137,12 +154,31 @@ struct TstItem
 
 
 
+struct TstLogRecord
+{
+    int level;
+    int line;
+    char file[64];
+    char message[512];
+};
+
+
+
 struct TstSuite
 {
-    uint32_t n_items;  // number of items
-    uint32_t capacity; // size of the allocated array TstSuite.items
-    TstItem* items;    // array of items
-    void* context;     // user-specified custom context
+    uint32_t n_items;                     // number of items
+    uint32_t capacity;                    // size of the allocated array TstSuite.items
+    TstItem* items;                       // array of items
+    void* context;                        // user-specified custom context
+    bool capture_logs;                    // whether log capture is enabled
+    bool expect_error_active;             // whether an expected-error scope is currently active
+    bool expect_error_seen;               // whether an expected error was observed in the current scope
+    bool unexpected_error_seen;           // whether an unexpected error was observed in the current test
+    bool suppress_expected_error_output;  // whether expected errors are hidden from console output
+    bool strict_unexpected_errors;        // whether unexpected error logs should fail tests
+    uint32_t captured_log_count;          // number of captured log entries
+    uint32_t captured_log_capacity;       // allocated size of captured logs
+    TstLogRecord* captured_logs;          // captured log entries
 };
 
 
@@ -160,6 +196,20 @@ void tst_suite_add(
 void tst_suite_run(TstSuite* suite, const char* match);
 
 void tst_suite_destroy(TstSuite* suite);
+
+void tst_log_capture_begin(TstSuite* suite);
+
+void tst_log_capture_end(TstSuite* suite);
+
+uint32_t tst_log_capture_count(const TstSuite* suite);
+
+const TstLogRecord* tst_log_capture_get(const TstSuite* suite, uint32_t index);
+
+void tst_expect_error_begin(TstSuite* suite);
+
+int tst_expect_error_end(TstSuite* suite);
+
+void tst_set_strict_unexpected_errors(TstSuite* suite, bool enabled);
 
 
 
