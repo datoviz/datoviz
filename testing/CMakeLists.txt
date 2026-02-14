@@ -34,17 +34,24 @@ endif()
 # Datoviz test runner
 # -------------------------------------------------------------------------------------------------
 
-# All C source files inside tests/
-file(GLOB TEST_SOURCES
+# All module C/C++ test sources.
+file(GLOB DVZ_MODULE_TEST_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/../src/*/tests/*.c*"
+)
+
+# Integration runner sources.
+set(TEST_SOURCES
+    ${DVZ_MODULE_TEST_SOURCES}
     "dvztest.c"
 )
 
 if(NOT DVZ_HAS_CUDA)
+    list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
     list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
 endif()
 
 if(NOT DVZ_HAS_KVZ)
+    list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_kvazaar\\.c.*")
     list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_kvazaar\\.c.*")
 endif()
 
@@ -117,9 +124,194 @@ if(TARGET datoviz_input AND TARGET datoviz_window AND TARGET datoviz_canvas AND 
     set(_dvz_has_canvas 1)
 endif()
 
+set(DVZ_TEST_CORE_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_CORE_SOURCES INCLUDE REGEX "/src/(common|ds|fileio|math|thread)/tests/")
+
+set(DVZ_TEST_VK_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_VK_SOURCES INCLUDE REGEX "/src/(vk|vklite)/tests/")
+list(FILTER DVZ_TEST_VK_SOURCES EXCLUDE REGEX "/src/vklite/tests/test_present\\.c.*")
+list(FILTER DVZ_TEST_VK_SOURCES EXCLUDE REGEX "/src/vklite/tests/test_vklite\\.c.*")
+
+set(DVZ_TEST_CANVAS_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_CANVAS_SOURCES INCLUDE REGEX "/src/(input|window|stream|video|canvas)/tests/")
+
+if(_dvz_has_core)
+    add_executable(dvztest_core
+        ${DVZ_TEST_CORE_SOURCES}
+        components/dvztest_core.c
+    )
+
+    target_link_libraries(dvztest_core
+        PRIVATE
+        datoviz_common
+        datoviz_ds
+        datoviz_fileio
+        datoviz_math
+        datoviz_thread
+        testing
+    )
+
+    if(DVZ_THREADING_TARGET)
+        target_link_libraries(dvztest_core PRIVATE ${DVZ_THREADING_TARGET})
+    endif()
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(dvztest_core PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(dvztest_core
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/external/volk
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(dvztest_core PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    if(APPLE)
+        set_target_properties(dvztest_core PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
+
+    add_test(NAME dvztest_core COMMAND dvztest_core)
+else()
+    message(STATUS "Skipping dvztest_core: core target set is not enabled.")
+endif()
+
+if(_dvz_has_core AND _dvz_has_vk)
+    add_executable(dvztest_vk
+        ${DVZ_TEST_VK_SOURCES}
+        components/dvztest_vk.c
+    )
+
+    target_link_libraries(dvztest_vk
+        PRIVATE
+        datoviz_common
+        datoviz_ds
+        datoviz_fileio
+        datoviz_math
+        datoviz_thread
+        datoviz_vk
+        datoviz_vklite
+        datoviz_volk
+        testing
+    )
+
+    if(DVZ_THREADING_TARGET)
+        target_link_libraries(dvztest_vk PRIVATE ${DVZ_THREADING_TARGET})
+    endif()
+
+    if(TARGET vklite_test_shaders)
+        add_dependencies(dvztest_vk vklite_test_shaders)
+    endif()
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(dvztest_vk PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(dvztest_vk
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/external/volk
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(dvztest_vk PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    target_compile_definitions(dvztest_vk PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
+    target_compile_definitions(dvztest_vk PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
+
+    if(APPLE)
+        set_target_properties(dvztest_vk PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
+
+    add_test(NAME dvztest_vk COMMAND dvztest_vk)
+else()
+    message(STATUS "Skipping dvztest_vk: vk target set is not enabled.")
+endif()
+
 if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
+    add_executable(dvztest_canvas
+        ${DVZ_TEST_CANVAS_SOURCES}
+        components/dvztest_canvas.c
+    )
+
+    target_link_libraries(dvztest_canvas
+        PRIVATE
+        datoviz_common
+        datoviz_ds
+        datoviz_fileio
+        datoviz_math
+        datoviz_thread
+        datoviz_input
+        datoviz_window
+        datoviz_canvas
+        datoviz_stream
+        datoviz_video
+        datoviz_vk
+        datoviz_vklite
+        datoviz_volk
+        testing
+    )
+
+    if(DVZ_THREADING_TARGET)
+        target_link_libraries(dvztest_canvas PRIVATE ${DVZ_THREADING_TARGET})
+    endif()
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(dvztest_canvas PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(dvztest_canvas
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/external/volk
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(dvztest_canvas PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    target_compile_definitions(dvztest_canvas PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
+    target_compile_definitions(dvztest_canvas PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
+
+    if(APPLE)
+        set_target_properties(dvztest_canvas PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
+
+    add_test(NAME dvztest_canvas COMMAND dvztest_canvas)
+else()
+    message(STATUS "Skipping dvztest_canvas: canvas target set is not enabled.")
+endif()
+
+if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
+    set(DVZ_INTEGRATION_SOURCES
+        ${DVZ_MODULE_TEST_SOURCES}
+        components/dvztest_integration.c
+    )
+
     # Build one executable: dvztest
     add_executable(dvztest ${TEST_SOURCES})
+    add_executable(dvztest_integration ${DVZ_INTEGRATION_SOURCES})
 
 # Link to the common module and the shared testing library
     target_link_libraries(dvztest
@@ -139,17 +331,37 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_volk
         testing
     )
+    target_link_libraries(dvztest_integration
+        PRIVATE
+        datoviz_common
+        datoviz_ds
+        datoviz_fileio
+        datoviz_math
+        datoviz_thread
+        datoviz_input
+        datoviz_window
+        datoviz_canvas
+        datoviz_stream
+        datoviz_video
+        datoviz_vk
+        datoviz_vklite
+        datoviz_volk
+        testing
+    )
 
     if(DVZ_THREADING_TARGET)
         target_link_libraries(dvztest PRIVATE ${DVZ_THREADING_TARGET})
+        target_link_libraries(dvztest_integration PRIVATE ${DVZ_THREADING_TARGET})
     endif()
 
     if(TARGET vklite_test_shaders)
         add_dependencies(dvztest vklite_test_shaders)
+        add_dependencies(dvztest_integration vklite_test_shaders)
     endif()
 
     if(DVZ_WITH_MIMALLOC)
         target_link_libraries(dvztest PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+        target_link_libraries(dvztest_integration PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
     endif()
 
     # Build the interactive canvas smoke app: dvz_live_canvas
@@ -206,10 +418,22 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         ${PROJECT_SOURCE_DIR}/src/canvas
         ${PROJECT_SOURCE_DIR}/external/volk
     )
+    target_include_directories(dvztest_integration
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/external/volk
+    )
 
     if(APPLE)
         # Let executables resolve bundled dylibs located next to them.
         set_target_properties(dvztest PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+        set_target_properties(dvztest_integration PROPERTIES
             BUILD_RPATH "${_dvz_runtime_rpath}"
             INSTALL_RPATH "${_dvz_runtime_rpath}"
         )
@@ -224,19 +448,26 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
 
         target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
         target_include_directories(dvztest PRIVATE ${PROJECT_SOURCE_DIR}/external)
+        target_include_directories(dvztest_integration PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+        target_include_directories(dvztest_integration PRIVATE ${PROJECT_SOURCE_DIR}/external)
 
         target_link_libraries(dvztest PRIVATE CUDA::cudart CUDA::cuda_driver)
         target_link_libraries(dvztest PRIVATE cuda)
+        target_link_libraries(dvztest_integration PRIVATE CUDA::cudart CUDA::cuda_driver)
+        target_link_libraries(dvztest_integration PRIVATE cuda)
 
         if(DVZ_NVENC_LIB_DIR)
             target_link_directories(dvztest PRIVATE "${DVZ_NVENC_LIB_DIR}")
+            target_link_directories(dvztest_integration PRIVATE "${DVZ_NVENC_LIB_DIR}")
             # Ensure the loader picks NVENC straight from the repo tree when running tests.
             set_property(TARGET dvztest APPEND PROPERTY BUILD_RPATH "${DVZ_NVENC_LIB_DIR}")
+            set_property(TARGET dvztest_integration APPEND PROPERTY BUILD_RPATH "${DVZ_NVENC_LIB_DIR}")
         endif()
 
         if(DVZ_NVENC_LIB)
             message(STATUS "Linking NVENC library: ${DVZ_NVENC_LIB}")
             target_link_libraries(dvztest PRIVATE ${DVZ_NVENC_LIB})
+            target_link_libraries(dvztest_integration PRIVATE ${DVZ_NVENC_LIB})
         else()
             message(FATAL_ERROR "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset.")
         endif()
@@ -254,12 +485,18 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             "${PROJECT_SOURCE_DIR}/src/vk/tests/test_cuda.cu"
         )
         set_target_properties(dvztest PROPERTIES CUDA_ARCHITECTURES "native")
+        set_target_properties(dvztest_integration PROPERTIES CUDA_ARCHITECTURES "native")
         message(STATUS "Adding CUDA test kernel: ${TEST_CUDA_KERNEL}")
         target_sources(dvztest PRIVATE ${TEST_CUDA_KERNEL})
+        target_sources(dvztest_integration PRIVATE ${TEST_CUDA_KERNEL})
         set_source_files_properties(${TEST_CUDA_KERNEL} PROPERTIES LANGUAGE CUDA)
 
         # Avoid slow host-device link step for simple kernels
         set_target_properties(dvztest PROPERTIES
+            CUDA_SEPARABLE_COMPILATION OFF
+            CUDA_RESOLVE_DEVICE_SYMBOLS OFF
+        )
+        set_target_properties(dvztest_integration PROPERTIES
             CUDA_SEPARABLE_COMPILATION OFF
             CUDA_RESOLVE_DEVICE_SYMBOLS OFF
         )
@@ -268,13 +505,18 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
     # Ensure OS/Compiler macros are available to tests
     if(_dvz_compile_definitions)
         target_compile_definitions(dvztest PRIVATE ${_dvz_compile_definitions})
+        target_compile_definitions(dvztest_integration PRIVATE ${_dvz_compile_definitions})
     endif()
 
     target_compile_definitions(dvztest PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
+    target_compile_definitions(dvztest_integration PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
     target_compile_definitions(dvztest PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
+    target_compile_definitions(
+        dvztest_integration PRIVATE DVZ_TEST_SPIRV_DIR="${DVZ_TEST_SPIRV_DIR}")
 
     # Register it as a CTest entry
     add_test(NAME dvztest COMMAND dvztest)
+    add_test(NAME dvztest_integration COMMAND dvztest_integration)
 else()
     message(STATUS "Skipping dvztest/dvz_live_canvas: full core+vk+canvas target set is not enabled.")
 endif()
@@ -331,14 +573,30 @@ else()
 endif()
 
 # Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
-foreach(_dvz_test_target testing dvztest dvz_live_canvas dvz_public_header_probe)
+foreach(_dvz_test_target
+    testing
+    dvztest
+    dvztest_core
+    dvztest_vk
+    dvztest_canvas
+    dvztest_integration
+    dvz_live_canvas
+    dvz_public_header_probe)
     if(TARGET ${_dvz_test_target})
         set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_test_target})
     endif()
 endforeach()
 
 if(DVZ_SANITIZER_FLAGS)
-    foreach(_target testing dvztest dvz_live_canvas dvz_public_header_probe)
+    foreach(_target
+        testing
+        dvztest
+        dvztest_core
+        dvztest_vk
+        dvztest_canvas
+        dvztest_integration
+        dvz_live_canvas
+        dvz_public_header_probe)
         if(TARGET ${_target})
             target_compile_options(${_target} PRIVATE
                 $<$<AND:$<CONFIG:Debug>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:${DVZ_SANITIZER_FLAGS}>

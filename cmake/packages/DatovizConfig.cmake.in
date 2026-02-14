@@ -1,0 +1,45 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+set(_datoviz_has_vk @DVZ_BUILD_VK@)
+set(_datoviz_has_canvas @DVZ_BUILD_CANVAS@)
+if(_datoviz_has_vk OR _datoviz_has_canvas)
+    find_dependency(Vulkan REQUIRED)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/DatovizTargets.cmake")
+
+set(_datoviz_supported_components core vk canvas datoviz)
+
+foreach(_datoviz_component IN LISTS datoviz_FIND_COMPONENTS)
+    if(NOT _datoviz_component IN_LIST _datoviz_supported_components)
+        set(datoviz_FOUND FALSE)
+        set(datoviz_NOT_FOUND_MESSAGE "Unsupported datoviz component: ${_datoviz_component}")
+        return()
+    endif()
+
+    if(_datoviz_component STREQUAL "core" AND NOT TARGET datoviz::core)
+        set(datoviz_FOUND FALSE)
+        set(datoviz_NOT_FOUND_MESSAGE "Requested component datoviz::core is not available in this package.")
+        return()
+    endif()
+
+    if(_datoviz_component STREQUAL "vk" AND NOT TARGET datoviz::vk)
+        set(datoviz_FOUND FALSE)
+        set(datoviz_NOT_FOUND_MESSAGE "Requested component datoviz::vk is not available in this package.")
+        return()
+    endif()
+
+    if(_datoviz_component STREQUAL "canvas" AND NOT TARGET datoviz::canvas)
+        set(datoviz_FOUND FALSE)
+        set(datoviz_NOT_FOUND_MESSAGE "Requested component datoviz::canvas is not available in this package.")
+        return()
+    endif()
+
+    if(_datoviz_component STREQUAL "datoviz" AND NOT TARGET datoviz::datoviz)
+        set(datoviz_FOUND FALSE)
+        set(datoviz_NOT_FOUND_MESSAGE "Requested component datoviz::datoviz is not available in this package.")
+        return()
+    endif()
+endforeach()

@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Datoviz core test runner                                                                     */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <stddef.h>
+
+#include "_log.h"
+#include "../../src/common/tests/test_common.h"
+#include "../../src/ds/tests/test_ds.h"
+#include "../../src/fileio/tests/test_fileio.h"
+#include "../../src/math/tests/test_math.h"
+#include "../../src/thread/tests/test_thread.h"
+#include "testing.h"
+
+
+
+/*************************************************************************************************/
+/*  Entry-point                                                                                  */
+/*************************************************************************************************/
+
+/**
+ * Run core-module tests.
+ *
+ * @param argc command-line argument count
+ * @param argv command-line arguments
+ * @return process exit code
+ */
+int main(int argc, char** argv)
+{
+    log_set_level_env();
+
+    TstSuite suite = tst_suite();
+
+    test_common(&suite);
+    test_ds(&suite);
+    test_fileio(&suite);
+    test_math(&suite);
+    test_thread(&suite);
+
+    tst_suite_run(&suite, argc >= 2 ? argv[1] : NULL);
+    tst_suite_destroy(&suite);
+    return 0;
+}
