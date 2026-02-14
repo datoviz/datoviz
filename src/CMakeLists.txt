@@ -271,6 +271,27 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/external/volk ${CMAKE_CURRENT_BINARY_DIR}
 # Components
 # -------------------------------------------------------------------------------------------------
 #
+set(DVZ_CORE_COMPONENTS
+    datoviz_common
+    datoviz_ds
+    datoviz_fileio
+    datoviz_math
+    datoviz_thread
+)
+
+set(DVZ_VK_COMPONENTS
+    datoviz_vk
+    datoviz_vklite
+)
+
+set(DVZ_CANVAS_COMPONENTS
+    datoviz_input
+    datoviz_window
+    datoviz_canvas
+    datoviz_stream
+    datoviz_video
+)
+
 add_subdirectory(common)
 add_subdirectory(ds)
 add_subdirectory(fileio)
@@ -285,54 +306,125 @@ add_subdirectory(vk)
 add_subdirectory(vklite)
 
 # -------------------------------------------------------------------------------------------------
-# Include and linking
+# Layered targets
 # -------------------------------------------------------------------------------------------------
 #
 set(DVZ_COMPONENTS
-    datoviz_common
-    datoviz_ds
-    datoviz_fileio
-    datoviz_math
-    datoviz_thread
-    datoviz_input
-    datoviz_window
-    datoviz_canvas
-    datoviz_stream
-    datoviz_video
-    datoviz_vk
-    datoviz_vklite
+    ${DVZ_CORE_COMPONENTS}
+    ${DVZ_VK_COMPONENTS}
+    ${DVZ_CANVAS_COMPONENTS}
 )
 
-# Link object modules
+add_library(datoviz_core SHARED "empty.c")
+set_target_properties(datoviz_core PROPERTIES OUTPUT_NAME "datoviz_core")
+
+target_link_libraries(datoviz_core
+    PRIVATE
+    ${DVZ_CORE_COMPONENTS}
+)
+
+target_compile_definitions(datoviz_core PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+
+target_include_directories(datoviz_core
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+add_library(datoviz_vk_layer SHARED "empty.c")
+set_target_properties(datoviz_vk_layer PROPERTIES OUTPUT_NAME "datoviz_vk")
+
+target_link_libraries(datoviz_vk_layer
+    PRIVATE
+    datoviz_core
+    ${DVZ_VK_COMPONENTS}
+    # Temporary bridge: vklite surface code currently depends on window internals.
+    # Window internals also pull input router symbols.
+    datoviz_input
+    datoviz_window
+    datoviz_volk
+)
+
+target_compile_definitions(datoviz_vk_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+
+target_include_directories(datoviz_vk_layer
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+add_library(datoviz_canvas_layer SHARED "empty.c")
+set_target_properties(datoviz_canvas_layer PROPERTIES OUTPUT_NAME "datoviz_canvas")
+
+target_link_libraries(datoviz_canvas_layer
+    PRIVATE
+    datoviz_core
+    datoviz_vk_layer
+    ${DVZ_CANVAS_COMPONENTS}
+    datoviz_volk
+)
+
+target_compile_definitions(datoviz_canvas_layer PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+
+target_include_directories(datoviz_canvas_layer
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+add_library(datoviz::core ALIAS datoviz_core)
+add_library(datoviz::vk ALIAS datoviz_vk_layer)
+add_library(datoviz::canvas ALIAS datoviz_canvas_layer)
+
+install(TARGETS datoviz_core datoviz_vk_layer datoviz_canvas_layer
+    LIBRARY DESTINATION lib
+)
+
+# -------------------------------------------------------------------------------------------------
+# Aggregate target
+# -------------------------------------------------------------------------------------------------
+#
 target_link_libraries(datoviz
     PRIVATE
     ${DVZ_COMPONENTS}
     datoviz_volk
 )
 
-if(DVZ_THREADING_TARGET)
-    target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
-endif()
-
-if(DVZ_HAS_GLFW AND TARGET glfw)
-    target_link_libraries(datoviz PRIVATE glfw)
-endif()
-
-if(DVZ_WITH_MIMALLOC)
-    target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-endif()
-
-foreach(_dvz_target datoviz ${DVZ_COMPONENTS})
-    if(TARGET ${_dvz_target})
-        set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_target})
-    endif()
-endforeach()
-
-# Public headers
 target_include_directories(datoviz
     PUBLIC
     ${PROJECT_SOURCE_DIR}/include
 )
+
+add_library(datoviz::datoviz ALIAS datoviz)
+
+if(DVZ_THREADING_TARGET)
+    target_link_libraries(datoviz_core PRIVATE ${DVZ_THREADING_TARGET})
+    target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
+endif()
+
+if(DVZ_HAS_GLFW AND TARGET glfw)
+    target_link_libraries(datoviz_canvas_layer PRIVATE glfw)
+    target_link_libraries(datoviz PRIVATE glfw)
+endif()
+
+if(DVZ_WITH_MIMALLOC)
+    target_link_libraries(datoviz_core PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+endif()
+
+if(APPLE)
+    foreach(_dvz_layer datoviz_core datoviz_vk_layer datoviz_canvas_layer)
+        if(TARGET ${_dvz_layer})
+            set_target_properties(${_dvz_layer} PROPERTIES
+                BUILD_RPATH "@loader_path"
+                INSTALL_RPATH "@loader_path"
+            )
+        endif()
+    endforeach()
+endif()
+
+foreach(_dvz_target datoviz datoviz_core datoviz_vk_layer datoviz_canvas_layer ${DVZ_COMPONENTS})
+    if(TARGET ${_dvz_target})
+        set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS ${_dvz_target})
+    endif()
+endforeach()
 
 # -------------------------------------------------------------------------------------------------
 # Sanitizers
@@ -449,7 +541,19 @@ endif()
 if(DVZ_SANITIZER_FLAGS)
     message(STATUS "Debug sanitizers: ${DVZ_SANITIZER_FLAGS}")
 
-    foreach(target_name datoviz datoviz_common datoviz_ds datoviz_fileio datoviz_math datoviz_thread datoviz_video datoviz_vk datoviz_vklite)
+    foreach(target_name
+        datoviz
+        datoviz_core
+        datoviz_vk_layer
+        datoviz_canvas_layer
+        datoviz_common
+        datoviz_ds
+        datoviz_fileio
+        datoviz_math
+        datoviz_thread
+        datoviz_video
+        datoviz_vk
+        datoviz_vklite)
         if(TARGET ${target_name})
             # Always add sanitizer compile flags in Debug.
             target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)
