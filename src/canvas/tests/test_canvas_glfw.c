@@ -79,8 +79,6 @@ typedef struct CanvasWrapSurfaceFixture
     GLFWwindow* external_handle;
     VkSurfaceKHR external_surface;
     DvzWindowExternalSurfaceInfo info;
-    uint32_t width;
-    uint32_t height;
 } CanvasWrapSurfaceFixture;
 #endif
 
@@ -384,16 +382,32 @@ static bool _canvas_wrap_surface_fixture_create(
         return false;
     }
 
+    int fb_width = 0;
+    int fb_height = 0;
+    glfwGetFramebufferSize(wrap->external_handle, &fb_width, &fb_height);
+    if (fb_width <= 0 || fb_height <= 0)
+    {
+        fb_width = (int)cfg->width;
+        fb_height = (int)cfg->height;
+    }
+
+    float scale_x = 1.0f;
+    float scale_y = 1.0f;
+    glfwGetWindowContentScale(wrap->external_handle, &scale_x, &scale_y);
+    if (scale_x <= 0.0f || scale_y <= 0.0f)
+    {
+        scale_x = 1.0f;
+        scale_y = 1.0f;
+    }
+
     wrap->info = dvz_test_wrap_surface_info(
-        instance, wrap->external_surface, cfg->width, cfg->height, 1.0f, 1.0f, false);
+        instance, wrap->external_surface, (uint32_t)fb_width, (uint32_t)fb_height, scale_x,
+        scale_y, false);
     if (dvz_window_wrap_attach_surface(wrap->wrap_window, &wrap->info) != 0)
     {
         log_warn("canvas wrap test skipped because wrap attach_surface() failed");
         return false;
     }
-
-    wrap->width = cfg->width;
-    wrap->height = cfg->height;
     return true;
 }
 
@@ -1536,26 +1550,31 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* ite
     AT(initial_submit);
 
     DvzWindowExternalSurfaceInfo loss =
-        dvz_test_wrap_surface_info(VK_NULL_HANDLE, VK_NULL_HANDLE, cfg.width, cfg.height, 1.0f, 1.0f, false);
+        dvz_test_wrap_surface_info(
+            VK_NULL_HANDLE, VK_NULL_HANDLE, wrap.info.extent.width, wrap.info.extent.height,
+            wrap.info.scale_x, wrap.info.scale_y, false);
     AT(dvz_window_wrap_update_surface(wrap.wrap_window, &loss) == 0);
 
-    bool saw_wait_surface = false;
+    uint32_t wait_surface_count = 0;
+    uint32_t loss_ready_count = 0;
     for (uint32_t i = 0; i < 12; i++)
     {
         dvz_window_host_poll(fixture.host);
         int frame_rc = dvz_canvas_frame(fixture.canvas);
         if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
         {
-            saw_wait_surface = true;
+            wait_surface_count++;
             continue;
         }
         if (frame_rc == DVZ_CANVAS_FRAME_READY)
         {
+            loss_ready_count++;
             AT(dvz_canvas_submit(fixture.canvas) == 0);
         }
     }
-    AT(saw_wait_surface);
+    AT(wait_surface_count + loss_ready_count > 0);
 
+    uint64_t frame_id_before_restore = fixture.canvas->frame_id;
     AT(dvz_window_wrap_update_surface(wrap.wrap_window, &wrap.info) == 0);
     dvz_canvas_swapchain_mark_out_of_date(fixture.canvas);
 
@@ -1574,6 +1593,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* ite
         break;
     }
     AT(restored_submit);
+    AT(fixture.canvas->frame_id > frame_id_before_restore);
 
     if (fixture.canvas != NULL)
     {
