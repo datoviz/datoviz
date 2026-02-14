@@ -20,6 +20,7 @@
 #include "_assertions.h"
 #include "datoviz/window.h"
 #include "testing.h"
+#include "wrap_surface_fixture.h"
 
 
 
@@ -181,14 +182,8 @@ int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item)
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
     ANN(window);
 
-    DvzWindowExternalSurfaceInfo info = {
-        .instance = (VkInstance)0x1,
-        .surface = (VkSurfaceKHR)0x2,
-        .extent = {.width = 640, .height = 480},
-        .scale_x = 2.0f,
-        .scale_y = 1.5f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo info = dvz_test_wrap_surface_info(
+        (VkInstance)0x1, (VkSurfaceKHR)0x2, 640, 480, 2.0f, 1.5f, false);
     AT(dvz_window_wrap_attach_surface(window, &info) == 0);
     const DvzWindowSurface* surface = dvz_window_surface(window);
     ANN(surface);
@@ -199,14 +194,8 @@ int test_window_wrap_attach_detach(TstSuite* suite, TstItem* item)
     AT(surface->scale_x == info.scale_x);
     AT(surface->scale_y == info.scale_y);
 
-    DvzWindowExternalSurfaceInfo update_loss = {
-        .instance = VK_NULL_HANDLE,
-        .surface = VK_NULL_HANDLE,
-        .extent = {.width = 640, .height = 480},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo update_loss =
+        dvz_test_wrap_surface_info(VK_NULL_HANDLE, VK_NULL_HANDLE, 640, 480, 1.0f, 1.0f, false);
     AT(dvz_window_wrap_update_surface(window, &update_loss) == 0);
     surface = dvz_window_surface(window);
     AT(surface->instance == VK_NULL_HANDLE);
@@ -278,14 +267,8 @@ int test_window_wrap_invalid_args(TstSuite* suite, TstItem* item)
     DvzWindow* offscreen_window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
     ANN(offscreen_window);
 
-    DvzWindowExternalSurfaceInfo valid = {
-        .instance = (VkInstance)0x1,
-        .surface = (VkSurfaceKHR)0x2,
-        .extent = {.width = 320, .height = 240},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo valid = dvz_test_wrap_surface_info(
+        (VkInstance)0x1, (VkSurfaceKHR)0x2, 320, 240, 1.0f, 1.0f, false);
     DvzWindowExternalSurfaceInfo invalid_tuple = valid;
     invalid_tuple.instance = VK_NULL_HANDLE;
 
@@ -346,28 +329,16 @@ int test_window_wrap_replace_surface(TstSuite* suite, TstItem* item)
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
     ANN(window);
 
-    DvzWindowExternalSurfaceInfo first = {
-        .instance = (VkInstance)0x100,
-        .surface = (VkSurfaceKHR)0x200,
-        .extent = {.width = 640, .height = 480},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo first = dvz_test_wrap_surface_info(
+        (VkInstance)0x100, (VkSurfaceKHR)0x200, 640, 480, 1.0f, 1.0f, false);
     AT(dvz_window_wrap_attach_surface(window, &first) == 0);
     const DvzWindowSurface* surface = dvz_window_surface(window);
     ANN(surface);
     AT(surface->instance == first.instance);
     AT(surface->surface == first.surface);
 
-    DvzWindowExternalSurfaceInfo second = {
-        .instance = (VkInstance)0x300,
-        .surface = (VkSurfaceKHR)0x400,
-        .extent = {.width = 800, .height = 600},
-        .scale_x = 2.0f,
-        .scale_y = 2.0f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo second = dvz_test_wrap_surface_info(
+        (VkInstance)0x300, (VkSurfaceKHR)0x400, 800, 600, 2.0f, 2.0f, false);
     AT(dvz_window_wrap_update_surface(window, &second) == 0);
     surface = dvz_window_surface(window);
     ANN(surface);
@@ -396,24 +367,12 @@ int test_window_wrap_owned_surface_null_lifecycle(TstSuite* suite, TstItem* item
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_WRAP, NULL);
     ANN(window);
 
-    DvzWindowExternalSurfaceInfo attached = {
-        .instance = (VkInstance)0x111,
-        .surface = (VkSurfaceKHR)0x222,
-        .extent = {.width = 320, .height = 240},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo attached = dvz_test_wrap_surface_info(
+        (VkInstance)0x111, (VkSurfaceKHR)0x222, 320, 240, 1.0f, 1.0f, false);
     AT(dvz_window_wrap_attach_surface(window, &attached) == 0);
 
-    DvzWindowExternalSurfaceInfo owned_null = {
-        .instance = VK_NULL_HANDLE,
-        .surface = VK_NULL_HANDLE,
-        .extent = {.width = 320, .height = 240},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = true,
-    };
+    DvzWindowExternalSurfaceInfo owned_null =
+        dvz_test_wrap_surface_info(VK_NULL_HANDLE, VK_NULL_HANDLE, 320, 240, 1.0f, 1.0f, true);
     AT(dvz_window_wrap_update_surface(window, &owned_null) == 0);
     const DvzWindowSurface* surface = dvz_window_surface(window);
     ANN(surface);

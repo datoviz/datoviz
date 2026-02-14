@@ -34,6 +34,7 @@
 #include "datoviz/window.h"
 #include "test_vklite.h"
 #include "testing.h"
+#include "wrap_surface_fixture.h"
 
 #include <volk.h>
 
@@ -417,14 +418,8 @@ static bool _wrap_surface_fixture_create(
         return false;
     }
 
-    wrap->info = (DvzWindowExternalSurfaceInfo){
-        .instance = instance,
-        .surface = wrap->external_surface,
-        .extent = {.width = cfg->width, .height = cfg->height},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
+    wrap->info = dvz_test_wrap_surface_info(
+        instance, wrap->external_surface, cfg->width, cfg->height, 1.0f, 1.0f, false);
     if (dvz_window_wrap_attach_surface(wrap->wrap_window, &wrap->info) != 0)
     {
         log_warn("vklite wrap present test skipped because wrap attach_surface() failed");
@@ -804,10 +799,7 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
         dvz_free((void*)extensions);
     }
 
-    DvzWindowConfig cfg = dvz_window_default_config();
-    cfg.title = "vklite-wrap-external-surface";
-    cfg.width = 320;
-    cfg.height = 240;
+    DvzWindowConfig cfg = dvz_test_wrap_window_config("vklite-wrap-external-surface", 320, 240);
     DvzVkliteWrapSurfaceFixture wrap = {0};
     if (!_wrap_surface_fixture_create(&fixture, &cfg, &wrap))
     {
@@ -841,14 +833,8 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     ANN(window_surface);
     AT(window_surface->surface == wrap.external_surface);
 
-    DvzWindowExternalSurfaceInfo loss = {
-        .instance = VK_NULL_HANDLE,
-        .surface = VK_NULL_HANDLE,
-        .extent = {.width = cfg.width, .height = cfg.height},
-        .scale_x = 1.0f,
-        .scale_y = 1.0f,
-        .owned_by_datoviz = false,
-    };
+    DvzWindowExternalSurfaceInfo loss =
+        dvz_test_wrap_surface_info(VK_NULL_HANDLE, VK_NULL_HANDLE, cfg.width, cfg.height, 1.0f, 1.0f, false);
     AT(dvz_window_wrap_update_surface(wrap.wrap_window, &loss) == 0);
     window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
