@@ -201,6 +201,49 @@ Keep current top-level layout; add target-level grouping and packaging metadata.
 5. Land Phase E incrementally as DRP2/WebGPU/Scene modules mature.
 
 
+## Current status (as of February 15, 2026)
+
+Completed:
+1. Phase A foundation:
+   1. Layered libraries and aliases are in place (`datoviz_core`, `datoviz_vk_layer`,
+      `datoviz_canvas_layer`, plus `datoviz::core`, `datoviz::vk`, `datoviz::canvas`,
+      `datoviz::datoviz`).
+   2. Aggregate `datoviz` target remains available and builds successfully.
+2. Phase B foundation:
+   1. Export/install wiring is in place (`DatovizTargets`, package config, version file).
+   2. Component checks exist in `DatovizConfig.cmake` for `core`, `vk`, `canvas`, `datoviz`.
+3. Phase C foundation:
+   1. Build options exist: `DVZ_BUILD_CORE`, `DVZ_BUILD_VK`, `DVZ_BUILD_CANVAS`,
+      `DVZ_BUILD_DRP2`, `DVZ_BUILD_WEBGPU`, `DVZ_BUILD_SCENE`.
+   2. Subdirectories/tests are gated by component toggles with dependency guard checks.
+4. Phase D:
+   1. Component runners are implemented: `dvztest_core`, `dvztest_vk`, `dvztest_canvas`,
+      `dvztest_integration`.
+   2. Legacy `dvztest` integration runner remains available for compatibility.
+
+Partially complete / remaining from A-D:
+1. CI matrix is not yet updated to run all component profiles/runners.
+2. Automated out-of-tree package-consumer smoke tests are not yet integrated into CTest/CI.
+3. Header install ownership is still broad; component-specific header install sets remain to do.
+
+
+## Next execution steps
+
+1. CI matrix integration (highest priority):
+   1. Update `.github/workflows/test.yml` to run profile jobs:
+      core-only, vk-only (+core), canvas stack (+core+vk), aggregate.
+   2. In each profile, run the matching runner:
+      `dvztest_core`, `dvztest_vk`, `dvztest_canvas`, `dvztest_integration`.
+2. Package-consumer smoke tests:
+   1. Add CTest out-of-tree consumer checks for `core`, `vk`, and `canvas` package components.
+   2. Wire these into CI to catch export/include/transitive-link regressions.
+3. Package/header ownership tightening:
+   1. Move from broad `install(DIRECTORY include/)` toward component-owned header install sets.
+   2. Keep aggregate install behavior while component boundaries are enforced.
+4. Docs follow-up:
+   1. Update `README.md` and `docs/discussions/BUILD.md` with component build and consumption examples.
+
+
 ## Risk controls
 
 1. API drift risk:
