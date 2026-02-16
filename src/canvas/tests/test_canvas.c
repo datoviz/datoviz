@@ -133,6 +133,39 @@ static int canvas_live_probe_callback(const DvzCanvasLiveImageFrame* frame, void
 
 
 
+/**
+ * Record a deterministic clear pass for offscreen canvas tests.
+ *
+ * @param canvas owning canvas (unused)
+ * @param frame stream frame carrying command buffer and attachment view
+ * @param user_data callback state (unused)
+ */
+static void
+canvas_offscreen_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
+{
+    (void)canvas;
+    (void)user_data;
+    ANN(frame);
+
+    VkCommandBuffer cmd = frame->command_buffer;
+    if (cmd == VK_NULL_HANDLE || frame->image_view == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
+    DvzCommands cmds = {0};
+    dvz_commands_wrap(canvas->device, cmd, &cmds);
+
+    DvzRendering rendering = {0};
+    dvz_cmd_rendering_default(
+        &cmds, frame->image_view, frame->extent.width, frame->extent.height,
+        (VkClearValue){.color.float32 = {0.08f, 0.12f, 0.16f, 1.00f}}, &rendering);
+    dvz_cmd_rendering_begin(&cmds, &rendering);
+    dvz_cmd_rendering_end(&cmds);
+}
+
+
+
 static int canvas_live_gap_probe_callback(const DvzCanvasLiveImageFrame* frame, void* user_data)
 {
     ANN(frame);
@@ -543,6 +576,8 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     cfg.timing_history = 4;
     canvas = dvz_canvas_create(&cfg);
     AT(canvas != NULL);
+    // Ensure deterministic non-zero capture content across drivers by explicitly recording a clear pass.
+    dvz_canvas_set_draw_callback(canvas, canvas_offscreen_clear_draw, NULL);
     AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN);
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
     DvzVideoSinkConfig external_cfg = dvz_video_sink_default_config();
