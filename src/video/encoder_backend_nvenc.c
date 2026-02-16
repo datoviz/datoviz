@@ -389,6 +389,8 @@ static void nvenc_state_free(DvzVideoBackendNvenc* state)
     }
     if (state->cuda.cuCtx)
     {
+        CU_CHECK(cuCtxSetCurrent(state->cuda.cuCtx));
+        CU_CHECK(cuCtxSetCurrent(NULL));
         cuCtxDestroy(state->cuda.cuCtx);
         state->cuda.cuCtx = NULL;
     }
@@ -406,6 +408,7 @@ cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, 
     CU_CHECK(cuInit(0));
     CU_CHECK(cuDeviceGet(&dev, 0));
     CU_CHECK(cuCtxCreate(&cu->cuCtx, 0, dev));
+    CU_CHECK(cuCtxSetCurrent(cu->cuCtx));
     CU_CHECK(cuStreamCreate(&cu->stream, CU_STREAM_DEFAULT));
 
     CUDA_EXTERNAL_MEMORY_HANDLE_DESC hdesc = {
@@ -583,6 +586,7 @@ static DvzNvencProfile nvenc_profile(DvzVideoCodec codec)
 static void nvenc_open_session_cuda(NvEncCtx* nctx, CUcontext cuCtx)
 {
     ANN(nctx);
+    CU_CHECK(cuCtxSetCurrent(cuCtx));
     NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS open = {0};
     open.version = (uint32_t)NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
     open.device = cuCtx;
