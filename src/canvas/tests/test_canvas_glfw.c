@@ -957,7 +957,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstSuite* suite
         AT(frame_rc == DVZ_CANVAS_FRAME_READY);
         DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
         AT(frame != NULL);
-        AT(frame->handles_dirty);
+        AT(!frame->handles_dirty);
         AT(frame->wait_semaphore_fd < 0);
         AT(dvz_canvas_submit(canvas) == 0);
         resumed = true;

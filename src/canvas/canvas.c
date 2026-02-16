@@ -71,6 +71,28 @@ static bool canvas_is_offscreen_mode(const DvzCanvas* canvas)
 
 
 
+/**
+ * Return whether video capture currently requires external-handle synchronization.
+ *
+ * @param canvas canvas instance
+ * @return true when effective video capture mode is external, false otherwise
+ */
+static bool canvas_uses_external_video_capture(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas->video_sink_enabled)
+    {
+        return false;
+    }
+    if (canvas->video_capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL)
+    {
+        return true;
+    }
+    return canvas->video_capture_mode == DVZ_VIDEO_CAPTURE_AUTO;
+}
+
+
+
 static const char* canvas_offscreen_state_name(DvzCanvasOffscreenRuntimeState state)
 {
     switch (state)
@@ -487,6 +509,21 @@ static int canvas_create_timeline(DvzCanvas* canvas)
     VkExternalSemaphoreHandleTypeFlags handle_type =
         canvas->supports_external_semaphore ? dvz_canvas_timeline_handle_type() : 0;
     dvz_semaphore_timeline(canvas->device, 0, &canvas->timeline_semaphore, handle_type);
+#if OS_UNIX
+    if (handle_type != 0)
+    {
+        int probe_fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
+        if (probe_fd >= 0)
+        {
+            close(probe_fd);
+        }
+        else
+        {
+            log_warn("canvas timeline semaphore export probe failed; disabling external semaphore path");
+            canvas->supports_external_semaphore = false;
+        }
+    }
+#endif
 
 
     canvas->timeline_ready = true;
@@ -501,11 +538,7 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
     ANN(canvas);
     ANN(frame);
 
-    if (!canvas->video_sink_enabled)
-    {
-        return 0;
-    }
-    if (canvas->video_capture_mode != DVZ_VIDEO_CAPTURE_EXTERNAL)
+    if (!canvas_uses_external_video_capture(canvas))
     {
         return 0;
     }
@@ -1091,7 +1124,7 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     // Sync-handle ordering contract: prepare the timeline wait handle before stream start/update so
     // video sinks always see the latest semaphore handle during their start/update callback.
     bool needs_video_sync_refresh =
-        canvas->video_sink_enabled && canvas->video_capture_mode == DVZ_VIDEO_CAPTURE_EXTERNAL &&
+        canvas_uses_external_video_capture(canvas) &&
         (!canvas->stream_started || frame->handles_dirty);
     if (needs_video_sync_refresh && canvas_prepare_video_wait_semaphore_fd(canvas, frame) != 0)
     {
