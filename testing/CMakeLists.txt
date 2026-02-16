@@ -8,6 +8,14 @@ get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
 
 if(DVZ_HAS_CUDA)
     find_package(CUDAToolkit REQUIRED)
+
+    if(NOT CMAKE_CUDA_ARCHITECTURES)
+        # Default to native architecture so CMake is satisfied when CUDA is enabled.
+        set(CMAKE_CUDA_ARCHITECTURES "native")
+    endif()
+
+    set(DVZ_CUDA_ARCHS "${CMAKE_CUDA_ARCHITECTURES}")
+    enable_language(CUDA)
 endif()
 
 target_include_directories(testing
@@ -38,6 +46,9 @@ endif()
 file(GLOB DVZ_MODULE_TEST_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/../src/*/tests/*.c*"
 )
+
+# test_cuda.cu is wired manually in the CUDA block below; keep it out of generic test source groups.
+list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/vk/tests/test_cuda\\.cu$")
 
 # Integration runner sources.
 set(TEST_SOURCES
@@ -223,6 +234,22 @@ if(_dvz_has_core AND _dvz_has_vk)
         ${PROJECT_SOURCE_DIR}/src/canvas
         ${PROJECT_SOURCE_DIR}/external/volk
     )
+
+    if(DVZ_HAS_CUDA)
+        target_include_directories(dvztest_vk PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+        target_include_directories(dvztest_vk PRIVATE ${PROJECT_SOURCE_DIR}/external)
+        target_link_libraries(dvztest_vk PRIVATE CUDA::cudart CUDA::cuda_driver)
+        target_link_libraries(dvztest_vk PRIVATE cuda)
+
+        set(TEST_CUDA_KERNEL "${PROJECT_SOURCE_DIR}/src/vk/tests/test_cuda.cu")
+        target_sources(dvztest_vk PRIVATE ${TEST_CUDA_KERNEL})
+        set_source_files_properties(${TEST_CUDA_KERNEL} PROPERTIES LANGUAGE CUDA)
+        set_target_properties(dvztest_vk PROPERTIES
+            CUDA_ARCHITECTURES "${DVZ_CUDA_ARCHS}"
+            CUDA_SEPARABLE_COMPILATION OFF
+            CUDA_RESOLVE_DEVICE_SYMBOLS OFF
+        )
+    endif()
 
     if(_dvz_compile_definitions)
         target_compile_definitions(dvztest_vk PRIVATE ${_dvz_compile_definitions})
@@ -472,20 +499,12 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             message(FATAL_ERROR "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset.")
         endif()
 
-        # Enable CUDA language for dvztest so it can compile .cu kernels
-        if(NOT CMAKE_CUDA_ARCHITECTURES)
-            # Default to native architecture so CMake is satisfied when CUDA is enabled.
-            set(CMAKE_CUDA_ARCHITECTURES "native")
-        endif()
-
-        enable_language(CUDA)
-
         # Optional: explicitly add the CUDA kernel file if it exists
         set(TEST_CUDA_KERNEL
             "${PROJECT_SOURCE_DIR}/src/vk/tests/test_cuda.cu"
         )
-        set_target_properties(dvztest PROPERTIES CUDA_ARCHITECTURES "native")
-        set_target_properties(dvztest_integration PROPERTIES CUDA_ARCHITECTURES "native")
+        set_target_properties(dvztest PROPERTIES CUDA_ARCHITECTURES "${DVZ_CUDA_ARCHS}")
+        set_target_properties(dvztest_integration PROPERTIES CUDA_ARCHITECTURES "${DVZ_CUDA_ARCHS}")
         message(STATUS "Adding CUDA test kernel: ${TEST_CUDA_KERNEL}")
         target_sources(dvztest PRIVATE ${TEST_CUDA_KERNEL})
         target_sources(dvztest_integration PRIVATE ${TEST_CUDA_KERNEL})
