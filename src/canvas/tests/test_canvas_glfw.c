@@ -1064,6 +1064,10 @@ int test_canvas_video_sink_start_submit_integration(TstSuite* suite, TstItem* it
     }
 
 cleanup:
+    if (fixture.canvas != NULL && fixture.canvas->video_sink_enabled)
+    {
+        AT(dvz_canvas_configure_video_sink(fixture.canvas, false, NULL) == 0);
+    }
     if (skip_reason != NULL)
     {
         log_warn("canvas video sink integration skipped (%s)", skip_reason);
@@ -1190,6 +1194,10 @@ int test_canvas_video_sink_disable_rebuild(TstSuite* suite, TstItem* item)
     }
 
 cleanup:
+    if (fixture.canvas != NULL && fixture.canvas->video_sink_enabled)
+    {
+        AT(dvz_canvas_configure_video_sink(fixture.canvas, false, NULL) == 0);
+    }
     if (skip_reason != NULL)
     {
         log_warn("canvas video sink disable test skipped (%s)", skip_reason);

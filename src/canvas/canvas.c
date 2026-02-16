@@ -562,7 +562,10 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
     }
     if (fd < 0)
     {
-        log_warn("video sink timeline export failed, continuing without wait semaphore handle");
+        if (!canvas->test_force_wait_semaphore_export_failure)
+        {
+            log_warn("video sink timeline export failed, continuing without wait semaphore handle");
+        }
         return 0;
     }
     frame->wait_semaphore_fd = fd;
