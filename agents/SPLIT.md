@@ -1,3 +1,9 @@
+> **Implementation Status**
+> - **Status:** `PARTIALLY COMPLETED`
+> - **Verified on:** `2026-02-18`
+> - **Codebase alignment:** Phases A-D are implemented (layered targets, package exports, build toggles, and component test runners).
+> - **Remaining gap:** Phase E (`drp2`/`webgpu`/`scene` onboarding) is still planned and not active.
+
 # Datoviz v0.4-dev Monorepo Target Split Plan
 
 This document defines a concrete plan to split Datoviz into independently consumable targets while

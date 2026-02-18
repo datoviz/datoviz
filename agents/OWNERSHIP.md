@@ -1,3 +1,9 @@
+> **Implementation Status**
+> - **Status:** `PARTIALLY COMPLETED`
+> - **Verified on:** `2026-02-18`
+> - **Codebase alignment:** New heap-owned create/destroy config paths for `instance`/`device` are implemented and used in active call sites.
+> - **Remaining gap:** Full ownership unification is incomplete (`DvzDeviceConfig` still takes `DvzGpu*`; legacy/internal mutation paths such as `dvz_instance(...)` and `dvz_gpu_device(...)` still exist).
+
 # Datoviz v0.4-dev API Ownership Unification Plan
 
 This plan unifies Datoviz runtime ownership semantics while the API is still private and breaking

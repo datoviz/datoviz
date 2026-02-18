@@ -1,3 +1,9 @@
+> **Implementation Status**
+> - **Status:** `NOT STARTED`
+> - **Verified on:** `2026-02-18`
+> - **Codebase alignment:** This roadmap remains strategic/planning-level; DRP2/WebGPU/scene runtime milestones are not implemented as active modules in the current build graph.
+> - **Remaining gap:** Start M0 scaffolding and wire first concrete DRP2/WebGPU deliverables into source, CMake, and tests.
+
 # Datoviz v0.4-dev Next Steps
 
 This document is a detailed, high-level execution plan to reach the first major objective:
