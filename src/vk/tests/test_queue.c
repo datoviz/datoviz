@@ -45,20 +45,17 @@ int test_queues_caps(TstSuite* suite, TstItem* tstitem)
     DvzInstance* instance = dvz_instance_create(&cfg);
     AT(instance != NULL);
 
-    // Get a GPU.
-    uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
-    ANN(gpu);
-
     // Probe the GPU queues.
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
-    ANN(qc);
+    DvzGpuInfo info = {0};
+    AT(dvz_instance_gpu_info(instance, 0, &info));
+    log_info("device name: %s", info.name);
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
 
-    for (uint32_t qf = 0; qf < qc->family_count; qf++)
+    for (uint32_t qf = 0; qf < qc.family_count; qf++)
     {
-        VkQueueFlags flags = qc->flags[qf];
-        log_info("Queue family %d (max %d) queues. Flags: 0x%x", qf, qc->queue_count[qf], flags);
+        VkQueueFlags flags = qc.flags[qf];
+        log_info("Queue family %d (max %d) queues. Flags: 0x%x", qf, qc.queue_count[qf], flags);
 
         if (flags & VK_QUEUE_GRAPHICS_BIT)
             log_info("  VK_QUEUE_GRAPHICS_BIT");

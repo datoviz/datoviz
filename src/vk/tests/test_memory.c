@@ -157,18 +157,15 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         goto cleanup_vulkan;
     }
 
-    // Obtain a GPU.
-    uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
-
     // Query the queues.
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
 
     // Initialize a device.
     DvzQueues queues = {0};
-    dvz_queues(qc, &queues);
+    dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -486,16 +483,13 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
 
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
-    ANN(gpus);
-    DvzGpu* gpu = &gpus[0];
-
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
 
     DvzQueues queues = {0};
-    dvz_queues(qc, &queues);
+    dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

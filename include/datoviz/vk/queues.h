@@ -104,6 +104,9 @@ struct DvzQueues
  *
  * @param gpu
  * @returns the queue capabilities
+ *
+ * @note Legacy pointer-based accessor kept for compatibility. Prefer
+ * dvz_instance_gpu_queue_caps() in new code.
  */
 DVZ_EXPORT DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu);
 

@@ -110,6 +110,9 @@ DVZ_EXPORT DvzInstance* dvz_bootstrap_instance(DvzBootstrap* bootstrap);
  *
  * @param bootstrap the bootstrap
  * @returns the gpu
+ *
+ * @note Legacy pointer-based accessor kept for compatibility. Prefer
+ * dvz_bootstrap_gpu_index() and dvz_bootstrap_gpu_info() in new code.
  */
 DVZ_EXPORT DvzGpu* dvz_bootstrap_gpu(DvzBootstrap* bootstrap);
 

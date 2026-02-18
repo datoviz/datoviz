@@ -45,18 +45,15 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
 
-    // Obtain a GPU.
-    uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
-
     // Query the queues.
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
 
     // Initialize a device.
     DvzQueues queues = {0};
-    dvz_queues(qc, &queues);
+    dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -100,8 +97,9 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
     dvz_device_config_request_extension(&dcfg, "VK_KHR_dynamic_rendering");
 
     // Queue requests.
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(gpu);
-    AT(qc);
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     dvz_device_config_request_queue(&dcfg, 0, 1);
     dvz_device_config_request_queue(&dcfg, 1, 1);
 
