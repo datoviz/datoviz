@@ -192,6 +192,16 @@ DVZ_EXPORT VkDevice dvz_device_handle(DvzDevice* device);
 
 
 /**
+ * Return the Vulkan physical device used by this logical device.
+ *
+ * @param device the device
+ * @returns the Vulkan physical device handle
+ */
+DVZ_EXPORT VkPhysicalDevice dvz_device_physical_device(DvzDevice* device);
+
+
+
+/**
  * Return the Vulkan 1.0 feature set enabled on this device.
  *
  * @param device the device

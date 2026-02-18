@@ -31,6 +31,7 @@
 
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzGpu DvzGpu;
+typedef struct DvzGpuInfo DvzGpuInfo;
 
 
 
@@ -65,6 +66,20 @@ struct DvzGpu
 
 
 
+struct DvzGpuInfo
+{
+    uint32_t index;
+    char name[VK_MAX_PHYSICAL_DEVICE_NAME_SIZE];
+    VkPhysicalDeviceType device_type;
+    uint32_t api_version;
+    uint32_t driver_version;
+    uint32_t vendor_id;
+    uint32_t device_id;
+    DvzQueueCaps queue_caps;
+};
+
+
+
 /*************************************************************************************************/
 /*  GPU                                                                                          */
 /*************************************************************************************************/
@@ -77,6 +92,29 @@ struct DvzGpu
  * @returns the array of detected GPUs
  */
 DVZ_EXPORT DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count);
+
+
+
+/**
+ * Return the number of detected physical GPUs.
+ *
+ * @param instance the instance
+ * @returns the number of detected GPUs
+ */
+DVZ_EXPORT uint32_t dvz_instance_gpu_count(DvzInstance* instance);
+
+
+
+/**
+ * Return a GPU descriptor snapshot for a given GPU index.
+ *
+ * @param instance the instance
+ * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param[out] out_info descriptor output
+ * @returns true when the descriptor was populated
+ */
+DVZ_EXPORT bool
+dvz_instance_gpu_info(DvzInstance* instance, uint32_t gpu_index, DvzGpuInfo* out_info);
 
 
 

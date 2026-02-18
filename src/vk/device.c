@@ -685,6 +685,21 @@ VkDevice dvz_device_handle(DvzDevice* device)
 
 
 /**
+ * Return the Vulkan physical device used by this logical device.
+ *
+ * @param device the device
+ * @return the Vulkan physical device handle
+ */
+VkPhysicalDevice dvz_device_physical_device(DvzDevice* device)
+{
+    ANN(device);
+    ANN(device->gpu);
+    return device->gpu->pdevice;
+}
+
+
+
+/**
  * Return the Vulkan 1.0 feature set enabled on this device.
  *
  * @param device the device

@@ -23,13 +23,11 @@
 #include <unistd.h>
 #endif
 
-#include "../vk/_device.h"
 #include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/vk/enums.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
@@ -187,15 +185,6 @@ static bool canvas_test_consume_forced_status(int32_t* forced_status, DvzPresent
     *status = (DvzPresentStatus)(*forced_status);
     *forced_status = -1;
     return true;
-}
-
-
-
-static DvzGpu* canvas_gpu(const DvzCanvas* canvas)
-{
-    ANN(canvas);
-    ANN(canvas->device);
-    return canvas->device->gpu;
 }
 
 
@@ -1458,18 +1447,18 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->queue = dvz_queue_handle(queue_ref);
     ANNVK(canvas->swapchain->queue);
     canvas->swapchain->queue_family = dvz_queue_family(queue_ref);
-    DvzGpu* gpu = canvas_gpu(canvas);
-    ANN(gpu);
     bool surface_initialized = false;
     bool swapchain_initialized = false;
-    if (!dvz_surface_init(&canvas->swapchain->surface_wrapper, gpu, canvas->swapchain->queue_family))
+    if (!dvz_surface_init_from_device(
+            &canvas->swapchain->surface_wrapper, canvas->device, canvas->swapchain->queue_family))
     {
         log_error("failed to initialize canvas surface wrapper");
         goto swapchain_init_failed;
     }
     surface_initialized = true;
-    if (!dvz_swapchain_init(
-            &canvas->swapchain->swapchain_wrapper, gpu, &canvas->swapchain->surface_wrapper))
+    if (!dvz_swapchain_init_from_device(
+            &canvas->swapchain->swapchain_wrapper, canvas->device,
+            &canvas->swapchain->surface_wrapper))
     {
         log_error("failed to initialize canvas swapchain wrapper");
         goto swapchain_init_failed;

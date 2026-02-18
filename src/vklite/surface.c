@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vklite/surface.h"
 
@@ -27,6 +28,34 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _surface_init_with_physical_device(
+    DvzSurface* surface, VkPhysicalDevice physical_device, uint32_t queue_family)
+{
+    ANN(surface);
+    if (physical_device == VK_NULL_HANDLE)
+    {
+        log_error("cannot initialize surface wrapper with null physical device");
+        return false;
+    }
+
+    dvz_memset(surface, sizeof(*surface), 0, sizeof(*surface));
+    surface->physical_device = physical_device;
+    surface->queue_family = queue_family;
+    surface->handle = VK_NULL_HANDLE;
+    surface->extent = (VkExtent2D){0, 0};
+    surface->extent_hint = (VkExtent2D){0, 0};
+    surface->has_extent_hint = false;
+    surface->preferred_format = (VkSurfaceFormatKHR){
+        .format = VK_FORMAT_B8G8R8A8_UNORM,
+        .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+    };
+    surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    surface->ready = false;
+    return true;
+}
+
+
 
 static void _surface_cache_clear(DvzSurface* surface)
 {
@@ -150,21 +179,52 @@ bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family)
 {
     ANN(surface);
     ANN(gpu);
+    return _surface_init_with_physical_device(surface, gpu->pdevice, queue_family);
+}
 
-    dvz_memset(surface, sizeof(*surface), 0, sizeof(*surface));
-    surface->gpu = gpu;
-    surface->queue_family = queue_family;
-    surface->handle = VK_NULL_HANDLE;
-    surface->extent = (VkExtent2D){0, 0};
-    surface->extent_hint = (VkExtent2D){0, 0};
-    surface->has_extent_hint = false;
-    surface->preferred_format = (VkSurfaceFormatKHR){
-        .format = VK_FORMAT_B8G8R8A8_UNORM,
-        .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
-    };
-    surface->preferred_present_mode = VK_PRESENT_MODE_FIFO_KHR;
-    surface->ready = false;
-    return true;
+
+
+/**
+ * Initialize a surface wrapper from instance + GPU index selection.
+ *
+ * @param surface surface wrapper to initialize
+ * @param instance source instance used to resolve the GPU
+ * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param queue_family queue family used for present support queries
+ * @return true when initialization succeeds
+ */
+bool dvz_surface_init_from_instance(
+    DvzSurface* surface, DvzInstance* instance, uint32_t gpu_index, uint32_t queue_family)
+{
+    ANN(surface);
+    ANN(instance);
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
+    if (gpus == NULL || gpu_index >= gpu_count)
+    {
+        log_error("invalid GPU index %u for surface init (available count=%u)", gpu_index, gpu_count);
+        return false;
+    }
+    return _surface_init_with_physical_device(surface, gpus[gpu_index].pdevice, queue_family);
+}
+
+
+
+/**
+ * Initialize a surface wrapper from a logical device.
+ *
+ * @param surface surface wrapper to initialize
+ * @param device logical device used to resolve its physical GPU
+ * @param queue_family queue family used for present support queries
+ * @return true when initialization succeeds
+ */
+bool dvz_surface_init_from_device(DvzSurface* surface, DvzDevice* device, uint32_t queue_family)
+{
+    ANN(surface);
+    ANN(device);
+    return _surface_init_with_physical_device(
+        surface, dvz_device_physical_device(device), queue_family);
 }
 
 
@@ -233,7 +293,11 @@ void dvz_surface_set_extent_hint(DvzSurface* surface, const VkExtent2D* extent_h
 bool dvz_surface_refresh(DvzSurface* surface)
 {
     ANN(surface);
-    ANN(surface->gpu);
+    if (surface->physical_device == VK_NULL_HANDLE)
+    {
+        log_error("cannot refresh surface wrapper with null physical device");
+        return false;
+    }
     surface->ready = false;
 
     if (surface->handle == VK_NULL_HANDLE)
@@ -246,7 +310,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
 
     VkBool32 supports_present = VK_FALSE;
     VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(
-        surface->gpu->pdevice, surface->queue_family, surface->handle, &supports_present);
+        surface->physical_device, surface->queue_family, surface->handle, &supports_present);
     if (res != VK_SUCCESS)
     {
         log_error("surface present support query failed (%d)", res);
@@ -259,7 +323,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
     }
 
     res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-        surface->gpu->pdevice, surface->handle, &surface->capabilities);
+        surface->physical_device, surface->handle, &surface->capabilities);
     if (res != VK_SUCCESS)
     {
         log_error("surface capability query failed (%d)", res);
@@ -267,7 +331,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
     }
 
     res = vkGetPhysicalDeviceSurfaceFormatsKHR(
-        surface->gpu->pdevice, surface->handle, &surface->format_count, NULL);
+        surface->physical_device, surface->handle, &surface->format_count, NULL);
     if (res != VK_SUCCESS)
     {
         log_error("surface format count query failed (%d)", res);
@@ -278,7 +342,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
         surface->formats = (VkSurfaceFormatKHR*)dvz_calloc(surface->format_count, sizeof(VkSurfaceFormatKHR));
         ANN(surface->formats);
         res = vkGetPhysicalDeviceSurfaceFormatsKHR(
-            surface->gpu->pdevice, surface->handle, &surface->format_count, surface->formats);
+            surface->physical_device, surface->handle, &surface->format_count, surface->formats);
         if (res != VK_SUCCESS)
         {
             log_error("surface format query failed (%d)", res);
@@ -288,7 +352,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
     }
 
     res = vkGetPhysicalDeviceSurfacePresentModesKHR(
-        surface->gpu->pdevice, surface->handle, &surface->present_mode_count, NULL);
+        surface->physical_device, surface->handle, &surface->present_mode_count, NULL);
     if (res != VK_SUCCESS)
     {
         log_error("surface present mode count query failed (%d)", res);
@@ -301,7 +365,7 @@ bool dvz_surface_refresh(DvzSurface* surface)
             (VkPresentModeKHR*)dvz_calloc(surface->present_mode_count, sizeof(VkPresentModeKHR));
         ANN(surface->present_modes);
         res = vkGetPhysicalDeviceSurfacePresentModesKHR(
-            surface->gpu->pdevice, surface->handle, &surface->present_mode_count,
+            surface->physical_device, surface->handle, &surface->present_mode_count,
             surface->present_modes);
         if (res != VK_SUCCESS)
         {

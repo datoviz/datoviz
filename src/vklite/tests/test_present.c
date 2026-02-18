@@ -60,7 +60,6 @@ typedef struct DvzVklitePresentFixture
     DvzWindow* window;
 
     DvzInstance* instance;
-    DvzGpu* gpu;
     DvzDevice* device;
 
     VkQueue queue;
@@ -260,9 +259,8 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
         return false;
     }
 
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(fixture->instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
+    uint32_t gpu_count = dvz_instance_gpu_count(fixture->instance);
+    if (gpu_count == 0)
     {
         log_warn(
             "vklite present tests: no Vulkan GPU found on first attempt, retrying with explicit "
@@ -277,18 +275,24 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
                 "during portability retry");
             return false;
         }
-        gpus = dvz_instance_gpus(fixture->instance, &gpu_count);
-        if (gpus == NULL || gpu_count == 0)
+        gpu_count = dvz_instance_gpu_count(fixture->instance);
+        if (gpu_count == 0)
         {
             log_warn("vklite present tests skipped because no Vulkan GPU is available");
             return false;
         }
     }
-    fixture->gpu = &gpus[0];
 
+    DvzGpuInfo gpu_info = {0};
+    if (!dvz_instance_gpu_info(fixture->instance, 0, &gpu_info))
+    {
+        log_warn("vklite present tests skipped because GPU descriptor query failed");
+        return false;
+    }
     DvzQueues queues = {0};
-    dvz_queues(dvz_gpu_queue_caps(fixture->gpu), &queues);
+    dvz_queues(&gpu_info.queue_caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(fixture->instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -343,7 +347,7 @@ static bool _swapchain_prepare(
     ANN(fixture);
     ANN(surface);
 
-    if (!dvz_swapchain_init(swapchain, fixture->gpu, surface))
+    if (!dvz_swapchain_init_from_device(swapchain, fixture->device, surface))
     {
         return false;
     }
@@ -501,7 +505,7 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
-    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
     AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
 
     AT(surface.ready);
@@ -552,7 +556,7 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
-    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
     AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
     AT(_swapchain_prepare(&swapchain, &fixture, &surface));
 
@@ -621,9 +625,9 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
         return 0;
     }
 
-    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
     AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
-    AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
+    AT(dvz_swapchain_init_from_device(&swapchain, fixture.device, &surface));
 
     DvzSwapchainConfig cfg = {0};
     cfg.image_format = surface.preferred_format.format;
@@ -733,9 +737,9 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
         return 0;
     }
 
-    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
     AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
-    AT(dvz_swapchain_init(&swapchain, fixture.gpu, &surface));
+    AT(dvz_swapchain_init_from_device(&swapchain, fixture.device, &surface));
     AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
 
     DvzSwapchainConfig cfg = {0};
@@ -815,7 +819,7 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
 
     DvzSurface surface = {0};
     DvzSwapchain swapchain = {0};
-    AT(dvz_surface_init(&surface, fixture.gpu, fixture.queue_family));
+    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
     VkExtent2D wrap_extent = {.width = wrap.size[0], .height = wrap.size[1]};
     AT(dvz_surface_wrap_native(&surface, wrap.external_surface, &wrap_extent));
     AT(_swapchain_prepare(&swapchain, &fixture, &surface));

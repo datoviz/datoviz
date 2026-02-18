@@ -1,8 +1,8 @@
 > **Implementation Status**
 > - **Status:** `PARTIALLY COMPLETED`
 > - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** New heap-owned create/destroy config paths for `instance`/`device` are implemented and used in active call sites; `DvzDeviceConfig` now uses explicit index-based GPU selection (`gpu_index`), bootstrap/manual-device paths build devices through config APIs with explicit ownership flags, and vklite sampler no longer depends on `vk` internal headers.
-> - **Remaining gap:** Ownership unification is now mostly at long-tail cleanup level (public GPU descriptor hardening and deeper internal helper shrinkage), not at active-call-site migration level.
+> - **Codebase alignment:** Active call sites in `canvas` and vklite present/swapchain paths now use device/index-driven APIs instead of passing raw `DvzGpu*` for surface/swapchain init; pointer-based APIs remain as compatibility wrappers. New public GPU descriptor queries (`dvz_instance_gpu_count()`, `dvz_instance_gpu_info()`) and device physical-device query (`dvz_device_physical_device()`) are now available.
+> - **Remaining gap:** Public headers still expose mutable `DvzGpu` and legacy `DvzGpu*` entry points (`vk/gpu.h`, bootstrap GPU accessor, queue-caps-by-pointer APIs). Final completion still requires deprecation/removal of these public pointer surfaces and full descriptor/index migration at the API boundary.
 
 # Datoviz v0.4-dev API Ownership Unification Plan
 

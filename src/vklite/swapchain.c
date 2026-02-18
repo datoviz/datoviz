@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vklite/swapchain.h"
 
@@ -36,6 +37,40 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static bool _swapchain_init_with_physical_device(
+    DvzSwapchain* swapchain, VkPhysicalDevice physical_device, DvzSurface* surface)
+{
+    ANN(swapchain);
+    if (physical_device == VK_NULL_HANDLE)
+    {
+        log_error("cannot initialize swapchain wrapper with null physical device");
+        return false;
+    }
+    ANN(surface);
+
+    dvz_memset(swapchain, sizeof(*swapchain), 0, sizeof(*swapchain));
+    swapchain->physical_device = physical_device;
+    swapchain->surface = surface;
+    swapchain->device = VK_NULL_HANDLE;
+    swapchain->handle = VK_NULL_HANDLE;
+    swapchain->config = (DvzSwapchainConfig){
+        .image_format = VK_FORMAT_UNDEFINED,
+        .color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+        .present_mode = VK_PRESENT_MODE_FIFO_KHR,
+        .image_usage = DVZ_SWAPCHAIN_DEFAULT_IMAGE_USAGE,
+        .composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        .min_image_count = 0,
+        .clipped = true,
+    };
+    swapchain->image_format = VK_FORMAT_UNDEFINED;
+    swapchain->color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    swapchain->ready = false;
+    return true;
+}
+
+
 
 static DvzPresentStatus _swapchain_status_from_result(VkResult result)
 {
@@ -351,26 +386,27 @@ bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surfac
     ANN(swapchain);
     ANN(gpu);
     ANN(surface);
+    return _swapchain_init_with_physical_device(swapchain, gpu->pdevice, surface);
+}
 
-    dvz_memset(swapchain, sizeof(*swapchain), 0, sizeof(*swapchain));
-    swapchain->gpu = gpu;
-    swapchain->surface = surface;
-    swapchain->device = VK_NULL_HANDLE;
-    swapchain->handle = VK_NULL_HANDLE;
-    swapchain->config = (DvzSwapchainConfig){
-        .image_format = VK_FORMAT_UNDEFINED,
-        .color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
-        .present_mode = VK_PRESENT_MODE_FIFO_KHR,
-        .image_usage = DVZ_SWAPCHAIN_DEFAULT_IMAGE_USAGE,
-        .composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        .min_image_count = 0,
-        .clipped = true,
-    };
-    swapchain->image_format = VK_FORMAT_UNDEFINED;
-    swapchain->color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR;
-    swapchain->ready = false;
-    return true;
+
+
+/**
+ * Initialize a swapchain wrapper from a logical device and surface.
+ *
+ * @param swapchain swapchain wrapper to initialize
+ * @param device logical device used to resolve the physical GPU
+ * @param surface surface wrapper used for capability and extent data
+ * @return true when initialization succeeds
+ */
+bool dvz_swapchain_init_from_device(
+    DvzSwapchain* swapchain, DvzDevice* device, DvzSurface* surface)
+{
+    ANN(swapchain);
+    ANN(device);
+    ANN(surface);
+    return _swapchain_init_with_physical_device(
+        swapchain, dvz_device_physical_device(device), surface);
 }
 
 
@@ -444,7 +480,11 @@ bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config)
 DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
 {
     ANN(swapchain);
-    ANN(swapchain->gpu);
+    if (swapchain->physical_device == VK_NULL_HANDLE)
+    {
+        log_error("swapchain recreate requires a valid physical device handle");
+        return DVZ_PRESENT_STATUS_ERROR;
+    }
     ANN(swapchain->surface);
 
     if (swapchain->surface->handle == VK_NULL_HANDLE)

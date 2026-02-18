@@ -87,6 +87,69 @@ DvzGpu* dvz_instance_gpus(DvzInstance* instance, uint32_t* count)
 
 
 
+/**
+ * Return the number of detected physical GPUs.
+ *
+ * @param instance the instance
+ * @return the number of detected GPUs
+ */
+uint32_t dvz_instance_gpu_count(DvzInstance* instance)
+{
+    ANN(instance);
+
+    uint32_t count = 0;
+    (void)dvz_instance_gpus(instance, &count);
+    return count;
+}
+
+
+
+/**
+ * Return a GPU descriptor snapshot for a given GPU index.
+ *
+ * @param instance the instance
+ * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param[out] out_info descriptor output
+ * @return true when the descriptor was populated
+ */
+bool dvz_instance_gpu_info(DvzInstance* instance, uint32_t gpu_index, DvzGpuInfo* out_info)
+{
+    ANN(instance);
+    ANN(out_info);
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
+    if (gpus == NULL || gpu_index >= count)
+    {
+        log_error("invalid GPU index %u (available count=%u)", gpu_index, count);
+        return false;
+    }
+
+    DvzGpu* gpu = &gpus[gpu_index];
+    VkPhysicalDeviceProperties* props = dvz_gpu_properties10(gpu);
+    DvzQueueCaps* queue_caps = dvz_gpu_queue_caps(gpu);
+
+    dvz_memset(out_info, sizeof(*out_info), 0, sizeof(*out_info));
+    out_info->index = gpu_index;
+    out_info->device_type = props->deviceType;
+    out_info->api_version = props->apiVersion;
+    out_info->driver_version = props->driverVersion;
+    out_info->vendor_id = props->vendorID;
+    out_info->device_id = props->deviceID;
+    dvz_memcpy(
+        out_info->name, sizeof(out_info->name), props->deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+    dvz_memcpy(
+        out_info->queue_caps.flags, sizeof(out_info->queue_caps.flags), queue_caps->flags,
+        sizeof(out_info->queue_caps.flags));
+    dvz_memcpy(
+        out_info->queue_caps.queue_count, sizeof(out_info->queue_caps.queue_count),
+        queue_caps->queue_count, sizeof(out_info->queue_caps.queue_count));
+    out_info->queue_caps.family_count = queue_caps->family_count;
+    return true;
+}
+
+
+
 // // TODO: move to device.c
 // int dvz_gpu_device(DvzGpu* gpu, DvzDevice* device)
 // {
