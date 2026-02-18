@@ -133,3 +133,61 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
     dvz_instance_destroy(instance);
     return 0;
 }
+
+
+
+int test_device_3(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create(&icfg);
+    AT(instance != NULL);
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
+    AT(gpus != NULL);
+    AT(count > 0);
+
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, count);
+    DvzDevice* device = dvz_device_create(&dcfg);
+    AT(device == NULL);
+
+    dvz_instance_destroy(instance);
+    return 0;
+}
+
+
+
+int test_device_4(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance_1 = dvz_instance_create(&icfg);
+    DvzInstance* instance_2 = dvz_instance_create(&icfg);
+    AT(instance_1 != NULL);
+    AT(instance_2 != NULL);
+
+    uint32_t count_1 = 0;
+    uint32_t count_2 = 0;
+    DvzGpu* gpus_1 = dvz_instance_gpus(instance_1, &count_1);
+    DvzGpu* gpus_2 = dvz_instance_gpus(instance_2, &count_2);
+    AT(gpus_1 != NULL);
+    AT(gpus_2 != NULL);
+    AT(count_1 > 0);
+    AT(count_2 > 0);
+
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance_1);
+    AT(dvz_device_config_set_gpu(&dcfg, &gpus_1[0]));
+    AT(!dvz_device_config_set_gpu(&dcfg, &gpus_2[0]));
+
+    dvz_instance_destroy(instance_2);
+    dvz_instance_destroy(instance_1);
+    return 0;
+}

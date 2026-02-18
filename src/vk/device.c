@@ -311,6 +311,39 @@ bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index)
 
 
 /**
+ * Select the GPU used for device creation from an instance-discovered GPU pointer.
+ *
+ * @param cfg device configuration
+ * @param gpu selected GPU pointer
+ * @return true when the pointer maps to one GPU in cfg->instance
+ */
+bool dvz_device_config_set_gpu(DvzDeviceConfig* cfg, const DvzGpu* gpu)
+{
+    ANN(cfg);
+    ANN(cfg->instance);
+    ANN(gpu);
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(cfg->instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < gpu_count; i++)
+    {
+        if (&gpus[i] == gpu)
+        {
+            cfg->gpu_index = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
  * Add a queue request to a device configuration.
  *
  * @param cfg device configuration

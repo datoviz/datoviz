@@ -46,6 +46,7 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     DvzQueues queues = {0};
     dvz_queues(qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    AT(dvz_device_config_set_gpu(&dcfg, bootstrap.gpu));
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];
@@ -55,6 +56,7 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     features10.samplerAnisotropy = true;
     dvz_device_config_set_features10(&dcfg, &features10);
     bootstrap.device = dvz_device_create(&dcfg);
+    bootstrap.owns_device = bootstrap.device != NULL;
     AT(bootstrap.device != NULL);
 
     DvzSampler sampler = {0};

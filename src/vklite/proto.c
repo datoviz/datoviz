@@ -54,6 +54,7 @@ void dvz_proto(DvzProto* proto)
     DvzQueues queues = {0};
     dvz_queues(qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap->instance);
+    ASSERT(dvz_device_config_set_gpu(&dcfg, bootstrap->gpu));
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];
@@ -68,6 +69,7 @@ void dvz_proto(DvzProto* proto)
     fet13.synchronization2 = true;
     dvz_device_config_set_features13(&dcfg, &fet13);
     bootstrap->device = dvz_device_create(&dcfg);
+    bootstrap->owns_device = bootstrap->device != NULL;
     DvzDevice* device = bootstrap->device;
     ANN(device);
     dvz_device_allocator(device, 0, &bootstrap->allocator);

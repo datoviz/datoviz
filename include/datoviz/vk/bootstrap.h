@@ -23,6 +23,7 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
@@ -62,6 +63,8 @@ struct DvzBootstrap
 {
     int flags;
     uint32_t validation_error_count;
+    bool owns_instance;
+    bool owns_device;
     DvzInstance* instance;
     DvzGpu* gpu;
     DvzDevice* device;
@@ -83,6 +86,9 @@ EXTERN_C_ON
  *
  * @param bootstrap the bootstrap object
  * @param flags the creation flags
+ *
+ * @note `bootstrap->owns_instance` and `bootstrap->owns_device` indicate whether destroy will
+ * reclaim these handles.
  */
 DVZ_EXPORT void dvz_bootstrap(DvzBootstrap* bootstrap, int flags);
 
@@ -142,6 +148,8 @@ DVZ_EXPORT uint32_t dvz_bootstrap_error_count(DvzBootstrap* bootstrap);
  * Destroy the instance, device, allocator.
  *
  * @param bootstrap the bootstrap
+ *
+ * @note Only resources owned by the bootstrap are destroyed (`owns_instance`/`owns_device`).
  */
 DVZ_EXPORT void dvz_bootstrap_destroy(DvzBootstrap* bootstrap);
 

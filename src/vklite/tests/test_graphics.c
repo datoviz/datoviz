@@ -65,6 +65,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_queues(qc, &queues);
 
     DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    AT(dvz_device_config_set_gpu(&dcfg, bootstrap.gpu));
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];
@@ -75,6 +76,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     features13.synchronization2 = true;
     dvz_device_config_set_features13(&dcfg, &features13);
     bootstrap.device = dvz_device_create(&dcfg);
+    bootstrap.owns_device = bootstrap.device != NULL;
     DvzDevice* device = bootstrap.device;
     AT(device != NULL);
     dvz_device_allocator(device, 0, &bootstrap.allocator);
