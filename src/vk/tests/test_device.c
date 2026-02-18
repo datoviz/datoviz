@@ -153,8 +153,8 @@ int test_device_3(TstSuite* suite, TstItem* tstitem)
 
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, count);
-    DvzDevice* device = dvz_device_create(&dcfg);
-    AT(device == NULL);
+    DvzDevice* device = NULL;
+    AT_EXPECTED_ERROR_STRICT(suite, (device = dvz_device_create(&dcfg)) == NULL);
 
     dvz_instance_destroy(instance);
     return 0;

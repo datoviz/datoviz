@@ -469,6 +469,10 @@ When generating or editing code:
    * Use the `testing.h` suite/item API (`TEST_SIMPLE`, `TEST`, `AT`, …).
    * Expose a `test_<module>(TstSuite* suite)` helper that appends your cases; invoke it from `dvztest` (no constructors).
    * Keep everything in the single `dvztest` executable—no per-module runners.
+   * For intentionally failing/error-path checks, wrap the assertion in expected-error scope so
+     known `log_error()` output is suppressed:
+     `AT_EXPECTED_ERROR_STRICT(suite, (expr_that_should_fail))` (or
+     `tst_expect_error_begin/end` manually).
 
 5. **Naming:**
 
