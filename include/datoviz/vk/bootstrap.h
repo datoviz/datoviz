@@ -63,6 +63,7 @@ struct DvzBootstrap
 {
     int flags;
     uint32_t validation_error_count;
+    uint32_t gpu_index;
     bool owns_instance;
     bool owns_device;
     DvzInstance* instance;
@@ -111,6 +112,27 @@ DVZ_EXPORT DvzInstance* dvz_bootstrap_instance(DvzBootstrap* bootstrap);
  * @returns the gpu
  */
 DVZ_EXPORT DvzGpu* dvz_bootstrap_gpu(DvzBootstrap* bootstrap);
+
+
+
+/**
+ * Return the bootstrap selected GPU index.
+ *
+ * @param bootstrap the bootstrap
+ * @returns the GPU index in dvz_instance_gpus(), or UINT32_MAX if unavailable
+ */
+DVZ_EXPORT uint32_t dvz_bootstrap_gpu_index(DvzBootstrap* bootstrap);
+
+
+
+/**
+ * Return the bootstrap selected GPU descriptor.
+ *
+ * @param bootstrap the bootstrap
+ * @param[out] out_info destination GPU descriptor
+ * @returns whether the descriptor could be retrieved
+ */
+DVZ_EXPORT bool dvz_bootstrap_gpu_info(DvzBootstrap* bootstrap, DvzGpuInfo* out_info);
 
 
 

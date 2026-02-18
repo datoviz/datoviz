@@ -69,8 +69,10 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, 0);
 
-    DvzGpu* gpu = dvz_bootstrap_gpu(&bootstrap);
-    ANN(gpu);
+    uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
+    AT(gpu_index != UINT32_MAX);
+    DvzGpuInfo gpu_info = {0};
+    AT(dvz_bootstrap_gpu_info(&bootstrap, &gpu_info));
 
     DvzVma* allocator = dvz_bootstrap_allocator(&bootstrap);
     ANN(allocator);

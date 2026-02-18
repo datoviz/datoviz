@@ -730,21 +730,24 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         return false;
     }
 
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(app->instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
+    uint32_t gpu_count = dvz_instance_gpu_count(app->instance);
+    if (gpu_count == 0)
     {
         dvz_fprintf(stderr, "no Vulkan GPU available\\n");
         return false;
     }
 
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
+    DvzQueueCaps caps = {0};
+    if (!dvz_instance_gpu_queue_caps(app->instance, 0, &caps))
+    {
+        dvz_fprintf(stderr, "failed to query Vulkan queue capabilities\\n");
+        return false;
+    }
 
     DvzQueues queues = {0};
-    dvz_queues(caps, &queues);
+    dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(app->instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

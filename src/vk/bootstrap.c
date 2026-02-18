@@ -35,6 +35,7 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
 {
     ANN(bootstrap);
     bootstrap->flags = flags;
+    bootstrap->gpu_index = UINT32_MAX;
     bootstrap->owns_instance = false;
     bootstrap->owns_device = false;
 
@@ -60,6 +61,7 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
     if (gpus == NULL || count == 0)
         return;
+    bootstrap->gpu_index = 0;
     bootstrap->gpu = &gpus[0];
 
     if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE) != 0)
@@ -70,10 +72,13 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
 
     if (bootstrap->device == NULL)
     {
-        DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap->gpu);
-        ANN(qc);
+        DvzQueueCaps qc = {0};
+        if (!dvz_instance_gpu_queue_caps(instance, bootstrap->gpu_index, &qc))
+        {
+            return;
+        }
         DvzQueues queues = {0};
-        dvz_queues(qc, &queues);
+        dvz_queues(&qc, &queues);
 
         DvzDeviceConfig dcfg = dvz_device_default_config(instance);
         for (uint32_t i = 0; i < queues.queue_count; i++)
@@ -109,6 +114,65 @@ DvzGpu* dvz_bootstrap_gpu(DvzBootstrap* bootstrap)
 {
     ANN(bootstrap);
     return bootstrap->gpu;
+}
+
+
+
+/**
+ * Return the bootstrap selected GPU index.
+ *
+ * @param bootstrap the bootstrap
+ * @return selected GPU index in dvz_instance_gpus(), or UINT32_MAX if unavailable
+ */
+uint32_t dvz_bootstrap_gpu_index(DvzBootstrap* bootstrap)
+{
+    ANN(bootstrap);
+    return bootstrap->gpu_index;
+}
+
+
+
+/**
+ * Return the bootstrap selected GPU descriptor.
+ *
+ * @param bootstrap the bootstrap
+ * @param[out] out_info destination GPU descriptor
+ * @return whether the descriptor could be retrieved
+ */
+bool dvz_bootstrap_gpu_info(DvzBootstrap* bootstrap, DvzGpuInfo* out_info)
+{
+    ANN(bootstrap);
+    ANN(out_info);
+    if (bootstrap->instance == NULL)
+    {
+        return false;
+    }
+    if (
+        bootstrap->gpu_index != UINT32_MAX &&
+        dvz_instance_gpu_info(bootstrap->instance, bootstrap->gpu_index, out_info))
+    {
+        return true;
+    }
+    if (bootstrap->gpu == NULL)
+    {
+        return false;
+    }
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(bootstrap->instance, &count);
+    if (gpus == NULL || count == 0)
+    {
+        return false;
+    }
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (gpus[i].pdevice == bootstrap->gpu->pdevice)
+        {
+            bootstrap->gpu_index = i;
+            return dvz_instance_gpu_info(bootstrap->instance, i, out_info);
+        }
+    }
+    return false;
 }
 
 
@@ -164,6 +228,7 @@ void dvz_bootstrap_destroy(DvzBootstrap* bootstrap)
     bootstrap->device = NULL;
     bootstrap->instance = NULL;
     bootstrap->gpu = NULL;
+    bootstrap->gpu_index = UINT32_MAX;
     bootstrap->owns_device = false;
     bootstrap->owns_instance = false;
 }

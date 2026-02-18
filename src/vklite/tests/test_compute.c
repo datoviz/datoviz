@@ -119,14 +119,14 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
     ANN(bootstrap.instance);
-    ANN(bootstrap.gpu);
-
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap.gpu);
-    ANN(qc);
+    uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
+    AT(gpu_index != UINT32_MAX);
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(bootstrap.instance, gpu_index, &qc));
     DvzQueues queues = {0};
-    dvz_queues(qc, &queues);
+    dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];

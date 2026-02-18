@@ -170,6 +170,37 @@ DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu)
 
 
 
+/**
+ * Get queue capabilities from an instance GPU index.
+ *
+ * @param instance source instance
+ * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param[out] out_caps destination queue capabilities snapshot
+ * @return whether queue capabilities were retrieved
+ */
+bool dvz_instance_gpu_queue_caps(DvzInstance* instance, uint32_t gpu_index, DvzQueueCaps* out_caps)
+{
+    ANN(instance);
+    ANN(out_caps);
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
+    if (gpus == NULL || gpu_index >= count)
+    {
+        log_error("invalid GPU index %u for queue caps (available count=%u)", gpu_index, count);
+        return false;
+    }
+
+    DvzQueueCaps* caps = dvz_gpu_queue_caps(&gpus[gpu_index]);
+    ANN(caps);
+
+    dvz_memset(out_caps, sizeof(*out_caps), 0, sizeof(*out_caps));
+    dvz_memcpy(out_caps, sizeof(*out_caps), caps, sizeof(*out_caps));
+    return true;
+}
+
+
+
 void dvz_queues(DvzQueueCaps* qc, DvzQueues* queues)
 {
     ANN(qc);

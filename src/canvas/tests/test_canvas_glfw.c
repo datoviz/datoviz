@@ -228,22 +228,26 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
         return 0;
     }
 
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(fixture->instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
+    uint32_t gpu_count = dvz_instance_gpu_count(fixture->instance);
+    if (gpu_count == 0)
     {
         *skipped = true;
         log_warn("canvas glfw fixture skipped because no Vulkan GPU was found");
         return 0;
     }
 
-    DvzGpu* gpu = &gpus[0];
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
+    DvzQueueCaps caps = {0};
+    if (!dvz_instance_gpu_queue_caps(fixture->instance, 0, &caps))
+    {
+        *skipped = true;
+        log_warn("canvas glfw fixture skipped because queue capability query failed");
+        return 0;
+    }
 
     DvzQueues queues = {0};
-    dvz_queues(caps, &queues);
+    dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(fixture->instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -1692,27 +1696,25 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
 
     AT(dvz_instance_has_extension(instance, VK_KHR_SURFACE_EXTENSION_NAME));
 
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
-    if (gpus == NULL || gpu_count == 0)
+    uint32_t gpu_count = dvz_instance_gpu_count(instance);
+    if (gpu_count == 0)
     {
         log_warn("canvas glfw test skipped because no Vulkan GPU was found");
         goto canvas_glfw_cleanup;
     }
 
-    DvzGpu* gpu = &gpus[0];
-    ANN(gpu);
+    DvzGpuInfo info = {0};
+    AT(dvz_instance_gpu_info(instance, 0, &info));
+    log_debug("device name: %s", info.name);
 
-    VkPhysicalDeviceProperties* props = dvz_gpu_properties10(gpu);
-    log_debug("device name: %s", props->deviceName);
-
-    DvzQueueCaps* caps = dvz_gpu_queue_caps(gpu);
-    ANN(caps);
+    DvzQueueCaps caps = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &caps));
 
     // Create the device.
     DvzQueues queues = {0};
-    dvz_queues(caps, &queues);
+    dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, 0);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

@@ -110,6 +110,19 @@ DVZ_EXPORT DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu);
 
 
 /**
+ * Get queue capabilities from an instance GPU index.
+ *
+ * @param instance source instance
+ * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param[out] out_caps destination queue capabilities snapshot
+ * @returns whether queue capabilities were retrieved
+ */
+DVZ_EXPORT bool
+dvz_instance_gpu_queue_caps(DvzInstance* instance, uint32_t gpu_index, DvzQueueCaps* out_caps);
+
+
+
+/**
  * Choose the requested queues for the logical device depending on the GPU queues capabilities.
  *
  * @param qc the queue caps
