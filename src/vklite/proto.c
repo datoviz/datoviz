@@ -16,13 +16,14 @@
 
 #include <stdint.h>
 
-#include "../vk/_device.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/queues.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/proto.h"
@@ -45,22 +46,34 @@ void dvz_proto(DvzProto* proto)
     ANN(bootstrap);
 
     dvz_bootstrap(bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
+    ANN(bootstrap->instance);
+    ANN(bootstrap->gpu);
 
+    DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap->gpu);
+    ANN(qc);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap->instance);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* req = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+    }
+    VkPhysicalDeviceFeatures fet10 = {0};
+    fet10.samplerAnisotropy = true;
+    fet10.sampleRateShading = true;
+    dvz_device_config_set_features10(&dcfg, &fet10);
+    VkPhysicalDeviceVulkan13Features fet13 = {0};
+    fet13.dynamicRendering = true;
+    fet13.synchronization2 = true;
+    dvz_device_config_set_features13(&dcfg, &fet13);
+    bootstrap->device = dvz_device_create(&dcfg);
     DvzDevice* device = bootstrap->device;
     ANN(device);
+    dvz_device_allocator(device, 0, &bootstrap->allocator);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
-
-    // Create a device with support for dynamic rendering.
-    VkPhysicalDeviceFeatures* fet10 = dvz_device_request_features10(device);
-    fet10->samplerAnisotropy = true;
-    fet10->sampleRateShading = true;
-    VkPhysicalDeviceVulkan13Features* fet13 = dvz_device_request_features13(device);
-    fet13->dynamicRendering = true;
-    fet13->synchronization2 = true;
-    dvz_device_build(device);
-    dvz_device_allocator(device, 0, &bootstrap->allocator);
 
 
 

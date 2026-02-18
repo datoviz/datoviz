@@ -17,10 +17,7 @@
 #include <stdint.h>
 #include <vulkan/vulkan_core.h>
 
-#include "_alloc.h"
 #include "_assertions.h"
-#include "_device.h"
-#include "_instance.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
@@ -41,44 +38,45 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
 
     if (bootstrap->instance == NULL)
     {
-        bootstrap->instance = (DvzInstance*)dvz_calloc(1, sizeof(DvzInstance));
+        DvzInstanceConfig icfg = dvz_instance_default_config();
+        icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+        bootstrap->instance = dvz_instance_create(&icfg);
     }
     DvzInstance* instance = bootstrap->instance;
-    ANN(instance);
-
-    if (bootstrap->device == NULL)
-    {
-        bootstrap->device = (DvzDevice*)dvz_calloc(1, sizeof(DvzDevice));
-    }
-    DvzDevice* device = bootstrap->device;
-    ANN(device);
-
-    dvz_instance(instance, DVZ_INSTANCE_VALIDATION_FLAGS);
+    if (instance == NULL)
+        return;
 
     if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_INSTANCE) != 0)
         return;
 
-    dvz_instance_build(instance, VK_API_VERSION_1_3);
-
     // Obtain the first GPU for simplicity.
     uint32_t count = 0;
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
+    if (gpus == NULL || count == 0)
+        return;
     bootstrap->gpu = &gpus[0];
-
-    // Query the queues.
-    DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap->gpu);
-
-    // Initialize a device.
-    dvz_gpu_device(bootstrap->gpu, device);
-
-    // Find an adequate set of queues to request.
-    dvz_queues(qc, &device->queues);
 
     if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE) != 0)
         return;
 
-    // Create the device.
-    dvz_device_build(device);
+    if (bootstrap->device == NULL)
+    {
+        DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap->gpu);
+        ANN(qc);
+        DvzQueues queues = {0};
+        dvz_queues(qc, &queues);
+
+        DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+        for (uint32_t i = 0; i < queues.queue_count; i++)
+        {
+            DvzQueue* queue = &queues.queues[i];
+            dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+        }
+        bootstrap->device = dvz_device_create(&dcfg);
+    }
+    DvzDevice* device = bootstrap->device;
+    if (device == NULL)
+        return;
 
     if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_ALLOCATOR) != 0)
         return;
@@ -147,13 +145,11 @@ void dvz_bootstrap_destroy(DvzBootstrap* bootstrap)
     dvz_allocator_destroy(&bootstrap->allocator);
     if (bootstrap->device != NULL)
     {
-        bootstrap->device->is_heap_allocated = true;
         dvz_device_destroy(bootstrap->device);
         bootstrap->device = NULL;
     }
     if (bootstrap->instance != NULL)
     {
-        bootstrap->instance->is_heap_allocated = true;
         dvz_instance_destroy(bootstrap->instance);
         bootstrap->instance = NULL;
     }

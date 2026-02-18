@@ -16,7 +16,6 @@
 
 #include <stdbool.h>
 
-#include "../../vk/_device.h"
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
@@ -39,11 +38,24 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
+    ANN(bootstrap.instance);
+    ANN(bootstrap.gpu);
 
-    // Create a device with support for samplerAnisotropy.
-    VkPhysicalDeviceFeatures* features = dvz_device_request_features10(bootstrap.device);
-    features->samplerAnisotropy = true;
-    dvz_device_build(bootstrap.device);
+    DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap.gpu);
+    ANN(qc);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* req = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+    }
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.samplerAnisotropy = true;
+    dvz_device_config_set_features10(&dcfg, &features10);
+    bootstrap.device = dvz_device_create(&dcfg);
+    AT(bootstrap.device != NULL);
 
     DvzSampler sampler = {0};
     dvz_sampler(bootstrap.device, &sampler);

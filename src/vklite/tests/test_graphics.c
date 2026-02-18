@@ -17,7 +17,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "../../vk/_device.h"
 #include "../../vk/tests/test_vk.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -57,19 +56,31 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
+    ANN(bootstrap.instance);
+    ANN(bootstrap.gpu);
 
+    DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap.gpu);
+    ANN(qc);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+
+    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* req = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+    }
+    VkPhysicalDeviceVulkan13Features features13 = {0};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_device_config_set_features13(&dcfg, &features13);
+    bootstrap.device = dvz_device_create(&dcfg);
     DvzDevice* device = bootstrap.device;
-    ANN(device);
+    AT(device != NULL);
+    dvz_device_allocator(device, 0, &bootstrap.allocator);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
-
-    // Create a device with support for dynamic rendering.
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(device);
-    features->dynamicRendering = true;
-    features->synchronization2 = true;
-    AT(dvz_device_build(device) == 0);
-    dvz_device_allocator(device, 0, &bootstrap.allocator);
 
     // Graphics setup.
     DvzGraphics graphics = {0};

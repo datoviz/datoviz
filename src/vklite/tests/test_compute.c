@@ -17,7 +17,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../../vk/_device.h"
 #include "../../vk/tests/test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
@@ -119,11 +118,24 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
+    ANN(bootstrap.instance);
+    ANN(bootstrap.gpu);
 
-    // Create a device with support for LocalSizeId.
-    VkPhysicalDeviceVulkan13Features* features = dvz_device_request_features13(bootstrap.device);
-    features->maintenance4 = true;
-    dvz_device_build(bootstrap.device);
+    DvzQueueCaps* qc = dvz_gpu_queue_caps(bootstrap.gpu);
+    ANN(qc);
+    DvzQueues queues = {0};
+    dvz_queues(qc, &queues);
+    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* req = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+    }
+    VkPhysicalDeviceVulkan13Features features13 = {0};
+    features13.maintenance4 = true;
+    dvz_device_config_set_features13(&dcfg, &features13);
+    bootstrap.device = dvz_device_create(&dcfg);
+    AT(bootstrap.device != NULL);
 
     // Create a basic compute shader.
     DvzShader shader = {0};

@@ -1,8 +1,8 @@
 > **Implementation Status**
 > - **Status:** `PARTIALLY COMPLETED`
 > - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** New heap-owned create/destroy config paths for `instance`/`device` are implemented and used in active call sites; `DvzDeviceConfig` now binds through `instance + gpu_index`.
-> - **Remaining gap:** Internal/manual bootstrap paths still rely on legacy internal mutation helpers (`dvz_instance(...)`, `dvz_gpu_device(...)`) for staged pre-build device setup.
+> - **Codebase alignment:** New heap-owned create/destroy config paths for `instance`/`device` are implemented and used in active call sites; `DvzDeviceConfig` now binds through `instance + gpu_index`, and bootstrap/manual-device paths now build devices through config APIs.
+> - **Remaining gap:** Ownership unification is still incomplete at API-design level (GPU selection surface is still `DvzGpu*`-based/public-struct and internal constructor helpers `dvz_instance(...)`/`dvz_gpu_device(...)` still exist inside `vk` internals).
 
 # Datoviz v0.4-dev API Ownership Unification Plan
 
