@@ -133,6 +133,76 @@ DVZ_EXPORT bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig
 
 
 /**
+ * Return whether the swapchain wrapper currently owns valid Vulkan resources.
+ *
+ * @param swapchain swapchain wrapper
+ * @return true when swapchain resources are ready for acquire/present
+ */
+DVZ_EXPORT bool dvz_swapchain_ready(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Return the wrapped Vulkan swapchain handle.
+ *
+ * @param swapchain swapchain wrapper
+ * @return wrapped VkSwapchainKHR handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkSwapchainKHR dvz_swapchain_handle(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Return the number of swapchain images in the current recreation state.
+ *
+ * @param swapchain swapchain wrapper
+ * @return swapchain image count
+ */
+DVZ_EXPORT uint32_t dvz_swapchain_image_count(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Return the resolved image format from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return resolved image format
+ */
+DVZ_EXPORT VkFormat dvz_swapchain_image_format(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Return the resolved color space from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return resolved color space
+ */
+DVZ_EXPORT VkColorSpaceKHR dvz_swapchain_color_space(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Return the resolved present mode from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return resolved present mode
+ */
+DVZ_EXPORT VkPresentModeKHR dvz_swapchain_present_mode(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Return the currently configured swapchain creation parameters.
+ *
+ * @param swapchain swapchain wrapper
+ * @return currently stored config
+ */
+DVZ_EXPORT DvzSwapchainConfig dvz_swapchain_get_config(const DvzSwapchain* swapchain);
+
+
+
+/**
  * Recreate swapchain images and image views for a new extent.
  *
  * @param swapchain swapchain wrapper to recreate

@@ -353,9 +353,10 @@ static bool _swapchain_prepare(
     }
 
     DvzSwapchainConfig cfg = {0};
-    cfg.image_format = surface->preferred_format.format;
-    cfg.color_space = surface->preferred_format.colorSpace;
-    cfg.present_mode = surface->preferred_present_mode;
+    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(surface);
+    cfg.image_format = preferred_format.format;
+    cfg.color_space = preferred_format.colorSpace;
+    cfg.present_mode = dvz_surface_preferred_present_mode(surface);
     cfg.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     cfg.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     cfg.clipped = true;
@@ -508,16 +509,18 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
     AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
     AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
 
-    AT(surface.ready);
-    AT(surface.handle != VK_NULL_HANDLE);
-    AT(surface.handle == window_surface->surface);
-    AT(surface.format_count > 0);
-    AT(surface.present_mode_count > 0);
-    AT(surface.formats != NULL);
-    AT(surface.present_modes != NULL);
+    AT(dvz_surface_ready(&surface));
+    AT(dvz_surface_handle(&surface) != VK_NULL_HANDLE);
+    AT(dvz_surface_handle(&surface) == window_surface->surface);
+    AT(dvz_surface_format_count(&surface) > 0);
+    AT(dvz_surface_present_mode_count(&surface) > 0);
+    VkSurfaceFormatKHR cached_format = {0};
+    VkPresentModeKHR cached_mode = VK_PRESENT_MODE_FIFO_KHR;
+    AT(dvz_surface_format(&surface, 0, &cached_format));
+    AT(dvz_surface_present_mode(&surface, 0, &cached_mode));
 
     AT(dvz_surface_refresh(&surface));
-    AT(surface.ready);
+    AT(dvz_surface_ready(&surface));
 
     dvz_surface_destroy(&surface);
     _present_fixture_destroy(&fixture);
@@ -581,9 +584,9 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    AT(swapchain.ready);
-    AT(swapchain.handle != VK_NULL_HANDLE);
-    AT(swapchain.image_count > 0);
+    AT(dvz_swapchain_ready(&swapchain));
+    AT(dvz_swapchain_handle(&swapchain) != VK_NULL_HANDLE);
+    AT(dvz_swapchain_image_count(&swapchain) > 0);
     AT(swapchain.images != NULL);
     AT(swapchain.image_views != NULL);
 
@@ -630,14 +633,16 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
     AT(dvz_swapchain_init_from_device(&swapchain, fixture.device, &surface));
 
     DvzSwapchainConfig cfg = {0};
-    cfg.image_format = surface.preferred_format.format;
-    cfg.color_space = surface.preferred_format.colorSpace;
+    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(&surface);
+    cfg.image_format = preferred_format.format;
+    cfg.color_space = preferred_format.colorSpace;
     cfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     cfg.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     cfg.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     cfg.clipped = true;
     AT(dvz_swapchain_config(&swapchain, cfg));
-    AT(swapchain.config.present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR);
+    DvzSwapchainConfig resolved_config = dvz_swapchain_get_config(&swapchain);
+    AT(resolved_config.present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR);
 
     dvz_swapchain_destroy(&swapchain);
     dvz_surface_destroy(&surface);
@@ -665,14 +670,15 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
     cfg.clipped = true;
 
     AT(dvz_swapchain_config(&swapchain, cfg));
-    AT(swapchain.config.image_format == VK_FORMAT_B8G8R8A8_UNORM);
-    AT(swapchain.config.color_space == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR);
+    DvzSwapchainConfig resolved_config = dvz_swapchain_get_config(&swapchain);
+    AT(resolved_config.image_format == VK_FORMAT_B8G8R8A8_UNORM);
+    AT(resolved_config.color_space == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR);
     // VK_PRESENT_MODE_IMMEDIATE_KHR has enum value 0; only fully-zeroed configs default to FIFO.
-    AT(swapchain.config.present_mode == 0);
+    AT(resolved_config.present_mode == 0);
     AT(
-        swapchain.config.image_usage ==
+        resolved_config.image_usage ==
         (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT));
-    AT(swapchain.config.composite_alpha == VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+    AT(resolved_config.composite_alpha == VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
 
     return 0;
 }
@@ -763,10 +769,11 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    AT(swapchain.image_format != VK_FORMAT_UNDEFINED);
-    AT(swapchain.image_format == swapchain.surface->preferred_format.format);
-    AT(swapchain.color_space == swapchain.surface->preferred_format.colorSpace);
-    AT(swapchain.present_mode == swapchain.surface->preferred_present_mode);
+    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(&surface);
+    AT(dvz_swapchain_image_format(&swapchain) != VK_FORMAT_UNDEFINED);
+    AT(dvz_swapchain_image_format(&swapchain) == preferred_format.format);
+    AT(dvz_swapchain_color_space(&swapchain) == preferred_format.colorSpace);
+    AT(dvz_swapchain_present_mode(&swapchain) == dvz_surface_preferred_present_mode(&surface));
 
     dvz_swapchain_destroy(&swapchain);
     dvz_surface_destroy(&surface);
@@ -837,8 +844,8 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    AT(swapchain.ready);
-    AT(swapchain.handle != VK_NULL_HANDLE);
+    AT(dvz_swapchain_ready(&swapchain));
+    AT(dvz_swapchain_handle(&swapchain) != VK_NULL_HANDLE);
     const DvzWindowSurface* window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
     AT(window_surface->surface == wrap.external_surface);

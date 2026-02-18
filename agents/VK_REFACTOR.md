@@ -2,8 +2,8 @@
 > - **Status:** `PARTIALLY COMPLETED`
 > - **Verified on:** `2026-02-18`
 > - **Codebase alignment:** Public GPU ownership/API cleanup is complete (`DvzGpu*` removed from public headers, index/descriptor flow active).
-> - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 partially completed (bootstrap/device/allocator boundary accessors added and active vklite proto path migrated).
-> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening (public struct hardening and broader call-site migration, especially tests and remaining direct struct consumers).
+> - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 completed for bootstrap and proto flows, Step 4 started (surface/swapchain accessor hardening and call-site migration in progress).
+> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening (broader public struct privatization and lifecycle matrix cleanup across remaining vklite wrappers).
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -256,6 +256,20 @@ Exit criteria:
    - `rg -n '#include "_.*\.h"' src/vklite` reviewed: shared `src/common` internals only, no vk-private
      include leakage observed.
    - `rg -n 'DvzGpu\*' include/datoviz` clean.
+9. Step 4 hardening slice on `2026-02-18`:
+   - Added `DvzSurface` accessors in `include/datoviz/vklite/surface.h` and `src/vklite/surface.c` for
+     readiness/handle/capabilities, format/present-mode counts and indexed fetch, and preferred defaults.
+   - Added `DvzSwapchain` state/config getters in `include/datoviz/vklite/swapchain.h` and
+     `src/vklite/swapchain.c` for readiness, handle, image count, resolved format/space/mode, and config.
+   - Migrated `src/vklite/swapchain.c` internal resolution logic from direct `surface->...` field access to
+     `dvz_surface_*` accessors.
+   - Migrated `src/vklite/tests/test_present.c` assertions/config reads away from direct mutable
+     `surface`/`swapchain` field reads where public getters are now available.
+10. Validation run on `2026-02-18` after Step 4 slice:
+   - `just build` (pass)
+   - `just test vklite` (pass, `25/25`)
+   - `just test vk` (pass, `48/48`)
+   - `just test canvas` (pass, `26/26`)
 
 
 ## Definition of done

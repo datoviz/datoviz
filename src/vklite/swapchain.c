@@ -124,42 +124,28 @@ static uint32_t _swapchain_clamp_extent(uint32_t value, uint32_t min, uint32_t m
 
 
 
-static bool _swapchain_has_present_mode(const DvzSurface* surface, VkPresentModeKHR mode)
-{
-    ANN(surface);
-
-    for (uint32_t i = 0; i < surface->present_mode_count; i++)
-    {
-        if (surface->present_modes[i] == mode)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-
 static VkSurfaceFormatKHR _swapchain_resolve_format(const DvzSwapchain* swapchain)
 {
     ANN(swapchain);
     ANN(swapchain->surface);
 
-    VkSurfaceFormatKHR resolved = swapchain->surface->preferred_format;
+    VkSurfaceFormatKHR resolved = dvz_surface_preferred_format(swapchain->surface);
     VkFormat requested_format = swapchain->config.image_format;
     VkColorSpaceKHR requested_space = swapchain->config.color_space;
+    uint32_t format_count = dvz_surface_format_count(swapchain->surface);
 
-    if (
-        requested_format == VK_FORMAT_UNDEFINED ||
-        swapchain->surface->format_count == 0 ||
-        swapchain->surface->formats == NULL)
+    if (requested_format == VK_FORMAT_UNDEFINED || format_count == 0)
     {
         return resolved;
     }
 
-    for (uint32_t i = 0; i < swapchain->surface->format_count; i++)
+    for (uint32_t i = 0; i < format_count; i++)
     {
-        VkSurfaceFormatKHR candidate = swapchain->surface->formats[i];
+        VkSurfaceFormatKHR candidate = {0};
+        if (!dvz_surface_format(swapchain->surface, i, &candidate))
+        {
+            continue;
+        }
         if (candidate.format != requested_format)
         {
             continue;
@@ -181,13 +167,13 @@ static VkPresentModeKHR _swapchain_resolve_present_mode(const DvzSwapchain* swap
     ANN(swapchain->surface);
 
     VkPresentModeKHR requested = swapchain->config.present_mode;
-    if (_swapchain_has_present_mode(swapchain->surface, requested))
+    if (dvz_surface_has_present_mode(swapchain->surface, requested))
     {
         return requested;
     }
 
     log_warn("requested present mode %d unsupported; using preferred mode", requested);
-    return swapchain->surface->preferred_present_mode;
+    return dvz_surface_preferred_present_mode(swapchain->surface);
 }
 
 
@@ -197,7 +183,7 @@ static VkExtent2D _swapchain_resolve_extent(const DvzSwapchain* swapchain, uvec2
     ANN(swapchain);
     ANN(swapchain->surface);
 
-    VkSurfaceCapabilitiesKHR caps = swapchain->surface->capabilities;
+    VkSurfaceCapabilitiesKHR caps = dvz_surface_capabilities(swapchain->surface);
     if (caps.currentExtent.width != UINT32_MAX && caps.currentExtent.height != UINT32_MAX)
     {
         return caps.currentExtent;
@@ -221,7 +207,7 @@ static uint32_t _swapchain_resolve_image_count(const DvzSwapchain* swapchain)
     ANN(swapchain);
     ANN(swapchain->surface);
 
-    VkSurfaceCapabilitiesKHR caps = swapchain->surface->capabilities;
+    VkSurfaceCapabilitiesKHR caps = dvz_surface_capabilities(swapchain->surface);
     uint32_t count = swapchain->config.min_image_count;
     if (count == 0)
     {
@@ -358,7 +344,7 @@ static DvzPresentStatus _swapchain_refresh_surface(DvzSwapchain* swapchain)
         return DVZ_PRESENT_STATUS_ERROR;
     }
 
-    if (!swapchain->surface->ready)
+    if (!dvz_surface_ready(swapchain->surface))
     {
         return DVZ_PRESENT_STATUS_ERROR;
     }
@@ -452,6 +438,104 @@ bool dvz_swapchain_config(DvzSwapchain* swapchain, DvzSwapchainConfig config)
 
 
 /**
+ * Return whether the swapchain wrapper currently owns valid Vulkan resources.
+ *
+ * @param swapchain swapchain wrapper
+ * @return true when swapchain resources are ready for acquire/present
+ */
+bool dvz_swapchain_ready(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->ready;
+}
+
+
+
+/**
+ * Return the wrapped Vulkan swapchain handle.
+ *
+ * @param swapchain swapchain wrapper
+ * @return wrapped VkSwapchainKHR handle or VK_NULL_HANDLE
+ */
+VkSwapchainKHR dvz_swapchain_handle(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->handle;
+}
+
+
+
+/**
+ * Return the number of swapchain images in the current recreation state.
+ *
+ * @param swapchain swapchain wrapper
+ * @return swapchain image count
+ */
+uint32_t dvz_swapchain_image_count(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->image_count;
+}
+
+
+
+/**
+ * Return the resolved image format from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return resolved image format
+ */
+VkFormat dvz_swapchain_image_format(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->image_format;
+}
+
+
+
+/**
+ * Return the resolved color space from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return resolved color space
+ */
+VkColorSpaceKHR dvz_swapchain_color_space(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->color_space;
+}
+
+
+
+/**
+ * Return the resolved present mode from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return resolved present mode
+ */
+VkPresentModeKHR dvz_swapchain_present_mode(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->present_mode;
+}
+
+
+
+/**
+ * Return the currently configured swapchain creation parameters.
+ *
+ * @param swapchain swapchain wrapper
+ * @return currently stored config
+ */
+DvzSwapchainConfig dvz_swapchain_get_config(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->config;
+}
+
+
+
+/**
  * Recreate swapchain images and image views for a new extent.
  *
  * @param swapchain swapchain wrapper to recreate
@@ -468,7 +552,7 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     }
     ANN(swapchain->surface);
 
-    if (swapchain->surface->handle == VK_NULL_HANDLE)
+    if (dvz_surface_handle(swapchain->surface) == VK_NULL_HANDLE)
     {
         log_error("swapchain recreate requires a valid wrapped surface");
         return DVZ_PRESENT_STATUS_ERROR;
@@ -494,10 +578,11 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
     VkSurfaceFormatKHR format = _swapchain_resolve_format(swapchain);
     VkPresentModeKHR present_mode = _swapchain_resolve_present_mode(swapchain);
     uint32_t min_image_count = _swapchain_resolve_image_count(swapchain);
+    VkSurfaceCapabilitiesKHR caps = dvz_surface_capabilities(swapchain->surface);
 
     VkSwapchainCreateInfoKHR create_info = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .surface = swapchain->surface->handle,
+        .surface = dvz_surface_handle(swapchain->surface),
         .minImageCount = min_image_count,
         .imageFormat = format.format,
         .imageColorSpace = format.colorSpace,
@@ -505,7 +590,7 @@ DvzPresentStatus dvz_swapchain_recreate(DvzSwapchain* swapchain, uvec2 size)
         .imageArrayLayers = 1,
         .imageUsage = swapchain->config.image_usage,
         .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .preTransform = swapchain->surface->capabilities.currentTransform,
+        .preTransform = caps.currentTransform,
         .compositeAlpha = swapchain->config.composite_alpha,
         .presentMode = present_mode,
         .clipped = swapchain->config.clipped,

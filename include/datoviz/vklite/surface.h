@@ -127,6 +127,113 @@ DVZ_EXPORT bool dvz_surface_refresh(DvzSurface* surface);
 
 
 /**
+ * Return whether the surface wrapper currently has a valid cached state.
+ *
+ * @param surface surface wrapper
+ * @return true when the wrapper is ready for swapchain queries
+ */
+DVZ_EXPORT bool dvz_surface_ready(const DvzSurface* surface);
+
+
+
+/**
+ * Return the wrapped native Vulkan surface handle.
+ *
+ * @param surface surface wrapper
+ * @return wrapped VkSurfaceKHR handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkSurfaceKHR dvz_surface_handle(const DvzSurface* surface);
+
+
+
+/**
+ * Return the cached surface capabilities snapshot.
+ *
+ * @param surface surface wrapper
+ * @return cached capabilities value
+ */
+DVZ_EXPORT VkSurfaceCapabilitiesKHR dvz_surface_capabilities(const DvzSurface* surface);
+
+
+
+/**
+ * Return the number of cached supported surface formats.
+ *
+ * @param surface surface wrapper
+ * @return number of cached formats
+ */
+DVZ_EXPORT uint32_t dvz_surface_format_count(const DvzSurface* surface);
+
+
+
+/**
+ * Fetch a cached supported format by index.
+ *
+ * @param surface surface wrapper
+ * @param format_idx format index in the cached list
+ * @param[out] format output cached format
+ * @return true when the index is valid
+ */
+DVZ_EXPORT bool
+dvz_surface_format(const DvzSurface* surface, uint32_t format_idx, VkSurfaceFormatKHR* format);
+
+
+
+/**
+ * Return the preferred surface format selected during refresh.
+ *
+ * @param surface surface wrapper
+ * @return preferred cached format
+ */
+DVZ_EXPORT VkSurfaceFormatKHR dvz_surface_preferred_format(const DvzSurface* surface);
+
+
+
+/**
+ * Return the number of cached supported present modes.
+ *
+ * @param surface surface wrapper
+ * @return number of cached present modes
+ */
+DVZ_EXPORT uint32_t dvz_surface_present_mode_count(const DvzSurface* surface);
+
+
+
+/**
+ * Fetch a cached supported present mode by index.
+ *
+ * @param surface surface wrapper
+ * @param mode_idx present mode index in the cached list
+ * @param[out] mode output cached present mode
+ * @return true when the index is valid
+ */
+DVZ_EXPORT bool
+dvz_surface_present_mode(const DvzSurface* surface, uint32_t mode_idx, VkPresentModeKHR* mode);
+
+
+
+/**
+ * Return whether a present mode is supported by the cached list.
+ *
+ * @param surface surface wrapper
+ * @param mode present mode to query
+ * @return true when the mode exists in the cached list
+ */
+DVZ_EXPORT bool dvz_surface_has_present_mode(const DvzSurface* surface, VkPresentModeKHR mode);
+
+
+
+/**
+ * Return the preferred present mode selected during refresh.
+ *
+ * @param surface surface wrapper
+ * @return preferred cached present mode
+ */
+DVZ_EXPORT VkPresentModeKHR dvz_surface_preferred_present_mode(const DvzSurface* surface);
+
+
+
+/**
  * Destroy a surface wrapper cache.
  *
  * @param surface surface wrapper to destroy
