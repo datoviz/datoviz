@@ -35,34 +35,19 @@ typedef struct DvzSurface DvzSurface;
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzSurface
-{
-    VkPhysicalDevice physical_device;
-    VkSurfaceKHR handle;
-    uint32_t queue_family;
-    VkExtent2D extent;
-    VkExtent2D extent_hint;
-    bool has_extent_hint;
-    VkSurfaceCapabilitiesKHR capabilities;
-    uint32_t format_count;
-    VkSurfaceFormatKHR* formats;
-    uint32_t present_mode_count;
-    VkPresentModeKHR* present_modes;
-    VkSurfaceFormatKHR preferred_format;
-    VkPresentModeKHR preferred_present_mode;
-    bool ready;
-};
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty surface wrapper.
+ *
+ * @return allocated surface wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzSurface* dvz_surface_create(void);
 
 
 
@@ -234,11 +219,30 @@ DVZ_EXPORT VkPresentModeKHR dvz_surface_preferred_present_mode(const DvzSurface*
 
 
 /**
+ * Return the current cached extent resolved during refresh.
+ *
+ * @param surface surface wrapper
+ * @return cached surface extent
+ */
+DVZ_EXPORT VkExtent2D dvz_surface_extent(const DvzSurface* surface);
+
+
+
+/**
  * Destroy a surface wrapper cache.
  *
  * @param surface surface wrapper to destroy
  */
 DVZ_EXPORT void dvz_surface_destroy(DvzSurface* surface);
+
+
+
+/**
+ * Free a surface wrapper allocated by dvz_surface_create().
+ *
+ * @param surface surface wrapper to free
+ */
+DVZ_EXPORT void dvz_surface_free(DvzSurface* surface);
 
 
 

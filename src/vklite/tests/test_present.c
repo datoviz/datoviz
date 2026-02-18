@@ -496,33 +496,36 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
-    DvzSurface surface = {0};
+    DvzSurface* surface = dvz_surface_create();
+    ANN(surface);
 
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite surface query test skipped because native surface is unavailable");
+        dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
-    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
+    AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));
+    AT(dvz_surface_wrap_native(surface, window_surface->surface, &window_surface->extent));
 
-    AT(dvz_surface_ready(&surface));
-    AT(dvz_surface_handle(&surface) != VK_NULL_HANDLE);
-    AT(dvz_surface_handle(&surface) == window_surface->surface);
-    AT(dvz_surface_format_count(&surface) > 0);
-    AT(dvz_surface_present_mode_count(&surface) > 0);
+    AT(dvz_surface_ready(surface));
+    AT(dvz_surface_handle(surface) != VK_NULL_HANDLE);
+    AT(dvz_surface_handle(surface) == window_surface->surface);
+    AT(dvz_surface_format_count(surface) > 0);
+    AT(dvz_surface_present_mode_count(surface) > 0);
     VkSurfaceFormatKHR cached_format = {0};
     VkPresentModeKHR cached_mode = VK_PRESENT_MODE_FIFO_KHR;
-    AT(dvz_surface_format(&surface, 0, &cached_format));
-    AT(dvz_surface_present_mode(&surface, 0, &cached_mode));
+    AT(dvz_surface_format(surface, 0, &cached_format));
+    AT(dvz_surface_present_mode(surface, 0, &cached_mode));
 
-    AT(dvz_surface_refresh(&surface));
-    AT(dvz_surface_ready(&surface));
+    AT(dvz_surface_refresh(surface));
+    AT(dvz_surface_ready(surface));
 
-    dvz_surface_destroy(&surface);
+    dvz_surface_destroy(surface);
+    dvz_surface_free(surface);
     _present_fixture_destroy(&fixture);
     return 0;
 }
@@ -548,50 +551,62 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
-    DvzSurface surface = {0};
-    DvzSwapchain swapchain = {0};
+    DvzSurface* surface = dvz_surface_create();
+    DvzSwapchain* swapchain = dvz_swapchain_create();
+    ANN(surface);
+    ANN(swapchain);
 
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite swapchain recreate test skipped because native surface is unavailable");
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
-    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
-    AT(_swapchain_prepare(&swapchain, &fixture, &surface));
+    AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));
+    AT(dvz_surface_wrap_native(surface, window_surface->surface, &window_surface->extent));
+    AT(_swapchain_prepare(swapchain, &fixture, surface));
 
     // Device binding is required before recreate.
     uvec2 size = {window_surface->extent.width, window_surface->extent.height};
     DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
     tst_expect_error_begin(suite);
-    status = dvz_swapchain_recreate(&swapchain, size);
+    status = dvz_swapchain_recreate(swapchain, size);
     AT(status == DVZ_PRESENT_STATUS_ERROR);
     (void)tst_expect_error_end(suite);
 
-    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
-    status = dvz_swapchain_recreate(&swapchain, size);
+    AT(dvz_swapchain_device(swapchain, dvz_device_handle(fixture.device)));
+    status = dvz_swapchain_recreate(swapchain, size);
 
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite swapchain recreate test skipped because window extent is zero");
-        dvz_swapchain_destroy(&swapchain);
-        dvz_surface_destroy(&surface);
+        dvz_swapchain_destroy(swapchain);
+        dvz_surface_destroy(surface);
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    AT(dvz_swapchain_ready(&swapchain));
-    AT(dvz_swapchain_handle(&swapchain) != VK_NULL_HANDLE);
-    AT(dvz_swapchain_image_count(&swapchain) > 0);
-    AT(swapchain.images != NULL);
-    AT(swapchain.image_views != NULL);
+    AT(dvz_swapchain_ready(swapchain));
+    AT(dvz_swapchain_handle(swapchain) != VK_NULL_HANDLE);
+    AT(dvz_swapchain_image_count(swapchain) > 0);
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView image_view = VK_NULL_HANDLE;
+    AT(dvz_swapchain_image(swapchain, 0, &image));
+    AT(dvz_swapchain_image_view(swapchain, 0, &image_view));
+    AT(image != VK_NULL_HANDLE);
+    AT(image_view != VK_NULL_HANDLE);
 
-    dvz_swapchain_destroy(&swapchain);
-    dvz_surface_destroy(&surface);
+    dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
     _present_fixture_destroy(&fixture);
     return 0;
 }
@@ -617,35 +632,41 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
         return 0;
     }
 
-    DvzSurface surface = {0};
-    DvzSwapchain swapchain = {0};
+    DvzSurface* surface = dvz_surface_create();
+    DvzSwapchain* swapchain = dvz_swapchain_create();
+    ANN(surface);
+    ANN(swapchain);
 
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite swapchain config test skipped because native surface is unavailable");
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
-    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
-    AT(dvz_swapchain_init_from_device(&swapchain, fixture.device, &surface));
+    AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));
+    AT(dvz_surface_wrap_native(surface, window_surface->surface, &window_surface->extent));
+    AT(dvz_swapchain_init_from_device(swapchain, fixture.device, surface));
 
     DvzSwapchainConfig cfg = {0};
-    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(&surface);
+    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(surface);
     cfg.image_format = preferred_format.format;
     cfg.color_space = preferred_format.colorSpace;
     cfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     cfg.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     cfg.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     cfg.clipped = true;
-    AT(dvz_swapchain_config(&swapchain, cfg));
-    DvzSwapchainConfig resolved_config = dvz_swapchain_get_config(&swapchain);
+    AT(dvz_swapchain_config(swapchain, cfg));
+    DvzSwapchainConfig resolved_config = dvz_swapchain_get_config(swapchain);
     AT(resolved_config.present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR);
 
-    dvz_swapchain_destroy(&swapchain);
-    dvz_surface_destroy(&surface);
+    dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
     _present_fixture_destroy(&fixture);
     return 0;
 }
@@ -664,13 +685,14 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
     ANN(suite);
     ANN(tstitem);
 
-    DvzSwapchain swapchain = {0};
+    DvzSwapchain* swapchain = dvz_swapchain_create();
+    ANN(swapchain);
     DvzSwapchainConfig cfg = {0};
     cfg.image_format = VK_FORMAT_B8G8R8A8_UNORM;
     cfg.clipped = true;
 
-    AT(dvz_swapchain_config(&swapchain, cfg));
-    DvzSwapchainConfig resolved_config = dvz_swapchain_get_config(&swapchain);
+    AT(dvz_swapchain_config(swapchain, cfg));
+    DvzSwapchainConfig resolved_config = dvz_swapchain_get_config(swapchain);
     AT(resolved_config.image_format == VK_FORMAT_B8G8R8A8_UNORM);
     AT(resolved_config.color_space == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR);
     // VK_PRESENT_MODE_IMMEDIATE_KHR has enum value 0; only fully-zeroed configs default to FIFO.
@@ -680,6 +702,7 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
         (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT));
     AT(resolved_config.composite_alpha == VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
 
+    dvz_swapchain_free(swapchain);
     return 0;
 }
 
@@ -697,17 +720,16 @@ int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstite
     ANN(suite);
     ANN(tstitem);
 
-    DvzSwapchain swapchain = {0};
-    swapchain.ready = true;
-    swapchain.image_count = 1;
-    swapchain.handle = (VkSwapchainKHR)(uintptr_t)0x1;
+    DvzSwapchain* swapchain = dvz_swapchain_create();
+    ANN(swapchain);
 
     DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
     tst_expect_error_begin(suite);
-    status = dvz_swapchain_present(&swapchain, (VkQueue)(uintptr_t)0x1, 1, VK_NULL_HANDLE);
+    status = dvz_swapchain_present(swapchain, (VkQueue)(uintptr_t)0x1, 1, VK_NULL_HANDLE);
     AT(status == DVZ_PRESENT_STATUS_ERROR);
     (void)tst_expect_error_end(suite);
 
+    dvz_swapchain_free(swapchain);
     return 0;
 }
 
@@ -732,21 +754,25 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
         return 0;
     }
 
-    DvzSurface surface = {0};
-    DvzSwapchain swapchain = {0};
+    DvzSurface* surface = dvz_surface_create();
+    DvzSwapchain* swapchain = dvz_swapchain_create();
+    ANN(surface);
+    ANN(swapchain);
 
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
     if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
     {
         log_warn("vklite resolved state test skipped because native surface is unavailable");
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
-    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
-    AT(dvz_surface_wrap_native(&surface, window_surface->surface, &window_surface->extent));
-    AT(dvz_swapchain_init_from_device(&swapchain, fixture.device, &surface));
-    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
+    AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));
+    AT(dvz_surface_wrap_native(surface, window_surface->surface, &window_surface->extent));
+    AT(dvz_swapchain_init_from_device(swapchain, fixture.device, surface));
+    AT(dvz_swapchain_device(swapchain, dvz_device_handle(fixture.device)));
 
     DvzSwapchainConfig cfg = {0};
     cfg.image_format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -755,28 +781,32 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
     cfg.image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     cfg.composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     cfg.clipped = true;
-    AT(dvz_swapchain_config(&swapchain, cfg));
+    AT(dvz_swapchain_config(swapchain, cfg));
 
     uvec2 size = {window_surface->extent.width, window_surface->extent.height};
-    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, size);
+    DvzPresentStatus status = dvz_swapchain_recreate(swapchain, size);
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite resolved state test skipped because window extent is zero");
-        dvz_swapchain_destroy(&swapchain);
-        dvz_surface_destroy(&surface);
+        dvz_swapchain_destroy(swapchain);
+        dvz_surface_destroy(surface);
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(&surface);
-    AT(dvz_swapchain_image_format(&swapchain) != VK_FORMAT_UNDEFINED);
-    AT(dvz_swapchain_image_format(&swapchain) == preferred_format.format);
-    AT(dvz_swapchain_color_space(&swapchain) == preferred_format.colorSpace);
-    AT(dvz_swapchain_present_mode(&swapchain) == dvz_surface_preferred_present_mode(&surface));
+    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(surface);
+    AT(dvz_swapchain_image_format(swapchain) != VK_FORMAT_UNDEFINED);
+    AT(dvz_swapchain_image_format(swapchain) == preferred_format.format);
+    AT(dvz_swapchain_color_space(swapchain) == preferred_format.colorSpace);
+    AT(dvz_swapchain_present_mode(swapchain) == dvz_surface_preferred_present_mode(surface));
 
-    dvz_swapchain_destroy(&swapchain);
-    dvz_surface_destroy(&surface);
+    dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
     _present_fixture_destroy(&fixture);
     return 0;
 }
@@ -824,28 +854,32 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
         return 0;
     }
 
-    DvzSurface surface = {0};
-    DvzSwapchain swapchain = {0};
-    AT(dvz_surface_init_from_device(&surface, fixture.device, fixture.queue_family));
+    DvzSurface* surface = dvz_surface_create();
+    DvzSwapchain* swapchain = dvz_swapchain_create();
+    ANN(surface);
+    ANN(swapchain);
+    AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));
     VkExtent2D wrap_extent = {.width = wrap.size[0], .height = wrap.size[1]};
-    AT(dvz_surface_wrap_native(&surface, wrap.external_surface, &wrap_extent));
-    AT(_swapchain_prepare(&swapchain, &fixture, &surface));
-    AT(dvz_swapchain_device(&swapchain, dvz_device_handle(fixture.device)));
+    AT(dvz_surface_wrap_native(surface, wrap.external_surface, &wrap_extent));
+    AT(_swapchain_prepare(swapchain, &fixture, surface));
+    AT(dvz_swapchain_device(swapchain, dvz_device_handle(fixture.device)));
 
-    DvzPresentStatus status = dvz_swapchain_recreate(&swapchain, wrap.size);
+    DvzPresentStatus status = dvz_swapchain_recreate(swapchain, wrap.size);
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite wrap present test skipped because wrap-window extent is zero");
-        dvz_swapchain_destroy(&swapchain);
-        dvz_surface_destroy(&surface);
+        dvz_swapchain_destroy(swapchain);
+        dvz_surface_destroy(surface);
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _wrap_surface_fixture_destroy(&fixture, &wrap);
         _present_fixture_destroy(&fixture);
         return 0;
     }
 
     AT(status == DVZ_PRESENT_STATUS_OK);
-    AT(dvz_swapchain_ready(&swapchain));
-    AT(dvz_swapchain_handle(&swapchain) != VK_NULL_HANDLE);
+    AT(dvz_swapchain_ready(swapchain));
+    AT(dvz_swapchain_handle(swapchain) != VK_NULL_HANDLE);
     const DvzWindowSurface* window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);
     AT(window_surface->surface == wrap.external_surface);
@@ -864,20 +898,24 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
     AT(window_surface->instance == wrap.info.instance);
     AT(window_surface->surface == wrap.external_surface);
 
-    status = dvz_swapchain_recreate(&swapchain, wrap.size);
+    status = dvz_swapchain_recreate(swapchain, wrap.size);
     if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
     {
         log_warn("vklite wrap present test skipped during restore because extent is zero");
-        dvz_swapchain_destroy(&swapchain);
-        dvz_surface_destroy(&surface);
+        dvz_swapchain_destroy(swapchain);
+        dvz_surface_destroy(surface);
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
         _wrap_surface_fixture_destroy(&fixture, &wrap);
         _present_fixture_destroy(&fixture);
         return 0;
     }
     AT(status == DVZ_PRESENT_STATUS_OK);
 
-    dvz_swapchain_destroy(&swapchain);
-    dvz_surface_destroy(&surface);
+    dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
     dvz_window_wrap_detach_surface(wrap.wrap_window);
     window_surface = dvz_window_surface(wrap.wrap_window);
     ANN(window_surface);

@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_surface.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vklite/surface.h"
@@ -166,6 +167,20 @@ static bool _surface_update_extent(DvzSurface* surface)
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty surface wrapper.
+ *
+ * @return allocated surface wrapper, or NULL on allocation failure
+ */
+DvzSurface* dvz_surface_create(void)
+{
+    DvzSurface* surface = (DvzSurface*)dvz_calloc(1, sizeof(DvzSurface));
+    ANN(surface);
+    return surface;
+}
+
+
 
 /**
  * Initialize a surface wrapper from instance + GPU index selection.
@@ -537,6 +552,20 @@ VkPresentModeKHR dvz_surface_preferred_present_mode(const DvzSurface* surface)
 
 
 /**
+ * Return the current cached extent resolved during refresh.
+ *
+ * @param surface surface wrapper
+ * @return cached surface extent
+ */
+VkExtent2D dvz_surface_extent(const DvzSurface* surface)
+{
+    ANN(surface);
+    return surface->extent;
+}
+
+
+
+/**
  * Destroy a surface wrapper cache.
  *
  * @param surface surface wrapper to destroy
@@ -557,4 +586,20 @@ void dvz_surface_destroy(DvzSurface* surface)
     surface->has_extent_hint = false;
     surface->handle = VK_NULL_HANDLE;
     surface->ready = false;
+}
+
+
+
+/**
+ * Free a surface wrapper allocated by dvz_surface_create().
+ *
+ * @param surface surface wrapper to free
+ */
+void dvz_surface_free(DvzSurface* surface)
+{
+    if (surface == NULL)
+    {
+        return;
+    }
+    dvz_free(surface);
 }

@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_swapchain.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/swapchain.h"
 
@@ -359,6 +360,20 @@ static DvzPresentStatus _swapchain_refresh_surface(DvzSwapchain* swapchain)
 /*************************************************************************************************/
 
 /**
+ * Allocate an empty swapchain wrapper.
+ *
+ * @return allocated swapchain wrapper, or NULL on allocation failure
+ */
+DvzSwapchain* dvz_swapchain_create(void)
+{
+    DvzSwapchain* swapchain = (DvzSwapchain*)dvz_calloc(1, sizeof(DvzSwapchain));
+    ANN(swapchain);
+    return swapchain;
+}
+
+
+
+/**
  * Initialize a swapchain wrapper from a logical device and surface.
  *
  * @param swapchain swapchain wrapper to initialize
@@ -531,6 +546,67 @@ DvzSwapchainConfig dvz_swapchain_get_config(const DvzSwapchain* swapchain)
 {
     ANN(swapchain);
     return swapchain->config;
+}
+
+
+
+/**
+ * Return the current swapchain extent from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return current resolved extent
+ */
+VkExtent2D dvz_swapchain_extent(const DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+    return swapchain->extent;
+}
+
+
+
+/**
+ * Fetch a swapchain image handle by index.
+ *
+ * @param swapchain swapchain wrapper
+ * @param image_idx image index
+ * @param[out] image output image handle
+ * @return true when the index is valid
+ */
+bool dvz_swapchain_image(const DvzSwapchain* swapchain, uint32_t image_idx, VkImage* image)
+{
+    ANN(swapchain);
+    ANN(image);
+
+    if (swapchain->images == NULL || image_idx >= swapchain->image_count)
+    {
+        return false;
+    }
+    *image = swapchain->images[image_idx];
+    return true;
+}
+
+
+
+/**
+ * Fetch a swapchain image view handle by index.
+ *
+ * @param swapchain swapchain wrapper
+ * @param image_idx image index
+ * @param[out] image_view output image view handle
+ * @return true when the index is valid
+ */
+bool dvz_swapchain_image_view(
+    const DvzSwapchain* swapchain, uint32_t image_idx, VkImageView* image_view)
+{
+    ANN(swapchain);
+    ANN(image_view);
+
+    if (swapchain->image_views == NULL || image_idx >= swapchain->image_count)
+    {
+        return false;
+    }
+    *image_view = swapchain->image_views[image_idx];
+    return true;
 }
 
 
@@ -818,4 +894,20 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
     swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR;
     swapchain->current_image = UINT32_MAX;
     swapchain->ready = false;
+}
+
+
+
+/**
+ * Free a swapchain wrapper allocated by dvz_swapchain_create().
+ *
+ * @param swapchain swapchain wrapper to free
+ */
+void dvz_swapchain_free(DvzSwapchain* swapchain)
+{
+    if (swapchain == NULL)
+    {
+        return;
+    }
+    dvz_free(swapchain);
 }

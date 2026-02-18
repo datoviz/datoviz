@@ -2,8 +2,8 @@
 > - **Status:** `PARTIALLY COMPLETED`
 > - **Verified on:** `2026-02-18`
 > - **Codebase alignment:** Public GPU ownership/API cleanup is complete (`DvzGpu*` removed from public headers, index/descriptor flow active).
-> - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 completed for bootstrap and proto flows, Step 4 started (surface/swapchain accessor hardening and call-site migration in progress).
-> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening (broader public struct privatization and lifecycle matrix cleanup across remaining vklite wrappers).
+> - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 completed for bootstrap/proto flows, Step 4 completed for `DvzSurface`/`DvzSwapchain` (opaque public handles + accessor migration).
+> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening across the rest of vklite public structs and lifecycle matrices.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -265,7 +265,21 @@ Exit criteria:
      `dvz_surface_*` accessors.
    - Migrated `src/vklite/tests/test_present.c` assertions/config reads away from direct mutable
      `surface`/`swapchain` field reads where public getters are now available.
-10. Validation run on `2026-02-18` after Step 4 slice:
+10. Step 4 opaque-handle follow-up on `2026-02-18`:
+   - Made `DvzSurface` and `DvzSwapchain` opaque in public headers
+     (`include/datoviz/vklite/surface.h`, `include/datoviz/vklite/swapchain.h`):
+     removed public struct layout exposure and added explicit `create/free` lifecycle entry points.
+   - Moved concrete layouts to internal headers `src/vklite/_surface.h` and `src/vklite/_swapchain.h`.
+   - Added missing accessors needed by downstream modules:
+     - `dvz_surface_extent()`
+     - `dvz_swapchain_extent()`
+     - `dvz_swapchain_image()`
+     - `dvz_swapchain_image_view()`
+   - Migrated canvas present backend (`src/canvas/swapchain_sink.c`) and vklite present tests
+     (`src/vklite/tests/test_present.c`) to pointer-owned wrappers + accessor-only data reads.
+   - Kept `dvz_surface_destroy()` / `dvz_swapchain_destroy()` as reusable teardown operations and introduced
+     `dvz_surface_free()` / `dvz_swapchain_free()` for allocation ownership release.
+11. Validation run on `2026-02-18` after Step 4 slice:
    - `just build` (pass)
    - `just test vklite` (pass, `25/25`)
    - `just test vk` (pass, `48/48`)

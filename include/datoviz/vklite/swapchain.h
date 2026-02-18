@@ -51,10 +51,6 @@ typedef enum DvzPresentStatus
 
 
 
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
 struct DvzSwapchainConfig
 {
     VkFormat image_format;
@@ -67,32 +63,20 @@ struct DvzSwapchainConfig
 };
 
 
-
-struct DvzSwapchain
-{
-    VkPhysicalDevice physical_device;
-    DvzSurface* surface;
-    VkDevice device;
-    VkSwapchainKHR handle;
-    DvzSwapchainConfig config;
-    VkExtent2D extent;
-    VkFormat image_format;
-    VkColorSpaceKHR color_space;
-    VkPresentModeKHR present_mode;
-    uint32_t image_count;
-    VkImage* images;
-    VkImageView* image_views;
-    uint32_t current_image;
-    bool ready;
-};
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty swapchain wrapper.
+ *
+ * @return allocated swapchain wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzSwapchain* dvz_swapchain_create(void);
 
 
 
@@ -203,6 +187,42 @@ DVZ_EXPORT DvzSwapchainConfig dvz_swapchain_get_config(const DvzSwapchain* swapc
 
 
 /**
+ * Return the current swapchain extent from the latest recreate.
+ *
+ * @param swapchain swapchain wrapper
+ * @return current resolved extent
+ */
+DVZ_EXPORT VkExtent2D dvz_swapchain_extent(const DvzSwapchain* swapchain);
+
+
+
+/**
+ * Fetch a swapchain image handle by index.
+ *
+ * @param swapchain swapchain wrapper
+ * @param image_idx image index
+ * @param[out] image output image handle
+ * @return true when the index is valid
+ */
+DVZ_EXPORT bool
+dvz_swapchain_image(const DvzSwapchain* swapchain, uint32_t image_idx, VkImage* image);
+
+
+
+/**
+ * Fetch a swapchain image view handle by index.
+ *
+ * @param swapchain swapchain wrapper
+ * @param image_idx image index
+ * @param[out] image_view output image view handle
+ * @return true when the index is valid
+ */
+DVZ_EXPORT bool
+dvz_swapchain_image_view(const DvzSwapchain* swapchain, uint32_t image_idx, VkImageView* image_view);
+
+
+
+/**
  * Recreate swapchain images and image views for a new extent.
  *
  * @param swapchain swapchain wrapper to recreate
@@ -248,6 +268,15 @@ DVZ_EXPORT DvzPresentStatus dvz_swapchain_present(
  * @param swapchain swapchain wrapper to destroy
  */
 DVZ_EXPORT void dvz_swapchain_destroy(DvzSwapchain* swapchain);
+
+
+
+/**
+ * Free a swapchain wrapper allocated by dvz_swapchain_create().
+ *
+ * @param swapchain swapchain wrapper to free
+ */
+DVZ_EXPORT void dvz_swapchain_free(DvzSwapchain* swapchain);
 
 
 
