@@ -234,6 +234,16 @@ DVZ_EXPORT VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t que
 
 
 /**
+ * Return the descriptor pool associated to a device.
+ *
+ * @param device the device
+ * @returns the Vulkan descriptor pool
+ */
+DVZ_EXPORT VkDescriptorPool dvz_device_descriptor_pool(DvzDevice* device);
+
+
+
+/**
  * Wait until the device is ready. Inefficient.
  *
  * @param device the device

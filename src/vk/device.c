@@ -736,6 +736,20 @@ VkCommandPool dvz_device_command_pool(DvzDevice* device, uint32_t queue_family)
 
 
 
+/**
+ * Return the descriptor pool associated to a device.
+ *
+ * @param device the device
+ * @return the Vulkan descriptor pool
+ */
+VkDescriptorPool dvz_device_descriptor_pool(DvzDevice* device)
+{
+    ANN(device);
+    return device->dpool;
+}
+
+
+
 void dvz_device_wait(DvzDevice* device)
 {
     ANN(device);

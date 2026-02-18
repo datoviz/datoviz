@@ -49,29 +49,19 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzSampler
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    VkFilter min_filter;
-    VkFilter mag_filter;
-    VkSamplerAddressMode address_modes[3]; // x, y, z
-    float anisotropy;
-
-    VkSampler vk_sampler;
-};
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty sampler wrapper.
+ *
+ * @return allocated sampler wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzSampler* dvz_sampler_create_wrapper(void);
 
 
 
@@ -143,6 +133,25 @@ DVZ_EXPORT int dvz_sampler_create(DvzSampler* sampler);
  * @param sampler the sampler
  */
 DVZ_EXPORT void dvz_sampler_destroy(DvzSampler* sampler);
+
+
+
+/**
+ * Return the Vulkan sampler handle.
+ *
+ * @param sampler sampler wrapper
+ * @return wrapped Vulkan sampler handle
+ */
+DVZ_EXPORT VkSampler dvz_sampler_handle(DvzSampler* sampler);
+
+
+
+/**
+ * Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
+ *
+ * @param sampler sampler wrapper to free
+ */
+DVZ_EXPORT void dvz_sampler_free(DvzSampler* sampler);
 
 
 

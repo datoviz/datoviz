@@ -19,12 +19,10 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
-#include "../vk/_device.h"
-#include "../vk/_gpu.h"
-#include "../vk/_instance.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vklite/commands.h"
@@ -213,9 +211,10 @@ int dvz_images_create(DvzImages* img)
     ASSERT(allocator->device == device);
 
     // Get GPU properties to check the dimensions of the image.
-    VkPhysicalDeviceProperties* props = dvz_gpu_properties10(device->gpu);
+    VkPhysicalDeviceProperties props = {0};
+    vkGetPhysicalDeviceProperties(dvz_device_physical_device(device), &props);
     uvec3 shape = {img->info.extent.width, img->info.extent.height, img->info.extent.depth};
-    if (check_image_size(props, img->info.imageType, shape) != 0)
+    if (check_image_size(&props, img->info.imageType, shape) != 0)
     {
         log_error("abort image creation");
         return 1;
@@ -361,13 +360,14 @@ void dvz_image_views_create(DvzImageViews* views)
 
     DvzDevice* device = views->device;
     ANN(device);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
 
     for (uint32_t i = 0; i < img->count; i++)
     {
         views->info.image = img->vk_images[i];
         views->info.format = img->info.format;
-        VK_CHECK_RESULT(
-            vkCreateImageView(device->vk_device, &views->info, NULL, &views->vk_views[i]));
+        VK_CHECK_RESULT(vkCreateImageView(vkd, &views->info, NULL, &views->vk_views[i]));
     }
 
     dvz_obj_created(&views->obj);
@@ -393,12 +393,14 @@ void dvz_image_views_destroy(DvzImageViews* views)
 
     DvzDevice* device = views->device;
     ANN(device);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
 
     for (uint32_t i = 0; i < img->count; i++)
     {
         if (views->vk_views[i] != VK_NULL_HANDLE)
         {
-            vkDestroyImageView(device->vk_device, views->vk_views[i], NULL);
+            vkDestroyImageView(vkd, views->vk_views[i], NULL);
             views->vk_views[i] = VK_NULL_HANDLE;
         }
     }

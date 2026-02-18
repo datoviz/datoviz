@@ -18,9 +18,11 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
-#include "../vk/_device.h"
+#include "_alloc.h"
 #include "_assertions.h"
+#include "_descriptors.h"
 #include "_log.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/descriptors.h"
 
@@ -29,6 +31,20 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty descriptor wrapper.
+ *
+ * @return allocated descriptor wrapper, or NULL on allocation failure
+ */
+DvzDescriptors* dvz_descriptors_create(void)
+{
+    DvzDescriptors* descriptors = (DvzDescriptors*)dvz_calloc(1, sizeof(DvzDescriptors));
+    ANN(descriptors);
+    return descriptors;
+}
+
+
 
 void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
 {
@@ -40,16 +56,19 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
 
     descriptors->device = device;
     descriptors->slots = slots;
+    VkDevice vkd = dvz_device_handle(device);
+    VkDescriptorPool dpool = dvz_device_descriptor_pool(device);
+    ANNVK(vkd);
+    ANNVK(dpool);
 
     VkDescriptorSetAllocateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    info.descriptorPool = device->dpool;
+    info.descriptorPool = dpool;
     info.descriptorSetCount = slots->set_count;
     info.pSetLayouts = slots->set_layouts;
 
     log_trace("allocate descriptor sets");
-    VK_CHECK_RESULT(
-        vkAllocateDescriptorSets(device->vk_device, &info, descriptors->vk_descriptors));
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(vkd, &info, descriptors->vk_descriptors));
 }
 
 
@@ -62,6 +81,8 @@ void dvz_descriptors_buffer(
 
     DvzDevice* device = descriptors->device;
     ANN(device);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
 
     DvzSlots* slots = descriptors->slots;
     ANN(slots);
@@ -80,7 +101,7 @@ void dvz_descriptors_buffer(
     dsw.descriptorCount = 1;
     dsw.pBufferInfo = &buf_info;
 
-    vkUpdateDescriptorSets(device->vk_device, 1, &dsw, 0, NULL);
+    vkUpdateDescriptorSets(vkd, 1, &dsw, 0, NULL);
 }
 
 
@@ -93,6 +114,8 @@ void dvz_descriptors_image(
 
     DvzDevice* device = descriptors->device;
     ANN(device);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
 
     DvzSlots* slots = descriptors->slots;
     ANN(slots);
@@ -111,7 +134,7 @@ void dvz_descriptors_image(
     dsw.descriptorType = slots->bindings[set][binding].descriptorType;
     dsw.pImageInfo = &img_info;
 
-    vkUpdateDescriptorSets(device->vk_device, 1, &dsw, 0, NULL);
+    vkUpdateDescriptorSets(vkd, 1, &dsw, 0, NULL);
 }
 
 
@@ -133,4 +156,20 @@ void dvz_cmd_bind_descriptors(
         cmd, bind_point, slots->pipeline_layout, //
         first_set, set_count, &descriptors->vk_descriptors[first_set], dynamic_count,
         dynamic_idxs);
+}
+
+
+
+/**
+ * Free a descriptor wrapper allocated by dvz_descriptors_create().
+ *
+ * @param descriptors descriptor wrapper to free
+ */
+void dvz_descriptors_free(DvzDescriptors* descriptors)
+{
+    if (descriptors == NULL)
+    {
+        return;
+    }
+    dvz_free(descriptors);
 }

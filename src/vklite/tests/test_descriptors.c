@@ -89,12 +89,13 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
 
 
     // Descriptors.
-    DvzDescriptors desc = {0};
-    dvz_descriptors(&slots, &desc);
-    dvz_descriptors_buffer(&desc, 0, 0, 0, ubuf.vk_buffer, 0, size);
-    dvz_descriptors_buffer(&desc, 1, 0, 0, sbuf.vk_buffer, 0, size);
+    DvzDescriptors* desc = dvz_descriptors_create();
+    ANN(desc);
+    dvz_descriptors(&slots, desc);
+    dvz_descriptors_buffer(desc, 0, 0, 0, ubuf.vk_buffer, 0, size);
+    dvz_descriptors_buffer(desc, 1, 0, 0, sbuf.vk_buffer, 0, size);
     dvz_descriptors_image(
-        &desc, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, views.vk_views[0], NULL);
+        desc, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, views.vk_views[0], NULL);
 
 
     // Cleanup.
@@ -102,6 +103,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_images_destroy(&images);
     dvz_buffer_destroy(&ubuf);
     dvz_buffer_destroy(&sbuf);
+    dvz_descriptors_free(desc);
     dvz_slots_destroy(&slots);
     dvz_bootstrap_destroy(&bootstrap);
 

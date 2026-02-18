@@ -40,23 +40,19 @@ typedef struct DvzCommands DvzCommands;
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzDescriptors
-{
-    DvzSlots* slots;
-    DvzDevice* device;
-    VkDescriptorSet vk_descriptors[DVZ_MAX_SETS];
-};
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty descriptor wrapper.
+ *
+ * @return allocated descriptor wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzDescriptors* dvz_descriptors_create(void);
 
 
 
@@ -119,6 +115,15 @@ DVZ_EXPORT void dvz_descriptors_image(
 DVZ_EXPORT void dvz_cmd_bind_descriptors(
     DvzCommands* cmds, VkPipelineBindPoint bind_point, DvzDescriptors* descriptors,
     uint32_t first_set, uint32_t set_count, uint32_t dynamic_count, uint32_t* dynamic_idxs);
+
+
+
+/**
+ * Free a descriptor wrapper allocated by dvz_descriptors_create().
+ *
+ * @param descriptors descriptor wrapper to free
+ */
+DVZ_EXPORT void dvz_descriptors_free(DvzDescriptors* descriptors);
 
 
 

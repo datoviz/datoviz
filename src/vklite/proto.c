@@ -79,6 +79,9 @@ void dvz_proto(DvzProto* proto)
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
 
+    proto->desc = dvz_descriptors_create();
+    ANN(proto->desc);
+
 
 
     // Rendering.
@@ -358,6 +361,8 @@ void dvz_proto_destroy(DvzProto* proto)
     dvz_shader_destroy(&proto->vs);
     dvz_shader_destroy(&proto->fs);
     dvz_slots_destroy(&proto->slots);
+    dvz_descriptors_free(proto->desc);
+    proto->desc = NULL;
     dvz_graphics_destroy(&proto->graphics);
     dvz_bootstrap_destroy(&proto->bootstrap);
 }

@@ -18,8 +18,10 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_sampler.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/sampler.h"
@@ -29,6 +31,20 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty sampler wrapper.
+ *
+ * @return allocated sampler wrapper, or NULL on allocation failure
+ */
+DvzSampler* dvz_sampler_create_wrapper(void)
+{
+    DvzSampler* sampler = (DvzSampler*)dvz_calloc(1, sizeof(DvzSampler));
+    ANN(sampler);
+    return sampler;
+}
+
+
 
 void dvz_sampler(DvzDevice* device, DvzSampler* sampler)
 {
@@ -147,4 +163,34 @@ void dvz_sampler_destroy(DvzSampler* sampler)
         sampler->vk_sampler = VK_NULL_HANDLE;
     }
     dvz_obj_destroyed(&sampler->obj);
+}
+
+
+
+/**
+ * Return the Vulkan sampler handle.
+ *
+ * @param sampler sampler wrapper
+ * @return wrapped Vulkan sampler handle
+ */
+VkSampler dvz_sampler_handle(DvzSampler* sampler)
+{
+    ANN(sampler);
+    return sampler->vk_sampler;
+}
+
+
+
+/**
+ * Free a sampler wrapper allocated by dvz_sampler_create_wrapper().
+ *
+ * @param sampler sampler wrapper to free
+ */
+void dvz_sampler_free(DvzSampler* sampler)
+{
+    if (sampler == NULL)
+    {
+        return;
+    }
+    dvz_free(sampler);
 }

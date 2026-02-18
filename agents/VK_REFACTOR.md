@@ -284,6 +284,28 @@ Exit criteria:
    - `just test vklite` (pass, `25/25`)
    - `just test vk` (pass, `48/48`)
    - `just test canvas` (pass, `26/26`)
+12. Step 3 boundary tightening slice on `2026-02-18`:
+   - Removed vk-private header usage from vklite runtime files that previously depended on
+     `../vk/_device.h`, `../vk/_gpu.h`, `../vk/_instance.h`:
+     - `src/vklite/descriptors.c`
+     - `src/vklite/graphics.c`
+     - `src/vklite/images.c`
+     - `src/vklite/sync.c`
+   - Added public vk accessor for descriptor-pool retrieval:
+     - `include/datoviz/vk/device.h`: `dvz_device_descriptor_pool(DvzDevice* device)`
+     - `src/vk/device.c`: implementation of `dvz_device_descriptor_pool(...)`
+   - Migrated these vklite call sites to public vk APIs/accessors:
+     - replaced direct `device->vk_device` reads with `dvz_device_handle(device)`
+     - replaced direct `device->dpool` reads with `dvz_device_descriptor_pool(device)`
+     - replaced direct GPU property reads via private struct with
+       `vkGetPhysicalDeviceProperties(dvz_device_physical_device(device), ...)`
+13. Validation run on `2026-02-18` after Step 3 slice:
+   - `just build` (pass)
+   - `just test vk` (pass, `48/48`)
+   - `just test vklite` (pass, `25/25`)
+   - `just test canvas` (pass, `26/26`)
+   - `rg -n '#include "\\.\\./vk/_.*\\.h"|#include "\\.\\./src/vk/' src/vklite`
+     reviewed: no `../vk/_*.h` includes remain; only legacy include of `../src/vk/macros.h` remains.
 
 
 ## Definition of done

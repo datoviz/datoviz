@@ -17,9 +17,9 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
-#include "../vk/_device.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sync.h"
 #include "vulkan/vulkan_core.h"
@@ -267,7 +267,9 @@ void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence)
     if (signaled)
         info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    VK_CHECK_RESULT(vkCreateFence(fence->device->vk_device, &info, NULL, &fence->vk_fence));
+    VkDevice vkd = dvz_device_handle(fence->device);
+    ANNVK(vkd);
+    VK_CHECK_RESULT(vkCreateFence(vkd, &info, NULL, &fence->vk_fence));
 
     dvz_obj_created(&fence->obj);
 }
@@ -277,9 +279,11 @@ void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence)
 void dvz_fence_wait(DvzFence* fence)
 {
     ANN(fence);
+    VkDevice vkd = dvz_device_handle(fence->device);
+    ANNVK(vkd);
     if (fence->vk_fence != VK_NULL_HANDLE)
     {
-        vkWaitForFences(fence->device->vk_device, 1, &fence->vk_fence, VK_TRUE, MAX_WAIT);
+        vkWaitForFences(vkd, 1, &fence->vk_fence, VK_TRUE, MAX_WAIT);
     }
     else
     {
@@ -292,7 +296,9 @@ void dvz_fence_wait(DvzFence* fence)
 bool dvz_fence_ready(DvzFence* fence)
 {
     ANN(fence);
-    VK_RETURN_RESULT(vkGetFenceStatus(fence->device->vk_device, fence->vk_fence));
+    VkDevice vkd = dvz_device_handle(fence->device);
+    ANNVK(vkd);
+    VK_RETURN_RESULT(vkGetFenceStatus(vkd, fence->vk_fence));
     return (bool)out;
 }
 
@@ -301,9 +307,11 @@ bool dvz_fence_ready(DvzFence* fence)
 void dvz_fence_reset(DvzFence* fence)
 {
     ANN(fence);
+    VkDevice vkd = dvz_device_handle(fence->device);
+    ANNVK(vkd);
     if (fence->vk_fence != VK_NULL_HANDLE)
     {
-        vkResetFences(fence->device->vk_device, 1, &fence->vk_fence);
+        vkResetFences(vkd, 1, &fence->vk_fence);
     }
 }
 
@@ -319,9 +327,11 @@ void dvz_fence_destroy(DvzFence* fence)
     }
 
     log_trace("destroying fence...");
+    VkDevice vkd = dvz_device_handle(fence->device);
+    ANNVK(vkd);
     if (fence->vk_fence != VK_NULL_HANDLE)
     {
-        vkDestroyFence(fence->device->vk_device, fence->vk_fence, NULL);
+        vkDestroyFence(vkd, fence->vk_fence, NULL);
         fence->vk_fence = VK_NULL_HANDLE;
     }
     dvz_obj_destroyed(&fence->obj);
@@ -338,10 +348,12 @@ void dvz_semaphore(DvzDevice* device, DvzSemaphore* semaphore)
     ANN(device);
 
     semaphore->device = device;
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
 
     VkSemaphoreCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    VK_CHECK_RESULT(vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
+    VK_CHECK_RESULT(vkCreateSemaphore(vkd, &info, NULL, &semaphore->vk_semaphore));
     log_trace("created semaphore %#x", semaphore->vk_semaphore);
     dvz_obj_created(&semaphore->obj);
 }
@@ -356,6 +368,8 @@ void dvz_semaphore_timeline(
     ANN(semaphore);
 
     semaphore->device = device;
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
 
     VkSemaphoreTypeCreateInfo timeline_info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
@@ -379,7 +393,7 @@ void dvz_semaphore_timeline(
     {
         info.pNext = &timeline_info;
     }
-    VK_CHECK_RESULT(vkCreateSemaphore(device->vk_device, &info, NULL, &semaphore->vk_semaphore));
+    VK_CHECK_RESULT(vkCreateSemaphore(vkd, &info, NULL, &semaphore->vk_semaphore));
     log_trace("created timeline semaphore %#x", semaphore->vk_semaphore);
     dvz_obj_created(&semaphore->obj);
 }
@@ -394,7 +408,9 @@ void dvz_semaphore_signal(DvzSemaphore* semaphore, uint64_t value)
         .semaphore = semaphore->vk_semaphore,
         .value = value,
     };
-    vkSignalSemaphore(semaphore->device->vk_device, &signalInfo);
+    VkDevice vkd = dvz_device_handle(semaphore->device);
+    ANNVK(vkd);
+    vkSignalSemaphore(vkd, &signalInfo);
 }
 
 
@@ -408,7 +424,9 @@ void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value)
         .pSemaphores = &semaphore->vk_semaphore,
         .pValues = &value,
     };
-    vkWaitSemaphores(semaphore->device->vk_device, &waitInfo, MAX_WAIT);
+    VkDevice vkd = dvz_device_handle(semaphore->device);
+    ANNVK(vkd);
+    vkWaitSemaphores(vkd, &waitInfo, MAX_WAIT);
 }
 
 
@@ -417,7 +435,9 @@ uint64_t dvz_semaphore_query(DvzSemaphore* semaphore)
 {
     ANN(semaphore);
     uint64_t current = 0;
-    vkGetSemaphoreCounterValue(semaphore->device->vk_device, semaphore->vk_semaphore, &current);
+    VkDevice vkd = dvz_device_handle(semaphore->device);
+    ANNVK(vkd);
+    vkGetSemaphoreCounterValue(vkd, semaphore->vk_semaphore, &current);
     return current;
 }
 
@@ -445,7 +465,9 @@ int dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTy
         .handleType = handle_type,
     };
     int fd = -1;
-    VkResult res = vkGetSemaphoreFdKHR(semaphore->device->vk_device, &fd_info, &fd);
+    VkDevice vkd = dvz_device_handle(semaphore->device);
+    ANNVK(vkd);
+    VkResult res = vkGetSemaphoreFdKHR(vkd, &fd_info, &fd);
     if (res != VK_SUCCESS)
     {
         log_warn("vkGetSemaphoreFdKHR failed for semaphore (%d)", res);
@@ -470,10 +492,12 @@ void dvz_semaphore_destroy(DvzSemaphore* semaphore)
     }
 
     log_trace("destroying semaphore...");
+    VkDevice vkd = dvz_device_handle(semaphore->device);
+    ANNVK(vkd);
 
     if (semaphore->vk_semaphore != VK_NULL_HANDLE)
     {
-        vkDestroySemaphore(semaphore->device->vk_device, semaphore->vk_semaphore, NULL);
+        vkDestroySemaphore(vkd, semaphore->vk_semaphore, NULL);
         semaphore->vk_semaphore = VK_NULL_HANDLE;
     }
     dvz_obj_destroyed(&semaphore->obj);

@@ -59,16 +59,18 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     AT(dvz_bootstrap_set_device(&bootstrap, created_device, created_device != NULL));
     AT(dvz_bootstrap_device(&bootstrap) != NULL);
 
-    DvzSampler sampler = {0};
-    dvz_sampler(dvz_bootstrap_device(&bootstrap), &sampler);
-    dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
-    dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_anisotropy(&sampler, 8);
-    AT(dvz_sampler_create(&sampler) == 0);
+    DvzSampler* sampler = dvz_sampler_create_wrapper();
+    ANN(sampler);
+    dvz_sampler(dvz_bootstrap_device(&bootstrap), sampler);
+    dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
+    dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_anisotropy(sampler, 8);
+    AT(dvz_sampler_create(sampler) == 0);
 
     // Cleanup.
-    dvz_sampler_destroy(&sampler);
+    dvz_sampler_destroy(sampler);
+    dvz_sampler_free(sampler);
     dvz_bootstrap_destroy(&bootstrap);
 
     RETURN_VALIDATION

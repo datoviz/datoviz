@@ -224,16 +224,16 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
     // Sampler.
-    DvzSampler sampler = {0};
+    DvzSampler* sampler = dvz_sampler_create_wrapper();
     {
-        ANN(&sampler);
-        dvz_sampler(dvz_bootstrap_device(&proto.bootstrap), &sampler);
-        dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
-        dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
+        ANN(sampler);
+        dvz_sampler(dvz_bootstrap_device(&proto.bootstrap), sampler);
+        dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
+        dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
         dvz_sampler_address_mode(
-            &sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-        dvz_sampler_anisotropy(&sampler, 8);
-        AT(dvz_sampler_create(&sampler) == 0);
+            sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+        dvz_sampler_anisotropy(sampler, 8);
+        AT(dvz_sampler_create(sampler) == 0);
     }
 
 
@@ -266,10 +266,10 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
     // Descriptors.
     {
-        dvz_descriptors(&proto.slots, &proto.desc);
+        dvz_descriptors(&proto.slots, proto.desc);
         dvz_descriptors_image(
-            &proto.desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, //
-            tex_view.vk_views[0], sampler.vk_sampler);
+            proto.desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, //
+            tex_view.vk_views[0], dvz_sampler_handle(sampler));
     }
 
 
@@ -307,8 +307,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     {
         dvz_cmd_rendering_begin(cmds, &proto.rendering);
         dvz_cmd_bind_graphics(cmds, &proto.graphics);
-        dvz_cmd_bind_descriptors(
-            cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &proto.desc, 0, 1, 0, NULL);
+        dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, proto.desc, 0, 1, 0, NULL);
         dvz_cmd_draw(cmds, 0, 6, 0, 1);
         dvz_cmd_rendering_end(cmds);
     }
@@ -324,7 +323,8 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_images_destroy(&tex);
     dvz_image_views_destroy(&tex_view);
-    dvz_sampler_destroy(&sampler);
+    dvz_sampler_destroy(sampler);
+    dvz_sampler_free(sampler);
     dvz_graphics_destroy(&igraphics);
     dvz_proto_destroy(&proto);
     dvz_free(vs_spv);
@@ -698,9 +698,10 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     AT(dvz_compute_create(&compute) == 0);
 
     // Descriptors for compute
-    DvzDescriptors desc = {0};
-    dvz_descriptors(&slots, &desc);
-    dvz_descriptors_buffer(&desc, 0, 0, 0, dvz_buffer_handle(&buf), 0, sizeof(positions));
+    DvzDescriptors* desc = dvz_descriptors_create();
+    ANN(desc);
+    dvz_descriptors(&slots, desc);
+    dvz_descriptors_buffer(desc, 0, 0, 0, dvz_buffer_handle(&buf), 0, sizeof(positions));
 
 
     // Step 4: create graphics pipeline
@@ -733,7 +734,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
 
     // Compute pass
     dvz_cmd_bind_compute(cmds, &compute);
-    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_COMPUTE, &desc, 0, 1, 0, NULL);
+    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_COMPUTE, desc, 0, 1, 0, NULL);
 
     // Dispatch 4 workgroups → each vertex is shifted in compute shader
     dvz_cmd_dispatch(cmds, 4, 1, 1);
@@ -765,6 +766,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
 
     // Step 7: cleanup
     dvz_slots_destroy(&slots);
+    dvz_descriptors_free(desc);
     dvz_shader_destroy(&cs);
     dvz_compute_destroy(&compute);
     dvz_graphics_destroy(graphics);
@@ -1144,15 +1146,16 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // -----------------------------------------------------------------------------------------
     // Sampler for composite pass.
     // -----------------------------------------------------------------------------------------
-    DvzSampler sampler = {0};
-    dvz_sampler(device, &sampler);
-    dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
-    dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_anisotropy(&sampler, 1.0f);
-    AT(dvz_sampler_create(&sampler) == 0);
+    DvzSampler* sampler = dvz_sampler_create_wrapper();
+    ANN(sampler);
+    dvz_sampler(device, sampler);
+    dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
+    dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_anisotropy(sampler, 1.0f);
+    AT(dvz_sampler_create(sampler) == 0);
 
     // -----------------------------------------------------------------------------------------
     // Shaders
@@ -1249,7 +1252,8 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // -----------------------------------------------------------------------------------------
     DvzGraphics g_comp = {0};
     DvzSlots slots_comp = {0};
-    DvzDescriptors desc_comp = {0};
+    DvzDescriptors* desc_comp = dvz_descriptors_create();
+    ANN(desc_comp);
     {
         dvz_graphics(device, &g_comp);
 
@@ -1303,13 +1307,13 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         AT(dvz_graphics_create(&g_comp) == 0);
 
         // Descriptors.
-        dvz_descriptors(&slots_comp, &desc_comp);
+        dvz_descriptors(&slots_comp, desc_comp);
         dvz_descriptors_image(
-            &desc_comp, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(&accum_color_view, 0), sampler.vk_sampler);
+            desc_comp, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(&accum_color_view, 0), dvz_sampler_handle(sampler));
         dvz_descriptors_image(
-            &desc_comp, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(&accum_weight_view, 0), sampler.vk_sampler);
+            desc_comp, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(&accum_weight_view, 0), dvz_sampler_handle(sampler));
 
         dvz_shader_destroy(&vs);
         dvz_shader_destroy(&fs);
@@ -1454,7 +1458,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     {
         dvz_cmd_rendering_begin(cmds, &composite_rendering);
         dvz_cmd_bind_graphics(cmds, &g_comp);
-        dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &desc_comp, 0, 1, 0, NULL);
+        dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, desc_comp, 0, 1, 0, NULL);
         // Fullscreen triangle: 3 vertices from VS (gl_VertexIndex).
         dvz_cmd_draw(cmds, 0, 3, 0, 1);
         dvz_cmd_rendering_end(cmds);
@@ -1477,7 +1481,9 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_destroy(&accum_weight_view);
     dvz_images_destroy(&accum_weight);
     dvz_slots_destroy(&slots_comp);
-    dvz_sampler_destroy(&sampler);
+    dvz_sampler_destroy(sampler);
+    dvz_sampler_free(sampler);
+    dvz_descriptors_free(desc_comp);
     dvz_graphics_destroy(&g_accum);
     dvz_graphics_destroy(&g_comp);
     dvz_proto_destroy(&proto);
@@ -1519,15 +1525,16 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_create(&depth_view);
 
     // Sampler for depth texture.
-    DvzSampler sampler = {0};
-    dvz_sampler(device, &sampler);
-    dvz_sampler_min_filter(&sampler, VK_FILTER_NEAREST);
-    dvz_sampler_mag_filter(&sampler, VK_FILTER_NEAREST);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(&sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_anisotropy(&sampler, 1.0f);
-    AT(dvz_sampler_create(&sampler) == 0);
+    DvzSampler* sampler = dvz_sampler_create_wrapper();
+    ANN(sampler);
+    dvz_sampler(device, sampler);
+    dvz_sampler_min_filter(sampler, VK_FILTER_NEAREST);
+    dvz_sampler_mag_filter(sampler, VK_FILTER_NEAREST);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_anisotropy(sampler, 1.0f);
+    AT(dvz_sampler_create(sampler) == 0);
 
 
     // PASS 1: depth-only pipeline writing depth into depth_img.
@@ -1615,7 +1622,8 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     DvzGraphics ssao_graphics = {0};
     DvzSlots ssao_slots = {0};
-    DvzDescriptors ssao_desc = {0};
+    DvzDescriptors* ssao_desc = dvz_descriptors_create();
+    ANN(ssao_desc);
     {
         dvz_graphics(device, &ssao_graphics);
 
@@ -1663,10 +1671,10 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         AT(dvz_graphics_create(&ssao_graphics) == 0);
 
         // Descriptors.
-        dvz_descriptors(&ssao_slots, &ssao_desc);
+        dvz_descriptors(&ssao_slots, ssao_desc);
         dvz_descriptors_image(
-            &ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(&depth_view, 0), sampler.vk_sampler);
+            ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(&depth_view, 0), dvz_sampler_handle(sampler));
 
         dvz_shader_destroy(&vs);
         dvz_shader_destroy(&fs);
@@ -1745,7 +1753,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     // PASS 2: SSAO rendering into proto main color image.
     dvz_cmd_rendering_begin(cmds, &ssao_rendering);
     dvz_cmd_bind_graphics(cmds, &ssao_graphics);
-    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, &ssao_desc, 0, 1, 0, NULL);
+    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, ssao_desc, 0, 1, 0, NULL);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
 
@@ -1763,7 +1771,9 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     dvz_image_views_destroy(&depth_view);
     dvz_images_destroy(&depth_img);
-    dvz_sampler_destroy(&sampler);
+    dvz_sampler_destroy(sampler);
+    dvz_sampler_free(sampler);
+    dvz_descriptors_free(ssao_desc);
 
     dvz_slots_destroy(&ssao_slots);
 

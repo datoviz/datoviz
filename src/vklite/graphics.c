@@ -18,13 +18,13 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
-#include "../vk/_device.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "cglm/include/cglm/types.h"
 #include "cglm/include/cglm/vec4.h"
 #include "datoviz/common/obj.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 
@@ -633,8 +633,10 @@ int dvz_graphics_create(DvzGraphics* graphics)
 
     // Creation.
     log_trace("creating graphics pipeline...");
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
     VK_RETURN_RESULT(vkCreateGraphicsPipelines(
-        device->vk_device, VK_NULL_HANDLE, 1, &info, NULL, &graphics->vk_pipeline));
+        vkd, VK_NULL_HANDLE, 1, &info, NULL, &graphics->vk_pipeline));
     if (out == 0)
     {
         dvz_obj_created(&graphics->obj);
