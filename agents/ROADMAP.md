@@ -206,24 +206,33 @@ Provide Vulkan/CUDA interop without contaminating DRP or browser paths.
 5. Opt-in access (for example `DVZ_ENABLE_NATIVE`) and clear API labeling.
 6. Generic external memory/sync interop path (extensible beyond CUDA).
 7. Versioned structs and ABI stability notes for native interop.
-6. Generic external memory/sync interop path (extensible beyond CUDA).
-7. Versioned structs and ABI stability notes for native interop.
+8. Explicit interop support targets for PyTorch and CuPy through standard exchange protocols
+   (DLPack and CUDA Array Interface).
+9. Stream/synchronization semantics required for framework interop are defined at API level and
+   capability-gated.
 
 ### Deliverables
 1. Public headers under `include/datoviz/native.h` and `include/datoviz/native/*`.
 2. Dedicated `src/native/` module with Vulkan-backed implementation.
 3. Platform support reporting (Linux/Windows supported; macOS may report unsupported).
 4. Documentation for ownership and synchronization rules.
+5. High-level protocol support statement for DLPack and CUDA Array Interface integration points
+   (detailed wire-format spec remains separate).
 
 ### Tests
 1. Capability gating tests with clear unsupported paths.
 2. Buffer export/import roundtrip with explicit semaphore sync.
 3. Image export/import roundtrip with explicit semaphore sync.
+4. End-to-end framework roundtrips:
+   1. Datoviz -> CuPy -> Datoviz
+   2. Datoviz -> PyTorch -> Datoviz
+5. Negative tests for ownership/sync misuse across framework boundaries.
 
 ### Exit criteria
 1. Interop APIs are stable and capability-gated.
 2. Interop tests pass on supported platforms.
 3. No DRP headers include Vulkan types.
+4. Framework interop contract is validated for both DLPack and CUDA Array Interface paths.
 
 
 ## M5 - Browser JS runtime over WebGPU
@@ -403,19 +412,21 @@ Use this workflow for every task:
 15. `T015`: Add native interop public headers, capability flags, and opt-in gating.
 16. `T016`: Implement native interop buffer/image export/import with sync primitives.
 17. `T017`: Add native interop tests with platform capability coverage.
-18. `T018`: Add native SPIR-V ingestion behind capability flags.
-19. `T019`: Add compute pass path (mandatory) with basic fixtures.
-20. `T020`: Add deterministic compute/reduction fixtures and validation mode.
-21. `T021`: Document and test thread-safety guarantees for runtime and submission.
-22. `T022`: Add memory budget reporting and OOM/eviction handling tests.
-23. `T023`: Add browser JS runtime DRP decoder and minimal draw fixture.
-24. `T024`: Add WASM -> JS DRP transport API (minimal command stream).
-25. `T025`: Add capability model and unsupported-feature reporting with native/browser parity tests.
-26. `T026`: Add present path integration where needed with canvas/window (native).
-27. `T027`: Add browser conformance replay suite for shared DRP fixtures.
-28. `T028`: Add profiling API and timing/counter exposure.
-29. `T029`: Add microbenchmark harness and baseline capture (native) + browser timing smoke metrics.
-30. `T030`: Stabilization pass (bug fixes + docs + compatibility notes).
+18. `T018`: Add native interop protocol bridge for DLPack + CUDA Array Interface (capability-gated).
+19. `T019`: Add PyTorch/CuPy roundtrip tests and ownership/sync misuse negatives.
+20. `T020`: Add native SPIR-V ingestion behind capability flags.
+21. `T021`: Add compute pass path (mandatory) with basic fixtures.
+22. `T022`: Add deterministic compute/reduction fixtures and validation mode.
+23. `T023`: Document and test thread-safety guarantees for runtime and submission.
+24. `T024`: Add memory budget reporting and OOM/eviction handling tests.
+25. `T025`: Add browser JS runtime DRP decoder and minimal draw fixture.
+26. `T026`: Add WASM -> JS DRP transport API (minimal command stream).
+27. `T027`: Add capability model and unsupported-feature reporting with native/browser parity tests.
+28. `T028`: Add present path integration where needed with canvas/window (native).
+29. `T029`: Add browser conformance replay suite for shared DRP fixtures.
+30. `T030`: Add profiling API and timing/counter exposure.
+31. `T031`: Add microbenchmark harness and baseline capture (native) + browser timing smoke metrics.
+32. `T032`: Stabilization pass (bug fixes + docs + compatibility notes).
 
 
 ## Post-v1 backlog (power-user memory)
