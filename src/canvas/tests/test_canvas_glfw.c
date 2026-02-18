@@ -243,7 +243,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
 
     DvzQueues queues = {0};
     dvz_queues(caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(fixture->instance);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -1712,7 +1712,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     // Create the device.
     DvzQueues queues = {0};
     dvz_queues(caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

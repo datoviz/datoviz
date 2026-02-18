@@ -48,7 +48,8 @@ struct DvzDeviceQueueRequest
 
 struct DvzDeviceConfig
 {
-    DvzGpu* gpu;
+    DvzInstance* instance;
+    uint32_t gpu_index;
     bool enable_canvas_extensions;
     uint32_t queue_request_count;
     DvzDeviceQueueRequest queue_requests[DVZ_MAX_QUEUE_FAMILIES];
@@ -73,10 +74,21 @@ struct DvzDeviceConfig
 /**
  * Return default configuration values for creating a device.
  *
- * @param gpu the source GPU
+ * @param instance the source instance
  * @returns the default device configuration
  */
-DVZ_EXPORT DvzDeviceConfig dvz_device_default_config(DvzGpu* gpu);
+DVZ_EXPORT DvzDeviceConfig dvz_device_default_config(DvzInstance* instance);
+
+
+
+/**
+ * Select the GPU index used for device creation.
+ *
+ * @param cfg the device configuration
+ * @param gpu_index the selected GPU index in dvz_instance_gpus()
+ * @returns whether the index was stored successfully
+ */
+DVZ_EXPORT bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index);
 
 
 

@@ -281,14 +281,31 @@ static void destroy_dpool(DvzDevice* device)
 /**
  * Return default configuration values for creating a device.
  *
- * @param gpu source GPU
+ * @param instance source instance
  * @return initialized device configuration with sensible defaults
  */
-DvzDeviceConfig dvz_device_default_config(DvzGpu* gpu)
+DvzDeviceConfig dvz_device_default_config(DvzInstance* instance)
 {
     INIT(DvzDeviceConfig, cfg);
-    cfg.gpu = gpu;
+    cfg.instance = instance;
+    cfg.gpu_index = 0;
     return cfg;
+}
+
+
+
+/**
+ * Select the GPU index used for device creation.
+ *
+ * @param cfg device configuration
+ * @param gpu_index selected GPU index
+ * @return true when the index has been stored
+ */
+bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index)
+{
+    ANN(cfg);
+    cfg->gpu_index = gpu_index;
+    return true;
 }
 
 
@@ -457,7 +474,24 @@ void dvz_device_config_set_features13(
 DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)
 {
     ANN(cfg);
-    ANN(cfg->gpu);
+    ANN(cfg->instance);
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(cfg->instance, &gpu_count);
+    if (gpus == NULL || gpu_count == 0)
+    {
+        log_error("cannot create device because no GPU is available");
+        return NULL;
+    }
+    if (cfg->gpu_index >= gpu_count)
+    {
+        log_error(
+            "cannot create device because GPU index %u is out of range (count=%u)", cfg->gpu_index,
+            gpu_count);
+        return NULL;
+    }
+    DvzGpu* gpu = &gpus[cfg->gpu_index];
+
     DvzDevice* device = (DvzDevice*)dvz_calloc(1, sizeof(DvzDevice));
     if (device == NULL)
     {
@@ -465,7 +499,7 @@ DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg)
         return NULL;
     }
 
-    dvz_gpu_device(cfg->gpu, device);
+    dvz_gpu_device(gpu, device);
     device->is_heap_allocated = true;
 
     for (uint32_t i = 0; i < cfg->queue_request_count; i++)

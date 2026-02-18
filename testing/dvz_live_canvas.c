@@ -744,7 +744,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 
     DvzQueues queues = {0};
     dvz_queues(caps, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(app->instance);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

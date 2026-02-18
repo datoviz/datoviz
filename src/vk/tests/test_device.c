@@ -56,7 +56,7 @@ int test_device_1(TstSuite* suite, TstItem* tstitem)
     // Initialize a device.
     DvzQueues queues = {0};
     dvz_queues(qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -90,7 +90,7 @@ int test_device_2(TstSuite* suite, TstItem* tstitem)
     DvzGpu* gpu = &gpus[0];
 
     // Initialize a device.
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
 
     // Device extensions.
     dvz_gpu_probe_extensions(gpu);

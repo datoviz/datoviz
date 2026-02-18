@@ -166,7 +166,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     // Initialize a device.
     DvzQueues queues = {0};
     dvz_queues(qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -493,7 +493,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
 
     DvzQueues queues = {0};
     dvz_queues(qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(gpu);
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
