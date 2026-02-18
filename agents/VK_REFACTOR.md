@@ -245,6 +245,9 @@ Exit criteria:
    - Migrated `src/vklite/proto.c` to consume only bootstrap accessors for instance/device/allocator paths.
    - Migrated `src/vklite/tests/*.c` bootstrap call sites away from direct `bootstrap.{instance,device,
      allocator,owns_*}` field access; tests now use bootstrap accessors and setter APIs.
+   - Demoted `proto` from installed public header to internal helper:
+     moved header to `src/vklite/_proto.h`, switched internal/test includes, and removed
+     `include/datoviz/vklite/proto.h`.
 8. Validation run on `2026-02-18` after this slice:
    - `just build` (pass)
    - `just test vk` (pass, `48/48`)
