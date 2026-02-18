@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <volk.h>
 
-#include "../vk/macros.h"
+#include "_vk_utils.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"

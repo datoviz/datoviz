@@ -306,6 +306,24 @@ Exit criteria:
    - `just test canvas` (pass, `26/26`)
    - `rg -n '#include "\\.\\./vk/_.*\\.h"|#include "\\.\\./src/vk/' src/vklite`
      reviewed: no `../vk/_*.h` includes remain; only legacy include of `../src/vk/macros.h` remains.
+14. Step 3 follow-up cleanup on `2026-02-18`:
+   - Replaced all remaining vklite dependencies on vk-private macro header paths
+     (`../src/vk/macros.h`, `../vk/macros.h`) with a shared common helper.
+   - Added `src/common/_vk_utils.h` exposing shared Vulkan result/assert helpers:
+     - `ANNVK(...)`
+     - `VK_CHECK_RESULT(...)`
+     - `VK_RETURN_RESULT(...)`
+     - `vk_result_check(...)` (logs with call-site file/line)
+   - Migrated all affected vklite files to include `_vk_utils.h`:
+     - `buffers.c`, `commands.c`, `compute.c`, `descriptors.c`, `graphics.c`, `images.c`,
+       `rendering.c`, `sampler.c`, `shader.c`, `slots.c`, `sync.c`.
+15. Validation run on `2026-02-18` after macro-header cleanup:
+   - `just build` (pass)
+   - `just test vk` (pass, `48/48`)
+   - `just test vklite` (pass, `25/25`)
+   - `just test canvas` (pass, `26/26`)
+   - `rg -n '#include "\\.\\./src/vk/macros.h"|#include "\\.\\./vk/macros.h"|#include "\\.\\./vk/_.*\\.h"' src/vklite`
+     returns no matches.
 
 
 ## Definition of done

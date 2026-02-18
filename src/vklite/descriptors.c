@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <volk.h>
 
-#include "../src/vk/macros.h"
+#include "_vk_utils.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_descriptors.h"

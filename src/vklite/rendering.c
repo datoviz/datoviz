@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <volk.h>
 
-#include "../vk/macros.h"
+#include "_vk_utils.h"
 #include "_assertions.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vklite/commands.h"

@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <volk.h>
 
-#include "../src/vk/macros.h"
+#include "_vk_utils.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
@@ -84,7 +84,7 @@ VkCommandBuffer dvz_command_buffer_alloc(DvzDevice* device, uint32_t queue_famil
     VkResult res = vkAllocateCommandBuffers(dvz_device_handle(device), &info, &cmd);
     if (res != VK_SUCCESS)
     {
-        check_result(res);
+        vk_result_check(res, __FILE__, __LINE__);
         return VK_NULL_HANDLE;
     }
     return cmd;

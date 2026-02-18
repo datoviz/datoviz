@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <volk.h>
 
-#include "../src/vk/macros.h"
+#include "_vk_utils.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
