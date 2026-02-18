@@ -18,7 +18,6 @@
 #include <volk.h>
 
 #include "../src/vk/macros.h"
-#include "../vk/_device.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
@@ -73,7 +72,7 @@ void dvz_sampler_anisotropy(DvzSampler* sampler, float anisotropy)
     ANN(sampler);
     ANN(sampler->device);
 
-    VkPhysicalDeviceFeatures* features = dvz_device_request_features10(sampler->device);
+    const VkPhysicalDeviceFeatures* features = dvz_device_features10(sampler->device);
     if (anisotropy != 0 && !features->samplerAnisotropy)
     {
         log_warn("unable to set sampler anisotropy because the device was not created with "

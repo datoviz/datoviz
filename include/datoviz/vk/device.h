@@ -35,7 +35,6 @@
 
 
 typedef struct DvzDevice DvzDevice;
-typedef struct DvzGpu DvzGpu;
 typedef struct DvzDeviceQueueRequest DvzDeviceQueueRequest;
 typedef struct DvzDeviceConfig DvzDeviceConfig;
 
@@ -90,17 +89,6 @@ DVZ_EXPORT DvzDeviceConfig dvz_device_default_config(DvzInstance* instance);
  * @returns whether the index was stored successfully
  */
 DVZ_EXPORT bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index);
-
-
-
-/**
- * Select the GPU used for device creation from an instance-discovered GPU pointer.
- *
- * @param cfg the device configuration
- * @param gpu the selected GPU pointer returned by dvz_instance_gpus()
- * @returns whether the pointer matched one GPU in the associated instance
- */
-DVZ_EXPORT bool dvz_device_config_set_gpu(DvzDeviceConfig* cfg, const DvzGpu* gpu);
 
 
 
@@ -200,6 +188,16 @@ DVZ_EXPORT DvzDevice* dvz_device_create(const DvzDeviceConfig* cfg);
  * @returns the Vulkan VkDevice handle
  */
 DVZ_EXPORT VkDevice dvz_device_handle(DvzDevice* device);
+
+
+
+/**
+ * Return the Vulkan 1.0 feature set enabled on this device.
+ *
+ * @param device the device
+ * @returns immutable pointer to enabled Vulkan 1.0 features
+ */
+DVZ_EXPORT const VkPhysicalDeviceFeatures* dvz_device_features10(DvzDevice* device);
 
 
 
