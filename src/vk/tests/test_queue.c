@@ -21,7 +21,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/vk/gpu.h"
+#include "../_gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
 #include "test_vk.h"

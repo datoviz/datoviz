@@ -19,9 +19,9 @@
 #include <stdint.h>
 
 #include "../_device.h"
+#include "../_gpu.h"
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
 #include "test_vk.h"

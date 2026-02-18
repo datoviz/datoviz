@@ -17,8 +17,8 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/obj.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
+#include "_gpu.h"
 
 
 

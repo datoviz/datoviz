@@ -18,12 +18,12 @@
 #include <volk.h>
 
 #include "../../vk/_device.h"
+#include "../../vk/_gpu.h"
 #include "../encoder.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
-#include "datoviz/vk/gpu.h"
 #include "test_video.h"
 #include "test_video_common.h"
 #include "testing.h"
@@ -424,4 +424,3 @@ cleanup:
     kvz_cpu_ctx_destroy(&ctx);
     return rc;
 }
-

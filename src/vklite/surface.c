@@ -168,28 +168,11 @@ static bool _surface_update_extent(DvzSurface* surface)
 /*************************************************************************************************/
 
 /**
- * Initialize a surface wrapper for a GPU queue family.
- *
- * @param surface surface wrapper to initialize
- * @param gpu physical GPU queried for capabilities
- * @param queue_family queue family used for present support queries
- * @return true when initialization succeeds
- */
-bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family)
-{
-    ANN(surface);
-    ANN(gpu);
-    return _surface_init_with_physical_device(surface, gpu->pdevice, queue_family);
-}
-
-
-
-/**
  * Initialize a surface wrapper from instance + GPU index selection.
  *
  * @param surface surface wrapper to initialize
  * @param instance source instance used to resolve the GPU
- * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param gpu_index selected GPU index in the instance
  * @param queue_family queue family used for present support queries
  * @return true when initialization succeeds
  */
@@ -199,14 +182,12 @@ bool dvz_surface_init_from_instance(
     ANN(surface);
     ANN(instance);
 
-    uint32_t gpu_count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
-    if (gpus == NULL || gpu_index >= gpu_count)
+    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+    if (!dvz_instance_gpu_handle(instance, gpu_index, &physical_device))
     {
-        log_error("invalid GPU index %u for surface init (available count=%u)", gpu_index, gpu_count);
         return false;
     }
-    return _surface_init_with_physical_device(surface, gpus[gpu_index].pdevice, queue_family);
+    return _surface_init_with_physical_device(surface, physical_device, queue_family);
 }
 
 

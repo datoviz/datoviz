@@ -20,7 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/vk/gpu.h"
+#include "_queues.h"
 #include "datoviz/vk/queues.h"
 #include "macros.h"
 
@@ -174,7 +174,7 @@ DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu)
  * Get queue capabilities from an instance GPU index.
  *
  * @param instance source instance
- * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param gpu_index selected GPU index in the instance
  * @param[out] out_caps destination queue capabilities snapshot
  * @return whether queue capabilities were retrieved
  */

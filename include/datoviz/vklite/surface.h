@@ -28,7 +28,6 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzGpu DvzGpu;
 typedef struct DvzInstance DvzInstance;
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzSurface DvzSurface;
@@ -68,25 +67,11 @@ EXTERN_C_ON
 
 
 /**
- * Initialize a surface wrapper for a GPU queue family.
- *
- * @param surface surface wrapper to initialize
- * @param gpu physical GPU queried for capabilities
- * @param queue_family queue family used for present support queries
- * @return true when initialization succeeds
- * @note This pointer-based entry point is kept for backward compatibility. Prefer
- * dvz_surface_init_from_device() or dvz_surface_init_from_instance() in new code.
- */
-DVZ_EXPORT bool dvz_surface_init(DvzSurface* surface, DvzGpu* gpu, uint32_t queue_family);
-
-
-
-/**
  * Initialize a surface wrapper from instance + GPU index selection.
  *
  * @param surface surface wrapper to initialize
  * @param instance source instance used to resolve the GPU
- * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param gpu_index selected GPU index in the instance
  * @param queue_family queue family used for present support queries
  * @return true when initialization succeeds
  */

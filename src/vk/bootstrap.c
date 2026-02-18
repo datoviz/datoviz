@@ -18,9 +18,9 @@
 #include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
+#include "_gpu.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
@@ -62,7 +62,6 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
     if (gpus == NULL || count == 0)
         return;
     bootstrap->gpu_index = 0;
-    bootstrap->gpu = &gpus[0];
 
     if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE) != 0)
         return;
@@ -110,19 +109,11 @@ DvzInstance* dvz_bootstrap_instance(DvzBootstrap* bootstrap)
 
 
 
-DvzGpu* dvz_bootstrap_gpu(DvzBootstrap* bootstrap)
-{
-    ANN(bootstrap);
-    return bootstrap->gpu;
-}
-
-
-
 /**
  * Return the bootstrap selected GPU index.
  *
  * @param bootstrap the bootstrap
- * @return selected GPU index in dvz_instance_gpus(), or UINT32_MAX if unavailable
+ * @return selected GPU index in the instance, or UINT32_MAX if unavailable
  */
 uint32_t dvz_bootstrap_gpu_index(DvzBootstrap* bootstrap)
 {
@@ -147,32 +138,9 @@ bool dvz_bootstrap_gpu_info(DvzBootstrap* bootstrap, DvzGpuInfo* out_info)
     {
         return false;
     }
-    if (
+    return (
         bootstrap->gpu_index != UINT32_MAX &&
-        dvz_instance_gpu_info(bootstrap->instance, bootstrap->gpu_index, out_info))
-    {
-        return true;
-    }
-    if (bootstrap->gpu == NULL)
-    {
-        return false;
-    }
-
-    uint32_t count = 0;
-    DvzGpu* gpus = dvz_instance_gpus(bootstrap->instance, &count);
-    if (gpus == NULL || count == 0)
-    {
-        return false;
-    }
-    for (uint32_t i = 0; i < count; i++)
-    {
-        if (gpus[i].pdevice == bootstrap->gpu->pdevice)
-        {
-            bootstrap->gpu_index = i;
-            return dvz_instance_gpu_info(bootstrap->instance, i, out_info);
-        }
-    }
-    return false;
+        dvz_instance_gpu_info(bootstrap->instance, bootstrap->gpu_index, out_info));
 }
 
 
@@ -227,7 +195,6 @@ void dvz_bootstrap_destroy(DvzBootstrap* bootstrap)
     }
     bootstrap->device = NULL;
     bootstrap->instance = NULL;
-    bootstrap->gpu = NULL;
     bootstrap->gpu_index = UINT32_MAX;
     bootstrap->owns_device = false;
     bootstrap->owns_instance = false;

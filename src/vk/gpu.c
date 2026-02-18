@@ -22,10 +22,11 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_gpu.h"
 #include "_instance.h"
 #include "_log.h"
+#include "_queues.h"
 #include "datoviz/math/types.h"
-#include "datoviz/vk/gpu.h"
 #include "macros.h"
 
 
@@ -108,7 +109,7 @@ uint32_t dvz_instance_gpu_count(DvzInstance* instance)
  * Return a GPU descriptor snapshot for a given GPU index.
  *
  * @param instance the instance
- * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param gpu_index selected GPU index in the instance
  * @param[out] out_info descriptor output
  * @return true when the descriptor was populated
  */
@@ -145,6 +146,33 @@ bool dvz_instance_gpu_info(DvzInstance* instance, uint32_t gpu_index, DvzGpuInfo
         out_info->queue_caps.queue_count, sizeof(out_info->queue_caps.queue_count),
         queue_caps->queue_count, sizeof(out_info->queue_caps.queue_count));
     out_info->queue_caps.family_count = queue_caps->family_count;
+    return true;
+}
+
+
+
+/**
+ * Resolve the Vulkan physical device handle for a selected GPU index.
+ *
+ * @param instance the instance
+ * @param gpu_index selected GPU index
+ * @param[out] out_pdevice resolved Vulkan physical device
+ * @return true when the physical device handle was resolved
+ */
+bool dvz_instance_gpu_handle(DvzInstance* instance, uint32_t gpu_index, VkPhysicalDevice* out_pdevice)
+{
+    ANN(instance);
+    ANN(out_pdevice);
+
+    uint32_t count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &count);
+    if (gpus == NULL || gpu_index >= count)
+    {
+        log_error("invalid GPU index %u (available count=%u)", gpu_index, count);
+        return false;
+    }
+
+    *out_pdevice = gpus[gpu_index].pdevice;
     return true;
 }
 

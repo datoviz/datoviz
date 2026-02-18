@@ -54,7 +54,6 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzInstance DvzInstance;
-typedef struct DvzGpu DvzGpu;
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzQueueCaps DvzQueueCaps;
 typedef struct DvzQueue DvzQueue;
@@ -100,23 +99,10 @@ struct DvzQueues
 /*************************************************************************************************/
 
 /**
- * Get the queue capabilities of a GPU.
- *
- * @param gpu
- * @returns the queue capabilities
- *
- * @note Legacy pointer-based accessor kept for compatibility. Prefer
- * dvz_instance_gpu_queue_caps() in new code.
- */
-DVZ_EXPORT DvzQueueCaps* dvz_gpu_queue_caps(DvzGpu* gpu);
-
-
-
-/**
  * Get queue capabilities from an instance GPU index.
  *
  * @param instance source instance
- * @param gpu_index selected GPU index in dvz_instance_gpus()
+ * @param gpu_index selected GPU index in the instance
  * @param[out] out_caps destination queue capabilities snapshot
  * @returns whether queue capabilities were retrieved
  */

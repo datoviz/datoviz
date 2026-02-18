@@ -18,6 +18,7 @@
 
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
+#include "_gpu.h"
 
 
 

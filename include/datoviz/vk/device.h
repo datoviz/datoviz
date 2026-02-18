@@ -85,7 +85,7 @@ DVZ_EXPORT DvzDeviceConfig dvz_device_default_config(DvzInstance* instance);
  * Select the GPU index used for device creation.
  *
  * @param cfg the device configuration
- * @param gpu_index the selected GPU index in dvz_instance_gpus()
+ * @param gpu_index the selected GPU index in the instance
  * @returns whether the index was stored successfully
  */
 DVZ_EXPORT bool dvz_device_config_set_gpu_index(DvzDeviceConfig* cfg, uint32_t gpu_index);

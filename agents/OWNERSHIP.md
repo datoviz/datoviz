@@ -1,8 +1,8 @@
 > **Implementation Status**
-> - **Status:** `PARTIALLY COMPLETED`
+> - **Status:** `COMPLETED` (for public GPU ownership/API boundary)
 > - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** Active call sites in `canvas`, vklite present/swapchain paths, live-canvas setup, and migrated vk test setup now use device/index-driven APIs instead of passing raw `DvzGpu*` for queue-cap/surface/swapchain setup. Pointer-based APIs remain as compatibility wrappers only. New public GPU descriptor/selection APIs (`dvz_instance_gpu_count()`, `dvz_instance_gpu_info()`, `dvz_instance_gpu_queue_caps()`), device physical-device query (`dvz_device_physical_device()`), and bootstrap index/descriptor helpers (`dvz_bootstrap_gpu_index()`, `dvz_bootstrap_gpu_info()`) are available and used in migrated setup paths.
-> - **Remaining gap:** Public headers still expose mutable `DvzGpu` and legacy `DvzGpu*` entry points (`vk/gpu.h`, bootstrap GPU pointer accessor, queue-caps-by-pointer APIs). Final completion still requires deprecation/removal of these public pointer surfaces and full descriptor/index migration at the API boundary.
+> - **Codebase alignment:** Public headers no longer expose `DvzGpu`, `DvzGpu*`, `dvz_instance_gpus()`, or `dvz_gpu_*` pointer APIs. Active call sites in `canvas` and vklite present/swapchain setup use device/index-driven APIs. Public GPU discovery/query now goes through `dvz_instance_gpu_count()`, `dvz_instance_gpu_info()`, `dvz_instance_gpu_queue_caps()`, and `dvz_instance_gpu_handle()`; bootstrap setup uses `dvz_bootstrap_gpu_index()`/`dvz_bootstrap_gpu_info()`.
+> - **Boundary note:** Low-level `DvzGpu` pointer helpers are now internal-only (`src/vk/_gpu.h`) and remain used by vk internals and vk-focused tests.
 
 # Datoviz v0.4-dev API Ownership Unification Plan
 

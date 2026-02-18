@@ -40,7 +40,6 @@
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/macros.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/compute.h"

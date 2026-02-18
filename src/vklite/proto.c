@@ -22,7 +22,6 @@
 #include "datoviz/common/obj.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"

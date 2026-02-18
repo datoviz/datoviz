@@ -20,7 +20,6 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vklite/swapchain.h"
 
 
@@ -372,24 +371,6 @@ static DvzPresentStatus _swapchain_refresh_surface(DvzSwapchain* swapchain)
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-/**
- * Initialize a swapchain wrapper from a GPU and surface.
- *
- * @param swapchain swapchain wrapper to initialize
- * @param gpu physical GPU used by the logical device
- * @param surface surface wrapper used for capability and extent data
- * @return true when initialization succeeds
- */
-bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surface)
-{
-    ANN(swapchain);
-    ANN(gpu);
-    ANN(surface);
-    return _swapchain_init_with_physical_device(swapchain, gpu->pdevice, surface);
-}
-
-
 
 /**
  * Initialize a swapchain wrapper from a logical device and surface.

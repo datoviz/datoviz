@@ -30,7 +30,6 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzGpu DvzGpu;
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzSwapchain DvzSwapchain;
 typedef struct DvzSwapchainConfig DvzSwapchainConfig;
@@ -94,21 +93,6 @@ struct DvzSwapchain
 /*************************************************************************************************/
 
 EXTERN_C_ON
-
-
-
-/**
- * Initialize a swapchain wrapper from a GPU and surface.
- *
- * @param swapchain swapchain wrapper to initialize
- * @param gpu physical GPU used by the logical device
- * @param surface surface wrapper used for capability and extent data
- * @return true when initialization succeeds
- * @note This call does not bind a VkDevice. Call dvz_swapchain_device() before recreate/acquire/present.
- * @note This pointer-based entry point is kept for backward compatibility. Prefer
- * dvz_swapchain_init_from_device() in new code.
- */
-DVZ_EXPORT bool dvz_swapchain_init(DvzSwapchain* swapchain, DvzGpu* gpu, DvzSurface* surface);
 
 
 

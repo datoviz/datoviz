@@ -67,7 +67,6 @@ struct DvzBootstrap
     bool owns_instance;
     bool owns_device;
     DvzInstance* instance;
-    DvzGpu* gpu;
     DvzDevice* device;
     DvzVma allocator;
 };
@@ -106,23 +105,10 @@ DVZ_EXPORT DvzInstance* dvz_bootstrap_instance(DvzBootstrap* bootstrap);
 
 
 /**
- * Return the bootstrap's gpu.
- *
- * @param bootstrap the bootstrap
- * @returns the gpu
- *
- * @note Legacy pointer-based accessor kept for compatibility. Prefer
- * dvz_bootstrap_gpu_index() and dvz_bootstrap_gpu_info() in new code.
- */
-DVZ_EXPORT DvzGpu* dvz_bootstrap_gpu(DvzBootstrap* bootstrap);
-
-
-
-/**
  * Return the bootstrap selected GPU index.
  *
  * @param bootstrap the bootstrap
- * @returns the GPU index in dvz_instance_gpus(), or UINT32_MAX if unavailable
+ * @returns the GPU index in the instance, or UINT32_MAX if unavailable
  */
 DVZ_EXPORT uint32_t dvz_bootstrap_gpu_index(DvzBootstrap* bootstrap);
 

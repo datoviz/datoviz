@@ -20,12 +20,12 @@
 
 #include "../src/vk/macros.h"
 #include "../vk/_device.h"
+#include "../vk/_gpu.h"
 #include "../vk/_instance.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
-#include "datoviz/vk/gpu.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
