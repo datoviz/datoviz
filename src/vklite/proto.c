@@ -45,19 +45,20 @@ void dvz_proto(DvzProto* proto)
     ANN(bootstrap);
 
     dvz_bootstrap(bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    ANN(bootstrap->instance);
+    DvzInstance* instance = dvz_bootstrap_instance(bootstrap);
+    ANN(instance);
     uint32_t gpu_index = dvz_bootstrap_gpu_index(bootstrap);
     ASSERT(gpu_index != UINT32_MAX);
     DvzQueueCaps qc = {0};
-    ASSERT(dvz_instance_gpu_queue_caps(bootstrap->instance, gpu_index, &qc));
+    ASSERT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap->instance);
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
     dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+        dvz_device_config_request_queue(&dcfg, dvz_queue_family(req), 1);
     }
     VkPhysicalDeviceFeatures fet10 = {0};
     fet10.samplerAnisotropy = true;
@@ -67,11 +68,13 @@ void dvz_proto(DvzProto* proto)
     fet13.dynamicRendering = true;
     fet13.synchronization2 = true;
     dvz_device_config_set_features13(&dcfg, &fet13);
-    bootstrap->device = dvz_device_create(&dcfg);
-    bootstrap->owns_device = bootstrap->device != NULL;
-    DvzDevice* device = bootstrap->device;
+    DvzDevice* created_device = dvz_device_create(&dcfg);
+    ASSERT(dvz_bootstrap_set_device(bootstrap, created_device, created_device != NULL));
+    DvzDevice* device = dvz_bootstrap_device(bootstrap);
     ANN(device);
-    dvz_device_allocator(device, 0, &bootstrap->allocator);
+    ASSERT(dvz_bootstrap_create_allocator(bootstrap, 0) == 0);
+    DvzVma* allocator = dvz_bootstrap_allocator(bootstrap);
+    ANN(allocator);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
@@ -85,7 +88,7 @@ void dvz_proto(DvzProto* proto)
     // Image to render to.
     DvzImages* img = &proto->img;
     ANN(img);
-    dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, img);
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, img);
     dvz_images_format(img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
     // NOTE: need transfer src for screenshot
@@ -112,7 +115,7 @@ void dvz_proto(DvzProto* proto)
     // Image to render to.
     DvzImages* dimg = &proto->dimg;
     ANN(dimg);
-    dvz_images(device, &proto->bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, dimg);
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, dimg);
     dvz_images_format(dimg, VK_FORMAT_D32_SFLOAT_S8_UINT);
     dvz_images_size(dimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
     dvz_images_usage(dimg, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
@@ -173,7 +176,7 @@ DvzSlots* dvz_proto_slots(DvzProto* proto)
 {
     ANN(proto);
 
-    DvzDevice* device = proto->bootstrap.device;
+    DvzDevice* device = dvz_bootstrap_device(&proto->bootstrap);
     ANN(device);
 
     dvz_slots(device, &proto->slots);
@@ -190,7 +193,7 @@ DvzGraphics* dvz_proto_graphics(
     DvzGraphics* graphics = &proto->graphics;
     ANN(graphics);
 
-    DvzDevice* device = proto->bootstrap.device;
+    DvzDevice* device = dvz_bootstrap_device(&proto->bootstrap);
     ANN(device);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
@@ -289,7 +292,11 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
     DvzSize screenshot_size = DVZ_PROTO_WIDTH * DVZ_PROTO_HEIGHT * 4;
     ASSERT(screenshot_size > 0);
 
-    dvz_buffer(proto->bootstrap.device, &proto->bootstrap.allocator, staging);
+    DvzDevice* device = dvz_bootstrap_device(&proto->bootstrap);
+    DvzVma* allocator = dvz_bootstrap_allocator(&proto->bootstrap);
+    ANN(device);
+    ANN(allocator);
+    dvz_buffer(device, allocator, staging);
     dvz_buffer_size(staging, screenshot_size);
     dvz_buffer_flags(
         staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);

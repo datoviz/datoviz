@@ -296,7 +296,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+        dvz_device_config_request_queue(&dcfg, dvz_queue_family(queue), 1);
     }
     dvz_device_config_enable_canvas_extensions(&dcfg, true);
     fixture->device = dvz_device_create(&dcfg);

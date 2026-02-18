@@ -45,7 +45,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
 
     // Create slots.
     DvzSlots slots = {0};
-    dvz_slots(bootstrap.device, &slots);
+    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
 
     // Bindings.
     dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -61,19 +61,19 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     DvzBuffer sbuf = {0};
     DvzSize size = 256;
 
-    dvz_buffer(bootstrap.device, &bootstrap.allocator, &ubuf);
+    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), &ubuf);
     dvz_buffer_size(&ubuf, size);
     dvz_buffer_usage(&ubuf, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     dvz_buffer_create(&ubuf);
 
-    dvz_buffer(bootstrap.device, &bootstrap.allocator, &sbuf);
+    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), &sbuf);
     dvz_buffer_size(&sbuf, size);
     dvz_buffer_usage(&sbuf, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     dvz_buffer_create(&sbuf);
 
     // Images.
     DvzImages images = {0};
-    dvz_images(bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &images);
+    dvz_images(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), VK_IMAGE_TYPE_2D, 1, &images);
     dvz_images_format(&images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&images, 256, 256, 1);
     dvz_images_mip(&images, 1);

@@ -56,30 +56,30 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    ANN(bootstrap.instance);
+    ANN(dvz_bootstrap_instance(&bootstrap));
     uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
     AT(gpu_index != UINT32_MAX);
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(bootstrap.instance, gpu_index, &qc));
+    AT(dvz_instance_gpu_queue_caps(dvz_bootstrap_instance(&bootstrap), gpu_index, &qc));
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
 
-    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    DvzDeviceConfig dcfg = dvz_device_default_config(dvz_bootstrap_instance(&bootstrap));
     dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+        dvz_device_config_request_queue(&dcfg, dvz_queue_family(req), 1);
     }
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
     dvz_device_config_set_features13(&dcfg, &features13);
-    bootstrap.device = dvz_device_create(&dcfg);
-    bootstrap.owns_device = bootstrap.device != NULL;
-    DvzDevice* device = bootstrap.device;
+    DvzDevice* created_device = dvz_device_create(&dcfg);
+    AT(dvz_bootstrap_set_device(&bootstrap, created_device, created_device != NULL));
+    DvzDevice* device = dvz_bootstrap_device(&bootstrap);
     AT(device != NULL);
-    dvz_device_allocator(device, 0, &bootstrap.allocator);
+    AT(dvz_bootstrap_create_allocator(&bootstrap, 0) == 0);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
@@ -104,7 +104,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Slots.
     DvzSlots slots = {0};
-    dvz_slots(bootstrap.device, &slots);
+    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
     AT(dvz_slots_create(&slots) == 0);
     dvz_graphics_layout(&graphics, dvz_slots_handle(&slots));
 
@@ -134,7 +134,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Image to render to.
     DvzImages img = {0};
-    dvz_images(bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &img);
+    dvz_images(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), VK_IMAGE_TYPE_2D, 1, &img);
     dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&img, WIDTH, HEIGHT, 1);
     dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
@@ -182,7 +182,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Staging buffer for screenshot.
     DvzBuffer staging = {0};
     DvzSize screenshot_size = WIDTH * HEIGHT * 4;
-    dvz_buffer(bootstrap.device, &bootstrap.allocator, &staging);
+    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), &staging);
     dvz_buffer_size(&staging, screenshot_size);
     dvz_buffer_flags(
         &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);

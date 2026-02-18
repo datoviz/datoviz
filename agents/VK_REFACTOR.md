@@ -2,7 +2,8 @@
 > - **Status:** `PARTIALLY COMPLETED`
 > - **Verified on:** `2026-02-18`
 > - **Codebase alignment:** Public GPU ownership/API cleanup is complete (`DvzGpu*` removed from public headers, index/descriptor flow active).
-> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening (private-header leakage, lifecycle ownership contracts, and public struct hardening).
+> - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 partially completed (bootstrap/device/allocator boundary accessors added and active vklite proto path migrated).
+> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening (public struct hardening and broader call-site migration, especially tests and remaining direct struct consumers).
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -231,6 +232,27 @@ Exit criteria:
    - Boundary leakage is currently more about public mutable struct layout than private-header includes.
    - Priority hardening targets are `DvzBootstrap`, `DvzSurface`, `DvzSwapchain`, and memory structs
      (`DvzVma`, `DvzAllocation`) before broader vklite struct privatization.
+6. Step 1 boundary contract (implemented subset):
+   - `vklite` runtime code must treat `DvzBootstrap` as API-managed state, using bootstrap accessors instead
+     of direct field mutation for instance/device/allocator ownership transitions.
+   - Queue-family extraction in cross-module configuration flows should prefer queue accessors
+     (`dvz_queue_family()`) over direct struct-field reads.
+7. Step 2 accessor additions completed in this slice:
+   - Added public APIs in `include/datoviz/vk/bootstrap.h` and implementations in `src/vk/bootstrap.c`:
+     - `dvz_bootstrap_set_instance(...)`
+     - `dvz_bootstrap_set_device(...)`
+     - `dvz_bootstrap_create_allocator(...)`
+   - Migrated `src/vklite/proto.c` to consume only bootstrap accessors for instance/device/allocator paths.
+   - Migrated `src/vklite/tests/*.c` bootstrap call sites away from direct `bootstrap.{instance,device,
+     allocator,owns_*}` field access; tests now use bootstrap accessors and setter APIs.
+8. Validation run on `2026-02-18` after this slice:
+   - `just build` (pass)
+   - `just test vk` (pass, `48/48`)
+   - `just test vklite` (pass, `25/25`)
+   - `just test canvas` (pass, `26/26`)
+   - `rg -n '#include "_.*\.h"' src/vklite` reviewed: shared `src/common` internals only, no vk-private
+     include leakage observed.
+   - `rg -n 'DvzGpu\*' include/datoviz` clean.
 
 
 ## Definition of done

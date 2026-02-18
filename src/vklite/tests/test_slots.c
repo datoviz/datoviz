@@ -39,7 +39,7 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
 
     // Create slots.
     DvzSlots slots = {0};
-    dvz_slots(bootstrap.device, &slots);
+    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
 
     // Bindings.
     dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

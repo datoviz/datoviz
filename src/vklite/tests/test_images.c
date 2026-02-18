@@ -48,7 +48,7 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
 
     // Images.
     DvzImages images = {0};
-    dvz_images(bootstrap.device, &bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &images);
+    dvz_images(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), VK_IMAGE_TYPE_2D, 1, &images);
     dvz_images_format(&images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&images, 256, 256, 1);
     dvz_images_mip(&images, 1);

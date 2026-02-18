@@ -105,6 +105,19 @@ DVZ_EXPORT DvzInstance* dvz_bootstrap_instance(DvzBootstrap* bootstrap);
 
 
 /**
+ * Attach an externally-created instance to a bootstrap.
+ *
+ * @param bootstrap the bootstrap
+ * @param instance externally-created instance (or NULL to clear)
+ * @param take_ownership whether bootstrap destroy should reclaim the instance
+ * @returns whether the assignment was accepted
+ */
+DVZ_EXPORT bool
+dvz_bootstrap_set_instance(DvzBootstrap* bootstrap, DvzInstance* instance, bool take_ownership);
+
+
+
+/**
  * Return the bootstrap selected GPU index.
  *
  * @param bootstrap the bootstrap
@@ -136,12 +149,37 @@ DVZ_EXPORT DvzDevice* dvz_bootstrap_device(DvzBootstrap* bootstrap);
 
 
 /**
+ * Attach an externally-created device to a bootstrap.
+ *
+ * @param bootstrap the bootstrap
+ * @param device externally-created device (or NULL to clear)
+ * @param take_ownership whether bootstrap destroy should reclaim the device
+ * @returns whether the assignment was accepted
+ */
+DVZ_EXPORT bool
+dvz_bootstrap_set_device(DvzBootstrap* bootstrap, DvzDevice* device, bool take_ownership);
+
+
+
+/**
  * Return the bootstrap's allocator.
  *
  * @param bootstrap the bootstrap
  * @returns the allocator
  */
 DVZ_EXPORT DvzVma* dvz_bootstrap_allocator(DvzBootstrap* bootstrap);
+
+
+
+/**
+ * Create or refresh the bootstrap allocator from the attached device.
+ *
+ * @param bootstrap the bootstrap
+ * @param export_handle_type external memory export flags
+ * @returns Vulkan-style success code (0 on success)
+ */
+DVZ_EXPORT int dvz_bootstrap_create_allocator(
+    DvzBootstrap* bootstrap, VkExternalMemoryHandleTypeFlagsKHR export_handle_type);
 
 
 

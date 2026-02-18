@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "_gpu.h"
+#include "_log.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/instance.h"
@@ -83,7 +84,7 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
         for (uint32_t i = 0; i < queues.queue_count; i++)
         {
             DvzQueue* queue = &queues.queues[i];
-            dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+            dvz_device_config_request_queue(&dcfg, dvz_queue_family(queue), 1);
         }
         bootstrap->device = dvz_device_create(&dcfg);
         bootstrap->owns_device = bootstrap->device != NULL;
@@ -105,6 +106,39 @@ DvzInstance* dvz_bootstrap_instance(DvzBootstrap* bootstrap)
 {
     ANN(bootstrap);
     return bootstrap->instance;
+}
+
+
+
+/**
+ * Attach an externally-created instance to a bootstrap.
+ *
+ * @param bootstrap the bootstrap
+ * @param instance externally-created instance (or NULL to clear)
+ * @param take_ownership whether bootstrap destroy should reclaim the instance
+ * @return whether the assignment was accepted
+ */
+bool dvz_bootstrap_set_instance(DvzBootstrap* bootstrap, DvzInstance* instance, bool take_ownership)
+{
+    ANN(bootstrap);
+    if (bootstrap->device != NULL && instance == NULL)
+    {
+        log_error("cannot clear bootstrap instance while a bootstrap device is attached");
+        return false;
+    }
+    if (take_ownership && instance == NULL)
+    {
+        log_error("cannot take ownership of a null bootstrap instance");
+        return false;
+    }
+
+    bootstrap->instance = instance;
+    bootstrap->owns_instance = take_ownership && instance != NULL;
+    if (instance == NULL)
+    {
+        bootstrap->gpu_index = UINT32_MAX;
+    }
+    return true;
 }
 
 
@@ -153,10 +187,55 @@ DvzDevice* dvz_bootstrap_device(DvzBootstrap* bootstrap)
 
 
 
+/**
+ * Attach an externally-created device to a bootstrap.
+ *
+ * @param bootstrap the bootstrap
+ * @param device externally-created device (or NULL to clear)
+ * @param take_ownership whether bootstrap destroy should reclaim the device
+ * @return whether the assignment was accepted
+ */
+bool dvz_bootstrap_set_device(DvzBootstrap* bootstrap, DvzDevice* device, bool take_ownership)
+{
+    ANN(bootstrap);
+    if (take_ownership && device == NULL)
+    {
+        log_error("cannot take ownership of a null bootstrap device");
+        return false;
+    }
+
+    bootstrap->device = device;
+    bootstrap->owns_device = take_ownership && device != NULL;
+    return true;
+}
+
+
+
 DvzVma* dvz_bootstrap_allocator(DvzBootstrap* bootstrap)
 {
     ANN(bootstrap);
     return &bootstrap->allocator;
+}
+
+
+
+/**
+ * Create or refresh the bootstrap allocator from the attached device.
+ *
+ * @param bootstrap the bootstrap
+ * @param export_handle_type external memory export flags
+ * @return Vulkan-style success code (0 on success)
+ */
+int dvz_bootstrap_create_allocator(
+    DvzBootstrap* bootstrap, VkExternalMemoryHandleTypeFlagsKHR export_handle_type)
+{
+    ANN(bootstrap);
+    if (bootstrap->device == NULL)
+    {
+        log_error("cannot create bootstrap allocator without an attached device");
+        return -1;
+    }
+    return dvz_device_allocator(bootstrap->device, export_handle_type, &bootstrap->allocator);
 }
 
 

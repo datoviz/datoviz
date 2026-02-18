@@ -118,40 +118,40 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    ANN(bootstrap.instance);
+    ANN(dvz_bootstrap_instance(&bootstrap));
     uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
     AT(gpu_index != UINT32_MAX);
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(bootstrap.instance, gpu_index, &qc));
+    AT(dvz_instance_gpu_queue_caps(dvz_bootstrap_instance(&bootstrap), gpu_index, &qc));
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(bootstrap.instance);
+    DvzDeviceConfig dcfg = dvz_device_default_config(dvz_bootstrap_instance(&bootstrap));
     dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* req = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, req->family_idx, 1);
+        dvz_device_config_request_queue(&dcfg, dvz_queue_family(req), 1);
     }
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.maintenance4 = true;
     dvz_device_config_set_features13(&dcfg, &features13);
-    bootstrap.device = dvz_device_create(&dcfg);
-    bootstrap.owns_device = bootstrap.device != NULL;
-    AT(bootstrap.device != NULL);
+    DvzDevice* created_device = dvz_device_create(&dcfg);
+    AT(dvz_bootstrap_set_device(&bootstrap, created_device, created_device != NULL));
+    AT(dvz_bootstrap_device(&bootstrap) != NULL);
 
     // Create a basic compute shader.
     DvzShader shader = {0};
-    dvz_shader(bootstrap.device, sizeof(minimal_compute), (uint32_t*)minimal_compute, &shader);
+    dvz_shader(dvz_bootstrap_device(&bootstrap), sizeof(minimal_compute), (uint32_t*)minimal_compute, &shader);
 
     // Create slots.
     DvzSlots slots = {0};
-    dvz_slots(bootstrap.device, &slots);
+    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
     dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     dvz_slots_create(&slots);
 
     // Create a compute pipeline.
     DvzCompute compute = {0};
-    dvz_compute(bootstrap.device, &compute);
+    dvz_compute(dvz_bootstrap_device(&bootstrap), &compute);
     dvz_compute_shader(&compute, dvz_shader_handle(&shader));
     dvz_compute_layout(&compute, dvz_slots_handle(&slots));
     AT(dvz_compute_create(&compute) == 0);

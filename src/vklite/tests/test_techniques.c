@@ -128,7 +128,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     // Inner graphics pipeline (triangle).
     DvzGraphics igraphics = {0};
     {
-        DvzDevice* device = proto.bootstrap.device;
+        DvzDevice* device = dvz_bootstrap_device(&proto.bootstrap);
         ANN(device);
 
         // Load the shaders.
@@ -194,7 +194,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     DvzImageViews tex_view = {0};
     {
         ANN(&tex);
-        dvz_images(proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &tex);
+        dvz_images(dvz_bootstrap_device(&proto.bootstrap), dvz_bootstrap_allocator(&proto.bootstrap), VK_IMAGE_TYPE_2D, 1, &tex);
         dvz_images_format(&tex, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_images_size(&tex, DVZ_PROTO_WIDTH / 2, DVZ_PROTO_HEIGHT / 2, 1);
         dvz_images_usage(&tex, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
@@ -227,7 +227,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     DvzSampler sampler = {0};
     {
         ANN(&sampler);
-        dvz_sampler(proto.bootstrap.device, &sampler);
+        dvz_sampler(dvz_bootstrap_device(&proto.bootstrap), &sampler);
         dvz_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
         dvz_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
         dvz_sampler_address_mode(
@@ -347,7 +347,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     // Mask pipeline.
     DvzGraphics mgraphics = {0};
     {
-        DvzDevice* device = proto.bootstrap.device;
+        DvzDevice* device = dvz_bootstrap_device(&proto.bootstrap);
         ANN(device);
 
         // Initialize the graphics pipeline.
@@ -526,7 +526,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     {
         ANN(&msimg);
         dvz_images(
-            proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msimg);
+            dvz_bootstrap_device(&proto.bootstrap), dvz_bootstrap_allocator(&proto.bootstrap), VK_IMAGE_TYPE_2D, 1, &msimg);
         dvz_images_format(&msimg, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_images_samples(&msimg, sample_count);
         dvz_images_size(&msimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
@@ -540,7 +540,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
 
         ANN(&msdepth);
         dvz_images(
-            proto.bootstrap.device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &msdepth);
+            dvz_bootstrap_device(&proto.bootstrap), dvz_bootstrap_allocator(&proto.bootstrap), VK_IMAGE_TYPE_2D, 1, &msdepth);
         dvz_images_format(&msdepth, VK_FORMAT_D32_SFLOAT_S8_UINT);
         dvz_images_samples(&msdepth, sample_count);
         dvz_images_size(&msdepth, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
@@ -649,7 +649,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = proto.bootstrap.device;
+    DvzDevice* device = dvz_bootstrap_device(&proto.bootstrap);
     ANN(device);
 
     // Step 1: create storage/vertex buffer
@@ -663,7 +663,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     };
 
     DvzBuffer buf = {0};
-    dvz_buffer(device, &proto.bootstrap.allocator, &buf);
+    dvz_buffer(device, dvz_bootstrap_allocator(&proto.bootstrap), &buf);
     dvz_buffer_size(&buf, sizeof(positions));
     dvz_buffer_usage(
         &buf, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
@@ -788,7 +788,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = proto.bootstrap.device;
+    DvzDevice* device = dvz_bootstrap_device(&proto.bootstrap);
     ANN(device);
 
     DvzSlots* slots = dvz_proto_slots(&proto);
@@ -809,7 +809,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     };
 
     DvzBuffer vbuf = {0};
-    dvz_buffer(device, &proto.bootstrap.allocator, &vbuf);
+    dvz_buffer(device, dvz_bootstrap_allocator(&proto.bootstrap), &vbuf);
     dvz_buffer_size(&vbuf, sizeof(verts));
     dvz_buffer_usage(&vbuf, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_flags(&vbuf, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
@@ -819,7 +819,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     // Step 2: picking attachment (R32_UINT)
     DvzImages pickimg = {0};
-    dvz_images(device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &pickimg);
+    dvz_images(device, dvz_bootstrap_allocator(&proto.bootstrap), VK_IMAGE_TYPE_2D, 1, &pickimg);
     dvz_images_format(&pickimg, VK_FORMAT_R32_UINT);
     dvz_images_size(&pickimg, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
     dvz_images_usage(
@@ -940,7 +940,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     // Step 5.5: create staging buffer for reading back one uint32 ID
     DvzBuffer staging = {0};
-    dvz_buffer(device, &proto.bootstrap.allocator, &staging);
+    dvz_buffer(device, dvz_bootstrap_allocator(&proto.bootstrap), &staging);
     dvz_buffer_size(&staging, sizeof(uint32_t));
     dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_flags(
@@ -1054,9 +1054,9 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = proto.bootstrap.device;
+    DvzDevice* device = dvz_bootstrap_device(&proto.bootstrap);
     ANN(device);
-    DvzVma* allocator = &proto.bootstrap.allocator;
+    DvzVma* allocator = dvz_bootstrap_allocator(&proto.bootstrap);
     ANN(allocator);
 
     // -----------------------------------------------------------------------------------------
@@ -1496,14 +1496,14 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     DvzProto proto = {0};
     dvz_proto(&proto);
 
-    DvzDevice* device = proto.bootstrap.device;
+    DvzDevice* device = dvz_bootstrap_device(&proto.bootstrap);
     ANN(device);
 
 
     // Offscreen depth image (to be sampled by SSAO pass).
 
     DvzImages depth_img = {0};
-    dvz_images(device, &proto.bootstrap.allocator, VK_IMAGE_TYPE_2D, 1, &depth_img);
+    dvz_images(device, dvz_bootstrap_allocator(&proto.bootstrap), VK_IMAGE_TYPE_2D, 1, &depth_img);
     dvz_images_format(&depth_img, VK_FORMAT_D32_SFLOAT);
     dvz_images_size(&depth_img, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, 1);
     dvz_images_usage(
