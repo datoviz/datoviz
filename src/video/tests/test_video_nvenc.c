@@ -31,7 +31,7 @@
 
 #include <volk.h>
 
-#include "../../vk/tests/test_vk.h"
+#include "test_vk.h"
 #include "../../vklite/tests/test_vklite.h"
 #include "../encoder.h"
 #include "_alloc.h"
@@ -44,7 +44,7 @@
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
-#include "../../vklite/_proto.h"
+#include "_proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sampler.h"
 #include "datoviz/vklite/slots.h"

@@ -16,7 +16,7 @@
 
 #include <stddef.h>
 
-#include "../../vk/tests/test_vk.h"
+#include "test_vk.h"
 #include "_assertions.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/bootstrap.h"

@@ -16,7 +16,7 @@
 
 #include <stdint.h>
 
-#include "../../vk/tests/test_vk.h"
+#include "test_vk.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"

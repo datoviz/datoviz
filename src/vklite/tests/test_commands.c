@@ -14,12 +14,15 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../../vk/tests/test_vk.h"
+#include <stdint.h>
+
+#include "test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/sync.h"
 #include "test_vklite.h"
 #include "testing.h"
 
@@ -55,4 +58,37 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
     dvz_bootstrap_destroy(&bootstrap);
 
     RETURN_VALIDATION
+}
+
+
+
+int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+
+    // Fill to capacity.
+    for (uint32_t i = 0; i < DVZ_MAX_BARRIERS; i++)
+    {
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, (VkImage)(uintptr_t)(i + 1));
+        AT(bimg != NULL);
+    }
+    AT(barriers.info.imageMemoryBarrierCount == DVZ_MAX_BARRIERS);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, (dvz_barriers_image(&barriers, (VkImage)(uintptr_t)0xFFFF) == NULL));
+
+    // Reset and ensure counters restart from zero.
+    dvz_barriers(&barriers);
+    AT(barriers.info.imageMemoryBarrierCount == 0);
+    AT(barriers.info.bufferMemoryBarrierCount == 0);
+    AT(barriers.info.memoryBarrierCount == 0);
+
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, (VkImage)(uintptr_t)0x1234);
+    AT(bimg != NULL);
+    AT(barriers.info.imageMemoryBarrierCount == 1);
+
+    return 0;
 }

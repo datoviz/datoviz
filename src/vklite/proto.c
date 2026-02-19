@@ -133,13 +133,13 @@ void dvz_proto(DvzProto* proto)
 
     DvzAttachment* datt = dvz_rendering_depth(rendering);
     dvz_attachment_image(
-        datt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        datt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
     DvzAttachment* satt = dvz_rendering_stencil(rendering);
     dvz_attachment_image(
-        satt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        satt, dvz_image_views_handle(dview, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(satt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
@@ -166,7 +166,7 @@ void dvz_proto(DvzProto* proto)
             VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
     dvz_barrier_image_access(bdimg, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
-        bdimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        bdimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_barrier_image_aspect(bdimg, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
     // Command buffers.
@@ -314,20 +314,8 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
     // Screenshot.
     DvzCommands* cmds = &proto->cmds;
     ANN(cmds);
-    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
-    {
-        log_warn("skip screenshot: command buffer unavailable");
-        dvz_buffer_destroy(staging);
-        return;
-    }
     dvz_cmd_reset(cmds);
     dvz_cmd_begin(cmds);
-    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
-    {
-        log_warn("skip screenshot: command buffer unavailable after begin");
-        dvz_buffer_destroy(staging);
-        return;
-    }
 
     // Image barrier.
     DvzBarriers* barriers = &proto->barriers;

@@ -14,7 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../../vk/tests/test_vk.h"
+#include "test_vk.h"
 #include "_assertions.h"
 #include "datoviz/vk/bootstrap.h"
 #include "datoviz/vklite/images.h"

@@ -18,13 +18,13 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "../../vk/tests/test_vk.h"
+#include "test_vk.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
-#include "../_proto.h"
+#include "_proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
@@ -425,15 +425,13 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
         // Attachments.
         DvzAttachment* datt = dvz_rendering_depth(&mrendering);
         dvz_attachment_image(
-            datt, dvz_image_views_handle(&proto.dview, 0),
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            datt, dvz_image_views_handle(&proto.dview, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
         DvzAttachment* satt = dvz_rendering_stencil(&mrendering);
         dvz_attachment_image(
-            satt, dvz_image_views_handle(&proto.dview, 0),
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            satt, dvz_image_views_handle(&proto.dview, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(satt, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
@@ -1373,7 +1371,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
 
         // Depth.
         DvzAttachment* ad = dvz_rendering_depth(&accum_rendering);
-        dvz_attachment_image(ad, depth_view, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        dvz_attachment_image(ad, depth_view, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(ad, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(ad, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
@@ -1636,8 +1634,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         // Depth.
         DvzAttachment* datt = dvz_rendering_depth(&depth_rendering);
         dvz_attachment_image(
-            datt, dvz_image_views_handle(&depth_view, 0),
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            datt, dvz_image_views_handle(&depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
@@ -1742,7 +1739,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
         dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
         dvz_barrier_image_layout(
-            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_barrier_image_mip(bimg, 0, 1);
         dvz_barrier_image_layers(bimg, 0, 1);
@@ -1767,8 +1764,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
             bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
         dvz_barrier_image_layout(
-            bimg, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            bimg, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_barrier_image_mip(bimg, 0, 1);
         dvz_barrier_image_layers(bimg, 0, 1);

@@ -560,11 +560,7 @@ void dvz_cmd_copy_buffer_to_image(
 
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip copy buffer->image: null command buffer handle");
-        return;
-    }
+    ANNVK(cmd);
 
     region->bufferOffset = offset;
 
@@ -586,11 +582,7 @@ void dvz_cmd_copy_image_to_buffer(
     ANN(cmds);
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip copy image->buffer: null command buffer handle");
-        return;
-    }
+    ANNVK(cmd);
 
     region->bufferOffset = offset;
 
@@ -656,11 +648,7 @@ void dvz_cmd_copy_image(DvzCommands* cmds, DvzImageCopy* copy)
     ANN(copy);
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip copy image: null command buffer handle");
-        return;
-    }
+    ANNVK(cmd);
 
     copy->info.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2;
     copy->info.regionCount = 1;
@@ -734,11 +722,7 @@ void dvz_cmd_blit_image(DvzCommands* cmds, DvzImageBlit* blit)
     ANN(blit);
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip blit image: null command buffer handle");
-        return;
-    }
+    ANNVK(cmd);
 
     blit->info.sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2;
     blit->info.regionCount = 1;

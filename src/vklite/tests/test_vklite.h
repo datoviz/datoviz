@@ -81,6 +81,7 @@ static inline void* dvz_test_shader_load(const char* filename, DvzSize* size_out
 /*************************************************************************************************/
 
 int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem);
 

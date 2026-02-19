@@ -70,6 +70,7 @@ int test_vklite(TstSuite* suite)
     }
 
     TEST_SIMPLE(test_vklite_commands_1);
+    TEST_SIMPLE(test_vklite_barriers_reset);
     TEST_SIMPLE(test_vklite_sampler_1);
     TEST_SIMPLE(test_vklite_shader_1);
     TEST_SIMPLE(test_vklite_slots_1);

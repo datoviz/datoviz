@@ -152,24 +152,14 @@ void dvz_commands_current(DvzCommands* cmds, uint32_t current)
 void dvz_cmd_begin(DvzCommands* cmds)
 {
     ANN(cmds);
-    if (cmds->count == 0)
-    {
-        log_error("skip command begin: no command buffers");
-        cmds->count = 0;
-        return;
-    }
+    ASSERT(cmds->count > 0);
 
 
     // log_trace("begin command buffer");
     VkCommandBufferBeginInfo begin_info = {0};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip command begin: null command buffer handle");
-        cmds->count = 0;
-        return;
-    }
+    ANNVK(cmd);
     VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &begin_info));
 }
 
@@ -178,21 +168,11 @@ void dvz_cmd_begin(DvzCommands* cmds)
 void dvz_cmd_end(DvzCommands* cmds)
 {
     ANN(cmds);
-    if (cmds->count == 0)
-    {
-        log_error("skip command end: no command buffers");
-        cmds->count = 0;
-        return;
-    }
+    ASSERT(cmds->count > 0);
 
     // log_trace("end command buffer");
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip command end: null command buffer handle");
-        cmds->count = 0;
-        return;
-    }
+    ANNVK(cmd);
     VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
 
     dvz_obj_created(&cmds->obj);
@@ -203,22 +183,12 @@ void dvz_cmd_end(DvzCommands* cmds)
 void dvz_cmd_reset(DvzCommands* cmds)
 {
     ANN(cmds);
-    if (cmds->count == 0)
-    {
-        log_error("skip command reset: no command buffers");
-        cmds->count = 0;
-        return;
-    }
+    ASSERT(cmds->count > 0);
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
 
     log_trace("reset command buffer #%d", cmds->current);
-    if (cmd == VK_NULL_HANDLE)
-    {
-        log_error("skip command reset: null command buffer handle");
-        cmds->count = 0;
-        return;
-    }
+    ANNVK(cmd);
     VK_CHECK_RESULT(vkResetCommandBuffer(cmd, 0));
 
     // NOTE: when resetting, we mark the object as not created because it is no longer filled with
@@ -251,11 +221,7 @@ void dvz_cmd_free(DvzCommands* cmds)
 void dvz_cmd_submit(DvzCommands* cmds)
 {
     ANN(cmds);
-    if (cmds->count == 0)
-    {
-        log_error("skip command submit: no command buffers");
-        return;
-    }
+    ASSERT(cmds->count > 0);
 
     DvzDevice* device = cmds->device;
     ANN(device);
@@ -269,21 +235,13 @@ void dvz_cmd_submit(DvzCommands* cmds)
     dvz_device_wait(device);
 
     VkQueue vk_queue = dvz_queue_handle(queue);
-    if (vk_queue == VK_NULL_HANDLE)
-    {
-        log_error("skip command submit: null queue handle");
-        return;
-    }
+    ANNVK(vk_queue);
 
     // Submit.
     VkCommandBufferSubmitInfo submit_cmds[DVZ_MAX_SWAPCHAIN_IMAGES] = {0};
     for (uint32_t i = 0; i < cmds->count; ++i)
     {
-        if (cmds->cmds[i] == VK_NULL_HANDLE)
-        {
-            log_error("skip command submit: null command buffer at index %u", i);
-            return;
-        }
+        ANNVK(cmds->cmds[i]);
         submit_cmds[i].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
         submit_cmds[i].commandBuffer = cmds->cmds[i];
     }
