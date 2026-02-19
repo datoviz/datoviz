@@ -22,7 +22,6 @@
 #include <unistd.h>
 #endif
 
-#include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"

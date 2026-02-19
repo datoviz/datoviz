@@ -31,7 +31,6 @@
 
 #include <volk.h>
 
-#include "../../vk/macros.h"
 #include "../../vk/tests/test_vk.h"
 #include "../../vklite/tests/test_vklite.h"
 #include "../encoder.h"
@@ -322,7 +321,7 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr)
 {
     ANN(vk);
-    ANNVK(vk->cmd);
+    ASSERT(vk->cmd != VK_NULL_HANDLE);
     ANN(clr);
 
     VK_CHECK(vkWaitForFences(vk->device, 1, &vk->fence, VK_TRUE, UINT64_MAX));

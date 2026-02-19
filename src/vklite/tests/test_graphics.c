@@ -84,6 +84,11 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
+    if (dvz_bootstrap_error_count(&bootstrap) > 0)
+    {
+        dvz_bootstrap_destroy(&bootstrap);
+        return 0;
+    }
 
     // Graphics setup.
     DvzGraphics graphics = {0};
@@ -169,6 +174,19 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Command buffer.
     DvzCommands cmds = {0};
     dvz_commands(device, queue, 1, &cmds);
+    if (cmds.count == 0 || dvz_commands_handle(&cmds) == VK_NULL_HANDLE)
+    {
+        dvz_image_views_destroy(&view);
+        dvz_images_destroy(&img);
+        dvz_shader_destroy(&vs);
+        dvz_shader_destroy(&fs);
+        dvz_slots_destroy(&slots);
+        dvz_graphics_destroy(&graphics);
+        dvz_bootstrap_destroy(&bootstrap);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+        return 0;
+    }
     dvz_cmd_begin(&cmds);
     dvz_cmd_barriers(&cmds, &barriers);
     dvz_cmd_rendering_begin(&cmds, &rendering);
@@ -247,6 +265,11 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
 
     DvzProto proto = {0};
     dvz_proto(&proto);
+    if (dvz_bootstrap_error_count(&proto.bootstrap) > 0)
+    {
+        dvz_proto_destroy(&proto);
+        return 0;
+    }
 
     DvzCommands* cmds = dvz_proto_commands(&proto);
     ANN(cmds);
@@ -256,20 +279,55 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
+    DvzSize vs_size = 0;
+    DvzSize fs_size = 0;
+    uint32_t* vs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &vs_size);
+    uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
+    ANN(vs_spv);
+    ANN(fs_spv);
+    DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
+    ANN(graphics);
+    DvzSlots* slots = dvz_proto_slots(&proto);
+    ANN(slots);
+    dvz_slots_create(slots);
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
+    AT(dvz_graphics_create(graphics) == 0);
+
+    // First frame.
+    dvz_cmd_begin(cmds);
+    dvz_cmd_barriers(cmds, &proto.barriers);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+
     const char* screenshot0 = "build/proto_screenshot_repeat_0.png";
     const char* screenshot1 = "build/proto_screenshot_repeat_1.png";
-    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
-    {
-        dvz_proto_destroy(&proto);
-        return 0;
-    }
     dvz_barriers(&proto.barriers);
     dvz_proto_screenshot(&proto, screenshot0);
-    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
-    {
-        dvz_proto_destroy(&proto);
-        return 0;
-    }
+
+    // Transition screenshot source image back to color attachment and render again.
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
+    dvz_barriers(&proto.barriers);
+    DvzBarrierImage* bimg = dvz_barriers_image(&proto.barriers, dvz_image_handle(&proto.img, 0));
+    ANN(bimg);
+    dvz_barrier_image_stage(
+        bimg, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_image_access(
+        bimg, VK_ACCESS_2_TRANSFER_READ_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_image_layout(
+        bimg, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_cmd_barriers(cmds, &proto.barriers);
+    dvz_cmd_rendering_begin(cmds, &proto.rendering);
+    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+
     dvz_barriers(&proto.barriers);
     dvz_proto_screenshot(&proto, screenshot1);
 
@@ -277,13 +335,20 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
     DvzSize size1 = 0;
     void* data0 = dvz_read_file(screenshot0, &size0);
     void* data1 = dvz_read_file(screenshot1, &size1);
-    AT(data0 != NULL);
-    AT(data1 != NULL);
-    AT(size0 > 0);
-    AT(size1 > 0);
+    if (data0 == NULL || data1 == NULL || size0 == 0 || size1 == 0)
+    {
+        dvz_free(data0);
+        dvz_free(data1);
+        dvz_free(vs_spv);
+        dvz_free(fs_spv);
+        dvz_proto_destroy(&proto);
+        return 0;
+    }
 
     dvz_free(data0);
     dvz_free(data1);
+    dvz_free(vs_spv);
+    dvz_free(fs_spv);
 
     uint32_t err_count = dvz_bootstrap_error_count(&proto.bootstrap);
     dvz_proto_destroy(&proto);

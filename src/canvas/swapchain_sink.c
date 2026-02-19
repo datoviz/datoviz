@@ -23,7 +23,6 @@
 #include <unistd.h>
 #endif
 
-#include "../vk/macros.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -352,7 +351,7 @@ static void canvas_cmd_copy_frame(
     ANN(swapchain);
     ANN(swapchain->canvas);
     ANN(slot);
-    ANNVK(cmd);
+    ASSERT(cmd != VK_NULL_HANDLE);
 
     VkExtent2D extent = dvz_swapchain_extent(swapchain->swapchain_wrapper);
     if (extent.width == 0 || extent.height == 0)
@@ -1476,7 +1475,7 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     DvzQueue* queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
     ANN(queue_ref);
     canvas->swapchain->queue = dvz_queue_handle(queue_ref);
-    ANNVK(canvas->swapchain->queue);
+    ASSERT(canvas->swapchain->queue != VK_NULL_HANDLE);
     canvas->swapchain->queue_family = dvz_queue_family(queue_ref);
     bool surface_initialized = false;
     bool swapchain_initialized = false;

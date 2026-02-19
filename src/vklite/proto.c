@@ -314,8 +314,20 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
     // Screenshot.
     DvzCommands* cmds = &proto->cmds;
     ANN(cmds);
+    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    {
+        log_warn("skip screenshot: command buffer unavailable");
+        dvz_buffer_destroy(staging);
+        return;
+    }
     dvz_cmd_reset(cmds);
     dvz_cmd_begin(cmds);
+    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    {
+        log_warn("skip screenshot: command buffer unavailable after begin");
+        dvz_buffer_destroy(staging);
+        return;
+    }
 
     // Image barrier.
     DvzBarriers* barriers = &proto->barriers;

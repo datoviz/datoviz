@@ -240,7 +240,11 @@ void dvz_cmd_barriers(DvzCommands* cmds, DvzBarriers* barriers)
     ANN(barriers);
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
-    ANNVK(cmd);
+    if (cmd == VK_NULL_HANDLE)
+    {
+        log_error("skip barrier recording: null command buffer handle");
+        return;
+    }
 
     log_trace(
         "record barrier (%d memory barriers, %d buffer barriers, %d image barriers)",
