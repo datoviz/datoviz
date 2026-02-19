@@ -170,6 +170,7 @@ void dvz_barrier_image_layers(DvzBarrierImage* bimg, uint32_t base, uint32_t cou
 void dvz_barriers(DvzBarriers* barriers)
 {
     ANN(barriers);
+    barriers->info = (VkDependencyInfo){0};
     barriers->info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
     barriers->info.pMemoryBarriers = barriers->bmems;
     barriers->info.pBufferMemoryBarriers = barriers->bbufs;
@@ -188,6 +189,11 @@ void dvz_barriers_flags(DvzBarriers* barriers, VkDependencyFlags flags)
 DvzBarrierMemory* dvz_barriers_memory(DvzBarriers* barriers)
 {
     ANN(barriers);
+    if (barriers->info.memoryBarrierCount >= DVZ_MAX_BARRIERS)
+    {
+        log_error("too many memory barriers (max=%d)", DVZ_MAX_BARRIERS);
+        return NULL;
+    }
     DvzBarrierMemory* bmem = &barriers->bmems[barriers->info.memoryBarrierCount++];
     ANN(bmem);
 
@@ -201,6 +207,11 @@ DvzBarrierBuffer*
 dvz_barriers_buffer(DvzBarriers* barriers, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize size)
 {
     ANN(barriers);
+    if (barriers->info.bufferMemoryBarrierCount >= DVZ_MAX_BARRIERS)
+    {
+        log_error("too many buffer barriers (max=%d)", DVZ_MAX_BARRIERS);
+        return NULL;
+    }
 
     DvzBarrierBuffer* bbuf = &barriers->bbufs[barriers->info.bufferMemoryBarrierCount++];
     ANN(bbuf);
@@ -218,6 +229,11 @@ DvzBarrierImage* dvz_barriers_image(DvzBarriers* barriers, VkImage img)
 {
     ANN(barriers);
     ANNVK(img);
+    if (barriers->info.imageMemoryBarrierCount >= DVZ_MAX_BARRIERS)
+    {
+        log_error("too many image barriers (max=%d)", DVZ_MAX_BARRIERS);
+        return NULL;
+    }
 
     DvzBarrierImage* bimg = &barriers->bimg[barriers->info.imageMemoryBarrierCount++];
 
