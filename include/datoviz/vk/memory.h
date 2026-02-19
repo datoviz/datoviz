@@ -38,36 +38,116 @@ typedef struct DvzAllocation DvzAllocation;
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzVma
-{
-    DvzDevice* device;
-    VmaAllocator vma;
-    VkExternalMemoryHandleTypeFlagsKHR external;
-};
-
-
-
-struct DvzAllocation
-{
-    VmaMemoryUsage usage;
-    VmaAllocationCreateFlags flags;
-    VmaAllocationInfo info;
-    VmaAllocation alloc;
-    VkMemoryPropertyFlags memory_flags;
-    DvzSize alignment; // alignment required by Vulkan
-    void* mmap;
-};
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty allocator wrapper.
+ *
+ * @returns allocated allocator wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzVma* dvz_allocator_create(void);
+
+
+
+/**
+ * Free an allocator wrapper allocated by dvz_allocator_create().
+ *
+ * @param allocator allocator wrapper to free
+ */
+DVZ_EXPORT void dvz_allocator_free(DvzVma* allocator);
+
+
+
+/**
+ * Allocate an empty allocation wrapper.
+ *
+ * @returns allocated allocation wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzAllocation* dvz_allocation_create(void);
+
+
+
+/**
+ * Free an allocation wrapper allocated by dvz_allocation_create().
+ *
+ * @param alloc allocation wrapper to free
+ */
+DVZ_EXPORT void dvz_allocation_free(DvzAllocation* alloc);
+
+
+
+/**
+ * Return the device associated with an allocator.
+ *
+ * @param allocator the allocator
+ * @returns associated device, or NULL if unset
+ */
+DVZ_EXPORT DvzDevice* dvz_allocator_device(DvzVma* allocator);
+
+
+
+/**
+ * Return the external-handle type configured on an allocator.
+ *
+ * @param allocator the allocator
+ * @return external memory handle type flags (0 when disabled)
+ */
+DVZ_EXPORT VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(DvzVma* allocator);
+
+
+
+/**
+ * Return the mapped pointer currently associated with an allocation.
+ *
+ * @param alloc the allocation
+ * @returns mapped pointer or NULL
+ */
+DVZ_EXPORT void* dvz_allocation_mapped(DvzAllocation* alloc);
+
+
+
+/**
+ * Return the allocation-create flags currently associated with an allocation.
+ *
+ * @param alloc the allocation
+ * @return allocation-create flags
+ */
+DVZ_EXPORT VmaAllocationCreateFlags dvz_allocation_flags(DvzAllocation* alloc);
+
+
+
+/**
+ * Update the allocation-create flags used by higher-level wrappers.
+ *
+ * @param alloc the allocation
+ * @param flags allocation-create flags
+ */
+DVZ_EXPORT void dvz_allocation_set_flags(DvzAllocation* alloc, VmaAllocationCreateFlags flags);
+
+
+
+/**
+ * Return the Vulkan device memory handle of an allocation.
+ *
+ * @param alloc the allocation
+ * @returns Vulkan device memory handle
+ */
+DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
+
+
+
+/**
+ * Return the allocation size, in bytes.
+ *
+ * @param alloc the allocation
+ * @returns allocation size in bytes
+ */
+DVZ_EXPORT VkDeviceSize dvz_allocation_size(DvzAllocation* alloc);
 
 
 
@@ -157,6 +237,37 @@ DVZ_EXPORT int dvz_allocator_flush(
  */
 DVZ_EXPORT int dvz_allocator_invalidate(
     DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, VkDeviceSize size);
+
+
+/**
+ * Copy host memory into an allocation.
+ *
+ * @param allocator the allocator
+ * @param alloc the destination allocation
+ * @param offset destination byte offset within the allocation
+ * @param data source host pointer
+ * @param size number of bytes to copy
+ * @return 0 on success, -1 on failure
+ */
+DVZ_EXPORT int dvz_allocator_copy_to(
+    DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, const void* data,
+    VkDeviceSize size);
+
+
+
+/**
+ * Copy memory from an allocation into host memory.
+ *
+ * @param allocator the allocator
+ * @param alloc the source allocation
+ * @param offset source byte offset within the allocation
+ * @param data destination host pointer
+ * @param size number of bytes to copy
+ * @return 0 on success, -1 on failure
+ */
+DVZ_EXPORT int dvz_allocator_copy_from(
+    DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, void* data, VkDeviceSize size);
+
 
 
 /**

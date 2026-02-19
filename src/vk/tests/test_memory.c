@@ -82,8 +82,9 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     VkBufferCreateInfo buf_info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     buf_info.size = 65536;
     buf_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    DvzAllocation buf_alloc = {0};
-    dvz_allocator_buffer(allocator, &buf_info, 0, &buf_alloc, &vk_buffer);
+    DvzAllocation* buf_alloc = dvz_allocation_create();
+    ANN(buf_alloc);
+    dvz_allocator_buffer(allocator, &buf_info, 0, buf_alloc, &vk_buffer);
 
     // Image allocation.
     VkImage vk_image = VK_NULL_HANDLE;
@@ -98,12 +99,15 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     img_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     img_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    DvzAllocation img_alloc = {0};
-    dvz_allocator_image(allocator, &img_info, 0, &img_alloc, &vk_image);
+    DvzAllocation* img_alloc = dvz_allocation_create();
+    ANN(img_alloc);
+    dvz_allocator_image(allocator, &img_info, 0, img_alloc, &vk_image);
 
     // Resource destruction.
-    dvz_allocator_destroy_buffer(allocator, &buf_alloc, vk_buffer);
-    dvz_allocator_destroy_image(allocator, &img_alloc, vk_image);
+    dvz_allocator_destroy_buffer(allocator, buf_alloc, vk_buffer);
+    dvz_allocator_destroy_image(allocator, img_alloc, vk_image);
+    dvz_allocation_free(buf_alloc);
+    dvz_allocation_free(img_alloc);
 
     // Cleanup.
     dvz_bootstrap_destroy(&bootstrap);
@@ -143,6 +147,9 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     const size_t SIZE = N * sizeof(uint32_t);
 
     int out = 0;
+    DvzVma* allocator = NULL;
+    DvzAllocation* alloc = NULL;
+    VkBuffer vk_buffer = VK_NULL_HANDLE;
 
     /******************* Vulkan setup *******************/
     DvzInstanceConfig icfg = dvz_instance_default_config();
@@ -181,9 +188,10 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     }
 
     // Memory allocator.
-    DvzVma allocator = {0};
+    allocator = dvz_allocator_create();
+    ANN(allocator);
     // IMPORTANT: need to pass the external memory handle type when creating the allocator.
-    dvz_device_allocator(device, handle_type, &allocator);
+    dvz_device_allocator(device, handle_type, allocator);
 
     // Create a mappable buffer.
     VkBufferCreateInfo buf_info = {
@@ -191,25 +199,25 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
         .size = SIZE,
         .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
     };
-    VkBuffer vk_buffer = VK_NULL_HANDLE;
-    DvzAllocation alloc = {0};
+    alloc = dvz_allocation_create();
+    ANN(alloc);
     dvz_allocator_buffer(
-        &allocator, &buf_info,
+        allocator, &buf_info,
         VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
-        &alloc, &vk_buffer);
+        alloc, &vk_buffer);
 
     /******************* Initialize data on Vulkan side *******************/
     log_trace("mapping and sending data to the buffer");
-    uint32_t* ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
+    uint32_t* ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
     ANN(ptr);
     for (uint32_t i = 0; i < N; i++)
         ptr[i] = i;
-    dvz_allocator_unmap(&allocator, &alloc);
+    dvz_allocator_unmap(allocator, alloc);
     log_trace("data copied");
 
     /******************* Export memory FD *******************/
     int fd = -1;
-    dvz_allocator_export(&allocator, &alloc, &fd);
+    dvz_allocator_export(allocator, alloc, &fd);
     if (fd < 0)
     {
         log_error("Failed to export Vulkan memory FD");
@@ -250,7 +258,7 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     cudaDeviceSynchronize();
 
     /******************* Check result from Vulkan side *******************/
-    ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
+    ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
     for (uint32_t i = 0; i < N; i++)
     {
         if (ptr[i] != i + 1)
@@ -260,15 +268,15 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
             break;
         }
     }
-    dvz_allocator_unmap(&allocator, &alloc);
+    dvz_allocator_unmap(allocator, alloc);
     if (out == 0)
         log_info("Vulkan->CUDA path verified OK (CUDA write visible in Vulkan)");
 
     /******************* Vulkan modifies data again *******************/
-    ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
+    ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
     for (uint32_t i = 0; i < N; i++)
         ptr[i] += 1; // add 1 again (now should be i + 2)
-    dvz_allocator_unmap(&allocator, &alloc);
+    dvz_allocator_unmap(allocator, alloc);
     vkDeviceWaitIdle(device->vk_device); // ensure write visible
 
     /******************* CUDA reads and checks *******************/
@@ -301,8 +309,16 @@ cleanup_cuda_mem:
 cleanup_fd:
     close(fd);
 cleanup_vulkan:
-    dvz_allocator_destroy_buffer(&allocator, &alloc, vk_buffer);
-    dvz_allocator_destroy(&allocator);
+    if (alloc != NULL)
+    {
+        dvz_allocator_destroy_buffer(allocator, alloc, vk_buffer);
+        dvz_allocation_free(alloc);
+    }
+    if (allocator != NULL)
+    {
+        dvz_allocator_destroy(allocator);
+        dvz_allocator_free(allocator);
+    }
     if (device != NULL)
     {
         dvz_device_destroy(device);
@@ -503,20 +519,22 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
         goto cleanup;
     }
 
-    DvzVma allocator = {0};
-    dvz_device_allocator(device, handle_type, &allocator);
+    DvzVma* allocator = dvz_allocator_create();
+    ANN(allocator);
+    dvz_device_allocator(device, handle_type, allocator);
 
     VkBuffer vk_buffer = VK_NULL_HANDLE;
-    DvzAllocation alloc = {0};
+    DvzAllocation* alloc = dvz_allocation_create();
+    ANN(alloc);
     VkBufferCreateInfo buf_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = SIZE,
         .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
     };
     out = dvz_allocator_import_buffer(
-        &allocator, &buf_info,
+        allocator, &buf_info,
         VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
-        fd, &alloc, &vk_buffer);
+        fd, alloc, &vk_buffer);
     if (out != 0)
     {
         log_error("dvz_allocator_import_buffer failed");
@@ -529,7 +547,7 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
     // BUG: this test fails here, the buffer appears to be all zeros, as if the import didn't work.
 
     /******************* Validate Vulkan view *******************/
-    uint32_t* ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
+    uint32_t* ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
     ANN(ptr);
     for (uint32_t i = 0; i < N; i++)
     {
@@ -542,16 +560,16 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
             break;
         }
     }
-    dvz_allocator_unmap(&allocator, &alloc);
+    dvz_allocator_unmap(allocator, alloc);
     if (out != 0)
         goto cleanup_vulkan;
 
     /******************* Modify from Vulkan *******************/
-    ptr = (uint32_t*)dvz_allocator_map(&allocator, &alloc);
+    ptr = (uint32_t*)dvz_allocator_map(allocator, alloc);
     ANN(ptr);
     for (uint32_t i = 0; i < N; i++)
         ptr[i] += vulkan_delta;
-    dvz_allocator_unmap(&allocator, &alloc);
+    dvz_allocator_unmap(allocator, alloc);
     vkDeviceWaitIdle(device->vk_device);
 
     /******************* Check from CUDA *******************/
@@ -597,9 +615,14 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
 
 cleanup_vulkan:
     if (vk_buffer != VK_NULL_HANDLE)
-        dvz_allocator_destroy_buffer(&allocator, &alloc, vk_buffer);
-    if (allocator.vma != NULL)
-        dvz_allocator_destroy(&allocator);
+        dvz_allocator_destroy_buffer(allocator, alloc, vk_buffer);
+    if (alloc != NULL)
+        dvz_allocation_free(alloc);
+    if (allocator != NULL)
+    {
+        dvz_allocator_destroy(allocator);
+        dvz_allocator_free(allocator);
+    }
     if (device != NULL)
     {
         dvz_device_destroy(device);

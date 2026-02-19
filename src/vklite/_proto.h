@@ -29,6 +29,8 @@
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
 #include "datoviz/vklite/sync.h"
+#include "_buffers.h"
+#include "_images.h"
 
 
 

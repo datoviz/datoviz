@@ -68,7 +68,7 @@ struct DvzBootstrap
     bool owns_device;
     DvzInstance* instance;
     DvzDevice* device;
-    DvzVma allocator;
+    DvzVma* allocator;
 };
 
 

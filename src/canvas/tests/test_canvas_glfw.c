@@ -1773,7 +1773,8 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     {
         DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
         bool has_external_memory =
-            canvas->supports_external_memory && canvas->allocator.external != 0;
+            canvas->supports_external_memory && canvas->allocator != NULL &&
+            dvz_allocator_external(canvas->allocator) != 0;
         bool has_external_semaphore = canvas->supports_external_semaphore;
         if (has_external_memory && has_external_semaphore)
         {

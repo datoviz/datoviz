@@ -65,7 +65,7 @@ struct DvzCanvasSwapchainSlot
     VkImageView swapchain_view;
     DvzImages offscreen_images;
     DvzImageViews offscreen_views;
-    DvzAllocation offscreen_alloc;
+    DvzAllocation* offscreen_alloc;
     DvzSemaphore image_available;
     DvzSemaphore render_finished;
     DvzFence in_flight;
@@ -563,17 +563,21 @@ static bool canvas_slot_init(
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         .pNext = NULL,
     };
-    bool use_external = canvas->allocator.external != 0;
+    bool use_external = canvas->allocator != NULL && dvz_allocator_external(canvas->allocator) != 0;
     if (use_external)
     {
-        external_info.handleTypes = canvas->allocator.external;
+        external_info.handleTypes = dvz_allocator_external(canvas->allocator);
         img_info.pNext = &external_info;
     }
 
+    slot->offscreen_alloc = dvz_allocation_create();
+    ANN(slot->offscreen_alloc);
     if (dvz_allocator_image(
-            &canvas->allocator, &img_info, 0, &slot->offscreen_alloc, &slot->offscreen_image) !=
+            canvas->allocator, &img_info, 0, slot->offscreen_alloc, &slot->offscreen_image) !=
         0)
     {
+        dvz_allocation_free(slot->offscreen_alloc);
+        slot->offscreen_alloc = NULL;
         log_error("failed to allocate offscreen canvas image for slot %u", slot_index);
         return false;
     }
@@ -581,7 +585,7 @@ static bool canvas_slot_init(
     slot->offscreen_images = (DvzImages){0};
     slot->offscreen_views = (DvzImageViews){0};
     dvz_images_wrap(
-        canvas->device, &canvas->allocator, VK_IMAGE_TYPE_2D, slot->offscreen_image,
+        canvas->device, canvas->allocator, VK_IMAGE_TYPE_2D, slot->offscreen_image,
         &slot->offscreen_images);
     dvz_images_format(&slot->offscreen_images, frame_format);
     dvz_image_views(&slot->offscreen_images, &slot->offscreen_views);
@@ -591,7 +595,9 @@ static bool canvas_slot_init(
     {
         log_error("failed to create offscreen image view for slot %u", slot_index);
         dvz_allocator_destroy_image(
-            &canvas->allocator, &slot->offscreen_alloc, slot->offscreen_image);
+            canvas->allocator, slot->offscreen_alloc, slot->offscreen_image);
+        dvz_allocation_free(slot->offscreen_alloc);
+        slot->offscreen_alloc = NULL;
         slot->offscreen_image = VK_NULL_HANDLE;
         slot->offscreen_images = (DvzImages){0};
         slot->offscreen_views = (DvzImageViews){0};
@@ -599,7 +605,7 @@ static bool canvas_slot_init(
     }
 
     if (use_external && dvz_allocator_export(
-                            &canvas->allocator, &slot->offscreen_alloc, &slot->memory_fd) != 0)
+                            canvas->allocator, slot->offscreen_alloc, &slot->memory_fd) != 0)
     {
         log_warn("failed to export canvas render target");
         slot->memory_fd = -1;
@@ -845,7 +851,12 @@ static void canvas_destroy_slot(
     slot->swapchain_view = VK_NULL_HANDLE;
     if (slot->offscreen_image != VK_NULL_HANDLE)
     {
-        dvz_allocator_destroy_image(allocator, &slot->offscreen_alloc, slot->offscreen_image);
+        if (slot->offscreen_alloc != NULL)
+        {
+            dvz_allocator_destroy_image(allocator, slot->offscreen_alloc, slot->offscreen_image);
+            dvz_allocation_free(slot->offscreen_alloc);
+            slot->offscreen_alloc = NULL;
+        }
         slot->offscreen_image = VK_NULL_HANDLE;
     }
     dvz_semaphore_destroy(&slot->image_available);
@@ -886,7 +897,7 @@ static void canvas_swapchain_release_slot_state(DvzCanvasSwapchain* swapchain)
         for (uint32_t i = 0; i < swapchain->image_count; ++i)
         {
             canvas_destroy_slot(
-                canvas->device, swapchain->queue_family, &swapchain->slots[i], &canvas->allocator);
+                canvas->device, swapchain->queue_family, &swapchain->slots[i], canvas->allocator);
         }
         dvz_free(swapchain->slots);
         swapchain->slots = NULL;
@@ -1212,8 +1223,10 @@ static void canvas_frame_from_slot(
     ANN(frame);
 
     frame->image = slot->offscreen_image;
-    frame->memory = slot->offscreen_alloc.info.deviceMemory;
-    frame->memory_size = slot->offscreen_alloc.info.size;
+    frame->memory =
+        slot->offscreen_alloc != NULL ? dvz_allocation_memory(slot->offscreen_alloc) : VK_NULL_HANDLE;
+    frame->memory_size =
+        slot->offscreen_alloc != NULL ? dvz_allocation_size(slot->offscreen_alloc) : 0;
     frame->command_buffer = slot->command_buffer;
     frame->image_view = slot->offscreen_view;
     frame->extent = dvz_swapchain_extent(state->swapchain_wrapper);
@@ -1743,7 +1756,7 @@ static int canvas_capture_create_staging(DvzCanvas* canvas, size_t size, DvzBuff
     ANN(canvas);
     ANN(staging);
 
-    dvz_buffer(canvas->device, &canvas->allocator, staging);
+    dvz_buffer(canvas->device, canvas->allocator, staging);
     dvz_buffer_size(staging, size);
     dvz_buffer_flags(
         staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);

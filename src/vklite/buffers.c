@@ -22,6 +22,7 @@
 #include "_vk_utils.h"
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_buffers.h"
 #include "_compat.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
@@ -36,6 +37,54 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty buffer wrapper.
+ *
+ * @return allocated buffer wrapper, or NULL on allocation failure
+ */
+DvzBuffer* dvz_buffer_create_wrapper(void)
+{
+    DvzBuffer* buffer = (DvzBuffer*)dvz_calloc(1, sizeof(DvzBuffer));
+    ANN(buffer);
+    return buffer;
+}
+
+
+
+/**
+ * Free a buffer wrapper allocated by dvz_buffer_create_wrapper().
+ *
+ * @param buffer buffer wrapper to free
+ */
+void dvz_buffer_free(DvzBuffer* buffer)
+{
+    if (buffer == NULL)
+    {
+        return;
+    }
+    dvz_free(buffer);
+}
+
+
+
+/**
+ * Return the current allocated size of a buffer, in bytes.
+ *
+ * @param buffer the buffer
+ * @return allocated size in bytes
+ */
+DvzSize dvz_buffer_allocated_size(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    if (buffer->alloc == NULL)
+    {
+        return 0;
+    }
+    return (DvzSize)dvz_allocation_size(buffer->alloc);
+}
+
+
 
 void dvz_buffer(DvzDevice* device, DvzVma* allocator, DvzBuffer* buffer)
 {
@@ -69,7 +118,7 @@ void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage)
 void dvz_buffer_flags(DvzBuffer* buffer, VmaAllocationCreateFlags flags)
 {
     ANN(buffer);
-    buffer->alloc.flags = flags;
+    buffer->req_alloc_flags = flags;
 }
 
 
@@ -81,14 +130,22 @@ int dvz_buffer_create(DvzBuffer* buffer)
 
     DvzVma* allocator = buffer->allocator;
     ANN(allocator);
-    ANN(allocator->device);
-    ASSERT(allocator->device == buffer->device);
+    DvzDevice* allocator_device = dvz_allocator_device(allocator);
+    ANN(allocator_device);
+    ASSERT(allocator_device == buffer->device);
 
     VkBufferCreateInfo info = {.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     info.size = buffer->req_size;
     info.usage = buffer->req_usage;
+    if (buffer->alloc == NULL)
+    {
+        buffer->alloc = dvz_allocation_create();
+        ANN(buffer->alloc);
+    }
+    VmaAllocationCreateFlags alloc_flags = buffer->req_alloc_flags;
+    dvz_allocation_set_flags(buffer->alloc, alloc_flags);
     int out = dvz_allocator_buffer(
-        allocator, &info, buffer->alloc.flags, &buffer->alloc, &buffer->vk_buffer);
+        allocator, &info, alloc_flags, buffer->alloc, &buffer->vk_buffer);
 
     dvz_obj_created(&buffer->obj);
     return out;
@@ -117,7 +174,7 @@ void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
         return;
     }
 
-    bool mapped = buffer->alloc.mmap != NULL;
+    bool mapped = buffer->alloc != NULL && dvz_allocation_mapped(buffer->alloc) != NULL;
 
     dvz_buffer_destroy(buffer);
 
@@ -133,11 +190,15 @@ void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
 int dvz_buffer_map(DvzBuffer* buffer)
 {
     ANN(buffer);
-    if (buffer->alloc.mmap != NULL)
+    if (buffer->alloc == NULL)
+    {
+        return -1;
+    }
+    if (dvz_allocation_mapped(buffer->alloc) != NULL)
         return -1;
     log_trace("mapping buffer memory");
-    buffer->alloc.mmap = dvz_allocator_map(buffer->allocator, &buffer->alloc);
-    return buffer->alloc.mmap != NULL ? 0 : 1;
+    (void)dvz_allocator_map(buffer->allocator, buffer->alloc);
+    return dvz_allocation_mapped(buffer->alloc) != NULL ? 0 : 1;
 }
 
 
@@ -145,11 +206,14 @@ int dvz_buffer_map(DvzBuffer* buffer)
 void dvz_buffer_unmap(DvzBuffer* buffer)
 {
     ANN(buffer);
-    if (buffer->alloc.mmap == NULL)
+    if (buffer->alloc == NULL)
+    {
+        return;
+    }
+    if (dvz_allocation_mapped(buffer->alloc) == NULL)
         return;
     log_trace("unmapping buffer memory");
-    dvz_allocator_unmap(buffer->allocator, &buffer->alloc);
-    buffer->alloc.mmap = NULL;
+    dvz_allocator_unmap(buffer->allocator, buffer->alloc);
 }
 
 
@@ -159,31 +223,18 @@ void dvz_buffer_upload(DvzBuffer* buffer, DvzSize offset, DvzSize size, const vo
     ANN(buffer);
     ANN(data);
     ASSERT(size > 0);
-    if (offset + size > buffer->alloc.info.size)
+    ANN(buffer->alloc);
+    if (offset + size > dvz_allocation_size(buffer->alloc))
     {
         log_error("the data is too large for the buffer");
         return;
     }
 
-    bool need_unmap = false;
-    if (buffer->alloc.mmap == NULL)
-    {
-        dvz_buffer_map(buffer);
-        need_unmap = true;
-    }
-
-    ANN(buffer->alloc.mmap);
     log_trace("buffer upload of %s", dvz_pretty_size(size));
-    dvz_memcpy(POINTER_OFFSET(buffer->alloc.mmap, offset), size, data, size);
-
-    // if (dvz_allocator_flush(buffer->allocator, &buffer->alloc, offset, size) != 0)
-    // {
-    //     log_warn("failed to flush buffer upload of %s", dvz_pretty_size(size));
-    // }
-
-    if (need_unmap)
+    if (dvz_allocator_copy_to(buffer->allocator, buffer->alloc, offset, data, size) != 0)
     {
-        dvz_buffer_unmap(buffer);
+        log_error("failed to upload data to buffer");
+        return;
     }
 }
 
@@ -195,26 +246,11 @@ void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* 
     ANN(data);
     ASSERT(size > 0);
 
-    bool need_unmap = false;
-    if (buffer->alloc.mmap == NULL)
-    {
-        dvz_buffer_map(buffer);
-        need_unmap = true;
-    }
-
-    ANN(buffer->alloc.mmap);
     log_trace("buffer download of %s", dvz_pretty_size(size));
-
-    // if (dvz_allocator_invalidate(buffer->allocator, &buffer->alloc, offset, size) != 0)
-    // {
-    //     log_warn("failed to invalidate buffer download of %s", dvz_pretty_size(size));
-    // }
-
-    dvz_memcpy(data, size, POINTER_OFFSET(buffer->alloc.mmap, offset), size);
-
-    if (need_unmap)
+    if (dvz_allocator_copy_from(buffer->allocator, buffer->alloc, offset, data, size) != 0)
     {
-        dvz_buffer_unmap(buffer);
+        log_error("failed to download data from buffer");
+        return;
     }
 }
 
@@ -228,10 +264,19 @@ void dvz_buffer_destroy(DvzBuffer* buffer)
     DvzVma* allocator = buffer->allocator;
     ANN(allocator);
 
-    dvz_buffer_unmap(buffer);
+    if (buffer->alloc != NULL)
+    {
+        dvz_buffer_unmap(buffer);
+    }
 
     log_trace("destroying buffer...");
-    dvz_allocator_destroy_buffer(allocator, &buffer->alloc, buffer->vk_buffer);
+    if (buffer->alloc != NULL)
+    {
+        dvz_allocator_destroy_buffer(allocator, buffer->alloc, buffer->vk_buffer);
+        dvz_allocation_free(buffer->alloc);
+        buffer->alloc = NULL;
+    }
+    buffer->vk_buffer = VK_NULL_HANDLE;
     dvz_obj_destroyed(&buffer->obj);
     log_trace("buffer destroyed");
 }

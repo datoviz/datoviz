@@ -17,6 +17,7 @@
 #include <stdint.h>
 
 #include "../../vk/tests/test_vk.h"
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "datoviz/vk/bootstrap.h"
@@ -51,17 +52,18 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, 0);
 
-    DvzBuffer buffer = {0};
+    DvzBuffer* buffer = dvz_buffer_create_wrapper();
+    ANN(buffer);
     DvzSize size = 65536;
 
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), &buffer);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_flags(&buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-    dvz_buffer_create(&buffer);
+    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), buffer);
+    dvz_buffer_size(buffer, size);
+    dvz_buffer_flags(buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_create(buffer);
 
     // Map the buffer.
-    dvz_buffer_map(&buffer);
+    dvz_buffer_map(buffer);
 
     // Create some data.
     uint8_t data[MAP_SIZE] = {0};
@@ -73,38 +75,39 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     DvzSize offset = MAP_OFFSET;
 
     // Upload the data and check.
-    dvz_buffer_upload(&buffer, offset, msize, data);
+    dvz_buffer_upload(buffer, offset, msize, data);
     AT(data[10] == 10);
 
     // Reset the data.
-    dvz_buffer_unmap(&buffer);
+    dvz_buffer_unmap(buffer);
     dvz_memset(data, msize, 0, msize);
     AT(data[10] == 0);
 
     // Download the data and check again.
-    dvz_buffer_download(&buffer, offset, msize, data);
+    dvz_buffer_download(buffer, offset, msize, data);
     AT(data[10] == 10);
 
 
     // RESIZING.
 
     // No-op as buffer is smaller.
-    dvz_buffer_resize(&buffer, size / 2);
+    dvz_buffer_resize(buffer, size / 2);
 
     // Download the data and check again.
-    dvz_buffer_download(&buffer, offset, msize, data);
+    dvz_buffer_download(buffer, offset, msize, data);
     AT(data[10] == 10);
 
     // Buffer recreated if size is larger.
-    dvz_buffer_resize(&buffer, 2 * size);
+    dvz_buffer_resize(buffer, 2 * size);
 
     // Download the data and check again.
-    dvz_buffer_download(&buffer, offset, msize, data);
-    AT(buffer.alloc.info.size == 2 * size);
-    AT(buffer.vk_buffer != VK_NULL_HANDLE);
+    dvz_buffer_download(buffer, offset, msize, data);
+    AT(dvz_buffer_allocated_size(buffer) == 2 * size);
+    AT(dvz_buffer_handle(buffer) != VK_NULL_HANDLE);
 
     // Cleanup.
-    dvz_buffer_destroy(&buffer);
+    dvz_buffer_destroy(buffer);
+    dvz_buffer_free(buffer);
     dvz_bootstrap_destroy(&bootstrap);
 
     RETURN_VALIDATION
@@ -118,26 +121,28 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
     DvzBootstrap bootstrap = {0};
     dvz_bootstrap(&bootstrap, 0);
 
-    DvzBuffer buffer = {0};
+    DvzBuffer* buffer = dvz_buffer_create_wrapper();
+    ANN(buffer);
     DvzSize size = 65536;
 
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), &buffer);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_flags(&buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
-    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-    dvz_buffer_create(&buffer);
+    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), buffer);
+    dvz_buffer_size(buffer, size);
+    dvz_buffer_flags(buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_create(buffer);
 
     DvzBufferViews views = {0};
     DvzSize offset = 33;
     DvzSize vsize = 7;
     DvzSize alignment = 16;
-    dvz_buffer_views(&buffer, 3, offset, vsize, alignment, &views);
+    dvz_buffer_views(buffer, 3, offset, vsize, alignment, &views);
     AT(views.offsets[0] == 48);
     AT(views.offsets[1] == 64);
     AT(views.offsets[2] == 80);
 
     // Cleanup.
-    dvz_buffer_destroy(&buffer);
+    dvz_buffer_destroy(buffer);
+    dvz_buffer_free(buffer);
     dvz_bootstrap_destroy(&bootstrap);
 
     RETURN_VALIDATION

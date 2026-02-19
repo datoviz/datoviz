@@ -17,7 +17,6 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
 #include "vk_mem_alloc.h"
@@ -53,52 +52,6 @@ typedef struct DvzImageCopy DvzImageCopy;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzImages
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzVma* allocator;
-
-    uint32_t count;
-    // uvec3 shape;
-    bool is_swapchain;
-
-    // This wraps:
-    // VkImageUsageFlags usage;
-    // VkFormat format;
-    // VkImageTiling tiling;
-    // VkImageType image_type;
-    // uint32_t mip;    // number of mip levels
-    // uint32_t layers; // number of array layers
-    // VkSampleCountFlags samples; // for multisample antialiasing
-    VkImageCreateInfo info;
-
-    VkImage vk_images[DVZ_MAX_IMAGES];
-    DvzAllocation allocs[DVZ_MAX_IMAGES];
-};
-
-
-
-struct DvzImageViews
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzImages* img;
-
-    // This wraps:
-    // VkImageViewType type;
-    // VkImageAspectFlags aspect;
-    // uint32_t mip_base;
-    // uint32_t mip_count;
-    // uint32_t layers_base;
-    // uint32_t layers_count;
-    VkImageViewCreateInfo info;
-
-    VkImageView vk_views[DVZ_MAX_IMAGES];
-};
-
-
-
 struct DvzImageBlit
 {
     VkBlitImageInfo2 info;
@@ -120,6 +73,40 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  Images                                                                                       */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty images wrapper.
+ *
+ * @return allocated images wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzImages* dvz_images_create_wrapper(void);
+
+
+
+/**
+ * Free an images wrapper allocated by dvz_images_create_wrapper().
+ *
+ * @param img images wrapper to free
+ */
+DVZ_EXPORT void dvz_images_free(DvzImages* img);
+
+
+
+/**
+ * Allocate an empty image-view wrapper.
+ *
+ * @return allocated image-view wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzImageViews* dvz_image_views_create_wrapper(void);
+
+
+
+/**
+ * Free an image-view wrapper allocated by dvz_image_views_create_wrapper().
+ *
+ * @param views image-view wrapper to free
+ */
+DVZ_EXPORT void dvz_image_views_free(DvzImageViews* views);
 
 /**
  * Initialize a set of GPU images.

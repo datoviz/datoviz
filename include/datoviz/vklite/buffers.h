@@ -17,7 +17,6 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
 #include "vk_mem_alloc.h"
@@ -49,21 +48,6 @@ typedef struct DvzBufferViews DvzBufferViews;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzBuffer
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzVma* allocator;
-
-    DvzSize req_size;
-    VkBufferUsageFlags req_usage;
-
-    VkBuffer vk_buffer;
-    DvzAllocation alloc;
-};
-
-
-
 struct DvzBufferViews
 {
     DvzBuffer* buffer;
@@ -81,6 +65,34 @@ struct DvzBufferViews
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty buffer wrapper.
+ *
+ * @return allocated buffer wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzBuffer* dvz_buffer_create_wrapper(void);
+
+
+
+/**
+ * Free a buffer wrapper allocated by dvz_buffer_create_wrapper().
+ *
+ * @param buffer buffer wrapper to free
+ */
+DVZ_EXPORT void dvz_buffer_free(DvzBuffer* buffer);
+
+
+
+/**
+ * Return the current allocated size of a buffer, in bytes.
+ *
+ * @param buffer the buffer
+ * @return allocated size in bytes
+ */
+DVZ_EXPORT DvzSize dvz_buffer_allocated_size(DvzBuffer* buffer);
 
 
 

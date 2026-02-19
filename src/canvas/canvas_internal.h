@@ -30,6 +30,8 @@
 #include "datoviz/window.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/sync.h"
+#include "../vklite/_buffers.h"
+#include "../vklite/_images.h"
 
 
 
@@ -73,6 +75,7 @@ struct DvzCanvas
     DvzWindow* window;
     const DvzWindowSurface* surface;
     DvzDevice* device;
+    DvzStreamSinkRegistry* sink_registry;
     DvzStream* stream;
     bool stream_started;
     bool primary_sink_attached;
@@ -89,7 +92,7 @@ struct DvzCanvas
     DvzCanvasLiveImageSinkConfig live_image_sink_cfg;
     bool supports_external_memory;
     bool supports_external_semaphore;
-    DvzVma allocator;
+    DvzVma* allocator;
     bool allocator_ready;
     DvzSemaphore timeline_semaphore;
     uint64_t timeline_value;
@@ -99,7 +102,7 @@ struct DvzCanvas
     bool test_force_offscreen_submit_status_set;
     VkImage offscreen_image;
     VkImageView offscreen_view;
-    DvzAllocation offscreen_alloc;
+    DvzAllocation* offscreen_alloc;
     DvzImages offscreen_images;
     DvzImageViews offscreen_views;
     VkImageLayout offscreen_layout;
@@ -199,8 +202,6 @@ void dvz_canvas_swapchain_test_force_acquire_status(DvzCanvas* canvas, int32_t s
 void dvz_canvas_swapchain_test_force_present_status(DvzCanvas* canvas, int32_t status);
 
 DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas);
-
-DvzCanvasOffscreenRuntimeState dvz_canvas_offscreen_runtime_state(const DvzCanvas* canvas);
 
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);
 

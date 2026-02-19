@@ -592,7 +592,8 @@ static int test_canvas_offscreen_mode_headless(TstSuite* suite, TstItem* item)
     int external_video_rc = -1;
     bool external_supported =
 #if OS_UNIX
-        canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+        canvas->allocator != NULL && dvz_allocator_external(canvas->allocator) != 0 &&
+        canvas->supports_external_semaphore;
 #else
         false;
 #endif

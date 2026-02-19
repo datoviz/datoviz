@@ -96,8 +96,14 @@ void dvz_bootstrap(DvzBootstrap* bootstrap, int flags)
     if ((flags & DVZ_BOOTSTRAP_MANUAL_CREATE_ALLOCATOR) != 0)
         return;
 
+    if (bootstrap->allocator == NULL)
+    {
+        bootstrap->allocator = dvz_allocator_create();
+        ANN(bootstrap->allocator);
+    }
+
     // Create the memory allocator.
-    dvz_device_allocator(device, 0, &bootstrap->allocator);
+    dvz_device_allocator(device, 0, bootstrap->allocator);
 }
 
 
@@ -214,7 +220,7 @@ bool dvz_bootstrap_set_device(DvzBootstrap* bootstrap, DvzDevice* device, bool t
 DvzVma* dvz_bootstrap_allocator(DvzBootstrap* bootstrap)
 {
     ANN(bootstrap);
-    return &bootstrap->allocator;
+    return bootstrap->allocator;
 }
 
 
@@ -235,7 +241,12 @@ int dvz_bootstrap_create_allocator(
         log_error("cannot create bootstrap allocator without an attached device");
         return -1;
     }
-    return dvz_device_allocator(bootstrap->device, export_handle_type, &bootstrap->allocator);
+    if (bootstrap->allocator == NULL)
+    {
+        bootstrap->allocator = dvz_allocator_create();
+        ANN(bootstrap->allocator);
+    }
+    return dvz_device_allocator(bootstrap->device, export_handle_type, bootstrap->allocator);
 }
 
 
@@ -263,7 +274,12 @@ void dvz_bootstrap_destroy(DvzBootstrap* bootstrap)
     ANN(bootstrap);
 
     bootstrap->validation_error_count = dvz_bootstrap_error_count(bootstrap);
-    dvz_allocator_destroy(&bootstrap->allocator);
+    if (bootstrap->allocator != NULL)
+    {
+        dvz_allocator_destroy(bootstrap->allocator);
+        dvz_allocator_free(bootstrap->allocator);
+        bootstrap->allocator = NULL;
+    }
     if (bootstrap->device != NULL && bootstrap->owns_device)
     {
         dvz_device_destroy(bootstrap->device);

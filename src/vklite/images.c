@@ -18,8 +18,10 @@
 #include <stdint.h>
 #include <volk.h>
 
+#include "_alloc.h"
 #include "_vk_utils.h"
 #include "_assertions.h"
+#include "_images.h"
 #include "_log.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
@@ -96,6 +98,74 @@ static int check_image_size(VkPhysicalDeviceProperties* props, VkImageType image
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Allocate an empty images wrapper.
+ *
+ * @return allocated images wrapper, or NULL on allocation failure
+ */
+DvzImages* dvz_images_create_wrapper(void)
+{
+    DvzImages* img = (DvzImages*)dvz_calloc(1, sizeof(DvzImages));
+    ANN(img);
+    return img;
+}
+
+
+
+/**
+ * Free an images wrapper allocated by dvz_images_create_wrapper().
+ *
+ * @param img images wrapper to free
+ */
+void dvz_images_free(DvzImages* img)
+{
+    if (img == NULL)
+    {
+        return;
+    }
+    for (uint32_t i = 0; i < DVZ_MAX_IMAGES; i++)
+    {
+        if (img->allocs[i] != NULL)
+        {
+            dvz_allocation_free(img->allocs[i]);
+            img->allocs[i] = NULL;
+        }
+    }
+    dvz_free(img);
+}
+
+
+
+/**
+ * Allocate an empty image-view wrapper.
+ *
+ * @return allocated image-view wrapper, or NULL on allocation failure
+ */
+DvzImageViews* dvz_image_views_create_wrapper(void)
+{
+    DvzImageViews* views = (DvzImageViews*)dvz_calloc(1, sizeof(DvzImageViews));
+    ANN(views);
+    return views;
+}
+
+
+
+/**
+ * Free an image-view wrapper allocated by dvz_image_views_create_wrapper().
+ *
+ * @param views image-view wrapper to free
+ */
+void dvz_image_views_free(DvzImageViews* views)
+{
+    if (views == NULL)
+    {
+        return;
+    }
+    dvz_free(views);
+}
+
+
+
 void dvz_images(
     DvzDevice* device, DvzVma* allocator, VkImageType type, uint32_t count, DvzImages* img)
 {
@@ -157,10 +227,7 @@ void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 void dvz_images_vma_flags(DvzImages* img, VmaAllocationCreateFlags flags)
 {
     ANN(img);
-    for (uint32_t i = 0; i < img->count; i++)
-    {
-        img->allocs[i].flags = flags;
-    }
+    img->req_alloc_flags = flags;
 }
 
 
@@ -207,8 +274,9 @@ int dvz_images_create(DvzImages* img)
 
     DvzVma* allocator = img->allocator;
     ANN(allocator);
-    ANN(allocator->device);
-    ASSERT(allocator->device == device);
+    DvzDevice* allocator_device = dvz_allocator_device(allocator);
+    ANN(allocator_device);
+    ASSERT(allocator_device == device);
 
     // Get GPU properties to check the dimensions of the image.
     VkPhysicalDeviceProperties props = {0};
@@ -223,8 +291,15 @@ int dvz_images_create(DvzImages* img)
     int out = 0;
     for (uint32_t i = 0; i < img->count; i++)
     {
+        if (img->allocs[i] == NULL)
+        {
+            img->allocs[i] = dvz_allocation_create();
+            ANN(img->allocs[i]);
+        }
+        dvz_allocation_set_flags(img->allocs[i], img->req_alloc_flags);
         out += dvz_allocator_image(
-            allocator, &img->info, img->allocs[i].flags, &img->allocs[i], &img->vk_images[i]);
+            allocator, &img->info, img->req_alloc_flags, img->allocs[i],
+            &img->vk_images[i]);
     }
 
     dvz_obj_created(&img->obj);
@@ -254,7 +329,13 @@ void dvz_images_destroy(DvzImages* img)
     log_trace("destroying images...");
     for (uint32_t i = 0; i < img->count; i++)
     {
-        dvz_allocator_destroy_image(allocator, &img->allocs[i], img->vk_images[i]);
+        if (img->allocs[i] != NULL)
+        {
+            dvz_allocator_destroy_image(allocator, img->allocs[i], img->vk_images[i]);
+            dvz_allocation_free(img->allocs[i]);
+            img->allocs[i] = NULL;
+        }
+        img->vk_images[i] = VK_NULL_HANDLE;
     }
     dvz_obj_destroyed(&img->obj);
     log_trace("images destroyed");

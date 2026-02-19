@@ -26,12 +26,14 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void canvas_register_swapchain_sink(void)
+static void canvas_register_swapchain_sink(DvzCanvas* canvas)
 {
+    ANN(canvas);
+    ANN(canvas->sink_registry);
     const DvzStreamSinkBackend* backend = dvz_canvas_swapchain_sink_backend();
     if (backend)
     {
-        dvz_stream_sink_registry_register(dvz_stream_sink_registry_default(), backend);
+        dvz_stream_sink_registry_register(canvas->sink_registry, backend);
     }
     else
     {
@@ -41,12 +43,14 @@ static void canvas_register_swapchain_sink(void)
 
 
 
-static void canvas_register_offscreen_sink(void)
+static void canvas_register_offscreen_sink(DvzCanvas* canvas)
 {
+    ANN(canvas);
+    ANN(canvas->sink_registry);
     const DvzStreamSinkBackend* backend = dvz_canvas_offscreen_sink_backend();
     if (backend)
     {
-        dvz_stream_sink_registry_register(dvz_stream_sink_registry_default(), backend);
+        dvz_stream_sink_registry_register(canvas->sink_registry, backend);
     }
     else
     {
@@ -56,12 +60,14 @@ static void canvas_register_offscreen_sink(void)
 
 
 
-static void canvas_register_live_image_sink(void)
+static void canvas_register_live_image_sink(DvzCanvas* canvas)
 {
+    ANN(canvas);
+    ANN(canvas->sink_registry);
     const DvzStreamSinkBackend* backend = dvz_canvas_live_image_sink_backend();
     if (backend)
     {
-        dvz_stream_sink_registry_register(dvz_stream_sink_registry_default(), backend);
+        dvz_stream_sink_registry_register(canvas->sink_registry, backend);
     }
     else
     {
@@ -76,10 +82,10 @@ static const DvzStreamSinkBackend* canvas_primary_sink_backend(DvzCanvas* canvas
     ANN(canvas);
     if (canvas->cfg.render_mode == DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
     {
-        canvas_register_offscreen_sink();
+        canvas_register_offscreen_sink(canvas);
         return dvz_canvas_offscreen_sink_backend();
     }
-    canvas_register_swapchain_sink();
+    canvas_register_swapchain_sink(canvas);
     return dvz_canvas_swapchain_sink_backend();
 }
 
@@ -149,7 +155,9 @@ static bool canvas_has_external_video_support(const DvzCanvas* canvas)
 {
     ANN(canvas);
 #if OS_UNIX
-    return canvas->allocator.external != 0 && canvas->supports_external_semaphore;
+    return (
+        canvas->allocator != NULL && dvz_allocator_external(canvas->allocator) != 0 &&
+        canvas->supports_external_semaphore);
 #else
     return false;
 #endif
@@ -201,11 +209,11 @@ static int canvas_create_stream_with_sinks(
     ANN(canvas);
     ANN(out_stream);
     *out_stream = NULL;
+    ANN(canvas->sink_registry);
 
     dvz_canvas_window_surface_refresh(canvas);
     DvzStreamConfig stream_cfg = canvas_stream_config(canvas);
-    DvzStream* stream =
-        dvz_stream_create(canvas->device, dvz_stream_sink_registry_default(), &stream_cfg);
+    DvzStream* stream = dvz_stream_create(canvas->device, canvas->sink_registry, &stream_cfg);
     if (!stream)
     {
         log_error("failed to create canvas stream");
@@ -228,8 +236,7 @@ static int canvas_create_stream_with_sinks(
 
     if (enable_video)
     {
-        dvz_stream_sink_registry_register(
-            dvz_stream_sink_registry_default(), dvz_stream_sink_video());
+        dvz_stream_sink_registry_register(canvas->sink_registry, dvz_stream_sink_video());
         const DvzStreamSinkBackend* video_backend = dvz_stream_sink_video();
         if (!video_backend)
         {
@@ -276,7 +283,7 @@ static int canvas_create_stream_with_sinks(
 
     if (enable_live)
     {
-        canvas_register_live_image_sink();
+        canvas_register_live_image_sink(canvas);
         const DvzStreamSinkBackend* live_backend = dvz_canvas_live_image_sink_backend();
         if (!live_backend)
         {

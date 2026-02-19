@@ -217,7 +217,13 @@ static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
     }
     if (canvas->offscreen_image != VK_NULL_HANDLE)
     {
-        dvz_allocator_destroy_image(&canvas->allocator, &canvas->offscreen_alloc, canvas->offscreen_image);
+        if (canvas->allocator != NULL && canvas->offscreen_alloc != NULL)
+        {
+            dvz_allocator_destroy_image(
+                canvas->allocator, canvas->offscreen_alloc, canvas->offscreen_image);
+            dvz_allocation_free(canvas->offscreen_alloc);
+            canvas->offscreen_alloc = NULL;
+        }
         canvas->offscreen_image = VK_NULL_HANDLE;
     }
     if (canvas->offscreen_command_buffer != VK_NULL_HANDLE)
@@ -280,21 +286,27 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
         .pNext = NULL,
     };
-    bool use_external = canvas->allocator.external != 0;
+    bool use_external = canvas->allocator != NULL && dvz_allocator_external(canvas->allocator) != 0;
     if (use_external)
     {
-        external_info.handleTypes = canvas->allocator.external;
+        external_info.handleTypes = dvz_allocator_external(canvas->allocator);
         img_info.pNext = &external_info;
     }
 
-    if (dvz_allocator_image(&canvas->allocator, &img_info, 0, &canvas->offscreen_alloc, &canvas->offscreen_image) != 0)
+    canvas->offscreen_alloc = dvz_allocation_create();
+    ANN(canvas->offscreen_alloc);
+    if (dvz_allocator_image(
+            canvas->allocator, &img_info, 0, canvas->offscreen_alloc, &canvas->offscreen_image) !=
+        0)
     {
+        dvz_allocation_free(canvas->offscreen_alloc);
+        canvas->offscreen_alloc = NULL;
         log_error("failed to allocate offscreen canvas image");
         return -1;
     }
 
     dvz_images_wrap(
-        canvas->device, &canvas->allocator, VK_IMAGE_TYPE_2D, canvas->offscreen_image,
+        canvas->device, canvas->allocator, VK_IMAGE_TYPE_2D, canvas->offscreen_image,
         &canvas->offscreen_images);
     dvz_images_format(&canvas->offscreen_images, format);
     dvz_image_views(&canvas->offscreen_images, &canvas->offscreen_views);
@@ -308,7 +320,9 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
     }
 
     canvas->offscreen_memory_fd = -1;
-    if (use_external && dvz_allocator_export(&canvas->allocator, &canvas->offscreen_alloc, &canvas->offscreen_memory_fd) != 0)
+    if (use_external && dvz_allocator_export(
+                            canvas->allocator, canvas->offscreen_alloc,
+                            &canvas->offscreen_memory_fd) != 0)
     {
         log_warn("failed to export offscreen canvas image memory handle");
         canvas->offscreen_memory_fd = -1;
@@ -473,9 +487,14 @@ static int canvas_create_allocator(DvzCanvas* canvas)
     {
         return 0;
     }
+    if (canvas->allocator == NULL)
+    {
+        canvas->allocator = dvz_allocator_create();
+        ANN(canvas->allocator);
+    }
     VkExternalMemoryHandleTypeFlagsKHR handle_type =
         canvas->supports_external_memory ? canvas_external_memory_handle_type() : 0;
-    if (dvz_device_allocator(canvas->device, handle_type, &canvas->allocator) != 0)
+    if (dvz_device_allocator(canvas->device, handle_type, canvas->allocator) != 0)
     {
         log_error("failed to create canvas allocator");
         return -1;
@@ -492,7 +511,12 @@ static void canvas_destroy_allocator(DvzCanvas* canvas)
     {
         return;
     }
-    dvz_allocator_destroy(&canvas->allocator);
+    if (canvas->allocator != NULL)
+    {
+        dvz_allocator_destroy(canvas->allocator);
+        dvz_allocator_free(canvas->allocator);
+        canvas->allocator = NULL;
+    }
     canvas->allocator_ready = false;
 }
 
@@ -819,7 +843,7 @@ static int canvas_offscreen_capture_rgba_into(
     }
 
     DvzBuffer staging = {0};
-    dvz_buffer(canvas->device, &canvas->allocator, &staging);
+    dvz_buffer(canvas->device, canvas->allocator, &staging);
     dvz_buffer_size(&staging, expected_size);
     dvz_buffer_flags(
         &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
@@ -946,6 +970,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->cfg = resolved;
     canvas->window = resolved.window;
     canvas->device = resolved.device;
+    canvas->sink_registry = NULL;
     canvas->draw_callback = NULL;
     canvas->draw_user_data = NULL;
     canvas->frame_id = 0;
@@ -975,13 +1000,19 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     }
 
     dvz_canvas_window_surface_refresh(canvas);
+    canvas->sink_registry = dvz_stream_sink_registry_create();
+    if (canvas->sink_registry == NULL)
+    {
+        log_error("failed to create canvas sink registry");
+        dvz_canvas_destroy(canvas);
+        return NULL;
+    }
     DvzStreamConfig stream_cfg = canvas_stream_config(canvas);
-    canvas->stream = dvz_stream_create(
-        canvas->device, dvz_stream_sink_registry_default(), &stream_cfg);
+    canvas->stream = dvz_stream_create(canvas->device, canvas->sink_registry, &stream_cfg);
     if (!canvas->stream)
     {
         log_error("failed to allocate stream for canvas");
-        dvz_free(canvas);
+        dvz_canvas_destroy(canvas);
         return NULL;
     }
 
@@ -1038,6 +1069,11 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     {
         dvz_stream_destroy(canvas->stream);
         canvas->stream = NULL;
+    }
+    if (canvas->sink_registry != NULL)
+    {
+        dvz_stream_sink_registry_destroy(canvas->sink_registry);
+        canvas->sink_registry = NULL;
     }
     canvas_offscreen_destroy_resources(canvas);
     canvas_destroy_timeline(canvas);
