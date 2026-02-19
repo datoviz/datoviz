@@ -44,7 +44,7 @@
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
-#include "datoviz/vklite/proto.h"
+#include "proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sampler.h"
 #include "datoviz/vklite/slots.h"

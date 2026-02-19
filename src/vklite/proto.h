@@ -20,11 +20,9 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/bootstrap.h"
-#include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/graphics.h"
-#include "datoviz/vklite/images.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sampler.h"
 #include "datoviz/vklite/shader.h"
