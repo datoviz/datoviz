@@ -379,7 +379,5 @@ DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void)
  */
 DVZ_EXPORT const DvzStreamSinkBackend* dvz_stream_sink_video(void)
 {
-    dvz_stream_sink_registry_register(
-        dvz_stream_sink_registry_default(), &DVZ_STREAM_SINK_VIDEO);
     return &DVZ_STREAM_SINK_VIDEO;
 }

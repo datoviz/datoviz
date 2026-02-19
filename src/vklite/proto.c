@@ -291,6 +291,11 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
     // Staging buffer for screenshot.
     DvzBuffer* staging = &proto->staging;
     ANN(staging);
+    if (staging->vk_buffer != VK_NULL_HANDLE)
+    {
+        // Keep screenshot staging ownership call-scoped even though the wrapper is proto-owned.
+        dvz_buffer_destroy(staging);
+    }
 
     DvzSize screenshot_size = DVZ_PROTO_WIDTH * DVZ_PROTO_HEIGHT * 4;
     ASSERT(screenshot_size > 0);
@@ -346,6 +351,7 @@ void dvz_proto_screenshot(DvzProto* proto, const char* filename)
     dvz_buffer_download(staging, 0, screenshot_size, screenshot);
     dvz_write_png(filename, DVZ_PROTO_WIDTH, DVZ_PROTO_HEIGHT, screenshot);
     dvz_free(screenshot);
+    dvz_buffer_destroy(staging);
 }
 
 

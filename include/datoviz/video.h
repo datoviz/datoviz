@@ -137,7 +137,7 @@ DVZ_EXPORT DvzVideoSinkConfig dvz_video_sink_default_config(void);
 /**
  * Access the built-in video sink backend that encodes stream frames.
  *
- * @returns the registered video sink backend descriptor
+ * @returns the video sink backend descriptor (caller registers it in the target sink registry)
  */
 DVZ_EXPORT const DvzStreamSinkBackend* dvz_stream_sink_video(void);
 
