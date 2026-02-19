@@ -14,6 +14,12 @@ The goals:
 * Unified **test runner** for all modules
 * CMake-based build and test system
 
+### Branch policy (v0.4-dev)
+
+In this branch, the Datoviz API is not treated as consumed by external users yet. Agents may make aggressive
+API and ABI changes and can break compatibility whenever it improves architecture, correctness, or long-term
+maintainability.
+
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
 ### 🏗️ Current refactor status (v0.4-dev)
