@@ -30,7 +30,7 @@
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
-#include "_proto.h"
+#include "datoviz/vklite/proto.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
