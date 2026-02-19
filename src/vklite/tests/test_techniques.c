@@ -593,27 +593,50 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
 
     DvzAttachment* datt = dvz_rendering_depth(rendering);
     dvz_attachment_image(
-        datt, dvz_image_views_handle(&msdepth_view, 0),
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        datt, dvz_image_views_handle(&msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
         datt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(&proto.dview, 0),
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 
     DvzAttachment* satt = dvz_rendering_stencil(rendering);
     dvz_attachment_image(
-        satt, dvz_image_views_handle(&msdepth_view, 0),
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        satt, dvz_image_views_handle(&msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
         satt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(&proto.dview, 0),
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 
     // Record the command buffer.
     DvzCommands* cmds = dvz_proto_commands(&proto);
     ANN(cmds);
     dvz_cmd_begin(cmds);
-    // NOTE: prevent a write after write sync hazard: we don't do the initial image transition on
-    // the resolve image since it is written by the MSAA rendering
-    // dvz_cmd_barriers(cmds, &proto.barriers);
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+
+        DvzBarrierImage* bcolor = dvz_barriers_image(&barriers, dvz_image_handle(&proto.img, 0));
+        dvz_barrier_image_stage(
+            bcolor, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        dvz_barrier_image_access(bcolor, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bcolor, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+        DvzBarrierImage* bdepth = dvz_barriers_image(&barriers, dvz_image_handle(&proto.dimg, 0));
+        dvz_barrier_image_stage(
+            bdepth, VK_PIPELINE_STAGE_2_NONE,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT |
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
+        dvz_barrier_image_access(
+            bdepth, 0,
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT |
+                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bdepth, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(
+            bdepth, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+
+        dvz_cmd_barriers(cmds, &barriers);
+    }
     dvz_cmd_rendering_begin(cmds, &proto.rendering);
     dvz_cmd_bind_graphics(cmds, &proto.graphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
@@ -954,6 +977,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     // Step 6: record command buffer
     DvzCommands* cmds = dvz_proto_commands(&proto);
     dvz_cmd_begin(cmds);
+    dvz_cmd_barriers(cmds, &proto.barriers);
 
     /* COLOR PASS */
     dvz_cmd_rendering_begin(cmds, &proto.rendering);
@@ -1373,6 +1397,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     DvzCommands* cmds = dvz_proto_commands(&proto);
     ANN(cmds);
     dvz_cmd_begin(cmds);
+    dvz_cmd_barriers(cmds, &proto.barriers);
 
     // Transition accum images: UNDEFINED -> COLOR_ATTACHMENT_OPTIMAL.
     {

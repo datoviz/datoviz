@@ -236,3 +236,56 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     RETURN_VALIDATION
 }
+
+
+
+int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzProto proto = {0};
+    dvz_proto(&proto);
+
+    DvzCommands* cmds = dvz_proto_commands(&proto);
+    ANN(cmds);
+    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    {
+        dvz_proto_destroy(&proto);
+        return 0;
+    }
+
+    const char* screenshot0 = "build/proto_screenshot_repeat_0.png";
+    const char* screenshot1 = "build/proto_screenshot_repeat_1.png";
+    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    {
+        dvz_proto_destroy(&proto);
+        return 0;
+    }
+    dvz_barriers(&proto.barriers);
+    dvz_proto_screenshot(&proto, screenshot0);
+    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    {
+        dvz_proto_destroy(&proto);
+        return 0;
+    }
+    dvz_barriers(&proto.barriers);
+    dvz_proto_screenshot(&proto, screenshot1);
+
+    DvzSize size0 = 0;
+    DvzSize size1 = 0;
+    void* data0 = dvz_read_file(screenshot0, &size0);
+    void* data1 = dvz_read_file(screenshot1, &size1);
+    AT(data0 != NULL);
+    AT(data1 != NULL);
+    AT(size0 > 0);
+    AT(size1 > 0);
+
+    dvz_free(data0);
+    dvz_free(data1);
+
+    uint32_t err_count = dvz_bootstrap_error_count(&proto.bootstrap);
+    dvz_proto_destroy(&proto);
+
+    return err_count > 0 ? 1 : 0;
+}
