@@ -30,8 +30,6 @@
 #include "datoviz/window.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/sync.h"
-#include "../vklite/_buffers.h"
-#include "../vklite/_images.h"
 
 
 
@@ -103,8 +101,8 @@ struct DvzCanvas
     VkImage offscreen_image;
     VkImageView offscreen_view;
     DvzAllocation* offscreen_alloc;
-    DvzImages offscreen_images;
-    DvzImageViews offscreen_views;
+    DvzImages* offscreen_images;
+    DvzImageViews* offscreen_views;
     VkImageLayout offscreen_layout;
     VkCommandBuffer offscreen_command_buffer;
     VkQueue offscreen_queue;

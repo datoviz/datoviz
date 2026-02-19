@@ -200,21 +200,5 @@ DVZ_EXPORT DvzStreamSinkRegistry* dvz_stream_sink_registry_create(void);
 DVZ_EXPORT void dvz_stream_sink_registry_destroy(DvzStreamSinkRegistry* registry);
 
 
-/**
- * Return the shared, lazily initialized sink registry.
- *
- * @returns global registry instance (never NULL after the first call)
- */
-DVZ_EXPORT DvzStreamSinkRegistry* dvz_stream_sink_registry_default(void);
-
-
-/**
- * Destroy the shared registry created by dvz_stream_sink_registry_default().
- *
- * @note Only use when you want to tear down the global state (e.g., tests).
- */
-DVZ_EXPORT void dvz_stream_sink_registry_default_destroy(void);
-
-
 
 EXTERN_C_OFF

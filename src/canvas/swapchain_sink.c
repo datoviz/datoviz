@@ -63,8 +63,8 @@ struct DvzCanvasSwapchainSlot
     VkImageView offscreen_view;
     VkImage swapchain_image;
     VkImageView swapchain_view;
-    DvzImages offscreen_images;
-    DvzImageViews offscreen_views;
+    DvzImages* offscreen_images;
+    DvzImageViews* offscreen_views;
     DvzAllocation* offscreen_alloc;
     DvzSemaphore image_available;
     DvzSemaphore render_finished;
@@ -582,15 +582,23 @@ static bool canvas_slot_init(
         return false;
     }
 
-    slot->offscreen_images = (DvzImages){0};
-    slot->offscreen_views = (DvzImageViews){0};
+    if (slot->offscreen_images == NULL)
+    {
+        slot->offscreen_images = dvz_images_create_wrapper();
+        ANN(slot->offscreen_images);
+    }
+    if (slot->offscreen_views == NULL)
+    {
+        slot->offscreen_views = dvz_image_views_create_wrapper();
+        ANN(slot->offscreen_views);
+    }
     dvz_images_wrap(
         canvas->device, canvas->allocator, VK_IMAGE_TYPE_2D, slot->offscreen_image,
-        &slot->offscreen_images);
-    dvz_images_format(&slot->offscreen_images, frame_format);
-    dvz_image_views(&slot->offscreen_images, &slot->offscreen_views);
-    dvz_image_views_create(&slot->offscreen_views);
-    slot->offscreen_view = dvz_image_views_handle(&slot->offscreen_views, 0);
+        slot->offscreen_images);
+    dvz_images_format(slot->offscreen_images, frame_format);
+    dvz_image_views(slot->offscreen_images, slot->offscreen_views);
+    dvz_image_views_create(slot->offscreen_views);
+    slot->offscreen_view = dvz_image_views_handle(slot->offscreen_views, 0);
     if (slot->offscreen_view == VK_NULL_HANDLE)
     {
         log_error("failed to create offscreen image view for slot %u", slot_index);
@@ -599,8 +607,10 @@ static bool canvas_slot_init(
         dvz_allocation_free(slot->offscreen_alloc);
         slot->offscreen_alloc = NULL;
         slot->offscreen_image = VK_NULL_HANDLE;
-        slot->offscreen_images = (DvzImages){0};
-        slot->offscreen_views = (DvzImageViews){0};
+        dvz_image_views_free(slot->offscreen_views);
+        slot->offscreen_views = NULL;
+        dvz_images_free(slot->offscreen_images);
+        slot->offscreen_images = NULL;
         return false;
     }
 
@@ -841,12 +851,17 @@ static void canvas_destroy_slot(
     {
         return;
     }
-    if (slot->offscreen_views.img)
+    if (slot->offscreen_views != NULL)
     {
-        dvz_image_views_destroy(&slot->offscreen_views);
+        dvz_image_views_destroy(slot->offscreen_views);
+        dvz_image_views_free(slot->offscreen_views);
+        slot->offscreen_views = NULL;
         slot->offscreen_view = VK_NULL_HANDLE;
-        slot->offscreen_images = (DvzImages){0};
-        slot->offscreen_views = (DvzImageViews){0};
+    }
+    if (slot->offscreen_images != NULL)
+    {
+        dvz_images_free(slot->offscreen_images);
+        slot->offscreen_images = NULL;
     }
     slot->swapchain_view = VK_NULL_HANDLE;
     if (slot->offscreen_image != VK_NULL_HANDLE)
@@ -1869,20 +1884,24 @@ int dvz_canvas_swapchain_capture_rgba_into(
 
     dvz_device_wait(canvas->device);
 
-    DvzBuffer staging = {0};
-    if (canvas_capture_create_staging(canvas, expected_size, &staging) != 0)
+    DvzBuffer* staging = dvz_buffer_create_wrapper();
+    ANN(staging);
+    if (canvas_capture_create_staging(canvas, expected_size, staging) != 0)
     {
+        dvz_buffer_free(staging);
         return -1;
     }
-    if (canvas_capture_copy_to_staging(canvas, state, slot, width, height, &staging) != 0)
+    if (canvas_capture_copy_to_staging(canvas, state, slot, width, height, staging) != 0)
     {
-        dvz_buffer_destroy(&staging);
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
         return -1;
     }
 
-    dvz_buffer_download(&staging, 0, expected_size, out_rgba);
+    dvz_buffer_download(staging, 0, expected_size, out_rgba);
 
-    dvz_buffer_destroy(&staging);
+    dvz_buffer_destroy(staging);
+    dvz_buffer_free(staging);
     return 0;
 }
 

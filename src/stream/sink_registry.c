@@ -30,19 +30,6 @@ struct DvzStreamSinkRegistry
 };
 
 
-static DvzStreamSinkRegistry* g_stream_sink_registry = NULL;
-
-
-static DvzStreamSinkRegistry* stream_sink_registry_global(void)
-{
-    if (g_stream_sink_registry == NULL)
-    {
-        g_stream_sink_registry = dvz_stream_sink_registry_create();
-    }
-    return g_stream_sink_registry;
-}
-
-
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
@@ -127,34 +114,6 @@ DVZ_EXPORT void dvz_stream_sink_registry_destroy(DvzStreamSinkRegistry* registry
     dvz_free(registry->items);
     dvz_free(registry);
 }
-
-
-/**
- * Return the shared, lazily initialized sink registry.
- *
- * @returns global registry instance (may be NULL if allocation failed)
- */
-DVZ_EXPORT DvzStreamSinkRegistry* dvz_stream_sink_registry_default(void)
-{
-    return stream_sink_registry_global();
-}
-
-
-/**
- * Destroy the shared registry created by dvz_stream_sink_registry_default().
- *
- * @note Only use when tearing down the global state (tests, etc.).
- */
-DVZ_EXPORT void dvz_stream_sink_registry_default_destroy(void)
-{
-    if (!g_stream_sink_registry)
-    {
-        return;
-    }
-    dvz_stream_sink_registry_destroy(g_stream_sink_registry);
-    g_stream_sink_registry = NULL;
-}
-
 
 
 /**

@@ -24,11 +24,11 @@
 #include <unistd.h>
 #endif
 
-#include "../vk/_device.h"
 #include "_alloc.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/thread/thread.h"
+#include "datoviz/vk/device.h"
 #include "encoder_backend.h"
 #include "kvazaar.h"
 
@@ -747,12 +747,12 @@ static int kvazaar_start(DvzVideoEncoder* enc)
         state = kvazaar_state(enc);
     }
     ANN(state);
-    if (!enc->device || enc->device->vk_device == VK_NULL_HANDLE)
+    if (!enc->device || dvz_device_handle(enc->device) == VK_NULL_HANDLE)
     {
         log_error("kvazaar backend requires a valid DvzDevice (vk_device cannot be NULL)");
         return -1;
     }
-    state->device = enc->device->vk_device;
+    state->device = dvz_device_handle(enc->device);
     state->width = enc->cfg.width;
     state->height = enc->cfg.height;
     state->format = enc->cfg.color_format;

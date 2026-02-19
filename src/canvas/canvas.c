@@ -209,11 +209,16 @@ static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
         return;
     }
     dvz_device_wait(canvas->device);
-    if (canvas->offscreen_views.img)
+    if (canvas->offscreen_views != NULL)
     {
-        dvz_image_views_destroy(&canvas->offscreen_views);
-        canvas->offscreen_views = (DvzImageViews){0};
-        canvas->offscreen_images = (DvzImages){0};
+        dvz_image_views_destroy(canvas->offscreen_views);
+        dvz_image_views_free(canvas->offscreen_views);
+        canvas->offscreen_views = NULL;
+    }
+    if (canvas->offscreen_images != NULL)
+    {
+        dvz_images_free(canvas->offscreen_images);
+        canvas->offscreen_images = NULL;
     }
     if (canvas->offscreen_image != VK_NULL_HANDLE)
     {
@@ -305,13 +310,23 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
         return -1;
     }
 
+    if (canvas->offscreen_images == NULL)
+    {
+        canvas->offscreen_images = dvz_images_create_wrapper();
+        ANN(canvas->offscreen_images);
+    }
+    if (canvas->offscreen_views == NULL)
+    {
+        canvas->offscreen_views = dvz_image_views_create_wrapper();
+        ANN(canvas->offscreen_views);
+    }
     dvz_images_wrap(
         canvas->device, canvas->allocator, VK_IMAGE_TYPE_2D, canvas->offscreen_image,
-        &canvas->offscreen_images);
-    dvz_images_format(&canvas->offscreen_images, format);
-    dvz_image_views(&canvas->offscreen_images, &canvas->offscreen_views);
-    dvz_image_views_create(&canvas->offscreen_views);
-    canvas->offscreen_view = dvz_image_views_handle(&canvas->offscreen_views, 0);
+        canvas->offscreen_images);
+    dvz_images_format(canvas->offscreen_images, format);
+    dvz_image_views(canvas->offscreen_images, canvas->offscreen_views);
+    dvz_image_views_create(canvas->offscreen_views);
+    canvas->offscreen_view = dvz_image_views_handle(canvas->offscreen_views, 0);
     if (canvas->offscreen_view == VK_NULL_HANDLE)
     {
         log_error("failed to create offscreen canvas image view");
@@ -842,14 +857,16 @@ static int canvas_offscreen_capture_rgba_into(
         dvz_semaphore_wait(&canvas->timeline_semaphore, canvas->timeline_value);
     }
 
-    DvzBuffer staging = {0};
-    dvz_buffer(canvas->device, canvas->allocator, &staging);
-    dvz_buffer_size(&staging, expected_size);
+    DvzBuffer* staging = dvz_buffer_create_wrapper();
+    ANN(staging);
+    dvz_buffer(canvas->device, canvas->allocator, staging);
+    dvz_buffer_size(staging, expected_size);
     dvz_buffer_flags(
-        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
-    dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    if (dvz_buffer_create(&staging) != 0)
+        staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    if (dvz_buffer_create(staging) != 0)
     {
+        dvz_buffer_free(staging);
         log_error("failed to allocate staging buffer for offscreen capture");
         return -1;
     }
@@ -857,7 +874,8 @@ static int canvas_offscreen_capture_rgba_into(
     VkCommandBuffer cmd = dvz_command_buffer_alloc(canvas->device, canvas->offscreen_queue_family);
     if (cmd == VK_NULL_HANDLE)
     {
-        dvz_buffer_destroy(&staging);
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
         log_error("failed to allocate command buffer for offscreen capture");
         return -1;
     }
@@ -878,7 +896,7 @@ static int canvas_offscreen_capture_rgba_into(
     dvz_image_region_extent(&region, width, height, 1);
     dvz_cmd_copy_image_to_buffer(
         &cmds, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
-        dvz_buffer_handle(&staging), 0);
+        dvz_buffer_handle(staging), 0);
     canvas_cmd_transition_image(
         canvas, cmd, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, original_layout);
     dvz_cmd_end(&cmds);
@@ -893,7 +911,8 @@ static int canvas_offscreen_capture_rgba_into(
     {
         dvz_fence_destroy(&fence);
         dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, cmd);
-        dvz_buffer_destroy(&staging);
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
         log_error("failed to submit offscreen capture copy commands (%d)", submit_rc);
         return -1;
     }
@@ -901,8 +920,9 @@ static int canvas_offscreen_capture_rgba_into(
     dvz_fence_destroy(&fence);
     dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, cmd);
 
-    dvz_buffer_download(&staging, 0, expected_size, out_rgba);
-    dvz_buffer_destroy(&staging);
+    dvz_buffer_download(staging, 0, expected_size, out_rgba);
+    dvz_buffer_destroy(staging);
+    dvz_buffer_free(staging);
     return 0;
 }
 
