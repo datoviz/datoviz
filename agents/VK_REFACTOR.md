@@ -5,6 +5,14 @@
 > - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 completed for bootstrap/proto flows, Step 4 completed for `DvzSurface`/`DvzSwapchain` (opaque public handles + accessor migration).
 > - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening across the rest of vklite public structs and lifecycle matrices.
 
+## Immediate next steps (2026-02-20)
+
+1. Make `proto` opaque even internally to tests.
+2. Replace direct `proto.<field>` access with `dvz_proto_*` accessors for commands/rendering/barriers/images/bootstrap/device/allocator.
+3. Normalize wrapper ownership APIs across `vklite` (`*_create_wrapper()` + matching `*_free()`, stack objects use `*_destroy()` only).
+4. Unify barrier lifecycle conventions (`dvz_barriers()` init, reset/clear semantics, repeated record/submit safety).
+5. Add focused conventions tests for null-safe/idempotent destroy and repeated-submit safety across `canvas`/`stream`/`vk`/`vklite`.
+
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
 This plan defines the next ownership slice after GPU API cleanup: strict public/internal separation and
