@@ -61,6 +61,7 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_size(buffer, size);
     dvz_buffer_flags(buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    AT(dvz_buffer_size_value(buffer) == size);
     dvz_buffer_create(buffer);
 
     // Map the buffer.
@@ -108,6 +109,8 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_buffer_destroy(buffer);
+    dvz_buffer_destroy(buffer);
+    AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
     dvz_buffer_free(buffer);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
@@ -132,6 +135,7 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_size(buffer, size);
     dvz_buffer_flags(buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    AT(dvz_buffer_size_value(buffer) == size);
     dvz_buffer_create(buffer);
 
     DvzBufferViews views = {0};
@@ -145,6 +149,8 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_buffer_destroy(buffer);
+    dvz_buffer_destroy(buffer);
+    AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
     dvz_buffer_free(buffer);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);

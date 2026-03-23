@@ -236,6 +236,26 @@ DVZ_EXPORT VkImage dvz_image_handle(DvzImages* img, uint32_t idx);
 
 
 /**
+ * Return the number of images wrapped by an images object.
+ *
+ * @param img the images
+ * @returns the image count
+ */
+DVZ_EXPORT uint32_t dvz_images_count(DvzImages* img);
+
+
+
+/**
+ * Return the configured image format for an images object.
+ *
+ * @param img the images
+ * @returns the Vulkan image format
+ */
+DVZ_EXPORT VkFormat dvz_images_format_value(DvzImages* img);
+
+
+
+/**
  * Destroy images.
  *
  * @param images the images
@@ -331,6 +351,16 @@ DVZ_EXPORT void dvz_image_views_create(DvzImageViews* views);
  * @returns the Vulkan image view handle
  */
 DVZ_EXPORT VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx);
+
+
+
+/**
+ * Return the number of image views owned by a views wrapper.
+ *
+ * @param views the image views
+ * @returns the image-view count
+ */
+DVZ_EXPORT uint32_t dvz_image_views_count(DvzImageViews* views);
 
 
 

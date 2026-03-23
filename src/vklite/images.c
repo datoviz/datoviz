@@ -173,7 +173,7 @@ void dvz_images(
     ANN(allocator);
     ANN(img);
     ASSERT(count <= DVZ_MAX_IMAGES);
-
+    dvz_memset(img, sizeof(*img), 0, sizeof(*img));
     img->device = device;
     img->allocator = allocator;
     img->count = count;
@@ -317,9 +317,42 @@ VkImage dvz_image_handle(DvzImages* img, uint32_t idx)
 
 
 
+/**
+ * Return the number of images wrapped by an images object.
+ *
+ * @param img the images
+ * @return the image count
+ */
+uint32_t dvz_images_count(DvzImages* img)
+{
+    ANN(img);
+    return img->count;
+}
+
+
+
+/**
+ * Return the configured image format for an images object.
+ *
+ * @param img the images
+ * @return the Vulkan image format
+ */
+VkFormat dvz_images_format_value(DvzImages* img)
+{
+    ANN(img);
+    return img->info.format;
+}
+
+
+
 void dvz_images_destroy(DvzImages* img)
 {
     ANN(img);
+    if (!dvz_obj_is_created(&img->obj))
+    {
+        log_trace("skip destruction of already-destroyed images");
+        return;
+    }
     ANN(img->device);
 
     DvzVma* allocator = img->allocator;
@@ -349,7 +382,7 @@ void dvz_images_wrap(
     ANN(device);
     ANN(allocator);
     ANN(img);
-
+    dvz_memset(img, sizeof(*img), 0, sizeof(*img));
     img->device = device;
     img->allocator = allocator;
     img->count = 1;
@@ -376,7 +409,7 @@ void dvz_image_views(DvzImages* img, DvzImageViews* views)
 {
     ANN(img);
     ANN(views);
-
+    dvz_memset(views, sizeof(*views), 0, sizeof(*views));
     views->device = img->device;
     views->img = img;
 
@@ -465,9 +498,29 @@ VkImageView dvz_image_views_handle(DvzImageViews* views, uint32_t idx)
 
 
 
+/**
+ * Return the number of image views owned by a views wrapper.
+ *
+ * @param views the image views
+ * @return the image-view count
+ */
+uint32_t dvz_image_views_count(DvzImageViews* views)
+{
+    ANN(views);
+    ANN(views->img);
+    return views->img->count;
+}
+
+
+
 void dvz_image_views_destroy(DvzImageViews* views)
 {
     ANN(views);
+    if (!dvz_obj_is_created(&views->obj))
+    {
+        log_trace("skip destruction of already-destroyed image views");
+        return;
+    }
 
     DvzImages* img = views->img;
     ANN(img);

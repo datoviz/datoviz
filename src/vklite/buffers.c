@@ -91,7 +91,7 @@ void dvz_buffer(DvzDevice* device, DvzVma* allocator, DvzBuffer* buffer)
     ANN(device);
     ANN(allocator);
     ANN(buffer);
-
+    dvz_memset(buffer, sizeof(*buffer), 0, sizeof(*buffer));
     buffer->device = device;
     buffer->allocator = allocator;
     dvz_obj_init(&buffer->obj);
@@ -157,6 +157,20 @@ VkBuffer dvz_buffer_handle(DvzBuffer* buffer)
 {
     ANN(buffer);
     return buffer->vk_buffer;
+}
+
+
+
+/**
+ * Return the requested logical size of a buffer, in bytes.
+ *
+ * @param buffer the buffer
+ * @return requested size in bytes
+ */
+DvzSize dvz_buffer_size_value(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    return buffer->req_size;
 }
 
 
@@ -259,6 +273,11 @@ void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* 
 void dvz_buffer_destroy(DvzBuffer* buffer)
 {
     ANN(buffer);
+    if (!dvz_obj_is_created(&buffer->obj))
+    {
+        log_trace("skip destruction of already-destroyed buffer");
+        return;
+    }
     ANN(buffer->device);
 
     DvzVma* allocator = buffer->allocator;
@@ -337,7 +356,7 @@ void dvz_cmd_bind_vertex_buffers(
     VkBuffer vk_buffers[DVZ_MAX_VERTEX_BINDINGS] = {0};
     for (uint32_t i = 0; i < binding_count; i++)
     {
-        vk_buffers[i] = buffers[i].vk_buffer;
+        vk_buffers[i] = dvz_buffer_handle(&buffers[i]);
     }
     vkCmdBindVertexBuffers(cmd, first_binding, binding_count, vk_buffers, offsets);
 }
@@ -352,5 +371,5 @@ void dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize off
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
 
-    vkCmdBindIndexBuffer(cmd, buffer->vk_buffer, offset, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cmd, dvz_buffer_handle(buffer), offset, VK_INDEX_TYPE_UINT32);
 }

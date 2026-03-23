@@ -158,6 +158,16 @@ DVZ_EXPORT VkBuffer dvz_buffer_handle(DvzBuffer* buffer);
 
 
 /**
+ * Return the requested logical size of a buffer, in bytes.
+ *
+ * @param buffer the buffer
+ * @returns requested size in bytes
+ */
+DVZ_EXPORT DvzSize dvz_buffer_size_value(DvzBuffer* buffer);
+
+
+
+/**
  * Resize a buffer.
  *
  * @param buffer the buffer
