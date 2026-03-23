@@ -5,8 +5,8 @@
 >   `dvz_instance_gpus()`, or `dvz_gpu_*` pointer APIs. Active call sites in `canvas` and vklite
 >   present/swapchain setup use device/index-driven APIs. Public GPU discovery/query now goes
 >   through `dvz_instance_gpu_count()`, `dvz_instance_gpu_info()`,
->   `dvz_instance_gpu_queue_caps()`, and `dvz_instance_gpu_handle()`; bootstrap setup uses
->   `dvz_bootstrap_gpu_index()`/`dvz_bootstrap_gpu_info()`.
+>   `dvz_instance_gpu_queue_caps()`, and `dvz_instance_gpu_handle()`; public bring-up now goes
+>   through `dvz_gpu_ctx_*()`.
 > - **Boundary note:** Low-level `DvzGpu` pointer helpers are now internal-only (`src/vk/_gpu.h`) and remain used by vk internals and vk-focused tests.
 > - **Current branch status:** This file is a completed phase record. The active remaining ownership
 >   work is the broader `vk`/`vklite` boundary cleanup tracked in `agents/now/VK_REFACTOR.md`, not this

@@ -28,7 +28,7 @@ The most important work completed before the pause was:
    preserving the unified `dvztest` entry point.
 2. The canvas/presentation/offscreen/video path was reworked and backed by many regression tests.
 3. The public Vulkan ownership model was cleaned up substantially, especially around GPU discovery,
-   bootstrap, surface/swapchain, and `proto`.
+   `gpu_ctx`, surface/swapchain, and `proto`.
 4. `vklite` now appears much closer to consuming `vk` through public contracts rather than private
    vk internals.
 
@@ -95,7 +95,7 @@ Key outcomes:
 
 - [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) records the current contract.
 - `proto` was demoted from installed public header to internal helper (`src/vklite/_proto.h`).
-- New bootstrap accessor/setter APIs were added and `proto` was migrated to use them.
+- The old bootstrap helper has now been removed and replaced by `gpu_ctx`.
 - `surface` and `swapchain` were refactored around more opaque public handles/accessors.
 - A large amount of `vklite` wrapper/test code was updated accordingly.
 
