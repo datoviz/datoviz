@@ -18,9 +18,8 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/instance.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/queues.h"
 #include "fixture_gpu.h"
 
@@ -32,7 +31,7 @@
 
 struct DvzFixtureGpu
 {
-    DvzBootstrap bootstrap;
+    DvzGpuCtx* ctx;
 };
 
 
@@ -42,7 +41,7 @@ struct DvzFixtureGpu
 /*************************************************************************************************/
 
 /**
- * Create a GPU test fixture with bootstrap, device, allocator, and main queue access.
+ * Create a GPU test fixture with GPU context, device, allocator, and main queue access.
  *
  * @return allocated GPU fixture, or NULL on allocation failure
  */
@@ -51,43 +50,18 @@ DvzFixtureGpu* dvz_fixture_gpu(void)
     DvzFixtureGpu* fixture = (DvzFixtureGpu*)dvz_calloc(1, sizeof(DvzFixtureGpu));
     ANN(fixture);
 
-    DvzBootstrap* bootstrap = &fixture->bootstrap;
-    ANN(bootstrap);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.samplerAnisotropy = true;
+    features10.sampleRateShading = true;
+    dvz_gpu_ctx_config_features10(&cfg, &features10);
 
-    dvz_bootstrap(bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    DvzInstance* instance = dvz_bootstrap_instance(bootstrap);
-    ANN(instance);
-
-    uint32_t gpu_index = dvz_bootstrap_gpu_index(bootstrap);
-    ASSERT(gpu_index != UINT32_MAX);
-
-    DvzQueueCaps qc = {0};
-    ASSERT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
-
-    DvzQueues queues = {0};
-    dvz_queues(&qc, &queues);
-
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
-    for (uint32_t i = 0; i < queues.queue_count; i++)
-    {
-        DvzQueue* req = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, dvz_queue_family(req), 1);
-    }
-
-    VkPhysicalDeviceFeatures fet10 = {0};
-    fet10.samplerAnisotropy = true;
-    fet10.sampleRateShading = true;
-    dvz_device_config_set_features10(&dcfg, &fet10);
-
-    VkPhysicalDeviceVulkan13Features fet13 = {0};
-    fet13.dynamicRendering = true;
-    fet13.synchronization2 = true;
-    dvz_device_config_set_features13(&dcfg, &fet13);
-
-    DvzDevice* created_device = dvz_device_create(&dcfg);
-    ASSERT(dvz_bootstrap_set_device(bootstrap, created_device, created_device != NULL));
-    ASSERT(dvz_bootstrap_create_allocator(bootstrap, 0) == 0);
+    VkPhysicalDeviceVulkan13Features features13 = {0};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    fixture->ctx = dvz_gpu_ctx(&cfg);
+    ASSERT(fixture->ctx != NULL);
 
     return fixture;
 }
@@ -106,28 +80,28 @@ void dvz_fixture_gpu_destroy(DvzFixtureGpu* fixture)
         return;
     }
 
-    dvz_bootstrap_destroy(&fixture->bootstrap);
+    dvz_gpu_ctx_destroy(fixture->ctx);
     dvz_free(fixture);
 }
 
 
 
 /**
- * Get the bootstrap wrapper owned by the fixture.
+ * Get the GPU context owned by the fixture.
  *
  * @param fixture the GPU fixture
- * @return borrowed bootstrap wrapper
+ * @return borrowed GPU context
  */
-DvzBootstrap* dvz_fixture_gpu_bootstrap(DvzFixtureGpu* fixture)
+DvzGpuCtx* dvz_fixture_gpu_ctx(DvzFixtureGpu* fixture)
 {
     ANN(fixture);
-    return &fixture->bootstrap;
+    return fixture->ctx;
 }
 
 
 
 /**
- * Get the device owned by the fixture bootstrap.
+ * Get the device owned by the fixture GPU context.
  *
  * @param fixture the GPU fixture
  * @return borrowed device
@@ -135,13 +109,13 @@ DvzBootstrap* dvz_fixture_gpu_bootstrap(DvzFixtureGpu* fixture)
 DvzDevice* dvz_fixture_gpu_device(DvzFixtureGpu* fixture)
 {
     ANN(fixture);
-    return dvz_bootstrap_device(&fixture->bootstrap);
+    return dvz_gpu_ctx_device(fixture->ctx);
 }
 
 
 
 /**
- * Get the allocator owned by the fixture bootstrap.
+ * Get the allocator owned by the fixture GPU context.
  *
  * @param fixture the GPU fixture
  * @return borrowed allocator
@@ -149,7 +123,7 @@ DvzDevice* dvz_fixture_gpu_device(DvzFixtureGpu* fixture)
 DvzVma* dvz_fixture_gpu_alloc(DvzFixtureGpu* fixture)
 {
     ANN(fixture);
-    return dvz_bootstrap_allocator(&fixture->bootstrap);
+    return dvz_gpu_ctx_alloc(fixture->ctx);
 }
 
 

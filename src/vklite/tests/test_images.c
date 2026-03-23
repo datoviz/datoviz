@@ -16,7 +16,7 @@
 
 #include "test_vk.h"
 #include "_assertions.h"
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/images.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -43,15 +43,15 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
     // Images.
     DvzImages* images = dvz_images_create_wrapper();
     ANN(images);
     dvz_images(
-        dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), VK_IMAGE_TYPE_2D, 1,
-        images);
+        dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 1, images);
     dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(images, 256, 256, 1);
     dvz_images_mip(images, 1);
@@ -71,7 +71,8 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
     dvz_images_destroy(images);
     dvz_image_views_free(views);
     dvz_images_free(images);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }

@@ -22,10 +22,8 @@
 #include "_assertions.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/math/types.h"
-#include "datoviz/vk/bootstrap.h"
-#include "datoviz/vk/instance.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/memory.h"
-#include "datoviz/vk/queues.h"
 #include "_buffers.h"
 #include "_images.h"
 #include "datoviz/vklite/buffers.h"
@@ -57,39 +55,21 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     const uint32_t HEIGHT = DVZ_FIXTURE_HEIGHT;
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    DvzInstance* instance = dvz_bootstrap_instance(&bootstrap);
-    ANN(instance);
-    uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
-    AT(gpu_index != UINT32_MAX);
-    DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
-    DvzQueues queues = {0};
-    dvz_queues(&qc, &queues);
-
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
-    for (uint32_t i = 0; i < queues.queue_count; i++)
-    {
-        DvzQueue* req = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, dvz_queue_family(req), 1);
-    }
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
-    dvz_device_config_set_features13(&dcfg, &features13);
-    DvzDevice* created_device = dvz_device_create(&dcfg);
-    AT(dvz_bootstrap_set_device(&bootstrap, created_device, created_device != NULL));
-    DvzDevice* device = dvz_bootstrap_device(&bootstrap);
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
     AT(device != NULL);
-    AT(dvz_bootstrap_create_allocator(&bootstrap, 0) == 0);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
-    if (dvz_bootstrap_error_count(&bootstrap) > 0)
+    if (dvz_gpu_ctx_error_count(ctx) > 0)
     {
-        dvz_bootstrap_destroy(&bootstrap);
+        dvz_gpu_ctx_destroy(ctx);
         return 0;
     }
 
@@ -113,7 +93,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Slots.
     DvzSlots slots = {0};
-    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
+    dvz_slots(device, &slots);
     AT(dvz_slots_create(&slots) == 0);
     dvz_graphics_layout(&graphics, dvz_slots_handle(&slots));
 
@@ -143,7 +123,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Image to render to.
     DvzImages img = {0};
-    dvz_images(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), VK_IMAGE_TYPE_2D, 1, &img);
+    dvz_images(device, dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 1, &img);
     dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(&img, WIDTH, HEIGHT, 1);
     dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
@@ -185,7 +165,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         dvz_shader_destroy(&fs);
         dvz_slots_destroy(&slots);
         dvz_graphics_destroy(&graphics);
-        dvz_bootstrap_destroy(&bootstrap);
+        dvz_gpu_ctx_destroy(ctx);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
         return 0;
@@ -204,7 +184,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Staging buffer for screenshot.
     DvzBuffer staging = {0};
     DvzSize screenshot_size = WIDTH * HEIGHT * 4;
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), &staging);
+    dvz_buffer(device, dvz_gpu_ctx_alloc(ctx), &staging);
     dvz_buffer_size(&staging, screenshot_size);
     dvz_buffer_flags(
         &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
@@ -251,12 +231,13 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_shader_destroy(&fs);
     dvz_slots_destroy(&slots);
     dvz_graphics_destroy(&graphics);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
     dvz_free(vs_spv);
     dvz_free(fs_spv);
     dvz_free(screenshot);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }
 
 
@@ -270,7 +251,7 @@ int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
     ANN(gpu);
     DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
-    if (dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu)) > 0)
+    if (dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu)) > 0)
     {
         dvz_fixture_offscreen_destroy(off);
         dvz_fixture_gpu_destroy(gpu);
@@ -362,7 +343,7 @@ int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
 

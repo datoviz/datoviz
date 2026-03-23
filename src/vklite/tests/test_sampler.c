@@ -18,7 +18,7 @@
 
 #include "test_vk.h"
 #include "_assertions.h"
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/sampler.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -36,33 +36,16 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    DvzInstance* instance = dvz_bootstrap_instance(&bootstrap);
-    ANN(instance);
-    uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
-    AT(gpu_index != UINT32_MAX);
-    DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
-    DvzQueues queues = {0};
-    dvz_queues(&qc, &queues);
-    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
-    for (uint32_t i = 0; i < queues.queue_count; i++)
-    {
-        DvzQueue* req = &queues.queues[i];
-        dvz_device_config_request_queue(&dcfg, dvz_queue_family(req), 1);
-    }
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceFeatures features10 = {0};
     features10.samplerAnisotropy = true;
-    dvz_device_config_set_features10(&dcfg, &features10);
-    DvzDevice* created_device = dvz_device_create(&dcfg);
-    AT(dvz_bootstrap_set_device(&bootstrap, created_device, created_device != NULL));
-    AT(dvz_bootstrap_device(&bootstrap) != NULL);
+    dvz_gpu_ctx_config_features10(&cfg, &features10);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
     DvzSampler* sampler = dvz_sampler_create_wrapper();
     ANN(sampler);
-    dvz_sampler(dvz_bootstrap_device(&bootstrap), sampler);
+    dvz_sampler(dvz_gpu_ctx_device(ctx), sampler);
     dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
     dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
     dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
@@ -72,7 +55,8 @@ int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }

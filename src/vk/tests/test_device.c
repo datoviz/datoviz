@@ -170,15 +170,6 @@ int test_device_4(TstSuite* suite, TstItem* tstitem)
     DvzInstance* instance = dvz_instance_create(&icfg);
     AT(instance != NULL);
 
-    DvzBootstrap bootstrap = {0};
-    bootstrap.instance = instance;
-    dvz_bootstrap(&bootstrap, DVZ_BOOTSTRAP_MANUAL_CREATE_DEVICE);
-    AT(bootstrap.instance == instance);
-    AT(!bootstrap.owns_instance);
-
-    dvz_bootstrap_destroy(&bootstrap);
-    AT(bootstrap.instance == NULL);
-
     dvz_instance_destroy(instance);
     return 0;
 }

@@ -19,7 +19,7 @@
 #include "test_vk.h"
 #include "_assertions.h"
 #include "datoviz/math/types.h"
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/images.h"
@@ -40,12 +40,13 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
     // Create slots.
     DvzSlots slots = {0};
-    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
+    dvz_slots(dvz_gpu_ctx_device(ctx), &slots);
 
     // Bindings.
     dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -63,12 +64,12 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     ANN(sbuf);
     DvzSize size = 256;
 
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), ubuf);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), ubuf);
     dvz_buffer_size(ubuf, size);
     dvz_buffer_usage(ubuf, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     dvz_buffer_create(ubuf);
 
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), sbuf);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), sbuf);
     dvz_buffer_size(sbuf, size);
     dvz_buffer_usage(sbuf, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     dvz_buffer_create(sbuf);
@@ -77,8 +78,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     DvzImages* images = dvz_images_create_wrapper();
     ANN(images);
     dvz_images(
-        dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), VK_IMAGE_TYPE_2D, 1,
-        images);
+        dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 1, images);
     dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(images, 256, 256, 1);
     dvz_images_mip(images, 1);
@@ -116,7 +116,8 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_free(sbuf);
     dvz_descriptors_free(desc);
     dvz_slots_destroy(&slots);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }

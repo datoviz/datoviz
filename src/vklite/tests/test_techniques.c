@@ -96,7 +96,7 @@ int test_technique_triangle(TstSuite* suite, TstItem* tstitem)
     dvz_fixture_offscreen_png(off, "build/technique_triangle.png");
 
     // Cleanup.
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
     dvz_free(vs_spv);
@@ -350,7 +350,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_graphics_destroy(&igraphics);
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
     dvz_free(vs_spv);
@@ -530,7 +530,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_graphics_destroy(&mgraphics);
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
     dvz_free(vs_spv);
@@ -698,7 +698,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_destroy(&msdepth_view);
     dvz_images_destroy(&msimg);
     dvz_images_destroy(&msdepth);
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
     dvz_free(vs_spv);
@@ -848,7 +848,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     dvz_compute_destroy(&compute);
     dvz_graphics_destroy(graphics);
     dvz_buffer_destroy(&buf);
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
     dvz_free(cs_spv);
@@ -1124,7 +1124,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&vbuf);
     dvz_image_views_destroy(&pickview);
     dvz_images_destroy(&pickimg);
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
     dvz_free(vs_spv);
@@ -1583,7 +1583,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     dvz_descriptors_free(desc_comp);
     dvz_graphics_destroy(&g_accum);
     dvz_graphics_destroy(&g_comp);
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
 
@@ -1884,7 +1884,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     dvz_slots_destroy(&ssao_slots);
 
-    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
 

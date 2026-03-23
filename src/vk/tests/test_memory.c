@@ -30,7 +30,7 @@
 #include <cuda_runtime_api.h>
 #endif
 
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "test_vk.h"
@@ -66,15 +66,16 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
-    uint32_t gpu_index = dvz_bootstrap_gpu_index(&bootstrap);
+    uint32_t gpu_index = dvz_gpu_ctx_gpu_index(ctx);
     AT(gpu_index != UINT32_MAX);
     DvzGpuInfo gpu_info = {0};
-    AT(dvz_bootstrap_gpu_info(&bootstrap, &gpu_info));
+    AT(dvz_gpu_ctx_gpu_info(ctx, &gpu_info));
 
-    DvzVma* allocator = dvz_bootstrap_allocator(&bootstrap);
+    DvzVma* allocator = dvz_gpu_ctx_alloc(ctx);
     ANN(allocator);
 
     // Buffer allocation.
@@ -110,9 +111,10 @@ int test_memory_1(TstSuite* suite, TstItem* tstitem)
     dvz_allocation_free(img_alloc);
 
     // Cleanup.
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }
 
 

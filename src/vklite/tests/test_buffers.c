@@ -20,7 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/buffers.h"
 #include "test_vklite.h"
 #include "datoviz/math/types.h"
@@ -49,14 +49,15 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
     DvzBuffer* buffer = dvz_buffer_create_wrapper();
     ANN(buffer);
     DvzSize size = 65536;
 
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), buffer);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), buffer);
     dvz_buffer_size(buffer, size);
     dvz_buffer_flags(buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -108,9 +109,10 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_buffer_destroy(buffer);
     dvz_buffer_free(buffer);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }
 
 
@@ -118,14 +120,15 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
 int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
 {
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
     DvzBuffer* buffer = dvz_buffer_create_wrapper();
     ANN(buffer);
     DvzSize size = 65536;
 
-    dvz_buffer(dvz_bootstrap_device(&bootstrap), dvz_bootstrap_allocator(&bootstrap), buffer);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), buffer);
     dvz_buffer_size(buffer, size);
     dvz_buffer_flags(buffer, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -143,7 +146,8 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     dvz_buffer_destroy(buffer);
     dvz_buffer_free(buffer);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }

@@ -18,5 +18,6 @@
 
 #include "vk/enums.h"
 #include "vk/gpu.h"
+#include "vk/gpu_ctx.h"
 #include "vk/instance.h"
 #include "vk/macros.h"

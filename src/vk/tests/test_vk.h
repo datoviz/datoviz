@@ -17,17 +17,8 @@
 /*************************************************************************************************/
 
 #include "datoviz/vk/instance.h"
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "testing.h"
-
-
-
-/*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-// A test should fail (return 1) if there are validation errors.
-#define RETURN_VALIDATION return dvz_bootstrap_error_count(&bootstrap) > 0;
 
 
 

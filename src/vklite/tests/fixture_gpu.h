@@ -17,8 +17,8 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
-#include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 
@@ -39,7 +39,7 @@ typedef struct DvzFixtureGpu DvzFixtureGpu;
 EXTERN_C_ON
 
 /**
- * Create a GPU test fixture with bootstrap, device, allocator, and main queue access.
+ * Create a GPU test fixture with GPU context, device, allocator, and main queue access.
  *
  * @return allocated GPU fixture, or NULL on allocation failure
  */
@@ -57,17 +57,17 @@ DVZ_EXPORT void dvz_fixture_gpu_destroy(DvzFixtureGpu* fixture);
 
 
 /**
- * Get the bootstrap wrapper owned by the fixture.
+ * Get the GPU context owned by the fixture.
  *
  * @param fixture the GPU fixture
- * @return borrowed bootstrap wrapper
+ * @return borrowed GPU context
  */
-DVZ_EXPORT DvzBootstrap* dvz_fixture_gpu_bootstrap(DvzFixtureGpu* fixture);
+DVZ_EXPORT DvzGpuCtx* dvz_fixture_gpu_ctx(DvzFixtureGpu* fixture);
 
 
 
 /**
- * Get the device owned by the fixture bootstrap.
+ * Get the device owned by the fixture GPU context.
  *
  * @param fixture the GPU fixture
  * @return borrowed device
@@ -77,7 +77,7 @@ DVZ_EXPORT DvzDevice* dvz_fixture_gpu_device(DvzFixtureGpu* fixture);
 
 
 /**
- * Get the allocator owned by the fixture bootstrap.
+ * Get the allocator owned by the fixture GPU context.
  *
  * @param fixture the GPU fixture
  * @return borrowed allocator

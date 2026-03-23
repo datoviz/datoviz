@@ -16,7 +16,7 @@
 
 #include "test_vk.h"
 #include "_assertions.h"
-#include "datoviz/vk/bootstrap.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -34,12 +34,13 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
     // Create slots.
     DvzSlots slots = {0};
-    dvz_slots(dvz_bootstrap_device(&bootstrap), &slots);
+    dvz_slots(dvz_gpu_ctx_device(ctx), &slots);
 
     // Bindings.
     dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -59,7 +60,8 @@ int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_slots_destroy(&slots);
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }

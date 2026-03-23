@@ -18,8 +18,8 @@
 
 #include "test_vk.h"
 #include "_assertions.h"
-#include "datoviz/vk/bootstrap.h"
 #include "datoviz/vk/device.h"
+#include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/sync.h"
@@ -38,10 +38,11 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzBootstrap bootstrap = {0};
-    dvz_bootstrap(&bootstrap, 0);
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
 
-    DvzDevice* device = dvz_bootstrap_device(&bootstrap);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
     ANN(device);
 
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
@@ -55,9 +56,10 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_free(&cmds);
 
     // Cleanup.
-    dvz_bootstrap_destroy(&bootstrap);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
 
-    RETURN_VALIDATION
+    return err_count > 0;
 }
 
 
