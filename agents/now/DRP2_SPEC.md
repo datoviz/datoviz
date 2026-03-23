@@ -2,9 +2,11 @@
 > - **Status:** `READY AFTER LOW-LEVEL CLEANUP IS STABLE ENOUGH`
 > - **Updated on:** `2026-03-23`
 > - **Purpose:** Define the first DRP2 contract without starting runtime or scene implementation.
-> - **Current branch priority:** The active immediate priority is still `vk`/`vklite` boundary and
->   lifecycle cleanup. This file exists so the next higher-level spec phase starts with a narrow,
->   disciplined scope instead of another broad brainstorming pass.
+> - **Current branch priority:** The active immediate priority is now the low-level consistency pass
+>   across `canvas`, `stream`, `video`, `vk`, and `vklite`; the earlier `vk`/`vklite`
+>   ownership-boundary cleanup is effectively complete for the active surface. This file exists so
+>   the next higher-level spec phase starts with a narrow, disciplined scope instead of another
+>   broad brainstorming pass.
 
 # DRP2 Spec Phase
 

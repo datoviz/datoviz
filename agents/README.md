@@ -7,14 +7,16 @@ This directory is organized by lifecycle state rather than by topic.
 
 Active execution surface:
 
-1. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
+1. [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
+2. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
 
 Current status:
 
 1. The active low-level graphics stack is green on this machine:
    - `just build` passed on `2026-03-23`
    - `just test` passed on `2026-03-23` with `146/146` tests passing
-2. The highest-value next work is finishing `vk`/`vklite` public-boundary and lifecycle cleanup.
+2. The active boundary-cleanup pass is effectively complete for the current low-level surface.
+3. The highest-value next work is naming/lifecycle consistency across the active low-level modules.
 
 
 ## Start Here
@@ -22,12 +24,14 @@ Current status:
 If resuming work on the branch:
 
 1. Read [REFACTOR_STATUS_2026-03-23.md](/home/cyrille/GIT/Viz/datoviz/agents/REFACTOR_STATUS_2026-03-23.md)
-2. Read [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
-3. Optionally read [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) if you
+2. Read [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
+3. Read [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) for the
+   predecessor boundary-cleanup record
+4. Optionally read [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) if you
    want to continue packaging/CI cleanup after the boundary work
-4. When the branch is ready to start higher-level spec work, read
+5. When the branch is ready to start higher-level spec work, read
    [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
-5. Treat
+6. Treat
    [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    as strategic backlog, not as the default next-task list
 
@@ -38,8 +42,9 @@ If resuming work on the branch:
 
 Files in this directory are actionable today and should stay short enough to drive real execution.
 
-1. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
-2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+1. [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
+2. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
+3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
 ### `done/`
 
