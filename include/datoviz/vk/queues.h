@@ -65,6 +65,12 @@ typedef struct DvzQueues DvzQueues;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Snapshot of the queue families exposed by one GPU.
+ *
+ * This is an intentional public low-level planning type. It is used to choose queue families
+ * before logical-device creation, not to expose mutable device internals after startup.
+ */
 struct DvzQueueCaps
 {
     uint32_t family_count;
@@ -74,6 +80,12 @@ struct DvzQueueCaps
 
 
 
+/**
+ * Snapshot of one selected queue role/family/index assignment.
+ *
+ * This is an intentional public low-level queue-selection type. It is part of the planning and
+ * lookup surface used by device setup, command submission helpers, and tests.
+ */
 struct DvzQueue
 {
     uint32_t family_idx;
@@ -86,6 +98,12 @@ struct DvzQueue
 
 
 
+/**
+ * Queue-selection plan for a logical device.
+ *
+ * This is an intentional public low-level planning type. It represents the queue-role assignment
+ * chosen from a GPU capability snapshot and then consumed by device-configuration code.
+ */
 struct DvzQueues
 {
     uint32_t queue_count;
@@ -99,7 +117,11 @@ struct DvzQueues
 /*************************************************************************************************/
 
 /**
- * Get queue capabilities from an instance GPU index.
+ * Query a GPU queue-family capability snapshot from an instance.
+ *
+ * Together with DvzQueues, this forms the public low-level queue-planning surface used before
+ * device creation. Callers should treat the result as a capability snapshot, not as owned runtime
+ * state.
  *
  * @param instance source instance
  * @param gpu_index selected GPU index in the instance
@@ -112,7 +134,11 @@ dvz_instance_gpu_queue_caps(DvzInstance* instance, uint32_t gpu_index, DvzQueueC
 
 
 /**
- * Choose the requested queues for the logical device depending on the GPU queues capabilities.
+ * Choose a logical-device queue plan from a capability snapshot.
+ *
+ * This function is part of the intentional public low-level queue-planning API. It does not create
+ * Vulkan queues by itself; it selects family/role assignments that higher-level device setup then
+ * requests explicitly.
  *
  * @param qc the queue caps
  * @param[out] queues the queues specification
@@ -131,7 +157,10 @@ DVZ_EXPORT void dvz_queues_show(DvzQueues* queues);
 
 
 /**
- * Get a queue from its role, either a dedicated queue, or the main queue if it supports the role.
+ * Get a queue for a role from a queue-selection plan or device-owned queue table.
+ *
+ * The returned queue may be a dedicated queue for the role, or the main queue when that queue
+ * intentionally satisfies the requested role.
  *
  * @param queues the queues
  * @param role the role
