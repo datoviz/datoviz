@@ -51,7 +51,7 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     ANN(slots);
     ANN(descriptors);
 
-    DvzDevice* device = slots->device;
+    DvzDevice* device = dvz_slots_device(slots);
     ANN(device);
 
     descriptors->device = device;
@@ -64,8 +64,14 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     VkDescriptorSetAllocateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     info.descriptorPool = dpool;
-    info.descriptorSetCount = slots->set_count;
-    info.pSetLayouts = slots->set_layouts;
+    info.descriptorSetCount = dvz_slots_set_count(slots);
+
+    VkDescriptorSetLayout set_layouts[DVZ_MAX_SETS] = {0};
+    for (uint32_t set = 0; set < info.descriptorSetCount; set++)
+    {
+        set_layouts[set] = dvz_slots_set_layout(slots, set);
+    }
+    info.pSetLayouts = set_layouts;
 
     log_trace("allocate descriptor sets");
     VK_CHECK_RESULT(vkAllocateDescriptorSets(vkd, &info, descriptors->vk_descriptors));
@@ -94,7 +100,7 @@ void dvz_descriptors_buffer(
 
     VkWriteDescriptorSet dsw = {0};
     dsw.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    dsw.descriptorType = slots->bindings[set][binding].descriptorType;
+    dsw.descriptorType = dvz_slots_descriptor_type(slots, set, binding);
     dsw.dstSet = descriptors->vk_descriptors[set];
     dsw.dstBinding = binding;
     dsw.dstArrayElement = array_idx;
@@ -131,7 +137,7 @@ void dvz_descriptors_image(
     dsw.dstBinding = binding;
     dsw.dstArrayElement = array_idx;
     dsw.descriptorCount = 1;
-    dsw.descriptorType = slots->bindings[set][binding].descriptorType;
+    dsw.descriptorType = dvz_slots_descriptor_type(slots, set, binding);
     dsw.pImageInfo = &img_info;
 
     vkUpdateDescriptorSets(vkd, 1, &dsw, 0, NULL);
@@ -153,7 +159,7 @@ void dvz_cmd_bind_descriptors(
     ANNVK(cmd);
 
     vkCmdBindDescriptorSets(
-        cmd, bind_point, slots->pipeline_layout, //
+        cmd, bind_point, dvz_slots_handle(slots), //
         first_set, set_count, &descriptors->vk_descriptors[first_set], dynamic_count,
         dynamic_idxs);
 }

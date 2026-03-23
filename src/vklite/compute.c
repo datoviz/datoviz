@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <volk.h>
 
+#include "_alloc.h"
 #include "_vk_utils.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -39,6 +40,7 @@ void dvz_compute(DvzDevice* device, DvzCompute* compute)
 {
     ANN(device);
     ANN(compute);
+    dvz_memset(compute, sizeof(*compute), 0, sizeof(*compute));
     compute->device = device;
     dvz_obj_init(&compute->obj);
 }
@@ -142,6 +144,34 @@ int dvz_compute_create(DvzCompute* compute)
 
 
 
+/**
+ * Return the Vulkan pipeline handle owned by a compute wrapper.
+ *
+ * @param compute the compute pipeline
+ * @return the Vulkan pipeline handle or VK_NULL_HANDLE
+ */
+VkPipeline dvz_compute_handle(DvzCompute* compute)
+{
+    ANN(compute);
+    return compute->vk_pipeline;
+}
+
+
+
+/**
+ * Return the pipeline layout bound to a compute wrapper.
+ *
+ * @param compute the compute pipeline
+ * @return the pipeline layout handle or VK_NULL_HANDLE
+ */
+VkPipelineLayout dvz_compute_layout_handle(DvzCompute* compute)
+{
+    ANN(compute);
+    return compute->layout;
+}
+
+
+
 void dvz_compute_destroy(DvzCompute* compute)
 {
     ANN(compute);
@@ -175,7 +205,7 @@ void dvz_cmd_bind_compute(DvzCommands* cmds, DvzCompute* compute)
     ANNVK(cmd);
 
     // Bind the compute pipeline.
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, compute->vk_pipeline);
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, dvz_compute_handle(compute));
 }
 
 

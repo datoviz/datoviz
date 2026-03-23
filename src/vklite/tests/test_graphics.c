@@ -90,6 +90,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_shader(device, fs_size, fs_spv, &fs);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+    AT(dvz_graphics_shader_count(&graphics) == 2);
 
     // Slots.
     DvzSlots slots = {0};
@@ -99,6 +100,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Attachments.
     dvz_graphics_attachment_color(&graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    AT(dvz_graphics_color_attachment_count(&graphics) == 1);
     dvz_graphics_blend_color(
         &graphics, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         VK_BLEND_OP_ADD, 0xF);
@@ -115,6 +117,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
     // Graphics pipeline creation.
     AT(dvz_graphics_create(&graphics) == 0);
+    AT(dvz_graphics_handle(&graphics) != VK_NULL_HANDLE);
+    AT(dvz_graphics_layout_handle(&graphics) == dvz_slots_handle(&slots));
 
     // Rendering.
     DvzRendering rendering = {0};
@@ -231,6 +235,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_shader_destroy(&fs);
     dvz_slots_destroy(&slots);
     dvz_graphics_destroy(&graphics);
+    dvz_graphics_destroy(&graphics);
+    AT(dvz_graphics_handle(&graphics) == VK_NULL_HANDLE);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
     dvz_free(vs_spv);

@@ -131,6 +131,26 @@ DVZ_EXPORT int dvz_compute_create(DvzCompute* compute);
 
 
 /**
+ * Return the Vulkan pipeline handle owned by a compute wrapper.
+ *
+ * @param compute the compute pipeline
+ * @returns the Vulkan pipeline handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkPipeline dvz_compute_handle(DvzCompute* compute);
+
+
+
+/**
+ * Return the pipeline layout bound to a compute wrapper.
+ *
+ * @param compute the compute pipeline
+ * @returns the pipeline layout handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkPipelineLayout dvz_compute_layout_handle(DvzCompute* compute);
+
+
+
+/**
  * Destroy a compute pipeline.
  *
  * @param compute the compute pipeline

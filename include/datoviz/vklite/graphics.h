@@ -487,6 +487,46 @@ DVZ_EXPORT int dvz_graphics_create(DvzGraphics* graphics);
 
 
 /**
+ * Return the Vulkan pipeline handle owned by a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @returns the Vulkan pipeline handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkPipeline dvz_graphics_handle(DvzGraphics* graphics);
+
+
+
+/**
+ * Return the pipeline layout bound to a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @returns the pipeline layout handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkPipelineLayout dvz_graphics_layout_handle(DvzGraphics* graphics);
+
+
+
+/**
+ * Return the number of configured shader stages on a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @returns the shader-stage count
+ */
+DVZ_EXPORT uint32_t dvz_graphics_shader_count(DvzGraphics* graphics);
+
+
+
+/**
+ * Return the number of configured color attachments on a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @returns the color-attachment count
+ */
+DVZ_EXPORT uint32_t dvz_graphics_color_attachment_count(DvzGraphics* graphics);
+
+
+
+/**
  * Destroy a graphics pipeline.
  *
  * @param graphics the graphics pipeline

@@ -17,6 +17,7 @@
 #include <string.h>
 #include <volk.h>
 
+#include "_alloc.h"
 #include "_vk_utils.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -153,6 +154,7 @@ void dvz_graphics(DvzDevice* device, DvzGraphics* graphics)
 {
     ANN(device);
     ANN(graphics);
+    dvz_memset(graphics, sizeof(*graphics), 0, sizeof(*graphics));
     graphics->device = device;
 
     graphics->input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -235,7 +237,7 @@ void dvz_graphics_spec(
     ASSERT(spec_info->dataSize <= DVZ_MAX_SPEC_CONST_SIZE);
 
     // Copy the value in the specialization constant data buffer.
-    dvz_memcpy(&graphics->spec_data[offset], size, data, size);
+    dvz_memcpy(&graphics->spec_data[shader_idx][offset], size, data, size);
 }
 
 
@@ -647,6 +649,62 @@ int dvz_graphics_create(DvzGraphics* graphics)
 
 
 
+/**
+ * Return the Vulkan pipeline handle owned by a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @return the Vulkan pipeline handle or VK_NULL_HANDLE
+ */
+VkPipeline dvz_graphics_handle(DvzGraphics* graphics)
+{
+    ANN(graphics);
+    return graphics->vk_pipeline;
+}
+
+
+
+/**
+ * Return the pipeline layout bound to a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @return the pipeline layout handle or VK_NULL_HANDLE
+ */
+VkPipelineLayout dvz_graphics_layout_handle(DvzGraphics* graphics)
+{
+    ANN(graphics);
+    return graphics->layout;
+}
+
+
+
+/**
+ * Return the number of configured shader stages on a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @return the shader-stage count
+ */
+uint32_t dvz_graphics_shader_count(DvzGraphics* graphics)
+{
+    ANN(graphics);
+    return graphics->shader_count;
+}
+
+
+
+/**
+ * Return the number of configured color attachments on a graphics wrapper.
+ *
+ * @param graphics the graphics pipeline
+ * @return the color-attachment count
+ */
+uint32_t dvz_graphics_color_attachment_count(DvzGraphics* graphics)
+{
+    ANN(graphics);
+    return graphics->rendering.colorAttachmentCount;
+}
+
+
+
 void dvz_graphics_destroy(DvzGraphics* graphics)
 {
     ANN(graphics);
@@ -680,7 +738,7 @@ void dvz_cmd_bind_graphics(DvzCommands* cmds, DvzGraphics* graphics)
     ANNVK(cmd);
 
     // Bind the graphics pipeline.
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->vk_pipeline);
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, dvz_graphics_handle(graphics));
 
     // Dynamic states.
     // TODO: go through all dynamic states and call the relevant vkCmdSet*() commands.

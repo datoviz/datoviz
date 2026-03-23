@@ -141,6 +141,70 @@ DVZ_EXPORT VkPipelineLayout dvz_slots_handle(DvzSlots* slots);
 
 
 /**
+ * Return the device that owns a slots wrapper.
+ *
+ * @param slots the slots
+ * @returns the owning device
+ */
+DVZ_EXPORT DvzDevice* dvz_slots_device(DvzSlots* slots);
+
+
+
+/**
+ * Return the number of descriptor sets configured on a slots wrapper.
+ *
+ * @param slots the slots
+ * @returns the descriptor-set count
+ */
+DVZ_EXPORT uint32_t dvz_slots_set_count(DvzSlots* slots);
+
+
+
+/**
+ * Return the number of bindings configured for a descriptor set.
+ *
+ * @param slots the slots
+ * @param set the descriptor-set index
+ * @returns the binding count for that set
+ */
+DVZ_EXPORT uint32_t dvz_slots_binding_count(DvzSlots* slots, uint32_t set);
+
+
+
+/**
+ * Return the number of configured push-constant ranges.
+ *
+ * @param slots the slots
+ * @returns the push-constant range count
+ */
+DVZ_EXPORT uint32_t dvz_slots_push_count(DvzSlots* slots);
+
+
+
+/**
+ * Return the descriptor type configured for a slot binding.
+ *
+ * @param slots the slots
+ * @param set the descriptor-set index
+ * @param binding the binding index within the set
+ * @returns the descriptor type
+ */
+DVZ_EXPORT VkDescriptorType dvz_slots_descriptor_type(DvzSlots* slots, uint32_t set, uint32_t binding);
+
+
+
+/**
+ * Return the descriptor-set layout handle for a set.
+ *
+ * @param slots the slots
+ * @param set the descriptor-set index
+ * @returns the descriptor-set layout handle
+ */
+DVZ_EXPORT VkDescriptorSetLayout dvz_slots_set_layout(DvzSlots* slots, uint32_t set);
+
+
+
+/**
  * Destroy the slots.
  *
  * @param slots the slots

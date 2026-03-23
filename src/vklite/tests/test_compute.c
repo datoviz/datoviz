@@ -138,10 +138,14 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     dvz_compute(dvz_gpu_ctx_device(ctx), &compute);
     dvz_compute_shader(&compute, dvz_shader_handle(&shader));
     dvz_compute_layout(&compute, dvz_slots_handle(&slots));
+    AT(dvz_compute_layout_handle(&compute) == dvz_slots_handle(&slots));
     AT(dvz_compute_create(&compute) == 0);
+    AT(dvz_compute_handle(&compute) != VK_NULL_HANDLE);
 
     // Cleanup.
     dvz_compute_destroy(&compute);
+    dvz_compute_destroy(&compute);
+    AT(dvz_compute_handle(&compute) == VK_NULL_HANDLE);
     dvz_slots_destroy(&slots);
     dvz_shader_destroy(&shader);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
