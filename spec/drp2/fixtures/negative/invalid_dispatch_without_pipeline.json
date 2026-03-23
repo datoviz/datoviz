@@ -15,6 +15,10 @@
   ],
   "commands": [
     {
+      "cmd": "CreateComputePipeline",
+      "id": 20
+    },
+    {
       "cmd": "BeginCommandEncoder",
       "id": 1
     },
@@ -35,6 +39,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 2
+    "command_index": 3
   }
 }

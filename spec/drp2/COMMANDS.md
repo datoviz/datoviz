@@ -118,8 +118,11 @@ Unless a command says otherwise:
 - `encoder_id`: identifier of an open command encoder.
 - `pass_id`: identifier of an open render or compute pass recorder.
 - `pipeline_id`: identifier of a previously created pipeline object.
+- `render_pipeline_id`: identifier of an existing render pipeline.
+- `compute_pipeline_id`: identifier of an existing compute pipeline.
 - `bind_group_id`: identifier of a previously created bind group object.
 - `slot`: zero-based bind-group slot index.
+- `index_format`: index element format token for indexed draws.
 - `submission_id`: optional host-visible identifier for queue-tracking or correlation.
 
 General rules:

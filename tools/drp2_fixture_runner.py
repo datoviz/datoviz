@@ -337,6 +337,62 @@ class DRP2SemanticValidator:
             },
         )
 
+    def _handle_CreateRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
+        self._reserve_id(
+            index,
+            command['id'],
+            'pipeline',
+            {
+                'kind': 'render',
+                'vertex_buffer_slots': command['vertex_buffer_slots'],
+            },
+        )
+
+    def _handle_DestroyRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
+        pipeline_id = command['render_pipeline_id']
+        state = self._resolve_live(index, pipeline_id, 'pipeline')
+        if state.data['kind'] != 'render':
+            raise SemanticFailure(
+                'DRP2_ERR_WRONG_OBJECT_TYPE',
+                index,
+                f'pipeline {pipeline_id} is {state.data["kind"]}, expected render',
+            )
+        if self._resource_in_use('pipeline', pipeline_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'render pipeline {pipeline_id} is still referenced by recorded work',
+            )
+        state.live = False
+
+    def _handle_CreateComputePipeline(self, index: int, command: Dict[str, Any]) -> None:
+        self._reserve_id(
+            index,
+            command['id'],
+            'pipeline',
+            {
+                'kind': 'compute',
+                'vertex_buffer_slots': 0,
+            },
+        )
+
+    def _handle_DestroyComputePipeline(self, index: int, command: Dict[str, Any]) -> None:
+        pipeline_id = command['compute_pipeline_id']
+        state = self._resolve_live(index, pipeline_id, 'pipeline')
+        if state.data['kind'] != 'compute':
+            raise SemanticFailure(
+                'DRP2_ERR_WRONG_OBJECT_TYPE',
+                index,
+                f'pipeline {pipeline_id} is {state.data["kind"]}, expected compute',
+            )
+        if self._resource_in_use('pipeline', pipeline_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'compute pipeline {pipeline_id} is still referenced by recorded work',
+            )
+        state.live = False
+
     def _handle_DestroyTexture(self, index: int, command: Dict[str, Any]) -> None:
         texture_id = command['texture_id']
         state = self._resolve_live(index, texture_id, 'texture')
@@ -386,6 +442,8 @@ class DRP2SemanticValidator:
             'encoder_id': command['encoder_id'],
             'state': 'open',
             'bound_pipeline_id': None,
+            'vertex_buffers': {},
+            'index_buffer': None,
         }
 
     def _handle_EndComputePass(self, index: int, command: Dict[str, Any]) -> None:
@@ -419,11 +477,43 @@ class DRP2SemanticValidator:
             'encoder_id': command['encoder_id'],
             'state': 'open',
             'bound_pipeline_id': None,
+            'vertex_buffers': {},
+            'index_buffer': None,
         }
 
     def _handle_SetPipeline(self, index: int, command: Dict[str, Any]) -> None:
         pass_info = self._resolve_pass(index, command['pass_id'])
+        pipeline = self._resolve_live(index, command['pipeline_id'], 'pipeline')
+        if pipeline.data['kind'] != pass_info['kind']:
+            raise SemanticFailure(
+                'DRP2_ERR_PASS_MISMATCH',
+                index,
+                f'pipeline {command["pipeline_id"]} is {pipeline.data["kind"]}, expected {pass_info["kind"]}',
+            )
         pass_info['bound_pipeline_id'] = command['pipeline_id']
+        encoder = self.encoders[pass_info['encoder_id']]
+        encoder['resources'].add(('pipeline', command['pipeline_id']))
+
+    def _handle_SetVertexBuffer(self, index: int, command: Dict[str, Any]) -> None:
+        pass_info = self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+        buffer_state = self._buffer_usage(index, command['buffer_id'], 'VERTEX')
+        if 'size' in command:
+            self._check_buffer_range(index, buffer_state, command['offset'], command['size'])
+        pass_info['vertex_buffers'][command['slot']] = command['buffer_id']
+        encoder = self.encoders[pass_info['encoder_id']]
+        encoder['resources'].add(('buffer', command['buffer_id']))
+
+    def _handle_SetIndexBuffer(self, index: int, command: Dict[str, Any]) -> None:
+        pass_info = self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+        buffer_state = self._buffer_usage(index, command['buffer_id'], 'INDEX')
+        if 'size' in command:
+            self._check_buffer_range(index, buffer_state, command['offset'], command['size'])
+        pass_info['index_buffer'] = {
+            'buffer_id': command['buffer_id'],
+            'index_format': command['index_format'],
+        }
+        encoder = self.encoders[pass_info['encoder_id']]
+        encoder['resources'].add(('buffer', command['buffer_id']))
 
     def _handle_SetViewport(self, index: int, command: Dict[str, Any]) -> None:
         self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
@@ -451,12 +541,34 @@ class DRP2SemanticValidator:
             index, command['pass_id'], expected_kind='render'
         )
         self._require_bound_pipeline(index, pass_info)
+        pipeline = self._resolve_live(index, pass_info['bound_pipeline_id'], 'pipeline')
+        for slot in range(pipeline.data['vertex_buffer_slots']):
+            if slot not in pass_info['vertex_buffers']:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'render pass {pass_info["id"]} is missing vertex buffer slot {slot}',
+                )
 
     def _handle_DrawIndexed(self, index: int, command: Dict[str, Any]) -> None:
         pass_info = self._require_active_pass_for_command(
             index, command['pass_id'], expected_kind='render'
         )
         self._require_bound_pipeline(index, pass_info)
+        pipeline = self._resolve_live(index, pass_info['bound_pipeline_id'], 'pipeline')
+        for slot in range(pipeline.data['vertex_buffer_slots']):
+            if slot not in pass_info['vertex_buffers']:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'render pass {pass_info["id"]} is missing vertex buffer slot {slot}',
+                )
+        if pass_info['index_buffer'] is None:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'render pass {pass_info["id"]} has no bound index buffer',
+            )
 
     def _handle_DispatchWorkgroups(self, index: int, command: Dict[str, Any]) -> None:
         pass_info = self._require_active_pass_for_command(

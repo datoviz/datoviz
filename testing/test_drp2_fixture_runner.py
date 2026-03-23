@@ -65,6 +65,30 @@ def test_drp2_fixture_runner_rejects_resubmitted_command_buffer() -> None:
     assert result.actual_command_index == 3
 
 
+def test_drp2_fixture_runner_can_filter_vertex_binding_negatives() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['vertex_binding'])
+    results = runner.run_fixtures(fixtures)
+
+    assert len(results) == 1
+    assert results[0].passed is True
+    assert results[0].actual_phase == 'semantic_validation'
+    assert results[0].actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert results[0].actual_command_index == 5
+
+
+def test_drp2_fixture_runner_rejects_missing_index_buffer_binding() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_drawindexed_missing_index_buffer.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_drawindexed_missing_index_buffer'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 7
+
+
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:
     root = Path(__file__).resolve().parents[1]
     fixture = 'spec/drp2/fixtures/positive/write_buffer_basic.json'

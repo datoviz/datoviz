@@ -14,11 +14,12 @@ This document applies only to the active DRP2 `2.0` commands:
 
 1. session and diagnostics,
 2. buffer and texture lifecycle,
-3. command encoder lifecycle,
-4. render and compute pass lifecycle,
-5. render and compute recording commands,
-6. copy commands,
-7. queue submission.
+3. pipeline lifecycle,
+4. command encoder lifecycle,
+5. render and compute pass lifecycle,
+6. render and compute recording commands,
+7. copy commands,
+8. queue submission.
 
 Deferred commands listed in `schema/DEFERRED.md` are not covered by these invariants and must not be
 assumed to inherit them unchanged.
@@ -49,7 +50,8 @@ Persistent objects remain live until explicit destruction:
 
 1. buffer
 2. texture
-3. command buffer
+3. pipeline
+4. command buffer
 
 Scoped objects exist only between their begin and end commands:
 
@@ -104,6 +106,23 @@ Rules:
 5. a texture may be referenced by copy commands only while live,
 6. texture subresources do not have independent protocol lifetimes in the active `2.0` surface,
 7. render-pass attachments in active `2.0` reference textures directly rather than separate texture-view objects.
+
+
+## Pipeline Lifetime
+
+Rules:
+
+1. `CreateRenderPipeline` makes `id` live as a render pipeline immediately after semantic validation
+   succeeds,
+2. `CreateComputePipeline` makes `id` live as a compute pipeline immediately after semantic
+   validation succeeds,
+3. `DestroyRenderPipeline` ends the lifetime of the referenced render pipeline immediately after
+   semantic validation succeeds,
+4. `DestroyComputePipeline` ends the lifetime of the referenced compute pipeline immediately after
+   semantic validation succeeds,
+5. no later command may reference a destroyed pipeline,
+6. a pipeline may be referenced by `QueueSubmit` only indirectly through previously finished command
+   buffers.
 
 
 ## Command Buffer Lifetime
@@ -176,8 +195,12 @@ Commands valid without encoder or pass scope:
 7. `CreateTexture`
 8. `DestroyTexture`
 9. `WriteTexture`
-10. `BeginCommandEncoder`
-11. `QueueSubmit`
+10. `CreateRenderPipeline`
+11. `DestroyRenderPipeline`
+12. `CreateComputePipeline`
+13. `DestroyComputePipeline`
+14. `BeginCommandEncoder`
+15. `QueueSubmit`
 
 Commands valid in an open encoder but outside any pass:
 
@@ -191,14 +214,16 @@ Commands valid in an open encoder but outside any pass:
 Commands valid only in an open render pass:
 
 1. `SetPipeline` with a render pipeline
-2. `SetBindGroup`
-3. `SetViewport`
-4. `SetScissor`
-5. `SetBlendConstant`
-6. `SetStencilReference`
-7. `Draw`
-8. `DrawIndexed`
-9. `EndRenderPass`
+2. `SetVertexBuffer`
+3. `SetIndexBuffer`
+4. `SetBindGroup`
+5. `SetViewport`
+6. `SetScissor`
+7. `SetBlendConstant`
+8. `SetStencilReference`
+9. `Draw`
+10. `DrawIndexed`
+11. `EndRenderPass`
 
 Commands valid only in an open compute pass:
 
@@ -227,18 +252,22 @@ Rules:
 3. a draw command requires a render pipeline to have been bound earlier in the same open render pass,
 4. a dispatch command requires a compute pipeline to have been bound earlier in the same open
    compute pass,
-5. rebinding a pipeline replaces the previously bound pipeline for subsequent commands in the same
+5. `SetVertexBuffer` requires a live buffer id whose usage includes `VERTEX`,
+6. `SetIndexBuffer` requires a live buffer id whose usage includes `INDEX`,
+7. `Draw` and `DrawIndexed` require every vertex-buffer slot required by the bound render pipeline
+   to have been bound earlier in the same open render pass,
+8. `DrawIndexed` additionally requires index-buffer state to have been bound earlier in the same
+   open render pass,
+9. rebinding a pipeline replaces the previously bound pipeline for subsequent commands in the same
    pass,
-6. `SetBindGroup` is interpreted against the currently bound pipeline layout,
-7. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
+10. `SetBindGroup` is interpreted against the currently bound pipeline layout,
+11. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
    cannot validate the slot against a known layout.
 
 Active runner note:
 
-1. the active fixture runner models the presence of a bound pipeline as a pass-local prerequisite for
-   `Draw`, `DrawIndexed`, and `DispatchWorkgroups`,
-2. pipeline-object creation and index-buffer binding remain outside the active command surface and are
-   therefore not yet validated as first-class object lifetimes.
+1. the active fixture runner models pipeline objects, pass-local pipeline binding, pass-local
+   vertex-buffer binding, and pass-local index-buffer binding as first-class semantic state.
 
 
 ## Submission And Destruction Safety

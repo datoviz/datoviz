@@ -1,8 +1,8 @@
 {
   "name": "render_pass_draw_with_pipeline",
   "description": "Begins a render pass, binds a pipeline, records one draw, ends the pass, and finishes the encoder.",
-  "reason": "A render pipeline is bound before Draw in the same open render pass, so the draw satisfies the active pipeline prerequisite.",
-  "notes": "The active fixture corpus treats pipeline ids as opaque handles for pass-local binding state because pipeline creation is still deferred.",
+  "reason": "A live render pipeline is created and bound before Draw, and the required vertex buffer slot is bound in the same render pass.",
+  "notes": "This fixture exercises the active render-pipeline and vertex-buffer binding contract without introducing deferred shader-module or layout objects.",
   "version": {
     "major": 2,
     "minor": 0
@@ -14,6 +14,19 @@
     "draw"
   ],
   "commands": [
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "vertex_buffer_slots": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 11,
+      "size": 64,
+      "usage": [
+        "VERTEX"
+      ]
+    },
     {
       "cmd": "CreateTexture",
       "id": 1,
@@ -53,7 +66,14 @@
     {
       "cmd": "SetPipeline",
       "pass_id": 3,
-      "pipeline_id": 1001
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 3,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
     },
     {
       "cmd": "Draw",

@@ -1,8 +1,8 @@
 {
-  "name": "invalid_draw_without_pipeline",
-  "description": "Draw is issued inside a render pass before any pipeline has been bound.",
-  "reason": "Draw requires a render pipeline to have been bound earlier in the same open render pass.",
-  "fix": "Bind a render pipeline with SetPipeline before issuing Draw.",
+  "name": "invalid_draw_missing_vertex_buffer",
+  "description": "Draw is issued after binding a render pipeline that requires one vertex buffer, but no vertex buffer has been bound.",
+  "reason": "Draw requires every vertex-buffer slot declared by the bound render pipeline to have been bound earlier in the same open render pass.",
+  "fix": "Bind the required vertex buffer slots with SetVertexBuffer before issuing Draw.",
   "version": {
     "major": 2,
     "minor": 0
@@ -10,7 +10,7 @@
   "tags": [
     "negative",
     "state",
-    "pipeline",
+    "vertex_binding",
     "render_pass"
   ],
   "commands": [
@@ -18,14 +18,6 @@
       "cmd": "CreateRenderPipeline",
       "id": 10,
       "vertex_buffer_slots": 1
-    },
-    {
-      "cmd": "CreateBuffer",
-      "id": 11,
-      "size": 64,
-      "usage": [
-        "VERTEX"
-      ]
     },
     {
       "cmd": "CreateTexture",
@@ -64,11 +56,9 @@
       ]
     },
     {
-      "cmd": "SetVertexBuffer",
+      "cmd": "SetPipeline",
       "pass_id": 3,
-      "slot": 0,
-      "buffer_id": 11,
-      "offset": 0
+      "pipeline_id": 10
     },
     {
       "cmd": "Draw",
@@ -83,6 +73,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 6
+    "command_index": 5
   }
 }

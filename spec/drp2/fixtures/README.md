@@ -45,7 +45,9 @@ The first negative corpus should stay intentionally small and cover the core val
 18. draw without a bound render pipeline,
 19. dispatch without a bound compute pipeline,
 20. render-only state command used in a compute pass,
-21. resubmitting an already submitted command buffer.
+21. resubmitting an already submitted command buffer,
+22. draw missing a required vertex-buffer binding,
+23. indexed draw missing an index-buffer binding.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 
@@ -58,7 +60,8 @@ The first positive corpus should stay minimal and focus on clean command shapes:
 5. texture-to-buffer copy,
 6. queue submit of a finished command buffer,
 7. render pass with pipeline bind plus draw,
-8. compute pass with pipeline bind plus dispatch.
+8. compute pass with pipeline bind plus dispatch,
+9. render pass with pipeline plus vertex and index bindings for `DrawIndexed`.
 
 
 ## Metadata Policy

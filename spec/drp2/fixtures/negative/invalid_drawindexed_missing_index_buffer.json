@@ -1,8 +1,8 @@
 {
-  "name": "invalid_draw_without_pipeline",
-  "description": "Draw is issued inside a render pass before any pipeline has been bound.",
-  "reason": "Draw requires a render pipeline to have been bound earlier in the same open render pass.",
-  "fix": "Bind a render pipeline with SetPipeline before issuing Draw.",
+  "name": "invalid_drawindexed_missing_index_buffer",
+  "description": "DrawIndexed is issued after binding a render pipeline and the required vertex buffer, but no index buffer has been bound.",
+  "reason": "DrawIndexed requires index-buffer state to have been bound earlier in the same open render pass.",
+  "fix": "Bind an index buffer with SetIndexBuffer before issuing DrawIndexed.",
   "version": {
     "major": 2,
     "minor": 0
@@ -10,7 +10,7 @@
   "tags": [
     "negative",
     "state",
-    "pipeline",
+    "index_binding",
     "render_pass"
   ],
   "commands": [
@@ -64,6 +64,11 @@
       ]
     },
     {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 10
+    },
+    {
       "cmd": "SetVertexBuffer",
       "pass_id": 3,
       "slot": 0,
@@ -71,11 +76,12 @@
       "offset": 0
     },
     {
-      "cmd": "Draw",
+      "cmd": "DrawIndexed",
       "pass_id": 3,
-      "vertex_count": 3,
+      "index_count": 3,
       "instance_count": 1,
-      "first_vertex": 0,
+      "first_index": 0,
+      "base_vertex": 0,
       "first_instance": 0
     }
   ],
@@ -83,6 +89,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 6
+    "command_index": 7
   }
 }

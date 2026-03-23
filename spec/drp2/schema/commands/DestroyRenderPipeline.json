@@ -4,15 +4,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "DestroyRenderPipeline"
     },
-    "id": {
+    "render_pipeline_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "id"
+    "cmd",
+    "render_pipeline_id"
   ]
 }

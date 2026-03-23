@@ -36,6 +36,10 @@ Authoritative files:
 - `commands/CreateTexture.json`
 - `commands/DestroyTexture.json`
 - `commands/WriteTexture.json`
+- `commands/CreateRenderPipeline.json`
+- `commands/DestroyRenderPipeline.json`
+- `commands/CreateComputePipeline.json`
+- `commands/DestroyComputePipeline.json`
 - `commands/BeginCommandEncoder.json`
 - `commands/FinishCommandEncoder.json`
 - `commands/BeginRenderPass.json`
@@ -43,6 +47,8 @@ Authoritative files:
 - `commands/BeginComputePass.json`
 - `commands/EndComputePass.json`
 - `commands/SetPipeline.json`
+- `commands/SetVertexBuffer.json`
+- `commands/SetIndexBuffer.json`
 - `commands/SetBindGroup.json`
 - `commands/SetViewport.json`
 - `commands/SetScissor.json`
@@ -70,10 +76,6 @@ Deferred, non-authoritative files:
 - `commands/DestroySampler.json`
 - `commands/CreateTextureView.json`
 - `commands/DestroyTextureView.json`
-- `commands/CreateRenderPipeline.json`
-- `commands/DestroyRenderPipeline.json`
-- `commands/CreateComputePipeline.json`
-- `commands/DestroyComputePipeline.json`
 - `commands/ResourceBarrier.json`
 - `commands/DispatchWorkgroupsIndirect.json`
 - `commands/DrawIndirect.json`

@@ -4,36 +4,18 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateComputePipeline"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
-    "layout": {
-      "$ref": "../common/Id.json"
-    },
-    "compute": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "module": {
-          "$ref": "../common/Id.json"
-        },
-        "entryPoint": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "module",
-        "entryPoint"
-      ]
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
-    "id",
-    "layout",
-    "compute"
+    "cmd",
+    "id"
   ]
 }

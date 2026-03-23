@@ -1,17 +1,18 @@
 {
-  "name": "invalid_draw_without_pipeline",
-  "description": "Draw is issued inside a render pass before any pipeline has been bound.",
-  "reason": "Draw requires a render pipeline to have been bound earlier in the same open render pass.",
-  "fix": "Bind a render pipeline with SetPipeline before issuing Draw.",
+  "name": "render_pass_drawindexed_with_bindings",
+  "description": "Begins a render pass, binds a render pipeline plus vertex and index buffers, records one indexed draw, ends the pass, and finishes the encoder.",
+  "reason": "A live render pipeline is bound before DrawIndexed, every required vertex buffer slot is bound, and index-buffer state is established in the same render pass.",
   "version": {
     "major": 2,
     "minor": 0
   },
   "tags": [
-    "negative",
-    "state",
+    "positive",
+    "render_pass",
     "pipeline",
-    "render_pass"
+    "vertex_binding",
+    "index_binding",
+    "draw"
   ],
   "commands": [
     {
@@ -25,6 +26,14 @@
       "size": 64,
       "usage": [
         "VERTEX"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 64,
+      "usage": [
+        "INDEX"
       ]
     },
     {
@@ -64,6 +73,11 @@
       ]
     },
     {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 10
+    },
+    {
       "cmd": "SetVertexBuffer",
       "pass_id": 3,
       "slot": 0,
@@ -71,18 +85,32 @@
       "offset": 0
     },
     {
-      "cmd": "Draw",
+      "cmd": "SetIndexBuffer",
       "pass_id": 3,
-      "vertex_count": 3,
+      "buffer_id": 12,
+      "index_format": "uint16",
+      "offset": 0
+    },
+    {
+      "cmd": "DrawIndexed",
+      "pass_id": 3,
+      "index_count": 3,
       "instance_count": 1,
-      "first_vertex": 0,
+      "first_index": 0,
+      "base_vertex": 0,
       "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 3
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 4
     }
   ],
   "expected": {
-    "outcome": "error",
-    "phase": "semantic_validation",
-    "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 6
+    "outcome": "success"
   }
 }

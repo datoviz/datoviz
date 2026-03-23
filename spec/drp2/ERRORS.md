@@ -97,6 +97,8 @@ Use the most specific error code that matches the contract-visible failure.
 3. prefer `DRP2_ERR_INVALID_STATE` for examples such as:
    - draw outside a render pass
    - draw or dispatch without a pipeline bound in the current pass
+   - draw without all vertex-buffer slots required by the bound pipeline
+   - indexed draw without a bound index buffer
    - dispatch outside a compute pass
    - finishing an encoder with an open pass
    - resubmitting a command buffer that was already submitted earlier in the stream

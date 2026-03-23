@@ -31,6 +31,18 @@
       "$ref": "./commands/WriteTexture.json"
     },
     {
+      "$ref": "./commands/CreateRenderPipeline.json"
+    },
+    {
+      "$ref": "./commands/DestroyRenderPipeline.json"
+    },
+    {
+      "$ref": "./commands/CreateComputePipeline.json"
+    },
+    {
+      "$ref": "./commands/DestroyComputePipeline.json"
+    },
+    {
       "$ref": "./commands/BeginCommandEncoder.json"
     },
     {
@@ -50,6 +62,12 @@
     },
     {
       "$ref": "./commands/SetPipeline.json"
+    },
+    {
+      "$ref": "./commands/SetVertexBuffer.json"
+    },
+    {
+      "$ref": "./commands/SetIndexBuffer.json"
     },
     {
       "$ref": "./commands/SetBindGroup.json"

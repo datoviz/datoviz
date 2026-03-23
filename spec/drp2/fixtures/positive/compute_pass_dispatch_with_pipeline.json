@@ -1,8 +1,8 @@
 {
   "name": "compute_pass_dispatch_with_pipeline",
   "description": "Begins a compute pass, binds a pipeline, records one dispatch, ends the pass, and finishes the encoder.",
-  "reason": "A compute pipeline is bound before DispatchWorkgroups in the same open compute pass, so the dispatch satisfies the active pipeline prerequisite.",
-  "notes": "The active fixture corpus treats pipeline ids as opaque handles for pass-local binding state because pipeline creation is still deferred.",
+  "reason": "A live compute pipeline is created and bound before DispatchWorkgroups in the same open compute pass.",
+  "notes": "This fixture exercises the active compute-pipeline lifecycle without introducing deferred shader-module or layout objects.",
   "version": {
     "major": 2,
     "minor": 0
@@ -15,6 +15,10 @@
   ],
   "commands": [
     {
+      "cmd": "CreateComputePipeline",
+      "id": 20
+    },
+    {
       "cmd": "BeginCommandEncoder",
       "id": 1
     },
@@ -26,7 +30,7 @@
     {
       "cmd": "SetPipeline",
       "pass_id": 2,
-      "pipeline_id": 2001
+      "pipeline_id": 20
     },
     {
       "cmd": "DispatchWorkgroups",

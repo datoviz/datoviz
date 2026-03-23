@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetVertexBuffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cmd": {
+      "const": "SetVertexBuffer"
+    },
+    "pass_id": {
+      "$ref": "../common/Id.json"
+    },
+    "slot": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "buffer_id": {
+      "$ref": "../common/Id.json"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "cmd",
+    "pass_id",
+    "slot",
+    "buffer_id",
+    "offset"
+  ]
+}

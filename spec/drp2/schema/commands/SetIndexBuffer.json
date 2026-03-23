@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetIndexBuffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cmd": {
+      "const": "SetIndexBuffer"
+    },
+    "pass_id": {
+      "$ref": "../common/Id.json"
+    },
+    "buffer_id": {
+      "$ref": "../common/Id.json"
+    },
+    "index_format": {
+      "type": "string",
+      "enum": [
+        "uint16",
+        "uint32"
+      ]
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "cmd",
+    "pass_id",
+    "buffer_id",
+    "index_format",
+    "offset"
+  ]
+}
