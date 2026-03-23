@@ -1034,6 +1034,10 @@ pytest:
     @pytest tests.py
 #
 
+drp2-fixtures *args='':
+    @python3 tools/drp2_fixture_runner.py {{args}}
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Python packaging

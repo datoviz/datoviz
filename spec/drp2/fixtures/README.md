@@ -77,3 +77,4 @@ Fixtures should remain backend-agnostic and reusable by both native and browser 
 
 See `FORMAT.md` for the fixture envelope and naming rules.
 See `schema/drp_fixture.schema.json` for the machine-readable fixture envelope.
+See `RUNNER.md` for the minimal runner and result-matching contract.
