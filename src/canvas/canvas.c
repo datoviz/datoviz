@@ -186,8 +186,9 @@ static void canvas_cmd_transition_image(
         return;
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(canvas->device, cmd, &cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, cmd, cmds);
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
     DvzBarrierImage* bimg = dvz_barriers_image(&barriers, image);
@@ -196,7 +197,8 @@ static void canvas_cmd_transition_image(
     dvz_barrier_image_access(
         bimg, canvas_access_for_layout(old_layout), canvas_access_for_layout(new_layout));
     dvz_barrier_image_layout(bimg, old_layout, new_layout);
-    dvz_cmd_barriers(&cmds, &barriers);
+    dvz_cmd_barriers(cmds, &barriers);
+    dvz_commands_free(cmds);
 }
 
 
@@ -373,10 +375,11 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
         dvz_semaphore_wait(&canvas->timeline_semaphore, canvas->timeline_value);
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, &cmds);
-    dvz_cmd_reset(&cmds);
-    dvz_cmd_begin(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, cmds);
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
     canvas_cmd_transition_image(
         canvas, canvas->offscreen_command_buffer, canvas->offscreen_image, canvas->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -391,6 +394,7 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     frame->memory_size = 0;
     frame->memory_fd = canvas->offscreen_memory_fd;
     frame->handles_dirty = false;
+    dvz_commands_free(cmds);
     return 0;
 }
 
@@ -879,10 +883,11 @@ static int canvas_offscreen_capture_rgba_into(
         return -1;
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(canvas->device, cmd, &cmds);
-    dvz_cmd_reset(&cmds);
-    dvz_cmd_begin(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, cmd, cmds);
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
     VkImageLayout original_layout = canvas->offscreen_layout;
     if (original_layout == VK_IMAGE_LAYOUT_UNDEFINED)
     {
@@ -894,11 +899,12 @@ static int canvas_offscreen_capture_rgba_into(
     dvz_image_region(&region);
     dvz_image_region_extent(&region, width, height, 1);
     dvz_cmd_copy_image_to_buffer(
-        &cmds, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(staging), 0);
     canvas_cmd_transition_image(
         canvas, cmd, canvas->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, original_layout);
-    dvz_cmd_end(&cmds);
+    dvz_cmd_end(cmds);
+    dvz_commands_free(cmds);
 
     DvzFence fence = {0};
     dvz_fence(canvas->device, false, &fence);
@@ -1275,9 +1281,11 @@ int dvz_canvas_submit(DvzCanvas* canvas)
             canvas, canvas->offscreen_command_buffer, canvas->offscreen_image, canvas->offscreen_layout,
             VK_IMAGE_LAYOUT_GENERAL);
         canvas->offscreen_layout = VK_IMAGE_LAYOUT_GENERAL;
-        DvzCommands cmds = {0};
-        dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, &cmds);
-        dvz_cmd_end(&cmds);
+        DvzCommands* cmds = dvz_commands_create_wrapper();
+        ANN(cmds);
+        dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, cmds);
+        dvz_cmd_end(cmds);
+        dvz_commands_free(cmds);
 
         DvzSubmit submit = {0};
         dvz_submit(&submit);

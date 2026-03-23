@@ -310,8 +310,9 @@ static void canvas_cmd_pipeline_barrier(
         return;
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(canvas->device, cmd, &cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, cmd, cmds);
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
@@ -321,7 +322,8 @@ static void canvas_cmd_pipeline_barrier(
         bimg, canvas_access_for_layout(old_layout), canvas_access_for_layout(new_layout));
     dvz_barrier_image_layout(bimg, old_layout, new_layout);
 
-    dvz_cmd_barriers(&cmds, &barriers);
+    dvz_cmd_barriers(cmds, &barriers);
+    dvz_commands_free(cmds);
 }
 
 
@@ -366,8 +368,9 @@ static void canvas_cmd_copy_frame(
         return;
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(swapchain->canvas->device, cmd, cmds);
 
     if (swapchain->frame_format == dvz_swapchain_image_format(swapchain->swapchain_wrapper))
     {
@@ -377,7 +380,7 @@ static void canvas_cmd_copy_frame(
             copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, extent.width, extent.height,
             1);
         dvz_cmd_copy_destination(copy, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
-        dvz_cmd_copy_image(&cmds, copy);
+        dvz_cmd_copy_image(cmds, copy);
         dvz_image_copy_free(copy);
     }
     else
@@ -391,9 +394,10 @@ static void canvas_cmd_copy_frame(
             blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
             (int32_t)extent.width, (int32_t)extent.height, 1);
         dvz_cmd_blit_filter(blit, VK_FILTER_NEAREST);
-        dvz_cmd_blit_image(&cmds, blit);
+        dvz_cmd_blit_image(cmds, blit);
         dvz_image_blit_free(blit);
     }
+    dvz_commands_free(cmds);
 }
 
 
@@ -430,15 +434,17 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
         log_error("canvas swapchain slot missing command buffer");
         return -1;
     }
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
-    dvz_cmd_reset(&cmds);
-    dvz_cmd_begin(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(swapchain->canvas->device, cmd, cmds);
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
     canvas_cmd_transition(
         swapchain->canvas, cmd, slot->offscreen_image, slot->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     slot->offscreen_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     slot->commands_recording = true;
+    dvz_commands_free(cmds);
     return 0;
 }
 
@@ -483,9 +489,11 @@ canvas_slot_finish_recording(DvzCanvasSwapchain* swapchain, DvzCanvasSwapchainSl
     slot->offscreen_layout = VK_IMAGE_LAYOUT_GENERAL;
 
     // log_trace("end command buffer");
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(swapchain->canvas->device, cmd, &cmds);
-    dvz_cmd_end(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(swapchain->canvas->device, cmd, cmds);
+    dvz_cmd_end(cmds);
+    dvz_commands_free(cmds);
 
     slot->commands_recording = false;
     if (swapchain->swapchain_layouts && slot->image_index < swapchain->image_count)
@@ -1814,10 +1822,11 @@ static int canvas_capture_copy_to_staging(
         return -1;
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(canvas->device, cmd, &cmds);
-    dvz_cmd_reset(&cmds);
-    dvz_cmd_begin(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, cmd, cmds);
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
 
     VkImageLayout original_layout = slot->offscreen_layout;
     if (original_layout == VK_IMAGE_LAYOUT_UNDEFINED)
@@ -1831,12 +1840,13 @@ static int canvas_capture_copy_to_staging(
     dvz_image_region(&region);
     dvz_image_region_extent(&region, width, height, 1);
     dvz_cmd_copy_image_to_buffer(
-        &cmds, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(staging), 0);
 
     canvas_cmd_transition(
         canvas, cmd, slot->offscreen_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, original_layout);
-    dvz_cmd_end(&cmds);
+    dvz_cmd_end(cmds);
+    dvz_commands_free(cmds);
 
     DvzFence fence = {0};
     dvz_fence(canvas->device, false, &fence);

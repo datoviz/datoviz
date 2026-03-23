@@ -165,9 +165,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     // Command buffer.
-    DvzCommands cmds = {0};
-    dvz_commands(device, queue, 1, &cmds);
-    if (dvz_commands_count(&cmds) == 0 || dvz_commands_handle(&cmds) == VK_NULL_HANDLE)
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    if (dvz_commands_count(cmds) == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
     {
         dvz_image_views_destroy(view);
         dvz_image_views_free(view);
@@ -182,21 +183,22 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         dvz_graphics_destroy(graphics);
         dvz_graphics_free(graphics);
         dvz_rendering_free(rendering);
+        dvz_commands_free(cmds);
         dvz_gpu_ctx_destroy(ctx);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
         return 0;
     }
-    dvz_cmd_begin(&cmds);
-    dvz_cmd_barriers(&cmds, &barriers);
-    dvz_cmd_rendering_begin(&cmds, rendering);
-    dvz_cmd_bind_graphics(&cmds, graphics);
-    dvz_cmd_draw(&cmds, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(&cmds);
-    dvz_cmd_end(&cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_barriers(cmds, &barriers);
+    dvz_cmd_rendering_begin(cmds, rendering);
+    dvz_cmd_bind_graphics(cmds, graphics);
+    dvz_cmd_draw(cmds, 0, 3, 0, 1);
+    dvz_cmd_rendering_end(cmds);
+    dvz_cmd_end(cmds);
 
     // Submit the command buffer.
-    dvz_cmd_submit(&cmds);
+    dvz_cmd_submit(cmds);
 
     // Staging buffer for screenshot.
     DvzBuffer staging = {0};
@@ -209,8 +211,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_create(&staging);
 
     // Screenshot.
-    dvz_cmd_reset(&cmds);
-    dvz_cmd_begin(&cmds);
+    dvz_cmd_reset(cmds);
+    dvz_cmd_begin(cmds);
 
     // Layout transition.
     dvz_barrier_image_stage(
@@ -219,21 +221,21 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         bimg, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_READ_BIT);
     dvz_barrier_image_layout(
         bimg, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    dvz_cmd_barriers(&cmds, &barriers);
+    dvz_cmd_barriers(cmds, &barriers);
 
     // Copy image to buffer.
     DvzImageRegion region = {0};
     dvz_image_region(&region);
     dvz_image_region_extent(&region, WIDTH, HEIGHT, 1);
     dvz_cmd_copy_image_to_buffer(
-        &cmds, dvz_image_handle(img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, dvz_image_handle(img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(&staging), 0);
 
     // End the command buffer.
-    dvz_cmd_end(&cmds);
+    dvz_cmd_end(cmds);
 
     // Submit the command buffer.
-    dvz_cmd_submit(&cmds);
+    dvz_cmd_submit(cmds);
 
     // Recover the screenshot.
     uint8_t* screenshot = (uint8_t*)dvz_calloc(WIDTH * HEIGHT, 4);
@@ -256,6 +258,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_destroy(graphics);
     AT(dvz_graphics_handle(graphics) == VK_NULL_HANDLE);
     dvz_graphics_free(graphics);
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
     dvz_rendering_free(rendering);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);

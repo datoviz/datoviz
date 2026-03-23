@@ -18,9 +18,10 @@
 #include <volk.h>
 
 #include "_alloc.h"
-#include "_vk_utils.h"
 #include "_assertions.h"
+#include "_commands.h"
 #include "_log.h"
+#include "_vk_utils.h"
 #include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
@@ -31,6 +32,34 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty commands wrapper.
+ *
+ * @return allocated commands wrapper, or NULL on allocation failure
+ */
+DvzCommands* dvz_commands_create_wrapper(void)
+{
+    DvzCommands* cmds = (DvzCommands*)dvz_calloc(1, sizeof(DvzCommands));
+    ANN(cmds);
+    return cmds;
+}
+
+
+
+/**
+ * Free a commands wrapper allocated by dvz_commands_create_wrapper().
+ *
+ * @param cmds commands wrapper to free
+ */
+void dvz_commands_free(DvzCommands* cmds)
+{
+    if (cmds == NULL)
+    {
+        return;
+    }
+    dvz_free(cmds);
+}
 
 /**
  * Release owned command buffers from a commands wrapper.

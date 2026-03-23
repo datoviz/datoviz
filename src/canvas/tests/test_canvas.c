@@ -153,17 +153,19 @@ canvas_offscreen_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void
         return;
     }
 
-    DvzCommands cmds = {0};
-    dvz_commands_wrap(canvas->device, cmd, &cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, cmd, cmds);
 
     DvzRendering* rendering = dvz_rendering_create();
     ANN(rendering);
     dvz_cmd_rendering_default(
-        &cmds, frame->image_view, frame->extent.width, frame->extent.height,
+        cmds, frame->image_view, frame->extent.width, frame->extent.height,
         (VkClearValue){.color.float32 = {0.08f, 0.12f, 0.16f, 1.00f}}, rendering);
-    dvz_cmd_rendering_begin(&cmds, rendering);
-    dvz_cmd_rendering_end(&cmds);
+    dvz_cmd_rendering_begin(cmds, rendering);
+    dvz_cmd_rendering_end(cmds);
     dvz_rendering_free(rendering);
+    dvz_commands_free(cmds);
 }
 
 

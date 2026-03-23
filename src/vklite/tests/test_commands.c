@@ -60,12 +60,14 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
     DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
     ANN(queue);
 
-    DvzCommands cmds = {0};
-    dvz_commands(device, queue, 3, &cmds);
-    dvz_cmd_begin(&cmds);
-    dvz_cmd_end(&cmds);
-    dvz_cmd_reset(&cmds);
-    dvz_cmd_free(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 3, cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
+    dvz_cmd_reset(cmds);
+    dvz_cmd_free(cmds);
+    dvz_commands_free(cmds);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
@@ -88,16 +90,18 @@ int test_vklite_commands_repeat_submit(TstSuite* suite, TstItem* tstitem)
     ANN(device);
     ANN(queue);
 
-    DvzCommands cmds = {0};
-    dvz_commands(device, queue, 1, &cmds);
-    dvz_cmd_begin(&cmds);
-    dvz_cmd_end(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
 
-    dvz_cmd_submit(&cmds);
-    dvz_cmd_submit(&cmds);
+    dvz_cmd_submit(cmds);
+    dvz_cmd_submit(cmds);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
-    dvz_commands_destroy(&cmds);
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
     dvz_gpu_ctx_destroy(ctx);
 
     return err_count > 0;
@@ -118,16 +122,18 @@ int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
     ANN(device);
     ANN(queue);
 
-    DvzCommands cmds = {0};
-    dvz_commands(device, queue, 1, &cmds);
-    dvz_cmd_begin(&cmds);
-    dvz_cmd_end(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
 
-    dvz_commands_destroy(&cmds);
-    dvz_commands_destroy(&cmds);
+    dvz_commands_destroy(cmds);
+    dvz_commands_destroy(cmds);
     dvz_commands_destroy(NULL);
-    AT(dvz_commands_count(&cmds) == 0);
-    AT(dvz_commands_handle(&cmds) == VK_NULL_HANDLE);
+    AT(dvz_commands_count(cmds) == 0);
+    AT(dvz_commands_handle(cmds) == VK_NULL_HANDLE);
+    dvz_commands_free(cmds);
 
     DvzFence fence = {0};
     dvz_fence(device, false, &fence);
@@ -199,10 +205,11 @@ int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem)
     ANN(device);
     ANN(queue);
 
-    DvzCommands cmds = {0};
-    dvz_commands(device, queue, 1, &cmds);
-    dvz_cmd_begin(&cmds);
-    dvz_cmd_end(&cmds);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
 
     DvzSubmit submit = {0};
     AT_EXPECTED_ERROR_STRICT(
@@ -217,7 +224,7 @@ int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem)
     AT_EXPECTED_ERROR_STRICT(
         suite, (dvz_submit_send(&submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
 
-    dvz_submit_command(&submit, dvz_commands_handle(&cmds));
+    dvz_submit_command(&submit, dvz_commands_handle(cmds));
     AT(!dvz_submit_is_empty(&submit));
     AT(dvz_submit_command_count(&submit) == 1);
 
@@ -231,13 +238,14 @@ int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem)
     AT(dvz_submit_command_count(&submit) == 0);
 
     dvz_fence_reset(&fence);
-    dvz_submit_command(&submit, dvz_commands_handle(&cmds));
+    dvz_submit_command(&submit, dvz_commands_handle(cmds));
     AT(dvz_submit_send(&submit, dvz_queue_handle(queue), dvz_fence_handle(&fence)) == VK_SUCCESS);
     dvz_fence_wait(&fence);
     dvz_fence_destroy(&fence);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
-    dvz_commands_destroy(&cmds);
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
     dvz_gpu_ctx_destroy(ctx);
 
     return err_count > 0;

@@ -52,7 +52,7 @@ struct DvzFixtureOffscreen
     DvzImages depth;
     DvzImageViews depth_view;
     DvzBarriers barriers;
-    DvzCommands cmds;
+    DvzCommands* cmds;
     DvzBuffer staging;
 };
 
@@ -88,12 +88,14 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     fixture->fs = dvz_shader_create_wrapper();
     fixture->graphics = dvz_graphics_create_wrapper();
     fixture->slots = dvz_slots_create_wrapper();
+    fixture->cmds = dvz_commands_create_wrapper();
     fixture->desc = dvz_descriptors_create();
     ANN(fixture->desc);
     ANN(fixture->vs);
     ANN(fixture->fs);
     ANN(fixture->graphics);
     ANN(fixture->slots);
+    ANN(fixture->cmds);
     fixture->rendering = dvz_rendering_create();
     ANN(fixture->rendering);
 
@@ -167,7 +169,7 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
         bdepth, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_barrier_image_aspect(bdepth, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
-    dvz_commands(device, queue, 1, &fixture->cmds);
+    dvz_commands(device, queue, 1, fixture->cmds);
 
     return fixture;
 }
@@ -186,7 +188,9 @@ void dvz_fixture_offscreen_destroy(DvzFixtureOffscreen* fixture)
         return;
     }
 
-    dvz_commands_destroy(&fixture->cmds);
+    dvz_commands_destroy(fixture->cmds);
+    dvz_commands_free(fixture->cmds);
+    fixture->cmds = NULL;
     dvz_image_views_destroy(&fixture->color_view);
     dvz_images_destroy(&fixture->color);
     dvz_image_views_destroy(&fixture->depth_view);
@@ -314,7 +318,7 @@ DvzDescriptors* dvz_fixture_offscreen_desc(DvzFixtureOffscreen* fixture)
 DvzCommands* dvz_fixture_offscreen_cmds(DvzFixtureOffscreen* fixture)
 {
     ANN(fixture);
-    return &fixture->cmds;
+    return fixture->cmds;
 }
 
 
@@ -417,7 +421,7 @@ void dvz_fixture_offscreen_transition(
     ANN(fixture);
     ANN(img);
 
-    DvzCommands* cmds = &fixture->cmds;
+    DvzCommands* cmds = fixture->cmds;
     DvzBarriers* barriers = &fixture->barriers;
 
     dvz_cmd_reset(cmds);
@@ -468,7 +472,7 @@ void dvz_fixture_offscreen_png(DvzFixtureOffscreen* fixture, const char* filenam
     dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_create(staging);
 
-    DvzCommands* cmds = &fixture->cmds;
+    DvzCommands* cmds = fixture->cmds;
     DvzBarriers* barriers = &fixture->barriers;
     dvz_cmd_reset(cmds);
     dvz_cmd_begin(cmds);

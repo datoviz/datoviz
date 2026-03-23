@@ -43,28 +43,28 @@ typedef struct DvzQueue DvzQueue;
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzCommands
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzQueue* queue;
-
-    uint32_t count;
-    uint32_t current;
-    VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
-    bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES]; // if true, no need to refill it in the FRAME
-};
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty commands wrapper.
+ *
+ * @return allocated commands wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzCommands* dvz_commands_create_wrapper(void);
+
+
+
+/**
+ * Free a commands wrapper allocated by dvz_commands_create_wrapper().
+ *
+ * @param cmds commands wrapper to free
+ */
+DVZ_EXPORT void dvz_commands_free(DvzCommands* cmds);
 
 
 
