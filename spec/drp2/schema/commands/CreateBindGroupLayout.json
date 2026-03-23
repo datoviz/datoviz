@@ -4,7 +4,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateBindGroupLayout"
     },
     "id": {
@@ -21,103 +21,28 @@
             "type": "integer",
             "minimum": 0
           },
-          "visibility": {
-            "$ref": "../common/ShaderStage.json"
-          },
-          "buffer": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "uniform",
-                  "storage",
-                  "read-only-storage"
-                ]
-              },
-              "hasDynamicOffset": {
-                "type": "boolean"
-              },
-              "minBindingSize": {
-                "type": "integer",
-                "minimum": 0
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "texture": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "sampleType": {
-                "type": "string",
-                "enum": [
-                  "float",
-                  "unfilterable-float",
-                  "depth",
-                  "sint",
-                  "uint"
-                ]
-              },
-              "viewDimension": {
-                "$ref": "../common/TextureViewDimension.json"
-              },
-              "multisampled": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "sampleType",
-              "viewDimension"
-            ]
-          },
-          "sampler": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": [
-                  "filtering",
-                  "non-filtering",
-                  "comparison"
-                ]
-              }
-            },
-            "required": [
-              "type"
+          "binding_type": {
+            "type": "string",
+            "enum": [
+              "uniform_buffer",
+              "storage_buffer",
+              "sampled_texture",
+              "storage_texture"
             ]
           }
         },
         "required": [
           "binding",
-          "visibility"
-        ],
-        "oneOf": [
-          {
-            "required": [
-              "buffer"
-            ]
-          },
-          {
-            "required": [
-              "texture"
-            ]
-          },
-          {
-            "required": [
-              "sampler"
-            ]
-          }
+          "binding_type"
         ]
       }
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
     "entries"
   ]

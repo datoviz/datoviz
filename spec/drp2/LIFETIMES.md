@@ -14,12 +14,13 @@ This document applies only to the active DRP2 `2.0` commands:
 
 1. session and diagnostics,
 2. buffer and texture lifecycle,
-3. pipeline lifecycle,
-4. command encoder lifecycle,
-5. render and compute pass lifecycle,
-6. render and compute recording commands,
-7. copy commands,
-8. queue submission.
+3. bind-group lifecycle,
+4. pipeline lifecycle,
+5. command encoder lifecycle,
+6. render and compute pass lifecycle,
+7. render and compute recording commands,
+8. copy commands,
+9. queue submission.
 
 Deferred commands listed in `schema/DEFERRED.md` are not covered by these invariants and must not be
 assumed to inherit them unchanged.
@@ -50,8 +51,10 @@ Persistent objects remain live until explicit destruction:
 
 1. buffer
 2. texture
-3. pipeline
-4. command buffer
+3. bind-group layout
+4. bind group
+5. pipeline
+6. command buffer
 
 Scoped objects exist only between their begin and end commands:
 
@@ -106,6 +109,35 @@ Rules:
 5. a texture may be referenced by copy commands only while live,
 6. texture subresources do not have independent protocol lifetimes in the active `2.0` surface,
 7. render-pass attachments in active `2.0` reference textures directly rather than separate texture-view objects.
+
+
+## Bind-Group Lifetime
+
+Rules:
+
+1. `CreateBindGroupLayout` makes `id` live as a bind-group layout immediately after semantic
+   validation succeeds,
+2. `DestroyBindGroupLayout` ends the bind-group-layout lifetime immediately after semantic validation
+   succeeds,
+3. no later command may reference the destroyed bind-group layout,
+4. `CreateBindGroup` makes `id` live as a bind group immediately after semantic validation succeeds,
+5. `DestroyBindGroup` ends the bind-group lifetime immediately after semantic validation succeeds,
+6. no later command may reference the destroyed bind group,
+7. a bind group may reference existing buffers and textures, but it does not create independent
+   subresource lifetimes for them,
+8. a bind-group layout may be referenced by bind groups and pipelines,
+9. a bind group may be referenced by `QueueSubmit` only indirectly through previously finished
+   command buffers.
+
+Validation consequences:
+
+1. a bind-group entry whose `binding_type` is incompatible with `resource_kind` should fail with
+   `DRP2_ERR_WRONG_OBJECT_TYPE`,
+2. a bind-group entry whose referenced resource lacks the usage bits implied by `binding_type` should
+   fail with `DRP2_ERR_USAGE`,
+3. a bind group whose entries do not exactly match its declared bind-group layout should fail with
+   `DRP2_ERR_INVALID_ARGUMENT` or `DRP2_ERR_INVALID_STATE` depending on whether the mismatch is
+   treated as structural shape or semantic compatibility.
 
 
 ## Pipeline Lifetime
@@ -195,12 +227,16 @@ Commands valid without encoder or pass scope:
 7. `CreateTexture`
 8. `DestroyTexture`
 9. `WriteTexture`
-10. `CreateRenderPipeline`
-11. `DestroyRenderPipeline`
-12. `CreateComputePipeline`
-13. `DestroyComputePipeline`
-14. `BeginCommandEncoder`
-15. `QueueSubmit`
+10. `CreateBindGroup`
+11. `DestroyBindGroup`
+12. `CreateBindGroupLayout`
+13. `DestroyBindGroupLayout`
+14. `CreateRenderPipeline`
+15. `DestroyRenderPipeline`
+16. `CreateComputePipeline`
+17. `DestroyComputePipeline`
+18. `BeginCommandEncoder`
+19. `QueueSubmit`
 
 Commands valid in an open encoder but outside any pass:
 
@@ -260,14 +296,19 @@ Rules:
    open render pass,
 9. rebinding a pipeline replaces the previously bound pipeline for subsequent commands in the same
    pass,
-10. `SetBindGroup` is interpreted against the currently bound pipeline layout,
-11. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
+10. `SetBindGroup` requires a live bind-group id,
+11. `CreateBindGroup` requires a live bind-group layout id,
+12. `SetBindGroup` is interpreted against the currently bound pipeline layout,
+13. if the bound pipeline declares a bind-group layout for the requested slot, the bound bind group
+   must have been created from that exact layout,
+14. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
    cannot validate the slot against a known layout.
 
 Active runner note:
 
 1. the active fixture runner models pipeline objects, pass-local pipeline binding, pass-local
-   vertex-buffer binding, and pass-local index-buffer binding as first-class semantic state.
+   vertex-buffer binding, pass-local index-buffer binding, and bind-group object binding as
+   first-class semantic state.
 
 
 ## Submission And Destruction Safety

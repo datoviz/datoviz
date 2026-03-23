@@ -4,15 +4,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "DestroyBindGroup"
     },
-    "id": {
+    "bind_group_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "id"
+    "cmd",
+    "bind_group_id"
   ]
 }

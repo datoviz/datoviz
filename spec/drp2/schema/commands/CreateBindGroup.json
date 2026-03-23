@@ -4,13 +4,13 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateBindGroup"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
-    "layout": {
+    "bind_group_layout_id": {
       "$ref": "../common/Id.json"
     },
     "entries": {
@@ -24,7 +24,23 @@
             "type": "integer",
             "minimum": 0
           },
-          "resource": {
+          "binding_type": {
+            "type": "string",
+            "enum": [
+              "uniform_buffer",
+              "storage_buffer",
+              "sampled_texture",
+              "storage_texture"
+            ]
+          },
+          "resource_kind": {
+            "type": "string",
+            "enum": [
+              "buffer",
+              "texture"
+            ]
+          },
+          "resource_id": {
             "$ref": "../common/Id.json"
           },
           "offset": {
@@ -38,15 +54,20 @@
         },
         "required": [
           "binding",
-          "resource"
+          "binding_type",
+          "resource_kind",
+          "resource_id"
         ]
       }
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
-    "layout",
+    "bind_group_layout_id",
     "entries"
   ]
 }

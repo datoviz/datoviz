@@ -31,6 +31,18 @@
       "$ref": "./commands/WriteTexture.json"
     },
     {
+      "$ref": "./commands/CreateBindGroup.json"
+    },
+    {
+      "$ref": "./commands/DestroyBindGroup.json"
+    },
+    {
+      "$ref": "./commands/CreateBindGroupLayout.json"
+    },
+    {
+      "$ref": "./commands/DestroyBindGroupLayout.json"
+    },
+    {
       "$ref": "./commands/CreateRenderPipeline.json"
     },
     {

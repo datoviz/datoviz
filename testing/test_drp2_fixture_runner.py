@@ -89,6 +89,65 @@ def test_drp2_fixture_runner_rejects_missing_index_buffer_binding() -> None:
     assert result.actual_command_index == 7
 
 
+def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['bind_group'])
+    results = runner.run_fixtures(fixtures)
+
+    assert len(results) == 6
+    assert all(result.passed for result in results)
+    assert results[0].actual_phase == 'semantic_validation'
+    assert results[1].actual_phase == 'semantic_validation'
+
+
+def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_kind() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_bind_group_wrong_resource_kind.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_bind_group_wrong_resource_kind'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_WRONG_OBJECT_TYPE'
+    assert result.actual_command_index == 2
+
+
+def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_usage() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_bind_group_wrong_resource_usage.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_bind_group_wrong_resource_usage'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 2
+
+
+def test_drp2_fixture_runner_rejects_bind_group_entries_mismatch_layout() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_bind_group_entries_mismatch_layout.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_bind_group_entries_mismatch_layout'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 2
+
+
+def test_drp2_fixture_runner_rejects_wrong_bind_group_layout_slot() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_set_bind_group_wrong_layout_slot.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_bind_group_wrong_layout_slot'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 10
+
+
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:
     root = Path(__file__).resolve().parents[1]
     fixture = 'spec/drp2/fixtures/positive/write_buffer_basic.json'

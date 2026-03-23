@@ -1,0 +1,99 @@
+{
+  "name": "invalid_set_bind_group_without_pipeline",
+  "description": "SetBindGroup is issued in a render pass before any pipeline has been bound.",
+  "reason": "Active DRP2 requires a pipeline to be bound in the same open pass before a bind group can be set.",
+  "fix": "Bind a render or compute pipeline with SetPipeline before issuing SetBindGroup.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "bind_group",
+    "render_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 64,
+      "usage": [
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 3,
+      "encoder_id": 2,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 3,
+      "slot": 0,
+      "bind_group_id": 13
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 6
+  }
+}

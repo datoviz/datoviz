@@ -1,0 +1,61 @@
+{
+  "name": "invalid_bind_group_wrong_resource_usage",
+  "description": "CreateBindGroup declares a sampled-texture binding type but points at a texture that lacks TEXTURE_BINDING usage.",
+  "reason": "Bind-group entry binding_type must be compatible with the referenced resource's declared usage bits.",
+  "fix": "Create the texture with TEXTURE_BINDING usage or choose a binding_type compatible with the texture's declared usage.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "bind_group",
+    "typing",
+    "usage"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampled_texture"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 2,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampled_texture",
+          "resource_kind": "texture",
+          "resource_id": 1
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 2
+  }
+}

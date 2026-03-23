@@ -86,7 +86,9 @@ Use the most specific error code that matches the contract-visible failure.
    already been destroyed,
 3. use `DRP2_ERR_DUPLICATE_ID` when a creation command reuses an already-used id,
 4. use `DRP2_ERR_WRONG_OBJECT_TYPE` when the id exists and is live but belongs to the wrong object
-   kind.
+   kind,
+5. for typed bind-group entries, prefer `DRP2_ERR_WRONG_OBJECT_TYPE` when `binding_type` and
+   `resource_kind` are structurally incompatible.
 
 
 ### State Versus Usage
@@ -97,6 +99,9 @@ Use the most specific error code that matches the contract-visible failure.
 3. prefer `DRP2_ERR_INVALID_STATE` for examples such as:
    - draw outside a render pass
    - draw or dispatch without a pipeline bound in the current pass
+   - setting a bind group before a pipeline is bound in the current pass
+   - creating a bind group whose entries do not match the declared layout
+   - setting a bind group whose layout does not match the current pipeline slot
    - draw without all vertex-buffer slots required by the bound pipeline
    - indexed draw without a bound index buffer
    - dispatch outside a compute pass
@@ -105,6 +110,9 @@ Use the most specific error code that matches the contract-visible failure.
    - issuing a copy command inside a pass
 4. prefer `DRP2_ERR_USAGE` for examples such as:
    - destroying a resource still referenced by recorded or submitted work
+   - destroying a bind group still referenced by recorded or submitted work
+   - creating a bind-group entry whose referenced resource lacks the usage bits implied by
+     `binding_type`
    - using a resource in a way forbidden by its declared creation usage
 
 

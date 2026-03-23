@@ -337,6 +337,122 @@ class DRP2SemanticValidator:
             },
         )
 
+    def _handle_CreateBindGroup(self, index: int, command: Dict[str, Any]) -> None:
+        layout_state = self._resolve_live(index, command['bind_group_layout_id'], 'bind_group_layout')
+        expected_entries = {
+            entry['binding']: entry['binding_type'] for entry in layout_state.data['entries']
+        }
+        actual_entries = {entry['binding']: entry['binding_type'] for entry in command['entries']}
+        if actual_entries != expected_entries:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'bind group {command["id"]} entries do not match layout {command["bind_group_layout_id"]}',
+            )
+        resources = set()
+        for entry in command['entries']:
+            binding_type = entry['binding_type']
+            if binding_type in ('uniform_buffer', 'storage_buffer'):
+                if entry['resource_kind'] != 'buffer':
+                    raise SemanticFailure(
+                        'DRP2_ERR_WRONG_OBJECT_TYPE',
+                        index,
+                        f'bind-group entry {entry["binding"]} uses {binding_type} with {entry["resource_kind"]}',
+                    )
+                buffer_state = self._resolve_live(index, entry['resource_id'], 'buffer')
+                required_usage = 'UNIFORM' if binding_type == 'uniform_buffer' else 'STORAGE'
+                if required_usage not in buffer_state.data['usage']:
+                    raise SemanticFailure(
+                        'DRP2_ERR_USAGE',
+                        index,
+                        f'buffer {entry["resource_id"]} does not allow {required_usage}',
+                    )
+                if 'offset' in entry and 'size' in entry:
+                    self._check_buffer_range(index, buffer_state, entry['offset'], entry['size'])
+                resources.add(('buffer', entry['resource_id']))
+            elif binding_type in ('sampled_texture', 'storage_texture'):
+                if entry['resource_kind'] != 'texture':
+                    raise SemanticFailure(
+                        'DRP2_ERR_WRONG_OBJECT_TYPE',
+                        index,
+                        f'bind-group entry {entry["binding"]} uses {binding_type} with {entry["resource_kind"]}',
+                    )
+                texture_state = self._resolve_live(index, entry['resource_id'], 'texture')
+                required_usage = (
+                    'TEXTURE_BINDING' if binding_type == 'sampled_texture' else 'STORAGE_BINDING'
+                )
+                if required_usage not in texture_state.data['usage']:
+                    raise SemanticFailure(
+                        'DRP2_ERR_USAGE',
+                        index,
+                        f'texture {entry["resource_id"]} does not allow {required_usage}',
+                    )
+                resources.add(('texture', entry['resource_id']))
+        self._reserve_id(
+            index,
+            command['id'],
+            'bind_group',
+            {
+                'bind_group_layout_id': command['bind_group_layout_id'],
+                'entries': command['entries'],
+                'resources': resources,
+            },
+        )
+
+    def _handle_CreateBindGroupLayout(self, index: int, command: Dict[str, Any]) -> None:
+        bindings = [entry['binding'] for entry in command['entries']]
+        if len(bindings) != len(set(bindings)):
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_ARGUMENT',
+                index,
+                f'bind-group layout {command["id"]} has duplicate binding indices',
+            )
+        self._reserve_id(
+            index,
+            command['id'],
+            'bind_group_layout',
+            {
+                'entries': command['entries'],
+            },
+        )
+
+    def _handle_DestroyBindGroupLayout(self, index: int, command: Dict[str, Any]) -> None:
+        layout_id = command['bind_group_layout_id']
+        state = self._resolve_live(index, layout_id, 'bind_group_layout')
+        if self._resource_in_use('bind_group_layout', layout_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'bind-group layout {layout_id} is still referenced by recorded work',
+            )
+        for object_state in self.objects.values():
+            if not object_state.live:
+                continue
+            if object_state.kind == 'bind_group' and object_state.data.get('bind_group_layout_id') == layout_id:
+                raise SemanticFailure(
+                    'DRP2_ERR_USAGE',
+                    index,
+                    f'bind-group layout {layout_id} is still referenced by live bind groups',
+                )
+            if object_state.kind == 'pipeline' and layout_id in object_state.data.get('bind_group_layout_ids', []):
+                raise SemanticFailure(
+                    'DRP2_ERR_USAGE',
+                    index,
+                    f'bind-group layout {layout_id} is still referenced by live pipelines',
+                )
+        state.live = False
+
+    def _handle_DestroyBindGroup(self, index: int, command: Dict[str, Any]) -> None:
+        bind_group_id = command['bind_group_id']
+        state = self._resolve_live(index, bind_group_id, 'bind_group')
+        if self._resource_in_use('bind_group', bind_group_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'bind group {bind_group_id} is still referenced by recorded work',
+            )
+        state.live = False
+
     def _handle_CreateRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
         self._reserve_id(
             index,
@@ -345,8 +461,11 @@ class DRP2SemanticValidator:
             {
                 'kind': 'render',
                 'vertex_buffer_slots': command['vertex_buffer_slots'],
+                'bind_group_layout_ids': list(command.get('bind_group_layout_ids', [])),
             },
         )
+        for layout_id in command.get('bind_group_layout_ids', []):
+            self._resolve_live(index, layout_id, 'bind_group_layout')
 
     def _handle_DestroyRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
         pipeline_id = command['render_pipeline_id']
@@ -373,8 +492,11 @@ class DRP2SemanticValidator:
             {
                 'kind': 'compute',
                 'vertex_buffer_slots': 0,
+                'bind_group_layout_ids': list(command.get('bind_group_layout_ids', [])),
             },
         )
+        for layout_id in command.get('bind_group_layout_ids', []):
+            self._resolve_live(index, layout_id, 'bind_group_layout')
 
     def _handle_DestroyComputePipeline(self, index: int, command: Dict[str, Any]) -> None:
         pipeline_id = command['compute_pipeline_id']
@@ -442,6 +564,7 @@ class DRP2SemanticValidator:
             'encoder_id': command['encoder_id'],
             'state': 'open',
             'bound_pipeline_id': None,
+            'bound_bind_groups': {},
             'vertex_buffers': {},
             'index_buffer': None,
         }
@@ -477,6 +600,7 @@ class DRP2SemanticValidator:
             'encoder_id': command['encoder_id'],
             'state': 'open',
             'bound_pipeline_id': None,
+            'bound_bind_groups': {},
             'vertex_buffers': {},
             'index_buffer': None,
         }
@@ -514,6 +638,32 @@ class DRP2SemanticValidator:
         }
         encoder = self.encoders[pass_info['encoder_id']]
         encoder['resources'].add(('buffer', command['buffer_id']))
+
+    def _handle_SetBindGroup(self, index: int, command: Dict[str, Any]) -> None:
+        pass_info = self._resolve_pass(index, command['pass_id'])
+        self._require_bound_pipeline(index, pass_info)
+        bind_group = self._resolve_live(index, command['bind_group_id'], 'bind_group')
+        pipeline = self._resolve_live(index, pass_info['bound_pipeline_id'], 'pipeline')
+        layout_ids = pipeline.data.get('bind_group_layout_ids', [])
+        if command['slot'] >= len(layout_ids):
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'pipeline {pass_info["bound_pipeline_id"]} has no bind-group layout for slot {command["slot"]}',
+            )
+        expected_layout_id = layout_ids[command['slot']]
+        if bind_group.data['bind_group_layout_id'] != expected_layout_id:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'bind group {command["bind_group_id"]} uses layout {bind_group.data["bind_group_layout_id"]}, expected {expected_layout_id}',
+            )
+        pass_info['bound_bind_groups'][command['slot']] = command['bind_group_id']
+        encoder = self.encoders[pass_info['encoder_id']]
+        encoder['resources'].add(('bind_group', command['bind_group_id']))
+        encoder['resources'].add(('bind_group_layout', bind_group.data['bind_group_layout_id']))
+        for resource in bind_group.data['resources']:
+            encoder['resources'].add(resource)
 
     def _handle_SetViewport(self, index: int, command: Dict[str, Any]) -> None:
         self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')

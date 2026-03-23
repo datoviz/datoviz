@@ -7,10 +7,6 @@ surface under review.
 
 Deferred command schema files:
 
-- `commands/CreateBindGroup.json`
-- `commands/DestroyBindGroup.json`
-- `commands/CreateBindGroupLayout.json`
-- `commands/DestroyBindGroupLayout.json`
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
 - `commands/CreateShaderModule.json`

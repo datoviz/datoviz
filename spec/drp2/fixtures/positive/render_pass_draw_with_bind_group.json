@@ -1,0 +1,142 @@
+{
+  "name": "render_pass_draw_with_bind_group",
+  "description": "Begins a render pass, binds a render pipeline, vertex buffer, and bind group, records one draw, ends the pass, and finishes the encoder.",
+  "reason": "The bind group is created from live resources and is bound only after a render pipeline has been selected in the same open pass.",
+  "notes": "The active bind-group contract remains layout-agnostic and validates only object lifetime plus referenced-resource capture.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "render_pass",
+    "pipeline",
+    "bind_group",
+    "draw"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "vertex_buffer_slots": 1,
+      "bind_group_layout_ids": [
+        14
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 11,
+      "size": 64,
+      "usage": [
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 64,
+      "usage": [
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 3,
+      "encoder_id": 2,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 3,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 3,
+      "slot": 0,
+      "bind_group_id": 13
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 3,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 3
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 4
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

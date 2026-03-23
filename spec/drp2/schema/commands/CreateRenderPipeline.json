@@ -14,6 +14,12 @@
       "type": "integer",
       "minimum": 0
     },
+    "bind_group_layout_ids": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/Id.json"
+      }
+    },
     "label": {
       "type": "string"
     }

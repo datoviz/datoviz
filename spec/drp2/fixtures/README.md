@@ -47,7 +47,13 @@ The first negative corpus should stay intentionally small and cover the core val
 20. render-only state command used in a compute pass,
 21. resubmitting an already submitted command buffer,
 22. draw missing a required vertex-buffer binding,
-23. indexed draw missing an index-buffer binding.
+23. indexed draw missing an index-buffer binding,
+24. bind group set before any pipeline is bound,
+25. destroying a bind group still referenced by recorded work,
+26. bind-group entry with incompatible resource kind,
+27. bind-group entry with incompatible resource usage bits,
+28. bind-group entries that do not match the declared layout,
+29. bind group bound into a pipeline slot expecting a different layout.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 
@@ -61,7 +67,8 @@ The first positive corpus should stay minimal and focus on clean command shapes:
 6. queue submit of a finished command buffer,
 7. render pass with pipeline bind plus draw,
 8. compute pass with pipeline bind plus dispatch,
-9. render pass with pipeline plus vertex and index bindings for `DrawIndexed`.
+9. render pass with pipeline plus vertex and index bindings for `DrawIndexed`,
+10. render pass with pipeline plus bind-group binding before draw.
 
 
 ## Metadata Policy

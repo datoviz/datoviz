@@ -1,0 +1,57 @@
+{
+  "name": "invalid_bind_group_entries_mismatch_layout",
+  "description": "CreateBindGroup provides an entry set that does not match the declared bind-group layout.",
+  "reason": "A bind group must provide exactly the binding indices and binding types declared by its bind-group layout.",
+  "fix": "Make the bind-group entries match the declared layout exactly, or create a layout that matches the intended bind-group entry set.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "bind_group",
+    "layout",
+    "state"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 64,
+      "usage": [
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 1,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 2
+  }
+}

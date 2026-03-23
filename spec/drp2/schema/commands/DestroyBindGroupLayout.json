@@ -4,15 +4,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "DestroyBindGroupLayout"
     },
-    "id": {
+    "bind_group_layout_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "id"
+    "cmd",
+    "bind_group_layout_id"
   ]
 }

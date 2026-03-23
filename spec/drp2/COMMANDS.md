@@ -41,6 +41,14 @@ The active DRP2 command set is intentionally small but complete enough for:
 6. `WriteTexture`
 
 
+### Resource Group Lifecycle
+
+1. `CreateBindGroup`
+2. `DestroyBindGroup`
+3. `CreateBindGroupLayout`
+4. `DestroyBindGroupLayout`
+
+
 ### Pipeline Lifecycle
 
 1. `CreateRenderPipeline`
@@ -87,22 +95,18 @@ The active DRP2 command set is intentionally small but complete enough for:
 The following command names exist in the schema tree as deferred design material only. They are not part
 of the active DRP2 contract and must not be treated as authoritative until promoted into this document.
 
-1. `CreateBindGroup`
-2. `DestroyBindGroup`
-3. `CreateBindGroupLayout`
-4. `DestroyBindGroupLayout`
-5. `CreatePipelineLayout`
-6. `DestroyPipelineLayout`
-7. `CreateShaderModule`
-8. `DestroyShaderModule`
-9. `CreateSampler`
-10. `DestroySampler`
-11. `CreateTextureView`
-12. `DestroyTextureView`
-13. `ResourceBarrier`
-14. `DispatchWorkgroupsIndirect`
-15. `DrawIndirect`
-16. `DrawIndexedIndirect`
+1. `CreatePipelineLayout`
+2. `DestroyPipelineLayout`
+3. `CreateShaderModule`
+4. `DestroyShaderModule`
+5. `CreateSampler`
+6. `DestroySampler`
+7. `CreateTextureView`
+8. `DestroyTextureView`
+9. `ResourceBarrier`
+10. `DispatchWorkgroupsIndirect`
+11. `DrawIndirect`
+12. `DrawIndexedIndirect`
 
 
 ## Common Field Semantics
@@ -319,6 +323,109 @@ Semantics:
 3. the written region must fit inside the destination subresource.
 
 
+## Resource Group Lifecycle
+
+### `CreateBindGroup`
+
+Creates a lightweight bind-group object that captures references to existing resources.
+
+Required fields:
+
+- `cmd`: must be `CreateBindGroup`.
+- `id`: identifier assigned to the new bind group.
+- `bind_group_layout_id`: layout that defines the expected entry set.
+- `entries`: ordered list of resource-binding entries.
+
+Each entry requires:
+
+- `binding`: numeric binding index within the bind group.
+- `binding_type`: one of `uniform_buffer`, `storage_buffer`, `sampled_texture`, or
+  `storage_texture`.
+- `resource_kind`: one of `buffer` or `texture`.
+- `resource_id`: identifier of the referenced resource object.
+
+Optional per-entry fields:
+
+- `offset`: first visible byte for buffer-backed bindings.
+- `size`: visible byte count for buffer-backed bindings.
+
+Optional top-level fields:
+
+- `label`: debug label.
+
+Semantics:
+
+1. active DRP2 `2.0` treats bind groups as lightweight protocol objects rather than full layout-aware
+   descriptor sets,
+2. `bind_group_layout_id` must reference a live bind-group layout object,
+3. each provided entry must match the declared layout entry for the same `binding` index,
+4. `binding_type` must be compatible with both `resource_kind` and the referenced resource's declared
+   usage bits,
+5. each referenced resource must already exist and remain live for the lifetime required by any
+   recorded work that captures the bind group,
+6. buffer-backed entry ranges must fit within the referenced buffer when `offset` and `size` are
+   provided.
+
+
+### `DestroyBindGroup`
+
+Destroys a previously created bind group.
+
+Required fields:
+
+- `cmd`: must be `DestroyBindGroup`.
+- `bind_group_id`: identifier of the bind group to destroy.
+
+Semantics:
+
+1. no later command may bind the bind group after destruction,
+2. destroying a bind group still referenced by recorded work is invalid.
+
+
+### `CreateBindGroupLayout`
+
+Creates a bind-group layout object that defines the expected binding indices and binding types.
+
+Required fields:
+
+- `cmd`: must be `CreateBindGroupLayout`.
+- `id`: identifier assigned to the new bind-group layout.
+- `entries`: ordered list of layout entries.
+
+Each layout entry requires:
+
+- `binding`: numeric binding index within the bind group.
+- `binding_type`: one of `uniform_buffer`, `storage_buffer`, `sampled_texture`, or
+  `storage_texture`.
+
+Optional fields:
+
+- `label`: debug label.
+
+Semantics:
+
+1. active DRP2 `2.0` bind-group layouts are intentionally minimal and validate binding number plus
+   binding type only,
+2. binding indices within one layout must be unique,
+3. bind groups created from the layout must provide exactly the declared binding set.
+
+
+### `DestroyBindGroupLayout`
+
+Destroys a previously created bind-group layout.
+
+Required fields:
+
+- `cmd`: must be `DestroyBindGroupLayout`.
+- `bind_group_layout_id`: identifier of the bind-group layout to destroy.
+
+Semantics:
+
+1. no later bind group or pipeline may reference the layout after destruction,
+2. destroying a bind-group layout still referenced by live bind groups, pipelines, or recorded work
+   is invalid.
+
+
 ## Pipeline Lifecycle
 
 ### `CreateRenderPipeline`
@@ -333,6 +440,7 @@ Required fields:
 
 Optional fields:
 
+- `bind_group_layout_ids`: ordered list of bind-group layouts expected by slot.
 - `label`: debug label.
 
 Semantics:
@@ -340,7 +448,9 @@ Semantics:
 1. active DRP2 `2.0` treats render pipelines as lightweight protocol objects rather than full shader
    or layout graphs,
 2. `vertex_buffer_slots` defines the required slot range `[0, vertex_buffer_slots)` for later draws
-   using this pipeline.
+   using this pipeline,
+3. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
+   `SetBindGroup(slot, ...)`.
 
 
 ### `DestroyRenderPipeline`
@@ -369,12 +479,15 @@ Required fields:
 
 Optional fields:
 
+- `bind_group_layout_ids`: ordered list of bind-group layouts expected by slot.
 - `label`: debug label.
 
 Semantics:
 
 1. active DRP2 `2.0` treats compute pipelines as lightweight protocol objects rather than full
-   shader or layout graphs.
+   shader or layout graphs,
+2. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
+   `SetBindGroup(slot, ...)`.
 
 
 ### `DestroyComputePipeline`
@@ -598,8 +711,12 @@ Optional fields:
 
 Semantics:
 
-1. `slot` is interpreted against the currently bound pipeline layout,
-2. if present, `dynamic_offsets` are consumed in the binding order defined by the bind group layout.
+1. `bind_group_id` must reference a live bind-group object,
+2. a pipeline must already be bound in the same open pass before the bind group is set,
+3. if the bound pipeline declares `bind_group_layout_ids`, the entry at `slot` must exist and match
+   the bind group's layout id,
+4. `slot` is interpreted against the currently bound pipeline layout,
+5. if present, `dynamic_offsets` are consumed in the binding order defined by the bind group layout.
 
 
 ### `SetViewport`

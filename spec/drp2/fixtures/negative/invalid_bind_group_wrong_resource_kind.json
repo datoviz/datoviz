@@ -1,0 +1,61 @@
+{
+  "name": "invalid_bind_group_wrong_resource_kind",
+  "description": "CreateBindGroup declares a uniform-buffer binding type but points at a texture resource.",
+  "reason": "Bind-group entry binding_type must be compatible with resource_kind, so a buffer binding type cannot target a texture object.",
+  "fix": "Use a buffer resource for uniform_buffer or change the binding_type to a texture binding kind.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "bind_group",
+    "typing",
+    "state"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "TEXTURE_BINDING"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 2,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "texture",
+          "resource_id": 1
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_WRONG_OBJECT_TYPE",
+    "command_index": 2
+  }
+}
