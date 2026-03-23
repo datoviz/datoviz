@@ -22,12 +22,23 @@ maintainability.
 
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
+
+### Validated snapshot (2026-03-23)
+
+* `just build` passed on this machine on `2026-03-23`.
+* `just test` passed on this machine on `2026-03-23` with `141/141` tests passing.
+* The active low-level graphics stack is currently green; the main remaining refactor frontier is
+  `vk`/`vklite` public-boundary and lifecycle cleanup, especially across `vklite`.
+* For the most recent branch re-entry summary and execution guidance, start with
+  `agents/REFACTOR_STATUS_2026-03-23.md` and `agents/now/VK_REFACTOR.md`.
+
 ### 🏗️ Current refactor status (v0.4-dev)
 
 * ✅ Active modules currently linked into `libdatoviz` are: `common`, `ds`, `fileio`, `math`, `thread`,
   `input`, `window`, `canvas`, `stream`, `video`, `vk`, and `vklite`.
-* 🚧 Vulkan-related modules (`vk`, `vklite`, `canvas`, `stream`, `video`) are still evolving quickly;
-  expect frequent API/internal adjustments in these directories.
+* ✅ The active low-level graphics stack is currently building and testing cleanly on this machine.
+* 🚧 The highest-value remaining refactor work is `vk`/`vklite` boundary hardening and lifecycle
+  cleanup; `vklite` is the main active frontier.
 * ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, and higher-level
   renderer/scene/client layers); keep them untouched unless explicitly requested.
 
@@ -35,7 +46,8 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
 
 ## 🧩 **Project Structure**
 
-**Important**: never go inside `v0.3` subfolder, it is the old version. Focus on `include`, `src`, `testing`, and supporting roots such as `external/`.
+**Important**: do not treat `v0.3` as an implementation target or compatibility constraint. Focus on
+`include`, `src`, `testing`, and supporting roots such as `external/`.
 
 ```
 datoviz/
@@ -88,7 +100,8 @@ not linked and should remain untouched unless explicitly requested.
 
 ### ⏩ Planned activation order
 
-1. Stabilize currently active modules (`vk`, `vklite`, `canvas`, `stream`, `video`, plus window/input integration).
+1. Finish the remaining `vk`/`vklite` ownership-boundary and lifecycle cleanup, with emphasis on
+   `vklite` public-struct hardening and accessor-driven APIs.
 2. Keep non-activated modules as scaffolding unless a task explicitly brings one online.
 3. Continue staged bring-up of higher-level systems (renderer/scene/client layers) only when requested.
 
@@ -171,7 +184,8 @@ The top-level `justfile` provides the primary workflow; Codex should stick to:
 
 * `just clean` — remove generated build artifacts so the next build starts fresh.
 * `just build` — configure (if needed) and compile the active targets through CMake.
-* `just test [filter]` — execute the unified `dvztest` suite after a successful build (platform recipe).
+* `just test [filter]` — execute the repo test workflow after a successful build; the unified
+  `dvztest` runner remains the broad validation path.
 
 Run these commands from the repository root. Other `just` recipes exist but are currently out of scope.
 
@@ -235,8 +249,10 @@ identifiers (`__name`) or underscore-capital names (`_NAME`) in new code.
 * All test sources live under `src/<module>/tests/*.c*`.
 * Each module provides an entry-point (for example `int test_common(TstSuite* suite)`) that appends its test cases to the shared `TstSuite`.
 * Assertions use the helpers in `testing.h` (`AT`, `AC`, `ACn`, `TEST_SIMPLE`, etc.).
-* A single runner executable, **`dvztest`**, builds the suite, runs optional filters, prints summaries,
-  and now lists failing test names explicitly when failures occur.
+* The repo keeps a unified runner executable, **`dvztest`**, and also builds narrower test binaries
+  such as `dvztest_core`, `dvztest_vk`, `dvztest_canvas`, and `dvztest_integration` for focused loops.
+* The unified runner builds the full suite, runs optional filters, prints summaries, and lists
+  failing test names explicitly when failures occur.
 
 ### Example
 
@@ -348,7 +364,12 @@ target_compile_definitions(dvztest PRIVATE ${DVZ_COMPILE_DEFINITIONS})
 add_test(NAME dvztest COMMAND dvztest)
 ```
 
-`enable_testing()` in the root `CMakeLists.txt` is currently commented out, so invoke `./dvztest [filter]` directly unless you re-enable CTest.
+Prefer the narrowest relevant validation loop for the slice you are changing:
+
+* use `just test` for broad validation,
+* use focused targets such as `dvztest_vk`, `dvztest_canvas`, or `dvztest_integration` when working
+  in a specific subsystem,
+* keep `dvztest` as the unified end-to-end runner.
 
 ---
 
@@ -440,7 +461,8 @@ These rules should be followed carefully whenever Codex edits or creates C sourc
 ## 🚧 Refactor Roadmap Guidance
 
 - **Active graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`):** prioritize robustness,
-  resource-lifetime correctness, and clear public/internal boundaries.
+  resource-lifetime correctness, and clear public/internal boundaries. The current highest-value work
+  is finishing `vk`/`vklite` boundary hardening rather than reopening broad canvas/video bring-up.
 - **Cross-module helpers:** if multiple modules need the same low-level utility, move it to `src/common`
   instead of duplicating it.
 - **Scaffolding modules (`color`, `wasm`, and higher-level renderer/scene/client layers):** keep untouched
@@ -474,7 +496,7 @@ When generating or editing code:
 
    * Use the `testing.h` suite/item API (`TEST_SIMPLE`, `TEST`, `AT`, …).
    * Expose a `test_<module>(TstSuite* suite)` helper that appends your cases; invoke it from `dvztest` (no constructors).
-   * Keep everything in the single `dvztest` executable—no per-module runners.
+   * Keep `dvztest` as the unified aggregation point, while using the narrower `dvztest_*` binaries for focused validation loops when available.
    * For intentionally failing/error-path checks, wrap the assertion in expected-error scope so
      known `log_error()` output is suppressed:
      `AT_EXPECTED_ERROR_STRICT(suite, (expr_that_should_fail))` (or
@@ -521,7 +543,7 @@ Before submitting a PR or automated refactor:
 * [ ] `external/` unchanged unless explicitly requested in the task
 * [ ] Test added under `src/<module>/tests/`
 * [ ] Builds with `cmake -B build && cmake --build build`
-* [ ] `./dvztest [filter]` passes (re-enable `enable_testing()` if you want `ctest`)
+* [ ] Relevant validation passes (`just test` and/or the narrowest relevant `dvztest_*` target)
 * [ ] Follows naming conventions (dvz_*, *dvz**, DVZ_*)
 * [ ] Headers properly grouped and ordered (pragma once, consistent formatting)
 

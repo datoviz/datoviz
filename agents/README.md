@@ -61,3 +61,6 @@ Files in this directory are backlog, strategic direction, or secondary cleanup t
 2. Completed plans should move to `done/` once the code and tests agree they are complete.
 3. Long-horizon architecture and speculative work should live under `later/`.
 4. Keep the number of active docs under `now/` small; one primary active plan is ideal.
+5. On the `v0.4` branch, backward compatibility with earlier `v0.4` code or with `v0.3` is not a priority.
+6. Prefer changes that improve architecture, correctness, and long-term maintainability, even when they
+   require API or ABI breakage.
