@@ -26,14 +26,17 @@
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
+#include "_buffers.h"
+#include "_images.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
-#include "proto.h"
 #include "datoviz/vklite/rendering.h"
-#include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
+#include "datoviz/vklite/shader.h"
+#include "fixture_gpu.h"
+#include "fixture_offscreen.h"
 #include "datoviz/vklite/sync.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -50,8 +53,8 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    const uint32_t WIDTH = DVZ_PROTO_WIDTH;
-    const uint32_t HEIGHT = DVZ_PROTO_HEIGHT;
+    const uint32_t WIDTH = DVZ_FIXTURE_WIDTH;
+    const uint32_t HEIGHT = DVZ_FIXTURE_HEIGHT;
 
     // Bootstrap.
     DvzBootstrap bootstrap = {0};
@@ -258,24 +261,28 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
 
 
-int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
+int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     ANN(tstitem);
 
-    DvzProto proto = {0};
-    dvz_proto(&proto);
-    if (dvz_bootstrap_error_count(&proto.bootstrap) > 0)
+    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    ANN(gpu);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    ANN(off);
+    if (dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu)) > 0)
     {
-        dvz_proto_destroy(&proto);
+        dvz_fixture_offscreen_destroy(off);
+        dvz_fixture_gpu_destroy(gpu);
         return 0;
     }
 
-    DvzCommands* cmds = dvz_proto_commands(&proto);
+    DvzCommands* cmds = dvz_fixture_offscreen_cmds(off);
     ANN(cmds);
     if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
     {
-        dvz_proto_destroy(&proto);
+        dvz_fixture_offscreen_destroy(off);
+        dvz_fixture_gpu_destroy(gpu);
         return 0;
     }
 
@@ -285,34 +292,38 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
     uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
     ANN(vs_spv);
     ANN(fs_spv);
-    DvzGraphics* graphics = dvz_proto_graphics(&proto, vs_size, vs_spv, fs_size, fs_spv);
+    DvzGraphics* graphics = dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
-    DvzSlots* slots = dvz_proto_slots(&proto);
+    DvzSlots* slots = dvz_fixture_offscreen_slots(off);
     ANN(slots);
     dvz_slots_create(slots);
     dvz_graphics_layout(graphics, dvz_slots_handle(slots));
     AT(dvz_graphics_create(graphics) == 0);
 
+    DvzBarriers* barriers = dvz_fixture_offscreen_barriers(off);
+    DvzRendering* rendering = dvz_fixture_offscreen_rendering(off);
+    DvzImages* color = dvz_fixture_offscreen_color(off);
+
     // First frame.
     dvz_cmd_begin(cmds);
-    dvz_cmd_barriers(cmds, &proto.barriers);
-    dvz_cmd_rendering_begin(cmds, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_barriers(cmds, barriers);
+    dvz_cmd_rendering_begin(cmds, rendering);
+    dvz_cmd_bind_graphics(cmds, graphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
     dvz_cmd_end(cmds);
     dvz_cmd_submit(cmds);
 
-    const char* screenshot0 = "build/proto_screenshot_repeat_0.png";
-    const char* screenshot1 = "build/proto_screenshot_repeat_1.png";
-    dvz_barriers(&proto.barriers);
-    dvz_proto_screenshot(&proto, screenshot0);
+    const char* screenshot0 = "build/fixture_screenshot_repeat_0.png";
+    const char* screenshot1 = "build/fixture_screenshot_repeat_1.png";
+    dvz_barriers(barriers);
+    dvz_fixture_offscreen_png(off, screenshot0);
 
     // Transition screenshot source image back to color attachment and render again.
     dvz_cmd_reset(cmds);
     dvz_cmd_begin(cmds);
-    dvz_barriers(&proto.barriers);
-    DvzBarrierImage* bimg = dvz_barriers_image(&proto.barriers, dvz_image_handle(&proto.img, 0));
+    dvz_barriers(barriers);
+    DvzBarrierImage* bimg = dvz_barriers_image(barriers, dvz_image_handle(color, 0));
     ANN(bimg);
     dvz_barrier_image_stage(
         bimg, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -320,16 +331,16 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
         bimg, VK_ACCESS_2_TRANSFER_READ_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
         bimg, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_cmd_barriers(cmds, &proto.barriers);
-    dvz_cmd_rendering_begin(cmds, &proto.rendering);
-    dvz_cmd_bind_graphics(cmds, &proto.graphics);
+    dvz_cmd_barriers(cmds, barriers);
+    dvz_cmd_rendering_begin(cmds, rendering);
+    dvz_cmd_bind_graphics(cmds, graphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
     dvz_cmd_end(cmds);
     dvz_cmd_submit(cmds);
 
-    dvz_barriers(&proto.barriers);
-    dvz_proto_screenshot(&proto, screenshot1);
+    dvz_barriers(barriers);
+    dvz_fixture_offscreen_png(off, screenshot1);
 
     DvzSize size0 = 0;
     DvzSize size1 = 0;
@@ -341,7 +352,8 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
         dvz_free(data1);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
-        dvz_proto_destroy(&proto);
+        dvz_fixture_offscreen_destroy(off);
+        dvz_fixture_gpu_destroy(gpu);
         return 0;
     }
 
@@ -350,8 +362,9 @@ int test_vklite_proto_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
     dvz_free(vs_spv);
     dvz_free(fs_spv);
 
-    uint32_t err_count = dvz_bootstrap_error_count(&proto.bootstrap);
-    dvz_proto_destroy(&proto);
+    uint32_t err_count = dvz_bootstrap_error_count(dvz_fixture_gpu_bootstrap(gpu));
+    dvz_fixture_offscreen_destroy(off);
+    dvz_fixture_gpu_destroy(gpu);
 
     return err_count > 0 ? 1 : 0;
 }

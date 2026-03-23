@@ -80,7 +80,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_images_1);
     TEST_SIMPLE(test_vklite_descriptors_1);
     TEST_SIMPLE(test_vklite_graphics_1);
-    TEST_SIMPLE(test_vklite_proto_screenshot_repeat);
+    TEST_SIMPLE(test_vklite_fixture_screenshot_repeat);
     TEST_SIMPLE(test_vklite_surface_query);
     TEST_SIMPLE(test_vklite_swapchain_recreate);
     TEST_SIMPLE(test_vklite_swapchain_config_present_mode_immediate);
