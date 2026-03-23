@@ -217,20 +217,20 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
     // Image to render to, and to use as a texture.
-    DvzImages tex = {0};
-    DvzImageViews tex_view = {0};
+    DvzImages* tex = dvz_images_create_wrapper();
+    DvzImageViews* tex_view = dvz_image_views_create_wrapper();
     {
-        ANN(&tex);
-        dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &tex);
-        dvz_images_format(&tex, VK_FORMAT_R8G8B8A8_UNORM);
-        dvz_images_size(&tex, DVZ_FIXTURE_WIDTH / 2, DVZ_FIXTURE_HEIGHT / 2, 1);
-        dvz_images_usage(&tex, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-        dvz_images_create(&tex);
+        ANN(tex);
+        ANN(tex_view);
+        dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, tex);
+        dvz_images_format(tex, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_images_size(tex, DVZ_FIXTURE_WIDTH / 2, DVZ_FIXTURE_HEIGHT / 2, 1);
+        dvz_images_usage(tex, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+        dvz_images_create(tex);
 
         // Image views.
-        ANN(&tex_view);
-        dvz_image_views(&tex, &tex_view);
-        dvz_image_views_create(&tex_view);
+        dvz_image_views(tex, tex_view);
+        dvz_image_views_create(tex_view);
     }
 
 
@@ -243,7 +243,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         // Attachments.
         DvzAttachment* attachment = dvz_rendering_color(irendering, 0);
         dvz_attachment_image(
-            attachment, dvz_image_views_handle(&tex_view, 0),
+            attachment, dvz_image_views_handle(tex_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {.5, .5, .5, 1}});
@@ -283,7 +283,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     // Barrier for the inner rendering.
     DvzBarriers ibarriers = {0};
     dvz_barriers(&ibarriers);
-    DvzBarrierImage* ibimg = dvz_barriers_image(&ibarriers, dvz_image_handle(&tex, 0));
+    DvzBarrierImage* ibimg = dvz_barriers_image(&ibarriers, dvz_image_handle(tex, 0));
     ANN(ibimg);
     // Initial image transition for inner color attachment.
     {
@@ -300,7 +300,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         dvz_descriptors(slots, desc);
         dvz_descriptors_image(
             desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, //
-            dvz_image_views_handle(&tex_view, 0), dvz_sampler_handle(sampler));
+            dvz_image_views_handle(tex_view, 0), dvz_sampler_handle(sampler));
     }
 
 
@@ -352,8 +352,10 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_fixture_offscreen_png(off, "build/technique_render_texture.png");
 
     // Cleanup.
-    dvz_images_destroy(&tex);
-    dvz_image_views_destroy(&tex_view);
+    dvz_image_views_destroy(tex_view);
+    dvz_image_views_free(tex_view);
+    dvz_images_destroy(tex);
+    dvz_images_free(tex);
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_graphics_destroy(igraphics);
@@ -578,38 +580,38 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     VkSampleCountFlags sample_count = VK_SAMPLE_COUNT_4_BIT;
 
     // Multisampled image.
-    DvzImages msimg = {0};
-    DvzImageViews msimg_view = {0};
-    DvzImages msdepth = {0};
-    DvzImageViews msdepth_view = {0};
+    DvzImages* msimg = dvz_images_create_wrapper();
+    DvzImageViews* msimg_view = dvz_image_views_create_wrapper();
+    DvzImages* msdepth = dvz_images_create_wrapper();
+    DvzImageViews* msdepth_view = dvz_image_views_create_wrapper();
     {
-        ANN(&msimg);
-        dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &msimg);
-        dvz_images_format(&msimg, VK_FORMAT_R8G8B8A8_UNORM);
-        dvz_images_samples(&msimg, sample_count);
-        dvz_images_size(&msimg, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
-        dvz_images_usage(&msimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-        dvz_images_create(&msimg);
+        ANN(msimg);
+        ANN(msimg_view);
+        ANN(msdepth);
+        ANN(msdepth_view);
+        dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, msimg);
+        dvz_images_format(msimg, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_images_samples(msimg, sample_count);
+        dvz_images_size(msimg, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
+        dvz_images_usage(msimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        dvz_images_create(msimg);
 
         // Image views.
-        ANN(&msimg_view);
-        dvz_image_views(&msimg, &msimg_view);
-        dvz_image_views_create(&msimg_view);
+        dvz_image_views(msimg, msimg_view);
+        dvz_image_views_create(msimg_view);
 
-        ANN(&msdepth);
-        dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &msdepth);
-        dvz_images_format(&msdepth, VK_FORMAT_D32_SFLOAT_S8_UINT);
-        dvz_images_samples(&msdepth, sample_count);
-        dvz_images_size(&msdepth, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
-        dvz_images_usage(&msdepth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-        dvz_images_create(&msdepth);
+        dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, msdepth);
+        dvz_images_format(msdepth, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_images_samples(msdepth, sample_count);
+        dvz_images_size(msdepth, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
+        dvz_images_usage(msdepth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        dvz_images_create(msdepth);
 
         // Image views.
-        ANN(&msdepth_view);
-        dvz_image_views(&msdepth, &msdepth_view);
+        dvz_image_views(msdepth, msdepth_view);
         dvz_image_views_aspect(
-            &msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
-        dvz_image_views_create(&msdepth_view);
+            msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+        dvz_image_views_create(msdepth_view);
     }
 
 
@@ -645,7 +647,7 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     DvzAttachment* att = dvz_rendering_color(rendering, 0);
     ANN(att);
     dvz_attachment_image(
-        att, dvz_image_views_handle(&msimg_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        att, dvz_image_views_handle(msimg_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
         att, VK_RESOLVE_MODE_AVERAGE_BIT, dvz_image_views_handle(color_view, 0),
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -653,14 +655,14 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
 
     DvzAttachment* datt = dvz_rendering_depth(rendering);
     dvz_attachment_image(
-        datt, dvz_image_views_handle(&msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        datt, dvz_image_views_handle(msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
         datt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(depth_view, 0),
         VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 
     DvzAttachment* satt = dvz_rendering_stencil(rendering);
     dvz_attachment_image(
-        satt, dvz_image_views_handle(&msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        satt, dvz_image_views_handle(msdepth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_resolve(
         satt, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT, dvz_image_views_handle(depth_view, 0),
         VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
@@ -712,10 +714,14 @@ int test_technique_msaa(TstSuite* suite, TstItem* tstitem)
     dvz_fixture_offscreen_png(off, "build/technique_msaa.png");
 
     // Cleanup.
-    dvz_image_views_destroy(&msimg_view);
-    dvz_image_views_destroy(&msdepth_view);
-    dvz_images_destroy(&msimg);
-    dvz_images_destroy(&msdepth);
+    dvz_image_views_destroy(msimg_view);
+    dvz_image_views_free(msimg_view);
+    dvz_image_views_destroy(msdepth_view);
+    dvz_image_views_free(msdepth_view);
+    dvz_images_destroy(msimg);
+    dvz_images_free(msimg);
+    dvz_images_destroy(msdepth);
+    dvz_images_free(msdepth);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
@@ -928,20 +934,22 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
 
     // Step 2: picking attachment (R32_UINT)
-    DvzImages pickimg = {0};
-    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &pickimg);
-    dvz_images_format(&pickimg, VK_FORMAT_R32_UINT);
-    dvz_images_size(&pickimg, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
+    DvzImages* pickimg = dvz_images_create_wrapper();
+    DvzImageViews* pickview = dvz_image_views_create_wrapper();
+    ANN(pickimg);
+    ANN(pickview);
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, pickimg);
+    dvz_images_format(pickimg, VK_FORMAT_R32_UINT);
+    dvz_images_size(pickimg, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
     dvz_images_usage(
-        &pickimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_vma_flags(&pickimg, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
-    AT(dvz_images_create(&pickimg) == 0);
+        pickimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    dvz_images_vma_flags(pickimg, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+    AT(dvz_images_create(pickimg) == 0);
 
-    DvzImageViews pickview = {0};
-    dvz_image_views(&pickimg, &pickview);
-    dvz_image_views_aspect(&pickview, VK_IMAGE_ASPECT_COLOR_BIT);
-    dvz_image_views_type(&pickview, VK_IMAGE_VIEW_TYPE_2D);
-    dvz_image_views_create(&pickview);
+    dvz_image_views(pickimg, pickview);
+    dvz_image_views_aspect(pickview, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_image_views_type(pickview, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_create(pickview);
 
 
 
@@ -950,7 +958,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
         DvzBarriers barriers = {0};
         dvz_barriers(&barriers);
 
-        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&pickimg, 0));
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(pickimg, 0));
         dvz_barrier_image_stage(
             bimg, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -1088,7 +1096,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     DvzAttachment* patt = dvz_rendering_color(pickrend, 0);
     dvz_attachment_image(
-        patt, dvz_image_views_handle(&pickview, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        patt, dvz_image_views_handle(pickview, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(patt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(patt, (VkClearValue){.color = {.uint32 = {0}}});
 
@@ -1103,7 +1111,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     // Build a one-off barrier for pickimg.
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
-    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&pickimg, 0));
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(pickimg, 0));
     dvz_barrier_image_stage(
         bimg, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
     dvz_barrier_image_access(
@@ -1125,7 +1133,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     // Copy that pixel into the staging buffer.
     dvz_cmd_copy_image_to_buffer(
-        cmds, dvz_image_handle(&pickimg, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, dvz_image_handle(pickimg, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(&staging), 0);
 
     dvz_cmd_end(cmds);
@@ -1158,8 +1166,10 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_shader_free(vs);
     dvz_shader_free(fs_pick);
     dvz_buffer_destroy(&vbuf);
-    dvz_image_views_destroy(&pickview);
-    dvz_images_destroy(&pickimg);
+    dvz_image_views_destroy(pickview);
+    dvz_image_views_free(pickview);
+    dvz_images_destroy(pickimg);
+    dvz_images_free(pickimg);
     dvz_rendering_free(pickrend);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
@@ -1238,38 +1248,42 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     const uint32_t H = DVZ_FIXTURE_HEIGHT;
 
     // Color accumulation: RGBA16F
-    DvzImages accum_color = {0};
-    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &accum_color);
-    dvz_images_format(&accum_color, VK_FORMAT_R16G16B16A16_SFLOAT);
-    dvz_images_size(&accum_color, W, H, 1);
+    DvzImages* accum_color = dvz_images_create_wrapper();
+    DvzImageViews* accum_color_view = dvz_image_views_create_wrapper();
+    ANN(accum_color);
+    ANN(accum_color_view);
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, accum_color);
+    dvz_images_format(accum_color, VK_FORMAT_R16G16B16A16_SFLOAT);
+    dvz_images_size(accum_color, W, H, 1);
     dvz_images_usage(
-        &accum_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    AT(dvz_images_create(&accum_color) == 0);
+        accum_color, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    AT(dvz_images_create(accum_color) == 0);
 
-    DvzImageViews accum_color_view = {0};
-    dvz_image_views(&accum_color, &accum_color_view);
-    dvz_image_views_type(&accum_color_view, VK_IMAGE_VIEW_TYPE_2D);
-    dvz_image_views_aspect(&accum_color_view, VK_IMAGE_ASPECT_COLOR_BIT);
-    dvz_image_views_mip(&accum_color_view, 0, 1);
-    dvz_image_views_layers(&accum_color_view, 0, 1);
-    dvz_image_views_create(&accum_color_view);
+    dvz_image_views(accum_color, accum_color_view);
+    dvz_image_views_type(accum_color_view, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_aspect(accum_color_view, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_image_views_mip(accum_color_view, 0, 1);
+    dvz_image_views_layers(accum_color_view, 0, 1);
+    dvz_image_views_create(accum_color_view);
 
     // Weight accumulation: R16F
-    DvzImages accum_weight = {0};
-    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &accum_weight);
-    dvz_images_format(&accum_weight, VK_FORMAT_R16_SFLOAT);
-    dvz_images_size(&accum_weight, W, H, 1);
+    DvzImages* accum_weight = dvz_images_create_wrapper();
+    DvzImageViews* accum_weight_view = dvz_image_views_create_wrapper();
+    ANN(accum_weight);
+    ANN(accum_weight_view);
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, accum_weight);
+    dvz_images_format(accum_weight, VK_FORMAT_R16_SFLOAT);
+    dvz_images_size(accum_weight, W, H, 1);
     dvz_images_usage(
-        &accum_weight, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    AT(dvz_images_create(&accum_weight) == 0);
+        accum_weight, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    AT(dvz_images_create(accum_weight) == 0);
 
-    DvzImageViews accum_weight_view = {0};
-    dvz_image_views(&accum_weight, &accum_weight_view);
-    dvz_image_views_type(&accum_weight_view, VK_IMAGE_VIEW_TYPE_2D);
-    dvz_image_views_aspect(&accum_weight_view, VK_IMAGE_ASPECT_COLOR_BIT);
-    dvz_image_views_mip(&accum_weight_view, 0, 1);
-    dvz_image_views_layers(&accum_weight_view, 0, 1);
-    dvz_image_views_create(&accum_weight_view);
+    dvz_image_views(accum_weight, accum_weight_view);
+    dvz_image_views_type(accum_weight_view, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_aspect(accum_weight_view, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_image_views_mip(accum_weight_view, 0, 1);
+    dvz_image_views_layers(accum_weight_view, 0, 1);
+    dvz_image_views_create(accum_weight_view);
 
     // Depth buffer: reuse the fixture depth-stencil image/view.
     VkImageView depth_view = dvz_image_views_handle(dvz_fixture_offscreen_depth_view(off), 0);
@@ -1454,10 +1468,10 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_descriptors(slots_comp, desc_comp);
         dvz_descriptors_image(
             desc_comp, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(&accum_color_view, 0), dvz_sampler_handle(sampler));
+            dvz_image_views_handle(accum_color_view, 0), dvz_sampler_handle(sampler));
         dvz_descriptors_image(
             desc_comp, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(&accum_weight_view, 0), dvz_sampler_handle(sampler));
+            dvz_image_views_handle(accum_weight_view, 0), dvz_sampler_handle(sampler));
 
         dvz_shader_destroy(vs);
         dvz_shader_destroy(fs);
@@ -1480,7 +1494,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         // Color 0: accumColor
         DvzAttachment* a0 = dvz_rendering_color(accum_rendering, 0);
         dvz_attachment_image(
-            a0, dvz_image_views_handle(&accum_color_view, 0),
+            a0, dvz_image_views_handle(accum_color_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(a0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(a0, (VkClearValue){.color = {.float32 = {0, 0, 0, 0}}});
@@ -1488,7 +1502,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         // Color 1: accumWeight
         DvzAttachment* a1 = dvz_rendering_color(accum_rendering, 1);
         dvz_attachment_image(
-            a1, dvz_image_views_handle(&accum_weight_view, 0),
+            a1, dvz_image_views_handle(accum_weight_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(a1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(a1, (VkClearValue){.color = {.float32 = {0, 0, 0, 0}}});
@@ -1528,8 +1542,8 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         DvzBarriers barriers = {0};
         dvz_barriers(&barriers);
 
-        VkImage img0 = dvz_image_handle(&accum_color, 0);
-        VkImage img1 = dvz_image_handle(&accum_weight, 0);
+        VkImage img0 = dvz_image_handle(accum_color, 0);
+        VkImage img1 = dvz_image_handle(accum_weight, 0);
 
         DvzBarrierImage* b0 = dvz_barriers_image(&barriers, img0);
         dvz_barrier_image_stage(
@@ -1571,8 +1585,8 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         DvzBarriers barriers = {0};
         dvz_barriers(&barriers);
 
-        VkImage img0 = dvz_image_handle(&accum_color, 0);
-        VkImage img1 = dvz_image_handle(&accum_weight, 0);
+        VkImage img0 = dvz_image_handle(accum_color, 0);
+        VkImage img1 = dvz_image_handle(accum_weight, 0);
 
         DvzBarrierImage* b0 = dvz_barriers_image(&barriers, img0);
         dvz_barrier_image_stage(
@@ -1625,10 +1639,14 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // Cleanup.
     // -----------------------------------------------------------------------------------------
     dvz_buffer_destroy(&vbo);
-    dvz_image_views_destroy(&accum_color_view);
-    dvz_images_destroy(&accum_color);
-    dvz_image_views_destroy(&accum_weight_view);
-    dvz_images_destroy(&accum_weight);
+    dvz_image_views_destroy(accum_color_view);
+    dvz_image_views_free(accum_color_view);
+    dvz_images_destroy(accum_color);
+    dvz_images_free(accum_color);
+    dvz_image_views_destroy(accum_weight_view);
+    dvz_image_views_free(accum_weight_view);
+    dvz_images_destroy(accum_weight);
+    dvz_images_free(accum_weight);
     dvz_slots_destroy(slots_comp);
     dvz_slots_free(slots_comp);
     dvz_sampler_destroy(sampler);
@@ -1669,21 +1687,23 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     // Offscreen depth image (to be sampled by SSAO pass).
 
-    DvzImages depth_img = {0};
-    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &depth_img);
-    dvz_images_format(&depth_img, VK_FORMAT_D32_SFLOAT);
-    dvz_images_size(&depth_img, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
+    DvzImages* depth_img = dvz_images_create_wrapper();
+    DvzImageViews* depth_view = dvz_image_views_create_wrapper();
+    ANN(depth_img);
+    ANN(depth_view);
+    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, depth_img);
+    dvz_images_format(depth_img, VK_FORMAT_D32_SFLOAT);
+    dvz_images_size(depth_img, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
     dvz_images_usage(
-        &depth_img, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    AT(dvz_images_create(&depth_img) == 0);
+        depth_img, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    AT(dvz_images_create(depth_img) == 0);
 
-    DvzImageViews depth_view = {0};
-    dvz_image_views(&depth_img, &depth_view);
-    dvz_image_views_type(&depth_view, VK_IMAGE_VIEW_TYPE_2D);
-    dvz_image_views_aspect(&depth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
-    dvz_image_views_mip(&depth_view, 0, 1);
-    dvz_image_views_layers(&depth_view, 0, 1);
-    dvz_image_views_create(&depth_view);
+    dvz_image_views(depth_img, depth_view);
+    dvz_image_views_type(depth_view, VK_IMAGE_VIEW_TYPE_2D);
+    dvz_image_views_aspect(depth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_image_views_mip(depth_view, 0, 1);
+    dvz_image_views_layers(depth_view, 0, 1);
+    dvz_image_views_create(depth_view);
 
     // Sampler for depth texture.
     DvzSampler* sampler = dvz_sampler_create_wrapper();
@@ -1782,7 +1802,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         // Depth.
         DvzAttachment* datt = dvz_rendering_depth(depth_rendering);
         dvz_attachment_image(
-            datt, dvz_image_views_handle(&depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+            datt, dvz_image_views_handle(depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
@@ -1850,7 +1870,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         dvz_descriptors(ssao_slots, ssao_desc);
         dvz_descriptors_image(
             ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(&depth_view, 0), dvz_sampler_handle(sampler));
+            dvz_image_views_handle(depth_view, 0), dvz_sampler_handle(sampler));
 
         dvz_shader_destroy(vs);
         dvz_shader_destroy(fs);
@@ -1890,7 +1910,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     {
         DvzBarriers barriers = {0};
         dvz_barriers(&barriers);
-        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&depth_img, 0));
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(depth_img, 0));
         dvz_barrier_image_stage(
             bimg, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
@@ -1914,7 +1934,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     {
         DvzBarriers barriers = {0};
         dvz_barriers(&barriers);
-        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&depth_img, 0));
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(depth_img, 0));
         dvz_barrier_image_stage(
             bimg, VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
             VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
@@ -1950,8 +1970,10 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_free(depth_graphics);
     dvz_graphics_free(ssao_graphics);
 
-    dvz_image_views_destroy(&depth_view);
-    dvz_images_destroy(&depth_img);
+    dvz_image_views_destroy(depth_view);
+    dvz_image_views_free(depth_view);
+    dvz_images_destroy(depth_img);
+    dvz_images_free(depth_img);
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_descriptors_free(ssao_desc);

@@ -130,22 +130,24 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_rendering_area(rendering, 0, 0, WIDTH, HEIGHT);
 
     // Image to render to.
-    DvzImages img = {0};
-    dvz_images(device, dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 1, &img);
-    dvz_images_format(&img, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_images_size(&img, WIDTH, HEIGHT, 1);
-    dvz_images_usage(&img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_create(&img);
+    DvzImages* img = dvz_images_create_wrapper();
+    ANN(img);
+    dvz_images(device, dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 1, img);
+    dvz_images_format(img, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(img, WIDTH, HEIGHT, 1);
+    dvz_images_usage(img, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    dvz_images_create(img);
 
     // Image views.
-    DvzImageViews view = {0};
-    dvz_image_views(&img, &view);
-    dvz_image_views_create(&view);
+    DvzImageViews* view = dvz_image_views_create_wrapper();
+    ANN(view);
+    dvz_image_views(img, view);
+    dvz_image_views_create(view);
 
     // Attachments.
     DvzAttachment* attachment = dvz_rendering_color(rendering, 0);
     dvz_attachment_image(
-        attachment, dvz_image_views_handle(&view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        attachment, dvz_image_views_handle(view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(attachment, (VkClearValue){.color.float32 = {.1, .2, .3, 1}});
 
@@ -154,7 +156,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_barriers(&barriers);
 
     // Image transition.
-    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(&img, 0));
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(img, 0));
     ANN(bimg);
     dvz_barrier_image_stage(
         bimg, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -167,8 +169,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_commands(device, queue, 1, &cmds);
     if (dvz_commands_count(&cmds) == 0 || dvz_commands_handle(&cmds) == VK_NULL_HANDLE)
     {
-        dvz_image_views_destroy(&view);
-        dvz_images_destroy(&img);
+        dvz_image_views_destroy(view);
+        dvz_image_views_free(view);
+        dvz_images_destroy(img);
+        dvz_images_free(img);
         dvz_shader_destroy(vs);
         dvz_shader_destroy(fs);
         dvz_shader_free(vs);
@@ -222,7 +226,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_image_region(&region);
     dvz_image_region_extent(&region, WIDTH, HEIGHT, 1);
     dvz_cmd_copy_image_to_buffer(
-        &cmds, dvz_image_handle(&img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        &cmds, dvz_image_handle(img, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(&staging), 0);
 
     // End the command buffer.
@@ -237,8 +241,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_write_png("build/screenshot.png", WIDTH, HEIGHT, screenshot);
 
     // Cleanup.
-    dvz_image_views_destroy(&view);
-    dvz_images_destroy(&img);
+    dvz_image_views_destroy(view);
+    dvz_image_views_free(view);
+    dvz_images_destroy(img);
+    dvz_images_free(img);
     dvz_buffer_destroy(&staging);
     dvz_shader_destroy(vs);
     dvz_shader_destroy(fs);
@@ -280,7 +286,7 @@ int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
 
     DvzCommands* cmds = dvz_fixture_offscreen_cmds(off);
     ANN(cmds);
-    if (cmds->count == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    if (dvz_commands_count(cmds) == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
     {
         dvz_fixture_offscreen_destroy(off);
         dvz_fixture_gpu_destroy(gpu);
