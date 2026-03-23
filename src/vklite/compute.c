@@ -22,12 +22,11 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/obj.h"
+#include "_compute.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
-#include "datoviz/vklite/compute.h"
 #include "vulkan/vulkan_core.h"
 
 
@@ -35,6 +34,20 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty compute wrapper.
+ *
+ * @return allocated compute wrapper, or NULL on allocation failure
+ */
+DvzCompute* dvz_compute_create_wrapper(void)
+{
+    DvzCompute* compute = (DvzCompute*)dvz_calloc(1, sizeof(DvzCompute));
+    ANN(compute);
+    return compute;
+}
+
+
 
 void dvz_compute(DvzDevice* device, DvzCompute* compute)
 {
@@ -192,6 +205,22 @@ void dvz_compute_destroy(DvzCompute* compute)
     }
 
     dvz_obj_destroyed(&compute->obj);
+}
+
+
+
+/**
+ * Free a compute wrapper allocated by dvz_compute_create_wrapper().
+ *
+ * @param compute compute wrapper to free
+ */
+void dvz_compute_free(DvzCompute* compute)
+{
+    if (compute == NULL)
+    {
+        return;
+    }
+    dvz_free(compute);
 }
 
 

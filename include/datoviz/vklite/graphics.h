@@ -21,7 +21,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
@@ -66,97 +65,20 @@ typedef enum
 } DvzGraphicFlags;
 
 
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzGraphics
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    uint32_t shader_count;
-    VkShaderStageFlagBits shader_stages[DVZ_MAX_SHADERS];
-    VkShaderModule shaders[DVZ_MAX_SHADERS];
-    VkPipelineLayout layout;
-
-    VkSpecializationMapEntry spec_entries[DVZ_MAX_SHADERS][DVZ_MAX_SPEC_CONST];
-    VkSpecializationInfo spec_info[DVZ_MAX_SHADERS];
-    // Specialization constant data buffer.
-    unsigned char spec_data[DVZ_MAX_SHADERS][DVZ_MAX_SPEC_CONST_SIZE];
-
-    uint32_t vertex_binding_count;
-    VkVertexInputBindingDescription vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
-
-    uint32_t vertex_attr_count;
-    VkVertexInputAttributeDescription vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
-
-    // This wraps:
-    // VkPrimitiveTopology topology;
-    // bool primitive_restart;
-    VkPipelineInputAssemblyStateCreateInfo input_assembly;
-
-    // This wraps:
-    // bool depth_bias;
-    // float depth_bias_constant;
-    // float depth_bias_clamp;
-    // float depth_bias_slope;
-    // VkPolygonMode polygon_mode;
-    // VkCullModeFlags cull_mode;
-    // VkFrontFace front_face;
-    VkPipelineRasterizationStateCreateInfo rasterization;
-
-    // This wraps:
-    // bool depth_test;
-    // bool depth_write;
-    // VkCompareOp depth_compare;
-    // bool depth_bounds_test;
-    // vec2 depth_bounds;
-    // VkStencilOp stencil_depth_fail;
-    // VkCompareOp stencil_compare;
-    // uint32_t stencil_compare_mask;
-    // uint32_t stencil_write_mask;
-    // uint32_t stencil_reference;
-    // bool stencil_test;
-    // VkStencilFaceFlags stencil_mask;
-    // VkStencilOp stencil_fail;
-    // VkStencilOp stencil_pass;
-    VkPipelineDepthStencilStateCreateInfo depth_stencil;
-
-    // Rendering and attachments.
-    VkFormat attachments_colors[DVZ_MAX_ATTACHMENTS];
-    VkPipelineRenderingCreateInfo rendering;
-
-    // This wraps:
-    // bool blend_enable;
-    // VkLogicOp blend_op;
-    // vec4 blend_constants;
-    VkPipelineColorBlendAttachmentState blend_attachments[DVZ_MAX_ATTACHMENTS];
-    VkPipelineColorBlendStateCreateInfo blend;
-
-    VkRect2D scissor;
-    VkViewport viewport;
-
-    // This wraps:
-    // VkSampleCountFlagBits msaa_samples;
-    // float msaa_min_sample_shading;
-    // bool msaa_alpha_coverage;
-    VkPipelineMultisampleStateCreateInfo multisampling;
-
-    uint32_t dynamic_count;
-    VkDynamicState dynamic_states[DVZ_MAX_DYNAMIC_STATES];
-
-    VkPipeline vk_pipeline;
-};
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty graphics wrapper.
+ *
+ * @return allocated graphics wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzGraphics* dvz_graphics_create_wrapper(void);
 
 
 
@@ -462,6 +384,18 @@ DVZ_EXPORT void dvz_graphics_blend_alpha(
 
 
 /**
+ * Set the color write mask of a color attachment.
+ *
+ * @param graphics the graphics pipeline
+ * @param idx the attachment index
+ * @param mask the color write mask
+ */
+DVZ_EXPORT void
+dvz_graphics_color_write_mask(DvzGraphics* graphics, uint32_t idx, VkColorComponentFlags mask);
+
+
+
+/**
  * Set multisampling.
  *
  * @param graphics the graphics pipeline
@@ -480,7 +414,7 @@ DVZ_EXPORT void dvz_graphics_multisampling(
  * Create a graphics pipeline after it has been set up.
  *
  * @param graphics the graphics pipeline
- * @returns the creation result code
+ * @return the creation result code
  */
 DVZ_EXPORT int dvz_graphics_create(DvzGraphics* graphics);
 
@@ -532,6 +466,15 @@ DVZ_EXPORT uint32_t dvz_graphics_color_attachment_count(DvzGraphics* graphics);
  * @param graphics the graphics pipeline
  */
 DVZ_EXPORT void dvz_graphics_destroy(DvzGraphics* graphics);
+
+
+
+/**
+ * Free a graphics wrapper allocated by dvz_graphics_create_wrapper().
+ *
+ * @param graphics graphics wrapper to free
+ */
+DVZ_EXPORT void dvz_graphics_free(DvzGraphics* graphics);
 
 
 

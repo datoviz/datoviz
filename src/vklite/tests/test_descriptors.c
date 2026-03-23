@@ -46,16 +46,17 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     ANN(ctx);
 
     // Create slots.
-    DvzSlots slots = {0};
-    dvz_slots(dvz_gpu_ctx_device(ctx), &slots);
+    DvzSlots* slots = dvz_slots_create_wrapper();
+    ANN(slots);
+    dvz_slots(dvz_gpu_ctx_device(ctx), slots);
 
     // Bindings.
-    dvz_slots_binding(&slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    dvz_slots_binding(&slots, 0, 1, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
-    dvz_slots_binding(&slots, 1, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    dvz_slots_binding(slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_slots_binding(slots, 0, 1, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+    dvz_slots_binding(slots, 1, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Create the slots.
-    int res = dvz_slots_create(&slots);
+    int res = dvz_slots_create(slots);
     AT(res == 0);
 
     // Buffers.
@@ -98,7 +99,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     // Descriptors.
     DvzDescriptors* desc = dvz_descriptors_create();
     ANN(desc);
-    dvz_descriptors(&slots, desc);
+    dvz_descriptors(slots, desc);
     AT(dvz_descriptors_set_count(desc) == 2);
     AT(dvz_descriptors_handle(desc, 0) != VK_NULL_HANDLE);
     AT(dvz_descriptors_handle(desc, 1) != VK_NULL_HANDLE);
@@ -119,7 +120,8 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_free(ubuf);
     dvz_buffer_free(sbuf);
     dvz_descriptors_free(desc);
-    dvz_slots_destroy(&slots);
+    dvz_slots_destroy(slots);
+    dvz_slots_free(slots);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
 

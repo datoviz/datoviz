@@ -20,7 +20,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 
@@ -46,33 +45,20 @@ typedef struct DvzCommands DvzCommands;
 typedef struct DvzCompute DvzCompute;
 
 
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzCompute
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    VkShaderModule shader;
-    VkPipelineLayout layout;
-
-    VkSpecializationMapEntry spec_entries[DVZ_MAX_SPEC_CONST];
-    VkSpecializationInfo spec_info;
-    unsigned char spec_data[DVZ_MAX_SPEC_CONST_SIZE]; // specialization constant data buffer
-
-    VkPipeline vk_pipeline;
-};
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty compute wrapper.
+ *
+ * @return allocated compute wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzCompute* dvz_compute_create_wrapper(void);
 
 
 
@@ -124,7 +110,7 @@ dvz_compute_spec(DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize si
  * Create a compute pipeline after it has been set up.
  *
  * @param compute the compute pipeline
- * @returns the creation result code
+ * @return the creation result code
  */
 DVZ_EXPORT int dvz_compute_create(DvzCompute* compute);
 
@@ -156,6 +142,15 @@ DVZ_EXPORT VkPipelineLayout dvz_compute_layout_handle(DvzCompute* compute);
  * @param compute the compute pipeline
  */
 DVZ_EXPORT void dvz_compute_destroy(DvzCompute* compute);
+
+
+
+/**
+ * Free a compute wrapper allocated by dvz_compute_create_wrapper().
+ *
+ * @param compute compute wrapper to free
+ */
+DVZ_EXPORT void dvz_compute_free(DvzCompute* compute);
 
 
 

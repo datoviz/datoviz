@@ -21,13 +21,12 @@
 #include "_vk_utils.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_graphics.h"
 #include "_log.h"
 #include "cglm/include/cglm/types.h"
 #include "cglm/include/cglm/vec4.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
-#include "datoviz/vklite/graphics.h"
 
 
 
@@ -149,6 +148,20 @@ set_dynamic_state(DvzGraphics* graphics, VkPipelineDynamicStateCreateInfo* dynam
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty graphics wrapper.
+ *
+ * @return allocated graphics wrapper, or NULL on allocation failure
+ */
+DvzGraphics* dvz_graphics_create_wrapper(void)
+{
+    DvzGraphics* graphics = (DvzGraphics*)dvz_calloc(1, sizeof(DvzGraphics));
+    ANN(graphics);
+    return graphics;
+}
+
+
 
 void dvz_graphics(DvzDevice* device, DvzGraphics* graphics)
 {
@@ -558,6 +571,22 @@ void dvz_graphics_blend_alpha(
 
 
 
+/**
+ * Set the color write mask of a color attachment.
+ *
+ * @param graphics the graphics pipeline
+ * @param idx the attachment index
+ * @param mask the color write mask
+ */
+void dvz_graphics_color_write_mask(
+    DvzGraphics* graphics, uint32_t idx, VkColorComponentFlags mask)
+{
+    ANN(graphics);
+    graphics->blend_attachments[idx].colorWriteMask = mask;
+}
+
+
+
 void dvz_graphics_multisampling(
     DvzGraphics* graphics, VkSampleCountFlagBits samples, float min_sample_shading,
     bool alpha_coverage)
@@ -724,6 +753,22 @@ void dvz_graphics_destroy(DvzGraphics* graphics)
     }
 
     dvz_obj_destroyed(&graphics->obj);
+}
+
+
+
+/**
+ * Free a graphics wrapper allocated by dvz_graphics_create_wrapper().
+ *
+ * @param graphics graphics wrapper to free
+ */
+void dvz_graphics_free(DvzGraphics* graphics)
+{
+    if (graphics == NULL)
+    {
+        return;
+    }
+    dvz_free(graphics);
 }
 
 

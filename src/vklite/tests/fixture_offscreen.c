@@ -21,12 +21,12 @@
 #include "_buffers.h"
 #include "_images.h"
 #include "_log.h"
-#include "_shader.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/rendering.h"
+#include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/sync.h"
 #include "fixture_offscreen.h"
 
@@ -41,10 +41,10 @@ struct DvzFixtureOffscreen
     DvzFixtureGpu* gpu;
     uint32_t width;
     uint32_t height;
-    DvzShader vs;
-    DvzShader fs;
-    DvzGraphics graphics;
-    DvzSlots slots;
+    DvzShader* vs;
+    DvzShader* fs;
+    DvzGraphics* graphics;
+    DvzSlots* slots;
     DvzDescriptors* desc;
     DvzRendering* rendering;
     DvzImages color;
@@ -84,8 +84,16 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     fixture->gpu = gpu;
     fixture->width = width;
     fixture->height = height;
+    fixture->vs = dvz_shader_create_wrapper();
+    fixture->fs = dvz_shader_create_wrapper();
+    fixture->graphics = dvz_graphics_create_wrapper();
+    fixture->slots = dvz_slots_create_wrapper();
     fixture->desc = dvz_descriptors_create();
     ANN(fixture->desc);
+    ANN(fixture->vs);
+    ANN(fixture->fs);
+    ANN(fixture->graphics);
+    ANN(fixture->slots);
     fixture->rendering = dvz_rendering_create();
     ANN(fixture->rendering);
 
@@ -184,14 +192,22 @@ void dvz_fixture_offscreen_destroy(DvzFixtureOffscreen* fixture)
     dvz_image_views_destroy(&fixture->depth_view);
     dvz_images_destroy(&fixture->depth);
     dvz_buffer_destroy(&fixture->staging);
-    dvz_shader_destroy(&fixture->vs);
-    dvz_shader_destroy(&fixture->fs);
-    dvz_slots_destroy(&fixture->slots);
+    dvz_shader_destroy(fixture->vs);
+    dvz_shader_destroy(fixture->fs);
+    dvz_shader_free(fixture->vs);
+    dvz_shader_free(fixture->fs);
+    fixture->vs = NULL;
+    fixture->fs = NULL;
+    dvz_slots_destroy(fixture->slots);
+    dvz_slots_free(fixture->slots);
+    fixture->slots = NULL;
     dvz_descriptors_free(fixture->desc);
     fixture->desc = NULL;
     dvz_rendering_free(fixture->rendering);
     fixture->rendering = NULL;
-    dvz_graphics_destroy(&fixture->graphics);
+    dvz_graphics_destroy(fixture->graphics);
+    dvz_graphics_free(fixture->graphics);
+    fixture->graphics = NULL;
     dvz_free(fixture);
 }
 
@@ -220,8 +236,8 @@ DvzFixtureGpu* dvz_fixture_offscreen_gpu(DvzFixtureOffscreen* fixture)
 DvzSlots* dvz_fixture_offscreen_slots(DvzFixtureOffscreen* fixture)
 {
     ANN(fixture);
-    dvz_slots(dvz_fixture_gpu_device(fixture->gpu), &fixture->slots);
-    return &fixture->slots;
+    dvz_slots(dvz_fixture_gpu_device(fixture->gpu), fixture->slots);
+    return fixture->slots;
 }
 
 
@@ -245,32 +261,32 @@ DvzGraphics* dvz_fixture_offscreen_graphics(
     DvzDevice* device = dvz_fixture_gpu_device(fixture->gpu);
     ANN(device);
 
-    dvz_graphics(device, &fixture->graphics);
+    dvz_graphics(device, fixture->graphics);
 
-    dvz_shader(device, vs_size, vs_spv, &fixture->vs);
-    dvz_shader(device, fs_size, fs_spv, &fixture->fs);
+    dvz_shader(device, vs_size, vs_spv, fixture->vs);
+    dvz_shader(device, fs_size, fs_spv, fixture->fs);
     dvz_graphics_shader(
-        &fixture->graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&fixture->vs));
+        fixture->graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(fixture->vs));
     dvz_graphics_shader(
-        &fixture->graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fixture->fs));
+        fixture->graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fixture->fs));
 
-    dvz_graphics_attachment_color(&fixture->graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_graphics_attachment_color(fixture->graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_graphics_blend_color(
-        &fixture->graphics, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        fixture->graphics, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         VK_BLEND_OP_ADD, 0xF);
     dvz_graphics_blend_alpha(
-        &fixture->graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
-    dvz_graphics_attachment_depth(&fixture->graphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
-    dvz_graphics_attachment_stencil(&fixture->graphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        fixture->graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+    dvz_graphics_attachment_depth(fixture->graphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+    dvz_graphics_attachment_stencil(fixture->graphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
     dvz_graphics_primitive(
-        &fixture->graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+        fixture->graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_viewport(
-        &fixture->graphics, 0, 0, fixture->width, fixture->height, 0, 1,
+        fixture->graphics, 0, 0, fixture->width, fixture->height, 0, 1,
         DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(
-        &fixture->graphics, 0, 0, fixture->width, fixture->height, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+        fixture->graphics, 0, 0, fixture->width, fixture->height, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
-    return &fixture->graphics;
+    return fixture->graphics;
 }
 
 

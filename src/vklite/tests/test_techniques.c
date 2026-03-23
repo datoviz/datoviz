@@ -149,7 +149,8 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
     // Inner graphics pipeline (triangle).
-    DvzGraphics igraphics = {0};
+    DvzGraphics* igraphics = dvz_graphics_create_wrapper();
+    ANN(igraphics);
     {
         // Load the shaders.
         DvzSize ivs_size = 0;
@@ -162,48 +163,50 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         ANN(ifs);
 
         // Initialize the graphics pipeline.
-        dvz_graphics(device, &igraphics);
+        dvz_graphics(device, igraphics);
 
 
         // Shaders.
         dvz_shader(device, ivs_size, ivs_spv, ivs);
         dvz_shader(device, ifs_size, ifs_spv, ifs);
-        dvz_graphics_shader(&igraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(ivs));
-        dvz_graphics_shader(&igraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(ifs));
+        dvz_graphics_shader(igraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(ivs));
+        dvz_graphics_shader(igraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(ifs));
 
         // Slots.
-        DvzSlots islots = {0};
-        dvz_slots(device, &islots);
-        dvz_slots_create(&islots);
+        DvzSlots* islots = dvz_slots_create_wrapper();
+        ANN(islots);
+        dvz_slots(device, islots);
+        dvz_slots_create(islots);
 
         // Attachments.
-        dvz_graphics_attachment_color(&igraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_color(igraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
         dvz_graphics_blend_color(
-            &igraphics, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            igraphics, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
             VK_BLEND_OP_ADD, 0xF);
         dvz_graphics_blend_alpha(
-            &igraphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+            igraphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
 
         // Fixed state.
         dvz_graphics_primitive(
-            &igraphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+            igraphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Dynamic state.
         dvz_graphics_viewport(
-            &igraphics, 0, 0, DVZ_FIXTURE_WIDTH / 2.0, DVZ_FIXTURE_HEIGHT / 2.0, 0, 1,
+            igraphics, 0, 0, DVZ_FIXTURE_WIDTH / 2.0, DVZ_FIXTURE_HEIGHT / 2.0, 0, 1,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
         dvz_graphics_scissor(
-            &igraphics, 0, 0, DVZ_FIXTURE_WIDTH / 2.0, DVZ_FIXTURE_HEIGHT / 2.0,
+            igraphics, 0, 0, DVZ_FIXTURE_WIDTH / 2.0, DVZ_FIXTURE_HEIGHT / 2.0,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
         // Slots
-        dvz_graphics_layout(&igraphics, dvz_slots_handle(&islots));
+        dvz_graphics_layout(igraphics, dvz_slots_handle(islots));
 
         // Create the graphics pipeline.
-        AT(dvz_graphics_create(&igraphics) == 0);
+        AT(dvz_graphics_create(igraphics) == 0);
 
         // Cleanup.
-        dvz_slots_destroy(&islots);
+        dvz_slots_destroy(islots);
+        dvz_slots_free(islots);
         dvz_shader_destroy(ivs);
         dvz_shader_destroy(ifs);
         dvz_shader_free(ivs);
@@ -312,7 +315,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     // Inner rendering.
     {
         dvz_cmd_rendering_begin(cmds, irendering);
-        dvz_cmd_bind_graphics(cmds, &igraphics);
+        dvz_cmd_bind_graphics(cmds, igraphics);
         dvz_cmd_draw(cmds, 0, 3, 0, 1);
         dvz_cmd_rendering_end(cmds);
     }
@@ -353,7 +356,8 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_destroy(&tex_view);
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
-    dvz_graphics_destroy(&igraphics);
+    dvz_graphics_destroy(igraphics);
+    dvz_graphics_free(igraphics);
     dvz_rendering_free(irendering);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
@@ -381,10 +385,11 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     ANN(device);
 
     // Mask pipeline.
-    DvzGraphics mgraphics = {0};
+    DvzGraphics* mgraphics = dvz_graphics_create_wrapper();
+    ANN(mgraphics);
     {
         // Initialize the graphics pipeline.
-        dvz_graphics(device, &mgraphics);
+        dvz_graphics(device, mgraphics);
 
         // Load the shaders.
         DvzSize vs_size = 0;
@@ -399,45 +404,47 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
         // Shaders.
         dvz_shader(device, vs_size, vs_spv, vs);
         dvz_shader(device, fs_size, fs_spv, fs);
-        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
+        dvz_graphics_shader(mgraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(mgraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Attachments.
-        dvz_graphics_attachment_color(&mgraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
-        dvz_graphics_attachment_depth(&mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
-        dvz_graphics_attachment_stencil(&mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
-        dvz_graphics_blend_color(&mgraphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, 0, 0);
+        dvz_graphics_attachment_color(mgraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_depth(mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_graphics_attachment_stencil(mgraphics, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_graphics_blend_color(mgraphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, 0, 0);
 
         // Fixed state.
         dvz_graphics_primitive(
-            &mgraphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+            mgraphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Dynamic state.
         dvz_graphics_viewport(
-            &mgraphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
+            mgraphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
         dvz_graphics_scissor(
-            &mgraphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+            mgraphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
         dvz_graphics_stencil(
-            &mgraphics, VK_STENCIL_FACE_FRONT_AND_BACK, VK_STENCIL_OP_KEEP, VK_STENCIL_OP_REPLACE,
+            mgraphics, VK_STENCIL_FACE_FRONT_AND_BACK, VK_STENCIL_OP_KEEP, VK_STENCIL_OP_REPLACE,
             VK_STENCIL_OP_KEEP, VK_COMPARE_OP_ALWAYS, 0xFF, 0xFF, 1, DVZ_GRAPHICS_FLAGS_FIXED);
 
         dvz_graphics_depth(
-            &mgraphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+            mgraphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Slots
-        DvzSlots slots = {0};
-        dvz_slots(device, &slots);
-        dvz_slots_create(&slots);
-        dvz_graphics_layout(&mgraphics, dvz_slots_handle(&slots));
+        DvzSlots* slots = dvz_slots_create_wrapper();
+        ANN(slots);
+        dvz_slots(device, slots);
+        dvz_slots_create(slots);
+        dvz_graphics_layout(mgraphics, dvz_slots_handle(slots));
 
         // Create the graphics pipeline.
-        AT(dvz_graphics_create(&mgraphics) == 0);
+        AT(dvz_graphics_create(mgraphics) == 0);
 
         // Cleanup.
-        dvz_slots_destroy(&slots);
+        dvz_slots_destroy(slots);
+        dvz_slots_free(slots);
         dvz_shader_destroy(vs);
         dvz_shader_destroy(fs);
         dvz_shader_free(vs);
@@ -519,7 +526,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
 
     // Mask rendering.
     dvz_cmd_rendering_begin(cmds, mrendering);
-    dvz_cmd_bind_graphics(cmds, &mgraphics);
+    dvz_cmd_bind_graphics(cmds, mgraphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
 
@@ -538,7 +545,8 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     dvz_fixture_offscreen_png(off, "build/technique_stencil.png");
 
     // Cleanup.
-    dvz_graphics_destroy(&mgraphics);
+    dvz_graphics_destroy(mgraphics);
+    dvz_graphics_free(mgraphics);
     dvz_rendering_free(mrendering);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
@@ -760,12 +768,13 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
 
 
     // Step 2: set up slots (descriptor layout)
-    DvzSlots slots = {0};
-    dvz_slots(device, &slots);
+    DvzSlots* slots = dvz_slots_create_wrapper();
+    ANN(slots);
+    dvz_slots(device, slots);
     // set = 0, binding = 0, storage buffer
     dvz_slots_binding(
-        &slots, 0, 0, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    dvz_slots_create(&slots);
+        slots, 0, 0, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    dvz_slots_create(slots);
 
 
     // Step 3: create compute pipeline
@@ -776,16 +785,17 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     ANN(cs);
     dvz_shader(device, cs_size, cs_spv, cs);
 
-    DvzCompute compute = {0};
-    dvz_compute(device, &compute);
-    dvz_compute_shader(&compute, dvz_shader_handle(cs));
-    dvz_compute_layout(&compute, dvz_slots_handle(&slots));
-    AT(dvz_compute_create(&compute) == 0);
+    DvzCompute* compute = dvz_compute_create_wrapper();
+    ANN(compute);
+    dvz_compute(device, compute);
+    dvz_compute_shader(compute, dvz_shader_handle(cs));
+    dvz_compute_layout(compute, dvz_slots_handle(slots));
+    AT(dvz_compute_create(compute) == 0);
 
     // Descriptors for compute
     DvzDescriptors* desc = dvz_descriptors_create();
     ANN(desc);
-    dvz_descriptors(&slots, desc);
+    dvz_descriptors(slots, desc);
     dvz_descriptors_buffer(desc, 0, 0, 0, dvz_buffer_handle(&buf), 0, sizeof(positions));
 
 
@@ -806,7 +816,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32_SFLOAT, 0);
 
     // Layout: reuse same slots (even though graphics doesn't use the storage buffer)
-    dvz_graphics_layout(graphics, dvz_slots_handle(&slots));
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
     dvz_graphics_primitive(
         graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, DVZ_GRAPHICS_FLAGS_FIXED);
     AT(dvz_graphics_create(graphics) == 0);
@@ -821,7 +831,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
 
     // Compute pass
-    dvz_cmd_bind_compute(cmds, &compute);
+    dvz_cmd_bind_compute(cmds, compute);
     dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_COMPUTE, desc, 0, 1, 0, NULL);
 
     // Dispatch 4 workgroups → each vertex is shifted in compute shader
@@ -853,11 +863,13 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
 
 
     // Step 7: cleanup
-    dvz_slots_destroy(&slots);
+    dvz_slots_destroy(slots);
+    dvz_slots_free(slots);
     dvz_descriptors_free(desc);
     dvz_shader_destroy(cs);
     dvz_shader_free(cs);
-    dvz_compute_destroy(&compute);
+    dvz_compute_destroy(compute);
+    dvz_compute_free(compute);
     dvz_graphics_destroy(graphics);
     dvz_buffer_destroy(&buf);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
@@ -966,80 +978,82 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
 
     // Step 4: graphics pipeline A — color
-    DvzGraphics gfx_color = {0};
-    dvz_graphics(device, &gfx_color);
+    DvzGraphics* gfx_color = dvz_graphics_create_wrapper();
+    ANN(gfx_color);
+    dvz_graphics(device, gfx_color);
 
     DvzShader* vs_color = dvz_shader_create_wrapper();
     ANN(vs_color);
     dvz_shader(device, vs_size, vs_spv, vs_color);
-    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs_color));
+    dvz_graphics_shader(gfx_color, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs_color));
 
     DvzShader* fs_color = dvz_shader_create_wrapper();
     ANN(fs_color);
     dvz_shader(device, cs_size, fs_color_spv, fs_color);
-    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs_color));
+    dvz_graphics_shader(gfx_color, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs_color));
 
-    dvz_graphics_attachment_color(&gfx_color, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_graphics_attachment_color(gfx_color, 0, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_graphics_blend_color(
-        &gfx_color, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        gfx_color, 0, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
         VK_BLEND_OP_ADD, 0xF);
     dvz_graphics_blend_alpha(
-        &gfx_color, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+        gfx_color, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
 
-    dvz_graphics_attachment_depth(&gfx_color, VK_FORMAT_D32_SFLOAT_S8_UINT);
-    dvz_graphics_attachment_stencil(&gfx_color, VK_FORMAT_D32_SFLOAT_S8_UINT);
+    dvz_graphics_attachment_depth(gfx_color, VK_FORMAT_D32_SFLOAT_S8_UINT);
+    dvz_graphics_attachment_stencil(gfx_color, VK_FORMAT_D32_SFLOAT_S8_UINT);
 
-    dvz_graphics_vertex_binding(&gfx_color, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
-    dvz_graphics_vertex_attr(&gfx_color, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
-    dvz_graphics_vertex_attr(&gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
+    dvz_graphics_vertex_binding(gfx_color, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(gfx_color, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
+    dvz_graphics_vertex_attr(gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
 
     dvz_graphics_viewport(
-        &gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
+        gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
         DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(
-        &gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+        gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
-    dvz_graphics_layout(&gfx_color, dvz_slots_handle(slots));
+    dvz_graphics_layout(gfx_color, dvz_slots_handle(slots));
     dvz_graphics_primitive(
-        &gfx_color, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
-    AT(dvz_graphics_create(&gfx_color) == 0);
+        gfx_color, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+    AT(dvz_graphics_create(gfx_color) == 0);
 
 
     // Step 5: graphics pipeline B — picking (same VS, different FS)
-    DvzGraphics gfx_pick = {0};
-    dvz_graphics(device, &gfx_pick);
+    DvzGraphics* gfx_pick = dvz_graphics_create_wrapper();
+    ANN(gfx_pick);
+    dvz_graphics(device, gfx_pick);
 
     // Shared vertex shader.
     DvzShader* vs = dvz_shader_create_wrapper();
     ANN(vs);
     dvz_shader(device, vs_size, vs_spv, vs);
-    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+    dvz_graphics_shader(gfx_pick, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
 
     // Picking fragment shader.
     DvzShader* fs_pick = dvz_shader_create_wrapper();
     ANN(fs_pick);
     dvz_shader(device, ps_size, fs_pick_spv, fs_pick);
-    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs_pick));
+    dvz_graphics_shader(gfx_pick, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs_pick));
 
-    dvz_graphics_attachment_color(&gfx_pick, 0, VK_FORMAT_R32_UINT);
+    dvz_graphics_attachment_color(gfx_pick, 0, VK_FORMAT_R32_UINT);
     // Integer attachments ignore blending, but we must still enable the write mask explicitly.
-    gfx_pick.blend_attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
+    dvz_graphics_color_write_mask(gfx_pick, 0, VK_COLOR_COMPONENT_R_BIT);
 
-    dvz_graphics_vertex_binding(&gfx_pick, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
-    dvz_graphics_vertex_attr(&gfx_pick, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
-    dvz_graphics_vertex_attr(&gfx_pick, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
+    dvz_graphics_vertex_binding(gfx_pick, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(gfx_pick, 0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, pos));
+    dvz_graphics_vertex_attr(gfx_pick, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
 
     dvz_graphics_viewport(
-        &gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
+        gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
         DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(
-        &gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
-    dvz_graphics_layout(&gfx_pick, dvz_slots_handle(slots));
+        gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_layout(gfx_pick, dvz_slots_handle(slots));
 
     dvz_graphics_primitive(
-        &gfx_pick, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+        gfx_pick, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
 
-    AT(dvz_graphics_create(&gfx_pick) == 0);
+    AT(dvz_graphics_create(gfx_pick) == 0);
 
 
     // Step 5.5: create staging buffer for reading back one uint32 ID
@@ -1062,7 +1076,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     /* COLOR PASS */
     dvz_cmd_rendering_begin(cmds, offscreen_rendering);
-    dvz_cmd_bind_graphics(cmds, &gfx_color);
+    dvz_cmd_bind_graphics(cmds, gfx_color);
     dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbuf, (DvzSize[]){0});
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
@@ -1079,7 +1093,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_attachment_clear(patt, (VkClearValue){.color = {.uint32 = {0}}});
 
     dvz_cmd_rendering_begin(cmds, pickrend);
-    dvz_cmd_bind_graphics(cmds, &gfx_pick);
+    dvz_cmd_bind_graphics(cmds, gfx_pick);
     dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbuf, (DvzSize[]){0});
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
@@ -1131,8 +1145,10 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
 
     // Step 9: cleanup
     dvz_buffer_destroy(&staging);
-    dvz_graphics_destroy(&gfx_pick);
-    dvz_graphics_destroy(&gfx_color);
+    dvz_graphics_destroy(gfx_pick);
+    dvz_graphics_destroy(gfx_color);
+    dvz_graphics_free(gfx_pick);
+    dvz_graphics_free(gfx_color);
     dvz_shader_destroy(vs_color);
     dvz_shader_destroy(fs_color);
     dvz_shader_destroy(vs);
@@ -1286,9 +1302,10 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // -----------------------------------------------------------------------------------------
     // Accumulation graphics pipeline.
     // -----------------------------------------------------------------------------------------
-    DvzGraphics g_accum = {0};
+    DvzGraphics* g_accum = dvz_graphics_create_wrapper();
+    ANN(g_accum);
     {
-        dvz_graphics(device, &g_accum);
+        dvz_graphics(device, g_accum);
 
         // Shaders.
         DvzShader* vs = dvz_shader_create_wrapper();
@@ -1299,65 +1316,67 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         ANN(fs);
         dvz_shader(device, vs_size, vs_spv, vs);
         dvz_shader(device, fs_size, fs_spv, fs);
-        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
+        dvz_graphics_shader(g_accum, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(g_accum, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Vertex input: binding 0, pos (loc 0), color (loc 1).
         dvz_graphics_vertex_binding(
-            &g_accum, 0, (DvzSize)sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+            g_accum, 0, (DvzSize)sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
         dvz_graphics_vertex_attr(
-            &g_accum, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos));
+            g_accum, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos));
         dvz_graphics_vertex_attr(
-            &g_accum, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color));
+            g_accum, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color));
 
         // Attachments: color0 = accum_color, color1 = accum_weight, depth.
-        dvz_graphics_attachment_color(&g_accum, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
-        dvz_graphics_attachment_color(&g_accum, 1, VK_FORMAT_R16_SFLOAT);
-        dvz_graphics_attachment_depth(&g_accum, VK_FORMAT_D32_SFLOAT_S8_UINT);
+        dvz_graphics_attachment_color(g_accum, 0, VK_FORMAT_R16G16B16A16_SFLOAT);
+        dvz_graphics_attachment_color(g_accum, 1, VK_FORMAT_R16_SFLOAT);
+        dvz_graphics_attachment_depth(g_accum, VK_FORMAT_D32_SFLOAT_S8_UINT);
 
         // Primitive + state.
         dvz_graphics_primitive(
-            &g_accum, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+            g_accum, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
         dvz_graphics_viewport(
-            &g_accum, 0, 0, (float)W, (float)H, 0.0f, 1.0f, DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_scissor(&g_accum, 0, 0, W, H, DVZ_GRAPHICS_FLAGS_FIXED);
+            g_accum, 0, 0, (float)W, (float)H, 0.0f, 1.0f, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_scissor(g_accum, 0, 0, W, H, DVZ_GRAPHICS_FLAGS_FIXED);
         dvz_graphics_depth(
-            &g_accum, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_cull_mode(&g_accum, VK_CULL_MODE_NONE, DVZ_GRAPHICS_FLAGS_FIXED);
+            g_accum, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_cull_mode(g_accum, VK_CULL_MODE_NONE, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Blending: additive for color + weight, WBOIT style.
         {
             vec4 blend_consts = {0, 0, 0, 0};
-            dvz_graphics_blend(&g_accum, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
+            dvz_graphics_blend(g_accum, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
 
             // Attachment 0: accumColor += srcColor * alpha
             dvz_graphics_blend_color(
-                &g_accum, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                g_accum, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                     VK_COLOR_COMPONENT_A_BIT);
             dvz_graphics_blend_alpha(
-                &g_accum, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
+                g_accum, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
 
             // Attachment 1: accumWeight += alpha
             dvz_graphics_blend_color(
-                &g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                     VK_COLOR_COMPONENT_A_BIT);
             dvz_graphics_blend_alpha(
-                &g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
+                g_accum, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD);
         }
 
         // No descriptors: empty pipeline layout.
-        DvzSlots slots = {0};
-        dvz_slots(device, &slots);
-        dvz_slots_create(&slots);
-        dvz_graphics_layout(&g_accum, dvz_slots_handle(&slots));
+        DvzSlots* slots = dvz_slots_create_wrapper();
+        ANN(slots);
+        dvz_slots(device, slots);
+        dvz_slots_create(slots);
+        dvz_graphics_layout(g_accum, dvz_slots_handle(slots));
 
         // Create pipeline.
-        AT(dvz_graphics_create(&g_accum) == 0);
+        AT(dvz_graphics_create(g_accum) == 0);
 
         // Cleanup temp.
-        dvz_slots_destroy(&slots);
+        dvz_slots_destroy(slots);
+        dvz_slots_free(slots);
         dvz_shader_destroy(vs);
         dvz_shader_destroy(fs);
         dvz_shader_free(vs);
@@ -1370,12 +1389,14 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // -----------------------------------------------------------------------------------------
     // Composite graphics pipeline.
     // -----------------------------------------------------------------------------------------
-    DvzGraphics g_comp = {0};
-    DvzSlots slots_comp = {0};
+    DvzGraphics* g_comp = dvz_graphics_create_wrapper();
+    DvzSlots* slots_comp = dvz_slots_create_wrapper();
+    ANN(g_comp);
+    ANN(slots_comp);
     DvzDescriptors* desc_comp = dvz_descriptors_create();
     ANN(desc_comp);
     {
-        dvz_graphics(device, &g_comp);
+        dvz_graphics(device, g_comp);
 
         // Shaders.
         DvzShader* vs = dvz_shader_create_wrapper();
@@ -1386,51 +1407,51 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         ANN(fs);
         dvz_shader(device, vs_size, vs_spv, vs);
         dvz_shader(device, fs_size, fs_spv, fs);
-        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
+        dvz_graphics_shader(g_comp, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(g_comp, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Fullscreen triangle: no vertex attributes.
 
         // Color attachment: final output offscreen format.
-        dvz_graphics_attachment_color(&g_comp, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_color(g_comp, 0, VK_FORMAT_R8G8B8A8_UNORM);
 
         // Primitive/state.
         dvz_graphics_primitive(
-            &g_comp, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+            g_comp, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
         dvz_graphics_viewport(
-            &g_comp, 0, 0, (float)W, (float)H, 0.0f, 1.0f, DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_scissor(&g_comp, 0, 0, W, H, DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_depth(&g_comp, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_cull_mode(&g_comp, VK_CULL_MODE_NONE, DVZ_GRAPHICS_FLAGS_FIXED);
+            g_comp, 0, 0, (float)W, (float)H, 0.0f, 1.0f, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_scissor(g_comp, 0, 0, W, H, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_depth(g_comp, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_cull_mode(g_comp, VK_CULL_MODE_NONE, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // No blending: overwrite final color.
         {
             vec4 blend_consts = {0, 0, 0, 0};
-            dvz_graphics_blend(&g_comp, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
+            dvz_graphics_blend(g_comp, blend_consts, DVZ_GRAPHICS_FLAGS_FIXED);
             dvz_graphics_blend_color(
-                &g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+                g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
                 VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                     VK_COLOR_COMPONENT_A_BIT);
             dvz_graphics_blend_alpha(
-                &g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
+                g_comp, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD);
         }
 
         // Descriptors: set 0, binding 0 = accumColor, binding 1 = accumWeight.
-        dvz_slots(device, &slots_comp);
+        dvz_slots(device, slots_comp);
         dvz_slots_binding(
-            &slots_comp, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            slots_comp, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         dvz_slots_binding(
-            &slots_comp, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            slots_comp, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-        dvz_slots_create(&slots_comp);
-        dvz_graphics_layout(&g_comp, dvz_slots_handle(&slots_comp));
+        dvz_slots_create(slots_comp);
+        dvz_graphics_layout(g_comp, dvz_slots_handle(slots_comp));
 
         // Pipeline.
-        AT(dvz_graphics_create(&g_comp) == 0);
+        AT(dvz_graphics_create(g_comp) == 0);
 
         // Descriptors.
-        dvz_descriptors(&slots_comp, desc_comp);
+        dvz_descriptors(slots_comp, desc_comp);
         dvz_descriptors_image(
             desc_comp, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             dvz_image_views_handle(&accum_color_view, 0), dvz_sampler_handle(sampler));
@@ -1539,7 +1560,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     {
         DvzSize offsets = 0;
         dvz_cmd_rendering_begin(cmds, accum_rendering);
-        dvz_cmd_bind_graphics(cmds, &g_accum);
+        dvz_cmd_bind_graphics(cmds, g_accum);
         dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbo, &offsets);
         dvz_cmd_draw(cmds, 0, vertex_count, 0, 1);
         dvz_cmd_rendering_end(cmds);
@@ -1585,7 +1606,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // Pass 2: composite full-screen.
     {
         dvz_cmd_rendering_begin(cmds, composite_rendering);
-        dvz_cmd_bind_graphics(cmds, &g_comp);
+        dvz_cmd_bind_graphics(cmds, g_comp);
         dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, desc_comp, 0, 1, 0, NULL);
         // Fullscreen triangle: 3 vertices from VS (gl_VertexIndex).
         dvz_cmd_draw(cmds, 0, 3, 0, 1);
@@ -1608,14 +1629,17 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     dvz_images_destroy(&accum_color);
     dvz_image_views_destroy(&accum_weight_view);
     dvz_images_destroy(&accum_weight);
-    dvz_slots_destroy(&slots_comp);
+    dvz_slots_destroy(slots_comp);
+    dvz_slots_free(slots_comp);
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_descriptors_free(desc_comp);
     dvz_rendering_free(accum_rendering);
     dvz_rendering_free(composite_rendering);
-    dvz_graphics_destroy(&g_accum);
-    dvz_graphics_destroy(&g_comp);
+    dvz_graphics_destroy(g_accum);
+    dvz_graphics_destroy(g_comp);
+    dvz_graphics_free(g_accum);
+    dvz_graphics_free(g_comp);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
@@ -1676,9 +1700,10 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     // PASS 1: depth-only pipeline writing depth into depth_img.
 
-    DvzGraphics depth_graphics = {0};
+    DvzGraphics* depth_graphics = dvz_graphics_create_wrapper();
+    ANN(depth_graphics);
     {
-        dvz_graphics(device, &depth_graphics);
+        dvz_graphics(device, depth_graphics);
 
         // Shaders.
         DvzSize vs_size = 0, fs_size = 0;
@@ -1692,43 +1717,45 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         dvz_shader(device, vs_size, vs_spv, vs);
         dvz_shader(device, fs_size, fs_spv, fs);
 
-        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
+        dvz_graphics_shader(depth_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(depth_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Attachments: dummy fixture color + our offscreen depth attachment format.
-        dvz_graphics_attachment_color(&depth_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
-        dvz_graphics_attachment_depth(&depth_graphics, VK_FORMAT_D32_SFLOAT);
+        dvz_graphics_attachment_color(depth_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_depth(depth_graphics, VK_FORMAT_D32_SFLOAT);
 
         // No blending, simple fullscreen triangles.
         dvz_graphics_blend_color(
-            &depth_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            depth_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                 VK_COLOR_COMPONENT_A_BIT);
         dvz_graphics_primitive(
-            &depth_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+            depth_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Viewport/scissor fixed.
         dvz_graphics_viewport(
-            &depth_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
+            depth_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
             DVZ_GRAPHICS_FLAGS_FIXED);
         dvz_graphics_scissor(
-            &depth_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT,
+            depth_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT,
             DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Depth test/write ON.
         dvz_graphics_depth(
-            &depth_graphics, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
+            depth_graphics, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Slots: none (no descriptors for pass 1).
-        DvzSlots slots = {0};
-        dvz_slots(device, &slots);
-        AT(dvz_slots_create(&slots) == 0);
-        dvz_graphics_layout(&depth_graphics, dvz_slots_handle(&slots));
+        DvzSlots* slots = dvz_slots_create_wrapper();
+        ANN(slots);
+        dvz_slots(device, slots);
+        AT(dvz_slots_create(slots) == 0);
+        dvz_graphics_layout(depth_graphics, dvz_slots_handle(slots));
 
-        AT(dvz_graphics_create(&depth_graphics) == 0);
+        AT(dvz_graphics_create(depth_graphics) == 0);
 
         // Cleanup.
-        dvz_slots_destroy(&slots);
+        dvz_slots_destroy(slots);
+        dvz_slots_free(slots);
         dvz_shader_destroy(vs);
         dvz_shader_destroy(fs);
         dvz_shader_free(vs);
@@ -1763,12 +1790,14 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     // PASS 2: SSAO pipeline, sampling depth_img and writing AO to the fixture color target.
 
-    DvzGraphics ssao_graphics = {0};
-    DvzSlots ssao_slots = {0};
+    DvzGraphics* ssao_graphics = dvz_graphics_create_wrapper();
+    DvzSlots* ssao_slots = dvz_slots_create_wrapper();
+    ANN(ssao_graphics);
+    ANN(ssao_slots);
     DvzDescriptors* ssao_desc = dvz_descriptors_create();
     ANN(ssao_desc);
     {
-        dvz_graphics(device, &ssao_graphics);
+        dvz_graphics(device, ssao_graphics);
 
         // Shaders.
         DvzSize vs_size = 0, fs_size = 0;
@@ -1782,43 +1811,43 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         dvz_shader(device, vs_size, vs_spv, vs);
         dvz_shader(device, fs_size, fs_spv, fs);
 
-        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
+        dvz_graphics_shader(ssao_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(ssao_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Color attachment: fixture main color.
-        dvz_graphics_attachment_color(&ssao_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+        dvz_graphics_attachment_color(ssao_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
 
         // No depth testing here (pure post-process).
         dvz_graphics_depth(
-            &ssao_graphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
+            ssao_graphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
 
         dvz_graphics_blend_color(
-            &ssao_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            ssao_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                 VK_COLOR_COMPONENT_A_BIT);
 
         dvz_graphics_primitive(
-            &ssao_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+            ssao_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
 
         dvz_graphics_viewport(
-            &ssao_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
+            ssao_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
             DVZ_GRAPHICS_FLAGS_FIXED);
         dvz_graphics_scissor(
-            &ssao_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT,
+            ssao_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT,
             DVZ_GRAPHICS_FLAGS_FIXED);
 
         // Descriptor set: combined image sampler for depthTex (set=0, binding=0).
-        dvz_slots(device, &ssao_slots);
+        dvz_slots(device, ssao_slots);
         dvz_slots_binding(
-            &ssao_slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            ssao_slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-        AT(dvz_slots_create(&ssao_slots) == 0);
-        dvz_graphics_layout(&ssao_graphics, dvz_slots_handle(&ssao_slots));
+        AT(dvz_slots_create(ssao_slots) == 0);
+        dvz_graphics_layout(ssao_graphics, dvz_slots_handle(ssao_slots));
 
-        AT(dvz_graphics_create(&ssao_graphics) == 0);
+        AT(dvz_graphics_create(ssao_graphics) == 0);
 
         // Descriptors.
-        dvz_descriptors(&ssao_slots, ssao_desc);
+        dvz_descriptors(ssao_slots, ssao_desc);
         dvz_descriptors_image(
             ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             dvz_image_views_handle(&depth_view, 0), dvz_sampler_handle(sampler));
@@ -1877,7 +1906,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     // PASS 1: depth rendering.
     dvz_cmd_rendering_begin(cmds, depth_rendering);
-    dvz_cmd_bind_graphics(cmds, &depth_graphics);
+    dvz_cmd_bind_graphics(cmds, depth_graphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
 
@@ -1902,7 +1931,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     // PASS 2: SSAO rendering into the fixture main color image.
     dvz_cmd_rendering_begin(cmds, ssao_rendering);
-    dvz_cmd_bind_graphics(cmds, &ssao_graphics);
+    dvz_cmd_bind_graphics(cmds, ssao_graphics);
     dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, ssao_desc, 0, 1, 0, NULL);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
@@ -1916,8 +1945,10 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
 
-    dvz_graphics_destroy(&depth_graphics);
-    dvz_graphics_destroy(&ssao_graphics);
+    dvz_graphics_destroy(depth_graphics);
+    dvz_graphics_destroy(ssao_graphics);
+    dvz_graphics_free(depth_graphics);
+    dvz_graphics_free(ssao_graphics);
 
     dvz_image_views_destroy(&depth_view);
     dvz_images_destroy(&depth_img);
@@ -1927,7 +1958,8 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     dvz_rendering_free(depth_rendering);
     dvz_rendering_free(ssao_rendering);
 
-    dvz_slots_destroy(&ssao_slots);
+    dvz_slots_destroy(ssao_slots);
+    dvz_slots_free(ssao_slots);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);

@@ -20,7 +20,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 
@@ -45,39 +44,20 @@ typedef struct DvzSlots DvzSlots;
 #define DVZ_MAX_SETS           4
 
 
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzSlots
-{
-    DvzObject obj;
-    DvzDevice* device;
-
-    // Binding types, for each set and each binding in each set.
-    uint32_t set_count;
-    uint32_t binding_counts[DVZ_MAX_SETS];
-    VkDescriptorSetLayoutBinding bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
-
-    // Push constants.
-    uint32_t push_count;
-    VkPushConstantRange pushs[DVZ_MAX_PUSH_CONSTANTS];
-
-    // Descriptor set layouts.
-    VkDescriptorSetLayout set_layouts[DVZ_MAX_BINDINGS];
-
-    // Pipeline layout.
-    VkPipelineLayout pipeline_layout;
-};
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty slots wrapper.
+ *
+ * @return allocated slots wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzSlots* dvz_slots_create_wrapper(void);
 
 
 
@@ -124,7 +104,7 @@ dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offset, Dv
  * Create the slots after they have been set up.
  *
  * @param slots the slots
- * @returns the Vulkan creation result code
+ * @return the Vulkan creation result code
  */
 DVZ_EXPORT int dvz_slots_create(DvzSlots* slots);
 
@@ -210,6 +190,15 @@ DVZ_EXPORT VkDescriptorSetLayout dvz_slots_set_layout(DvzSlots* slots, uint32_t 
  * @param slots the slots
  */
 DVZ_EXPORT void dvz_slots_destroy(DvzSlots* slots);
+
+
+
+/**
+ * Free a slots wrapper allocated by dvz_slots_create_wrapper().
+ *
+ * @param slots slots wrapper to free
+ */
+DVZ_EXPORT void dvz_slots_free(DvzSlots* slots);
 
 
 

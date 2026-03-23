@@ -21,16 +21,29 @@
 #include "_vk_utils.h"
 #include "_assertions.h"
 #include "_log.h"
-#include "datoviz/common/obj.h"
+#include "_slots.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include "datoviz/vklite/slots.h"
 
 
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty slots wrapper.
+ *
+ * @return allocated slots wrapper, or NULL on allocation failure
+ */
+DvzSlots* dvz_slots_create_wrapper(void)
+{
+    DvzSlots* slots = (DvzSlots*)dvz_calloc(1, sizeof(DvzSlots));
+    ANN(slots);
+    return slots;
+}
+
+
 
 void dvz_slots(DvzDevice* device, DvzSlots* slots)
 {
@@ -259,4 +272,20 @@ void dvz_slots_destroy(DvzSlots* slots)
     log_trace("pipeline layout destroyed");
 
     dvz_obj_destroyed(&slots->obj);
+}
+
+
+
+/**
+ * Free a slots wrapper allocated by dvz_slots_create_wrapper().
+ *
+ * @param slots slots wrapper to free
+ */
+void dvz_slots_free(DvzSlots* slots)
+{
+    if (slots == NULL)
+    {
+        return;
+    }
+    dvz_free(slots);
 }
