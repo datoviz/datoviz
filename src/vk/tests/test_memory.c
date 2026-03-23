@@ -204,9 +204,8 @@ int test_memory_cuda_1(TstSuite* suite, TstItem* tstitem)
     alloc = dvz_allocation_create();
     ANN(alloc);
     dvz_allocator_buffer(
-        allocator, &buf_info,
-        VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
-        alloc, &vk_buffer);
+        allocator, &buf_info, DVZ_ALLOC_DEDICATED_MEMORY | DVZ_ALLOC_HOST_ACCESS_RANDOM, alloc,
+        &vk_buffer);
 
     /******************* Initialize data on Vulkan side *******************/
     log_trace("mapping and sending data to the buffer");
@@ -534,9 +533,8 @@ int test_memory_cuda_2(TstSuite* suite, TstItem* tstitem)
         .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
     };
     out = dvz_allocator_import_buffer(
-        allocator, &buf_info,
-        VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT,
-        fd, alloc, &vk_buffer);
+        allocator, &buf_info, DVZ_ALLOC_DEDICATED_MEMORY | DVZ_ALLOC_HOST_ACCESS_RANDOM, fd, alloc,
+        &vk_buffer);
     if (out != 0)
     {
         log_error("dvz_allocator_import_buffer failed");

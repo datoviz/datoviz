@@ -34,7 +34,7 @@ struct DvzBuffer
 
     DvzSize req_size;
     VkBufferUsageFlags req_usage;
-    VmaAllocationCreateFlags req_alloc_flags;
+    DvzAllocationFlags req_alloc_flags;
 
     VkBuffer vk_buffer;
     DvzAllocation* alloc;

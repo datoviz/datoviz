@@ -206,7 +206,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer(device, dvz_gpu_ctx_alloc(ctx), &staging);
     dvz_buffer_size(&staging, screenshot_size);
     dvz_buffer_flags(
-        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+        &staging, DVZ_ALLOC_HOST_ACCESS_RANDOM | DVZ_ALLOC_MAPPED);
     dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_create(&staging);
 

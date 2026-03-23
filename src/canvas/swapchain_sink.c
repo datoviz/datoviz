@@ -1796,8 +1796,7 @@ static int canvas_capture_create_staging(DvzCanvas* canvas, size_t size, DvzBuff
 
     dvz_buffer(canvas->device, canvas->allocator, staging);
     dvz_buffer_size(staging, size);
-    dvz_buffer_flags(
-        staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    dvz_buffer_flags(staging, DVZ_ALLOC_HOST_ACCESS_RANDOM | DVZ_ALLOC_MAPPED);
     dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     if (dvz_buffer_create(staging) != 0)
     {

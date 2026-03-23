@@ -766,7 +766,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_usage(
         &buf, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                   VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    dvz_buffer_flags(&buf, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    dvz_buffer_flags(&buf, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
     AT(dvz_buffer_create(&buf) == 0);
 
     // Upload initial data
@@ -928,7 +928,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_buffer(device, allocator, &vbuf);
     dvz_buffer_size(&vbuf, sizeof(verts));
     dvz_buffer_usage(&vbuf, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    dvz_buffer_flags(&vbuf, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    dvz_buffer_flags(&vbuf, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
     AT(dvz_buffer_create(&vbuf) == 0);
     dvz_buffer_upload(&vbuf, 0, sizeof(verts), verts);
 
@@ -943,7 +943,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_images_size(pickimg, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
     dvz_images_usage(
         pickimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_vma_flags(pickimg, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT);
+    dvz_images_vma_flags(pickimg, DVZ_ALLOC_DEDICATED_MEMORY);
     AT(dvz_images_create(pickimg) == 0);
 
     dvz_image_views(pickimg, pickview);
@@ -1070,8 +1070,8 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_size(&staging, sizeof(uint32_t));
     dvz_buffer_usage(&staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_flags(
-        &staging, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
-                      VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT);
+        &staging,
+        DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE | DVZ_ALLOC_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD);
     AT(dvz_buffer_create(&staging) == 0);
 
 
@@ -1237,7 +1237,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     dvz_buffer(device, allocator, &vbo);
     dvz_buffer_size(&vbo, sizeof(vertices));
     dvz_buffer_usage(&vbo, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    dvz_buffer_flags(&vbo, VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
+    dvz_buffer_flags(&vbo, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
     AT(dvz_buffer_create(&vbo) == 0);
     dvz_buffer_upload(&vbo, 0, sizeof(vertices), vertices);
 

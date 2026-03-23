@@ -34,6 +34,23 @@ MUTE_OFF
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzVma DvzVma;
 typedef struct DvzAllocation DvzAllocation;
+typedef VmaAllocationCreateFlags DvzAllocationFlags;
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define DVZ_ALLOC_FLAGS_NONE ((DvzAllocationFlags)0)
+#define DVZ_ALLOC_DEDICATED_MEMORY ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT)
+#define DVZ_ALLOC_MAPPED ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_MAPPED_BIT)
+#define DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE                                                   \
+    ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
+#define DVZ_ALLOC_HOST_ACCESS_RANDOM                                                             \
+    ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT)
+#define DVZ_ALLOC_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD                                             \
+    ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT)
 
 
 
@@ -112,22 +129,33 @@ DVZ_EXPORT void* dvz_allocation_mapped(DvzAllocation* alloc);
 
 
 /**
- * Return the allocation-create flags currently associated with an allocation.
+ * Return the allocation policy flags currently associated with an allocation.
  *
  * @param alloc the allocation
- * @return allocation-create flags
+ * @return allocation policy flags
  */
-DVZ_EXPORT VmaAllocationCreateFlags dvz_allocation_flags(DvzAllocation* alloc);
+DVZ_EXPORT DvzAllocationFlags dvz_allocation_flags(DvzAllocation* alloc);
 
 
 
 /**
- * Update the allocation-create flags used by higher-level wrappers.
+ * Test whether a flag set contains all requested allocation policy flags.
+ *
+ * @param flags flag set to test
+ * @param test flags that must all be present
+ * @return true when every flag in test is set in flags
+ */
+DVZ_EXPORT bool dvz_allocation_flags_contains(DvzAllocationFlags flags, DvzAllocationFlags test);
+
+
+
+/**
+ * Update the allocation policy flags used by higher-level wrappers.
  *
  * @param alloc the allocation
- * @param flags allocation-create flags
+ * @param flags allocation policy flags
  */
-DVZ_EXPORT void dvz_allocation_set_flags(DvzAllocation* alloc, VmaAllocationCreateFlags flags);
+DVZ_EXPORT void dvz_allocation_set_flags(DvzAllocation* alloc, DvzAllocationFlags flags);
 
 
 
@@ -168,13 +196,13 @@ DVZ_EXPORT int dvz_device_allocator(
  *
  * @param allocator the allocator
  * @param info the buffer creation info Vulkan struct
- * @param flags the VMA allocation creation flags
+ * @param flags Datoviz allocation policy flags
  * @param[out] alloc the created allocation
  * @param[out] vk_buffer the created VkBuffer handle
  */
 DVZ_EXPORT int dvz_allocator_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, VmaAllocationCreateFlags flags,
-    DvzAllocation* alloc, VkBuffer* vk_buffer);
+    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, DvzAllocation* alloc,
+    VkBuffer* vk_buffer);
 
 
 
@@ -183,13 +211,13 @@ DVZ_EXPORT int dvz_allocator_buffer(
  *
  * @param allocator the allocator
  * @param info the image creation info Vulkan struct
- * @param flags the VMA allocation creation flags
+ * @param flags Datoviz allocation policy flags
  * @param[out] alloc the created allocation
  * @param[out] vk_image the created VkImage handle
  */
 DVZ_EXPORT int dvz_allocator_image(
-    DvzVma* allocator, VkImageCreateInfo* info, VmaAllocationCreateFlags flags,
-    DvzAllocation* alloc, VkImage* vk_image);
+    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, DvzAllocation* alloc,
+    VkImage* vk_image);
 
 
 /**
@@ -290,13 +318,13 @@ DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int
  * @param allocator the allocator
  * @param info the buffer creation
  * @param info the buffer creation info Vulkan struct
- * @param flags the VMA allocation creation flags
+ * @param flags Datoviz allocation policy flags
  * @param handle the handle to import
  * @param[out] alloc the created allocation
  * @param[out] vk_buffer the created VkBuffer handle
  */
 DVZ_EXPORT int dvz_allocator_import_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, VmaAllocationCreateFlags flags, int handle,
+    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
     DvzAllocation* alloc, VkBuffer* vk_buffer);
 
 
@@ -307,13 +335,13 @@ DVZ_EXPORT int dvz_allocator_import_buffer(
  * @param allocator the allocator
  * @param info the image creation
  * @param info the image creation info Vulkan struct
- * @param flags the VMA allocation creation flags
+ * @param flags Datoviz allocation policy flags
  * @param handle the handle to import
  * @param[out] alloc the created allocation
  * @param[out] vk_image the created VkImage handle
  */
 DVZ_EXPORT int dvz_allocator_import_image(
-    DvzVma* allocator, VkImageCreateInfo* info, VmaAllocationCreateFlags flags, int handle,
+    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, int handle,
     DvzAllocation* alloc, VkImage* vk_image);
 
 

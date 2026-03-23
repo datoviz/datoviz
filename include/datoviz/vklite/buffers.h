@@ -19,7 +19,6 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
-#include "vk_mem_alloc.h"
 
 
 
@@ -83,7 +82,7 @@ DVZ_EXPORT DvzSize dvz_buffer_allocated_size(DvzBuffer* buffer);
  * Initialize a GPU buffer.
  *
  * @param device the device
- * @param allocator the VMA allocator
+ * @param allocator the Datoviz allocator
  * @param[out] buffer the initialized buffer
  */
 DVZ_EXPORT void dvz_buffer(DvzDevice* device, DvzVma* allocator, DvzBuffer* buffer);
@@ -111,12 +110,12 @@ DVZ_EXPORT void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage);
 
 
 /**
- * Set the VMA creation flags.
+ * Set the allocation policy flags used when the buffer creates its memory.
  *
  * @param buffer the buffer
  * @param flags the flags
  */
-DVZ_EXPORT void dvz_buffer_flags(DvzBuffer* buffer, VmaAllocationCreateFlags flags);
+DVZ_EXPORT void dvz_buffer_flags(DvzBuffer* buffer, DvzAllocationFlags flags);
 
 
 

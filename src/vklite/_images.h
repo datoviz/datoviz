@@ -36,7 +36,7 @@ struct DvzImages
     bool is_swapchain;
 
     VkImageCreateInfo info;
-    VmaAllocationCreateFlags req_alloc_flags;
+    DvzAllocationFlags req_alloc_flags;
 
     VkImage vk_images[DVZ_MAX_IMAGES];
     DvzAllocation* allocs[DVZ_MAX_IMAGES];

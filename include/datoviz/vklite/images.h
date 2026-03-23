@@ -19,7 +19,6 @@
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/memory.h"
-#include "vk_mem_alloc.h"
 
 
 
@@ -92,7 +91,7 @@ DVZ_EXPORT void dvz_image_views_free(DvzImageViews* views);
  * Initialize a set of GPU images.
  *
  * @param device the device
- * @param allocator the VMA allocator
+ * @param allocator the Datoviz allocator
  * @param type the image type (1D, 2D, or 3D)
  * @param count the number of images
  * @param[out] images the initialized images
@@ -145,12 +144,12 @@ DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
 
 
 /**
- * Set the VMA creation flags.
+ * Set the allocation policy flags used when the images create their memory.
  *
  * @param image the image
  * @param flags the flags
  */
-DVZ_EXPORT void dvz_images_vma_flags(DvzImages* img, VmaAllocationCreateFlags flags);
+DVZ_EXPORT void dvz_images_vma_flags(DvzImages* img, DvzAllocationFlags flags);
 
 
 
@@ -248,7 +247,7 @@ DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
  * Wrap an existing Vulkan image into a DvzImages struct.
  *
  * @param device the device
- * @param allocator the VMA allocator
+ * @param allocator the Datoviz allocator
  * @param type the image type (1D, 2D, or 3D)
  * @param vk_image the Vulkan image handle
  * @param[out] images the initialized images

@@ -192,12 +192,12 @@ void* dvz_allocation_mapped(DvzAllocation* alloc)
 
 
 /**
- * Return the allocation-create flags currently associated with an allocation.
+ * Return the allocation policy flags currently associated with an allocation.
  *
  * @param alloc the allocation
- * @return allocation-create flags
+ * @return allocation policy flags
  */
-VmaAllocationCreateFlags dvz_allocation_flags(DvzAllocation* alloc)
+DvzAllocationFlags dvz_allocation_flags(DvzAllocation* alloc)
 {
     ANN(alloc);
     return alloc->flags;
@@ -206,12 +206,26 @@ VmaAllocationCreateFlags dvz_allocation_flags(DvzAllocation* alloc)
 
 
 /**
- * Update the allocation-create flags used by higher-level wrappers.
+ * Test whether a flag set contains all requested allocation policy flags.
+ *
+ * @param flags flag set to test
+ * @param test flags that must all be present
+ * @return true when every flag in test is set in flags
+ */
+bool dvz_allocation_flags_contains(DvzAllocationFlags flags, DvzAllocationFlags test)
+{
+    return (flags & test) == test;
+}
+
+
+
+/**
+ * Update the allocation policy flags used by higher-level wrappers.
  *
  * @param alloc the allocation
- * @param flags allocation-create flags
+ * @param flags allocation policy flags
  */
-void dvz_allocation_set_flags(DvzAllocation* alloc, VmaAllocationCreateFlags flags)
+void dvz_allocation_set_flags(DvzAllocation* alloc, DvzAllocationFlags flags)
 {
     ANN(alloc);
     alloc->flags = flags;
@@ -302,8 +316,8 @@ int dvz_device_allocator(
 
 
 int dvz_allocator_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, VmaAllocationCreateFlags flags,
-    DvzAllocation* alloc, VkBuffer* vk_buffer)
+    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, DvzAllocation* alloc,
+    VkBuffer* vk_buffer)
 {
     ANN(allocator);
     ANN(info);
@@ -312,12 +326,12 @@ int dvz_allocator_buffer(
 
     VmaAllocationCreateInfo alloc_info = {0};
     VmaMemoryUsage usage = VMA_MEMORY_USAGE_AUTO;
-    if ((flags & VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT) != 0)
+    if (dvz_allocation_flags_contains(flags, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE))
     {
         usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         alloc_info.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
     }
-    if ((flags & VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT) != 0)
+    if (dvz_allocation_flags_contains(flags, DVZ_ALLOC_HOST_ACCESS_RANDOM))
     {
         usage = VMA_MEMORY_USAGE_AUTO_PREFER_HOST;
         alloc_info.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
@@ -356,8 +370,8 @@ int dvz_allocator_buffer(
 
 
 int dvz_allocator_image(
-    DvzVma* allocator, VkImageCreateInfo* info, VmaAllocationCreateFlags flags,
-    DvzAllocation* alloc, VkImage* vk_image)
+    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, DvzAllocation* alloc,
+    VkImage* vk_image)
 {
     ANN(allocator);
     ANN(info);
@@ -588,7 +602,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
 
 
 int dvz_allocator_import_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, VmaAllocationCreateFlags flags, int handle,
+    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
     DvzAllocation* alloc, VkBuffer* vk_buffer)
 {
     ANN(allocator);
@@ -659,7 +673,7 @@ int dvz_allocator_import_buffer(
 
 
 int dvz_allocator_import_image(
-    DvzVma* allocator, VkImageCreateInfo* info, VmaAllocationCreateFlags flags, int handle,
+    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, int handle,
     DvzAllocation* alloc, VkImage* vk_image)
 {
     ANN(allocator);

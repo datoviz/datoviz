@@ -30,7 +30,6 @@
 #include "datoviz/vk/memory.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/graphics.h"
-#include "vk_mem_alloc.h"
 
 
 
@@ -115,7 +114,7 @@ void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage)
 
 
 
-void dvz_buffer_flags(DvzBuffer* buffer, VmaAllocationCreateFlags flags)
+void dvz_buffer_flags(DvzBuffer* buffer, DvzAllocationFlags flags)
 {
     ANN(buffer);
     buffer->req_alloc_flags = flags;
@@ -142,7 +141,7 @@ int dvz_buffer_create(DvzBuffer* buffer)
         buffer->alloc = dvz_allocation_create();
         ANN(buffer->alloc);
     }
-    VmaAllocationCreateFlags alloc_flags = buffer->req_alloc_flags;
+    DvzAllocationFlags alloc_flags = buffer->req_alloc_flags;
     dvz_allocation_set_flags(buffer->alloc, alloc_flags);
     int out = dvz_allocator_buffer(
         allocator, &info, alloc_flags, buffer->alloc, &buffer->vk_buffer);
