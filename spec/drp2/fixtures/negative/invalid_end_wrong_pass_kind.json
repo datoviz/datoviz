@@ -1,0 +1,36 @@
+{
+  "name": "invalid_end_wrong_pass_kind",
+  "description": "EndRenderPass is used on a pass id created by BeginComputePass.",
+  "reason": "Render-pass and compute-pass end commands are not interchangeable, so ending the wrong pass kind is a pass mismatch.",
+  "fix": "Use EndComputePass for a compute pass or open a render pass if EndRenderPass is intended.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "pass_mismatch"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 2
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_PASS_MISMATCH",
+    "command_index": 2
+  }
+}

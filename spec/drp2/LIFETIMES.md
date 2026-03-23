@@ -102,7 +102,8 @@ Rules:
 3. `DestroyTexture` ends the texture lifetime immediately after semantic validation succeeds,
 4. no later command may reference the destroyed texture,
 5. a texture may be referenced by copy commands only while live,
-6. texture subresources do not have independent protocol lifetimes in the active `2.0` surface.
+6. texture subresources do not have independent protocol lifetimes in the active `2.0` surface,
+7. render-pass attachments in active `2.0` reference textures directly rather than separate texture-view objects.
 
 
 ## Command Buffer Lifetime

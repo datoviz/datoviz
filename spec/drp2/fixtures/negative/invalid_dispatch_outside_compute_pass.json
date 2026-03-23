@@ -1,0 +1,34 @@
+{
+  "name": "invalid_dispatch_outside_compute_pass",
+  "description": "DispatchWorkgroups is issued without an open compute pass.",
+  "reason": "DispatchWorkgroups is valid only inside an open compute pass.",
+  "fix": "Begin a compute pass before DispatchWorkgroups and end it afterward.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 42,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 1
+  }
+}

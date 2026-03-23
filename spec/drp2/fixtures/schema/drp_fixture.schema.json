@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "drp_fixture.schema.json",
+  "title": "DRP2Fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "fix": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "version": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "patch": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "major",
+        "minor"
+      ]
+    },
+    "capabilities": {
+      "type": "object"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "$ref": "../../schema/drp_command.json"
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "success",
+            "error"
+          ]
+        },
+        "phase": {
+          "type": "string",
+          "enum": [
+            "decode",
+            "schema_validation",
+            "semantic_validation",
+            "capability_validation",
+            "execution"
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "command_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "readback_hash": {
+          "type": "string"
+        },
+        "resource_metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "outcome"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "error"
+              }
+            },
+            "required": [
+              "outcome"
+            ]
+          },
+          "then": {
+            "required": [
+              "phase",
+              "code"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "name",
+    "version",
+    "commands",
+    "expected"
+  ]
+}

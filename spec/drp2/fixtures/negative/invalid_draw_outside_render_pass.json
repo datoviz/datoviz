@@ -1,0 +1,35 @@
+{
+  "name": "invalid_draw_outside_render_pass",
+  "description": "Draw is issued without an open render pass.",
+  "reason": "Draw commands are valid only inside an open render pass.",
+  "fix": "Begin a render pass before Draw and end it afterward.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "render_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 99,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 1
+  }
+}

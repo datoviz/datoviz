@@ -1,0 +1,39 @@
+{
+  "name": "invalid_duplicate_buffer_id",
+  "description": "A second CreateBuffer reuses a live buffer id.",
+  "reason": "Ids must remain unique within the live namespace of their object kind, so reusing a live buffer id is invalid.",
+  "fix": "Use a fresh buffer id for the second CreateBuffer or avoid creating the buffer twice.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "identity",
+    "buffer"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 64,
+      "usage": [
+        "COPY_SRC"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 128,
+      "usage": [
+        "COPY_DST"
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_DUPLICATE_ID",
+    "command_index": 1
+  }
+}

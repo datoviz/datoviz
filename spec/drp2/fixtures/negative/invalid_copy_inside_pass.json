@@ -1,0 +1,57 @@
+{
+  "name": "invalid_copy_inside_pass",
+  "description": "A buffer copy is recorded while a compute pass is open.",
+  "reason": "Copy commands are valid at encoder scope only and are not allowed inside render or compute passes.",
+  "fix": "Move the copy before the pass begins or after the pass ends.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "copy"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 64,
+      "usage": [
+        "COPY_SRC"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "size": 64,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 4,
+      "encoder_id": 3
+    },
+    {
+      "cmd": "CopyBufferToBuffer",
+      "encoder_id": 3,
+      "src_buffer_id": 1,
+      "src_offset": 0,
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "size": 16
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 4
+  }
+}

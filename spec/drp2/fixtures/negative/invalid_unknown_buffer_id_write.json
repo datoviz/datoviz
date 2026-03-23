@@ -1,0 +1,30 @@
+{
+  "name": "invalid_unknown_buffer_id_write",
+  "description": "WriteBuffer references a buffer id that was never created.",
+  "reason": "WriteBuffer requires a live buffer id, and no command in the stream creates buffer 99.",
+  "fix": "Create the buffer before WriteBuffer or change buffer_id to a live buffer id.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "identity",
+    "buffer"
+  ],
+  "commands": [
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 99,
+      "offset": 0,
+      "size": 4,
+      "data": "AAAAAA=="
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ID",
+    "command_index": 0
+  }
+}

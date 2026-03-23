@@ -366,10 +366,17 @@ Optional fields:
 
 Attachment descriptor semantics:
 
-- `view_id` or equivalent attachment handle: image/view used as the attachment target.
+- `texture_id`: live texture used as the attachment target in active DRP2 `2.0`.
+- `resolve_target_texture_id`: optional live texture used as the resolve target in active DRP2 `2.0`.
 - `load_op`: whether the attachment content is loaded or cleared at pass start.
 - `store_op`: whether the final attachment content is stored after the pass.
 - `clear_value`: clear color or clear depth/stencil value used when `load_op` is clear.
+
+Active `2.0` note:
+
+1. render-pass attachments reference textures directly,
+2. texture views are deferred and non-authoritative in active `2.0`,
+3. runtimes may derive backend-native attachment views from the referenced texture plus implicit full-subresource selection.
 
 Pass semantics:
 

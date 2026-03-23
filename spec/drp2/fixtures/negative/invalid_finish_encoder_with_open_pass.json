@@ -1,0 +1,65 @@
+{
+  "name": "invalid_finish_encoder_with_open_pass",
+  "description": "FinishCommandEncoder is called while a render pass is still open.",
+  "reason": "An encoder cannot be finished until its currently open child pass has been ended.",
+  "fix": "End the render pass before FinishCommandEncoder.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "encoder"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2,
+      "label": "encoder"
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 3,
+      "encoder_id": 2,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 4
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 3
+  }
+}

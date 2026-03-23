@@ -1,0 +1,41 @@
+{
+  "name": "invalid_wrong_object_type_destroy",
+  "description": "DestroyBuffer is given the id of a texture rather than a buffer.",
+  "reason": "The id exists, but it belongs to the wrong object kind, so DestroyBuffer must reject it as a type error.",
+  "fix": "Use a buffer id created by CreateBuffer or destroy the texture with DestroyTexture instead.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "identity",
+    "wrong_object_type"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 7,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "DestroyBuffer",
+      "buffer_id": 7
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_WRONG_OBJECT_TYPE",
+    "command_index": 1
+  }
+}

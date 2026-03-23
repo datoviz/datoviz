@@ -1,0 +1,55 @@
+{
+  "name": "invalid_texture_range_write",
+  "description": "WriteTexture targets a box that exceeds the destination texture extent.",
+  "reason": "The origin plus written size must fit inside the selected texture subresource, and this box extends past the texture width.",
+  "fix": "Shrink the write region, move the origin inward, or create a larger texture.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "range",
+    "texture"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "WriteTexture",
+      "texture_id": 1,
+      "mip_level": 0,
+      "origin": {
+        "x": 3,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 2,
+        "height": 1,
+        "depth": 1
+      },
+      "bytes_per_row": 8,
+      "rows_per_image": 1,
+      "data": "AAAAAAAAAAA="
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_OUT_OF_RANGE",
+    "command_index": 1
+  }
+}

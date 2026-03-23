@@ -1,0 +1,61 @@
+{
+  "name": "invalid_destroy_buffer_still_referenced_by_recorded_work",
+  "description": "A buffer is destroyed after being captured by a finished command buffer.",
+  "reason": "A resource referenced by recorded work must remain live for the protocol-visible lifetime of that work.",
+  "fix": "Keep the buffer alive until the recorded work is no longer considered in use by the protocol.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "lifetime",
+    "usage"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 64,
+      "usage": [
+        "COPY_SRC"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "size": 64,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "CopyBufferToBuffer",
+      "encoder_id": 3,
+      "src_buffer_id": 1,
+      "src_offset": 0,
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "size": 16
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 3,
+      "command_buffer_id": 4
+    },
+    {
+      "cmd": "DestroyBuffer",
+      "buffer_id": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 5
+  }
+}

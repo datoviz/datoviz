@@ -1,0 +1,38 @@
+{
+  "name": "invalid_buffer_range_write",
+  "description": "WriteBuffer extends past the end of the destination buffer.",
+  "reason": "WriteBuffer requires offset plus size to fit inside the target buffer, and this write overruns the declared size.",
+  "fix": "Reduce offset or size, or create a larger buffer.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "range",
+    "buffer"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 1,
+      "offset": 12,
+      "size": 8,
+      "data": "AAAAAAAAAAA="
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_OUT_OF_RANGE",
+    "command_index": 1
+  }
+}
