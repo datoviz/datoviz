@@ -18,6 +18,7 @@
 #include <volk.h>
 
 #include "_vk_utils.h"
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vklite/commands.h"
@@ -75,6 +76,8 @@ void dvz_rendering(DvzRendering* rendering)
 {
     ANN(rendering);
 
+    dvz_memset(rendering, sizeof(DvzRendering), 0, sizeof(DvzRendering));
+
     // Default values.
     rendering->info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
     rendering->info.layerCount = 1;
@@ -99,6 +102,62 @@ void dvz_rendering_layers(DvzRendering* rendering, uint32_t count)
     ANN(rendering);
     ASSERT(count > 0);
     rendering->info.layerCount = count;
+}
+
+
+
+/**
+ * Return the number of configured color attachments.
+ *
+ * @param rendering the rendering
+ * @return the color attachment count
+ */
+uint32_t dvz_rendering_color_count(DvzRendering* rendering)
+{
+    ANN(rendering);
+    return rendering->info.colorAttachmentCount;
+}
+
+
+
+/**
+ * Return the configured layer count.
+ *
+ * @param rendering the rendering
+ * @return the layer count
+ */
+uint32_t dvz_rendering_layer_count(DvzRendering* rendering)
+{
+    ANN(rendering);
+    return rendering->info.layerCount;
+}
+
+
+
+/**
+ * Return whether a depth attachment is configured.
+ *
+ * @param rendering the rendering
+ * @return true when a depth attachment is configured
+ */
+bool dvz_rendering_has_depth(DvzRendering* rendering)
+{
+    ANN(rendering);
+    return rendering->depth.sType != 0;
+}
+
+
+
+/**
+ * Return whether a stencil attachment is configured.
+ *
+ * @param rendering the rendering
+ * @return true when a stencil attachment is configured
+ */
+bool dvz_rendering_has_stencil(DvzRendering* rendering)
+{
+    ANN(rendering);
+    return rendering->stencil.sType != 0;
 }
 
 
@@ -141,15 +200,17 @@ void dvz_cmd_rendering_begin(DvzCommands* cmds, DvzRendering* rendering)
     ANNVK(cmd);
 
     VkRenderingAttachmentInfo attachments[DVZ_MAX_ATTACHMENTS] = {0};
-    for (uint32_t i = 0; i < rendering->info.colorAttachmentCount; i++)
+    uint32_t color_count = dvz_rendering_color_count(rendering);
+    for (uint32_t i = 0; i < color_count; i++)
     {
         attachments[i] = rendering->attachments[i];
     }
 
     rendering->info.pColorAttachments = attachments;
-    rendering->info.pDepthAttachment = rendering->depth.sType != 0 ? &rendering->depth : NULL;
+    rendering->info.pDepthAttachment =
+        dvz_rendering_has_depth(rendering) ? &rendering->depth : NULL;
     rendering->info.pStencilAttachment =
-        rendering->stencil.sType != 0 ? &rendering->stencil : NULL;
+        dvz_rendering_has_stencil(rendering) ? &rendering->stencil : NULL;
 
     vkCmdBeginRendering(cmd, &rendering->info);
 }

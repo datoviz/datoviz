@@ -101,6 +101,7 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem);
 int test_vklite_images_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem);

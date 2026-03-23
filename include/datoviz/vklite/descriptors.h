@@ -67,6 +67,27 @@ DVZ_EXPORT void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors);
 
 
 /**
+ * Return the number of descriptor sets allocated by the wrapper.
+ *
+ * @param descriptors the descriptors
+ * @returns the descriptor set count
+ */
+DVZ_EXPORT uint32_t dvz_descriptors_set_count(DvzDescriptors* descriptors);
+
+
+
+/**
+ * Return a Vulkan descriptor-set handle by set index.
+ *
+ * @param descriptors the descriptors
+ * @param set the descriptor set index
+ * @returns the descriptor set handle
+ */
+DVZ_EXPORT VkDescriptorSet dvz_descriptors_handle(DvzDescriptors* descriptors, uint32_t set);
+
+
+
+/**
  * Bind a buffer.
  *
  * @param descriptors the descriptors

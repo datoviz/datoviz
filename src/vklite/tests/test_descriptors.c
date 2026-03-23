@@ -23,6 +23,7 @@
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/slots.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -98,6 +99,9 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     DvzDescriptors* desc = dvz_descriptors_create();
     ANN(desc);
     dvz_descriptors(&slots, desc);
+    AT(dvz_descriptors_set_count(desc) == 2);
+    AT(dvz_descriptors_handle(desc, 0) != VK_NULL_HANDLE);
+    AT(dvz_descriptors_handle(desc, 1) != VK_NULL_HANDLE);
     dvz_descriptors_buffer(desc, 0, 0, 0, dvz_buffer_handle(ubuf), 0, size);
     dvz_descriptors_buffer(desc, 1, 0, 0, dvz_buffer_handle(sbuf), 0, size);
     dvz_descriptors_image(
@@ -120,4 +124,37 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     dvz_gpu_ctx_destroy(ctx);
 
     return err_count > 0;
+}
+
+
+
+int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzRendering rendering = {0};
+    dvz_rendering(&rendering);
+    AT(dvz_rendering_layer_count(&rendering) == 1);
+    AT(dvz_rendering_color_count(&rendering) == 0);
+    AT(!dvz_rendering_has_depth(&rendering));
+    AT(!dvz_rendering_has_stencil(&rendering));
+
+    dvz_rendering_layers(&rendering, 3);
+    (void)dvz_rendering_color(&rendering, 1);
+    (void)dvz_rendering_depth(&rendering);
+    (void)dvz_rendering_stencil(&rendering);
+
+    AT(dvz_rendering_layer_count(&rendering) == 3);
+    AT(dvz_rendering_color_count(&rendering) == 2);
+    AT(dvz_rendering_has_depth(&rendering));
+    AT(dvz_rendering_has_stencil(&rendering));
+
+    dvz_rendering(&rendering);
+    AT(dvz_rendering_layer_count(&rendering) == 1);
+    AT(dvz_rendering_color_count(&rendering) == 0);
+    AT(!dvz_rendering_has_depth(&rendering));
+    AT(!dvz_rendering_has_stencil(&rendering));
+
+    return 0;
 }

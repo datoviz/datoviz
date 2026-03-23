@@ -51,6 +51,8 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     ANN(slots);
     ANN(descriptors);
 
+    dvz_memset(descriptors, sizeof(DvzDescriptors), 0, sizeof(DvzDescriptors));
+
     DvzDevice* device = dvz_slots_device(slots);
     ANN(device);
 
@@ -65,6 +67,7 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     info.descriptorPool = dpool;
     info.descriptorSetCount = dvz_slots_set_count(slots);
+    ASSERT(info.descriptorSetCount <= DVZ_MAX_SETS);
 
     VkDescriptorSetLayout set_layouts[DVZ_MAX_SETS] = {0};
     for (uint32_t set = 0; set < info.descriptorSetCount; set++)
@@ -75,6 +78,37 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
 
     log_trace("allocate descriptor sets");
     VK_CHECK_RESULT(vkAllocateDescriptorSets(vkd, &info, descriptors->vk_descriptors));
+}
+
+
+
+/**
+ * Return the number of descriptor sets allocated by the wrapper.
+ *
+ * @param descriptors the descriptors
+ * @return the descriptor set count
+ */
+uint32_t dvz_descriptors_set_count(DvzDescriptors* descriptors)
+{
+    ANN(descriptors);
+    ANN(descriptors->slots);
+    return dvz_slots_set_count(descriptors->slots);
+}
+
+
+
+/**
+ * Return a Vulkan descriptor-set handle by set index.
+ *
+ * @param descriptors the descriptors
+ * @param set the descriptor set index
+ * @return the descriptor set handle
+ */
+VkDescriptorSet dvz_descriptors_handle(DvzDescriptors* descriptors, uint32_t set)
+{
+    ANN(descriptors);
+    ASSERT(set < dvz_descriptors_set_count(descriptors));
+    return descriptors->vk_descriptors[set];
 }
 
 
@@ -101,7 +135,7 @@ void dvz_descriptors_buffer(
     VkWriteDescriptorSet dsw = {0};
     dsw.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     dsw.descriptorType = dvz_slots_descriptor_type(slots, set, binding);
-    dsw.dstSet = descriptors->vk_descriptors[set];
+    dsw.dstSet = dvz_descriptors_handle(descriptors, set);
     dsw.dstBinding = binding;
     dsw.dstArrayElement = array_idx;
     dsw.descriptorCount = 1;
@@ -133,7 +167,7 @@ void dvz_descriptors_image(
 
     VkWriteDescriptorSet dsw = {0};
     dsw.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    dsw.dstSet = descriptors->vk_descriptors[set];
+    dsw.dstSet = dvz_descriptors_handle(descriptors, set);
     dsw.dstBinding = binding;
     dsw.dstArrayElement = array_idx;
     dsw.descriptorCount = 1;
@@ -154,6 +188,7 @@ void dvz_cmd_bind_descriptors(
 
     DvzSlots* slots = descriptors->slots;
     ANN(slots);
+    ASSERT(first_set + set_count <= dvz_descriptors_set_count(descriptors));
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);

@@ -16,6 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <vulkan/vulkan_core.h>
 
@@ -140,6 +141,46 @@ dvz_rendering_area(DvzRendering* rendering, int32_t x, int32_t y, uint32_t width
  * @param count the number of layers
  */
 DVZ_EXPORT void dvz_rendering_layers(DvzRendering* rendering, uint32_t count);
+
+
+
+/**
+ * Return the number of configured color attachments.
+ *
+ * @param rendering the rendering
+ * @returns the color attachment count
+ */
+DVZ_EXPORT uint32_t dvz_rendering_color_count(DvzRendering* rendering);
+
+
+
+/**
+ * Return the configured layer count.
+ *
+ * @param rendering the rendering
+ * @returns the layer count
+ */
+DVZ_EXPORT uint32_t dvz_rendering_layer_count(DvzRendering* rendering);
+
+
+
+/**
+ * Return whether a depth attachment is configured.
+ *
+ * @param rendering the rendering
+ * @returns true when a depth attachment is configured
+ */
+DVZ_EXPORT bool dvz_rendering_has_depth(DvzRendering* rendering);
+
+
+
+/**
+ * Return whether a stencil attachment is configured.
+ *
+ * @param rendering the rendering
+ * @returns true when a stencil attachment is configured
+ */
+DVZ_EXPORT bool dvz_rendering_has_stencil(DvzRendering* rendering);
 
 
 
