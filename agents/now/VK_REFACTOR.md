@@ -13,6 +13,10 @@
 > - **Current closure note:** `DvzBarriers` is intentionally still public because it serves as a
 >   mutable command-recording builder rather than an owned wrapper. The remaining clearly sensitive
 >   public exposure is now mostly on the `vk` side, especially `vk/memory.h`.
+> - **Technical-debt note:** Public VMA-facing allocator policy in `vk/memory.h`,
+>   `vklite/buffers.h`, and `vklite/images.h` is currently accepted technical debt. The wrappers are
+>   already opaque; the deferred cleanup is removing VMA types from public headers, not another
+>   opacity pass.
 > - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` are now mostly closed
 >   for the active `vklite` wrapper surface. The remaining work is a final policy/doc pass plus any
 >   follow-up cleanup around `vk` allocator/memory exposure and, if desired later, stricter `vk`
@@ -29,6 +33,8 @@
    low-level public model or eventually move behind a stricter accessor surface.
 5. Keep the focused lifecycle tests current around repeated submit, destroy idempotence, and
    recreate/reset semantics.
+6. Unless external low-level API stabilization becomes a priority, defer the VMA abstraction pass;
+   treat it as intentional technical debt rather than an immediate blocker.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -255,6 +261,8 @@ Exit criteria:
      (`DvzVma`, `DvzAllocation`) before any further broad API churn.
    - `DvzBarriers` should remain public as an intentional builder/config surface unless its command
      recording role changes.
+   - `DvzVma` and `DvzAllocation` are already opaque; the remaining debt is the public exposure of
+     VMA flag types and allocator-policy details, which is currently deferred on purpose.
 6. Step 1 boundary contract (implemented subset):
    - `vklite` runtime code must treat `DvzBootstrap` as API-managed state, using bootstrap accessors instead
      of direct field mutation for instance/device/allocator ownership transitions.

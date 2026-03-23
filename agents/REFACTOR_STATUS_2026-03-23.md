@@ -173,6 +173,9 @@ Status: materially improved, ownership cleanup largely landed
 - Bootstrap/device/queue ownership semantics are clearer than before.
 - The remaining work in `vk` seems more about supporting a stricter `vklite` boundary than about
   missing core functionality.
+- The main remaining low-level API debt is allocator/memory exposure through public VMA-facing
+  headers; that is now better understood as deferred technical debt than as an unresolved opacity
+  problem.
 
 ### `vklite`
 
@@ -208,7 +211,9 @@ Status: intentionally dormant
    stop cleanly so the public boundary is intentional rather than endlessly transitional.
 4. The clearest still-sensitive public low-level exposure is now `include/datoviz/vk/memory.h`,
    while `include/datoviz/vk/queues.h` looks more like a deliberate low-level queue model.
-5. The local worktree has many untracked files, so keep future changes narrowly scoped and avoid
+5. `DvzVma` and `DvzAllocation` are already opaque; what remains exposed publicly is mostly VMA
+   policy/types, and that is a conscious tradeoff for now.
+6. The local worktree has many untracked files, so keep future changes narrowly scoped and avoid
    cleanup commands unless you intentionally want to sort local artifacts first.
 
 
@@ -226,6 +231,8 @@ Recommended order:
    [`memory.h`](/home/cyrille/GIT/Viz/datoviz/include/datoviz/vk/memory.h), and only later decide
    whether the queue model in [`queues.h`](/home/cyrille/GIT/Viz/datoviz/include/datoviz/vk/queues.h)
    should stay public as-is.
+   - If no external low-level API stabilization is needed soon, it is reasonable to defer the VMA
+     abstraction pass and treat it as documented technical debt.
 3. Reconcile architecture/testing docs with the code as it exists now:
    - note the presence of split test binaries in addition to `dvztest`
    - note that the active `vklite` wrapper-opacity pass is effectively complete
