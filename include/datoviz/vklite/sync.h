@@ -57,6 +57,13 @@ typedef struct DvzSubmit DvzSubmit;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Mutable command-recording helper for vkCmdPipelineBarrier2 state.
+ *
+ * DvzBarriers is intentionally public and non-opaque: callers build barrier state incrementally,
+ * inspect counts, and pass the recorded dependency info to command-encoding helpers. This type is
+ * treated as a builder/config object rather than an owned resource wrapper.
+ */
 struct DvzBarriers
 {
     VkDependencyInfo info;
@@ -67,37 +74,63 @@ struct DvzBarriers
 
 
 
-struct DvzFence
-{
-    DvzObject obj;
-    DvzDevice* device;
-    VkFence vk_fence;
-};
-
-
-
-struct DvzSemaphore
-{
-    DvzObject obj;
-    DvzDevice* device;
-    VkSemaphore vk_semaphore;
-    uint64_t value;
-};
-
-
-
-struct DvzSubmit
-{
-    DvzDevice* device;
-    VkSubmitInfo2 info;
-    VkSemaphoreSubmitInfo wait[DVZ_MAX_SEMAPHORES];
-    VkSemaphoreSubmitInfo signal[DVZ_MAX_SEMAPHORES];
-    VkCommandBufferSubmitInfo cmds[DVZ_MAX_COMMANDS];
-};
-
-
-
 EXTERN_C_ON
+
+/*************************************************************************************************/
+/*  Wrapper allocation                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Allocate an empty fence wrapper.
+ *
+ * @return allocated fence wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzFence* dvz_fence_create_wrapper(void);
+
+
+
+/**
+ * Free a fence wrapper allocated by dvz_fence_create_wrapper().
+ *
+ * @param fence fence wrapper to free
+ */
+DVZ_EXPORT void dvz_fence_free(DvzFence* fence);
+
+
+
+/**
+ * Allocate an empty semaphore wrapper.
+ *
+ * @return allocated semaphore wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzSemaphore* dvz_semaphore_create_wrapper(void);
+
+
+
+/**
+ * Free a semaphore wrapper allocated by dvz_semaphore_create_wrapper().
+ *
+ * @param semaphore semaphore wrapper to free
+ */
+DVZ_EXPORT void dvz_semaphore_free(DvzSemaphore* semaphore);
+
+
+
+/**
+ * Allocate an empty submit wrapper.
+ *
+ * @return allocated submit wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzSubmit* dvz_submit_create_wrapper(void);
+
+
+
+/**
+ * Free a submit wrapper allocated by dvz_submit_create_wrapper().
+ *
+ * @param submit submit wrapper to free
+ */
+DVZ_EXPORT void dvz_submit_free(DvzSubmit* submit);
 
 /*************************************************************************************************/
 /*  Memory barrier                                                                               */

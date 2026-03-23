@@ -372,7 +372,7 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     }
     if (canvas->timeline_ready && canvas->timeline_value > 0)
     {
-        dvz_semaphore_wait(&canvas->timeline_semaphore, canvas->timeline_value);
+        dvz_semaphore_wait(canvas->timeline_semaphore, canvas->timeline_value);
     }
 
     DvzCommands* cmds = dvz_commands_create_wrapper();
@@ -550,11 +550,16 @@ static int canvas_create_timeline(DvzCanvas* canvas)
 
     VkExternalSemaphoreHandleTypeFlags handle_type =
         canvas->supports_external_semaphore ? dvz_canvas_timeline_handle_type() : 0;
-    dvz_semaphore_timeline(canvas->device, 0, &canvas->timeline_semaphore, handle_type);
+    if (canvas->timeline_semaphore == NULL)
+    {
+        canvas->timeline_semaphore = dvz_semaphore_create_wrapper();
+        ANN(canvas->timeline_semaphore);
+    }
+    dvz_semaphore_timeline(canvas->device, 0, canvas->timeline_semaphore, handle_type);
 #if OS_UNIX
     if (handle_type != 0)
     {
-        int probe_fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
+        int probe_fd = dvz_semaphore_export_fd(canvas->timeline_semaphore, handle_type);
         if (probe_fd >= 0)
         {
             close(probe_fd);
@@ -595,7 +600,7 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
     int fd = -1;
     if (!canvas->test_force_wait_semaphore_export_failure)
     {
-        fd = dvz_semaphore_export_fd(&canvas->timeline_semaphore, handle_type);
+        fd = dvz_semaphore_export_fd(canvas->timeline_semaphore, handle_type);
     }
     if (frame->wait_semaphore_fd >= 0)
     {
@@ -661,7 +666,9 @@ static void canvas_destroy_timeline(DvzCanvas* canvas)
     {
         return;
     }
-    dvz_semaphore_destroy(&canvas->timeline_semaphore);
+    dvz_semaphore_destroy(canvas->timeline_semaphore);
+    dvz_semaphore_free(canvas->timeline_semaphore);
+    canvas->timeline_semaphore = NULL;
     canvas->timeline_ready = false;
 }
 
@@ -857,7 +864,7 @@ static int canvas_offscreen_capture_rgba_into(
     }
     if (canvas->timeline_value > 0)
     {
-        dvz_semaphore_wait(&canvas->timeline_semaphore, canvas->timeline_value);
+        dvz_semaphore_wait(canvas->timeline_semaphore, canvas->timeline_value);
     }
 
     DvzBuffer* staging = dvz_buffer_create_wrapper();
@@ -906,23 +913,29 @@ static int canvas_offscreen_capture_rgba_into(
     dvz_cmd_end(cmds);
     dvz_commands_free(cmds);
 
-    DvzFence fence = {0};
-    dvz_fence(canvas->device, false, &fence);
-    DvzSubmit submit = {0};
-    dvz_submit(&submit);
-    dvz_submit_command(&submit, cmd);
-    int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, dvz_fence_handle(&fence));
+    DvzFence* fence = dvz_fence_create_wrapper();
+    DvzSubmit* submit = dvz_submit_create_wrapper();
+    ANN(fence);
+    ANN(submit);
+    dvz_fence(canvas->device, false, fence);
+    dvz_submit(submit);
+    dvz_submit_command(submit, cmd);
+    int32_t submit_rc = dvz_submit_send(submit, canvas->offscreen_queue, dvz_fence_handle(fence));
     if (submit_rc != VK_SUCCESS)
     {
-        dvz_fence_destroy(&fence);
+        dvz_fence_destroy(fence);
+        dvz_fence_free(fence);
+        dvz_submit_free(submit);
         dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, cmd);
         dvz_buffer_destroy(staging);
         dvz_buffer_free(staging);
         log_error("failed to submit offscreen capture copy commands (%d)", submit_rc);
         return -1;
     }
-    dvz_fence_wait(&fence);
-    dvz_fence_destroy(&fence);
+    dvz_fence_wait(fence);
+    dvz_fence_destroy(fence);
+    dvz_fence_free(fence);
+    dvz_submit_free(submit);
     dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, cmd);
 
     dvz_buffer_download(staging, 0, expected_size, out_rgba);
@@ -1287,11 +1300,12 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         dvz_cmd_end(cmds);
         dvz_commands_free(cmds);
 
-        DvzSubmit submit = {0};
-        dvz_submit(&submit);
-        dvz_submit_command(&submit, canvas->offscreen_command_buffer);
+        DvzSubmit* submit = dvz_submit_create_wrapper();
+        ANN(submit);
+        dvz_submit(submit);
+        dvz_submit_command(submit, canvas->offscreen_command_buffer);
         dvz_submit_signal(
-            &submit, dvz_semaphore_handle(&canvas->timeline_semaphore), wait_value,
+            submit, dvz_semaphore_handle(canvas->timeline_semaphore), wait_value,
             VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
         int32_t submit_rc = 0;
         if (canvas->test_force_offscreen_submit_status_set)
@@ -1302,8 +1316,9 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         }
         else
         {
-            submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, VK_NULL_HANDLE);
+            submit_rc = dvz_submit_send(submit, canvas->offscreen_queue, VK_NULL_HANDLE);
         }
+        dvz_submit_free(submit);
         if (submit_rc != VK_SUCCESS)
         {
             if (submit_rc == VK_ERROR_DEVICE_LOST)

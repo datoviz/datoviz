@@ -135,15 +135,19 @@ int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
     AT(dvz_commands_handle(cmds) == VK_NULL_HANDLE);
     dvz_commands_free(cmds);
 
-    DvzFence fence = {0};
-    dvz_fence(device, false, &fence);
-    dvz_fence_destroy(&fence);
-    dvz_fence_destroy(&fence);
+    DvzFence* fence = dvz_fence_create_wrapper();
+    ANN(fence);
+    dvz_fence(device, false, fence);
+    dvz_fence_destroy(fence);
+    dvz_fence_destroy(fence);
+    dvz_fence_free(fence);
 
-    DvzSemaphore semaphore = {0};
-    dvz_semaphore(device, &semaphore);
-    dvz_semaphore_destroy(&semaphore);
-    dvz_semaphore_destroy(&semaphore);
+    DvzSemaphore* semaphore = dvz_semaphore_create_wrapper();
+    ANN(semaphore);
+    dvz_semaphore(device, semaphore);
+    dvz_semaphore_destroy(semaphore);
+    dvz_semaphore_destroy(semaphore);
+    dvz_semaphore_free(semaphore);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
@@ -211,37 +215,41 @@ int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
     dvz_cmd_end(cmds);
 
-    DvzSubmit submit = {0};
+    DvzSubmit* submit = dvz_submit_create_wrapper();
+    ANN(submit);
     AT_EXPECTED_ERROR_STRICT(
-        suite, (dvz_submit_send(&submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
+        suite, (dvz_submit_send(submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
 
-    dvz_submit(&submit);
-    AT(dvz_submit_is_empty(&submit));
-    AT(dvz_submit_wait_count(&submit) == 0);
-    AT(dvz_submit_signal_count(&submit) == 0);
-    AT(dvz_submit_command_count(&submit) == 0);
+    dvz_submit(submit);
+    AT(dvz_submit_is_empty(submit));
+    AT(dvz_submit_wait_count(submit) == 0);
+    AT(dvz_submit_signal_count(submit) == 0);
+    AT(dvz_submit_command_count(submit) == 0);
 
     AT_EXPECTED_ERROR_STRICT(
-        suite, (dvz_submit_send(&submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
+        suite, (dvz_submit_send(submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
 
-    dvz_submit_command(&submit, dvz_commands_handle(cmds));
-    AT(!dvz_submit_is_empty(&submit));
-    AT(dvz_submit_command_count(&submit) == 1);
+    dvz_submit_command(submit, dvz_commands_handle(cmds));
+    AT(!dvz_submit_is_empty(submit));
+    AT(dvz_submit_command_count(submit) == 1);
 
-    DvzFence fence = {0};
-    dvz_fence(device, false, &fence);
-    AT(dvz_submit_send(&submit, dvz_queue_handle(queue), dvz_fence_handle(&fence)) == VK_SUCCESS);
-    dvz_fence_wait(&fence);
+    DvzFence* fence = dvz_fence_create_wrapper();
+    ANN(fence);
+    dvz_fence(device, false, fence);
+    AT(dvz_submit_send(submit, dvz_queue_handle(queue), dvz_fence_handle(fence)) == VK_SUCCESS);
+    dvz_fence_wait(fence);
 
-    dvz_submit(&submit);
-    AT(dvz_submit_is_empty(&submit));
-    AT(dvz_submit_command_count(&submit) == 0);
+    dvz_submit(submit);
+    AT(dvz_submit_is_empty(submit));
+    AT(dvz_submit_command_count(submit) == 0);
 
-    dvz_fence_reset(&fence);
-    dvz_submit_command(&submit, dvz_commands_handle(cmds));
-    AT(dvz_submit_send(&submit, dvz_queue_handle(queue), dvz_fence_handle(&fence)) == VK_SUCCESS);
-    dvz_fence_wait(&fence);
-    dvz_fence_destroy(&fence);
+    dvz_fence_reset(fence);
+    dvz_submit_command(submit, dvz_commands_handle(cmds));
+    AT(dvz_submit_send(submit, dvz_queue_handle(queue), dvz_fence_handle(fence)) == VK_SUCCESS);
+    dvz_fence_wait(fence);
+    dvz_fence_destroy(fence);
+    dvz_fence_free(fence);
+    dvz_submit_free(submit);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_commands_destroy(cmds);

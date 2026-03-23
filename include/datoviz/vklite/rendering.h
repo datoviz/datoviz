@@ -100,6 +100,10 @@ DVZ_EXPORT void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue cle
 /**
  * Allocate an empty rendering wrapper.
  *
+ * DvzRendering is intentionally opaque. It owns a coupled rendering-state bundle whose attachment
+ * arrays and cached Vulkan structs are kept consistent through the public API rather than direct
+ * field mutation.
+ *
  * @return allocated rendering wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzRendering* dvz_rendering_create(void);
@@ -107,7 +111,10 @@ DVZ_EXPORT DvzRendering* dvz_rendering_create(void);
 
 
 /**
- * Initialize a rendering wrapper.
+ * Initialize or reset a rendering wrapper.
+ *
+ * Reinitialization clears any previously configured attachment state so callers can safely reuse
+ * the wrapper across recording passes without relying on direct struct mutation.
  *
  * @param rendering the rendering
  */

@@ -17,9 +17,10 @@
 #include <volk.h>
 
 #include "_alloc.h"
-#include "_vk_utils.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_sync.h"
+#include "_vk_utils.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sync.h"
@@ -32,6 +33,100 @@
 /*************************************************************************************************/
 
 #define MAX_WAIT 100000000
+
+
+
+/*************************************************************************************************/
+/*  Wrapper allocation                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Allocate an empty fence wrapper.
+ *
+ * @return allocated fence wrapper, or NULL on allocation failure
+ */
+DvzFence* dvz_fence_create_wrapper(void)
+{
+    DvzFence* fence = (DvzFence*)dvz_calloc(1, sizeof(DvzFence));
+    ANN(fence);
+    return fence;
+}
+
+
+
+/**
+ * Free a fence wrapper allocated by dvz_fence_create_wrapper().
+ *
+ * @param fence fence wrapper to free
+ */
+void dvz_fence_free(DvzFence* fence)
+{
+    if (fence == NULL)
+    {
+        return;
+    }
+    dvz_free(fence);
+}
+
+
+
+/**
+ * Allocate an empty semaphore wrapper.
+ *
+ * @return allocated semaphore wrapper, or NULL on allocation failure
+ */
+DvzSemaphore* dvz_semaphore_create_wrapper(void)
+{
+    DvzSemaphore* semaphore = (DvzSemaphore*)dvz_calloc(1, sizeof(DvzSemaphore));
+    ANN(semaphore);
+    return semaphore;
+}
+
+
+
+/**
+ * Free a semaphore wrapper allocated by dvz_semaphore_create_wrapper().
+ *
+ * @param semaphore semaphore wrapper to free
+ */
+void dvz_semaphore_free(DvzSemaphore* semaphore)
+{
+    if (semaphore == NULL)
+    {
+        return;
+    }
+    dvz_free(semaphore);
+}
+
+
+
+/**
+ * Allocate an empty submit wrapper.
+ *
+ * @return allocated submit wrapper, or NULL on allocation failure
+ */
+DvzSubmit* dvz_submit_create_wrapper(void)
+{
+    DvzSubmit* submit = (DvzSubmit*)dvz_calloc(1, sizeof(DvzSubmit));
+    ANN(submit);
+    return submit;
+}
+
+
+
+/**
+ * Free a submit wrapper allocated by dvz_submit_create_wrapper().
+ *
+ * @param submit submit wrapper to free
+ */
+void dvz_submit_free(DvzSubmit* submit)
+{
+    if (submit == NULL)
+    {
+        return;
+    }
+    dvz_free(submit);
+}
 
 
 
@@ -414,7 +509,10 @@ void dvz_fence_reset(DvzFence* fence)
 
 void dvz_fence_destroy(DvzFence* fence)
 {
-    ANN(fence);
+    if (fence == NULL)
+    {
+        return;
+    }
     if (!dvz_obj_is_created(&fence->obj))
     {
         log_trace("skip destruction of already-destroyed fence");
@@ -587,7 +685,10 @@ int dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTy
 
 void dvz_semaphore_destroy(DvzSemaphore* semaphore)
 {
-    ANN(semaphore);
+    if (semaphore == NULL)
+    {
+        return;
+    }
     if (!dvz_obj_is_created(&semaphore->obj))
     {
         log_trace("skip destruction of already-destroyed semaphore");

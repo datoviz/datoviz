@@ -92,7 +92,7 @@ struct DvzCanvas
     bool supports_external_semaphore;
     DvzVma* allocator;
     bool allocator_ready;
-    DvzSemaphore timeline_semaphore;
+    DvzSemaphore* timeline_semaphore;
     uint64_t timeline_value;
     bool timeline_ready;
     bool test_force_wait_semaphore_export_failure;

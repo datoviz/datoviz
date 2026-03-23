@@ -65,9 +65,9 @@ struct DvzCanvasSwapchainSlot
     DvzImages* offscreen_images;
     DvzImageViews* offscreen_views;
     DvzAllocation* offscreen_alloc;
-    DvzSemaphore image_available;
-    DvzSemaphore render_finished;
-    DvzFence in_flight;
+    DvzSemaphore* image_available;
+    DvzSemaphore* render_finished;
+    DvzFence* in_flight;
     VkCommandBuffer command_buffer;
     VkImageLayout offscreen_layout;
     VkImageLayout swapchain_layout;
@@ -632,9 +632,15 @@ static bool canvas_slot_init(
         slot->memory_fd = -1;
     }
 
-    dvz_semaphore(canvas->device, &slot->image_available);
-    dvz_semaphore(canvas->device, &slot->render_finished);
-    dvz_fence(canvas->device, true, &slot->in_flight);
+    slot->image_available = dvz_semaphore_create_wrapper();
+    slot->render_finished = dvz_semaphore_create_wrapper();
+    slot->in_flight = dvz_fence_create_wrapper();
+    ANN(slot->image_available);
+    ANN(slot->render_finished);
+    ANN(slot->in_flight);
+    dvz_semaphore(canvas->device, slot->image_available);
+    dvz_semaphore(canvas->device, slot->render_finished);
+    dvz_fence(canvas->device, true, slot->in_flight);
     slot->ready = true;
     return true;
 }
@@ -885,9 +891,15 @@ static void canvas_destroy_slot(
         }
         slot->offscreen_image = VK_NULL_HANDLE;
     }
-    dvz_semaphore_destroy(&slot->image_available);
-    dvz_semaphore_destroy(&slot->render_finished);
-    dvz_fence_destroy(&slot->in_flight);
+    dvz_semaphore_destroy(slot->image_available);
+    dvz_semaphore_free(slot->image_available);
+    slot->image_available = NULL;
+    dvz_semaphore_destroy(slot->render_finished);
+    dvz_semaphore_free(slot->render_finished);
+    slot->render_finished = NULL;
+    dvz_fence_destroy(slot->in_flight);
+    dvz_fence_free(slot->in_flight);
+    slot->in_flight = NULL;
 #if OS_UNIX
     if (slot->memory_fd >= 0)
     {
@@ -1287,22 +1299,24 @@ static int canvas_submit_active_slot(
 
     // Ownership contract: one slot owns one fence + per-frame semaphores; the main queue is used
     // for both submit and present, and slot synchronization primitives are reset on next acquire.
-    DvzSubmit submit = {0};
-    dvz_submit(&submit);
-    dvz_submit_wait(&submit, dvz_semaphore_handle(&state->active_slot->image_available), 0, wait_stage);
+    DvzSubmit* submit = dvz_submit_create_wrapper();
+    ANN(submit);
+    dvz_submit(submit);
+    dvz_submit_wait(submit, dvz_semaphore_handle(state->active_slot->image_available), 0, wait_stage);
     if (cmd != VK_NULL_HANDLE)
     {
-        dvz_submit_command(&submit, cmd);
+        dvz_submit_command(submit, cmd);
     }
     dvz_submit_signal(
-        &submit, dvz_semaphore_handle(&state->active_slot->render_finished), 0, signal_stage);
+        submit, dvz_semaphore_handle(state->active_slot->render_finished), 0, signal_stage);
     dvz_submit_signal(
-        &submit, dvz_semaphore_handle(&canvas->timeline_semaphore), wait_value,
+        submit, dvz_semaphore_handle(canvas->timeline_semaphore), wait_value,
         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
     int32_t submit_res =
-        dvz_submit_send(&submit, queue, dvz_fence_handle(&state->active_slot->in_flight));
+        dvz_submit_send(submit, queue, dvz_fence_handle(state->active_slot->in_flight));
+    dvz_submit_free(submit);
     if (canvas_handle_submit_status(state, submit_res) != 0)
     {
         return -1;
@@ -1357,8 +1371,8 @@ static void canvas_select_acquire_slot(
 
     uint32_t slot_idx = state->frame_index % state->image_count;
     DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
-    dvz_fence_wait(&slot->in_flight);
-    dvz_fence_reset(&slot->in_flight);
+    dvz_fence_wait(slot->in_flight);
+    dvz_fence_reset(slot->in_flight);
 
     *slot_idx_out = slot_idx;
     *slot_out = slot;
@@ -1390,7 +1404,7 @@ static int canvas_acquire_image_for_slot(
     if (!canvas_test_consume_forced_status(&state->test_force_acquire_status, &acquire_status))
     {
         acquire_status = dvz_swapchain_acquire(
-            state->swapchain_wrapper, dvz_semaphore_handle(&slot->image_available), UINT64_MAX,
+            state->swapchain_wrapper, dvz_semaphore_handle(slot->image_available), UINT64_MAX,
             &image_index);
     }
     int acquire_status_rc = canvas_handle_acquire_status(canvas, state, acquire_status, slot_idx);
@@ -1448,7 +1462,7 @@ static int canvas_dispatch_present(DvzCanvas* canvas, DvzCanvasSwapchain* state,
     {
         present_status = dvz_swapchain_present(
             state->swapchain_wrapper, queue, index,
-            dvz_semaphore_handle(&state->active_slot->render_finished));
+            dvz_semaphore_handle(state->active_slot->render_finished));
     }
     return canvas_handle_present_status(canvas, state, present_status, index);
 }
@@ -1848,22 +1862,28 @@ static int canvas_capture_copy_to_staging(
     dvz_cmd_end(cmds);
     dvz_commands_free(cmds);
 
-    DvzFence fence = {0};
-    dvz_fence(canvas->device, false, &fence);
-    DvzSubmit submit = {0};
-    dvz_submit(&submit);
-    dvz_submit_command(&submit, cmd);
-    int32_t submit_rc = dvz_submit_send(&submit, state->queue, dvz_fence_handle(&fence));
+    DvzFence* fence = dvz_fence_create_wrapper();
+    DvzSubmit* submit = dvz_submit_create_wrapper();
+    ANN(fence);
+    ANN(submit);
+    dvz_fence(canvas->device, false, fence);
+    dvz_submit(submit);
+    dvz_submit_command(submit, cmd);
+    int32_t submit_rc = dvz_submit_send(submit, state->queue, dvz_fence_handle(fence));
     if (submit_rc != VK_SUCCESS)
     {
-        dvz_fence_destroy(&fence);
+        dvz_fence_destroy(fence);
+        dvz_fence_free(fence);
+        dvz_submit_free(submit);
         dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
         log_error("failed to submit canvas capture copy commands (%d)", submit_rc);
         return -1;
     }
 
-    dvz_fence_wait(&fence);
-    dvz_fence_destroy(&fence);
+    dvz_fence_wait(fence);
+    dvz_fence_destroy(fence);
+    dvz_fence_free(fence);
+    dvz_submit_free(submit);
     dvz_command_buffer_free(canvas->device, state->queue_family, cmd);
     return 0;
 }
