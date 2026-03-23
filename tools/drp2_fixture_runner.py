@@ -63,6 +63,90 @@ class SemanticFailure(Exception):
         self.message = message
 
 
+class CapabilityFailure(Exception):
+    """Represent a capability validation failure."""
+
+    def __init__(self, code: str, command_index: int, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+        self.command_index = command_index
+        self.message = message
+
+
+class DRP2CapabilityValidator:
+    """Validate fixture-level capability gates for the active DRP2 corpus."""
+
+    def __init__(self, capabilities: Dict[str, Any]) -> None:
+        self.capabilities = capabilities
+
+    def validate(self, commands: Sequence[Dict[str, Any]]) -> None:
+        for index, command in enumerate(commands):
+            handler = getattr(self, f'_handle_{command["cmd"]}', None)
+            if handler is not None:
+                handler(index, command)
+
+    def _handle_CreateBuffer(self, index: int, command: Dict[str, Any]) -> None:
+        max_buffer_size = self.capabilities.get('max_buffer_size')
+        if max_buffer_size is not None and command['size'] > max_buffer_size:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                f'buffer size {command["size"]} exceeds capability max_buffer_size {max_buffer_size}',
+            )
+
+    def _handle_CreateTexture(self, index: int, command: Dict[str, Any]) -> None:
+        supported_formats = self.capabilities.get('supported_texture_formats')
+        if supported_formats is not None and command['format'] not in supported_formats:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                f'texture format {command["format"]} is not supported by the fixture capability set',
+            )
+
+        supported_sample_counts = self.capabilities.get('supported_sample_counts')
+        if supported_sample_counts is not None and command['sample_count'] not in supported_sample_counts:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                f'sample count {command["sample_count"]} is not supported by the fixture capability set',
+            )
+
+        dimension = command['dimension']
+        if dimension == '1d':
+            max_dimension = self.capabilities.get('max_texture_dimension_1d')
+            extent = command['width']
+        elif dimension == '2d':
+            max_dimension = self.capabilities.get('max_texture_dimension_2d')
+            extent = max(command['width'], command['height'])
+        else:
+            max_dimension = self.capabilities.get('max_texture_dimension_3d')
+            extent = max(command['width'], command['height'], command['depth'])
+        if max_dimension is not None and extent > max_dimension:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                f'texture extent {extent} exceeds capability limit {max_dimension} for dimension {dimension}',
+            )
+
+    def _handle_BeginComputePass(self, index: int, command: Dict[str, Any]) -> None:
+        supports_compute = self.capabilities.get('supports_compute')
+        if supports_compute is False:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                'compute is disabled by the fixture capability set',
+            )
+
+    def _handle_DispatchWorkgroups(self, index: int, command: Dict[str, Any]) -> None:
+        supports_compute = self.capabilities.get('supports_compute')
+        if supports_compute is False:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                'compute is disabled by the fixture capability set',
+            )
+
+
 class DRP2SemanticValidator:
     """Validate the current active DRP2 fixture corpus semantically."""
 
@@ -480,6 +564,19 @@ class DRP2FixtureRunner:
                 'command_index': exc.command_index,
                 'message': exc.message,
             }
+
+        capabilities = fixture.get('capabilities')
+        if capabilities is not None:
+            try:
+                DRP2CapabilityValidator(capabilities).validate(commands)
+            except CapabilityFailure as exc:
+                return {
+                    'outcome': 'error',
+                    'phase': 'capability_validation',
+                    'code': exc.code,
+                    'command_index': exc.command_index,
+                    'message': exc.message,
+                }
 
         return {
             'outcome': 'success',

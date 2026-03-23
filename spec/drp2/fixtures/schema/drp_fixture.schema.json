@@ -44,7 +44,42 @@
       ]
     },
     "capabilities": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_buffer_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_texture_dimension_1d": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_texture_dimension_2d": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_texture_dimension_3d": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "supported_texture_formats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supported_sample_counts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "supports_compute": {
+          "type": "boolean"
+        }
+      }
     },
     "tags": {
       "type": "array",

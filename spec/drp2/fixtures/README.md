@@ -38,7 +38,10 @@ The first negative corpus should stay intentionally small and cover the core val
 11. texture range violation,
 12. missing command discriminator,
 13. wrong field names,
-14. missing required command fields.
+14. missing required command fields,
+15. unsupported texture format,
+16. unsupported sample count,
+17. compute disabled by capability policy.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 

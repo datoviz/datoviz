@@ -1,0 +1,42 @@
+{
+  "name": "invalid_capability_sample_count",
+  "description": "CreateTexture requests a sample count not listed in the fixture capability set.",
+  "reason": "The capability report declares supported sample counts, and this fixture only advertises single-sample textures.",
+  "fix": "Use a supported sample count or run against a capability set that advertises the requested sample count.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "capabilities": {
+    "supported_sample_counts": [
+      1
+    ]
+  },
+  "tags": [
+    "negative",
+    "capability",
+    "texture"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 4
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "capability_validation",
+    "code": "DRP2_ERR_UNSUPPORTED_CAPABILITY",
+    "command_index": 0
+  }
+}

@@ -11,8 +11,8 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 
 ## Status
 
-- Status: planning and contract-definition only
-- Build integration: none yet
+- Status: active contract-definition with executable conformance fixtures
+- Build integration: fixture validation available through the Python runner
 - Implementation priority: after the current `vk`/`vklite` boundary cleanup is sufficiently stable
 
 
@@ -27,6 +27,37 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 - `GLOSSARY.md`: fixed terminology
 - `schema/`: machine-readable schema material
 - `fixtures/`: canonical conformance traces
+
+
+## Validation
+
+The current DRP2 contract can be checked with the fixture runner:
+
+```bash
+just drp2-fixtures
+```
+
+The current spec-level validation entrypoint is:
+
+```bash
+just spec-check
+```
+
+Direct invocation is also available:
+
+```bash
+python3 tools/drp2_fixture_runner.py
+```
+
+Useful focused examples:
+
+```bash
+python3 tools/drp2_fixture_runner.py spec/drp2/fixtures/negative_schema
+python3 tools/drp2_fixture_runner.py --tag queue
+python3 tools/drp2_fixture_runner.py --json spec/drp2/fixtures/positive/write_buffer_basic.json
+```
+
+The runner contract lives in `fixtures/RUNNER.md`.
 
 
 ## Scope Discipline

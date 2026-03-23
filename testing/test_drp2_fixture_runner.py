@@ -31,6 +31,17 @@ def test_drp2_fixture_runner_can_filter_schema_negatives() -> None:
     assert all(result.actual_phase == 'schema_validation' for result in results)
 
 
+def test_drp2_fixture_runner_can_filter_capability_negatives() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['capability'])
+    results = runner.run_fixtures(fixtures)
+
+    assert len(results) == 4
+    assert all(result.passed for result in results)
+    assert all(result.actual_phase == 'capability_validation' for result in results)
+    assert all(result.actual_code == 'DRP2_ERR_UNSUPPORTED_CAPABILITY' for result in results)
+
+
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:
     root = Path(__file__).resolve().parents[1]
     fixture = 'spec/drp2/fixtures/positive/write_buffer_basic.json'
@@ -51,4 +62,28 @@ def test_drp2_fixture_runner_cli_json_output_shape() -> None:
     assert result['actual_outcome'] == 'success'
     assert result['actual_phase'] is None
     assert result['actual_code'] is None
+    assert result['passed'] is True
+
+
+def test_drp2_fixture_runner_cli_json_output_for_capability_negative() -> None:
+    root = Path(__file__).resolve().parents[1]
+    fixture = 'spec/drp2/fixtures/negative/invalid_capability_compute_disabled.json'
+    proc = subprocess.run(
+        [sys.executable, 'tools/drp2_fixture_runner.py', '--json', fixture],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(proc.stdout)
+
+    assert isinstance(payload, list)
+    assert len(payload) == 1
+    result = payload[0]
+    assert result['fixture_name'] == 'invalid_capability_compute_disabled'
+    assert result['fixture_path'] == fixture
+    assert result['actual_outcome'] == 'error'
+    assert result['actual_phase'] == 'capability_validation'
+    assert result['actual_code'] == 'DRP2_ERR_UNSUPPORTED_CAPABILITY'
+    assert result['actual_command_index'] == 1
     assert result['passed'] is True

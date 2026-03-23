@@ -19,3 +19,16 @@ Do not use it for execution planning or broad architecture essays.
 3. If a document is primarily explanatory, comparative, or tutorial-like, it belongs in `docs/`.
 4. Avoid speculative API sketches in `spec/` unless they are directly needed to validate the written
    contract.
+
+
+## Validation
+
+Spec-owned executable checks should be runnable from the repository root.
+
+Current entrypoint:
+
+```bash
+just spec-check
+```
+
+At the moment this validates the DRP2 fixture corpus and the DRP2 fixture-runner tests.

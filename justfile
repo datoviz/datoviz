@@ -1038,6 +1038,11 @@ drp2-fixtures *args='':
     @python3 tools/drp2_fixture_runner.py {{args}}
 #
 
+spec-check:
+    @python3 tools/drp2_fixture_runner.py
+    @.venv/bin/pytest -q testing/test_drp2_fixture_runner.py
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Python packaging

@@ -1,0 +1,42 @@
+{
+  "name": "invalid_capability_texture_format",
+  "description": "CreateTexture requests a texture format not listed in the fixture capability set.",
+  "reason": "The capability report declares which texture formats are supported, and rgba8unorm is intentionally omitted here.",
+  "fix": "Choose a supported texture format or run against a capability set that advertises rgba8unorm support.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "capabilities": {
+    "supported_texture_formats": [
+      "bgra8unorm"
+    ]
+  },
+  "tags": [
+    "negative",
+    "capability",
+    "texture"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "capability_validation",
+    "code": "DRP2_ERR_UNSUPPORTED_CAPABILITY",
+    "command_index": 0
+  }
+}

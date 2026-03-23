@@ -1,0 +1,40 @@
+{
+  "name": "invalid_capability_texture_dimension_2d",
+  "description": "CreateTexture requests a 2D extent larger than the fixture capability limit.",
+  "reason": "The fixture capability set explicitly caps max_texture_dimension_2d below the requested width.",
+  "fix": "Shrink the texture extent or run against a capability set with a larger 2D texture limit.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "capabilities": {
+    "max_texture_dimension_2d": 4
+  },
+  "tags": [
+    "negative",
+    "capability",
+    "texture"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 8,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "capability_validation",
+    "code": "DRP2_ERR_UNSUPPORTED_CAPABILITY",
+    "command_index": 0
+  }
+}

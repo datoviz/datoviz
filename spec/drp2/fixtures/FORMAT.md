@@ -82,6 +82,9 @@ This field is normative when present.
 If a fixture depends on a capability gate, the gate must be expressed here rather than buried in
 free-form notes.
 
+For the first executable `2.0` corpus, the active fixture capability shape is defined in
+`CAPABILITIES.md`.
+
 
 ### `tags`
 
