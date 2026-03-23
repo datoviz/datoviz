@@ -114,8 +114,9 @@ Rules:
 2. a command buffer becomes live only if its parent encoder finishes successfully,
 3. `QueueSubmit` requires every referenced command buffer to be live and finished,
 4. command buffers are immutable once created,
-5. DRP2 `2.0` has no explicit `DestroyCommandBuffer`,
-6. runtimes may reclaim backend-native command-buffer resources after submission or stream teardown,
+5. a command buffer may be submitted at most once in active DRP2 `2.0`,
+6. DRP2 `2.0` has no explicit `DestroyCommandBuffer`,
+7. runtimes may reclaim backend-native command-buffer resources after submission or stream teardown,
    but that is not a protocol-visible state change.
 
 
@@ -232,6 +233,13 @@ Rules:
 7. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
    cannot validate the slot against a known layout.
 
+Active runner note:
+
+1. the active fixture runner models the presence of a bound pipeline as a pass-local prerequisite for
+   `Draw`, `DrawIndexed`, and `DispatchWorkgroups`,
+2. pipeline-object creation and index-buffer binding remain outside the active command surface and are
+   therefore not yet validated as first-class object lifetimes.
+
 
 ## Submission And Destruction Safety
 
@@ -241,14 +249,15 @@ Rules:
 
 1. an object referenced by an open encoder or open pass cannot be destroyed,
 2. a command buffer referenced by a `QueueSubmit` is consumed as immutable recorded work,
-3. destroying a resource that is referenced by a finished but not yet submitted command buffer is
+3. a command buffer that has already been submitted cannot be submitted again in active DRP2 `2.0`,
+4. destroying a resource that is referenced by a finished but not yet submitted command buffer is
    invalid,
-4. destroying a resource that is referenced by already submitted work is invalid unless the runtime
+5. destroying a resource that is referenced by already submitted work is invalid unless the runtime
    explicitly defines completion tracking beyond the active `2.0` contract,
-5. because active `2.0` has no fence or completion primitive, clients should conservatively treat
+6. because active `2.0` has no fence or completion primitive, clients should conservatively treat
    submitted work as still using its referenced resources for the remainder of the stream,
-6. destroying an already-destroyed object is invalid,
-7. destroying an object of the wrong kind is invalid.
+7. destroying an already-destroyed object is invalid,
+8. destroying an object of the wrong kind is invalid.
 
 Validation consequences:
 

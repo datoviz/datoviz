@@ -242,6 +242,14 @@ class DRP2SemanticValidator:
             )
         return pass_info
 
+    def _require_bound_pipeline(self, index: int, pass_info: Dict[str, Any]) -> None:
+        if pass_info.get('bound_pipeline_id') is None:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'{pass_info["kind"]} pass {pass_info["id"]} has no bound pipeline',
+            )
+
     def _buffer_usage(self, index: int, buffer_id: int, required: str) -> ObjectState:
         state = self._resolve_live(index, buffer_id, 'buffer')
         usage = state.data['usage']
@@ -361,6 +369,7 @@ class DRP2SemanticValidator:
         encoder['state'] = 'finished'
         self.command_buffers[command_buffer_id] = {
             'resources': set(encoder['resources']),
+            'state': 'finished',
             'submitted': False,
         }
 
@@ -372,9 +381,11 @@ class DRP2SemanticValidator:
         self._reserve_id(index, pass_id, 'pass', {})
         encoder['open_pass'] = pass_id
         self.passes[pass_id] = {
+            'id': pass_id,
             'kind': 'compute',
             'encoder_id': command['encoder_id'],
             'state': 'open',
+            'bound_pipeline_id': None,
         }
 
     def _handle_EndComputePass(self, index: int, command: Dict[str, Any]) -> None:
@@ -403,10 +414,28 @@ class DRP2SemanticValidator:
         self._reserve_id(index, pass_id, 'pass', {})
         encoder['open_pass'] = pass_id
         self.passes[pass_id] = {
+            'id': pass_id,
             'kind': 'render',
             'encoder_id': command['encoder_id'],
             'state': 'open',
+            'bound_pipeline_id': None,
         }
+
+    def _handle_SetPipeline(self, index: int, command: Dict[str, Any]) -> None:
+        pass_info = self._resolve_pass(index, command['pass_id'])
+        pass_info['bound_pipeline_id'] = command['pipeline_id']
+
+    def _handle_SetViewport(self, index: int, command: Dict[str, Any]) -> None:
+        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+
+    def _handle_SetScissor(self, index: int, command: Dict[str, Any]) -> None:
+        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+
+    def _handle_SetBlendConstant(self, index: int, command: Dict[str, Any]) -> None:
+        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+
+    def _handle_SetStencilReference(self, index: int, command: Dict[str, Any]) -> None:
+        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
 
     def _handle_EndRenderPass(self, index: int, command: Dict[str, Any]) -> None:
         pass_info = self._resolve_pass(index, command['pass_id'], expected_kind='render')
@@ -418,13 +447,22 @@ class DRP2SemanticValidator:
         encoder['open_pass'] = None
 
     def _handle_Draw(self, index: int, command: Dict[str, Any]) -> None:
-        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+        pass_info = self._require_active_pass_for_command(
+            index, command['pass_id'], expected_kind='render'
+        )
+        self._require_bound_pipeline(index, pass_info)
 
     def _handle_DrawIndexed(self, index: int, command: Dict[str, Any]) -> None:
-        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')
+        pass_info = self._require_active_pass_for_command(
+            index, command['pass_id'], expected_kind='render'
+        )
+        self._require_bound_pipeline(index, pass_info)
 
     def _handle_DispatchWorkgroups(self, index: int, command: Dict[str, Any]) -> None:
-        self._require_active_pass_for_command(index, command['pass_id'], expected_kind='compute')
+        pass_info = self._require_active_pass_for_command(
+            index, command['pass_id'], expected_kind='compute'
+        )
+        self._require_bound_pipeline(index, pass_info)
 
     def _handle_CopyBufferToBuffer(self, index: int, command: Dict[str, Any]) -> None:
         encoder = self._resolve_encoder(index, command['encoder_id'])
@@ -464,7 +502,20 @@ class DRP2SemanticValidator:
     def _handle_QueueSubmit(self, index: int, command: Dict[str, Any]) -> None:
         for command_buffer_id in command['command_buffer_ids']:
             self._resolve_live(index, command_buffer_id, 'command_buffer')
-            self.command_buffers[command_buffer_id]['submitted'] = True
+            command_buffer = self.command_buffers[command_buffer_id]
+            if command_buffer['state'] != 'finished':
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'command buffer {command_buffer_id} is not finished',
+                )
+            if command_buffer['submitted']:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'command buffer {command_buffer_id} was already submitted',
+                )
+            command_buffer['submitted'] = True
 
 
 class DRP2FixtureRunner:

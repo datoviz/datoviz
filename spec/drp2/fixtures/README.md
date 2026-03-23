@@ -41,7 +41,11 @@ The first negative corpus should stay intentionally small and cover the core val
 14. missing required command fields,
 15. unsupported texture format,
 16. unsupported sample count,
-17. compute disabled by capability policy.
+17. compute disabled by capability policy,
+18. draw without a bound render pipeline,
+19. dispatch without a bound compute pipeline,
+20. render-only state command used in a compute pass,
+21. resubmitting an already submitted command buffer.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 
@@ -52,7 +56,9 @@ The first positive corpus should stay minimal and focus on clean command shapes:
 3. command encoder plus compute pass plus successful finish,
 4. buffer-to-texture copy,
 5. texture-to-buffer copy,
-6. queue submit of a finished command buffer.
+6. queue submit of a finished command buffer,
+7. render pass with pipeline bind plus draw,
+8. compute pass with pipeline bind plus dispatch.
 
 
 ## Metadata Policy

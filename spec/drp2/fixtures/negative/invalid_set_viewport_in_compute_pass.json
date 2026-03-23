@@ -1,0 +1,43 @@
+{
+  "name": "invalid_set_viewport_in_compute_pass",
+  "description": "SetViewport targets an open compute pass.",
+  "reason": "SetViewport is a render-pass-only state command and has no valid meaning in a compute pass.",
+  "fix": "Use SetViewport only inside an open render pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "render_state",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "SetViewport",
+      "pass_id": 2,
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "min_depth": 0,
+      "max_depth": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_PASS_MISMATCH",
+    "command_index": 2
+  }
+}

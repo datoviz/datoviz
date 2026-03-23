@@ -96,8 +96,10 @@ Use the most specific error code that matches the contract-visible failure.
    destroyed in the current contract state,
 3. prefer `DRP2_ERR_INVALID_STATE` for examples such as:
    - draw outside a render pass
+   - draw or dispatch without a pipeline bound in the current pass
    - dispatch outside a compute pass
    - finishing an encoder with an open pass
+   - resubmitting a command buffer that was already submitted earlier in the stream
    - issuing a copy command inside a pass
 4. prefer `DRP2_ERR_USAGE` for examples such as:
    - destroying a resource still referenced by recorded or submitted work

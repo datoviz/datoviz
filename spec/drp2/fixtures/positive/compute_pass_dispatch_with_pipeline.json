@@ -1,0 +1,51 @@
+{
+  "name": "compute_pass_dispatch_with_pipeline",
+  "description": "Begins a compute pass, binds a pipeline, records one dispatch, ends the pass, and finishes the encoder.",
+  "reason": "A compute pipeline is bound before DispatchWorkgroups in the same open compute pass, so the dispatch satisfies the active pipeline prerequisite.",
+  "notes": "The active fixture corpus treats pipeline ids as opaque handles for pass-local binding state because pipeline creation is still deferred.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "compute_pass",
+    "pipeline",
+    "dispatch"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 2,
+      "pipeline_id": 2001
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 2,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "cmd": "EndComputePass",
+      "pass_id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 1,
+      "command_buffer_id": 3
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

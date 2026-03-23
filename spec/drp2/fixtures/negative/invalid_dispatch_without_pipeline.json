@@ -1,0 +1,40 @@
+{
+  "name": "invalid_dispatch_without_pipeline",
+  "description": "DispatchWorkgroups is issued inside a compute pass before any pipeline has been bound.",
+  "reason": "DispatchWorkgroups requires a compute pipeline to have been bound earlier in the same open compute pass.",
+  "fix": "Bind a compute pipeline with SetPipeline before issuing DispatchWorkgroups.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "pipeline",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 2,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 2
+  }
+}

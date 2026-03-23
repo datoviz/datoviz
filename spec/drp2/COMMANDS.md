@@ -41,6 +41,14 @@ The active DRP2 command set is intentionally small but complete enough for:
 6. `WriteTexture`
 
 
+### Pipeline Lifecycle
+
+1. `CreateRenderPipeline`
+2. `DestroyRenderPipeline`
+3. `CreateComputePipeline`
+4. `DestroyComputePipeline`
+
+
 ### Encoder And Pass Lifecycle
 
 1. `BeginCommandEncoder`
@@ -54,14 +62,16 @@ The active DRP2 command set is intentionally small but complete enough for:
 ### Recording Commands
 
 1. `SetPipeline`
-2. `SetBindGroup`
-3. `SetViewport`
-4. `SetScissor`
-5. `SetBlendConstant`
-6. `SetStencilReference`
-7. `Draw`
-8. `DrawIndexed`
-9. `DispatchWorkgroups`
+2. `SetVertexBuffer`
+3. `SetIndexBuffer`
+4. `SetBindGroup`
+5. `SetViewport`
+6. `SetScissor`
+7. `SetBlendConstant`
+8. `SetStencilReference`
+9. `Draw`
+10. `DrawIndexed`
+11. `DispatchWorkgroups`
 
 
 ### Copy And Submission
@@ -89,14 +99,10 @@ of the active DRP2 contract and must not be treated as authoritative until promo
 10. `DestroySampler`
 11. `CreateTextureView`
 12. `DestroyTextureView`
-13. `CreateRenderPipeline`
-14. `DestroyRenderPipeline`
-15. `CreateComputePipeline`
-16. `DestroyComputePipeline`
-17. `ResourceBarrier`
-18. `DispatchWorkgroupsIndirect`
-19. `DrawIndirect`
-20. `DrawIndexedIndirect`
+13. `ResourceBarrier`
+14. `DispatchWorkgroupsIndirect`
+15. `DrawIndirect`
+16. `DrawIndexedIndirect`
 
 
 ## Common Field Semantics
@@ -310,6 +316,79 @@ Semantics:
 3. the written region must fit inside the destination subresource.
 
 
+## Pipeline Lifecycle
+
+### `CreateRenderPipeline`
+
+Creates a render pipeline object with validation-relevant vertex-input requirements.
+
+Required fields:
+
+- `cmd`: must be `CreateRenderPipeline`.
+- `id`: identifier assigned to the new render pipeline.
+- `vertex_buffer_slots`: number of contiguous vertex-buffer slots required by later draw commands.
+
+Optional fields:
+
+- `label`: debug label.
+
+Semantics:
+
+1. active DRP2 `2.0` treats render pipelines as lightweight protocol objects rather than full shader
+   or layout graphs,
+2. `vertex_buffer_slots` defines the required slot range `[0, vertex_buffer_slots)` for later draws
+   using this pipeline.
+
+
+### `DestroyRenderPipeline`
+
+Destroys a previously created render pipeline.
+
+Required fields:
+
+- `cmd`: must be `DestroyRenderPipeline`.
+- `render_pipeline_id`: identifier of the render pipeline to destroy.
+
+Semantics:
+
+1. no later command may bind the pipeline after destruction,
+2. destroying a pipeline still referenced by recorded work is invalid.
+
+
+### `CreateComputePipeline`
+
+Creates a compute pipeline object.
+
+Required fields:
+
+- `cmd`: must be `CreateComputePipeline`.
+- `id`: identifier assigned to the new compute pipeline.
+
+Optional fields:
+
+- `label`: debug label.
+
+Semantics:
+
+1. active DRP2 `2.0` treats compute pipelines as lightweight protocol objects rather than full
+   shader or layout graphs.
+
+
+### `DestroyComputePipeline`
+
+Destroys a previously created compute pipeline.
+
+Required fields:
+
+- `cmd`: must be `DestroyComputePipeline`.
+- `compute_pipeline_id`: identifier of the compute pipeline to destroy.
+
+Semantics:
+
+1. no later command may bind the pipeline after destruction,
+2. destroying a pipeline still referenced by recorded work is invalid.
+
+
 ## Encoder And Pass Lifecycle
 
 ### `BeginCommandEncoder`
@@ -446,8 +525,57 @@ Required fields:
 
 Semantics:
 
-1. the pipeline type must match the pass type,
-2. rebinding replaces the previously bound pipeline for later commands in the same pass.
+1. `pipeline_id` must reference a live pipeline object,
+2. the pipeline type must match the pass type,
+3. rebinding replaces the previously bound pipeline for later commands in the same pass.
+
+
+### `SetVertexBuffer`
+
+Binds a vertex buffer for later draw commands in the current render pass.
+
+Required fields:
+
+- `cmd`: must be `SetVertexBuffer`.
+- `pass_id`: target render pass.
+- `slot`: zero-based vertex-buffer slot index.
+- `buffer_id`: bound vertex buffer.
+- `offset`: first byte visible through the binding.
+
+Optional fields:
+
+- `size`: size in bytes visible through the binding.
+
+Semantics:
+
+1. this command is valid only in an open render pass,
+2. `buffer_id` must reference a buffer whose declared usage includes `VERTEX`,
+3. the binding satisfies the slot requirement for later draws that use the currently bound render
+   pipeline.
+
+
+### `SetIndexBuffer`
+
+Binds the index buffer for later indexed draw commands in the current render pass.
+
+Required fields:
+
+- `cmd`: must be `SetIndexBuffer`.
+- `pass_id`: target render pass.
+- `buffer_id`: bound index buffer.
+- `index_format`: index element format.
+- `offset`: first byte visible through the binding.
+
+Optional fields:
+
+- `size`: size in bytes visible through the binding.
+
+Semantics:
+
+1. this command is valid only in an open render pass,
+2. `buffer_id` must reference a buffer whose declared usage includes `INDEX`,
+3. `DrawIndexed` requires index-buffer state to have been bound earlier in the same open render
+   pass.
 
 
 ### `SetBindGroup`
@@ -556,7 +684,10 @@ Required fields:
 Semantics:
 
 1. all counts apply to the currently bound render pipeline and resources,
-2. clients should serialize counts explicitly rather than relying on implicit defaults.
+2. a render pipeline must already have been bound in the same open render pass,
+3. every vertex-buffer slot required by the bound render pipeline must already have been bound in
+   the same open render pass,
+4. clients should serialize counts explicitly rather than relying on implicit defaults.
 
 
 ### `DrawIndexed`
@@ -575,7 +706,11 @@ Required fields:
 
 Semantics:
 
-1. indexed draws additionally depend on the currently bound index-buffer state.
+1. a render pipeline must already have been bound in the same open render pass,
+2. every vertex-buffer slot required by the bound render pipeline must already have been bound in
+   the same open render pass,
+3. indexed draws additionally require an index buffer to have been bound earlier in the same open
+   render pass.
 
 
 ### `DispatchWorkgroups`
@@ -593,7 +728,8 @@ Required fields:
 Semantics:
 
 1. these are workgroup counts, not thread counts,
-2. clients should serialize all dimensions explicitly.
+2. a compute pipeline must already have been bound in the same open compute pass,
+3. clients should serialize all dimensions explicitly.
 
 
 ## Copy And Submission
@@ -681,4 +817,5 @@ Semantics:
 
 1. command buffers execute in listed order within the submission,
 2. every referenced command buffer must already have been produced by `FinishCommandEncoder`,
-3. submission transfers work from recorded state to queue execution.
+3. each referenced command buffer must not already have been submitted earlier in the same stream,
+4. submission transfers work from recorded state to queue execution.

@@ -1,0 +1,47 @@
+{
+  "name": "invalid_queue_submit_reused_command_buffer",
+  "description": "QueueSubmit references a command buffer that was already submitted earlier in the stream.",
+  "reason": "Active DRP2 2.0 treats command buffers as single-submit objects once QueueSubmit consumes them.",
+  "fix": "Record and finish a fresh command buffer for the later submission instead of resubmitting the old one.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "queue",
+    "submission"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 1,
+      "command_buffer_id": 2
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        2
+      ],
+      "submission_id": 3
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        2
+      ],
+      "submission_id": 4
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 3
+  }
+}
