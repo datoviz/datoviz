@@ -4,20 +4,23 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CopyBufferToBuffer"
     },
-    "src": {
+    "encoder_id": {
       "$ref": "../common/Id.json"
     },
-    "srcOffset": {
+    "src_buffer_id": {
+      "$ref": "../common/Id.json"
+    },
+    "src_offset": {
       "type": "integer",
       "minimum": 0
     },
-    "dst": {
+    "dst_buffer_id": {
       "$ref": "../common/Id.json"
     },
-    "dstOffset": {
+    "dst_offset": {
       "type": "integer",
       "minimum": 0
     },
@@ -27,11 +30,12 @@
     }
   },
   "required": [
-    "type",
-    "src",
-    "srcOffset",
-    "dst",
-    "dstOffset",
+    "cmd",
+    "encoder_id",
+    "src_buffer_id",
+    "src_offset",
+    "dst_buffer_id",
+    "dst_offset",
     "size"
   ]
 }

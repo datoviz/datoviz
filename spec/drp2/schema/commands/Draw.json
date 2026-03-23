@@ -4,35 +4,35 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "Draw"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
-    "vertexCount": {
+    "vertex_count": {
       "type": "integer",
       "minimum": 0
     },
-    "instanceCount": {
+    "instance_count": {
       "type": "integer",
-      "minimum": 1,
-      "default": 1
+      "minimum": 0
     },
-    "firstVertex": {
+    "first_vertex": {
       "type": "integer",
-      "minimum": 0,
-      "default": 0
+      "minimum": 0
     },
-    "firstInstance": {
+    "first_instance": {
       "type": "integer",
-      "minimum": 0,
-      "default": 0
+      "minimum": 0
     }
   },
   "required": [
-    "type",
-    "pass",
-    "vertexCount"
+    "cmd",
+    "pass_id",
+    "vertex_count",
+    "instance_count",
+    "first_vertex",
+    "first_instance"
   ]
 }

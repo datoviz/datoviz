@@ -4,35 +4,35 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "BeginRenderPass"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
-    "encoder": {
+    "encoder_id": {
       "$ref": "../common/Id.json"
     },
-    "colorAttachments": {
+    "color_attachments": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "view": {
+          "view_id": {
             "$ref": "../common/Id.json"
           },
-          "resolveTarget": {
+          "resolve_target_id": {
             "$ref": "../common/Id.json"
           },
-          "loadOp": {
+          "load_op": {
             "$ref": "../common/LoadOp.json"
           },
-          "storeOp": {
+          "store_op": {
             "$ref": "../common/StoreOp.json"
           },
-          "clearValue": {
+          "clear_value": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -58,48 +58,51 @@
           }
         },
         "required": [
-          "view",
-          "loadOp",
-          "storeOp"
+          "view_id",
+          "load_op",
+          "store_op"
         ]
       }
     },
-    "depthStencilAttachment": {
+    "depth_stencil_attachment": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "view": {
+        "view_id": {
           "$ref": "../common/Id.json"
         },
-        "depthLoadOp": {
+        "depth_load_op": {
           "$ref": "../common/LoadOp.json"
         },
-        "depthStoreOp": {
+        "depth_store_op": {
           "$ref": "../common/StoreOp.json"
         },
-        "depthClearValue": {
+        "depth_clear_value": {
           "type": "number"
         },
-        "stencilLoadOp": {
+        "stencil_load_op": {
           "$ref": "../common/LoadOp.json"
         },
-        "stencilStoreOp": {
+        "stencil_store_op": {
           "$ref": "../common/StoreOp.json"
         },
-        "stencilClearValue": {
+        "stencil_clear_value": {
           "type": "integer",
           "minimum": 0
         }
       },
       "required": [
-        "view"
+        "view_id"
       ]
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
-    "encoder",
-    "colorAttachments"
+    "encoder_id",
+    "color_attachments"
   ]
 }

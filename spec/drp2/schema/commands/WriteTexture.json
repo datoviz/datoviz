@@ -4,11 +4,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "WriteTexture"
     },
-    "texture": {
+    "texture_id": {
       "$ref": "../common/Id.json"
+    },
+    "mip_level": {
+      "type": "integer",
+      "minimum": 0
     },
     "origin": {
       "$ref": "../common/Origin3D.json"
@@ -16,35 +20,27 @@
     "size": {
       "$ref": "../common/Extent3D.json"
     },
+    "bytes_per_row": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rows_per_image": {
+      "type": "integer",
+      "minimum": 0
+    },
     "data": {
       "type": "string",
       "contentEncoding": "base64"
-    },
-    "layout": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "bytesPerRow",
-        "rowsPerImage"
-      ],
-      "properties": {
-        "bytesPerRow": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "rowsPerImage": {
-          "type": "integer",
-          "minimum": 0
-        }
-      }
     }
   },
   "required": [
-    "type",
-    "texture",
+    "cmd",
+    "texture_id",
+    "mip_level",
     "origin",
     "size",
-    "data",
-    "layout"
+    "bytes_per_row",
+    "rows_per_image",
+    "data"
   ]
 }

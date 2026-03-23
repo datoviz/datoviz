@@ -4,31 +4,40 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "SetBlendConstant"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
-    "r": {
-      "type": "number"
-    },
-    "g": {
-      "type": "number"
-    },
-    "b": {
-      "type": "number"
-    },
-    "a": {
-      "type": "number"
+    "color": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "r": {
+          "type": "number"
+        },
+        "g": {
+          "type": "number"
+        },
+        "b": {
+          "type": "number"
+        },
+        "a": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "r",
+        "g",
+        "b",
+        "a"
+      ]
     }
   },
   "required": [
-    "type",
-    "pass",
-    "r",
-    "g",
-    "b",
-    "a"
+    "cmd",
+    "pass_id",
+    "color"
   ]
 }

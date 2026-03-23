@@ -4,10 +4,10 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "SetScissor"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
     "x": {
@@ -26,8 +26,8 @@
     }
   },
   "required": [
-    "type",
-    "pass",
+    "cmd",
+    "pass_id",
     "x",
     "y",
     "width",

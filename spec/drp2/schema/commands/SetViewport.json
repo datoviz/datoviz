@@ -4,10 +4,10 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "SetViewport"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
     "x": {
@@ -24,25 +24,25 @@
       "type": "number",
       "exclusiveMinimum": 0
     },
-    "minDepth": {
+    "min_depth": {
       "type": "number",
       "minimum": 0,
       "maximum": 1
     },
-    "maxDepth": {
+    "max_depth": {
       "type": "number",
       "minimum": 0,
       "maximum": 1
     }
   },
   "required": [
-    "type",
-    "pass",
+    "cmd",
+    "pass_id",
     "x",
     "y",
     "width",
     "height",
-    "minDepth",
-    "maxDepth"
+    "min_depth",
+    "max_depth"
   ]
 }

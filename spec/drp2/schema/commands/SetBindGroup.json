@@ -4,20 +4,20 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "SetBindGroup"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
-    "index": {
+    "slot": {
       "type": "integer",
       "minimum": 0
     },
-    "bindGroup": {
+    "bind_group_id": {
       "$ref": "../common/Id.json"
     },
-    "dynamicOffsets": {
+    "dynamic_offsets": {
       "type": "array",
       "items": {
         "type": "integer",
@@ -26,9 +26,9 @@
     }
   },
   "required": [
-    "type",
-    "pass",
-    "index",
-    "bindGroup"
+    "cmd",
+    "pass_id",
+    "slot",
+    "bind_group_id"
   ]
 }

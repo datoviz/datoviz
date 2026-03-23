@@ -4,39 +4,39 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "DrawIndexed"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
-    "indexCount": {
+    "index_count": {
       "type": "integer",
       "minimum": 0
     },
-    "instanceCount": {
+    "instance_count": {
       "type": "integer",
-      "minimum": 1,
-      "default": 1
+      "minimum": 0
     },
-    "firstIndex": {
+    "first_index": {
       "type": "integer",
-      "minimum": 0,
-      "default": 0
+      "minimum": 0
     },
-    "baseVertex": {
-      "type": "integer",
-      "default": 0
+    "base_vertex": {
+      "type": "integer"
     },
-    "firstInstance": {
+    "first_instance": {
       "type": "integer",
-      "minimum": 0,
-      "default": 0
+      "minimum": 0
     }
   },
   "required": [
-    "type",
-    "pass",
-    "indexCount"
+    "cmd",
+    "pass_id",
+    "index_count",
+    "instance_count",
+    "first_index",
+    "base_vertex",
+    "first_instance"
   ]
 }

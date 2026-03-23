@@ -4,13 +4,17 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "WriteBuffer"
     },
-    "buffer": {
+    "buffer_id": {
       "$ref": "../common/Id.json"
     },
     "offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "size": {
       "type": "integer",
       "minimum": 0
     },
@@ -21,9 +25,10 @@
     }
   },
   "required": [
-    "type",
-    "buffer",
+    "cmd",
+    "buffer_id",
     "offset",
+    "size",
     "data"
   ]
 }

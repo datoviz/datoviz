@@ -4,19 +4,19 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "SetPipeline"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
-    "pipeline": {
+    "pipeline_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "pass",
-    "pipeline"
+    "cmd",
+    "pass_id",
+    "pipeline_id"
   ]
 }

@@ -4,15 +4,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "EndComputePass"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "pass"
+    "cmd",
+    "pass_id"
   ]
 }

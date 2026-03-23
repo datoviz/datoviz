@@ -4,10 +4,10 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "DispatchWorkgroups"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
     "x": {
@@ -16,18 +16,18 @@
     },
     "y": {
       "type": "integer",
-      "minimum": 1,
-      "default": 1
+      "minimum": 1
     },
     "z": {
       "type": "integer",
-      "minimum": 1,
-      "default": 1
+      "minimum": 1
     }
   },
   "required": [
-    "type",
-    "pass",
-    "x"
+    "cmd",
+    "pass_id",
+    "x",
+    "y",
+    "z"
   ]
 }

@@ -4,23 +4,22 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "QueueSubmit"
     },
-    "queue": {
-      "$ref": "../common/Id.json"
-    },
-    "commandBuffers": {
+    "command_buffer_ids": {
       "type": "array",
       "minItems": 1,
       "items": {
         "$ref": "../common/Id.json"
       }
+    },
+    "submission_id": {
+      "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "queue",
-    "commandBuffers"
+    "cmd",
+    "command_buffer_ids"
   ]
 }

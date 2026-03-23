@@ -4,19 +4,19 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "FinishCommandEncoder"
     },
-    "encoder": {
+    "encoder_id": {
       "$ref": "../common/Id.json"
     },
-    "id": {
+    "command_buffer_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "encoder",
-    "id"
+    "cmd",
+    "encoder_id",
+    "command_buffer_id"
   ]
 }

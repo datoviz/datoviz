@@ -4,19 +4,22 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "BeginComputePass"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
-    "encoder": {
+    "encoder_id": {
       "$ref": "../common/Id.json"
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
-    "encoder"
+    "encoder_id"
   ]
 }

@@ -4,42 +4,51 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CopyTextureToBuffer"
     },
-    "srcTexture": {
+    "encoder_id": {
       "$ref": "../common/Id.json"
     },
-    "origin": {
+    "src_texture_id": {
+      "$ref": "../common/Id.json"
+    },
+    "src_mip_level": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "src_origin": {
       "$ref": "../common/Origin3D.json"
     },
     "size": {
       "$ref": "../common/Extent3D.json"
     },
-    "dst": {
+    "dst_buffer_id": {
       "$ref": "../common/Id.json"
     },
-    "dstOffset": {
+    "dst_offset": {
       "type": "integer",
       "minimum": 0
     },
-    "bytesPerRow": {
+    "bytes_per_row": {
       "type": "integer",
       "minimum": 0
     },
-    "rowsPerImage": {
+    "rows_per_image": {
       "type": "integer",
       "minimum": 0
     }
   },
   "required": [
-    "type",
-    "srcTexture",
-    "origin",
+    "cmd",
+    "encoder_id",
+    "src_texture_id",
+    "src_mip_level",
+    "src_origin",
     "size",
-    "dst",
-    "dstOffset",
-    "bytesPerRow",
-    "rowsPerImage"
+    "dst_buffer_id",
+    "dst_offset",
+    "bytes_per_row",
+    "rows_per_image"
   ]
 }

@@ -4,15 +4,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "DestroyBuffer"
     },
-    "id": {
+    "buffer_id": {
       "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "id"
+    "cmd",
+    "buffer_id"
   ]
 }

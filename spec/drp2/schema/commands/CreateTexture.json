@@ -4,7 +4,7 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateTexture"
     },
     "id": {
@@ -13,8 +13,17 @@
     "dimension": {
       "$ref": "../common/TextureDimension.json"
     },
-    "size": {
-      "$ref": "../common/Size3D.json"
+    "width": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "depth": {
+      "type": "integer",
+      "minimum": 1
     },
     "format": {
       "$ref": "../common/GPUTextureFormat.json"
@@ -26,21 +35,28 @@
       },
       "minItems": 1
     },
-    "mipLevelCount": {
+    "mip_level_count": {
       "type": "integer",
       "minimum": 1
     },
-    "sampleCount": {
+    "sample_count": {
       "type": "integer",
       "minimum": 1
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
     "dimension",
-    "size",
+    "width",
+    "height",
+    "depth",
     "format",
-    "usage"
+    "usage",
+    "mip_level_count",
+    "sample_count"
   ]
 }

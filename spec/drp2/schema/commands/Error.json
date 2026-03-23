@@ -4,23 +4,25 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "Error"
     },
-    "severity": {
-      "type": "string",
-      "enum": [
-        "error",
-        "warning"
-      ]
+    "code": {
+      "type": "string"
     },
     "message": {
       "type": "string"
+    },
+    "failed_cmd": {
+      "type": "string"
+    },
+    "failed_id": {
+      "$ref": "../common/Id.json"
     }
   },
   "required": [
-    "type",
-    "severity",
+    "cmd",
+    "code",
     "message"
   ]
 }

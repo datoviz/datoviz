@@ -4,10 +4,10 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "SetStencilReference"
     },
-    "pass": {
+    "pass_id": {
       "$ref": "../common/Id.json"
     },
     "reference": {
@@ -16,8 +16,8 @@
     }
   },
   "required": [
-    "type",
-    "pass",
+    "cmd",
+    "pass_id",
     "reference"
   ]
 }
