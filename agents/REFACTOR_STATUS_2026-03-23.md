@@ -7,10 +7,9 @@ refactor burst.
 ## Snapshot
 
 - Branch: `v0.4-dev`
-- Current HEAD at review time: `e8d13005` (`2026-03-02`, "Fix Vulkan warning by specifying shader
-  compilation options with compute shaders")
+- Current HEAD at review time: `14f153844235` (`2026-03-23`, "DRP2 spec, fixtures, tools")
 - Build status on this machine today: `just build` passed
-- Test status on this machine today: `just test` passed, `141/141` tests passed
+- Test status on this machine today: `just test` passed, `146/146` tests passed
 - Worktree note: no tracked edits were present, but several untracked local paths exist
   (`.codex/`, `plans/`, `scripts/`, local cert/key files, generated media, etc.), so treat the tree
   as locally dirty even though the branch tip is clean
@@ -31,6 +30,8 @@ The most important work completed before the pause was:
    `gpu_ctx`, surface/swapchain, and `proto`.
 4. `vklite` now appears much closer to consuming `vk` through public contracts rather than private
    vk internals.
+5. A large follow-up pass hardened `vklite` wrapper ownership and opacity across commands, rendering,
+   shaders, buffer/image helpers, slots, compute, graphics, descriptors, and tests.
 
 The branch feels like a successful mid-refactor checkpoint: the architecture is meaningfully cleaner
 than v0.3-era code, but the remaining work is now mostly boundary hardening and API simplification,
@@ -94,15 +95,30 @@ Main period: `2026-02-18` to `2026-02-20`
 Key outcomes:
 
 - [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) records the current contract.
-- `proto` was demoted from installed public header to internal helper (`src/vklite/_proto.h`).
+- `proto` was removed from the active tree and replaced in tests by explicit fixture helpers.
 - The old bootstrap helper has now been removed and replaced by `gpu_ctx`.
 - `surface` and `swapchain` were refactored around more opaque public handles/accessors.
 - A large amount of `vklite` wrapper/test code was updated accordingly.
 
-This is the main area still marked only partially completed. The remaining gap is not basic
-functionality, but finishing the ownership/boundary cleanup across the rest of `vklite`.
+This is still the active frontier, but it is materially further along than this older snapshot
+initially implied.
 
-### 5. Post-refactor stabilization
+### 5. Wrapper hardening follow-up
+
+Main period: `2026-03-23`
+
+Key outcomes:
+
+- `bootstrap` was fully replaced by `gpu_ctx`, and direct bootstrap users were removed.
+- `proto` was fully removed from active test infrastructure in favor of `fixture_gpu` /
+  `fixture_offscreen`.
+- `surface` / `swapchain`, `commands` / `sync`, `buffers` / `images`, `rendering`, `shader`,
+  `buffer_views`, `slots`, `compute`, and `graphics` all received accessor/lifecycle hardening.
+- Several public `vklite` wrapper bodies are now opaque and use `*_create_wrapper()` / `*_free()`
+  ownership more consistently.
+- The suite grew from the earlier `141/141` green state to `146/146` passing tests on this machine.
+
+### 6. Post-refactor stabilization
 
 Main period: `2026-02-19` to `2026-03-02`
 
@@ -135,7 +151,7 @@ Status: much stronger than before
 - The repo still has the unified `dvztest` runner.
 - In practice the test topology is now richer than some older docs imply, because dedicated
   `dvztest_*` binaries also exist.
-- Today’s local run of `just test` passed all `141/141` tests.
+- Today’s local run of `just test` passed all `146/146` tests.
 - The suite now covers a lot of recovery/rebuild/present/offscreen behavior that would have been
   fragile earlier in the refactor.
 
@@ -163,8 +179,10 @@ Status: materially improved, ownership cleanup largely landed
 Status: functional, but still the main refactor frontier
 
 - `vklite` is heavily exercised by tests and currently green.
-- The `proto` demotion and surface/swapchain cleanup were important wins.
-- Public headers still expose several ownership-sensitive structs and raw mutable runtime details.
+- `proto` is gone from the active tree, and a broad wrapper-hardening pass has already landed.
+- Public headers still expose some ownership-sensitive structs and raw mutable runtime details,
+  but the remaining frontier is narrower than before and now centers mostly on `sync` wrappers and
+  a final audit pass.
 - The open plan in [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) still
   correctly identifies this as the next cleanup target.
 
@@ -198,11 +216,9 @@ Recommended order:
 1. Finish the remaining `vk`/`vklite` ownership-boundary work from
    [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md), starting with the items
    already listed there:
-   - make `proto` opaque even to tests where practical
-   - replace remaining direct `proto.<field>` access with accessors
-   - normalize wrapper ownership APIs across `vklite`
-   - unify barrier lifecycle/reset semantics
-   - add focused idempotent-destroy / repeated-submit tests
+   - finish the remaining `sync`-side public struct hardening
+   - normalize the last ownership APIs that still do not follow the wrapper pattern cleanly
+   - add or retain focused idempotent-destroy / repeated-submit tests where edge cases remain
 2. Audit public `vklite` headers for structs that still expose raw Vulkan handles, owner pointers, or
    mutable caches, and decide case by case whether they should become opaque or be reduced to config
    + accessor surfaces.

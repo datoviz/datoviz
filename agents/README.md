@@ -13,7 +13,7 @@ Current status:
 
 1. The active low-level graphics stack is green on this machine:
    - `just build` passed on `2026-03-23`
-   - `just test` passed on `2026-03-23` with `141/141` tests passing
+   - `just test` passed on `2026-03-23` with `146/146` tests passing
 2. The highest-value next work is finishing `vk`/`vklite` public-boundary and lifecycle cleanup.
 
 

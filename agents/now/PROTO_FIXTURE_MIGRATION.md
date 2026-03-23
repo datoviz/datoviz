@@ -1,10 +1,25 @@
 # Proto Fixture Migration Plan
 
-Status: `ACTIVE`
+Status: `COMPLETED`
 
 Owner slice: `vklite` test infrastructure cleanup
 
 Date: `2026-03-23`
+
+Verified on: `2026-03-23`
+
+Validation on this revision:
+
+1. `just build`
+2. `direnv exec . just test vklite`
+3. `direnv exec . just test`
+
+Completion snapshot:
+
+1. `fixture_gpu` and `fixture_offscreen` are the active `vklite` test helpers
+2. `DvzProto` symbols and direct `proto.h` test usage are gone from the active tree
+3. `src/vklite/proto.h` and `src/vklite/proto.c` were deleted
+4. migrated tests now use explicit fixture getters for device/allocator/commands/rendering/images
 
 
 ## Goal

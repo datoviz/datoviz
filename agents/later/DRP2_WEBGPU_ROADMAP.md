@@ -62,7 +62,7 @@ Reach a point where Datoviz has:
    `datoviz_canvas_layer`) and the aggregate `datoviz` target.
 4. Testing is broader than before: component runners (`dvztest_core`, `dvztest_vk`,
    `dvztest_canvas`, `dvztest_integration`) exist alongside the legacy `dvztest` runner.
-5. On this machine today, `just build` passes and `just test` passes `141/141` tests.
+5. On this machine today, `just build` passes and `just test` passes `146/146` tests.
 
 
 ## Target Architecture
