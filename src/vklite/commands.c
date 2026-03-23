@@ -178,6 +178,14 @@ VkCommandBuffer dvz_commands_handle(DvzCommands* cmds)
 
 
 
+uint32_t dvz_commands_count(DvzCommands* cmds)
+{
+    ANN(cmds);
+    return cmds->count;
+}
+
+
+
 void dvz_commands_current(DvzCommands* cmds, uint32_t current)
 {
     ANN(cmds);

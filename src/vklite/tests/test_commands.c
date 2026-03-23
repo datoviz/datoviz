@@ -126,7 +126,7 @@ int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
     dvz_commands_destroy(&cmds);
     dvz_commands_destroy(&cmds);
     dvz_commands_destroy(NULL);
-    AT(cmds.count == 0);
+    AT(dvz_commands_count(&cmds) == 0);
     AT(dvz_commands_handle(&cmds) == VK_NULL_HANDLE);
 
     DvzFence fence = {0};
@@ -160,18 +160,18 @@ int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
         DvzBarrierImage* bimg = dvz_barriers_image(&barriers, (VkImage)(uintptr_t)(i + 1));
         AT(bimg != NULL);
     }
-    AT(barriers.info.imageMemoryBarrierCount == DVZ_MAX_BARRIERS);
+    AT(dvz_barriers_image_count(&barriers) == DVZ_MAX_BARRIERS);
     AT_EXPECTED_ERROR_STRICT(
         suite, (dvz_barriers_image(&barriers, (VkImage)(uintptr_t)0xFFFF) == NULL));
 
     dvz_barriers(&barriers);
-    AT(barriers.info.imageMemoryBarrierCount == 0);
-    AT(barriers.info.bufferMemoryBarrierCount == 0);
-    AT(barriers.info.memoryBarrierCount == 0);
+    AT(dvz_barriers_image_count(&barriers) == 0);
+    AT(dvz_barriers_buffer_count(&barriers) == 0);
+    AT(dvz_barriers_memory_count(&barriers) == 0);
 
     DvzBarrierImage* bimg = dvz_barriers_image(&barriers, (VkImage)(uintptr_t)0x1234);
     AT(bimg != NULL);
-    AT(barriers.info.imageMemoryBarrierCount == 1);
+    AT(dvz_barriers_image_count(&barriers) == 1);
     AT(bimg->subresourceRange.aspectMask == VK_IMAGE_ASPECT_COLOR_BIT);
     AT(bimg->subresourceRange.levelCount == 1);
     AT(bimg->subresourceRange.layerCount == 1);

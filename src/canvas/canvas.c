@@ -905,7 +905,7 @@ static int canvas_offscreen_capture_rgba_into(
     DvzSubmit submit = {0};
     dvz_submit(&submit);
     dvz_submit_command(&submit, cmd);
-    int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, fence.vk_fence);
+    int32_t submit_rc = dvz_submit_send(&submit, canvas->offscreen_queue, dvz_fence_handle(&fence));
     if (submit_rc != VK_SUCCESS)
     {
         dvz_fence_destroy(&fence);
@@ -1283,7 +1283,7 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         dvz_submit(&submit);
         dvz_submit_command(&submit, canvas->offscreen_command_buffer);
         dvz_submit_signal(
-            &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
+            &submit, dvz_semaphore_handle(&canvas->timeline_semaphore), wait_value,
             VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
         int32_t submit_rc = 0;
         if (canvas->test_force_offscreen_submit_status_set)

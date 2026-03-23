@@ -322,6 +322,36 @@ DVZ_EXPORT void dvz_cmd_barriers(DvzCommands* cmds, DvzBarriers* barriers);
 
 
 
+/**
+ * Return the number of recorded memory barriers in a barrier set.
+ *
+ * @param barriers the barrier set
+ * @returns the memory-barrier count
+ */
+DVZ_EXPORT uint32_t dvz_barriers_memory_count(DvzBarriers* barriers);
+
+
+
+/**
+ * Return the number of recorded buffer barriers in a barrier set.
+ *
+ * @param barriers the barrier set
+ * @returns the buffer-barrier count
+ */
+DVZ_EXPORT uint32_t dvz_barriers_buffer_count(DvzBarriers* barriers);
+
+
+
+/**
+ * Return the number of recorded image barriers in a barrier set.
+ *
+ * @param barriers the barrier set
+ * @returns the image-barrier count
+ */
+DVZ_EXPORT uint32_t dvz_barriers_image_count(DvzBarriers* barriers);
+
+
+
 /*************************************************************************************************/
 /*  Fences                                                                                       */
 /*************************************************************************************************/
@@ -343,6 +373,16 @@ DVZ_EXPORT void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence);
  * @param fence the fence
  */
 DVZ_EXPORT void dvz_fence_wait(DvzFence* fence);
+
+
+
+/**
+ * Return the Vulkan fence handle owned by a fence wrapper.
+ *
+ * @param fence the fence
+ * @returns the Vulkan fence handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkFence dvz_fence_handle(DvzFence* fence);
 
 
 
@@ -428,6 +468,16 @@ DVZ_EXPORT void dvz_semaphore_wait(DvzSemaphore* semaphore, uint64_t value);
  * @returns the value
  */
 DVZ_EXPORT uint64_t dvz_semaphore_query(DvzSemaphore* semaphore);
+
+
+
+/**
+ * Return the Vulkan semaphore handle owned by a semaphore wrapper.
+ *
+ * @param semaphore the semaphore
+ * @returns the Vulkan semaphore handle or VK_NULL_HANDLE
+ */
+DVZ_EXPORT VkSemaphore dvz_semaphore_handle(DvzSemaphore* semaphore);
 
 
 

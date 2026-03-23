@@ -1277,18 +1277,20 @@ static int canvas_submit_active_slot(
     // for both submit and present, and slot synchronization primitives are reset on next acquire.
     DvzSubmit submit = {0};
     dvz_submit(&submit);
-    dvz_submit_wait(&submit, state->active_slot->image_available.vk_semaphore, 0, wait_stage);
+    dvz_submit_wait(&submit, dvz_semaphore_handle(&state->active_slot->image_available), 0, wait_stage);
     if (cmd != VK_NULL_HANDLE)
     {
         dvz_submit_command(&submit, cmd);
     }
-    dvz_submit_signal(&submit, state->active_slot->render_finished.vk_semaphore, 0, signal_stage);
     dvz_submit_signal(
-        &submit, canvas->timeline_semaphore.vk_semaphore, wait_value,
+        &submit, dvz_semaphore_handle(&state->active_slot->render_finished), 0, signal_stage);
+    dvz_submit_signal(
+        &submit, dvz_semaphore_handle(&canvas->timeline_semaphore), wait_value,
         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
-    int32_t submit_res = dvz_submit_send(&submit, queue, state->active_slot->in_flight.vk_fence);
+    int32_t submit_res =
+        dvz_submit_send(&submit, queue, dvz_fence_handle(&state->active_slot->in_flight));
     if (canvas_handle_submit_status(state, submit_res) != 0)
     {
         return -1;
@@ -1376,7 +1378,8 @@ static int canvas_acquire_image_for_slot(
     if (!canvas_test_consume_forced_status(&state->test_force_acquire_status, &acquire_status))
     {
         acquire_status = dvz_swapchain_acquire(
-            state->swapchain_wrapper, slot->image_available.vk_semaphore, UINT64_MAX, &image_index);
+            state->swapchain_wrapper, dvz_semaphore_handle(&slot->image_available), UINT64_MAX,
+            &image_index);
     }
     int acquire_status_rc = canvas_handle_acquire_status(canvas, state, acquire_status, slot_idx);
     if (acquire_status_rc != 0)
@@ -1432,7 +1435,8 @@ static int canvas_dispatch_present(DvzCanvas* canvas, DvzCanvasSwapchain* state,
     if (!canvas_test_consume_forced_status(&state->test_force_present_status, &present_status))
     {
         present_status = dvz_swapchain_present(
-            state->swapchain_wrapper, queue, index, state->active_slot->render_finished.vk_semaphore);
+            state->swapchain_wrapper, queue, index,
+            dvz_semaphore_handle(&state->active_slot->render_finished));
     }
     return canvas_handle_present_status(canvas, state, present_status, index);
 }
@@ -1835,7 +1839,7 @@ static int canvas_capture_copy_to_staging(
     DvzSubmit submit = {0};
     dvz_submit(&submit);
     dvz_submit_command(&submit, cmd);
-    int32_t submit_rc = dvz_submit_send(&submit, state->queue, fence.vk_fence);
+    int32_t submit_rc = dvz_submit_send(&submit, state->queue, dvz_fence_handle(&fence));
     if (submit_rc != VK_SUCCESS)
     {
         dvz_fence_destroy(&fence);

@@ -157,7 +157,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     // Command buffer.
     DvzCommands cmds = {0};
     dvz_commands(device, queue, 1, &cmds);
-    if (cmds.count == 0 || dvz_commands_handle(&cmds) == VK_NULL_HANDLE)
+    if (dvz_commands_count(&cmds) == 0 || dvz_commands_handle(&cmds) == VK_NULL_HANDLE)
     {
         dvz_image_views_destroy(&view);
         dvz_images_destroy(&img);

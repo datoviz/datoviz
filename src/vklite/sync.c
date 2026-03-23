@@ -268,6 +268,30 @@ void dvz_cmd_barriers(DvzCommands* cmds, DvzBarriers* barriers)
 
 
 
+uint32_t dvz_barriers_memory_count(DvzBarriers* barriers)
+{
+    ANN(barriers);
+    return barriers->info.memoryBarrierCount;
+}
+
+
+
+uint32_t dvz_barriers_buffer_count(DvzBarriers* barriers)
+{
+    ANN(barriers);
+    return barriers->info.bufferMemoryBarrierCount;
+}
+
+
+
+uint32_t dvz_barriers_image_count(DvzBarriers* barriers)
+{
+    ANN(barriers);
+    return barriers->info.imageMemoryBarrierCount;
+}
+
+
+
 /*************************************************************************************************/
 /*  Fence                                                                                        */
 /*************************************************************************************************/
@@ -306,6 +330,14 @@ void dvz_fence_wait(DvzFence* fence)
     {
         log_trace("skip wait for fence %u", fence->vk_fence);
     }
+}
+
+
+
+VkFence dvz_fence_handle(DvzFence* fence)
+{
+    ANN(fence);
+    return fence->vk_fence;
 }
 
 
@@ -456,6 +488,14 @@ uint64_t dvz_semaphore_query(DvzSemaphore* semaphore)
     ANNVK(vkd);
     vkGetSemaphoreCounterValue(vkd, semaphore->vk_semaphore, &current);
     return current;
+}
+
+
+
+VkSemaphore dvz_semaphore_handle(DvzSemaphore* semaphore)
+{
+    ANN(semaphore);
+    return semaphore->vk_semaphore;
 }
 
 

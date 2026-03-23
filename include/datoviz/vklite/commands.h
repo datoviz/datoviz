@@ -117,6 +117,16 @@ DVZ_EXPORT VkCommandBuffer dvz_commands_handle(DvzCommands* cmds);
 
 
 /**
+ * Return the number of command buffers managed by a wrapper.
+ *
+ * @param cmds the set of command buffers
+ * @returns the command-buffer count
+ */
+DVZ_EXPORT uint32_t dvz_commands_count(DvzCommands* cmds);
+
+
+
+/**
  * Set the current command buffer index.
  *
  * @param cmds the set of command buffers
