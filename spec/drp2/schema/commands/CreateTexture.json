@@ -8,21 +8,21 @@
       "const": "CreateTexture"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "dimension": {
-      "$ref": "../common/TextureDimension.json.json"
+      "$ref": "../common/TextureDimension.json"
     },
     "size": {
-      "$ref": "../common/Size3D.json.json"
+      "$ref": "../common/Size3D.json"
     },
     "format": {
-      "$ref": "../common/GPUTextureFormat.json.json"
+      "$ref": "../common/GPUTextureFormat.json"
     },
     "usage": {
       "type": "array",
       "items": {
-        "$ref": "../common/GPUTextureUsage.json.json"
+        "$ref": "../common/GPUTextureUsage.json"
       },
       "minItems": 1
     },

@@ -8,17 +8,17 @@
       "const": "CreateComputePipeline"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "layout": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "compute": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "module": {
-          "$ref": "../common/Id.json.json"
+          "$ref": "../common/Id.json"
         },
         "entryPoint": {
           "type": "string"

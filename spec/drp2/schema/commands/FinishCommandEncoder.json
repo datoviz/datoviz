@@ -8,10 +8,10 @@
       "const": "FinishCommandEncoder"
     },
     "encoder": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     }
   },
   "required": [

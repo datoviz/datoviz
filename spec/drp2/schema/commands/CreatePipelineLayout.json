@@ -8,12 +8,12 @@
       "const": "CreatePipelineLayout"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "bindGroupLayouts": {
       "type": "array",
       "items": {
-        "$ref": "../common/Id.json.json"
+        "$ref": "../common/Id.json"
       }
     },
     "pushConstantRanges": {
@@ -23,7 +23,7 @@
         "additionalProperties": false,
         "properties": {
           "stages": {
-            "$ref": "../common/ShaderStage.json.json"
+            "$ref": "../common/ShaderStage.json"
           },
           "offset": {
             "type": "integer",

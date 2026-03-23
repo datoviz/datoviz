@@ -1,16 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DRPCommand",
-  "description": "Root schema for a single DRP command object.",
+  "description": "Root schema for a single frozen DRP2 v2.0 command object.",
   "oneOf": [
     {
-      "$ref": "./commands/HelloRenderer.json"
-    },
-    {
-      "$ref": "./commands/RendererHelloReply.json"
-    },
-    {
       "$ref": "./commands/CreateBuffer.json"
+    },
+    {
+      "$ref": "./commands/DestroyBuffer.json"
     },
     {
       "$ref": "./commands/WriteBuffer.json"
@@ -19,7 +16,13 @@
       "$ref": "./commands/CreateTexture.json"
     },
     {
+      "$ref": "./commands/DestroyTexture.json"
+    },
+    {
       "$ref": "./commands/CreateTextureView.json"
+    },
+    {
+      "$ref": "./commands/DestroyTextureView.json"
     },
     {
       "$ref": "./commands/WriteTexture.json"
@@ -28,22 +31,43 @@
       "$ref": "./commands/CreateSampler.json"
     },
     {
+      "$ref": "./commands/DestroySampler.json"
+    },
+    {
       "$ref": "./commands/CreateBindGroupLayout.json"
+    },
+    {
+      "$ref": "./commands/DestroyBindGroupLayout.json"
     },
     {
       "$ref": "./commands/CreatePipelineLayout.json"
     },
     {
+      "$ref": "./commands/DestroyPipelineLayout.json"
+    },
+    {
       "$ref": "./commands/CreateBindGroup.json"
+    },
+    {
+      "$ref": "./commands/DestroyBindGroup.json"
     },
     {
       "$ref": "./commands/CreateShaderModule.json"
     },
     {
+      "$ref": "./commands/DestroyShaderModule.json"
+    },
+    {
       "$ref": "./commands/CreateRenderPipeline.json"
     },
     {
+      "$ref": "./commands/DestroyRenderPipeline.json"
+    },
+    {
       "$ref": "./commands/CreateComputePipeline.json"
+    },
+    {
+      "$ref": "./commands/DestroyComputePipeline.json"
     },
     {
       "$ref": "./commands/BeginCommandEncoder.json"
@@ -76,28 +100,13 @@
       "$ref": "./commands/SetScissor.json"
     },
     {
-      "$ref": "./commands/SetBlendConstant.json"
-    },
-    {
-      "$ref": "./commands/SetStencilReference.json"
-    },
-    {
       "$ref": "./commands/Draw.json"
     },
     {
       "$ref": "./commands/DrawIndexed.json"
     },
     {
-      "$ref": "./commands/DrawIndirect.json"
-    },
-    {
-      "$ref": "./commands/DrawIndexedIndirect.json"
-    },
-    {
       "$ref": "./commands/DispatchWorkgroups.json"
-    },
-    {
-      "$ref": "./commands/DispatchWorkgroupsIndirect.json"
     },
     {
       "$ref": "./commands/CopyBufferToBuffer.json"
@@ -110,12 +119,6 @@
     },
     {
       "$ref": "./commands/QueueSubmit.json"
-    },
-    {
-      "$ref": "./commands/ResourceBarrier.json"
-    },
-    {
-      "$ref": "./commands/Error.json"
     }
   ]
 }

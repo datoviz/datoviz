@@ -8,16 +8,16 @@
       "const": "CopyTextureToBuffer"
     },
     "srcTexture": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "origin": {
-      "$ref": "../common/Origin3D.json.json"
+      "$ref": "../common/Origin3D.json"
     },
     "size": {
-      "$ref": "../common/Extent3D.json.json"
+      "$ref": "../common/Extent3D.json"
     },
     "dst": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "dstOffset": {
       "type": "integer",

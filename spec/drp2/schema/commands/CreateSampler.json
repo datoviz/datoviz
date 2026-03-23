@@ -8,25 +8,25 @@
       "const": "CreateSampler"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "minFilter": {
-      "$ref": "../common/FilterMode.json.json"
+      "$ref": "../common/FilterMode.json"
     },
     "magFilter": {
-      "$ref": "../common/FilterMode.json.json"
+      "$ref": "../common/FilterMode.json"
     },
     "addressModeU": {
-      "$ref": "../common/AddressMode.json.json"
+      "$ref": "../common/AddressMode.json"
     },
     "addressModeV": {
-      "$ref": "../common/AddressMode.json.json"
+      "$ref": "../common/AddressMode.json"
     },
     "addressModeW": {
-      "$ref": "../common/AddressMode.json.json"
+      "$ref": "../common/AddressMode.json"
     },
     "mipFilter": {
-      "$ref": "../common/FilterMode.json.json"
+      "$ref": "../common/FilterMode.json"
     },
     "lodMinClamp": {
       "type": "number"

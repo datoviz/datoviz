@@ -19,12 +19,14 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 ## Documents
 
 - `LAYER1.md`: primary human-readable contract
+- `COMMANDS.md`: frozen `2.0` command surface
+- `LIFETIMES.md`: object lifetime and encoder/pass state rules
 - `ERRORS.md`: validation and error model
 - `CAPABILITIES.md`: feature and format capability reporting
 - `VERSIONING.md`: compatibility and contract-evolution rules
+- `GLOSSARY.md`: fixed terminology
 - `schema/`: machine-readable schema material
 - `fixtures/`: canonical conformance traces
-- `prototypes/`: non-authoritative exploratory C API sketches
 
 
 ## Scope Discipline
@@ -43,3 +45,10 @@ The first stable contract should cover only the minimum needed for a practical r
 
 Scene concerns, browser transport, profiling, native interop, and advanced memory policy are all
 important, but they should pressure-test the contract rather than bloat the first contract freeze.
+
+
+## `2.0` Decisions Already Taken
+
+1. explicit destroy commands are part of `2.0`,
+2. compute remains mandatory in the first frozen contract,
+3. prototype C API sketches are intentionally excluded until the contract is tighter.

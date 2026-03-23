@@ -8,7 +8,7 @@
       "const": "EndComputePass"
     },
     "pass": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     }
   },
   "required": [

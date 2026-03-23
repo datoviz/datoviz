@@ -8,10 +8,10 @@
       "const": "CreateShaderModule"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "format": {
-      "$ref": "../common/ShaderFormat.json.json"
+      "$ref": "../common/ShaderFormat.json"
     },
     "code": {
       "oneOf": [

@@ -8,13 +8,13 @@
       "const": "QueueSubmit"
     },
     "queue": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "commandBuffers": {
       "type": "array",
       "minItems": 1,
       "items": {
-        "$ref": "../common/Id.json.json"
+        "$ref": "../common/Id.json"
       }
     }
   },

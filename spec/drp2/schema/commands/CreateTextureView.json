@@ -8,19 +8,19 @@
       "const": "CreateTextureView"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "texture": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "format": {
-      "$ref": "../common/GPUTextureFormat.json.json"
+      "$ref": "../common/GPUTextureFormat.json"
     },
     "dimension": {
-      "$ref": "../common/TextureViewDimension.json.json"
+      "$ref": "../common/TextureViewDimension.json"
     },
     "aspect": {
-      "$ref": "../common/TextureAspect.json.json"
+      "$ref": "../common/TextureAspect.json"
     },
     "mipRange": {
       "type": "object",

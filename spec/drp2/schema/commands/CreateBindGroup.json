@@ -8,10 +8,10 @@
       "const": "CreateBindGroup"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "layout": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "entries": {
       "type": "array",
@@ -25,7 +25,7 @@
             "minimum": 0
           },
           "resource": {
-            "$ref": "../common/Id.json.json"
+            "$ref": "../common/Id.json"
           },
           "offset": {
             "type": "integer",

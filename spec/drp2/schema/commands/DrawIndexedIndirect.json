@@ -8,10 +8,10 @@
       "const": "DrawIndexedIndirect"
     },
     "pass": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "buffer": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "offset": {
       "type": "integer",

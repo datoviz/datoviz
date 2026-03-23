@@ -8,14 +8,14 @@
       "const": "SetBindGroup"
     },
     "pass": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "index": {
       "type": "integer",
       "minimum": 0
     },
     "bindGroup": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "dynamicOffsets": {
       "type": "array",

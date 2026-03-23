@@ -22,5 +22,5 @@ The scene layer should remain pure high-level logic:
 - `REQUIREMENTS.md`: what the scene layer needs from DRP2 and the runtime
 - `OBJECT_MODEL.md`: minimum stable concepts
 - `FRAME_LIFECYCLE.md`: update/build/emit flow
+- `RUNTIME_BOUNDARY.md`: allowed and forbidden dependencies on the runtime layer
 - `USE_CASES.md`: pressure-test scenarios
-- `prototypes/`: non-authoritative API sketches

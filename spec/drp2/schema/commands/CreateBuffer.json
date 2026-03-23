@@ -8,7 +8,7 @@
       "const": "CreateBuffer"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "size": {
       "type": "integer",
@@ -17,7 +17,7 @@
     "usage": {
       "type": "array",
       "items": {
-        "$ref": "../common/GPUBufferUsage.json.json"
+        "$ref": "../common/GPUBufferUsage.json"
       },
       "minItems": 1
     },

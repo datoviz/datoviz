@@ -8,10 +8,10 @@
       "const": "SetPipeline"
     },
     "pass": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "pipeline": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     }
   },
   "required": [

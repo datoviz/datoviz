@@ -8,10 +8,10 @@
       "const": "BeginRenderPass"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "encoder": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "colorAttachments": {
       "type": "array",
@@ -21,16 +21,16 @@
         "additionalProperties": false,
         "properties": {
           "view": {
-            "$ref": "../common/Id.json.json"
+            "$ref": "../common/Id.json"
           },
           "resolveTarget": {
-            "$ref": "../common/Id.json.json"
+            "$ref": "../common/Id.json"
           },
           "loadOp": {
-            "$ref": "../common/LoadOp.json.json"
+            "$ref": "../common/LoadOp.json"
           },
           "storeOp": {
-            "$ref": "../common/StoreOp.json.json"
+            "$ref": "../common/StoreOp.json"
           },
           "clearValue": {
             "type": "object",
@@ -69,22 +69,22 @@
       "additionalProperties": false,
       "properties": {
         "view": {
-          "$ref": "../common/Id.json.json"
+          "$ref": "../common/Id.json"
         },
         "depthLoadOp": {
-          "$ref": "../common/LoadOp.json.json"
+          "$ref": "../common/LoadOp.json"
         },
         "depthStoreOp": {
-          "$ref": "../common/StoreOp.json.json"
+          "$ref": "../common/StoreOp.json"
         },
         "depthClearValue": {
           "type": "number"
         },
         "stencilLoadOp": {
-          "$ref": "../common/LoadOp.json.json"
+          "$ref": "../common/LoadOp.json"
         },
         "stencilStoreOp": {
-          "$ref": "../common/StoreOp.json.json"
+          "$ref": "../common/StoreOp.json"
         },
         "stencilClearValue": {
           "type": "integer",

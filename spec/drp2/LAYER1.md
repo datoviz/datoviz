@@ -66,7 +66,7 @@ Each object is addressed by an explicit logical id chosen by the producer.
 
 ## Command Categories
 
-The reduced v1 contract should cover only these categories:
+The reduced `2.0` contract covers only these categories:
 
 1. resource creation and destruction,
 2. resource upload and copy,
@@ -78,42 +78,28 @@ The reduced v1 contract should cover only these categories:
 8. queue submission.
 
 
+## Frozen `2.0` Decisions
+
+These decisions are already taken for the first contract freeze:
+
+1. explicit destroy commands are part of `2.0`,
+2. compute is mandatory in `2.0`,
+3. prototype C API sketches are intentionally excluded until the contract is tighter.
+
+
 ## Required First-Slice Commands
 
-The minimal contract should include:
+The frozen `2.0` command surface is defined in `COMMANDS.md`.
 
-1. `CreateBuffer`
-2. `WriteBuffer`
-3. `CreateTexture`
-4. `WriteTexture`
-5. `CreateTextureView`
-6. `CreateSampler`
-7. `CreateShaderModule`
-8. `CreateBindGroupLayout`
-9. `CreateBindGroup`
-10. `CreatePipelineLayout`
-11. `CreateRenderPipeline`
-12. `CreateComputePipeline`
-13. `BeginCommandEncoder`
-14. `FinishCommandEncoder`
-15. `BeginRenderPass`
-16. `EndRenderPass`
-17. `SetPipeline`
-18. `SetBindGroup`
-19. `SetViewport`
-20. `SetScissor`
-21. `Draw`
-22. `DrawIndexed`
-23. `BeginComputePass`
-24. `EndComputePass`
-25. `DispatchWorkgroups`
-26. `CopyBufferToBuffer`
-27. `CopyBufferToTexture`
-28. `CopyTextureToBuffer`
-29. `QueueSubmit`
+At a minimum, `2.0` includes:
 
-Destruction commands may be added in the first contract if object lifetime is not sufficiently clear
-without them. If omitted initially, runtime-owned teardown rules must still be explicit.
+1. resource lifecycle commands,
+2. binding and pipeline lifecycle commands,
+3. render-pass commands,
+4. compute-pass commands,
+5. draw and dispatch commands,
+6. copy commands,
+7. queue submission.
 
 
 ## Execution Semantics
@@ -149,10 +135,10 @@ Render and compute passes are explicit encoder scopes.
 
 Rules:
 
-1. Draw commands are valid only inside a render pass.
-2. Dispatch commands are valid only inside a compute pass.
-3. Attachments, load/store operations, and pipeline state must be validated before execution.
-4. Pass compatibility is a contract-level concern, not only a backend detail.
+1. draw commands are valid only inside a render pass,
+2. dispatch commands are valid only inside a compute pass,
+3. attachments, load/store operations, and pipeline state must be validated before execution,
+4. pass compatibility is a contract-level concern, not only a backend detail.
 
 
 ## Validation
@@ -163,14 +149,16 @@ At minimum, validation covers:
 
 1. object existence,
 2. object type compatibility,
-3. command ordering,
-4. pass scope correctness,
-5. binding compatibility,
-6. resource range and layout checks,
-7. capability gating,
-8. version compatibility.
+3. lifetime and state transitions,
+4. command ordering,
+5. pass scope correctness,
+6. binding compatibility,
+7. resource range and layout checks,
+8. capability gating,
+9. version compatibility.
 
 Detailed symbolic codes live in `ERRORS.md`.
+Detailed lifetime and state rules live in `LIFETIMES.md`.
 
 
 ## Capability Model
@@ -197,6 +185,7 @@ The schema, fixture set, and human-readable Layer 1 contract for a given version
 lockstep.
 
 Detailed rules live in `VERSIONING.md`.
+Terminology is fixed in `GLOSSARY.md`.
 
 
 ## Conformance
@@ -208,6 +197,8 @@ The contract is not ready until it has:
 3. negative fixtures for validation failures,
 4. native and browser replay expectations.
 
+The command surface for `2.0` is frozen in `COMMANDS.md`.
+
 
 ## Pressure Tests From Future Scene Work
 
@@ -217,372 +208,6 @@ The first contract freeze should be checked against at least these producer stor
 2. dynamic buffer updates across frames,
 3. texture upload and sampling,
 4. picking-oriented render-to-texture plus readback,
-5. one compute-assisted data path if compute is considered mandatory for v1.
+5. one compute-assisted data path.
 
 If DRP2 cannot express those cleanly without backend leakage, the contract is not ready.
-
-```
-CreateBindGroup {
-  id,
-  layout,
-  entries: [
-    { binding, resource: bufferId, offset?, size? },
-    { binding, resource: textureViewId },
-    { binding, resource: samplerId },
-    ...
-  ]
-}
-```
-
----
-
-# 6. Shader Modules
-
-## 6.1 CreateShaderModule
-
-```
-CreateShaderModule {
-  id,
-  format: "wgsl" | "spirv" | "glsl",
-  code: string or bytes
-}
-```
-
-Backend rules:
-
-* Vulkan: prefers SPIR-V; can compile GLSL → SPIR-V if `shader_glsl` enabled.
-* WebGPU: WGSL only. `spirv` accepted only if native backend supports it.
-
----
-
-# 7. Pipeline Creation
-
-## 7.1 CreateRenderPipeline
-
-```
-CreateRenderPipeline {
-  id,
-  layout,
-
-  vertex: {
-    module,
-    entryPoint,
-    buffers: [
-      {
-        arrayStride,
-        stepMode,
-        attributes: [
-          {shaderLocation, offset, format}
-        ]
-      }, ...
-    ]
-  },
-
-  fragment?: {
-    module,
-    entryPoint,
-    targets: [
-      {
-        format,
-        blend?: {
-          color: {src, dst, op},
-          alpha: {src, dst, op}
-        },
-        writeMask
-      }, ...
-    ]
-  },
-
-  primitive: {
-    topology,
-    stripIndexFormat?,
-    frontFace?,
-    cullMode?
-  },
-
-  depthStencil?: {
-    format,
-    depthWriteEnabled?,
-    depthCompare?,
-    stencilFront?,
-    stencilBack?,
-    depthBias?, depthBiasSlopeScale?, depthBiasClamp?
-  },
-
-  multisample?: {
-    count,
-    mask?,
-    alphaToCoverageEnabled?
-  },
-
-}
-```
-
----
-
-## 7.2 CreateComputePipeline
-
-```
-CreateComputePipeline {
-  id,
-  layout,
-  compute: {
-    module,
-    entryPoint
-  }
-}
-```
-
----
-
-# 8. Command Encoding
-
-## 8.1 BeginCommandEncoder
-
-```
-BeginCommandEncoder { id }
-```
-
-Creates a GPUCommandEncoder.
-
----
-
-## 8.2 FinishCommandEncoder
-
-```
-FinishCommandEncoder {
-  encoder,
-  id   // id of resulting GPUCommandBuffer
-}
-```
-
----
-
-# 9. Render Pass Commands
-
-## 9.1 BeginRenderPass
-
-```
-BeginRenderPass {
-  id,
-  encoder,
-  colorAttachments: [
-    {
-      view,
-      resolveTarget?,
-      loadOp,          // "load"|"clear"
-      storeOp,         // "store"|"discard"
-      clearValue?
-    }
-  ],
-  depthStencilAttachment?: {
-    view,
-    depthLoadOp?, depthStoreOp?, depthClearValue?,
-    stencilLoadOp?, stencilStoreOp?, stencilClearValue?
-  }
-}
-```
-
-Backend:
-
-* Vulkan: mapped to `DvzRendering` + `dvz_cmd_rendering_begin`.
-
----
-
-## 9.2 Render-pass commands
-
-```
-SetPipeline { pass, pipeline }
-SetBindGroup { pass, index, bindGroup, dynamicOffsets? }
-SetViewport { pass, x, y, width, height, minDepth, maxDepth }
-SetScissor { pass, x, y, width, height }
-SetBlendConstant { pass, r, g, b, a }
-SetStencilReference { pass, value }
-
-Draw { pass, vertexCount, instanceCount?, firstVertex?, firstInstance? }
-DrawIndexed { pass, indexCount, instanceCount?, firstIndex?, baseVertex?, firstInstance? }
-DrawIndirect { pass, buffer, offset, count? }
-DrawIndexedIndirect { pass, buffer, offset, count? }
-```
-
----
-
-## 9.3 EndRenderPass
-
-```
-EndRenderPass { pass }
-```
-
----
-
-# 10. Compute Pass Commands
-
-## 10.1 BeginComputePass
-
-```
-BeginComputePass { id, encoder }
-```
-
----
-
-## 10.2 Compute-pass commands
-
-```
-SetPipeline { pass, pipeline }
-SetBindGroup { pass, index, bindGroup, dynamicOffsets? }
-DispatchWorkgroups { pass, x, y, z }
-DispatchWorkgroupsIndirect { pass, buffer, offset }
-```
-
----
-
-## 10.3 EndComputePass
-
-```
-EndComputePass { pass }
-```
-
----
-
-# 11. Copy and Blit Commands
-
-```
-CopyBufferToBuffer { src, srcOffset, dst, dstOffset, size }
-CopyBufferToTexture { src, srcOffset, dstTexture, origin, size, bytesPerRow, rowsPerImage }
-CopyTextureToBuffer { srcTexture, origin, size, dst, dstOffset, bytesPerRow, rowsPerImage }
-```
-
-Semantics identical to WebGPU.
-
----
-
-# 12. Submission
-
-## QueueSubmit
-
-```
-QueueSubmit {
-  queue,
-  commandBuffers: [ids]
-}
-```
-
-Backend:
-
-* Vulkan: `vkQueueSubmit2`
-* WebGPU: `queue.submit([cmdBuffers])`
-
----
-
-# 13. Synchronization & Barriers
-
-## Default: implicit WebGPU-style tracking
-
-The renderer:
-
-* Tracks resource usage (copy, attachment, sampled, storage, etc.)
-* Inserts necessary barriers automatically
-
-No DRP command is required for this.
-
----
-
-## Optional explicit barriers (requires `vulkan_barriers`)
-
-```
-ResourceBarrier {
-  resource,
-  oldState?,
-  newState?,
-  srcStage?,
-  dstStage?,
-  srcAccess?,
-  dstAccess?
-}
-```
-
-Backend mapping:
-Vulkan → vklite `DvzBarriers` and `dvz_cmd_barriers`.
-
-Ignored by WebGPU backend.
-
----
-
-# 14. Shader Language Handling
-
-| Format | Vulkan Backend                   | WebGPU Backend                         |
-| ------ | -------------------------------- | -------------------------------------- |
-| WGSL   | needs transpile → SPIR-V or Naga | native (preferred)                     |
-| SPIR-V | native                           | optional (depending on implementation) |
-| GLSL   | compile via glslang → SPIR-V     | not accepted                           |
-
-Recommended workflow:
-
-* Author in GLSL or WGSL.
-* Precompile GLSL → SPIR-V and/or WGSL.
-* DRP uses WGSL for WebGPU, SPIR-V for Vulkan.
-
----
-
-# 15. Validation Rules
-
-Examples (subset):
-
-* Using an object before creation → error
-* Destroyed object referenced → error
-* Bind group layout mismatch → validation error
-* Texture format incompatible with usage → error
-* Using same resource as both color attachment and sampled texture in same pass → forbidden
-* Binding buffer with missing or too-small range → error
-* Draw commands require render pipeline bound
-* Dispatch commands require compute pipeline bound
-
-Renderer emits:
-
-```
-Error {
-  severity: "error"|"warning",
-  message: string
-}
-```
-
----
-
-# 16. Backend Mapping Summary
-
-## 16.1 WebGPU Backend
-
-* DRP objects → direct WebGPU equivalents
-* Shader language → WGSL only
-* Barriers ignored
-* Push constants unsupported (ignored)
-* Command structure maps 1:1 to WebGPU API calls
-
----
-
-## 16.2 Vulkan/vklite Backend
-
-* GPUBuffer → suballocation inside large `DvzBuffer`
-* GPUTexture → `DvzImages`
-* GPUTextureView → `DvzImageViews`
-* Sampler → `DvzSampler`
-* Bind groups → `DvzDescriptors`
-* Pipelines → `DvzGraphics`, `DvzCompute`
-* Render passes → `DvzRendering` + `dvz_cmd_rendering_begin/end`
-* Barriers → `DvzBarriers` (optional explicit)
-* Shaders → SPIR-V preferred; GLSL allowed as extension
-* QueueSubmit → `dvz_submit` → `vkQueueSubmit2`
-
----
-
-# 17. Future Extensions
-
-Potential upcoming optional features:
-
-* **timeline_semaphores** (explicit work submission control)
-* **multi-queue** (compute & transfer queue separation)
-* **mesh shaders / compute-driven rendering**
-* **acceleration structures (Ray Tracing)**
-* **video encode/decode interop**
-
-These must be negotiated through the extension mechanism.

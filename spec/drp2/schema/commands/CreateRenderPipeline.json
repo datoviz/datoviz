@@ -8,17 +8,17 @@
       "const": "CreateRenderPipeline"
     },
     "id": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "layout": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "vertex": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "module": {
-          "$ref": "../common/Id.json.json"
+          "$ref": "../common/Id.json"
         },
         "entryPoint": {
           "type": "string"
@@ -85,7 +85,7 @@
       "additionalProperties": false,
       "properties": {
         "module": {
-          "$ref": "../common/Id.json.json"
+          "$ref": "../common/Id.json"
         },
         "entryPoint": {
           "type": "string"
@@ -97,7 +97,7 @@
             "additionalProperties": false,
             "properties": {
               "format": {
-                "$ref": "../common/GPUTextureFormat.json.json"
+                "$ref": "../common/GPUTextureFormat.json"
               },
               "blend": {
                 "type": "object",
@@ -108,13 +108,13 @@
                     "additionalProperties": false,
                     "properties": {
                       "src": {
-                        "$ref": "../common/BlendFactor.json.json"
+                        "$ref": "../common/BlendFactor.json"
                       },
                       "dst": {
-                        "$ref": "../common/BlendFactor.json.json"
+                        "$ref": "../common/BlendFactor.json"
                       },
                       "op": {
-                        "$ref": "../common/BlendOperation.json.json"
+                        "$ref": "../common/BlendOperation.json"
                       }
                     },
                     "required": [
@@ -128,13 +128,13 @@
                     "additionalProperties": false,
                     "properties": {
                       "src": {
-                        "$ref": "../common/BlendFactor.json.json"
+                        "$ref": "../common/BlendFactor.json"
                       },
                       "dst": {
-                        "$ref": "../common/BlendFactor.json.json"
+                        "$ref": "../common/BlendFactor.json"
                       },
                       "op": {
-                        "$ref": "../common/BlendOperation.json.json"
+                        "$ref": "../common/BlendOperation.json"
                       }
                     },
                     "required": [
@@ -150,7 +150,7 @@
                 ]
               },
               "writeMask": {
-                "$ref": "../common/ColorWriteMask.json.json"
+                "$ref": "../common/ColorWriteMask.json"
               }
             },
             "required": [
@@ -170,16 +170,16 @@
       "additionalProperties": false,
       "properties": {
         "topology": {
-          "$ref": "../common/PrimitiveTopology.json.json"
+          "$ref": "../common/PrimitiveTopology.json"
         },
         "stripIndexFormat": {
-          "$ref": "../common/IndexFormat.json.json"
+          "$ref": "../common/IndexFormat.json"
         },
         "frontFace": {
-          "$ref": "../common/FrontFace.json.json"
+          "$ref": "../common/FrontFace.json"
         },
         "cullMode": {
-          "$ref": "../common/CullMode.json.json"
+          "$ref": "../common/CullMode.json"
         }
       },
       "required": [
@@ -191,29 +191,29 @@
       "additionalProperties": false,
       "properties": {
         "format": {
-          "$ref": "../common/GPUTextureFormat.json.json"
+          "$ref": "../common/GPUTextureFormat.json"
         },
         "depthWriteEnabled": {
           "type": "boolean"
         },
         "depthCompare": {
-          "$ref": "../common/CompareFunction.json.json"
+          "$ref": "../common/CompareFunction.json"
         },
         "stencilFront": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
             "compare": {
-              "$ref": "../common/CompareFunction.json.json"
+              "$ref": "../common/CompareFunction.json"
             },
             "failOp": {
-              "$ref": "../common/StencilOperation.json.json"
+              "$ref": "../common/StencilOperation.json"
             },
             "depthFailOp": {
-              "$ref": "../common/StencilOperation.json.json"
+              "$ref": "../common/StencilOperation.json"
             },
             "passOp": {
-              "$ref": "../common/StencilOperation.json.json"
+              "$ref": "../common/StencilOperation.json"
             }
           }
         },
@@ -222,16 +222,16 @@
           "additionalProperties": false,
           "properties": {
             "compare": {
-              "$ref": "../common/CompareFunction.json.json"
+              "$ref": "../common/CompareFunction.json"
             },
             "failOp": {
-              "$ref": "../common/StencilOperation.json.json"
+              "$ref": "../common/StencilOperation.json"
             },
             "depthFailOp": {
-              "$ref": "../common/StencilOperation.json.json"
+              "$ref": "../common/StencilOperation.json"
             },
             "passOp": {
-              "$ref": "../common/StencilOperation.json.json"
+              "$ref": "../common/StencilOperation.json"
             }
           }
         },

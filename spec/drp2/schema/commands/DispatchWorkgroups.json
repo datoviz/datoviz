@@ -8,7 +8,7 @@
       "const": "DispatchWorkgroups"
     },
     "pass": {
-      "$ref": "../common/Id.json.json"
+      "$ref": "../common/Id.json"
     },
     "x": {
       "type": "integer",
