@@ -32,6 +32,8 @@ The most important work completed before the pause was:
    vk internals.
 5. A large follow-up pass hardened `vklite` wrapper ownership and opacity across commands, rendering,
    shaders, buffer/image helpers, slots, compute, graphics, descriptors, and tests.
+6. A substantial DRP2 spec/fixture/tooling pass landed under `spec/drp2/` and is now executable via
+   `just spec-check`.
 
 The branch feels like a successful mid-refactor checkpoint: the architecture is meaningfully cleaner
 than v0.3-era code, but the remaining work is now mostly boundary hardening and API simplification,
@@ -131,6 +133,27 @@ Key outcomes:
   shader path, which suggests the branch ended the burst by cleaning up platform/tooling rough
   edges rather than by starting a new architectural direction.
 
+### 7. DRP2 executable contract bring-up
+
+Main period: `2026-03-23`
+
+Key outcomes:
+
+- `spec/drp2/` now has aligned prose, schemas, fixtures, and a runnable validator.
+- The active DRP2 `2.0` surface is no longer just a command list; it now includes executable
+  lifetime/error/fixture rules.
+- The active surface now covers:
+  - buffers and textures
+  - encoders and passes
+  - lightweight render/compute pipelines
+  - vertex/index buffer binding
+  - lightweight bind groups
+  - lightweight bind-group layouts
+  - copy and submission commands
+- `tools/drp2_fixture_runner.py` and `testing/test_drp2_fixture_runner.py` provide the first repo
+  conformance loop for DRP2.
+- `just spec-check` now includes the DRP2 fixture corpus.
+
 
 ## Current State By Area
 
@@ -199,6 +222,21 @@ Status: intentionally dormant
 - There is no sign that bringing renderer/scene/client layers online should be the immediate next
   move.
 
+### DRP2 spec/tooling
+
+Status: active and materially further along than older notes imply
+
+- DRP2 is no longer in the "spec brainstorming only" phase.
+- The repo now has an executable DRP2 contract made of:
+  - prose docs
+  - active schemas
+  - fixture format + runner contract
+  - positive/negative/schema/capability fixtures
+  - a runnable validator and focused tests
+- The current DRP2 fixture corpus is now a real maintenance surface, not just planning material.
+- The remaining DRP2 work is mainly about deepening the active contract carefully, not broadening it
+  indiscriminately.
+
 
 ## Mismatches Or Cautions Worth Remembering
 
@@ -215,6 +253,9 @@ Status: intentionally dormant
    policy/types, and that is a conscious tradeoff for now.
 6. The local worktree has many untracked files, so keep future changes narrowly scoped and avoid
    cleanup commands unless you intentionally want to sort local artifacts first.
+7. DRP2 now has its own executable validation lane. If future work touches `spec/drp2/`, treat
+   `just spec-check` as part of the normal validation story rather than optional documentation-only
+   checking.
 
 
 ## Suggested Next Steps
@@ -244,6 +285,11 @@ Recommended order:
 5. Only after that, decide whether to reactivate any higher-level layer. Right now the codebase is
    still getting high leverage from low-level cleanup, and moving upward too early would likely lock
    in interfaces that you still want to simplify.
+6. If you continue DRP2 work, prefer tightening the active executable contract over promoting more
+   deferred objects. The next sensible DRP2 slice is:
+   - dynamic-offset semantics for `SetBindGroup`
+   - explicit destruction-safety negatives for bind-group layouts and pipelines
+   - continued fixture-first growth of the current active `2.0` surface
 
 
 ## Practical Re-entry Plan
@@ -258,6 +304,11 @@ If resuming work now, the shortest sensible sequence is:
    - `just test`
    - then narrower loops such as `just test vklite` or direct `dvztest_vk` work as needed
 5. Pick one boundary-cleanup slice and finish it end-to-end before touching any dormant higher layer
+6. If resuming DRP2 instead of low-level cleanup, read
+   [DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) and use:
+   - `python3 tools/drp2_fixture_runner.py --json`
+   - `.venv/bin/pytest -q testing/test_drp2_fixture_runner.py`
+   - `just spec-check`
 
 
 ## Bottom Line

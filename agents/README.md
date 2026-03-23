@@ -17,6 +17,9 @@ Current status:
    - `just test` passed on `2026-03-23` with `146/146` tests passing
 2. The active boundary-cleanup pass is effectively complete for the current low-level surface.
 3. The highest-value next work is naming/lifecycle consistency across the active low-level modules.
+4. DRP2 now also has an executable spec/fixture lane; treat
+   [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) as current if you are
+   working under `spec/drp2/` rather than in the low-level runtime.
 
 
 ## Start Here
@@ -31,6 +34,8 @@ If resuming work on the branch:
    want to continue packaging/CI cleanup after the boundary work
 5. When the branch is ready to start higher-level spec work, read
    [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+   - this is no longer only a planning note; it now records the active DRP2 executable contract and
+     its next recommended slice
 6. Treat
    [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    as strategic backlog, not as the default next-task list
