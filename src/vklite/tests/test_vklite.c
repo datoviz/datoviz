@@ -73,6 +73,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_commands_repeat_submit);
     TEST_SIMPLE(test_vklite_commands_destroy_idempotent);
     TEST_SIMPLE(test_vklite_barriers_reset);
+    TEST_SIMPLE(test_vklite_submit_reset_reuse);
     TEST_SIMPLE(test_vklite_sampler_1);
     TEST_SIMPLE(test_vklite_shader_1);
     TEST_SIMPLE(test_vklite_slots_1);

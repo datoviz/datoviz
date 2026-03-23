@@ -352,6 +352,26 @@ DVZ_EXPORT uint32_t dvz_barriers_image_count(DvzBarriers* barriers);
 
 
 
+/**
+ * Return the dependency flags configured on a barrier set.
+ *
+ * @param barriers the barrier set
+ * @returns the dependency flags
+ */
+DVZ_EXPORT VkDependencyFlags dvz_barriers_dependency_flags(DvzBarriers* barriers);
+
+
+
+/**
+ * Return the maximum number of barriers supported per barrier type.
+ *
+ * @param barriers the barrier set
+ * @returns the barrier capacity
+ */
+DVZ_EXPORT uint32_t dvz_barriers_capacity(DvzBarriers* barriers);
+
+
+
 /*************************************************************************************************/
 /*  Fences                                                                                       */
 /*************************************************************************************************/
@@ -508,7 +528,7 @@ DVZ_EXPORT void dvz_semaphore_destroy(DvzSemaphore* semaphore);
 
 
 /**
- * Initialize a submission.
+ * Initialize or reset a submission.
  *
  * @param submit the submission
  */
@@ -549,6 +569,46 @@ DVZ_EXPORT void dvz_submit_signal(
  * @param cmd the command buffer
  */
 DVZ_EXPORT void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd);
+
+
+
+/**
+ * Return the number of wait semaphores configured on a submission.
+ *
+ * @param submit the submission
+ * @returns the wait-semaphore count
+ */
+DVZ_EXPORT uint32_t dvz_submit_wait_count(DvzSubmit* submit);
+
+
+
+/**
+ * Return the number of signal semaphores configured on a submission.
+ *
+ * @param submit the submission
+ * @returns the signal-semaphore count
+ */
+DVZ_EXPORT uint32_t dvz_submit_signal_count(DvzSubmit* submit);
+
+
+
+/**
+ * Return the number of command buffers configured on a submission.
+ *
+ * @param submit the submission
+ * @returns the command-buffer count
+ */
+DVZ_EXPORT uint32_t dvz_submit_command_count(DvzSubmit* submit);
+
+
+
+/**
+ * Return whether a submission has no recorded waits, signals, or command buffers.
+ *
+ * @param submit the submission
+ * @returns true when the submission is empty
+ */
+DVZ_EXPORT bool dvz_submit_is_empty(DvzSubmit* submit);
 
 
 

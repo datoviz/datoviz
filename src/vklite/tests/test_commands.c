@@ -154,6 +154,10 @@ int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
+    AT(dvz_barriers_capacity(&barriers) == DVZ_MAX_BARRIERS);
+    AT(dvz_barriers_dependency_flags(&barriers) == 0);
+    dvz_barriers_flags(&barriers, VK_DEPENDENCY_BY_REGION_BIT);
+    AT(dvz_barriers_dependency_flags(&barriers) == VK_DEPENDENCY_BY_REGION_BIT);
 
     for (uint32_t i = 0; i < DVZ_MAX_BARRIERS; i++)
     {
@@ -165,6 +169,7 @@ int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
         suite, (dvz_barriers_image(&barriers, (VkImage)(uintptr_t)0xFFFF) == NULL));
 
     dvz_barriers(&barriers);
+    AT(dvz_barriers_dependency_flags(&barriers) == 0);
     AT(dvz_barriers_image_count(&barriers) == 0);
     AT(dvz_barriers_buffer_count(&barriers) == 0);
     AT(dvz_barriers_memory_count(&barriers) == 0);
@@ -177,4 +182,63 @@ int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
     AT(bimg->subresourceRange.layerCount == 1);
 
     return 0;
+}
+
+
+
+int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtx* ctx = _commands_ctx();
+    ANN(ctx);
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    ANN(device);
+    ANN(queue);
+
+    DvzCommands cmds = {0};
+    dvz_commands(device, queue, 1, &cmds);
+    dvz_cmd_begin(&cmds);
+    dvz_cmd_end(&cmds);
+
+    DvzSubmit submit = {0};
+    AT_EXPECTED_ERROR_STRICT(
+        suite, (dvz_submit_send(&submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
+
+    dvz_submit(&submit);
+    AT(dvz_submit_is_empty(&submit));
+    AT(dvz_submit_wait_count(&submit) == 0);
+    AT(dvz_submit_signal_count(&submit) == 0);
+    AT(dvz_submit_command_count(&submit) == 0);
+
+    AT_EXPECTED_ERROR_STRICT(
+        suite, (dvz_submit_send(&submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS));
+
+    dvz_submit_command(&submit, dvz_commands_handle(&cmds));
+    AT(!dvz_submit_is_empty(&submit));
+    AT(dvz_submit_command_count(&submit) == 1);
+
+    DvzFence fence = {0};
+    dvz_fence(device, false, &fence);
+    AT(dvz_submit_send(&submit, dvz_queue_handle(queue), dvz_fence_handle(&fence)) == VK_SUCCESS);
+    dvz_fence_wait(&fence);
+
+    dvz_submit(&submit);
+    AT(dvz_submit_is_empty(&submit));
+    AT(dvz_submit_command_count(&submit) == 0);
+
+    dvz_fence_reset(&fence);
+    dvz_submit_command(&submit, dvz_commands_handle(&cmds));
+    AT(dvz_submit_send(&submit, dvz_queue_handle(queue), dvz_fence_handle(&fence)) == VK_SUCCESS);
+    dvz_fence_wait(&fence);
+    dvz_fence_destroy(&fence);
+
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_commands_destroy(&cmds);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
 }

@@ -268,6 +268,12 @@ void dvz_cmd_barriers(DvzCommands* cmds, DvzBarriers* barriers)
 
 
 
+/**
+ * Return the number of recorded memory barriers in a barrier set.
+ *
+ * @param barriers the barrier set
+ * @return the memory-barrier count
+ */
 uint32_t dvz_barriers_memory_count(DvzBarriers* barriers)
 {
     ANN(barriers);
@@ -276,6 +282,12 @@ uint32_t dvz_barriers_memory_count(DvzBarriers* barriers)
 
 
 
+/**
+ * Return the number of recorded buffer barriers in a barrier set.
+ *
+ * @param barriers the barrier set
+ * @return the buffer-barrier count
+ */
 uint32_t dvz_barriers_buffer_count(DvzBarriers* barriers)
 {
     ANN(barriers);
@@ -284,10 +296,44 @@ uint32_t dvz_barriers_buffer_count(DvzBarriers* barriers)
 
 
 
+/**
+ * Return the number of recorded image barriers in a barrier set.
+ *
+ * @param barriers the barrier set
+ * @return the image-barrier count
+ */
 uint32_t dvz_barriers_image_count(DvzBarriers* barriers)
 {
     ANN(barriers);
     return barriers->info.imageMemoryBarrierCount;
+}
+
+
+
+/**
+ * Return the dependency flags configured on a barrier set.
+ *
+ * @param barriers the barrier set
+ * @return the dependency flags
+ */
+VkDependencyFlags dvz_barriers_dependency_flags(DvzBarriers* barriers)
+{
+    ANN(barriers);
+    return barriers->info.dependencyFlags;
+}
+
+
+
+/**
+ * Return the maximum number of barriers supported per barrier type.
+ *
+ * @param barriers the barrier set
+ * @return the barrier capacity
+ */
+uint32_t dvz_barriers_capacity(DvzBarriers* barriers)
+{
+    ANN(barriers);
+    return DVZ_MAX_BARRIERS;
 }
 
 
@@ -566,10 +612,32 @@ void dvz_semaphore_destroy(DvzSemaphore* semaphore)
 /*  Submission                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Return whether a submission wrapper has been initialized.
+ *
+ * @param submit the submission
+ * @return true when the wrapper is initialized
+ */
+static bool _submit_initialized(DvzSubmit* submit)
+{
+    ANN(submit);
+    return submit->info.sType == VK_STRUCTURE_TYPE_SUBMIT_INFO_2 &&
+           submit->info.pWaitSemaphoreInfos == submit->wait &&
+           submit->info.pSignalSemaphoreInfos == submit->signal &&
+           submit->info.pCommandBufferInfos == submit->cmds;
+}
+
+
+
+/**
+ * Initialize or reset a submission.
+ *
+ * @param submit the submission
+ */
 void dvz_submit(DvzSubmit* submit)
 {
     ANN(submit);
-
+    dvz_memset(submit, sizeof(*submit), 0, sizeof(*submit));
     submit->info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
     submit->info.pWaitSemaphoreInfos = submit->wait;
     submit->info.pSignalSemaphoreInfos = submit->signal;
@@ -578,6 +646,14 @@ void dvz_submit(DvzSubmit* submit)
 
 
 
+/**
+ * Add a semaphore to wait on.
+ *
+ * @param submit the submission
+ * @param semaphore the semaphore handle to wait on
+ * @param value the timeline value, when relevant
+ * @param stage the dependent pipeline stage mask
+ */
 void dvz_submit_wait(
     DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage)
 {
@@ -598,6 +674,14 @@ void dvz_submit_wait(
 
 
 
+/**
+ * Add a semaphore to signal.
+ *
+ * @param submit the submission
+ * @param semaphore the semaphore handle to signal
+ * @param value the timeline value, when relevant
+ * @param stage the dependent pipeline stage mask
+ */
 void dvz_submit_signal(
     DvzSubmit* submit, VkSemaphore semaphore, uint64_t value, VkPipelineStageFlags2 stage)
 {
@@ -618,6 +702,12 @@ void dvz_submit_signal(
 
 
 
+/**
+ * Add a command buffer to a submission.
+ *
+ * @param submit the submission
+ * @param cmd the command buffer handle
+ */
 void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd)
 {
     ANN(submit);
@@ -635,9 +725,84 @@ void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd)
 
 
 
+/**
+ * Return the number of wait semaphores configured on a submission.
+ *
+ * @param submit the submission
+ * @return the wait-semaphore count
+ */
+uint32_t dvz_submit_wait_count(DvzSubmit* submit)
+{
+    ANN(submit);
+    return submit->info.waitSemaphoreInfoCount;
+}
+
+
+
+/**
+ * Return the number of signal semaphores configured on a submission.
+ *
+ * @param submit the submission
+ * @return the signal-semaphore count
+ */
+uint32_t dvz_submit_signal_count(DvzSubmit* submit)
+{
+    ANN(submit);
+    return submit->info.signalSemaphoreInfoCount;
+}
+
+
+
+/**
+ * Return the number of command buffers configured on a submission.
+ *
+ * @param submit the submission
+ * @return the command-buffer count
+ */
+uint32_t dvz_submit_command_count(DvzSubmit* submit)
+{
+    ANN(submit);
+    return submit->info.commandBufferInfoCount;
+}
+
+
+
+/**
+ * Return whether a submission has no recorded waits, signals, or command buffers.
+ *
+ * @param submit the submission
+ * @return true when the submission is empty
+ */
+bool dvz_submit_is_empty(DvzSubmit* submit)
+{
+    ANN(submit);
+    return dvz_submit_wait_count(submit) == 0 && dvz_submit_signal_count(submit) == 0 &&
+           dvz_submit_command_count(submit) == 0;
+}
+
+
+
+/**
+ * Send a submission to a queue.
+ *
+ * @param submit the submission
+ * @param queue the queue receiving the work
+ * @param fence the optional fence signaled on completion
+ * @return Vulkan result code cast to int32_t
+ */
 int32_t dvz_submit_send(DvzSubmit* submit, VkQueue queue, VkFence fence)
 {
     ANN(submit);
     ANNVK(queue);
+    if (!_submit_initialized(submit))
+    {
+        log_error("cannot send an uninitialized submit wrapper");
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+    if (submit->info.commandBufferInfoCount == 0)
+    {
+        log_error("cannot submit without command buffers");
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
     return (int32_t)vkQueueSubmit2(queue, 1, &submit->info, fence);
 }

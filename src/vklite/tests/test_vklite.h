@@ -84,6 +84,7 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_commands_repeat_submit(TstSuite* suite, TstItem* tstitem);
 int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem);
 int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem);
+int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem);
 
