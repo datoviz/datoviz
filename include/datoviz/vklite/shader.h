@@ -20,10 +20,8 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
-#include "datoviz/common/obj.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
-#include "datoviz/vk/enums.h"
 
 
 
@@ -36,28 +34,20 @@ typedef struct DvzDevice DvzDevice;
 typedef struct DvzShader DvzShader;
 
 
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzShader
-{
-    DvzObject obj; // used to hold the id in the mapping structure
-    DvzDevice* device;
-    DvzShaderType type;
-    DvzSize size;
-    VkShaderModule vk_shader;
-    uint32_t* buffer; // only for SPIRV obj_type
-};
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Allocate an empty shader wrapper.
+ *
+ * @return allocated shader wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzShader* dvz_shader_create_wrapper(void);
 
 
 
@@ -68,7 +58,7 @@ EXTERN_C_ON
  * @param size the size of the buffer with the SPIR-V code, in bytes
  * @param buffer the buffer with the SPIR-V bytecode
  * @param[out] shader the shader module
- * @returns the Vulkan creation result code
+ * @return the Vulkan creation result code
  */
 DVZ_EXPORT int
 dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShader* shader);
@@ -91,6 +81,15 @@ DVZ_EXPORT VkShaderModule dvz_shader_handle(DvzShader* shader);
  * @param shader the shader module
  */
 DVZ_EXPORT void dvz_shader_destroy(DvzShader* shader);
+
+
+
+/**
+ * Free a shader wrapper allocated by dvz_shader_create_wrapper().
+ *
+ * @param shader shader wrapper to free
+ */
+DVZ_EXPORT void dvz_shader_free(DvzShader* shader);
 
 
 

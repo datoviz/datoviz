@@ -21,12 +21,12 @@
 #include "_buffers.h"
 #include "_images.h"
 #include "_log.h"
+#include "_shader.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/rendering.h"
-#include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/sync.h"
 #include "fixture_offscreen.h"
 

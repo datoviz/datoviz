@@ -78,6 +78,16 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
     dvz_images_destroy(images);
     AT(dvz_image_views_handle(views, 0) == VK_NULL_HANDLE);
     AT(dvz_image_handle(images, 0) == VK_NULL_HANDLE);
+
+    DvzImageCopy* copy = dvz_image_copy_create();
+    DvzImageBlit* blit = dvz_image_blit_create();
+    ANN(copy);
+    ANN(blit);
+    dvz_image_copy(copy);
+    dvz_image_blit(blit);
+    dvz_image_copy_free(copy);
+    dvz_image_blit_free(blit);
+
     dvz_image_views_free(views);
     dvz_images_free(images);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);

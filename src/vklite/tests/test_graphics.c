@@ -78,18 +78,20 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_graphics(device, &graphics);
 
     // Shaders.
-    DvzShader vs = {0};
-    DvzShader fs = {0};
+    DvzShader* vs = dvz_shader_create_wrapper();
+    DvzShader* fs = dvz_shader_create_wrapper();
     DvzSize vs_size = 0;
     DvzSize fs_size = 0;
     uint32_t* vs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &vs_size);
     uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
+    ANN(vs);
+    ANN(fs);
     ANN(vs_spv);
     ANN(fs_spv);
-    dvz_shader(device, vs_size, vs_spv, &vs);
-    dvz_shader(device, fs_size, fs_spv, &fs);
-    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
-    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+    dvz_shader(device, vs_size, vs_spv, vs);
+    dvz_shader(device, fs_size, fs_spv, fs);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
     AT(dvz_graphics_shader_count(&graphics) == 2);
 
     // Slots.
@@ -165,8 +167,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     {
         dvz_image_views_destroy(&view);
         dvz_images_destroy(&img);
-        dvz_shader_destroy(&vs);
-        dvz_shader_destroy(&fs);
+        dvz_shader_destroy(vs);
+        dvz_shader_destroy(fs);
+        dvz_shader_free(vs);
+        dvz_shader_free(fs);
         dvz_slots_destroy(&slots);
         dvz_graphics_destroy(&graphics);
         dvz_rendering_free(rendering);
@@ -232,8 +236,10 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_destroy(&view);
     dvz_images_destroy(&img);
     dvz_buffer_destroy(&staging);
-    dvz_shader_destroy(&vs);
-    dvz_shader_destroy(&fs);
+    dvz_shader_destroy(vs);
+    dvz_shader_destroy(fs);
+    dvz_shader_free(vs);
+    dvz_shader_free(fs);
     dvz_slots_destroy(&slots);
     dvz_graphics_destroy(&graphics);
     dvz_graphics_destroy(&graphics);

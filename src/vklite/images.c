@@ -548,6 +548,94 @@ void dvz_image_views_destroy(DvzImageViews* views)
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
+/**
+ * Allocate an empty image-copy wrapper.
+ *
+ * @return allocated image-copy wrapper, or NULL on allocation failure
+ */
+DvzImageCopy* dvz_image_copy_create(void)
+{
+    DvzImageCopy* copy = (DvzImageCopy*)dvz_calloc(1, sizeof(DvzImageCopy));
+    ANN(copy);
+    dvz_image_copy(copy);
+    return copy;
+}
+
+
+
+/**
+ * Reset an image-copy wrapper to its default state.
+ *
+ * @param copy the image-copy wrapper
+ */
+void dvz_image_copy(DvzImageCopy* copy)
+{
+    ANN(copy);
+    dvz_memset(copy, sizeof(DvzImageCopy), 0, sizeof(DvzImageCopy));
+}
+
+
+
+/**
+ * Free an image-copy wrapper allocated by dvz_image_copy_create().
+ *
+ * @param copy image-copy wrapper to free
+ */
+void dvz_image_copy_free(DvzImageCopy* copy)
+{
+    if (copy == NULL)
+    {
+        return;
+    }
+    dvz_free(copy);
+}
+
+
+
+/**
+ * Allocate an empty image-blit wrapper.
+ *
+ * @return allocated image-blit wrapper, or NULL on allocation failure
+ */
+DvzImageBlit* dvz_image_blit_create(void)
+{
+    DvzImageBlit* blit = (DvzImageBlit*)dvz_calloc(1, sizeof(DvzImageBlit));
+    ANN(blit);
+    dvz_image_blit(blit);
+    return blit;
+}
+
+
+
+/**
+ * Reset an image-blit wrapper to its default state.
+ *
+ * @param blit the image-blit wrapper
+ */
+void dvz_image_blit(DvzImageBlit* blit)
+{
+    ANN(blit);
+    dvz_memset(blit, sizeof(DvzImageBlit), 0, sizeof(DvzImageBlit));
+}
+
+
+
+/**
+ * Free an image-blit wrapper allocated by dvz_image_blit_create().
+ *
+ * @param blit image-blit wrapper to free
+ */
+void dvz_image_blit_free(DvzImageBlit* blit)
+{
+    if (blit == NULL)
+    {
+        return;
+    }
+    dvz_free(blit);
+}
+
+
+
 void dvz_image_region(DvzImageRegion* region)
 {
     ANN(region);

@@ -23,10 +23,9 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz/common/obj.h"
+#include "_shader.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/queues.h"
-#include "datoviz/vklite/shader.h"
 
 
 
@@ -34,6 +33,29 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Allocate an empty shader wrapper.
+ *
+ * @return allocated shader wrapper, or NULL on allocation failure
+ */
+DvzShader* dvz_shader_create_wrapper(void)
+{
+    DvzShader* shader = (DvzShader*)dvz_calloc(1, sizeof(DvzShader));
+    ANN(shader);
+    return shader;
+}
+
+
+
+/**
+ * Create a shader module.
+ *
+ * @param device the device
+ * @param size the size of the buffer with the SPIR-V code, in bytes
+ * @param buffer the buffer with the SPIR-V bytecode
+ * @param[out] shader the shader module
+ * @return the Vulkan creation result code
+ */
 int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShader* shader)
 {
     ANN(device);
@@ -66,6 +88,12 @@ int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShade
 
 
 
+/**
+ * Return the shader Vulkan handle.
+ *
+ * @param shader the shader
+ * @return the shader module handle
+ */
 VkShaderModule dvz_shader_handle(DvzShader* shader)
 {
     ANN(shader);
@@ -74,6 +102,11 @@ VkShaderModule dvz_shader_handle(DvzShader* shader)
 
 
 
+/**
+ * Destroy a shader module.
+ *
+ * @param shader the shader module
+ */
 void dvz_shader_destroy(DvzShader* shader)
 {
     ANN(shader);
@@ -92,4 +125,20 @@ void dvz_shader_destroy(DvzShader* shader)
     dvz_free(shader->buffer);
     shader->buffer = NULL;
     dvz_obj_destroyed(&shader->obj);
+}
+
+
+
+/**
+ * Free a shader wrapper allocated by dvz_shader_create_wrapper().
+ *
+ * @param shader shader wrapper to free
+ */
+void dvz_shader_free(DvzShader* shader)
+{
+    if (shader == NULL)
+    {
+        return;
+    }
+    dvz_free(shader);
 }

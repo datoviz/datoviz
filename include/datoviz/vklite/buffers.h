@@ -43,23 +43,6 @@ typedef struct DvzBuffer DvzBuffer;
 typedef struct DvzBufferViews DvzBufferViews;
 
 
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzBufferViews
-{
-    DvzBuffer* buffer;
-    uint32_t count;
-    DvzSize size;
-    DvzSize aligned_size; // NOTE: is non-null only for aligned arrays
-    DvzSize alignment;
-    DvzSize offsets[DVZ_MAX_BUFFER_VIEWS];
-};
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -239,6 +222,15 @@ DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
 
 
 /**
+ * Allocate an empty buffer-views wrapper.
+ *
+ * @return allocated buffer-views wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzBufferViews* dvz_buffer_views_create(void);
+
+
+
+/**
  * Create buffer views on an existing GPU buffer.
  *
  * @param buffer the buffer
@@ -251,6 +243,56 @@ DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
 DVZ_EXPORT void dvz_buffer_views(
     DvzBuffer* buffer, uint32_t count, //
     DvzSize offset, DvzSize size, DvzSize alignment, DvzBufferViews* views);
+
+
+
+/**
+ * Return the number of logical views configured in a buffer-views wrapper.
+ *
+ * @param views the buffer views
+ * @return the number of configured views
+ */
+DVZ_EXPORT uint32_t dvz_buffer_views_count(DvzBufferViews* views);
+
+
+
+/**
+ * Return the size in bytes of each configured logical view.
+ *
+ * @param views the buffer views
+ * @return the logical view size in bytes
+ */
+DVZ_EXPORT DvzSize dvz_buffer_views_size(DvzBufferViews* views);
+
+
+
+/**
+ * Return the aligned stride in bytes between successive views.
+ *
+ * @param views the buffer views
+ * @return the aligned stride in bytes, or 0 when no alignment was requested
+ */
+DVZ_EXPORT DvzSize dvz_buffer_views_aligned_size(DvzBufferViews* views);
+
+
+
+/**
+ * Return the byte offset of a configured view.
+ *
+ * @param views the buffer views
+ * @param idx the logical view index
+ * @return the byte offset of the selected view
+ */
+DVZ_EXPORT DvzSize dvz_buffer_views_offset(DvzBufferViews* views, uint32_t idx);
+
+
+
+/**
+ * Free a buffer-views wrapper allocated by dvz_buffer_views_create().
+ *
+ * @param views buffer-views wrapper to free
+ */
+DVZ_EXPORT void dvz_buffer_views_free(DvzBufferViews* views);
 
 
 

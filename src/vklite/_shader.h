@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Images internals                                                                             */
+/*  Shader internals                                                                             */
 /*************************************************************************************************/
 
 #pragma once
@@ -16,9 +16,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
+
 #include "datoviz/common/obj.h"
-#include "datoviz/vk/memory.h"
-#include "datoviz/vklite/images.h"
+#include "datoviz/vk/enums.h"
+#include "datoviz/vklite/shader.h"
 
 
 
@@ -26,47 +28,12 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzImages
+struct DvzShader
 {
-    DvzObject obj;
+    DvzObject obj; // used to hold the id in the mapping structure
     DvzDevice* device;
-    DvzVma* allocator;
-
-    uint32_t count;
-    bool is_swapchain;
-
-    VkImageCreateInfo info;
-    VmaAllocationCreateFlags req_alloc_flags;
-
-    VkImage vk_images[DVZ_MAX_IMAGES];
-    DvzAllocation* allocs[DVZ_MAX_IMAGES];
-};
-
-
-
-struct DvzImageViews
-{
-    DvzObject obj;
-    DvzDevice* device;
-    DvzImages* img;
-
-    VkImageViewCreateInfo info;
-
-    VkImageView vk_views[DVZ_MAX_IMAGES];
-};
-
-
-
-struct DvzImageBlit
-{
-    VkBlitImageInfo2 info;
-    VkImageBlit2 blit;
-};
-
-
-
-struct DvzImageCopy
-{
-    VkCopyImageInfo2 info;
-    VkImageCopy2 copy;
+    DvzShaderType type;
+    DvzSize size;
+    VkShaderModule vk_shader;
+    uint32_t* buffer; // only for SPIRV obj_type
 };

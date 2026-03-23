@@ -154,20 +154,22 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         // Load the shaders.
         DvzSize ivs_size = 0;
         DvzSize ifs_size = 0;
-        DvzShader ivs = {0};
-        DvzShader ifs = {0};
+        DvzShader* ivs = dvz_shader_create_wrapper();
+        DvzShader* ifs = dvz_shader_create_wrapper();
         uint32_t* ivs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &ivs_size);
         uint32_t* ifs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &ifs_size);
+        ANN(ivs);
+        ANN(ifs);
 
         // Initialize the graphics pipeline.
         dvz_graphics(device, &igraphics);
 
 
         // Shaders.
-        dvz_shader(device, ivs_size, ivs_spv, &ivs);
-        dvz_shader(device, ifs_size, ifs_spv, &ifs);
-        dvz_graphics_shader(&igraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&ivs));
-        dvz_graphics_shader(&igraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&ifs));
+        dvz_shader(device, ivs_size, ivs_spv, ivs);
+        dvz_shader(device, ifs_size, ifs_spv, ifs);
+        dvz_graphics_shader(&igraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(ivs));
+        dvz_graphics_shader(&igraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(ifs));
 
         // Slots.
         DvzSlots islots = {0};
@@ -202,8 +204,10 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
         // Cleanup.
         dvz_slots_destroy(&islots);
-        dvz_shader_destroy(&ivs);
-        dvz_shader_destroy(&ifs);
+        dvz_shader_destroy(ivs);
+        dvz_shader_destroy(ifs);
+        dvz_shader_free(ivs);
+        dvz_shader_free(ifs);
         dvz_free(ivs_spv);
         dvz_free(ifs_spv);
     }
@@ -385,16 +389,18 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
         // Load the shaders.
         DvzSize vs_size = 0;
         DvzSize fs_size = 0;
-        DvzShader vs = {0};
-        DvzShader fs = {0};
+        DvzShader* vs = dvz_shader_create_wrapper();
+        DvzShader* fs = dvz_shader_create_wrapper();
         uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
         uint32_t* fs_spv = dvz_test_shader_load("disc_mask.frag.spv", &fs_size);
+        ANN(vs);
+        ANN(fs);
 
         // Shaders.
-        dvz_shader(device, vs_size, vs_spv, &vs);
-        dvz_shader(device, fs_size, fs_spv, &fs);
-        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
-        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+        dvz_shader(device, vs_size, vs_spv, vs);
+        dvz_shader(device, fs_size, fs_spv, fs);
+        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(&mgraphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Attachments.
         dvz_graphics_attachment_color(&mgraphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
@@ -432,8 +438,10 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
 
         // Cleanup.
         dvz_slots_destroy(&slots);
-        dvz_shader_destroy(&vs);
-        dvz_shader_destroy(&fs);
+        dvz_shader_destroy(vs);
+        dvz_shader_destroy(fs);
+        dvz_shader_free(vs);
+        dvz_shader_free(fs);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
     }
@@ -764,12 +772,13 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     DvzSize cs_size = 0;
     uint32_t* cs_spv = dvz_test_shader_load("compute_increment.comp.spv", &cs_size);
 
-    DvzShader cs = {0};
-    dvz_shader(device, cs_size, cs_spv, &cs);
+    DvzShader* cs = dvz_shader_create_wrapper();
+    ANN(cs);
+    dvz_shader(device, cs_size, cs_spv, cs);
 
     DvzCompute compute = {0};
     dvz_compute(device, &compute);
-    dvz_compute_shader(&compute, dvz_shader_handle(&cs));
+    dvz_compute_shader(&compute, dvz_shader_handle(cs));
     dvz_compute_layout(&compute, dvz_slots_handle(&slots));
     AT(dvz_compute_create(&compute) == 0);
 
@@ -846,7 +855,8 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     // Step 7: cleanup
     dvz_slots_destroy(&slots);
     dvz_descriptors_free(desc);
-    dvz_shader_destroy(&cs);
+    dvz_shader_destroy(cs);
+    dvz_shader_free(cs);
     dvz_compute_destroy(&compute);
     dvz_graphics_destroy(graphics);
     dvz_buffer_destroy(&buf);
@@ -959,13 +969,15 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     DvzGraphics gfx_color = {0};
     dvz_graphics(device, &gfx_color);
 
-    DvzShader vs_color = {0};
-    dvz_shader(device, vs_size, vs_spv, &vs_color);
-    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs_color));
+    DvzShader* vs_color = dvz_shader_create_wrapper();
+    ANN(vs_color);
+    dvz_shader(device, vs_size, vs_spv, vs_color);
+    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs_color));
 
-    DvzShader fs_color = {0};
-    dvz_shader(device, cs_size, fs_color_spv, &fs_color);
-    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs_color));
+    DvzShader* fs_color = dvz_shader_create_wrapper();
+    ANN(fs_color);
+    dvz_shader(device, cs_size, fs_color_spv, fs_color);
+    dvz_graphics_shader(&gfx_color, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs_color));
 
     dvz_graphics_attachment_color(&gfx_color, 0, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_graphics_blend_color(
@@ -998,14 +1010,16 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_graphics(device, &gfx_pick);
 
     // Shared vertex shader.
-    DvzShader vs = {0};
-    dvz_shader(device, vs_size, vs_spv, &vs);
-    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
+    DvzShader* vs = dvz_shader_create_wrapper();
+    ANN(vs);
+    dvz_shader(device, vs_size, vs_spv, vs);
+    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
 
     // Picking fragment shader.
-    DvzShader fs_pick = {0};
-    dvz_shader(device, ps_size, fs_pick_spv, &fs_pick);
-    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs_pick));
+    DvzShader* fs_pick = dvz_shader_create_wrapper();
+    ANN(fs_pick);
+    dvz_shader(device, ps_size, fs_pick_spv, fs_pick);
+    dvz_graphics_shader(&gfx_pick, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs_pick));
 
     dvz_graphics_attachment_color(&gfx_pick, 0, VK_FORMAT_R32_UINT);
     // Integer attachments ignore blending, but we must still enable the write mask explicitly.
@@ -1119,10 +1133,14 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&staging);
     dvz_graphics_destroy(&gfx_pick);
     dvz_graphics_destroy(&gfx_color);
-    dvz_shader_destroy(&vs_color);
-    dvz_shader_destroy(&fs_color);
-    dvz_shader_destroy(&vs);
-    dvz_shader_destroy(&fs_pick);
+    dvz_shader_destroy(vs_color);
+    dvz_shader_destroy(fs_color);
+    dvz_shader_destroy(vs);
+    dvz_shader_destroy(fs_pick);
+    dvz_shader_free(vs_color);
+    dvz_shader_free(fs_color);
+    dvz_shader_free(vs);
+    dvz_shader_free(fs_pick);
     dvz_buffer_destroy(&vbuf);
     dvz_image_views_destroy(&pickview);
     dvz_images_destroy(&pickimg);
@@ -1273,13 +1291,16 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_graphics(device, &g_accum);
 
         // Shaders.
-        DvzShader vs = {0}, fs = {0};
+        DvzShader* vs = dvz_shader_create_wrapper();
+        DvzShader* fs = dvz_shader_create_wrapper();
         vs_spv = dvz_test_shader_load("wboit_accum.vert.spv", &vs_size);
         fs_spv = dvz_test_shader_load("wboit_accum.frag.spv", &fs_size);
-        dvz_shader(device, vs_size, vs_spv, &vs);
-        dvz_shader(device, fs_size, fs_spv, &fs);
-        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
-        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+        ANN(vs);
+        ANN(fs);
+        dvz_shader(device, vs_size, vs_spv, vs);
+        dvz_shader(device, fs_size, fs_spv, fs);
+        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(&g_accum, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Vertex input: binding 0, pos (loc 0), color (loc 1).
         dvz_graphics_vertex_binding(
@@ -1337,8 +1358,10 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
 
         // Cleanup temp.
         dvz_slots_destroy(&slots);
-        dvz_shader_destroy(&vs);
-        dvz_shader_destroy(&fs);
+        dvz_shader_destroy(vs);
+        dvz_shader_destroy(fs);
+        dvz_shader_free(vs);
+        dvz_shader_free(fs);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
         vs_spv = fs_spv = NULL;
@@ -1355,13 +1378,16 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_graphics(device, &g_comp);
 
         // Shaders.
-        DvzShader vs = {0}, fs = {0};
+        DvzShader* vs = dvz_shader_create_wrapper();
+        DvzShader* fs = dvz_shader_create_wrapper();
         vs_spv = dvz_test_shader_load("wboit_comp.vert.spv", &vs_size);
         fs_spv = dvz_test_shader_load("wboit_comp.frag.spv", &fs_size);
-        dvz_shader(device, vs_size, vs_spv, &vs);
-        dvz_shader(device, fs_size, fs_spv, &fs);
-        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
-        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+        ANN(vs);
+        ANN(fs);
+        dvz_shader(device, vs_size, vs_spv, vs);
+        dvz_shader(device, fs_size, fs_spv, fs);
+        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(&g_comp, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Fullscreen triangle: no vertex attributes.
 
@@ -1412,8 +1438,10 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
             desc_comp, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             dvz_image_views_handle(&accum_weight_view, 0), dvz_sampler_handle(sampler));
 
-        dvz_shader_destroy(&vs);
-        dvz_shader_destroy(&fs);
+        dvz_shader_destroy(vs);
+        dvz_shader_destroy(fs);
+        dvz_shader_free(vs);
+        dvz_shader_free(fs);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
         vs_spv = fs_spv = NULL;
@@ -1657,12 +1685,15 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
         uint32_t* fs_spv = dvz_test_shader_load("ssao_depth.frag.spv", &fs_size);
 
-        DvzShader vs = {0}, fs = {0};
-        dvz_shader(device, vs_size, vs_spv, &vs);
-        dvz_shader(device, fs_size, fs_spv, &fs);
+        DvzShader* vs = dvz_shader_create_wrapper();
+        DvzShader* fs = dvz_shader_create_wrapper();
+        ANN(vs);
+        ANN(fs);
+        dvz_shader(device, vs_size, vs_spv, vs);
+        dvz_shader(device, fs_size, fs_spv, fs);
 
-        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
-        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(&depth_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Attachments: dummy fixture color + our offscreen depth attachment format.
         dvz_graphics_attachment_color(&depth_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
@@ -1698,8 +1729,10 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
 
         // Cleanup.
         dvz_slots_destroy(&slots);
-        dvz_shader_destroy(&vs);
-        dvz_shader_destroy(&fs);
+        dvz_shader_destroy(vs);
+        dvz_shader_destroy(fs);
+        dvz_shader_free(vs);
+        dvz_shader_free(fs);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
     }
@@ -1742,12 +1775,15 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
         uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
         uint32_t* fs_spv = dvz_test_shader_load("ssao.frag.spv", &fs_size);
 
-        DvzShader vs = {0}, fs = {0};
-        dvz_shader(device, vs_size, vs_spv, &vs);
-        dvz_shader(device, fs_size, fs_spv, &fs);
+        DvzShader* vs = dvz_shader_create_wrapper();
+        DvzShader* fs = dvz_shader_create_wrapper();
+        ANN(vs);
+        ANN(fs);
+        dvz_shader(device, vs_size, vs_spv, vs);
+        dvz_shader(device, fs_size, fs_spv, fs);
 
-        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(&vs));
-        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(&fs));
+        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+        dvz_graphics_shader(&ssao_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
 
         // Color attachment: fixture main color.
         dvz_graphics_attachment_color(&ssao_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
@@ -1787,8 +1823,10 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
             ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             dvz_image_views_handle(&depth_view, 0), dvz_sampler_handle(sampler));
 
-        dvz_shader_destroy(&vs);
-        dvz_shader_destroy(&fs);
+        dvz_shader_destroy(vs);
+        dvz_shader_destroy(fs);
+        dvz_shader_free(vs);
+        dvz_shader_free(fs);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
     }

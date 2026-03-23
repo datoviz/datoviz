@@ -124,8 +124,10 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     ANN(ctx);
 
     // Create a basic compute shader.
-    DvzShader shader = {0};
-    dvz_shader(dvz_gpu_ctx_device(ctx), sizeof(minimal_compute), (uint32_t*)minimal_compute, &shader);
+    DvzShader* shader = dvz_shader_create_wrapper();
+    ANN(shader);
+    dvz_shader(
+        dvz_gpu_ctx_device(ctx), sizeof(minimal_compute), (uint32_t*)minimal_compute, shader);
 
     // Create slots.
     DvzSlots slots = {0};
@@ -136,7 +138,7 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     // Create a compute pipeline.
     DvzCompute compute = {0};
     dvz_compute(dvz_gpu_ctx_device(ctx), &compute);
-    dvz_compute_shader(&compute, dvz_shader_handle(&shader));
+    dvz_compute_shader(&compute, dvz_shader_handle(shader));
     dvz_compute_layout(&compute, dvz_slots_handle(&slots));
     AT(dvz_compute_layout_handle(&compute) == dvz_slots_handle(&slots));
     AT(dvz_compute_create(&compute) == 0);
@@ -147,7 +149,8 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
     dvz_compute_destroy(&compute);
     AT(dvz_compute_handle(&compute) == VK_NULL_HANDLE);
     dvz_slots_destroy(&slots);
-    dvz_shader_destroy(&shader);
+    dvz_shader_destroy(shader);
+    dvz_shader_free(shader);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
 

@@ -371,24 +371,28 @@ static void canvas_cmd_copy_frame(
 
     if (swapchain->frame_format == dvz_swapchain_image_format(swapchain->swapchain_wrapper))
     {
-        DvzImageCopy copy = {0};
+        DvzImageCopy* copy = dvz_image_copy_create();
+        ANN(copy);
         dvz_cmd_copy_source(
-            &copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, extent.width, extent.height,
+            copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, extent.width, extent.height,
             1);
-        dvz_cmd_copy_destination(&copy, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
-        dvz_cmd_copy_image(&cmds, &copy);
+        dvz_cmd_copy_destination(copy, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
+        dvz_cmd_copy_image(&cmds, copy);
+        dvz_image_copy_free(copy);
     }
     else
     {
-        DvzImageBlit blit = {0};
+        DvzImageBlit* blit = dvz_image_blit_create();
+        ANN(blit);
         dvz_cmd_blit_source(
-            &blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
+            blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
             (int32_t)extent.width, (int32_t)extent.height, 1);
         dvz_cmd_blit_destination(
-            &blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
+            blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
             (int32_t)extent.width, (int32_t)extent.height, 1);
-        dvz_cmd_blit_filter(&blit, VK_FILTER_NEAREST);
-        dvz_cmd_blit_image(&cmds, &blit);
+        dvz_cmd_blit_filter(blit, VK_FILTER_NEAREST);
+        dvz_cmd_blit_image(&cmds, blit);
+        dvz_image_blit_free(blit);
     }
 }
 

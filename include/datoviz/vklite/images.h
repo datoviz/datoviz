@@ -48,26 +48,6 @@ typedef struct DvzImageCopy DvzImageCopy;
 
 
 
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzImageBlit
-{
-    VkBlitImageInfo2 info;
-    VkImageBlit2 blit;
-};
-
-
-
-struct DvzImageCopy
-{
-    VkCopyImageInfo2 info;
-    VkImageCopy2 copy;
-};
-
-
-
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -446,6 +426,60 @@ dvz_image_region_layers(DvzImageRegion* region, uint32_t base_layer, uint32_t la
 /*************************************************************************************************/
 /*  Image commands                                                                               */
 /*************************************************************************************************/
+
+/**
+ * Allocate an empty image-copy wrapper.
+ *
+ * @return allocated image-copy wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzImageCopy* dvz_image_copy_create(void);
+
+
+
+/**
+ * Reset an image-copy wrapper to its default state.
+ *
+ * @param copy the image-copy wrapper
+ */
+DVZ_EXPORT void dvz_image_copy(DvzImageCopy* copy);
+
+
+
+/**
+ * Free an image-copy wrapper allocated by dvz_image_copy_create().
+ *
+ * @param copy image-copy wrapper to free
+ */
+DVZ_EXPORT void dvz_image_copy_free(DvzImageCopy* copy);
+
+
+
+/**
+ * Allocate an empty image-blit wrapper.
+ *
+ * @return allocated image-blit wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzImageBlit* dvz_image_blit_create(void);
+
+
+
+/**
+ * Reset an image-blit wrapper to its default state.
+ *
+ * @param blit the image-blit wrapper
+ */
+DVZ_EXPORT void dvz_image_blit(DvzImageBlit* blit);
+
+
+
+/**
+ * Free an image-blit wrapper allocated by dvz_image_blit_create().
+ *
+ * @param blit image-blit wrapper to free
+ */
+DVZ_EXPORT void dvz_image_blit_free(DvzImageBlit* blit);
+
+
 
 /**
  * Copy a GPU buffer to a GPU image.

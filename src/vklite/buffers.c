@@ -302,6 +302,30 @@ void dvz_buffer_destroy(DvzBuffer* buffer)
 
 
 
+/**
+ * Allocate an empty buffer-views wrapper.
+ *
+ * @return allocated buffer-views wrapper, or NULL on allocation failure
+ */
+DvzBufferViews* dvz_buffer_views_create(void)
+{
+    DvzBufferViews* views = (DvzBufferViews*)dvz_calloc(1, sizeof(DvzBufferViews));
+    ANN(views);
+    return views;
+}
+
+
+
+/**
+ * Create buffer views on an existing GPU buffer.
+ *
+ * @param buffer the buffer
+ * @param count the number of successive views
+ * @param offset the offset within the buffer
+ * @param size the size of each view, in bytes
+ * @param alignment the alignment requirement for the view offsets
+ * @param[out] views the created buffer views
+ */
 void dvz_buffer_views(
     DvzBuffer* buffer, uint32_t count, //
     DvzSize offset, DvzSize size, DvzSize alignment, DvzBufferViews* views)
@@ -341,6 +365,89 @@ void dvz_buffer_views(
 
 
 
+/**
+ * Return the number of logical views configured in a buffer-views wrapper.
+ *
+ * @param views the buffer views
+ * @return the number of configured views
+ */
+uint32_t dvz_buffer_views_count(DvzBufferViews* views)
+{
+    ANN(views);
+    return views->count;
+}
+
+
+
+/**
+ * Return the size in bytes of each configured logical view.
+ *
+ * @param views the buffer views
+ * @return the logical view size in bytes
+ */
+DvzSize dvz_buffer_views_size(DvzBufferViews* views)
+{
+    ANN(views);
+    return views->size;
+}
+
+
+
+/**
+ * Return the aligned stride in bytes between successive views.
+ *
+ * @param views the buffer views
+ * @return the aligned stride in bytes, or 0 when no alignment was requested
+ */
+DvzSize dvz_buffer_views_aligned_size(DvzBufferViews* views)
+{
+    ANN(views);
+    return views->aligned_size;
+}
+
+
+
+/**
+ * Return the byte offset of a configured view.
+ *
+ * @param views the buffer views
+ * @param idx the logical view index
+ * @return the byte offset of the selected view
+ */
+DvzSize dvz_buffer_views_offset(DvzBufferViews* views, uint32_t idx)
+{
+    ANN(views);
+    ASSERT(idx < views->count);
+    return views->offsets[idx];
+}
+
+
+
+/**
+ * Free a buffer-views wrapper allocated by dvz_buffer_views_create().
+ *
+ * @param views buffer-views wrapper to free
+ */
+void dvz_buffer_views_free(DvzBufferViews* views)
+{
+    if (views == NULL)
+    {
+        return;
+    }
+    dvz_free(views);
+}
+
+
+
+/**
+ * Bind vertex buffers before recording draw commands.
+ *
+ * @param cmds the command buffers
+ * @param first_binding the index of the first vertex binding
+ * @param binding_count the number of bindings
+ * @param buffers the "binding_count" buffers to bind
+ * @param offsets the offsets within each buffer
+ */
 void dvz_cmd_bind_vertex_buffers(
     DvzCommands* cmds, uint32_t first_binding, uint32_t binding_count, DvzBuffer* buffers,
     DvzSize* offsets)

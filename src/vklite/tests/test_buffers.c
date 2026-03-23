@@ -138,19 +138,24 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
     AT(dvz_buffer_size_value(buffer) == size);
     dvz_buffer_create(buffer);
 
-    DvzBufferViews views = {0};
+    DvzBufferViews* views = dvz_buffer_views_create();
+    ANN(views);
     DvzSize offset = 33;
     DvzSize vsize = 7;
     DvzSize alignment = 16;
-    dvz_buffer_views(buffer, 3, offset, vsize, alignment, &views);
-    AT(views.offsets[0] == 48);
-    AT(views.offsets[1] == 64);
-    AT(views.offsets[2] == 80);
+    dvz_buffer_views(buffer, 3, offset, vsize, alignment, views);
+    AT(dvz_buffer_views_count(views) == 3);
+    AT(dvz_buffer_views_size(views) == vsize);
+    AT(dvz_buffer_views_aligned_size(views) == 16);
+    AT(dvz_buffer_views_offset(views, 0) == 48);
+    AT(dvz_buffer_views_offset(views, 1) == 64);
+    AT(dvz_buffer_views_offset(views, 2) == 80);
 
     // Cleanup.
     dvz_buffer_destroy(buffer);
     dvz_buffer_destroy(buffer);
     AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
+    dvz_buffer_views_free(views);
     dvz_buffer_free(buffer);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);

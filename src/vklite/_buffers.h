@@ -39,3 +39,15 @@ struct DvzBuffer
     VkBuffer vk_buffer;
     DvzAllocation* alloc;
 };
+
+
+
+struct DvzBufferViews
+{
+    DvzBuffer* buffer;
+    uint32_t count;
+    DvzSize size;
+    DvzSize aligned_size; // NOTE: is non-null only for aligned arrays
+    DvzSize alignment;
+    DvzSize offsets[DVZ_MAX_BUFFER_VIEWS];
+};

@@ -76,10 +76,12 @@ int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem)
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 
-    DvzShader shader = {0};
-    dvz_shader(dvz_gpu_ctx_device(ctx), sizeof(shader_spirv), (uint32_t*)shader_spirv, &shader);
+    DvzShader* shader = dvz_shader_create_wrapper();
+    ANN(shader);
+    dvz_shader(dvz_gpu_ctx_device(ctx), sizeof(shader_spirv), (uint32_t*)shader_spirv, shader);
 
-    dvz_shader_destroy(&shader);
+    dvz_shader_destroy(shader);
+    dvz_shader_free(shader);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
 
