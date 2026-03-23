@@ -15,6 +15,22 @@ Requirements:
 
 This is the minimum path that DRP2 and scene must express cleanly.
 
+Likely family examples:
+
+1. `basic`
+2. `pixel`
+3. `point`
+
+Likely resource classes:
+
+1. `ItemTable`
+2. optional `StyleBlock`
+
+Likely variant axes:
+
+1. primitive topology for `basic`
+2. point versus pixel rendering path
+
 
 ## UC2: Dynamic Buffer Updates
 
@@ -24,6 +40,25 @@ Requirements:
 2. CPU-side data changes every frame,
 3. dirty-range uploads,
 4. no unnecessary pipeline rebuild.
+
+Likely family examples:
+
+1. `point`
+2. `marker`
+3. `path`
+4. `glyph`
+
+Likely resource classes:
+
+1. `ItemTable`
+2. `GroupedItemTable`
+3. `StyleBlock`
+
+Pressure on the spec:
+
+1. family identity should remain stable while only resource contents change,
+2. variant identity should not churn when only item data changes,
+3. dirty tracking should isolate item updates from style or family changes.
 
 
 ## UC3: Picking
@@ -35,6 +70,25 @@ Requirements:
 3. single-pixel readback or equivalent,
 4. mapping back to visual/item identity.
 
+Likely family examples:
+
+1. `point`
+2. `marker`
+3. `mesh`
+4. `glyph`
+
+Likely resource classes:
+
+1. primary family data resource
+2. picking-oriented `DerivedField`
+3. `ReadbackTarget`
+
+Pressure on the spec:
+
+1. picking should be described semantically, not as a backend attachment trick,
+2. families should declare whether picking is native, optional, or unsupported,
+3. the mapping back to visual and item identity should be family-aware.
+
 
 ## UC4: Offscreen Rendering
 
@@ -43,6 +97,25 @@ Requirements:
 1. render to texture,
 2. deterministic readback,
 3. no dependence on onscreen window state.
+
+Likely family examples:
+
+1. `image`
+2. `mesh`
+3. `sphere`
+4. `volume`
+
+Likely resource classes:
+
+1. source family resources
+2. offscreen `DerivedField`
+3. `ReadbackTarget`
+
+Pressure on the spec:
+
+1. family semantics should not depend on onscreen presentation state,
+2. export and inspection paths should remain scene-visible,
+3. readback should compose with the same family and variant model used onscreen.
 
 
 ## UC5: Compute-Assisted Visual
@@ -53,6 +126,26 @@ Requirements:
 2. explicit resource handoff,
 3. deterministic validation of unsupported compute paths.
 
+Likely family examples:
+
+1. `mesh`
+2. `sphere`
+3. `volume`
+4. future specialized `path` or `image` variants
+
+Likely resource classes:
+
+1. source resource such as `IndexedGeometry` or `SampledField`
+2. compute-written `DerivedField`
+3. render-consumed resource view of that derived output
+
+Pressure on the spec:
+
+1. compute participation should usually be a variant axis inside a family, not a separate family by
+   default,
+2. unsupported compute should map to a deterministic fallback or a clear planning diagnostic,
+3. scene planning should make the handoff explicit without exposing backend synchronization details.
+
 
 ## UC6: Browser Delivery
 
@@ -61,3 +154,10 @@ Requirements:
 1. same logical scene state,
 2. same DRP2 semantics,
 3. no scene dependency on native-only handles or APIs.
+
+Pressure on the spec:
+
+1. family names should remain semantic rather than backend-shaped,
+2. variant axes should be capability-driven, not Vulkan-driven,
+3. scene resource classes should not assume native-only object models,
+4. image-family slice-like semantics should not depend on explicit texture-handle vocabulary.

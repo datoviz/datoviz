@@ -43,6 +43,27 @@ Panels may be onscreen, offscreen, or virtual for composition.
 
 A visual is a high-level scientific renderable.
 
+The broad concept should stay consistent with the local `v0.3` scene stack, where a visual is a
+named renderable family such as:
+
+1. `basic`
+2. `pixel`
+3. `point`
+4. `marker`
+5. `segment`
+6. `path`
+7. `glyph`
+8. `monoglyph`
+9. `image`
+10. `wiggle`
+11. `mesh`
+12. `sphere`
+13. `volume`
+14. `slice`
+
+Those names are useful vocabulary for the future scene layer, but they should not be treated as a
+frozen v0.4 API taxonomy.
+
 Minimum visual responsibilities:
 
 1. declare its required resources,
