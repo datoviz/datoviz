@@ -8,24 +8,27 @@
 >   machine.
 > - **Current progress:** Steps 0-3 are complete. Step 4 is substantially complete for the active
 >   `vklite` surface (`bootstrap` removed, `surface`/`swapchain` hardened, `proto` removed,
->   commands/rendering/shader/buffer/image/slots/compute/graphics wrappers hardened or made opaque).
->   Steps 5-7 remain active mainly around the remaining `sync` public structs and final lifecycle
->   audit work.
-> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening
->   across the last `vklite` public structs and lifecycle matrices, with `sync` now the clearest
->   remaining target.
+>   commands/rendering/shader/buffer/image/slots/compute/graphics wrappers hardened or made opaque,
+>   and `sync` opacity completed for `DvzFence`, `DvzSemaphore`, and `DvzSubmit`).
+> - **Current closure note:** `DvzBarriers` is intentionally still public because it serves as a
+>   mutable command-recording builder rather than an owned wrapper. The remaining clearly sensitive
+>   public exposure is now mostly on the `vk` side, especially `vk/memory.h`.
+> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` are now mostly closed
+>   for the active `vklite` wrapper surface. The remaining work is a final policy/doc pass plus any
+>   follow-up cleanup around `vk` allocator/memory exposure and, if desired later, stricter `vk`
+>   queue-model encapsulation.
 
 ## Immediate next steps (2026-03-23)
 
-1. Finish the remaining `sync` public-struct hardening, starting with `DvzFence`,
-   `DvzSemaphore`, and `DvzSubmit`, and `DvzBarriers` if the churn is still justified.
-2. Normalize any remaining wrapper ownership APIs across `vklite` so the public pattern is
-   consistently `*_create_wrapper()` + `*_free()` where opacity is intended.
-3. Keep the focused lifecycle tests current around repeated submit, destroy idempotence, and
+1. Treat the `vklite` wrapper-opacity pass as effectively complete for the active surface.
+2. Keep `DvzBarriers` public and documented as an intentional builder/config type for command
+   recording rather than trying to force opacity there.
+3. Audit remaining public structs in `include/datoviz/vk/*.h` for true ownership-sensitive
+   exposure, with `vk/memory.h` now the clearest remaining cleanup target.
+4. Reassess whether `DvzQueueCaps` / `DvzQueue` / `DvzQueues` should remain an intentionally
+   low-level public model or eventually move behind a stricter accessor surface.
+5. Keep the focused lifecycle tests current around repeated submit, destroy idempotence, and
    recreate/reset semantics.
-4. Audit the remaining public structs in `include/datoviz/vk/*.h` and
-   `include/datoviz/vklite/*.h` for mutable owner pointers, raw handles, or caches that should move
-   behind accessors.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -220,15 +223,16 @@ Exit criteria:
      (`_alloc.h`, `_assertions.h`, `_compat.h`, `_log.h`).
    - No `src/vk/_*.h` include is present in `src/vklite/*.c`; invariant #1 is currently satisfied.
 3. Public struct exposure inventory (ownership-sensitive):
-   - `include/datoviz/vk/memory.h`: `DvzVma` and `DvzAllocation` expose allocator internals and mutable
-     mapping state (`VmaAllocator`, `VmaAllocation`, `VmaAllocationInfo`, `void* mmap`).
-   - `include/datoviz/vklite/sync.h`: `DvzBarriers`, `DvzFence`, `DvzSemaphore`, and `DvzSubmit`
-     still expose mutable runtime layout publicly and are now the most obvious remaining `vklite`
-     opacity targets.
-   - `include/datoviz/vk/memory.h` still exposes allocator internals and mutable mapping state.
+   - `include/datoviz/vk/memory.h`: `DvzVma` and `DvzAllocation` remain the clearest still-sensitive
+     public wrappers on the active low-level path.
+   - `include/datoviz/vklite/sync.h`: only `DvzBarriers` still has a public struct body, and that
+     is now intentional because it is a mutable barrier-recording builder/config helper.
+   - `include/datoviz/vk/queues.h`: `DvzQueueCaps`, `DvzQueue`, and `DvzQueues` remain public, but
+     they currently behave more like a deliberate low-level queue-model/snapshot API than an
+     accidental `vklite` boundary leak.
    - Most of the earlier `vklite` wrapper exposure inventory (`surface`, `swapchain`, `buffers`,
-     `images`, `commands`, `slots`, `descriptors`, `graphics`, `compute`, `shader`) has already
-     been reduced, accessorized, or made opaque.
+     `images`, `commands`, `sync` owners, `slots`, `descriptors`, `graphics`, `compute`, `shader`,
+     `rendering`) has already been reduced, accessorized, or made opaque.
 4. Create/destroy + owner map (public API view):
    - `DvzInstance`: created by `dvz_instance_create()`, destroyed by `dvz_instance_destroy()`;
      owner is caller or `DvzBootstrap` when bootstrap owns instance.
@@ -246,10 +250,11 @@ Exit criteria:
      init + `*_create()` (where applicable) + `*_destroy()` pattern; each borrows `DvzDevice`
      (and allocator/parent object where relevant) and owns its Vulkan object handles.
 5. Immediate Step 1 inputs (accessor contract focus):
-   - Boundary leakage is currently more about the last public mutable struct layouts than about
-     private-header includes.
-   - Priority hardening targets are now `sync` wrappers and memory structs
+   - Boundary leakage is no longer primarily about `vklite` wrapper layout exposure.
+   - The highest-value remaining hardening target is `vk` allocator/memory state
      (`DvzVma`, `DvzAllocation`) before any further broad API churn.
+   - `DvzBarriers` should remain public as an intentional builder/config surface unless its command
+     recording role changes.
 6. Step 1 boundary contract (implemented subset):
    - `vklite` runtime code must treat `DvzBootstrap` as API-managed state, using bootstrap accessors instead
      of direct field mutation for instance/device/allocator ownership transitions.

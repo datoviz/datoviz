@@ -176,15 +176,16 @@ Status: materially improved, ownership cleanup largely landed
 
 ### `vklite`
 
-Status: functional, but still the main refactor frontier
+Status: functional, with the wrapper-opacity pass mostly complete
 
 - `vklite` is heavily exercised by tests and currently green.
 - `proto` is gone from the active tree, and a broad wrapper-hardening pass has already landed.
-- Public headers still expose some ownership-sensitive structs and raw mutable runtime details,
-  but the remaining frontier is narrower than before and now centers mostly on `sync` wrappers and
-  a final audit pass.
-- The open plan in [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) still
-  correctly identifies this as the next cleanup target.
+- The last `sync` owner wrappers (`DvzFence`, `DvzSemaphore`, `DvzSubmit`) have now been made
+  opaque as well.
+- `DvzBarriers` remains public by design and is now documented as a mutable command-recording
+  builder/config helper rather than an ownership leak.
+- The remaining architectural debt is no longer mainly in `vklite`; it is now more about a final
+  audit/closure pass plus the still-exposed allocator/memory surface in `vk`.
 
 ### Higher-level/scaffold modules
 
@@ -203,9 +204,11 @@ Status: intentionally dormant
    the `agents/*.md` plans over older prose.
 2. The repo contains many scaffold directories and public headers that are not truly active in the
    current v0.4-dev runtime.
-3. `vklite` remains green but still exposes too much structure publicly; the hard part now is
-   continuing cleanup without accidentally creating a second transitional API.
-4. The local worktree has many untracked files, so keep future changes narrowly scoped and avoid
+3. `vklite` is green and much tighter than before; the remaining challenge is deciding where to
+   stop cleanly so the public boundary is intentional rather than endlessly transitional.
+4. The clearest still-sensitive public low-level exposure is now `include/datoviz/vk/memory.h`,
+   while `include/datoviz/vk/queues.h` looks more like a deliberate low-level queue model.
+5. The local worktree has many untracked files, so keep future changes narrowly scoped and avoid
    cleanup commands unless you intentionally want to sort local artifacts first.
 
 
@@ -216,14 +219,16 @@ Recommended order:
 1. Finish the remaining `vk`/`vklite` ownership-boundary work from
    [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md), starting with the items
    already listed there:
-   - finish the remaining `sync`-side public struct hardening
-   - normalize the last ownership APIs that still do not follow the wrapper pattern cleanly
-   - add or retain focused idempotent-destroy / repeated-submit tests where edge cases remain
-2. Audit public `vklite` headers for structs that still expose raw Vulkan handles, owner pointers, or
-   mutable caches, and decide case by case whether they should become opaque or be reduced to config
-   + accessor surfaces.
+   - keep `DvzBarriers` intentionally public as a builder/config type
+   - verify no remaining `vklite` public structs are accidental ownership leaks
+   - keep the focused idempotent-destroy / repeated-submit tests around the hardened wrappers
+2. Continue the low-level cleanup in `vk`, especially around allocator/memory exposure in
+   [`memory.h`](/home/cyrille/GIT/Viz/datoviz/include/datoviz/vk/memory.h), and only later decide
+   whether the queue model in [`queues.h`](/home/cyrille/GIT/Viz/datoviz/include/datoviz/vk/queues.h)
+   should stay public as-is.
 3. Reconcile architecture/testing docs with the code as it exists now:
    - note the presence of split test binaries in addition to `dvztest`
+   - note that the active `vklite` wrapper-opacity pass is effectively complete
    - keep the active-module list and runtime path documentation current
    - remove or rewrite stale statements that no longer match the refactor
 4. After the boundary cleanup is complete, run a second pass on naming/lifecycle consistency across
