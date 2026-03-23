@@ -81,6 +81,8 @@ static inline void* dvz_test_shader_load(const char* filename, DvzSize* size_out
 /*************************************************************************************************/
 
 int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_commands_repeat_submit(TstSuite* suite, TstItem* tstitem);
+int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem);
 int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem);
@@ -105,6 +107,7 @@ int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem);
 int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem);
+int test_vklite_surface_swapchain_destroy_idempotent(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem* tstitem);
 

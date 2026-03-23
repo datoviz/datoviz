@@ -16,6 +16,7 @@
 
 #include <volk.h>
 
+#include "_alloc.h"
 #include "_vk_utils.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -170,7 +171,7 @@ void dvz_barrier_image_layers(DvzBarrierImage* bimg, uint32_t base, uint32_t cou
 void dvz_barriers(DvzBarriers* barriers)
 {
     ANN(barriers);
-    barriers->info = (VkDependencyInfo){0};
+    dvz_memset(barriers, sizeof(*barriers), 0, sizeof(*barriers));
     barriers->info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
     barriers->info.pMemoryBarriers = barriers->bmems;
     barriers->info.pBufferMemoryBarriers = barriers->bbufs;
@@ -542,6 +543,11 @@ void dvz_submit_wait(
 {
     ANN(submit);
     ANNVK(semaphore);
+    if (submit->info.waitSemaphoreInfoCount >= DVZ_MAX_SEMAPHORES)
+    {
+        log_error("too many wait semaphores in submit (max=%d)", DVZ_MAX_SEMAPHORES);
+        return;
+    }
 
     VkSemaphoreSubmitInfo* info = &submit->wait[submit->info.waitSemaphoreInfoCount++];
     info->sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
@@ -557,6 +563,11 @@ void dvz_submit_signal(
 {
     ANN(submit);
     ANNVK(semaphore);
+    if (submit->info.signalSemaphoreInfoCount >= DVZ_MAX_SEMAPHORES)
+    {
+        log_error("too many signal semaphores in submit (max=%d)", DVZ_MAX_SEMAPHORES);
+        return;
+    }
 
     VkSemaphoreSubmitInfo* info = &submit->signal[submit->info.signalSemaphoreInfoCount++];
     info->sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
@@ -571,6 +582,11 @@ void dvz_submit_command(DvzSubmit* submit, VkCommandBuffer cmd)
 {
     ANN(submit);
     ANNVK(cmd);
+    if (submit->info.commandBufferInfoCount >= DVZ_MAX_COMMANDS)
+    {
+        log_error("too many command buffers in submit (max=%d)", DVZ_MAX_COMMANDS);
+        return;
+    }
 
     VkCommandBufferSubmitInfo* info = &submit->cmds[submit->info.commandBufferInfoCount++];
     info->sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;

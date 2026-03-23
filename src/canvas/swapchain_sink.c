@@ -1494,12 +1494,6 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
         goto swapchain_init_failed;
     }
     swapchain_initialized = true;
-    if (!dvz_swapchain_device(
-            canvas->swapchain->swapchain_wrapper, dvz_device_handle(canvas->device)))
-    {
-        log_error("failed to bind device to canvas swapchain wrapper");
-        goto swapchain_init_failed;
-    }
     canvas->swapchain->wrappers_ready = true;
     canvas_runtime_transition(
         canvas->swapchain, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "initialized wrappers");

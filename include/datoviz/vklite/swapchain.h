@@ -87,7 +87,7 @@ DVZ_EXPORT DvzSwapchain* dvz_swapchain_create(void);
  * @param device logical device used to resolve the physical GPU
  * @param surface surface wrapper used for capability and extent data
  * @return true when initialization succeeds
- * @note This call does not bind a VkDevice. Call dvz_swapchain_device() before recreate/acquire/present.
+ * @note This call also binds the Vulkan logical device handle used by recreate/acquire/present.
  */
 DVZ_EXPORT bool
 dvz_swapchain_init_from_device(DvzSwapchain* swapchain, DvzDevice* device, DvzSurface* surface);
@@ -95,11 +95,12 @@ dvz_swapchain_init_from_device(DvzSwapchain* swapchain, DvzDevice* device, DvzSu
 
 
 /**
- * Bind the Vulkan logical device used by swapchain create/destroy/acquire paths.
+ * Bind or override the Vulkan logical device used by swapchain create/destroy/acquire paths.
  *
  * @param swapchain swapchain wrapper to configure
  * @param device logical device used to issue swapchain API calls
  * @return true when binding succeeds
+ * @note Rebinding a live swapchain is rejected; destroy the swapchain resources first.
  */
 DVZ_EXPORT bool dvz_swapchain_device(DvzSwapchain* swapchain, VkDevice device);
 

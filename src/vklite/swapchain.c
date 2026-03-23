@@ -39,7 +39,7 @@
 /*************************************************************************************************/
 
 static bool _swapchain_init_with_physical_device(
-    DvzSwapchain* swapchain, VkPhysicalDevice physical_device, DvzSurface* surface)
+    DvzSwapchain* swapchain, VkPhysicalDevice physical_device, VkDevice device, DvzSurface* surface)
 {
     ANN(swapchain);
     if (physical_device == VK_NULL_HANDLE)
@@ -49,10 +49,15 @@ static bool _swapchain_init_with_physical_device(
     }
     ANN(surface);
 
+    if (swapchain->handle != VK_NULL_HANDLE || swapchain->images != NULL || swapchain->image_views != NULL)
+    {
+        dvz_swapchain_destroy(swapchain);
+    }
+
     dvz_memset(swapchain, sizeof(*swapchain), 0, sizeof(*swapchain));
     swapchain->physical_device = physical_device;
     swapchain->surface = surface;
-    swapchain->device = VK_NULL_HANDLE;
+    swapchain->device = device;
     swapchain->handle = VK_NULL_HANDLE;
     swapchain->config = (DvzSwapchainConfig){
         .image_format = VK_FORMAT_UNDEFINED,
@@ -388,7 +393,7 @@ bool dvz_swapchain_init_from_device(
     ANN(device);
     ANN(surface);
     return _swapchain_init_with_physical_device(
-        swapchain, dvz_device_physical_device(device), surface);
+        swapchain, dvz_device_physical_device(device), dvz_device_handle(device), surface);
 }
 
 
@@ -406,6 +411,13 @@ bool dvz_swapchain_device(DvzSwapchain* swapchain, VkDevice device)
     if (device == VK_NULL_HANDLE)
     {
         log_error("cannot bind null VkDevice to swapchain");
+        return false;
+    }
+    if (
+        swapchain->ready && swapchain->handle != VK_NULL_HANDLE && swapchain->device != VK_NULL_HANDLE &&
+        swapchain->device != device)
+    {
+        log_error("cannot rebind a live swapchain to a different VkDevice");
         return false;
     }
     swapchain->device = device;

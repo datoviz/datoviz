@@ -40,6 +40,11 @@ static bool _surface_init_with_physical_device(
         return false;
     }
 
+    if (surface->formats != NULL || surface->present_modes != NULL)
+    {
+        dvz_surface_destroy(surface);
+    }
+
     dvz_memset(surface, sizeof(*surface), 0, sizeof(*surface));
     surface->physical_device = physical_device;
     surface->queue_family = queue_family;
@@ -585,6 +590,8 @@ void dvz_surface_destroy(DvzSurface* surface)
     surface->extent_hint = (VkExtent2D){0, 0};
     surface->has_extent_hint = false;
     surface->handle = VK_NULL_HANDLE;
+    surface->queue_family = 0;
+    surface->physical_device = VK_NULL_HANDLE;
     surface->ready = false;
 }
 

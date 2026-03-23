@@ -17,6 +17,7 @@
 #include <stdint.h>
 #include <volk.h>
 
+#include "_alloc.h"
 #include "_vk_utils.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -30,6 +31,47 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Release owned command buffers from a commands wrapper.
+ *
+ * @param cmds the commands wrapper
+ */
+static void _commands_release(DvzCommands* cmds)
+{
+    ANN(cmds);
+    if (cmds->device == NULL || cmds->count == 0)
+    {
+        cmds->count = 0;
+        cmds->current = 0;
+        return;
+    }
+    if (cmds->queue == NULL)
+    {
+        cmds->count = 0;
+        cmds->current = 0;
+        return;
+    }
+
+    VkDevice vkd = dvz_device_handle(cmds->device);
+    ANNVK(vkd);
+    VkCommandPool cpool = dvz_device_command_pool(cmds->device, dvz_queue_family(cmds->queue));
+    if (cpool == VK_NULL_HANDLE)
+    {
+        log_warn(
+            "skip command buffer free: missing command pool for queue family %u",
+            dvz_queue_family(cmds->queue));
+        cmds->count = 0;
+        cmds->current = 0;
+        return;
+    }
+
+    log_trace("free %d command buffer(s)", cmds->count);
+    vkFreeCommandBuffers(vkd, cpool, cmds->count, cmds->cmds);
+    dvz_memset(cmds->cmds, sizeof(cmds->cmds), 0, sizeof(cmds->cmds));
+    cmds->count = 0;
+    cmds->current = 0;
+}
 
 void dvz_commands(DvzDevice* device, DvzQueue* queue, uint32_t count, DvzCommands* cmds)
 {
@@ -201,18 +243,7 @@ void dvz_cmd_reset(DvzCommands* cmds)
 void dvz_cmd_free(DvzCommands* cmds)
 {
     ANN(cmds);
-
-    DvzDevice* device = cmds->device;
-    ANN(device);
-
-    VkDevice vkd = dvz_device_handle(device);
-    ANNVK(vkd);
-
-    VkCommandPool cpool = dvz_device_command_pool(device, dvz_queue_family(cmds->queue));
-
-    log_trace("free %d command buffer(s)", cmds->count);
-    vkFreeCommandBuffers(vkd, cpool, cmds->count, cmds->cmds);
-
+    _commands_release(cmds);
     dvz_obj_init(&cmds->obj);
 }
 
@@ -222,6 +253,11 @@ void dvz_cmd_submit(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
+    if (!dvz_obj_is_created(&cmds->obj))
+    {
+        log_error("cannot submit commands before recording them");
+        return;
+    }
 
     DvzDevice* device = cmds->device;
     ANN(device);
@@ -261,13 +297,17 @@ void dvz_cmd_submit(DvzCommands* cmds)
 
 void dvz_commands_destroy(DvzCommands* cmds)
 {
-    ANN(cmds);
+    if (cmds == NULL)
+    {
+        return;
+    }
     if (!dvz_obj_is_created(&cmds->obj))
     {
         log_trace("skip destruction of already-destroyed commands");
         return;
     }
     log_trace("destroy commands");
+    _commands_release(cmds);
     dvz_obj_destroyed(&cmds->obj);
 }
 
