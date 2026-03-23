@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateBindGroupLayout",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateBindGroupLayout"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "binding": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "visibility": {
+            "$ref": "../common/ShaderStage.json.json"
+          },
+          "buffer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "uniform",
+                  "storage",
+                  "read-only-storage"
+                ]
+              },
+              "hasDynamicOffset": {
+                "type": "boolean"
+              },
+              "minBindingSize": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "texture": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sampleType": {
+                "type": "string",
+                "enum": [
+                  "float",
+                  "unfilterable-float",
+                  "depth",
+                  "sint",
+                  "uint"
+                ]
+              },
+              "viewDimension": {
+                "$ref": "../common/TextureViewDimension.json.json"
+              },
+              "multisampled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "sampleType",
+              "viewDimension"
+            ]
+          },
+          "sampler": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "filtering",
+                  "non-filtering",
+                  "comparison"
+                ]
+              }
+            },
+            "required": [
+              "type"
+            ]
+          }
+        },
+        "required": [
+          "binding",
+          "visibility"
+        ],
+        "oneOf": [
+          {
+            "required": [
+              "buffer"
+            ]
+          },
+          {
+            "required": [
+              "texture"
+            ]
+          },
+          {
+            "required": [
+              "sampler"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "entries"
+  ]
+}

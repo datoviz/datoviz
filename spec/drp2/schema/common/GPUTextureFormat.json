@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GPUTextureFormat",
+  "type": "string",
+  "description": "WebGPU texture format string.",
+  "enum": [
+    "rgba8unorm",
+    "bgra8unorm",
+    "rgba16float",
+    "rgba32float",
+    "depth24plus",
+    "depth24plus-stencil8",
+    "depth32float",
+    "rgba8unorm-srgb"
+  ]
+}

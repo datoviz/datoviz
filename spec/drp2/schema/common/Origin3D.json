@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Origin3D",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "x",
+    "y",
+    "z"
+  ],
+  "properties": {
+    "x": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "y": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "z": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

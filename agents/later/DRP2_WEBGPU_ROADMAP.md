@@ -1,29 +1,28 @@
 > **Implementation Status**
 > - **Status:** `STRATEGIC BACKLOG`
 > - **Verified on:** `2026-03-23`
-> - **Codebase alignment:** This roadmap remains strategic/planning-level; DRP2/WebGPU/scene runtime
->   milestones are still not implemented as active modules in the current build graph.
-> - **Current branch status:** This is not the immediate next execution plan. The active branch
->   priority is still stabilization and API cleanup of the current `vk`/`vklite`/`canvas` stack.
-> - **Remaining gap:** Defer M0 scaffolding until the active low-level stack boundaries are tighter
->   and the current graphics API surface is stable enough to avoid locking in premature abstractions.
+> - **Role:** long-horizon direction for DRP2, WebGPU runtime work, and eventual scene bring-up
+> - **Current branch status:** not the immediate execution plan; active priority is still
+>   `vk`/`vklite` cleanup
+> - **Execution note:** the actionable spec-phase entry point is `agents/now/DRP2_SPEC.md`
 
-# Datoviz v0.4-dev Next Steps
+# DRP2 / WebGPU / Scene Roadmap
 
-This document is a detailed, high-level execution plan to reach the first major objective:
-
-1. Build and stabilize a high-performance renderer based on a new DRP version shaped by WebGPU semantics.
-2. Ensure this architecture also works in the browser by running a WebGPU runtime in JavaScript.
-3. Only after stabilization, build a standalone Scene API on top of that DRP/WebGPU contract with no dependency on low-level backend internals.
-
-The plan is organized so each step can be executed by Codex in small, testable increments.
-
-Priority note:
-1. Keep this document as a long-horizon direction, not as the default next task list for the
-   current branch state.
+This file is intentionally strategic.
+It should describe direction and phase ordering, not act as the active coding checklist.
 
 
-## Ground rules
+## First Objective
+
+Reach a point where Datoviz has:
+
+1. a stable DRP2 contract,
+2. a native runtime that executes that contract,
+3. a browser runtime over WebGPU that executes the same contract,
+4. enough conformance parity to let a future scene layer target DRP2 rather than backend internals.
+
+
+## Ground Rules
 
 1. DRP/WebGPU contract is the source of truth.
 2. Public DRP headers must not expose `Vk*` types.
@@ -53,7 +52,7 @@ Priority note:
     12. Data layout, alignment, and stride guarantees are documented and validated.
 
 
-## Current baseline snapshot (branch reality)
+## Current Baseline Snapshot
 
 1. The active low-level graphics stack (`vk`, `vklite`, `window`, `canvas`, `stream`, `video`) has
    undergone a substantial February 2026 refactor and is currently green.
@@ -66,7 +65,7 @@ Priority note:
 5. On this machine today, `just build` passes and `just test` passes `141/141` tests.
 
 
-## Target architecture (for this phase)
+## Target Architecture
 
 1. `DRP v2` (WebGPU-shaped command/data contract).
 2. `semantic core` (backend-agnostic object model, validation rules, capability model).
@@ -86,69 +85,29 @@ Priority note:
    5. Performance benchmarks.
 
 
-## Milestone plan
+## Phase Order
 
-## M0 - Planning freeze and scaffolding
+## P0 - DRP2 Contract Freeze
 
 ### Goal
-Freeze a clear implementation path and create scaffolding that lets Codex work incrementally.
+Freeze a narrow DRP2 contract and the minimum conformance material needed to implement it safely.
 
 ### Deliverables
-1. `spec/DRP_V2.md` skeleton (object model, command taxonomy, lifecycle states).
-2. `agents/WEBGPU_RENDERER_TASKS.md` checklist with task IDs.
-3. New source folders (or clear naming convention) for:
-   1. semantic core
-   2. native runtime
-   3. browser runtime
-   4. wasm bridge
-4. Test harness placeholders for DRP parser/validator and cross-runtime fixtures.
+1. `spec/drp2/` contract set
+2. reduced schema set aligned with the contract
+3. first fixture corpus definition
+4. `spec/scene/` consumer requirements
 
-### Exit criteria
-1. Team agrees DRP v2 scope for first renderer slice.
-2. Build still passes.
-3. Placeholder tests are wired into CI/test runner.
+### Exit Criteria
+1. DRP2 minimal scope is frozen.
+2. No public DRP2 concept requires backend type leakage.
+3. The first implementation tasks are obvious and bounded.
 
 
-## M1 - DRP v2 contract (minimal but strict)
+## P1 - Runtime Semantic Core
 
 ### Goal
-Define a small, stable DRP subset required to draw a basic frame.
-
-### Scope (minimum)
-1. Device/queue selection.
-2. Buffer create/upload/destroy.
-3. Shader module and basic render pipeline creation.
-4. Texture/view/sampler minimal subset.
-5. Command encoding:
-   1. begin pass / end pass
-   2. set pipeline
-   3. set vertex/index buffers
-   4. draw / draw indexed
-6. Resource lifetime and error model.
-
-### Deliverables
-1. DRP message structs/enums in `include/datoviz/drp/*`.
-2. Versioned binary/text representation rules.
-3. Validation spec section with explicit error codes.
-4. Capability schema covering precision/format requirements (including FP64).
-5. WGSL shader module ingestion rules and validation requirements.
-6. Data layout, alignment, and stride rules for buffers and textures.
-4. Capability schema covering precision/format requirements (including FP64).
-
-### Tests
-1. Roundtrip encode/decode tests for each message kind.
-2. Fuzz-ish malformed payload tests for parser robustness.
-3. Deterministic conformance fixtures under `testing/fixtures/drp_v2/`.
-
-### Exit criteria
-1. DRP tests pass in isolation.
-2. No Vulkan symbol leaks in DRP public headers.
-
-
-## M2 - Runtime core (backend-agnostic)
-
-### Goal
-Implement a runtime that consumes DRP v2 and enforces API semantics independent of Vulkan details.
+Implement backend-agnostic DRP2 validation and runtime semantics before backend-specific execution.
 
 ### Responsibilities
 1. Object registry with typed handles and generation counters.
@@ -161,21 +120,21 @@ Implement a runtime that consumes DRP v2 and enforces API semantics independent 
 8. Memory budget reporting and OOM/eviction handling with explicit errors.
 
 ### Deliverables
-1. Runtime module (new `src/...` namespace dedicated to DRP execution).
-2. Runtime API boundary that backends implement.
-3. Structured error reporting mapped to DRP validation codes.
+1. semantic validation layer
+2. handle/object registry
+3. structured error reporting
 
 ### Tests
 1. Handle lifetime tests (use-after-destroy, stale generation).
 2. Validation tests (invalid bind, incompatible pipeline, illegal pass ops).
 3. Deterministic replay tests from DRP fixture streams.
 
-### Exit criteria
+### Exit Criteria
 1. Runtime tests pass with a mock backend.
-2. Runtime has zero direct Vulkan includes in public-facing runtime headers.
+2. Public runtime-facing headers remain backend-agnostic.
 
 
-## M3 - Native Vulkan backend adapter (first functional native path)
+## P2 - Native Vulkan Runtime
 
 ### Goal
 Map runtime operations to Vulkan efficiently while staying behind backend interface.
@@ -206,7 +165,7 @@ Map runtime operations to Vulkan efficiently while staying behind backend interf
 2. No direct DRP/Vulkan cross-contamination in public contract headers.
 
 
-## M4 - Native interop escape hatch (advanced, native-only)
+## P3 - Native Interop
 
 ### Goal
 Provide Vulkan/CUDA interop without contaminating DRP or browser paths.
@@ -248,7 +207,7 @@ Provide Vulkan/CUDA interop without contaminating DRP or browser paths.
 4. Framework interop contract is validated for both DLPack and CUDA Array Interface paths.
 
 
-## M5 - Browser JS runtime over WebGPU
+## P4 - Browser WebGPU Runtime
 
 ### Goal
 Run the same DRP v2 fixtures in browser via a JS runtime implemented on top of WebGPU.
@@ -278,7 +237,7 @@ Run the same DRP v2 fixtures in browser via a JS runtime implemented on top of W
 3. WASM transport can feed DRP commands to JS runtime.
 
 
-## M6 - Feature-complete renderer v1 slice (native + browser contract parity)
+## P5 - Contract Parity And Renderer v1 Slice
 
 ### Goal
 Reach a practical renderer baseline suitable for stabilization.
@@ -306,7 +265,7 @@ Reach a practical renderer baseline suitable for stabilization.
 2. Known unsupported features are explicitly flagged in capability model.
 
 
-## M7 - Performance pass and stabilization
+## P6 - Performance And Stabilization
 
 ### Goal
 Ensure architecture remains high-performance and operationally stable.
@@ -337,7 +296,7 @@ Ensure architecture remains high-performance and operationally stable.
 4. Profiling API is documented and stable.
 
 
-## M8 - Scene API kickoff (only after M7)
+## P7 - Scene Bring-Up
 
 ### Goal
 Start new standalone scene API as a pure DRP consumer.
@@ -355,7 +314,7 @@ Start new standalone scene API as a pure DRP consumer.
 4. One browser end-to-end scene example (WASM scene -> JS runtime -> WebGPU).
 
 
-## M9 - Post-v1 advanced memory features (power-user roadmap)
+## P8 - Post-v1 Memory Features
 
 ### Goal
 Add advanced memory and streaming capabilities once v1 is stabilized.
@@ -374,7 +333,7 @@ Add advanced memory and streaming capabilities once v1 is stabilized.
 1. Streaming and sparse resource tests pass on supported platforms.
 
 
-## Codex execution protocol (important)
+## Execution Rules
 
 Use this workflow for every task:
 
@@ -387,7 +346,7 @@ Use this workflow for every task:
 4. Merge only if acceptance criteria are met.
 
 
-## AI execution guide (how to use agents for coding)
+## Agent Rules
 
 1. Always select exactly one task ID from the backlog before coding.
 2. Confirm scope: list files to change, tests to add/update, and acceptance commands.
@@ -398,7 +357,7 @@ Use this workflow for every task:
 6. If a task’s acceptance criteria are not met, do not mark it done.
 
 
-## Task sizing rules for Codex
+## Task Sizing Rules
 
 1. One PR/task should be 1 logical change, ideally 5 to 15 files.
 2. Never combine spec changes and broad refactors without tests.
@@ -406,7 +365,7 @@ Use this workflow for every task:
 4. Keep behavioral changes accompanied by fixture updates.
 
 
-## Suggested task backlog (ordered)
+## Suggested Backlog
 
 1. `T001`: Create DRP v2 spec skeleton and command taxonomy.
 2. `T002`: Add DRP versioning fields and compatibility checks.
@@ -442,7 +401,7 @@ Use this workflow for every task:
 32. `T032`: Stabilization pass (bug fixes + docs + compatibility notes).
 
 
-## Post-v1 backlog (power-user memory)
+## Post-v1 Backlog
 
 1. `P001`: Add zero-copy streaming and persistent mapped buffer support.
 2. `P002`: Add sparse/virtualized buffer and texture resource support.
@@ -450,7 +409,7 @@ Use this workflow for every task:
 4. `P004`: Add multi-GPU device selection and explicit affinity workflows.
 
 
-## Acceptance gates by phase
+## Acceptance Gates
 
 1. Gate A (after M1): DRP v2 contract and parser stable.
 2. Gate B (after M2): Runtime semantic validation stable with mock backend.
@@ -463,7 +422,7 @@ Use this workflow for every task:
 9. Gate I (after M9): Advanced memory features are available for power users.
 
 
-## Quality checklist (for every merged task)
+## Quality Checklist
 
 1. Public API changes documented.
 2. Tests added or updated.
@@ -473,7 +432,7 @@ Use this workflow for every task:
 6. No unchecked TODOs without linked task ID.
 
 
-## Risks and mitigation
+## Risks And Mitigation
 
 1. Risk: DRP contract churn causes constant rewrites.
    1. Mitigation: freeze minimal v1 contract early and version strictly.
@@ -492,7 +451,7 @@ Use this workflow for every task:
       explicitly excluded from DRP headers and tests.
 
 
-## Definition of done for "WebGPU renderer first objective"
+## Definition Of Done
 
 1. DRP v2/WebGPU-shaped contract is versioned and documented.
 2. Native runtime executes DRP v2 with strict validation and deterministic behavior.

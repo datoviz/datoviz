@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CopyTextureToBuffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CopyTextureToBuffer"
+    },
+    "srcTexture": {
+      "$ref": "../common/Id.json.json"
+    },
+    "origin": {
+      "$ref": "../common/Origin3D.json.json"
+    },
+    "size": {
+      "$ref": "../common/Extent3D.json.json"
+    },
+    "dst": {
+      "$ref": "../common/Id.json.json"
+    },
+    "dstOffset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bytesPerRow": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rowsPerImage": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "type",
+    "srcTexture",
+    "origin",
+    "size",
+    "dst",
+    "dstOffset",
+    "bytesPerRow",
+    "rowsPerImage"
+  ]
+}

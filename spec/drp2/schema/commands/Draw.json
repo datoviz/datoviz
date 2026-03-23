@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Draw",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "Draw"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "vertexCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "instanceCount": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "firstVertex": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    },
+    "firstInstance": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "vertexCount"
+  ]
+}

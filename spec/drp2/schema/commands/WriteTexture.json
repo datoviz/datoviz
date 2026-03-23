@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WriteTexture",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "WriteTexture"
+    },
+    "texture": {
+      "$ref": "../common/Id.json.json"
+    },
+    "origin": {
+      "$ref": "../common/Origin3D.json.json"
+    },
+    "size": {
+      "$ref": "../common/Extent3D.json.json"
+    },
+    "data": {
+      "type": "string",
+      "contentEncoding": "base64"
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bytesPerRow",
+        "rowsPerImage"
+      ],
+      "properties": {
+        "bytesPerRow": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rowsPerImage": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "required": [
+    "type",
+    "texture",
+    "origin",
+    "size",
+    "data",
+    "layout"
+  ]
+}

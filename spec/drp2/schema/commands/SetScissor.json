@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetScissor",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "SetScissor"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "x": {
+      "type": "integer"
+    },
+    "y": {
+      "type": "integer"
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "x",
+    "y",
+    "width",
+    "height"
+  ]
+}

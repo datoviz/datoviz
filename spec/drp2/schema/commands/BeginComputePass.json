@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BeginComputePass",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "BeginComputePass"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "encoder": {
+      "$ref": "../common/Id.json.json"
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "encoder"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreatePipelineLayout",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreatePipelineLayout"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "bindGroupLayouts": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/Id.json.json"
+      }
+    },
+    "pushConstantRanges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "stages": {
+            "$ref": "../common/ShaderStage.json.json"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "stages",
+          "offset",
+          "size"
+        ]
+      }
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "bindGroupLayouts"
+  ]
+}

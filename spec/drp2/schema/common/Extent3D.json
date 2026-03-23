@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Extent3D",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "width",
+    "height",
+    "depth"
+  ],
+  "properties": {
+    "width": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "depth": {
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}

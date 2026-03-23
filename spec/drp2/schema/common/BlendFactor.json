@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BlendFactor",
+  "type": "string",
+  "enum": [
+    "zero",
+    "one",
+    "src",
+    "one-minus-src",
+    "src-alpha",
+    "one-minus-src-alpha",
+    "dst",
+    "one-minus-dst",
+    "dst-alpha",
+    "one-minus-dst-alpha",
+    "src-alpha-saturated",
+    "constant",
+    "one-minus-constant"
+  ]
+}

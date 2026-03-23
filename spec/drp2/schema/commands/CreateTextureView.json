@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateTextureView",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateTextureView"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "texture": {
+      "$ref": "../common/Id.json.json"
+    },
+    "format": {
+      "$ref": "../common/GPUTextureFormat.json.json"
+    },
+    "dimension": {
+      "$ref": "../common/TextureViewDimension.json.json"
+    },
+    "aspect": {
+      "$ref": "../common/TextureAspect.json.json"
+    },
+    "mipRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base",
+        "count"
+      ],
+      "properties": {
+        "base": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "layerRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base",
+        "count"
+      ],
+      "properties": {
+        "base": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "texture",
+    "format",
+    "dimension",
+    "aspect",
+    "mipRange",
+    "layerRange"
+  ]
+}

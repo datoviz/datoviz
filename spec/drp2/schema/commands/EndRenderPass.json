@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EndRenderPass",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "EndRenderPass"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    }
+  },
+  "required": [
+    "type",
+    "pass"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetBlendConstant",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "SetBlendConstant"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "r": {
+      "type": "number"
+    },
+    "g": {
+      "type": "number"
+    },
+    "b": {
+      "type": "number"
+    },
+    "a": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "r",
+    "g",
+    "b",
+    "a"
+  ]
+}

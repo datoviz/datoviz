@@ -25,8 +25,11 @@ If resuming work on the branch:
 2. Read [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
 3. Optionally read [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) if you
    want to continue packaging/CI cleanup after the boundary work
-4. Treat [later/ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/ROADMAP.md) as strategic
-   backlog, not as the default next-task list
+4. When the branch is ready to start higher-level spec work, read
+   [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+5. Treat
+   [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+   as strategic backlog, not as the default next-task list
 
 
 ## Directory Layout
@@ -36,6 +39,7 @@ If resuming work on the branch:
 Files in this directory are actionable today and should stay short enough to drive real execution.
 
 1. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
+2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
 ### `done/`
 
@@ -52,7 +56,7 @@ current execution plans.
 Files in this directory are backlog, strategic direction, or secondary cleanup tracks.
 
 1. [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md)
-2. [later/ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/ROADMAP.md)
+2. [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
 
 
 ## Maintenance Rules

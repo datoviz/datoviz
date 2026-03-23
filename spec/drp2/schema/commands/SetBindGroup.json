@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetBindGroup",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "SetBindGroup"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "bindGroup": {
+      "$ref": "../common/Id.json.json"
+    },
+    "dynamicOffsets": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "index",
+    "bindGroup"
+  ]
+}

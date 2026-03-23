@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CompareFunction",
+  "type": "string",
+  "enum": [
+    "never",
+    "less",
+    "equal",
+    "less-equal",
+    "greater",
+    "not-equal",
+    "greater-equal",
+    "always"
+  ]
+}

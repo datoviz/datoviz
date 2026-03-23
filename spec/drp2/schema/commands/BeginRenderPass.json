@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BeginRenderPass",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "BeginRenderPass"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "encoder": {
+      "$ref": "../common/Id.json.json"
+    },
+    "colorAttachments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "view": {
+            "$ref": "../common/Id.json.json"
+          },
+          "resolveTarget": {
+            "$ref": "../common/Id.json.json"
+          },
+          "loadOp": {
+            "$ref": "../common/LoadOp.json.json"
+          },
+          "storeOp": {
+            "$ref": "../common/StoreOp.json.json"
+          },
+          "clearValue": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "r": {
+                "type": "number"
+              },
+              "g": {
+                "type": "number"
+              },
+              "b": {
+                "type": "number"
+              },
+              "a": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "r",
+              "g",
+              "b",
+              "a"
+            ]
+          }
+        },
+        "required": [
+          "view",
+          "loadOp",
+          "storeOp"
+        ]
+      }
+    },
+    "depthStencilAttachment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "view": {
+          "$ref": "../common/Id.json.json"
+        },
+        "depthLoadOp": {
+          "$ref": "../common/LoadOp.json.json"
+        },
+        "depthStoreOp": {
+          "$ref": "../common/StoreOp.json.json"
+        },
+        "depthClearValue": {
+          "type": "number"
+        },
+        "stencilLoadOp": {
+          "$ref": "../common/LoadOp.json.json"
+        },
+        "stencilStoreOp": {
+          "$ref": "../common/StoreOp.json.json"
+        },
+        "stencilClearValue": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "view"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "encoder",
+    "colorAttachments"
+  ]
+}

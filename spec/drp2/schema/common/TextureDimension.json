@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TextureDimension",
+  "type": "string",
+  "enum": [
+    "1d",
+    "2d",
+    "3d"
+  ]
+}

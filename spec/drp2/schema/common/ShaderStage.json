@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ShaderStage",
+  "type": "string",
+  "description": "Bitmask-like union of shader stages. Represented as WebGPU-style strings.",
+  "enum": [
+    "VERTEX",
+    "FRAGMENT",
+    "COMPUTE",
+    "VERTEX_FRAGMENT",
+    "VERTEX_COMPUTE",
+    "FRAGMENT_COMPUTE",
+    "VERTEX_FRAGMENT_COMPUTE"
+  ]
+}

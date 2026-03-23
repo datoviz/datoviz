@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateTexture",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateTexture"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "dimension": {
+      "$ref": "../common/TextureDimension.json.json"
+    },
+    "size": {
+      "$ref": "../common/Size3D.json.json"
+    },
+    "format": {
+      "$ref": "../common/GPUTextureFormat.json.json"
+    },
+    "usage": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/GPUTextureUsage.json.json"
+      },
+      "minItems": 1
+    },
+    "mipLevelCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sampleCount": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "dimension",
+    "size",
+    "format",
+    "usage"
+  ]
+}

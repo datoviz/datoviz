@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateRenderPipeline",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateRenderPipeline"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "layout": {
+      "$ref": "../common/Id.json.json"
+    },
+    "vertex": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "module": {
+          "$ref": "../common/Id.json.json"
+        },
+        "entryPoint": {
+          "type": "string"
+        },
+        "buffers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arrayStride": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "stepMode": {
+                "type": "string",
+                "enum": [
+                  "vertex",
+                  "instance"
+                ]
+              },
+              "attributes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "shaderLocation": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "format": {
+                      "type": "string",
+                      "description": "WebGPU vertex format string."
+                    }
+                  },
+                  "required": [
+                    "shaderLocation",
+                    "offset",
+                    "format"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "arrayStride",
+              "stepMode",
+              "attributes"
+            ]
+          }
+        }
+      },
+      "required": [
+        "module",
+        "entryPoint"
+      ]
+    },
+    "fragment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "module": {
+          "$ref": "../common/Id.json.json"
+        },
+        "entryPoint": {
+          "type": "string"
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "format": {
+                "$ref": "../common/GPUTextureFormat.json.json"
+              },
+              "blend": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "color": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "src": {
+                        "$ref": "../common/BlendFactor.json.json"
+                      },
+                      "dst": {
+                        "$ref": "../common/BlendFactor.json.json"
+                      },
+                      "op": {
+                        "$ref": "../common/BlendOperation.json.json"
+                      }
+                    },
+                    "required": [
+                      "src",
+                      "dst",
+                      "op"
+                    ]
+                  },
+                  "alpha": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "src": {
+                        "$ref": "../common/BlendFactor.json.json"
+                      },
+                      "dst": {
+                        "$ref": "../common/BlendFactor.json.json"
+                      },
+                      "op": {
+                        "$ref": "../common/BlendOperation.json.json"
+                      }
+                    },
+                    "required": [
+                      "src",
+                      "dst",
+                      "op"
+                    ]
+                  }
+                },
+                "required": [
+                  "color",
+                  "alpha"
+                ]
+              },
+              "writeMask": {
+                "$ref": "../common/ColorWriteMask.json.json"
+              }
+            },
+            "required": [
+              "format"
+            ]
+          }
+        }
+      },
+      "required": [
+        "module",
+        "entryPoint",
+        "targets"
+      ]
+    },
+    "primitive": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "topology": {
+          "$ref": "../common/PrimitiveTopology.json.json"
+        },
+        "stripIndexFormat": {
+          "$ref": "../common/IndexFormat.json.json"
+        },
+        "frontFace": {
+          "$ref": "../common/FrontFace.json.json"
+        },
+        "cullMode": {
+          "$ref": "../common/CullMode.json.json"
+        }
+      },
+      "required": [
+        "topology"
+      ]
+    },
+    "depthStencil": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "$ref": "../common/GPUTextureFormat.json.json"
+        },
+        "depthWriteEnabled": {
+          "type": "boolean"
+        },
+        "depthCompare": {
+          "$ref": "../common/CompareFunction.json.json"
+        },
+        "stencilFront": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "compare": {
+              "$ref": "../common/CompareFunction.json.json"
+            },
+            "failOp": {
+              "$ref": "../common/StencilOperation.json.json"
+            },
+            "depthFailOp": {
+              "$ref": "../common/StencilOperation.json.json"
+            },
+            "passOp": {
+              "$ref": "../common/StencilOperation.json.json"
+            }
+          }
+        },
+        "stencilBack": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "compare": {
+              "$ref": "../common/CompareFunction.json.json"
+            },
+            "failOp": {
+              "$ref": "../common/StencilOperation.json.json"
+            },
+            "depthFailOp": {
+              "$ref": "../common/StencilOperation.json.json"
+            },
+            "passOp": {
+              "$ref": "../common/StencilOperation.json.json"
+            }
+          }
+        },
+        "depthBias": {
+          "type": "number"
+        },
+        "depthBiasSlopeScale": {
+          "type": "number"
+        },
+        "depthBiasClamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "format"
+      ]
+    },
+    "multisample": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mask": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "alphaToCoverageEnabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "count"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "layout",
+    "vertex",
+    "primitive"
+  ]
+}

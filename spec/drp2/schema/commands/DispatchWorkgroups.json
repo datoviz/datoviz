@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DispatchWorkgroups",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "DispatchWorkgroups"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "x": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "y": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    },
+    "z": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "x"
+  ]
+}

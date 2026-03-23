@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Id",
+  "type": "integer",
+  "minimum": 0,
+  "description": "Unsigned 32-bit identifier for DRP objects."
+}

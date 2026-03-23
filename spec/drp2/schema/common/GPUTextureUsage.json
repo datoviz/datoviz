@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GPUTextureUsage",
+  "type": "string",
+  "enum": [
+    "COPY_SRC",
+    "COPY_DST",
+    "TEXTURE_BINDING",
+    "STORAGE_BINDING",
+    "RENDER_ATTACHMENT"
+  ]
+}

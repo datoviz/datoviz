@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DispatchWorkgroupsIndirect",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "DispatchWorkgroupsIndirect"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "buffer": {
+      "$ref": "../common/Id.json.json"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "buffer",
+    "offset"
+  ]
+}

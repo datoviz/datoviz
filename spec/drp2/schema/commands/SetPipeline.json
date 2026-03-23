@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetPipeline",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "SetPipeline"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "pipeline": {
+      "$ref": "../common/Id.json.json"
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "pipeline"
+  ]
+}

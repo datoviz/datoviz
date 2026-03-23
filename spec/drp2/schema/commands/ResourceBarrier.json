@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ResourceBarrier",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "ResourceBarrier"
+    },
+    "resource": {
+      "$ref": "../common/Id.json.json"
+    },
+    "oldState": {
+      "type": "string"
+    },
+    "newState": {
+      "type": "string"
+    },
+    "srcStage": {
+      "type": "string"
+    },
+    "dstStage": {
+      "type": "string"
+    },
+    "srcAccess": {
+      "type": "string"
+    },
+    "dstAccess": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "type",
+    "resource"
+  ]
+}

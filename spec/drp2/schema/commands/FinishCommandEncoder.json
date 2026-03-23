@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FinishCommandEncoder",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "FinishCommandEncoder"
+    },
+    "encoder": {
+      "$ref": "../common/Id.json.json"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    }
+  },
+  "required": [
+    "type",
+    "encoder",
+    "id"
+  ]
+}

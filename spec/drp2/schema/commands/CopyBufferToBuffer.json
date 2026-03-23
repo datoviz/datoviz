@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CopyBufferToBuffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CopyBufferToBuffer"
+    },
+    "src": {
+      "$ref": "../common/Id.json.json"
+    },
+    "srcOffset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dst": {
+      "$ref": "../common/Id.json.json"
+    },
+    "dstOffset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "type",
+    "src",
+    "srcOffset",
+    "dst",
+    "dstOffset",
+    "size"
+  ]
+}

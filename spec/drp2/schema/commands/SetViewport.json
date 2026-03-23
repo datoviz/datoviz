@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SetViewport",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "SetViewport"
+    },
+    "pass": {
+      "$ref": "../common/Id.json.json"
+    },
+    "x": {
+      "type": "number"
+    },
+    "y": {
+      "type": "number"
+    },
+    "width": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "height": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "minDepth": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "maxDepth": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "required": [
+    "type",
+    "pass",
+    "x",
+    "y",
+    "width",
+    "height",
+    "minDepth",
+    "maxDepth"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "IndexFormat",
+  "type": "string",
+  "enum": [
+    "uint16",
+    "uint32",
+    "none"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateComputePipeline",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateComputePipeline"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "layout": {
+      "$ref": "../common/Id.json.json"
+    },
+    "compute": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "module": {
+          "$ref": "../common/Id.json.json"
+        },
+        "entryPoint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "module",
+        "entryPoint"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "layout",
+    "compute"
+  ]
+}

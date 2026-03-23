@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateShaderModule",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateShaderModule"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "format": {
+      "$ref": "../common/ShaderFormat.json.json"
+    },
+    "code": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Text-based WGSL or GLSL source."
+        },
+        {
+          "type": "string",
+          "contentEncoding": "base64",
+          "description": "Binary SPIR-V bytes in base64."
+        }
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "format",
+    "code"
+  ]
+}

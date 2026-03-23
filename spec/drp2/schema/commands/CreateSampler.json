@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateSampler",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateSampler"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "minFilter": {
+      "$ref": "../common/FilterMode.json.json"
+    },
+    "magFilter": {
+      "$ref": "../common/FilterMode.json.json"
+    },
+    "addressModeU": {
+      "$ref": "../common/AddressMode.json.json"
+    },
+    "addressModeV": {
+      "$ref": "../common/AddressMode.json.json"
+    },
+    "addressModeW": {
+      "$ref": "../common/AddressMode.json.json"
+    },
+    "mipFilter": {
+      "$ref": "../common/FilterMode.json.json"
+    },
+    "lodMinClamp": {
+      "type": "number"
+    },
+    "lodMaxClamp": {
+      "type": "number"
+    },
+    "maxAnisotropy": {
+      "type": "number",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "minFilter",
+    "magFilter",
+    "addressModeU",
+    "addressModeV",
+    "addressModeW",
+    "mipFilter",
+    "lodMinClamp",
+    "lodMaxClamp"
+  ]
+}

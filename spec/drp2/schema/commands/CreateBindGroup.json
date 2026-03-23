@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CreateBindGroup",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "CreateBindGroup"
+    },
+    "id": {
+      "$ref": "../common/Id.json.json"
+    },
+    "layout": {
+      "$ref": "../common/Id.json.json"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "binding": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resource": {
+            "$ref": "../common/Id.json.json"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "binding",
+          "resource"
+        ]
+      }
+    }
+  },
+  "required": [
+    "type",
+    "id",
+    "layout",
+    "entries"
+  ]
+}

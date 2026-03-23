@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WriteBuffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "const": "WriteBuffer"
+    },
+    "buffer": {
+      "$ref": "../common/Id.json.json"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "data": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "description": "Raw bytes encoded as base64."
+    }
+  },
+  "required": [
+    "type",
+    "buffer",
+    "offset",
+    "data"
+  ]
+}
