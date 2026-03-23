@@ -46,7 +46,10 @@ The first positive corpus should stay minimal and focus on clean command shapes:
 
 1. buffer upload only,
 2. texture upload only,
-3. command encoder plus compute pass plus successful finish.
+3. command encoder plus compute pass plus successful finish,
+4. buffer-to-texture copy,
+5. texture-to-buffer copy,
+6. queue submit of a finished command buffer.
 
 
 ## Metadata Policy

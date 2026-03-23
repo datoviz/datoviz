@@ -1,0 +1,66 @@
+{
+  "name": "copy_texture_to_buffer_basic",
+  "description": "Copies a small region from a source texture into a destination buffer.",
+  "reason": "The encoder is open, no pass is active, the source and destination usages are compatible, and the copied region fits both resources.",
+  "notes": "This fixture exercises the happy-path shape of CopyTextureToBuffer without involving render-pass state.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "copy",
+    "buffer"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_SRC"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "CopyTextureToBuffer",
+      "encoder_id": 3,
+      "src_texture_id": 1,
+      "src_mip_level": 0,
+      "src_origin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 2,
+        "height": 1,
+        "depth": 1
+      },
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "bytes_per_row": 8,
+      "rows_per_image": 1
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "queue_submit_basic",
+  "description": "Finishes an encoder into a command buffer and submits it successfully.",
+  "reason": "The command buffer is produced by FinishCommandEncoder before QueueSubmit references it, so the submission is valid.",
+  "notes": "This fixture keeps the recorded work empty and focuses on the happy-path shape of QueueSubmit.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "queue",
+    "submission"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 1,
+      "command_buffer_id": 2
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        2
+      ],
+      "submission_id": 3
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

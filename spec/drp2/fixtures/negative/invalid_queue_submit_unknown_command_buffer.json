@@ -1,0 +1,29 @@
+{
+  "name": "invalid_queue_submit_unknown_command_buffer",
+  "description": "QueueSubmit references a command buffer id that was never produced by FinishCommandEncoder.",
+  "reason": "QueueSubmit requires every referenced command buffer to be live and finished before submission.",
+  "fix": "Finish an encoder to create the command buffer first, or reference an existing finished command buffer id.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "queue",
+    "identity"
+  ],
+  "commands": [
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        77
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ID",
+    "command_index": 0
+  }
+}
