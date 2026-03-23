@@ -228,13 +228,13 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
     // Inner rendering.
-    DvzRendering irendering = {0};
+    DvzRendering* irendering = dvz_rendering_create();
+    ANN(irendering);
     {
-        dvz_rendering(&irendering);
-        dvz_rendering_area(&irendering, 0, 0, DVZ_FIXTURE_WIDTH / 2, DVZ_FIXTURE_HEIGHT / 2);
+        dvz_rendering_area(irendering, 0, 0, DVZ_FIXTURE_WIDTH / 2, DVZ_FIXTURE_HEIGHT / 2);
 
         // Attachments.
-        DvzAttachment* attachment = dvz_rendering_color(&irendering, 0);
+        DvzAttachment* attachment = dvz_rendering_color(irendering, 0);
         dvz_attachment_image(
             attachment, dvz_image_views_handle(&tex_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -293,7 +293,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
         dvz_descriptors(slots, desc);
         dvz_descriptors_image(
             desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, //
-            tex_view.vk_views[0], dvz_sampler_handle(sampler));
+            dvz_image_views_handle(&tex_view, 0), dvz_sampler_handle(sampler));
     }
 
 
@@ -307,7 +307,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
     // Inner rendering.
     {
-        dvz_cmd_rendering_begin(cmds, &irendering);
+        dvz_cmd_rendering_begin(cmds, irendering);
         dvz_cmd_bind_graphics(cmds, &igraphics);
         dvz_cmd_draw(cmds, 0, 3, 0, 1);
         dvz_cmd_rendering_end(cmds);
@@ -350,6 +350,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_graphics_destroy(&igraphics);
+    dvz_rendering_free(irendering);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
@@ -438,15 +439,15 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     }
 
     // Mask rendering.
-    DvzRendering mrendering = {0};
+    DvzRendering* mrendering = dvz_rendering_create();
+    ANN(mrendering);
     {
         DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
         DvzImageViews* depth_view = dvz_fixture_offscreen_depth_view(off);
-        dvz_rendering(&mrendering);
-        dvz_rendering_area(&mrendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+        dvz_rendering_area(mrendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
 
         // Attachments.
-        DvzAttachment* catt = dvz_rendering_color(&mrendering, 0);
+        DvzAttachment* catt = dvz_rendering_color(mrendering, 0);
         dvz_attachment_image(
             catt, dvz_image_views_handle(color_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -454,13 +455,13 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
             catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         // Attachments.
-        DvzAttachment* datt = dvz_rendering_depth(&mrendering);
+        DvzAttachment* datt = dvz_rendering_depth(mrendering);
         dvz_attachment_image(
             datt, dvz_image_views_handle(depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
-        DvzAttachment* satt = dvz_rendering_stencil(&mrendering);
+        DvzAttachment* satt = dvz_rendering_stencil(mrendering);
         dvz_attachment_image(
             satt, dvz_image_views_handle(depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -509,7 +510,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_barriers(cmds, barriers);
 
     // Mask rendering.
-    dvz_cmd_rendering_begin(cmds, &mrendering);
+    dvz_cmd_rendering_begin(cmds, mrendering);
     dvz_cmd_bind_graphics(cmds, &mgraphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
@@ -530,6 +531,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
 
     // Cleanup.
     dvz_graphics_destroy(&mgraphics);
+    dvz_rendering_free(mrendering);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
@@ -1052,17 +1054,17 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_rendering_end(cmds);
 
     /* PICKING PASS */
-    DvzRendering pickrend = {0};
-    dvz_rendering(&pickrend);
-    dvz_rendering_area(&pickrend, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzRendering* pickrend = dvz_rendering_create();
+    ANN(pickrend);
+    dvz_rendering_area(pickrend, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
 
-    DvzAttachment* patt = dvz_rendering_color(&pickrend, 0);
+    DvzAttachment* patt = dvz_rendering_color(pickrend, 0);
     dvz_attachment_image(
         patt, dvz_image_views_handle(&pickview, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(patt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(patt, (VkClearValue){.color = {.uint32 = {0}}});
 
-    dvz_cmd_rendering_begin(cmds, &pickrend);
+    dvz_cmd_rendering_begin(cmds, pickrend);
     dvz_cmd_bind_graphics(cmds, &gfx_pick);
     dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbuf, (DvzSize[]){0});
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
@@ -1124,6 +1126,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&vbuf);
     dvz_image_views_destroy(&pickview);
     dvz_images_destroy(&pickimg);
+    dvz_rendering_free(pickrend);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);
@@ -1420,13 +1423,13 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // Renderings
     // -----------------------------------------------------------------------------------------
     // Accumulation rendering: writes to accum_color + accum_weight + depth.
-    DvzRendering accum_rendering = {0};
+    DvzRendering* accum_rendering = dvz_rendering_create();
+    ANN(accum_rendering);
     {
-        dvz_rendering(&accum_rendering);
-        dvz_rendering_area(&accum_rendering, 0, 0, W, H);
+        dvz_rendering_area(accum_rendering, 0, 0, W, H);
 
         // Color 0: accumColor
-        DvzAttachment* a0 = dvz_rendering_color(&accum_rendering, 0);
+        DvzAttachment* a0 = dvz_rendering_color(accum_rendering, 0);
         dvz_attachment_image(
             a0, dvz_image_views_handle(&accum_color_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1434,7 +1437,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_attachment_clear(a0, (VkClearValue){.color = {.float32 = {0, 0, 0, 0}}});
 
         // Color 1: accumWeight
-        DvzAttachment* a1 = dvz_rendering_color(&accum_rendering, 1);
+        DvzAttachment* a1 = dvz_rendering_color(accum_rendering, 1);
         dvz_attachment_image(
             a1, dvz_image_views_handle(&accum_weight_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1442,19 +1445,19 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
         dvz_attachment_clear(a1, (VkClearValue){.color = {.float32 = {0, 0, 0, 0}}});
 
         // Depth.
-        DvzAttachment* ad = dvz_rendering_depth(&accum_rendering);
+        DvzAttachment* ad = dvz_rendering_depth(accum_rendering);
         dvz_attachment_image(ad, depth_view, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(ad, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
         dvz_attachment_clear(ad, (VkClearValue){.depthStencil = {1.0f, 0}});
     }
 
     // Composite rendering: color-only pass directly to the fixture color target.
-    DvzRendering composite_rendering = {0};
+    DvzRendering* composite_rendering = dvz_rendering_create();
+    ANN(composite_rendering);
     {
-        dvz_rendering(&composite_rendering);
-        dvz_rendering_area(&composite_rendering, 0, 0, W, H);
+        dvz_rendering_area(composite_rendering, 0, 0, W, H);
 
-        DvzAttachment* c0 = dvz_rendering_color(&composite_rendering, 0);
+        DvzAttachment* c0 = dvz_rendering_color(composite_rendering, 0);
         dvz_attachment_image(
             c0, dvz_image_views_handle(dvz_fixture_offscreen_color_view(off), 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1507,7 +1510,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // Pass 1: accumulation.
     {
         DvzSize offsets = 0;
-        dvz_cmd_rendering_begin(cmds, &accum_rendering);
+        dvz_cmd_rendering_begin(cmds, accum_rendering);
         dvz_cmd_bind_graphics(cmds, &g_accum);
         dvz_cmd_bind_vertex_buffers(cmds, 0, 1, &vbo, &offsets);
         dvz_cmd_draw(cmds, 0, vertex_count, 0, 1);
@@ -1553,7 +1556,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
 
     // Pass 2: composite full-screen.
     {
-        dvz_cmd_rendering_begin(cmds, &composite_rendering);
+        dvz_cmd_rendering_begin(cmds, composite_rendering);
         dvz_cmd_bind_graphics(cmds, &g_comp);
         dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, desc_comp, 0, 1, 0, NULL);
         // Fullscreen triangle: 3 vertices from VS (gl_VertexIndex).
@@ -1581,6 +1584,8 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_descriptors_free(desc_comp);
+    dvz_rendering_free(accum_rendering);
+    dvz_rendering_free(composite_rendering);
     dvz_graphics_destroy(&g_accum);
     dvz_graphics_destroy(&g_comp);
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
@@ -1700,14 +1705,14 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     }
 
     // Rendering for depth pass: color = fixture color (ignored), depth = depth_img.
-    DvzRendering depth_rendering = {0};
+    DvzRendering* depth_rendering = dvz_rendering_create();
+    ANN(depth_rendering);
     {
         DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
-        dvz_rendering(&depth_rendering);
-        dvz_rendering_area(&depth_rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+        dvz_rendering_area(depth_rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
 
         // Color (dummy, uses the fixture main color image, but we don't care about its content here).
-        DvzAttachment* catt = dvz_rendering_color(&depth_rendering, 0);
+        DvzAttachment* catt = dvz_rendering_color(depth_rendering, 0);
         dvz_attachment_image(
             catt, dvz_image_views_handle(color_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1715,7 +1720,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
             catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
         // Depth.
-        DvzAttachment* datt = dvz_rendering_depth(&depth_rendering);
+        DvzAttachment* datt = dvz_rendering_depth(depth_rendering);
         dvz_attachment_image(
             datt, dvz_image_views_handle(&depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -1789,13 +1794,13 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     }
 
     // Rendering for SSAO pass: color attachment = fixture main image, no depth/stencil.
-    DvzRendering ssao_rendering = {0};
+    DvzRendering* ssao_rendering = dvz_rendering_create();
+    ANN(ssao_rendering);
     {
         DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
-        dvz_rendering(&ssao_rendering);
-        dvz_rendering_area(&ssao_rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+        dvz_rendering_area(ssao_rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
 
-        DvzAttachment* catt = dvz_rendering_color(&ssao_rendering, 0);
+        DvzAttachment* catt = dvz_rendering_color(ssao_rendering, 0);
         dvz_attachment_image(
             catt, dvz_image_views_handle(color_view, 0),
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1833,7 +1838,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     }
 
     // PASS 1: depth rendering.
-    dvz_cmd_rendering_begin(cmds, &depth_rendering);
+    dvz_cmd_rendering_begin(cmds, depth_rendering);
     dvz_cmd_bind_graphics(cmds, &depth_graphics);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(cmds);
@@ -1858,7 +1863,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     }
 
     // PASS 2: SSAO rendering into the fixture main color image.
-    dvz_cmd_rendering_begin(cmds, &ssao_rendering);
+    dvz_cmd_rendering_begin(cmds, ssao_rendering);
     dvz_cmd_bind_graphics(cmds, &ssao_graphics);
     dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, ssao_desc, 0, 1, 0, NULL);
     dvz_cmd_draw(cmds, 0, 3, 0, 1);
@@ -1881,6 +1886,8 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     dvz_sampler_destroy(sampler);
     dvz_sampler_free(sampler);
     dvz_descriptors_free(ssao_desc);
+    dvz_rendering_free(depth_rendering);
+    dvz_rendering_free(ssao_rendering);
 
     dvz_slots_destroy(&ssao_slots);
 

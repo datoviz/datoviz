@@ -20,6 +20,7 @@
 #include "_vk_utils.h"
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_rendering.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/rendering.h"
@@ -72,6 +73,26 @@ void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue clear)
 /*  Rendering                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Allocate an empty rendering wrapper.
+ *
+ * @return allocated rendering wrapper, or NULL on allocation failure
+ */
+DvzRendering* dvz_rendering_create(void)
+{
+    DvzRendering* rendering = (DvzRendering*)dvz_calloc(1, sizeof(DvzRendering));
+    ANN(rendering);
+    dvz_rendering(rendering);
+    return rendering;
+}
+
+
+
+/**
+ * Initialize a rendering wrapper.
+ *
+ * @param rendering the rendering
+ */
 void dvz_rendering(DvzRendering* rendering)
 {
     ANN(rendering);
@@ -242,6 +263,22 @@ void dvz_cmd_rendering_end(DvzCommands* cmds)
     ANNVK(cmd);
 
     vkCmdEndRendering(cmd);
+}
+
+
+
+/**
+ * Free a rendering wrapper allocated by dvz_rendering_create().
+ *
+ * @param rendering rendering wrapper to free
+ */
+void dvz_rendering_free(DvzRendering* rendering)
+{
+    if (rendering == NULL)
+    {
+        return;
+    }
+    dvz_free(rendering);
 }
 
 

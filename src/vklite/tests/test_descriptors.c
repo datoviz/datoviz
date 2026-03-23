@@ -133,28 +133,29 @@ int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzRendering rendering = {0};
-    dvz_rendering(&rendering);
-    AT(dvz_rendering_layer_count(&rendering) == 1);
-    AT(dvz_rendering_color_count(&rendering) == 0);
-    AT(!dvz_rendering_has_depth(&rendering));
-    AT(!dvz_rendering_has_stencil(&rendering));
+    DvzRendering* rendering = dvz_rendering_create();
+    ANN(rendering);
+    AT(dvz_rendering_layer_count(rendering) == 1);
+    AT(dvz_rendering_color_count(rendering) == 0);
+    AT(!dvz_rendering_has_depth(rendering));
+    AT(!dvz_rendering_has_stencil(rendering));
 
-    dvz_rendering_layers(&rendering, 3);
-    (void)dvz_rendering_color(&rendering, 1);
-    (void)dvz_rendering_depth(&rendering);
-    (void)dvz_rendering_stencil(&rendering);
+    dvz_rendering_layers(rendering, 3);
+    (void)dvz_rendering_color(rendering, 1);
+    (void)dvz_rendering_depth(rendering);
+    (void)dvz_rendering_stencil(rendering);
 
-    AT(dvz_rendering_layer_count(&rendering) == 3);
-    AT(dvz_rendering_color_count(&rendering) == 2);
-    AT(dvz_rendering_has_depth(&rendering));
-    AT(dvz_rendering_has_stencil(&rendering));
+    AT(dvz_rendering_layer_count(rendering) == 3);
+    AT(dvz_rendering_color_count(rendering) == 2);
+    AT(dvz_rendering_has_depth(rendering));
+    AT(dvz_rendering_has_stencil(rendering));
 
-    dvz_rendering(&rendering);
-    AT(dvz_rendering_layer_count(&rendering) == 1);
-    AT(dvz_rendering_color_count(&rendering) == 0);
-    AT(!dvz_rendering_has_depth(&rendering));
-    AT(!dvz_rendering_has_stencil(&rendering));
+    dvz_rendering(rendering);
+    AT(dvz_rendering_layer_count(rendering) == 1);
+    AT(dvz_rendering_color_count(rendering) == 0);
+    AT(!dvz_rendering_has_depth(rendering));
+    AT(!dvz_rendering_has_stencil(rendering));
+    dvz_rendering_free(rendering);
 
     return 0;
 }

@@ -422,12 +422,14 @@ static void _dvz_canvas_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, voi
     DvzCommands cmds = {0};
     dvz_commands_wrap(device, frame->command_buffer, &cmds);
 
-    DvzRendering rendering = {0};
+    DvzRendering* rendering = dvz_rendering_create();
+    ANN(rendering);
     dvz_cmd_rendering_default(
         &cmds, frame->image_view, frame->extent.width, frame->extent.height,
-        (VkClearValue){.color.float32 = {bg[0], bg[1], bg[2], bg[3]}}, &rendering);
-    dvz_cmd_rendering_begin(&cmds, &rendering);
+        (VkClearValue){.color.float32 = {bg[0], bg[1], bg[2], bg[3]}}, rendering);
+    dvz_cmd_rendering_begin(&cmds, rendering);
     dvz_cmd_rendering_end(&cmds);
+    dvz_rendering_free(rendering);
 }
 
 

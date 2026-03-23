@@ -40,20 +40,6 @@ typedef struct DvzRendering DvzRendering;
 
 
 
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzRendering
-{
-    VkRenderingInfo info;
-    DvzAttachment attachments[DVZ_MAX_ATTACHMENTS];
-    DvzAttachment depth;
-    DvzAttachment stencil;
-};
-
-
-
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -112,7 +98,16 @@ DVZ_EXPORT void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue cle
 /*************************************************************************************************/
 
 /**
- * Create a rendering.
+ * Allocate an empty rendering wrapper.
+ *
+ * @return allocated rendering wrapper, or NULL on allocation failure
+ */
+DVZ_EXPORT DvzRendering* dvz_rendering_create(void);
+
+
+
+/**
+ * Initialize a rendering wrapper.
  *
  * @param rendering the rendering
  */
@@ -247,6 +242,15 @@ DVZ_EXPORT void dvz_cmd_rendering_default(
  * @param cmds the command buffers
  */
 DVZ_EXPORT void dvz_cmd_rendering_end(DvzCommands* cmds);
+
+
+
+/**
+ * Free a rendering wrapper allocated by dvz_rendering_create().
+ *
+ * @param rendering rendering wrapper to free
+ */
+DVZ_EXPORT void dvz_rendering_free(DvzRendering* rendering);
 
 
 

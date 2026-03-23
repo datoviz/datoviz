@@ -46,7 +46,7 @@ struct DvzFixtureOffscreen
     DvzGraphics graphics;
     DvzSlots slots;
     DvzDescriptors* desc;
-    DvzRendering rendering;
+    DvzRendering* rendering;
     DvzImages color;
     DvzImageViews color_view;
     DvzImages depth;
@@ -86,6 +86,8 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     fixture->height = height;
     fixture->desc = dvz_descriptors_create();
     ANN(fixture->desc);
+    fixture->rendering = dvz_rendering_create();
+    ANN(fixture->rendering);
 
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
     DvzVma* allocator = dvz_fixture_gpu_alloc(gpu);
@@ -94,8 +96,8 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     ANN(allocator);
     ANN(queue);
 
-    dvz_rendering(&fixture->rendering);
-    dvz_rendering_area(&fixture->rendering, 0, 0, width, height);
+    dvz_rendering(fixture->rendering);
+    dvz_rendering_area(fixture->rendering, 0, 0, width, height);
 
     dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, &fixture->color);
     dvz_images_format(&fixture->color, VK_FORMAT_R8G8B8A8_UNORM);
@@ -107,7 +109,7 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     dvz_image_views(&fixture->color, &fixture->color_view);
     dvz_image_views_create(&fixture->color_view);
 
-    DvzAttachment* catt = dvz_rendering_color(&fixture->rendering, 0);
+    DvzAttachment* catt = dvz_rendering_color(fixture->rendering, 0);
     dvz_attachment_image(
         catt, dvz_image_views_handle(&fixture->color_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -123,13 +125,13 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     dvz_image_views_aspect(&fixture->depth_view, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
     dvz_image_views_create(&fixture->depth_view);
 
-    DvzAttachment* datt = dvz_rendering_depth(&fixture->rendering);
+    DvzAttachment* datt = dvz_rendering_depth(fixture->rendering);
     dvz_attachment_image(
         datt, dvz_image_views_handle(&fixture->depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
 
-    DvzAttachment* satt = dvz_rendering_stencil(&fixture->rendering);
+    DvzAttachment* satt = dvz_rendering_stencil(fixture->rendering);
     dvz_attachment_image(
         satt, dvz_image_views_handle(&fixture->depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(satt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -187,6 +189,8 @@ void dvz_fixture_offscreen_destroy(DvzFixtureOffscreen* fixture)
     dvz_slots_destroy(&fixture->slots);
     dvz_descriptors_free(fixture->desc);
     fixture->desc = NULL;
+    dvz_rendering_free(fixture->rendering);
+    fixture->rendering = NULL;
     dvz_graphics_destroy(&fixture->graphics);
     dvz_free(fixture);
 }
@@ -308,7 +312,7 @@ DvzCommands* dvz_fixture_offscreen_cmds(DvzFixtureOffscreen* fixture)
 DvzRendering* dvz_fixture_offscreen_rendering(DvzFixtureOffscreen* fixture)
 {
     ANN(fixture);
-    return &fixture->rendering;
+    return fixture->rendering;
 }
 
 

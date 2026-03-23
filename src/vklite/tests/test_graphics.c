@@ -121,9 +121,9 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     AT(dvz_graphics_layout_handle(&graphics) == dvz_slots_handle(&slots));
 
     // Rendering.
-    DvzRendering rendering = {0};
-    dvz_rendering(&rendering);
-    dvz_rendering_area(&rendering, 0, 0, WIDTH, HEIGHT);
+    DvzRendering* rendering = dvz_rendering_create();
+    ANN(rendering);
+    dvz_rendering_area(rendering, 0, 0, WIDTH, HEIGHT);
 
     // Image to render to.
     DvzImages img = {0};
@@ -139,7 +139,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_image_views_create(&view);
 
     // Attachments.
-    DvzAttachment* attachment = dvz_rendering_color(&rendering, 0);
+    DvzAttachment* attachment = dvz_rendering_color(rendering, 0);
     dvz_attachment_image(
         attachment, dvz_image_views_handle(&view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
     dvz_attachment_ops(attachment, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -169,6 +169,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
         dvz_shader_destroy(&fs);
         dvz_slots_destroy(&slots);
         dvz_graphics_destroy(&graphics);
+        dvz_rendering_free(rendering);
         dvz_gpu_ctx_destroy(ctx);
         dvz_free(vs_spv);
         dvz_free(fs_spv);
@@ -176,7 +177,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     }
     dvz_cmd_begin(&cmds);
     dvz_cmd_barriers(&cmds, &barriers);
-    dvz_cmd_rendering_begin(&cmds, &rendering);
+    dvz_cmd_rendering_begin(&cmds, rendering);
     dvz_cmd_bind_graphics(&cmds, &graphics);
     dvz_cmd_draw(&cmds, 0, 3, 0, 1);
     dvz_cmd_rendering_end(&cmds);
@@ -237,6 +238,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     dvz_graphics_destroy(&graphics);
     dvz_graphics_destroy(&graphics);
     AT(dvz_graphics_handle(&graphics) == VK_NULL_HANDLE);
+    dvz_rendering_free(rendering);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);
     dvz_free(vs_spv);
