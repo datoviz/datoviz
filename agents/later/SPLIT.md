@@ -1,8 +1,14 @@
 > **Implementation Status**
 > - **Status:** `PARTIALLY COMPLETED`
-> - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** Phases A-D are implemented (layered targets, package exports, build toggles, and component test runners).
-> - **Remaining gap:** Phase E (`drp2`/`webgpu`/`scene` onboarding) is still planned and not active.
+> - **Verified on:** `2026-03-23`
+> - **Codebase alignment:** Phases A-D are implemented in code today: layered shared targets,
+>   package exports, build toggles, component runners, and the legacy integration runner all exist.
+> - **Current branch status:** The split work is structurally successful and no longer the main
+>   blocker for the branch. Remaining work is mostly packaging/CI tightening rather than core
+>   architecture bring-up.
+> - **Remaining gap:** CI profile coverage, out-of-tree package-consumer smoke tests, and
+>   component-owned header install sets remain open. Phase E (`drp2`/`webgpu`/`scene`) is still
+>   planning-only and should not be treated as an active near-term execution phase.
 
 # Datoviz v0.4-dev Monorepo Target Split Plan
 
@@ -207,7 +213,7 @@ Keep current top-level layout; add target-level grouping and packaging metadata.
 5. Land Phase E incrementally as DRP2/WebGPU/Scene modules mature.
 
 
-## Current status (as of February 15, 2026)
+## Current status (as of March 23, 2026)
 
 Completed:
 1. Phase A foundation:
@@ -231,9 +237,15 @@ Partially complete / remaining from A-D:
 1. CI matrix is not yet updated to run all component profiles/runners.
 2. Automated out-of-tree package-consumer smoke tests are not yet integrated into CTest/CI.
 3. Header install ownership is still broad; component-specific header install sets remain to do.
+4. This is now a secondary cleanup track; the active low-level refactor priority is still
+   `vk`/`vklite` boundary hardening.
 
 
 ## Next execution steps
+
+Priority note:
+1. These are useful follow-ups, but they are lower priority than finishing the current
+   `vk`/`vklite` ownership-boundary cleanup while the active graphics stack is already green.
 
 1. CI matrix integration (highest priority):
    1. Update `.github/workflows/test.yml` to run profile jobs:

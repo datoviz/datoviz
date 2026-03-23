@@ -1,8 +1,12 @@
 > **Implementation Status**
-> - **Status:** `NOT STARTED`
-> - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** This roadmap remains strategic/planning-level; DRP2/WebGPU/scene runtime milestones are not implemented as active modules in the current build graph.
-> - **Remaining gap:** Start M0 scaffolding and wire first concrete DRP2/WebGPU deliverables into source, CMake, and tests.
+> - **Status:** `STRATEGIC BACKLOG`
+> - **Verified on:** `2026-03-23`
+> - **Codebase alignment:** This roadmap remains strategic/planning-level; DRP2/WebGPU/scene runtime
+>   milestones are still not implemented as active modules in the current build graph.
+> - **Current branch status:** This is not the immediate next execution plan. The active branch
+>   priority is still stabilization and API cleanup of the current `vk`/`vklite`/`canvas` stack.
+> - **Remaining gap:** Defer M0 scaffolding until the active low-level stack boundaries are tighter
+>   and the current graphics API surface is stable enough to avoid locking in premature abstractions.
 
 # Datoviz v0.4-dev Next Steps
 
@@ -13,6 +17,10 @@ This document is a detailed, high-level execution plan to reach the first major 
 3. Only after stabilization, build a standalone Scene API on top of that DRP/WebGPU contract with no dependency on low-level backend internals.
 
 The plan is organized so each step can be executed by Codex in small, testable increments.
+
+Priority note:
+1. Keep this document as a long-horizon direction, not as the default next task list for the
+   current branch state.
 
 
 ## Ground rules
@@ -47,10 +55,15 @@ The plan is organized so each step can be executed by Codex in small, testable i
 
 ## Current baseline snapshot (branch reality)
 
-1. Core modules are actively refactored: `vk`, `vklite`, `window`, `canvas`, `stream`, `video`.
-2. High-level scene/visual layers are currently thin/placeholders in this branch.
-3. `datoviz` is currently built as one shared library from modular object components.
-4. Existing tests are primarily low-level/core and run through `testing/dvztest.c`.
+1. The active low-level graphics stack (`vk`, `vklite`, `window`, `canvas`, `stream`, `video`) has
+   undergone a substantial February 2026 refactor and is currently green.
+2. High-level scene/visual layers are still thin/placeholders in this branch and are not part of the
+   active v0.4-dev stabilization effort.
+3. The repo now builds both layered shared targets (`datoviz_core`, `datoviz_vk_layer`,
+   `datoviz_canvas_layer`) and the aggregate `datoviz` target.
+4. Testing is broader than before: component runners (`dvztest_core`, `dvztest_vk`,
+   `dvztest_canvas`, `dvztest_integration`) exist alongside the legacy `dvztest` runner.
+5. On this machine today, `just build` passes and `just test` passes `141/141` tests.
 
 
 ## Target architecture (for this phase)

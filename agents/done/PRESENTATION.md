@@ -1,8 +1,12 @@
 > **Implementation Status**
 > - **Status:** `COMPLETED`
-> - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** Presentation wrapper APIs and migration are in place (`surface`/`swapchain` in `vklite`, canvas integration, and associated tests).
-> - **Remaining gap:** No open gap for this plan scope; only ongoing maintenance/regression hardening.
+> - **Verified on:** `2026-03-23`
+> - **Codebase alignment:** Presentation wrapper APIs and migration remain in place (`surface`/
+>   `swapchain` in `vklite`, canvas integration, and associated tests).
+> - **Current branch status:** This plan is now a completed phase record, not an active execution
+>   surface.
+> - **Remaining gap:** No open gap for this plan scope; only ongoing maintenance/regression
+>   hardening.
 
 # Datoviz v0.4-dev Presentation Stack Refactor Plan
 

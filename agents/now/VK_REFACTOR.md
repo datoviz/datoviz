@@ -1,17 +1,31 @@
 > **Implementation Status**
 > - **Status:** `PARTIALLY COMPLETED`
-> - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** Public GPU ownership/API cleanup is complete (`DvzGpu*` removed from public headers, index/descriptor flow active).
-> - **Current progress:** Step 0 completed, Step 1 contract defined, Step 2 completed for bootstrap/proto flows, Step 4 completed for `DvzSurface`/`DvzSwapchain` (opaque public handles + accessor migration).
-> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening across the rest of vklite public structs and lifecycle matrices.
+> - **Verified on:** `2026-03-23`
+> - **Codebase alignment:** Public GPU ownership/API cleanup is complete (`DvzGpu*` removed from
+>   public headers, index/descriptor flow active). `vklite` no longer includes vk-private headers;
+>   `proto` is internal-only; `surface`/`swapchain` are accessor-driven; full `just build` and
+>   `just test` currently pass on this machine.
+> - **Current progress:** Steps 0-3 are effectively complete, Step 4 is partially complete
+>   (`bootstrap`, `memory`, `surface`, `swapchain`, and `proto` improved), and Steps 5-7 remain the
+>   active work.
+> - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` still need tightening
+>   across the rest of vklite public structs and lifecycle matrices. Tests still include internal
+>   `proto.h` and access `proto.*` fields directly.
 
-## Immediate next steps (2026-02-20)
+## Immediate next steps (2026-03-23)
 
-1. Make `proto` opaque even internally to tests.
-2. Replace direct `proto.<field>` access with `dvz_proto_*` accessors for commands/rendering/barriers/images/bootstrap/device/allocator.
-3. Normalize wrapper ownership APIs across `vklite` (`*_create_wrapper()` + matching `*_free()`, stack objects use `*_destroy()` only).
-4. Unify barrier lifecycle conventions (`dvz_barriers()` init, reset/clear semantics, repeated record/submit safety).
-5. Add focused conventions tests for null-safe/idempotent destroy and repeated-submit safety across `canvas`/`stream`/`vk`/`vklite`.
+1. Make `proto` opaque to tests where practical, or at least shrink direct `proto.*` field access to
+   a very small intentional test-only surface.
+2. Replace direct `proto.<field>` access with `dvz_proto_*` accessors for
+   commands/rendering/barriers/images/bootstrap/device/allocator.
+3. Normalize wrapper ownership APIs across `vklite` (`*_create_wrapper()` + matching `*_free()`,
+   stack objects use `*_destroy()` only).
+4. Unify barrier lifecycle conventions (`dvz_barriers()` init, reset/clear semantics, repeated
+   record/submit safety).
+5. Add focused conventions tests for null-safe/idempotent destroy and repeated-submit safety across
+   `canvas`/`stream`/`vk`/`vklite`.
+6. Audit remaining public structs in `include/datoviz/vk/*.h` and `include/datoviz/vklite/*.h` for
+   mutable owner pointers, raw handles, or caches that should move behind accessors.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -190,7 +204,7 @@ Goal:
 1. Mark closure with explicit evidence.
 
 Actions:
-1. Update `agents/OWNERSHIP.md` with final boundary status for non-GPU slice.
+1. Update `agents/done/OWNERSHIP.md` with final boundary status for non-GPU slice.
 2. Set this file status to `COMPLETED` only when Step 8 is fully green.
 3. Record exact commands/tests run and date.
 
@@ -258,6 +272,11 @@ Exit criteria:
      `include/datoviz/vklite/proto.h`.
 8. Validation run on `2026-02-18` after this slice:
    - `just build` (pass)
+9. Validation run on `2026-03-23`:
+   - `just build` (pass)
+   - `just test` (pass, `141/141`)
+   - `rg -n '#include "_.*\.h"' src/vklite` shows only shared/common or vklite-private helpers, not
+     vk-private include leakage
    - `just test vk` (pass, `48/48`)
    - `just test vklite` (pass, `25/25`)
    - `just test canvas` (pass, `26/26`)

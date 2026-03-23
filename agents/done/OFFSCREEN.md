@@ -1,8 +1,12 @@
 > **Implementation Status**
 > - **Status:** `COMPLETED`
-> - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** Offscreen render mode, offscreen sink path, mode-gated stream wiring, live tool support, and offscreen canvas/video tests are implemented.
-> - **Remaining gap:** No open gap for this plan scope; only routine stability/performance follow-ups.
+> - **Verified on:** `2026-03-23`
+> - **Codebase alignment:** Offscreen render mode, offscreen sink path, mode-gated stream wiring,
+>   live-image sink support, and offscreen canvas/video tests remain implemented and green.
+> - **Current branch status:** This plan is now a completed phase record; the offscreen path is no
+>   longer the main source of architectural uncertainty.
+> - **Remaining gap:** No open gap for this plan scope; only routine stability/performance follow-ups
+>   and API polish remain.
 
 # Datoviz v0.4-dev Canvas Offscreen Refactor Plan
 

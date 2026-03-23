@@ -1,8 +1,13 @@
 > **Implementation Status**
 > - **Status:** `COMPLETED`
-> - **Verified on:** `2026-02-18`
-> - **Codebase alignment:** Wrap backend and external-surface APIs are implemented (`DVZ_BACKEND_WRAP`, attach/update/detach, required-extension query/injection, backend registration, and tests including ctypes smoke).
-> - **Remaining gap:** No open gap for this phase plan; follow-up work would be consumer-side integration (outside core Datoviz scope).
+> - **Verified on:** `2026-03-23`
+> - **Codebase alignment:** Wrap backend and external-surface APIs remain implemented
+>   (`DVZ_BACKEND_WRAP`, attach/update/detach, required-extension query/injection, backend
+>   registration, window/canvas/vklite tests, and ctypes smoke coverage).
+> - **Current branch status:** This plan is now a completed phase record, not an active refactor
+>   frontier.
+> - **Remaining gap:** No Datoviz-core gap for this phase; future work is consumer-side integration
+>   and UX on top of the existing wrap backend.
 
 # Phase 2 Plan: External-Surface Window Backend (Qt/PyQt First Consumer)
 
