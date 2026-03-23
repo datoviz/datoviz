@@ -1,0 +1,35 @@
+{
+  "name": "write_buffer_basic",
+  "description": "Creates a buffer and uploads a small payload into it.",
+  "reason": "The buffer is live, the write range fits within the declared size, and the command stream stays within the active DRP2 `2.0` buffer lifecycle rules.",
+  "notes": "This fixture is intentionally minimal and checks the happy-path shape of CreateBuffer plus WriteBuffer without involving encoder state.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "buffer",
+    "upload"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 1,
+      "offset": 4,
+      "size": 4,
+      "data": "AQIDBA=="
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "invalid_missing_required_draw_field",
+  "description": "A Draw command omits required fields that active DRP2 `2.0` requires to be serialized explicitly.",
+  "reason": "Draw must include `instance_count`, `first_vertex`, and `first_instance`, so the command fails schema validation before pass-state rules are considered.",
+  "fix": "Provide the full active Draw shape, including every required count and offset field.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "schema",
+    "draw"
+  ],
+  "commands": [
+    {
+      "cmd": "Draw",
+      "pass_id": 1,
+      "vertex_count": 3
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 0
+  }
+}

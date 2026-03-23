@@ -1,0 +1,26 @@
+{
+  "name": "invalid_missing_cmd",
+  "description": "The command object omits the required command discriminator.",
+  "reason": "Every DRP2 command object must include the active discriminator field `cmd`, so this stream fails before semantic validation begins.",
+  "fix": "Add the required `cmd` field with a valid active command name.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "schema",
+    "missing_field"
+  ],
+  "commands": [
+    {
+      "id": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 0
+  }
+}

@@ -75,6 +75,57 @@ backend execution.
 5. Unsupported capabilities must fail with a capability-oriented error, not a generic internal error.
 
 
+## Code Selection Rules
+
+Use the most specific error code that matches the contract-visible failure.
+
+### Identity And Type
+
+1. use `DRP2_ERR_INVALID_ID` when the referenced id was never created,
+2. use `DRP2_ERR_DESTROYED_OBJECT` when the referenced id existed earlier in the same stream but has
+   already been destroyed,
+3. use `DRP2_ERR_DUPLICATE_ID` when a creation command reuses an already-used id,
+4. use `DRP2_ERR_WRONG_OBJECT_TYPE` when the id exists and is live but belongs to the wrong object
+   kind.
+
+
+### State Versus Usage
+
+1. use `DRP2_ERR_INVALID_STATE` when the failure is about recorder scope or sequencing,
+2. use `DRP2_ERR_USAGE` when the failure is about whether a live resource may legally be used or
+   destroyed in the current contract state,
+3. prefer `DRP2_ERR_INVALID_STATE` for examples such as:
+   - draw outside a render pass
+   - dispatch outside a compute pass
+   - finishing an encoder with an open pass
+   - issuing a copy command inside a pass
+4. prefer `DRP2_ERR_USAGE` for examples such as:
+   - destroying a resource still referenced by recorded or submitted work
+   - using a resource in a way forbidden by its declared creation usage
+
+
+### Range, Layout, And Alignment
+
+1. use `DRP2_ERR_OUT_OF_RANGE` when numeric bounds are exceeded after the command shape is otherwise
+   valid,
+2. use `DRP2_ERR_LAYOUT` when the memory-layout description itself is invalid or inconsistent,
+3. use `DRP2_ERR_ALIGNMENT` when the only failing condition is an alignment requirement,
+4. prefer `DRP2_ERR_OUT_OF_RANGE` for examples such as:
+   - `offset + size` exceeding buffer bounds
+   - a texture write region exceeding the destination subresource extent
+5. prefer `DRP2_ERR_LAYOUT` for examples such as:
+   - impossible or self-contradictory row-stride / image-stride declarations
+   - layout metadata incompatible with the transfer shape even when the destination range exists
+
+
+### Phase Preference
+
+1. schema-shape failures should report a schema-validation phase before semantic codes are considered,
+2. semantic code selection applies only after the command object has passed schema validation,
+3. capability-dependent failures should prefer `DRP2_ERR_UNSUPPORTED_CAPABILITY` or
+   `DRP2_ERR_FEATURE_REQUIRED` over generic usage or internal errors.
+
+
 ## First Conformance Set
 
 The first fixture set should include negatives for:
@@ -87,3 +138,4 @@ The first fixture set should include negatives for:
 6. invalid binding layout
 7. unsupported format or feature
 8. invalid copy ranges or alignment
+9. schema-shape failures such as missing discriminators or missing required fields

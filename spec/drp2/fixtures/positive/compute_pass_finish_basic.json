@@ -1,0 +1,38 @@
+{
+  "name": "compute_pass_finish_basic",
+  "description": "Opens a command encoder, records an empty compute pass, ends it, and finishes the encoder.",
+  "reason": "The encoder and pass scopes are opened and closed in the valid order, so the command buffer is produced without any state violation.",
+  "notes": "This fixture intentionally avoids pipeline and dispatch requirements and exists to validate the happy-path recorder lifecycle for BeginCommandEncoder, BeginComputePass, EndComputePass, and FinishCommandEncoder.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "encoder",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "EndComputePass",
+      "pass_id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 1,
+      "command_buffer_id": 3
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

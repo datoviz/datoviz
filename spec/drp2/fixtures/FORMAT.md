@@ -95,9 +95,12 @@ Ordered list of DRP2 command objects.
 Rules:
 
 1. command indexing is zero-based,
-2. command objects must use the active DRP2 `2.0` field names,
-3. deferred command names and deferred schema shapes must not appear in the first `2.0` corpus,
-4. command semantics are defined by `COMMANDS.md`, `LIFETIMES.md`, and the active schemas.
+2. for positive fixtures and semantic negatives, command objects must use the active DRP2 `2.0`
+   field names,
+3. schema-negative fixtures may intentionally include command objects that fail the active command
+   schema,
+4. deferred command names and deferred schema shapes must not appear in the first `2.0` corpus,
+5. command semantics are defined by `COMMANDS.md`, `LIFETIMES.md`, and the active schemas.
 
 
 ### `expected`
@@ -143,7 +146,9 @@ Rules:
 1. a negative fixture should express exactly one intended primary failure,
 2. the expected phase should be the earliest deterministic phase at which the failure is detectable,
 3. if multiple errors could be reported, the fixture should be written so one primary failure is
-   clearly dominant.
+   clearly dominant,
+4. if `expected.phase` is `schema_validation`, the fixture may intentionally contain command objects
+   that do not satisfy the active DRP2 command schema.
 
 
 ### Positive Fixture
@@ -203,6 +208,7 @@ The first corpus should be split into:
 
 1. `positive/`
 2. `negative/`
+3. `negative_schema/`
 
 The immediate priority for DRP2 `2.0` is the negative corpus because it locks the validation
 boundary for the active command surface.
@@ -215,4 +221,6 @@ boundary for the active command surface.
 3. keep human metadata concise and accurate,
 4. do not encode normative behavior only in `description`, `reason`, `fix`, or `notes`,
 5. when a fixture exercises lifetime or state rules, make the expected error code consistent with
-   `ERRORS.md` and `LIFETIMES.md`.
+   `ERRORS.md` and `LIFETIMES.md`,
+6. keep schema-negative fixtures envelope-valid even when their `commands` payload is intentionally
+   invalid against the active command schema.

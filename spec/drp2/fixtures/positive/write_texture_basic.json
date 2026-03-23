@@ -1,0 +1,52 @@
+{
+  "name": "write_texture_basic",
+  "description": "Creates a texture and uploads a small texel region into mip level zero.",
+  "reason": "The texture is live, the write box fits the destination subresource, and the payload layout is consistent with the written extent.",
+  "notes": "This fixture keeps the active render/copy surface out of scope and focuses on the happy-path shape of CreateTexture plus WriteTexture.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "texture",
+    "upload"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "WriteTexture",
+      "texture_id": 1,
+      "mip_level": 0,
+      "origin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 2,
+        "height": 1,
+        "depth": 1
+      },
+      "bytes_per_row": 8,
+      "rows_per_image": 1,
+      "data": "AAAAAAAAAAA="
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

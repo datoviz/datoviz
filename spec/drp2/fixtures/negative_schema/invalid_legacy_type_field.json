@@ -1,0 +1,27 @@
+{
+  "name": "invalid_legacy_type_field",
+  "description": "The command uses the legacy `type` discriminator instead of the active `cmd` field.",
+  "reason": "Active DRP2 `2.0` command objects use `cmd`, so a legacy `type` field does not satisfy the schema for any active command.",
+  "fix": "Rename `type` to `cmd` and use the active field names for the rest of the command object.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "schema",
+    "legacy_shape"
+  ],
+  "commands": [
+    {
+      "type": "BeginCommandEncoder",
+      "id": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 0
+  }
+}

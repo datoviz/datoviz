@@ -53,10 +53,7 @@
       }
     },
     "commands": {
-      "type": "array",
-      "items": {
-        "$ref": "../../schema/drp_command.json"
-      }
+      "type": "array"
     },
     "expected": {
       "type": "object",
@@ -118,6 +115,45 @@
       ]
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "expected": {
+            "properties": {
+              "phase": {
+                "const": "schema_validation"
+              }
+            },
+            "required": [
+              "phase"
+            ]
+          }
+        },
+        "required": [
+          "expected"
+        ]
+      },
+      "then": {
+        "properties": {
+          "commands": {
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "commands": {
+            "items": {
+              "$ref": "../../schema/drp_command.json"
+            }
+          }
+        }
+      }
+    }
+  ],
   "required": [
     "name",
     "version",

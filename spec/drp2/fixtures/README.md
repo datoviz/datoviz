@@ -14,6 +14,7 @@ The first corpus is split into:
 
 1. `negative/`
 2. `positive/`
+3. `negative_schema/`
 
 The immediate priority is `negative/`.
 Those fixtures lock the failure boundary for the active DRP2 `2.0` command set, schemas, error
@@ -34,9 +35,18 @@ The first negative corpus should stay intentionally small and cover the core val
 8. pass-kind mismatch,
 9. destroying a resource still referenced by recorded work,
 10. buffer range violation,
-11. texture range violation.
+11. texture range violation,
+12. missing command discriminator,
+13. wrong field names,
+14. missing required command fields.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
+
+The first positive corpus should stay minimal and focus on clean command shapes:
+
+1. buffer upload only,
+2. texture upload only,
+3. command encoder plus compute pass plus successful finish.
 
 
 ## Metadata Policy
@@ -51,6 +61,14 @@ Fixtures may include human-readable metadata such as:
 These fields are non-normative.
 They exist to make the corpus readable and reviewable.
 Only the normative fields described in `FORMAT.md` determine conformance.
+
+
+## Schema-Negative Policy
+
+Fixtures under `negative_schema/` are expected to fail during `schema_validation`.
+
+Those fixtures must still satisfy the fixture envelope itself.
+Only the embedded DRP command objects are intentionally malformed.
 
 
 ## Reuse
