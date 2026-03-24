@@ -84,14 +84,17 @@ Rules:
 4. a failed handshake transitions the session to `failed`,
 5. `HelloRenderer` and `RendererHelloReply` are single-use for a stream and may not be repeated after
    negotiation has started,
-6. active resource and recording commands are valid only in `ready`,
-7. once the session is `failed`, the stream is not required to recover within the same connection.
+6. `Error` is valid after `HelloRenderer` regardless of whether the session is still pending, ready,
+   or already failed,
+7. active resource and recording commands are valid only in `ready`,
+8. once the session is `failed`, the stream is not required to recover within the same connection.
 
 Active fixture-runner note:
 
 1. the executable fixture runner requires `HelloRenderer` as the first command of every stream,
 2. `RendererHelloReply` must complete before any active resource or recording command is valid,
-3. a failed handshake leaves the session in `failed` for the remainder of that stream.
+3. a failed handshake leaves the session in `failed` for the remainder of that stream,
+4. `Error` is treated as diagnostic output and does not by itself change the session state.
 
 
 ## Buffer Lifetime
@@ -176,8 +179,9 @@ Rules:
 3. `QueueSubmit` requires every referenced command buffer to be live and finished,
 4. command buffers are immutable once created,
 5. a command buffer may be submitted at most once in active DRP2 `2.0`,
-6. DRP2 `2.0` has no explicit `DestroyCommandBuffer`,
-7. runtimes may reclaim backend-native command-buffer resources after submission or stream teardown,
+6. a single `QueueSubmit` may not list the same command buffer id more than once,
+7. DRP2 `2.0` has no explicit `DestroyCommandBuffer`,
+8. runtimes may reclaim backend-native command-buffer resources after submission or stream teardown,
    but that is not a protocol-visible state change.
 
 

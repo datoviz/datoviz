@@ -1,0 +1,42 @@
+{
+  "name": "error_after_failed_handshake",
+  "description": "A failed handshake is followed by an Error diagnostic without attempting any active command.",
+  "reason": "Error remains valid as renderer-to-client diagnostic output even after the session has entered the failed state.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "error",
+    "diagnostic"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "error",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "Error",
+      "code": "DRP2_ERR_UNSUPPORTED_VERSION",
+      "message": "handshake failed",
+      "failed_cmd": "RendererHelloReply"
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "invalid_queue_submit_empty_list",
+  "description": "QueueSubmit provides an empty command_buffer_ids array.",
+  "reason": "Active DRP2 requires QueueSubmit to reference at least one finished command buffer.",
+  "fix": "Provide at least one finished command_buffer_id in the submission.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "schema",
+    "queue"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": []
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 2
+  }
+}

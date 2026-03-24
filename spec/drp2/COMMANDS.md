@@ -200,7 +200,11 @@ Optional fields:
 Semantics:
 
 1. `Error` is renderer-to-client diagnostic output, not a client request,
-2. whether the session remains usable depends on the error class, not on the existence of the message alone.
+2. `Error` is valid only after `HelloRenderer` has established the stream,
+3. `Error` alone does not change session readiness; a `ready` session remains usable unless another
+   command already transitioned it to `failed`,
+4. `Error` may still appear after a failed handshake or other terminal validation failure as
+   additional diagnostic output.
 
 
 ## Resource Lifecycle
@@ -960,4 +964,5 @@ Semantics:
 1. command buffers execute in listed order within the submission,
 2. every referenced command buffer must already have been produced by `FinishCommandEncoder`,
 3. each referenced command buffer must not already have been submitted earlier in the same stream,
-4. submission transfers work from recorded state to queue execution.
+4. each command buffer id may appear at most once within a single `QueueSubmit`,
+5. submission transfers work from recorded state to queue execution.

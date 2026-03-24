@@ -66,8 +66,8 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `72/72` fixtures passing
-2. `36` focused runner tests passing
+1. `77/77` fixtures passing
+2. `39` focused runner tests passing
 
 
 ## In Scope
@@ -106,11 +106,11 @@ The most sensible next DRP2 step is still not another large object-graph promoti
 
 Recommended next slice:
 
-1. keep the pass-state and handshake checks stable across prose, fixtures, and runner behavior
-2. continue fixture-first hardening of submission edge cases and diagnostic semantics before broadening object scope
+1. keep the queue-submission and diagnostic checks stable across prose, fixtures, and runner behavior
+2. continue fixture-first hardening of remaining submit-time misuse cases before broadening object scope
 3. only add backend-facing alignment or capability detail if a runtime slice proves the need concretely
-4. if the next hardening pass stays in DRP2, prefer explicit `Error` semantics and queue-submission edge cases over new object families
-5. the next likely frontier is diagnostic-lane precision and remaining submit-time misuse cases, not broader resource graphs
+4. if the next hardening pass stays in DRP2, prefer error-code precision and any remaining submission-state gaps over new object families
+5. the next likely frontier is small error-policy cleanup rather than broader resource graphs
 
 Reasoning:
 

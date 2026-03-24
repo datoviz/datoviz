@@ -26,7 +26,7 @@ def test_drp2_fixture_runner_can_filter_schema_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative_schema'], None, ['schema'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 4
+    assert len(results) == 5
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'schema_validation' for result in results)
 
@@ -51,6 +51,15 @@ def test_drp2_fixture_runner_can_filter_handshake_fixtures() -> None:
     assert all(result.passed for result in results)
 
 
+def test_drp2_fixture_runner_can_filter_error_fixtures() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixtures = runner.discover([], None, ['error'])
+    results = runner.run_fixtures(fixtures)
+
+    assert len(results) == 3
+    assert all(result.passed for result in results)
+
+
 def test_drp2_fixture_runner_can_filter_pipeline_prerequisite_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['pipeline'])
@@ -72,6 +81,18 @@ def test_drp2_fixture_runner_rejects_resubmitted_command_buffer() -> None:
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
     assert result.actual_command_index == 5
+
+
+def test_drp2_fixture_runner_rejects_duplicate_command_buffer_ids_in_one_submit() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_queue_submit_duplicate_ids_same_submit.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_queue_submit_duplicate_ids_same_submit'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_ARGUMENT'
+    assert result.actual_command_index == 4
 
 
 def test_drp2_fixture_runner_rejects_unsupported_major_version() -> None:
@@ -132,6 +153,18 @@ def test_drp2_fixture_runner_rejects_duplicate_reply() -> None:
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
     assert result.actual_command_index == 2
+
+
+def test_drp2_fixture_runner_rejects_error_before_hello() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_error_before_hello.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_error_before_hello'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 0
 
 
 def test_drp2_fixture_runner_rejects_write_texture_bad_mip_level() -> None:

@@ -1,0 +1,28 @@
+{
+  "name": "invalid_error_before_hello",
+  "description": "An Error command is emitted before HelloRenderer established the stream.",
+  "reason": "Diagnostic Error output is only valid after the stream exists.",
+  "fix": "Begin the stream with HelloRenderer before emitting diagnostic Error commands.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "error",
+    "diagnostic"
+  ],
+  "commands": [
+    {
+      "cmd": "Error",
+      "code": "DRP2_ERR_INVALID_STATE",
+      "message": "stream not negotiated"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 0
+  }
+}

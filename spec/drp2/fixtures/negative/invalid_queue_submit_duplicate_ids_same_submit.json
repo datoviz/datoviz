@@ -1,0 +1,56 @@
+{
+  "name": "invalid_queue_submit_duplicate_ids_same_submit",
+  "description": "QueueSubmit lists the same finished command buffer id twice in one submission.",
+  "reason": "A single submission may not contain the same command buffer more than once.",
+  "fix": "List each finished command buffer at most once per QueueSubmit.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "queue",
+    "submission"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 1,
+      "command_buffer_id": 2
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        2,
+        2
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 4
+  }
+}

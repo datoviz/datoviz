@@ -1,0 +1,49 @@
+{
+  "name": "error_does_not_poison_ready_session",
+  "description": "A ready session emits an Error diagnostic and then continues with a valid active command.",
+  "reason": "Error by itself is diagnostic output and does not transition a ready session to failed.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "error",
+    "diagnostic"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "Error",
+      "code": "DRP2_ERR_INVALID_ARGUMENT",
+      "message": "non-fatal diagnostic"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

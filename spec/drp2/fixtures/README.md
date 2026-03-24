@@ -69,6 +69,11 @@ The first negative corpus should stay intentionally small and cover the core val
 41. duplicate handshake commands after negotiation has started,
 42. draw or dispatch commands targeting passes that already ended,
 43. copy commands targeting encoders that were already finished.
+44. diagnostic `Error` commands before stream start are invalid,
+45. diagnostic `Error` commands after handshake failure remain valid,
+46. diagnostic `Error` commands in a ready session do not by themselves poison later active commands.
+47. queue submission with the same command buffer id listed more than once,
+48. queue submission with an empty command-buffer list.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 

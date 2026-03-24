@@ -204,6 +204,14 @@ class DRP2SemanticValidator:
             return
         self.handshake_failed = True
 
+    def _handle_Error(self, index: int, command: Dict[str, Any]) -> None:
+        if not self.handshake_started:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                'Error requires an established stream after HelloRenderer',
+            )
+
     def _reserve_id(self, index: int, obj_id: int, kind: str, data: Dict[str, Any]) -> None:
         state = self.objects.get(obj_id)
         if state is not None:
@@ -935,7 +943,15 @@ class DRP2SemanticValidator:
         encoder['resources'].add(('buffer', command['dst_buffer_id']))
 
     def _handle_QueueSubmit(self, index: int, command: Dict[str, Any]) -> None:
+        seen_command_buffer_ids = set()
         for command_buffer_id in command['command_buffer_ids']:
+            if command_buffer_id in seen_command_buffer_ids:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_ARGUMENT',
+                    index,
+                    f'command buffer {command_buffer_id} appears more than once in the same submission',
+                )
+            seen_command_buffer_ids.add(command_buffer_id)
             self._resolve_live(index, command_buffer_id, 'command_buffer')
             command_buffer = self.command_buffers[command_buffer_id]
             if command_buffer['state'] != 'finished':
