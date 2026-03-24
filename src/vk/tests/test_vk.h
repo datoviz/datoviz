@@ -76,6 +76,8 @@ int test_device_3(TstSuite* suite, TstItem* tstitem);
 
 int test_device_4(TstSuite* suite, TstItem* tstitem);
 
+int test_device_destroy_rebuild(TstSuite* suite, TstItem* tstitem);
+
 
 
 int test_memory_1(TstSuite* suite, TstItem* tstitem);

@@ -79,6 +79,15 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
     AT(dvz_image_views_handle(views, 0) == VK_NULL_HANDLE);
     AT(dvz_image_handle(images, 0) == VK_NULL_HANDLE);
 
+    AT(dvz_images_create(images) == 0);
+    AT(dvz_image_handle(images, 0) != VK_NULL_HANDLE);
+    dvz_image_views_create(views);
+    AT(dvz_image_views_handle(views, 0) != VK_NULL_HANDLE);
+    dvz_image_views_destroy(views);
+    dvz_images_destroy(images);
+    AT(dvz_image_views_handle(views, 0) == VK_NULL_HANDLE);
+    AT(dvz_image_handle(images, 0) == VK_NULL_HANDLE);
+
     DvzImageCopy* copy = dvz_image_copy_create();
     DvzImageBlit* blit = dvz_image_blit_create();
     ANN(copy);

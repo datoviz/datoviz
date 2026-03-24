@@ -111,6 +111,13 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(buffer);
     dvz_buffer_destroy(buffer);
     AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
+
+    AT(dvz_buffer_create(buffer) == 0);
+    AT(dvz_buffer_handle(buffer) != VK_NULL_HANDLE);
+    AT(dvz_buffer_allocated_size(buffer) == 2 * size);
+    dvz_buffer_destroy(buffer);
+    AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
+
     dvz_buffer_free(buffer);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
     dvz_gpu_ctx_destroy(ctx);

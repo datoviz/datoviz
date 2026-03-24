@@ -124,6 +124,7 @@ int test_vk(TstSuite* suite)
     TEST_SIMPLE(test_device_2);
     TEST_SIMPLE(test_device_3);
     TEST_SIMPLE(test_device_4);
+    TEST_SIMPLE(test_device_destroy_rebuild);
 
 
 
