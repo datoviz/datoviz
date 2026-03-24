@@ -20,6 +20,7 @@ Their role is narrower:
 4. `IMAGE_SLICE.md`
 5. `SPHERE_IMPOSTOR.md`
 6. `VOLUME_OFFSCREEN.md`
+7. `LINKED_PANELS_PROBE_COLORBAR.md`
 
 
 ## Common Structure
