@@ -17,6 +17,24 @@ The scene layer should remain pure high-level logic:
 - Primary constraint: do not let scene design leak backend details into its public API
 
 
+## Normative Invariants
+
+The current scene spec should be read with the following invariants in mind:
+
+1. scene owns high-level semantics and authored state, while the runtime owns execution details,
+2. `FramePlan` is the canonical producer-side execution artifact,
+3. uploads and lazy materialization work should appear in `FramePlan`, not in a separate execution
+   side path,
+4. picking must return scene identity rather than backend identity,
+5. hover picking follows latest-request-wins semantics and stale results must be discardable,
+6. data normalization and panel-local navigation are separate stages,
+7. panel navigation should usually not force normalization rebuild or bulk data reupload,
+8. compute-derived resources are frame-local by default unless persistence is declared explicitly,
+9. legends and colorbars may aggregate only semantically identical mappings unless sharing is
+   configured explicitly,
+10. capability adaptation must be explicit and deterministic rather than implicit or backend-shaped.
+
+
 ## Documents
 
 - `REQUIREMENTS.md`: what the scene layer needs from DRP2 and the runtime
