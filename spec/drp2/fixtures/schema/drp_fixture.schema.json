@@ -101,11 +101,9 @@
         "phase": {
           "type": "string",
           "enum": [
-            "decode",
             "schema_validation",
             "semantic_validation",
-            "capability_validation",
-            "execution"
+            "capability_validation"
           ]
         },
         "code": {
@@ -114,12 +112,6 @@
         "command_index": {
           "type": "integer",
           "minimum": 0
-        },
-        "readback_hash": {
-          "type": "string"
-        },
-        "resource_metadata": {
-          "type": "object"
         }
       },
       "required": [
@@ -176,13 +168,67 @@
         }
       },
       "else": {
-        "properties": {
-          "commands": {
-            "items": {
-              "$ref": "../../schema/drp_command.json"
+        "allOf": [
+          {
+            "properties": {
+              "commands": {
+                "items": {
+                  "$ref": "../../schema/drp_command.json"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "expected": {
+                  "properties": {
+                    "outcome": {
+                      "const": "success"
+                    }
+                  },
+                  "required": [
+                    "outcome"
+                  ]
+                }
+              },
+              "required": [
+                "expected"
+              ]
+            },
+            "then": {
+              "properties": {
+                "commands": {
+                  "minItems": 2,
+                  "prefixItems": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "cmd": {
+                          "const": "HelloRenderer"
+                        }
+                      },
+                      "required": [
+                        "cmd"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "cmd": {
+                          "const": "RendererHelloReply"
+                        }
+                      },
+                      "required": [
+                        "cmd"
+                      ]
+                    }
+                  ]
+                }
+              }
             }
           }
-        }
+        ]
       }
     }
   ],

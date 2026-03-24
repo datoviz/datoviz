@@ -90,6 +90,7 @@ int main(int argc, char** argv)
     else
     {
         TEST_SIMPLE(test_vklite_commands_1);
+        TEST_SIMPLE(test_vklite_commands_destroy_without_recording);
         TEST_SIMPLE(test_vklite_sampler_1);
         TEST_SIMPLE(test_vklite_shader_1);
         TEST_SIMPLE(test_vklite_slots_1);

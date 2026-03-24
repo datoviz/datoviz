@@ -1,0 +1,55 @@
+{
+  "name": "invalid_set_stencil_reference_in_compute_pass",
+  "description": "SetStencilReference targets an open compute pass.",
+  "reason": "SetStencilReference is a render-pass-only state command and has no valid meaning in a compute pass.",
+  "fix": "Use SetStencilReference only inside an open render pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "render_state",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "SetStencilReference",
+      "pass_id": 2,
+      "reference": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_PASS_MISMATCH",
+    "command_index": 4
+  }
+}

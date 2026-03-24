@@ -76,10 +76,29 @@
             "then": {
               "properties": {
                 "resource_kind": {
+                  "const": "buffer"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "binding_type": {
                   "enum": [
-                    "buffer",
-                    "texture"
+                    "sampled_texture",
+                    "storage_texture"
                   ]
+                }
+              },
+              "required": [
+                "binding_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "resource_kind": {
+                  "const": "texture"
                 }
               }
             }

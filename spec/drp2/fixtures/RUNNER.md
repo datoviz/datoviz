@@ -44,8 +44,8 @@ Required runner behavior:
 
 1. validate the fixture envelope,
 2. validate every command object against the active DRP command schema,
-3. run decode, semantic validation, capability checks, and execution only as far as the fixture
-   contract currently requires,
+3. run semantic validation and capability checks only as far as the active fixture contract
+   currently requires,
 4. report success only if no earlier phase fails.
 
 
@@ -60,7 +60,7 @@ Required runner behavior:
 
 1. validate the fixture envelope,
 2. validate every command object against the active DRP command schema,
-3. continue into the expected validation or execution phase,
+3. continue into the expected active validation phase,
 4. report success only if the actual primary failure matches the fixture expectation.
 
 
@@ -76,7 +76,7 @@ Required runner behavior:
 1. validate the fixture envelope,
 2. allow the embedded `commands` payload to be invalid against the active DRP command schema,
 3. stop once schema validation of the command payload fails,
-4. do not continue to semantic validation or execution.
+4. do not continue to semantic validation or capability validation.
 
 
 ## Required Execution Pipeline
@@ -84,18 +84,16 @@ Required runner behavior:
 For each fixture, the runner should model these phases in order:
 
 1. fixture envelope validation,
-2. command decode,
-3. command schema validation,
-4. semantic validation,
-5. capability validation,
-6. execution
+2. command schema validation,
+3. semantic validation,
+4. capability validation
 
 Rules:
 
 1. the earliest deterministic failure wins,
 2. once a fixture has failed in one phase, later phases must not replace that result,
-3. a runner may internally combine decode and schema setup steps, but the reported phase must still
-   map to the contract phase names,
+3. decode and execution remain future extension points rather than active conformance phases for the
+   current runner contract,
 4. fixture-envelope failure is a runner or corpus-authoring problem, not a DRP command-stream result
    and should not be reported as a DRP command phase result.
 

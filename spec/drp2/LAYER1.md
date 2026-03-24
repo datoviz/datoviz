@@ -112,7 +112,7 @@ At a minimum, `2.0` includes:
 
 1. Every resource has an explicit logical id.
 2. Resource usage must be declared at creation time.
-3. Upload and copy commands must obey documented range, layout, and alignment rules.
+3. Upload and copy commands must obey documented range and layout rules.
 4. Texture formats and shader formats are validated against the capability model.
 5. The public contract describes logical resources, not allocation strategy.
 

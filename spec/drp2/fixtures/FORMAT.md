@@ -98,13 +98,16 @@ Ordered list of DRP2 command objects.
 Rules:
 
 1. command indexing is zero-based,
-2. every active fixture stream must start with `HelloRenderer` followed by `RendererHelloReply`,
-3. for positive fixtures and semantic negatives, command objects must use the active DRP2 `2.0`
+2. every positive active fixture stream must start with `HelloRenderer` followed by
+   `RendererHelloReply`,
+3. semantic negatives that intentionally test handshake establishment may violate that happy-path
+   prefix and should continue to fail in semantic validation rather than fixture-envelope validation,
+4. for positive fixtures and semantic negatives, command objects must use the active DRP2 `2.0`
    field names,
-4. schema-negative fixtures may intentionally include command objects that fail the active command
+5. schema-negative fixtures may intentionally include command objects that fail the active command
    schema,
-5. deferred command names and deferred schema shapes must not appear in the first `2.0` corpus,
-6. command semantics are defined by `COMMANDS.md`, `LIFETIMES.md`, and the active schemas.
+6. deferred command names and deferred schema shapes must not appear in the first `2.0` corpus,
+7. command semantics are defined by `COMMANDS.md`, `LIFETIMES.md`, and the active schemas.
 
 
 ### `expected`
@@ -123,9 +126,7 @@ Negative fixtures must also declare:
 
 Positive fixtures may additionally declare:
 
-1. `expected.readback_hash`
-2. `expected.resource_metadata`
-3. other deterministic success outputs once the positive corpus is frozen
+1. other deterministic success outputs once the positive corpus is frozen
 
 
 ## Expected Outcome Semantics
@@ -136,11 +137,9 @@ Use:
 
 1. `expected.outcome = "error"`
 2. `expected.phase` as one of:
-   - `decode`
    - `schema_validation`
    - `semantic_validation`
    - `capability_validation`
-   - `execution`
 3. `expected.code` as a symbolic error code from `ERRORS.md`
 4. `expected.command_index` as the zero-based index of the primary failing command when the failure
    is attributable to a single command
@@ -161,7 +160,9 @@ Use:
 
 1. `expected.outcome = "success"`
 
-Positive fixtures may omit execution-specific details until the first positive corpus is frozen.
+Positive fixtures currently express only pass/fail at the active fixture-contract level.
+Deterministic success outputs such as readback hashes remain deferred until the runner implements
+them explicitly.
 
 
 ## Human Metadata

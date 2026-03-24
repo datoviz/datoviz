@@ -87,8 +87,8 @@ Use the most specific error code that matches the contract-visible failure.
 3. use `DRP2_ERR_DUPLICATE_ID` when a creation command reuses an already-used id,
 4. use `DRP2_ERR_WRONG_OBJECT_TYPE` when the id exists and is live but belongs to the wrong object
    kind,
-5. for typed bind-group entries, prefer `DRP2_ERR_WRONG_OBJECT_TYPE` when `binding_type` and
-   `resource_kind` are structurally incompatible.
+5. for typed bind-group entries, a structural `binding_type` versus `resource_kind` mismatch should
+   fail during schema validation before semantic code selection is considered.
 
 
 ### State Versus Usage
@@ -125,7 +125,8 @@ Use the most specific error code that matches the contract-visible failure.
 1. use `DRP2_ERR_OUT_OF_RANGE` when numeric bounds are exceeded after the command shape is otherwise
    valid,
 2. use `DRP2_ERR_LAYOUT` when the memory-layout description itself is invalid or inconsistent,
-3. use `DRP2_ERR_ALIGNMENT` when the only failing condition is an alignment requirement,
+3. `DRP2_ERR_ALIGNMENT` remains reserved but is not currently exercised by the active `2.0`
+   executable contract,
 4. prefer `DRP2_ERR_OUT_OF_RANGE` for examples such as:
    - `offset + size` exceeding buffer bounds
    - a texture write region exceeding the destination subresource extent
@@ -153,5 +154,5 @@ The first fixture set should include negatives for:
 5. incompatible pipeline in a pass
 6. invalid binding layout
 7. unsupported format or feature
-8. invalid copy ranges or alignment
+8. invalid copy ranges or layout metadata
 9. schema-shape failures such as missing discriminators or missing required fields

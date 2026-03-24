@@ -55,7 +55,7 @@ The first negative corpus should stay intentionally small and cover the core val
 27. indexed draw missing an index-buffer binding,
 28. bind group set before any pipeline is bound,
 29. destroying a bind group still referenced by recorded work,
-30. bind-group entry with incompatible resource kind,
+30. bind-group entry with structurally incompatible resource kind,
 31. bind-group entry with incompatible resource usage bits,
 32. bind-group entries that do not match the declared layout,
 33. bind group bound into a pipeline slot expecting a different layout,

@@ -60,6 +60,17 @@ def test_drp2_fixture_runner_can_filter_error_fixtures() -> None:
     assert all(result.passed for result in results)
 
 
+def test_drp2_fixture_runner_can_filter_render_state_negatives() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['render_state'])
+    results = runner.run_fixtures(fixtures)
+
+    assert len(results) == 4
+    assert all(result.passed for result in results)
+    assert all(result.actual_phase == 'semantic_validation' for result in results)
+    assert all(result.actual_code == 'DRP2_ERR_PASS_MISMATCH' for result in results)
+
+
 def test_drp2_fixture_runner_can_filter_pipeline_prerequisite_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['pipeline'])
@@ -317,7 +328,10 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
 
     assert len(results) == 13
     assert all(result.passed for result in results)
-    assert all(result.actual_phase == 'semantic_validation' for result in results)
+    assert {result.actual_phase for result in results} == {
+        'schema_validation',
+        'semantic_validation',
+    }
 
 
 def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_kind() -> None:
@@ -327,8 +341,8 @@ def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_kind() -> None:
 
     assert result.fixture_name == 'invalid_bind_group_wrong_resource_kind'
     assert result.passed is True
-    assert result.actual_phase == 'semantic_validation'
-    assert result.actual_code == 'DRP2_ERR_WRONG_OBJECT_TYPE'
+    assert result.actual_phase == 'schema_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_ARGUMENT'
     assert result.actual_command_index == 4
 
 
@@ -341,6 +355,42 @@ def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_usage() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 4
+
+
+def test_drp2_fixture_runner_rejects_set_scissor_in_compute_pass() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_set_scissor_in_compute_pass.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_scissor_in_compute_pass'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_PASS_MISMATCH'
+    assert result.actual_command_index == 4
+
+
+def test_drp2_fixture_runner_rejects_set_blend_constant_in_compute_pass() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_set_blend_constant_in_compute_pass.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_blend_constant_in_compute_pass'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_PASS_MISMATCH'
+    assert result.actual_command_index == 4
+
+
+def test_drp2_fixture_runner_rejects_set_stencil_reference_in_compute_pass() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_set_stencil_reference_in_compute_pass.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_stencil_reference_in_compute_pass'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_PASS_MISMATCH'
     assert result.actual_command_index == 4
 
 

@@ -1,0 +1,58 @@
+{
+  "name": "invalid_set_scissor_in_compute_pass",
+  "description": "SetScissor targets an open compute pass.",
+  "reason": "SetScissor is a render-pass-only state command and has no valid meaning in a compute pass.",
+  "fix": "Use SetScissor only inside an open render pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "render_state",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "SetScissor",
+      "pass_id": 2,
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 64
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_PASS_MISMATCH",
+    "command_index": 4
+  }
+}

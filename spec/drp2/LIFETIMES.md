@@ -142,8 +142,8 @@ Rules:
 
 Validation consequences:
 
-1. a bind-group entry whose `binding_type` is incompatible with `resource_kind` should fail with
-   `DRP2_ERR_WRONG_OBJECT_TYPE`,
+1. a bind-group entry whose `binding_type` is incompatible with `resource_kind` should fail during
+   schema validation before semantic code selection is considered,
 2. a bind-group entry whose referenced resource lacks the usage bits implied by `binding_type` should
    fail with `DRP2_ERR_USAGE`,
 3. a bind group whose entries do not exactly match its declared bind-group layout should fail with

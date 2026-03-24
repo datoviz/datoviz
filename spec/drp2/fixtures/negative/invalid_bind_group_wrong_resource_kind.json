@@ -71,8 +71,8 @@
   ],
   "expected": {
     "outcome": "error",
-    "phase": "semantic_validation",
-    "code": "DRP2_ERR_WRONG_OBJECT_TYPE",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
     "command_index": 4
   }
 }

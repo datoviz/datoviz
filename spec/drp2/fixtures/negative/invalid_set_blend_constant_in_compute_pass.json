@@ -1,0 +1,60 @@
+{
+  "name": "invalid_set_blend_constant_in_compute_pass",
+  "description": "SetBlendConstant targets an open compute pass.",
+  "reason": "SetBlendConstant is a render-pass-only state command and has no valid meaning in a compute pass.",
+  "fix": "Use SetBlendConstant only inside an open render pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "render_state",
+    "compute_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "SetBlendConstant",
+      "pass_id": 2,
+      "color": {
+        "r": 1.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 1.0
+      }
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_PASS_MISMATCH",
+    "command_index": 4
+  }
+}
