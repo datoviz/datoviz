@@ -96,4 +96,6 @@ This example checks that:
 1. grouped resources behave correctly,
 2. axes are semantic scene objects rather than a primitive family,
 3. data normalization stays separate from panzoom,
-4. panzoom can invalidate axis layout without invalidating all visual data.
+4. panzoom can invalidate axis layout without invalidating all visual data,
+5. axis-derived uploads remain scoped to plan-visible dirty resources rather than ad hoc execution
+   work.

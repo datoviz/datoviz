@@ -75,4 +75,5 @@ This example checks that:
 1. `point` remains distinct from `pixel`,
 2. data normalization is separate from panzoom,
 3. one family can reuse normalized data across many panzoom updates,
-4. the minimal `FramePlan` stays simple.
+4. the minimal `FramePlan` stays simple,
+5. uploads appear inside the plan rather than through a separate execution-time path.

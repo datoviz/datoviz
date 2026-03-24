@@ -13,7 +13,8 @@ annotations, and one consolidated explanatory object.
 5. one `LinkedPanelsController` coordinating crosshair and probe behavior,
 6. one shared probe annotation state mirrored across both panels,
 7. one consolidated scene-shared colorbar attached to the overall two-panel layout,
-8. picking and readback enabled for hover probe updates.
+8. picking and readback enabled for hover probe updates,
+9. latest-request-wins hover behavior per source panel.
 
 
 ## Family And Variant
@@ -45,6 +46,13 @@ Scene-facing resources:
 8. panel-local derived annotation resources for crosshair guides and probe labels,
 9. one shared derived colorbar resource set for ramp, ticks, and labels.
 
+Logical shared-state requirements:
+
+1. one semantic scalar mapping identity shared by both panels and by the consolidated colorbar,
+2. one current hover `request_id` per panel,
+3. scene or panel generation data used to reject stale probe results,
+4. scene-level probe state that is updated only from current accepted pick results.
+
 
 ## Transform Pipeline
 
@@ -65,9 +73,10 @@ For linked probe annotations:
 
 1. pointer interaction begins in one panel,
 2. picking identifies the relevant scene position or item identity,
-3. probe state is stored at scene level,
-4. crosshair guides and probe labels are derived separately for each panel,
-5. the shared colorbar remains viewport-relative and does not follow panzoom.
+3. the request is tagged with panel identity plus current request and generation state,
+4. probe state is stored at scene level only after a current result is accepted,
+5. crosshair guides and probe labels are derived separately for each panel,
+6. the shared colorbar remains viewport-relative and does not follow panzoom.
 
 The important split is:
 
@@ -75,6 +84,13 @@ The important split is:
 2. panel navigation remains panel-local,
 3. probe annotation placement is panel-local,
 4. colorbar explanation is scene-shared but layout-aware.
+
+The important freshness and aggregation rules are:
+
+1. hover probe results from one panel must not overwrite newer probe state from that same panel,
+2. linked updates in the other panel must derive from the accepted current scene-level probe state,
+3. the consolidated colorbar is valid only because both panels share the same semantic scalar mapping
+   identity.
 
 
 ## FramePlan Shape
@@ -96,12 +112,21 @@ Typical frame during hover or crosshair motion:
 4. no rebuild of the shared image resource,
 5. no colorbar rebuild unless the scalar mapping changed.
 
+Acceptance rule for the hover result:
+
+1. apply it only if the result matches the current `request_id` for the source panel,
+2. discard it if the source panel has already issued a newer hover request,
+3. discard it if the relevant scene or panel generation changed enough to make the result stale.
+
 Typical frame after colormap-domain change:
 
 1. optional update of the image style or parameter resources,
 2. colorbar tick and ramp regeneration,
 3. possible redraw of both panels,
 4. no mandatory change to the underlying scalar field resource.
+
+The shared colorbar should remain aggregated only while the semantic scalar mapping identity remains
+the same across the two panel views.
 
 
 ## DRP2 Categories Implied
@@ -123,4 +148,6 @@ This example checks that:
 3. picking and probe semantics survive a multi-panel routing path,
 4. a consolidated colorbar is treated as an annotation-side semantic object rather than a visual,
 5. panel-local transforms do not force regeneration of shared explanatory objects,
-6. the scene can keep shared semantics and panel-local layout separate at the same time.
+6. the scene can keep shared semantics and panel-local layout separate at the same time,
+7. stale hover results are safely dropped,
+8. shared colorbar aggregation depends on stable mapping identity rather than visual resemblance.

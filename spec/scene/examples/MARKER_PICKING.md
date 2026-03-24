@@ -9,7 +9,8 @@ This example instantiates a richer point-like family with a picking path.
 2. one 2D panel,
 3. one `marker` visual,
 4. picking enabled for the panel,
-5. one pointer-driven interaction loop.
+5. one pointer-driven interaction loop,
+6. latest-request-wins hover behavior.
 
 
 ## Family And Variant
@@ -35,6 +36,12 @@ Scene-facing resources:
 4. panel-local picking `DerivedField`,
 5. picking `ReadbackTarget`.
 
+Logical picking state:
+
+1. one current hover `request_id` for the panel,
+2. one scene or panel generation used to reject stale readback,
+3. scene-level routing from pick result back to marker item identity.
+
 
 ## Transform Pipeline
 
@@ -54,6 +61,13 @@ Typical frame without hover change:
 3. one `RenderNode` for the picking pass when picking is active,
 4. one `ReadbackNode` for the picked pixel when needed.
 
+Typical frame during fast pointer motion:
+
+1. one latest hover pick request remains current for the panel,
+2. older pending hover requests may be superseded,
+3. a `ReadbackNode` result is applied only if its `request_id` and generation still match current
+   panel state.
+
 
 ## DRP2 Categories Implied
 
@@ -71,4 +85,5 @@ This example checks that:
 1. `marker` remains distinct from `point`,
 2. picking is modeled semantically and not as backend leakage,
 3. visual identity and item identity survive the readback path,
-4. family-level style semantics do not require a separate family split.
+4. stale hover results can be discarded without corrupting scene state,
+5. family-level style semantics do not require a separate family split.

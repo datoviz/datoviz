@@ -56,6 +56,13 @@ Typical frame:
 2. optional `ComputeNode` only if a future slice mode needs it,
 3. one `RenderNode` for the visible image-family contribution.
 
+If a compute-assisted slice path exists:
+
+1. the compute output should be treated as frame-local by default,
+2. persistence across frames should require an explicitly declared derived cache,
+3. the image-family semantics should remain the same whether the slice path is compute-assisted or
+   not.
+
 
 ## DRP2 Categories Implied
 
@@ -72,4 +79,5 @@ This example checks that:
 1. `slice` is not promoted to a separate family,
 2. `image` can host slice-like semantics cleanly,
 3. volumetric sampling source and image-family placement remain separate concepts,
-4. camera transforms stay panel-local.
+4. camera transforms stay panel-local,
+5. optional compute assistance does not implicitly create authoritative persistent scene data.

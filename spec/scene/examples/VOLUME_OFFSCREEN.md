@@ -55,6 +55,8 @@ Typical export frame:
 If a future volume variant requires preprocessing:
 
 1. a `ComputeNode` may appear before the render node.
+2. any compute-produced intermediate should be frame-local by default unless the scene explicitly
+   declares a reusable derived cache.
 
 
 ## DRP2 Categories Implied
@@ -73,4 +75,5 @@ This example checks that:
 1. offscreen rendering remains independent from window state,
 2. `volume` semantics stay distinct from `image`,
 3. readback is modeled explicitly in `FramePlan`,
-4. deterministic export fits the same family and transform model as onscreen rendering.
+4. deterministic export fits the same family and transform model as onscreen rendering,
+5. compute-assisted preprocessing does not silently become persistent authoritative scene state.
