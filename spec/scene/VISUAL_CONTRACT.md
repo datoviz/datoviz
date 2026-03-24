@@ -25,9 +25,10 @@ It sits:
 
 ## Terminology Baseline
 
-The future scene spec should keep the broad `v0.3` idea of a visual.
+The future scene spec should keep the broad `v0.3` idea of a visual while following the preferred
+v0.4 family direction in `VISUAL_FAMILIES.md`.
 
-Concretely, `v0.3` already uses visual-family names such as:
+The current preferred first-class family set is:
 
 1. `basic`
 2. `pixel`
@@ -36,22 +37,13 @@ Concretely, `v0.3` already uses visual-family names such as:
 5. `segment`
 6. `path`
 7. `glyph`
-8. `monoglyph`
-9. `image`
-10. `wiggle`
-11. `mesh`
-12. `sphere`
-13. `volume`
-14. `slice`
+8. `image`
+9. `mesh`
+10. `sphere`
+11. `volume`
 
-The v0.4 scene layer should continue to use `visual` as the top-level concept for these kinds of
-renderables.
-
-However:
-
-1. `v0.3` naming is informative, not definitive,
-2. v0.4 may merge, split, rename, or remove families when that improves architecture,
-3. backward compatibility with the `v0.3` public surface is not a requirement.
+Historical `v0.3` names such as `monoglyph`, `wiggle`, and `slice` remain informative background
+vocabulary, but they should not be read here as the preferred v0.4 top-level taxonomy.
 
 
 ## Core Rule
@@ -428,15 +420,7 @@ At minimum:
 The future public scene API may expose concrete visual types such as points, lines, meshes, images,
 volumes, or glyph-based visuals.
 
-The local `v0.3` vocabulary is a good starting point here:
-
-1. `point` and `pixel` should likely remain distinct only if they still represent meaningfully
-   different semantics in planning and interaction,
-2. `glyph` and `monoglyph` may or may not remain separate public families,
-3. `volume` and `slice` should remain closely related,
-4. `basic` may remain as a low-level escape hatch or disappear in favor of more explicit families.
-
-The current preferred direction from the scene spec is now:
+The current preferred direction from the scene spec is:
 
 1. keep `basic`,
 2. keep `pixel` distinct from `point`,
@@ -445,7 +429,8 @@ The current preferred direction from the scene spec is now:
 5. treat `slice` as an `image`-family mode rather than a top-level family,
 6. keep `sphere` as a first-class family with multiple possible rendering variants.
 
-This document does not freeze that taxonomy.
+This document does not freeze final public naming, but it should be read as aligned with the current
+preferred taxonomy above rather than as reopening older family options by default.
 
 For now, the only stable requirement is that every future public visual type must satisfy the contract
 defined here.

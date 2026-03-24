@@ -26,6 +26,25 @@ The relationship is:
 3. DRP2 emission is a pure translation of the `FramePlan` plus runtime capabilities.
 
 
+## Plan Scope
+
+The current spec direction is that one scene-level `FramePlan` is produced for each frame build.
+
+That plan may still contain:
+
+1. panel-local targets,
+2. panel-local render or picking nodes,
+3. panel-local ordering constraints,
+4. optional panel-local derived resources,
+5. scene-global nodes that coordinate shared resources or multi-panel composition.
+
+Panels therefore contribute subplans, node groups, or target configuration inside one scene-owned
+plan.
+
+The scene should not build several unrelated top-level plans for one frame and leave cross-panel
+ordering implicit.
+
+
 ## Goals
 
 The first `FramePlan` IR should be able to express:
@@ -80,8 +99,10 @@ Each plan should carry enough metadata for debugging and deterministic tests:
 1. frame index,
 2. scene revision or equivalent state-generation number,
 3. capability snapshot identifier or summary,
-4. target panel set,
-5. planning flags such as offscreen-only or picking-enabled.
+4. validation scope or validation generation summary,
+5. adaptation outcome summary or identifier,
+6. target panel set,
+7. planning flags such as offscreen-only or picking-enabled.
 
 
 ## Logical Targets
@@ -313,7 +334,8 @@ These are scene-level diagnostics and should remain free of backend leakage.
 `FramePlan` should be derived from the existing scene object model as follows:
 
 1. `Scene` contributes global shared resources and scheduling policy,
-2. `Panel` contributes target configuration, camera state, and panel-local visual membership,
+2. `Panel` contributes target configuration, camera state, panel-local visual membership, and any
+   panel-local node grouping within the scene-level plan,
 3. `Visual` contributes draw items, stage participation, and resource requirements,
 4. `Resource` contributes creation intent, dirty ranges, and sharing information,
 5. `Animation` and `Controller` contribute state changes before planning begins.

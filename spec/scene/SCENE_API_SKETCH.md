@@ -32,6 +32,38 @@ This sketch sits:
 It is a design aid, not a mandate for names or signatures.
 
 
+## Current Preferred Direction
+
+Until a narrower public API proposal replaces this sketch, the preferred interpretation should be:
+
+1. one scene-level `FramePlan` is built per frame,
+2. panels contribute panel-local state, targets, and node groups inside that plan,
+3. validation runs after invalidation resolution and before planning,
+4. capability adaptation runs after validation and before planning,
+5. family identity should follow the preferred v0.4 set in `VISUAL_FAMILIES.md`,
+6. generic scene-level constructors with typed descriptors are preferred over a large family of
+   unrelated creation entry points,
+7. explicit style blocks and explicit mapping identity should be treated as the default sketch
+   direction unless a later API pass replaces them.
+
+
+## Reading Guide
+
+This sketch is not the authoritative owner of every rule it touches.
+
+When several scene documents overlap, read them with the following priority:
+
+1. `VISUAL_FAMILIES.md` owns preferred family taxonomy,
+2. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` own family-level contract details,
+3. `RESOURCE_MODEL.md` owns logical resource classes and dirty-shape expectations,
+4. `TRANSFORM_PIPELINE.md` owns normalization versus panel-transform boundaries,
+5. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` own pre-planning rejection and fallback
+   rules,
+6. `INVALIDATION_AND_CACHING.md` owns dirty-scope semantics,
+7. `FRAME_PLAN_IR.md` owns the producer-side execution artifact,
+8. `RUNTIME_BOUNDARY.md` owns the scene-to-runtime service contract.
+
+
 ## Core Goals
 
 The scene API should make it easy to express scientific visuals without exposing:
@@ -145,6 +177,10 @@ It should also be the natural owner of:
 2. pending scene-level pick routing state,
 3. capability snapshots or the active adapted policy state.
 
+If the final public API introduces a separate runtime/session handle, that handle should remain below
+the scene semantic layer and should follow `RUNTIME_BOUNDARY.md` rather than changing the ownership
+model described here.
+
 Conceptually, the user should be able to do things like:
 
 ```text
@@ -177,6 +213,9 @@ The important separation is:
 2. panel transforms are panel-local,
 3. panel-local derived resources are allowed when planning requires them,
 4. panel-local explanatory objects may coexist with scene-shared ones.
+
+Panels should contribute panel-local planning inputs, but they should not each own a separate
+top-level `FramePlan`.
 
 
 ## Visual Creation
@@ -640,6 +679,20 @@ The important rule is:
 The sketch should also leave room for explicit capability-dirty or adaptation-dirty consequences when
 the active capability set changes.
 
+The preferred frame-build semantics are:
+
+1. invalidation is resolved first,
+2. validation runs on the affected scope,
+3. capability adaptation chooses an explicit outcome,
+4. one scene-level `FramePlan` is then built from the validated and adapted scene state.
+
+The normative behavior for those stages lives in:
+
+1. `SCENE_VALIDATION.md`,
+2. `CAPABILITY_ADAPTATION.md`,
+3. `INVALIDATION_AND_CACHING.md`,
+4. `FRAME_PLAN_IR.md`.
+
 
 ## Invalidation Surface
 
@@ -688,6 +741,15 @@ scene_build_frame(scene)
 ```
 
 The final runtime may fuse some of these, but the separation is useful at the spec level.
+
+`scene_build_frame(scene)` should be read as a compound scene operation that may perform validation,
+capability adaptation, and plan construction before any runtime submission occurs.
+
+If the final API separates build and submit more explicitly, this sketch should still preserve:
+
+1. state mutation before build,
+2. validation and adaptation before plan finalization,
+3. runtime submission after the plan exists.
 
 
 ## Planning Boundary
@@ -803,9 +865,9 @@ The scene layer is then responsible for:
 3. tracking one current hover request per panel and dropping stale hover results,
 4. planning any picking participation,
 5. constructing the `FramePlan`,
-5. preserving the shared colorbar only while the mapping identity remains semantically identical
+6. preserving the shared colorbar only while the mapping identity remains semantically identical
    across both panels,
-6. emitting DRP2 through the runtime-facing boundary.
+7. emitting DRP2 through the runtime-facing boundary.
 
 
 ## Example: Grouped Paths
@@ -849,7 +911,7 @@ level.
 
 ## API Shape Preferences
 
-The current spec pressure suggests the following preferences:
+The current spec pressure suggests the following preferred defaults:
 
 1. prefer family-aware creation over one giant untyped visual constructor,
 2. prefer semantic resource roles over slot numbers,
@@ -860,18 +922,28 @@ The current spec pressure suggests the following preferences:
 7. prefer transient derived resources by default unless persistence is declared explicitly.
 
 
-## Open Choices
+## Deferred API Choices
 
-The sketch leaves several API-shape choices intentionally open:
+The sketch still leaves several API-shape choices open, but the current preferred default is listed
+first in each case:
 
-1. whether family creation uses one generic constructor or one constructor per family,
-2. whether style data lives mostly in typed setters or typed style blocks,
-3. whether grouped data is one object or an item table plus a grouping resource,
-4. whether pick requests are synchronous, asynchronous, or both,
-5. how much of validation is eager versus deferred to frame build,
-6. whether mapping identity is always exposed as a first-class object or may sometimes be derived.
+1. use generic scene-level constructors with typed descriptors, though family-specific helpers may be
+   layered on later,
+2. use explicit style blocks by default, though typed property setters may wrap them,
+3. use explicit grouped-resource concepts by default, whether that is one grouped object or a table
+   plus grouping descriptor internally,
+4. support asynchronous pick handling by default, while leaving room for synchronous helpers,
+5. keep eager validation for local semantic checks and allow frame-build validation for plan-shaped
+   checks,
+6. expose mapping identity explicitly by default, while allowing some derived convenience surfaces.
 
 These choices matter, but they do not change the main architecture.
+
+The remaining choice surface should be read narrowly:
+
+1. these are API-shape choices,
+2. they are not intended to reopen the already-settled plan-scope, lifecycle-ordering, or
+   runtime-boundary decisions established elsewhere in the scene spec.
 
 
 ## Recommended Next Step

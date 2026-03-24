@@ -25,19 +25,25 @@ It should:
 4. Scene must support resource updates without forcing whole-scene rebuilds each frame.
 5. Scene must support picking workflows.
 6. Scene must support compute-assisted workflows if compute remains mandatory in DRP2 v1.
+7. Scene must validate authored intent before planning execution work.
+8. Scene must apply capability adaptation before planning rather than relying on backend best-effort
+   fallback.
+9. Scene must build one scene-level `FramePlan` per frame, even when the plan contains panel-local
+   nodes or targets.
 
 
 ## Required Runtime Services
 
 The scene layer should depend on a small runtime-facing service surface:
 
-1. capability query,
-2. error reporting,
+1. capability snapshot query,
+2. error and diagnostics reporting,
 3. shader module ingestion,
 4. resource creation and update,
-5. command-stream submission,
-6. offscreen target creation and readback,
-7. optional frame timing and debug hooks later.
+5. command-stream submission for already-planned work,
+6. offscreen target creation and typed readback,
+7. completion routing for picking and export results,
+8. optional frame timing and debug hooks later.
 
 
 ## What Scene Should Own
@@ -47,9 +53,10 @@ The scene layer should depend on a small runtime-facing service surface:
 3. visuals and materials,
 4. CPU-side resources and dirty tracking,
 5. transform logic,
-6. framegraph or equivalent render-work planning,
-7. picking interpretation,
-8. animation and scheduling logic.
+6. validation and capability adaptation,
+7. framegraph or equivalent render-work planning,
+8. picking interpretation,
+9. animation and scheduling logic.
 
 
 ## What Scene Should Not Own

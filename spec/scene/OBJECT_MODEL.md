@@ -34,7 +34,7 @@ A panel is a logical viewport region with:
 2. a visual set,
 3. a local interaction state,
 4. one or more rendering targets,
-5. a panel-scoped frame plan.
+5. panel-local configuration that contributes to the scene-level `FramePlan`.
 
 Panels may be onscreen, offscreen, or virtual for composition.
 
@@ -43,8 +43,10 @@ Panels may be onscreen, offscreen, or virtual for composition.
 
 A visual is a high-level scientific renderable.
 
-The broad concept should stay consistent with the local `v0.3` scene stack, where a visual is a
-named renderable family such as:
+The broad concept should stay consistent with the local `v0.3` scene stack, but the current v0.4
+direction should follow `VISUAL_FAMILIES.md`.
+
+The current preferred first-class families are:
 
 1. `basic`
 2. `pixel`
@@ -53,16 +55,13 @@ named renderable family such as:
 5. `segment`
 6. `path`
 7. `glyph`
-8. `monoglyph`
-9. `image`
-10. `wiggle`
-11. `mesh`
-12. `sphere`
-13. `volume`
-14. `slice`
+8. `image`
+9. `mesh`
+10. `sphere`
+11. `volume`
 
-Those names are useful vocabulary for the future scene layer, but they should not be treated as a
-frozen v0.4 API taxonomy.
+Historical `v0.3` names such as `monoglyph`, `wiggle`, and `slice` remain useful background
+vocabulary, but they should not be read here as the preferred v0.4 family set.
 
 Minimum visual responsibilities:
 
@@ -117,6 +116,9 @@ The scene layer clearly needs a structure that:
 4. partitions visuals across stages.
 
 But it is too early to hard-freeze a full public render-graph API.
+
+The current spec direction is that one scene-level `FramePlan` is built per frame, while panels may
+contribute panel-local targets, nodes, and ordering constraints inside that one plan.
 
 
 ## Animation

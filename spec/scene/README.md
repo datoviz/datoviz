@@ -22,7 +22,8 @@ The scene layer should remain pure high-level logic:
 The current scene spec should be read with the following invariants in mind:
 
 1. scene owns high-level semantics and authored state, while the runtime owns execution details,
-2. `FramePlan` is the canonical producer-side execution artifact,
+2. exactly one scene-level `FramePlan` is the canonical producer-side execution artifact for a frame
+   build, even when it contains panel-local subplans or per-panel nodes,
 3. uploads and lazy materialization work should appear in `FramePlan`, not in a separate execution
    side path,
 4. picking must return scene identity rather than backend identity,
@@ -32,7 +33,9 @@ The current scene spec should be read with the following invariants in mind:
 8. compute-derived resources are frame-local by default unless persistence is declared explicitly,
 9. legends and colorbars may aggregate only semantically identical mappings unless sharing is
    configured explicitly,
-10. capability adaptation must be explicit and deterministic rather than implicit or backend-shaped.
+10. capability adaptation must be explicit and deterministic rather than implicit or backend-shaped,
+11. validation runs after dirty-scope resolution and before planning,
+12. capability adaptation runs after validation and before planning.
 
 
 ## Documents
