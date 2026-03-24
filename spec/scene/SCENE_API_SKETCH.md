@@ -65,6 +65,14 @@ In practice:
 3. the scene layer derives normalized resources and per-frame plans,
 4. the runtime only sees planned work, not high-level scene semantics.
 
+This also implies:
+
+1. setters mutate scene-owned state rather than emitting DRP2 directly,
+2. uploads and lazy materialization belong to planned frame work rather than an execution-time side
+   path,
+3. derived resources are transient by default unless the scene surface declares persistence
+   explicitly.
+
 
 ## Non-Goals
 
@@ -130,6 +138,12 @@ The important semantic operations are:
 7. animations,
 8. scene-global invalidation state,
 9. validation and capability-adaptation policy.
+
+It should also be the natural owner of:
+
+1. shared mapping or scale identity when explanatory objects are shared,
+2. pending scene-level pick routing state,
+3. capability snapshots or the active adapted policy state.
 
 Conceptually, the user should be able to do things like:
 
@@ -294,6 +308,23 @@ field = scene_sampled_field(scene, schema)
 style = scene_style_block(scene, schema)
 ```
 
+The resource surface should also leave room for explicit persistence policy on derived resources.
+
+Conceptually:
+
+```text
+derived = scene_derived_field(scene, {
+    purpose = SLICE_INTERMEDIATE,
+    persistence = TRANSIENT,
+})
+```
+
+The preferred default is:
+
+1. authored resources are authoritative,
+2. derived resources are transient unless declared reusable,
+3. compute-produced outputs do not silently become long-lived scene state.
+
 
 ## Flat And Grouped Data
 
@@ -345,6 +376,14 @@ style_write(style, params)
 ```
 
 Those calls should mutate scene-owned CPU data and mark the correct invalidation scope.
+
+They should not be read as “immediate backend upload” calls.
+
+The intended model is:
+
+1. the call updates scene-owned data,
+2. invalidation is recorded,
+3. the next frame build inserts the required upload or materialization nodes into `FramePlan`.
 
 
 ## Parameter Surface
@@ -412,6 +451,17 @@ colorbar_set_scale(colorbar, scale)
 
 The final API may derive mappings from visual parameters instead of exposing first-class scale
 objects, but the semantic relationship should still be representable.
+
+Whether mappings are explicit objects or derived views, the API sketch should preserve stable mapping
+identity.
+
+That matters because:
+
+1. a shared legend or colorbar should attach to semantic mapping identity rather than visual
+   resemblance,
+2. implicit aggregation is only valid when the mappings are semantically identical,
+3. different meanings should not collapse into one explanatory object merely because they look
+   similar.
 
 
 ## Transform Surface
@@ -503,6 +553,12 @@ colorbar_attach_panels(colorbar, [panel_a, panel_b])
 
 The scene-side API should not force the user to assemble the ramp, tick marks, and labels manually.
 
+The important aggregation rule is:
+
+1. a shared legend or colorbar should only aggregate semantically identical mappings by default,
+2. if aggregation spans several visuals, the shared mapping identity should be explicit or
+   unambiguous from scene state.
+
 
 ## Picking
 
@@ -518,9 +574,29 @@ The API needs to expose:
 Conceptually:
 
 ```text
-pick = panel_pick(panel, x, y)
+pick = panel_pick(panel, {
+    x = x,
+    y = y,
+    kind = HOVER,
+})
 result = scene_pick_result(scene, pick)
 ```
+
+The sketch should assume that a pick request carries enough freshness information to support
+asynchronous result handling safely.
+
+Conceptually, the request should include:
+
+1. stable request identity,
+2. requesting panel identity,
+3. request kind such as hover, click, or query,
+4. scene or panel generation data sufficient to reject stale results.
+
+The default hover rule should be:
+
+1. latest request wins,
+2. stale hover results may be discarded,
+3. click and explicit query requests may choose stronger delivery guarantees.
 
 The final result shape should be able to report:
 
@@ -561,6 +637,9 @@ The important rule is:
 2. unsupported runtime paths should fail or simplify as capability adaptation,
 3. neither should be deferred into backend-specific surprises.
 
+The sketch should also leave room for explicit capability-dirty or adaptation-dirty consequences when
+the active capability set changes.
+
 
 ## Invalidation Surface
 
@@ -574,7 +653,8 @@ The important invalidation scopes are:
 4. `AxisLayoutDirty`
 5. `AnnotationDirty`
 6. `ExplanationLayoutDirty`
-7. `FramePlanDirty`
+7. `CapabilityDirty`
+8. `FramePlanDirty`
 
 Not every API call needs a manual dirty flag, but the model should be explicit enough that the scene
 layer can reason deterministically about what must be rebuilt.
@@ -586,7 +666,8 @@ Examples:
 3. panning far enough may also invalidate axis layout,
 4. moving a linked crosshair may invalidate panel-local annotation layout only,
 5. changing a color scale may invalidate a colorbar without rebuilding unrelated visuals,
-6. toggling picking may invalidate visual variant selection and the plan.
+6. toggling picking may invalidate visual variant selection and the plan,
+7. changing active capabilities may invalidate fallback choice and possibly the plan.
 
 
 ## Redraw Requests
@@ -621,6 +702,13 @@ Instead:
 4. DRP2 emission happens from that plan.
 
 This keeps the scene API declarative and testable.
+
+It also means:
+
+1. pick requests become planned picking work rather than direct backend calls,
+2. upload work is derived into the plan rather than emitted by setters,
+3. capability adaptation should be resolved before or during plan construction, not after backend
+   failure.
 
 
 ## Error Surface
@@ -712,9 +800,12 @@ The scene layer is then responsible for:
 
 1. deriving normalized visual-space positions,
 2. deriving panel-local transforms,
-3. planning any picking participation,
-4. constructing the `FramePlan`,
-5. emitting DRP2 through the runtime-facing boundary.
+3. tracking one current hover request per panel and dropping stale hover results,
+4. planning any picking participation,
+5. constructing the `FramePlan`,
+5. preserving the shared colorbar only while the mapping identity remains semantically identical
+   across both panels,
+6. emitting DRP2 through the runtime-facing boundary.
 
 
 ## Example: Grouped Paths
@@ -764,7 +855,9 @@ The current spec pressure suggests the following preferences:
 2. prefer semantic resource roles over slot numbers,
 3. prefer explicit grouped-resource concepts over anonymous flat buffers,
 4. prefer panel-owned navigation over visual-owned navigation,
-5. prefer explicit invalidation boundaries over hidden backend updates.
+5. prefer explicit invalidation boundaries over hidden backend updates,
+6. prefer explicit mapping identity over implicit explanation aggregation,
+7. prefer transient derived resources by default unless persistence is declared explicitly.
 
 
 ## Open Choices
@@ -775,19 +868,20 @@ The sketch leaves several API-shape choices intentionally open:
 2. whether style data lives mostly in typed setters or typed style blocks,
 3. whether grouped data is one object or an item table plus a grouping resource,
 4. whether pick requests are synchronous, asynchronous, or both,
-5. how much of validation is eager versus deferred to frame build.
+5. how much of validation is eager versus deferred to frame build,
+6. whether mapping identity is always exposed as a first-class object or may sometimes be derived.
 
 These choices matter, but they do not change the main architecture.
 
 
 ## Recommended Next Step
 
-The next spec iteration should define invalidation and caching explicitly.
+The next spec iteration should refine this sketch into a smaller number of preferred construction
+patterns.
 
-This API sketch already depends on that missing document for:
+The main remaining pressure points are:
 
-1. resource update behavior,
-2. axes regeneration thresholds,
-3. redraw scheduling,
-4. `FramePlan` rebuild policy,
-5. cached normalization versus live panel transforms.
+1. how much the final public surface should use generic constructors versus family-specific helpers,
+2. whether scale or mapping identity should usually be explicit or mostly derived,
+3. how pick request and result objects should look in a C-friendly API,
+4. where persistent derived caches deserve explicit scene-facing surface area.
