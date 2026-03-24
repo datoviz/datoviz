@@ -22,6 +22,8 @@ The scene layer should remain pure high-level logic:
 - `REQUIREMENTS.md`: what the scene layer needs from DRP2 and the runtime
 - `OBJECT_MODEL.md`: minimum stable concepts
 - `AXES.md`: scene-side semantic model for axes, ticks, labels, and related annotations
+- `ANNOTATIONS.md`: semantic model for labels, guides, probes, overlays, legends, and callouts
+- `LEGENDS_AND_COLORBARS.md`: semantic model for discrete legends, continuous colorbars, and shared explanatory mappings
 - `SCENE_API_SKETCH.md`: tentative user-facing scene construction surface above planning and DRP2
 - `INVALIDATION_AND_CACHING.md`: rules for dirty scopes, reuse, redraw, uploads, and plan rebuilds
 - `PICKING.md`: scene-side picking, identity round-trip, grouped hits, and readback semantics
@@ -55,13 +57,11 @@ The current scene spec now covers:
 
 The next recommended iterations are:
 
-1. `ANNOTATIONS.md` for legends, labels, guides, probes, overlays, and crosshairs,
-2. `LEGENDS_AND_COLORBARS.md` for data-driven legends and colorbar semantics,
-3. `CAPABILITY_ADAPTATION.md` for fallback and variant-reduction policy,
-4. `SCENE_VALIDATION.md` for scene-level pre-emission validation,
-5. more worked examples, especially multi-panel and annotation-heavy cases,
-6. a refinement pass on `SCENE_API_SKETCH.md`,
-7. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
+1. `SCENE_VALIDATION.md` for scene-level pre-emission validation,
+2. `CAPABILITY_ADAPTATION.md` for fallback and variant-reduction policy,
+3. more worked examples, especially multi-panel and annotation-heavy cases,
+4. a refinement pass on `SCENE_API_SKETCH.md`,
+5. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
    `volume`.
 
 The general rule should remain:
