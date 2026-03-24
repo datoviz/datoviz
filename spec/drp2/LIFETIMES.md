@@ -85,6 +85,13 @@ Rules:
 5. active resource and recording commands are valid only in `ready`,
 6. once the session is `failed`, the stream is not required to recover within the same connection.
 
+Active fixture-runner note:
+
+1. the current executable fixture runner treats streams that omit handshake commands as already
+   negotiated for backward compatibility with the pre-existing corpus,
+2. once a fixture uses `HelloRenderer`, the runner enforces explicit handshake ordering and failed
+   handshake behavior for the remainder of that stream.
+
 
 ## Buffer Lifetime
 

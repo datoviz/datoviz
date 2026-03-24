@@ -169,7 +169,7 @@ Required fields:
 
 - `cmd`: must be `RendererHelloReply`.
 - `version`: protocol version object accepted by the renderer.
-- `status`: handshake outcome.
+- `status`: handshake outcome, currently `ok` or `error`.
 
 Optional fields:
 
@@ -178,8 +178,8 @@ Optional fields:
 
 Semantics:
 
-1. a successful reply completes protocol negotiation,
-2. a failed reply means later commands are invalid until the client reconnects or renegotiates.
+1. `status = ok` completes protocol negotiation,
+2. `status = error` means later commands are invalid until the client reconnects or renegotiates.
 
 
 ### `Error`

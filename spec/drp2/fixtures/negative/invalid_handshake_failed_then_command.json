@@ -1,0 +1,47 @@
+{
+  "name": "invalid_handshake_failed_then_command",
+  "description": "Attempts to create a resource after an explicit handshake reply reports failure.",
+  "reason": "A failed RendererHelloReply transitions the session to failed, and later active commands are invalid within the same connection.",
+  "fix": "Reconnect or renegotiate successfully before sending active DRP2 commands.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "handshake",
+    "session",
+    "version"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      }
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "error"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 2
+  }
+}

@@ -11,7 +11,11 @@
       "$ref": "../common/Version.json"
     },
     "status": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "ok",
+        "error"
+      ]
     },
     "renderer_name": {
       "type": "string"

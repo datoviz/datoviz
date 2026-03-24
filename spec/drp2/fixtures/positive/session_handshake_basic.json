@@ -1,0 +1,37 @@
+{
+  "name": "session_handshake_basic",
+  "description": "Completes a minimal handshake with HelloRenderer followed by a successful RendererHelloReply.",
+  "reason": "A supported major version is requested and the renderer accepts it, so the explicit handshake completes cleanly.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "handshake",
+    "session",
+    "version"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

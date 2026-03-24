@@ -24,6 +24,7 @@ FIXTURES_DIR = ROOT_DIR / 'spec' / 'drp2' / 'fixtures'
 FIXTURE_SCHEMA_PATH = FIXTURES_DIR / 'schema' / 'drp_fixture.schema.json'
 COMMAND_SCHEMA_PATH = ROOT_DIR / 'spec' / 'drp2' / 'schema' / 'drp_command.json'
 FIXTURE_DIRS = ('positive', 'negative', 'negative_schema')
+SUPPORTED_DRP2_MAJOR_VERSION = 2
 
 
 @dataclass
@@ -136,6 +137,10 @@ class DRP2SemanticValidator:
         self.encoders: Dict[int, Dict[str, Any]] = {}
         self.passes: Dict[int, Dict[str, Any]] = {}
         self.command_buffers: Dict[int, Dict[str, Any]] = {}
+        self.handshake_started = False
+        self.handshake_pending = False
+        self.handshake_failed = False
+        self.stream_started_without_handshake = False
 
     def validate(self, commands: Sequence[Dict[str, Any]]) -> None:
         """Validate a full command stream."""
@@ -145,10 +150,51 @@ class DRP2SemanticValidator:
 
     def _validate_command(self, index: int, command: Dict[str, Any]) -> None:
         cmd = command['cmd']
+        if cmd not in ('HelloRenderer', 'RendererHelloReply', 'Error'):
+            if self.handshake_pending or self.handshake_failed:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'command {cmd} is invalid before handshake completion',
+                )
+            if not self.handshake_started:
+                self.stream_started_without_handshake = True
         handler = getattr(self, f'_handle_{cmd}', None)
         if handler is None:
             return
         handler(index, command)
+
+    def _validate_version(self, index: int, version: Dict[str, Any]) -> None:
+        if version['major'] != SUPPORTED_DRP2_MAJOR_VERSION:
+            raise SemanticFailure(
+                'DRP2_ERR_UNSUPPORTED_VERSION',
+                index,
+                f'unsupported DRP2 major version {version["major"]}',
+            )
+
+    def _handle_HelloRenderer(self, index: int, command: Dict[str, Any]) -> None:
+        if self.stream_started_without_handshake or self.handshake_started or self.handshake_failed:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                'HelloRenderer is valid only at the start of a fresh explicit handshake',
+            )
+        self._validate_version(index, command['version'])
+        self.handshake_started = True
+        self.handshake_pending = True
+
+    def _handle_RendererHelloReply(self, index: int, command: Dict[str, Any]) -> None:
+        if not self.handshake_started or not self.handshake_pending:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                'RendererHelloReply requires a pending HelloRenderer handshake',
+            )
+        self._validate_version(index, command['version'])
+        self.handshake_pending = False
+        if command['status'] == 'ok':
+            return
+        self.handshake_failed = True
 
     def _reserve_id(self, index: int, obj_id: int, kind: str, data: Dict[str, Any]) -> None:
         state = self.objects.get(obj_id)

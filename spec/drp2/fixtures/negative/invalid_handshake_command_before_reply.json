@@ -1,0 +1,39 @@
+{
+  "name": "invalid_handshake_command_before_reply",
+  "description": "Issues an active command after HelloRenderer but before RendererHelloReply completes the handshake.",
+  "reason": "Explicit handshake negotiation is still pending, so resource commands are invalid until the reply completes the session transition to ready.",
+  "fix": "Wait for a successful RendererHelloReply before emitting active resource or recording commands.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "handshake",
+    "session",
+    "version"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      }
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 1
+  }
+}

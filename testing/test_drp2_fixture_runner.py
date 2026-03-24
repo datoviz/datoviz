@@ -42,6 +42,15 @@ def test_drp2_fixture_runner_can_filter_capability_negatives() -> None:
     assert all(result.actual_code == 'DRP2_ERR_UNSUPPORTED_CAPABILITY' for result in results)
 
 
+def test_drp2_fixture_runner_can_filter_handshake_fixtures() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixtures = runner.discover([], None, ['handshake'])
+    results = runner.run_fixtures(fixtures)
+
+    assert len(results) == 4
+    assert all(result.passed for result in results)
+
+
 def test_drp2_fixture_runner_can_filter_pipeline_prerequisite_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['pipeline'])
@@ -63,6 +72,42 @@ def test_drp2_fixture_runner_rejects_resubmitted_command_buffer() -> None:
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
     assert result.actual_command_index == 3
+
+
+def test_drp2_fixture_runner_rejects_unsupported_major_version() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_handshake_unsupported_major_version.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_handshake_unsupported_major_version'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_UNSUPPORTED_VERSION'
+    assert result.actual_command_index == 0
+
+
+def test_drp2_fixture_runner_rejects_command_before_handshake_reply() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_handshake_command_before_reply.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_handshake_command_before_reply'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 1
+
+
+def test_drp2_fixture_runner_rejects_command_after_failed_handshake() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_handshake_failed_then_command.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_handshake_failed_then_command'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 2
 
 
 def test_drp2_fixture_runner_can_filter_vertex_binding_negatives() -> None:

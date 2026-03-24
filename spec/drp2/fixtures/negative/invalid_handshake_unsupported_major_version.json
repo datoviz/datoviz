@@ -1,0 +1,31 @@
+{
+  "name": "invalid_handshake_unsupported_major_version",
+  "description": "Requests a DRP2 major version that is outside the active supported handshake contract.",
+  "reason": "Unknown major versions must fail immediately during semantic version validation.",
+  "fix": "Use the supported DRP2 major version for the current contract.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "handshake",
+    "session",
+    "version"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 99,
+        "minor": 0
+      }
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_UNSUPPORTED_VERSION",
+    "command_index": 0
+  }
+}

@@ -196,8 +196,7 @@ The contract is not ready until it has:
 
 The command surface for `2.0` is frozen in `COMMANDS.md`.
 
-The active fixture core does not yet exercise handshake/version negotiation; that slice remains
-specified but not yet part of first conformance.
+The active fixture core now includes a minimal handshake/version slice.
 
 
 ## Pressure Tests From Future Scene Work
