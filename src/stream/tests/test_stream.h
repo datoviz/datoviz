@@ -36,4 +36,12 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item);
 
 
 
+int test_stream_update_restart_failure_stops_stream(TstSuite* suite, TstItem* item);
+
+
+
+int test_stream_attach_sink_name_prefers_requested_then_auto(TstSuite* suite, TstItem* item);
+
+
+
 int test_stream(TstSuite* suite);

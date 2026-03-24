@@ -34,11 +34,11 @@ struct DvzStreamSinkRegistry
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void stream_registry_reserve(DvzStreamSinkRegistry* registry, size_t capacity)
+static bool stream_registry_reserve(DvzStreamSinkRegistry* registry, size_t capacity)
 {
     if (!registry || registry->capacity >= capacity)
     {
-        return;
+        return registry != NULL;
     }
     size_t new_cap = (registry->capacity == 0) ? 4 : registry->capacity;
     while (new_cap < capacity)
@@ -50,13 +50,14 @@ static void stream_registry_reserve(DvzStreamSinkRegistry* registry, size_t capa
     if (!ptr)
     {
         log_error("failed to resize stream sink registry");
-        return;
+        return false;
     }
     dvz_memset(
         ptr + registry->capacity, (new_cap - registry->capacity) * sizeof(*ptr), 0,
         (new_cap - registry->capacity) * sizeof(*ptr));
     registry->items = ptr;
     registry->capacity = new_cap;
+    return true;
 }
 
 
@@ -133,7 +134,10 @@ DVZ_EXPORT void dvz_stream_sink_registry_register(
     {
         return;
     }
-    stream_registry_reserve(registry, registry->count + 1);
+    if (!stream_registry_reserve(registry, registry->count + 1))
+    {
+        return;
+    }
     registry->items[registry->count++] = backend;
 }
 

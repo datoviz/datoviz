@@ -335,7 +335,6 @@ int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
 
     stream_set_frame(stream, frame);
 
-    int rc = 0;
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
         DvzStreamSink* sink = &stream->sinks[i];
@@ -348,7 +347,11 @@ int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
             int sink_rc = sink->backend->update(sink, &stream->frame);
             if (sink_rc != 0)
             {
-                rc = sink_rc;
+                log_error(
+                    "frame sink '%s' failed to update; stopping stream",
+                    sink->backend->name ? sink->backend->name : "?");
+                dvz_stream_stop(stream);
+                return sink_rc;
             }
             continue;
         }
@@ -359,15 +362,15 @@ int dvz_stream_update(DvzStream* stream, const DvzStreamFrame* frame)
             if (sink->backend->start(sink, &stream->frame) != 0)
             {
                 log_error(
-                    "failed to restart sink '%s' after frame update",
+                    "failed to restart sink '%s' after frame update; stopping stream",
                     sink->backend->name ? sink->backend->name : "?");
-                rc = -1;
-                continue;
+                dvz_stream_stop(stream);
+                return -1;
             }
             sink->started = true;
         }
     }
-    return rc;
+    return 0;
 }
 
 

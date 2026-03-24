@@ -34,9 +34,12 @@ typedef struct StreamMockSinkState
     int create_count;
     int start_count;
     int submit_count;
+    int update_count;
     int stop_count;
     int destroy_count;
     int start_rc;
+    int restart_rc;
+    int fail_start_on_count;
     int submit_rc;
 } StreamMockSinkState;
 
@@ -49,6 +52,14 @@ typedef struct StreamMockSinkState
 static bool _stream_mock_probe(const void* config)
 {
     return config != NULL;
+}
+
+
+
+static bool _stream_mock_probe_unavailable(const void* config)
+{
+    (void)config;
+    return false;
 }
 
 
@@ -74,6 +85,10 @@ static int _stream_mock_start(DvzStreamSink* sink, const DvzStreamFrame* frame)
     StreamMockSinkState* state = (StreamMockSinkState*)sink->backend_data;
     ANN(state);
     state->start_count++;
+    if (state->fail_start_on_count > 0 && state->start_count == state->fail_start_on_count)
+    {
+        return state->restart_rc != 0 ? state->restart_rc : -1;
+    }
     return state->start_rc;
 }
 
@@ -87,6 +102,18 @@ static int _stream_mock_submit(DvzStreamSink* sink, uint64_t wait_value)
     ANN(state);
     state->submit_count++;
     return state->submit_rc;
+}
+
+
+
+static int _stream_mock_update(DvzStreamSink* sink, const DvzStreamFrame* frame)
+{
+    ANN(sink);
+    ANN(frame);
+    StreamMockSinkState* state = (StreamMockSinkState*)sink->backend_data;
+    ANN(state);
+    state->update_count++;
+    return 0;
 }
 
 
@@ -190,7 +217,7 @@ int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
         .start = _stream_mock_start,
         .submit = _stream_mock_submit,
         .stop = _stream_mock_stop,
-        .update = NULL,
+        .update = _stream_mock_update,
         .destroy = _stream_mock_destroy,
     };
     DvzStreamSinkBackend sink_fail = {
@@ -200,7 +227,7 @@ int test_stream_start_rollback_on_sink_failure(TstSuite* suite, TstItem* item)
         .start = _stream_mock_start,
         .submit = _stream_mock_submit,
         .stop = _stream_mock_stop,
-        .update = NULL,
+        .update = _stream_mock_update,
         .destroy = _stream_mock_destroy,
     };
 
@@ -266,7 +293,7 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
         .start = _stream_mock_start,
         .submit = _stream_mock_submit,
         .stop = _stream_mock_stop,
-        .update = NULL,
+        .update = _stream_mock_update,
         .destroy = _stream_mock_destroy,
     };
     DvzStreamSinkBackend sink1 = {
@@ -276,7 +303,7 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
         .start = _stream_mock_start,
         .submit = _stream_mock_submit,
         .stop = _stream_mock_stop,
-        .update = NULL,
+        .update = _stream_mock_update,
         .destroy = _stream_mock_destroy,
     };
     DvzStreamSinkBackend sink2 = {
@@ -286,7 +313,7 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
         .start = _stream_mock_start,
         .submit = _stream_mock_submit,
         .stop = _stream_mock_stop,
-        .update = NULL,
+        .update = _stream_mock_update,
         .destroy = _stream_mock_destroy,
     };
 
@@ -313,6 +340,145 @@ int test_stream_submit_returns_first_error(TstSuite* suite, TstItem* item)
 
 
 
+int test_stream_update_restart_failure_stops_stream(TstSuite* suite, TstItem* item)
+{
+    (void)item;
+    ANN(suite);
+
+    DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
+    ANN(registry);
+
+    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
+    AT(stream != NULL);
+
+    StreamMockSinkState ok_state = {0};
+    StreamMockSinkState fail_state = {
+        .restart_rc = -9,
+        .fail_start_on_count = 2,
+    };
+
+    DvzStreamSinkBackend sink_ok = {
+        .name = "mock_restart_ok",
+        .probe = _stream_mock_probe,
+        .create = _stream_mock_create,
+        .start = _stream_mock_start,
+        .submit = _stream_mock_submit,
+        .stop = _stream_mock_stop,
+        .update = NULL,
+        .destroy = _stream_mock_destroy,
+    };
+    DvzStreamSinkBackend sink_fail = {
+        .name = "mock_restart_fail",
+        .probe = _stream_mock_probe,
+        .create = _stream_mock_create,
+        .start = _stream_mock_start,
+        .submit = _stream_mock_submit,
+        .stop = _stream_mock_stop,
+        .update = NULL,
+        .destroy = _stream_mock_destroy,
+    };
+
+    AT(dvz_stream_attach_sink(stream, &sink_ok, &ok_state) == 0);
+    AT(dvz_stream_attach_sink(stream, &sink_fail, &fail_state) == 0);
+
+    DvzStreamFrame frame0 = {0};
+    DvzStreamFrame frame1 = {.extent = {.width = 1, .height = 1}};
+    AT(dvz_stream_start(stream, &frame0) == 0);
+    AT(ok_state.start_count == 1);
+    AT(fail_state.start_count == 1);
+
+    tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
+    AT(dvz_stream_update(stream, &frame1) == -1);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(_stream_log_contains(suite, "failed to restart sink"));
+
+    AT(ok_state.start_count == 2);
+    AT(ok_state.stop_count == 2);
+    AT(fail_state.start_count == 2);
+    AT(fail_state.stop_count == 1);
+
+    tst_expect_error_begin(suite);
+    AT(dvz_stream_submit(stream, 7) != 0);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(_stream_log_contains(suite, "not started"));
+
+    AT(dvz_stream_start(stream, &frame1) == 0);
+    AT(ok_state.start_count == 3);
+    AT(fail_state.start_count == 3);
+    AT(dvz_stream_submit(stream, 8) == 0);
+
+    tst_log_capture_end(suite);
+    dvz_stream_destroy(stream);
+    dvz_stream_sink_registry_destroy(registry);
+    return 0;
+}
+
+
+
+int test_stream_attach_sink_name_prefers_requested_then_auto(TstSuite* suite, TstItem* item)
+{
+    (void)item;
+    ANN(suite);
+
+    DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
+    ANN(registry);
+
+    DvzStreamConfig cfg = dvz_stream_default_config();
+    DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
+    AT(stream != NULL);
+
+    StreamMockSinkState primary_state = {0};
+    StreamMockSinkState fallback_state = {0};
+
+    DvzStreamSinkBackend unavailable = {
+        .name = "named_unavailable",
+        .probe = _stream_mock_probe_unavailable,
+        .create = _stream_mock_create,
+        .start = _stream_mock_start,
+        .submit = _stream_mock_submit,
+        .stop = _stream_mock_stop,
+        .update = _stream_mock_update,
+        .destroy = _stream_mock_destroy,
+    };
+    DvzStreamSinkBackend fallback = {
+        .name = "fallback_auto",
+        .probe = _stream_mock_probe,
+        .create = _stream_mock_create,
+        .start = _stream_mock_start,
+        .submit = _stream_mock_submit,
+        .stop = _stream_mock_stop,
+        .update = _stream_mock_update,
+        .destroy = _stream_mock_destroy,
+    };
+
+    dvz_stream_sink_registry_register(registry, &unavailable);
+    dvz_stream_sink_registry_register(registry, &fallback);
+
+    AT(dvz_stream_sink_registry_find(registry, "named_unavailable") == &unavailable);
+    AT(dvz_stream_sink_registry_find(registry, "fallback_auto") == &fallback);
+
+    AT(dvz_stream_attach_sink_name(stream, "fallback_auto", &primary_state) == 0);
+    tst_log_capture_begin(suite);
+    AT(dvz_stream_attach_sink_name(stream, "named_unavailable", &fallback_state) == 0);
+    AT(_stream_log_contains(suite, "falling back to auto"));
+    tst_log_capture_end(suite);
+
+    DvzStreamFrame frame = {0};
+    AT(dvz_stream_start(stream, &frame) == 0);
+    AT(primary_state.create_count == 1);
+    AT(primary_state.start_count == 1);
+    AT(fallback_state.create_count == 1);
+    AT(fallback_state.start_count == 1);
+
+    dvz_stream_destroy(stream);
+    dvz_stream_sink_registry_destroy(registry);
+    return 0;
+}
+
+
+
 int test_stream(TstSuite* suite)
 {
     ANN(suite);
@@ -320,5 +486,7 @@ int test_stream(TstSuite* suite)
     TEST_SIMPLE(test_stream_attach_video);
     TEST_SIMPLE(test_stream_start_rollback_on_sink_failure);
     TEST_SIMPLE(test_stream_submit_returns_first_error);
+    TEST_SIMPLE(test_stream_update_restart_failure_stops_stream);
+    TEST_SIMPLE(test_stream_attach_sink_name_prefers_requested_then_auto);
     return 0;
 }

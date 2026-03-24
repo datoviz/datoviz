@@ -324,7 +324,12 @@ void dvz_cmd_submit(DvzCommands* cmds)
         .commandBufferInfoCount = cmds->count,
         .pCommandBufferInfos = submit_cmds,
     };
-    vkQueueSubmit2(vk_queue, 1, &info, VK_NULL_HANDLE);
+    VkResult res = vkQueueSubmit2(vk_queue, 1, &info, VK_NULL_HANDLE);
+    if (res != VK_SUCCESS)
+    {
+        vk_result_check(res, __FILE__, __LINE__);
+        return;
+    }
 
     // Wait.
     dvz_queue_wait(queue);
@@ -338,7 +343,7 @@ void dvz_commands_destroy(DvzCommands* cmds)
     {
         return;
     }
-    if (!dvz_obj_is_created(&cmds->obj))
+    if (cmds->count == 0)
     {
         log_trace("skip destruction of already-destroyed commands");
         return;

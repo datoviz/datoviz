@@ -157,6 +157,43 @@ int test_vklite_commands_destroy_idempotent(TstSuite* suite, TstItem* tstitem)
 
 
 
+int test_vklite_commands_destroy_without_recording(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtx* ctx = _commands_ctx();
+    ANN(ctx);
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    ANN(device);
+    ANN(queue);
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    AT(dvz_commands_count(cmds) == 1);
+
+    dvz_commands_destroy(cmds);
+    AT(dvz_commands_count(cmds) == 0);
+    AT(dvz_commands_handle(cmds) == VK_NULL_HANDLE);
+
+    dvz_commands(device, queue, 1, cmds);
+    AT(dvz_commands_count(cmds) == 1);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
+
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}
+
+
+
 int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
