@@ -103,6 +103,13 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
     AT(dvz_descriptors_set_count(desc) == 2);
     AT(dvz_descriptors_handle(desc, 0) != VK_NULL_HANDLE);
     AT(dvz_descriptors_handle(desc, 1) != VK_NULL_HANDLE);
+    VkDescriptorSet set0 = dvz_descriptors_handle(desc, 0);
+    VkDescriptorSet set1 = dvz_descriptors_handle(desc, 1);
+    tst_expect_error_begin(suite);
+    dvz_descriptors(slots, desc);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(dvz_descriptors_handle(desc, 0) == set0);
+    AT(dvz_descriptors_handle(desc, 1) == set1);
     dvz_descriptors_buffer(desc, 0, 0, 0, dvz_buffer_handle(ubuf), 0, size);
     dvz_descriptors_buffer(desc, 1, 0, 0, dvz_buffer_handle(sbuf), 0, size);
     dvz_descriptors_image(

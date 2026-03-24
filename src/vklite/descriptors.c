@@ -32,6 +32,23 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+static bool _dvz_descriptors_allocated(DvzDescriptors* descriptors)
+{
+    ANN(descriptors);
+    if (descriptors->slots != NULL || descriptors->device != NULL)
+    {
+        return true;
+    }
+    for (uint32_t i = 0; i < DVZ_MAX_SETS; i++)
+    {
+        if (descriptors->vk_descriptors[i] != VK_NULL_HANDLE)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 /**
  * Allocate an empty descriptor wrapper.
  *
@@ -50,6 +67,11 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
 {
     ANN(slots);
     ANN(descriptors);
+    if (_dvz_descriptors_allocated(descriptors))
+    {
+        log_error("cannot allocate descriptors twice into the same wrapper");
+        return;
+    }
 
     dvz_memset(descriptors, sizeof(DvzDescriptors), 0, sizeof(DvzDescriptors));
 

@@ -50,6 +50,10 @@ EXTERN_C_ON
 /**
  * Allocate an empty descriptor wrapper.
  *
+ * This wrapper is intentionally lightweight: it refers to descriptor sets allocated from the
+ * device-owned descriptor pool rather than owning an independent Vulkan object with a separate
+ * destroy path.
+ *
  * @return allocated descriptor wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzDescriptors* dvz_descriptors_create(void);
@@ -58,6 +62,11 @@ DVZ_EXPORT DvzDescriptors* dvz_descriptors_create(void);
 
 /**
  * Initialize and allocate descriptors.
+ *
+ * This is a one-shot pool-backed allocation helper. The wrapper does not own the descriptor pool
+ * and does not provide an independent Vulkan destroy entry point. Descriptor sets remain valid
+ * only while the parent device/pool stays alive, and callers must not allocate into the same
+ * wrapper twice without discarding it and starting from a fresh wrapper.
  *
  * @param slots the slots
  * @param[out] descriptors the created descriptors
@@ -141,6 +150,9 @@ DVZ_EXPORT void dvz_cmd_bind_descriptors(
 
 /**
  * Free a descriptor wrapper allocated by dvz_descriptors_create().
+ *
+ * This only releases the CPU-side wrapper. The underlying descriptor sets are pool-backed and are
+ * reclaimed with the parent descriptor pool/device rather than through this wrapper.
  *
  * @param descriptors descriptor wrapper to free
  */
