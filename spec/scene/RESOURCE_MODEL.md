@@ -54,6 +54,24 @@ The first resource model must support:
 7. derived transient resources created during planning when needed.
 
 
+## Authority Rule
+
+Scene-authored resources should remain authoritative by default.
+
+The first scene slice should distinguish clearly between:
+
+1. CPU-authored source resources that are authoritative across frames,
+2. CPU-cached derived resources that may be reused across frames,
+3. frame-local transient derived resources that exist only to serve one `FramePlan`,
+4. GPU-produced results that do not become authoritative scene state unless explicitly promoted.
+
+The important consequence is:
+
+1. compute output is frame-local by default,
+2. persistence across frames must be explicit,
+3. GPU-produced data must not silently replace scene-owned authored state.
+
+
 ## Why This Needs To Be Explicit
 
 The local `v0.3/` scene and visual code already implies several distinct data shapes and binding
@@ -122,6 +140,9 @@ The first scene slice should distinguish these ownership classes:
 
 Even `VisualOwned` resources should still be visible to planning and diagnostics as first-class
 scene resources.
+
+`TransientDerived` should be the default class for compute-produced or planning-produced intermediate
+results unless a spec-level contract explicitly declares a reusable persistent cache.
 
 
 ## Resource Kinds
@@ -285,6 +306,13 @@ Examples:
 3. compute-derived buffers,
 4. scene-derived geometry or field representations.
 
+`DerivedField` should be interpreted together with the ownership classes above:
+
+1. most compute-derived fields should be `TransientDerived`,
+2. reusable derived caches should be declared explicitly rather than inferred,
+3. a derived field should only become authoritative across frames if the scene contract says so or if
+   its contents are explicitly promoted into a CPU-owned scene resource.
+
 
 ## `ReadbackTarget`
 
@@ -295,6 +323,19 @@ It should cover:
 1. picking results,
 2. image export results,
 3. optional compute-result captures for testing or tooling.
+
+
+## Persistence Of Compute-Derived Results
+
+When a compute stage writes a derived resource, the default policy should be:
+
+1. the output is valid for the current frame plan only,
+2. later frames may regenerate it from the authoritative scene inputs,
+3. reuse across frames is allowed only when the scene declares a persistent derived cache,
+4. readback into a CPU-owned resource is the explicit path for promotion into long-lived scene state.
+
+This keeps compute as an implementation and planning tool without making GPU-side intermediates the
+implicit source of truth.
 
 
 ## Resource Facets

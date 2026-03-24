@@ -228,6 +228,12 @@ This controller should:
 
 This controller should cooperate closely with the picking model in `PICKING.md`.
 
+The default freshness rule should be:
+
+1. hover follows latest-request-wins semantics,
+2. stale hover results are discarded rather than applied late,
+3. request identity and scene or panel generation are checked before hover state mutates.
+
 
 ## `SelectionController`
 
@@ -303,6 +309,11 @@ This preserves the boundary:
 1. controllers decide interaction policy,
 2. picking resolves scene identity,
 3. controllers mutate scene state from that identity.
+
+Controllers should not need to guess whether a pick result is current.
+
+That freshness decision should already have been made by scene-level routing using the request
+identity and revision data defined by `PICKING.md`.
 
 
 ## Hover Flow

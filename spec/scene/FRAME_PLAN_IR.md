@@ -128,6 +128,14 @@ The plan may also carry producer-side materialization hints such as:
 
 These hints exist to guide planning and validation, not to expose backend allocation strategy.
 
+The plan should also be able to distinguish whether a derived resource is:
+
+1. authoritative scene data,
+2. reusable persistent derived cache,
+3. frame-local transient output.
+
+This is especially important for compute-written resources and readback paths.
+
 
 ## Node Kinds
 
@@ -155,6 +163,11 @@ It should support:
 
 `UploadNode` is where scene dirty tracking becomes concrete frame work.
 
+`UploadNode` should be the canonical place where already-resolved resource dirtiness becomes explicit
+execution work.
+
+The scene should not maintain a parallel execution path that emits upload work outside `FramePlan`.
+
 
 ## ComputeNode
 
@@ -169,6 +182,11 @@ It should declare:
 5. whether its outputs are later consumed by render, copy, or readback nodes.
 
 It should not encode backend pipeline or encoder internals directly.
+
+Unless a stronger scene contract says otherwise, compute-written outputs should be treated as
+frame-local derived resources.
+
+Persistence across frames should be explicit rather than implicit.
 
 
 ## RenderNode
@@ -252,7 +270,8 @@ Whichever representation is used, it must express:
 
 ## Capability Adaptation
 
-`FramePlan` is the right place for capability-shaped producer decisions.
+`FramePlan` should reflect capability-shaped producer decisions, but it should not be the first place
+where those decisions are discovered.
 
 Examples:
 
@@ -266,6 +285,12 @@ The result should be one of:
 1. a valid plan,
 2. a deterministic degraded plan,
 3. a scene-visible planning diagnostic before DRP2 submission.
+
+The preferred rule is:
+
+1. adaptation policy runs before planning,
+2. `FramePlan` records the chosen adapted outcome,
+3. planning diagnostics may still reject a plan if no valid adapted topology exists.
 
 
 ## Planning Diagnostics
@@ -338,4 +363,3 @@ This document should be followed by:
 2. `RESOURCE_MODEL.md`
 3. `PICKING.md`
 4. worked examples that trace scene state to `FramePlan` to DRP2 command categories
-

@@ -57,9 +57,10 @@ The first scene slice should recognize at least these invalidation scopes:
 4. `NormalizationDirty`
 5. `PanelTransformDirty`
 6. `AxisLayoutDirty`
-7. `FramePlanDirty`
-8. `UploadDirty`
-9. `ReadbackRoutingDirty`
+7. `CapabilityDirty`
+8. `FramePlanDirty`
+9. `UploadDirty`
+10. `ReadbackRoutingDirty`
 
 These are logical scopes, not necessarily final public enum names.
 
@@ -185,6 +186,26 @@ This may require:
 3. uploading only the affected axis-derived resources.
 
 
+### `CapabilityDirty`
+
+This means the capability record or the chosen adaptation outcome changed in a way that may alter the
+scene-visible execution path.
+
+Examples:
+
+1. the runtime capability set changed,
+2. a browser versus native runtime switch selected a different adaptation path,
+3. picking or readback support availability changed,
+4. a degraded variant became required or no longer required.
+
+This may require:
+
+1. variant reselection,
+2. capability diagnostics refresh,
+3. `FramePlan` rebuild when topology or target usage changes,
+4. redraw or interaction-policy update when optional affordances are enabled or disabled.
+
+
 ### `FramePlanDirty`
 
 This means the previously cached plan shape is no longer valid.
@@ -305,6 +326,10 @@ Depending on the final implementation, this may cache:
 
 This cache should be invalidated only when plan structure truly changes.
 
+Capability changes that do not alter topology should not invalidate more than necessary, but any
+adaptation change that affects stage participation, target usage, or routing should invalidate this
+cache.
+
 
 ## Incremental Update Rules
 
@@ -418,6 +443,24 @@ It may require:
 
 1. new picking-pass participation,
 2. new pick payload encoding,
+
+
+### Capability Or Adaptation Change
+
+Usually invalidates:
+
+1. `CapabilityDirty`
+
+May invalidate:
+
+1. `VisualPropsDirty` when a fallback changes active variant semantics,
+2. `FramePlanDirty` when pass topology or target usage changes,
+3. `ReadbackRoutingDirty` when picking or readback paths are enabled, disabled, or reshaped.
+
+Should not invalidate:
+
+1. source authored data by itself,
+2. normalization state unless the adapted path explicitly changes normalization semantics.
 3. new readback planning.
 
 

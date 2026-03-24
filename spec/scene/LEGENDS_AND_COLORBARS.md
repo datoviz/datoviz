@@ -254,6 +254,24 @@ The source of truth should not be:
 3. texture objects without semantic range information.
 
 
+## Mapping Identity
+
+Legends and colorbars should aggregate semantic mappings, not merely similar-looking rendered output.
+
+The first scene slice should therefore assume a stable logical mapping identity such as
+`ScaleMapping` or an equivalent concept.
+
+That identity should capture at least:
+
+1. the semantic quantity or category set being explained,
+2. the mapping policy such as categorical palette, continuous colormap, size scale, or symbol map,
+3. domain or category definitions,
+4. any interpretation details that would change what the legend or colorbar means.
+
+The final API may expose this as an explicit object or derive it from visual state, but the spec-level
+identity rule should be stable.
+
+
 ## Discrete Versus Continuous Explanations
 
 The scene spec should explicitly support both:
@@ -313,6 +331,13 @@ But the scene should avoid implicit aggregation when meanings differ.
 
 If two visuals use similar colors for different semantics, they should not silently collapse into one
 legend.
+
+The aggregation rule should be:
+
+1. implicit aggregation is allowed only when mapping identity is semantically identical,
+2. visual resemblance alone is not enough,
+3. explicit scene configuration may still request a shared explanatory object when several visuals are
+   intentionally tied to the same semantic mapping.
 
 
 ## Entry Model For Legends

@@ -101,6 +101,12 @@ Examples:
 3. grouped picking is enabled for a visual that has no group identity,
 4. a 2D-only controller is attached to a 3D panel mode.
 
+Semantic validation should also reject:
+
+1. implicit legend or colorbar aggregation when mapping identities are not semantically identical,
+2. stale pick result application when the request identity or generation no longer matches current
+   scene state.
+
 
 ### Planning Validation
 

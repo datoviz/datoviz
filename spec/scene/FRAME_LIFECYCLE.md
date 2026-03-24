@@ -37,7 +37,14 @@ Mutate:
 ### 3. Resource Update
 
 Identify changed CPU-owned resources and subranges.
-The scene layer should emit only the required DRP2 resource writes for the current frame.
+The scene layer should resolve those changes into planning-visible upload and materialization needs for
+the current frame.
+
+This stage should determine:
+
+1. which source resources are dirty,
+2. which normalized or derived resources must be recomputed,
+3. which uploads, creates, or readbacks must appear in the next `FramePlan`.
 
 
 ### 4. Frame Planning
@@ -48,7 +55,8 @@ Build a per-frame execution plan that decides:
 2. render stages,
 3. compute stages if needed,
 4. ordering and dependencies,
-5. offscreen and picking paths.
+5. offscreen and picking paths,
+6. upload and lazy materialization nodes needed for the frame.
 
 
 ### 5. DRP2 Emission
@@ -62,6 +70,10 @@ Emit:
 5. draw and dispatch commands,
 6. submission.
 
+Emission should be a translation of the already-built `FramePlan`.
+
+It should not rediscover upload work outside the plan.
+
 
 ### 6. Post-Frame Readback
 
@@ -74,3 +86,5 @@ Interpret picking or offscreen readback results at the scene level.
 2. Scene should not mutate state while a frame plan is being emitted.
 3. DRP2 emission should be a deterministic function of scene state plus runtime capabilities.
 4. Runtime failures must map back to scene-visible diagnostics without backend leakage.
+5. Upload and lazy materialization work should be represented in `FramePlan`, not introduced as an
+   execution-time side path.

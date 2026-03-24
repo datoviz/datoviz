@@ -310,6 +310,25 @@ These may share the same underlying picking path, but the scene-side semantics d
 3. explicit query may expose more diagnostics or payload.
 
 
+## Pick Request Identity
+
+Every pick request should carry enough identity to make asynchronous result routing safe.
+
+The first scene slice should model each request with at least:
+
+1. stable `request_id`,
+2. originating `panel_id`,
+3. request kind such as hover, click, or explicit query,
+4. pointer or sample position in panel-local coordinates,
+5. scene revision or panel revision sufficient to detect stale results.
+
+The exact public C struct may change later, but the semantic requirement should be fixed now:
+
+1. every result must identify the request it belongs to,
+2. every result must be checkable against current scene or panel freshness state,
+3. every result must be discardable without ambiguity when it no longer matches current state.
+
+
 ## Pick Timing
 
 The spec should allow both:
@@ -322,6 +341,12 @@ The important contract is:
 1. the scene must know which request a result belongs to,
 2. stale results must be detectable and discardable,
 3. the final selection or hover update must map back to current scene identity safely.
+
+For hover-oriented picking, the default semantic rule should be:
+
+1. latest request wins,
+2. older hover results may be dropped silently,
+3. click and explicit query requests may require stronger delivery guarantees than hover.
 
 
 ## Request Coalescing
@@ -336,6 +361,12 @@ The scene model should therefore allow:
 2. replacement of stale hover requests,
 3. stronger guarantees for click requests than hover requests.
 
+This means a hover result should only be applied when:
+
+1. its `request_id` is still current for the target panel,
+2. its scene or panel generation still matches the accepting state,
+3. its referenced visual or routing state still exists.
+
 
 ## Picking And `FramePlan`
 
@@ -346,7 +377,8 @@ Typical plan contributions include:
 1. one picking target,
 2. one picking `RenderNode` when picking is enabled or requested,
 3. one `ReadbackNode` when the result is needed,
-4. resource dependencies linking picking output to readback interpretation.
+4. resource dependencies linking picking output to readback interpretation,
+5. request metadata sufficient to route the result back to the correct pending pick request.
 
 This keeps picking visible as scene planning work rather than a hidden backend side-channel.
 
@@ -418,6 +450,7 @@ The intended flow is:
 1. pick request issued,
 2. picking work planned and executed,
 3. result interpreted at the scene level,
+4. stale results discarded if superseded by a newer request or scene generation,
 4. hover or selection state mutated,
 5. redraw requested if needed.
 
