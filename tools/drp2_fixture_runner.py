@@ -140,7 +140,6 @@ class DRP2SemanticValidator:
         self.handshake_started = False
         self.handshake_pending = False
         self.handshake_failed = False
-        self.stream_started_without_handshake = False
 
     def validate(self, commands: Sequence[Dict[str, Any]]) -> None:
         """Validate a full command stream."""
@@ -151,14 +150,12 @@ class DRP2SemanticValidator:
     def _validate_command(self, index: int, command: Dict[str, Any]) -> None:
         cmd = command['cmd']
         if cmd not in ('HelloRenderer', 'RendererHelloReply', 'Error'):
-            if self.handshake_pending or self.handshake_failed:
+            if not self.handshake_started or self.handshake_pending or self.handshake_failed:
                 raise SemanticFailure(
                     'DRP2_ERR_INVALID_STATE',
                     index,
                     f'command {cmd} is invalid before handshake completion',
                 )
-            if not self.handshake_started:
-                self.stream_started_without_handshake = True
         handler = getattr(self, f'_handle_{cmd}', None)
         if handler is None:
             return
@@ -173,11 +170,11 @@ class DRP2SemanticValidator:
             )
 
     def _handle_HelloRenderer(self, index: int, command: Dict[str, Any]) -> None:
-        if self.stream_started_without_handshake or self.handshake_started or self.handshake_failed:
+        if index != 0 or self.handshake_started or self.handshake_failed:
             raise SemanticFailure(
                 'DRP2_ERR_INVALID_STATE',
                 index,
-                'HelloRenderer is valid only at the start of a fresh explicit handshake',
+                'HelloRenderer must be the first command of a fresh stream',
             )
         self._validate_version(index, command['version'])
         self.handshake_started = True

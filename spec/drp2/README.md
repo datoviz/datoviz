@@ -83,4 +83,5 @@ important, but they should pressure-test the contract rather than bloat the firs
 1. explicit destroy commands are part of `2.0`,
 2. compute remains mandatory in the first frozen contract,
 3. handshake and version-negotiation commands are now part of the executable fixture core,
-4. prototype C API sketches are intentionally excluded until the contract is tighter.
+4. `HelloRenderer` is required as the first command of every fixture stream in the active corpus,
+5. prototype C API sketches are intentionally excluded until the contract is tighter.

@@ -98,12 +98,13 @@ Ordered list of DRP2 command objects.
 Rules:
 
 1. command indexing is zero-based,
-2. for positive fixtures and semantic negatives, command objects must use the active DRP2 `2.0`
+2. every active fixture stream must start with `HelloRenderer` followed by `RendererHelloReply`,
+3. for positive fixtures and semantic negatives, command objects must use the active DRP2 `2.0`
    field names,
-3. schema-negative fixtures may intentionally include command objects that fail the active command
+4. schema-negative fixtures may intentionally include command objects that fail the active command
    schema,
-4. deferred command names and deferred schema shapes must not appear in the first `2.0` corpus,
-5. command semantics are defined by `COMMANDS.md`, `LIFETIMES.md`, and the active schemas.
+5. deferred command names and deferred schema shapes must not appear in the first `2.0` corpus,
+6. command semantics are defined by `COMMANDS.md`, `LIFETIMES.md`, and the active schemas.
 
 
 ### `expected`

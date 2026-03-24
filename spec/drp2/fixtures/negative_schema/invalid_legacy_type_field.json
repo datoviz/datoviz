@@ -14,6 +14,23 @@
   ],
   "commands": [
     {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
       "type": "BeginCommandEncoder",
       "id": 1
     }
@@ -22,6 +39,6 @@
     "outcome": "error",
     "phase": "schema_validation",
     "code": "DRP2_ERR_INVALID_ARGUMENT",
-    "command_index": 0
+    "command_index": 2
   }
 }

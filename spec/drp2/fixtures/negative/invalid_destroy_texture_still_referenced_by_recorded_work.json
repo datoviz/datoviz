@@ -15,6 +15,23 @@
   ],
   "commands": [
     {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
       "cmd": "CreateBuffer",
       "id": 1,
       "size": 16,
@@ -74,6 +91,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_USAGE",
-    "command_index": 5
+    "command_index": 7
   }
 }

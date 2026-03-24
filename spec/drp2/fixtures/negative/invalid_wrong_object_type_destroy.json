@@ -14,6 +14,23 @@
   ],
   "commands": [
     {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
       "cmd": "CreateTexture",
       "id": 7,
       "dimension": "2d",
@@ -36,6 +53,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_WRONG_OBJECT_TYPE",
-    "command_index": 1
+    "command_index": 3
   }
 }

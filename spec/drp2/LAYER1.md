@@ -197,6 +197,7 @@ The contract is not ready until it has:
 The command surface for `2.0` is frozen in `COMMANDS.md`.
 
 The active fixture core now includes a minimal handshake/version slice.
+That handshake is now mandatory for the active fixture corpus rather than optional.
 
 
 ## Pressure Tests From Future Scene Work

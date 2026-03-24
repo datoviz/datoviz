@@ -16,6 +16,23 @@
   ],
   "commands": [
     {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
       "cmd": "CreateRenderPipeline",
       "id": 10,
       "vertex_buffer_slots": 1
@@ -99,6 +116,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 9
+    "command_index": 11
   }
 }

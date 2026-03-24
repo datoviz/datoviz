@@ -87,10 +87,9 @@ Rules:
 
 Active fixture-runner note:
 
-1. the current executable fixture runner treats streams that omit handshake commands as already
-   negotiated for backward compatibility with the pre-existing corpus,
-2. once a fixture uses `HelloRenderer`, the runner enforces explicit handshake ordering and failed
-   handshake behavior for the remainder of that stream.
+1. the executable fixture runner requires `HelloRenderer` as the first command of every stream,
+2. `RendererHelloReply` must complete before any active resource or recording command is valid,
+3. a failed handshake leaves the session in `failed` for the remainder of that stream.
 
 
 ## Buffer Lifetime
