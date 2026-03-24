@@ -258,15 +258,44 @@ Expected hit identity:
 For slice-like `image` mode, any auxiliary coordinate payload should still be interpreted as image-
 family semantics, not as backend texture semantics.
 
+For slice-like `image` mode backed by volumetric sampling, the preferred semantic result for an
+explicit query or probe-oriented request should be able to carry:
+
+1. image instance identity,
+2. slice-local coordinates,
+3. world, atlas, or other declared scene-domain coordinates,
+4. sampled value at the queried position,
+5. optional channel, filter, or sampling-context identity when several interpretations are possible.
+
+The important rule is:
+
+1. the returned coordinates must be meaningful in scene terms,
+2. the returned value must correspond to the active scene-declared slice and filter state,
+3. the result must not expose backend texture coordinates as the only authoritative meaning.
+
 
 ### `mesh`
 
 Expected hit identity:
 
 1. visual id
-2. optional item or primitive payload depending on the mesh contract
+2. optional item, group, region, or primitive payload depending on the mesh contract
 
-The exact granularity can remain open for now.
+The exact primitive-level granularity can remain open for now, but one stronger rule should already
+be fixed:
+
+1. when one mesh visual semantically represents several stable logical parts such as atlas regions,
+   parcels, or labeled submeshes, picking should be able to return that logical part identity
+   directly,
+2. this logical identity must survive batching, draw merging, and variant changes,
+3. primitive payload is auxiliary and should not replace stable semantic region or group identity
+   when the scene has one.
+
+So the default semantic hit for grouped or partitioned scientific meshes should usually be:
+
+1. visual id,
+2. semantic region or group id,
+3. optional primitive payload when finer inspection is requested.
 
 
 ### `sphere`
@@ -308,6 +337,10 @@ These may share the same underlying picking path, but the scene-side semantics d
 1. hover may be throttled or coalesced,
 2. click usually needs a stable round-trip result,
 3. explicit query may expose more diagnostics or payload.
+
+For slice inspection, voxel probing, or other scientific readout tools, explicit query requests
+should be the preferred semantic home for richer result payloads such as scene-domain coordinates and
+sampled values.
 
 
 ## Pick Request Identity

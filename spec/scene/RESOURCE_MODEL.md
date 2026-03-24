@@ -266,6 +266,54 @@ This class may include:
 3. optional auxiliary geometry channels such as normals or contour metadata.
 
 
+### Small-N Versus Large-N Mesh Collections
+
+The scene spec should distinguish clearly between:
+
+1. semantic object granularity,
+2. visual object granularity,
+3. batched geometry storage.
+
+These are related, but they should not be forced to be identical.
+
+For scientific mesh collections such as anatomical regions, cortical parcels, or segmented
+assemblies, the preferred guidance is:
+
+1. when the number of independently manipulated meshes is small, using one visual per mesh is often
+   the clearest scene representation,
+2. when the number of meshes becomes large, one grouped mesh visual or a small number of grouped
+   mesh visuals is usually the better realization,
+3. in both cases, the scene should preserve stable semantic identity for each logical region or
+   submesh.
+
+The practical rule is therefore:
+
+1. small-N favors simplicity of one visual per logical mesh,
+2. large-N favors grouped geometry plus per-region style or state tables,
+3. semantic identity such as `region_id` must survive either realization strategy.
+
+Grouped mesh realizations should therefore be allowed to combine:
+
+1. one shared `IndexedGeometry` payload or a small number of shared geometry payloads,
+2. one partition map from geometry ranges to semantic region identity,
+3. one per-region style or state resource for visibility, opacity, selection, and related controls.
+
+This avoids two bad outcomes:
+
+1. forcing a large scene to create one visual per small mesh even when batching is clearly better,
+2. forcing a batched realization to collapse into anonymous geometry with no stable semantic
+   identity.
+
+The first scene slice does not need to freeze an exact public API for grouped meshes yet.
+
+But it should already preserve this stronger rule:
+
+1. one logical region may be represented either by one visual or by one partition inside a grouped
+   mesh visual,
+2. picking, selection, visibility, and style updates must still resolve through stable scene
+   identity rather than draw-call shape.
+
+
 ## `SampledField`
 
 `SampledField` is the scene-level class for sampled scalar, vector, color, or volumetric fields.

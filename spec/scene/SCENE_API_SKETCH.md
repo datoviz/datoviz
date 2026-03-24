@@ -189,7 +189,12 @@ It should also be the natural owner of:
 
 1. shared mapping or scale identity when explanatory objects are shared,
 2. pending scene-level pick routing state,
-3. capability snapshots or the active adapted policy state.
+3. capability snapshots or the active adapted policy state,
+4. scene-semantic state edited by external UI such as selection, visibility, opacity, active slice,
+   and active filter choice.
+
+External UI widgets such as tree views, sliders, and inspectors should therefore be treated as
+clients of scene state rather than as scene primitives in their own right.
 
 If the final public API introduces a separate runtime/session handle, that handle should remain below
 the scene semantic layer and should follow `RUNTIME_BOUNDARY.md` rather than changing the ownership
@@ -662,6 +667,37 @@ The final result shape should be able to report:
 7. annotation or legend-entry identity when the picked object is explanatory rather than primary
    data.
 
+For explicit query or probe-oriented interaction, the sketch should also leave room for richer
+family-defined payload.
+
+Conceptually:
+
+```text
+query = panel_pick(panel, {
+    x = x,
+    y = y,
+    kind = QUERY,
+})
+result = scene_pick_result(scene, query)
+```
+
+For slice-like `image` mode backed by volumetric sampling, the semantic result should be able to
+report fields conceptually like:
+
+1. panel id,
+2. visual id,
+3. image instance identity when relevant,
+4. slice-local coordinates,
+5. world, atlas, or other declared scene-domain coordinates,
+6. sampled value,
+7. optional channel, filter, or sampling-context identity.
+
+The important rule is:
+
+1. explicit query is the preferred semantic home for scientific readout tools,
+2. the returned coordinates and values must reflect current scene-owned slice and filter state,
+3. the result should remain scene-meaningful rather than backend-shaped.
+
 
 ## Validation And Capability Surface
 
@@ -902,6 +938,69 @@ The important point is that the user expresses many logical paths while the scen
 batch them into one efficient GPU-facing representation.
 
 
+## Example: Region Meshes, Small-N Versus Large-N
+
+For a small number of independently manipulated meshes, the clearer scene-facing realization may be
+one visual per region.
+
+Conceptually:
+
+```text
+brain_surface = scene_visual(scene, { family = MESH })
+visual_set_resource(brain_surface, GEOMETRY, brain_geometry)
+panel_add_visual(panel, brain_surface)
+
+hippocampus = scene_visual(scene, { family = MESH, picking = true })
+visual_set_resource(hippocampus, GEOMETRY, hippocampus_geometry)
+visual_set_param(hippocampus, opacity, 0.25)
+panel_add_visual(panel, hippocampus)
+
+thalamus = scene_visual(scene, { family = MESH, picking = true })
+visual_set_resource(thalamus, GEOMETRY, thalamus_geometry)
+visual_set_param(thalamus, opacity, 0.25)
+panel_add_visual(panel, thalamus)
+```
+
+For a large number of small regions, the clearer scene-facing realization may instead be one grouped
+mesh visual plus explicit region identity and region-local style state.
+
+Conceptually:
+
+```text
+regions_geometry = scene_indexed_geometry(scene, atlas_region_schema)
+geometry_write_vertices(regions_geometry, vertices)
+geometry_write_indices(regions_geometry, indices)
+geometry_write_partitions(regions_geometry, region_ranges, region_ids)
+
+region_style = scene_style_block(scene, region_style_schema)
+style_write_rows(region_style, region_ids, {
+    visible,
+    opacity,
+    selected,
+})
+
+regions = scene_visual(scene, { family = MESH, picking = true })
+visual_set_resource(regions, GEOMETRY, regions_geometry)
+visual_set_resource(regions, STYLE, region_style)
+panel_add_visual(panel, regions)
+```
+
+Possible app- or scene-level semantic operations then look like:
+
+```text
+scene_set_region_visible(scene, region_id, false)
+scene_set_region_opacity(scene, region_id, 0.10)
+scene_select_region(scene, region_id)
+```
+
+The important rule is:
+
+1. semantic region identity stays stable in both realizations,
+2. the small-N and large-N versions differ in batching strategy, not in user-facing meaning,
+3. picking should still round-trip `region_id` whether the region is one visual or one partition
+   inside a grouped mesh visual.
+
+
 ## Example: Image Slice Mode
 
 Conceptually:
@@ -921,6 +1020,59 @@ panel_add_visual(panel, visual)
 
 This keeps `slice` under `image` while still exposing volumetric sampling semantics at the scene
 level.
+
+
+## Example: Slice Probe Query
+
+Conceptually:
+
+```text
+field = scene_sampled_field(scene, volume_field_schema)
+field_write(field, volume_data)
+
+slice = scene_visual(scene, {
+    family = IMAGE,
+    variant = SLICE_MODE,
+    picking = true,
+})
+visual_set_resource(slice, FIELD, field)
+visual_set_param(slice, slice_plane, plane_desc)
+visual_set_param(slice, filter_mode, GAUSSIAN)
+panel_add_visual(panel, slice)
+
+query = panel_pick(panel, {
+    x = x,
+    y = y,
+    kind = QUERY,
+})
+
+result = scene_pick_result(scene, query)
+
+coords = pick_result_domain_coords(result)
+value = pick_result_sample_value(result)
+context = pick_result_sampling_context(result)
+```
+
+Possible higher-level semantic helpers may later look like:
+
+```text
+probe = panel_probe(panel, {
+    x = x,
+    y = y,
+    source = slice,
+})
+
+coords = probe_world_coords(probe)
+value = probe_sample_value(probe)
+```
+
+The important point is that the result should already be expressed in scene terms:
+
+1. the query targets one slice-like `image` visual,
+2. the result returns scene-domain coordinates and sampled value,
+3. the value corresponds to the active slice placement and filter state,
+4. the public surface may later add convenience probe helpers without changing the underlying
+   picking semantics.
 
 
 ## API Shape Preferences

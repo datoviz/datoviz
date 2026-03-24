@@ -391,4 +391,5 @@ This document should be followed by:
 1. `VISUAL_CONTRACT.md`
 2. `RESOURCE_MODEL.md`
 3. `PICKING.md`
-4. worked examples that trace scene state to `FramePlan` to DRP2 command categories
+4. `DIAGNOSTICS_SCHEMA.md`
+5. worked examples that trace scene state to `FramePlan` to DRP2 command categories

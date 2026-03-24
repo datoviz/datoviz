@@ -210,4 +210,5 @@ This document should be read together with:
 2. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` for family contract details,
 3. `RESOURCE_MODEL.md` for logical resource classes,
 4. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` for stage ordering and failure semantics,
-5. `RUNTIME_BOUNDARY.md` and `RUNTIME_SERVICE_SKETCH.md` for the lower execution boundary.
+5. `RUNTIME_BOUNDARY.md` and `RUNTIME_SERVICE_SKETCH.md` for the lower execution boundary,
+6. `IMPLEMENTATION_BRIDGE.md` for one tentative implementation-facing translation of this profile.

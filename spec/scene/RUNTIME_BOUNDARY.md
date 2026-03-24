@@ -31,7 +31,8 @@ This document should be read together with:
 1. `SCENE_VALIDATION.md` for what must fail before execution,
 2. `CAPABILITY_ADAPTATION.md` for how capability-driven simplification or rejection is chosen,
 3. `FRAME_PLAN_IR.md` for the producer-side plan shape the runtime receives,
-4. `RUNTIME_SERVICE_SKETCH.md` for the minimal conceptual runtime service surface.
+4. `RUNTIME_SERVICE_SKETCH.md` for the minimal conceptual runtime service surface,
+5. `DIAGNOSTICS_SCHEMA.md` for the shared scene-facing diagnostic shape.
 
 
 ## Core Rule

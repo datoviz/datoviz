@@ -60,12 +60,16 @@ Unless a document says otherwise, this directory should be read with the followi
 - `REQUIREMENTS.md`: what the scene layer needs from DRP2 and the runtime
 - `OBJECT_MODEL.md`: minimum stable concepts
 - `PREFERRED_API_PROFILE.md`: the current preferred scene-facing API defaults selected from the API sketch
+- `IMPLEMENTATION_BRIDGE.md`: tentative C-facing type and operation mapping derived from the current scene spec
+- `headers/`: non-authoritative draft headers pressure-testing the current scene, runtime, and diagnostics surfaces
 - `AXES.md`: scene-side semantic model for axes, ticks, labels, and related annotations
 - `ANNOTATIONS.md`: semantic model for labels, guides, probes, overlays, legends, and callouts
 - `LEGENDS_AND_COLORBARS.md`: semantic model for discrete legends, continuous colorbars, and shared explanatory mappings
+- `DIAGNOSTICS_SCHEMA.md`: shared conceptual diagnostic shape across validation, adaptation, planning, and runtime execution
 - `SCENE_VALIDATION.md`: scene-level pre-emission validation rules, error classes, and capability-gated checks
 - `CAPABILITY_ADAPTATION.md`: explicit fallback, simplification, and deactivation policy driven by runtime capabilities
 - `SCENE_API_SKETCH.md`: tentative user-facing scene construction surface above planning and DRP2
+- `EXTERNAL_UI.md`: boundary between scene-owned semantics and app-owned UI frameworks such as ImGui
 - `INVALIDATION_AND_CACHING.md`: rules for dirty scopes, reuse, redraw, uploads, and plan rebuilds
 - `PICKING.md`: scene-side picking, identity round-trip, grouped hits, and readback semantics
 - `CONTROLLERS.md`: event routing, panel-owned navigation, picking-driven interaction, and redraw

@@ -183,7 +183,8 @@ This document should be read together with:
 2. `FRAME_PLAN_IR.md` for the producer-side artifact this service consumes,
 3. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` for the stages that must run before
    submission,
-4. `PICKING.md` for freshness and identity semantics on picking completions.
+4. `PICKING.md` for freshness and identity semantics on picking completions,
+5. `DIAGNOSTICS_SCHEMA.md` for the shared scene-facing diagnostic record shape.
 
 
 ## Deferred Questions

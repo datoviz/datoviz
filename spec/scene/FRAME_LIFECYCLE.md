@@ -6,16 +6,18 @@ This document defines the logical frame flow for the future scene layer.
 ## High-Level Flow
 
 1. ingest events,
-2. update controllers,
-3. update animations,
-4. update cameras and scene-visible derived state,
-5. resolve invalidation scopes and resource dirtiness,
-6. validate the affected scene state,
-7. apply capability adaptation,
-8. build the scene-level `FramePlan`,
-9. emit DRP2,
-10. submit through the runtime,
-11. process readback or picking results.
+2. update external UI and app-owned scene edits,
+3. update controllers,
+4. update animations,
+5. update cameras and scene-visible derived state,
+6. resolve invalidation scopes and resource dirtiness,
+7. validate the affected scene state,
+8. apply capability adaptation,
+9. build the scene-level `FramePlan`,
+10. emit DRP2,
+11. submit through the runtime,
+12. optionally render external UI overlay,
+13. process readback or picking results.
 
 
 ## Detailed Stages
@@ -25,8 +27,30 @@ This document defines the logical frame flow for the future scene layer.
 Translate raw runtime events into scene-level events and dispatch them to the relevant panel and
 controller state.
 
+When an app uses an external UI layer, the preferred ordering is:
 
-### 2. State Update
+1. raw runtime input arrives,
+2. the app-level UI consumes the event first when appropriate,
+3. unconsumed or forwarded input is translated into scene-level events,
+4. those events are dispatched to the relevant panel and controller state.
+
+
+### 2. External UI And App State Update
+
+Apply any app-owned UI edits that mutate scene-owned semantic state.
+
+Examples:
+
+1. toggling visual visibility from a tree view,
+2. changing opacity from a slider,
+3. switching an active slice or filter mode from an inspector,
+4. applying app-level tool actions that update scene selection or panel configuration.
+
+These edits should still mutate ordinary scene-owned state rather than bypassing scene validation,
+adaptation, invalidation, or planning.
+
+
+### 3. State Update
 
 Mutate:
 
@@ -36,7 +60,7 @@ Mutate:
 4. any derived visual parameters.
 
 
-### 3. Invalidation And Resource Update
+### 4. Invalidation And Resource Update
 
 Identify changed CPU-owned resources and subranges.
 The scene layer should resolve those changes into planning-visible upload and materialization needs for
@@ -50,7 +74,7 @@ This stage should determine:
 4. which uploads, creates, or readbacks must appear in the next `FramePlan`.
 
 
-### 4. Validation
+### 5. Validation
 
 Validate the smallest correct scene scope affected by the current invalidation state.
 
@@ -62,7 +86,7 @@ This stage should determine:
 4. whether planning may proceed for the affected scope.
 
 
-### 5. Capability Adaptation
+### 6. Capability Adaptation
 
 Apply runtime capability information to the already-validated preferred scene intent.
 
@@ -74,7 +98,7 @@ This stage should determine:
 4. which additional invalidation consequences follow from the chosen adaptation outcome.
 
 
-### 6. Frame Planning
+### 7. Frame Planning
 
 Build a per-frame execution plan that decides:
 
@@ -90,7 +114,7 @@ The current spec direction is that this build produces one scene-level `FramePla
 even when the plan contains panel-local nodes or subplans.
 
 
-### 7. DRP2 Emission
+### 8. DRP2 Emission
 
 Emit:
 
@@ -106,14 +130,28 @@ Emission should be a translation of the already-built `FramePlan`.
 It should not rediscover upload work outside the plan.
 
 
-### 8. Runtime Submission
+### 9. Runtime Submission
 
 Submit the emitted work through the runtime-facing boundary.
 
 This stage should treat the runtime as an execution service, not as a second planner.
 
 
-### 9. Post-Frame Readback
+### 10. External UI Overlay
+
+If the app uses an external UI framework, it may render that UI after scene submission and before
+present.
+
+This overlay path is app-owned and native.
+
+It should not:
+
+1. redefine scene semantics,
+2. bypass scene planning,
+3. require UI widgets to be modeled as scene visuals or annotations.
+
+
+### 11. Post-Frame Readback
 
 Interpret picking or offscreen readback results at the scene level.
 
@@ -129,3 +167,7 @@ Interpret picking or offscreen readback results at the scene level.
 6. Runtime failures must map back to scene-visible diagnostics without backend leakage.
 7. Upload and lazy materialization work should be represented in `FramePlan`, not introduced as an
    execution-time side path.
+8. App-owned external UI may mutate scene state, but those edits must still flow through normal
+   invalidation, validation, adaptation, and planning stages.
+9. App-owned external UI overlay rendering is outside the scene plan unless a later spec defines a
+   separate scene-native UI layer explicitly.

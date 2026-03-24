@@ -628,6 +628,16 @@ Picking should be optional and mode-dependent.
 It should at least be able to identify the image instance, and may optionally resolve finer logical
 sub-identity later if a mode requires it.
 
+For slice-like modes backed by volumetric sampling, the preferred contract should also allow
+probe-oriented picking or explicit query results to expose:
+
+1. slice-local coordinates,
+2. world, atlas, or other declared scene-domain coordinates,
+3. sampled value at the queried position,
+4. optional channel, filter, or sampling-context identity.
+
+These should be treated as scene-level sampling semantics rather than backend texture payload.
+
 
 ### Variant Axes
 
@@ -699,8 +709,19 @@ Optional:
 
 ### Picking Model
 
-Picking should usually be supported at least at the mesh-instance level, with finer-grained policies
-left to later contracts.
+Picking should usually be supported at least at the mesh-instance level.
+
+When one mesh visual represents several stable logical parts, the preferred contract should also
+support semantic group or region identity rather than only primitive identity.
+
+Examples:
+
+1. one anatomical region inside an atlas mesh collection,
+2. one labeled parcel inside a cortical surface,
+3. one submesh partition inside a scientific assembly.
+
+Primitive or face-level payload may remain optional, but it should refine semantic identity rather
+than replace it when the scene model already has stable logical parts.
 
 
 ### Variant Axes
