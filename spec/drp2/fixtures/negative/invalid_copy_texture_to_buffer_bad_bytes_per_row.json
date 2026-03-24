@@ -1,0 +1,87 @@
+{
+  "name": "invalid_copy_texture_to_buffer_bad_bytes_per_row",
+  "description": "CopyTextureToBuffer declares a destination bytes_per_row smaller than one copied texel row.",
+  "reason": "The destination layout must reserve at least width times bytes-per-texel for each copied row.",
+  "fix": "Increase bytes_per_row to cover the copied row footprint.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "copy",
+    "buffer",
+    "layout"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_SRC"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "CopyTextureToBuffer",
+      "encoder_id": 3,
+      "src_texture_id": 1,
+      "src_mip_level": 0,
+      "src_origin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 2,
+        "height": 1,
+        "depth": 1
+      },
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "bytes_per_row": 4,
+      "rows_per_image": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_LAYOUT",
+    "command_index": 5
+  }
+}

@@ -365,7 +365,9 @@ These rules supplement the per-command field semantics in `COMMANDS.md`.
    subresource,
 8. texture transfer commands require layout metadata to describe at least one full texel row and, for
    multi-image transfers, enough rows per image slice,
-9. schema-valid commands may still fail semantic validation if ids, ranges, usage, pass state, or
+9. these layout and mip-selection rules apply symmetrically to `WriteTexture`,
+   `CopyBufferToTexture`, and `CopyTextureToBuffer`,
+10. schema-valid commands may still fail semantic validation if ids, ranges, usage, pass state, or
    layout metadata are wrong.
 
 

@@ -936,7 +936,9 @@ Required fields:
 Semantics:
 
 1. the source box must fit inside the selected texture subresource,
-2. the layout fields describe how texel data is packed in the destination buffer.
+2. `src_mip_level` must select an allocated source subresource,
+3. `bytes_per_row` and `rows_per_image` must be consistent with the copied extent,
+4. the layout fields describe how texel data is packed in the destination buffer.
 
 
 ### `QueueSubmit`

@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `ACTIVE SPEC / FIXTURE CONTRACT`
-> - **Updated on:** `2026-03-23`
+> - **Updated on:** `2026-03-24`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined before any runtime or scene
 >   implementation starts.
 > - **Current branch priority:** The low-level graphics stack remains the main code priority, but
@@ -63,12 +63,11 @@ Verified on this revision:
 
 1. `python3 tools/drp2_fixture_runner.py --json`
 2. `.venv/bin/pytest -q testing/test_drp2_fixture_runner.py`
-3. `just spec-check`
 
 Current executable DRP2 corpus status:
 
-1. `64/64` fixtures passing
-2. `28` focused runner tests passing
+1. `67/67` fixtures passing
+2. `31` focused runner tests passing
 
 
 ## In Scope
@@ -107,17 +106,17 @@ The most sensible next DRP2 step is still not another large object-graph promoti
 
 Recommended next slice:
 
-1. keep the new dynamic-offset contract stable across prose, schema, fixtures, and runner behavior
-2. keep dynamic buffer bindings intentionally free of new capability or alignment fields in active `2.0`
-3. continue fixture-first growth of the active bind-group/pipeline lifetime model before promoting any deferred object family
-4. only add dynamic-offset alignment reporting later if a runtime slice proves the need concretely
-5. if the next hardening pass stays in DRP2, prefer rebinding/submission edge cases over new object families
-6. the next likely frontier is compute-pass rebind parity or explicit execution-time bind-group requirements, not new object families
+1. keep the texture-layout checks stable across prose, fixtures, and runner behavior
+2. add the remaining `CopyTextureToBuffer` layout and range negatives before broadening object scope
+3. continue fixture-first hardening of pass and submission edge cases before promoting any deferred object family
+4. only add backend-facing alignment or capability detail if a runtime slice proves the need concretely
+5. if the next hardening pass stays in DRP2, prefer pass-state and error-lane precision over new object families
+6. the next likely frontier is pass-state parity and explicit diagnostic semantics, not broader resource graphs
 
 Reasoning:
 
-1. the active contract now covers the first non-trivial bind-group dynamic-offset semantics end to end
-2. the highest-value follow-up is contract hardening, not broader object promotion
+1. the active contract now covers handshake, bind-group state, and the first real texture-layout slice end to end
+2. the highest-value follow-up remains contract hardening, not broader object promotion
 3. the current fixture shape stays backend-agnostic precisely by not exposing backend-specific alignment policy yet
 4. deferred object families should remain deferred until a future slice can be validated just as concretely
 

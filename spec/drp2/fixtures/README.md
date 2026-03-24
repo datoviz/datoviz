@@ -65,6 +65,7 @@ The first negative corpus should stay intentionally small and cover the core val
 37. destroying a bind-group layout or pipeline still referenced by already submitted work,
 38. pipeline rebind followed by SetBindGroup validated against the newly bound pipeline,
 39. pipeline rebind followed by Draw validated against the newly bound pipeline.
+40. texture-to-buffer copies with invalid mip selection or inconsistent layout metadata.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 
