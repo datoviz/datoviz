@@ -3,6 +3,16 @@
 This example instantiates the first-class `sphere` family with its default impostor-first direction.
 
 
+## Owning Specs
+
+This example should be read against:
+
+1. `VISUAL_FAMILIES.md` for `sphere` as a first-class family,
+2. `VISUAL_MINI_CONTRACTS.md` for the `sphere` family contract,
+3. `CAPABILITY_ADAPTATION.md` for optional fallback pressure,
+4. `FRAME_PLAN_IR.md` for the expected render-path participation.
+
+
 ## Scene Setup
 
 1. one scene,

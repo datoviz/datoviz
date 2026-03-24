@@ -32,10 +32,11 @@ Their role is narrower:
 
 Each example should describe:
 
-1. the scene setup,
-2. the visual family and variant,
-3. the resource schema instance,
-4. the transform pipeline for that case,
-5. the resulting `FramePlan` shape,
-6. the DRP2 command categories implied,
-7. the key pressure on the current spec.
+1. the owning specs that define the normative rules it exercises,
+2. the scene setup,
+3. the visual family and variant,
+4. the resource schema instance,
+5. the transform pipeline for that case,
+6. the resulting `FramePlan` shape,
+7. the DRP2 command categories implied,
+8. the key pressure on the current spec.

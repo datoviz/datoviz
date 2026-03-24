@@ -5,6 +5,16 @@ transparent enclosing surface, interior region meshes, one slice-like image back
 sampling, picking-driven selection, and one linked 2D subplot.
 
 
+## Owning Specs
+
+This example should be read against:
+
+1. `PREFERRED_API_PROFILE.md` for the current preferred scene-facing API defaults,
+2. `RUNTIME_SERVICE_SKETCH.md` for runtime capability and completion assumptions,
+3. `DIAGNOSTICS_SCHEMA.md` for multi-phase diagnostics expectations,
+4. the specialized family, resource, annotation, and controller docs referenced by the example body.
+
+
 ## Scene Setup
 
 1. one scene,
@@ -66,6 +76,13 @@ Logical scene state:
 7. one current volume-filter selection,
 8. one current probe state containing panel id, world or atlas coordinates, and sampled value,
 9. one request or generation tracking state for stale-result rejection.
+
+Preferred realization guidance:
+
+1. if only a handful of atlas regions are independently shown, one visual per region mesh is a good
+   default,
+2. if many small atlas regions are shown together, a grouped mesh realization is usually preferable,
+3. the semantic region identity should remain the same in both cases.
 
 
 ## Transform Pipeline

@@ -3,6 +3,16 @@
 This example instantiates a richer point-like family with a picking path.
 
 
+## Owning Specs
+
+This example should be read against:
+
+1. `VISUAL_MINI_CONTRACTS.md` for the `marker` family contract,
+2. `PICKING.md` for request/result identity and freshness semantics,
+3. `RESOURCE_MODEL.md` for item and readback resources,
+4. `FRAME_PLAN_IR.md` for picking pass and readback-node structure.
+
+
 ## Scene Setup
 
 1. one scene,

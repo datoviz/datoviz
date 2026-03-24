@@ -4,6 +4,16 @@ This example pressure-tests the `volume` family together with offscreen targets 
 readback.
 
 
+## Owning Specs
+
+This example should be read against:
+
+1. `VISUAL_MINI_CONTRACTS.md` for the `volume` family contract,
+2. `RESOURCE_MODEL.md` for volumetric fields and readback targets,
+3. `RUNTIME_SERVICE_SKETCH.md` for offscreen completion semantics,
+4. `FRAME_PLAN_IR.md` for offscreen render and readback participation.
+
+
 ## Scene Setup
 
 1. one scene,

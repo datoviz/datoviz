@@ -4,6 +4,17 @@ This example instantiates a multi-panel scene with shared data, linked interacti
 annotations, and one consolidated explanatory object.
 
 
+## Owning Specs
+
+This example should be read against:
+
+1. `LEGENDS_AND_COLORBARS.md` for shared explanatory-object and mapping-identity rules,
+2. `ANNOTATIONS.md` for transient probe and crosshair semantics,
+3. `PICKING.md` for latest-request-wins hover semantics,
+4. `CONTROLLERS.md` for linked-panel interaction,
+5. `FRAME_PLAN_IR.md` for panel-local plus shared scene-level `FramePlan` structure.
+
+
 ## Scene Setup
 
 1. one scene,

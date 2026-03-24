@@ -3,6 +3,16 @@
 This example instantiates the `slice` decision as an `image`-family mode.
 
 
+## Owning Specs
+
+This example should be read against:
+
+1. `VISUAL_FAMILIES.md` for `slice` under `image`,
+2. `VISUAL_MINI_CONTRACTS.md` for the `image` family contract,
+3. `RESOURCE_MODEL.md` for sampled and derived field handling,
+4. `TRANSFORM_PIPELINE.md` for slice placement versus panel transform staging.
+
+
 ## Scene Setup
 
 1. one scene,
