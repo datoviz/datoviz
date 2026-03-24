@@ -31,6 +31,7 @@
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/surface.h"
 #include "datoviz/vklite/swapchain.h"
+#include "datoviz/vklite/sync.h"
 #include "datoviz/window.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -365,6 +366,52 @@ static bool _swapchain_prepare(
         return false;
     }
 
+    return true;
+}
+
+
+
+/**
+ * Create and recreate a present-ready swapchain for the current fixture window.
+ *
+ * @param fixture initialized present fixture
+ * @param[out] surface created surface wrapper
+ * @param[out] swapchain created swapchain wrapper
+ * @param[out] extent resolved target extent used for recreate
+ * @return true when setup succeeds, false when the test should skip or fail early
+ */
+static bool _present_ready_swapchain(
+    DvzVklitePresentFixture* fixture, DvzSurface** surface, DvzSwapchain** swapchain, uvec2 extent)
+{
+    ANN(fixture);
+    ANN(surface);
+    ANN(swapchain);
+
+    *surface = dvz_surface_create();
+    *swapchain = dvz_swapchain_create();
+    ANN(*surface);
+    ANN(*swapchain);
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture->window);
+    if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
+    {
+        log_warn("vklite present test skipped because native surface is unavailable");
+        return false;
+    }
+
+    AT(dvz_surface_init_from_device(*surface, fixture->device, fixture->queue_family));
+    AT(dvz_surface_wrap_native(*surface, window_surface->surface, &window_surface->extent));
+    AT(_swapchain_prepare(*swapchain, fixture, *surface));
+
+    DvzPresentStatus status = dvz_swapchain_recreate(*swapchain, extent);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        log_warn("vklite present test skipped because window extent is zero");
+        return false;
+    }
+
+    AT(status == DVZ_PRESENT_STATUS_OK);
+    AT(dvz_swapchain_ready(*swapchain));
     return true;
 }
 
@@ -872,6 +919,240 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
     AT(dvz_swapchain_present_mode(swapchain) == dvz_surface_preferred_present_mode(surface));
 
     dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Verify repeated recreate keeps the swapchain usable and refreshes the resolved state cleanly.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_recreate_repeat_state(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture))
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
+    if (window_surface == NULL)
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    uvec2 size = {window_surface->extent.width, window_surface->extent.height};
+    DvzSurface* surface = NULL;
+    DvzSwapchain* swapchain = NULL;
+    if (!_present_ready_swapchain(&fixture, &surface, &swapchain, size))
+    {
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    uint32_t first_image_count = dvz_swapchain_image_count(swapchain);
+    VkFormat first_format = dvz_swapchain_image_format(swapchain);
+    VkColorSpaceKHR first_color_space = dvz_swapchain_color_space(swapchain);
+    VkPresentModeKHR first_present_mode = dvz_swapchain_present_mode(swapchain);
+    VkExtent2D first_extent = dvz_swapchain_extent(swapchain);
+    VkImage first_image = VK_NULL_HANDLE;
+    VkImageView first_view = VK_NULL_HANDLE;
+    AT(dvz_swapchain_image(swapchain, 0, &first_image));
+    AT(dvz_swapchain_image_view(swapchain, 0, &first_view));
+    AT(first_image != VK_NULL_HANDLE);
+    AT(first_view != VK_NULL_HANDLE);
+
+    DvzPresentStatus status = dvz_swapchain_recreate(swapchain, size);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        log_warn("vklite repeat-recreate test skipped because extent became zero");
+        dvz_swapchain_destroy(swapchain);
+        dvz_surface_destroy(surface);
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    AT(status == DVZ_PRESENT_STATUS_OK);
+    AT(dvz_swapchain_ready(swapchain));
+    AT(dvz_swapchain_handle(swapchain) != VK_NULL_HANDLE);
+    AT(dvz_swapchain_image_count(swapchain) > 0);
+    AT(dvz_swapchain_image(swapchain, 0, &first_image));
+    AT(dvz_swapchain_image_view(swapchain, 0, &first_view));
+    AT(first_image != VK_NULL_HANDLE);
+    AT(first_view != VK_NULL_HANDLE);
+    AT(dvz_swapchain_image_format(swapchain) == first_format);
+    AT(dvz_swapchain_color_space(swapchain) == first_color_space);
+    AT(dvz_swapchain_present_mode(swapchain) == first_present_mode);
+    AT(dvz_swapchain_extent(swapchain).width == first_extent.width);
+    AT(dvz_swapchain_extent(swapchain).height == first_extent.height);
+    AT(first_image_count > 0);
+
+    dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Verify destroy clears cached swapchain image/view access and resolved state.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_destroy_clears_cached_state(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture))
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
+    if (window_surface == NULL)
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    uvec2 size = {window_surface->extent.width, window_surface->extent.height};
+    DvzSurface* surface = NULL;
+    DvzSwapchain* swapchain = NULL;
+    if (!_present_ready_swapchain(&fixture, &surface, &swapchain, size))
+    {
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    dvz_swapchain_destroy(swapchain);
+
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView image_view = VK_NULL_HANDLE;
+    AT(!dvz_swapchain_ready(swapchain));
+    AT(dvz_swapchain_handle(swapchain) == VK_NULL_HANDLE);
+    AT(dvz_swapchain_image_count(swapchain) == 0);
+    AT(dvz_swapchain_image_format(swapchain) == VK_FORMAT_UNDEFINED);
+    AT(dvz_swapchain_present_mode(swapchain) == VK_PRESENT_MODE_FIFO_KHR);
+    AT(dvz_swapchain_extent(swapchain).width == 0);
+    AT(dvz_swapchain_extent(swapchain).height == 0);
+    AT(!dvz_swapchain_image(swapchain, 0, &image));
+    AT(!dvz_swapchain_image_view(swapchain, 0, &image_view));
+
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
+ * Verify acquire/present transitions reject destroyed state and accept one live cycle.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_acquire_present_cycle(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture))
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
+    if (window_surface == NULL)
+    {
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    uvec2 size = {window_surface->extent.width, window_surface->extent.height};
+    DvzSurface* surface = NULL;
+    DvzSwapchain* swapchain = NULL;
+    if (!_present_ready_swapchain(&fixture, &surface, &swapchain, size))
+    {
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzSemaphore* image_available = dvz_semaphore_create_wrapper();
+    ANN(image_available);
+    dvz_semaphore(fixture.device, image_available);
+
+    uint32_t image_idx = UINT32_MAX;
+    DvzPresentStatus status =
+        dvz_swapchain_acquire(swapchain, dvz_semaphore_handle(image_available), UINT64_MAX, &image_idx);
+    if (status == DVZ_PRESENT_STATUS_RECREATE || status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        log_warn("vklite acquire/present cycle test skipped because acquire requested recreate");
+        dvz_semaphore_destroy(image_available);
+        dvz_semaphore_free(image_available);
+        dvz_swapchain_destroy(swapchain);
+        dvz_surface_destroy(surface);
+        dvz_swapchain_free(swapchain);
+        dvz_surface_free(surface);
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    AT(status == DVZ_PRESENT_STATUS_OK);
+    AT(image_idx < dvz_swapchain_image_count(swapchain));
+    status = dvz_swapchain_present(swapchain, fixture.queue, image_idx, VK_NULL_HANDLE);
+    AT(status == DVZ_PRESENT_STATUS_OK || status == DVZ_PRESENT_STATUS_RECREATE);
+
+    dvz_swapchain_destroy(swapchain);
+
+    image_idx = UINT32_MAX;
+    tst_expect_error_begin(suite);
+    status =
+        dvz_swapchain_acquire(swapchain, dvz_semaphore_handle(image_available), UINT64_MAX, &image_idx);
+    AT(status == DVZ_PRESENT_STATUS_ERROR);
+    AT(image_idx == UINT32_MAX);
+    AT(tst_expect_error_end(suite) == 0);
+
+    tst_expect_error_begin(suite);
+    status = dvz_swapchain_present(swapchain, fixture.queue, 0, VK_NULL_HANDLE);
+    AT(status == DVZ_PRESENT_STATUS_ERROR);
+    AT(tst_expect_error_end(suite) == 0);
+
+    dvz_semaphore_destroy(image_available);
+    dvz_semaphore_free(image_available);
     dvz_surface_destroy(surface);
     dvz_swapchain_free(swapchain);
     dvz_surface_free(surface);

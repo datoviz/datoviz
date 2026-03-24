@@ -776,6 +776,7 @@ DvzPresentStatus dvz_swapchain_acquire(
 {
     ANN(swapchain);
     ANN(image_idx);
+    *image_idx = UINT32_MAX;
 
     if (
         !swapchain->ready || swapchain->handle == VK_NULL_HANDLE ||
@@ -785,6 +786,7 @@ DvzPresentStatus dvz_swapchain_acquire(
             "swapchain acquire invalid state (ready=%d has_handle=%d has_device=%d)",
             swapchain->ready ? 1 : 0, swapchain->handle != VK_NULL_HANDLE ? 1 : 0,
             swapchain->device != VK_NULL_HANDLE ? 1 : 0);
+        swapchain->current_image = UINT32_MAX;
         return DVZ_PRESENT_STATUS_ERROR;
     }
     if (swapchain->extent.width == 0 || swapchain->extent.height == 0)
@@ -792,6 +794,7 @@ DvzPresentStatus dvz_swapchain_acquire(
         log_warn(
             "swapchain acquire skipped because extent is zero (%ux%u)", swapchain->extent.width,
             swapchain->extent.height);
+        swapchain->current_image = UINT32_MAX;
         return DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT;
     }
 
@@ -804,6 +807,7 @@ DvzPresentStatus dvz_swapchain_acquire(
         swapchain->current_image = *image_idx;
         return status;
     }
+    swapchain->current_image = UINT32_MAX;
     if (status == DVZ_PRESENT_STATUS_RECREATE)
     {
         log_warn(

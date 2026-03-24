@@ -125,6 +125,9 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
 int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_recreate_repeat_state(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_destroy_clears_cached_state(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain_acquire_present_cycle(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* tstitem);
 
