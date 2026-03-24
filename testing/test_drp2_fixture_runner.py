@@ -26,7 +26,7 @@ def test_drp2_fixture_runner_can_filter_schema_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative_schema'], None, ['schema'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 3
+    assert len(results) == 4
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'schema_validation' for result in results)
 
@@ -94,10 +94,10 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['bind_group'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 10
+    assert len(results) == 12
     assert all(result.passed for result in results)
-    assert results[0].actual_phase == 'semantic_validation'
-    assert results[1].actual_phase == 'semantic_validation'
+    assert any(result.actual_phase == 'schema_validation' for result in results)
+    assert any(result.actual_phase == 'semantic_validation' for result in results)
 
 
 def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_kind() -> None:
@@ -184,6 +184,20 @@ def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenc
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_USAGE'
     assert result.actual_command_index == 14
+
+
+def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenced_by_submitted_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_bind_group_layout_still_referenced_by_submitted_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_bind_group_layout_still_referenced_by_submitted_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 15
 
 
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:

@@ -339,8 +339,9 @@ class DRP2SemanticValidator:
 
     def _handle_CreateBindGroup(self, index: int, command: Dict[str, Any]) -> None:
         layout_state = self._resolve_live(index, command['bind_group_layout_id'], 'bind_group_layout')
+        layout_entries_by_binding = {entry['binding']: entry for entry in layout_state.data['entries']}
         expected_entries = {
-            entry['binding']: entry['binding_type'] for entry in layout_state.data['entries']
+            binding: entry['binding_type'] for binding, entry in layout_entries_by_binding.items()
         }
         actual_entries = {entry['binding']: entry['binding_type'] for entry in command['entries']}
         if actual_entries != expected_entries:
@@ -352,7 +353,16 @@ class DRP2SemanticValidator:
         resources = set()
         for entry in command['entries']:
             binding_type = entry['binding_type']
+            layout_entry = layout_entries_by_binding[entry['binding']]
             if binding_type in ('uniform_buffer', 'storage_buffer'):
+                if layout_entry.get('has_dynamic_offset', False) and (
+                    'offset' not in entry or 'size' not in entry
+                ):
+                    raise SemanticFailure(
+                        'DRP2_ERR_INVALID_ARGUMENT',
+                        index,
+                        f'dynamic bind-group entry {entry["binding"]} requires explicit offset and size',
+                    )
                 if entry['resource_kind'] != 'buffer':
                     raise SemanticFailure(
                         'DRP2_ERR_WRONG_OBJECT_TYPE',

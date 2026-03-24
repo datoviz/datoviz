@@ -363,7 +363,9 @@ Semantics:
    usage bits,
 5. each referenced resource must already exist and remain live for the lifetime required by any
    recorded work that captures the bind group,
-6. buffer-backed entry ranges must fit within the referenced buffer when `offset` and `size` are
+6. if the referenced bind-group layout marks a buffer binding with `has_dynamic_offset = true`, the
+   corresponding bind-group entry must provide both `offset` and `size`,
+7. buffer-backed entry ranges must fit within the referenced buffer when `offset` and `size` are
    provided.
 
 

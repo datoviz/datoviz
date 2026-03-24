@@ -57,6 +57,58 @@
           "binding_type",
           "resource_kind",
           "resource_id"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "binding_type": {
+                  "enum": [
+                    "uniform_buffer",
+                    "storage_buffer"
+                  ]
+                },
+                "resource_kind": {
+                  "const": "buffer"
+                }
+              },
+              "required": [
+                "binding_type",
+                "resource_kind"
+              ]
+            },
+            "then": {
+              "required": [
+                "offset",
+                "size"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "binding_type": {
+                  "enum": [
+                    "uniform_buffer",
+                    "storage_buffer"
+                  ]
+                }
+              },
+              "required": [
+                "binding_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "resource_kind": {
+                  "enum": [
+                    "buffer",
+                    "texture"
+                  ]
+                }
+              }
+            }
+          }
         ]
       }
     },

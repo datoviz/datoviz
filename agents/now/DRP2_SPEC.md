@@ -43,6 +43,8 @@ Active DRP2 `2.0` surface now includes:
 7. dynamic buffer offsets on bind-group bindings
 8. copy commands and queue submission
 9. destruction-safety negatives for bind-group layouts and pipelines
+10. conservative submitted-work lifetime coverage for bind-group layouts and pipelines
+11. explicit bounded-range requirement for buffer-backed bind-group entries
 
 What remains intentionally deferred:
 
@@ -64,7 +66,7 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `49/49` fixtures passing
+1. `59/59` fixtures passing
 2. `17` focused runner tests passing
 
 
@@ -108,6 +110,7 @@ Recommended next slice:
 2. keep dynamic buffer bindings intentionally free of new capability or alignment fields in active `2.0`
 3. continue fixture-first growth of the active bind-group/pipeline lifetime model before promoting any deferred object family
 4. only add dynamic-offset alignment reporting later if a runtime slice proves the need concretely
+5. if the next hardening pass stays in DRP2, prefer rebinding/submission edge cases over new object families
 
 Reasoning:
 

@@ -1,0 +1,35 @@
+{
+  "name": "invalid_dynamic_offset_on_texture_layout_entry",
+  "description": "A bind-group layout marks a sampled-texture binding as dynamic.",
+  "reason": "The active DRP2 schema allows has_dynamic_offset only on uniform_buffer and storage_buffer bindings.",
+  "fix": "Remove has_dynamic_offset from texture bindings, or change the binding to a supported buffer binding type.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "schema",
+    "bind_group",
+    "dynamic_offsets"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 1,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampled_texture",
+          "has_dynamic_offset": true
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 0
+  }
+}

@@ -55,7 +55,9 @@ The first negative corpus should stay intentionally small and cover the core val
 28. bind-group entries that do not match the declared layout,
 29. bind group bound into a pipeline slot expecting a different layout,
 30. bind group dynamic offsets missing, extra, or applied in the wrong layout order,
-31. destroying a bind-group layout or pipeline still referenced by recorded work.
+31. dynamic buffer binding created without an explicit buffer range,
+32. destroying a bind-group layout or pipeline still referenced by recorded work,
+33. destroying a bind-group layout or pipeline still referenced by already submitted work.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 

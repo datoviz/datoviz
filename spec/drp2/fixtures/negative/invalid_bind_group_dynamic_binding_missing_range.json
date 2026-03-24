@@ -1,0 +1,56 @@
+{
+  "name": "invalid_bind_group_dynamic_binding_missing_range",
+  "description": "CreateBindGroup omits the explicit buffer range for a binding declared dynamic by the bind-group layout.",
+  "reason": "Dynamic buffer bindings must declare a concrete base offset and size so SetBindGroup can apply dynamic_offsets against a bounded buffer range.",
+  "fix": "Provide both offset and size on every CreateBindGroup entry whose layout binding has has_dynamic_offset set to true.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "schema",
+    "bind_group",
+    "dynamic_offsets"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "has_dynamic_offset": true
+        }
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 64,
+      "usage": [
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 2
+  }
+}
