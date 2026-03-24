@@ -5,6 +5,16 @@ This document defines what the future scene layer must require from DRP2 and its
 It intentionally does not define the final public scene API.
 
 
+## Normative Status
+
+This document is normative.
+
+Its hard requirements should be read as constraints on both:
+
+1. scene-side architectural work,
+2. future runtime-facing contract work.
+
+
 ## Architectural Position
 
 The scene layer sits above DRP2.

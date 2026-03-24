@@ -47,21 +47,35 @@ Until a narrower public API proposal replaces this sketch, the preferred interpr
    direction unless a later API pass replaces them.
 
 
+## Normative Status
+
+This document is mostly informative.
+
+Its role is:
+
+1. to pressure-test the broader design space,
+2. to show how the current scene contracts could compose into a user-facing surface,
+3. to provide examples and pressure points for later narrowing.
+
+For the current preferred API defaults, `PREFERRED_API_PROFILE.md` is the normative document.
+
+
 ## Reading Guide
 
 This sketch is not the authoritative owner of every rule it touches.
 
 When several scene documents overlap, read them with the following priority:
 
-1. `VISUAL_FAMILIES.md` owns preferred family taxonomy,
-2. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` own family-level contract details,
-3. `RESOURCE_MODEL.md` owns logical resource classes and dirty-shape expectations,
-4. `TRANSFORM_PIPELINE.md` owns normalization versus panel-transform boundaries,
-5. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` own pre-planning rejection and fallback
+1. `PREFERRED_API_PROFILE.md` owns the current preferred API-shape defaults,
+2. `VISUAL_FAMILIES.md` owns preferred family taxonomy,
+3. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` own family-level contract details,
+4. `RESOURCE_MODEL.md` owns logical resource classes and dirty-shape expectations,
+5. `TRANSFORM_PIPELINE.md` owns normalization versus panel-transform boundaries,
+6. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` own pre-planning rejection and fallback
    rules,
-6. `INVALIDATION_AND_CACHING.md` owns dirty-scope semantics,
-7. `FRAME_PLAN_IR.md` owns the producer-side execution artifact,
-8. `RUNTIME_BOUNDARY.md` owns the scene-to-runtime service contract.
+7. `INVALIDATION_AND_CACHING.md` owns dirty-scope semantics,
+8. `FRAME_PLAN_IR.md` owns the producer-side execution artifact,
+9. `RUNTIME_BOUNDARY.md` and `RUNTIME_SERVICE_SKETCH.md` own the scene-to-runtime service contract.
 
 
 ## Core Goals

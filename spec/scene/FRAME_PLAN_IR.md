@@ -12,6 +12,13 @@ Its purpose is narrower:
 3. provide a stable producer-side model while some DRP2 object details remain under active review.
 
 
+## Normative Status
+
+This document is normative for the producer-side execution artifact.
+
+Examples, deferred questions, and follow-on notes in this document are informative.
+
+
 ## Position In The Stack
 
 `FramePlan` sits between:

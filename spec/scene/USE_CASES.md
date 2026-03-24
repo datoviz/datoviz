@@ -161,3 +161,44 @@ Pressure on the spec:
 2. variant axes should be capability-driven, not Vulkan-driven,
 3. scene resource classes should not assume native-only object models,
 4. image-family slice-like semantics should not depend on explicit texture-handle vocabulary.
+
+
+## UC7: Neuroanatomy Atlas Explorer
+
+Requirements:
+
+1. one 3D panel mixing transparent enclosing surfaces, interior region meshes, and one slice-like
+   image backed by volumetric sampling,
+2. stable region identity that survives batching and is suitable for click selection,
+3. scene-owned region visibility and opacity state driven by an external hierarchical UI,
+4. panel-local 3D camera navigation with orbit and wheel zoom,
+5. picking on both region meshes and the slice image,
+6. probe readout returning 3D coordinates plus sampled value,
+7. one linked 2D panel that updates from slice state or probe state,
+8. explicit capability-sensitive transparency behavior.
+
+Likely family examples:
+
+1. `mesh`
+2. `image`
+3. `path`
+4. `point`
+
+Likely resource classes:
+
+1. `IndexedGeometry`
+2. `SampledField`
+3. `StyleBlock`
+4. panel-local picking `DerivedField`
+5. `ReadbackTarget`
+
+Pressure on the spec:
+
+1. mesh-family picking may need a stronger grouped-identity story for selectable region collections,
+2. image-family slice picking should be able to report semantic coordinates and sampled values,
+3. scene state must remain separate from external UI widget structure while still being easy to
+   mutate from it,
+4. linked 2D subplot updates should compose with 3D interaction without unnecessary shared-resource
+   churn,
+5. transparency policy should remain capability-aware and explicit rather than implicit or backend-
+   shaped.

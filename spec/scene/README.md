@@ -38,10 +38,28 @@ The current scene spec should be read with the following invariants in mind:
 12. capability adaptation runs after validation and before planning.
 
 
+## Reading Conventions
+
+Unless a document says otherwise, this directory should be read with the following conventions:
+
+1. sections titled `Core Rule`, `Rules`, `Requirements`, `Hard Requirements`, `Normative
+   Invariants`, `Current Preferred Direction`, or `Contract` are normative for the current planning
+   baseline,
+2. sections titled `Purpose`, `Position`, `Why`, `Rationale`, `Examples`, `Deferred Questions`,
+   `Open Choices`, `Deferred API Choices`, `What This Document Intentionally Leaves Open`,
+   `Immediate Follow-Up`, `Immediate Follow-On Specs`, or `Recommended Next Step` are informative
+   unless they explicitly say otherwise,
+3. worked examples under `examples/` are informative pressure tests, not independent sources of
+   normative behavior,
+4. when two documents overlap, the more specialized contract document should win over a broader
+   orientation document.
+
+
 ## Documents
 
 - `REQUIREMENTS.md`: what the scene layer needs from DRP2 and the runtime
 - `OBJECT_MODEL.md`: minimum stable concepts
+- `PREFERRED_API_PROFILE.md`: the current preferred scene-facing API defaults selected from the API sketch
 - `AXES.md`: scene-side semantic model for axes, ticks, labels, and related annotations
 - `ANNOTATIONS.md`: semantic model for labels, guides, probes, overlays, legends, and callouts
 - `LEGENDS_AND_COLORBARS.md`: semantic model for discrete legends, continuous colorbars, and shared explanatory mappings
@@ -59,6 +77,7 @@ The current scene spec should be read with the following invariants in mind:
 - `FRAME_PLAN_IR.md`: producer-side intermediate representation for one planned frame
 - `FRAME_LIFECYCLE.md`: update/build/emit flow
 - `RUNTIME_BOUNDARY.md`: allowed and forbidden dependencies on the runtime layer
+- `RUNTIME_SERVICE_SKETCH.md`: minimal conceptual runtime service surface below scene planning and above backend execution
 - `USE_CASES.md`: pressure-test scenarios
 - `examples/`: worked scene-spec examples that instantiate families, transforms, and `FramePlan`
   shapes
@@ -82,8 +101,7 @@ The current scene spec now covers:
 The next recommended iterations are:
 
 1. more worked examples, especially multi-panel and annotation-heavy cases,
-2. a refinement pass on `SCENE_API_SKETCH.md`,
-3. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
+2. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
    `volume`.
 
 The general rule should remain:

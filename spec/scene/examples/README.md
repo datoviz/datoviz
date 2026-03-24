@@ -4,6 +4,10 @@ This directory contains worked examples that pressure-test the current scene spe
 
 These examples are not API proposals.
 
+They are also not independent normative sources.
+
+They should be read as informative pressure tests of the main scene-spec documents.
+
 Their role is narrower:
 
 1. instantiate the current family contracts,
@@ -21,6 +25,7 @@ Their role is narrower:
 5. `SPHERE_IMPOSTOR.md`
 6. `VOLUME_OFFSCREEN.md`
 7. `LINKED_PANELS_PROBE_COLORBAR.md`
+8. `MOUSE_BRAIN_ATLAS_EXPLORER.md`
 
 
 ## Common Structure

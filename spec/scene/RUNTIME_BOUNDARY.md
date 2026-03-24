@@ -3,6 +3,17 @@
 This document defines the allowed contract between the future scene layer and the DRP2 runtime.
 
 
+## Normative Status
+
+This document is normative for dependency boundaries and ownership boundaries.
+
+It should be read as:
+
+1. defining what the scene layer may rely on,
+2. defining what must stay below the scene semantic layer,
+3. delegating more concrete service-shape questions to `RUNTIME_SERVICE_SKETCH.md`.
+
+
 ## Position
 
 The runtime boundary sits below scene validation, capability adaptation, and `FramePlan`
@@ -19,7 +30,8 @@ This document should be read together with:
 
 1. `SCENE_VALIDATION.md` for what must fail before execution,
 2. `CAPABILITY_ADAPTATION.md` for how capability-driven simplification or rejection is chosen,
-3. `FRAME_PLAN_IR.md` for the producer-side plan shape the runtime receives.
+3. `FRAME_PLAN_IR.md` for the producer-side plan shape the runtime receives,
+4. `RUNTIME_SERVICE_SKETCH.md` for the minimal conceptual runtime service surface.
 
 
 ## Core Rule
