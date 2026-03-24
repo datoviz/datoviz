@@ -8,7 +8,7 @@
       "const": "RendererHelloReply"
     },
     "version": {
-      "type": "string"
+      "$ref": "../common/Version.json"
     },
     "status": {
       "type": "string"

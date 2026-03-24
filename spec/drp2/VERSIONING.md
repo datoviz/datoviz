@@ -29,10 +29,11 @@ Compatibility rules:
 ## Producer and Runtime Rules
 
 1. Every command stream declares its protocol version.
-2. Runtimes declare the versions they accept.
-3. Unknown major versions fail immediately.
-4. Unknown optional fields in the same major version may be ignored only when the schema says so.
-5. The schema and fixture set for a given version must be frozen together.
+2. Handshake commands use the same `{major, minor, patch?}` version object as fixtures.
+3. Runtimes declare the versions they accept.
+4. Unknown major versions fail immediately.
+5. Unknown optional fields in the same major version may be ignored only when the schema says so.
+6. The schema and fixture set for a given version must be frozen together.
 
 
 ## Freeze Strategy

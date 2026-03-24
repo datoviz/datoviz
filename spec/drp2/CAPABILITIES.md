@@ -19,10 +19,9 @@ The runtime should expose a structured capability record covering:
 3. texture format support
 4. sample count support
 5. depth/stencil support
-6. compute support
-7. limits
-8. determinism-related guarantees
-9. optional native escape hatches outside the core DRP2 contract
+6. limits
+7. determinism-related guarantees
+8. optional native escape hatches outside the core DRP2 contract
 
 
 ## Minimum Fields
@@ -40,10 +39,9 @@ The first capability schema should include at least:
 9. `max_texture_array_layers`
 10. `supported_texture_formats`
 11. `supported_sample_counts`
-12. `supports_compute`
-13. `supports_timestamp_queries`
-14. `supports_fp64`
-15. `supported_shader_formats`
+12. `supports_timestamp_queries`
+13. `supports_fp64`
+14. `supported_shader_formats`
 
 
 ## Fixture Capability Shape
@@ -57,8 +55,6 @@ shape:
 4. `max_texture_dimension_3d`
 5. `supported_texture_formats`
 6. `supported_sample_counts`
-7. `supports_compute`
-
 The omitted fields from the broader future capability model remain planned but are not yet consumed
 by the first executable fixture corpus.
 
@@ -79,7 +75,7 @@ The first active `2.0` capability validation rules are:
 3. `CreateTexture.sample_count` must be listed in `supported_sample_counts`,
 4. `CreateTexture` dimensions must not exceed the corresponding `max_texture_dimension_*` field for
    the chosen texture dimension,
-5. `BeginComputePass` and `DispatchWorkgroups` require `supports_compute = true`.
+5. compute is mandatory in active DRP2 `2.0` and therefore is not gated by a capability field.
 
 Capability failures should occur during `capability_validation` after schema and semantic validation
 have succeeded.

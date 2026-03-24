@@ -2,7 +2,7 @@
 
 Human-readable contract for the future Datoviz Rendering Protocol v2.
 
-Status: draft
+Status: active reduced contract
 Scope: intentionally reduced first contract
 
 
@@ -45,21 +45,17 @@ strictly required by the minimal renderer slice.
 The first DRP2 contract defines logical objects only.
 Backends remain free to implement them with different physical strategies.
 
-Object kinds:
+Active object kinds:
 
 1. buffer
 2. texture
-3. texture view
-4. sampler
-5. shader module
-6. bind group layout
-7. bind group
-8. pipeline layout
-9. render pipeline
-10. compute pipeline
-11. command encoder
-12. render pass encoder
-13. compute pass encoder
+3. bind group layout
+4. bind group
+5. render pipeline
+6. compute pipeline
+7. command encoder
+8. render pass encoder
+9. compute pass encoder
 
 Each object is addressed by an explicit logical id chosen by the producer.
 
@@ -70,7 +66,7 @@ The reduced `2.0` contract covers only these categories:
 
 1. resource creation and destruction,
 2. resource upload and copy,
-3. shader and pipeline creation,
+3. lightweight pipeline creation,
 4. command encoder lifecycle,
 5. render pass lifecycle,
 6. compute pass lifecycle,
@@ -123,10 +119,12 @@ At a minimum, `2.0` includes:
 
 ## Shader Rules
 
-1. WGSL should be the default contract-level shader language.
-2. Native-only ingestion paths such as SPIR-V may exist behind explicit capability flags.
-3. A shader module must declare enough metadata for deterministic validation.
-4. Pipeline creation must fail early if declared resources, layouts, or stages are incompatible.
+1. Shader-module objects are deferred from the active executable `2.0` surface.
+2. WGSL remains the intended default contract-level shader language once shader ingestion is promoted.
+3. Native-only ingestion paths such as SPIR-V may exist behind explicit capability flags once shader
+   ingestion is promoted.
+4. The active `2.0` surface validates only lightweight pipeline metadata such as bind-group-layout
+   expectations and required vertex-buffer slots.
 
 
 ## Pass Rules
@@ -171,16 +169,15 @@ At minimum the capability model must cover:
 2. shader language support,
 3. texture format support,
 4. sample count support,
-5. compute availability,
-6. FP64 support,
-7. key size and binding limits.
+5. FP64 support,
+6. key size and binding limits.
 
 Detailed rules live in `CAPABILITIES.md`.
 
 
 ## Versioning
 
-Every stream declares a DRP2 protocol version.
+Every stream and handshake message declares a DRP2 protocol version object.
 The schema, fixture set, and human-readable Layer 1 contract for a given version must be kept in
 lockstep.
 
@@ -198,6 +195,9 @@ The contract is not ready until it has:
 4. native and browser replay expectations.
 
 The command surface for `2.0` is frozen in `COMMANDS.md`.
+
+The active fixture core does not yet exercise handshake/version negotiation; that slice remains
+specified but not yet part of first conformance.
 
 
 ## Pressure Tests From Future Scene Work

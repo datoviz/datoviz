@@ -9,7 +9,6 @@
   },
   "tags": [
     "negative",
-    "schema",
     "bind_group",
     "dynamic_offsets"
   ],
@@ -49,7 +48,7 @@
   ],
   "expected": {
     "outcome": "error",
-    "phase": "schema_validation",
+    "phase": "semantic_validation",
     "code": "DRP2_ERR_INVALID_ARGUMENT",
     "command_index": 2
   }

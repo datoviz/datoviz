@@ -147,7 +147,7 @@ Starts protocol negotiation for a fresh connection.
 Required fields:
 
 - `cmd`: must be `HelloRenderer`.
-- `version`: protocol version requested by the client.
+- `version`: protocol version object requested by the client.
 
 Optional fields:
 
@@ -168,7 +168,7 @@ Returns the renderer-side result of handshake negotiation.
 Required fields:
 
 - `cmd`: must be `RendererHelloReply`.
-- `version`: protocol version accepted by the renderer.
+- `version`: protocol version object accepted by the renderer.
 - `status`: handshake outcome.
 
 Optional fields:

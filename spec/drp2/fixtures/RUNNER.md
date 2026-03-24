@@ -96,7 +96,8 @@ Rules:
 2. once a fixture has failed in one phase, later phases must not replace that result,
 3. a runner may internally combine decode and schema setup steps, but the reported phase must still
    map to the contract phase names,
-4. fixture-envelope failure is a runner or corpus-authoring problem, not a DRP command-stream result.
+4. fixture-envelope failure is a runner or corpus-authoring problem, not a DRP command-stream result
+   and should not be reported as a DRP command phase result.
 
 
 ## First-Failure Semantics

@@ -128,25 +128,6 @@ class DRP2CapabilityValidator:
                 f'texture extent {extent} exceeds capability limit {max_dimension} for dimension {dimension}',
             )
 
-    def _handle_BeginComputePass(self, index: int, command: Dict[str, Any]) -> None:
-        supports_compute = self.capabilities.get('supports_compute')
-        if supports_compute is False:
-            raise CapabilityFailure(
-                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
-                index,
-                'compute is disabled by the fixture capability set',
-            )
-
-    def _handle_DispatchWorkgroups(self, index: int, command: Dict[str, Any]) -> None:
-        supports_compute = self.capabilities.get('supports_compute')
-        if supports_compute is False:
-            raise CapabilityFailure(
-                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
-                index,
-                'compute is disabled by the fixture capability set',
-            )
-
-
 class DRP2SemanticValidator:
     """Validate the current active DRP2 fixture corpus semantically."""
 
@@ -894,8 +875,8 @@ class DRP2FixtureRunner:
                 fixture_path,
                 fixture,
                 actual_outcome='error',
-                actual_phase='schema_validation',
-                actual_code='DRP2_ERR_INVALID_ARGUMENT',
+                actual_phase=None,
+                actual_code=None,
                 actual_command_index=None,
                 message=f'fixture envelope validation failed: {exc.message}',
             )

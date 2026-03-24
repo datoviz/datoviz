@@ -8,7 +8,7 @@
       "const": "HelloRenderer"
     },
     "version": {
-      "type": "string"
+      "$ref": "../common/Version.json"
     },
     "client_name": {
       "type": "string"

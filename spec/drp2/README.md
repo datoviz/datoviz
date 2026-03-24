@@ -82,4 +82,6 @@ important, but they should pressure-test the contract rather than bloat the firs
 
 1. explicit destroy commands are part of `2.0`,
 2. compute remains mandatory in the first frozen contract,
-3. prototype C API sketches are intentionally excluded until the contract is tighter.
+3. handshake and version-negotiation commands are specified in the active prose and schema, but are
+   not yet part of the first executable fixture core,
+4. prototype C API sketches are intentionally excluded until the contract is tighter.

@@ -36,7 +36,7 @@ def test_drp2_fixture_runner_can_filter_capability_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['capability'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 4
+    assert len(results) == 3
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'capability_validation' for result in results)
     assert all(result.actual_code == 'DRP2_ERR_UNSUPPORTED_CAPABILITY' for result in results)
@@ -95,8 +95,7 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
 
     assert len(results) == 13
     assert all(result.passed for result in results)
-    assert any(result.actual_phase == 'schema_validation' for result in results)
-    assert any(result.actual_phase == 'semantic_validation' for result in results)
+    assert all(result.actual_phase == 'semantic_validation' for result in results)
 
 
 def test_drp2_fixture_runner_rejects_wrong_bind_group_resource_kind() -> None:
@@ -252,7 +251,7 @@ def test_drp2_fixture_runner_cli_json_output_shape() -> None:
 
 def test_drp2_fixture_runner_cli_json_output_for_capability_negative() -> None:
     root = Path(__file__).resolve().parents[1]
-    fixture = 'spec/drp2/fixtures/negative/invalid_capability_compute_disabled.json'
+    fixture = 'spec/drp2/fixtures/negative/invalid_capability_texture_format.json'
     proc = subprocess.run(
         [sys.executable, 'tools/drp2_fixture_runner.py', '--json', fixture],
         cwd=root,
@@ -265,10 +264,10 @@ def test_drp2_fixture_runner_cli_json_output_for_capability_negative() -> None:
     assert isinstance(payload, list)
     assert len(payload) == 1
     result = payload[0]
-    assert result['fixture_name'] == 'invalid_capability_compute_disabled'
+    assert result['fixture_name'] == 'invalid_capability_texture_format'
     assert result['fixture_path'] == fixture
     assert result['actual_outcome'] == 'error'
     assert result['actual_phase'] == 'capability_validation'
     assert result['actual_code'] == 'DRP2_ERR_UNSUPPORTED_CAPABILITY'
-    assert result['actual_command_index'] == 1
+    assert result['actual_command_index'] == 0
     assert result['passed'] is True
