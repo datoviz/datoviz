@@ -367,18 +367,20 @@ int dvz_allocator_buffer(
 
     // External memory.
     VkExternalMemoryBufferCreateInfo external_info = {0};
+    VkBufferCreateInfo info_local = *info;
     if (allocator->external != 0)
     {
         external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO;
         external_info.handleTypes = allocator->external;
-        info->pNext = &external_info;
+        external_info.pNext = info_local.pNext;
+        info_local.pNext = &external_info;
     }
 
     // TODO: queue families
 
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateBuffer(
-        allocator->vma, info, &alloc_info, vk_buffer, &alloc->alloc, &alloc->info));
+        allocator->vma, &info_local, &alloc_info, vk_buffer, &alloc->alloc, &alloc->info));
     if (out == 0)
         log_trace("buffer created");
 

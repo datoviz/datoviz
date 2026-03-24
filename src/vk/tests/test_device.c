@@ -226,3 +226,52 @@ int test_device_destroy_rebuild(TstSuite* suite, TstItem* tstitem)
     dvz_instance_destroy(instance);
     return 0;
 }
+
+
+
+int test_device_build_requires_destroy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+    DvzInstance* instance = dvz_instance_create(&icfg);
+    AT(instance != NULL);
+
+    uint32_t gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &gpu_count);
+    AT(gpus != NULL);
+    AT(gpu_count > 0);
+
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+
+    DvzQueues queues = {0};
+    dvz_queues(&qc, &queues);
+    AT(queues.queue_count > 0);
+
+    DvzDevice device = {0};
+    dvz_gpu_device(&gpus[0], &device);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_request_queues(&device, queue->family_idx, 1);
+    }
+
+    AT(dvz_device_build(&device) == 0);
+    AT(device.vk_device != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_device_build(&device) != 0);
+    AT(device.vk_device != VK_NULL_HANDLE);
+
+    dvz_device_destroy(&device);
+    AT(device.vk_device == VK_NULL_HANDLE);
+
+    AT(dvz_device_build(&device) == 0);
+    AT(device.vk_device != VK_NULL_HANDLE);
+
+    dvz_device_destroy(&device);
+    dvz_instance_destroy(instance);
+    return 0;
+}

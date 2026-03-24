@@ -612,8 +612,11 @@ int dvz_device_build(DvzDevice* device)
 {
     ANN(device);
 
-    // TODO: recreate the underlying vulkan logical device if called multiple times (destroying the
-    // old one first), which allows to change the queues before
+    if (device->vk_device != VK_NULL_HANDLE || dvz_obj_is_created(&device->obj))
+    {
+        log_error("cannot build a device twice without destroying it first");
+        return 1;
+    }
 
     // NOTE: if the GPU supports extension VK_KHR_portability_subset, it must be requested
     if (dvz_gpu_has_extension(device->gpu, "VK_KHR_portability_subset"))
