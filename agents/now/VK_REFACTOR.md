@@ -12,13 +12,16 @@
 >   and `sync` opacity completed for `DvzFence`, `DvzSemaphore`, and `DvzSubmit`).
 > - **Current closure note:** `DvzBarriers` is intentionally still public because it serves as a
 >   mutable command-recording builder rather than an owned wrapper. The remaining clearly sensitive
->   public exposure is now mostly on the `vk` side, especially `vk/memory.h`.
+>   public exposure is now mostly on the `vk` allocator side, especially the intentional advanced
+>   interop surface in `vk/memory_interop.h`.
 > - **Technical-debt note:** The most direct public VMA include leak has now been removed from
 >   `vk/memory.h`: `DvzAllocationFlags` is Datoviz-owned and VMA stays internal to `src/vk`.
 >   Remaining allocator debt is narrower: advanced allocator/interop semantics now live behind the
 >   opt-in `vk/memory_interop.h` header, while the core allocation path stays in `vk/memory.h`.
 >   `vklite` and canvas still intentionally expose allocator-oriented object references such as
->   `DvzVma*`.
+>   `DvzVma*`. Import/export declarations remain intentionally public there even when some paths are
+>   lightly used today, because later interop hardening should build on that public surface rather
+>   than reintroducing private vk helpers.
 > - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` are now mostly closed
 >   for the active `vklite` wrapper surface. The remaining work is a final policy/doc pass plus any
 >   follow-up cleanup around `vk` allocator/memory exposure and, if desired later, stricter `vk`
@@ -37,8 +40,8 @@
 5. Keep the focused lifecycle tests current around repeated submit, destroy idempotence, and
    recreate/reset semantics.
 6. Unless external low-level API stabilization becomes a priority, defer deeper allocator-interop
-   abstraction work beyond the `memory_interop.h` split; treat it as intentional technical debt
-   rather than an immediate blocker.
+   abstraction work beyond the `memory_interop.h` split; keep the import/export helpers public and
+   treat additional narrowing as intentional technical debt rather than an immediate blocker.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 

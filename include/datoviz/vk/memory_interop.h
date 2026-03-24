@@ -33,6 +33,18 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
+ * Advanced allocator interop surface.
+ *
+ * This header is an intentional low-level escape hatch for external-memory workflows.
+ * It is narrower than `memory.h` and should be included only by code that explicitly needs
+ * raw memory handles, export/import plumbing, or external-handle inspection.
+ *
+ * The declarations below remain public on purpose even when some of them are lightly used on the
+ * current branch, because allocator interop hardening is expected to continue here rather than
+ * through private vk-only helpers.
+ */
+
+/**
  * Return the external-handle type configured on an allocator.
  *
  * This helper belongs to the narrower external-memory interop surface rather than the stable
@@ -79,6 +91,10 @@ DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
  * This function belongs to the advanced external-memory interop surface, not the stable
  * low-level allocation path.
  *
+ * This declaration remains intentionally public even though the active branch currently exercises
+ * import paths only narrowly; future allocator-interop hardening is expected to build on this
+ * surface rather than reintroducing private entry points.
+ *
  * !!! warning
  *     This function remains experimental on the current branch. The import-buffer test path is
  *     still documented as unreliable and should not be treated as a stable v0.4 contract yet.
@@ -102,6 +118,10 @@ DVZ_EXPORT int dvz_allocator_import_buffer(
  *
  * This function belongs to the advanced external-memory interop surface, not the stable
  * low-level allocation path.
+ *
+ * This declaration remains intentionally public even though the active branch does not yet rely on
+ * image import broadly; future allocator-interop hardening is expected to build on this surface
+ * rather than reintroducing private entry points.
  *
  * @param allocator the allocator
  * @param info the image creation
