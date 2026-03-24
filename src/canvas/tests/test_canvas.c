@@ -1695,6 +1695,7 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_video_handle_refresh_after_recreate);
     TEST_SIMPLE(test_canvas_device_lost_fatal_transition);
     TEST_SIMPLE(test_canvas_glfw_wrap_surface_present_recovery);
+    TEST_SIMPLE(test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state);
     TEST_SIMPLE(test_canvas_glfw);
     return 0;
 }

@@ -1634,6 +1634,157 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* ite
 
 
 
+int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+#if DVZ_HAS_GLFW
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    if (fixture.canvas != NULL)
+    {
+        dvz_canvas_set_draw_callback(fixture.canvas, NULL, NULL);
+        dvz_canvas_destroy(fixture.canvas);
+        fixture.canvas = NULL;
+    }
+    if (fixture.window != NULL)
+    {
+        dvz_window_destroy(fixture.window);
+        fixture.window = NULL;
+    }
+
+    uint32_t ext_count = dvz_window_host_required_extension_count(fixture.host, DVZ_BACKEND_GLFW);
+    if (ext_count > 0)
+    {
+        const char** extensions = dvz_calloc(ext_count, sizeof(char*));
+        ANN(extensions);
+        AT(dvz_window_host_required_extensions(fixture.host, DVZ_BACKEND_GLFW, ext_count, extensions) == (int)ext_count);
+        AT(dvz_window_wrap_set_required_extensions(fixture.host, ext_count, extensions) == 0);
+        AT(dvz_window_host_required_extension_count(fixture.host, DVZ_BACKEND_WRAP) == ext_count);
+        dvz_free((void*)extensions);
+    }
+
+    DvzWindowConfig cfg = dvz_test_wrap_window_config("canvas-wrap-resize-recreate", 320, 240);
+    CanvasWrapSurfaceFixture wrap = {0};
+    if (!_canvas_wrap_surface_fixture_create(&fixture, &cfg, &wrap))
+    {
+        _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzCanvasConfig canvas_cfg = dvz_canvas_default_config();
+    canvas_cfg.window = wrap.wrap_window;
+    canvas_cfg.device = fixture.device;
+    canvas_cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    canvas_cfg.timing_history = 1;
+    fixture.canvas = dvz_canvas_create(&canvas_cfg);
+    if (fixture.canvas == NULL)
+    {
+        log_warn("canvas wrap resize test skipped because canvas creation failed");
+        _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(fixture.canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .awaiting_refresh = false,
+        .saw_update_since_refresh = false,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(fixture.canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    bool initial_submit = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        initial_submit = true;
+        break;
+    }
+    AT(initial_submit);
+
+    DvzCanvasSurfaceInfo before_surface = dvz_canvas_window_surface_info(fixture.canvas);
+    uint32_t update_before = probe.update_count;
+    uint32_t submit_before = probe.submit_count;
+    probe.awaiting_refresh = true;
+    probe.saw_update_since_refresh = false;
+
+    DvzWindowExternalSurfaceInfo resized = wrap.info;
+    resized.extent.width = wrap.info.extent.width + 64;
+    resized.extent.height = wrap.info.extent.height + 32;
+    AT(dvz_window_wrap_update_surface(wrap.wrap_window, &resized) == 0);
+    const DvzWindowSurface* resized_surface = dvz_window_surface(wrap.wrap_window);
+    ANN(resized_surface);
+    AT(resized_surface->extent.width == resized.extent.width);
+    AT(resized_surface->extent.height == resized.extent.height);
+    dvz_canvas_swapchain_mark_out_of_date(fixture.canvas);
+
+    bool recreated_submit = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            continue;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        recreated_submit = true;
+        if (probe.update_count > update_before)
+        {
+            break;
+        }
+    }
+
+    AT(recreated_submit);
+    AT(probe.update_count > update_before);
+    AT(probe.submit_count > submit_before);
+    AT(probe.saw_update_since_refresh);
+    AT(probe.stale_submit_count == 0);
+    AT(probe.latest_handles_dirty);
+    DvzCanvasSurfaceInfo after_surface = dvz_canvas_window_surface_info(fixture.canvas);
+    AT(after_surface.extent.width != before_surface.extent.width || after_surface.extent.height != before_surface.extent.height);
+
+    if (fixture.canvas != NULL)
+    {
+        dvz_canvas_set_draw_callback(fixture.canvas, NULL, NULL);
+        dvz_canvas_destroy(fixture.canvas);
+        fixture.canvas = NULL;
+    }
+    _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+#else
+    log_warn("canvas wrap resize test skipped because Datoviz was not build with glfw support");
+    return 0;
+#endif
+}
+
+
+
 /**
  * Exercise the GLFW-backed canvas and ensure the frame submission path works.
  *

@@ -59,6 +59,7 @@ int test_canvas_capture_api(TstSuite* suite, TstItem* item);
 int test_canvas_device_lost_fatal_transition(TstSuite* suite, TstItem* item);
 
 int test_canvas_glfw_wrap_surface_present_recovery(TstSuite* suite, TstItem* item);
+int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suite, TstItem* item);
 
 
 
