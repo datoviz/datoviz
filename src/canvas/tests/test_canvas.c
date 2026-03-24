@@ -546,6 +546,178 @@ int test_canvas_timings(TstSuite* suite, TstItem* item)
     dvz_canvas_timings_release(&timings);
     return 0;
 }
+
+
+
+/**
+ * Validate offscreen canvas destroy/recreate on the same device and window setup.
+ */
+int test_canvas_offscreen_destroy_recreate(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    {
+        goto offscreen_recreate_cleanup;
+    }
+
+    host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-offscreen-destroy-recreate";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto offscreen_recreate_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    cfg.timing_history = 4;
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        canvas = dvz_canvas_create(&cfg);
+        AT(canvas != NULL);
+        dvz_canvas_set_draw_callback(canvas, canvas_offscreen_clear_draw, NULL);
+        AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_OFFSCREEN);
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+        AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING);
+        AT(dvz_canvas_submit(canvas) == 0);
+        AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+        dvz_canvas_destroy(canvas);
+        canvas = NULL;
+    }
+
+offscreen_recreate_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas offscreen destroy/recreate test skipped (%s)", skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
+/**
+ * Validate GLFW present canvas destroy/recreate on the same device and window setup.
+ */
+int test_canvas_glfw_destroy_recreate(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+
+    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    {
+        goto glfw_recreate_cleanup;
+    }
+
+    host = dvz_window_host();
+    if (host == NULL)
+    {
+        skip_reason = "window host creation failed";
+        goto glfw_recreate_cleanup;
+    }
+    if (!dvz_window_glfw_init())
+    {
+        skip_reason = "GLFW initialization failed";
+        goto glfw_recreate_cleanup;
+    }
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "canvas-glfw-destroy-recreate";
+    window_cfg.width = 320;
+    window_cfg.height = 240;
+    window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
+    {
+        skip_reason = "GLFW window creation failed";
+        goto glfw_recreate_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_default_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+    cfg.timing_history = 4;
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        canvas = dvz_canvas_create(&cfg);
+        if (canvas == NULL)
+        {
+            skip_reason = "canvas creation failed";
+            goto glfw_recreate_cleanup;
+        }
+        AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_PRESENT);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+        {
+            skip_reason = "surface unavailable";
+            goto glfw_recreate_cleanup;
+        }
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        dvz_canvas_destroy(canvas);
+        canvas = NULL;
+    }
+
+glfw_recreate_cleanup:
+    if (skip_reason != NULL)
+    {
+        log_warn("canvas GLFW destroy/recreate test skipped (%s)", skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
 /**
  * Validate first-class offscreen mode frame/submit flow on a headless window backend.
  */
@@ -1499,6 +1671,8 @@ int test_canvas(TstSuite* suite)
     TEST_SIMPLE(test_canvas_defaults);
     TEST_SIMPLE(test_canvas_frame_pool);
     TEST_SIMPLE(test_canvas_timings);
+    TEST_SIMPLE(test_canvas_offscreen_destroy_recreate);
+    TEST_SIMPLE(test_canvas_glfw_destroy_recreate);
     TEST_SIMPLE(test_canvas_offscreen_mode_headless);
     TEST_SIMPLE(test_canvas_offscreen_video_sink_cpu_readback);
     TEST_SIMPLE(test_canvas_offscreen_state_on_stream_submit_failure);
