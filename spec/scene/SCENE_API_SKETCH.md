@@ -12,9 +12,10 @@ API could express:
 3. resource attachment,
 4. grouped and sampled data,
 5. parameter and variant selection,
-6. axes and picking,
-7. invalidation and redraw requests,
-8. frame planning and DRP2 emission boundaries.
+6. axes, annotations, and explanatory objects,
+7. picking, validation, and capability-aware behavior,
+8. invalidation and redraw requests,
+9. frame planning and DRP2 emission boundaries.
 
 
 ## Position
@@ -48,7 +49,9 @@ At the same time, it should remain explicit about:
 3. visual family identity,
 4. resource schemas,
 5. grouped data,
-6. invalidation and redraw.
+6. annotations and explanatory objects,
+7. validation and capability adaptation,
+8. invalidation and redraw.
 
 
 ## Core Rule
@@ -84,11 +87,16 @@ The minimum useful scene-side surface is:
 3. `Visual`
 4. `Resource`
 5. `Axis`
-6. `Controller`
-7. `Animation`
-8. `PickRequest`
+6. `Annotation`
+7. `Legend` / `Colorbar`
+8. `Controller`
+9. `Animation`
+10. `PickRequest`
+11. `ValidationReport`
+12. `CapabilityPolicy`
 
-This matches the existing scene object model while adding an explicit axis-facing object.
+This matches the existing scene object model while making room for the newer annotation, validation,
+and adaptation surface.
 
 
 ## Construction Model
@@ -102,9 +110,11 @@ The important semantic operations are:
 3. create a `Visual` with a chosen family,
 4. create or import `Resource` objects,
 5. attach resources and parameters to visuals,
-6. attach visuals and axes to panels,
-7. mark objects dirty or request redraw,
-8. ask the runtime to present or export.
+6. create axes, annotations, legends, or colorbars,
+7. attach visuals and explanatory objects to panels or scene layout,
+8. validate or inspect scene state,
+9. mark objects dirty or request redraw,
+10. ask the runtime to present or export.
 
 
 ## Scene
@@ -114,9 +124,12 @@ The important semantic operations are:
 1. panels,
 2. shared resources,
 3. visuals,
-4. controllers,
-5. animations,
-6. scene-global invalidation state.
+4. scene-global annotations,
+5. scene-shared legends or colorbars when needed,
+6. controllers,
+7. animations,
+8. scene-global invalidation state,
+9. validation and capability-adaptation policy.
 
 Conceptually, the user should be able to do things like:
 
@@ -125,6 +138,7 @@ scene = scene_create()
 panel = scene_panel(scene, panel_desc)
 visual = scene_visual(scene, visual_desc)
 resource = scene_resource(scene, resource_desc)
+annotation = scene_annotation(scene, annotation_desc)
 ```
 
 The exact call spelling is open.
@@ -138,7 +152,8 @@ The exact call spelling is open.
 2. panel dimensionality or camera family,
 3. panel-local controller state,
 4. panel-local axes and overlays,
-5. target mode such as onscreen or offscreen.
+5. panel-local legends or annotations when appropriate,
+6. target mode such as onscreen or offscreen.
 
 Panels should not privately own their own unrelated copies of scene resources by default.
 
@@ -146,7 +161,8 @@ The important separation is:
 
 1. scene resources may be shared,
 2. panel transforms are panel-local,
-3. panel-local derived resources are allowed when planning requires them.
+3. panel-local derived resources are allowed when planning requires them,
+4. panel-local explanatory objects may coexist with scene-shared ones.
 
 
 ## Visual Creation
@@ -171,6 +187,40 @@ visual = scene_visual(scene, {
 
 The public surface should not force the user to think in terms of backend pipelines or descriptor
 sets.
+
+
+## Annotations And Explanatory Objects
+
+The sketch should expose annotations by semantic role rather than by low-level drawing primitive.
+
+The important object classes are:
+
+1. labels,
+2. guides,
+3. probes,
+4. crosshairs,
+5. callouts,
+6. legends,
+7. colorbars.
+
+Conceptually:
+
+```text
+annotation = panel_annotation(panel, {
+    kind = CROSSHAIR,
+    interaction = hover_linked,
+})
+
+legend = panel_legend(panel, legend_desc)
+colorbar = scene_colorbar(scene, colorbar_desc)
+```
+
+The final API may choose:
+
+1. one generic annotation object with typed descriptors, or
+2. several specialized constructors.
+
+But the semantic model should remain explicit either way.
 
 
 ## Visual Families
@@ -335,6 +385,35 @@ The API should avoid backend language such as:
 3. binding layouts.
 
 
+## Mapping And Explanation Surface
+
+The sketch should leave room for explicit scene-side mapping or scale objects where needed.
+
+This matters for:
+
+1. legends,
+2. colorbars,
+3. size scales,
+4. categorical encodings,
+5. domain-aware explanatory objects.
+
+Conceptually:
+
+```text
+scale = scene_scale(scene, {
+    kind = COLOR,
+    domain = scalar_domain,
+    palette = VIRIDIS,
+})
+
+visual_set_mapping(visual, COLOR_SCALE, scale)
+colorbar_set_scale(colorbar, scale)
+```
+
+The final API may derive mappings from visual parameters instead of exposing first-class scale
+objects, but the semantic relationship should still be representable.
+
+
 ## Transform Surface
 
 The scene API should reflect the two-stage transform model already defined in
@@ -398,6 +477,33 @@ The implementation may emit segment and glyph contributions internally, but the 
 surface should not require the user to assemble those manually.
 
 
+## Legends And Colorbars
+
+Legends and colorbars should behave as annotation-side explanatory objects rather than as visual
+families.
+
+The API should allow:
+
+1. panel-attached legends,
+2. scene-shared consolidated legends,
+3. panel-attached or axis-attached colorbars,
+4. optional interactive legend behavior,
+5. explicit attachment to one or more visual mappings.
+
+Conceptually:
+
+```text
+legend = panel_legend(panel, { placement = RIGHT })
+legend_add_visual(legend, visual)
+
+colorbar = scene_colorbar(scene, { placement = SHARED_RIGHT })
+colorbar_set_scale(colorbar, scale)
+colorbar_attach_panels(colorbar, [panel_a, panel_b])
+```
+
+The scene-side API should not force the user to assemble the ramp, tick marks, and labels manually.
+
+
 ## Picking
 
 Picking should be panel-aware and visual-aware, but still scene-level in semantics.
@@ -423,7 +529,37 @@ The final result shape should be able to report:
 3. family id,
 4. item id when present,
 5. group id when present,
-6. auxiliary payload if the family defines one.
+6. auxiliary payload if the family defines one,
+7. annotation or legend-entry identity when the picked object is explanatory rather than primary
+   data.
+
+
+## Validation And Capability Surface
+
+The API sketch should make room for:
+
+1. eager semantic validation,
+2. pre-plan validation,
+3. capability-aware simplification or rejection,
+4. scene-visible diagnostics.
+
+Conceptually:
+
+```text
+report = scene_validate(scene)
+scene_set_capabilities(scene, runtime_caps)
+scene_set_capability_policy(scene, policy)
+scene_adapt(scene)
+```
+
+The final API may fuse some of these operations into frame build entry points, but the logical stages
+should remain visible at the spec level.
+
+The important rule is:
+
+1. invalid scene semantics should fail as scene validation,
+2. unsupported runtime paths should fail or simplify as capability adaptation,
+3. neither should be deferred into backend-specific surprises.
 
 
 ## Invalidation Surface
@@ -436,7 +572,9 @@ The important invalidation scopes are:
 2. `ResourceDataDirty`
 3. `PanelTransformDirty`
 4. `AxisLayoutDirty`
-5. `FramePlanDirty`
+5. `AnnotationDirty`
+6. `ExplanationLayoutDirty`
+7. `FramePlanDirty`
 
 Not every API call needs a manual dirty flag, but the model should be explicit enough that the scene
 layer can reason deterministically about what must be rebuilt.
@@ -446,7 +584,9 @@ Examples:
 1. writing new point positions invalidates the normalized point resource and likely the plan,
 2. panning a panel invalidates panel transforms but not the source point table,
 3. panning far enough may also invalidate axis layout,
-4. toggling picking may invalidate visual variant selection and the plan.
+4. moving a linked crosshair may invalidate panel-local annotation layout only,
+5. changing a color scale may invalidate a colorbar without rebuilding unrelated visuals,
+6. toggling picking may invalidate visual variant selection and the plan.
 
 
 ## Redraw Requests
@@ -493,7 +633,9 @@ At the spec level, the important requirement is that scene validation should be 
 2. incompatible family and variant choices,
 3. malformed grouped data,
 4. unsupported capability requests,
-5. invalid transform or domain configurations.
+5. invalid transform or domain configurations,
+6. invalid annotation or legend attachments,
+7. capability-driven simplification or deactivation outcomes.
 
 
 ## Example: 2D Point Scatter
@@ -518,6 +660,53 @@ panel_add_visual(panel, visual)
 panel_add_default_axes(panel)
 scene_request_redraw(scene)
 ```
+
+
+## Example: Linked Panels With Shared Colorbar
+
+Conceptually, a user should also be able to express a richer multi-panel case like:
+
+```text
+scene = scene_create()
+panel_a = scene_panel(scene, { camera = PANZOOM_2D })
+panel_b = scene_panel(scene, { camera = PANZOOM_2D })
+
+field = scene_sampled_field(scene, scalar_field_schema)
+field_write(field, full_extent, scalar_data)
+
+scale = scene_scale(scene, {
+    kind = COLOR,
+    domain = data_domain,
+    palette = VIRIDIS,
+})
+
+image = scene_visual(scene, { family = IMAGE, picking = true })
+visual_set_resource(image, FIELD, field)
+visual_set_mapping(image, COLOR_SCALE, scale)
+
+panel_add_visual(panel_a, image)
+panel_add_visual(panel_b, image)
+
+scene_link_panels(scene, panel_a, panel_b, { mode = SHARED_PROBE })
+panel_add_annotation(panel_a, { kind = CROSSHAIR, interaction = hover_linked })
+panel_add_annotation(panel_b, { kind = CROSSHAIR, interaction = hover_linked })
+
+colorbar = scene_colorbar(scene, { placement = SHARED_RIGHT })
+colorbar_set_scale(colorbar, scale)
+colorbar_attach_panels(colorbar, [panel_a, panel_b])
+
+scene_request_redraw(scene)
+```
+
+This is intentionally still only a sketch.
+
+The important pressure it adds is:
+
+1. scene-shared resource ownership,
+2. panel-local transforms,
+3. scene-shared explanatory objects,
+4. linked interaction,
+5. capability-aware picking behavior.
 
 The scene layer is then responsible for:
 
