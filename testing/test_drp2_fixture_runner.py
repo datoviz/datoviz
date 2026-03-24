@@ -352,7 +352,7 @@ def test_drp2_fixture_runner_rejects_bind_group_entries_mismatch_layout() -> Non
     assert result.fixture_name == 'invalid_bind_group_entries_mismatch_layout'
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
-    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_code == 'DRP2_ERR_INVALID_ARGUMENT'
     assert result.actual_command_index == 4
 
 

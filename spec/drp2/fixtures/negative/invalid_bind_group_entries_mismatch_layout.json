@@ -68,7 +68,7 @@
   "expected": {
     "outcome": "error",
     "phase": "semantic_validation",
-    "code": "DRP2_ERR_INVALID_STATE",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
     "command_index": 4
   }
 }

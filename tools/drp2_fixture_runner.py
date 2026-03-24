@@ -436,7 +436,7 @@ class DRP2SemanticValidator:
         actual_entries = {entry['binding']: entry['binding_type'] for entry in command['entries']}
         if actual_entries != expected_entries:
             raise SemanticFailure(
-                'DRP2_ERR_INVALID_STATE',
+                'DRP2_ERR_INVALID_ARGUMENT',
                 index,
                 f'bind group {command["id"]} entries do not match layout {command["bind_group_layout_id"]}',
             )

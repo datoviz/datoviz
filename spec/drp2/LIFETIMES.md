@@ -147,8 +147,8 @@ Validation consequences:
 2. a bind-group entry whose referenced resource lacks the usage bits implied by `binding_type` should
    fail with `DRP2_ERR_USAGE`,
 3. a bind group whose entries do not exactly match its declared bind-group layout should fail with
-   `DRP2_ERR_INVALID_ARGUMENT` or `DRP2_ERR_INVALID_STATE` depending on whether the mismatch is
-   treated as structural shape or semantic compatibility,
+   `DRP2_ERR_INVALID_ARGUMENT` because the create-time command shape is malformed against the chosen
+   layout,
 4. a dynamic buffer binding created without an explicit `offset` and `size` should fail with
    `DRP2_ERR_INVALID_ARGUMENT`.
 

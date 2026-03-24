@@ -96,11 +96,12 @@ Use the most specific error code that matches the contract-visible failure.
 1. use `DRP2_ERR_INVALID_STATE` when the failure is about recorder scope or sequencing,
 2. use `DRP2_ERR_USAGE` when the failure is about whether a live resource may legally be used or
    destroyed in the current contract state,
-3. prefer `DRP2_ERR_INVALID_STATE` for examples such as:
+3. use `DRP2_ERR_INVALID_ARGUMENT` when a create-time command shape is structurally incompatible with
+   an already-resolved live object,
+4. prefer `DRP2_ERR_INVALID_STATE` for examples such as:
    - draw outside a render pass
    - draw or dispatch without a pipeline bound in the current pass
    - setting a bind group before a pipeline is bound in the current pass
-   - creating a bind group whose entries do not match the declared layout
    - setting a bind group whose layout does not match the current pipeline slot
    - draw without all vertex-buffer slots required by the bound pipeline
    - indexed draw without a bound index buffer
@@ -108,12 +109,15 @@ Use the most specific error code that matches the contract-visible failure.
    - finishing an encoder with an open pass
    - resubmitting a command buffer that was already submitted earlier in the stream
    - issuing a copy command inside a pass
-4. prefer `DRP2_ERR_USAGE` for examples such as:
+5. prefer `DRP2_ERR_USAGE` for examples such as:
    - destroying a resource still referenced by recorded or submitted work
    - destroying a bind group still referenced by recorded or submitted work
    - creating a bind-group entry whose referenced resource lacks the usage bits implied by
      `binding_type`
    - using a resource in a way forbidden by its declared creation usage
+6. prefer `DRP2_ERR_INVALID_ARGUMENT` for examples such as:
+   - creating a bind group whose entries do not match the declared layout
+   - creating a dynamic buffer binding without the explicit range required by the layout
 
 
 ### Range, Layout, And Alignment
