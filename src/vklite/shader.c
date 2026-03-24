@@ -62,6 +62,11 @@ int dvz_shader(DvzDevice* device, DvzSize size, const uint32_t* buffer, DvzShade
     ANN(buffer);
     ANN(shader);
     ASSERT(size > 0);
+    if (dvz_obj_is_created(&shader->obj))
+    {
+        log_error("cannot create a shader twice without destroying it first");
+        return 1;
+    }
 
     VkDevice vkd = dvz_device_handle(device);
     ANNVK(vkd);
@@ -122,6 +127,7 @@ void dvz_shader_destroy(DvzShader* shader)
     vkDestroyShaderModule(vkd, shader->vk_shader, NULL);
     log_trace("shader module destroyed");
 
+    shader->vk_shader = VK_NULL_HANDLE;
     dvz_free(shader->buffer);
     shader->buffer = NULL;
     dvz_obj_destroyed(&shader->obj);

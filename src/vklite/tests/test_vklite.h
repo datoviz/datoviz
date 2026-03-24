@@ -89,10 +89,12 @@ int test_vklite_submit_reset_reuse(TstSuite* suite, TstItem* tstitem);
 int test_vklite_sampler_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_shader_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_compute_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem);
 
@@ -108,6 +110,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_graphics_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
 int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem);

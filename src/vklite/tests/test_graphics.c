@@ -272,6 +272,87 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
 
 
 
+int test_vklite_graphics_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {0};
+    features13.dynamicRendering = true;
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    ANN(device);
+
+    DvzGraphics* graphics = dvz_graphics_create_wrapper();
+    DvzShader* vs = dvz_shader_create_wrapper();
+    DvzShader* fs = dvz_shader_create_wrapper();
+    DvzSlots* slots = dvz_slots_create_wrapper();
+    ANN(graphics);
+    ANN(vs);
+    ANN(fs);
+    ANN(slots);
+
+    dvz_graphics(device, graphics);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_graphics_create(graphics) != 0);
+    AT(dvz_graphics_handle(graphics) == VK_NULL_HANDLE);
+
+    DvzSize vs_size = 0;
+    DvzSize fs_size = 0;
+    uint32_t* vs_spv = dvz_test_shader_load("hello_triangle.vert.spv", &vs_size);
+    uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
+    ANN(vs_spv);
+    ANN(fs_spv);
+    AT(dvz_shader(device, vs_size, vs_spv, vs) == 0);
+    AT(dvz_shader(device, fs_size, fs_spv, fs) == 0);
+
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_graphics_create(graphics) != 0);
+    AT(dvz_graphics_handle(graphics) == VK_NULL_HANDLE);
+
+    dvz_slots(device, slots);
+    AT(dvz_slots_create(slots) == 0);
+    dvz_graphics_layout(graphics, dvz_slots_handle(slots));
+    dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_graphics_primitive(
+        graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+    dvz_graphics_viewport(graphics, 0, 0, 64, 64, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_scissor(graphics, 0, 0, 64, 64, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+
+    AT(dvz_graphics_create(graphics) == 0);
+    AT(dvz_graphics_handle(graphics) != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_graphics_create(graphics) != 0);
+    AT(dvz_graphics_handle(graphics) != VK_NULL_HANDLE);
+
+    dvz_graphics_destroy(graphics);
+    AT(dvz_graphics_handle(graphics) == VK_NULL_HANDLE);
+
+    AT(dvz_graphics_create(graphics) == 0);
+    AT(dvz_graphics_handle(graphics) != VK_NULL_HANDLE);
+
+    dvz_graphics_destroy(graphics);
+    dvz_graphics_free(graphics);
+    dvz_slots_destroy(slots);
+    dvz_slots_free(slots);
+    dvz_shader_destroy(vs);
+    dvz_shader_destroy(fs);
+    dvz_shader_free(vs);
+    dvz_shader_free(fs);
+    dvz_free(vs_spv);
+    dvz_free(fs_spv);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}
+
+
+
 int test_vklite_fixture_screenshot_repeat(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);

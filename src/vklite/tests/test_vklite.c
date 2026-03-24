@@ -76,8 +76,10 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_submit_reset_reuse);
     TEST_SIMPLE(test_vklite_sampler_1);
     TEST_SIMPLE(test_vklite_shader_1);
+    TEST_SIMPLE(test_vklite_shader_create_requires_destroy);
     TEST_SIMPLE(test_vklite_slots_1);
     TEST_SIMPLE(test_vklite_compute_1);
+    TEST_SIMPLE(test_vklite_compute_create_requires_destroy);
     TEST_SIMPLE(test_vklite_buffers_1);
     TEST_SIMPLE(test_vklite_buffer_views);
     TEST_SIMPLE(test_vklite_buffer_create_requires_destroy);
@@ -86,6 +88,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_descriptors_1);
     TEST_SIMPLE(test_vklite_rendering_reset);
     TEST_SIMPLE(test_vklite_graphics_1);
+    TEST_SIMPLE(test_vklite_graphics_create_requires_destroy);
     TEST_SIMPLE(test_vklite_fixture_screenshot_repeat);
     TEST_SIMPLE(test_vklite_surface_query);
     TEST_SIMPLE(test_vklite_swapchain_recreate);

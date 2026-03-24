@@ -87,3 +87,38 @@ int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem)
 
     return err_count > 0;
 }
+
+
+
+int test_vklite_shader_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+
+    DvzShader* shader = dvz_shader_create_wrapper();
+    ANN(shader);
+
+    AT(dvz_shader(dvz_gpu_ctx_device(ctx), sizeof(shader_spirv), (uint32_t*)shader_spirv, shader) == 0);
+    AT(dvz_shader_handle(shader) != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_shader(dvz_gpu_ctx_device(ctx), sizeof(shader_spirv), (uint32_t*)shader_spirv, shader) != 0);
+    AT(dvz_shader_handle(shader) != VK_NULL_HANDLE);
+
+    dvz_shader_destroy(shader);
+    AT(dvz_shader_handle(shader) == VK_NULL_HANDLE);
+
+    AT(dvz_shader(dvz_gpu_ctx_device(ctx), sizeof(shader_spirv), (uint32_t*)shader_spirv, shader) == 0);
+    AT(dvz_shader_handle(shader) != VK_NULL_HANDLE);
+
+    dvz_shader_destroy(shader);
+    dvz_shader_free(shader);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}

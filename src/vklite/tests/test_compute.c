@@ -160,3 +160,65 @@ int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem)
 
     return err_count > 0;
 }
+
+
+
+int test_vklite_compute_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {0};
+    features13.maintenance4 = true;
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    ANN(device);
+
+    DvzCompute* compute = dvz_compute_create_wrapper();
+    DvzShader* shader = dvz_shader_create_wrapper();
+    DvzSlots* slots = dvz_slots_create_wrapper();
+    ANN(compute);
+    ANN(shader);
+    ANN(slots);
+
+    dvz_compute(device, compute);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_compute_create(compute) != 0);
+    AT(dvz_compute_handle(compute) == VK_NULL_HANDLE);
+
+    AT(dvz_shader(device, sizeof(minimal_compute), (uint32_t*)minimal_compute, shader) == 0);
+    dvz_compute_shader(compute, dvz_shader_handle(shader));
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_compute_create(compute) != 0);
+    AT(dvz_compute_handle(compute) == VK_NULL_HANDLE);
+
+    dvz_slots(device, slots);
+    dvz_slots_binding(slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    AT(dvz_slots_create(slots) == 0);
+    dvz_compute_layout(compute, dvz_slots_handle(slots));
+
+    AT(dvz_compute_create(compute) == 0);
+    AT(dvz_compute_handle(compute) != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_compute_create(compute) != 0);
+    AT(dvz_compute_handle(compute) != VK_NULL_HANDLE);
+
+    dvz_compute_destroy(compute);
+    AT(dvz_compute_handle(compute) == VK_NULL_HANDLE);
+
+    AT(dvz_compute_create(compute) == 0);
+    AT(dvz_compute_handle(compute) != VK_NULL_HANDLE);
+
+    dvz_compute_destroy(compute);
+    dvz_compute_free(compute);
+    dvz_slots_destroy(slots);
+    dvz_slots_free(slots);
+    dvz_shader_destroy(shader);
+    dvz_shader_free(shader);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}

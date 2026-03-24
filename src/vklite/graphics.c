@@ -603,9 +603,32 @@ void dvz_graphics_multisampling(
 int dvz_graphics_create(DvzGraphics* graphics)
 {
     ANN(graphics);
+    if (dvz_obj_is_created(&graphics->obj))
+    {
+        log_error("cannot create a graphics pipeline twice without destroying it first");
+        return 1;
+    }
 
     DvzDevice* device = graphics->device;
     ANN(device);
+    if (graphics->layout == VK_NULL_HANDLE)
+    {
+        log_error("cannot create graphics pipeline without layout");
+        return 1;
+    }
+    if (graphics->shader_count == 0)
+    {
+        log_error("cannot create graphics pipeline without shaders");
+        return 1;
+    }
+    for (uint32_t i = 0; i < graphics->shader_count; i++)
+    {
+        if (graphics->shaders[i] == VK_NULL_HANDLE)
+        {
+            log_error("cannot create graphics pipeline with null shader module");
+            return 1;
+        }
+    }
 
     // Create the pipeline.
     VkGraphicsPipelineCreateInfo info = {0};

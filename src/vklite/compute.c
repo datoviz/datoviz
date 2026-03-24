@@ -116,6 +116,11 @@ int dvz_compute_create(DvzCompute* compute)
 {
     ANN(compute);
     ANN(compute->device);
+    if (dvz_obj_is_created(&compute->obj))
+    {
+        log_error("cannot create compute pipeline twice without destroying it first");
+        return 1;
+    }
 
     if (compute->layout == VK_NULL_HANDLE)
     {
