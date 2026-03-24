@@ -47,7 +47,7 @@ def test_drp2_fixture_runner_can_filter_pipeline_prerequisite_negatives() -> Non
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['pipeline'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 2
+    assert len(results) == 4
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'semantic_validation' for result in results)
     assert all(result.actual_code == 'DRP2_ERR_INVALID_STATE' for result in results)
@@ -70,11 +70,10 @@ def test_drp2_fixture_runner_can_filter_vertex_binding_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['vertex_binding'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 1
-    assert results[0].passed is True
-    assert results[0].actual_phase == 'semantic_validation'
-    assert results[0].actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert results[0].actual_command_index == 5
+    assert len(results) == 2
+    assert all(result.passed for result in results)
+    assert all(result.actual_phase == 'semantic_validation' for result in results)
+    assert all(result.actual_code == 'DRP2_ERR_INVALID_STATE' for result in results)
 
 
 def test_drp2_fixture_runner_rejects_missing_index_buffer_binding() -> None:
@@ -94,7 +93,7 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['bind_group'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 12
+    assert len(results) == 13
     assert all(result.passed for result in results)
     assert any(result.actual_phase == 'schema_validation' for result in results)
     assert any(result.actual_phase == 'semantic_validation' for result in results)
@@ -198,6 +197,34 @@ def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenc
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_USAGE'
     assert result.actual_command_index == 15
+
+
+def test_drp2_fixture_runner_rejects_set_bind_group_after_pipeline_rebind_without_required_dynamic_offsets() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_set_bind_group_after_pipeline_rebind_missing_dynamic_offsets.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_bind_group_after_pipeline_rebind_missing_dynamic_offsets'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 13
+
+
+def test_drp2_fixture_runner_rejects_draw_after_pipeline_rebind_missing_new_vertex_slot() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_draw_after_pipeline_rebind_missing_new_vertex_slot.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_draw_after_pipeline_rebind_missing_new_vertex_slot'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 9
 
 
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:

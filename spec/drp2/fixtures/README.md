@@ -57,7 +57,9 @@ The first negative corpus should stay intentionally small and cover the core val
 30. bind group dynamic offsets missing, extra, or applied in the wrong layout order,
 31. dynamic buffer binding created without an explicit buffer range,
 32. destroying a bind-group layout or pipeline still referenced by recorded work,
-33. destroying a bind-group layout or pipeline still referenced by already submitted work.
+33. destroying a bind-group layout or pipeline still referenced by already submitted work,
+34. pipeline rebind followed by SetBindGroup validated against the newly bound pipeline,
+35. pipeline rebind followed by Draw validated against the newly bound pipeline.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 
@@ -73,7 +75,8 @@ The first positive corpus should stay minimal and focus on clean command shapes:
 8. compute pass with pipeline bind plus dispatch,
 9. render pass with pipeline plus vertex and index bindings for `DrawIndexed`,
 10. render pass with pipeline plus bind-group binding before draw,
-11. render pass with bind-group dynamic offsets applied in layout order before draw.
+11. render pass with bind-group dynamic offsets applied in layout order before draw,
+12. render pass pipeline rebind with refreshed bind-group and vertex-buffer state before draw.
 
 
 ## Metadata Policy

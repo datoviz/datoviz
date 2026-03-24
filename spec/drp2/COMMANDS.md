@@ -647,7 +647,11 @@ Semantics:
 
 1. `pipeline_id` must reference a live pipeline object,
 2. the pipeline type must match the pass type,
-3. rebinding replaces the previously bound pipeline for later commands in the same pass.
+3. rebinding replaces the previously bound pipeline for later commands in the same pass,
+4. later `SetBindGroup`, `Draw`, `DrawIndexed`, or `DispatchWorkgroups` validation uses the most
+   recently bound pipeline in that pass,
+5. runtimes may discard previously cached bind-group compatibility state when a new pipeline is
+   bound.
 
 
 ### `SetVertexBuffer`
@@ -727,7 +731,9 @@ Semantics:
 8. each consumed dynamic offset is added to the corresponding bind-group entry's base `offset`
    before validating the referenced buffer range,
 9. if the bind-group layout declares no dynamic buffer bindings, `dynamic_offsets` must be omitted or
-   empty.
+   empty,
+10. if a new pipeline is rebound earlier in the same pass, `SetBindGroup` is interpreted against the
+    newly bound pipeline rather than any earlier pipeline.
 
 
 ### `SetViewport`

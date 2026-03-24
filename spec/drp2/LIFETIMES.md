@@ -307,7 +307,9 @@ Rules:
    dynamic offset for each such binding in layout entry order,
 15. each dynamic offset is applied to the corresponding bind-group entry's base offset before buffer
    range validation,
-16. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
+16. after a pipeline rebind, later draw/dispatch commands validate against the newly bound pipeline's
+   requirements rather than any earlier pipeline,
+17. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
    cannot validate the slot against a known layout.
 
 Active runner note:

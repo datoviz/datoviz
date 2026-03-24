@@ -1,0 +1,192 @@
+{
+  "name": "render_pass_rebind_pipeline_then_draw_with_updated_state",
+  "description": "A render pass binds one pipeline, then rebinds to a second pipeline, updates bind-group and vertex-buffer state to match the new pipeline, and draws successfully.",
+  "reason": "Later SetBindGroup and Draw validation use the most recently bound pipeline in the pass, and the command stream refreshes the required state after the rebind.",
+  "notes": "This fixture keeps the rebind semantics explicit without introducing deferred pipeline-layout objects.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "pipeline",
+    "bind_group",
+    "vertex_binding",
+    "render_pass",
+    "draw"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 15,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "has_dynamic_offset": true
+        }
+      ]
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "vertex_buffer_slots": 1,
+      "bind_group_layout_ids": [
+        14
+      ]
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 16,
+      "vertex_buffer_slots": 2,
+      "bind_group_layout_ids": [
+        15
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 11,
+      "size": 64,
+      "usage": [
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 17,
+      "size": 64,
+      "usage": [
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 64,
+      "usage": [
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 15,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 3,
+      "encoder_id": 2,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 3,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 16
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 3,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 3,
+      "slot": 1,
+      "buffer_id": 17,
+      "offset": 0
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 3,
+      "slot": 0,
+      "bind_group_id": 13,
+      "dynamic_offsets": [
+        16
+      ]
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 3,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 3
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 4
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

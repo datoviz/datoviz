@@ -45,6 +45,7 @@ Active DRP2 `2.0` surface now includes:
 9. destruction-safety negatives for bind-group layouts and pipelines
 10. conservative submitted-work lifetime coverage for bind-group layouts and pipelines
 11. explicit bounded-range requirement for buffer-backed bind-group entries
+12. pipeline-rebind validation for later bind-group and draw commands
 
 What remains intentionally deferred:
 
@@ -66,8 +67,8 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `59/59` fixtures passing
-2. `17` focused runner tests passing
+1. `57/57` fixtures passing
+2. `20` focused runner tests passing
 
 
 ## In Scope
@@ -111,6 +112,7 @@ Recommended next slice:
 3. continue fixture-first growth of the active bind-group/pipeline lifetime model before promoting any deferred object family
 4. only add dynamic-offset alignment reporting later if a runtime slice proves the need concretely
 5. if the next hardening pass stays in DRP2, prefer rebinding/submission edge cases over new object families
+6. the next likely frontier is compute-pass rebind parity or explicit execution-time bind-group requirements, not new object families
 
 Reasoning:
 

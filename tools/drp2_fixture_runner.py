@@ -635,6 +635,8 @@ class DRP2SemanticValidator:
                 f'pipeline {command["pipeline_id"]} is {pipeline.data["kind"]}, expected {pass_info["kind"]}',
             )
         pass_info['bound_pipeline_id'] = command['pipeline_id']
+        # A pipeline rebind resets compatibility assumptions for pass-local bind-group state.
+        pass_info['bound_bind_groups'] = {}
         encoder = self.encoders[pass_info['encoder_id']]
         encoder['resources'].add(('pipeline', command['pipeline_id']))
 
