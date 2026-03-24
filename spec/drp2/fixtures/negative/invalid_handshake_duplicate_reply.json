@@ -1,0 +1,49 @@
+{
+  "name": "invalid_handshake_duplicate_reply",
+  "description": "A second RendererHelloReply is sent after the handshake already completed successfully.",
+  "reason": "RendererHelloReply requires a pending HelloRenderer handshake and cannot be repeated.",
+  "fix": "Send RendererHelloReply only once for a given stream handshake.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "handshake",
+    "state"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 2
+  }
+}

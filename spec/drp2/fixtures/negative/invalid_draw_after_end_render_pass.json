@@ -1,0 +1,99 @@
+{
+  "name": "invalid_draw_after_end_render_pass",
+  "description": "A draw command targets a render pass after EndRenderPass already closed it.",
+  "reason": "Render-state and draw commands are only valid while the target render pass remains open.",
+  "fix": "Record draw commands before EndRenderPass, or begin a new render pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "render"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 2,
+      "vertex_buffer_slots": 0,
+      "bind_group_layout_ids": []
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 4,
+      "encoder_id": 3,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 4,
+      "pipeline_id": 2
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 4
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 4,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 8
+  }
+}

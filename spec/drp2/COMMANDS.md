@@ -630,7 +630,8 @@ Required fields:
 
 Semantics:
 
-1. the pass must be the currently open compute pass for its encoder.
+1. the pass must be the currently open compute pass for its encoder,
+2. no later bind-group or dispatch command may target the pass after it ends.
 
 
 ## Recording Commands

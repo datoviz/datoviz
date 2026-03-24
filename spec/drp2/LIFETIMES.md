@@ -82,8 +82,10 @@ Rules:
 2. `HelloRenderer` is valid only in `unnegotiated`,
 3. a successful `RendererHelloReply` transitions the session to `ready`,
 4. a failed handshake transitions the session to `failed`,
-5. active resource and recording commands are valid only in `ready`,
-6. once the session is `failed`, the stream is not required to recover within the same connection.
+5. `HelloRenderer` and `RendererHelloReply` are single-use for a stream and may not be repeated after
+   negotiation has started,
+6. active resource and recording commands are valid only in `ready`,
+7. once the session is `failed`, the stream is not required to recover within the same connection.
 
 Active fixture-runner note:
 

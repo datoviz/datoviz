@@ -1,0 +1,70 @@
+{
+  "name": "invalid_dispatch_after_end_compute_pass",
+  "description": "A dispatch command targets a compute pass after EndComputePass already closed it.",
+  "reason": "Dispatch commands are only valid while the target compute pass remains open.",
+  "fix": "Record dispatch commands before EndComputePass, or begin a new compute pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "compute"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateComputePipeline",
+      "id": 1,
+      "bind_group_layout_ids": []
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 3,
+      "encoder_id": 2
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 1
+    },
+    {
+      "cmd": "EndComputePass",
+      "pass_id": 3
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 3,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 7
+  }
+}

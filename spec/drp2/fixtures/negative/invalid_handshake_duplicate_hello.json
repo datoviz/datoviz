@@ -1,0 +1,39 @@
+{
+  "name": "invalid_handshake_duplicate_hello",
+  "description": "A second HelloRenderer is sent after handshake negotiation has already started.",
+  "reason": "HelloRenderer is only valid as the first command of a fresh stream.",
+  "fix": "Send HelloRenderer once at the start of the stream and continue with RendererHelloReply.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "handshake",
+    "state"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 1
+  }
+}

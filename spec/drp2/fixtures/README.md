@@ -66,6 +66,9 @@ The first negative corpus should stay intentionally small and cover the core val
 38. pipeline rebind followed by SetBindGroup validated against the newly bound pipeline,
 39. pipeline rebind followed by Draw validated against the newly bound pipeline.
 40. texture-to-buffer copies with invalid mip selection or inconsistent layout metadata.
+41. duplicate handshake commands after negotiation has started,
+42. draw or dispatch commands targeting passes that already ended,
+43. copy commands targeting encoders that were already finished.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 

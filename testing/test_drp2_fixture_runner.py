@@ -47,7 +47,7 @@ def test_drp2_fixture_runner_can_filter_handshake_fixtures() -> None:
     fixtures = runner.discover([], None, ['handshake'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 4
+    assert len(results) == 6
     assert all(result.passed for result in results)
 
 
@@ -110,6 +110,30 @@ def test_drp2_fixture_runner_rejects_command_after_failed_handshake() -> None:
     assert result.actual_command_index == 2
 
 
+def test_drp2_fixture_runner_rejects_duplicate_hello() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_handshake_duplicate_hello.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_handshake_duplicate_hello'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 1
+
+
+def test_drp2_fixture_runner_rejects_duplicate_reply() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_handshake_duplicate_reply.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_handshake_duplicate_reply'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 2
+
+
 def test_drp2_fixture_runner_rejects_write_texture_bad_mip_level() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixture = Path('spec/drp2/fixtures/negative/invalid_write_texture_bad_mip_level.json')
@@ -156,6 +180,42 @@ def test_drp2_fixture_runner_rejects_copy_buffer_to_texture_bad_rows_per_image()
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_LAYOUT'
     assert result.actual_command_index == 5
+
+
+def test_drp2_fixture_runner_rejects_draw_after_end_render_pass() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_draw_after_end_render_pass.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_draw_after_end_render_pass'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 8
+
+
+def test_drp2_fixture_runner_rejects_dispatch_after_end_compute_pass() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_dispatch_after_end_compute_pass.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_dispatch_after_end_compute_pass'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 7
+
+
+def test_drp2_fixture_runner_rejects_copy_after_finish_encoder() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_copy_after_finish_encoder.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_copy_after_finish_encoder'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 6
 
 
 def test_drp2_fixture_runner_rejects_copy_texture_to_buffer_bad_mip_level() -> None:

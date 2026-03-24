@@ -1,0 +1,74 @@
+{
+  "name": "invalid_copy_after_finish_encoder",
+  "description": "A copy command targets a command encoder after FinishCommandEncoder already closed it.",
+  "reason": "Copy and recording commands are only valid while the target encoder remains open.",
+  "fix": "Record copy commands before FinishCommandEncoder, or begin a new encoder.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "state",
+    "encoder"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": [
+        "COPY_SRC"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "size": 16,
+      "usage": [
+        "COPY_DST"
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 3,
+      "command_buffer_id": 4
+    },
+    {
+      "cmd": "CopyBufferToBuffer",
+      "encoder_id": 3,
+      "src_buffer_id": 1,
+      "src_offset": 0,
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "size": 4
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_STATE",
+    "command_index": 6
+  }
+}
