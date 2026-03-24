@@ -161,6 +161,8 @@ Examples:
 2. lower sampling precision where the scene contract allows it,
 3. simpler sample marks in a legend,
 4. lower-fidelity offscreen export path if deterministic semantics remain intact.
+5. lower-fidelity transparency realization when the same visibility and emphasis semantics remain
+   readable.
 
 
 ### Optional Affordances
@@ -218,6 +220,54 @@ When several adaptations are possible, the scene should prefer:
 In practice:
 
 1. keep the object if meaning can be preserved,
+2. preserve semantic emphasis relationships such as selected-versus-context visibility before
+   preserving the highest transparency quality,
+3. treat high-fidelity transparency algorithms as quality choices unless one is explicitly required by
+   the scene contract.
+
+
+## Transparency And Emphasis
+
+Transparency should be treated as a scene-visible styling and emphasis policy, not as a backend
+algorithm choice.
+
+The scene should therefore distinguish between:
+
+1. semantic intent such as context meshes shown translucently,
+2. semantic emphasis such as selected objects shown more opaquely than unselected context,
+3. backend realization choices such as which transparency path the runtime uses.
+
+The preferred adaptation rule is:
+
+1. preserve the semantic relationship first,
+2. simplify the realization quality second,
+3. reject only when the requested semantics themselves cannot be represented honestly.
+
+For examples such as anatomical context surfaces plus selected region emphasis:
+
+1. the scene may request one outer mesh as translucent context,
+2. the scene may request interior regions as translucent by default,
+3. the scene may request the selected region to become more opaque or otherwise more prominent,
+4. the runtime may realize that request with different transparency-quality paths depending on
+   capability,
+5. but adaptation should not silently erase the difference between selected and unselected state if
+   that difference is semantically important to the workflow.
+
+Acceptable simplifications may include:
+
+1. lower-quality transparency while preserving ordering semantics well enough for the declared use,
+2. reduced layering fidelity while keeping selected-versus-context emphasis visible,
+3. disabling nonessential translucent decorative overlays before degrading primary scientific
+   objects.
+
+Unacceptable simplifications include:
+
+1. silently making all context and selected objects equally opaque when the scene relies on that
+   difference for interpretation,
+2. silently making all translucent context invisible if visibility of those objects is still part of
+   the intended scene meaning,
+3. claiming high-quality transparency semantics when the active capability path only supports a
+   materially different result and no explicit adaptation diagnostic was produced.
 2. reduce quality before removing the object,
 3. remove optional affordances before changing data interpretation,
 4. reject rather than silently change scientific meaning.

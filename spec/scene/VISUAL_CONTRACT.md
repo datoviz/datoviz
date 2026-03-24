@@ -356,7 +356,18 @@ Examples:
 1. fallback from FP64 to FP32,
 2. fallback from compute-assisted to render-only,
 3. fallback from multisampled to single-sampled rendering,
-4. disabling a nonessential picking mode when the required format is unsupported.
+4. disabling a nonessential picking mode when the required format is unsupported,
+5. lowering transparency quality while preserving declared opacity and emphasis semantics when
+   possible.
+
+When a visual participates in a transparency-sensitive workflow, the contract should distinguish:
+
+1. opacity and emphasis semantics requested by scene state,
+2. quality of the transparency realization,
+3. capability-gated fallback that preserves meaning while simplifying quality.
+
+This is especially important for workflows where one selected mesh should remain more prominent than
+other translucent context meshes.
 
 
 ## Dirty-State Interaction

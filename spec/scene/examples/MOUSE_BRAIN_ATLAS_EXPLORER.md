@@ -180,4 +180,6 @@ This example checks that:
 9. the current `image` picking contract likely needs an explicit coordinate-readout expectation for
    slice-like modes,
 10. the scene spec should eventually state more clearly how filter selection affects derived-field
-    caching and invalidation for volumetric sampling workflows.
+    caching and invalidation for volumetric sampling workflows,
+11. capability adaptation should preserve selected-versus-context emphasis even when transparency
+    quality must be reduced.
