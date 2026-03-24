@@ -98,7 +98,11 @@ int test_vklite_buffers_1(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem);
 
+int test_vklite_buffer_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
+
 int test_vklite_images_1(TstSuite* suite, TstItem* tstitem);
+
+int test_vklite_images_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem);

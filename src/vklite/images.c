@@ -268,6 +268,11 @@ int dvz_images_create(DvzImages* img)
 {
     ANN(img);
     ANN(img->device);
+    if (dvz_obj_is_created(&img->obj))
+    {
+        log_error("cannot create images twice without destroying them first");
+        return 1;
+    }
 
     DvzDevice* device = img->device;
     ANN(device);
@@ -297,9 +302,25 @@ int dvz_images_create(DvzImages* img)
             ANN(img->allocs[i]);
         }
         dvz_allocation_set_flags(img->allocs[i], img->req_alloc_flags);
-        out += dvz_allocator_image(
-            allocator, &img->info, img->req_alloc_flags, img->allocs[i],
-            &img->vk_images[i]);
+        out = dvz_allocator_image(
+            allocator, &img->info, img->req_alloc_flags, img->allocs[i], &img->vk_images[i]);
+        if (out != 0)
+        {
+            for (uint32_t j = 0; j <= i; j++)
+            {
+                if (img->vk_images[j] != VK_NULL_HANDLE)
+                {
+                    dvz_allocator_destroy_image(allocator, img->allocs[j], img->vk_images[j]);
+                }
+                img->vk_images[j] = VK_NULL_HANDLE;
+                if (img->allocs[j] != NULL)
+                {
+                    dvz_allocation_free(img->allocs[j]);
+                    img->allocs[j] = NULL;
+                }
+            }
+            return out;
+        }
     }
 
     dvz_obj_created(&img->obj);
@@ -468,9 +489,19 @@ void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint32_t count)
 void dvz_image_views_create(DvzImageViews* views)
 {
     ANN(views);
+    if (dvz_obj_is_created(&views->obj))
+    {
+        log_error("cannot create image views twice without destroying them first");
+        return;
+    }
 
     DvzImages* img = views->img;
     ANN(img);
+    if (!dvz_obj_is_created(&img->obj))
+    {
+        log_error("cannot create image views from images that are not created");
+        return;
+    }
 
     DvzDevice* device = views->device;
     ANN(device);
@@ -481,7 +512,19 @@ void dvz_image_views_create(DvzImageViews* views)
     {
         views->info.image = img->vk_images[i];
         views->info.format = img->info.format;
-        VK_CHECK_RESULT(vkCreateImageView(vkd, &views->info, NULL, &views->vk_views[i]));
+        VkResult res = vkCreateImageView(vkd, &views->info, NULL, &views->vk_views[i]);
+        if (vk_result_check(res, __FILE__, __LINE__) != 0)
+        {
+            for (uint32_t j = 0; j <= i; j++)
+            {
+                if (views->vk_views[j] != VK_NULL_HANDLE)
+                {
+                    vkDestroyImageView(vkd, views->vk_views[j], NULL);
+                    views->vk_views[j] = VK_NULL_HANDLE;
+                }
+            }
+            return;
+        }
     }
 
     dvz_obj_created(&views->obj);

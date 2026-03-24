@@ -16,11 +16,14 @@
 
 #include "test_vk.h"
 #include "_assertions.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/images.h"
 #include "test_vklite.h"
 #include "testing.h"
 #include "vulkan_core.h"
+
+#include <volk.h>
 
 
 
@@ -97,6 +100,71 @@ int test_vklite_images_1(TstSuite* suite, TstItem* tstitem)
     dvz_image_copy_free(copy);
     dvz_image_blit_free(blit);
 
+    dvz_image_views_free(views);
+    dvz_images_free(images);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}
+
+
+
+int test_vklite_images_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+
+    DvzImages* images = dvz_images_create_wrapper();
+    ANN(images);
+    dvz_images(
+        dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 1, images);
+    dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_mip(images, 1);
+    dvz_images_layers(images, 1);
+    dvz_images_samples(images, VK_SAMPLE_COUNT_1_BIT);
+    dvz_images_usage(images, VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    VkPhysicalDeviceProperties props = {0};
+    vkGetPhysicalDeviceProperties(
+        dvz_device_physical_device(dvz_gpu_ctx_device(ctx)), &props);
+    dvz_images_size(images, props.limits.maxImageDimension2D + 1, 16, 1);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_images_create(images) != 0);
+    AT(dvz_image_handle(images, 0) == VK_NULL_HANDLE);
+
+    DvzImageViews* views = dvz_image_views_create_wrapper();
+    ANN(views);
+    dvz_image_views(images, views);
+    tst_expect_error_begin(suite);
+    dvz_image_views_create(views);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(dvz_image_views_handle(views, 0) == VK_NULL_HANDLE);
+
+    dvz_image_views_destroy(views);
+    dvz_images_destroy(images);
+    AT(dvz_image_handle(images, 0) == VK_NULL_HANDLE);
+
+    dvz_images_size(images, 64, 64, 1);
+    AT(dvz_images_create(images) == 0);
+    AT(dvz_image_handle(images, 0) != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_images_create(images) != 0);
+    AT(dvz_image_handle(images, 0) != VK_NULL_HANDLE);
+
+    dvz_image_views_create(views);
+    AT(dvz_image_views_handle(views, 0) != VK_NULL_HANDLE);
+    tst_expect_error_begin(suite);
+    dvz_image_views_create(views);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(dvz_image_views_handle(views, 0) != VK_NULL_HANDLE);
+
+    dvz_image_views_destroy(views);
+    dvz_images_destroy(images);
     dvz_image_views_free(views);
     dvz_images_free(images);
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);

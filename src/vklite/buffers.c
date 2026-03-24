@@ -126,6 +126,21 @@ int dvz_buffer_create(DvzBuffer* buffer)
 {
     ANN(buffer);
     ANN(buffer->device);
+    if (dvz_obj_is_created(&buffer->obj))
+    {
+        log_error("cannot create a buffer twice without destroying it first");
+        return 1;
+    }
+    if (buffer->req_size == 0)
+    {
+        log_error("cannot create a buffer with zero size");
+        return 1;
+    }
+    if (buffer->req_usage == 0)
+    {
+        log_error("cannot create a buffer without usage flags");
+        return 1;
+    }
 
     DvzVma* allocator = buffer->allocator;
     ANN(allocator);
@@ -145,6 +160,17 @@ int dvz_buffer_create(DvzBuffer* buffer)
     dvz_allocation_set_flags(buffer->alloc, alloc_flags);
     int out = dvz_allocator_buffer(
         allocator, &info, alloc_flags, buffer->alloc, &buffer->vk_buffer);
+    if (out != 0)
+    {
+        if (buffer->vk_buffer != VK_NULL_HANDLE)
+        {
+            dvz_allocator_destroy_buffer(allocator, buffer->alloc, buffer->vk_buffer);
+            buffer->vk_buffer = VK_NULL_HANDLE;
+        }
+        dvz_allocation_free(buffer->alloc);
+        buffer->alloc = NULL;
+        return out;
+    }
 
     dvz_obj_created(&buffer->obj);
     return out;

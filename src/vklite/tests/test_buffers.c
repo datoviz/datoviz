@@ -169,3 +169,50 @@ int test_vklite_buffer_views(TstSuite* suite, TstItem* tstitem)
 
     return err_count > 0;
 }
+
+
+
+int test_vklite_buffer_create_requires_destroy(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+
+    DvzBuffer* buffer = dvz_buffer_create_wrapper();
+    ANN(buffer);
+
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), buffer);
+    dvz_buffer_size(buffer, 0);
+    dvz_buffer_usage(buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_flags(buffer, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_buffer_create(buffer) != 0);
+    AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
+
+    dvz_buffer_destroy(buffer);
+    AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
+
+    dvz_buffer_size(buffer, 4096);
+    AT(dvz_buffer_create(buffer) == 0);
+    AT(dvz_buffer_handle(buffer) != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_buffer_create(buffer) != 0);
+    AT(dvz_buffer_handle(buffer) != VK_NULL_HANDLE);
+
+    dvz_buffer_destroy(buffer);
+    AT(dvz_buffer_handle(buffer) == VK_NULL_HANDLE);
+
+    dvz_buffer_size(buffer, 8192);
+    AT(dvz_buffer_create(buffer) == 0);
+    AT(dvz_buffer_handle(buffer) != VK_NULL_HANDLE);
+
+    dvz_buffer_destroy(buffer);
+    dvz_buffer_free(buffer);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}
