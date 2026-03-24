@@ -12,7 +12,7 @@ This document defines the logical frame flow for the future scene layer.
 5. resolve invalidation scopes and resource dirtiness,
 6. validate the affected scene state,
 7. apply capability adaptation,
-8. build a frame plan,
+8. build the scene-level `FramePlan`,
 9. emit DRP2,
 10. submit through the runtime,
 11. process readback or picking results.
@@ -123,7 +123,7 @@ Interpret picking or offscreen readback results at the scene level.
 1. Scene state update happens before DRP2 emission.
 2. Validation runs after invalidation resolution and before planning.
 3. Capability adaptation runs after validation and before planning.
-4. Scene should not mutate state while a frame plan is being emitted.
+4. Scene should not mutate state while a `FramePlan` is being emitted.
 5. DRP2 emission should be a deterministic function of validated and adapted scene state plus runtime
    capabilities.
 6. Runtime failures must map back to scene-visible diagnostics without backend leakage.

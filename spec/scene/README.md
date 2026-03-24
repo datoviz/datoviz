@@ -60,7 +60,8 @@ The current scene spec should be read with the following invariants in mind:
 - `FRAME_LIFECYCLE.md`: update/build/emit flow
 - `RUNTIME_BOUNDARY.md`: allowed and forbidden dependencies on the runtime layer
 - `USE_CASES.md`: pressure-test scenarios
-- `examples/`: worked scene-spec examples that instantiate families, transforms, and frame plans
+- `examples/`: worked scene-spec examples that instantiate families, transforms, and `FramePlan`
+  shapes
 
 
 ## Next Steps

@@ -329,7 +329,7 @@ It should cover:
 
 When a compute stage writes a derived resource, the default policy should be:
 
-1. the output is valid for the current frame plan only,
+1. the output is valid for the current scene-level `FramePlan` only,
 2. later frames may regenerate it from the authoritative scene inputs,
 3. reuse across frames is allowed only when the scene declares a persistent derived cache,
 4. readback into a CPU-owned resource is the explicit path for promotion into long-lived scene state.

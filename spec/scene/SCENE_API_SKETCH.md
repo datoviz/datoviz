@@ -496,7 +496,7 @@ identity.
 
 That matters because:
 
-1. a shared legend or colorbar should attach to semantic mapping identity rather than visual
+1. a shared legend or colorbar should attach to explicit semantic mapping identity rather than visual
    resemblance,
 2. implicit aggregation is only valid when the mappings are semantically identical,
 3. different meanings should not collapse into one explanatory object merely because they look

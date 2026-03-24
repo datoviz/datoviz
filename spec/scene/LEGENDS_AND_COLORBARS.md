@@ -32,7 +32,7 @@ The intended flow is:
 1. one or more visuals declare encodings that may need explanation,
 2. the scene decides which legend or colorbar objects should exist,
 3. those objects derive entries, ramps, labels, and placement,
-4. the resulting annotation contributions enter the frame plan.
+4. the resulting annotation contributions enter the scene-level `FramePlan`.
 
 
 ## Core Rule
@@ -258,7 +258,7 @@ The source of truth should not be:
 
 Legends and colorbars should aggregate semantic mappings, not merely similar-looking rendered output.
 
-The first scene slice should therefore assume a stable logical mapping identity such as
+The first scene slice should therefore assume an explicit stable logical mapping identity such as
 `ScaleMapping` or an equivalent concept.
 
 That identity should capture at least:
@@ -334,7 +334,7 @@ legend.
 
 The aggregation rule should be:
 
-1. implicit aggregation is allowed only when mapping identity is semantically identical,
+1. implicit aggregation is allowed only when the mapping identity is semantically identical,
 2. visual resemblance alone is not enough,
 3. explicit scene configuration may still request a shared explanatory object when several visuals are
    intentionally tied to the same semantic mapping.

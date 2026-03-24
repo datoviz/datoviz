@@ -511,7 +511,7 @@ This document should be read alongside:
 3. `CONTROLLERS.md` for controller-driven transient overlays,
 4. `TRANSFORM_PIPELINE.md` for anchor and placement transform stages,
 5. `INVALIDATION_AND_CACHING.md` for dirty-scope and reuse behavior,
-6. `FRAME_PLAN_IR.md` for how annotation contributions enter one frame plan.
+6. `FRAME_PLAN_IR.md` for how annotation contributions enter the scene-level `FramePlan`.
 
 
 ## What This Document Intentionally Leaves Open
