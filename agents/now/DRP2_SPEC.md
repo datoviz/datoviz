@@ -66,8 +66,8 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `77/77` fixtures passing
-2. `39` focused runner tests passing
+1. `80/80` fixtures passing
+2. `43` focused runner tests passing
 
 
 ## In Scope
