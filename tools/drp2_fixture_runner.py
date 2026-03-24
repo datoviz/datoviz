@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -25,6 +26,16 @@ FIXTURE_SCHEMA_PATH = FIXTURES_DIR / 'schema' / 'drp_fixture.schema.json'
 COMMAND_SCHEMA_PATH = ROOT_DIR / 'spec' / 'drp2' / 'schema' / 'drp_command.json'
 FIXTURE_DIRS = ('positive', 'negative', 'negative_schema')
 SUPPORTED_DRP2_MAJOR_VERSION = 2
+BYTES_PER_TEXEL = {
+    'rgba8unorm': 4,
+    'bgra8unorm': 4,
+    'rgba8unorm-srgb': 4,
+    'rgba16float': 8,
+    'rgba32float': 16,
+    'depth24plus': 4,
+    'depth24plus-stencil8': 4,
+    'depth32float': 4,
+}
 
 
 @dataclass
@@ -305,17 +316,61 @@ class DRP2SemanticValidator:
             )
 
     def _check_texture_box(
-        self, index: int, state: ObjectState, origin: Dict[str, int], size: Dict[str, int]
+        self,
+        index: int,
+        state: ObjectState,
+        mip_level: int,
+        origin: Dict[str, int],
+        size: Dict[str, int],
     ) -> None:
-        width = state.data['width']
-        height = state.data['height']
-        depth = state.data['depth']
+        mip_level_count = state.data['mip_level_count']
+        if mip_level >= mip_level_count:
+            raise SemanticFailure(
+                'DRP2_ERR_OUT_OF_RANGE',
+                index,
+                f'texture mip level {mip_level} exceeds mip_level_count {mip_level_count}',
+            )
+        width = max(1, state.data['width'] >> mip_level)
+        height = max(1, state.data['height'] >> mip_level)
+        depth = max(1, state.data['depth'] >> mip_level) if state.data['dimension'] == '3d' else state.data['depth']
         if origin['x'] + size['width'] > width:
             raise SemanticFailure('DRP2_ERR_OUT_OF_RANGE', index, 'texture write exceeds width')
         if origin['y'] + size['height'] > height:
             raise SemanticFailure('DRP2_ERR_OUT_OF_RANGE', index, 'texture write exceeds height')
         if origin['z'] + size['depth'] > depth:
             raise SemanticFailure('DRP2_ERR_OUT_OF_RANGE', index, 'texture write exceeds depth')
+
+    def _required_transfer_bytes(
+        self,
+        index: int,
+        texture_state: ObjectState,
+        width: int,
+        height: int,
+        depth: int,
+        bytes_per_row: int,
+        rows_per_image: int,
+    ) -> int:
+        bytes_per_texel = BYTES_PER_TEXEL[texture_state.data['format']]
+        min_bytes_per_row = width * bytes_per_texel
+        if bytes_per_row < min_bytes_per_row:
+            raise SemanticFailure(
+                'DRP2_ERR_LAYOUT',
+                index,
+                f'bytes_per_row {bytes_per_row} is smaller than the required row footprint {min_bytes_per_row}',
+            )
+        if rows_per_image == 0:
+            raise SemanticFailure(
+                'DRP2_ERR_LAYOUT',
+                index,
+                'rows_per_image must be greater than zero for texture transfers',
+            )
+        if depth > 1 and rows_per_image < height:
+            raise SemanticFailure(
+                'DRP2_ERR_LAYOUT',
+                index,
+                f'rows_per_image {rows_per_image} is smaller than transfer height {height}',
+            )
+        return bytes_per_row * (height - 1) + min_bytes_per_row + bytes_per_row * rows_per_image * (depth - 1)
 
     def _resource_in_use(self, kind: str, obj_id: int) -> bool:
         token = (kind, obj_id)
@@ -353,13 +408,16 @@ class DRP2SemanticValidator:
             index,
             command['id'],
             'texture',
-            {
-                'width': command['width'],
-                'height': command['height'],
-                'depth': command['depth'],
-                'usage': set(command['usage']),
-            },
-        )
+                {
+                    'width': command['width'],
+                    'height': command['height'],
+                    'depth': command['depth'],
+                    'dimension': command['dimension'],
+                    'format': command['format'],
+                    'mip_level_count': command['mip_level_count'],
+                    'usage': set(command['usage']),
+                },
+            )
 
     def _handle_CreateBindGroup(self, index: int, command: Dict[str, Any]) -> None:
         layout_state = self._resolve_live(index, command['bind_group_layout_id'], 'bind_group_layout')
@@ -572,7 +630,23 @@ class DRP2SemanticValidator:
 
     def _handle_WriteTexture(self, index: int, command: Dict[str, Any]) -> None:
         state = self._resolve_live(index, command['texture_id'], 'texture')
-        self._check_texture_box(index, state, command['origin'], command['size'])
+        self._check_texture_box(index, state, command['mip_level'], command['origin'], command['size'])
+        required_bytes = self._required_transfer_bytes(
+            index,
+            state,
+            command['size']['width'],
+            command['size']['height'],
+            command['size']['depth'],
+            command['bytes_per_row'],
+            command['rows_per_image'],
+        )
+        payload_size = len(base64.b64decode(command['data'], validate=True))
+        if payload_size < required_bytes:
+            raise SemanticFailure(
+                'DRP2_ERR_LAYOUT',
+                index,
+                f'data payload size {payload_size} is smaller than required transfer footprint {required_bytes}',
+            )
 
     def _handle_BeginCommandEncoder(self, index: int, command: Dict[str, Any]) -> None:
         encoder_id = command['id']
@@ -821,10 +895,20 @@ class DRP2SemanticValidator:
         if encoder['open_pass'] is not None:
             raise SemanticFailure('DRP2_ERR_INVALID_STATE', index, 'copy command is inside a pass')
         src = self._buffer_usage(index, command['src_buffer_id'], 'COPY_SRC')
-        size = command['size']['width'] * command['size']['height'] * command['size']['depth']
-        self._check_buffer_range(index, src, command['src_offset'], size)
         dst = self._texture_usage(index, command['dst_texture_id'], 'COPY_DST')
-        self._check_texture_box(index, dst, command['dst_origin'], command['size'])
+        self._check_texture_box(
+            index, dst, command['dst_mip_level'], command['dst_origin'], command['size']
+        )
+        required_bytes = self._required_transfer_bytes(
+            index,
+            dst,
+            command['size']['width'],
+            command['size']['height'],
+            command['size']['depth'],
+            command['bytes_per_row'],
+            command['rows_per_image'],
+        )
+        self._check_buffer_range(index, src, command['src_offset'], required_bytes)
         encoder['resources'].add(('buffer', command['src_buffer_id']))
         encoder['resources'].add(('texture', command['dst_texture_id']))
 
@@ -833,10 +917,20 @@ class DRP2SemanticValidator:
         if encoder['open_pass'] is not None:
             raise SemanticFailure('DRP2_ERR_INVALID_STATE', index, 'copy command is inside a pass')
         src = self._texture_usage(index, command['src_texture_id'], 'COPY_SRC')
-        self._check_texture_box(index, src, command['src_origin'], command['size'])
+        self._check_texture_box(
+            index, src, command['src_mip_level'], command['src_origin'], command['size']
+        )
         dst = self._buffer_usage(index, command['dst_buffer_id'], 'COPY_DST')
-        size = command['size']['width'] * command['size']['height'] * command['size']['depth']
-        self._check_buffer_range(index, dst, command['dst_offset'], size)
+        required_bytes = self._required_transfer_bytes(
+            index,
+            src,
+            command['size']['width'],
+            command['size']['height'],
+            command['size']['depth'],
+            command['bytes_per_row'],
+            command['rows_per_image'],
+        )
+        self._check_buffer_range(index, dst, command['dst_offset'], required_bytes)
         encoder['resources'].add(('texture', command['src_texture_id']))
         encoder['resources'].add(('buffer', command['dst_buffer_id']))
 

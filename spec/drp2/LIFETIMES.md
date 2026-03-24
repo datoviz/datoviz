@@ -361,8 +361,12 @@ These rules supplement the per-command field semantics in `COMMANDS.md`.
 5. `WriteTexture` requires the written box to fit inside the selected texture subresource,
 6. `bytes_per_row` and `rows_per_image` describe payload layout and do not change object lifetime or
    resource shape,
-7. schema-valid commands may still fail semantic validation if ids, ranges, usage, or pass state are
-   wrong.
+7. texture transfer commands require `mip_level` or `*_mip_level` to select an allocated mip
+   subresource,
+8. texture transfer commands require layout metadata to describe at least one full texel row and, for
+   multi-image transfers, enough rows per image slice,
+9. schema-valid commands may still fail semantic validation if ids, ranges, usage, pass state, or
+   layout metadata are wrong.
 
 
 ## Invalid Sequence Examples

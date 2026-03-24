@@ -1,0 +1,73 @@
+{
+  "name": "invalid_write_texture_short_payload",
+  "description": "WriteTexture provides a payload shorter than the transfer footprint implied by the declared layout.",
+  "reason": "The provided payload must be large enough for the declared bytes_per_row, rows_per_image, and transfer extent.",
+  "fix": "Provide enough data for the declared transfer footprint or reduce the declared layout to match the payload.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "texture",
+    "layout",
+    "payload"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "WriteTexture",
+      "texture_id": 1,
+      "mip_level": 0,
+      "origin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 2,
+        "height": 2,
+        "depth": 1
+      },
+      "bytes_per_row": 8,
+      "rows_per_image": 2,
+      "data": "AAAAAAAAAAA="
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_LAYOUT",
+    "command_index": 3
+  }
+}

@@ -320,7 +320,9 @@ Semantics:
 
 1. `origin` and `size` select the destination box within the chosen subresource,
 2. `bytes_per_row` and `rows_per_image` describe the source payload layout, not the texture itself,
-3. the written region must fit inside the destination subresource.
+3. `mip_level` must select an allocated destination subresource,
+4. `bytes_per_row` and `rows_per_image` must be consistent with the transfer extent,
+5. the written region must fit inside the destination subresource.
 
 
 ## Resource Group Lifecycle

@@ -1,0 +1,73 @@
+{
+  "name": "invalid_write_texture_bad_mip_level",
+  "description": "WriteTexture targets a mip level outside the allocated texture mip range.",
+  "reason": "The destination mip level must be less than the texture's mip_level_count.",
+  "fix": "Use a valid mip level or create the texture with enough mip levels for the intended write.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "texture",
+    "layout",
+    "mip"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "WriteTexture",
+      "texture_id": 1,
+      "mip_level": 1,
+      "origin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 1,
+        "height": 1,
+        "depth": 1
+      },
+      "bytes_per_row": 4,
+      "rows_per_image": 1,
+      "data": "AAAAAA=="
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_OUT_OF_RANGE",
+    "command_index": 3
+  }
+}

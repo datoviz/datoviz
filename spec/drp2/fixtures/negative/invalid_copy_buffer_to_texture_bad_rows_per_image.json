@@ -1,0 +1,87 @@
+{
+  "name": "invalid_copy_buffer_to_texture_bad_rows_per_image",
+  "description": "CopyBufferToTexture declares rows_per_image smaller than the transfer height for a multi-layer copy.",
+  "reason": "For a multi-layer transfer, rows_per_image must be large enough to advance between image slices.",
+  "fix": "Increase rows_per_image to at least the transfer height for multi-layer copies.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "copy",
+    "texture",
+    "layout"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 64,
+      "usage": [
+        "COPY_SRC"
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 2,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 2,
+      "format": "rgba8unorm",
+      "usage": [
+        "COPY_DST"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 3
+    },
+    {
+      "cmd": "CopyBufferToTexture",
+      "encoder_id": 3,
+      "src_buffer_id": 1,
+      "src_offset": 0,
+      "bytes_per_row": 8,
+      "rows_per_image": 1,
+      "dst_texture_id": 2,
+      "dst_mip_level": 0,
+      "dst_origin": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "size": {
+        "width": 2,
+        "height": 2,
+        "depth": 2
+      }
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_LAYOUT",
+    "command_index": 5
+  }
+}

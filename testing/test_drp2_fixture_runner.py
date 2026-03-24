@@ -110,6 +110,54 @@ def test_drp2_fixture_runner_rejects_command_after_failed_handshake() -> None:
     assert result.actual_command_index == 2
 
 
+def test_drp2_fixture_runner_rejects_write_texture_bad_mip_level() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_write_texture_bad_mip_level.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_write_texture_bad_mip_level'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_OUT_OF_RANGE'
+    assert result.actual_command_index == 3
+
+
+def test_drp2_fixture_runner_rejects_write_texture_bad_bytes_per_row() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_write_texture_bad_bytes_per_row.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_write_texture_bad_bytes_per_row'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_LAYOUT'
+    assert result.actual_command_index == 3
+
+
+def test_drp2_fixture_runner_rejects_write_texture_short_payload() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_write_texture_short_payload.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_write_texture_short_payload'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_LAYOUT'
+    assert result.actual_command_index == 3
+
+
+def test_drp2_fixture_runner_rejects_copy_buffer_to_texture_bad_rows_per_image() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_copy_buffer_to_texture_bad_rows_per_image.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_copy_buffer_to_texture_bad_rows_per_image'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_LAYOUT'
+    assert result.actual_command_index == 5
+
+
 def test_drp2_fixture_runner_can_filter_vertex_binding_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['vertex_binding'])
