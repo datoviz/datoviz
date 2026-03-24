@@ -59,6 +59,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty sampler wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_sampler(), configure, call dvz_sampler_create() once,
+ * then destroy before any recreate and free only if this wrapper came from
+ * dvz_sampler_create_wrapper().
+ *
  * @return allocated sampler wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzSampler* dvz_sampler_create_wrapper(void);
@@ -67,6 +72,10 @@ DVZ_EXPORT DvzSampler* dvz_sampler_create_wrapper(void);
 
 /**
  * Initialize a texture sampler.
+ *
+ * This prepares the wrapper for configuration. Call dvz_sampler_create() once
+ * after setting filter and address-mode state. Recreating a live sampler
+ * requires dvz_sampler_destroy() first.
  *
  * @param device the device
  * @param sampler the sampler object to create
@@ -120,6 +129,9 @@ DVZ_EXPORT void dvz_sampler_anisotropy(DvzSampler* sampler, float anisotropy);
 /**
  * Create the sampler after it has been set up.
  *
+ * This function creates the wrapped Vulkan sampler exactly once per live
+ * wrapper. Call dvz_sampler_destroy() before attempting to create it again.
+ *
  * @param sampler the sampler
  * @returns the creation result code
  */
@@ -128,7 +140,10 @@ DVZ_EXPORT int dvz_sampler_create(DvzSampler* sampler);
 
 
 /**
- * Destroy a sampler
+ * Destroy a sampler.
+ *
+ * This releases the wrapped Vulkan sampler and returns the wrapper to a
+ * reusable initialized state.
  *
  * @param sampler the sampler
  */

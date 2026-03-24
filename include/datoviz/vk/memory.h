@@ -65,6 +65,10 @@ EXTERN_C_ON
 /**
  * Allocate an empty allocator wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_device_allocator(), destroy with dvz_allocator_destroy(),
+ * and free only if this wrapper came from dvz_allocator_create().
+ *
  * @returns allocated allocator wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzVma* dvz_allocator_create(void);
@@ -82,6 +86,11 @@ DVZ_EXPORT void dvz_allocator_free(DvzVma* allocator);
 
 /**
  * Allocate an empty allocation wrapper.
+ *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * fill them through allocator create/import helpers, destroy the owning Vulkan
+ * resource before discarding them, and free only if this wrapper came from
+ * dvz_allocation_create().
  *
  * @returns allocated allocation wrapper, or NULL on allocation failure
  */
@@ -164,7 +173,8 @@ DVZ_EXPORT VkDeviceSize dvz_allocation_size(DvzAllocation* alloc);
  *
  * This is the main allocator entry point for regular buffer/image allocation workflows.
  * External-memory interop remains a narrower advanced path documented in
- * `datoviz/vk/memory_interop.h`.
+ * `datoviz/vk/memory_interop.h`. Reinitializing a live allocator requires
+ * dvz_allocator_destroy() first.
  *
  * @param device the device
  * @param export if exporting created allocations, the external memory handle type
@@ -177,6 +187,9 @@ DVZ_EXPORT int dvz_device_allocator(
 
 /**
  * Allocate and create a Vulkan buffer.
+ *
+ * The input create-info struct is treated as caller-owned configuration and is
+ * not retained or mutated after this call returns.
  *
  * @param allocator the allocator
  * @param info the buffer creation info Vulkan struct
@@ -192,6 +205,9 @@ DVZ_EXPORT int dvz_allocator_buffer(
 
 /**
  * Allocate and create a Vulkan image.
+ *
+ * The input create-info struct is treated as caller-owned configuration and is
+ * not retained or mutated after this call returns.
  *
  * @param allocator the allocator
  * @param info the image creation info Vulkan struct

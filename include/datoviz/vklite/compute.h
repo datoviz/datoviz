@@ -56,6 +56,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty compute wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_compute(), configure, call dvz_compute_create() once,
+ * then destroy before any recreate and free only if this wrapper came from
+ * dvz_compute_create_wrapper().
+ *
  * @return allocated compute wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzCompute* dvz_compute_create_wrapper(void);
@@ -64,6 +69,10 @@ DVZ_EXPORT DvzCompute* dvz_compute_create_wrapper(void);
 
 /**
  * Initialize a compute pipeline.
+ *
+ * This prepares the wrapper for configuration. Call dvz_compute_create() once
+ * after setting the shader module and pipeline layout. Recreating a live
+ * compute pipeline requires dvz_compute_destroy() first.
  *
  * @param device the device
  * @param[out] compute the compute pipeline
@@ -109,6 +118,9 @@ dvz_compute_spec(DvzCompute* compute, uint32_t index, DvzSize offset, DvzSize si
 /**
  * Create a compute pipeline after it has been set up.
  *
+ * This function creates the wrapped Vulkan pipeline exactly once per live
+ * wrapper. Call dvz_compute_destroy() before attempting to create it again.
+ *
  * @param compute the compute pipeline
  * @return the creation result code
  */
@@ -138,6 +150,9 @@ DVZ_EXPORT VkPipelineLayout dvz_compute_layout_handle(DvzCompute* compute);
 
 /**
  * Destroy a compute pipeline.
+ *
+ * This releases the wrapped Vulkan pipeline and returns the wrapper to a
+ * reusable initialized state.
  *
  * @param compute the compute pipeline
  */

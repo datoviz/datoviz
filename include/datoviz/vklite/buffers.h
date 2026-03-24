@@ -53,6 +53,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty buffer wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_buffer(), configure, call dvz_buffer_create() once, then
+ * destroy before any recreate and free only if this wrapper came from
+ * dvz_buffer_create_wrapper().
+ *
  * @return allocated buffer wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzBuffer* dvz_buffer_create_wrapper(void);
@@ -80,6 +85,10 @@ DVZ_EXPORT DvzSize dvz_buffer_allocated_size(DvzBuffer* buffer);
 
 /**
  * Initialize a GPU buffer.
+ *
+ * This prepares the wrapper for configuration. Call dvz_buffer_create() once
+ * after setting the desired size, usage, and allocation flags. Recreating a
+ * live buffer requires dvz_buffer_destroy() first.
  *
  * @param device the device
  * @param allocator the Datoviz allocator
@@ -121,6 +130,9 @@ DVZ_EXPORT void dvz_buffer_flags(DvzBuffer* buffer, DvzAllocationFlags flags);
 
 /**
  * Create the buffer after it has been set.
+ *
+ * This function creates the wrapped Vulkan buffer exactly once per live
+ * wrapper. Call dvz_buffer_destroy() before attempting to create it again.
  *
  * @param buffer the buffer
  * @returns the Vulkan creation result code
@@ -212,7 +224,10 @@ DVZ_EXPORT void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize s
 
 
 /**
- * Destroy a buffer
+ * Destroy a buffer.
+ *
+ * This releases the wrapped Vulkan buffer and returns the wrapper to a reusable
+ * initialized state.
  *
  * @param buffer the buffer
  */

@@ -100,7 +100,6 @@ DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
  *     still documented as unreliable and should not be treated as a stable v0.4 contract yet.
  *
  * @param allocator the allocator
- * @param info the buffer creation
  * @param info the buffer creation info Vulkan struct
  * @param flags Datoviz allocation policy flags
  * @param handle the handle to import
@@ -124,7 +123,6 @@ DVZ_EXPORT int dvz_allocator_import_buffer(
  * rather than reintroducing private entry points.
  *
  * @param allocator the allocator
- * @param info the image creation
  * @param info the image creation info Vulkan struct
  * @param flags Datoviz allocation policy flags
  * @param handle the handle to import

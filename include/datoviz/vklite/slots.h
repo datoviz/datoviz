@@ -55,6 +55,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty slots wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_slots(), configure, call dvz_slots_create() once, then
+ * destroy before any recreate and free only if this wrapper came from
+ * dvz_slots_create_wrapper().
+ *
  * @return allocated slots wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzSlots* dvz_slots_create_wrapper(void);
@@ -63,6 +68,10 @@ DVZ_EXPORT DvzSlots* dvz_slots_create_wrapper(void);
 
 /**
  * Initialize pipeline slots (aka Vulkan descriptor set layout).
+ *
+ * This prepares the wrapper for configuration. Call dvz_slots_create() once
+ * after declaring bindings and push-constant ranges. Recreating live slots
+ * requires dvz_slots_destroy() first.
  *
  * @param device the device
  * @param[out] slots the created slots
@@ -102,6 +111,10 @@ dvz_slots_push(DvzSlots* slots, VkShaderStageFlagBits stages, DvzSize offset, Dv
 
 /**
  * Create the slots after they have been set up.
+ *
+ * This function creates the wrapped Vulkan descriptor-set layouts and pipeline
+ * layout exactly once per live wrapper. Call dvz_slots_destroy() before
+ * attempting to create them again.
  *
  * @param slots the slots
  * @return the Vulkan creation result code
@@ -186,6 +199,9 @@ DVZ_EXPORT VkDescriptorSetLayout dvz_slots_set_layout(DvzSlots* slots, uint32_t 
 
 /**
  * Destroy the slots.
+ *
+ * This releases the wrapped Vulkan layouts and returns the wrapper to a
+ * reusable initialized state.
  *
  * @param slots the slots
  */

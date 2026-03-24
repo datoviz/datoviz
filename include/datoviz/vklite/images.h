@@ -56,6 +56,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty images wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_images(), configure, call dvz_images_create() once, then
+ * destroy before any recreate and free only if this wrapper came from
+ * dvz_images_create_wrapper().
+ *
  * @return allocated images wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzImages* dvz_images_create_wrapper(void);
@@ -74,6 +79,11 @@ DVZ_EXPORT void dvz_images_free(DvzImages* img);
 /**
  * Allocate an empty image-view wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_image_views(), configure, call dvz_image_views_create()
+ * once, then destroy before any recreate and free only if this wrapper came
+ * from dvz_image_views_create_wrapper().
+ *
  * @return allocated image-view wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzImageViews* dvz_image_views_create_wrapper(void);
@@ -89,6 +99,10 @@ DVZ_EXPORT void dvz_image_views_free(DvzImageViews* views);
 
 /**
  * Initialize a set of GPU images.
+ *
+ * This prepares the wrapper for configuration. Call dvz_images_create() once
+ * after setting the desired format, size, usage, and allocation policy.
+ * Recreating a live image set requires dvz_images_destroy() first.
  *
  * @param device the device
  * @param allocator the Datoviz allocator
@@ -196,6 +210,9 @@ DVZ_EXPORT void dvz_images_layers(DvzImages* img, uint32_t layers);
 /**
  * Create the images after they have been set up.
  *
+ * This function creates the wrapped Vulkan images exactly once per live
+ * wrapper. Call dvz_images_destroy() before attempting to create them again.
+ *
  * @param images the images
  * @returns the Vulkan creation result code
  */
@@ -237,6 +254,9 @@ DVZ_EXPORT VkFormat dvz_images_format_value(DvzImages* img);
 /**
  * Destroy images.
  *
+ * This releases the wrapped Vulkan images and returns the wrapper to a reusable
+ * initialized state.
+ *
  * @param images the images
  */
 DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
@@ -262,7 +282,11 @@ DVZ_EXPORT void dvz_images_wrap(
 /*************************************************************************************************/
 
 /**
- * Create image views.
+ * Initialize image views for an existing images wrapper.
+ *
+ * This prepares the wrapper for configuration. Call dvz_image_views_create()
+ * once after setting the desired view type, aspect, and subresource range.
+ * Recreating live image views requires dvz_image_views_destroy() first.
  *
  * @param img the images
  * @param[out] views the created image views
@@ -316,6 +340,10 @@ DVZ_EXPORT void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint
 /**
  * Create image views.
  *
+ * This function creates the wrapped Vulkan image views exactly once per live
+ * wrapper. Call dvz_image_views_destroy() before attempting to create them
+ * again.
+ *
  * @param views the image views
  */
 DVZ_EXPORT void dvz_image_views_create(DvzImageViews* views);
@@ -345,6 +373,9 @@ DVZ_EXPORT uint32_t dvz_image_views_count(DvzImageViews* views);
 
 /**
  * Destroy image views.
+ *
+ * This releases the wrapped Vulkan image views and returns the wrapper to a
+ * reusable initialized state.
  *
  * @param views the image views
  */

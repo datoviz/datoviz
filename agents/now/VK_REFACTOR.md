@@ -1,6 +1,6 @@
 > **Implementation Status**
 > - **Status:** `PARTIALLY COMPLETED`
-> - **Verified on:** `2026-03-23`
+> - **Verified on:** `2026-03-24`
 > - **Codebase alignment:** Public GPU ownership/API cleanup is complete (`DvzGpu*` removed from
 >   public headers, index/descriptor flow active). `vklite` no longer includes vk-private headers;
 >   `proto` is removed from the active tree; `surface`/`swapchain` are accessor-driven; several
@@ -23,25 +23,25 @@
 >   lightly used today, because later interop hardening should build on that public surface rather
 >   than reintroducing private vk helpers.
 > - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` are now mostly closed
->   for the active `vklite` wrapper surface. The remaining work is a final policy/doc pass plus any
->   follow-up cleanup around `vk` allocator/memory exposure and, if desired later, stricter `vk`
->   queue-model encapsulation.
+>   for the active `vklite` wrapper surface. The public headers now describe the intended wrapper
+>   lifecycle more explicitly, so the remaining work is mostly follow-up robustness on advanced
+>   allocator interop and focused lifecycle/failure-path testing rather than another boundary
+>   reshape.
 
-## Immediate next steps (2026-03-23)
+## Immediate next steps (2026-03-24)
 
 1. Treat the `vklite` wrapper-opacity pass as effectively complete for the active surface.
 2. Keep `DvzBarriers` public and documented as an intentional builder/config type for command
    recording rather than trying to force opacity there.
-3. Audit remaining public structs and advanced low-level helpers in `include/datoviz/vk/*.h` for
-   true ownership-sensitive exposure, with allocator interop policy and queue planning now the
-   clearest remaining cleanup targets.
-4. Reassess whether `DvzQueueCaps` / `DvzQueue` / `DvzQueues` should remain an intentionally
-   low-level public model or eventually move behind a stricter accessor surface.
+3. Treat the `vk/memory_interop.h` surface as the intentional advanced escape hatch and harden it
+   later with dedicated export/import tests rather than more public-API reshaping now.
+4. Keep the queue model public as an intentional low-level planning API; do not reopen queue
+   encapsulation unless a concrete correctness problem appears.
 5. Keep the focused lifecycle tests current around repeated submit, destroy idempotence, and
    recreate/reset semantics.
-6. Unless external low-level API stabilization becomes a priority, defer deeper allocator-interop
-   abstraction work beyond the `memory_interop.h` split; keep the import/export helpers public and
-   treat additional narrowing as intentional technical debt rather than an immediate blocker.
+6. Continue smoothing the public headers and comments so wrapper lifecycle expectations stay
+   predictable across `vk` and `vklite`, but avoid renaming or deep API churn unless tests expose a
+   real usability problem.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 

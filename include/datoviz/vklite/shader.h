@@ -45,6 +45,10 @@ EXTERN_C_ON
 /**
  * Allocate an empty shader wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * call dvz_shader() once per live wrapper, destroy before any recreate, and
+ * free only if this wrapper came from dvz_shader_create_wrapper().
+ *
  * @return allocated shader wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzShader* dvz_shader_create_wrapper(void);
@@ -53,6 +57,9 @@ DVZ_EXPORT DvzShader* dvz_shader_create_wrapper(void);
 
 /**
  * Create a shader module.
+ *
+ * This function creates the wrapped Vulkan shader module exactly once per live
+ * wrapper. Call dvz_shader_destroy() before attempting to create it again.
  *
  * @param device the device
  * @param size the size of the buffer with the SPIR-V code, in bytes
@@ -77,6 +84,9 @@ DVZ_EXPORT VkShaderModule dvz_shader_handle(DvzShader* shader);
 
 /**
  * Destroy a shader module.
+ *
+ * This releases the wrapped Vulkan shader module and returns the wrapper to a
+ * reusable initialized state.
  *
  * @param shader the shader module
  */

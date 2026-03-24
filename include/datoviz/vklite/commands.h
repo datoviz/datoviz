@@ -53,6 +53,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty commands wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_commands(), record or wrap existing command buffers,
+ * destroy when done, and free only if this wrapper came from
+ * dvz_commands_create_wrapper().
+ *
  * @return allocated commands wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzCommands* dvz_commands_create_wrapper(void);
@@ -72,6 +77,7 @@ DVZ_EXPORT void dvz_commands_free(DvzCommands* cmds);
  * Create a set of command buffers.
  *
  * The status is INIT when the command buffers are initialized, and CREATED when they are filled.
+ * Reinitializing a live wrapper requires dvz_commands_destroy() first.
  *
  * @param device the device
  * @param queue the queue
@@ -185,6 +191,9 @@ DVZ_EXPORT void dvz_cmd_submit(DvzCommands* cmds);
 
 /**
  * Destroy a set of command buffers.
+ *
+ * This releases the wrapped Vulkan command buffers and returns the wrapper to
+ * a reusable initialized state.
  *
  * @param cmds the set of command buffers
  */

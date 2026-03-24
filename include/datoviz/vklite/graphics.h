@@ -76,6 +76,11 @@ EXTERN_C_ON
 /**
  * Allocate an empty graphics wrapper.
  *
+ * Heap-allocated wrappers follow the same lifecycle as stack-owned wrappers:
+ * initialize with dvz_graphics(), configure, call dvz_graphics_create() once,
+ * then destroy before any recreate and free only if this wrapper came from
+ * dvz_graphics_create_wrapper().
+ *
  * @return allocated graphics wrapper, or NULL on allocation failure
  */
 DVZ_EXPORT DvzGraphics* dvz_graphics_create_wrapper(void);
@@ -84,6 +89,10 @@ DVZ_EXPORT DvzGraphics* dvz_graphics_create_wrapper(void);
 
 /**
  * Initialize a graphics pipeline.
+ *
+ * This prepares the wrapper for configuration. Call dvz_graphics_create() once
+ * after setting shaders, layout, and fixed-function state. Recreating a live
+ * graphics pipeline requires dvz_graphics_destroy() first.
  *
  * @param device the device
  * @param[out graphics] the created graphics pipeline
@@ -413,6 +422,9 @@ DVZ_EXPORT void dvz_graphics_multisampling(
 /**
  * Create a graphics pipeline after it has been set up.
  *
+ * This function creates the wrapped Vulkan pipeline exactly once per live
+ * wrapper. Call dvz_graphics_destroy() before attempting to create it again.
+ *
  * @param graphics the graphics pipeline
  * @return the creation result code
  */
@@ -462,6 +474,9 @@ DVZ_EXPORT uint32_t dvz_graphics_color_attachment_count(DvzGraphics* graphics);
 
 /**
  * Destroy a graphics pipeline.
+ *
+ * This releases the wrapped Vulkan pipeline and returns the wrapper to a
+ * reusable initialized state.
  *
  * @param graphics the graphics pipeline
  */

@@ -66,7 +66,9 @@ DVZ_EXPORT DvzDescriptors* dvz_descriptors_create(void);
  * This is a one-shot pool-backed allocation helper. The wrapper does not own the descriptor pool
  * and does not provide an independent Vulkan destroy entry point. Descriptor sets remain valid
  * only while the parent device/pool stays alive, and callers must not allocate into the same
- * wrapper twice without discarding it and starting from a fresh wrapper.
+ * wrapper twice without discarding it and starting from a fresh wrapper. This
+ * intentionally differs from the heavier create/destroy/free wrappers used for
+ * buffers, images, pipelines, and samplers.
  *
  * @param slots the slots
  * @param[out] descriptors the created descriptors
