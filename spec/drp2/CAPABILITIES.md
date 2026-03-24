@@ -62,6 +62,13 @@ shape:
 The omitted fields from the broader future capability model remain planned but are not yet consumed
 by the first executable fixture corpus.
 
+Active `2.0` note:
+
+1. dynamic buffer offsets do not currently introduce a separate capability field,
+2. the active contract deliberately does not model backend-specific dynamic-offset alignment limits,
+3. if a future runtime needs explicit dynamic-offset alignment reporting, that should be added as a
+   later capability slice rather than retrofitted implicitly into the current fixture corpus.
+
 
 ## Active `2.0` Command Gates
 

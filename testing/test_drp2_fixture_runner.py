@@ -94,7 +94,7 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['bind_group'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 6
+    assert len(results) == 10
     assert all(result.passed for result in results)
     assert results[0].actual_phase == 'semantic_validation'
     assert results[1].actual_phase == 'semantic_validation'
@@ -146,6 +146,44 @@ def test_drp2_fixture_runner_rejects_wrong_bind_group_layout_slot() -> None:
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
     assert result.actual_command_index == 10
+
+
+def test_drp2_fixture_runner_rejects_missing_dynamic_offsets() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_set_bind_group_dynamic_offsets_missing.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_bind_group_dynamic_offsets_missing'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
+    assert result.actual_command_index == 10
+
+
+def test_drp2_fixture_runner_rejects_misordered_dynamic_offsets() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_set_bind_group_dynamic_offsets_misordered.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_set_bind_group_dynamic_offsets_misordered'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_OUT_OF_RANGE'
+    assert result.actual_command_index == 11
+
+
+def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenced_by_recorded_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_bind_group_layout_still_referenced_by_recorded_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_bind_group_layout_still_referenced_by_recorded_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 14
 
 
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:

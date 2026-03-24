@@ -1,0 +1,153 @@
+{
+  "name": "invalid_set_bind_group_dynamic_offsets_misordered",
+  "description": "SetBindGroup supplies dynamic_offsets in the wrong order for a bind-group layout with two dynamic buffer bindings.",
+  "reason": "Dynamic offsets are consumed in bind-group layout entry order, so swapping the offsets applies them to the wrong bindings and can invalidate the resulting buffer ranges.",
+  "fix": "Order dynamic_offsets exactly as the dynamic bindings appear in the bind-group layout declaration.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "bind_group",
+    "dynamic_offsets",
+    "render_pass"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "has_dynamic_offset": true
+        },
+        {
+          "binding": 1,
+          "binding_type": "storage_buffer",
+          "has_dynamic_offset": true
+        }
+      ]
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "vertex_buffer_slots": 1,
+      "bind_group_layout_ids": [
+        14
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 11,
+      "size": 64,
+      "usage": [
+        "VERTEX"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "size": 16,
+      "usage": [
+        "UNIFORM"
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 15,
+      "size": 64,
+      "usage": [
+        "STORAGE"
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 14,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 16
+        },
+        {
+          "binding": 1,
+          "binding_type": "storage_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 15,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": [
+        "RENDER_ATTACHMENT"
+      ],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 3,
+      "encoder_id": 2,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": {
+            "r": 0,
+            "g": 0,
+            "b": 0,
+            "a": 1
+          }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 3,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 3,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 3,
+      "slot": 0,
+      "bind_group_id": 13,
+      "dynamic_offsets": [
+        48,
+        0
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_OUT_OF_RANGE",
+    "command_index": 11
+  }
+}

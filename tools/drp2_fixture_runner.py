@@ -407,6 +407,16 @@ class DRP2SemanticValidator:
                 index,
                 f'bind-group layout {command["id"]} has duplicate binding indices',
             )
+        for entry in command['entries']:
+            if entry.get('has_dynamic_offset', False) and entry['binding_type'] not in (
+                'uniform_buffer',
+                'storage_buffer',
+            ):
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_ARGUMENT',
+                    index,
+                    f'bind-group layout {command["id"]} marks non-buffer binding {entry["binding"]} as dynamic',
+                )
         self._reserve_id(
             index,
             command['id'],
@@ -658,6 +668,39 @@ class DRP2SemanticValidator:
                 index,
                 f'bind group {command["bind_group_id"]} uses layout {bind_group.data["bind_group_layout_id"]}, expected {expected_layout_id}',
             )
+        layout = self._resolve_live(index, expected_layout_id, 'bind_group_layout')
+        dynamic_layout_entries = [
+            entry for entry in layout.data['entries'] if entry.get('has_dynamic_offset', False)
+        ]
+        dynamic_offsets = command.get('dynamic_offsets', [])
+        if len(dynamic_offsets) != len(dynamic_layout_entries):
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'bind group {command["bind_group_id"]} expected {len(dynamic_layout_entries)} dynamic offsets, got {len(dynamic_offsets)}',
+            )
+        entries_by_binding = {entry['binding']: entry for entry in bind_group.data['entries']}
+        for dynamic_index, layout_entry in enumerate(dynamic_layout_entries):
+            bind_group_entry = entries_by_binding.get(layout_entry['binding'])
+            if bind_group_entry is None:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'bind group {command["bind_group_id"]} is missing dynamic binding {layout_entry["binding"]}',
+                )
+            if bind_group_entry['resource_kind'] != 'buffer':
+                raise SemanticFailure(
+                    'DRP2_ERR_WRONG_OBJECT_TYPE',
+                    index,
+                    f'bind-group entry {layout_entry["binding"]} uses {bind_group_entry["resource_kind"]}, expected buffer',
+                )
+            buffer_state = self._resolve_live(index, bind_group_entry['resource_id'], 'buffer')
+            base_offset = bind_group_entry.get('offset', 0)
+            size = bind_group_entry.get('size')
+            if size is not None:
+                self._check_buffer_range(
+                    index, buffer_state, base_offset + dynamic_offsets[dynamic_index], size
+                )
         pass_info['bound_bind_groups'][command['slot']] = command['bind_group_id']
         encoder = self.encoders[pass_info['encoder_id']]
         encoder['resources'].add(('bind_group', command['bind_group_id']))

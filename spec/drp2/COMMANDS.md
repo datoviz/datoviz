@@ -400,6 +400,7 @@ Each layout entry requires:
 
 Optional fields:
 
+- `has_dynamic_offset`: whether a buffer binding consumes one entry from `SetBindGroup.dynamic_offsets`.
 - `label`: debug label.
 
 Semantics:
@@ -407,7 +408,8 @@ Semantics:
 1. active DRP2 `2.0` bind-group layouts are intentionally minimal and validate binding number plus
    binding type only,
 2. binding indices within one layout must be unique,
-3. bind groups created from the layout must provide exactly the declared binding set.
+3. `has_dynamic_offset` may be set only on `uniform_buffer` or `storage_buffer` bindings,
+4. bind groups created from the layout must provide exactly the declared binding set.
 
 
 ### `DestroyBindGroupLayout`
@@ -716,7 +718,14 @@ Semantics:
 3. if the bound pipeline declares `bind_group_layout_ids`, the entry at `slot` must exist and match
    the bind group's layout id,
 4. `slot` is interpreted against the currently bound pipeline layout,
-5. if present, `dynamic_offsets` are consumed in the binding order defined by the bind group layout.
+5. if the bind-group layout declares dynamic buffer bindings, `dynamic_offsets` must be present,
+6. `dynamic_offsets` must contain exactly one offset for each layout entry whose
+   `has_dynamic_offset` is true,
+7. `dynamic_offsets` are consumed in the layout entry order declared by `CreateBindGroupLayout`,
+8. each consumed dynamic offset is added to the corresponding bind-group entry's base `offset`
+   before validating the referenced buffer range,
+9. if the bind-group layout declares no dynamic buffer bindings, `dynamic_offsets` must be omitted or
+   empty.
 
 
 ### `SetViewport`

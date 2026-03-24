@@ -40,7 +40,9 @@ Active DRP2 `2.0` surface now includes:
 4. vertex/index buffer binding
 5. lightweight bind groups
 6. lightweight bind-group layouts
-7. copy commands and queue submission
+7. dynamic buffer offsets on bind-group bindings
+8. copy commands and queue submission
+9. destruction-safety negatives for bind-group layouts and pipelines
 
 What remains intentionally deferred:
 
@@ -62,8 +64,8 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `42/42` fixtures passing
-2. `14` focused runner tests passing
+1. `49/49` fixtures passing
+2. `17` focused runner tests passing
 
 
 ## In Scope
@@ -98,21 +100,21 @@ Current executable DRP2 corpus status:
 
 ## Recommended Next Step
 
-The most sensible next DRP2 step is not another large object-graph promotion.
+The most sensible next DRP2 step is still not another large object-graph promotion.
 
 Recommended next slice:
 
-1. tighten `SetBindGroup.dynamic_offsets` semantics end to end
-2. let bind-group layout entries declare whether a buffer binding uses dynamic offsets
-3. validate dynamic-offset count and ordering in `SetBindGroup`
-4. add positive and negative fixtures for missing, extra, and misordered dynamic offsets
-5. add explicit destruction-safety negatives for bind-group layouts and pipelines
+1. keep the new dynamic-offset contract stable across prose, schema, fixtures, and runner behavior
+2. keep dynamic buffer bindings intentionally free of new capability or alignment fields in active `2.0`
+3. continue fixture-first growth of the active bind-group/pipeline lifetime model before promoting any deferred object family
+4. only add dynamic-offset alignment reporting later if a runtime slice proves the need concretely
 
 Reasoning:
 
-1. the active contract already has pipelines, bind groups, and bind-group layouts
-2. `dynamic_offsets` is still present but under-specified
-3. this next slice deepens the current active model instead of reopening deferred object families
+1. the active contract now covers the first non-trivial bind-group dynamic-offset semantics end to end
+2. the highest-value follow-up is contract hardening, not broader object promotion
+3. the current fixture shape stays backend-agnostic precisely by not exposing backend-specific alignment policy yet
+4. deferred object families should remain deferred until a future slice can be validated just as concretely
 
 
 ## Recommended Task Order

@@ -29,11 +29,38 @@
               "sampled_texture",
               "storage_texture"
             ]
+          },
+          "has_dynamic_offset": {
+            "type": "boolean"
           }
         },
         "required": [
           "binding",
           "binding_type"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "has_dynamic_offset": {
+                  "const": true
+                }
+              },
+              "required": [
+                "has_dynamic_offset"
+              ]
+            },
+            "then": {
+              "properties": {
+                "binding_type": {
+                  "enum": [
+                    "uniform_buffer",
+                    "storage_buffer"
+                  ]
+                }
+              }
+            }
+          }
         ]
       }
     },

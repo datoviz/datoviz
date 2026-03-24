@@ -301,7 +301,11 @@ Rules:
 12. `SetBindGroup` is interpreted against the currently bound pipeline layout,
 13. if the bound pipeline declares a bind-group layout for the requested slot, the bound bind group
    must have been created from that exact layout,
-14. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
+14. if a bind-group layout marks buffer bindings as dynamic, `SetBindGroup` must provide exactly one
+   dynamic offset for each such binding in layout entry order,
+15. each dynamic offset is applied to the corresponding bind-group entry's base offset before buffer
+   range validation,
+16. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
    cannot validate the slot against a known layout.
 
 Active runner note:

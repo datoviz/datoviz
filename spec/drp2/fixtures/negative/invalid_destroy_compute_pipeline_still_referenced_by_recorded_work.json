@@ -1,0 +1,62 @@
+{
+  "name": "invalid_destroy_compute_pipeline_still_referenced_by_recorded_work",
+  "description": "A compute pipeline is destroyed after being captured by a finished command buffer.",
+  "reason": "Destroying a compute pipeline still referenced by recorded work is invalid because the recorded dispatch commands still depend on that pipeline state.",
+  "fix": "Keep the compute pipeline live until the recorded work no longer depends on it, or record fresh work with a different pipeline.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "usage",
+    "submission",
+    "destroy"
+  ],
+  "commands": [
+    {
+      "cmd": "CreateComputePipeline",
+      "id": 20
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 1
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 2,
+      "encoder_id": 1
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 2,
+      "pipeline_id": 20
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 2,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "cmd": "EndComputePass",
+      "pass_id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 1,
+      "command_buffer_id": 3
+    },
+    {
+      "cmd": "DestroyComputePipeline",
+      "compute_pipeline_id": 20
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 7
+  }
+}
