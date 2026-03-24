@@ -18,6 +18,10 @@
 
 #include "datoviz/vk/memory.h"
 
+MUTE_ON
+#include "vk_mem_alloc.h"
+MUTE_OFF
+
 
 
 /*************************************************************************************************/
@@ -36,7 +40,7 @@ struct DvzVma
 struct DvzAllocation
 {
     VmaMemoryUsage usage;
-    VmaAllocationCreateFlags flags;
+    DvzAllocationFlags flags;
     VmaAllocationInfo info;
     VmaAllocation alloc;
     VkMemoryPropertyFlags memory_flags;

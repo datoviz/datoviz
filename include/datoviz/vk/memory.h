@@ -17,13 +17,10 @@
 /*************************************************************************************************/
 
 #include <stdint.h>
+#include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
-
-MUTE_ON
-#include "vk_mem_alloc.h"
-MUTE_OFF
 
 
 
@@ -34,7 +31,7 @@ MUTE_OFF
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzVma DvzVma;
 typedef struct DvzAllocation DvzAllocation;
-typedef VmaAllocationCreateFlags DvzAllocationFlags;
+typedef uint32_t DvzAllocationFlags;
 
 
 
@@ -43,14 +40,11 @@ typedef VmaAllocationCreateFlags DvzAllocationFlags;
 /*************************************************************************************************/
 
 #define DVZ_ALLOC_FLAGS_NONE ((DvzAllocationFlags)0)
-#define DVZ_ALLOC_DEDICATED_MEMORY ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT)
-#define DVZ_ALLOC_MAPPED ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_MAPPED_BIT)
-#define DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE                                                   \
-    ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT)
-#define DVZ_ALLOC_HOST_ACCESS_RANDOM                                                             \
-    ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT)
-#define DVZ_ALLOC_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD                                             \
-    ((DvzAllocationFlags)VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT)
+#define DVZ_ALLOC_DEDICATED_MEMORY ((DvzAllocationFlags)(1u << 0))
+#define DVZ_ALLOC_MAPPED ((DvzAllocationFlags)(1u << 1))
+#define DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE ((DvzAllocationFlags)(1u << 2))
+#define DVZ_ALLOC_HOST_ACCESS_RANDOM ((DvzAllocationFlags)(1u << 3))
+#define DVZ_ALLOC_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD ((DvzAllocationFlags)(1u << 4))
 
 
 

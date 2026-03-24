@@ -41,6 +41,30 @@ MUTE_OFF
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Convert public Datoviz allocation policy flags to internal VMA creation flags.
+ *
+ * @param flags Datoviz allocation policy flags
+ * @return equivalent VMA allocation creation flags
+ */
+static VmaAllocationCreateFlags _dvz_to_vma_allocation_flags(DvzAllocationFlags flags)
+{
+    VmaAllocationCreateFlags out = 0;
+    if ((flags & DVZ_ALLOC_DEDICATED_MEMORY) != 0)
+        out |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+    if ((flags & DVZ_ALLOC_MAPPED) != 0)
+        out |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
+    if ((flags & DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE) != 0)
+        out |= VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+    if ((flags & DVZ_ALLOC_HOST_ACCESS_RANDOM) != 0)
+        out |= VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+    if ((flags & DVZ_ALLOC_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD) != 0)
+        out |= VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT;
+    return out;
+}
+
+
+
 static VmaAllocatorCreateFlags _set_vma_flags(DvzDevice* device)
 {
     ANN(device);
@@ -337,7 +361,8 @@ int dvz_allocator_buffer(
         alloc_info.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
     }
     alloc_info.usage = alloc->usage = usage;
-    alloc_info.flags = alloc->flags = flags;
+    alloc->flags = flags;
+    alloc_info.flags = _dvz_to_vma_allocation_flags(flags);
 
     // External memory.
     VkExternalMemoryBufferCreateInfo external_info = {0};
@@ -380,7 +405,8 @@ int dvz_allocator_image(
 
     VmaAllocationCreateInfo alloc_info = {0};
     alloc_info.usage = alloc->usage = VMA_MEMORY_USAGE_AUTO;
-    alloc_info.flags = alloc->flags = flags;
+    alloc->flags = flags;
+    alloc_info.flags = _dvz_to_vma_allocation_flags(flags);
 
     log_trace("creating image...");
     VK_RETURN_RESULT(
@@ -636,7 +662,8 @@ int dvz_allocator_import_buffer(
     // VMA allocation create info.
     VmaAllocationCreateInfo alloc_info = {0};
     alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-    alloc_info.flags = flags;
+    alloc->flags = flags;
+    alloc_info.flags = _dvz_to_vma_allocation_flags(flags);
 
 #if OS_UNIX
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
@@ -701,7 +728,8 @@ int dvz_allocator_import_image(
     // VMA allocation create info.
     VmaAllocationCreateInfo alloc_info = {0};
     alloc_info.usage = VMA_MEMORY_USAGE_AUTO;
-    alloc_info.flags = flags;
+    alloc->flags = flags;
+    alloc_info.flags = _dvz_to_vma_allocation_flags(flags);
 
 #if OS_UNIX
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
