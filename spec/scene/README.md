@@ -24,6 +24,7 @@ The scene layer should remain pure high-level logic:
 - `AXES.md`: scene-side semantic model for axes, ticks, labels, and related annotations
 - `ANNOTATIONS.md`: semantic model for labels, guides, probes, overlays, legends, and callouts
 - `LEGENDS_AND_COLORBARS.md`: semantic model for discrete legends, continuous colorbars, and shared explanatory mappings
+- `SCENE_VALIDATION.md`: scene-level pre-emission validation rules, error classes, and capability-gated checks
 - `SCENE_API_SKETCH.md`: tentative user-facing scene construction surface above planning and DRP2
 - `INVALIDATION_AND_CACHING.md`: rules for dirty scopes, reuse, redraw, uploads, and plan rebuilds
 - `PICKING.md`: scene-side picking, identity round-trip, grouped hits, and readback semantics
@@ -57,11 +58,10 @@ The current scene spec now covers:
 
 The next recommended iterations are:
 
-1. `SCENE_VALIDATION.md` for scene-level pre-emission validation,
-2. `CAPABILITY_ADAPTATION.md` for fallback and variant-reduction policy,
-3. more worked examples, especially multi-panel and annotation-heavy cases,
-4. a refinement pass on `SCENE_API_SKETCH.md`,
-5. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
+1. `CAPABILITY_ADAPTATION.md` for fallback and variant-reduction policy,
+2. more worked examples, especially multi-panel and annotation-heavy cases,
+3. a refinement pass on `SCENE_API_SKETCH.md`,
+4. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
    `volume`.
 
 The general rule should remain:
