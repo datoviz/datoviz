@@ -27,6 +27,7 @@
 #include "datoviz/stream.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
+#include "datoviz/vk/memory_interop.h"
 #include "datoviz/window.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/sync.h"

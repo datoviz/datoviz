@@ -26,6 +26,7 @@
 #include "_memory.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/memory.h"
+#include "datoviz/vk/memory_interop.h"
 
 MUTE_ON
 MUTE_OFF

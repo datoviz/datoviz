@@ -144,12 +144,12 @@ DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
 
 
 /**
- * Set the allocation policy flags used when the images create their memory.
+ * Set the allocator policy flags used when the images create their memory.
  *
  * @param image the image
  * @param flags the flags
  */
-DVZ_EXPORT void dvz_images_vma_flags(DvzImages* img, DvzAllocationFlags flags);
+DVZ_EXPORT void dvz_images_alloc_flags(DvzImages* img, DvzAllocationFlags flags);
 
 
 

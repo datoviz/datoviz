@@ -224,7 +224,7 @@ void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 
 
 
-void dvz_images_vma_flags(DvzImages* img, DvzAllocationFlags flags)
+void dvz_images_alloc_flags(DvzImages* img, DvzAllocationFlags flags)
 {
     ANN(img);
     img->req_alloc_flags = flags;

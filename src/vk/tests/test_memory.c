@@ -33,6 +33,7 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/memory.h"
+#include "datoviz/vk/memory_interop.h"
 #include "test_vk.h"
 #include "testing.h"
 

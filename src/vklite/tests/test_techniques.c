@@ -943,7 +943,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_images_size(pickimg, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
     dvz_images_usage(
         pickimg, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    dvz_images_vma_flags(pickimg, DVZ_ALLOC_DEDICATED_MEMORY);
+    dvz_images_alloc_flags(pickimg, DVZ_ALLOC_DEDICATED_MEMORY);
     AT(dvz_images_create(pickimg) == 0);
 
     dvz_image_views(pickimg, pickview);

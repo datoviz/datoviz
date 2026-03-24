@@ -109,16 +109,6 @@ DVZ_EXPORT DvzDevice* dvz_allocator_device(DvzVma* allocator);
 
 
 /**
- * Return the external-handle type configured on an allocator.
- *
- * @param allocator the allocator
- * @return external memory handle type flags (0 when disabled)
- */
-DVZ_EXPORT VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(DvzVma* allocator);
-
-
-
-/**
  * Return the mapped pointer currently associated with an allocation.
  *
  * @param alloc the allocation
@@ -173,7 +163,8 @@ DVZ_EXPORT VkDeviceSize dvz_allocation_size(DvzAllocation* alloc);
  * Create an allocator for the stable low-level Datoviz allocation path.
  *
  * This is the main allocator entry point for regular buffer/image allocation workflows.
- * External-memory interop remains a narrower advanced path documented separately below.
+ * External-memory interop remains a narrower advanced path documented in
+ * `datoviz/vk/memory_interop.h`.
  *
  * @param device the device
  * @param export if exporting created allocations, the external memory handle type
@@ -288,81 +279,6 @@ DVZ_EXPORT int dvz_allocator_copy_to(
  */
 DVZ_EXPORT int dvz_allocator_copy_from(
     DvzVma* allocator, DvzAllocation* alloc, VkDeviceSize offset, void* data, VkDeviceSize size);
-
-
-
-/*************************************************************************************************/
-/*  External-memory interop API                                                                  */
-/*************************************************************************************************/
-
-/**
- * Export an allocation for another GPU API.
- *
- * This function is part of the advanced external-memory interop surface. It is intended for
- * specialized paths such as video/interop plumbing rather than ordinary Datoviz allocation use.
- *
- * @param allocator the allocator
- * @param alloc the allocation
- * @param[out] handle the exported handle pointing to that allocation
- */
-DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle);
-
-
-
-/**
- * Return the Vulkan device-memory handle backing an allocation.
- *
- * This is an advanced interop helper for external-memory workflows. Regular Datoviz callers
- * should prefer the allocator/map/copy helpers above instead of depending on raw memory handles.
- *
- * @param alloc the allocation
- * @returns Vulkan device memory handle
- */
-DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
-
-
-
-/**
- * Import an external GPU data pointer to a Vulkan buffer.
- *
- * This function belongs to the advanced external-memory interop surface, not the stable
- * low-level allocation path.
- *
- * !!! warning
- *     This function remains experimental on the current branch. The import-buffer test path is
- *     still documented as unreliable and should not be treated as a stable v0.4 contract yet.
- *
- * @param allocator the allocator
- * @param info the buffer creation
- * @param info the buffer creation info Vulkan struct
- * @param flags Datoviz allocation policy flags
- * @param handle the handle to import
- * @param[out] alloc the created allocation
- * @param[out] vk_buffer the created VkBuffer handle
- */
-DVZ_EXPORT int dvz_allocator_import_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
-    DvzAllocation* alloc, VkBuffer* vk_buffer);
-
-
-
-/**
- * Import an external GPU data pointer to a Vulkan image.
- *
- * This function belongs to the advanced external-memory interop surface, not the stable
- * low-level allocation path.
- *
- * @param allocator the allocator
- * @param info the image creation
- * @param info the image creation info Vulkan struct
- * @param flags Datoviz allocation policy flags
- * @param handle the handle to import
- * @param[out] alloc the created allocation
- * @param[out] vk_image the created VkImage handle
- */
-DVZ_EXPORT int dvz_allocator_import_image(
-    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, int handle,
-    DvzAllocation* alloc, VkImage* vk_image);
 
 
 

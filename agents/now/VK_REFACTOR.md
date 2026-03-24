@@ -13,10 +13,12 @@
 > - **Current closure note:** `DvzBarriers` is intentionally still public because it serves as a
 >   mutable command-recording builder rather than an owned wrapper. The remaining clearly sensitive
 >   public exposure is now mostly on the `vk` side, especially `vk/memory.h`.
-> - **Technical-debt note:** Public VMA-facing allocator policy in `vk/memory.h`,
->   `vklite/buffers.h`, and `vklite/images.h` is currently accepted technical debt. The wrappers are
->   already opaque; the deferred cleanup is removing VMA types from public headers, not another
->   opacity pass.
+> - **Technical-debt note:** The most direct public VMA include leak has now been removed from
+>   `vk/memory.h`: `DvzAllocationFlags` is Datoviz-owned and VMA stays internal to `src/vk`.
+>   Remaining allocator debt is narrower: advanced allocator/interop semantics now live behind the
+>   opt-in `vk/memory_interop.h` header, while the core allocation path stays in `vk/memory.h`.
+>   `vklite` and canvas still intentionally expose allocator-oriented object references such as
+>   `DvzVma*`.
 > - **Remaining gap:** Non-GPU ownership boundaries between `vk` and `vklite` are now mostly closed
 >   for the active `vklite` wrapper surface. The remaining work is a final policy/doc pass plus any
 >   follow-up cleanup around `vk` allocator/memory exposure and, if desired later, stricter `vk`
@@ -27,14 +29,16 @@
 1. Treat the `vklite` wrapper-opacity pass as effectively complete for the active surface.
 2. Keep `DvzBarriers` public and documented as an intentional builder/config type for command
    recording rather than trying to force opacity there.
-3. Audit remaining public structs in `include/datoviz/vk/*.h` for true ownership-sensitive
-   exposure, with `vk/memory.h` now the clearest remaining cleanup target.
+3. Audit remaining public structs and advanced low-level helpers in `include/datoviz/vk/*.h` for
+   true ownership-sensitive exposure, with allocator interop policy and queue planning now the
+   clearest remaining cleanup targets.
 4. Reassess whether `DvzQueueCaps` / `DvzQueue` / `DvzQueues` should remain an intentionally
    low-level public model or eventually move behind a stricter accessor surface.
 5. Keep the focused lifecycle tests current around repeated submit, destroy idempotence, and
    recreate/reset semantics.
-6. Unless external low-level API stabilization becomes a priority, defer the VMA abstraction pass;
-   treat it as intentional technical debt rather than an immediate blocker.
+6. Unless external low-level API stabilization becomes a priority, defer deeper allocator-interop
+   abstraction work beyond the `memory_interop.h` split; treat it as intentional technical debt
+   rather than an immediate blocker.
 
 # Datoviz v0.4-dev VK/VKLite Ownership Boundary Refactor Plan
 
@@ -230,7 +234,11 @@ Exit criteria:
    - No `src/vk/_*.h` include is present in `src/vklite/*.c`; invariant #1 is currently satisfied.
 3. Public struct exposure inventory (ownership-sensitive):
    - `include/datoviz/vk/memory.h`: `DvzVma` and `DvzAllocation` remain the clearest still-sensitive
-     public wrappers on the active low-level path.
+     public wrappers on the active low-level path, but the core header no longer includes
+     `vk_mem_alloc.h`, no longer exposes raw VMA flag types, and no longer carries the explicit
+     external-memory helper declarations.
+   - `include/datoviz/vk/memory_interop.h`: now holds the narrower external-memory helper surface
+     (`dvz_allocator_external()`, export/import helpers, raw memory handle accessor).
    - `include/datoviz/vklite/sync.h`: only `DvzBarriers` still has a public struct body, and that
      is now intentional because it is a mutable barrier-recording builder/config helper.
    - `include/datoviz/vk/queues.h`: `DvzQueueCaps`, `DvzQueue`, and `DvzQueues` remain public, but
@@ -257,7 +265,8 @@ Exit criteria:
      (and allocator/parent object where relevant) and owns its Vulkan object handles.
 5. Immediate Step 1 inputs (accessor contract focus):
    - Boundary leakage is no longer primarily about `vklite` wrapper layout exposure.
-   - The highest-value remaining hardening target is `vk` allocator/memory state
+   - The highest-value remaining hardening target is allocator interop/lifecycle policy after the
+     `memory_interop.h` split, plus the remaining low-level queue-model decision.
      (`DvzVma`, `DvzAllocation`) before any further broad API churn.
    - `DvzBarriers` should remain public as an intentional builder/config surface unless its command
      recording role changes.
