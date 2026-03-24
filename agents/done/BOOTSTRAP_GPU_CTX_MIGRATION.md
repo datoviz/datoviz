@@ -56,7 +56,7 @@ It currently mixes:
 That is acceptable as a convenience helper, but it creates several problems:
 
 1. callers can depend on `struct DvzBootstrap` layout in
-   [bootstrap.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/vk/bootstrap.h)
+   the old `include/datoviz/vk/bootstrap.h` surface
 2. the object can exist in several partially configured states
 3. the `flags` model hides lifecycle decisions instead of making them explicit
 4. the default GPU selection policy is implicit and hardcoded

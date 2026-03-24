@@ -77,6 +77,23 @@ Out of scope:
 4. Naming consistency pass for wrapper allocation versus owned runtime creation.
 
 
+## Recent executed slice (`2026-03-24`)
+
+The latest low-level consistency pass already landed a small but representative lifecycle-hardening
+slice:
+
+1. `DvzCommands` destroy now releases owned command buffers even when the wrapper is destroyed
+   before any recording reaches the "created" state.
+2. `dvz_stream_update()` now fails closed instead of leaving sinks partially restarted after an
+   update/restart failure.
+3. The focused regressions added in that slice are:
+   - `test_vklite_commands_destroy_without_recording`
+   - `test_stream_update_restart_failure_stops_stream`
+   - `test_stream_attach_sink_name_prefers_requested_then_auto`
+4. `testing/components/dvztest_vk.c` was also refreshed so the focused vk runner includes the new
+   `vklite` command-lifecycle regression instead of lagging behind the unified suite.
+
+
 ## Decision notes carried from the previous phase
 
 1. `include/datoviz/vk/queues.h` should be treated as an intentional public low-level

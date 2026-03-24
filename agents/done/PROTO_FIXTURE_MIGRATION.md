@@ -26,7 +26,7 @@ Completion snapshot:
 
 Replace the internal `proto` test helper with explicitly named fixture helpers that separate:
 
-1. GPU/bootstrap ownership and device/allocator access
+1. GPU bring-up ownership and device/allocator access
 2. Offscreen render-target / command / screenshot infrastructure
 
 The replacement should improve naming, make test intent clearer, and finish the remaining `proto`
@@ -37,7 +37,7 @@ boundary cleanup tracked in [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agent
 
 Current `proto` is useful, but it mixes several responsibilities in one object:
 
-1. bootstrap / device / allocator ownership
+1. GPU bring-up / device / allocator ownership
 2. offscreen color/depth attachment setup
 3. rendering attachment state
 4. barriers and command buffers
@@ -81,10 +81,10 @@ Reasoning:
 
 Responsibilities:
 
-1. create/destroy bootstrap state
+1. create/destroy GPU-context bring-up state
 2. create/manage device
 3. create/manage allocator
-4. expose queue/device/allocator/bootstrap access needed by tests or dependent fixtures
+4. expose queue/device/allocator access needed by tests or dependent fixtures
 
 Non-responsibilities:
 
@@ -106,7 +106,7 @@ Responsibilities:
 
 Non-responsibilities:
 
-1. does not own bootstrap/device/allocator creation policy
+1. does not own offscreen rendering policy
 2. borrows `DvzFixtureGpu`
 
 
