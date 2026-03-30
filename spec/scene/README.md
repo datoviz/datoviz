@@ -55,36 +55,115 @@ Unless a document says otherwise, this directory should be read with the followi
    orientation document.
 
 
-## Documents
+## Recommended Reading Order
 
-- `REQUIREMENTS.md`: what the scene layer needs from DRP2 and the runtime
-- `OBJECT_MODEL.md`: minimum stable concepts
-- `PREFERRED_API_PROFILE.md`: the current preferred scene-facing API defaults selected from the API sketch
-- `IMPLEMENTATION_BRIDGE.md`: tentative C-facing type and operation mapping derived from the current scene spec
-- `headers/`: non-authoritative draft headers pressure-testing the current scene, runtime, and diagnostics surfaces
-- `AXES.md`: scene-side semantic model for axes, ticks, labels, and related annotations
-- `ANNOTATIONS.md`: semantic model for labels, guides, probes, overlays, legends, and callouts
-- `LEGENDS_AND_COLORBARS.md`: semantic model for discrete legends, continuous colorbars, and shared explanatory mappings
-- `DIAGNOSTICS_SCHEMA.md`: shared conceptual diagnostic shape across validation, adaptation, planning, and runtime execution
-- `SCENE_VALIDATION.md`: scene-level pre-emission validation rules, error classes, and capability-gated checks
-- `CAPABILITY_ADAPTATION.md`: explicit fallback, simplification, and deactivation policy driven by runtime capabilities
-- `SCENE_API_SKETCH.md`: tentative user-facing scene construction surface above planning and DRP2
-- `EXTERNAL_UI.md`: boundary between scene-owned semantics and app-owned UI frameworks such as ImGui
-- `INVALIDATION_AND_CACHING.md`: rules for dirty scopes, reuse, redraw, uploads, and plan rebuilds
-- `PICKING.md`: scene-side picking, identity round-trip, grouped hits, and readback semantics
-- `CONTROLLERS.md`: event routing, panel-owned navigation, picking-driven interaction, and redraw
-- `VISUAL_FAMILIES.md`: preferred v0.4 visual-family taxonomy grounded in local `v0.3` terminology
-- `VISUAL_CONTRACT.md`: producer-side contract every future visual type must satisfy
-- `VISUAL_MINI_CONTRACTS.md`: family-level mini-contracts for the current preferred v0.4 visuals
-- `RESOURCE_MODEL.md`: scene-owned logical data model for visuals, planning, upload, and readback
-- `TRANSFORM_PIPELINE.md`: explicit data-normalization and panel-transform pipeline for scene visuals
-- `FRAME_PLAN_IR.md`: producer-side intermediate representation for one planned frame
-- `FRAME_LIFECYCLE.md`: update/build/emit flow
-- `RUNTIME_BOUNDARY.md`: allowed and forbidden dependencies on the runtime layer
-- `RUNTIME_SERVICE_SKETCH.md`: minimal conceptual runtime service surface below scene planning and above backend execution
-- `USE_CASES.md`: pressure-test scenarios
-- `examples/`: worked scene-spec examples that instantiate families, transforms, and `FramePlan`
-  shapes
+Read the scene spec in this order during review.
+
+### 1. Orientation and high-level constraints
+
+1. [REQUIREMENTS.md](REQUIREMENTS.md) — scene goals, scope, and required runtime/DRP2 support
+2. [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md) — what scene may and may not depend on
+3. [USE_CASES.md](USE_CASES.md) — pressure-test scenarios to keep in mind while reviewing
+
+### 2. Core scene concepts and public shape
+
+4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
+5. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults
+6. [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md) — tentative user-facing construction surface
+7. [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md) — C-facing mapping of the current design
+8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
+
+### 3. Visual semantics
+
+9. [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md) — family taxonomy
+10. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md) — shared producer contract across visuals
+11. [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md) — family-level mini-contracts
+12. [AXES.md](AXES.md) — axes and tick semantics
+13. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
+14. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
+
+### 4. Data, transforms, planning, and runtime handoff
+
+15. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model
+16. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization and panel-transform pipeline
+17. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
+18. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
+19. [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md) — conceptual runtime service surface
+
+### 5. Validation, adaptation, interaction, and diagnostics
+
+20. [SCENE_VALIDATION.md](SCENE_VALIDATION.md) — validation rules and error classes
+21. [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md) — explicit fallback and simplification policy
+22. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
+23. [PICKING.md](PICKING.md) — picking identity and readback behavior
+24. [CONTROLLERS.md](CONTROLLERS.md) — event routing and interaction ownership
+25. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
+26. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+
+### 6. Worked examples
+
+27. [examples/README.md](examples/README.md) — entry point for worked examples
+28. [examples/POINT_2D.md](examples/POINT_2D.md)
+29. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
+30. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
+31. [examples/IMAGE_SLICE.md](examples/IMAGE_SLICE.md)
+32. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
+33. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
+34. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
+35. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+
+
+## Document Index
+
+- [REQUIREMENTS.md](REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
+- [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
+- [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): the current preferred scene-facing API
+  defaults selected from the API sketch
+- [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md): tentative C-facing type and operation
+  mapping derived from the current scene spec
+- [headers/README.md](headers/README.md): non-authoritative draft header index for the current
+  scene, runtime, and diagnostics surfaces
+- [AXES.md](AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
+- [ANNOTATIONS.md](ANNOTATIONS.md): semantic model for labels, guides, probes, overlays, legends,
+  and callouts
+- [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md): semantic model for discrete legends,
+  continuous colorbars, and shared explanatory mappings
+- [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md): shared conceptual diagnostic shape across
+  validation, adaptation, planning, and runtime execution
+- [SCENE_VALIDATION.md](SCENE_VALIDATION.md): scene-level pre-emission validation rules, error
+  classes, and capability-gated checks
+- [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md): explicit fallback, simplification, and
+  deactivation policy driven by runtime capabilities
+- [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md): tentative user-facing scene construction surface
+  above planning and DRP2
+- [EXTERNAL_UI.md](EXTERNAL_UI.md): boundary between scene-owned semantics and app-owned UI
+  frameworks such as ImGui
+- [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md): rules for dirty scopes, reuse,
+  redraw, uploads, and plan rebuilds
+- [PICKING.md](PICKING.md): scene-side picking, identity round-trip, grouped hits, and readback
+  semantics
+- [CONTROLLERS.md](CONTROLLERS.md): event routing, panel-owned navigation, picking-driven
+  interaction, and redraw
+- [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md): preferred v0.4 visual-family taxonomy grounded in
+  local `v0.3` terminology
+- [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md): producer-side contract every future visual type must
+  satisfy
+- [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md): family-level mini-contracts for the
+  current preferred v0.4 visuals
+- [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
+  upload, and readback
+- [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md): explicit data-normalization and panel-transform
+  pipeline for scene visuals
+- [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md): producer-side intermediate representation for one planned
+  frame
+- [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md): update/build/emit flow
+- [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md): allowed and forbidden dependencies on the runtime
+  layer
+- [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md): minimal conceptual runtime service
+  surface below scene planning and above backend execution
+- [USE_CASES.md](USE_CASES.md): pressure-test scenarios
+- [examples/README.md](examples/README.md): worked scene-spec examples that instantiate families,
+  transforms, and `FramePlan` shapes
 
 
 ## Next Steps
