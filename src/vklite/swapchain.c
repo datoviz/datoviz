@@ -360,6 +360,31 @@ static DvzPresentStatus _swapchain_refresh_surface(DvzSwapchain* swapchain)
 
 
 
+/**
+ * Wait until the swapchain device is idle before destroying present resources.
+ *
+ * @param swapchain swapchain wrapper being torn down
+ */
+static void _swapchain_wait_idle(DvzSwapchain* swapchain)
+{
+    ANN(swapchain);
+
+    if (swapchain->device == VK_NULL_HANDLE)
+    {
+        return;
+    }
+    if (
+        swapchain->handle == VK_NULL_HANDLE && swapchain->image_views == NULL && swapchain->images == NULL)
+    {
+        return;
+    }
+
+    // Teardown can follow an acquire/present cycle immediately in tests and shutdown paths.
+    vkDeviceWaitIdle(swapchain->device);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -896,6 +921,7 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
         return;
     }
 
+    _swapchain_wait_idle(swapchain);
     _swapchain_destroy_views(swapchain);
 
     if (swapchain->handle != VK_NULL_HANDLE && swapchain->device != VK_NULL_HANDLE)

@@ -252,6 +252,9 @@ Exit criteria:
      `VkSurfaceKHR`.
    - `DvzSwapchain`: owns swapchain/image-view resources it creates; borrows `DvzSurface` and
      logical-device state.
+     Present-path teardown must wait until the device is idle before destroying swapchain-owned
+     image views or the swapchain handle; this is required to avoid macOS/MoltenVK teardown races
+     after an acquire/present cycle.
    - Opaque `vklite` wrappers (`commands`, `sync` owners, `buffers`, `images`, `sampler`, `slots`,
      `graphics`, `compute`, `shader`, `rendering`) follow the active create/init/destroy/free
      pattern and borrow `DvzDevice` plus any allocator/parent wrapper they depend on.
