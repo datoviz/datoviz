@@ -14,13 +14,14 @@ This document applies only to the active DRP2 `2.0` commands:
 
 1. session and diagnostics,
 2. buffer and texture lifecycle,
-3. bind-group lifecycle,
-4. pipeline lifecycle,
-5. command encoder lifecycle,
-6. render and compute pass lifecycle,
-7. render and compute recording commands,
-8. copy commands,
-9. queue submission.
+3. shader-module lifecycle,
+4. bind-group lifecycle,
+5. pipeline lifecycle,
+6. command encoder lifecycle,
+7. render and compute pass lifecycle,
+8. render and compute recording commands,
+9. copy commands,
+10. queue submission.
 
 Deferred commands listed in `schema/DEFERRED.md` are not covered by these invariants and must not be
 assumed to inherit them unchanged.
@@ -51,10 +52,11 @@ Persistent objects remain live until explicit destruction:
 
 1. buffer
 2. texture
-3. bind-group layout
-4. bind group
-5. pipeline
-6. command buffer
+3. shader module
+4. bind-group layout
+5. bind group
+6. pipeline
+7. command buffer
 
 Scoped objects exist only between their begin and end commands:
 
@@ -153,6 +155,20 @@ Validation consequences:
    `DRP2_ERR_INVALID_ARGUMENT`.
 
 
+## Shader-Module Lifetime
+
+Rules:
+
+1. `CreateShaderModule` makes `id` live as a shader module immediately after semantic validation
+   succeeds,
+2. `DestroyShaderModule` ends the shader-module lifetime immediately after semantic validation
+   succeeds,
+3. no later command may reference the destroyed shader module,
+4. a shader module may be referenced by live pipelines,
+5. a shader module may be referenced by `QueueSubmit` only indirectly through previously finished
+   command buffers that capture pipelines using it.
+
+
 ## Pipeline Lifetime
 
 Rules:
@@ -167,7 +183,10 @@ Rules:
    semantic validation succeeds,
 5. no later command may reference a destroyed pipeline,
 6. a pipeline may be referenced by `QueueSubmit` only indirectly through previously finished command
-   buffers.
+   buffers,
+7. a live pipeline keeps its referenced shader modules live for as long as the pipeline itself is
+   live,
+8. creating a pipeline with shader modules whose stages do not match the pipeline slot is invalid.
 
 
 ## Command Buffer Lifetime
@@ -245,12 +264,14 @@ Commands valid without encoder or pass scope:
 11. `DestroyBindGroup`
 12. `CreateBindGroupLayout`
 13. `DestroyBindGroupLayout`
-14. `CreateRenderPipeline`
-15. `DestroyRenderPipeline`
-16. `CreateComputePipeline`
-17. `DestroyComputePipeline`
-18. `BeginCommandEncoder`
-19. `QueueSubmit`
+14. `CreateShaderModule`
+15. `DestroyShaderModule`
+16. `CreateRenderPipeline`
+17. `DestroyRenderPipeline`
+18. `CreateComputePipeline`
+19. `DestroyComputePipeline`
+20. `BeginCommandEncoder`
+21. `QueueSubmit`
 
 Commands valid in an open encoder but outside any pass:
 

@@ -40,6 +40,8 @@ Authoritative files:
 - `commands/DestroyBindGroup.json`
 - `commands/CreateBindGroupLayout.json`
 - `commands/DestroyBindGroupLayout.json`
+- `commands/CreateShaderModule.json`
+- `commands/DestroyShaderModule.json`
 - `commands/CreateRenderPipeline.json`
 - `commands/DestroyRenderPipeline.json`
 - `commands/CreateComputePipeline.json`
@@ -70,8 +72,6 @@ Deferred, non-authoritative files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/CreateShaderModule.json`
-- `commands/DestroyShaderModule.json`
 - `commands/CreateSampler.json`
 - `commands/DestroySampler.json`
 - `commands/CreateTextureView.json`

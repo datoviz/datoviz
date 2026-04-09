@@ -49,13 +49,14 @@ Active object kinds:
 
 1. buffer
 2. texture
-3. bind group layout
-4. bind group
-5. render pipeline
-6. compute pipeline
-7. command encoder
-8. render pass encoder
-9. compute pass encoder
+3. shader module
+4. bind group layout
+5. bind group
+6. render pipeline
+7. compute pipeline
+8. command encoder
+9. render pass encoder
+10. compute pass encoder
 
 Each object is addressed by an explicit logical id chosen by the producer.
 
@@ -119,12 +120,14 @@ At a minimum, `2.0` includes:
 
 ## Shader Rules
 
-1. Shader-module objects are deferred from the active executable `2.0` surface.
-2. WGSL remains the intended default contract-level shader language once shader ingestion is promoted.
-3. Native-only ingestion paths such as SPIR-V may exist behind explicit capability flags once shader
-   ingestion is promoted.
-4. The active `2.0` surface validates only lightweight pipeline metadata such as bind-group-layout
-   expectations and required vertex-buffer slots.
+1. Shader-module objects are part of the active executable `2.0` surface.
+2. WGSL is the default contract-level shader language in active `2.0`.
+3. Native-only ingestion paths such as SPIR-V may exist only behind explicit capability flags.
+4. Shader modules carry only the minimum executable contract metadata: stage, format, entry point,
+   and declared required features.
+5. Pipelines reference shader-module ids explicitly.
+6. Active `2.0` still keeps pipeline semantics narrow beyond shader attachment, bind-group-layout
+   expectations, and required vertex-buffer slots.
 
 
 ## Pass Rules

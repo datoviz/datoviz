@@ -43,6 +43,12 @@
       "$ref": "./commands/DestroyBindGroupLayout.json"
     },
     {
+      "$ref": "./commands/CreateShaderModule.json"
+    },
+    {
+      "$ref": "./commands/DestroyShaderModule.json"
+    },
+    {
       "$ref": "./commands/CreateRenderPipeline.json"
     },
     {

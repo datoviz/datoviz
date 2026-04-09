@@ -1,0 +1,62 @@
+{
+  "name": "invalid_create_render_pipeline_wrong_shader_stage",
+  "description": "A render pipeline binds a shader module whose declared stage does not match the requested pipeline slot.",
+  "reason": "Render pipelines require a VERTEX shader module for the vertex slot and a FRAGMENT shader module for the fragment slot.",
+  "fix": "Create a vertex-stage shader module for the vertex slot and a fragment-stage shader module for the fragment slot.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "shader"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "COMPUTE",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@compute @workgroup_size(1) fn main() {}"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 12,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 1
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 4
+  }
+}

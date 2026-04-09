@@ -1,0 +1,54 @@
+{
+  "name": "invalid_capability_shader_module_format",
+  "description": "A shader module requests a format that the runtime capability record does not support.",
+  "reason": "Shader formats are capability-gated in the active DRP2 2.0 contract.",
+  "fix": "Emit a shader module in a supported format or select a runtime whose capability record includes the requested format.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "shader",
+    "capability"
+  ],
+  "capabilities": {
+    "supported_shader_formats": [
+      "wgsl"
+    ],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "COMPUTE",
+      "format": "spirv",
+      "entry_point": "main",
+      "code": "AAAA"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "capability_validation",
+    "code": "DRP2_ERR_UNSUPPORTED_CAPABILITY",
+    "command_index": 2
+  }
+}

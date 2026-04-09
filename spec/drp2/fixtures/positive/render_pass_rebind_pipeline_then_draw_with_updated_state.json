@@ -55,12 +55,46 @@
       ]
     },
     {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
+    },
+    {
       "cmd": "CreateRenderPipeline",
       "id": 10,
       "vertex_buffer_slots": 1,
       "bind_group_layout_ids": [
         14
-      ]
+      ],
+      "vertex_shader_module_id": 9000,
+      "fragment_shader_module_id": 9001
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9002,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9003,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
     },
     {
       "cmd": "CreateRenderPipeline",
@@ -68,7 +102,9 @@
       "vertex_buffer_slots": 2,
       "bind_group_layout_ids": [
         15
-      ]
+      ],
+      "vertex_shader_module_id": 9002,
+      "fragment_shader_module_id": 9003
     },
     {
       "cmd": "CreateBuffer",

@@ -9,8 +9,6 @@ Deferred command schema files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/CreateShaderModule.json`
-- `commands/DestroyShaderModule.json`
 - `commands/CreateSampler.json`
 - `commands/DestroySampler.json`
 - `commands/CreateTextureView.json`

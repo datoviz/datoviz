@@ -1,0 +1,58 @@
+{
+  "name": "invalid_feature_required_shader_module_fp64",
+  "description": "A shader module declares fp64 as a required feature but the runtime capability record does not support it.",
+  "reason": "Shader feature requirements must fail during capability validation before backend execution.",
+  "fix": "Select a fallback shader variant or use a runtime whose capability record reports fp64 support.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "shader",
+    "capability",
+    "feature"
+  ],
+  "capabilities": {
+    "supported_shader_formats": [
+      "wgsl"
+    ],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "COMPUTE",
+      "format": "wgsl",
+      "entry_point": "main",
+      "required_features": [
+        "fp64"
+      ],
+      "code": "@compute @workgroup_size(1) fn main() {}"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "capability_validation",
+    "code": "DRP2_ERR_FEATURE_REQUIRED",
+    "command_index": 2
+  }
+}

@@ -31,9 +31,18 @@
       "renderer_name": "fixture-renderer"
     },
     {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "COMPUTE",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@compute @workgroup_size(1) fn main() {}"
+    },
+    {
       "cmd": "CreateComputePipeline",
       "id": 1,
-      "bind_group_layout_ids": []
+      "bind_group_layout_ids": [],
+      "compute_shader_module_id": 9000
     },
     {
       "cmd": "BeginCommandEncoder",
@@ -65,6 +74,6 @@
     "outcome": "error",
     "phase": "semantic_validation",
     "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 7
+    "command_index": 8
   }
 }

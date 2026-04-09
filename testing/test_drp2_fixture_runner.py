@@ -36,10 +36,13 @@ def test_drp2_fixture_runner_can_filter_capability_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['capability'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 3
+    assert len(results) == 5
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'capability_validation' for result in results)
-    assert all(result.actual_code == 'DRP2_ERR_UNSUPPORTED_CAPABILITY' for result in results)
+    assert {result.actual_code for result in results} == {
+        'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+        'DRP2_ERR_FEATURE_REQUIRED',
+    }
 
 
 def test_drp2_fixture_runner_can_filter_handshake_fixtures() -> None:
@@ -128,6 +131,30 @@ def test_drp2_fixture_runner_rejects_command_before_handshake_reply() -> None:
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
     assert result.actual_command_index == 1
+
+
+def test_drp2_fixture_runner_rejects_wrong_shader_stage_in_render_pipeline() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_create_render_pipeline_wrong_shader_stage.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_create_render_pipeline_wrong_shader_stage'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_INVALID_ARGUMENT'
+    assert result.actual_command_index == 4
+
+
+def test_drp2_fixture_runner_rejects_shader_module_fp64_without_capability() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/negative/invalid_feature_required_shader_module_fp64.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_feature_required_shader_module_fp64'
+    assert result.passed is True
+    assert result.actual_phase == 'capability_validation'
+    assert result.actual_code == 'DRP2_ERR_FEATURE_REQUIRED'
+    assert result.actual_command_index == 2
 
 
 def test_drp2_fixture_runner_rejects_command_after_failed_handshake() -> None:
@@ -235,7 +262,7 @@ def test_drp2_fixture_runner_rejects_draw_after_end_render_pass() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 8
+    assert result.actual_command_index == 10
 
 
 def test_drp2_fixture_runner_rejects_dispatch_after_end_compute_pass() -> None:
@@ -247,7 +274,7 @@ def test_drp2_fixture_runner_rejects_dispatch_after_end_compute_pass() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 7
+    assert result.actual_command_index == 8
 
 
 def test_drp2_fixture_runner_rejects_copy_after_finish_encoder() -> None:
@@ -318,7 +345,7 @@ def test_drp2_fixture_runner_rejects_missing_index_buffer_binding() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 9
+    assert result.actual_command_index == 11
 
 
 def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
@@ -415,7 +442,7 @@ def test_drp2_fixture_runner_rejects_wrong_bind_group_layout_slot() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 12
+    assert result.actual_command_index == 14
 
 
 def test_drp2_fixture_runner_rejects_missing_dynamic_offsets() -> None:
@@ -427,7 +454,7 @@ def test_drp2_fixture_runner_rejects_missing_dynamic_offsets() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 12
+    assert result.actual_command_index == 14
 
 
 def test_drp2_fixture_runner_rejects_misordered_dynamic_offsets() -> None:
@@ -439,7 +466,7 @@ def test_drp2_fixture_runner_rejects_misordered_dynamic_offsets() -> None:
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_OUT_OF_RANGE'
-    assert result.actual_command_index == 13
+    assert result.actual_command_index == 15
 
 
 def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenced_by_recorded_work() -> None:
@@ -453,7 +480,7 @@ def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenc
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_USAGE'
-    assert result.actual_command_index == 16
+    assert result.actual_command_index == 18
 
 
 def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenced_by_submitted_work() -> None:
@@ -467,7 +494,7 @@ def test_drp2_fixture_runner_rejects_destroying_bind_group_layout_still_referenc
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_USAGE'
-    assert result.actual_command_index == 17
+    assert result.actual_command_index == 19
 
 
 def test_drp2_fixture_runner_rejects_set_bind_group_after_pipeline_rebind_without_required_dynamic_offsets() -> None:
@@ -481,7 +508,7 @@ def test_drp2_fixture_runner_rejects_set_bind_group_after_pipeline_rebind_withou
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 15
+    assert result.actual_command_index == 19
 
 
 def test_drp2_fixture_runner_rejects_draw_after_pipeline_rebind_missing_new_vertex_slot() -> None:
@@ -495,7 +522,7 @@ def test_drp2_fixture_runner_rejects_draw_after_pipeline_rebind_missing_new_vert
     assert result.passed is True
     assert result.actual_phase == 'semantic_validation'
     assert result.actual_code == 'DRP2_ERR_INVALID_STATE'
-    assert result.actual_command_index == 11
+    assert result.actual_command_index == 15
 
 
 def test_drp2_fixture_runner_cli_json_output_shape() -> None:

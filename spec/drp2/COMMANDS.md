@@ -51,10 +51,12 @@ The active DRP2 command set is intentionally small but complete enough for:
 
 ### Pipeline Lifecycle
 
-1. `CreateRenderPipeline`
-2. `DestroyRenderPipeline`
-3. `CreateComputePipeline`
-4. `DestroyComputePipeline`
+1. `CreateShaderModule`
+2. `DestroyShaderModule`
+3. `CreateRenderPipeline`
+4. `DestroyRenderPipeline`
+5. `CreateComputePipeline`
+6. `DestroyComputePipeline`
 
 
 ### Encoder And Pass Lifecycle
@@ -97,16 +99,14 @@ of the active DRP2 contract and must not be treated as authoritative until promo
 
 1. `CreatePipelineLayout`
 2. `DestroyPipelineLayout`
-3. `CreateShaderModule`
-4. `DestroyShaderModule`
-5. `CreateSampler`
-6. `DestroySampler`
-7. `CreateTextureView`
-8. `DestroyTextureView`
-9. `ResourceBarrier`
-10. `DispatchWorkgroupsIndirect`
-11. `DrawIndirect`
-12. `DrawIndexedIndirect`
+3. `CreateSampler`
+4. `DestroySampler`
+5. `CreateTextureView`
+6. `DestroyTextureView`
+7. `ResourceBarrier`
+8. `DispatchWorkgroupsIndirect`
+9. `DrawIndirect`
+10. `DrawIndexedIndirect`
 
 
 ## Common Field Semantics
@@ -128,6 +128,13 @@ Unless a command says otherwise:
 - `slot`: zero-based bind-group slot index.
 - `index_format`: index element format token for indexed draws.
 - `submission_id`: optional host-visible identifier for queue-tracking or correlation.
+- `shader_module_id`: identifier of an existing shader module.
+- `vertex_shader_module_id`: identifier of an existing vertex-stage shader module.
+- `fragment_shader_module_id`: identifier of an existing fragment-stage shader module.
+- `compute_shader_module_id`: identifier of an existing compute-stage shader module.
+- `entry_point`: shader entry-point name inside the chosen module.
+- `format`: shader-source or shader-binary format token.
+- `required_features`: explicit runtime features required by a shader module.
 
 General rules:
 
@@ -438,14 +445,60 @@ Semantics:
 
 ## Pipeline Lifecycle
 
+### `CreateShaderModule`
+
+Creates a logical shader-module object.
+
+Required fields:
+
+- `cmd`: must be `CreateShaderModule`.
+- `id`: identifier assigned to the new shader module.
+- `stage`: shader stage implemented by the module.
+- `format`: shader format token.
+- `entry_point`: non-empty entry-point name.
+- `code`: shader payload encoded as UTF-8 source text or base64 binary, depending on `format`.
+
+Optional fields:
+
+- `required_features`: explicit feature requirements such as `fp64`.
+- `label`: debug label.
+
+Semantics:
+
+1. active DRP2 `2.0` accepts WGSL in the core contract,
+2. SPIR-V remains capability-gated native ingestion rather than an always-available contract path,
+3. the module stage is fixed at creation time and later pipeline commands must use it consistently,
+4. `entry_point` names the callable entry in the provided module payload,
+5. `required_features` declares execution requirements that must be checked during capability
+   validation before backend execution.
+
+
+### `DestroyShaderModule`
+
+Destroys a previously created shader module.
+
+Required fields:
+
+- `cmd`: must be `DestroyShaderModule`.
+- `shader_module_id`: identifier of the shader module to destroy.
+
+Semantics:
+
+1. no later pipeline may reference the shader module after destruction,
+2. destroying a shader module still referenced by a live pipeline or by recorded/submitted work is
+   invalid.
+
 ### `CreateRenderPipeline`
 
-Creates a render pipeline object with validation-relevant vertex-input requirements.
+Creates a render pipeline object with explicit shader attachments and validation-relevant
+vertex-input requirements.
 
 Required fields:
 
 - `cmd`: must be `CreateRenderPipeline`.
 - `id`: identifier assigned to the new render pipeline.
+- `vertex_shader_module_id`: vertex-stage shader module used by the pipeline.
+- `fragment_shader_module_id`: fragment-stage shader module used by the pipeline.
 - `vertex_buffer_slots`: number of contiguous vertex-buffer slots required by later draw commands.
 
 Optional fields:
@@ -455,11 +508,14 @@ Optional fields:
 
 Semantics:
 
-1. active DRP2 `2.0` treats render pipelines as lightweight protocol objects rather than full shader
-   or layout graphs,
-2. `vertex_buffer_slots` defines the required slot range `[0, vertex_buffer_slots)` for later draws
+1. active DRP2 `2.0` render pipelines bind one explicit vertex shader and one explicit fragment
+   shader,
+2. `vertex_shader_module_id` must reference a live shader module whose declared stage is `VERTEX`,
+3. `fragment_shader_module_id` must reference a live shader module whose declared stage is
+   `FRAGMENT`,
+4. `vertex_buffer_slots` defines the required slot range `[0, vertex_buffer_slots)` for later draws
    using this pipeline,
-3. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
+5. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
    `SetBindGroup(slot, ...)`.
 
 
@@ -486,6 +542,7 @@ Required fields:
 
 - `cmd`: must be `CreateComputePipeline`.
 - `id`: identifier assigned to the new compute pipeline.
+- `compute_shader_module_id`: compute-stage shader module used by the pipeline.
 
 Optional fields:
 
@@ -494,9 +551,10 @@ Optional fields:
 
 Semantics:
 
-1. active DRP2 `2.0` treats compute pipelines as lightweight protocol objects rather than full
-   shader or layout graphs,
-2. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
+1. active DRP2 `2.0` compute pipelines bind one explicit compute shader module,
+2. `compute_shader_module_id` must reference a live shader module whose declared stage is
+   `COMPUTE`,
+3. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
    `SetBindGroup(slot, ...)`.
 
 

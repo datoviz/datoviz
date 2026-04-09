@@ -4,33 +4,64 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateShaderModule"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
+    "stage": {
+      "$ref": "../common/ShaderModuleStage.json"
+    },
     "format": {
       "$ref": "../common/ShaderFormat.json"
     },
+    "entry_point": {
+      "type": "string",
+      "minLength": 1
+    },
     "code": {
-      "oneOf": [
-        {
-          "type": "string",
-          "description": "Text-based WGSL or GLSL source."
-        },
-        {
-          "type": "string",
-          "contentEncoding": "base64",
-          "description": "Binary SPIR-V bytes in base64."
-        }
-      ]
+      "type": "string",
+      "description": "WGSL source text or base64-encoded SPIR-V bytes, depending on format."
+    },
+    "required_features": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/RequiredFeature.json"
+      },
+      "uniqueItems": true
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
+    "stage",
     "format",
+    "entry_point",
     "code"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "format": {
+            "const": "spirv"
+          }
+        },
+        "required": [
+          "format"
+        ]
+      },
+      "then": {
+        "properties": {
+          "code": {
+            "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+          }
+        }
+      }
+    }
   ]
 }

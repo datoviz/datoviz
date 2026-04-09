@@ -2,7 +2,7 @@
   "name": "render_pass_draw_with_pipeline",
   "description": "Begins a render pass, binds a pipeline, records one draw, ends the pass, and finishes the encoder.",
   "reason": "A live render pipeline is created and bound before Draw, and the required vertex buffer slot is bound in the same render pass.",
-  "notes": "This fixture exercises the active render-pipeline and vertex-buffer binding contract without introducing deferred shader-module or layout objects.",
+  "notes": "This fixture exercises the active render-pipeline and vertex-buffer binding contract using explicit shader modules and the active lightweight layout model.",
   "version": {
     "major": 2,
     "minor": 0
@@ -32,9 +32,27 @@
       "renderer_name": "fixture-renderer"
     },
     {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
+    },
+    {
       "cmd": "CreateRenderPipeline",
       "id": 10,
-      "vertex_buffer_slots": 1
+      "vertex_buffer_slots": 1,
+      "vertex_shader_module_id": 9000,
+      "fragment_shader_module_id": 9001
     },
     {
       "cmd": "CreateBuffer",

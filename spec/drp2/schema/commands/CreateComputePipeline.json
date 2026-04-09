@@ -10,6 +10,9 @@
     "id": {
       "$ref": "../common/Id.json"
     },
+    "compute_shader_module_id": {
+      "$ref": "../common/Id.json"
+    },
     "bind_group_layout_ids": {
       "type": "array",
       "items": {
@@ -22,6 +25,7 @@
   },
   "required": [
     "cmd",
-    "id"
+    "id",
+    "compute_shader_module_id"
   ]
 }

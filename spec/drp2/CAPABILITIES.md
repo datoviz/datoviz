@@ -55,6 +55,8 @@ shape:
 4. `max_texture_dimension_3d`
 5. `supported_texture_formats`
 6. `supported_sample_counts`
+7. `supported_shader_formats`
+8. `supports_fp64`
 The omitted fields from the broader future capability model remain planned but are not yet consumed
 by the first executable fixture corpus.
 
@@ -75,7 +77,10 @@ The first active `2.0` capability validation rules are:
 3. `CreateTexture.sample_count` must be listed in `supported_sample_counts`,
 4. `CreateTexture` dimensions must not exceed the corresponding `max_texture_dimension_*` field for
    the chosen texture dimension,
-5. compute is mandatory in active DRP2 `2.0` and therefore is not gated by a capability field.
+5. `CreateShaderModule.format` must be listed in `supported_shader_formats` when that field is
+   present,
+6. a shader module declaring `required_features = ["fp64"]` requires `supports_fp64 = true`,
+7. compute is mandatory in active DRP2 `2.0` and therefore is not gated by a capability field.
 
 Capability failures should occur during `capability_validation` after schema and semantic validation
 have succeeded.

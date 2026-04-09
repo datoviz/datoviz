@@ -1,9 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "ShaderFormat",
+  "title": "ShaderModuleStage",
   "type": "string",
   "enum": [
-    "wgsl",
-    "spirv"
+    "VERTEX",
+    "FRAGMENT",
+    "COMPUTE"
   ]
 }

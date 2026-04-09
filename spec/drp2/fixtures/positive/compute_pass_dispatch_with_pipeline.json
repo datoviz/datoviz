@@ -2,7 +2,7 @@
   "name": "compute_pass_dispatch_with_pipeline",
   "description": "Begins a compute pass, binds a pipeline, records one dispatch, ends the pass, and finishes the encoder.",
   "reason": "A live compute pipeline is created and bound before DispatchWorkgroups in the same open compute pass.",
-  "notes": "This fixture exercises the active compute-pipeline lifecycle without introducing deferred shader-module or layout objects.",
+  "notes": "This fixture exercises the active compute-pipeline lifecycle using explicit shader modules and the active lightweight layout model.",
   "version": {
     "major": 2,
     "minor": 0
@@ -32,8 +32,17 @@
       "renderer_name": "fixture-renderer"
     },
     {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "COMPUTE",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@compute @workgroup_size(1) fn main() {}"
+    },
+    {
       "cmd": "CreateComputePipeline",
-      "id": 20
+      "id": 20,
+      "compute_shader_module_id": 9000
     },
     {
       "cmd": "BeginCommandEncoder",

@@ -155,4 +155,5 @@ The first fixture set should include negatives for:
 6. invalid binding layout
 7. unsupported format or feature
 8. invalid copy ranges or layout metadata
-9. schema-shape failures such as missing discriminators or missing required fields
+9. shader-stage mismatch or shader-feature mismatch in pipeline creation
+10. schema-shape failures such as missing discriminators or missing required fields

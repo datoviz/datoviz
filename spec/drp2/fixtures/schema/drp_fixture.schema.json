@@ -75,6 +75,15 @@
             "type": "integer",
             "minimum": 1
           }
+        },
+        "supported_shader_formats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supports_fp64": {
+          "type": "boolean"
         }
       }
     },

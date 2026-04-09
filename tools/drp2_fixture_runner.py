@@ -140,6 +140,21 @@ class DRP2CapabilityValidator:
                 f'texture extent {extent} exceeds capability limit {max_dimension} for dimension {dimension}',
             )
 
+    def _handle_CreateShaderModule(self, index: int, command: Dict[str, Any]) -> None:
+        supported_formats = self.capabilities.get('supported_shader_formats')
+        if supported_formats is not None and command['format'] not in supported_formats:
+            raise CapabilityFailure(
+                'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+                index,
+                f'shader format {command["format"]} is not supported by the fixture capability set',
+            )
+        if 'fp64' in command.get('required_features', []) and not self.capabilities.get('supports_fp64', False):
+            raise CapabilityFailure(
+                'DRP2_ERR_FEATURE_REQUIRED',
+                index,
+                'shader module requires fp64 but the fixture capability set does not support it',
+            )
+
 class DRP2SemanticValidator:
     """Validate the current active DRP2 fixture corpus semantically."""
 
@@ -526,6 +541,39 @@ class DRP2SemanticValidator:
             },
         )
 
+    def _handle_CreateShaderModule(self, index: int, command: Dict[str, Any]) -> None:
+        self._reserve_id(
+            index,
+            command['id'],
+            'shader_module',
+            {
+                'stage': command['stage'],
+                'format': command['format'],
+                'entry_point': command['entry_point'],
+                'required_features': list(command.get('required_features', [])),
+            },
+        )
+
+    def _handle_DestroyShaderModule(self, index: int, command: Dict[str, Any]) -> None:
+        shader_module_id = command['shader_module_id']
+        state = self._resolve_live(index, shader_module_id, 'shader_module')
+        if self._resource_in_use('shader_module', shader_module_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'shader module {shader_module_id} is still referenced by recorded work',
+            )
+        for object_state in self.objects.values():
+            if not object_state.live or object_state.kind != 'pipeline':
+                continue
+            if shader_module_id in object_state.data.get('shader_module_ids', []):
+                raise SemanticFailure(
+                    'DRP2_ERR_USAGE',
+                    index,
+                    f'shader module {shader_module_id} is still referenced by live pipelines',
+                )
+        state.live = False
+
     def _handle_DestroyBindGroupLayout(self, index: int, command: Dict[str, Any]) -> None:
         layout_id = command['bind_group_layout_id']
         state = self._resolve_live(index, layout_id, 'bind_group_layout')
@@ -564,6 +612,22 @@ class DRP2SemanticValidator:
         state.live = False
 
     def _handle_CreateRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
+        vertex_shader = self._resolve_live(index, command['vertex_shader_module_id'], 'shader_module')
+        if vertex_shader.data['stage'] != 'VERTEX':
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_ARGUMENT',
+                index,
+                f'shader module {command["vertex_shader_module_id"]} is {vertex_shader.data["stage"]}, expected VERTEX',
+            )
+        fragment_shader = self._resolve_live(index, command['fragment_shader_module_id'], 'shader_module')
+        if fragment_shader.data['stage'] != 'FRAGMENT':
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_ARGUMENT',
+                index,
+                f'shader module {command["fragment_shader_module_id"]} is {fragment_shader.data["stage"]}, expected FRAGMENT',
+            )
+        for layout_id in command.get('bind_group_layout_ids', []):
+            self._resolve_live(index, layout_id, 'bind_group_layout')
         self._reserve_id(
             index,
             command['id'],
@@ -572,10 +636,17 @@ class DRP2SemanticValidator:
                 'kind': 'render',
                 'vertex_buffer_slots': command['vertex_buffer_slots'],
                 'bind_group_layout_ids': list(command.get('bind_group_layout_ids', [])),
+                'shader_module_ids': [
+                    command['vertex_shader_module_id'],
+                    command['fragment_shader_module_id'],
+                ],
+                'resources': {
+                    ('shader_module', command['vertex_shader_module_id']),
+                    ('shader_module', command['fragment_shader_module_id']),
+                    *{('bind_group_layout', layout_id) for layout_id in command.get('bind_group_layout_ids', [])},
+                },
             },
         )
-        for layout_id in command.get('bind_group_layout_ids', []):
-            self._resolve_live(index, layout_id, 'bind_group_layout')
 
     def _handle_DestroyRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
         pipeline_id = command['render_pipeline_id']
@@ -595,6 +666,15 @@ class DRP2SemanticValidator:
         state.live = False
 
     def _handle_CreateComputePipeline(self, index: int, command: Dict[str, Any]) -> None:
+        compute_shader = self._resolve_live(index, command['compute_shader_module_id'], 'shader_module')
+        if compute_shader.data['stage'] != 'COMPUTE':
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_ARGUMENT',
+                index,
+                f'shader module {command["compute_shader_module_id"]} is {compute_shader.data["stage"]}, expected COMPUTE',
+            )
+        for layout_id in command.get('bind_group_layout_ids', []):
+            self._resolve_live(index, layout_id, 'bind_group_layout')
         self._reserve_id(
             index,
             command['id'],
@@ -603,10 +683,13 @@ class DRP2SemanticValidator:
                 'kind': 'compute',
                 'vertex_buffer_slots': 0,
                 'bind_group_layout_ids': list(command.get('bind_group_layout_ids', [])),
+                'shader_module_ids': [command['compute_shader_module_id']],
+                'resources': {
+                    ('shader_module', command['compute_shader_module_id']),
+                    *{('bind_group_layout', layout_id) for layout_id in command.get('bind_group_layout_ids', [])},
+                },
             },
         )
-        for layout_id in command.get('bind_group_layout_ids', []):
-            self._resolve_live(index, layout_id, 'bind_group_layout')
 
     def _handle_DestroyComputePipeline(self, index: int, command: Dict[str, Any]) -> None:
         pipeline_id = command['compute_pipeline_id']
@@ -745,6 +828,7 @@ class DRP2SemanticValidator:
         pass_info['bound_bind_groups'] = {}
         encoder = self.encoders[pass_info['encoder_id']]
         encoder['resources'].add(('pipeline', command['pipeline_id']))
+        encoder['resources'].update(pipeline.data.get('resources', set()))
 
     def _handle_SetVertexBuffer(self, index: int, command: Dict[str, Any]) -> None:
         pass_info = self._require_active_pass_for_command(index, command['pass_id'], expected_kind='render')

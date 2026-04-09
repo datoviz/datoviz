@@ -1,17 +1,16 @@
 {
-  "name": "invalid_draw_without_pipeline",
-  "description": "Draw is issued inside a render pass before any pipeline has been bound.",
-  "reason": "Draw requires a render pipeline to have been bound earlier in the same open render pass.",
-  "fix": "Bind a render pipeline with SetPipeline before issuing Draw.",
+  "name": "invalid_destroy_shader_module_still_referenced_by_recorded_work",
+  "description": "A shader module is destroyed after being captured by recorded render work that has not yet been submitted.",
+  "reason": "Recorded work conservatively retains the shader modules of any captured pipeline.",
+  "fix": "Keep the shader module live until all recorded work that references its pipeline is discarded or completed.",
   "version": {
     "major": 2,
     "minor": 0
   },
   "tags": [
     "negative",
-    "state",
-    "pipeline",
-    "render_pass"
+    "shader",
+    "usage"
   ],
   "commands": [
     {
@@ -33,7 +32,7 @@
     },
     {
       "cmd": "CreateShaderModule",
-      "id": 9000,
+      "id": 10,
       "stage": "VERTEX",
       "format": "wgsl",
       "entry_point": "main",
@@ -41,7 +40,7 @@
     },
     {
       "cmd": "CreateShaderModule",
-      "id": 9001,
+      "id": 11,
       "stage": "FRAGMENT",
       "format": "wgsl",
       "entry_point": "main",
@@ -49,22 +48,14 @@
     },
     {
       "cmd": "CreateRenderPipeline",
-      "id": 10,
-      "vertex_buffer_slots": 1,
-      "vertex_shader_module_id": 9000,
-      "fragment_shader_module_id": 9001
-    },
-    {
-      "cmd": "CreateBuffer",
-      "id": 11,
-      "size": 64,
-      "usage": [
-        "VERTEX"
-      ]
+      "id": 12,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 0
     },
     {
       "cmd": "CreateTexture",
-      "id": 1,
+      "id": 13,
       "dimension": "2d",
       "width": 4,
       "height": 4,
@@ -78,15 +69,15 @@
     },
     {
       "cmd": "BeginCommandEncoder",
-      "id": 2
+      "id": 14
     },
     {
       "cmd": "BeginRenderPass",
-      "id": 3,
-      "encoder_id": 2,
+      "id": 15,
+      "encoder_id": 14,
       "color_attachments": [
         {
-          "texture_id": 1,
+          "texture_id": 13,
           "load_op": "clear",
           "store_op": "store",
           "clear_value": {
@@ -99,25 +90,28 @@
       ]
     },
     {
-      "cmd": "SetVertexBuffer",
-      "pass_id": 3,
-      "slot": 0,
-      "buffer_id": 11,
-      "offset": 0
+      "cmd": "SetPipeline",
+      "pass_id": 15,
+      "pipeline_id": 12
     },
     {
-      "cmd": "Draw",
-      "pass_id": 3,
-      "vertex_count": 3,
-      "instance_count": 1,
-      "first_vertex": 0,
-      "first_instance": 0
+      "cmd": "EndRenderPass",
+      "pass_id": 15
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 14,
+      "command_buffer_id": 16
+    },
+    {
+      "cmd": "DestroyShaderModule",
+      "shader_module_id": 10
     }
   ],
   "expected": {
     "outcome": "error",
     "phase": "semantic_validation",
-    "code": "DRP2_ERR_INVALID_STATE",
-    "command_index": 10
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 11
   }
 }

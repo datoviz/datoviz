@@ -102,7 +102,7 @@ DRP2 should start narrow.
 The first stable contract should cover only the minimum needed for a practical renderer slice:
 
 1. resource creation and update,
-2. shader and pipeline creation,
+2. shader-module and pipeline creation,
 3. command encoding,
 4. render passes and draw calls,
 5. copy operations,

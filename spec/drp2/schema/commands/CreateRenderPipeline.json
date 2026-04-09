@@ -10,6 +10,12 @@
     "id": {
       "$ref": "../common/Id.json"
     },
+    "vertex_shader_module_id": {
+      "$ref": "../common/Id.json"
+    },
+    "fragment_shader_module_id": {
+      "$ref": "../common/Id.json"
+    },
     "vertex_buffer_slots": {
       "type": "integer",
       "minimum": 0
@@ -27,6 +33,8 @@
   "required": [
     "cmd",
     "id",
+    "vertex_shader_module_id",
+    "fragment_shader_module_id",
     "vertex_buffer_slots"
   ]
 }
