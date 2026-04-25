@@ -24,6 +24,7 @@ detail to implement or validate each family.
 | `primitive` | [PRIMITIVE.md](PRIMITIVE.md) |
 | `point` | [POINT.md](POINT.md) |
 | `marker` | [MARKER.md](MARKER.md) |
+| `segment` | [SEGMENT.md](SEGMENT.md) |
 | `point` | planned |
 | `marker` | planned |
 | `segment` | planned |
