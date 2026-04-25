@@ -93,8 +93,9 @@ The active DRP2 command set is intentionally small but complete enough for:
 1. `CopyBufferToBuffer`
 2. `CopyBufferToTexture`
 3. `CopyTextureToBuffer`
-4. `QueueSubmit`
-5. `QueueSubmitReply`
+4. `CopyTextureToTexture`
+5. `QueueSubmit`
+6. `QueueSubmitReply`
 
 
 ## Deferred And Non-Authoritative Commands
@@ -635,8 +636,8 @@ Optional fields:
   - `format` (required per target): texture format of the color attachment.
   - `blend`: blend state object with required `color` and `alpha` sub-objects, each with
     required `src_factor`, `dst_factor`, and `operation`. Omit for no blending.
-  - `write_mask`: channel write mask; one of `none`, `red`, `green`, `blue`, `alpha`, `all`.
-    Defaults to `all`.
+  - `write_mask`: array of channels to write; each element one of `red`, `green`, `blue`, `alpha`.
+    Empty array means no writes. Defaults to all four channels.
 - `label`: debug label.
 
 Semantics:
@@ -1146,6 +1147,33 @@ Semantics:
 2. `src_mip_level` must select an allocated source subresource,
 3. `bytes_per_row` and `rows_per_image` must be consistent with the copied extent,
 4. the layout fields describe how texel data is packed in the destination buffer.
+
+
+### `CopyTextureToTexture`
+
+Encodes a texture-to-texture copy.
+
+Required fields:
+
+- `cmd`: must be `CopyTextureToTexture`.
+- `encoder_id`: target command encoder.
+- `src_texture_id`: source texture.
+- `src_mip_level`: source mip level.
+- `src_origin`: source texel origin.
+- `dst_texture_id`: destination texture.
+- `dst_mip_level`: destination mip level.
+- `dst_origin`: destination texel origin.
+- `size`: copied extent in texels.
+
+Semantics:
+
+1. `src_mip_level` and `dst_mip_level` must each select an allocated subresource,
+2. the source box `(src_origin, size)` must fit inside the source subresource,
+3. the destination box `(dst_origin, size)` must fit inside the destination subresource,
+4. the source texture must have `COPY_SRC` usage and the destination must have `COPY_DST` usage,
+5. source and destination textures may be the same object only if the subresource ranges do not
+   overlap,
+6. this command must not be issued inside an open render or compute pass.
 
 
 ### `QueueSubmit`

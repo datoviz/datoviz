@@ -98,7 +98,7 @@
               "operation": "add"
             }
           },
-          "write_mask": "all"
+          "write_mask": ["red", "green", "blue", "alpha"]
         }
       ]
     },

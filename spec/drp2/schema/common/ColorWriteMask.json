@@ -1,13 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ColorWriteMask",
-  "type": "string",
-  "enum": [
-    "none",
-    "red",
-    "green",
-    "blue",
-    "alpha",
-    "all"
-  ]
+  "type": "array",
+  "items": {
+    "type": "string",
+    "enum": ["red", "green", "blue", "alpha"]
+  },
+  "uniqueItems": true
 }
