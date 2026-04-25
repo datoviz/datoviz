@@ -47,6 +47,7 @@ diffuse term.
 
 Standard — see `SHARED_ATTRIBUTES.md`. Sphere radius (not diameter).
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Supports `direct` and `scalar` modes — see `size_mode` variant axis.
 
 
 ## Visual-Wide Parameters
@@ -71,9 +72,10 @@ Applies when `lighting = phong`. Ignored when `lighting = flat`.
 | Axis | Values | Default |
 |---|---|---|
 | `color_mode` | `rgba`, `scalar` | `rgba` |
+| `size_mode` | `direct`, `scalar` | `direct` |
 | `lighting` | `phong`, `flat` | `phong` |
 
-Both set at visual creation time.
+All set at visual creation time.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -121,8 +123,6 @@ v0.4 defers: texture-mapped spheres (spherical UV mapping) — see deferred ques
 
 ## Deferred Questions
 
-1. whether texture-mapped spheres (spherical UV computed in shader) should be supported as a
-   `color_mode = texture` variant,
-2. whether per-item `emissive` or `shininess` is useful for mixed-material sphere sets,
-3. whether `size_mode = scalar` (mapping a data value through a size Scale) should be supported,
-   consistent with `point` and `marker`.
+1. whether texture-mapped spheres (spherical UV computed analytically in the shader, no
+   user-supplied texcoords) should be supported as a `color_mode = texture` variant,
+2. whether per-item `emissive` or `shininess` is useful for mixed-material sphere sets.
