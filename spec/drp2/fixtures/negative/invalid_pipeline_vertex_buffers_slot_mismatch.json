@@ -1,0 +1,65 @@
+{
+  "name": "invalid_pipeline_vertex_buffers_slot_mismatch",
+  "description": "CreateRenderPipeline where vertex_buffers length does not match vertex_buffer_slots.",
+  "reason": "vertex_buffer_slots is 2 but vertex_buffers declares only one entry. The mismatch fails semantic validation.",
+  "fix": "Set vertex_buffer_slots to match the number of entries in vertex_buffers, or add the missing buffer layout entry.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "pipeline",
+    "vertex_layout"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@location(0) pos: vec3f) -> @builtin(position) vec4f { return vec4f(pos, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 2,
+      "vertex_buffers": [
+        {
+          "array_stride": 12,
+          "attributes": [
+            { "format": "float32x3", "offset": 0, "shader_location": 0 }
+          ]
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 4
+  }
+}

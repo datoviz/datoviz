@@ -1,0 +1,136 @@
+{
+  "name": "render_pass_pipeline_vertex_layout",
+  "description": "Creates a render pipeline with an explicit vertex buffer layout declaring position and color attributes, then draws a triangle.",
+  "reason": "vertex_buffers declares one buffer at slot 0 with array_stride 24, a float32x3 position attribute at offset 0 and shader_location 0, and a float32x3 color attribute at offset 12 and shader_location 1. vertex_buffer_slots is 1, matching the vertex_buffers length.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "pipeline",
+    "vertex_layout",
+    "attributes"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "struct Vert { @location(0) pos: vec3f, @location(1) col: vec3f } @vertex fn main(v: Vert) -> @builtin(position) vec4f { return vec4f(v.pos, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 1,
+      "vertex_buffers": [
+        {
+          "array_stride": 24,
+          "step_mode": "vertex",
+          "attributes": [
+            { "format": "float32x3", "offset": 0,  "shader_location": 0 },
+            { "format": "float32x3", "offset": 12, "shader_location": 1 }
+          ]
+        }
+      ],
+      "topology": "triangle-list",
+      "color_targets": [
+        { "format": "rgba8unorm" }
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 30,
+      "size": 72,
+      "usage": ["VERTEX"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 40
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 41,
+      "encoder_id": 40,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 41,
+      "pipeline_id": 20
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 41,
+      "slot": 0,
+      "buffer_id": 30,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 41,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 41
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 40,
+      "command_buffer_id": 42
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [42]
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
