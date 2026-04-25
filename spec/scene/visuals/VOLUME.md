@@ -35,27 +35,28 @@ The 3D voxel data. Format must match the declared `texture_mode`:
 - `rgba`: RGBA `u8` texture
 
 
-### `bounds`
+### `bounds_min`, `bounds_max`
 
 | Property | Value |
 |---|---|
-| Type | two `vec3` corners: `(x0, y0, z0)` and `(x1, y1, z1)` in visual space |
-| Default | unit cube `(0,0,0)` to `(1,1,1)` |
+| Type | `vec3` each, in visual space |
+| Default | `(0,0,0)` and `(1,1,1)` — unit cube |
 | Mutability | `dynamic` |
 
-Data-space bounding box of the volume. Aligns the voxel grid to scene coordinates.
+Data-space bounding box corners of the volume. Aligns the voxel grid to scene coordinates.
+For example, an MRI volume spanning 256×256×180 mm maps to the corresponding data-space extent.
 
 
 ### `crop_min`, `crop_max`
 
 | Property | Value |
 |---|---|
-| Type | `vec3` each, UVW coordinates in `[0, 1]` |
-| Default | `(0,0,0)` and `(1,1,1)` — full texture |
+| Type | `vec3` each, in data-space coordinates (same units as `bounds`) |
+| Default | equal to `bounds_min` and `bounds_max` — no crop |
 | Mutability | `dynamic` |
 
-Selects a sub-region of the 3D texture to render. Useful for cropping or streaming a
-sub-volume without re-uploading the full texture.
+Restricts rendering to a sub-region of the volume in data space. Useful for focusing on a
+region of interest without re-uploading the full texture.
 
 
 ### `axis_order`
@@ -66,7 +67,7 @@ sub-volume without re-uploading the full texture.
 | Default | `(0, 1, 2)` — x→U, y→V, z→W |
 | Mutability | `dynamic` |
 
-Maps data axes to texture axes. Corrects for arrays stored in a different axis order than the
+Maps scene axes to texture axes. Corrects for arrays stored in a different axis order than the
 scene coordinate system (e.g., a `(z, y, x)` array needs `(2, 1, 0)`).
 
 
@@ -78,40 +79,63 @@ scene coordinate system (e.g., a `(z, y, x)` array needs `(2, 1, 0)`).
 | Default | `(false, false, false)` |
 | Mutability | `dynamic` |
 
-Flips individual axes after `axis_order` is applied. Corrects for axes that are stored
-high-to-low in memory but should display low-to-high (or vice versa). Common in MRI data
-where the Y axis may run inferior→superior in the array but needs to display the other way.
+Flips individual axes after `axis_order` is applied. Corrects for axes stored high-to-low in
+memory that should display low-to-high, or vice versa. Common in MRI data.
 
 
-### `colormap`
+### `value_range`
 
 | Property | Value |
 |---|---|
-| Type | `Scale` reference (kind = color) — see `SCALES.md` |
+| Type | `vec2` — `(min, max)` |
+| Default | `(0.0, 1.0)` |
 | Mutability | `dynamic` |
-| Applies to | `texture_mode = scalar`, `color_mode = colormap` |
+| Applies to | `texture_mode = scalar` only |
 
-Maps voxel scalar values to display colors. Domain and palette can be updated without
-re-uploading voxel data.
+Normalizes raw voxel values to `[0, 1]` before any transfer function or colormap is applied:
+`t = clamp((v - min) / (max - min), 0, 1)`.
+
+Allows uploading data in its native range without pre-normalizing:
+- MRI: `(0, 4096)` for 12-bit data
+- CT: `(-1000, 3000)` for Hounsfield units
+- fMRI: arbitrary float range
+
+All `alpha_transfer` and `color_transfer` control points operate on the normalized value `t`.
 
 
 ### `alpha_transfer`
 
 | Property | Value |
 |---|---|
-| Type | up to 8 `(value, alpha)` control points, `float32` pairs |
+| Type | `vec2[8]` — up to 8 `(value, alpha)` control points |
 | Default | `[(0, 0), (1, 1)]` — linear ramp |
 | Mutability | `dynamic` |
+| Applies to | `texture_mode = scalar` |
 
-Piecewise-linear opacity mapping from voxel value to alpha. Values between control points
-are linearly interpolated; values outside the range clamp to the nearest endpoint.
+Piecewise-linear opacity mapping from normalized voxel value (after `value_range`) to alpha.
+Values outside the control point range clamp to the nearest endpoint.
+Active for both `render_mode = dvr` and `render_mode = slice`.
 
 Common patterns:
-- `[(0, 0), (0.1, 0), (0.1, 1), (1, 1)]` — threshold: transparent below 0.1, opaque above,
+- `[(0, 0), (0.1, 0), (0.1, 1), (1, 1)]` — threshold: transparent below 0.1,
 - `[(0.3, 0), (0.5, 1), (0.7, 1), (0.9, 0)]` — window: show only a value band,
-- `[(0, 0), (1, 0.3)]` — low-opacity ramp for seeing internal structure.
+- `[(0, 0), (1, 0.3)]` — low-opacity ramp for revealing internal structure.
 
-Applies to `texture_mode = scalar` only. For `rgba`, alpha comes from the A channel.
+
+### `color_transfer`
+
+| Property | Value |
+|---|---|
+| Type | `vec2[8]` — up to 8 `(value, remapped_value)` control points |
+| Default | `[(0, 0), (1, 1)]` — identity (no remapping) |
+| Mutability | `dynamic` |
+| Applies to | `texture_mode = scalar`, `color_mode = colormap` |
+
+Piecewise-linear remapping of the normalized voxel value before colormap lookup.
+Allows gamma correction, contrast enhancement, or histogram windowing on color independently
+from opacity.
+
+Example: `[(0, 0), (0.5, 0.8), (1, 1)]` — compress high values, expand low values.
 
 
 ### `opacity_scale`
@@ -122,8 +146,50 @@ Applies to `texture_mode = scalar` only. For `rgba`, alpha comes from the A chan
 | Default | `1.0` |
 | Mutability | `dynamic` |
 
-Global multiplier applied to per-voxel alpha after the `alpha_transfer` function.
-Convenient for quickly adjusting overall transparency without redefining control points.
+Global multiplier applied to per-voxel alpha after `alpha_transfer` (for scalar) or after the
+A channel lookup (for rgba). Applies to both `texture_mode = scalar` and `rgba`.
+Convenient for quickly dimming the whole volume without redefining control points.
+
+
+### `colormap`
+
+| Property | Value |
+|---|---|
+| Type | `Scale` reference (kind = color) — see `SCALES.md` |
+| Mutability | `dynamic` |
+| Applies to | `texture_mode = scalar`, `color_mode = colormap` |
+
+Maps the remapped voxel value (after `color_transfer`) to a display color.
+
+
+### `gradient_shading`
+
+| Property | Value |
+|---|---|
+| Type | `bool` |
+| Default | `false` |
+| Mutability | `dynamic` |
+| Applies to | `texture_mode = scalar`, `render_mode = dvr` |
+
+When `true`, the scene estimates the local gradient of the scalar field at each sample point
+and uses it as a surface normal for Phong shading. This gives strong depth cues that make the
+volume appear three-dimensional rather than a flat transparent cloud.
+
+Standard lighting parameters (see `SHARED_ATTRIBUTES.md`) apply when gradient shading is
+enabled. Requires slightly more GPU work per sample.
+
+
+### `clip_plane`
+
+| Property | Value |
+|---|---|
+| Type | `vec4` — `(a, b, c, d)` defining `ax + by + cz + d = 0` in visual space |
+| Default | disabled (all voxels rendered) |
+| Mutability | `dynamic` |
+
+An optional clipping plane that discards voxels on its negative side. Set to `(0,0,0,0)` to
+disable.
+Useful for revealing internal anatomy by cutting the volume with a flat plane.
 
 
 ### `quality`
@@ -133,10 +199,10 @@ Convenient for quickly adjusting overall transparency without redefining control
 | Type | `float32` in `(0, 1]` |
 | Default | `0.5` |
 | Mutability | `dynamic` |
+| Applies to | `render_mode = dvr` only |
 
-Controls the ray-marching step size: `1.0` gives maximum quality (smallest step, most samples),
-lower values increase step size and reduce quality proportionally.
-Applies to `render_mode = dvr` only; ignored for `slice`.
+Controls ray-marching step size. `1.0` = maximum quality (smallest steps, most samples per
+ray). Lower values increase step size proportionally, trading quality for performance.
 
 
 ### `direction`
@@ -148,7 +214,7 @@ Applies to `render_mode = dvr` only; ignored for `slice`.
 | Mutability | `dynamic` |
 | Applies to | `render_mode = dvr` only |
 
-Ray-marching traversal order. `front_back` is standard (correct for alpha compositing).
+Ray-marching traversal order. `front_back` is correct for standard alpha compositing.
 `back_front` is useful for emission/absorption models.
 
 
@@ -168,13 +234,13 @@ Which data-space axis the slice plane is perpendicular to.
 
 | Property | Value |
 |---|---|
-| Type | `float32`, in data-space coordinates |
-| Default | midpoint of the corresponding bounds axis |
+| Type | `float32`, in data-space coordinates (same units as `bounds`) |
+| Default | midpoint of the corresponding `bounds` axis |
 | Mutability | `dynamic` |
 | Applies to | `render_mode = slice` only |
 
-Position of the slice plane along `slice_axis`, in the same units as `bounds`.
-Animating this value produces a slice-through effect.
+Position of the slice plane along `slice_axis`. Animating this produces a slice-through
+effect.
 
 
 ## Variant Axes
@@ -189,9 +255,9 @@ All set at visual creation time. `color_mode` applies to `texture_mode = scalar`
 
 | `texture_mode` | `color_mode` | Behavior |
 |---|---|---|
-| `scalar` | `density` | voxel value → white, value mapped through `alpha_transfer` |
-| `scalar` | `colormap` | voxel value → colormap color, value mapped through `alpha_transfer` |
-| `rgba` | — | RGBA voxel sampled directly, A channel used as alpha |
+| `scalar` | `density` | normalized value → white, opacity from `alpha_transfer` |
+| `scalar` | `colormap` | normalized value → `color_transfer` → colormap; opacity from `alpha_transfer` |
+| `rgba` | — | RGBA voxel sampled directly; `opacity_scale` applied to A channel |
 
 
 ## Transform Model, Stage Participation, Picking
@@ -211,15 +277,17 @@ Picking is not supported for `volume`.
 
 ## Minimum Cases This Spec Must Support
 
-1. scalar MRI volume with colormap — `texture_mode = scalar`, `color_mode = colormap`,
+1. scalar MRI volume, native 12-bit range — `value_range = (0, 4096)`, `color_mode = colormap`,
 2. RGBA fluorescence volume — `texture_mode = rgba`,
-3. threshold-based opacity — `alpha_transfer` with step at threshold value,
-4. CT windowing — `alpha_transfer` with a narrow band of opaque values,
-5. orthographic slice view — `render_mode = slice`, animated `slice_position`,
-6. sub-region crop — `crop_min`/`crop_max` set to a sub-cube,
-7. axis-reordered MRI — `axis_order = (2, 1, 0)`,
-8. mirrored axis — `axis_flip = (false, true, false)`,
-9. low-quality preview — `quality = 0.1`.
+3. threshold opacity — `alpha_transfer` with step at threshold,
+4. CT windowing — `alpha_transfer` narrow band + `value_range = (-1000, 3000)`,
+5. gradient-shaded anatomical volume — `gradient_shading = true`,
+6. clipped volume to reveal interior — `clip_plane` set,
+7. orthographic slice, animated — `render_mode = slice`, animated `slice_position`,
+8. sub-region crop — `crop_min`/`crop_max` in data space,
+9. axis-reordered MRI — `axis_order = (2, 1, 0)`,
+10. mirrored axis — `axis_flip = (false, true, false)`,
+11. low-quality preview — `quality = 0.1`.
 
 
 ## v0.3 Correspondence
@@ -227,25 +295,24 @@ Picking is not supported for `volume`.
 | v0.3 | v0.4 |
 |---|---|
 | `dvz_volume_texture` | `texture` resource |
-| `dvz_volume_bounds` | `bounds` |
-| `dvz_volume_texcoords` (uvw0/uvw1) | `crop_min`, `crop_max` |
+| `dvz_volume_bounds` | `bounds_min`, `bounds_max` |
+| `dvz_volume_texcoords` (uvw0/uvw1) | `crop_min`, `crop_max` (data space) |
 | `dvz_volume_permutation` | `axis_order` + `axis_flip` |
-| `dvz_volume_slice` (face index) | `render_mode = slice`, `slice_axis`, `slice_position` |
-| `dvz_volume_transfer` (vec4) | `opacity_scale` + `alpha_transfer` + `colormap` Scale |
-| `VOLUME_TYPE_SCALAR/RGBA` specialization | `texture_mode` variant axis |
-| `VOLUME_COLOR_DIRECT/COLORMAP` specialization | `color_mode = density/colormap` variant axis |
-| `VOLUME_DIR_FRONT_BACK/BACK_FRONT` specialization | `direction` parameter |
+| `dvz_volume_slice` (face index 0–5) | `render_mode = slice`, `slice_axis`, `slice_position` |
+| `dvz_volume_transfer` (vec4) | `value_range` + `opacity_scale` + `alpha_transfer` + `colormap` |
+| `VOLUME_TYPE_SCALAR/RGBA` | `texture_mode` variant axis |
+| `VOLUME_COLOR_DIRECT/COLORMAP` | `color_mode = density/colormap` variant axis |
+| `VOLUME_DIR_*` | `direction` parameter |
 | `STEP_SIZE` hardcoded | `quality` parameter |
-
-v0.4 improvements: `slice` replaced by axis+position in data space; `permutation` split into
-`axis_order` + `axis_flip`; `transfer` vec4 replaced by `alpha_transfer` control points +
-`opacity_scale`; `color_mode = direct` renamed to `density`; step size exposed as `quality`.
+| volume_slice `x_cmap/y_cmap` | `color_transfer` |
+| — | `gradient_shading`, `clip_plane`, `value_range` (new in v0.4) |
 
 
 ## Deferred Questions
 
 1. whether maximum intensity projection (MIP) should be a `render_mode` variant (`dvr`,
    `mip`, `slice`) — common in medical imaging, requires a different accumulation loop,
-2. whether multiple simultaneous slices (e.g., three orthogonal planes) should be supported
-   as a `render_mode = multiplane` variant,
-3. whether picking should be supported via ray-marching depth readback.
+2. whether multiple simultaneous orthogonal slices (`render_mode = multiplane`) should be
+   supported,
+3. whether picking should be supported via ray-marching depth readback,
+4. whether multiple clip planes should be supported.
