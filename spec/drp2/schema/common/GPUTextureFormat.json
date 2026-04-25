@@ -11,6 +11,9 @@
     "depth24plus",
     "depth24plus-stencil8",
     "depth32float",
-    "rgba8unorm-srgb"
+    "rgba8unorm-srgb",
+    "r32uint",
+    "r32sint",
+    "r32float"
   ]
 }
