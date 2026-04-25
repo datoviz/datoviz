@@ -57,6 +57,7 @@ shape:
 6. `supported_sample_counts`
 7. `supported_shader_formats`
 8. `supports_fp64`
+
 The omitted fields from the broader future capability model remain planned but are not yet consumed
 by the first executable fixture corpus.
 
