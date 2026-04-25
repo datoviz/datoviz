@@ -1,0 +1,265 @@
+{
+  "name": "pressure_dynamic_buffer_update",
+  "description": "Upload vertex and uniform data, submit a render frame, write updated data to the same buffers, then submit a second render frame.",
+  "reason": "WriteBuffer on a live buffer is valid after QueueSubmit. The same vertex buffer and uniform buffer are reused across two submission cycles with new content written between them. Both submissions reference the same pipeline and bind group. The runtime is responsible for any backend-level synchronization between submissions.",
+  "notes": "Pressure test #2 from LAYER1.md. This fixture demonstrates the standard per-frame dynamic update pattern: static pipeline and binding objects are created once and reused, while mutable resource contents are re-uploaded before each submission. DRP2 2.0 has no explicit fence or completion primitive, so the producer treats resources as available for re-upload once a new command buffer is being built for the next frame. The runtime handles the necessary synchronization at the backend level.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "pressure_test",
+    "dynamic_update",
+    "render_pass",
+    "pipeline",
+    "bind_group",
+    "upload",
+    "draw",
+    "queue"
+  ],
+  "capabilities": {
+    "max_buffer_size": 134217728,
+    "max_texture_dimension_1d": 8192,
+    "max_texture_dimension_2d": 8192,
+    "max_texture_dimension_3d": 2048,
+    "supported_texture_formats": ["rgba8unorm"],
+    "supported_sample_counts": [1],
+    "supported_shader_formats": ["wgsl"],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 100,
+      "label": "panel_uniforms",
+      "entries": [
+        { "binding": 0, "binding_type": "uniform_buffer" }
+      ]
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@location(0) position: vec3f) -> @builtin(position) vec4f { return vec4f(position, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@group(0) @binding(0) var<uniform> color: vec4f; @fragment fn main() -> @location(0) vec4f { return color; }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "label": "triangle_pipeline",
+      "vertex_shader_module_id": 9000,
+      "fragment_shader_module_id": 9001,
+      "vertex_buffer_slots": 1,
+      "bind_group_layout_ids": [100]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 11,
+      "label": "vertex_buffer",
+      "size": 36,
+      "usage": ["VERTEX", "COPY_DST"]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 12,
+      "label": "uniform_buffer",
+      "size": 16,
+      "usage": ["UNIFORM", "COPY_DST"]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "label": "panel_bind_group",
+      "bind_group_layout_id": 100,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "uniform_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 12,
+          "offset": 0,
+          "size": 16
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "render_target",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 11,
+      "offset": 0,
+      "size": 36,
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 12,
+      "offset": 0,
+      "size": 16,
+      "data": "AAAAAAAAAAAAAAAAAAAAAA=="
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 20
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 21,
+      "encoder_id": 20,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 21,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 21,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 21,
+      "slot": 0,
+      "bind_group_id": 13
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 21,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 21
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 20,
+      "command_buffer_id": 22
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [22],
+      "submission_id": 30
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 11,
+      "offset": 0,
+      "size": 36,
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 12,
+      "offset": 0,
+      "size": 16,
+      "data": "AAAAAAAAAAAAAAAAAAAAAA=="
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 23
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 24,
+      "encoder_id": 23,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 24,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 24,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 24,
+      "slot": 0,
+      "bind_group_id": 13
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 24,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 24
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 23,
+      "command_buffer_id": 25
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [25],
+      "submission_id": 31
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
