@@ -166,6 +166,7 @@ class DRP2SemanticValidator:
         self.encoders: Dict[int, Dict[str, Any]] = {}
         self.passes: Dict[int, Dict[str, Any]] = {}
         self.command_buffers: Dict[int, Dict[str, Any]] = {}
+        self.pending_readbacks: Dict[int, Dict[str, Any]] = {}
         self.handshake_started = False
         self.handshake_pending = False
         self.handshake_failed = False
@@ -1054,6 +1055,46 @@ class DRP2SemanticValidator:
                     f'command buffer {command_buffer_id} was already submitted',
                 )
             command_buffer['submitted'] = True
+
+        readbacks = command.get('readbacks', [])
+        if readbacks:
+            submission_id = command.get('submission_id')
+            if submission_id is None:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_ARGUMENT',
+                    index,
+                    'submission_id is required when readbacks are requested',
+                )
+            for rb in readbacks:
+                buffer_state = self._buffer_usage(index, rb['buffer_id'], 'MAP_READ')
+                self._check_buffer_range(index, buffer_state, rb['offset'], rb['size'])
+            self.pending_readbacks[submission_id] = readbacks
+
+    def _handle_QueueSubmitReply(self, index: int, command: Dict[str, Any]) -> None:
+        submission_id = command['submission_id']
+        if submission_id not in self.pending_readbacks:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'QueueSubmitReply references submission {submission_id} with no pending readback request',
+            )
+        expected = self.pending_readbacks.pop(submission_id)
+        actual = command.get('readbacks', [])
+        if len(actual) != len(expected):
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_ARGUMENT',
+                index,
+                f'QueueSubmitReply readback count {len(actual)} does not match request count {len(expected)}',
+            )
+        for req, rep in zip(expected, actual):
+            if (rep['buffer_id'] != req['buffer_id']
+                    or rep['offset'] != req['offset']
+                    or rep['size'] != req['size']):
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_ARGUMENT',
+                    index,
+                    'QueueSubmitReply readback entry does not match the original request',
+                )
 
 
 class DRP2FixtureRunner:
