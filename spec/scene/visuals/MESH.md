@@ -21,6 +21,16 @@ Typical uses: brain surfaces, terrain, 3D anatomical models, procedural geometry
 isosurfaces, polyhedral shapes.
 
 
+## Geometry Sizing and Empty Visuals
+
+Vertex count and index count are not fixed at creation. Both can be changed at any time by
+uploading new data — the visual resizes its GPU buffers as needed.
+
+A visual may be created with zero vertices and zero indices (empty). This is the recommended
+pattern for interactive applications that set up the scene structure before data is available.
+An empty mesh renders nothing and generates no picking results.
+
+
 ## Per-Vertex Attributes
 
 Each item is one vertex.
@@ -38,7 +48,10 @@ Each item is one vertex.
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`.
-Applies when `color_mode = rgba` or `scalar`. Ignored when `color_mode = texture`.
+Applies when `color_mode = rgba` or `scalar`.
+When `color_mode = scalar` and `lighting = phong`, the colormap-derived color feeds the diffuse
+term of the Phong equation.
+Ignored when `color_mode = texture`.
 
 
 ### `normal`
@@ -65,7 +78,9 @@ Ignored when `lighting = flat`.
 | Typical mutability | `static` |
 | Optional | yes — required only when `color_mode = texture` |
 
-UV coordinates for texture sampling. Not used when `color_mode` is `rgba` or `scalar`.
+UV coordinates for texture sampling. The user-facing type is `vec2`; any additional per-vertex
+data needed by the implementation is managed internally.
+Not used when `color_mode` is `rgba` or `scalar`.
 
 
 ### `isoline_value`
@@ -75,10 +90,10 @@ UV coordinates for texture sampling. Not used when `color_mode` is `rgba` or `sc
 | Type | `float32` |
 | Accepted sources | `PER_ITEM` only |
 | Typical mutability | `dynamic` |
-| Optional | yes — required only when isoline rendering is enabled |
+| Optional | yes — required only when `isoline_count > 0` |
 
 Per-vertex scalar used to draw isoline contours on the mesh surface.
-Isolines appear at evenly-spaced levels between the domain min and max.
+Isolines are placed at `isoline_count` evenly-spaced levels within `isoline_range`.
 
 
 ## Index Buffer
@@ -86,10 +101,11 @@ Isolines appear at evenly-spaced levels between the domain min and max.
 | Property | Value |
 |---|---|
 | Type | flat `uint32` array, three indices per triangle |
-| Mutability | `static` |
+| Mutability | `dynamic` |
 
 Defines the triangle list. No indexed lines or points — triangle list only.
 The index count must be a multiple of 3.
+Can be replaced at any time; the visual resizes as needed.
 
 
 ## Visual-Wide Parameters
@@ -113,7 +129,21 @@ The index count must be a multiple of 3.
 | Mutability | `dynamic` |
 | Applies to | `color_mode = scalar` only |
 
-Maps per-vertex scalar values to display colors.
+Maps per-vertex scalar values to display colors. The Scale domain also defines the range used
+by `isoline_range` when `isoline_range` is not set explicitly.
+
+
+### `backface_culling`
+
+| Property | Value |
+|---|---|
+| Type | `bool` |
+| Default | `true` |
+| Mutability | `dynamic` |
+
+When `true`, back-facing triangles are not rendered (standard for solid closed meshes).
+Set to `false` for open surfaces that must be visible from both sides (e.g., cortical surfaces,
+thin shells).
 
 
 ### Lighting Parameters
@@ -156,7 +186,7 @@ Material reflection coefficients.
 
 Phong specular exponent. Higher values produce tighter specular highlights.
 
-#### `emit`
+#### `emissive`
 
 | Property | Value |
 |---|---|
@@ -165,7 +195,8 @@ Phong specular exponent. Higher values produce tighter specular highlights.
 | Mutability | `dynamic` |
 
 Self-emission factor. At `1.0` the mesh appears fully lit regardless of light positions.
-Useful for unlit regions or emissive surfaces.
+Useful for surfaces that should not be darkened by shadow (e.g., wireframe reference meshes,
+glowing elements).
 
 
 ### Edge Overlay Parameters
@@ -178,7 +209,8 @@ Useful for unlit regions or emissive surfaces.
 | Default | transparent — no edges drawn |
 | Mutability | `dynamic` |
 
-Color of triangle edges drawn on top of the mesh surface. Set to transparent to disable.
+Color of triangle edges (wireframe lines) drawn on top of the mesh surface.
+Set to transparent to disable. Edge detection is handled internally by the scene.
 
 #### `linewidth`
 
@@ -201,8 +233,19 @@ Width of drawn edges. Only relevant when `edgecolor` is not transparent.
 | Default | `0` — isolines disabled |
 | Mutability | `dynamic` |
 
-Number of evenly-spaced isoline levels across the `isoline_value` domain.
-Requires `isoline_value` per-vertex data to be set.
+Number of evenly-spaced isoline levels within `isoline_range`.
+Requires `isoline_value` per-vertex data.
+
+#### `isoline_range`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — `(min, max)` |
+| Default | derived from the `colormap` Scale domain when `color_mode = scalar`; otherwise auto-computed from `isoline_value` data |
+| Mutability | `dynamic` |
+
+Value range over which isoline levels are distributed.
+Setting this explicitly overrides the auto-derived range.
 
 #### `isoline_color`
 
@@ -236,6 +279,8 @@ multiple shapes into a single mesh visual.
 Both set at visual creation time.
 
 `color_mode = texture` requires `texcoords` per-vertex and a `texture` resource.
+`color_mode = scalar` with `lighting = phong`: the colormap-derived color feeds the Phong
+diffuse term.
 `lighting = flat` skips normal computation and Phong shading; `normal` data is ignored.
 
 
@@ -258,13 +303,14 @@ question.
 
 ## Minimum Cases This Spec Must Support
 
-1. brain surface with vertex-colored regions — `color_mode = rgba`, Phong lighting,
+1. brain surface with vertex-colored regions — `color_mode = rgba`, Phong, `backface_culling = false`,
 2. terrain with satellite texture — `color_mode = texture`,
 3. activity-colored cortical surface — `color_mode = scalar` with colormap Scale,
 4. flat-shaded polyhedral mesh — `lighting = flat`,
-5. wireframe overlay — `edgecolor` set, `lighting = flat`,
+5. wireframe overlay — `edgecolor` set,
 6. isoline contours on a height field — `isoline_value` `PER_ITEM`, `isoline_count > 0`,
-7. procedural sphere from shape builder — `dvz_shape_sphere` → `mesh`.
+7. procedural sphere from shape builder — `dvz_shape_sphere` → `mesh`,
+8. interactive app with deferred data — visual created empty, geometry uploaded on data arrival.
 
 
 ## v0.3 Correspondence
@@ -273,22 +319,25 @@ question.
 |---|---|
 | `dvz_mesh_position` | `position` `PER_ITEM` |
 | `dvz_mesh_color` | `color` `PER_ITEM` |
-| `dvz_mesh_texcoords` | `texcoords` `PER_ITEM` |
+| `dvz_mesh_texcoords` | `texcoords` `PER_ITEM` (user-facing `vec2`, internal layout hidden) |
 | `dvz_mesh_normal` | `normal` `PER_ITEM`, now optional with auto-compute fallback |
 | `dvz_mesh_isoline` | `isoline_value` `PER_ITEM` |
 | `dvz_mesh_left/right/contour` | hidden — implementation detail for edge rendering |
 | `dvz_mesh_texture` | `texture` resource |
-| `dvz_mesh_index` | `index` buffer |
+| `dvz_mesh_index` | `index` buffer, now `dynamic` |
 | `dvz_mesh_light_pos/color` | `light_pos`, `light_color` |
 | `dvz_mesh_material_params` | `ambient`, `diffuse`, `specular` |
 | `dvz_mesh_shine` | `shininess` |
-| `dvz_mesh_emit` | `emit` |
+| `dvz_mesh_emit` | `emissive` |
 | `dvz_mesh_edgecolor/linewidth` | `edgecolor`, `linewidth` |
 | `dvz_mesh_density` | `isoline_count` |
+| `dvz_mesh_alloc` | not needed — visual resizes automatically |
 | `dvz_mesh_shape` / `dvz_mesh_reshape` | shape builder integration |
 
-v0.4 adds: `color_mode` variant axis, `lighting` variant axis, auto-computed normals,
-`colormap` as Scale reference, `CONSTANT` color source.
+v0.4 adds: `color_mode` variant axis, `lighting` variant axis, `backface_culling`,
+`isoline_range`, auto-computed normals, `colormap` as Scale reference, `CONSTANT` color source,
+empty visual support, dynamic index buffer.
+v0.4 renames: `emit` → `emissive`.
 v0.4 hides `left`/`right`/`contour` — edge distance data is computed internally.
 
 
@@ -297,6 +346,6 @@ v0.4 hides `left`/`right`/`contour` — edge distance data is computed internall
 1. triangle-level (face) picking vs. vertex picking,
 2. whether smooth normal auto-computation (area-weighted vertex normals) should be offered
    in addition to flat normals,
-3. whether per-vertex `emit` or `shininess` is needed for heterogeneous material surfaces,
+3. whether per-vertex `emissive` or `shininess` is needed for heterogeneous material surfaces,
 4. whether multiple textures (e.g., diffuse + normal map) should be supported,
 5. whether `isoline_color` should support a `Scale` for multi-colored isolines.
