@@ -39,6 +39,7 @@
             "enum": [
               "buffer",
               "texture",
+              "texture_view",
               "sampler"
             ]
           },
@@ -100,7 +101,7 @@
             "then": {
               "properties": {
                 "resource_kind": {
-                  "const": "texture"
+                  "enum": ["texture", "texture_view"]
                 }
               }
             }
