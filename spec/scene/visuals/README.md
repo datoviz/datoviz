@@ -29,7 +29,7 @@ detail to implement or validate each family.
 | `glyph` | [GLYPH.md](GLYPH.md) |
 | `image` | [IMAGE.md](IMAGE.md) |
 | `mesh` | [MESH.md](MESH.md) |
-| `sphere` | planned |
+| `sphere` | [SPHERE.md](SPHERE.md) |
 | `volume` | planned |
 
 
