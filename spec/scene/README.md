@@ -79,7 +79,8 @@ Read the scene spec in this order during review.
 10. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md) — shared producer contract across visuals
 11. [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md) — family-level mini-contracts
 12. [visuals/README.md](visuals/README.md) — per-family data contracts (attribute schemas, parameters, variants)
-13. [AXES.md](AXES.md) — axes and tick semantics
+13. [SCALES.md](SCALES.md) — color, size, and opacity scale objects and colormap model
+14. [AXES.md](AXES.md) — axes and tick semantics
 14. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
 15. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
 
@@ -122,6 +123,8 @@ Read the scene spec in this order during review.
   / PER_GROUP) and optional mutability hints
 - [visuals/README.md](visuals/README.md): per-family data contracts with attribute schemas,
   parameters, variant axes, and v0.3 correspondence
+- [SCALES.md](SCALES.md): color, size, and opacity scale objects; colormap palette model; domain
+  and scale identity for visual attributes and colorbars
 - [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
 - [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): the current preferred scene-facing API
   defaults selected from the API sketch
