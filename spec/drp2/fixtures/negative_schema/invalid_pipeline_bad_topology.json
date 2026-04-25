@@ -1,0 +1,58 @@
+{
+  "name": "invalid_pipeline_bad_topology",
+  "description": "CreateRenderPipeline with an unrecognised topology token.",
+  "reason": "The string 'quad-list' is not a member of the PrimitiveTopology enum, so the command fails schema validation.",
+  "fix": "Use one of the valid topology values: point-list, line-list, line-strip, triangle-list, triangle-strip.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative_schema",
+    "pipeline",
+    "topology"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 0,
+      "topology": "quad-list"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 4
+  }
+}

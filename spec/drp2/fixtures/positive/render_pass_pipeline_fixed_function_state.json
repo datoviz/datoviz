@@ -1,0 +1,171 @@
+{
+  "name": "render_pass_pipeline_fixed_function_state",
+  "description": "Creates a render pipeline with explicit topology, depth/stencil state, and per-target blend state, then records a draw into a render pass with a depth attachment.",
+  "reason": "All fixed-function fields are structurally valid. The pipeline declares triangle-list topology, back-face culling, depth write with less-than comparison, and standard src-alpha blending for the color target. The render pass provides matching color and depth/stencil attachments.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "pipeline",
+    "fixed_function",
+    "depth",
+    "blend",
+    "topology"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "color_target",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 2,
+      "label": "depth_target",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "depth32float",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.5, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 0.0, 0.0, 0.5); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 0,
+      "topology": "triangle-list",
+      "cull_mode": "back",
+      "front_face": "ccw",
+      "sample_count": 1,
+      "depth_stencil": {
+        "format": "depth32float",
+        "depth_write_enabled": true,
+        "depth_compare": "less"
+      },
+      "color_targets": [
+        {
+          "format": "rgba8unorm",
+          "blend": {
+            "color": {
+              "src_factor": "src-alpha",
+              "dst_factor": "one-minus-src-alpha",
+              "operation": "add"
+            },
+            "alpha": {
+              "src_factor": "one",
+              "dst_factor": "zero",
+              "operation": "add"
+            }
+          },
+          "write_mask": "all"
+        }
+      ]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 30,
+      "size": 64,
+      "usage": ["VERTEX"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 40
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 41,
+      "encoder_id": 40,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+        }
+      ],
+      "depth_stencil_attachment": {
+        "texture_id": 2,
+        "depth_load_op": "clear",
+        "depth_store_op": "store",
+        "depth_clear_value": 1.0
+      }
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 41,
+      "pipeline_id": 20
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 41,
+      "slot": 0,
+      "buffer_id": 30,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 41,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 41
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 40,
+      "command_buffer_id": 42
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [42]
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
