@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QueueSubmitReply",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cmd": {
+      "const": "QueueSubmitReply"
+    },
+    "submission_id": {
+      "$ref": "../common/Id.json"
+    },
+    "readbacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "buffer_id": { "$ref": "../common/Id.json" },
+          "offset": { "type": "integer", "minimum": 0 },
+          "size": { "type": "integer", "minimum": 1 },
+          "data": {
+            "type": "string",
+            "contentEncoding": "base64"
+          }
+        },
+        "required": ["buffer_id", "offset", "size", "data"]
+      }
+    }
+  },
+  "required": [
+    "cmd",
+    "submission_id",
+    "readbacks"
+  ]
+}

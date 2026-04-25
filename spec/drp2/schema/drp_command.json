@@ -122,6 +122,9 @@
     },
     {
       "$ref": "./commands/QueueSubmit.json"
+    },
+    {
+      "$ref": "./commands/QueueSubmitReply.json"
     }
   ]
 }

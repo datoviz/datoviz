@@ -67,6 +67,7 @@ Authoritative files:
 - `commands/CopyBufferToTexture.json`
 - `commands/CopyTextureToBuffer.json`
 - `commands/QueueSubmit.json`
+- `commands/QueueSubmitReply.json`
 
 Deferred, non-authoritative files:
 
