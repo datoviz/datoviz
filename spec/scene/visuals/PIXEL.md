@@ -87,16 +87,34 @@ These parameters apply to all items and are not per-item attributes.
 | Property | Value |
 |---|---|
 | Type | `float32` |
-| Unit | screen pixels |
-| Default | implementation-defined, suggested 1.0 |
+| Unit | determined by `size_space` |
+| Default | implementation-defined, suggested 1.0 screen pixels |
 | Mutability | `dynamic` |
 
-The size of every pixel mark in screen pixels.
+The size of every pixel mark.
 All items share the same size.
 For per-item size, use the `point` family.
 
 Size is a visual parameter, not an item attribute.
 It is not subject to attribute source declarations.
+
+
+### `size_space`
+
+| Property | Value |
+|---|---|
+| Type | enum: `screen` or `data` |
+| Default | `screen` |
+| Mutability | `dynamic` |
+
+Controls whether `size` is interpreted in screen pixels or data-space units.
+
+**`screen`** (default): size is invariant under zoom. Right for most use cases.
+
+**`data`**: size scales with zoom. Right when pixels represent physical objects with real spatial
+extent.
+
+See `visuals/POINT.md` for a full discussion of this parameter.
 
 
 ## Color Mode Variant Axis
