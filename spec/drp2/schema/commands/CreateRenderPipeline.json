@@ -26,6 +26,46 @@
         "$ref": "../common/Id.json"
       }
     },
+    "vertex_buffers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["array_stride", "attributes"],
+        "properties": {
+          "array_stride": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "step_mode": {
+            "type": "string",
+            "enum": ["vertex", "instance"]
+          },
+          "attributes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["format", "offset", "shader_location"],
+              "properties": {
+                "format": {
+                  "$ref": "../common/GPUVertexFormat.json"
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "shader_location": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "topology": {
       "$ref": "../common/PrimitiveTopology.json"
     },
