@@ -35,6 +35,9 @@ BYTES_PER_TEXEL = {
     'depth24plus': 4,
     'depth24plus-stencil8': 4,
     'depth32float': 4,
+    'r32uint': 4,
+    'r32sint': 4,
+    'r32float': 4,
 }
 
 
