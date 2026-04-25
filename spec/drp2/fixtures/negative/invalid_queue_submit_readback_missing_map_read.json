@@ -1,0 +1,58 @@
+{
+  "name": "invalid_queue_submit_readback_missing_map_read",
+  "description": "Request a readback on a buffer that does not have MAP_READ usage.",
+  "reason": "The buffer declares only COPY_DST usage. MAP_READ is required for any buffer listed in QueueSubmit.readbacks. The submission fails with DRP2_ERR_USAGE at the QueueSubmit command.",
+  "fix": "Add MAP_READ to the buffer's usage list.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "readback",
+    "usage",
+    "queue"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": ["COPY_DST"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 3
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [3],
+      "submission_id": 10,
+      "readbacks": [
+        { "buffer_id": 1, "offset": 0, "size": 16 }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 5
+  }
+}

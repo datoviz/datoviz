@@ -1,0 +1,52 @@
+{
+  "name": "invalid_queue_submit_readback_unknown_buffer",
+  "description": "Request a readback on a buffer id that does not exist.",
+  "reason": "Buffer id 99 was never created. Referencing an unknown id in QueueSubmit.readbacks fails with DRP2_ERR_INVALID_ID at the QueueSubmit command.",
+  "fix": "Use a buffer_id that refers to a live buffer.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "readback",
+    "identity",
+    "queue"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 3
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [3],
+      "submission_id": 10,
+      "readbacks": [
+        { "buffer_id": 99, "offset": 0, "size": 16 }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ID",
+    "command_index": 4
+  }
+}

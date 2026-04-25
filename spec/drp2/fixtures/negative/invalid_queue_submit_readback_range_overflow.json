@@ -1,0 +1,58 @@
+{
+  "name": "invalid_queue_submit_readback_range_overflow",
+  "description": "Request a readback whose range extends beyond the buffer's declared size.",
+  "reason": "The buffer is 16 bytes. The readback requests offset=8, size=12, which requires bytes 8–19 and exceeds the buffer. The submission fails with DRP2_ERR_OUT_OF_RANGE at the QueueSubmit command.",
+  "fix": "Reduce the readback size so that offset + size does not exceed the buffer size.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "readback",
+    "range",
+    "queue"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 16,
+      "usage": ["COPY_DST", "MAP_READ"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 3
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [3],
+      "submission_id": 10,
+      "readbacks": [
+        { "buffer_id": 1, "offset": 8, "size": 12 }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_OUT_OF_RANGE",
+    "command_index": 5
+  }
+}
