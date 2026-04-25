@@ -78,14 +78,15 @@ Read the scene spec in this order during review.
 9. [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md) — family taxonomy
 10. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md) — shared producer contract across visuals
 11. [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md) — family-level mini-contracts
-12. [AXES.md](AXES.md) — axes and tick semantics
-13. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
-14. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
+12. [visuals/README.md](visuals/README.md) — per-family data contracts (attribute schemas, parameters, variants)
+13. [AXES.md](AXES.md) — axes and tick semantics
+14. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
+15. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
 
 ### 4. Data, transforms, planning, and runtime handoff
 
-15. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model
-16. [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
+16. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model
+17. [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
 18. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization and panel-transform pipeline
 19. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
 20. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
@@ -119,6 +120,8 @@ Read the scene spec in this order during review.
 - [REQUIREMENTS.md](REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
 - [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md): per-attribute data granularity (CONSTANT / PER_ITEM
   / PER_GROUP) and optional mutability hints
+- [visuals/README.md](visuals/README.md): per-family data contracts with attribute schemas,
+  parameters, variant axes, and v0.3 correspondence
 - [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
 - [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): the current preferred scene-facing API
   defaults selected from the API sketch
