@@ -66,6 +66,7 @@ Authoritative files:
 - `commands/CopyBufferToBuffer.json`
 - `commands/CopyBufferToTexture.json`
 - `commands/CopyTextureToBuffer.json`
+- `commands/CopyTextureToTexture.json`
 - `commands/QueueSubmit.json`
 - `commands/QueueSubmitReply.json`
 - `commands/CreateSampler.json`

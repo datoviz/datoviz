@@ -133,6 +133,9 @@
       "$ref": "./commands/CopyTextureToBuffer.json"
     },
     {
+      "$ref": "./commands/CopyTextureToTexture.json"
+    },
+    {
       "$ref": "./commands/QueueSubmit.json"
     },
     {

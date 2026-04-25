@@ -1092,6 +1092,21 @@ class DRP2SemanticValidator:
         encoder['resources'].add(('texture', command['src_texture_id']))
         encoder['resources'].add(('buffer', command['dst_buffer_id']))
 
+    def _handle_CopyTextureToTexture(self, index: int, command: Dict[str, Any]) -> None:
+        encoder = self._resolve_encoder(index, command['encoder_id'])
+        if encoder['open_pass'] is not None:
+            raise SemanticFailure('DRP2_ERR_INVALID_STATE', index, 'copy command is inside a pass')
+        src = self._texture_usage(index, command['src_texture_id'], 'COPY_SRC')
+        self._check_texture_box(
+            index, src, command['src_mip_level'], command['src_origin'], command['size']
+        )
+        dst = self._texture_usage(index, command['dst_texture_id'], 'COPY_DST')
+        self._check_texture_box(
+            index, dst, command['dst_mip_level'], command['dst_origin'], command['size']
+        )
+        encoder['resources'].add(('texture', command['src_texture_id']))
+        encoder['resources'].add(('texture', command['dst_texture_id']))
+
     def _handle_QueueSubmit(self, index: int, command: Dict[str, Any]) -> None:
         seen_command_buffer_ids = set()
         for command_buffer_id in command['command_buffer_ids']:

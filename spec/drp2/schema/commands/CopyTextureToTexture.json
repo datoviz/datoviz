@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CopyTextureToTexture",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cmd": {
+      "const": "CopyTextureToTexture"
+    },
+    "encoder_id": {
+      "$ref": "../common/Id.json"
+    },
+    "src_texture_id": {
+      "$ref": "../common/Id.json"
+    },
+    "src_mip_level": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "src_origin": {
+      "$ref": "../common/Origin3D.json"
+    },
+    "dst_texture_id": {
+      "$ref": "../common/Id.json"
+    },
+    "dst_mip_level": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dst_origin": {
+      "$ref": "../common/Origin3D.json"
+    },
+    "size": {
+      "$ref": "../common/Extent3D.json"
+    }
+  },
+  "required": [
+    "cmd",
+    "encoder_id",
+    "src_texture_id",
+    "src_mip_level",
+    "src_origin",
+    "dst_texture_id",
+    "dst_mip_level",
+    "dst_origin",
+    "size"
+  ]
+}
