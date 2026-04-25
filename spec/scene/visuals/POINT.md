@@ -82,8 +82,8 @@ underlying data value.
 | Property | Value |
 |---|---|
 | Type | `float32` |
-| Unit | screen pixels |
-| Default | implementation-defined, suggested 5.0 |
+| Unit | determined by `size_space` |
+| Default | implementation-defined, suggested 5.0 screen pixels |
 | Mutability | `dynamic` |
 
 Fallback size used when `size` source is `CONSTANT` and no explicit constant is set, or as a
@@ -91,6 +91,31 @@ default before the first `size` write.
 
 This parameter is distinct from the `size` attribute.
 When `size` source is `PER_ITEM` or `PER_GROUP`, `size_default` is ignored.
+
+
+### `size_space`
+
+| Property | Value |
+|---|---|
+| Type | enum: `screen` or `data` |
+| Default | `screen` |
+| Mutability | `dynamic` |
+
+Controls whether the `size` attribute is interpreted in screen space or data space.
+
+**`screen`** (default): size is in screen pixels. Points appear the same visual size regardless of
+zoom level. This is the right choice for most scatter plots and spike rasters.
+
+**`data`**: size is in the same units as the visual-space coordinate system. Points scale with
+zoom, so zooming in makes them appear larger. This is the right choice when points represent
+physical objects with real spatial extent — cells with measured radii, electrode contacts with
+known diameters, atoms in a molecular viewer.
+
+When `size_space = data`, the `size_mode = scalar` scale should use `output_unit = data_units`
+(see `SCALES.md`).
+
+`size_space` applies uniformly to all items in the visual.
+Mixed screen/data sizing within one visual is not supported.
 
 
 ## Variant Axes
@@ -102,9 +127,12 @@ When `size` source is `PER_ITEM` or `PER_GROUP`, `size_default` is ignored.
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 | `size_mode` | `direct`, `scalar` | `direct` |
 
-Both axes are selected at visual creation time and cannot change without recreating the visual.
+`size_space` is a visual-wide parameter rather than a variant axis — it does not affect the data
+layout and can be changed at runtime.
 
-The four combinations are all valid.
+Both mode axes are selected at visual creation time and cannot change without recreating the visual.
+
+The four combinations of `color_mode` × `size_mode` are all valid.
 The most common are `(rgba, direct)` for simple scatter plots and `(scalar, scalar)` for bubble
 charts where both color and size encode data quantities.
 
@@ -203,6 +231,6 @@ The `PER_ITEM` direct path is a strict superset of the v0.3 behavior.
 
 1. whether `point` should render as a filled circle (smooth disc) or as a hardware point sprite,
    and whether this is a variant axis or a capability-gated fallback,
-2. the exact public API spelling for declaring `color_mode` and `size_mode` at creation,
+2. the exact public API spelling for declaring `color_mode`, `size_mode`, and `size_space`,
 3. whether a separate `alpha` attribute (distinct from the alpha channel of `color`) is useful,
 4. whether depth sorting of semi-transparent points is in scope for this family or deferred.
