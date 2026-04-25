@@ -122,14 +122,22 @@ size `Scale`).
 | Property | Value |
 |---|---|
 | Type | `float32` |
-| Unit | radians, clockwise from up |
+| Unit | radians, counter-clockwise from right |
 | Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
 | Typical mutability | `dynamic` |
 
-Rotation of the marker around its center.
+Rotation of the marker around its center, counter-clockwise from the right (+x) axis.
+`angle = 0` means the marker points right. `angle = π/2` means it points up.
+
+This convention matches `atan2(dy, dx)` directly — a vector `(dx, dy)` in data space has angle
+`atan2(dy, dx)` with no additional transformation needed.
+
 `CONSTANT` source with `angle = 0` is the default (no rotation).
 Per-item angle is used for directional markers such as arrows or chevrons.
 Per-group angle is useful when groups represent orientations (e.g., cardinal directions).
+
+The scene layer is responsible for any coordinate-system adjustment needed for screen-Y-down
+rendering. Users always work in data-space convention.
 
 
 ## Visual-Wide Parameters
@@ -346,7 +354,5 @@ keeping them separate.
 1. whether per-item `shape` should be supported in a future version via a shape index attribute
    and a shader lookup table,
 2. whether per-item `edgecolor` is worth the memory cost for a future variant,
-3. whether `angle` should be in clockwise or counter-clockwise radians — convention should be
-   fixed before the first implementation,
 4. the exact public API spelling for the three variant axes at creation time,
 5. whether `ellipse` shape needs additional per-item aspect-ratio control beyond `angle`.
