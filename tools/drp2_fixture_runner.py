@@ -686,6 +686,14 @@ class DRP2SemanticValidator:
             )
         for layout_id in command.get('bind_group_layout_ids', []):
             self._resolve_live(index, layout_id, 'bind_group_layout')
+        vertex_buffers = command.get('vertex_buffers')
+        if vertex_buffers is not None and len(vertex_buffers) != command['vertex_buffer_slots']:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_ARGUMENT',
+                index,
+                f'vertex_buffers length {len(vertex_buffers)} does not match '
+                f'vertex_buffer_slots {command["vertex_buffer_slots"]}',
+            )
         self._reserve_id(
             index,
             command['id'],

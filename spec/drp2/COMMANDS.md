@@ -607,6 +607,17 @@ Required fields:
 Optional fields:
 
 - `bind_group_layout_ids`: ordered list of bind-group layouts expected by slot.
+- `vertex_buffers`: ordered list of vertex buffer layout descriptors, one per slot in
+  `[0, vertex_buffer_slots)`. If present, its length must equal `vertex_buffer_slots`. If absent,
+  vertex input layout is unspecified and the pipeline is expected to use vertex pulling via storage
+  buffers or builtins. Each entry requires:
+  - `array_stride`: byte distance between successive elements in the buffer.
+  - `attributes`: list of vertex attributes sourced from this buffer. Each attribute requires:
+    - `format`: vertex attribute format token (e.g. `float32x3`, `unorm8x4`).
+    - `offset`: byte offset of the attribute within one stride.
+    - `shader_location`: `@location(n)` index in the vertex shader.
+  - `step_mode`: `vertex` (advance per vertex) or `instance` (advance per instance). Defaults to
+    `vertex`.
 - `topology`: primitive assembly mode; one of `point-list`, `line-list`, `line-strip`,
   `triangle-list`, `triangle-strip`. Defaults to `triangle-list`.
 - `cull_mode`: face-culling mode; one of `none`, `front`, `back`. Defaults to `none`.
@@ -639,13 +650,15 @@ Semantics:
    using this pipeline,
 5. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
    `SetBindGroup(slot, ...)`,
-6. omitting `topology` is equivalent to `triangle-list`,
-7. omitting `depth_stencil` means no depth or stencil testing is performed; the pipeline must not
+6. if `vertex_buffers` is present, its length must equal `vertex_buffer_slots`; if absent, vertex
+   input layout is unspecified and vertex pulling is assumed,
+7. omitting `topology` is equivalent to `triangle-list`,
+8. omitting `depth_stencil` means no depth or stencil testing is performed; the pipeline must not
    be used in a render pass whose `depth_stencil_attachment` requires depth writes or comparison,
-8. omitting `color_targets` means the pipeline targets one color attachment with no blending and
+9. omitting `color_targets` means the pipeline targets one color attachment with no blending and
    full write mask; format compatibility is the backend's responsibility,
-9. if `color_targets` is present, its length should match the number of color attachments declared
-   in the render pass.
+10. if `color_targets` is present, its length should match the number of color attachments declared
+    in the render pass.
 
 
 ### `DestroyRenderPipeline`
