@@ -28,7 +28,7 @@ detail to implement or validate each family.
 | `path` | [PATH.md](PATH.md) |
 | `glyph` | [GLYPH.md](GLYPH.md) |
 | `image` | [IMAGE.md](IMAGE.md) |
-| `mesh` | planned |
+| `mesh` | [MESH.md](MESH.md) |
 | `sphere` | planned |
 | `volume` | planned |
 
