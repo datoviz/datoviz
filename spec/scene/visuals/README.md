@@ -26,7 +26,7 @@ detail to implement or validate each family.
 | `marker` | [MARKER.md](MARKER.md) |
 | `segment` | [SEGMENT.md](SEGMENT.md) |
 | `path` | [PATH.md](PATH.md) |
-| `glyph` | planned |
+| `glyph` | [GLYPH.md](GLYPH.md) |
 | `image` | planned |
 | `mesh` | planned |
 | `sphere` | planned |
