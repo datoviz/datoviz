@@ -3,12 +3,10 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `segment` visual family.
 
-It refines:
+It refines `VISUAL_FAMILIES.md`, `VISUAL_MINI_CONTRACTS.md`, `ATTRIBUTE_SOURCES.md`, and
+`VISUAL_CONTRACT.md`.
 
-1. `VISUAL_FAMILIES.md` — family taxonomy and rationale
-2. `VISUAL_MINI_CONTRACTS.md` — family-level mini-contract
-3. `ATTRIBUTE_SOURCES.md` — attribute granularity and mutability vocabulary
-4. `VISUAL_CONTRACT.md` — shared visual responsibilities
+Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 
 ## Semantic Purpose
@@ -19,10 +17,10 @@ The primary semantic unit is one segment, not a connected sequence.
 For connected sequences, use `path`.
 
 Typical uses: error bars, rulers, graph edges, connection lines, axis ticks, crosshair guides,
-vector field glyphs, anatomical fiber bundles rendered as individual segments.
+vector field glyphs, anatomical fiber bundles.
 
 
-## Per-Item Attribute Schema
+## Per-Item Attributes
 
 Each item is one segment with two endpoints, P0 (start) and P1 (end).
 
@@ -30,8 +28,7 @@ Each item is one segment with two endpoints, P0 (start) and P1 (end).
 
 | Property | Value |
 |---|---|
-| Type | `vec3` — three `float32` values |
-| Interpretation | start endpoint `(x, y, z)` in visual space |
+| Type | `vec3`, start endpoint `(x, y, z)` in visual space |
 | Accepted sources | `PER_ITEM` only |
 | Typical mutability | `dynamic` |
 
@@ -40,22 +37,15 @@ Each item is one segment with two endpoints, P0 (start) and P1 (end).
 
 | Property | Value |
 |---|---|
-| Type | `vec3` — three `float32` values |
-| Interpretation | end endpoint `(x, y, z)` in visual space |
+| Type | `vec3`, end endpoint `(x, y, z)` in visual space |
 | Accepted sources | `PER_ITEM` only |
 | Typical mutability | `dynamic` |
 
 
 ### `color`
 
-| Property | Value |
-|---|---|
-| Type | `rgba_u8` (direct) or `scalar_f32` (mapped) — see color mode |
-| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
-| Typical mutability | `dynamic` |
-
-The color of the segment, or the color at P0 when `color_end` is also set (gradient mode).
-Two color modes: `rgba` (default) and `scalar` (mapped through a `Scale` — see `SCALES.md`).
+Standard — see `SHARED_ATTRIBUTES.md`. Color at P0, or uniform color when `color_end` is not set.
+Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 
 ### `color_end`
@@ -65,111 +55,53 @@ Two color modes: `rgba` (default) and `scalar` (mapped through a `Scale` — see
 | Type | same as `color` |
 | Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
 | Typical mutability | `dynamic` |
-| Optional | yes — gradient is disabled when not set |
+| Optional | yes — gradient disabled when not set |
 
-Color at the P1 endpoint.
-When set, the segment is rendered with a linear color gradient from `color` (at P0) to `color_end`
-(at P1).
-When not set, the segment is uniformly colored by `color`.
+Color at P1. When set, a linear gradient is drawn from `color` (P0) to `color_end` (P1).
+Must use the same `color_mode` as `color`.
 
-`color_end` uses the same color mode as `color` — both must be `rgba` or both must be `scalar`.
-
-Gradient segments are useful for encoding a second scalar channel along each segment's length — for
-example, time-colored trajectories or signal-strength connection lines.
+Useful for time-colored trajectories, FA-colored fibers, signal-strength connection lines.
 
 
 ### `linewidth`
 
-| Property | Value |
-|---|---|
-| Type | `float32` |
-| Unit | screen pixels |
-| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
-| Typical mutability | `dynamic` |
-
-Width of the segment in screen pixels.
-`PER_ITEM` linewidth is the defining capability of `segment` over `primitive` line topologies.
-
-`PER_GROUP` is useful for error-bar bundles where different groups carry different uncertainty
-widths, or for multi-channel displays with channel-encoded linewidths.
+Standard — see `SHARED_ATTRIBUTES.md`.
+Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Per-item linewidth is the defining capability of `segment` over `primitive` line topologies.
 
 
 ### `shift`
 
-| Property | Value |
-|---|---|
-| Type | `vec4` — four `float32` values `(dx0, dy0, dx1, dy1)` |
-| Unit | screen pixels |
-| Accepted sources | `CONSTANT`, `PER_ITEM` |
-| Typical mutability | `dynamic` |
-| Optional | yes — defaults to `(0, 0, 0, 0)` |
-
-Screen-space pixel offsets applied to each endpoint after projection.
-
-`shift` enables precise sub-pixel positioning relative to other visual elements — for example,
-placing error bar caps exactly on top of marker centers without adjusting data-space coordinates.
-
-`PER_GROUP` is not supported for `shift` because it is inherently a per-item screen-space
-adjustment.
-
-`shift` is a general concept across visual families. For single-anchor visuals (`pixel`, `point`,
-`marker`, `glyph`) it is a `vec2 (dx, dy)`. For `segment` it is naturally `vec4` to independently
-offset each endpoint. See those family specs for details.
+Standard `vec4` (dual-endpoint form) — see `SHARED_ATTRIBUTES.md`.
+`(dx0, dy0, dx1, dy1)` in screen pixels.
+Useful for aligning segment endpoints precisely to marker centers.
 
 
 ## Visual-Wide Parameters
 
+### `cap_start` and `cap_end`
+
+| Property | Value |
+|---|---|
+| Type | enum — see cap type list below |
+| Default | `round` |
+| Mutability | `dynamic` |
+
+Cap style at P0 and P1 respectively. May differ.
+
+| Cap | Description |
+|---|---|
+| `none` | no cap, ends at the endpoint coordinate |
+| `round` | semicircular, extends by half linewidth |
+| `square` | rectangular, extends by half linewidth |
+| `butt` | flat exactly at endpoint, no extension |
+| `triangle_out` | triangular cap pointing outward |
+| `triangle_in` | triangular cap pointing inward (notch) |
+
+
 ### `linewidth_space`
 
-| Property | Value |
-|---|---|
-| Type | enum: `screen` or `data` |
-| Default | `screen` |
-| Mutability | `dynamic` |
-
-Controls whether `linewidth` values are interpreted in screen pixels or data-space units.
-
-**`screen`** (default): linewidth is invariant under zoom. Right for most uses.
-
-**`data`**: linewidth scales with zoom. Right when segments represent physical structures with real
-spatial width — anatomical fibers, vessel walls, geological features.
-
-Applies uniformly to all items. See `visuals/POINT.md` for a full discussion of space parameters.
-
-
-### `cap_start`
-
-| Property | Value |
-|---|---|
-| Type | enum — see cap type list |
-| Default | `round` |
-| Mutability | `dynamic` |
-
-Cap style at the P0 endpoint.
-
-
-### `cap_end`
-
-| Property | Value |
-|---|---|
-| Type | enum — see cap type list |
-| Default | `round` |
-| Mutability | `dynamic` |
-
-Cap style at the P1 endpoint.
-May differ from `cap_start`.
-
-
-### Cap Types
-
-| Value | Description |
-|---|---|
-| `none` | no cap, segment ends at the endpoint coordinate |
-| `round` | semicircular cap extending by half the linewidth |
-| `square` | rectangular cap extending by half the linewidth |
-| `butt` | flat cap exactly at the endpoint, no extension |
-| `triangle_out` | triangular cap pointing outward from the endpoint |
-| `triangle_in` | triangular cap pointing inward (arrow-like notch) |
+Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
 
 ## Variant Axes
@@ -178,97 +110,51 @@ May differ from `cap_start`.
 |---|---|---|
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 
-Color mode is set at visual creation time.
-`color_end` is an optional attribute that can be added or removed at any time — enabling or
-disabling gradient mode does not require recreating the visual, but does require a re-upload of the
-color data.
+Set at visual creation time.
+`color_end` can be added or removed at runtime without recreating the visual.
 
 
-## Transform Model
+## Transform Model, Stage Participation, Picking
 
-Standard two-stage transform:
-
-1. **Normalization** — data-space endpoint positions normalized to visual space before upload.
-2. **Panel transform** — panel-local camera or panzoom applied per-frame without re-upload.
-   `shift` is applied after the panel transform, in screen space.
-
-`segment` does not support a visual-local transform matrix.
-
-
-## Stage Participation
-
-| Stage | Participation |
-|---|---|
-| Render | required |
-| Compute | none |
-| Picking | optional |
-| Offscreen / export | same as render |
-
-
-## Picking Model
-
-When picking is enabled:
-
-1. a pick result returns `(panel_id, visual_id, item_index)`,
-2. item index identifies the segment.
-
-No sub-segment identity (endpoint or midpoint) is defined.
-
-
-## Fallback Notes
-
-`segment` has no meaningful capability fallback beyond the standard `color_mode = scalar` CPU
-path.
-
-If per-item linewidth is not supported on a constrained backend, the scene may fall back to a
-uniform linewidth using `CONSTANT` source and emit a diagnostic.
+Standard — see `SHARED_ATTRIBUTES.md`.
+`shift` is applied after the panel transform in screen space.
+Picking returns the segment index as item identity.
 
 
 ## Relationship To Other Families
 
 | Situation | Preferred family |
 |---|---|
-| Connected sequence of points | `path` |
-| Raw line topology, no caps or per-item width | `primitive` with `line_list` |
-| Directional arrows with shaped heads | `marker` with `shape = arrow` |
-| Many paths batched together | `path` |
+| Connected sequence | `path` |
+| Raw lines, no caps or per-item width | `primitive` with `line_list` |
+| Directional arrows | `marker` with `shape = arrow` |
 
 
 ## Minimum Cases This Spec Must Support
 
-1. uniform error bars — `P0`, `P1` `PER_ITEM`, `color` `CONSTANT`, `linewidth` `CONSTANT`,
-2. per-segment colored connection graph — `color` `PER_ITEM` rgba,
+1. uniform error bars — `P0`/`P1` `PER_ITEM`, `color` `CONSTANT`, `linewidth` `CONSTANT`,
+2. per-segment colored graph edges — `color` `PER_ITEM` rgba,
 3. multi-group error bars with group-encoded widths — `linewidth` `PER_GROUP`,
-4. time-colored trajectories — gradient mode, `color` and `color_end` both `PER_ITEM` scalar,
-5. error bar caps precisely aligned to markers — `shift` `PER_ITEM`,
-6. fiber bundle with per-fiber scalar FA coloring — `color` `PER_ITEM` scalar mode.
+4. time-colored trajectories — gradient, `color` and `color_end` both `PER_ITEM` scalar,
+5. error bar caps aligned to markers — `shift` `PER_ITEM`,
+6. fiber bundle with scalar FA coloring — `color` `PER_ITEM` scalar.
 
 
 ## v0.3 Correspondence
 
-```c
-dvz_segment(batch, flags)
-dvz_segment_position(visual, first, count, initial, terminal, flags)
-dvz_segment_color(visual, first, count, colors, flags)
-dvz_segment_linewidth(visual, first, count, widths, flags)
-dvz_segment_shift(visual, first, count, shifts, flags)
-dvz_segment_cap(visual, cap_initial, cap_terminal)
-```
-
 | v0.3 | v0.4 |
 |---|---|
-| `initial`, `terminal` in `dvz_segment_position` | `P0`, `P1` attributes |
-| `dvz_segment_color` | `color` attribute, now also `CONSTANT`/`PER_GROUP` and `scalar` mode |
-| `dvz_segment_linewidth` | `linewidth` attribute, now also `CONSTANT`/`PER_GROUP` |
-| `dvz_segment_shift` | `shift` attribute, unchanged |
-| `dvz_segment_cap` | `cap_start`, `cap_end` parameters |
+| `initial`/`terminal` in `dvz_segment_position` | `P0`, `P1` |
+| `dvz_segment_color` | `color`, extended sources and scalar mode |
+| `dvz_segment_linewidth` | `linewidth`, extended sources |
+| `dvz_segment_shift` | `shift` (`vec4`) |
+| `dvz_segment_cap` | `cap_start`, `cap_end` |
 
-v0.4 adds: `color_end` for gradient segments (new), `PER_GROUP` source for `color` and
-`linewidth`, `scalar` color mode.
+v0.4 adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode, `linewidth_space`.
 
 
 ## Deferred Questions
 
 1. whether `shift` should support `PER_GROUP` source in a future version,
-2. the exact public API spelling for `P0`/`P1` — whether they are two separate attribute calls or
-   one interleaved call as in v0.3.
+2. the exact public API spelling for `P0`/`P1` — two separate calls or one interleaved call as
+   in v0.3.
