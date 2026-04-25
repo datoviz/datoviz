@@ -1,0 +1,231 @@
+{
+  "name": "pressure_compute_assisted",
+  "description": "Run a compute pass that writes transformed floats into a storage buffer, then use that buffer as vertex input in a render pass, all within a single command encoder.",
+  "reason": "The output buffer has both STORAGE and VERTEX usage, which is valid. The compute pass and render pass are sequential within the same open encoder, so the runtime is responsible for inserting any necessary backend-level barrier between them. The vertex buffer slot in the render pass references the buffer that the compute pass just wrote, which is a valid producer pattern under DRP2 implicit synchronization semantics.",
+  "notes": "Pressure test #5 from LAYER1.md. This fixture validates the compute-assisted data path: a compute shader processes input data and writes results into a shared buffer that feeds the render pipeline as vertex input. Both passes live in the same encoder, so the runtime handles synchronization at the backend level without any explicit ResourceBarrier command (which is deferred to 2.1 in schema/DEFERRED.md). The compute shader copies 9 floats (3 vec3f vertices) from the input storage buffer to the output storage buffer using one workgroup of 9 threads.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "pressure_test",
+    "compute_assisted",
+    "compute_pass",
+    "render_pass",
+    "pipeline",
+    "draw",
+    "dispatch",
+    "queue"
+  ],
+  "capabilities": {
+    "max_buffer_size": 134217728,
+    "max_texture_dimension_1d": 8192,
+    "max_texture_dimension_2d": 8192,
+    "max_texture_dimension_3d": 2048,
+    "supported_texture_formats": ["rgba8unorm"],
+    "supported_sample_counts": [1],
+    "supported_shader_formats": ["wgsl"],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 100,
+      "label": "compute_buffers",
+      "entries": [
+        { "binding": 0, "binding_type": "storage_buffer" },
+        { "binding": 1, "binding_type": "storage_buffer" }
+      ]
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "COMPUTE",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@group(0) @binding(0) var<storage, read> input: array<f32>; @group(0) @binding(1) var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main(@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@location(0) position: vec3f) -> @builtin(position) vec4f { return vec4f(position, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9002,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateComputePipeline",
+      "id": 10,
+      "label": "copy_pipeline",
+      "compute_shader_module_id": 9000,
+      "bind_group_layout_ids": [100]
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 11,
+      "label": "draw_pipeline",
+      "vertex_shader_module_id": 9001,
+      "fragment_shader_module_id": 9002,
+      "vertex_buffer_slots": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "label": "input_buffer",
+      "size": 36,
+      "usage": ["STORAGE", "COPY_DST"]
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 3,
+      "label": "output_buffer",
+      "size": 36,
+      "usage": ["STORAGE", "VERTEX"]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 2,
+      "offset": 0,
+      "size": 36,
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 101,
+      "label": "compute_bind_group",
+      "bind_group_layout_id": 100,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "storage_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 2,
+          "offset": 0,
+          "size": 36
+        },
+        {
+          "binding": 1,
+          "binding_type": "storage_buffer",
+          "resource_kind": "buffer",
+          "resource_id": 3,
+          "offset": 0,
+          "size": 36
+        }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "render_target",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 20
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 21,
+      "encoder_id": 20
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 21,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 21,
+      "slot": 0,
+      "bind_group_id": 101
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 21,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "cmd": "EndComputePass",
+      "pass_id": 21
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 22,
+      "encoder_id": 20,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 22,
+      "pipeline_id": 11
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 22,
+      "slot": 0,
+      "buffer_id": 3,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 22,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 22
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 20,
+      "command_buffer_id": 23
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [23],
+      "submission_id": 30
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
