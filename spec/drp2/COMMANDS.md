@@ -41,6 +41,8 @@ The active DRP2 command set is intentionally small but complete enough for:
 6. `WriteTexture`
 7. `CreateSampler`
 8. `DestroySampler`
+9. `CreateTextureView`
+10. `DestroyTextureView`
 
 
 ### Resource Group Lifecycle
@@ -102,12 +104,10 @@ of the active DRP2 contract and must not be treated as authoritative until promo
 
 1. `CreatePipelineLayout`
 2. `DestroyPipelineLayout`
-3. `CreateTextureView`
-4. `DestroyTextureView`
-5. `ResourceBarrier`
-6. `DispatchWorkgroupsIndirect`
-7. `DrawIndirect`
-8. `DrawIndexedIndirect`
+3. `ResourceBarrier`
+4. `DispatchWorkgroupsIndirect`
+5. `DrawIndirect`
+6. `DrawIndexedIndirect`
 
 
 ## Common Field Semantics
@@ -387,6 +387,58 @@ Semantics:
 3. no later command may reference the destroyed sampler.
 
 
+### `CreateTextureView`
+
+Creates a view of an existing texture with a specified subresource range, format, and dimension.
+
+Required fields:
+
+- `cmd`: must be `CreateTextureView`.
+- `id`: client-assigned identifier for the new texture view.
+- `texture_id`: identifier of the live parent texture.
+- `format`: texture format for this view; must be compatible with the parent texture format.
+- `dimension`: view dimensionality token.
+- `aspect`: which aspect of the texture is visible through this view; one of `all`, `depth-only`,
+  `stencil-only`.
+
+Optional fields:
+
+- `mip_range`: object with `base` (integer ≥ 0) and `count` (integer ≥ 1) specifying the visible
+  mip-level range. Defaults to the full mip range of the parent texture.
+- `layer_range`: object with `base` (integer ≥ 0) and `count` (integer ≥ 1) specifying the visible
+  array-layer range. Defaults to the full layer range of the parent texture.
+- `label`: optional debug name.
+
+Semantics:
+
+1. the parent texture must be live at the time of view creation,
+2. `mip_range.base + mip_range.count` must not exceed the parent texture's `mip_level_count`,
+3. `layer_range.base + layer_range.count` must not exceed the parent texture's depth (for array and
+   cube dimensions),
+4. the texture view is a derived protocol object; it does not own the underlying texture storage,
+5. the view can be used as a bind-group resource entry with `resource_kind: "texture_view"` and
+   `binding_type` of `sampled_texture` or `storage_texture`,
+6. the required usage check for the bind-group entry applies to the parent texture, not the view.
+
+
+### `DestroyTextureView`
+
+Ends the lifetime of a texture view object.
+
+Required fields:
+
+- `cmd`: must be `DestroyTextureView`.
+- `id`: identifier of the existing live texture view.
+
+Semantics:
+
+1. the texture view must be live at the time of destruction,
+2. any bind group that references this view must already be destroyed before `DestroyTextureView` is
+   valid,
+3. no later command may reference the destroyed texture view,
+4. destroying the view does not affect the parent texture.
+
+
 ## Resource Group Lifecycle
 
 ### `CreateBindGroup`
@@ -403,9 +455,9 @@ Required fields:
 Each entry requires:
 
 - `binding`: numeric binding index within the bind group.
-- `binding_type`: one of `uniform_buffer`, `storage_buffer`, `sampled_texture`, or
-  `storage_texture`.
-- `resource_kind`: one of `buffer` or `texture`.
+- `binding_type`: one of `uniform_buffer`, `storage_buffer`, `sampled_texture`, `storage_texture`,
+  or `sampler`.
+- `resource_kind`: one of `buffer`, `texture`, `texture_view`, or `sampler`.
 - `resource_id`: identifier of the referenced resource object.
 
 Optional per-entry fields:
@@ -688,9 +740,11 @@ Attachment descriptor semantics:
 
 Active `2.0` note:
 
-1. render-pass attachments reference textures directly,
-2. texture views are deferred and non-authoritative in active `2.0`,
-3. runtimes may derive backend-native attachment views from the referenced texture plus implicit full-subresource selection.
+1. render-pass attachments reference textures directly via `texture_id`,
+2. runtimes may derive backend-native attachment views from the referenced texture using implicit
+   full-subresource selection,
+3. texture view objects (`CreateTextureView`) are used for bind-group bindings, not render-pass
+   attachments.
 
 Pass semantics:
 
