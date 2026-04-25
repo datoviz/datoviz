@@ -1,0 +1,70 @@
+{
+  "name": "queue_submit_readback_basic",
+  "description": "Write data to a MAP_READ buffer, submit with a readback request, and receive a QueueSubmitReply with the buffer contents.",
+  "reason": "The buffer has MAP_READ usage and the readback range fits within its declared size. QueueSubmitReply follows with a matching submission_id and the same buffer_id, offset, and size as the request.",
+  "notes": "This is the minimal happy-path fixture for the QueueSubmit readback path. The buffer contains zeros (uploaded via WriteBuffer) and the reply returns the same 16 zero bytes as base64.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "queue",
+    "readback",
+    "submission"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "label": "readback_buffer",
+      "size": 16,
+      "usage": ["COPY_DST", "MAP_READ"]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 1,
+      "offset": 0,
+      "size": 16,
+      "data": "AAAAAAAAAAAAAAAAAAAAAA=="
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 2
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 2,
+      "command_buffer_id": 3
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [3],
+      "submission_id": 10,
+      "readbacks": [
+        { "buffer_id": 1, "offset": 0, "size": 16 }
+      ]
+    },
+    {
+      "cmd": "QueueSubmitReply",
+      "submission_id": 10,
+      "readbacks": [
+        { "buffer_id": 1, "offset": 0, "size": 16, "data": "AAAAAAAAAAAAAAAAAAAAAA==" }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

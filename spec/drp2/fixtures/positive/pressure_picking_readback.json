@@ -158,7 +158,17 @@
     {
       "cmd": "QueueSubmit",
       "command_buffer_ids": [22],
-      "submission_id": 30
+      "submission_id": 30,
+      "readbacks": [
+        { "buffer_id": 2, "offset": 0, "size": 64 }
+      ]
+    },
+    {
+      "cmd": "QueueSubmitReply",
+      "submission_id": 30,
+      "readbacks": [
+        { "buffer_id": 2, "offset": 0, "size": 64, "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" }
+      ]
     }
   ],
   "expected": {
