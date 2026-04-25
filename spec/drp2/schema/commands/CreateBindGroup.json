@@ -30,14 +30,16 @@
               "uniform_buffer",
               "storage_buffer",
               "sampled_texture",
-              "storage_texture"
+              "storage_texture",
+              "sampler"
             ]
           },
           "resource_kind": {
             "type": "string",
             "enum": [
               "buffer",
-              "texture"
+              "texture",
+              "sampler"
             ]
           },
           "resource_id": {
@@ -99,6 +101,25 @@
               "properties": {
                 "resource_kind": {
                   "const": "texture"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "binding_type": {
+                  "const": "sampler"
+                }
+              },
+              "required": [
+                "binding_type"
+              ]
+            },
+            "then": {
+              "properties": {
+                "resource_kind": {
+                  "const": "sampler"
                 }
               }
             }

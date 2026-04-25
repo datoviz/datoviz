@@ -1,0 +1,42 @@
+{
+  "name": "invalid_create_sampler_duplicate",
+  "description": "Create two samplers with the same id.",
+  "reason": "Sampler id 200 is already live after the first CreateSampler. The second CreateSampler with the same id fails with DRP2_ERR_DUPLICATE_ID.",
+  "fix": "Use a unique id for each sampler.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "sampler",
+    "identity"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateSampler",
+      "id": 200
+    },
+    {
+      "cmd": "CreateSampler",
+      "id": 200
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_DUPLICATE_ID",
+    "command_index": 3
+  }
+}

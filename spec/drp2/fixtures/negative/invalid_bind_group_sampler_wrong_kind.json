@@ -1,0 +1,67 @@
+{
+  "name": "invalid_bind_group_sampler_wrong_kind",
+  "description": "Create a bind group with a sampler binding_type but supply a texture as the resource.",
+  "reason": "The layout declares binding 0 as a sampler. The bind group supplies resource_kind=texture for that slot. The schema allOf constraint requires resource_kind=sampler for a sampler binding_type, so this fails at schema validation.",
+  "fix": "Use resource_kind=sampler and supply a live sampler id for a sampler binding.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "sampler",
+    "bind_group",
+    "type_mismatch"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["TEXTURE_BINDING", "COPY_DST"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 100,
+      "entries": [
+        { "binding": 0, "binding_type": "sampler" }
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 100,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampler",
+          "resource_kind": "texture",
+          "resource_id": 1
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 4
+  }
+}

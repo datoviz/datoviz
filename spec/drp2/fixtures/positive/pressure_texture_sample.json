@@ -1,8 +1,8 @@
 {
   "name": "pressure_texture_sample",
-  "description": "Upload a 2x2 rgba8unorm texture, bind it as a sampled texture, and read it in a fragment shader using textureLoad.",
-  "reason": "The source texture is live and has TEXTURE_BINDING usage. The bind group correctly references it as a sampled_texture resource. The fragment shader reads a texel using textureLoad, which does not require a sampler object. The full path from texture upload to render-submit is valid under the active DRP2 2.0 contract.",
-  "notes": "Pressure test #3 from LAYER1.md. This fixture deliberately uses textureLoad rather than textureSample. textureLoad reads a single texel at an integer coordinate without filtering, and does not require a sampler object. textureSample with interpolation would require a CreateSampler command, which is deferred to 2.1 (see schema/DEFERRED.md). This fixture therefore demonstrates what is expressible in 2.0 and exposes exactly where sampler promotion would become necessary for filtered texture access. The vertex shader uses @builtin(vertex_index) to generate a fullscreen triangle without a vertex buffer, so vertex_buffer_slots is 0.",
+  "description": "Upload a 2x2 rgba8unorm texture, bind it with a sampler, and read it in a fragment shader using textureSample.",
+  "reason": "The source texture is live and has TEXTURE_BINDING usage. A sampler object is created and bound alongside it. The fragment shader reads a texel using textureSample with linear filtering. The full path from texture upload to render-submit is valid under the active DRP2 2.0 contract.",
+  "notes": "Pressure test #3 from LAYER1.md. This fixture uses textureSample with an explicit sampler object. The bind-group layout declares two entries: binding 0 for the sampled_texture and binding 1 for the sampler. The vertex shader uses @builtin(vertex_index) to generate a fullscreen triangle without a vertex buffer, so vertex_buffer_slots is 0.",
   "version": {
     "major": 2,
     "minor": 0
@@ -11,6 +11,7 @@
     "positive",
     "pressure_test",
     "texture_sampling",
+    "sampler",
     "render_pass",
     "pipeline",
     "bind_group",
@@ -41,11 +42,22 @@
       "renderer_name": "fixture-renderer"
     },
     {
+      "cmd": "CreateSampler",
+      "id": 200,
+      "label": "linear_sampler",
+      "mag_filter": "linear",
+      "min_filter": "linear",
+      "mipmap_filter": "nearest",
+      "address_mode_u": "clamp-to-edge",
+      "address_mode_v": "clamp-to-edge"
+    },
+    {
       "cmd": "CreateBindGroupLayout",
       "id": 100,
-      "label": "texture_bindings",
+      "label": "texture_and_sampler_bindings",
       "entries": [
-        { "binding": 0, "binding_type": "sampled_texture" }
+        { "binding": 0, "binding_type": "sampled_texture" },
+        { "binding": 1, "binding_type": "sampler" }
       ]
     },
     {
@@ -62,7 +74,7 @@
       "stage": "FRAGMENT",
       "format": "wgsl",
       "entry_point": "main",
-      "code": "@group(0) @binding(0) var source: texture_2d<f32>; @fragment fn main(@builtin(position) pos: vec4f) -> @location(0) vec4f { return textureLoad(source, vec2i(0, 0), 0); }"
+      "code": "@group(0) @binding(0) var source: texture_2d<f32>; @group(0) @binding(1) var samp: sampler; @fragment fn main(@builtin(position) pos: vec4f) -> @location(0) vec4f { return textureSample(source, samp, vec2f(0.5, 0.5)); }"
     },
     {
       "cmd": "CreateRenderPipeline",
@@ -99,7 +111,7 @@
     {
       "cmd": "CreateBindGroup",
       "id": 13,
-      "label": "texture_bind_group",
+      "label": "texture_and_sampler_bind_group",
       "bind_group_layout_id": 100,
       "entries": [
         {
@@ -107,6 +119,12 @@
           "binding_type": "sampled_texture",
           "resource_kind": "texture",
           "resource_id": 2
+        },
+        {
+          "binding": 1,
+          "binding_type": "sampler",
+          "resource_kind": "sampler",
+          "resource_id": 200
         }
       ]
     },

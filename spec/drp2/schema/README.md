@@ -68,13 +68,13 @@ Authoritative files:
 - `commands/CopyTextureToBuffer.json`
 - `commands/QueueSubmit.json`
 - `commands/QueueSubmitReply.json`
+- `commands/CreateSampler.json`
+- `commands/DestroySampler.json`
 
 Deferred, non-authoritative files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/CreateSampler.json`
-- `commands/DestroySampler.json`
 - `commands/CreateTextureView.json`
 - `commands/DestroyTextureView.json`
 - `commands/ResourceBarrier.json`

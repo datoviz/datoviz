@@ -14,14 +14,15 @@ This document applies only to the active DRP2 `2.0` commands:
 
 1. session and diagnostics,
 2. buffer and texture lifecycle,
-3. shader-module lifecycle,
-4. bind-group lifecycle,
-5. pipeline lifecycle,
-6. command encoder lifecycle,
-7. render and compute pass lifecycle,
-8. render and compute recording commands,
-9. copy commands,
-10. queue submission.
+3. sampler lifecycle,
+4. shader-module lifecycle,
+5. bind-group lifecycle,
+6. pipeline lifecycle,
+7. command encoder lifecycle,
+8. render and compute pass lifecycle,
+9. render and compute recording commands,
+10. copy commands,
+11. queue submission.
 
 Deferred commands listed in `schema/DEFERRED.md` are not covered by these invariants and must not be
 assumed to inherit them unchanged.
@@ -52,11 +53,12 @@ Persistent objects remain live until explicit destruction:
 
 1. buffer
 2. texture
-3. shader module
-4. bind-group layout
-5. bind group
-6. pipeline
-7. command buffer
+3. sampler
+4. shader module
+5. bind-group layout
+6. bind group
+7. pipeline
+8. command buffer
 
 Scoped objects exist only between their begin and end commands:
 
@@ -124,6 +126,17 @@ Rules:
 7. render-pass attachments in active `2.0` reference textures directly rather than separate texture-view objects.
 
 
+## Sampler Lifetime
+
+Rules:
+
+1. `CreateSampler` makes `id` live as a sampler immediately after semantic validation succeeds,
+2. `DestroySampler` ends the sampler lifetime immediately after semantic validation succeeds,
+3. no later command may reference the destroyed sampler,
+4. a sampler may be referenced by bind groups as a `sampler` binding resource,
+5. a bind group that references a sampler must be destroyed before that sampler may be destroyed.
+
+
 ## Bind-Group Lifetime
 
 Rules:
@@ -136,8 +149,8 @@ Rules:
 4. `CreateBindGroup` makes `id` live as a bind group immediately after semantic validation succeeds,
 5. `DestroyBindGroup` ends the bind-group lifetime immediately after semantic validation succeeds,
 6. no later command may reference the destroyed bind group,
-7. a bind group may reference existing buffers and textures, but it does not create independent
-   subresource lifetimes for them,
+7. a bind group may reference existing buffers, textures, and samplers, but it does not create
+   independent subresource lifetimes for them,
 8. a bind-group layout may be referenced by bind groups and pipelines,
 9. a bind group may be referenced by `QueueSubmit` only indirectly through previously finished
    command buffers.
@@ -260,18 +273,20 @@ Commands valid without encoder or pass scope:
 7. `CreateTexture`
 8. `DestroyTexture`
 9. `WriteTexture`
-10. `CreateBindGroup`
-11. `DestroyBindGroup`
-12. `CreateBindGroupLayout`
-13. `DestroyBindGroupLayout`
-14. `CreateShaderModule`
-15. `DestroyShaderModule`
-16. `CreateRenderPipeline`
-17. `DestroyRenderPipeline`
-18. `CreateComputePipeline`
-19. `DestroyComputePipeline`
-20. `BeginCommandEncoder`
-21. `QueueSubmit`
+10. `CreateSampler`
+11. `DestroySampler`
+12. `CreateBindGroup`
+13. `DestroyBindGroup`
+14. `CreateBindGroupLayout`
+15. `DestroyBindGroupLayout`
+16. `CreateShaderModule`
+17. `DestroyShaderModule`
+18. `CreateRenderPipeline`
+19. `DestroyRenderPipeline`
+20. `CreateComputePipeline`
+21. `DestroyComputePipeline`
+22. `BeginCommandEncoder`
+23. `QueueSubmit`
 
 Commands valid in an open encoder but outside any pass:
 

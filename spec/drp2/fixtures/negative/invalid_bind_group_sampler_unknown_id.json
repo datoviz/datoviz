@@ -1,0 +1,55 @@
+{
+  "name": "invalid_bind_group_sampler_unknown_id",
+  "description": "Create a bind group referencing a sampler id that does not exist.",
+  "reason": "Sampler id 99 was never created. Referencing it in a bind group entry with resource_kind=sampler fails with DRP2_ERR_INVALID_ID at the CreateBindGroup command.",
+  "fix": "Create a sampler with CreateSampler before referencing it in a bind group.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "sampler",
+    "bind_group",
+    "identity"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 100,
+      "entries": [
+        { "binding": 0, "binding_type": "sampler" }
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 13,
+      "bind_group_layout_id": 100,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampler",
+          "resource_kind": "sampler",
+          "resource_id": 99
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ID",
+    "command_index": 3
+  }
+}

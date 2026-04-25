@@ -31,6 +31,12 @@
       "$ref": "./commands/WriteTexture.json"
     },
     {
+      "$ref": "./commands/CreateSampler.json"
+    },
+    {
+      "$ref": "./commands/DestroySampler.json"
+    },
+    {
       "$ref": "./commands/CreateBindGroup.json"
     },
     {

@@ -27,7 +27,8 @@
               "uniform_buffer",
               "storage_buffer",
               "sampled_texture",
-              "storage_texture"
+              "storage_texture",
+              "sampler"
             ]
           },
           "has_dynamic_offset": {

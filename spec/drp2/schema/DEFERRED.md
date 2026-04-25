@@ -9,8 +9,6 @@ Deferred command schema files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/CreateSampler.json`
-- `commands/DestroySampler.json`
 - `commands/CreateTextureView.json`
 - `commands/DestroyTextureView.json`
 - `commands/ResourceBarrier.json`
@@ -42,13 +40,11 @@ Promotion must keep schema, fixtures, and prose in lockstep per the rules in `..
 
 ## Promotion Risk For `2.0`
 
-Two deferred groups are candidates for promotion before `2.0` ships, depending on pressure-test
+One deferred group is a candidate for promotion before `2.0` ships, depending on pressure-test
 outcomes (see the pressure tests in `../LAYER1.md`):
 
 - `CreateTextureView` / `DestroyTextureView`: may be required if the texture-upload-and-sampling
   pressure test cannot be expressed cleanly with render-pass attachments referencing textures
   directly.
-- `CreateSampler` / `DestroySampler`: may be required by the same pressure test if texture
-  sampling in a shader needs an explicit sampler object.
 
 All other deferred commands are lower priority and expected to target `2.1` or later.

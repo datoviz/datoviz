@@ -4,51 +4,51 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateSampler"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
-    "minFilter": {
+    "mag_filter": {
       "$ref": "../common/FilterMode.json"
     },
-    "magFilter": {
+    "min_filter": {
       "$ref": "../common/FilterMode.json"
     },
-    "addressModeU": {
-      "$ref": "../common/AddressMode.json"
-    },
-    "addressModeV": {
-      "$ref": "../common/AddressMode.json"
-    },
-    "addressModeW": {
-      "$ref": "../common/AddressMode.json"
-    },
-    "mipFilter": {
+    "mipmap_filter": {
       "$ref": "../common/FilterMode.json"
     },
-    "lodMinClamp": {
-      "type": "number"
+    "address_mode_u": {
+      "$ref": "../common/AddressMode.json"
     },
-    "lodMaxClamp": {
-      "type": "number"
+    "address_mode_v": {
+      "$ref": "../common/AddressMode.json"
     },
-    "maxAnisotropy": {
+    "address_mode_w": {
+      "$ref": "../common/AddressMode.json"
+    },
+    "lod_min_clamp": {
       "type": "number",
+      "minimum": 0
+    },
+    "lod_max_clamp": {
+      "type": "number",
+      "minimum": 0
+    },
+    "compare": {
+      "$ref": "../common/CompareFunction.json"
+    },
+    "max_anisotropy": {
+      "type": "integer",
       "minimum": 1
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
-    "id",
-    "minFilter",
-    "magFilter",
-    "addressModeU",
-    "addressModeV",
-    "addressModeW",
-    "mipFilter",
-    "lodMinClamp",
-    "lodMaxClamp"
+    "cmd",
+    "id"
   ]
 }

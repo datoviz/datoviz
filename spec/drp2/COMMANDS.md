@@ -39,6 +39,8 @@ The active DRP2 command set is intentionally small but complete enough for:
 4. `CreateTexture`
 5. `DestroyTexture`
 6. `WriteTexture`
+7. `CreateSampler`
+8. `DestroySampler`
 
 
 ### Resource Group Lifecycle
@@ -100,14 +102,12 @@ of the active DRP2 contract and must not be treated as authoritative until promo
 
 1. `CreatePipelineLayout`
 2. `DestroyPipelineLayout`
-3. `CreateSampler`
-4. `DestroySampler`
-5. `CreateTextureView`
-6. `DestroyTextureView`
-7. `ResourceBarrier`
-8. `DispatchWorkgroupsIndirect`
-9. `DrawIndirect`
-10. `DrawIndexedIndirect`
+3. `CreateTextureView`
+4. `DestroyTextureView`
+5. `ResourceBarrier`
+6. `DispatchWorkgroupsIndirect`
+7. `DrawIndirect`
+8. `DrawIndexedIndirect`
 
 
 ## Common Field Semantics
@@ -335,6 +335,56 @@ Semantics:
 3. `mip_level` must select an allocated destination subresource,
 4. `bytes_per_row` and `rows_per_image` must be consistent with the transfer extent,
 5. the written region must fit inside the destination subresource.
+
+
+### `CreateSampler`
+
+Creates a sampler object that controls how textures are sampled inside shaders.
+
+Required fields:
+
+- `cmd`: must be `CreateSampler`.
+- `id`: client-assigned sampler id.
+
+Optional fields:
+
+- `mag_filter`: magnification filter; one of `nearest`, `linear`. Defaults to `nearest`.
+- `min_filter`: minification filter; one of `nearest`, `linear`. Defaults to `nearest`.
+- `mipmap_filter`: mip-level interpolation filter; one of `nearest`, `linear`. Defaults to `nearest`.
+- `address_mode_u`: horizontal wrap mode; one of `clamp-to-edge`, `repeat`, `mirror-repeat`. Defaults to `clamp-to-edge`.
+- `address_mode_v`: vertical wrap mode; same tokens. Defaults to `clamp-to-edge`.
+- `address_mode_w`: depth wrap mode (3D textures); same tokens. Defaults to `clamp-to-edge`.
+- `lod_min_clamp`: minimum level-of-detail value, must be ≥ 0. Defaults to 0.
+- `lod_max_clamp`: maximum level-of-detail value, must be ≥ 0. Defaults to backend maximum.
+- `compare`: comparison function for shadow/depth samplers; one of `never`, `less`, `equal`,
+  `less-equal`, `greater`, `not-equal`, `greater-equal`, `always`. Omit for non-comparison samplers.
+- `max_anisotropy`: maximum anisotropy clamping value, integer ≥ 1. Defaults to 1 (isotropic).
+- `label`: optional debug name.
+
+Semantics:
+
+1. a sampler describes sampling parameters, it does not own or reference any texture,
+2. the sampler is usable as a bind-group resource entry with `binding_type: "sampler"`,
+3. omitting optional fields inherits implementation defaults aligned with WebGPU defaults,
+4. `compare` is mutually exclusive with filtering modes in most backends — set it only for
+   depth-comparison samplers.
+
+
+### `DestroySampler`
+
+Ends the lifetime of a sampler object.
+
+Required fields:
+
+- `cmd`: must be `DestroySampler`.
+- `id`: id of an existing live sampler.
+
+Semantics:
+
+1. the sampler must be live at the time of destruction,
+2. any bind group that references this sampler must already be destroyed before `DestroySampler` is
+   valid,
+3. no later command may reference the destroyed sampler.
 
 
 ## Resource Group Lifecycle

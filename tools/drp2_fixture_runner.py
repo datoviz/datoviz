@@ -507,6 +507,15 @@ class DRP2SemanticValidator:
                         f'texture {entry["resource_id"]} does not allow {required_usage}',
                     )
                 resources.add(('texture', entry['resource_id']))
+            elif binding_type == 'sampler':
+                if entry['resource_kind'] != 'sampler':
+                    raise SemanticFailure(
+                        'DRP2_ERR_WRONG_OBJECT_TYPE',
+                        index,
+                        f'bind-group entry {entry["binding"]} uses {binding_type} with {entry["resource_kind"]}',
+                    )
+                self._resolve_live(index, entry['resource_id'], 'sampler')
+                resources.add(('sampler', entry['resource_id']))
         self._reserve_id(
             index,
             command['id'],
@@ -613,6 +622,14 @@ class DRP2SemanticValidator:
                 index,
                 f'bind group {bind_group_id} is still referenced by recorded work',
             )
+        state.live = False
+
+    def _handle_CreateSampler(self, index: int, command: Dict[str, Any]) -> None:
+        self._reserve_id(index, command['id'], 'sampler', {})
+
+    def _handle_DestroySampler(self, index: int, command: Dict[str, Any]) -> None:
+        sampler_id = command['id']
+        state = self._resolve_live(index, sampler_id, 'sampler')
         state.live = False
 
     def _handle_CreateRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
