@@ -26,6 +26,99 @@
         "$ref": "../common/Id.json"
       }
     },
+    "topology": {
+      "$ref": "../common/PrimitiveTopology.json"
+    },
+    "cull_mode": {
+      "$ref": "../common/CullMode.json"
+    },
+    "front_face": {
+      "$ref": "../common/FrontFace.json"
+    },
+    "sample_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "depth_stencil": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format"],
+      "properties": {
+        "format": {
+          "$ref": "../common/GPUTextureFormat.json"
+        },
+        "depth_write_enabled": {
+          "type": "boolean"
+        },
+        "depth_compare": {
+          "$ref": "../common/CompareFunction.json"
+        },
+        "stencil_front": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "compare":       { "$ref": "../common/CompareFunction.json" },
+            "fail_op":       { "$ref": "../common/StencilOperation.json" },
+            "depth_fail_op": { "$ref": "../common/StencilOperation.json" },
+            "pass_op":       { "$ref": "../common/StencilOperation.json" }
+          }
+        },
+        "stencil_back": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "compare":       { "$ref": "../common/CompareFunction.json" },
+            "fail_op":       { "$ref": "../common/StencilOperation.json" },
+            "depth_fail_op": { "$ref": "../common/StencilOperation.json" },
+            "pass_op":       { "$ref": "../common/StencilOperation.json" }
+          }
+        }
+      }
+    },
+    "color_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["format"],
+        "properties": {
+          "format": {
+            "$ref": "../common/GPUTextureFormat.json"
+          },
+          "blend": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["color", "alpha"],
+            "properties": {
+              "color": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["src_factor", "dst_factor", "operation"],
+                "properties": {
+                  "src_factor":  { "$ref": "../common/BlendFactor.json" },
+                  "dst_factor":  { "$ref": "../common/BlendFactor.json" },
+                  "operation":   { "$ref": "../common/BlendOperation.json" }
+                }
+              },
+              "alpha": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["src_factor", "dst_factor", "operation"],
+                "properties": {
+                  "src_factor":  { "$ref": "../common/BlendFactor.json" },
+                  "dst_factor":  { "$ref": "../common/BlendFactor.json" },
+                  "operation":   { "$ref": "../common/BlendOperation.json" }
+                }
+              }
+            }
+          },
+          "write_mask": {
+            "$ref": "../common/ColorWriteMask.json"
+          }
+        }
+      }
+    },
     "label": {
       "type": "string"
     }

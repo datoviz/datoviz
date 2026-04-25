@@ -593,8 +593,8 @@ Semantics:
 
 ### `CreateRenderPipeline`
 
-Creates a render pipeline object with explicit shader attachments and validation-relevant
-vertex-input requirements.
+Creates a render pipeline object with explicit shader attachments, fixed-function state, and
+validation-relevant vertex-input requirements.
 
 Required fields:
 
@@ -607,6 +607,25 @@ Required fields:
 Optional fields:
 
 - `bind_group_layout_ids`: ordered list of bind-group layouts expected by slot.
+- `topology`: primitive assembly mode; one of `point-list`, `line-list`, `line-strip`,
+  `triangle-list`, `triangle-strip`. Defaults to `triangle-list`.
+- `cull_mode`: face-culling mode; one of `none`, `front`, `back`. Defaults to `none`.
+- `front_face`: winding order considered front-facing; one of `ccw`, `cw`. Defaults to `ccw`.
+- `sample_count`: MSAA sample count; integer ≥ 1. Defaults to `1`.
+- `depth_stencil`: depth and stencil state object. Omit for render passes without a depth/stencil
+  attachment.
+  - `format` (required): texture format of the depth/stencil attachment.
+  - `depth_write_enabled`: whether depth values are written. Defaults to `false`.
+  - `depth_compare`: comparison function for depth testing. Defaults to `always`.
+  - `stencil_front`: stencil state for front faces; object with optional `compare`,
+    `fail_op`, `depth_fail_op`, `pass_op`. All default to `always` / `keep`.
+  - `stencil_back`: stencil state for back faces; same shape as `stencil_front`.
+- `color_targets`: per-attachment color write and blend state; array of objects.
+  - `format` (required per target): texture format of the color attachment.
+  - `blend`: blend state object with required `color` and `alpha` sub-objects, each with
+    required `src_factor`, `dst_factor`, and `operation`. Omit for no blending.
+  - `write_mask`: channel write mask; one of `none`, `red`, `green`, `blue`, `alpha`, `all`.
+    Defaults to `all`.
 - `label`: debug label.
 
 Semantics:
@@ -619,7 +638,14 @@ Semantics:
 4. `vertex_buffer_slots` defines the required slot range `[0, vertex_buffer_slots)` for later draws
    using this pipeline,
 5. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
-   `SetBindGroup(slot, ...)`.
+   `SetBindGroup(slot, ...)`,
+6. omitting `topology` is equivalent to `triangle-list`,
+7. omitting `depth_stencil` means no depth or stencil testing is performed; the pipeline must not
+   be used in a render pass whose `depth_stencil_attachment` requires depth writes or comparison,
+8. omitting `color_targets` means the pipeline targets one color attachment with no blending and
+   full write mask; format compatibility is the backend's responsibility,
+9. if `color_targets` is present, its length should match the number of color attachments declared
+   in the render pass.
 
 
 ### `DestroyRenderPipeline`
