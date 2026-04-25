@@ -75,9 +75,9 @@ The reduced `2.0` contract covers only these categories:
 8. queue submission.
 
 
-## Frozen `2.0` Decisions
+## Settled `2.0` Decisions
 
-These decisions are already taken for the first contract freeze:
+These decisions are already taken for the `2.0` contract:
 
 1. explicit destroy commands are part of `2.0`,
 2. compute is mandatory in `2.0`,
@@ -86,7 +86,7 @@ These decisions are already taken for the first contract freeze:
 
 ## Required First-Slice Commands
 
-The frozen `2.0` command surface is defined in `COMMANDS.md`.
+The active `2.0` command surface is defined in `COMMANDS.md`.
 
 At a minimum, `2.0` includes:
 

@@ -11,7 +11,7 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 
 ## Status
 
-- Status: **frozen 2.0** — command surface, schemas, and fixture corpus are frozen
+- Status: **active 2.0 contract** — command surface, schemas, and fixture corpus are stable and growing toward a release
 - Conformance: Level 1 (validation) mechanically verified; Level 2 (execution) prose commitment; Level 3 (output) deferred to `2.1`
 - Build integration: fixture validation available through the Python runner
 - Implementation priority: after the current `vk`/`vklite` boundary cleanup is sufficiently stable
@@ -29,7 +29,7 @@ Read the DRP2 spec in this order during review.
 
 ### 2. Normative protocol surface
 
-4. [COMMANDS.md](COMMANDS.md) — frozen `2.0` command surface and command semantics
+4. [COMMANDS.md](COMMANDS.md) — active `2.0` command surface and command semantics
 5. [LIFETIMES.md](LIFETIMES.md) — object lifetime and encoder/pass state rules
 6. [ERRORS.md](ERRORS.md) — validation and error model
 7. [CAPABILITIES.md](CAPABILITIES.md) — feature and format capability reporting
@@ -56,7 +56,7 @@ Read the DRP2 spec in this order during review.
 ## Document Index
 
 - [LAYER1.md](LAYER1.md): primary human-readable contract
-- [COMMANDS.md](COMMANDS.md): frozen `2.0` command surface
+- [COMMANDS.md](COMMANDS.md): active `2.0` command surface
 - [LIFETIMES.md](LIFETIMES.md): object lifetime and encoder/pass state rules
 - [ERRORS.md](ERRORS.md): validation and error model
 - [CAPABILITIES.md](CAPABILITIES.md): feature and format capability reporting
