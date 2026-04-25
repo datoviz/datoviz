@@ -4,13 +4,13 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "type": {
+    "cmd": {
       "const": "CreateTextureView"
     },
     "id": {
       "$ref": "../common/Id.json"
     },
-    "texture": {
+    "texture_id": {
       "$ref": "../common/Id.json"
     },
     "format": {
@@ -22,7 +22,7 @@
     "aspect": {
       "$ref": "../common/TextureAspect.json"
     },
-    "mipRange": {
+    "mip_range": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -40,7 +40,7 @@
         }
       }
     },
-    "layerRange": {
+    "layer_range": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -57,16 +57,17 @@
           "minimum": 1
         }
       }
+    },
+    "label": {
+      "type": "string"
     }
   },
   "required": [
-    "type",
+    "cmd",
     "id",
-    "texture",
+    "texture_id",
     "format",
     "dimension",
-    "aspect",
-    "mipRange",
-    "layerRange"
+    "aspect"
   ]
 }

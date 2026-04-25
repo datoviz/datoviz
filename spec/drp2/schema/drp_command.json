@@ -37,6 +37,12 @@
       "$ref": "./commands/DestroySampler.json"
     },
     {
+      "$ref": "./commands/CreateTextureView.json"
+    },
+    {
+      "$ref": "./commands/DestroyTextureView.json"
+    },
+    {
       "$ref": "./commands/CreateBindGroup.json"
     },
     {

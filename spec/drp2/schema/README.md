@@ -70,13 +70,13 @@ Authoritative files:
 - `commands/QueueSubmitReply.json`
 - `commands/CreateSampler.json`
 - `commands/DestroySampler.json`
+- `commands/CreateTextureView.json`
+- `commands/DestroyTextureView.json`
 
 Deferred, non-authoritative files:
 
 - `commands/CreatePipelineLayout.json`
 - `commands/DestroyPipelineLayout.json`
-- `commands/CreateTextureView.json`
-- `commands/DestroyTextureView.json`
 - `commands/ResourceBarrier.json`
 - `commands/DispatchWorkgroupsIndirect.json`
 - `commands/DrawIndirect.json`
