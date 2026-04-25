@@ -1,8 +1,8 @@
 {
   "name": "pressure_picking_readback",
-  "description": "Render object IDs into a color attachment, copy the result to a staging buffer, and submit — reaching the limit of what DRP2 2.0 can express for a picking pass.",
-  "reason": "The render target has RENDER_ATTACHMENT and COPY_SRC usage. The staging buffer has COPY_DST and MAP_READ usage. CopyTextureToBuffer inside the encoder copies rendered pixel data to the staging buffer before submission. All commands are valid under the active 2.0 contract.",
-  "notes": "Pressure test #4 from LAYER1.md. This fixture exposes two gaps in the active 2.0 contract that a production picking implementation would need to address:\n\n1. No result-readback primitive. DRP2 2.0 has no ReadBuffer, MapBuffer, or equivalent command. After QueueSubmit the staging buffer holds the picked pixel data on the GPU side, but the producer has no protocol-level way to observe it. Result readback requires a mechanism outside the current contract (a future reply command, a side-channel, or a 2.1 extension).\n\n2. No integer texture format. Real picking passes encode object IDs as integer values and typically render to r32uint or similar. The active GPUTextureFormat enum contains only floating-point and unorm formats. This fixture uses rgba8unorm as a proxy, which limits ID precision to 0-255 per channel. Integer format support is a candidate addition for 2.1.\n\nDespite these gaps, the fixture is valid in 2.0: it verifies that the copy-to-staging pattern is expressible and that the command sequence compiles cleanly at the contract level.",
+  "description": "Render 32-bit object IDs into an r32uint attachment, copy the result to a staging buffer, and submit.",
+  "reason": "The r32uint render target has RENDER_ATTACHMENT and COPY_SRC usage. The staging buffer has COPY_DST and MAP_READ usage. CopyTextureToBuffer inside the encoder copies the rendered ID data to the staging buffer before submission. All commands are valid under the active 2.0 contract.",
+  "notes": "Pressure test #4 from LAYER1.md. The fragment shader outputs a u32 object ID directly into the r32uint render target. r32uint is 4 bytes per texel, so the 4x4 render target produces 64 bytes of readback data matching the staging buffer size. The remaining open gap in this pressure test is the absence of a result-readback primitive: DRP2 2.0 has no ReadBuffer, MapBuffer, or equivalent command. After QueueSubmit the staging buffer holds the picked pixel data on the GPU side, but the producer has no protocol-level way to observe it. Result readback requires a mechanism outside the current contract (a future reply command, a side-channel, or a 2.1 extension).",
   "version": {
     "major": 2,
     "minor": 0
@@ -22,7 +22,7 @@
     "max_texture_dimension_1d": 8192,
     "max_texture_dimension_2d": 8192,
     "max_texture_dimension_3d": 2048,
-    "supported_texture_formats": ["rgba8unorm"],
+    "supported_texture_formats": ["rgba8unorm", "r32uint"],
     "supported_sample_counts": [1],
     "supported_shader_formats": ["wgsl"],
     "supports_fp64": false
@@ -53,7 +53,7 @@
       "stage": "FRAGMENT",
       "format": "wgsl",
       "entry_point": "main",
-      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 0.0, 0.0, 1.0); }"
+      "code": "@fragment fn main() -> @location(0) u32 { return 1u; }"
     },
     {
       "cmd": "CreateRenderPipeline",
@@ -85,7 +85,7 @@
       "width": 4,
       "height": 4,
       "depth": 1,
-      "format": "rgba8unorm",
+      "format": "r32uint",
       "usage": ["RENDER_ATTACHMENT", "COPY_SRC"],
       "mip_level_count": 1,
       "sample_count": 1
@@ -110,7 +110,7 @@
           "texture_id": 1,
           "load_op": "clear",
           "store_op": "store",
-          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0 }
+          "clear_value": { "r": 0, "g": 0, "b": 0, "a": 0 }
         }
       ]
     },
