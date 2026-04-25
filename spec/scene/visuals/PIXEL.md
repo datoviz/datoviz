@@ -117,6 +117,26 @@ extent.
 See `visuals/POINT.md` for a full discussion of this parameter.
 
 
+### `shift`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — two `float32` values `(dx, dy)` |
+| Unit | screen pixels |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Typical mutability | `dynamic` |
+| Optional | yes — defaults to `(0, 0)` |
+
+Screen-space pixel offset applied to each item's position after projection.
+
+Useful when items must be placed at a precise data-space position AND a fixed pixel distance from
+it, independently of zoom level. Data-space nudging cannot achieve this because the pixel distance
+would change with zoom.
+
+`shift` is a general concept across visual families. For `segment` it extends to `vec4` to
+independently offset each endpoint.
+
+
 ## Color Mode Variant Axis
 
 The `color_mode` variant axis has two values:

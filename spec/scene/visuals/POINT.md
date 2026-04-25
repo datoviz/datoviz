@@ -118,6 +118,20 @@ When `size_space = data`, the `size_mode = scalar` scale should use `output_unit
 Mixed screen/data sizing within one visual is not supported.
 
 
+### `shift`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — two `float32` values `(dx, dy)` |
+| Unit | screen pixels |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Typical mutability | `dynamic` |
+| Optional | yes — defaults to `(0, 0)` |
+
+Screen-space pixel offset applied after projection. See `visuals/PIXEL.md` for full discussion.
+Useful for jitter plots and zoom-invariant nudging of points relative to their data position.
+
+
 ## Variant Axes
 
 `point` has two independent variant axes:

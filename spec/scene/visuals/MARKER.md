@@ -237,6 +237,19 @@ Must match the declared render mode:
 - `msdf`: RGBA float multi-channel SDF texture
 
 
+### `shift`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — two `float32` values `(dx, dy)` |
+| Unit | screen pixels |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Typical mutability | `dynamic` |
+| Optional | yes — defaults to `(0, 0)` |
+
+Screen-space pixel offset applied after projection. See `visuals/PIXEL.md` for full discussion.
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

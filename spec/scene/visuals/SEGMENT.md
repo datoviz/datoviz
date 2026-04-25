@@ -112,8 +112,30 @@ placing error bar caps exactly on top of marker centers without adjusting data-s
 `PER_GROUP` is not supported for `shift` because it is inherently a per-item screen-space
 adjustment.
 
+`shift` is a general concept across visual families. For single-anchor visuals (`pixel`, `point`,
+`marker`, `glyph`) it is a `vec2 (dx, dy)`. For `segment` it is naturally `vec4` to independently
+offset each endpoint. See those family specs for details.
+
 
 ## Visual-Wide Parameters
+
+### `linewidth_space`
+
+| Property | Value |
+|---|---|
+| Type | enum: `screen` or `data` |
+| Default | `screen` |
+| Mutability | `dynamic` |
+
+Controls whether `linewidth` values are interpreted in screen pixels or data-space units.
+
+**`screen`** (default): linewidth is invariant under zoom. Right for most uses.
+
+**`data`**: linewidth scales with zoom. Right when segments represent physical structures with real
+spatial width — anatomical fibers, vessel walls, geological features.
+
+Applies uniformly to all items. See `visuals/POINT.md` for a full discussion of space parameters.
+
 
 ### `cap_start`
 
@@ -247,8 +269,6 @@ v0.4 adds: `color_end` for gradient segments (new), `PER_GROUP` source for `colo
 
 ## Deferred Questions
 
-1. whether `linewidth` should support a `data` space mode (linewidth scales with zoom) — deferred,
-   screen pixels is sufficient for the current use cases,
-2. whether `shift` should support `PER_GROUP` source in a future version,
-3. the exact public API spelling for `P0`/`P1` — whether they are two separate attribute calls or
+1. whether `shift` should support `PER_GROUP` source in a future version,
+2. the exact public API spelling for `P0`/`P1` — whether they are two separate attribute calls or
    one interleaved call as in v0.3.
