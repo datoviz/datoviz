@@ -21,16 +21,6 @@ Typical uses: brain surfaces, terrain, 3D anatomical models, procedural geometry
 isosurfaces, polyhedral shapes.
 
 
-## Geometry Sizing and Empty Visuals
-
-Vertex count and index count are not fixed at creation. Both can be changed at any time by
-uploading new data — the visual resizes its GPU buffers as needed.
-
-A visual may be created with zero vertices and zero indices (empty). This is the recommended
-pattern for interactive applications that set up the scene structure before data is available.
-An empty mesh renders nothing and generates no picking results.
-
-
 ## Per-Vertex Attributes
 
 Each item is one vertex.

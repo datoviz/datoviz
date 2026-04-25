@@ -194,6 +194,20 @@ The public API can choose any convenient construction surface later, but these l
 already be explicit at the spec layer.
 
 
+## Item Count and Empty Visuals
+
+Item count (and index count, for indexed families) is not fixed at visual creation time.
+
+A visual may be created with zero items. This is the standard pattern for interactive
+applications that set up the scene structure — panels, visuals, parameters — before data is
+available. An empty visual renders nothing and generates no picking results.
+
+Item count changes by uploading new data. The scene resizes GPU buffers as needed; the user
+does not manage allocation explicitly. Shrinking to zero is valid at any time.
+
+This rule applies universally. Family specs do not need to repeat it.
+
+
 ## Parameter Schema
 
 Each visual family should define a parameter schema distinct from bulk resource payloads.
