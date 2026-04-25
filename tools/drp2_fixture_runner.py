@@ -490,13 +490,21 @@ class DRP2SemanticValidator:
                     self._check_buffer_range(index, buffer_state, entry['offset'], entry['size'])
                 resources.add(('buffer', entry['resource_id']))
             elif binding_type in ('sampled_texture', 'storage_texture'):
-                if entry['resource_kind'] != 'texture':
+                if entry['resource_kind'] not in ('texture', 'texture_view'):
                     raise SemanticFailure(
                         'DRP2_ERR_WRONG_OBJECT_TYPE',
                         index,
                         f'bind-group entry {entry["binding"]} uses {binding_type} with {entry["resource_kind"]}',
                     )
-                texture_state = self._resolve_live(index, entry['resource_id'], 'texture')
+                if entry['resource_kind'] == 'texture_view':
+                    view_state = self._resolve_live(index, entry['resource_id'], 'texture_view')
+                    texture_id = view_state.data['texture_id']
+                    texture_state = self._resolve_live(index, texture_id, 'texture')
+                    resources.add(('texture_view', entry['resource_id']))
+                    resources.add(('texture', texture_id))
+                else:
+                    texture_state = self._resolve_live(index, entry['resource_id'], 'texture')
+                    resources.add(('texture', entry['resource_id']))
                 required_usage = (
                     'TEXTURE_BINDING' if binding_type == 'sampled_texture' else 'STORAGE_BINDING'
                 )
@@ -504,9 +512,8 @@ class DRP2SemanticValidator:
                     raise SemanticFailure(
                         'DRP2_ERR_USAGE',
                         index,
-                        f'texture {entry["resource_id"]} does not allow {required_usage}',
+                        f'texture {texture_state.data.get("id", entry["resource_id"])} does not allow {required_usage}',
                     )
-                resources.add(('texture', entry['resource_id']))
             elif binding_type == 'sampler':
                 if entry['resource_kind'] != 'sampler':
                     raise SemanticFailure(
@@ -630,6 +637,36 @@ class DRP2SemanticValidator:
     def _handle_DestroySampler(self, index: int, command: Dict[str, Any]) -> None:
         sampler_id = command['id']
         state = self._resolve_live(index, sampler_id, 'sampler')
+        state.live = False
+
+    def _handle_CreateTextureView(self, index: int, command: Dict[str, Any]) -> None:
+        texture_state = self._resolve_live(index, command['texture_id'], 'texture')
+        mip_range = command.get('mip_range')
+        if mip_range is not None:
+            mip_count = texture_state.data['mip_level_count']
+            if mip_range['base'] + mip_range['count'] > mip_count:
+                raise SemanticFailure(
+                    'DRP2_ERR_OUT_OF_RANGE',
+                    index,
+                    f'mip_range base={mip_range["base"]} count={mip_range["count"]} exceeds '
+                    f'texture mip_level_count={mip_count}',
+                )
+        self._reserve_id(
+            index,
+            command['id'],
+            'texture_view',
+            {'texture_id': command['texture_id']},
+        )
+
+    def _handle_DestroyTextureView(self, index: int, command: Dict[str, Any]) -> None:
+        view_id = command['id']
+        state = self._resolve_live(index, view_id, 'texture_view')
+        if self._resource_in_use('texture_view', view_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'texture view {view_id} is still referenced by recorded work',
+            )
         state.live = False
 
     def _handle_CreateRenderPipeline(self, index: int, command: Dict[str, Any]) -> None:
