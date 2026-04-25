@@ -30,7 +30,7 @@ detail to implement or validate each family.
 | `image` | [IMAGE.md](IMAGE.md) |
 | `mesh` | [MESH.md](MESH.md) |
 | `sphere` | [SPHERE.md](SPHERE.md) |
-| `volume` | planned |
+| `volume` | [VOLUME.md](VOLUME.md) |
 
 
 ## Reading Order
