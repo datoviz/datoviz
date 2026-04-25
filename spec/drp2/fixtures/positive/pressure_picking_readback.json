@@ -1,0 +1,167 @@
+{
+  "name": "pressure_picking_readback",
+  "description": "Render object IDs into a color attachment, copy the result to a staging buffer, and submit — reaching the limit of what DRP2 2.0 can express for a picking pass.",
+  "reason": "The render target has RENDER_ATTACHMENT and COPY_SRC usage. The staging buffer has COPY_DST and MAP_READ usage. CopyTextureToBuffer inside the encoder copies rendered pixel data to the staging buffer before submission. All commands are valid under the active 2.0 contract.",
+  "notes": "Pressure test #4 from LAYER1.md. This fixture exposes two gaps in the active 2.0 contract that a production picking implementation would need to address:\n\n1. No result-readback primitive. DRP2 2.0 has no ReadBuffer, MapBuffer, or equivalent command. After QueueSubmit the staging buffer holds the picked pixel data on the GPU side, but the producer has no protocol-level way to observe it. Result readback requires a mechanism outside the current contract (a future reply command, a side-channel, or a 2.1 extension).\n\n2. No integer texture format. Real picking passes encode object IDs as integer values and typically render to r32uint or similar. The active GPUTextureFormat enum contains only floating-point and unorm formats. This fixture uses rgba8unorm as a proxy, which limits ID precision to 0-255 per channel. Integer format support is a candidate addition for 2.1.\n\nDespite these gaps, the fixture is valid in 2.0: it verifies that the copy-to-staging pattern is expressible and that the command sequence compiles cleanly at the contract level.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "pressure_test",
+    "picking",
+    "render_pass",
+    "pipeline",
+    "copy",
+    "readback",
+    "queue"
+  ],
+  "capabilities": {
+    "max_buffer_size": 134217728,
+    "max_texture_dimension_1d": 8192,
+    "max_texture_dimension_2d": 8192,
+    "max_texture_dimension_3d": 2048,
+    "supported_texture_formats": ["rgba8unorm"],
+    "supported_sample_counts": [1],
+    "supported_shader_formats": ["wgsl"],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9000,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@location(0) position: vec3f) -> @builtin(position) vec4f { return vec4f(position, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 9001,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 0.0, 0.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 10,
+      "label": "id_pipeline",
+      "vertex_shader_module_id": 9000,
+      "fragment_shader_module_id": 9001,
+      "vertex_buffer_slots": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 11,
+      "label": "vertex_buffer",
+      "size": 36,
+      "usage": ["VERTEX", "COPY_DST"]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 11,
+      "offset": 0,
+      "size": 36,
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "id_render_target",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT", "COPY_SRC"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 2,
+      "label": "staging_buffer",
+      "size": 64,
+      "usage": ["COPY_DST", "MAP_READ"]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 20
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 21,
+      "encoder_id": 20,
+      "color_attachments": [
+        {
+          "texture_id": 1,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 21,
+      "pipeline_id": 10
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 21,
+      "slot": 0,
+      "buffer_id": 11,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 21,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 21
+    },
+    {
+      "cmd": "CopyTextureToBuffer",
+      "encoder_id": 20,
+      "src_texture_id": 1,
+      "src_mip_level": 0,
+      "src_origin": { "x": 0, "y": 0, "z": 0 },
+      "size": { "width": 4, "height": 4, "depth": 1 },
+      "dst_buffer_id": 2,
+      "dst_offset": 0,
+      "bytes_per_row": 16,
+      "rows_per_image": 4
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 20,
+      "command_buffer_id": 22
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [22],
+      "submission_id": 30
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
