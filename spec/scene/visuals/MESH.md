@@ -138,55 +138,8 @@ thin shells).
 
 ### Lighting Parameters
 
+Standard — see `SHARED_ATTRIBUTES.md`.
 Applies when `lighting = phong`. Ignored when `lighting = flat`.
-
-#### `light_pos`
-
-| Property | Value |
-|---|---|
-| Type | array of up to 4 `vec4` — `(x, y, z, w)` where `w = 0` for directional, `w = 1` for point |
-| Default | single directional light at `(1, 1, 1, 0)` |
-| Mutability | `dynamic` |
-
-#### `light_color`
-
-| Property | Value |
-|---|---|
-| Type | array of up to 4 `rgba_u8` |
-| Default | white `(255, 255, 255, 255)` |
-| Mutability | `dynamic` |
-
-#### `ambient`, `diffuse`, `specular`
-
-| Property | Value |
-|---|---|
-| Type | `float32` in `[0, 1]` each |
-| Default | `0.2`, `0.7`, `0.3` |
-| Mutability | `dynamic` |
-
-Material reflection coefficients.
-
-#### `shininess`
-
-| Property | Value |
-|---|---|
-| Type | `float32` |
-| Default | `32.0` |
-| Mutability | `dynamic` |
-
-Phong specular exponent. Higher values produce tighter specular highlights.
-
-#### `emissive`
-
-| Property | Value |
-|---|---|
-| Type | `float32` in `[0, 1]` |
-| Default | `0.0` |
-| Mutability | `dynamic` |
-
-Self-emission factor. At `1.0` the mesh appears fully lit regardless of light positions.
-Useful for surfaces that should not be darkened by shadow (e.g., wireframe reference meshes,
-glowing elements).
 
 
 ### Edge Overlay Parameters

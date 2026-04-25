@@ -185,6 +185,59 @@ Unless a family spec states otherwise:
 5. Hover picking follows latest-request-wins semantics.
 
 
+## Standard Lighting Parameters
+
+Used by families that support Phong shading (`mesh`, `sphere`).
+Applies when the family's `lighting` variant axis is set to `phong`.
+Ignored when `lighting = flat`.
+
+### `light_pos`
+
+| Property | Value |
+|---|---|
+| Type | array of up to 4 `vec4` — `(x, y, z, w)`, `w = 0` directional, `w = 1` point light |
+| Default | single directional light at `(1, 1, 1, 0)` |
+| Mutability | `dynamic` |
+
+### `light_color`
+
+| Property | Value |
+|---|---|
+| Type | array of up to 4 `rgba_u8` |
+| Default | white `(255, 255, 255, 255)` |
+| Mutability | `dynamic` |
+
+### `ambient`, `diffuse`, `specular`
+
+| Property | Value |
+|---|---|
+| Type | `float32` in `[0, 1]` each |
+| Default | `0.2`, `0.7`, `0.3` |
+| Mutability | `dynamic` |
+
+Material reflection coefficients for the Phong model.
+
+### `shininess`
+
+| Property | Value |
+|---|---|
+| Type | `float32` |
+| Default | `32.0` |
+| Mutability | `dynamic` |
+
+Phong specular exponent. Higher values produce tighter highlights.
+
+### `emissive`
+
+| Property | Value |
+|---|---|
+| Type | `float32` in `[0, 1]` |
+| Default | `0.0` |
+| Mutability | `dynamic` |
+
+Self-emission factor. At `1.0` the surface appears fully lit regardless of light positions.
+
+
 ## Standard Stage Participation
 
 Unless a family spec states otherwise:
