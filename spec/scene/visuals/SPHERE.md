@@ -19,9 +19,7 @@ in the shader. This produces pixel-accurate silhouettes and correct depth at far
 than a tessellated mesh sphere per item.
 
 Typical uses: molecular visualization (atoms), particle systems, cell body positions,
-electrode contacts, 3D scatter plots with physical extent.
-
-For a single large sphere or a sphere with a custom texture, use `mesh` with `dvz_shape_sphere`.
+electrode contacts, 3D scatter plots with physical extent, textured globes.
 
 
 ## Per-Item Attributes
@@ -41,6 +39,7 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 When `color_mode = scalar` and `lighting = phong`, the colormap-derived color feeds the
 diffuse term.
+Ignored when `color_mode = texture`.
 
 
 ### `size`
@@ -61,17 +60,50 @@ whose size should scale with zoom (atoms, cells). Use `screen` when spheres are 
 markers that should stay constant size regardless of zoom.
 
 
+### `texture`
+
+| Property | Value |
+|---|---|
+| Type | `SampledField` scene resource |
+| Mutability | `dynamic` |
+| Applies to | `color_mode = texture` only |
+
+2D texture mapped onto each sphere surface. UV coordinates are computed analytically in the
+shader from the surface normal — no per-item texcoords are needed.
+
+
+### `texture_projection`
+
+| Property | Value |
+|---|---|
+| Type | enum: `equirectangular`, `spherical` |
+| Default | `spherical` |
+| Mutability | `dynamic` |
+| Applies to | `color_mode = texture` only |
+
+Controls how the texture is mapped onto the sphere surface.
+
+| Value | Description |
+|---|---|
+| `equirectangular` | standard lat/lon projection — right for globe and planet textures |
+| `spherical` | circular area projection, magnified and mirrored front/back — right for general decorative use |
+
+
 ### Lighting Parameters
 
 Standard — see `SHARED_ATTRIBUTES.md`.
 Applies when `lighting = phong`. Ignored when `lighting = flat`.
+
+`emissive` and `shininess` additionally accept `PER_GROUP` source for sphere, allowing
+different material properties per group (e.g., metallic vs. matte sphere populations in one
+visual).
 
 
 ## Variant Axes
 
 | Axis | Values | Default |
 |---|---|---|
-| `color_mode` | `rgba`, `scalar` | `rgba` |
+| `color_mode` | `rgba`, `scalar`, `texture` | `rgba` |
 | `size_mode` | `direct`, `scalar` | `direct` |
 | `lighting` | `phong`, `flat` | `phong` |
 
@@ -89,7 +121,6 @@ intersection, so picking is geometrically accurate (not bounding-box based).
 
 | Situation | Preferred family |
 |---|---|
-| Large sphere or custom texture | `mesh` with `dvz_shape_sphere` |
 | 2D circular marks without depth | `point` or `marker` |
 | Many atoms or particles | `sphere` (impostor, much cheaper than mesh per item) |
 
@@ -100,7 +131,9 @@ intersection, so picking is geometrically accurate (not bounding-box based).
 2. per-sphere radius — `size` `PER_ITEM`, `size_space = data`,
 3. activity-colored cell bodies — `color_mode = scalar` with colormap Scale,
 4. flat-shaded spheres — `lighting = flat`,
-5. electrode contacts by group — `color` `PER_GROUP`, `size` `PER_GROUP`.
+5. electrode contacts by group — `color` `PER_GROUP`, `size` `PER_GROUP`,
+6. globe with equirectangular texture — `color_mode = texture`, `texture_projection = equirectangular`,
+7. mixed-material populations — `emissive` `PER_GROUP`, `shininess` `PER_GROUP`.
 
 
 ## v0.3 Correspondence
@@ -109,20 +142,19 @@ intersection, so picking is geometrically accurate (not bounding-box based).
 |---|---|
 | `dvz_sphere_position` | `position` `PER_ITEM` |
 | `dvz_sphere_color` | `color`, extended sources and scalar mode |
-| `dvz_sphere_size` | `size`, extended sources |
-| `dvz_sphere_texture` | deferred — see below |
+| `dvz_sphere_size` | `size`, extended sources and scalar mode |
+| `dvz_sphere_texture` | `texture` + `texture_projection` |
+| `SPHERE_RECTANGULAR` specialization constant | `texture_projection = equirectangular` |
 | `dvz_sphere_light_pos/color` | standard lighting — see `SHARED_ATTRIBUTES.md` |
 | `dvz_sphere_material_params` | `ambient`, `diffuse`, `specular` |
-| `dvz_sphere_shine` | `shininess` |
-| `dvz_sphere_emit` | `emissive` |
+| `dvz_sphere_shine` | `shininess`, now also `PER_GROUP` |
+| `dvz_sphere_emit` | `emissive`, now also `PER_GROUP` |
 
-v0.4 adds: `PER_GROUP` sources, `scalar` color mode, `size_space`, `lighting` variant axis.
+v0.4 adds: `PER_GROUP` sources, `scalar` and `texture` color modes, `size_space`,
+`size_mode`, `lighting` variant axis, `texture_projection` parameter.
 v0.4 renames: `emit` → `emissive`.
-v0.4 defers: texture-mapped spheres (spherical UV mapping) — see deferred questions.
 
 
 ## Deferred Questions
 
-1. whether texture-mapped spheres (spherical UV computed analytically in the shader, no
-   user-supplied texcoords) should be supported as a `color_mode = texture` variant,
-2. whether per-item `emissive` or `shininess` is useful for mixed-material sphere sets.
+1. whether per-item `emissive` or `shininess` is useful beyond `PER_GROUP`.
