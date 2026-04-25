@@ -1,0 +1,42 @@
+{
+  "name": "invalid_texture_view_unknown_texture",
+  "description": "Attempt to create a texture view referencing a texture id that does not exist.",
+  "reason": "No texture with id 99 has been created. CreateTextureView with an unknown texture_id fails with DRP2_ERR_UNKNOWN_OBJECT.",
+  "fix": "Create the parent texture before creating a view of it.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "texture_view",
+    "identity"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTextureView",
+      "id": 1,
+      "texture_id": 99,
+      "format": "rgba8unorm",
+      "dimension": "2d",
+      "aspect": "all"
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_INVALID_ID",
+    "command_index": 2
+  }
+}

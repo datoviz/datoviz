@@ -78,6 +78,8 @@ The first negative corpus should stay intentionally small and cover the core val
     commands.
 49. queue submission with the same command buffer id listed more than once,
 50. queue submission with an empty command-buffer list.
+51. texture view created with an unknown parent texture id,
+52. texture view destroyed while still referenced by recorded work.
 
 Positive fixtures can follow once the negative corpus and fixture envelope are frozen.
 
@@ -96,7 +98,8 @@ The first positive corpus should stay minimal and focus on clean command shapes:
 11. render pass with pipeline plus vertex and index bindings for `DrawIndexed`,
 12. render pass with pipeline plus bind-group binding before draw,
 13. render pass with bind-group dynamic offsets applied in layout order before draw,
-14. render pass pipeline rebind with refreshed bind-group and vertex-buffer state before draw.
+14. render pass pipeline rebind with refreshed bind-group and vertex-buffer state before draw,
+15. texture view lifecycle: create texture, create view, bind via bind group, destroy in reverse order.
 
 
 ## Metadata Policy

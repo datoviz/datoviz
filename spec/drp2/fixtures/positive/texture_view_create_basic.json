@@ -1,0 +1,91 @@
+{
+  "name": "texture_view_create_basic",
+  "description": "Create a texture, derive a texture view, bind it via a bind group, then destroy all objects in reverse order.",
+  "reason": "The parent texture is live with TEXTURE_BINDING usage. The view selects the full mip range of the texture. The bind group references the view with resource_kind texture_view and binding_type sampled_texture. All objects are destroyed cleanly after the bind group is released.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "texture_view",
+    "bind_group",
+    "lifecycle"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "source_texture",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["TEXTURE_BINDING", "COPY_DST"],
+      "mip_level_count": 2,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTextureView",
+      "id": 2,
+      "label": "full_view",
+      "texture_id": 1,
+      "format": "rgba8unorm",
+      "dimension": "2d",
+      "aspect": "all",
+      "mip_range": { "base": 0, "count": 2 },
+      "layer_range": { "base": 0, "count": 1 }
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 3,
+      "entries": [
+        { "binding": 0, "binding_type": "sampled_texture" }
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 4,
+      "bind_group_layout_id": 3,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampled_texture",
+          "resource_kind": "texture_view",
+          "resource_id": 2
+        }
+      ]
+    },
+    {
+      "cmd": "DestroyBindGroup",
+      "bind_group_id": 4
+    },
+    {
+      "cmd": "DestroyBindGroupLayout",
+      "bind_group_layout_id": 3
+    },
+    {
+      "cmd": "DestroyTextureView",
+      "id": 2
+    },
+    {
+      "cmd": "DestroyTexture",
+      "texture_id": 1
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
