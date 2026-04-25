@@ -85,37 +85,40 @@ Read the scene spec in this order during review.
 ### 4. Data, transforms, planning, and runtime handoff
 
 15. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model
-16. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization and panel-transform pipeline
-17. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
-18. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
-19. [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md) — conceptual runtime service surface
+16. [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
+18. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization and panel-transform pipeline
+19. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
+20. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
+21. [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md) — conceptual runtime service surface
 
 ### 5. Validation, adaptation, interaction, and diagnostics
 
-20. [SCENE_VALIDATION.md](SCENE_VALIDATION.md) — validation rules and error classes
-21. [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md) — explicit fallback and simplification policy
-22. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
-23. [PICKING.md](PICKING.md) — picking identity and readback behavior
-24. [CONTROLLERS.md](CONTROLLERS.md) — event routing and interaction ownership
-25. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
-26. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+22. [SCENE_VALIDATION.md](SCENE_VALIDATION.md) — validation rules and error classes
+23. [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md) — explicit fallback and simplification policy
+24. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
+25. [PICKING.md](PICKING.md) — picking identity and readback behavior
+26. [CONTROLLERS.md](CONTROLLERS.md) — event routing and interaction ownership
+27. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
+28. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
-27. [examples/README.md](examples/README.md) — entry point for worked examples
-28. [examples/POINT_2D.md](examples/POINT_2D.md)
-29. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
-30. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
-31. [examples/IMAGE_SLICE.md](examples/IMAGE_SLICE.md)
-32. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
-33. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
-34. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
-35. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+29. [examples/README.md](examples/README.md) — entry point for worked examples
+30. [examples/POINT_2D.md](examples/POINT_2D.md)
+31. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
+32. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
+33. [examples/IMAGE_SLICE.md](examples/IMAGE_SLICE.md)
+34. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
+35. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
+36. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
+37. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 
 
 ## Document Index
 
 - [REQUIREMENTS.md](REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
+- [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md): per-attribute data granularity (CONSTANT / PER_ITEM
+  / PER_GROUP) and optional mutability hints
 - [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
 - [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): the current preferred scene-facing API
   defaults selected from the API sketch
