@@ -21,7 +21,7 @@ detail to implement or validate each family.
 | Family | Spec |
 |---|---|
 | `pixel` | [PIXEL.md](PIXEL.md) |
-| `basic` | planned |
+| `primitive` | [PRIMITIVE.md](PRIMITIVE.md) |
 | `point` | planned |
 | `marker` | planned |
 | `segment` | planned |

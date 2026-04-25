@@ -36,11 +36,11 @@ Each family mini-contract specifies:
 8. fallback notes.
 
 
-## `basic`
+## `primitive`
 
 ### Semantic Purpose
 
-`basic` is a first-class low-level visual family for explicit primitive-driven rendering.
+`primitive` is a first-class low-level visual family for explicit primitive-driven rendering.
 
 It exists to:
 
@@ -108,10 +108,10 @@ Allowed axes:
 
 ### Fallback Notes
 
-`basic` should remain intentionally constrained.
+`primitive` should remain intentionally constrained.
 
 If a use case needs richer semantic behavior, the preferred direction is usually another family rather
-than continuously expanding `basic`.
+than continuously expanding `primitive`.
 
 
 ## `pixel`

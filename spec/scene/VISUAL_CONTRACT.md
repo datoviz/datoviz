@@ -30,7 +30,7 @@ v0.4 family direction in `VISUAL_FAMILIES.md`.
 
 The current preferred first-class family set is:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 4. `marker`
@@ -433,7 +433,7 @@ volumes, or glyph-based visuals.
 
 The current preferred direction from the scene spec is:
 
-1. keep `basic`,
+1. keep `primitive`,
 2. keep `pixel` distinct from `point`,
 3. remove `monoglyph` as a first-class family,
 4. treat `wiggle` as path-related unless later evidence promotes it,

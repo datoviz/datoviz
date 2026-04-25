@@ -17,7 +17,7 @@ This is the minimum path that DRP2 and scene must express cleanly.
 
 Likely family examples:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 
@@ -28,7 +28,7 @@ Likely resource classes:
 
 Likely variant axes:
 
-1. primitive topology for `basic`
+1. primitive topology for `primitive`
 2. point versus pixel rendering path
 
 

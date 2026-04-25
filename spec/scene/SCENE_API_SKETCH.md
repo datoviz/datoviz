@@ -299,7 +299,7 @@ But the semantic model should remain explicit either way.
 
 The API sketch should align with the current preferred first-class families:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 4. `marker`
@@ -313,7 +313,7 @@ The API sketch should align with the current preferred first-class families:
 
 And with current family decisions:
 
-1. `basic` remains first-class,
+1. `primitive` remains first-class,
 2. `pixel` is simpler than `point`,
 3. `sphere` is first-class and impostor-first,
 4. `slice` is not a top-level family but an `image`-family mode backed by volumetric sampling,

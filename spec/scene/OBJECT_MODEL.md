@@ -48,7 +48,7 @@ direction should follow `VISUAL_FAMILIES.md`.
 
 The current preferred first-class families are:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 4. `marker`

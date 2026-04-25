@@ -126,7 +126,7 @@ For 3D scenes, `z` participates in depth ordering under the panel camera.
 
 `pixel` does not support a visual-local transform (a per-visual matrix).
 If a visual-local offset or scale is needed, prefer applying it in the normalization stage or use
-the `basic` family.
+the `primitive` family.
 
 
 ## Stage Participation
@@ -171,7 +171,7 @@ adaptation diagnostic.
 | Need per-item size | `point` |
 | Need shape, rotation, or edge treatment | `marker` |
 | Need connected lines or paths | `path` or `segment` |
-| Need low-level topology control | `basic` |
+| Need low-level topology control | `primitive` |
 
 `pixel` should not grow per-item size or shape controls.
 Any such request is pressure toward `point` or `marker`.

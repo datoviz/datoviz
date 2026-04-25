@@ -32,7 +32,7 @@ be modeled as a variant rather than a distinct family.
 
 The local `v0.3` subtree provides the right broad vocabulary baseline:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 4. `marker`
@@ -61,7 +61,7 @@ However:
 The following families should remain first-class scene concepts unless later evidence shows they are
 artificial:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 4. `marker`
@@ -76,9 +76,9 @@ artificial:
 
 ## Rationale For Kept Families
 
-### `basic`
+### `primitive`
 
-Keep `basic` as an explicit low-level visual family.
+Keep `primitive` as an explicit low-level visual family.
 
 Reason:
 
@@ -86,7 +86,7 @@ Reason:
 2. it can support experimentation without forcing new family design immediately,
 3. it is still useful as a baseline pressure test for the visual contract.
 
-`basic` should stay intentionally constrained and should not become the default answer to every new
+`primitive` should stay intentionally constrained and should not become the default answer to every new
 rendering need.
 
 It is expected to remain a long-term first-class family rather than a temporary compatibility
@@ -293,7 +293,7 @@ Those family-level details should refine `VISUAL_CONTRACT.md`, not replace it.
 
 The current preferred v0.4 family set is:
 
-1. `basic`
+1. `primitive`
 2. `pixel`
 3. `point`
 4. `marker`
