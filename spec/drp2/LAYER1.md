@@ -190,17 +190,20 @@ Terminology is fixed in `GLOSSARY.md`.
 
 ## Conformance
 
-The contract is not ready until it has:
+The full conformance model is defined in `CONFORMANCE.md`.
 
-1. machine-readable schemas,
-2. canonical fixtures,
-3. negative fixtures for validation failures,
-4. native and browser replay expectations.
+Summary:
+
+1. Level 1 (validation): all corpus fixtures pass the fixture runner — required and mechanically
+   verified.
+2. Level 2 (execution): a runtime executes every positive fixture without protocol error, with WGSL
+   as the mandatory shader language — required, prose commitment only in `2.0`.
+3. Level 3 (output): readback data matches golden checksums across backends — deferred to `2.1`.
 
 The command surface for `2.0` is frozen in `COMMANDS.md`.
 
-The active fixture core now includes a minimal handshake/version slice.
-That handshake is now mandatory for the active fixture corpus rather than optional.
+The active fixture core includes a mandatory handshake/version slice.
+`HelloRenderer` followed by `RendererHelloReply` is required as the opening of every fixture stream.
 
 
 ## Pressure Tests From Future Scene Work

@@ -11,7 +11,8 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 
 ## Status
 
-- Status: active contract-definition with executable conformance fixtures
+- Status: **frozen 2.0** — command surface, schemas, and fixture corpus are frozen
+- Conformance: Level 1 (validation) mechanically verified; Level 2 (execution) prose commitment; Level 3 (output) deferred to `2.1`
 - Build integration: fixture validation available through the Python runner
 - Implementation priority: after the current `vk`/`vklite` boundary cleanup is sufficiently stable
 
@@ -32,23 +33,24 @@ Read the DRP2 spec in this order during review.
 5. [LIFETIMES.md](LIFETIMES.md) — object lifetime and encoder/pass state rules
 6. [ERRORS.md](ERRORS.md) — validation and error model
 7. [CAPABILITIES.md](CAPABILITIES.md) — feature and format capability reporting
+8. [CONFORMANCE.md](CONFORMANCE.md) — conformance levels and requirements for `2.0`
 
 ### 3. Machine-readable review material
 
-8. [schema/README.md](schema/README.md) — schema authority, active files, and maintenance rules
-9. [schema/drp_command.json](schema/drp_command.json) — root union for active commands
-10. [schema/commands/](schema/commands/) — per-command schema files
-11. [schema/common/](schema/common/) — shared enums and common value types
-12. [schema/DEFERRED.md](schema/DEFERRED.md) — explicitly deferred schema inventory
+9. [schema/README.md](schema/README.md) — schema authority, active files, and maintenance rules
+10. [schema/drp_command.json](schema/drp_command.json) — root union for active commands
+11. [schema/commands/](schema/commands/) — per-command schema files
+12. [schema/common/](schema/common/) — shared enums and common value types
+13. [schema/DEFERRED.md](schema/DEFERRED.md) — explicitly deferred schema inventory
 
 ### 4. Executable conformance material
 
-13. [fixtures/README.md](fixtures/README.md) — fixture corpus overview
-14. [fixtures/FORMAT.md](fixtures/FORMAT.md) — fixture file format
-15. [fixtures/RUNNER.md](fixtures/RUNNER.md) — fixture runner behavior and usage
-16. [fixtures/positive/](fixtures/positive/) — canonical valid traces
-17. [fixtures/negative/](fixtures/negative/) — canonical invalid semantic traces
-18. [fixtures/negative_schema/](fixtures/negative_schema/) — canonical invalid schema traces
+14. [fixtures/README.md](fixtures/README.md) — fixture corpus overview
+15. [fixtures/FORMAT.md](fixtures/FORMAT.md) — fixture file format
+16. [fixtures/RUNNER.md](fixtures/RUNNER.md) — fixture runner behavior and usage
+17. [fixtures/positive/](fixtures/positive/) — canonical valid traces
+18. [fixtures/negative/](fixtures/negative/) — canonical invalid semantic traces
+19. [fixtures/negative_schema/](fixtures/negative_schema/) — canonical invalid schema traces
 
 
 ## Document Index
@@ -58,6 +60,7 @@ Read the DRP2 spec in this order during review.
 - [LIFETIMES.md](LIFETIMES.md): object lifetime and encoder/pass state rules
 - [ERRORS.md](ERRORS.md): validation and error model
 - [CAPABILITIES.md](CAPABILITIES.md): feature and format capability reporting
+- [CONFORMANCE.md](CONFORMANCE.md): conformance levels and requirements
 - [VERSIONING.md](VERSIONING.md): compatibility and contract-evolution rules
 - [GLOSSARY.md](GLOSSARY.md): fixed terminology
 - [schema/README.md](schema/README.md): machine-readable schema material
