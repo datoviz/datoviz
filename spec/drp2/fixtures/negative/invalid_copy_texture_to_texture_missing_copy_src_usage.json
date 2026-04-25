@@ -1,0 +1,74 @@
+{
+  "name": "invalid_copy_texture_to_texture_missing_copy_src_usage",
+  "description": "CopyTextureToTexture where the source texture was not created with COPY_SRC usage.",
+  "reason": "Texture 1 has only TEXTURE_BINDING usage. Using it as a copy source requires COPY_SRC, so the command fails with DRP2_ERR_USAGE.",
+  "fix": "Add COPY_SRC to the source texture usage at creation time.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "copy",
+    "texture",
+    "usage"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["TEXTURE_BINDING"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 2,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["COPY_DST"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 10
+    },
+    {
+      "cmd": "CopyTextureToTexture",
+      "encoder_id": 10,
+      "src_texture_id": 1,
+      "src_mip_level": 0,
+      "src_origin": { "x": 0, "y": 0, "z": 0 },
+      "dst_texture_id": 2,
+      "dst_mip_level": 0,
+      "dst_origin": { "x": 0, "y": 0, "z": 0 },
+      "size": { "width": 2, "height": 2, "depth": 1 }
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 5
+  }
+}

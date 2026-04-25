@@ -1,0 +1,80 @@
+{
+  "name": "copy_texture_to_texture_basic",
+  "description": "Copies a 2x2 region from one texture to another of the same format and size.",
+  "reason": "Both textures are live with COPY_SRC and COPY_DST usage respectively. The source box and destination box both fit inside mip level 0. The copy is issued outside any open pass.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "copy",
+    "texture"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "label": "src",
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["COPY_SRC"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 2,
+      "label": "dst",
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["COPY_DST"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 10
+    },
+    {
+      "cmd": "CopyTextureToTexture",
+      "encoder_id": 10,
+      "src_texture_id": 1,
+      "src_mip_level": 0,
+      "src_origin": { "x": 0, "y": 0, "z": 0 },
+      "dst_texture_id": 2,
+      "dst_mip_level": 0,
+      "dst_origin": { "x": 0, "y": 0, "z": 0 },
+      "size": { "width": 2, "height": 2, "depth": 1 }
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 10,
+      "command_buffer_id": 11
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [11]
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}
