@@ -23,6 +23,7 @@ detail to implement or validate each family.
 | `pixel` | [PIXEL.md](PIXEL.md) |
 | `primitive` | [PRIMITIVE.md](PRIMITIVE.md) |
 | `point` | [POINT.md](POINT.md) |
+| `marker` | [MARKER.md](MARKER.md) |
 | `point` | planned |
 | `marker` | planned |
 | `segment` | planned |
