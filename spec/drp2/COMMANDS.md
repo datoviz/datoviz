@@ -90,6 +90,7 @@ The active DRP2 command set is intentionally small but complete enough for:
 2. `CopyBufferToTexture`
 3. `CopyTextureToBuffer`
 4. `QueueSubmit`
+5. `QueueSubmitReply`
 
 
 ## Deferred And Non-Authoritative Commands
@@ -127,7 +128,7 @@ Unless a command says otherwise:
 - `bind_group_id`: identifier of a previously created bind group object.
 - `slot`: zero-based bind-group slot index.
 - `index_format`: index element format token for indexed draws.
-- `submission_id`: optional host-visible identifier for queue-tracking or correlation.
+- `submission_id`: host-visible identifier for queue-tracking or correlation; required on `QueueSubmit` when `readbacks` is non-empty.
 - `shader_module_id`: identifier of an existing shader module.
 - `vertex_shader_module_id`: identifier of an existing vertex-stage shader module.
 - `fragment_shader_module_id`: identifier of an existing fragment-stage shader module.
@@ -1015,7 +1016,14 @@ Required fields:
 
 Optional fields:
 
-- `submission_id`: host-visible identifier for tracking or correlation.
+- `submission_id`: host-visible identifier for tracking or correlation; required when `readbacks` is non-empty.
+- `readbacks`: list of buffer ranges the runtime must copy back to the producer after submitted work completes.
+
+Each `readbacks` entry:
+
+- `buffer_id`: live buffer to read back; must have `MAP_READ` usage.
+- `offset`: byte offset into the buffer.
+- `size`: byte count to read back; `offset + size` must not exceed the buffer size.
 
 Semantics:
 
@@ -1023,4 +1031,32 @@ Semantics:
 2. every referenced command buffer must already have been produced by `FinishCommandEncoder`,
 3. each referenced command buffer must not already have been submitted earlier in the same stream,
 4. each command buffer id may appear at most once within a single `QueueSubmit`,
-5. submission transfers work from recorded state to queue execution.
+5. submission transfers work from recorded state to queue execution,
+6. when `readbacks` is non-empty, the runtime must send a `QueueSubmitReply` after all submitted work affecting the requested buffers has completed,
+7. readback ranges are read after GPU work is complete; producers must not assume the data is available before the reply arrives.
+
+
+### `QueueSubmitReply`
+
+Returns buffer readback data to the producer after a submission with readbacks completes.
+
+Required fields:
+
+- `cmd`: must be `QueueSubmitReply`.
+- `submission_id`: must match the `submission_id` of the corresponding `QueueSubmit`.
+- `readbacks`: list of readback results, in the same order as the `readbacks` in the originating `QueueSubmit`.
+
+Each `readbacks` entry:
+
+- `buffer_id`: the buffer id from the original readback request.
+- `offset`: the byte offset from the original readback request.
+- `size`: the byte count from the original readback request.
+- `data`: base64-encoded bytes read from the buffer range.
+
+Semantics:
+
+1. `QueueSubmitReply` is a runtime-to-producer message, analogous to `RendererHelloReply`,
+2. the runtime must deliver replies in the same order as their corresponding submissions,
+3. the `readbacks` list must mirror the original request exactly: same buffer ids, offsets, and sizes in the same order,
+4. each `data` field must contain exactly `size` bytes encoded as base64,
+5. a `QueueSubmit` with no `readbacks` field or an empty `readbacks` list does not produce a reply.

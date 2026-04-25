@@ -377,6 +377,34 @@ Validation consequences:
 3. pass-kind mismatches should fail with `DRP2_ERR_PASS_MISMATCH`.
 
 
+## Readback Lifetime
+
+Rules:
+
+1. every buffer referenced in a `QueueSubmit.readbacks` entry must be live at the time `QueueSubmit`
+   is processed,
+2. every such buffer must have `MAP_READ` in its declared usage,
+3. the readback range `offset + size` must fit within the buffer's declared size,
+4. `submission_id` must be present on `QueueSubmit` whenever `readbacks` is non-empty,
+5. the runtime must send exactly one `QueueSubmitReply` for each `QueueSubmit` whose `readbacks`
+   list is non-empty,
+6. replies must arrive in the same order as the corresponding submissions,
+7. `QueueSubmitReply` must reference a `submission_id` that matches a prior `QueueSubmit` with a
+   non-empty readbacks list; referencing an unknown or already-replied submission id is invalid,
+8. the `readbacks` list in `QueueSubmitReply` must mirror the request exactly: same buffer ids,
+   offsets, and sizes, in the same order,
+9. each `data` field in the reply must contain exactly `size` bytes encoded as base64.
+
+Validation consequences:
+
+1. a buffer in readbacks lacking `MAP_READ` usage should fail with `DRP2_ERR_USAGE`,
+2. a readback range that exceeds the buffer should fail with `DRP2_ERR_OUT_OF_RANGE`,
+3. a `QueueSubmitReply` with no matching pending submission should fail with
+   `DRP2_ERR_INVALID_STATE`,
+4. a `QueueSubmitReply` whose readbacks list does not match the request should fail with
+   `DRP2_ERR_INVALID_ARGUMENT`.
+
+
 ## Range And Layout Invariants
 
 These rules supplement the per-command field semantics in `COMMANDS.md`.
