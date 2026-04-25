@@ -117,17 +117,18 @@ Maps single-channel float texture values to display colors.
 Domain and palette can be updated without re-uploading texture data.
 
 
-### `permutation`
+### `transpose`
 
 | Property | Value |
 |---|---|
-| Type | `ivec2`, e.g. `(0, 1)` for natural order or `(1, 0)` to transpose |
-| Default | `(0, 1)` — x maps to U, y maps to V |
+| Type | `bool` |
+| Default | `false` |
 | Mutability | `dynamic` |
 
-Controls which texture axis maps to which screen axis.
-Useful when scientific array data has axes in a different order than screen layout (e.g., a
-`(height, width)` array that needs to display as `(width, height)`).
+When `false` (default): texture U axis maps to screen X, V axis maps to screen Y.
+When `true`: axes are swapped — U maps to Y, V maps to X.
+Useful when scientific array data has shape `(height, width)` but should display as
+`(width, height)` without re-allocating the array.
 
 
 ### `edgecolor`
@@ -175,14 +176,20 @@ Use `data` when the image should cover a fixed data-space region and scale with 
 | Axis | Values | Default |
 |---|---|---|
 | `texture_mode` | `rgba`, `scalar`, `none` | `rgba` |
+| `color_mode` | `rgba`, `scalar` | `rgba` |
 
-Set at visual creation time.
+Both set at visual creation time.
+
+`texture_mode` controls how the texture is sampled:
 
 | Mode | Texture format | Color source |
 |---|---|---|
 | `rgba` | RGBA `u8` texture | texture sample |
 | `scalar` | single-channel `f32` texture | texture sample mapped via `colormap` |
-| `none` | no texture | `color` per-item |
+| `none` | no texture | `color` per-item fill |
+
+`color_mode` applies only when `texture_mode = none` and determines how `color` data is encoded.
+Standard — see `SHARED_ATTRIBUTES.md`.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -210,7 +217,7 @@ Picking returns the image index as item identity.
 4. colored rectangle annotations — `texture_mode = none`, `color` `PER_ITEM`,
 5. data-aligned heatmap tile — `size_space = data`,
 6. rotated image annotations — `angle` `PER_ITEM`,
-7. transposed scientific array — `permutation = (1, 0)`.
+7. transposed scientific array — `transpose = true`.
 
 
 ## v0.3 Correspondence
@@ -224,13 +231,14 @@ Picking returns the image index as item identity.
 | `dvz_image_facecolor` | `color` `PER_ITEM` when `texture_mode = none` |
 | `dvz_image_texture` | `texture` resource reference |
 | `dvz_image_colormap` | `colormap` Scale reference |
-| `dvz_image_permutation` | `permutation` |
+| `dvz_image_permutation` | `transpose` (bool) |
 | `dvz_image_edgecolor` | `edgecolor` |
 | `dvz_image_linewidth` | `linewidth` |
 | `dvz_image_radius` | `radius` |
 
-v0.4 adds: `angle`, `shift`, `size_space`, `texture_mode` variant axis, `CONSTANT` sources for
-`size` and `texcoords`, `colormap` as Scale reference instead of enum.
+v0.4 adds: `angle`, `shift`, `size_space`, `texture_mode` and `color_mode` variant axes,
+`CONSTANT` sources for `size` and `texcoords`, `colormap` as Scale reference instead of enum,
+`transpose` replacing `permutation`.
 v0.4 drops per-item `anchor` — deferred to future version.
 
 
