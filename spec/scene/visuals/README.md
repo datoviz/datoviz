@@ -25,10 +25,7 @@ detail to implement or validate each family.
 | `point` | [POINT.md](POINT.md) |
 | `marker` | [MARKER.md](MARKER.md) |
 | `segment` | [SEGMENT.md](SEGMENT.md) |
-| `point` | planned |
-| `marker` | planned |
-| `segment` | planned |
-| `path` | planned |
+| `path` | [PATH.md](PATH.md) |
 | `glyph` | planned |
 | `image` | planned |
 | `mesh` | planned |
