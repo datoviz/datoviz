@@ -207,11 +207,11 @@ The architecture has three tiers:
 
 ```
 ┌─────────────────────────────────┐
-│  Python sugar layer             │  datoviz/*.py  (pure Python)
+│  Python sugar layer             │  datoviz/*.py        (pure Python)
 │  ergonomics, NumPy, defaults    │
 ├─────────────────────────────────┤
-│  Python binding layer           │  _datoviz.so   (nanobind)
-│  1:1 with C, mechanical         │
+│  Generated ctypes binding       │  datoviz/_ctypes.py  (auto-generated)
+│  1:1 with C API, no compilation │
 ├─────────────────────────────────┤
 │  C core                         │  libdatoviz.so
 │  all scene logic lives here     │
@@ -221,63 +221,90 @@ The architecture has three tiers:
 The rule is strict: all logic lives in C, all ergonomics live in Python, the binding layer is
 mechanical and contains no logic of its own.
 
+### v0.3 Binding Pipeline (Carried Forward)
+
+v0.3 established a code-generation approach that v0.4 continues.
+It requires no compiled extension module — the binding layer is a generated pure Python file that
+loads `libdatoviz.so` at runtime via `ctypes.CDLL()`.
+
+The pipeline has two steps:
+
+**Step 1 — `tools/parse_headers.py`**
+
+A pyparsing-based parser reads all `include/datoviz/**/*.h` headers and emits
+`build/headers.json` containing defines, enums, struct field layouts, and all `DVZ_EXPORT`-marked
+function signatures with their doxygen docstrings.
+Only `DVZ_EXPORT` functions are included — this acts as the public API gate.
+
+**Step 2 — `tools/build_ctypes.py`**
+
+Reads `headers.json` and generates `datoviz/_ctypes.py`:
+
+1. emits Python `IntEnum` classes for all C enums,
+2. emits `ctypes.Structure` subclasses for all C structs with correct field types,
+3. emits `argtypes` and `restype` for every exported function,
+4. maps C scalar types to ctypes equivalents and pointer arguments to NumPy `ndpointer`,
+5. converts doxygen `@param`/`@returns` docstrings to NumPy-style docstrings.
+
+The output is never edited by hand.
+In v0.3 it was ~15 000 lines covering the full public API.
+
+Key properties of this approach:
+
+1. no C++ compilation step — regenerating bindings after a header change is just running the
+   two scripts,
+2. the C headers are the single source of truth; no annotations or wrapper code are needed on
+   the C side beyond `DVZ_EXPORT` and doxygen comments,
+3. the generated file is readable as ordinary Python,
+4. ctypes per-call overhead is negligible for scene-level calls where the hot path is GPU work.
+
+### v0.4 Adaptation
+
+The same pipeline applies in v0.4.
+The generator scripts may need updates to handle v0.4 header conventions — new type names, new
+struct patterns, changes to `DVZ_EXPORT` usage — but the architecture stays the same.
+Any function that should be accessible from Python must be exported with `DVZ_EXPORT` and
+documented with a doxygen docstring.
+
 ### C API Design As An FFI Target
 
-The C scene API must be designed as an FFI target from the start, not retrofitted later.
+For the generated binding to work correctly the C scene API must be designed as an FFI target.
 
 Required properties:
 
 1. **Opaque handles** — public headers never expose struct internals; callers hold pointers to
    forward-declared types only.
 2. **Descriptor structs for construction** — constructors take one `const Desc*` argument rather
-   than many positional parameters; this is both FFI-friendly and forward-compatible.
-3. **Explicit lifecycle** — every `dvz_foo_create` or allocating call has a paired `dvz_foo_destroy`.
-   No implicit ownership transfer.
-4. **No raw function pointers in public structs** — they are painful across FFI boundaries; use
-   explicit event registration functions instead.
-5. **Error callbacks or last-error query** — avoid requiring the caller to check a return code on
-   every call; a registered error callback or `dvz_scene_last_error()` pattern scales better for
-   FFI consumers.
-
-### Binding Layer (nanobind)
-
-The binding layer is compiled with nanobind and exposes one Python class per C handle type.
-
-Its responsibilities are limited to:
-
-1. wrapping each C handle in a Python object,
-2. calling `dvz_destroy` on `__del__`,
-3. converting NumPy arrays to `(void*, count)` for data upload calls,
-4. keeping NumPy arrays alive as long as the scene or visual holds a reference to the underlying
-   memory.
-
-The binding layer must not contain scene logic, convenience constructors, or Python-specific
-default values.
+   than many positional parameters; this is both ctypes-friendly and forward-compatible.
+3. **Explicit lifecycle** — every allocating call has a paired `dvz_foo_destroy`; no implicit
+   ownership transfer.
+4. **No raw function pointers in public structs** — they are awkward across ctypes; use explicit
+   event registration functions instead.
+5. **Error callbacks or last-error query** — a registered error callback or
+   `dvz_scene_last_error()` pattern is more natural for ctypes consumers than per-call return
+   codes.
 
 ### Python Sugar Layer
 
-The Python sugar layer is pure Python.
-It imports the binding layer and adds:
+The sugar layer is pure Python, imports `_ctypes`, and adds:
 
 1. keyword arguments and sensible defaults for constructors,
-2. NumPy integration at the Python level (dtype coercion, shape checks),
+2. NumPy dtype coercion and shape checks before passing arrays to ctypes,
 3. context managers for scene and resource lifecycle,
 4. `__repr__` and inspection helpers,
 5. inline colormap and scale shortcuts (as described in `SCALES.md`),
 6. Pythonic property setters instead of explicit setter calls.
 
 The sugar layer must not contain scene logic.
-If a convenience shortcut requires a new semantic capability it should be added to the C API
-first, then exposed through the sugar layer.
+Any new semantic capability must be added to the C API first, then surfaced through the sugar
+layer.
 
 ### Consequences For Spec Work
 
-This decision has two concrete consequences for the current scene spec:
-
-1. the draft C headers under `headers/` are the right pressure-test surface; they should be
-   designed as FFI targets (opaque handles, descriptor structs) rather than as internal C objects,
-2. the inline scale shortcut described in `SCALES.md` maps to a sugar-layer convenience that calls
-   an anonymous scale constructor in C — it does not require a special code path in the C API.
+1. The draft C headers under `headers/` should be designed as FFI targets (opaque handles,
+   descriptor structs) — the ctypes generator needs clean, parseable, `DVZ_EXPORT`-marked headers.
+2. The inline scale shortcut in `SCALES.md` maps to a sugar-layer convenience; it does not require
+   a special code path in the C API.
 
 
 ## Immediate Pressure On Implementation

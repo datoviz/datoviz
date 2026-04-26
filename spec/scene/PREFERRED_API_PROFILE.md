@@ -39,12 +39,15 @@ It must be designed as an FFI target:
 3. explicit lifecycle with paired create/destroy,
 4. no raw function pointers in public structs.
 
-Python binds to the C API through a nanobind binding layer.
-A thin Python sugar layer sits above the binding layer and adds ergonomics (NumPy arrays, keyword
-arguments, context managers, inline scale shortcuts).
+Python binds to the C API through an auto-generated ctypes binding layer (`datoviz/_ctypes.py`),
+produced by `tools/parse_headers.py` and `tools/build_ctypes.py` — the same pipeline used in
+v0.3, updated for v0.4 headers.
+A thin Python sugar layer sits above the generated binding and adds ergonomics (NumPy arrays,
+keyword arguments, context managers, inline scale shortcuts).
 All scene logic lives in C; the Python layers add no logic of their own.
 
-See `IMPLEMENTATION_BRIDGE.md` for the full three-tier binding architecture.
+See `IMPLEMENTATION_BRIDGE.md` for the full three-tier binding architecture and v0.3 pipeline
+details.
 
 
 ## Core Rule

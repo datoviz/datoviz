@@ -152,26 +152,44 @@ The Python API will be layered above `libdatoviz` in three tiers:
 
 ```
 ┌─────────────────────────────────┐
-│  Python sugar layer             │  datoviz/*.py  (pure Python)
+│  Python sugar layer             │  datoviz/*.py        (pure Python)
 │  ergonomics, NumPy, defaults    │
 ├─────────────────────────────────┤
-│  Python binding layer           │  _datoviz.so   (nanobind)
-│  1:1 with C API, mechanical     │
+│  Generated ctypes binding       │  datoviz/_ctypes.py  (auto-generated)
+│  1:1 with C API, no compilation │
 ├─────────────────────────────────┤
 │  C core                         │  libdatoviz.so
 │  all logic lives here           │
 └─────────────────────────────────┘
 ```
 
-The C API is designed as an FFI target: opaque handles, descriptor structs, explicit lifecycle, no
-raw function pointers in public structs.
+### v0.3 binding strategy (carried forward to v0.4)
 
-The binding layer (`_datoviz.so`) wraps C handles in Python objects mechanically using nanobind.
-It converts NumPy arrays to raw pointer + count for data upload calls and manages `dvz_destroy`
-on `__del__`. It contains no scene logic.
+v0.3 used a code-generation pipeline that is retained for v0.4:
 
-The sugar layer (`datoviz/*.py`) adds Python ergonomics: keyword arguments, NumPy dtype coercion,
-context managers, inline colormap shortcuts. It contains no scene logic.
+1. `tools/parse_headers.py` — pyparsing-based parser that reads all `include/datoviz/**/*.h`
+   headers and emits a `build/headers.json` description of defines, enums, structs, and all
+   `DVZ_EXPORT`-marked functions with their doxygen docstrings.
+
+2. `tools/build_ctypes.py` — reads `headers.json` and generates `datoviz/_ctypes.py`, a pure
+   Python ctypes binding file. It maps C types to ctypes and NumPy dtypes, emits `argtypes` and
+   `restype` for every exported function, and converts doxygen docstrings to NumPy-style
+   docstrings. The output requires no compilation — it loads `libdatoviz.so` at runtime via
+   `ctypes.CDLL()`.
+
+3. `datoviz/_ctypes.py` — the generated file. Never edited by hand; always regenerated from
+   headers. In v0.3 this file was ~15 000 lines covering the full public API.
+
+The sugar layer (`datoviz/*.py`) sits above `_ctypes.py` and adds Python ergonomics: keyword
+arguments, NumPy array coercion, context managers, inline colormap shortcuts. It contains no
+scene logic.
+
+### v0.4 adaptation
+
+The same three-tier strategy applies in v0.4. The generator scripts may need updates to handle
+v0.4 header conventions (new type names, new struct patterns, updated `DVZ_EXPORT` usage), but
+the pipeline architecture stays the same. The C API must remain an FFI-friendly target: opaque
+handles, descriptor structs, explicit lifecycle, no raw function pointers in public structs.
 
 See `spec/scene/IMPLEMENTATION_BRIDGE.md` for the full design rationale.
 
