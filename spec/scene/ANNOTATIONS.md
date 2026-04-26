@@ -514,16 +514,27 @@ This document should be read alongside:
 6. `FRAME_PLAN_IR.md` for how annotation contributions enter the scene-level `FramePlan`.
 
 
+## Resolved Questions
+
+**Annotation type hierarchy** — resolved.
+Annotations are represented by several distinct types at the API level, not one generic type.
+The annotation subtypes (text label, callout, guide line, probe overlay, region overlay) have
+genuinely different content models that barely overlap.
+A shared `DvzAnnotation` union or type-tag struct would be awkward to use and hard to validate.
+Shared behavior — attachment, placement, invalidation, z-order — is covered by shared rules in
+the spec and matching fields in each struct, not by a common C base type.
+
+**Legends and colorbars** — resolved by `LEGENDS_AND_COLORBARS.md`.
+They are dedicated scene objects, not annotation subtypes.
+
+
 ## What This Document Intentionally Leaves Open
 
 This document intentionally does not freeze:
 
-1. whether annotations are represented by one generic object type or several specialized types,
-2. the final style or theme object model,
-3. the final text-layout engine boundary,
-4. the final collision-avoidance algorithm,
-5. whether legends and colorbars remain a shared annotation superclass or become dedicated scene
-   objects.
+1. the final style or theme object model,
+2. the final text-layout engine boundary,
+3. the final collision-avoidance algorithm.
 
 
 ## Immediate Follow-Up

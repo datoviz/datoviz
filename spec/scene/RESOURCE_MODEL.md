@@ -484,8 +484,9 @@ This resource kind should cover:
 3. compare mode when relevant later,
 4. sampling policy shared across visuals.
 
-If the final implementation decides that samplers are not first-class scene resources, this concept
-may become a field inside a `ParameterBlockResource` instead.
+Sampler resources are not first-class scene resources.
+A texture/sampler binding slot is a field inside a `ParameterBlockResource`.
+A sampler has no meaningful scene-level lifecycle independent of the parameter block that declares it.
 
 
 ## ParameterBlockResource
@@ -536,6 +537,13 @@ Examples:
 3. intermediate buffers used by compute-assisted visuals,
 4. visual-local derived geometry buffers created from higher-level scene data,
 5. panel-local target attachments.
+
+Derived resources are internal planning artifacts by default.
+They are not scene-visible unless the user explicitly declares a named readback resource for them.
+The common case — axis tick geometry, glyph quads, path tessellation — has no reason to be
+user-visible; exposing it would leak implementation detail and create unnecessary API surface.
+When the user explicitly requests readback of derived data (for testing or export), a named
+`ReadbackResource` is the opt-in mechanism.
 
 Derived resources should still be represented explicitly in planning and diagnostics.
 
@@ -753,8 +761,5 @@ The first resource model is acceptable only if it can cleanly represent:
 The following topics should remain open for now:
 
 1. the final public scene API for constructing resources,
-2. whether logical sampler resources stay first-class or collapse into a `ParameterBlockResource`,
-3. whether some derived geometry stays visible as a scene resource or becomes an internal planning
-   artifact,
-4. how far logical resource views should be exposed above planning,
-5. whether readback resources are modeled as ordinary resources or a dedicated result channel.
+2. how far logical resource views should be exposed above planning,
+3. whether readback resources are modeled as ordinary resources or a dedicated result channel.

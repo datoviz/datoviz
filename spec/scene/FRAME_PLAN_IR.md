@@ -373,15 +373,32 @@ The first `FramePlan` IR is acceptable only if it can represent:
 5. one compute-assisted visual path followed by rendering.
 
 
+## Resolved Questions
+
+**Transient logical targets** — resolved.
+Transient render targets (picking pass buffers, intermediate composition targets, multi-pass
+effect intermediates) are internal planning artifacts.
+The planner may create, reuse, and destroy them without exposing them to the user.
+The only targets that require scene-visible identity are declared outputs: the final swapchain
+image, explicit offscreen export targets, and picking readback sinks — all of which the user
+already names when setting up a panel or requesting a readback.
+
+**`FramePlan` public inspectability** — resolved.
+`FramePlan` is not a first-class public user-facing API.
+It is readable and serializable through a diagnostics or test interface.
+Normal user code never touches it directly.
+Exposing it as a stable user API would freeze internal planning structure prematurely.
+
+**Material binding** — resolved by `VISUAL_CONTRACT.md`.
+Material is not a first-class scene concept.
+Shading parameters are fields inside a `ParameterBlockResource`.
+
+
 ## Deferred Questions
 
 The following questions should remain explicitly open for now:
 
-1. whether the final scene API exposes any inspectable public `FramePlan` object,
-2. how shader-module and pipeline identities map onto final DRP2 object-creation commands,
-3. whether material binding is expressed through scene-owned descriptors, runtime-owned caches, or a
-   hybrid model,
-4. whether transient logical targets are scene-visible concepts or purely internal planning artifacts.
+1. how shader-module and pipeline identities map onto final DRP2 object-creation commands.
 
 
 ## Immediate Follow-On Specs

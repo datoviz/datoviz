@@ -253,9 +253,11 @@ Promotion to a full family would require evidence that it has meaningfully diffe
 Current direction:
 
 1. do not treat `slice` as a first-class family,
-2. treat it as an `image`-family mode used to place one or more images in a 3D scene,
-3. allow its sampled content to come from volumetric data without making backend texture
-   dimensionality part of the scene taxonomy.
+2. model it as a named variant on the `image` family: `image_mode: { rgba, colormap, slice }`,
+3. the `slice` mode declares that the source texture is volumetric and adds `slice_axis` and
+   `slice_position` parameters to select the plane,
+4. the `volume` family handles full 3D traversal; `slice` inside `image` covers the
+   "flat cut through a volume" case only.
 
 The important rule is that scene terminology should describe semantics, not texture dimensionality or
 backend object shape.
