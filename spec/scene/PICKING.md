@@ -499,6 +499,41 @@ The scene should be able to report:
 5. which `FramePlan` nodes were added because of picking.
 
 
+## Synchronous Versus Asynchronous Picking In The C API
+
+The primary C API for click and query picking is synchronous:
+
+```c
+DvzPickResult result = {0};
+dvz_panel_pick(panel, x, y, DVZ_PICK_CLICK, &result);
+```
+
+This blocks until the result is available.
+
+Synchronous picking is implemented via the runtime service's synchronous completion helper,
+which submits a `QueueSubmit` with a `readbacks` entry targeting the picking buffer pixel and
+blocks until the `QueueSubmitReply` arrives.
+DRP2 supports this through its existing async readback protocol — the synchronous surface is a
+runtime service wrapper, not a DRP2 protocol change.
+
+Hover picking does not use this mechanism.
+Hover is handled through the controller callback path:
+
+```c
+dvz_panel_on_hover(panel, my_hover_callback, user_data);
+```
+
+The callback receives a `DvzPickResult` when a hover result arrives.
+Latest-request-wins semantics apply: stale hover results are discarded silently.
+
+Summary:
+
+| Pick kind | C API style | Delivery |
+|---|---|---|
+| click / query | synchronous, blocking | immediate return |
+| hover | async callback | latest-wins, stale discarded |
+
+
 ## Recommended Next Step
 
 The next spec iteration should define controllers and interaction more explicitly.

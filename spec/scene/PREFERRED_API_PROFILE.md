@@ -231,17 +231,38 @@ The preferred diagnostics model is:
 3. backend handles never become required to interpret failures.
 
 
-## Deferred Questions
+## Resolved C API Decisions
 
-The following questions remain intentionally open:
+**Naming convention** — `dvz_` prefix throughout. Opaque handles (`DvzVisual*`, `DvzPanel*`,
+etc.). Descriptor structs named `DvzXxxDesc`. Visual type identity uses `DvzVisualType` enum
+(`DVZ_VISUAL_POINT`, `DVZ_VISUAL_PATH`, etc.) — the internal spec term "family" is not exposed
+to users.
 
-1. the exact spelling of constructors and descriptor structs in a C header,
-2. whether some style parameters deserve dedicated typed setters in addition to style blocks,
-3. how much of `FramePlan` inspection is public versus test-only.
+**Constructors** — family-specific constructors as the primary public surface (`dvz_point()`,
+`dvz_path()`, `dvz_image()`, etc.) because resource schemas and initialization requirements
+differ per type. A generic `dvz_visual_create()` may exist internally but is not the user-facing
+default.
 
-The following question is resolved:
+**Data upload** — generic `dvz_visual_write(visual, attr, first, count, data)` uniform across
+all visual types. Family-specific data preparation is an implementation concern, not a scene API
+concern. Span boundaries for grouped visuals declared via `dvz_visual_spans(visual, n, sizes)`.
 
-- **Inline vs explicit mapping construction**: both are supported. Explicit handles are the
+**Allocation** — separated from creation. Visuals are created without a committed item count.
+Size is established on first write. An optional `dvz_visual_alloc(visual, n)` hint is available
+for pre-allocation.
+
+**Parameters** — typed setters per visual type (`dvz_point_size()`, `dvz_path_linewidth()`,
+etc.) as the primary surface. No style block or bulk params struct in the public C API. The
+Python sugar layer adds keyword-argument convenience above the typed setters.
+
+**Picking** — synchronous blocking for click and query (`dvz_panel_pick()`), async callback for
+hover (`dvz_panel_on_hover()`). Synchronous picking wraps DRP2's async readback via the runtime
+service's synchronous completion helper. See `PICKING.md` for the full model.
+
+**`FramePlan` inspection** — readable and serializable through a diagnostics or test interface
+only. Not a first-class public user-facing API.
+
+**Inline vs explicit mapping construction** — both are supported. Explicit handles are the
   preferred default and support sharing across visuals and attachment to colorbars. An inline
   shortcut (anonymous mapping, no shareable identity) is available at the Python sugar layer for
   single-visual cases. See `SCALES.md` for the full model.
