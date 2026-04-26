@@ -17,6 +17,25 @@ The scene layer should remain pure high-level logic:
 - Primary constraint: do not let scene design leak backend details into its public API
 
 
+## Relationship To The DRP2 Spec
+
+The scene layer is a consumer of DRP2.
+It emits DRP2 commands — it never calls Vulkan, vklite, or any backend API directly.
+
+The scene spec and the DRP2 spec (`spec/drp2/`) are being designed in parallel and feed
+requirements into each other:
+
+1. when the scene spec needs a DRP2 capability that does not yet exist, that is a DRP2 spec
+   input — not a reason to add a scene-side workaround or backend escape hatch,
+2. when the DRP2 spec adds or changes commands, the scene spec should be updated to reflect
+   what the scene can now express,
+3. open questions in the scene spec that depend on DRP2 details should be left explicitly open
+   until the relevant DRP2 decision is made.
+
+This parallel design constraint applies especially to `RUNTIME_SERVICE_SKETCH.md`,
+`FRAME_PLAN_IR.md`, and `CAPABILITY_ADAPTATION.md`.
+
+
 ## Normative Invariants
 
 The current scene spec should be read with the following invariants in mind:

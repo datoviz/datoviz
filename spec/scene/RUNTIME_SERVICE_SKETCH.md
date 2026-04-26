@@ -5,6 +5,18 @@ This document sketches the minimal conceptual runtime service surface below scen
 It refines `RUNTIME_BOUNDARY.md` into a smaller set of service concepts without freezing a final C
 API.
 
+**The "runtime" in this document is the DRP2 runtime executor.**
+
+The scene layer emits DRP2 commands — it does not call Vulkan, vklite, or any backend API
+directly.
+The service concepts described here (`RuntimeService`, `CapabilitySnapshot`, etc.) are the
+scene-facing view of the DRP2 runtime interface, not a separate layer between scene and DRP2.
+
+The scene spec and the DRP2 spec are being designed in parallel.
+When the scene spec needs a capability or behavior that DRP2 does not yet provide, that is a
+DRP2 spec input, not a reason to add a scene-side workaround.
+See `spec/drp2/` for the active DRP2 command surface.
+
 
 ## Position
 
@@ -12,7 +24,7 @@ This document sits:
 
 1. below `FRAME_PLAN_IR.md`,
 2. below `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md`,
-3. above any backend-specific execution system,
+3. above any backend-specific execution system (Vulkan, WebGPU, etc.),
 4. alongside `RUNTIME_BOUNDARY.md` as a more concrete service sketch.
 
 
@@ -189,9 +201,15 @@ This document should be read together with:
 
 ## Deferred Questions
 
-The following questions remain intentionally open:
+The following questions remain intentionally open, and most depend on DRP2 decisions still under
+active review:
 
-1. whether the final runtime surface is one object or several cooperating interfaces,
-2. whether completion delivery is callback-based, polled, or both,
-3. how much diagnostic detail is standardized versus debug-only,
+1. whether the final runtime surface is one object or several cooperating interfaces — depends on
+   how DRP2 structures its execution entry points,
+2. whether completion delivery is callback-based, polled, or both — depends on what DRP2 provides
+   for readback and async signaling,
+3. how much diagnostic detail is standardized versus debug-only — to be aligned with the DRP2
+   error model in `spec/drp2/ERRORS.md`,
 4. whether some export-oriented helpers live above or below the strict runtime boundary.
+
+These should be resolved in coordination with DRP2 spec work, not independently.
