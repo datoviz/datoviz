@@ -485,7 +485,7 @@ This resource kind should cover:
 4. sampling policy shared across visuals.
 
 If the final implementation decides that samplers are not first-class scene resources, this concept
-may become a material attribute instead.
+may become a field inside a `ParameterBlockResource` instead.
 
 
 ## ParameterBlockResource
@@ -753,7 +753,7 @@ The first resource model is acceptable only if it can cleanly represent:
 The following topics should remain open for now:
 
 1. the final public scene API for constructing resources,
-2. whether logical sampler resources stay first-class or collapse into material state,
+2. whether logical sampler resources stay first-class or collapse into a `ParameterBlockResource`,
 3. whether some derived geometry stays visible as a scene resource or becomes an internal planning
    artifact,
 4. how far logical resource views should be exposed above planning,

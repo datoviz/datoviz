@@ -244,9 +244,9 @@ As a rule:
    visual internals.
 
 
-## Material And Shader Variant Identity
+## Shader Variant Identity
 
-Each visual must expose a logical material or shader variant identity.
+Each visual must expose a logical shader variant identity.
 
 This identity should capture:
 
@@ -258,6 +258,16 @@ This identity should capture:
 
 This identity is intentionally logical.
 It must not assume the final DRP2 object-creation or runtime cache shape.
+
+Material is not a first-class scene concept in datoviz.
+
+The visual vocabulary is broad and mostly 2D — markers, paths, glyphs, images, volumes — and most
+families have no lighting model.
+For lit 3D families such as `mesh` and `sphere`, shading parameters (`ambient`, `diffuse`,
+`specular`, lighting mode) are a `ParameterBlockResource` attached to the visual, like any other
+visual parameter block.
+The word "material" may appear informally in documentation for those families to describe what
+the parameters represent, but it is not an API concept and there is no `DvzMaterial` handle.
 
 
 ## Variant Axes
@@ -477,7 +487,6 @@ The first visual contract is acceptable only if it can describe:
 The following topics should remain open until DRP2 and runtime details are more stable:
 
 1. the final public type hierarchy of visuals,
-2. whether material identity becomes a first-class public scene object,
-3. the exact shape of scene-owned descriptor or binding declarations,
+2. the exact shape of scene-owned descriptor or binding declarations,
 4. how much batching policy is visible above planning,
 5. whether some visuals may generate transient internal resources as part of planning.
