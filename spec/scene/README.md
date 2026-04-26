@@ -119,8 +119,9 @@ Read the scene spec in this order during review.
 24. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
 25. [PICKING.md](PICKING.md) — picking identity and readback behavior
 26. [CONTROLLERS.md](CONTROLLERS.md) — event routing and interaction ownership
-27. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
-28. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+27. [ANIMATION.md](ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
+28. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
+29. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
@@ -207,12 +208,16 @@ The current scene spec now covers:
 7. invalidation and caching,
 8. picking,
 9. controllers and interaction,
-10. worked examples.
+10. animation and frame scheduling,
+11. worked examples.
 
 The next recommended iterations are:
 
-1. more worked examples, especially multi-panel and annotation-heavy cases,
-2. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
+1. public C API surface — resolving open choices in `SCENE_API_SKETCH.md` and
+   `PREFERRED_API_PROFILE.md`,
+2. axes ↔ domain and panel binding spec,
+3. more worked examples, especially multi-panel, animation, and video export cases,
+4. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
    `volume`.
 
 The general rule should remain:
