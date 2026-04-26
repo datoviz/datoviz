@@ -217,15 +217,22 @@ It should cover families such as:
 It combines:
 
 1. underlying item storage,
-2. group boundaries,
-3. optional per-group metadata,
-4. group-aware dirtiness.
+2. span boundaries — contiguous ranges of items that form one logical sub-object,
+3. optional per-span metadata,
+4. span-aware dirtiness.
+
+**Terminology note**: the contiguous boundary units stored here are called **spans** in the public
+API to distinguish them from attribute-level groups (`PER_GROUP` source).
+A span is one polyline in `path`, one string in `glyph`.
+A group is a population-level attribute bucket (neuron population, brain region) used with the
+`PER_GROUP` attribute source.
+The two concepts are orthogonal and must not be conflated.
 
 Conceptually:
 
 1. the underlying storage may still be one flat batch-friendly array,
-2. but the scene model also records how rows are partitioned into higher-level logical groups,
-3. each group is an independent semantic object even if many groups are rendered in one GPU batch.
+2. but the scene model also records how rows are partitioned into higher-level logical spans,
+3. each span is an independent semantic object even if many spans are rendered in one GPU batch.
 
 Examples:
 
@@ -556,7 +563,7 @@ The first useful content-shape categories are:
 
 1. scalar or small fixed struct,
 2. flat array of fixed-size records,
-3. grouped array with segment boundaries,
+3. grouped array with span boundaries,
 4. dense 2D texel grid,
 5. dense 3D texel grid,
 6. opaque derived payload.
@@ -572,9 +579,9 @@ Grouped resources are necessary for path-like, text-like, and other segmented da
 The resource model should support:
 
 1. a flat storage region for the underlying items,
-2. a grouping descriptor that identifies segment starts and lengths,
-3. optional per-group metadata,
-4. subrange dirtiness at both item and group levels.
+2. a span descriptor that identifies span starts and lengths,
+3. optional per-span metadata,
+4. subrange dirtiness at both item and span levels.
 
 This avoids forcing each grouped visual to invent a private data encoding.
 

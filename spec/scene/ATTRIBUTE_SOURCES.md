@@ -116,27 +116,41 @@ The user does not select or see the strategy.
 
 `PER_GROUP` attribute source and `GroupedItemTable` are related but distinct concepts.
 
-`GroupedItemTable` is a scene resource class that owns both item storage and group boundary metadata.
-It is primarily used by families such as `path` and `glyph` where group membership is intrinsic to
-the family contract (items belong to an ordered sequence).
+**Terminology**: the word "group" is used in two distinct senses in the scene spec.
+These must not be confused:
+
+- **Span** — a contiguous boundary unit in a `GroupedItemTable`: one polyline in `path`, one
+  string in `glyph`.
+  Spans define the structural layout of the data.
+  The public API uses `dvz_visual_spans()` to declare them.
+
+- **Group** — a population-level attribute bucket used with `PER_GROUP` source: one neuron
+  population, one brain region, one electrode channel.
+  Groups define which items share the same attribute value.
+  The public API uses `DVZ_ATTR_GROUP_ID` per item to declare them.
+
+`GroupedItemTable` is a scene resource class that owns both item storage and span boundary
+metadata.
+It is primarily used by visual types such as `path` and `glyph` where span membership is
+intrinsic to the data contract (items belong to an ordered sequence).
 
 `PER_GROUP` attribute source is an attribute-level declaration.
 It says that a specific attribute value varies by group, not by item.
 
 The two concepts interact as follows:
 
-1. **`ItemTable` + `PER_GROUP`**: the visual has no intrinsic group structure, so the user must
+1. **`ItemTable` + `PER_GROUP`**: the visual has no intrinsic span structure, so the user must
    supply an explicit per-item group index integer alongside the group value table.
    Example: a flat scatter of 3M spikes where each spike carries a neuron group index.
 
-2. **`GroupedItemTable` + `PER_GROUP`**: group membership is already encoded in the table
+2. **`GroupedItemTable` + `PER_GROUP`**: span membership is already encoded in the table
    boundaries, so no separate per-item group index is needed.
-   The scene infers group identity from the boundary metadata.
-   Example: 200 paths each with its own color — the path boundaries define the groups.
+   The scene infers group identity from the span boundary metadata.
+   Example: 200 paths each with its own color — the span boundaries define the groups.
 
-Group identity in `GroupedItemTable` visuals is always the table's own group structure.
+Group identity in `GroupedItemTable` visuals is always the table's own span structure.
 There is no supported case where a `GroupedItemTable` visual uses `PER_GROUP` with a group
-identity that differs from the table's boundaries.
+identity that differs from the table's span boundaries.
 
 
 ## Which Sources Each Attribute Accepts

@@ -927,7 +927,7 @@ Conceptually:
 ```text
 paths = scene_grouped_item_table(scene, path_schema)
 paths_write_items(paths, item_rows, vertices)
-paths_write_groups(paths, group_ranges, groups)
+paths_write_spans(paths, span_sizes)  // one entry per polyline, value = vertex count
 
 visual = scene_visual(scene, { family = PATH })
 visual_set_resource(visual, GROUPED_ITEMS, paths)

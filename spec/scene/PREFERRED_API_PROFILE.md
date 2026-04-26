@@ -82,6 +82,10 @@ dvz_visual_alloc(point, n)
 // Generic write (uniform across all visual types)
 dvz_visual_write(point, DVZ_ATTR_POSITION, 0, n, xyz)
 dvz_visual_write(point, DVZ_ATTR_COLOR,    0, n, rgba)
+
+// For grouped visuals: declare span boundaries (one span = one polyline or one string)
+dvz_visual_spans(path, n_paths, path_sizes)    // path: each span is one polyline
+dvz_visual_spans(glyph, n_strings, str_sizes)  // glyph: each span is one string
 ```
 
 The `DVZ_ATTR_*` enum values are family-scoped: `DVZ_POINT_ATTR_POSITION`,
