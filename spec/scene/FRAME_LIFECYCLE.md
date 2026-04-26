@@ -3,6 +3,21 @@
 This document defines the logical frame flow for the future scene layer.
 
 
+## What Drives The Lifecycle
+
+The frame lifecycle is triggered by the canvas draw callback.
+
+Each frame, the canvas fires a draw callback that the application routes to the scene.
+The scene then runs the full lifecycle — events through DRP2 emission — and returns a filled
+command buffer to the DRP2 runtime, which passes it back to the canvas for submission.
+
+The scene does not own the event loop, the canvas, or the swapchain.
+It receives a "build a frame" signal and produces DRP2 work in response.
+
+In offline (video export) mode the application drives the loop directly, calling the scene's
+frame-advance function once per step rather than waiting for a canvas callback.
+
+
 ## High-Level Flow
 
 1. ingest events,

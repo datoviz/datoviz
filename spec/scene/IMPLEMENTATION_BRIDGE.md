@@ -161,6 +161,7 @@ The runtime sketch most naturally maps onto implementation-facing runtime concep
 3. `DvzRuntimeSubmissionResult`
 4. `DvzRuntimeCompletion`
 5. `DvzRuntimeDiagnostic`
+6. `DvzRenderTarget`
 
 Conceptually:
 
@@ -169,6 +170,33 @@ caps = dvz_runtime_query_capabilities(runtime)
 result = dvz_runtime_submit(runtime, frame_plan)
 completion = dvz_runtime_poll(runtime)
 ```
+
+
+## Canvas And Render Target Wiring
+
+The application owns three cooperating objects and wires them together:
+
+```text
+canvas  = dvz_canvas_create(...)                        // window + swapchain + stream
+runtime = dvz_runtime_create(canvas, ...)               // DRP2 runtime; plugs into canvas draw callback
+target  = dvz_render_target_canvas(canvas)              // logical scene-level output handle
+scene   = dvz_scene_create(runtime, target, ...)        // scene holds runtime + target, not canvas
+```
+
+For offscreen or export use:
+
+```text
+runtime = dvz_runtime_create_offscreen(...)
+target  = dvz_render_target_offscreen(runtime, width, height, format)
+scene   = dvz_scene_create(runtime, target, ...)
+```
+
+The scene API never takes a `DvzCanvas*` argument directly.
+The canvas is not a scene concept.
+Video sinks and stream configuration are attached to the canvas by the application before the
+frame loop starts.
+
+See `RUNTIME_BOUNDARY.md` for the normative ownership rules.
 
 
 ## Diagnostics Mapping

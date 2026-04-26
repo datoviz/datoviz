@@ -13,6 +13,7 @@ This document defines the minimum stable concepts for the future scene layer.
 6. `Controller`
 7. `FramePlan`
 8. `Animation`
+9. `RenderTarget`
 
 
 ## Scene
@@ -124,3 +125,25 @@ contribute panel-local targets, nodes, and ordering constraints inside that one 
 ## Animation
 
 Animations should target scene properties rather than backend resources directly.
+
+
+## RenderTarget
+
+A `RenderTarget` is the scene-level logical description of where a frame is rendered.
+
+It is a scene-visible handle that the DRP2 runtime resolves to actual backend resources.
+The scene never holds a `VkImageView`, swapchain image, or backend framebuffer.
+
+Two variants exist:
+
+1. **Canvas target** — backed by the canvas swapchain; used for interactive display.
+2. **Offscreen target** — backed by a readback-capable image; used for export or headless
+   rendering.
+
+The application creates a `RenderTarget` and passes it to the scene at creation time.
+The scene uses it when building `FramePlan` nodes.
+The DRP2 runtime handles the mapping to backend objects.
+
+The scene does not own the canvas, window, stream, or sinks.
+Those remain application-level and canvas-level concerns.
+See `RUNTIME_BOUNDARY.md` for the full ownership model.
