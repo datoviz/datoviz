@@ -60,21 +60,35 @@ while keeping planning, validation, adaptation, and runtime submission explicit 
 
 The preferred construction model is:
 
-1. generic scene-level constructors with typed descriptors,
-2. family identity supplied explicitly at visual creation,
-3. convenience helpers allowed later only as thin wrappers over the generic model.
+1. family-specific constructors for visual creation — each visual type has its own creation
+   function because resource schemas and initialization requirements differ,
+2. generic attribute write functions for data upload — family-specific data preparation is an
+   implementation concern, not a scene API concern; the write surface is uniform,
+3. allocation separated from creation — a visual is created without a committed item count;
+   data is written when available and size is established on first write,
+4. optional explicit pre-allocation hint for performance when count is known upfront.
 
 Conceptually:
 
 ```text
-scene = scene_create(scene_desc)
-panel = scene_panel(scene, panel_desc)
-visual = scene_visual(scene, visual_desc)
-resource = scene_resource(scene, resource_desc)
+// Family-specific creation (schemas differ per type)
+point = dvz_point(scene, flags)
+path  = dvz_path(scene, flags)
+image = dvz_image(scene, flags)
+
+// Optional pre-allocation hint
+dvz_visual_alloc(point, n)
+
+// Generic write (uniform across all visual types)
+dvz_visual_write(point, DVZ_ATTR_POSITION, 0, n, xyz)
+dvz_visual_write(point, DVZ_ATTR_COLOR,    0, n, rgba)
 ```
 
-The profile should not assume one completely different constructor family per visual type as the
-primary surface.
+The `DVZ_ATTR_*` enum values are family-scoped: `DVZ_POINT_ATTR_POSITION`,
+`DVZ_PATH_ATTR_POSITION`, etc., to document expected types and layout per family.
+
+Visual type identity uses `DvzVisualType` with values such as `DVZ_VISUAL_POINT`,
+`DVZ_VISUAL_PATH`, `DVZ_VISUAL_IMAGE` — not the internal spec term "family".
 
 
 ## Preferred Ownership Model

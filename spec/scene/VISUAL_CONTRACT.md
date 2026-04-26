@@ -81,6 +81,25 @@ A visual must not:
 6. mutate unrelated scene objects during planning.
 
 
+## Data Preparation Is Not A Scene Concern
+
+The scene spec intentionally does not define how user-authored data becomes GPU-ready.
+
+From the scene spec's perspective:
+
+1. the user writes data to scene resources through the write API,
+2. the scene layer transforms that data into renderable state,
+3. the mechanism of that transformation is not specified here.
+
+The same scene API is valid over a rasterization backend, a ray-tracing backend, or any other
+execution model.
+How each backend prepares data for its own rendering pipeline is an implementation concern, not a
+scene contract.
+
+Implementors building on rasterization pipelines should consult `IMPLEMENTATION_BRIDGE.md` for
+guidance on family-specific data preparation steps.
+
+
 ## Visual Identity
 
 Each visual needs a stable logical identity within the owning scene.

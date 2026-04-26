@@ -756,6 +756,70 @@ The first resource model is acceptable only if it can cleanly represent:
 8. shared parameter blocks reused across visuals or panels.
 
 
+## Data Ownership And Memory Model
+
+When the user writes data to a scene resource, the scene must decide whether to copy the buffer
+or borrow the pointer.
+
+Copying is safe but expensive for large data (volume textures, million-point arrays, brain atlas
+meshes).
+Borrowing is zero-copy but requires a lifetime contract between the user and the scene.
+
+The preferred model ties ownership semantics to the mutability hint declared on the attribute or
+resource (see `ATTRIBUTE_SOURCES.md`):
+
+1. `static` — the user declares the buffer will remain valid for the lifetime of the scene.
+   The scene borrows the pointer and does not copy.
+   The user must not free or mutate the buffer while the scene is alive.
+   This is the zero-copy path for large immutable data.
+
+2. `dynamic` — the scene copies the data on write.
+   The user retains ownership of the source buffer and may free it after the write call returns.
+   This is the safe default for moderate-sized data that changes occasionally.
+
+3. `streaming` — the scene owns a staging buffer and exposes a mapped write pointer.
+   The user writes directly into the scene-managed staging memory each frame.
+   No source buffer is required; no copy occurs after the initial staging allocation.
+
+The default when no hint is given is `dynamic` (copy on write).
+
+This model means large static resources (full volume textures, static atlas meshes) incur no
+redundant copy if the user explicitly declares them `static`.
+The scene trusts the declared lifetime.
+
+These ownership semantics should be enforced at the API level: a `static` resource must not be
+written to after initial upload without re-declaring it as `dynamic` or `streaming`.
+
+
+## Allocation And Visual Sizing
+
+Resource allocation should be separate from visual creation.
+
+A visual is created without a committed item count:
+
+```text
+visual = dvz_point(scene, flags)   // no size yet
+```
+
+Data is written when available:
+
+```text
+dvz_visual_write(visual, DVZ_ATTR_POSITION, 0, n, xyz)  // establishes size on first write
+```
+
+An optional explicit pre-allocation hint is available for performance when the count is known
+upfront:
+
+```text
+dvz_visual_alloc(visual, n)        // hints GPU buffer pre-allocation; not required
+```
+
+Resizing is allowed: writing with a different total count triggers reallocation.
+This supports streaming workloads where item count changes frame to frame.
+
+Tying item count to construction (as in v0.3) is not the preferred v0.4 model.
+
+
 ## Deferred Questions
 
 The following topics should remain open for now:

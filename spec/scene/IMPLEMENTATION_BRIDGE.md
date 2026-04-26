@@ -97,17 +97,48 @@ This keeps the bridge aligned with `RESOURCE_MODEL.md` and `VISUAL_CONTRACT.md`.
 
 ## Family And Variant Mapping
 
-Visual family identity likely maps onto:
+Visual type identity maps onto a `DvzVisualType` enum with values such as `DVZ_VISUAL_POINT`,
+`DVZ_VISUAL_PATH`, `DVZ_VISUAL_IMAGE`, etc.
 
-1. a `DvzSceneVisualFamily` enum,
-2. a variant flag set or structured variant descriptor,
-3. an optional family-specific parameter schema layered on top of generic creation.
+Note: the spec uses the term "family" as a taxonomic concept; the public C API uses `DvzVisualType`
+and does not expose the word "family" to users.
 
 This suggests an implementation split such as:
 
-1. `family` is mandatory in `DvzSceneVisualDesc`,
-2. `variant` is explicit but family-scoped,
-3. family-specific helpers remain wrappers rather than a different object model.
+1. `type` is mandatory in `DvzVisualDesc`,
+2. `variant` is explicit but type-scoped,
+3. type-specific creation helpers (`dvz_point()`, `dvz_path()`, etc.) are the primary public
+   surface; a generic `dvz_visual_create()` may exist internally.
+
+
+## Family-Specific Data Preparation (Rasterization Backends)
+
+This section is an implementation note, not a scene spec contract.
+
+The scene spec intentionally does not define how user data becomes GPU-ready.
+On a rasterization backend, most visual types require CPU-side data preparation steps before GPU
+upload.
+These steps are not visible to the user and are not part of the scene API contract.
+
+Known preparation steps per type (rasterization):
+
+| Visual type | Preparation needed |
+|---|---|
+| `point`, `pixel`, `marker` | none — positions uploaded directly |
+| `path` | join and cap geometry computed from polyline vertices |
+| `glyph` | glyph instances packed against an atlas; atlas may be rebuilt |
+| `sphere` | impostor quad layout derived from center + radius |
+| `mesh` | normals computed if absent; tangents for textured variants |
+| `image` | none for 2D; slice plane parameters computed for slice mode |
+| `volume` | transfer function and traversal parameters packed |
+| `segment` | cap geometry derived from endpoint pairs |
+
+These steps should be encapsulated inside each type's write path and triggered by invalidation.
+They must remain invisible to the user.
+
+On a ray-tracing backend, preparation steps would differ entirely.
+Implementors targeting non-rasterization backends should ignore this table and define their own
+preparation steps appropriate to their execution model.
 
 
 ## Parameter And Style Mapping
