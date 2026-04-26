@@ -146,6 +146,36 @@ Internally, canvas renders into an offscreen image, then copies/blits to the swa
 The runner composes module test suites into one process and supports optional filtering by name/tag.
 
 
+## Planned Python binding architecture
+
+The Python API will be layered above `libdatoviz` in three tiers:
+
+```
+┌─────────────────────────────────┐
+│  Python sugar layer             │  datoviz/*.py  (pure Python)
+│  ergonomics, NumPy, defaults    │
+├─────────────────────────────────┤
+│  Python binding layer           │  _datoviz.so   (nanobind)
+│  1:1 with C API, mechanical     │
+├─────────────────────────────────┤
+│  C core                         │  libdatoviz.so
+│  all logic lives here           │
+└─────────────────────────────────┘
+```
+
+The C API is designed as an FFI target: opaque handles, descriptor structs, explicit lifecycle, no
+raw function pointers in public structs.
+
+The binding layer (`_datoviz.so`) wraps C handles in Python objects mechanically using nanobind.
+It converts NumPy arrays to raw pointer + count for data upload calls and manages `dvz_destroy`
+on `__del__`. It contains no scene logic.
+
+The sugar layer (`datoviz/*.py`) adds Python ergonomics: keyword arguments, NumPy dtype coercion,
+context managers, inline colormap shortcuts. It contains no scene logic.
+
+See `spec/scene/IMPLEMENTATION_BRIDGE.md` for the full design rationale.
+
+
 ## Current status and direction
 
 - Core active modules above are the stabilization focus for v0.4-dev.

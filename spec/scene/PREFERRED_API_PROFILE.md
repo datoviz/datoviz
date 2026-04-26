@@ -28,6 +28,25 @@ It should be read as:
 Rationale paragraphs and examples in this document are informative.
 
 
+## Language Target
+
+The C scene API is the primary and canonical public surface.
+
+It must be designed as an FFI target:
+
+1. opaque handles only in public headers,
+2. descriptor structs for construction,
+3. explicit lifecycle with paired create/destroy,
+4. no raw function pointers in public structs.
+
+Python binds to the C API through a nanobind binding layer.
+A thin Python sugar layer sits above the binding layer and adds ergonomics (NumPy arrays, keyword
+arguments, context managers, inline scale shortcuts).
+All scene logic lives in C; the Python layers add no logic of their own.
+
+See `IMPLEMENTATION_BRIDGE.md` for the full three-tier binding architecture.
+
+
 ## Core Rule
 
 The preferred scene API profile should expose semantic scene objects and semantic resource roles,
@@ -197,9 +216,14 @@ The following questions remain intentionally open:
 
 1. the exact spelling of constructors and descriptor structs in a C header,
 2. whether some style parameters deserve dedicated typed setters in addition to style blocks,
-3. whether mapping objects are always public handles or may sometimes be hidden behind derived
-   convenience constructors,
-4. how much of `FramePlan` inspection is public versus test-only.
+3. how much of `FramePlan` inspection is public versus test-only.
+
+The following question is resolved:
+
+- **Inline vs explicit mapping construction**: both are supported. Explicit handles are the
+  preferred default and support sharing across visuals and attachment to colorbars. An inline
+  shortcut (anonymous mapping, no shareable identity) is available at the Python sugar layer for
+  single-visual cases. See `SCALES.md` for the full model.
 
 
 ## Relationship To Other Scene Docs

@@ -198,6 +198,88 @@ The current spec suggests implementation modules such as:
 8. example or fixture builders.
 
 
+## Language Binding Architecture
+
+The C scene API is the canonical source of truth.
+Python (and any other language) binds to it; the Python layer does not reimplement scene logic.
+
+The architecture has three tiers:
+
+```
+┌─────────────────────────────────┐
+│  Python sugar layer             │  datoviz/*.py  (pure Python)
+│  ergonomics, NumPy, defaults    │
+├─────────────────────────────────┤
+│  Python binding layer           │  _datoviz.so   (nanobind)
+│  1:1 with C, mechanical         │
+├─────────────────────────────────┤
+│  C core                         │  libdatoviz.so
+│  all scene logic lives here     │
+└─────────────────────────────────┘
+```
+
+The rule is strict: all logic lives in C, all ergonomics live in Python, the binding layer is
+mechanical and contains no logic of its own.
+
+### C API Design As An FFI Target
+
+The C scene API must be designed as an FFI target from the start, not retrofitted later.
+
+Required properties:
+
+1. **Opaque handles** — public headers never expose struct internals; callers hold pointers to
+   forward-declared types only.
+2. **Descriptor structs for construction** — constructors take one `const Desc*` argument rather
+   than many positional parameters; this is both FFI-friendly and forward-compatible.
+3. **Explicit lifecycle** — every `dvz_foo_create` or allocating call has a paired `dvz_foo_destroy`.
+   No implicit ownership transfer.
+4. **No raw function pointers in public structs** — they are painful across FFI boundaries; use
+   explicit event registration functions instead.
+5. **Error callbacks or last-error query** — avoid requiring the caller to check a return code on
+   every call; a registered error callback or `dvz_scene_last_error()` pattern scales better for
+   FFI consumers.
+
+### Binding Layer (nanobind)
+
+The binding layer is compiled with nanobind and exposes one Python class per C handle type.
+
+Its responsibilities are limited to:
+
+1. wrapping each C handle in a Python object,
+2. calling `dvz_destroy` on `__del__`,
+3. converting NumPy arrays to `(void*, count)` for data upload calls,
+4. keeping NumPy arrays alive as long as the scene or visual holds a reference to the underlying
+   memory.
+
+The binding layer must not contain scene logic, convenience constructors, or Python-specific
+default values.
+
+### Python Sugar Layer
+
+The Python sugar layer is pure Python.
+It imports the binding layer and adds:
+
+1. keyword arguments and sensible defaults for constructors,
+2. NumPy integration at the Python level (dtype coercion, shape checks),
+3. context managers for scene and resource lifecycle,
+4. `__repr__` and inspection helpers,
+5. inline colormap and scale shortcuts (as described in `SCALES.md`),
+6. Pythonic property setters instead of explicit setter calls.
+
+The sugar layer must not contain scene logic.
+If a convenience shortcut requires a new semantic capability it should be added to the C API
+first, then exposed through the sugar layer.
+
+### Consequences For Spec Work
+
+This decision has two concrete consequences for the current scene spec:
+
+1. the draft C headers under `headers/` are the right pressure-test surface; they should be
+   designed as FFI targets (opaque handles, descriptor structs) rather than as internal C objects,
+2. the inline scale shortcut described in `SCALES.md` maps to a sugar-layer convenience that calls
+   an anonymous scale constructor in C — it does not require a special code path in the C API.
+
+
 ## Immediate Pressure On Implementation
 
 If implementation work starts from this bridge, the first high-value prototypes would be:
