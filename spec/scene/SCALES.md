@@ -51,14 +51,16 @@ the scene layer and is not user-visible.
 
 The first scene slice should support these scale kinds:
 
-1. `color` — maps scalars to RGBA colors via a colormap palette,
-2. `size` — maps scalars to a float size value within a declared output range,
-3. `opacity` — maps scalars to an alpha value in `[0, 1]`.
+1. `color` — maps `float32` scalars to `rgba_u8` colors via a continuous colormap palette,
+2. `categorical` — maps integer category IDs to `rgba_u8` colors via a discrete color set,
+3. `size` — maps `float32` scalars to a float size value within a declared output range,
+4. `opacity` — maps `float32` scalars to an alpha value in `[0, 1]`.
 
 Additional scale kinds such as `linewidth` or `shape` may be added later.
 
 The most important and most common kind is `color`.
-The rest of this document focuses on color scales, with notes on size and opacity where they differ.
+`categorical` is semantically distinct from `color` and is described in its own section.
+The rest of this document covers color scales first, then categorical, then size and opacity.
 
 
 ## Color Scale
@@ -106,7 +108,6 @@ The minimum required named palettes are:
 | `coolwarm` | diverging, blue–red |
 | `bwr` | diverging, blue–white–red |
 | `hsv` | cyclic, hue-based |
-| `tab10`, `tab20` | categorical, up to 10 or 20 distinct colors |
 
 Additional palettes may be added without breaking the contract.
 
@@ -146,6 +147,56 @@ depending on item count, update frequency, and runtime capability.
 The user does not choose the mapping location.
 
 
+## Categorical Scale
+
+A categorical scale maps integer category IDs to colors from a discrete color set.
+
+It is semantically distinct from a continuous color scale:
+
+1. the input is an integer category ID, not a continuous scalar,
+2. there is no domain normalization — each ID is an index directly into the color set,
+3. the mapping is not interpolated between entries,
+4. out-of-range IDs wrap modulo the color set size.
+
+### Color Set
+
+Two color set sources are supported:
+
+**Named color set**: the user selects a built-in discrete palette by name.
+
+| Name | Description |
+|---|---|
+| `tab10` | 10 visually distinct colors |
+| `tab20` | 20 visually distinct colors |
+
+Additional named categorical palettes may be added without breaking the contract.
+
+**Custom color set**: the user supplies an explicit array of `rgba_u8` colors.
+Category ID `i` maps to entry `i % len(colors)`.
+
+### Input And Output
+
+| Property | Description |
+|---|---|
+| input | `int32` category ID per item |
+| output | `rgba_u8` color |
+
+When a visual attribute uses a categorical scale:
+
+1. `PER_ITEM` source: one `int32` category ID per item is uploaded,
+2. `CONSTANT` source: one `int32` is supplied; one color is applied to all items,
+3. `PER_GROUP` source: one `int32` per group is supplied; each group gets one mapped color.
+
+### Updates
+
+A categorical scale supports the same update separation as a continuous color scale:
+
+1. **color set update** — change the named palette or custom color array; marks the scale dirty,
+   does not require re-uploading item ID data.
+2. **item ID update** — upload new category IDs; marks the visual's item data dirty, does not
+   change the scale itself.
+
+
 ## Size Scale
 
 A size scale maps scalars to float size values.
@@ -177,14 +228,15 @@ It is typically combined with a base color by multiplying the alpha channel.
 
 ## Scale Identity And Sharing
 
-Each scale has a stable logical identity within the owning scene.
+All scale kinds — `color`, `categorical`, `size`, and `opacity` — have a stable logical identity
+within the owning scene.
 
 That identity allows:
 
 1. multiple visuals to reference the same scale,
-2. a colorbar to attach to a scale rather than to a specific visual,
-3. scale-dirty propagation: when the domain or palette changes, all referencing visuals and
-   explanatory objects are invalidated correctly.
+2. a colorbar or legend to attach to a scale rather than to a specific visual,
+3. scale-dirty propagation: when scale parameters change, all referencing visuals and explanatory
+   objects are invalidated correctly.
 
 Two visuals that reference the same scale object share a mapping identity.
 A colorbar that attaches to that scale explains both visuals simultaneously.
@@ -200,7 +252,7 @@ shared explanatory objects should only combine semantically identical mappings.
 ## Declaring A Scale On A Visual Attribute
 
 When a visual attribute uses `scalar` color mode (see `visuals/PIXEL.md` and family specs), it
-must reference a color scale.
+must reference a color or categorical scale.
 
 The declaration binds:
 
@@ -208,7 +260,10 @@ The declaration binds:
 2. the scale object,
 3. the attribute source (`CONSTANT`, `PER_ITEM`, or `PER_GROUP`).
 
-Conceptually:
+### Explicit Handle
+
+The preferred form creates a named scale handle that can be shared across visuals and attached to
+explanatory objects:
 
 ```text
 scale = scene_scale(scene, {
@@ -222,11 +277,24 @@ visual_set_color_scale(visual, scale)
 visual_set_color_source(visual, PER_ITEM)
 ```
 
-Or using the generic resource binding model from `PREFERRED_API_PROFILE.md`:
+### Inline Shortcut
+
+When a scale is used on exactly one visual and no colorbar or legend is needed, the user may
+declare the mapping parameters directly on the visual without materializing a scale handle.
+The scene creates an anonymous scale internally.
 
 ```text
-visual_set_mapping(visual, COLOR_SCALE, scale)
+visual_set_colormap(visual, {
+    domain_min = 0.0,
+    domain_max = 1.0,
+    palette = VIRIDIS,
+    source = PER_ITEM,
+})
 ```
+
+An anonymous scale has no stable identity outside the visual.
+It cannot be shared with other visuals or attached to a colorbar.
+If the user later needs to attach a colorbar, they should switch to an explicit handle.
 
 The exact API spelling is deferred to `PREFERRED_API_PROFILE.md` and the final C header work.
 
@@ -280,11 +348,16 @@ This fallback is transparent to the user except for the diagnostic and the highe
 
 ## Deferred Questions
 
-1. the exact public API spelling for scale construction and update,
-2. whether scale objects are always explicit handles or may sometimes be constructed inline from
-   visual parameters as a convenience,
-3. whether categorical scales (mapping integer category ids to discrete colors) deserve a separate
-   scale kind or are handled as a special palette with `tab10` / `tab20`,
-4. whether scale output types other than `rgba_u8` are needed (e.g., `rgba_f32` for HDR contexts),
-5. whether size and opacity scales share the same construction surface as color scales or use
-   separate entry points.
+1. the exact public API spelling for scale construction and update.
+
+The following questions are resolved and no longer open:
+
+- **Inline construction**: both explicit handles and an inline shortcut are supported; see
+  the Declaring section above.
+- **Categorical scales**: `categorical` is a first-class scale kind with integer input, not a
+  palette variant of `color`.
+- **`rgba_f32` output**: not needed. The output of all color and categorical scales is `rgba_u8`.
+  The float32 *input* scalar is already covered by the color scale model.
+- **Size and opacity construction surface**: all scale kinds share the same identity and sharing
+  machinery; size and opacity scales use the same explicit-handle and inline-shortcut model as
+  color scales.
