@@ -150,6 +150,55 @@ The scene layer must not depend on:
 6. backend command-buffer recording APIs.
 
 
+## Canvas And Presentation Ownership
+
+The scene layer does not own or reference the canvas, window, swapchain, or stream/sink objects.
+
+Those are application-level and runtime-level concerns.
+
+The intended ownership model is:
+
+1. the application creates a canvas (window + device + swapchain + stream + sinks),
+2. the application creates a DRP2 runtime, which plugs into the canvas draw callback,
+3. the application creates a scene, passing it the DRP2 runtime as its submission target,
+4. the scene never references canvas, stream, sink, or swapchain directly.
+
+Per-frame flow:
+
+```text
+canvas fires draw callback
+  → application asks scene to build frame → FramePlan
+  → DRP2 runtime executes FramePlan → fills VkCommandBuffer
+  → canvas submits → stream routes to sinks (swapchain, video, etc.)
+```
+
+Video and offscreen sinks are attached to the canvas stream by the application.
+The scene does not attach sinks, register callbacks on the stream, or inspect the canvas.
+
+
+## Logical Render Target
+
+The scene needs to know the logical output dimensions and format for a frame — but not the backend
+object behind them.
+
+This is expressed as a `DvzRenderTarget`, a scene-level logical handle resolved by the DRP2
+runtime to actual backend resources.
+
+Two variants:
+
+```text
+// Interactive: target backed by the canvas swapchain
+DvzRenderTarget* target = dvz_render_target_canvas(canvas)
+
+// Offscreen/export: target backed by a readback-capable image
+DvzRenderTarget* target = dvz_render_target_offscreen(runtime, width, height, format)
+```
+
+The scene holds a `DvzRenderTarget` and uses it when building the `FramePlan`.
+It does not know whether the target is a swapchain image or an export buffer.
+That mapping is the DRP2 runtime's responsibility.
+
+
 ## Design Rule
 
 If the scene layer needs a reusable low-level behavior, prefer improving the DRP2 or runtime-facing

@@ -200,13 +200,17 @@ Redraw scheduling rules:
 
 Offline clock mode is the foundation for GPU-accelerated video export.
 
-The export workflow:
+The export workflow, from the application's perspective:
 
-1. set clock mode to `offline`, configure `fps` and total `duration`,
-2. attach a video sink to the canvas stream (already supported in the canvas architecture),
-3. call the frame advance loop — the scene steps `t` by `dt` each iteration, builds a `FramePlan`,
-   emits DRP2, submits, and the video sink captures the output,
+1. application attaches a video sink to the canvas stream — this is a canvas-level operation,
+   not a scene concern,
+2. application sets the scene clock to `offline` mode and configures `fps` and total `duration`,
+3. application drives the frame loop — each iteration the scene steps `t` by `dt`, builds a
+   `FramePlan`, emits DRP2, and the DRP2 runtime submits; the video sink captures the output,
 4. the loop terminates when `t >= duration`.
+
+The scene's only responsibility in this workflow is the clock and the `FramePlan`.
+Everything about canvas, sinks, and capture is the application's job.
 
 The user authors the animation through any combination of:
 
