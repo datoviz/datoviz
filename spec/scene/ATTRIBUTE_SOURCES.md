@@ -88,14 +88,20 @@ Examples:
 2. 200 electrode channels, each channel a different linewidth,
 3. K brain-atlas regions rendered together, each region a distinct opacity.
 
-User declaration requirements:
+User declaration requirements depend on the resource class of the visual:
 
-1. the user declares which attribute uses `PER_GROUP` source,
-2. each item must carry or imply a group identity — typically a group index integer,
-3. the group value table is a separate small resource.
+**`ItemTable` visuals** (`point`, `pixel`, `marker`, `segment`, etc.): there are no intrinsic group
+boundaries, so each item must carry an explicit per-item group index integer.
+The group value table is a separate small resource.
 
-Scene implementation: the scene layer may choose between multiple draw calls, a small storage buffer
-lookup keyed by group index, or a per-item expanded copy depending on group count and item count.
+**`GroupedItemTable` visuals** (`path`, `glyph`, etc.): group boundaries are already encoded in the
+table metadata.
+`PER_GROUP` source on these visuals infers group membership from those boundaries — no separate
+per-item group index attribute is needed.
+The group value table is still a separate small resource.
+
+Scene implementation: the scene layer may choose between multiple draw calls, a storage buffer
+lookup keyed by group index, or a per-item expanded copy.
 The user does not select or see the strategy.
 
 `PER_GROUP` is especially important for scientific visualization patterns such as:
@@ -116,11 +122,21 @@ the family contract (items belong to an ordered sequence).
 
 `PER_GROUP` attribute source is an attribute-level declaration.
 It says that a specific attribute value varies by group, not by item.
-It may apply to families that use `ItemTable` rather than `GroupedItemTable` — for example, a flat
-`ItemTable` of spike positions where each item carries a neuron group index.
 
-The concepts may coexist: a `GroupedItemTable` visual may also declare that its `color` attribute
-uses `PER_GROUP` source, meaning each logical path or label has one color.
+The two concepts interact as follows:
+
+1. **`ItemTable` + `PER_GROUP`**: the visual has no intrinsic group structure, so the user must
+   supply an explicit per-item group index integer alongside the group value table.
+   Example: a flat scatter of 3M spikes where each spike carries a neuron group index.
+
+2. **`GroupedItemTable` + `PER_GROUP`**: group membership is already encoded in the table
+   boundaries, so no separate per-item group index is needed.
+   The scene infers group identity from the boundary metadata.
+   Example: 200 paths each with its own color — the path boundaries define the groups.
+
+Group identity in `GroupedItemTable` visuals is always the table's own group structure.
+There is no supported case where a `GroupedItemTable` visual uses `PER_GROUP` with a group
+identity that differs from the table's boundaries.
 
 
 ## Which Sources Each Attribute Accepts
@@ -236,12 +252,15 @@ The user should choose based on what their data actually requires.
 
 ## Deferred Questions
 
-The following are intentionally left open:
+1. the exact public API shape for declaring attribute sources and mutability hints — deferred to
+   the broader C API surface work in `PREFERRED_API_PROFILE.md`.
 
-1. whether group identity is always an explicit per-item integer or may sometimes be inferred from
-   item range partitions,
-2. the exact public API shape for declaring attribute sources and mutability hints,
-3. whether `PER_GROUP` source may reuse `GroupedItemTable` group boundaries without a separate
-   group index attribute,
-4. the minimum group count threshold above which the scene layer should prefer storage buffer lookup
-   over multiple draw calls.
+The following questions are resolved:
+
+- **Group identity and range inference**: `ItemTable` visuals require an explicit per-item group
+  index integer; `GroupedItemTable` visuals infer group membership from table boundaries with no
+  separate index needed.
+- **`PER_GROUP` reuse of `GroupedItemTable` boundaries**: confirmed — see the `Relationship To
+  GroupedItemTable` section above.
+- **Group count threshold for storage buffer vs draw calls**: an internal scene layer
+  implementation detail, not user-visible, not specced.
