@@ -439,10 +439,147 @@ They should not necessarily be regenerated when:
    path by default.
 
 
+## Panel Ownership
+
+Axes are owned by panels, not by the scene directly.
+
+A panel creates default axes for each active dimension when it is created.
+For a 2D panel, the defaults are one X axis and one Y axis.
+The user configures them through the panel rather than creating free-standing axis handles.
+
+Conceptually:
+
+```text
+panel = scene_panel(scene, &panel_desc)
+panel.x_axis.scale = LINEAR
+panel.x_axis.label = "Time (s)"
+panel.y_axis.scale = LOG
+```
+
+To suppress default axes or add non-default ones:
+
+```text
+panel = scene_panel(scene, &panel_desc)   // axes=false to suppress defaults
+axis = scene_axis(panel, &axis_desc)      // axis_dim = X, scale = LINEAR, ...
+```
+
+The same panel handle is the natural access point for its axes.
+Free-standing axis objects that exist outside a panel are not supported.
+
+
+## Axis Dimension Declaration
+
+The axis dimension (`x`, `y`, or `z`) is declared explicitly at creation.
+
+It is not inferred from panel type alone.
+
+The panel creates sensible defaults for each dimension, but the user may override or suppress them.
+
+Rules:
+
+1. each panel dimension may have at most one active axis,
+2. axis dimension is fixed at creation and does not change,
+3. 2D panels create X and Y axes by default; 3D panels may create X, Y, and Z axes.
+
+
+## Domain Source
+
+An axis tracks the data-space domain of its dimension.
+
+The domain source follows a priority order:
+
+1. **Explicit override** — the user sets `domain_min` / `domain_max` directly on the axis.
+   The axis uses those values and does not follow panzoom.
+   Used for fixed-range plots where the domain should not react to navigation.
+
+2. **Panzoom-linked (default)** — the axis tracks the panel controller's current visible range
+   on its dimension.
+   When the user pans or zooms, the visible range changes and the axis domain follows.
+   This is the default for interactive panels.
+
+3. **Fit to data (one-time operation)** — the user requests a one-time domain fit from the
+   extents of visuals in the panel.
+   This sets the panzoom state to encompass the data, after which the axis follows panzoom as
+   normal.
+   It is not a live binding; it is an initialization convenience.
+
+The default is panzoom-linked.
+
+
+## Controller Binding And The Pull Model
+
+An axis bound to panzoom does not subscribe to panzoom events.
+
+Instead, during the axis update step of the frame lifecycle, the axis queries its panel's
+controller directly for the current visible domain on its dimension.
+
+```text
+visible_min, visible_max = controller_query_domain(panel.x_controller, DIM_X)
+```
+
+The axis then checks whether the current tick layout is still acceptable for that domain.
+If not, it triggers regeneration.
+If yes, it retains the existing layout and lets panel transforms move it live.
+
+This pull model keeps axis update deterministic and avoids event routing complexity for something
+that happens every frame anyway.
+
+
+## Panel Linking
+
+Panel linking is a controller concept, not an axis concept.
+
+Two panels that share the same controller automatically have synchronized axes.
+
+```text
+panzoom = scene_controller(scene, &panzoom_desc)  // shared controller
+
+panel_a = scene_panel(scene, &panel_a_desc)        // x_controller = panzoom
+panel_b = scene_panel(scene, &panel_b_desc)        // x_controller = panzoom
+```
+
+Both panels' X axes query the same controller and therefore always show the same visible X domain.
+No explicit axis-linking API is needed — sharing the controller IS the link.
+
+Partial linking (share X but independent Y) follows naturally from per-dimension controllers:
+
+```text
+panel_a = scene_panel(scene, &desc_a)  // x_controller = shared_x, y_controller = local_y_a
+panel_b = scene_panel(scene, &desc_b)  // x_controller = shared_x, y_controller = local_y_b
+```
+
+Common scientific viz patterns this covers:
+
+1. spike raster + PSTH sharing a time axis,
+2. multi-panel time series all locked to the same X range,
+3. scatter plot + marginal histograms sharing X and Y,
+4. any overview + detail layout where one dimension is synchronized.
+
+Controllers must be first-class scene objects with stable handles for this model to work.
+`CONTROLLERS.md` already implies this; the axis binding model depends on it being made explicit
+there.
+
+
+## Rules (Updated)
+
+1. Tick selection happens in `DataSpace`.
+2. Label formatting happens from data-space values.
+3. Tick and label geometry are built in `VisualSpace`.
+4. Panel transforms still apply after that geometry is built.
+5. Axes are scene-side semantic objects, not backend concepts.
+6. Axes should emit ordinary visual-family contributions rather than inventing a parallel render
+   path by default.
+7. Axes are owned by panels; free-standing axis objects are not supported.
+8. The axis dimension is declared explicitly at creation.
+9. The default domain source is panzoom-linked; explicit override suppresses panzoom tracking.
+10. Axis domain is queried from the panel controller during the frame lifecycle (pull model).
+11. Panel linking is achieved by sharing a controller, not by a dedicated link API.
+
+
 ## Follow-On Work
 
 This document should eventually be followed by:
 
-1. worked 2D axis examples,
-2. explicit colorbar notes if needed,
-3. future API sketches for binding axes to domain sources and panels.
+1. worked 2D axis examples tracing domain source → tick generation → FramePlan,
+2. explicit colorbar binding notes,
+3. an update to `CONTROLLERS.md` making controllers first-class handles explicit.
