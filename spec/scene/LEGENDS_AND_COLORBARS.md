@@ -580,16 +580,29 @@ This document should be read alongside:
 6. [INVALIDATION_AND_CACHING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/INVALIDATION_AND_CACHING.md).
 
 
+## Resolved Questions
+
+**Scale objects and the public API** — resolved by `SCALES.md`.
+Scale objects are explicit first-class scene handles.
+Legends and colorbars reference them by handle.
+The exact C API spelling remains open in `PREFERRED_API_PROFILE.md`.
+
+**Legend vs colorbar type distinction** — resolved.
+Legends and colorbars are distinct types at the API level.
+They share annotation base rules (attachment, placement, invalidation, interaction constraints)
+but not a common C struct.
+Their content models are genuinely different: a legend owns a list of discrete labeled entries,
+a colorbar owns a continuous color ramp with tick geometry.
+Treating them as subtypes of a single base type would obscure that difference without benefit.
+
+
 ## What This Document Intentionally Leaves Open
 
 This document intentionally does not freeze:
 
-1. whether explicit scale objects become part of the final public scene API,
-2. whether legends and colorbars share one annotation base type or remain distinct top-level scene
-   objects,
-3. the final sample-mark templating system,
-4. the final collision and packing algorithm for dense legends,
-5. the final text and ramp rendering implementation strategy.
+1. the final sample-mark templating system,
+2. the final collision and packing algorithm for dense legends,
+3. the final text and ramp rendering implementation strategy.
 
 
 ## Immediate Follow-Up
