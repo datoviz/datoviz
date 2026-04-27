@@ -178,9 +178,10 @@ The first useful set is:
 
 1. `PanZoom2DController`
 2. `Camera3DController`
-3. `HoverController`
-4. `SelectionController`
-5. `LinkedPanelsController`
+3. `GlobeController`
+4. `HoverController`
+5. `SelectionController`
+6. `LinkedPanelsController`
 
 These names are descriptive only.
 
@@ -214,6 +215,40 @@ It may also:
 
 1. invalidate view-dependent overlays,
 2. schedule picking or probes if the interaction model wants that.
+
+
+## `GlobeController`
+
+This controller supports navigation on a 3D geographic globe.
+
+It should:
+
+1. constrain the camera to always point toward the globe center,
+2. interpret drag as rotation on the sphere surface — expressed as longitude and latitude of
+   the view center,
+3. interpret scroll or pinch as altitude change — moving the camera closer to or farther from
+   the surface,
+4. enforce a minimum altitude to prevent the camera from passing through the surface,
+5. enforce a maximum altitude beyond which the full globe is visible,
+6. mark `PanelTransformDirty` on any navigation change.
+
+It is the natural paired controller for `DVZ_TRANSFORM_GEO_GLOBE` visual attachments.
+
+Unlike `Camera3DController`, navigation is expressed in geographic terms (longitude, latitude,
+altitude) rather than free 3D space.
+The camera is always oriented with the sphere's north pole up unless an explicit up-vector
+override is applied.
+
+The queryable domain interface for globe axes should return the currently visible longitude and
+latitude ranges rather than raw `VisualSpace` extents.
+
+Constructor:
+
+```text
+globe = dvz_globe_controller(scene, flags)
+dvz_globe_controller_set_altitude(globe, min_alt, max_alt)
+dvz_panel_bind_controller(panel, globe, DVZ_DIM_XYZ)   // binds all three spatial dimensions
+```
 
 
 ## `HoverController`

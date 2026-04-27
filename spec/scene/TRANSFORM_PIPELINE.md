@@ -431,6 +431,90 @@ positions in the same data-space coordinate system as the panel domain.
 The scene does not detect or reconcile mismatched coordinate systems.
 
 
+## Coordinate Transform Stage
+
+Before panel-domain normalization, an optional per-visual coordinate transform converts the
+visual's `DataSpace` into a Cartesian `DataSpace` that the domain normalization can handle.
+
+The full pipeline for a visual with a coordinate transform is:
+
+```text
+DataSpace (user coords) → [coord_transform] → Cartesian DataSpace → [domain normalization] → VisualSpace
+                                                                  → [controller] → PanelSpace → NDC
+```
+
+The transform is declared on the attachment descriptor alongside `coord_space`:
+
+```text
+dvz_panel_add_visual(panel, visual, &(DvzVisualAttachDesc){
+    .coord_space      = DVZ_COORD_DATA,
+    .coord_transform  = DVZ_TRANSFORM_POLAR,
+    .transform_params = {},    // optional per-transform parameters
+    ...
+})
+```
+
+### Named Transforms
+
+| Value | Input | Output | Notes |
+|---|---|---|---|
+| `DVZ_TRANSFORM_NONE` | any Cartesian | unchanged | default |
+| `DVZ_TRANSFORM_POLAR` | `(r, θ)` | `(x, y)` | θ in radians |
+| `DVZ_TRANSFORM_SPHERICAL` | `(r, θ, φ)` | `(x, y, z)` | physics convention: θ polar, φ azimuthal |
+| `DVZ_TRANSFORM_GEO_MERCATOR` | `(lon, lat)` | `(x, y)` | Web Mercator (EPSG:3857) by default |
+| `DVZ_TRANSFORM_GEO_GLOBE` | `(lon, lat, alt)` | `(x, y, z)` | on unit sphere; alt scales radially |
+
+All angles are in radians unless a `DvzTransformParams` field overrides the convention.
+
+### Transform Parameters
+
+`DvzTransformParams` carries optional per-transform configuration:
+
+| Field | Used by | Description |
+|---|---|---|
+| `sphere_radius` | `GEO_GLOBE` | radius of the reference sphere; default `1.0` |
+| `center_lon` | `GEO_MERCATOR` | projection center longitude; default `0.0` |
+| `center_lat` | `GEO_MERCATOR` | reference latitude for scale; default `0.0` |
+| `angles_degrees` | `POLAR`, `SPHERICAL`, `GEO_*` | if true, angles are in degrees |
+
+Zero-valued fields use defaults; the entire struct may be zero-initialized for defaults.
+
+### Coordinate Transform And Panel Domain
+
+The panel domain always refers to the **post-transform Cartesian** space, not the original user
+coordinate space.
+
+For `DVZ_TRANSFORM_POLAR` the panel domain is declared in Cartesian `(x, y)` units.
+For `DVZ_TRANSFORM_GEO_MERCATOR` the panel domain is declared in projected map units.
+For `DVZ_TRANSFORM_GEO_GLOBE` the panel domain is typically not used for normalization — the
+globe controller manages the view directly and data lands on the unit sphere.
+
+### Polar Notes
+
+`DVZ_TRANSFORM_POLAR` converts `(r, θ)` to `(x, y)` before normalization.
+Axes in a polar panel should show radial and angular gridlines rather than Cartesian ticks.
+Polar axis geometry (circular gridlines, radial labels) is deferred; for the initial spec a
+polar panel may suppress default axes or show Cartesian axes over the normalized Cartesian
+space.
+
+### Geographic Notes
+
+`DVZ_TRANSFORM_GEO_MERCATOR` maps longitude and latitude to 2D projected coordinates.
+Standard Web Mercator is the default; the Mercator projection diverges near the poles
+(lat ≥ ~85.05°).
+
+`DVZ_TRANSFORM_GEO_GLOBE` maps longitude, latitude, and altitude to a point on or above a
+sphere surface.
+Altitude `0` lands exactly on the sphere; positive altitude scales radially outward.
+The natural paired controller is `GlobeController` (see `CONTROLLERS.md`).
+
+Tiled satellite or street-map imagery for geographic visualization is a data-pipeline concern
+(tile loading, LOD management, cache) and is deferred.
+The `image` family must support efficient per-tile partial updates to enable it.
+
+Geographic axes (graticule lines, lon/lat tick formatting) are deferred.
+
+
 ## Aspect Ratio Policy
 
 Aspect ratio is a panzoom controller property, not a normalization property.
@@ -463,11 +547,13 @@ the visual's position data and whether the panel controller applies to it.
 
 ```text
 dvz_panel_add_visual(panel, visual, &(DvzVisualAttachDesc){
-    .coord_space     = DVZ_COORD_DATA,
-    .controller_mode = DVZ_CONTROLLER_APPLY,
-    .domain_x        = NULL,   // NULL = use panel domain
-    .domain_y        = NULL,
-    .domain_z        = NULL,
+    .coord_space      = DVZ_COORD_DATA,
+    .coord_transform  = DVZ_TRANSFORM_NONE,   // see Coordinate Transform Stage
+    .transform_params = {},
+    .controller_mode  = DVZ_CONTROLLER_APPLY,
+    .domain_x         = NULL,                 // NULL = use panel domain
+    .domain_y         = NULL,
+    .domain_z         = NULL,
 })
 ```
 
