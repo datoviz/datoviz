@@ -165,6 +165,19 @@ It should not:
 2. bypass scene planning,
 3. require UI widgets to be modeled as scene visuals or annotations.
 
+The `FramePlan` carries an explicit **external overlay slot** as a reserved post-scene
+execution step.
+The runtime fills this slot with the appropriate native UI render pass (e.g., Dear ImGui)
+after scene work completes.
+This makes the ordering contract explicit — the overlay always executes after scene submission
+and before present, and the runtime is responsible for inserting it at the right point.
+
+The overlay render pass uses `LOAD_OP_LOAD` on the target surface, preserving scene output.
+The runtime selects the correct backend-specific implementation (Vulkan, WebGPU, offscreen
+stub) without the scene layer being aware of the choice.
+
+If no external UI is registered, the overlay slot is a no-op.
+
 
 ### 11. Post-Frame Readback
 

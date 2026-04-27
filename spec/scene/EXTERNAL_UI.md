@@ -153,114 +153,125 @@ Good fits for scene-native semantics instead:
 ## Dear ImGui Integration
 
 Dear ImGui is bundled with Datoviz and is the primary supported external UI framework.
-The following describes the concrete architecture as implemented in v0.3 and carried forward
-into v0.4.
 
 
-### Rendering Architecture
+### v0.3 Architecture (Reference)
 
-ImGui rendering uses a **separate Vulkan render pass** that executes after the scene render
-and before the swapchain present.
+In v0.3, ImGui is integrated as follows:
 
-Key properties of the ImGui render pass:
+1. **Separate Vulkan render pass** with `LOAD_OP_LOAD` — preserves scene output, ImGui draws
+   on top without clearing. Framebuffers point to the same swapchain images as the scene pass.
+2. **Two command buffers, one submit** — scene CB records first, ImGui CB records after,
+   both submitted together. ImGui is always on top.
+3. **Hard-coded to Vulkan** — uses `ImGui_ImplVulkan` directly, bypassing DRP2.
+4. **Hard-coupled to GLFW** — uses `ImGui_ImplGlfw` for input.
+5. **Implicit ordering** — the loop submits the ImGui CB after the scene CB with no explicit
+   contract in the FramePlan.
+6. **Offscreen texture binding** — `dvz_gui_image` calls `ImGui_ImplVulkan_AddTexture`
+   directly with a Vulkan image view.
+7. **Panel binding** — `dvz_panel_gui(panel, title)` links a panel to an ImGui window;
+   the scene polls `dvz_gui_moving()` / `dvz_gui_resizing()` each frame and calls
+   `dvz_panel_resize()` to follow the ImGui window.
 
-1. **`LOAD_OP_LOAD`** — the ImGui render pass loads the existing framebuffer content rather
-   than clearing it. This means ImGui draws on top of the completed scene output without
-   discarding it.
-2. **Shared swapchain images** — ImGui framebuffers point to the same swapchain images as the
-   scene render pass, so ImGui output lands on the same surface.
-3. **`VK_IMAGE_LAYOUT_PRESENT_SRC_KHR` as final layout** — the ImGui render pass performs
-   the layout transition to present-ready, since it is the last pass before present.
 
-The frame sequence is:
+### v0.4 Target Architecture
 
-```text
-1. scene FramePlan executes → scene command buffer recorded and submitted
-2. ImGui NewFrame + app UI callbacks → ImGui draw lists built
-3. ImGui Render + ImGui_ImplVulkan_RenderDrawData → ImGui command buffer recorded
-4. both command buffers submitted together in one dvz_submit_send
-5. swapchain present
-```
+The v0.3 architecture works well but has three problems for v0.4:
 
-ImGui is **always rendered on top** of the scene. There is no mechanism to interleave scene
-and ImGui layers.
+1. **DRP2 bypass is implicit** — the FramePlan has no knowledge of the ImGui overlay.
+2. **Single backend** — `ImGui_ImplVulkan` is hard-coded; WebGPU and offscreen targets
+   are not naturally supported.
+3. **Vulkan-specific texture binding** — `dvz_gui_image` leaks `VkImageView` into scene code.
 
-This architecture is **below DRP2**. ImGui rendering uses `ImGui_ImplVulkan` directly and
-does not appear in the scene's `FramePlan` or DRP2 emission. The scene has no knowledge of
-ImGui draw calls.
+The v0.4 improvements are:
+
+#### 1. Explicit External Overlay Slot In The Frame Lifecycle
+
+The FramePlan carries an explicit **external overlay slot** as the last execution step,
+after scene work and before present.
+The runtime fills this slot with the ImGui render pass at the right point in the frame.
+This makes the ordering contract explicit rather than implicit in the loop.
+See `FRAME_LIFECYCLE.md` step 10.
+
+#### 2. Runtime-Selected ImGui Backend
+
+The scene and DRP2 remain backend-agnostic.
+The runtime selects and initializes the correct ImGui backend pair at startup:
+
+| Target | ImGui graphics backend | ImGui windowing backend |
+|---|---|---|
+| Desktop Vulkan | `imgui_impl_vulkan` | `imgui_impl_glfw` |
+| Desktop WebGPU (Dawn) | `imgui_impl_wgpu` | `imgui_impl_glfw` |
+| Browser (Emscripten + WebGPU) | `imgui_impl_wgpu` | `imgui_impl_glfw` (Emscripten GLFW) |
+| Offscreen / headless | either, no window | stub or none |
+
+`imgui_impl_wgpu` is Dear ImGui's official WebGPU backend (added 2022-2023).
+It supports Dawn (native) and browser WebGPU via Emscripten.
+The scene layer never references which backend is active.
+
+#### 3. Backend-Agnostic Texture Binding
+
+`dvz_gui_image(tex, w, h)` is a scene-level call that takes a logical scene texture handle,
+not a Vulkan image view.
+The runtime resolves the handle to the backend-native texture descriptor
+(`VkImageView` for Vulkan, `WGPUTextureView` for WebGPU) before passing it to ImGui.
+Scene code never calls `ImGui_ImplVulkan_AddTexture` or any backend-specific function directly.
+
+
+### Rendering Architecture (Both Versions)
+
+The following properties are correct in both v0.3 and v0.4:
+
+1. ImGui renders **after** the scene and **before** present.
+2. ImGui uses a **separate render pass** with `LOAD_OP_LOAD` — scene output is preserved.
+3. ImGui is **always on top** — there is no mechanism to interleave scene and ImGui layers.
+4. ImGui rendering is **outside DRP2** — it uses a native backend path not visible to the
+   scene plan.
 
 
 ### Input Routing
 
-`ImGui_ImplGlfw_NewFrame()` runs before scene controllers each frame, so ImGui consumes
-keyboard and mouse events first.
-Unconsumed events (i.e., events that do not interact with any ImGui window) are forwarded to
-scene controllers.
+ImGui input polling (`ImGui_ImplGlfw_NewFrame`) runs before scene controllers each frame.
+ImGui consumes input first; unconsumed events are forwarded to scene controllers.
 
-When an ImGui window is focused or hovered, scene controllers should not receive those events.
-This matches the standard ImGui `io.WantCaptureMouse` / `io.WantCaptureKeyboard` convention.
+Standard ImGui convention applies: `io.WantCaptureMouse` / `io.WantCaptureKeyboard` indicate
+whether ImGui has claimed the current event.
+Scene controllers should not process events claimed by ImGui.
 
 
 ### Panel–ImGui Window Binding
 
 A Datoviz panel can be bound to an ImGui window so that the panel viewport follows the
-ImGui window's position and size as the user drags or resizes it.
+ImGui window as the user drags or resizes it:
 
 ```text
-dvz_panel_gui(panel, "My Panel Title", flags)
+dvz_panel_gui(panel, "Window Title", flags)
 ```
 
-At runtime:
-1. an ImGui window with the given title is created each frame,
-2. the scene detects ImGui window move and resize events via `dvz_gui_moving()` /
-   `dvz_gui_resizing()`,
-3. on change, `dvz_panel_resize()` is called to update the Datoviz panel viewport,
-4. the scene rebuilds the `FramePlan` with the updated viewport on the next frame.
+Each frame the scene reads the ImGui window's current rect and updates the panel viewport.
+See `PANEL_LAYOUT.md` for the ImGui-driven layout mode.
 
-This is the **ImGui-driven layout mode** described in `PANEL_LAYOUT.md`.
+**Serialization**: ImGui persists window positions and sizes to `imgui.ini` automatically.
+Datoviz does not need its own layout serialization for ImGui-driven panels.
 
-Docking is supported when the scene is initialized with `DVZ_GUI_FLAGS_DOCKING`.
-In docking mode, panels can be docked into ImGui dock spaces and moved collectively.
-
-**Serialization**: ImGui automatically persists window positions and sizes to `imgui.ini`.
-Datoviz does not need its own layout serialization for ImGui-driven panels — `imgui.ini`
-is the save/restore mechanism.
+Docking is enabled with `DVZ_GUI_FLAGS_DOCKING`.
 
 
 ### Rendering Panel Content Inside ImGui
 
-A Datoviz panel rendered to an offscreen texture can be displayed inside an ImGui window
-using `dvz_gui_image`:
+An offscreen Datoviz panel can be displayed inside an ImGui window:
 
 ```text
 dvz_gui_image(tex, width, height)
 ```
 
-This calls `ImGui_ImplVulkan_AddTexture` internally to bind the offscreen texture to an
-ImGui image widget.
-The result is a panel whose content is rendered by Datoviz but displayed and positioned by
-ImGui.
-
-This pattern is useful for:
-1. tool panels showing a thumbnail or auxiliary view,
-2. multi-window applications where panels live in dockable ImGui windows,
-3. applications that mix ImGui-native UI with Datoviz-rendered content in one window.
+The runtime resolves the logical texture handle to the backend-native descriptor and passes
+it to ImGui. In v0.4 this call is backend-agnostic from the scene side.
 
 
 ### ImGui Font System
 
-ImGui uses its own font system (`ImGui_ImplVulkan` font atlas), independent of Datoviz's
-`DvzFont` / `DvzAtlas` glyph pipeline.
+ImGui uses its own font atlas, independent of `DvzFont` / `DvzAtlas`.
 Datoviz bundles Roboto Regular and Bold as the default ImGui fonts.
-These are loaded into ImGui's font atlas at startup and are used only for ImGui widget text,
-not for `glyph` visual text rendering.
-
+These are used only for ImGui widget text, not for `glyph` visual rendering.
 The two font systems are parallel and do not share resources.
-
-
-### Offscreen And Headless
-
-ImGui rendering is supported in offscreen mode via `dvz_gui_offscreen()`.
-In headless runs (testing, video export), the ImGui render pass still executes but no window
-is shown.
-`ImGui_ImplGlfw` is replaced by a stub that does not require a display.
