@@ -64,7 +64,8 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_GROUP`.
 
-Per-vertex linewidth is not supported — join geometry requires uniform width per path.
+Per-vertex linewidth (tapered lines) is not supported in v0.4 — join geometry requires uniform
+width per path. Tapered lines are a v0.4+ feature.
 Use `segment` if per-segment width variation is needed.
 
 
@@ -174,6 +175,13 @@ Sub-item (vertex) identity is not returned.
 | Single closed polygon | `path` with `closed = true` |
 
 
+## Streaming And Partial Updates
+
+Partial path updates (e.g., streaming new vertices into an existing path without re-uploading
+the full buffer) use the standard byte-range upload mechanism from `THREAD_SAFETY.md`. No
+dedicated streaming API is needed.
+
+
 ## Minimum Cases This Spec Must Support
 
 1. single signal trace — one path, `color` `CONSTANT`, `linewidth` `CONSTANT`,
@@ -196,12 +204,3 @@ Sub-item (vertex) identity is not returned.
 
 v0.4 adds: `PER_GROUP` sources, `scalar` color mode, `linewidth_space`, `closed` variant axis.
 v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds `miter`.
-
-
-## Resolved Questions
-
-- **Per-vertex `linewidth` (tapered lines)**: not supported in v0.4. Tapered lines require
-  complex per-segment geometry generation and are reserved as a v0.4+ feature.
-
-Partial path updates are served by the standard byte-range upload mechanism from
-`THREAD_SAFETY.md` — no dedicated streaming API needed.

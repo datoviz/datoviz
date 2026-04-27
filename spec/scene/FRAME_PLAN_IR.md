@@ -355,6 +355,24 @@ These are scene-level diagnostics and should remain free of backend leakage.
 5. `Animation` and `Controller` contribute state changes before planning begins.
 
 
+## Material And Shader Identity
+
+Material is not a first-class FramePlan concept. Shading parameters (`ambient`, `diffuse`,
+`specular`, lighting mode) are fields of a `ParameterBlockResource` attached to the visual.
+The FramePlan references them as a regular parameter-block binding — there is no `DvzMaterial`
+handle or material-specific node kind.
+
+Shader module and pipeline identities are assigned by the scene layer before planning:
+
+- The scene assigns deterministic numeric IDs to shader modules based on (stage, source hash).
+- `CreateShaderModule` is emitted once per unique (stage, source) pair.
+- `CreateRenderPipeline` is emitted referencing those module IDs, keyed on
+  (vertex_module_id, fragment_module_id, pipeline state). If the same key was already created
+  in a prior frame, the command is omitted.
+- `DestroyShaderModule` and `DestroyRenderPipeline` are emitted when the referencing visual
+  is removed or its variant changes.
+
+
 ## Relationship To DRP2
 
 The `FramePlan` should be translatable to DRP2 command categories already in scope:
@@ -378,47 +396,3 @@ The first `FramePlan` IR is acceptable only if it can represent:
 3. a picking pass plus single-pixel readback,
 4. offscreen rendering plus deterministic image readback,
 5. one compute-assisted visual path followed by rendering.
-
-
-## Resolved Questions
-
-**Transient logical targets** — resolved.
-Transient render targets (picking pass buffers, intermediate composition targets, multi-pass
-effect intermediates) are internal planning artifacts.
-The planner may create, reuse, and destroy them without exposing them to the user.
-The only targets that require scene-visible identity are declared outputs: the final swapchain
-image, explicit offscreen export targets, and picking readback sinks — all of which the user
-already names when setting up a panel or requesting a readback.
-
-**`FramePlan` public inspectability** — resolved.
-`FramePlan` is not a first-class public user-facing API.
-It is readable and serializable through a diagnostics or test interface.
-Normal user code never touches it directly.
-Exposing it as a stable user API would freeze internal planning structure prematurely.
-
-**Material binding** — resolved by `VISUAL_CONTRACT.md`.
-Material is not a first-class scene concept.
-Shading parameters are fields inside a `ParameterBlockResource`.
-
-
-## Resolved Questions
-
-- **Shader-module and pipeline identities → DRP2 commands**: resolved by `spec/drp2/COMMANDS.md`.
-  The scene layer assigns deterministic numeric IDs to shader modules (e.g., based on a hash of
-  family + variant flags + shader source). The FramePlan emits `CreateShaderModule` once per
-  unique (stage, source) pair and `CreateRenderPipeline` referencing those module IDs.
-  Pipeline objects are cached: if the same (vertex_module_id, fragment_module_id, pipeline state)
-  was already created in a prior frame, no new `CreateRenderPipeline` command is emitted.
-  `DestroyShaderModule` and `DestroyRenderPipeline` are emitted when the referencing visual is
-  removed or its variant changes.
-
-
-## Immediate Follow-On Specs
-
-This document should be followed by:
-
-1. `VISUAL_CONTRACT.md`
-2. `RESOURCE_MODEL.md`
-3. `PICKING.md`
-4. `DIAGNOSTICS_SCHEMA.md`
-5. worked examples that trace scene state to `FramePlan` to DRP2 command categories

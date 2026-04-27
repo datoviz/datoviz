@@ -129,6 +129,23 @@ The first visual contract should model a visual as a pure function of:
 By the time planning begins, these inputs should already be in a read-only state for the frame.
 
 
+## Public Type Model
+
+`DvzVisual*` is the single opaque handle type for all visual families. There is no
+user-visible subtype hierarchy or type-tag enum for families. Family identity is fixed at
+construction time by the typed constructor called (`dvz_point`, `dvz_marker`, `dvz_mesh`, …).
+The handle is opaque; the scene enforces that only operations valid for the declared family
+are applied to it.
+
+All draw-call batching (instanced ranges, draw-call merging, storage buffer vs. multiple
+draws) is decided internally by the scene and FramePlan. Users see only item counts and group
+assignments.
+
+Some visuals generate transient GPU resources during FramePlan construction (e.g., glyph atlas
+expansion, isoline intermediate buffers). These are scene-owned and destroyed with the
+FramePlan; they are not user-visible.
+
+
 ## Family Identity
 
 Each visual must declare its semantic family.
@@ -499,19 +516,3 @@ The first visual contract is acceptable only if it can describe:
 3. one pickable visual with payload-to-item mapping,
 4. one offscreen-export visual,
 5. one compute-assisted visual that produces data consumed by rendering.
-
-
-## Resolved Questions
-
-- **Final public type hierarchy**: `DvzVisual*` is the single opaque handle type for all visual
-  families (resolved by `scene_api.h`). There is no user-visible subtype hierarchy — family
-  identity is fixed at construction time via the typed constructor functions.
-- **Scene-owned descriptor or binding declarations**: internal implementation detail, not
-  user-facing. The scene layer owns all GPU binding state; users interact through named
-  attribute and parameter setters.
-- **Batching policy visibility above planning**: not visible. The scene and FramePlan decide
-  all batching (draw-call merging, instanced ranges, storage buffer vs. multiple draws).
-  Users see only item counts and group assignments.
-- **Transient internal resources during planning**: allowed and not user-visible. Some visuals
-  (e.g., glyph atlas expansion, isoline compute) generate intermediate GPU resources during
-  FramePlan construction. These are scene-owned and destroyed with the FramePlan.

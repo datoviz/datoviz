@@ -56,10 +56,10 @@ Render scale stacks with device pixel ratio (see `HIGH_DPI.md`).
 The effective physical resolution is `dpi_scale × render_scale × logical_size`.
 Both scale factors are applied by the runtime, not the scene.
 
-**Deferred questions:**
+**Render scale scope:** `dvz_figure_set_render_scale` is a figure-level call in v0.4. All
+panels in a figure scale together. Per-panel render scale is deferred to v0.4+.
 
-1. whether render scale must be a figure-level property or can be per-panel,
-2. the downsampling filter (nearest, bilinear, or Lanczos).
+**Downsampling filter:** bilinear for v0.4. Lanczos and other high-quality filters are v0.4+.
 
 
 ## Panel-As-Texture
@@ -72,14 +72,22 @@ visual attribute anywhere a texture is accepted.
 ### Declaration
 
 ```text
-DvzTexture* tex = dvz_panel_set_offscreen(panel)
+DvzTexture* tex = dvz_panel_set_offscreen(panel, flags)
 ```
 
 `dvz_panel_set_offscreen` designates `panel` as an offscreen render source and returns
 a logical texture handle owned by the scene.
 
-The panel renders to an internal texture rather than (or in addition to) the main
-framebuffer attachment.
+`flags` controls compositing behaviour:
+
+| Flag | Effect |
+|---|---|
+| `DVZ_PANEL_OFFSCREEN_DEFAULT` (0) | exclusive — panel renders to texture only, not to the main framebuffer |
+| `DVZ_PANEL_OFFSCREEN_PIP` | picture-in-picture — panel renders to both the texture and the main framebuffer |
+
+The default (exclusive) mode is the right choice when the offscreen texture is consumed by
+another visual or ImGui widget. Use `DVZ_PANEL_OFFSCREEN_PIP` when you want the offscreen
+panel to also appear in its normal position on screen.
 
 The returned handle can be passed to any visual that accepts a texture attribute:
 
@@ -121,7 +129,8 @@ The user does not need to specify it explicitly.
    ```
 
 3. **Format** — the texture format is `rgba_u8` by default.
-   A float format may be requested if the downstream visual requires it (deferred).
+   Passing a `DvzTexture*` created with a float format (e.g., `VK_FORMAT_R32G32B32A32_SFLOAT`
+   via `dvz_texture_2d`) gives an HDR-capable offscreen target.
 4. **Multiple consumers** — a single offscreen panel texture may be referenced by multiple
    downstream visuals.
 5. **Recursion depth** — more than one level of indirection (A → B → C) is allowed as long
@@ -150,18 +159,3 @@ This is the scene-native path for embedding a rendered panel inside an ImGui win
 | `FRAME_PLAN_IR.md` | offscreen panel ordering in FramePlan |
 | `EXTERNAL_UI.md` | `dvz_gui_image` accepts offscreen panel textures |
 | `RESOURCE_MODEL.md` | offscreen texture is a scene-owned `TextureResource` |
-
-
-## Resolved Questions
-
-- **Render scale granularity**: per-figure only in v0.4. All panels in a figure scale together.
-  Per-panel render scale is a v0.4+ feature if a clear use case emerges.
-- **Downsampling filter for render scale**: bilinear for v0.4. No additional options surface
-  in the API — Lanczos or other filters are a v0.4+ quality option.
-- **Offscreen panel rendering to main framebuffer**: exclusive by default — the offscreen panel
-  renders only to its texture and is not composited into the main framebuffer. Pass
-  `DVZ_PANEL_OFFSCREEN_PIP` to `dvz_panel_set_offscreen` to enable picture-in-picture mode
-  where the panel renders to both the texture and the main framebuffer.
-- **Float-format offscreen textures**: supported. `dvz_panel_set_offscreen` uses the format of
-  the `DvzTexture*` that was passed at panel creation. Creating the texture with
-  `VK_FORMAT_R32G32B32A32_SFLOAT` via `dvz_texture_2d` gives an HDR-capable offscreen target.

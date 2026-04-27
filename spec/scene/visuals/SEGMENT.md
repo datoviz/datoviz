@@ -29,6 +29,7 @@ Each item is one segment with two endpoints, P0 (start) and P1 (end).
 | Property | Value |
 |---|---|
 | Type | `vec3`, start endpoint `(x, y, z)` in visual space |
+| Attribute name | `"pos_start"` |
 | Accepted sources | `PER_ITEM` only |
 | Typical mutability | `dynamic` |
 
@@ -38,8 +39,16 @@ Each item is one segment with two endpoints, P0 (start) and P1 (end).
 | Property | Value |
 |---|---|
 | Type | `vec3`, end endpoint `(x, y, z)` in visual space |
+| Attribute name | `"pos_end"` |
 | Accepted sources | `PER_ITEM` only |
 | Typical mutability | `dynamic` |
+
+The two endpoints are written as separate `dvz_visual_set_data` calls:
+
+```c
+dvz_visual_set_data(seg, "pos_start", p0_array, n);
+dvz_visual_set_data(seg, "pos_end",   p1_array, n);
+```
 
 
 ### `color`
@@ -161,15 +170,3 @@ Picking returns the segment index as item identity.
 | `dvz_segment_cap` | `cap_start`, `cap_end` |
 
 v0.4 adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode, `linewidth_space`.
-
-
-## Resolved Questions
-
-- **API spelling for `P0`/`P1`**: two separate attribute calls, matching the named-attribute
-  pattern used across all visual families:
-  ```c
-  dvz_visual_set_data(seg, "pos_start", p0_array, n);
-  dvz_visual_set_data(seg, "pos_end",   p1_array, n);
-  ```
-  This is cleaner than the v0.3 interleaved layout and is consistent with how other
-  dual-position attributes (e.g., errorbar `center`/`extent`) are written.

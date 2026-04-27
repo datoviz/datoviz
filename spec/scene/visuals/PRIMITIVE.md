@@ -29,6 +29,14 @@ families.
 
 Declared at visual creation time; cannot change without recreating the visual.
 
+Topology is the **second argument** to the constructor:
+
+```c
+DvzVisual* vis = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+```
+
+The full `DvzPrimitiveTopology` enum is defined in `scene_api.h`.
+
 | Topology | Description |
 |---|---|
 | `point_list` | one point per vertex |
@@ -128,9 +136,3 @@ Picking returns vertex index as item identity.
 `primitive` does not expose a `linewidth` parameter. OpenGL line width is not reliably supported
 across drivers and is not available in WebGPU. For thick lines, use `path` or `segment`.
 `primitive` line topologies always render at 1 physical pixel.
-
-## Resolved Questions
-
-- **API spelling for topology**: topology is the second argument to the constructor:
-  `dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags)`.
-  The full `DvzPrimitiveTopology` enum is defined in `scene_api.h`.

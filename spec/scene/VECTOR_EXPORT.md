@@ -39,13 +39,29 @@ SVG text uses the same font family and size as the scene font declarations.
 Exact font rendering may differ from the GPU path when fonts are not embedded in the SVG.
 
 
+## What Is Emitted As Vector (Visual Families)
+
+`path` and `segment` visuals are emitted as native SVG elements via a CPU re-draw path:
+
+| Visual family | SVG representation |
+|---|---|
+| `path` | `<polyline>` per path |
+| `segment` | `<line>` per segment |
+
+This covers the most common line-based scientific visualization output (signal traces,
+contours, error bars) at true vector quality.
+
+PDF export is not supported in v0.4. SVG output can be converted to PDF externally
+(Inkscape, CairoSVG).
+
+
 ## What Is Embedded As Raster
 
 Visual content rendered by GPU shaders is captured as a high-resolution raster image
 and embedded in the SVG as a `<image>` element with `preserveAspectRatio="none"`.
 
-This includes all visual families: markers, paths, images, segments, spheres, volumes,
-meshes, etc.
+This includes all other visual families: markers, pixels, points, glyphs, images, spheres,
+volumes, meshes, etc. `path` and `segment` are excepted (see above).
 
 The raster resolution for the embed is controlled by the render scale
 (see `IMAGE_EXPORT.md`): a higher render scale produces a sharper embed at the cost
@@ -63,7 +79,7 @@ Options (`DvzSVGExportOptions`):
 | Field | Type | Default | Description |
 |---|---|---|---|
 | `render_scale` | `float32` | `2.0` | raster resolution multiplier for visual embeds |
-| `embed_fonts` | `bool` | `false` | embed font data in the SVG (larger file, self-contained) |
+| `embed_fonts` | `bool` | `true` | embed font data as base64 data URIs (fully self-contained SVG); set to `false` to use `@font-face` references for a smaller file |
 | `dpi` | `float32` | `96.0` | nominal DPI for `px`-to-`pt` conversion in SVG units |
 
 `dvz_figure_export_svg` drives one offline frame at the requested render scale,
@@ -103,16 +119,3 @@ The logical panel size in the scene maps to the SVG `viewBox`.
 | `ANNOTATIONS.md` | text annotations emit vector SVG elements |
 | `LEGENDS_AND_COLORBARS.md` | colorbar emits gradient and tick SVG elements |
 | `HIGH_DPI.md` | DPI scale affects raster embed resolution |
-
-
-## Resolved Questions
-
-- **Annotation callout lines**: yes — polyline callouts and simple anchor shapes from the
-  annotation layer emit as SVG `<line>` and `<path>` elements, not raster embeds.
-- **Per-item vector export for simple families**: yes for `path` and `segment` in v0.4, via a
-  CPU re-draw path that maps items to SVG `<polyline>` and `<line>` elements. Other families
-  (mesh, volume, sphere, glyph) remain raster-embedded.
-- **PDF export**: deferred to v0.4+. SVG output can be converted to PDF externally via standard
-  tools (Inkscape, CairoSVG).
-- **Font embedding**: base64 data URIs by default, producing a fully self-contained SVG file.
-  Setting `embed_fonts = false` in `DvzSVGExportOptions` uses `@font-face` references instead.

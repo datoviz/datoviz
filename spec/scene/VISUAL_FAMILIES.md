@@ -277,14 +277,12 @@ Promotion to a full family would require evidence that it has meaningfully diffe
 
 ### `slice`
 
-Current direction:
+`slice` is a render mode of the `volume` family, not a variant of `image`.
 
-1. do not treat `slice` as a first-class family,
-2. model it as a named variant on the `image` family: `image_mode: { rgba, colormap, slice }`,
-3. the `slice` mode declares that the source texture is volumetric and adds `slice_axis` and
-   `slice_position` parameters to select the plane,
-4. the `volume` family handles full 3D traversal; `slice` inside `image` covers the
-   "flat cut through a volume" case only.
+2D slicing through a 3D volume is handled by `dvz_volume` with `render_mode = slice` (see
+`visuals/VOLUME.md`). The `image` family handles flat 2D rasters only; it does not model 3D
+volume slicing. Slice parameters (`slice_axis`, `slice_position`) are visual-wide parameters
+of `volume` in slice mode.
 
 The important rule is that scene terminology should describe semantics, not texture dimensionality or
 backend object shape.
@@ -294,7 +292,7 @@ backend object shape.
 
 The following are good candidates for variants rather than separate families:
 
-1. `image`: rgba, colormap, fill, projected slice-like modes
+1. `image`: rgba, colormap, fill modes (flat 2D rasters only; 3D slicing belongs to `volume`)
 2. `mesh`: colored, textured, lit, contour-enhanced
 3. `sphere`: impostor-style, mesh-backed, or other sphere-specific rendering paths
 4. `path`: plain, stacked, wiggle-like, closed/open variants
@@ -339,18 +337,4 @@ The current preferred v0.4 family set is:
 With the following provisional non-top-level concepts:
 
 1. `wiggle` under `path`
-2. `slice` under `image`
-
-
-## Resolved Questions
-
-- **Sphere variant set**: resolved in `visuals/SPHERE.md` — three variant axes: `color_mode`
-  (rgba, scalar, texture), `size_mode` (direct, scalar), `lighting` (phong, flat).
-  The `texture` color mode supports globe and decorative sphere workflows via
-  `texture_projection` (equirectangular, spherical).
-- **Slice inside the image family**: 2D slicing through a 3D volume is handled by the `volume`
-  family with `render_mode = slice`. The `image` family handles flat 2D rasters only; it does
-  not model 3D slicing.
-- **Additional high-level families**: no new families added for v0.4. The set is: pixel, point,
-  marker, segment, path, primitive, glyph, image, mesh, sphere, volume, errorbar, boxplot.
-  New families may emerge from bring-up if a compelling gap is found, but none are planned.
+2. `slice` under `volume` (render mode, not under `image`)

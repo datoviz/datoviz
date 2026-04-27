@@ -63,6 +63,12 @@ desc.fragment_shader — GLSL source or path, fragment stage
 desc.compute_shader  — optional; compute stage for pre-pass work
 ```
 
+All v0.4 shaders are written in GLSL. When a WebGPU target is ready, shaders will be converted
+to WGSL once (not maintained in parallel or transpiled at runtime).
+
+**Shader hot reload** is not supported in v0.4. To update a custom visual's shaders, the visual
+must be destroyed and recreated.
+
 The scene compiles and caches the shaders.
 Shader variants (e.g., with/without picking, with/without selection mask) are generated
 automatically by the scene's shader preprocessor using standard insertion points
@@ -88,8 +94,9 @@ desc.pickable        — bool (default false)
 
 When `true`, the scene generates a picking variant of the visual's shaders.
 The picking variant writes the item ID to the picking attachment using the standard
-convention: the item ID is the vertex instance index unless the visual overrides it
-via the `dvz_item_id` output variable in the vertex shader.
+convention: the item ID is `gl_InstanceIndex` (the item index). Custom picking strategies
+(compound IDs, object-space picking) are not supported in v0.4 — the default instance-index
+convention is the only available option.
 
 The user does not write picking shader code explicitly — the scene inserts it.
 
@@ -177,6 +184,10 @@ desc.invalidation_scope — DVZ_INVALIDATE_FULL (default) or DVZ_INVALIDATE_PART
 receives the changed attribute name and returns the dirty scope.
 Partial invalidation is optional and only needed for performance-sensitive visuals.
 
+The scene always fully invalidates a custom visual when any of its data or parameters change,
+unless `DVZ_INVALIDATE_PARTIAL` is declared with a callback. Granular per-attribute dirty
+tracking for custom visuals is a v0.4+ optimization concern.
+
 
 ## Standard Shader Injections
 
@@ -215,18 +226,3 @@ A custom visual follows the same lifecycle as built-in visuals:
 | `CAPABILITY_ADAPTATION.md` | capability gating and deactivation |
 | `INVALIDATION_AND_CACHING.md` | dirty scope declaration |
 | `NONLINEAR_TRANSFORMS.md` | custom compute shader registration for projections |
-
-
-## Resolved Questions
-
-- **Shader language policy**: GLSL for all v0.4 shaders, both built-in and custom. When the
-  browser/WebGPU target is ready, shaders will be converted to WGSL once (manually,
-  AI-assisted) rather than maintained in parallel or transpiled at runtime.
-- **Hot reload of custom visual shaders**: not supported in v0.4. Shader recompilation requires
-  destroying and recreating the visual. Hot reload is a v0.4+ developer-tooling concern.
-- **Partial invalidation callback**: not exposed in v0.4. The scene always fully invalidates a
-  custom visual when any of its data or parameters change. Granular dirty tracking for custom
-  visuals is a v0.4+ optimization.
-- **Custom per-item picking ID strategy**: not supported in v0.4. Custom visuals use the default
-  instance-index convention (item index = gl_InstanceIndex). Custom picking strategies
-  (e.g., encoding compound IDs in the picking buffer) are deferred to v0.4+.

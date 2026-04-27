@@ -96,7 +96,8 @@ Applies when `lighting = phong`. Ignored when `lighting = flat`.
 
 `emissive` and `shininess` additionally accept `PER_GROUP` source for sphere, allowing
 different material properties per group (e.g., metallic vs. matte sphere populations in one
-visual).
+visual). `PER_GROUP` is the maximum granularity supported; `PER_ITEM` material attributes
+are not supported. Per-item material is PBR territory, deferred to the PBR lighting path.
 
 
 ## Variant Axes
@@ -163,9 +164,3 @@ The style block reserves `metallic` and `roughness` fields (zero-initialized, ig
 for future PBR support, following the same pattern as `mesh`.
 A future `normal_map` texture slot is also reserved.
 See `LIGHTING.md` for the full upgrade path.
-
-
-## Resolved Questions
-
-1. per-item `emissive`/`shininess` beyond `PER_GROUP`: no — uniform material per visual or group
-   is sufficient; per-vertex material is PBR territory, deferred to the PBR lighting path.

@@ -839,6 +839,11 @@ DVZ_EXPORT uint32_t dvz_selection_count(const DvzSelection* sel);
 DVZ_EXPORT void dvz_selection_get(const DvzSelection* sel, uint64_t* out_ids,
                                    uint32_t max_count);
 
+/* Trigger a one-shot GPU→CPU readback of the selection mask. The result is available on the
+ * next rendered frame via dvz_selection_count / dvz_selection_get. Opt-in: automatic
+ * readback is not performed every frame. */
+DVZ_EXPORT void dvz_selection_sync(DvzSelection* sel);
+
 
 /* ========================================================================= */
 /* Event callbacks                                                            */

@@ -171,6 +171,33 @@ It should be able to refer to:
 5. optional backend detail kept as opaque debug text rather than required semantic input.
 
 
+## API Shape And Completion
+
+**Single object:** The scene layer interacts with the runtime through a single opaque
+`DvzRuntime*` handle. There is no split device/encoder/queue model exposed to the scene.
+Encoder lifecycle and DRP2 session management are hidden inside the runtime.
+
+```c
+DvzRuntime* rt = dvz_runtime_create(/* backend init */);
+dvz_runtime_submit(rt, frame_plan);
+dvz_runtime_get_capabilities(rt, &caps);
+dvz_runtime_destroy(rt);
+```
+
+**Completion delivery:** v0.4 uses polling — `dvz_scene_poll_pick_result` and the
+`DVZ_EVENT_PICK_RESULT` callback cover the primary readback use case. DRP2 does not expose
+async signaling primitives; the polling model is the authoritative completion path.
+
+**Export helpers above the boundary:** `dvz_figure_export_png` and `dvz_figure_export_svg`
+live in the scene layer and drive the runtime via a standard offline frame sequence. They
+are not part of the runtime surface.
+
+**DRP2 error codes:** DRP2 error codes are non-normative from the scene API's perspective.
+DRP2 failures are mapped to scene-level error categories in `DvzDiagnosticReport`
+(OOM → resource error, capability failure → validation error). The raw DRP2 symbolic code
+appears only in a verbose debug string field and is not required semantic input.
+
+
 ## Service Boundaries
 
 The runtime service should not require the scene layer to expose:
@@ -197,22 +224,3 @@ This document should be read together with:
    submission,
 4. `PICKING.md` for freshness and identity semantics on picking completions,
 5. `DIAGNOSTICS_SCHEMA.md` for the shared scene-facing diagnostic record shape.
-
-
-## Resolved Questions
-
-- **Completion delivery**: polling for v0.4. DRP2 does not expose async signaling primitives in
-  the active contract; `dvz_scene_poll_pick_result` and the `DVZ_EVENT_PICK_RESULT` callback
-  cover the primary readback use case.
-- **Export helpers above or below the boundary**: above. `dvz_figure_export_png` and
-  `dvz_figure_export_svg` live in the scene layer and drive the runtime via a standard offline
-  frame sequence. They are not part of the runtime surface.
-- **Runtime surface shape**: one object — a single opaque `DvzRuntime*`. The scene calls
-  `dvz_runtime_submit(rt, frame_plan)` and `dvz_runtime_get_capabilities(rt)`. Encoder
-  lifecycle and DRP2 session management are hidden inside the runtime; no split
-  device/encoder/queue model is exposed to the scene layer.
-- **Diagnostic detail standardization**: DRP2 error codes are debug detail only, not part of
-  the public scene API. DRP2 failures are mapped to scene-level error categories in
-  `DvzDiagnosticReport` (e.g., OOM → resource error, capability failure → validation error).
-  The raw DRP2 symbolic code appears only in a verbose debug string field and is
-  non-normative from the scene API's perspective.

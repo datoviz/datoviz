@@ -321,6 +321,19 @@ But it should already preserve this stronger rule:
    identity rather than draw-call shape.
 
 
+## User-Facing Resource Constructors
+
+The only user-facing resource constructors in the v0.4 API are `dvz_texture_2d` and
+`dvz_texture_3d`, which create `SampledField` resources. All other resource classes
+(`ItemTable`, `GroupedItemTable`, `IndexedGeometry`, `DerivedField`, etc.) are internal
+resources managed by the scene through `dvz_visual_set_data` and `dvz_visual_alloc`. The user
+never constructs them directly.
+
+The scene provides two user-visible readback surfaces: `DvzPickResult` (picking, polled via
+`dvz_scene_poll_pick_result` or the `DVZ_EVENT_PICK_RESULT` callback) and the `DvzSelection`
+GPU mask buffer (selection). There is no generic user-facing readback resource constructor.
+
+
 ## `SampledField`
 
 `SampledField` is the scene-level class for sampled scalar, vector, color, or volumetric fields.
@@ -850,18 +863,3 @@ Resizing is allowed: writing with a different total count triggers reallocation.
 This supports streaming workloads where item count changes frame to frame.
 
 Tying item count to construction (as in v0.3) is not the preferred v0.4 model.
-
-
-## Resolved Questions
-
-- **Public scene API for constructing resources**: only `dvz_texture_2d` and `dvz_texture_3d`
-  are user-facing resource constructors (for `SampledField` resources). Item tables, indexed
-  geometry, and derived fields are internal resources managed by the scene through
-  `dvz_visual_set_data` and `dvz_visual_alloc` — the user never constructs them directly.
-- **Logical resource views above planning**: not exposed. The resource layer is an internal
-  concern of the scene and FramePlan. Users see visuals and textures, not item tables or
-  indexed geometry objects.
-- **Readback resources**: no generic readback resource type in the user-facing API. Readback
-  results are delivered via dedicated channels: `DvzPickResult` (polled or via
-  `DVZ_EVENT_PICK_RESULT` callback) for picking, and the `DvzSelection` GPU mask buffer for
-  selection. These cover all v0.4 readback use cases.

@@ -43,6 +43,10 @@ For per-item size, shape, or edge treatment, use `point` or `marker`.
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
+`PER_GROUP` color uses contiguous item-range partitions (a `GroupedItemTable` model). No
+explicit per-item group-index attribute is needed; the user declares group sizes and the scene
+maps each item to its group by range.
+
 
 ### `shift`
 
@@ -60,6 +64,7 @@ Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 | Mutability | `dynamic` |
 
 Size of every pixel mark. All items share the same size.
+Minimum supported size: 1 physical pixel. Maximum: unspecified, backend-dependent.
 For per-item size, use `point`.
 
 ### `size_space`
@@ -73,7 +78,14 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 |---|---|---|
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 
-Set at visual creation time.
+Set at visual creation time by passing flags to `dvz_pixel(scene, flags)`:
+- `DVZ_COLOR_RGBA` (default) or `DVZ_COLOR_SCALAR` (scalar input mapped via a `DvzScale`).
+
+
+## Depth And Transparency
+
+`z` participates in depth sorting when fragment alpha < 1.0. No explicit flag is needed;
+use `alpha_mode` on the visual to control the transparency path (see `TRANSPARENCY.md`).
 
 
 ## Transform Model, Stage Participation, Picking
@@ -115,18 +127,3 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 | `dvz_pixel_size` | `size` parameter |
 
 v0.4 adds: `shift`, `size_space`, `color_mode = scalar`.
-
-
-## Resolved Questions
-
-- **API spelling for `color_mode`**: passed as a flag to `dvz_pixel(scene, flags)`.
-  Use `DVZ_COLOR_RGBA` (default) or `DVZ_COLOR_SCALAR` (scalar input mapped via a `DvzScale`).
-
-`PER_GROUP` color uses item range partitions — no explicit per-item group-index attribute is
-needed. Groups are contiguous ranges; the user declares group sizes and the scene maps each
-item to its group by range.
-
-Minimum supported `size`: 1 physical pixel. Maximum: unspecified, backend-dependent.
-
-`z` participates in depth sorting by default when fragment alpha < 1.0. No explicit flag needed;
-use `alpha_mode` on the visual to control the transparency path (see `TRANSPARENCY.md`).

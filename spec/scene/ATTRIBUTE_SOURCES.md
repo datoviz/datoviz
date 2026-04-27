@@ -171,6 +171,21 @@ General rules:
 When a family spec does not list a source for an attribute, the default is `PER_ITEM`.
 
 
+## Source Selection In The Public API
+
+Attribute source is encoded implicitly in the item count `n` passed to
+`dvz_visual_set_data(visual, attr_name, data, n)`:
+
+| `n` value | Source |
+|---|---|
+| `1` | `CONSTANT` — one value for all items |
+| `item_count` | `PER_ITEM` — one value per item |
+| `group_count` | `PER_GROUP` — one value per group |
+
+The scene validates that `n` matches an accepted source for the attribute as declared in the
+per-family spec. An `n` value that does not match any accepted source is a validation error.
+
+
 ## Mutability Hint
 
 Orthogonal to source, each attribute may carry an optional **mutability hint**.
@@ -182,6 +197,16 @@ The three hint levels are:
 1. `static` — the value is set once and not expected to change.
 2. `dynamic` — the value changes occasionally, for example in response to user interaction.
 3. `streaming` — the value changes every frame or nearly every frame.
+
+The hint is set via a separate call:
+
+```c
+dvz_visual_set_mutability(visual, attr_name, hint)
+```
+
+where `hint` is one of `DVZ_MUTABILITY_STATIC`, `DVZ_MUTABILITY_DYNAMIC` (default), or
+`DVZ_MUTABILITY_STREAMING`. The call is optional and should be made before the first
+`dvz_visual_set_data` call for best effect.
 
 The hint is optional.
 The default when absent is `dynamic`, which is safe but not maximally optimized.
@@ -262,31 +287,3 @@ When `color` is `PER_ITEM`:
 For 1M pixels, `CONSTANT` color uses 4 bytes total.
 `PER_ITEM` color uses 4 MB.
 The user should choose based on what their data actually requires.
-
-
-## Resolved Questions
-
-- **Public API shape for attribute sources and mutability hints**:
-  Sources are implicit in `n` passed to `dvz_visual_set_data(visual, attr_name, data, n)`:
-  - `n = 1` → `CONSTANT`
-  - `n = item_count` → `PER_ITEM`
-  - `n = group_count` → `PER_GROUP`
-  The scene validates that `n` matches an accepted source for the attribute (as defined in the
-  per-family spec). An `n` value inconsistent with the accepted sources is a validation error.
-
-  Mutability hints are set via a separate call:
-  ```c
-  dvz_visual_set_mutability(visual, attr_name, hint)
-  ```
-  where `hint` is one of `DVZ_MUTABILITY_STATIC`, `DVZ_MUTABILITY_DYNAMIC` (default),
-  or `DVZ_MUTABILITY_STREAMING`. This call is optional — the default is always `DYNAMIC`.
-
-The following questions are resolved:
-
-- **Group identity and range inference**: `ItemTable` visuals require an explicit per-item group
-  index integer; `GroupedItemTable` visuals infer group membership from table boundaries with no
-  separate index needed.
-- **`PER_GROUP` reuse of `GroupedItemTable` boundaries**: confirmed — see the `Relationship To
-  GroupedItemTable` section above.
-- **Group count threshold for storage buffer vs draw calls**: an internal scene layer
-  implementation detail, not user-visible, not specced.

@@ -131,8 +131,10 @@ the transfer.
 It is safe to poll from any thread.
 
 Transfers that request a copy allocate from a scene-internal staging pool.
-The pool is bounded; if it is full, `dvz_scene_submit_transfer` blocks briefly until
-space is available.
+The default staging pool is **256 MB**; the ring buffer holds up to **256 pending transfers**.
+If the ring buffer is full, `dvz_scene_submit_transfer` blocks the calling thread until a slot
+opens (back-pressure by blocking — no silent drop).
+Both limits are tuneable at scene creation time.
 This back-pressure is intentional — it prevents unbounded memory growth if the
 background thread produces faster than the render thread consumes.
 
@@ -190,6 +192,12 @@ callback runs on the render thread during stage 2 and may perform any structural
 mutation except direct GPU or DRP2 calls.
 
 
+## Constraints
+
+**Multi-scene resource sharing across threads:** Each scene owns its GPU resources exclusively.
+Sharing resources across multiple scenes or across threads is not supported in v0.4.
+
+
 ## Relationship To Other Documents
 
 | Document | Relationship |
@@ -198,16 +206,3 @@ mutation except direct GPU or DRP2 calls.
 | `INVALIDATION_AND_CACHING.md` | drained transfers mark affected attributes dirty |
 | `RESOURCE_MODEL.md` | staging pool and zero-copy upload path |
 | `FRAME_PLAN_IR.md` | dirty attributes resolved into UploadNodes in the same frame |
-
-
-## Resolved Questions
-
-- **Staging pool size and back-pressure**: the default staging pool is 256 MB; the ring buffer
-  holds up to 256 pending transfers. When the ring buffer is full, `dvz_scene_submit_transfer`
-  blocks the calling thread until a slot opens (back-pressure by blocking, no silent drop).
-  These limits are tuneable at scene creation time.
-- **`DVZ_TRANSFER_CALLBACK` structural mutations**: allowed. The callback runs on the render
-  thread during stage 2 (before invalidation), so adding/removing visuals, creating panels,
-  and changing scale parameters are all safe.
-- **Multi-scene resource sharing across threads**: out of scope for v0.4. Each scene owns its
-  GPU resources exclusively.

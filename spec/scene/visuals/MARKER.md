@@ -252,7 +252,16 @@ Must match the declared render mode format.
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 | `size_mode` | `direct`, `scalar` | `direct` |
 
-All set at visual creation time.
+All set at visual creation time by combining flag constants with bitwise OR and passing to
+`dvz_marker(scene, flags)`:
+
+| Group | Flag constants |
+|---|---|
+| render mode | `DVZ_MARKER_CODE` (default), `DVZ_MARKER_BITMAP`, `DVZ_MARKER_SDF`, `DVZ_MARKER_MSDF` |
+| color mode | `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR` |
+| size mode | `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR` |
+
+Example: `dvz_marker(scene, DVZ_MARKER_MSDF | DVZ_COLOR_SCALAR)`.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -301,13 +310,3 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 
 v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
 `mtsdf` merged into `msdf` unless implementation evidence separates them.
-
-
-## Resolved Questions
-
-- **API spelling for variant axes**: passed as flags to `dvz_marker(scene, flags)`.
-  Combine one value from each group with bitwise OR:
-  - render mode: `DVZ_MARKER_CODE` (default), `DVZ_MARKER_BITMAP`, `DVZ_MARKER_SDF`,
-    `DVZ_MARKER_MSDF`
-  - color mode: `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR`
-  - size mode: `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR`

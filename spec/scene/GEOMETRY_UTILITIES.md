@@ -179,6 +179,9 @@ Use cases:
 2. large anatomical contours — reduce vertex count without visible loss,
 3. LOD (level-of-detail) path variants at different simplification levels.
 
+`dvz_simplify_path` is a **one-shot utility**; it is not applied automatically at different zoom
+levels. Automatic LOD (triggering simplification per zoom change) is a v0.4+ concern.
+
 The output is a subset of the input points (Douglas-Peucker is topology-preserving).
 Output is F64 and feeds the normal upload path.
 
@@ -209,7 +212,9 @@ Use the convex hull as the initial approximation.
 
 ## Boolean Polygon Operations
 
-Boolean polygon operations on 2D polygons via the Clipper2 library.
+Boolean polygon operations on 2D polygons via the Clipper2 library. These are **CPU-side
+utilities** exposed at the geometry utility layer — they are not scene API calls and do not
+have direct counterparts in `dvz_scene` or `dvz_visual` functions.
 
 Supported operations:
 
@@ -390,16 +395,3 @@ The utilities are CPU-side data preparation steps, not scene-layer extension poi
 
 
 ---
-
-## Resolved Questions
-
-- **Concave hull (alpha shapes)**: deferred to v0.4+ — use cases not yet clear enough to spec.
-- **Boolean polygon operations**: stay a lower-level CPU utility; not exposed at the scene API
-  level for v0.4.
-- **Per-item shape variation via atlas**: resolved — `shape_index` `PER_ITEM` attribute in the
-  `marker` family spec covers this; no separate atlas API needed at the geometry utility level.
-- **GPU-side SDF computation (jump flooding)**: deferred to v0.4+ — the CPU msdfgen path covers
-  vector-shape SDF for markers and glyphs; jump flooding for raster segmentation masks requires
-  a full compute pipeline that is out of scope for v0.4.
-- **Douglas-Peucker as automatic LOD**: not automatic for v0.4 — exposed as a one-shot utility
-  only; automatic LOD strategies are a v0.4+ concern.

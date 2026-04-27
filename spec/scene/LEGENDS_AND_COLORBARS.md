@@ -35,6 +35,15 @@ The intended flow is:
 4. the resulting annotation contributions enter the scene-level `FramePlan`.
 
 
+## API Model
+
+`DvzLegend` and `DvzColorbar` are distinct types at the API level. They share placement and
+invalidation rules but have different content models and are not subtypes of a common base.
+
+Legends and colorbars hold a reference to a `DvzScale*` handle (see `SCALES.md`). The scale is
+a first-class scene object with a stable identity; legends and colorbars do not own the scale.
+
+
 ## Core Rule
 
 Legends and colorbars should explain scene meaning, not rendering mechanics.
@@ -578,22 +587,6 @@ This document should be read alongside:
 4. [VISUAL_CONTRACT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/VISUAL_CONTRACT.md),
 5. [TRANSFORM_PIPELINE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/TRANSFORM_PIPELINE.md),
 6. [INVALIDATION_AND_CACHING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/INVALIDATION_AND_CACHING.md).
-
-
-## Resolved Questions
-
-**Scale objects and the public API** — resolved by `SCALES.md`.
-Scale objects are explicit first-class scene handles.
-Legends and colorbars reference them by handle.
-The exact C API spelling remains open in `PREFERRED_API_PROFILE.md`.
-
-**Legend vs colorbar type distinction** — resolved.
-Legends and colorbars are distinct types at the API level.
-They share annotation base rules (attachment, placement, invalidation, interaction constraints)
-but not a common C struct.
-Their content models are genuinely different: a legend owns a list of discrete labeled entries,
-a colorbar owns a continuous color ramp with tick geometry.
-Treating them as subtypes of a single base type would obscure that difference without benefit.
 
 
 ## What This Document Intentionally Leaves Open

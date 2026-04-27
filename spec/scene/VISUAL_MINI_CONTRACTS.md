@@ -887,9 +887,3 @@ Allowed axes:
 
 If a runtime cannot support a richer volume path, fallback should remain semantic and explicit rather
 than silently degrading into an unrelated family.
-
-
-## Deferred Follow-On
-
-These mini-contracts should eventually be followed by one document per family only if implementation
-pressure justifies that extra detail.

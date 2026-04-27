@@ -354,7 +354,30 @@ An anonymous scale has no stable identity outside the visual.
 It cannot be shared with other visuals or attached to a colorbar.
 If the user later needs to attach a colorbar, they should switch to an explicit handle.
 
-The exact API spelling is deferred to `PREFERRED_API_PROFILE.md` and the final C header work.
+**API spelling** — three typed shorthand constructors cover the common cases:
+
+```c
+/* Color scale: float input → rgba via named colormap */
+DvzScale* scale = dvz_scale_color(scene, "viridis", domain_min, domain_max);
+
+/* Size scale: float input → float output in [px_min, px_max] */
+DvzScale* scale = dvz_scale_size(scene, px_min, px_max, domain_min, domain_max);
+
+/* Opacity scale: float input → float output in [0, 1] */
+DvzScale* scale = dvz_scale_opacity(scene, domain_min, domain_max);
+```
+
+Update functions operate on an existing handle without recreating the visual:
+
+```c
+dvz_scale_set_domain(scale, min, max);           /* update domain bounds */
+dvz_scale_set_colormap(scale, "plasma");          /* change named palette */
+dvz_scale_set_stops(scale, rgba_stops, n_stops); /* custom RGBA color stops */
+dvz_scale_destroy(scale);
+```
+
+All three constructors return a `DvzScale*` that can be passed to `dvz_visual_set_scale`.
+Categorical scales use `dvz_scale_color` with a categorical colormap name (e.g., `"tab10"`).
 
 
 ## Scale Updates
@@ -402,35 +425,3 @@ This fallback is transparent to the user except for the diagnostic and the highe
 | `ATTRIBUTE_SOURCES.md` | scalar attribute source feeds the scale mapping |
 | `INVALIDATION_AND_CACHING.md` | scale-dirty propagation rules |
 | `CAPABILITY_ADAPTATION.md` | GPU vs CPU palette lookup fallback |
-
-
-## Resolved Questions
-
-- **Public API spelling for scale construction and update**: three typed shorthand constructors
-  cover the common cases:
-  ```c
-  dvz_scale_color(scene, colormap_name, domain_min, domain_max)
-  dvz_scale_size(scene, px_min, px_max, domain_min, domain_max)
-  dvz_scale_opacity(scene, domain_min, domain_max)
-  ```
-  Update functions operate on an existing handle:
-  ```c
-  dvz_scale_set_domain(scale, min, max)
-  dvz_scale_set_colormap(scale, name)
-  dvz_scale_set_stops(scale, rgba_stops, count)  // custom color stops
-  dvz_scale_destroy(scale)
-  ```
-  Categorical scales use `dvz_scale_color` with a categorical colormap name. All three
-  constructors return a `DvzScale*` that can be passed to `dvz_visual_set_scale`.
-
-The following questions are resolved and no longer open:
-
-- **Inline construction**: both explicit handles and an inline shortcut are supported; see
-  the Declaring section above.
-- **Categorical scales**: `categorical` is a first-class scale kind with integer input, not a
-  palette variant of `color`.
-- **`rgba_f32` output**: not needed. The output of all color and categorical scales is `rgba_u8`.
-  The float32 *input* scalar is already covered by the color scale model.
-- **Size and opacity construction surface**: all scale kinds share the same identity and sharing
-  machinery; size and opacity scales use the same explicit-handle and inline-shortcut model as
-  color scales.

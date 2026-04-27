@@ -57,6 +57,18 @@ It should not force the user to think in terms of:
 4. backend overlay passes.
 
 
+## API Model
+
+Annotation subtypes are distinct types at the API level. There is no shared `DvzAnnotation`
+union or base struct — the content models of text labels, callouts, guide lines, probe overlays,
+and region overlays differ enough that a generic type would obscure more than it clarifies.
+Shared behaviour — attachment, placement, invalidation, z-order — is covered by shared rules in
+this spec and matching fields in each subtype, not by a common C base type.
+
+Legends and colorbars are dedicated scene objects (`DvzLegend`, `DvzColorbar`) defined in
+`LEGENDS_AND_COLORBARS.md`. They are not annotation subtypes.
+
+
 ## Non-Goals
 
 This document does not define:
@@ -512,20 +524,6 @@ This document should be read alongside:
 4. `TRANSFORM_PIPELINE.md` for anchor and placement transform stages,
 5. `INVALIDATION_AND_CACHING.md` for dirty-scope and reuse behavior,
 6. `FRAME_PLAN_IR.md` for how annotation contributions enter the scene-level `FramePlan`.
-
-
-## Resolved Questions
-
-**Annotation type hierarchy** — resolved.
-Annotations are represented by several distinct types at the API level, not one generic type.
-The annotation subtypes (text label, callout, guide line, probe overlay, region overlay) have
-genuinely different content models that barely overlap.
-A shared `DvzAnnotation` union or type-tag struct would be awkward to use and hard to validate.
-Shared behavior — attachment, placement, invalidation, z-order — is covered by shared rules in
-the spec and matching fields in each struct, not by a common C base type.
-
-**Legends and colorbars** — resolved by `LEGENDS_AND_COLORBARS.md`.
-They are dedicated scene objects, not annotation subtypes.
 
 
 ## What This Document Intentionally Leaves Open

@@ -391,12 +391,3 @@ produced by animations are included in the current frame's dirty scope.
 | `CONTROLLERS.md` | controllers and animations are distinct but both mark scene dirty |
 | `REQUIREMENTS.md` | animation and scheduling listed as scene-owned responsibilities |
 | `RUNTIME_SERVICE_SKETCH.md` | runtime provides wall-clock timestamp; scene clock consumes it |
-
-
-## Resolved Questions
-
-- **Scene-level timeline**: not needed for v0.4. The existing `dvz_anim_*` constructors and
-  `dvz_anim_start(anim, t_start)` scheduling are sufficient for staggered multi-animation
-  sequences. Complex scripted sequences can be driven by the caller from a `DVZ_EVENT_ANIM_STEP`
-  callback. A higher-level sequencer (named tracks, scrubbing, keyframe editor) is a v0.4+
-  concern.

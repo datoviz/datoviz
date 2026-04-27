@@ -108,6 +108,22 @@ The following projections will be supported as built-in compute shaders:
 
 Additional built-in projections may be added without breaking the contract.
 
+**Parameter layout** — indices into `DvzProjectionDesc.params[8]` for each built-in projection:
+
+| Projection | params[0] | params[1] | params[2] | params[3] |
+|---|---|---|---|---|
+| `MERCATOR` | center_lon | center_lat | — | — |
+| `EQUIRECTANGULAR` | center_lon | center_lat | scale_x | scale_y |
+| `ORTHOGRAPHIC` | center_lon | center_lat | — | — |
+| `POLAR` | origin_x | origin_y | — | — |
+
+All unused entries are zero-initialized. Geographic coordinates are in degrees; angles in
+radians. Entries 4–7 are reserved for future use.
+
+**Per-visual projection overrides** are not supported in v0.4. All visuals in a panel share
+the panel's projection. Per-visual projection would require separate transform pre-passes per
+visual and is deferred to v0.4+.
+
 
 ### Custom GPU Projections
 
@@ -152,26 +168,3 @@ The interaction between non-linear projections and axes is deferred to the axes 
 | `INVALIDATION_AND_CACHING.md` | projection dirty scope: source positions or parameters |
 | `CUSTOM_VISUALS.md` | custom compute shader registration |
 | `AXES.md` | tick projection for non-linear panels |
-
-
-## Resolved Questions
-
-- **Parameter layout for built-in projections** (indices into `DvzProjectionDesc.params[8]`):
-
-  | Projection | params[0] | params[1] | params[2] | params[3] |
-  |---|---|---|---|---|
-  | `MERCATOR` | center_lon | center_lat | — | — |
-  | `EQUIRECTANGULAR` | center_lon | center_lat | scale_x | scale_y |
-  | `ORTHOGRAPHIC_GEO` | center_lon | center_lat | — | — |
-  | `POLAR` | origin_x | origin_y | — | — |
-
-  All unused entries are zero. Angles in radians; geographic coordinates in degrees.
-
-- **Interaction with axes tick generation**: tick values are generated in data space; the
-  panel's projection function is also applied to tick label anchor positions so that grid
-  lines and labels land at correct projected locations. The axes layer calls the same
-  CPU-side projection function used for data points.
-
-- **Per-visual projection overrides**: not supported in v0.4. All visuals in a panel share the
-  panel's projection. Per-visual projection would require separate transform pre-passes and
-  is a v0.4+ concern.

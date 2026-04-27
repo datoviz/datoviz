@@ -123,6 +123,16 @@ DvzPanel* cbar_panel  = dvz_grid_panel(grid, 0, 1)
 The colorbar visual is attached to `cbar_panel` as a normal visual.
 No special colorbar-panel type is needed — it is an ordinary panel with a fixed-width column.
 
+A convenience wrapper is available that encapsulates the grid setup above:
+
+```text
+DvzPanel* cbar_panel = dvz_panel_attach_colorbar(data_panel, DVZ_PANEL_SIDE_RIGHT, 60)
+```
+
+`dvz_panel_attach_colorbar` creates a fixed-width column or row adjacent to the given panel
+and returns a `DvzPanel*` for the colorbar. `DVZ_PANEL_SIDE_RIGHT`, `_LEFT`, `_TOP`, and
+`_BOTTOM` select the side; the second argument is the width (or height) in pixels.
+
 For a shared colorbar spanning multiple data rows, use a row-span:
 
 ```text
@@ -265,6 +275,15 @@ and sets panel margins to the minimum values that prevent clipping.
 It operates on the current axis state; if domains change significantly later, call it again.
 
 
+## Panel Size Constraints
+
+**Minimum panel size:** 16 × 16 logical pixels. The layout engine silently clamps any panel to
+this minimum on extreme resize rather than producing a zero-size panel.
+
+**Clip regions:** Panel clipping is always rectangular (scissor). Non-rectangular or circular
+clip regions are not supported.
+
+
 ## Responsive Behavior On Resize
 
 All proportional (weight-based) column widths and row heights are recomputed when the figure
@@ -293,19 +312,3 @@ If the figure is resized significantly, the user should call `dvz_figure_tight_l
 | — | `dvz_panel_set_aspect_ratio` — new |
 | — | `dvz_grid_link_col_width` / `dvz_grid_link_row_height` — new |
 | — | `dvz_figure_tight_layout` — new |
-
-
-## Resolved Questions
-
-- **`dvz_panel_attach_colorbar` convenience wrapper**: yes, added. The call
-  `dvz_panel_attach_colorbar(panel, side, width_px)` creates a fixed-width column or row
-  adjacent to the panel and returns a `DvzPanel*` for the colorbar panel. This wraps the
-  4-5 lines of `dvz_figure_grid` + margin setup that would otherwise be needed every time.
-- **Non-rectangular clip regions**: not supported. Panel clipping is always rectangular
-  (scissor). Circular or custom-shape panels are out of scope.
-- **Auto-link column width on shared controller**: not automatic. If two panels share a
-  controller and should maintain linked column widths, the caller must explicitly call
-  `dvz_grid_link_col_width`. Automatic linking would create implicit coupling that is hard
-  to override.
-- **Minimum panel size**: hard minimum of 16 × 16 logical pixels. The layout engine silently
-  clamps any panel to this minimum on extreme resize rather than producing a zero-size panel.

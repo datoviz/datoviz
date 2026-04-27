@@ -317,13 +317,3 @@ dvz_visual_set_texture(mesh, 1, normal_map_tex) // slot 1: normal map (optional)
 When PBR rendering is activated in a future version, the `metallic` and `roughness` fields
 drive the Cook-Torrance BRDF without any change to the public API surface.
 See `LIGHTING.md` for the full PBR and ray tracing upgrade path.
-
-
-## Resolved Questions
-
-- **Additional texture slots (emissive map, roughness/metallic maps)**: deferred to PBR
-  activation. The style block already reserves `metallic` and `roughness` fields for forward
-  compatibility; new texture slots will be added when the PBR lighting path is introduced.
-
-Per-vertex `emissive`/`shininess`: not supported — uniform material per visual is sufficient;
-per-vertex material is PBR territory.

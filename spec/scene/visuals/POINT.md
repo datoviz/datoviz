@@ -77,11 +77,20 @@ Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 | `size_mode` | `direct`, `scalar` | `direct` |
 
 `size_space` is a visual-wide parameter, not a variant axis — it does not affect data layout and
-can change at runtime.
+can change at runtime via `dvz_visual_set_param(visual, "size_space", &space)`.
 
-Both mode axes are set at visual creation time.
+Both mode axes are set at visual creation time by combining flag constants and passing to
+`dvz_point(scene, flags)`:
+
+| Group | Flag constants |
+|---|---|
+| color mode | `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR` |
+| size mode | `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR` |
+
 All four combinations are valid. Most common: `(rgba, direct)` for scatter plots, `(scalar,
 scalar)` for bubble charts.
+
+There is no separate `alpha` attribute. Use the alpha channel of `color`.
 
 
 ## Transform Model, Stage Participation, Picking
@@ -134,14 +143,3 @@ circle. This is the same approach used by `marker` without the shape or rotation
 
 Depth sorting of semi-transparent points uses the scene's transparency path
 (see `TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.
-
-
-## Resolved Questions
-
-- **API spelling for variant axes**: passed as flags to `dvz_point(scene, flags)`.
-  - color mode: `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR`
-  - size mode: `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR`
-  - `size_space` is a visual-wide parameter set via
-    `dvz_visual_set_param(visual, "size_space", &space)` after construction.
-
-Separate `alpha` attribute: not needed — use the alpha channel of `color`.

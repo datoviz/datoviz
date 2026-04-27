@@ -290,6 +290,10 @@ effect.
 
 All set at visual creation time. `color_mode` applies to `texture_mode = scalar` only.
 
+`render_mode = multiplane` (multiple simultaneous orthogonal slices, MPR viewer) is deferred
+to v0.4+. MPR viewers can be approximated in v0.4 with three separate `volume` visuals each
+using `render_mode = slice` on different axes.
+
 | `texture_mode` | `color_mode` | Behavior |
 |---|---|---|
 | `scalar` | `density` | normalized value → white, opacity from `alpha_transfer` |
@@ -358,12 +362,3 @@ hit position. The returned item identity is the isosurface level index (0-based 
 | `STEP_SIZE` hardcoded | `quality` parameter |
 | volume_slice `x_cmap/y_cmap` | `color_transfer` |
 | — | `gradient_shading`, `clip_planes` (up to 4), `value_range` (new in v0.4) |
-
-
-## Resolved Questions
-
-- **`render_mode = multiplane`** (multiple simultaneous orthogonal slices): deferred to v0.4+.
-  MPR viewers can be approximated in v0.4 with three separate `volume` visuals each using
-  `render_mode = slice` on different axes.
-- **`isosurface_levels` data structure**: stays as a simple `float32[8]` array with a parallel
-  `isosurface_colors` array. Named level objects with richer metadata are not needed for v0.4.

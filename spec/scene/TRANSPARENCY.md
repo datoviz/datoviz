@@ -105,7 +105,9 @@ They are exempt from the OIT passes.
 Volumes are rendered in their own pass, typically after the opaque pass and before the
 transparent compositing step.
 
-Blending between multiple overlapping volumes in the same panel is a deferred question.
+Multiple overlapping volume visuals in the same panel blend correctly. Each volume's
+transparent fragments enter the standard WB-OIT accumulation pass. No special ordering is
+required — this is an inherent property of weighted blended OIT.
 
 
 ## Interaction With Selection And Highlight
@@ -163,17 +165,3 @@ Per-item alpha is expressed through the item's color alpha channel or an opacity
 | `SELECTION.md` | highlight alpha multiplier applied before OIT accumulation |
 | `LIGHTING.md` | transparent visuals with PBR shading use the same OIT paths |
 | `VISUAL_CONTRACT.md` | custom visuals must declare their alpha mode |
-
-
-## Resolved Questions
-
-- **Multiple overlapping volume visuals**: each volume's fragments enter the standard transparent
-  fragment stream. WB-OIT accumulates across all transparent fragments regardless of visual type
-  — multiple volumes in the same panel blend correctly without special ordering. This is an
-  inherent property of weighted blended OIT.
-- **`DVZ_ALPHA_BLENDED_EXACT`**: reserved enum value in v0.4.0; falls back to
-  `DVZ_ALPHA_BLENDED` with a capability diagnostic. Per-pixel linked list OIT is a v0.4+
-  feature.
-- **Auxiliary buffer sizing for per-pixel linked list OIT**: moot for v0.4 since
-  `DVZ_ALPHA_BLENDED_EXACT` is deferred. Will be specced together with the full OIT
-  implementation in v0.4+.

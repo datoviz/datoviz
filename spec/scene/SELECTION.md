@@ -184,8 +184,15 @@ The scene inserts a `ComputeNode` into the next `FramePlan`:
 
 After the compute pass, the mask buffer is consumed by the visual shaders in the same frame's
 render pass.
-The CPU index set is synchronized from the mask buffer via a lightweight readback on the
-following frame (or immediately if the app requests synchronous feedback).
+CPU index synchronization from the GPU mask buffer is **opt-in**. The application calls:
+
+```c
+dvz_selection_sync(sel);
+```
+
+This triggers a one-shot GPU→CPU readback; the result is available on the next rendered frame
+via `dvz_selection_count(sel)` and `dvz_selection_get(sel, ...)`. Automatic readback is not
+performed every frame — only when explicitly requested.
 
 **Screen-space projection:**
 
@@ -233,6 +240,17 @@ The mask buffer approach is O(N) only for the compute/upload of a small `uint8` 
 the color arithmetic moves to the shader.
 
 
+## Constraints And Limitations
+
+**Binary highlight only:** Selection highlighting is binary (selected / unselected). Per-item
+multi-level emphasis (primary, secondary, hover stacking) is not supported in v0.4 and is a
+v0.4+ concern.
+
+**One selection per visual:** A single `DvzSelection` per visual is supported. Multiple named
+selection groups (primary, secondary, hover layers with stacked mask buffers) are not supported
+in v0.4.
+
+
 ## Relationship To Other Documents
 
 | Document | Relationship |
@@ -242,20 +260,3 @@ the color arithmetic moves to the shader.
 | `FRAME_PLAN_IR.md` | lasso inserts `ComputeNode`; selection change inserts `UploadNode` |
 | `INVALIDATION_AND_CACHING.md` | selection change marks highlight-dirty scope |
 | `RESOURCE_MODEL.md` | mask buffer is a `BufferResource` owned by `DvzSelection` |
-
-
-## Resolved Questions
-
-- **Lasso CPU index sync**: opt-in via an explicit `dvz_selection_sync(sel)` call. Automatic
-  readback would stall the GPU pipeline every frame for users who only need the visual
-  highlight effect without a CPU index list. `dvz_selection_sync` triggers a one-shot
-  readback; the result is available on the next rendered frame via `dvz_selection_get`.
-- **`selected_size_mult` and shader handling**: the size multiplier from `DvzHighlightDesc` is
-  passed as a uniform and applied entirely in the shader. No separate per-item size buffer
-  upload is needed for selection highlighting.
-- **Per-item highlight overrides beyond binary**: not supported in v0.4. The binary
-  selected/unselected model with a uniform `DvzHighlightDesc` covers scientific visualization
-  needs. Per-item multi-level emphasis is a v0.4+ concern.
-- **Named selection groups**: deferred to v0.4+. A single selection per visual with one
-  `DvzHighlightDesc` is sufficient for v0.4. Multi-layer selection (primary, secondary, hover)
-  would require stacked mask buffers and is out of scope.
