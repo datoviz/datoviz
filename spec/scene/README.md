@@ -125,7 +125,9 @@ Read the scene spec in this order during review.
 27. [ANIMATION.md](ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
 28. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
 29. [SELECTION.md](SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
-30. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+30. [IMAGE_EXPORT.md](IMAGE_EXPORT.md) — still image capture, render scale (supersampling), panel-as-texture
+31. [HIGH_DPI.md](HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
+32. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
@@ -189,6 +191,10 @@ Read the scene spec in this order during review.
   row/column span, colorbar slots, fixed aspect ratio, shared-width constraint, tight layout
 - [SELECTION.md](SELECTION.md): scene-level selection state, selection modes, parametrizable
   input mapping, highlight descriptor, lasso via GPU ComputeNode, cross-visual linking
+- [IMAGE_EXPORT.md](IMAGE_EXPORT.md): still image capture boundary, render scale (supersampling),
+  panel-as-texture with FramePlan ordering and cycle detection
+- [HIGH_DPI.md](HIGH_DPI.md): logical pixel coordinate model, device pixel ratio, pixel-unit
+  quantity scaling, font rasterization at physical resolution, DPI change handling
 - [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
 - [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
@@ -234,7 +240,11 @@ The current scene spec now covers:
 16. panel layout: grid (weighted + fixed-px columns/rows, span), free placement, colorbar slots,
     fixed aspect ratio, shared-width constraint, manual-only tight layout,
 17. selection and highlight: `DvzSelection` handle, parametrizable input mapping, `DvzHighlightDesc`,
-    GPU mask buffer approach, lasso via `ComputeNode`, cross-visual linking.
+    GPU mask buffer approach, lasso via `ComputeNode`, cross-visual linking,
+18. image export: still capture boundary, render scale, panel-as-texture with ordered `FramePlan`
+    dependency and cycle detection,
+19. high-DPI: logical pixel model, `dpi_scale` from window surface, pixel-unit scaling,
+    font rasterization at physical resolution, DPI-change event handling.
 
 The general rule should remain:
 
