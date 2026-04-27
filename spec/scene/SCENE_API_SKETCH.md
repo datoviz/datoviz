@@ -547,18 +547,30 @@ The sketch should treat panel navigation as controller-owned state, not visual-l
 
 Panels therefore need a surface for:
 
-1. assigning a camera family,
-2. attaching panzoom or 3D controllers,
-3. reading or mutating visible domain,
-4. requesting panel-local redraw.
+1. creating controllers as explicit scene-owned handles,
+2. binding controllers to panels per dimension,
+3. sharing a controller handle across panels to link their navigation,
+4. querying the current visible domain from a controller,
+5. requesting panel-local redraw.
 
 Conceptually:
 
 ```text
-panel_set_controller(panel, PANZOOM_2D)
-panel_set_camera(panel, camera_desc)
-panel_set_visible_domain(panel, domain)
+// Controllers are first-class handles, not attached by type
+panzoom = dvz_panzoom(scene, flags)
+dvz_panel_bind_controller(panel, panzoom, DVZ_DIM_X)
+dvz_panel_bind_controller(panel, panzoom, DVZ_DIM_Y)
+
+// Sharing a handle links panels — no separate linking API
+dvz_panel_bind_controller(panel_a, shared_x, DVZ_DIM_X)
+dvz_panel_bind_controller(panel_b, shared_x, DVZ_DIM_X)
+
+// Axes query controllers in a pull model
+dvz_controller_query_domain(panzoom, DVZ_DIM_X, &min, &max)
 ```
+
+See `CONTROLLERS.md` for the full handle, construction, per-dimension binding, and panel-linking
+model.
 
 
 ## Axes

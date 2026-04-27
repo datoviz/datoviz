@@ -581,5 +581,4 @@ there.
 This document should eventually be followed by:
 
 1. worked 2D axis examples tracing domain source → tick generation → FramePlan,
-2. explicit colorbar binding notes,
-3. an update to `CONTROLLERS.md` making controllers first-class handles explicit.
+2. explicit colorbar binding notes.

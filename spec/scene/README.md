@@ -207,17 +207,17 @@ The current scene spec now covers:
 6. axes,
 7. invalidation and caching,
 8. picking,
-9. controllers and interaction,
+9. controllers and interaction, including first-class handles, per-dimension binding, and panel
+   linking via shared controller handles,
 10. animation and frame scheduling,
 11. worked examples.
 
 The next recommended iterations are:
 
-1. public C API surface — resolving open choices in `SCENE_API_SKETCH.md` and
-   `PREFERRED_API_PROFILE.md`,
-2. axes ↔ domain and panel binding spec,
-3. more worked examples, especially multi-panel, animation, and video export cases,
-4. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
+1. worked 2D axis example tracing domain source → tick generation → `FramePlan`, with panzoom
+   interaction and panel linking,
+2. animation or video-export worked example,
+3. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
    `volume`.
 
 The general rule should remain:

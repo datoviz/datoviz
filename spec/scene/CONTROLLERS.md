@@ -261,6 +261,122 @@ Examples:
 This controller is scene-global in effect even if it listens to one panel-local source event.
 
 
+## Controller Handles
+
+Controllers are first-class scene objects with stable handles.
+
+This means:
+
+1. a controller is created and owned by the scene,
+2. it is returned as an opaque handle (`DvzController*`),
+3. panels reference that handle rather than embedding controller state internally,
+4. one controller handle may be bound to multiple panels,
+5. the scene owns the controller lifecycle and destroys it when the scene is destroyed.
+
+Making handles explicit is required for panel linking: two panels that share the same controller
+handle automatically have their navigation synchronized, with no additional linking API.
+
+
+## Controller Construction
+
+Family-specific constructors are the preferred public surface, mirroring the visual construction
+model in `PREFERRED_API_PROFILE.md`.
+
+Conceptually:
+
+```text
+// Create a controller (scene-owned)
+panzoom  = dvz_panzoom(scene, flags)
+camera3d = dvz_camera3d(scene, flags)
+hover    = dvz_hover(scene, flags)
+
+// Optionally configure before binding
+dvz_panzoom_set_bounds(panzoom, &bounds)
+```
+
+A generic `dvz_controller(scene, type, flags)` may exist internally but is not the user-facing
+default.
+
+Controllers are destroyed when the scene is destroyed.
+Explicit `dvz_controller_destroy()` is available for earlier release.
+
+
+## Per-Dimension Binding
+
+Panels bind controllers per dimension.
+
+This allows partial linking: sharing X navigation while keeping Y independent, or binding a
+3D camera globally while leaving a secondary dimension panel-local.
+
+Conceptually:
+
+```text
+// Bind a panzoom controller to a panel's X dimension
+dvz_panel_bind_controller(panel, panzoom, DVZ_DIM_X)
+dvz_panel_bind_controller(panel, local_y, DVZ_DIM_Y)
+```
+
+A panel that has a controller bound for a dimension delegates all navigation on that dimension
+to the controller.
+
+For 2D panzoom, binding the same controller to both `DVZ_DIM_X` and `DVZ_DIM_Y` covers the
+common case of full-panel panzoom.
+For 3D, a `Camera3DController` handle covers all three dimensions through a single binding.
+
+Panels retain the binding reference; the controller handle is the stable identity.
+
+
+## Panel Linking Via Shared Handles
+
+Sharing a controller handle across panels is the panel-linking mechanism.
+
+Conceptually:
+
+```text
+// Create one shared X controller
+shared_x = dvz_panzoom(scene, flags)
+
+// Bind it to two panels on the X dimension only
+dvz_panel_bind_controller(panel_a, shared_x, DVZ_DIM_X)
+dvz_panel_bind_controller(panel_b, shared_x, DVZ_DIM_X)
+
+// Each panel keeps its own independent Y controller
+dvz_panel_bind_controller(panel_a, local_y_a, DVZ_DIM_Y)
+dvz_panel_bind_controller(panel_b, local_y_b, DVZ_DIM_Y)
+```
+
+Both panels' X axes query `shared_x` and therefore always show the same visible X domain.
+No separate linking API is needed: sharing the handle IS the link.
+
+This pattern covers common scientific visualization layouts:
+
+1. spike raster + PSTH sharing a time axis,
+2. multi-panel time series locked to the same X range,
+3. scatter plot + marginal histograms sharing X and Y,
+4. overview + detail with one synchronized dimension.
+
+
+## Domain Query Interface
+
+Axes and other scene objects query controllers for the current visible domain.
+
+This is a pull model: the scene does not push domain changes to axes.
+Instead, during the axis update step of the frame lifecycle, the axis queries its bound
+controller directly.
+
+Conceptually:
+
+```text
+// Axis queries its panel's X controller for the currently visible range
+dvz_controller_query_domain(panel_x_controller, DVZ_DIM_X, &visible_min, &visible_max)
+```
+
+This makes axis update deterministic and avoids event-routing complexity for something that
+happens every frame anyway.
+
+If no controller is bound to a dimension, the panel uses its full data-space domain.
+
+
 ## Interaction State
 
 The scene layer should represent interaction state explicitly.
@@ -450,27 +566,25 @@ The scene layer should be able to report:
 
 ## API-Sketch Consequences
 
-This document suggests the scene API should eventually support concepts like:
+This document defines the following concrete API-shape commitments:
 
-1. attach controller to panel,
-2. route event to scene,
-3. query current hover or selection state,
-4. query focused or captured controller,
-5. request or cancel interaction capture.
+1. controllers are created by family-specific constructors returning `DvzController*` handles,
+2. panels bind controllers per dimension via `dvz_panel_bind_controller(panel, controller, dim)`,
+3. panel linking is achieved by sharing a controller handle — no separate linking API,
+4. axes and scene objects query controllers via `dvz_controller_query_domain()` in a pull model,
+5. events are routed to the scene, which dispatches to the correct panel and its bound controllers,
+6. hover and selection state remain queryable at scene level,
+7. focus and capture remain scene-owned, not backend-owned.
 
-The final naming is still open, but the semantics should remain.
+The exact final naming follows the resolved `dvz_` convention from `PREFERRED_API_PROFILE.md`.
 
 
 ## Recommended Next Step
 
-The next useful spec iteration is probably `ANNOTATIONS.md` or `LEGENDS_AND_COLORBARS.md`.
+The next useful spec iteration is a worked 2D axis example that traces:
 
-The scene now has enough structure for:
+1. domain source → tick generation → `FramePlan` contribution,
+2. panzoom interaction → controller domain query → axis regeneration decision,
+3. panel linking with shared controller → synchronized axes across panels.
 
-1. visuals,
-2. transforms,
-3. axes,
-4. picking,
-5. controllers,
-
-and the next likely composite objects are legends, labels, guides, and colorbar-like annotation.
+This will pressure-test the axis binding model and the pull-model query interface defined above.
