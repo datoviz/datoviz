@@ -134,6 +134,7 @@ Read the scene spec in this order during review.
 35. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
 36. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
 37. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+38. [examples/LINKED_PANELS_AXES_PANZOOM.md](examples/LINKED_PANELS_AXES_PANZOOM.md)
 
 
 ## Document Index
@@ -214,10 +215,8 @@ The current scene spec now covers:
 
 The next recommended iterations are:
 
-1. worked 2D axis example tracing domain source → tick generation → `FramePlan`, with panzoom
-   interaction and panel linking,
-2. animation or video-export worked example,
-3. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
+1. animation or video-export worked example,
+2. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
    `volume`.
 
 The general rule should remain:

@@ -26,6 +26,7 @@ Their role is narrower:
 6. `VOLUME_OFFSCREEN.md`
 7. `LINKED_PANELS_PROBE_COLORBAR.md`
 8. `MOUSE_BRAIN_ATLAS_EXPLORER.md`
+9. `LINKED_PANELS_AXES_PANZOOM.md`
 
 
 ## Common Structure
