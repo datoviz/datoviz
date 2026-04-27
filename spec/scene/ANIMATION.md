@@ -104,6 +104,99 @@ When an animation is active it marks the scene dirty every frame it produces a n
 When all animations are inactive and no interaction is pending, no redraw is triggered.
 
 
+## Animation Handles
+
+Animations are first-class scene objects with stable handles.
+
+This means:
+
+1. an animation is created and owned by the scene,
+2. it is returned as an opaque handle (`DvzAnimation*`),
+3. the caller may start, stop, or destroy it through that handle,
+4. the scene owns the lifecycle and destroys all animations when the scene is destroyed.
+
+This is the same ownership model as controllers (`DvzController*`).
+The handle is required for the caller to stop an open-ended animation, retrieve its state, or
+cancel it before the scene is destroyed.
+
+
+## Animation Construction
+
+Three type-specific constructors cover the primary animation use cases.
+
+```text
+// Timer callback: fires every frame while active
+// callback signature: void cb(DvzAnimation*, double t, void* user_data)
+anim = dvz_anim_timer(scene, period_s, callback, user_data)
+
+// 2-point property transition: interpolates from_val to to_val over duration seconds
+// target is a typed descriptor identifying the scene property to animate
+anim = dvz_anim_transition(scene, &(DvzAnimTransitionDesc){
+    .target   = target_desc,   // identifies the property (see below)
+    .from     = from_val,
+    .to       = to_val,
+    .duration = 2.0,
+    .easing   = DVZ_EASING_EASE_OUT,
+})
+
+// Camera path: animates a panel's camera through an ordered list of keyframes
+anim = dvz_anim_camera_path(scene, panel, keyframes, n_keyframes)
+```
+
+A generic `dvz_anim_create(scene, type, &desc)` may exist internally but is not the
+user-facing default.
+
+**Property target descriptors** — `DvzAnimTarget` identifies what a transition animates.
+For the first spec the supported targets are:
+
+1. a named visual parameter (e.g. `{.visual = v, .param = DVZ_PARAM_ALPHA}`),
+2. a panzoom domain bound (e.g. `{.controller = panzoom, .dim = DVZ_DIM_X, .bound = DVZ_BOUND_MAX}`),
+3. the scene clock's own time offset (for scripted synchronization).
+
+General property-path expressions or multi-track keyframe curves are explicitly out of scope.
+The 2-point transition model covers non-camera property animation.
+
+
+## Animation Lifecycle
+
+```text
+dvz_anim_start(anim, t_start)   // schedule start at scene-clock time t_start; 0 = immediate
+dvz_anim_stop(anim)             // deactivate; retains handle for restart or inspection
+dvz_anim_destroy(anim)          // release resources; handle becomes invalid
+```
+
+An animation that reaches `t_end` stops itself automatically.
+An open-ended timer animation (no `t_end`) runs until `dvz_anim_stop()` or `dvz_anim_destroy()`.
+
+Stopping an animation does not revert scene state — the last value written remains.
+
+The scene clock controls when animations advance; individual animations do not have their own
+clocks.
+
+
+## Resolved C API Decisions
+
+**Handles** — animations are first-class `DvzAnimation*` handles, not sugar-layer callbacks.
+The handle is required to stop or destroy open-ended animations.
+
+**Constructors** — type-specific: `dvz_anim_timer()`, `dvz_anim_transition()`,
+`dvz_anim_camera_path()`. Each constructor takes a descriptor struct or explicit parameters
+matching the animation type.
+
+**Property targets** — typed `DvzAnimTarget` descriptor rather than a string property path.
+Targets are limited to named visual parameters, controller domain bounds, and the clock offset
+for the initial spec. A general property-path system is not introduced.
+
+**Lifecycle** — `dvz_anim_start()` / `dvz_anim_stop()` / `dvz_anim_destroy()` with clear
+semantics: stop retains state, destroy releases resources.
+
+**Loop and playback modes** — deferred. The active/stopped model is sufficient for the first
+contract. Ping-pong and repeat-count modes remain open.
+
+**Scene-level timeline** — deferred. Coordinating multiple animations by setting their
+`t_start` values explicitly is sufficient for the initial spec.
+
+
 ### Easing Functions
 
 Easing functions map normalized time `u ∈ [0, 1]` to a shaped `u' ∈ [0, 1]`.
@@ -275,9 +368,6 @@ produced by animations are included in the current frame's dirty scope.
 
 ## Deferred Questions
 
-1. the exact public C API for creating and managing animation objects,
-2. whether animation objects are first-class public scene handles or sugar-layer conveniences
-   wrapping a lower-level callback registration,
-3. loop and playback modes beyond the basic active/stopped model (ping-pong, repeat count),
-4. whether a scene-level animation player or timeline object is needed for coordinating multiple
+1. loop and playback modes beyond the active/stopped model (ping-pong, repeat count),
+2. whether a scene-level animation player or timeline object is needed for coordinating multiple
    animations in complex scripted sequences.
