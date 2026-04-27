@@ -269,23 +269,75 @@ correctly.
 This is the recommended path for custom marker shapes defined as SVG paths.
 
 
-### Font Glyph Atlas — `DvzAtlas`
+### Font Glyph Atlas — `DvzFont` And `DvzAtlas`
 
-`DvzAtlas` is the scene resource for font-backed glyph atlases.
+#### Scene-Level Font Handle — `DvzFont`
+
+`DvzFont` is the scene-level resource for a loaded typeface.
+It owns a `DvzAtlas` internally and is the object that `glyph` visuals reference.
 
 ```text
-DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes)
-dvz_atlas_codepoints(atlas, codepoints, n)   // or dvz_atlas_string for a string set
-dvz_atlas_generate(atlas)
-DvzTexture* tex = dvz_atlas_texture(atlas, batch)
+// Load a custom font from TTF bytes
+DvzFont* font = dvz_font_load(scene, ttf_bytes, ttf_size)
+
+// Use the scene-provided default font (same typeface as v0.3)
+DvzFont* font = dvz_font_default(scene)
 ```
 
-The atlas packs selected glyphs into a single MSDF texture.
-Individual glyph coordinates are looked up via `dvz_atlas_glyph` and `dvz_atlas_glyphs` for
-batch lookup.
+The default font is the built-in typeface bundled with Datoviz (same as v0.3).
+It is available without any user-side font loading.
 
-Atlases can be pre-generated and saved with `dvz_atlas_export` / `dvz_atlas_import` to avoid
-regenerating them at startup.
+A `glyph` visual references a font at creation time:
+
+```text
+visual = dvz_glyph(scene, &(DvzGlyphParams){ .font = font, ... })
+```
+
+All `glyph` visuals referencing the same `DvzFont*` handle share one atlas texture.
+No per-visual atlas copies are made.
+
+
+#### Codepoint Declaration Policy
+
+The scene uses **lazy auto-grow** by default.
+
+The user sets strings directly; the scene tracks which codepoints are required across all
+`glyph` visuals that reference a given `DvzFont`, and regenerates the atlas automatically
+when new characters appear.
+Regeneration is deferred to the next frame boundary — it never happens mid-render.
+
+For performance-sensitive cases where any runtime regeneration must be avoided, an explicit
+pre-declaration path is available:
+
+```text
+dvz_font_preload_string(font, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+dvz_font_preload_codepoints(font, codepoints, n)
+```
+
+Calling either function before the first frame bakes the atlas ahead of time.
+If a string later introduces codepoints not in the pre-declared set, the auto-grow policy
+still applies unless the font was created with `DVZ_FONT_FLAG_STATIC_ATLAS`.
+
+
+#### Atlas Invalidation On Growth
+
+When auto-grow triggers, the full atlas is regenerated via msdf-atlas-gen repacking and
+re-uploaded on the next frame.
+All `glyph` visuals referencing the font are marked dirty: their per-character UV coordinates
+are recomputed against the new atlas layout before the next render.
+
+For typical scientific character sets (< 200 glyphs, Latin + digits + symbols), regeneration
+is fast and usually happens at most once or twice during application startup.
+
+Atlases can be pre-generated offline and serialized for instant startup:
+
+```text
+dvz_font_export(font, path)   // save pre-baked atlas to disk
+DvzFont* font = dvz_font_import(scene, path)  // load at startup, skip generation
+```
+
+These carry forward the `dvz_atlas_export` / `dvz_atlas_import` v0.3 functionality at the
+`DvzFont` level.
 
 
 ### Per-Item Shape Variation Via Atlas
