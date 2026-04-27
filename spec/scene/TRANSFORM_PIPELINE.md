@@ -365,6 +365,219 @@ DRP2 should not need to know:
 3. why some visual-ready data ended up in `[-1, 1]` or another normalized range.
 
 
+## Panel Domain
+
+The panel owns a data-space domain per dimension.
+This domain is the single source of truth for normalization from `DataSpace` to `VisualSpace`
+for all visuals in the panel that use `DVZ_COORD_DATA` without a per-visual domain override.
+
+`DvzDataDomain` carries three fields:
+
+| Field | Description |
+|---|---|
+| `min` | lower bound in data-space units; may be greater than `max` for an inverted axis |
+| `max` | upper bound in data-space units |
+| `scale` | `DVZ_SCALE_LINEAR` (default) or `DVZ_SCALE_LOG` |
+
+### Domain Source Modes
+
+1. **Explicit** — the user declares the domain directly.
+   Normalization is fixed against it.
+   Axis ticks are generated from this domain.
+
+   ```text
+   dvz_panel_set_domain(panel, DVZ_DIM_X, &(DvzDataDomain){.min=0, .max=10, .scale=DVZ_SCALE_LINEAR})
+   dvz_panel_set_domain(panel, DVZ_DIM_Y, &(DvzDataDomain){.min=0, .max=1})
+   ```
+
+2. **Fit-to-data** — a one-time scan of the data extents of all visuals currently attached to the
+   panel sets the domain, after which it behaves as explicit.
+   It is not a live binding.
+
+   ```text
+   dvz_panel_fit_domain(panel, DVZ_DIM_X)
+   dvz_panel_fit_domain(panel, DVZ_DIM_Y)
+   ```
+
+3. **Pass-through (default)** — no domain is declared.
+   Visual data is treated as already in `VisualSpace`; no normalization is applied.
+   Axes have no `DataSpace` domain and may suppress tick labels or show normalized coordinates.
+   This preserves v0.3 behavior for callers who pre-normalize their data.
+
+### Log Scale
+
+When `scale = DVZ_SCALE_LOG`, values are mapped through `log10` before linear interpolation to
+`VisualSpace`.
+Negative or zero values in a log-scale domain are undefined and should produce a diagnostic.
+Axis tick values are chosen at decade boundaries or suitable log-spaced positions.
+
+### Inverted Axis
+
+Setting `min > max` inverts the axis: the minimum data value maps to the top or right of the
+panel in `VisualSpace`.
+This is standard in image analysis and medical imaging where y = 0 is at the top.
+
+```text
+dvz_panel_set_domain(panel, DVZ_DIM_Y, &(DvzDataDomain){.min=480, .max=0})  // y=0 at top
+```
+
+The axis tick direction follows the declared order: ticks increase from `min` toward `max` in
+`VisualSpace`.
+
+### User Constraint
+
+All visuals attached with `DVZ_COORD_DATA` and no per-visual domain override must express their
+positions in the same data-space coordinate system as the panel domain.
+The scene does not detect or reconcile mismatched coordinate systems.
+
+
+## Aspect Ratio Policy
+
+Aspect ratio is a panzoom controller property, not a normalization property.
+
+```text
+panzoom = dvz_panzoom(scene, 0)
+dvz_panzoom_set_aspect(panzoom, DVZ_ASPECT_EQUAL)
+```
+
+| Value | Behavior |
+|---|---|
+| `DVZ_ASPECT_FREE` | X and Y scale independently (default) |
+| `DVZ_ASPECT_EQUAL` | zoom constrains X and Y to the same data-unit-per-pixel ratio |
+
+When `DVZ_ASPECT_EQUAL` is active, any zoom gesture that would scale X and Y differently is
+adjusted so both dimensions use the same scale factor.
+Pan is unconstrained.
+
+The constraint is applied after normalization — the controller operates on `VisualSpace`, not
+`DataSpace`.
+This means equal aspect is expressed in data units only when the X and Y panel domains cover
+the same physical extent; if they differ, the user should account for that in the domain
+declaration.
+
+
+## Visual Attachment And Coordinate Space
+
+When attaching a visual to a panel, a `DvzVisualAttachDesc` declares the coordinate space of
+the visual's position data and whether the panel controller applies to it.
+
+```text
+dvz_panel_add_visual(panel, visual, &(DvzVisualAttachDesc){
+    .coord_space     = DVZ_COORD_DATA,
+    .controller_mode = DVZ_CONTROLLER_APPLY,
+    .domain_x        = NULL,   // NULL = use panel domain
+    .domain_y        = NULL,
+    .domain_z        = NULL,
+})
+```
+
+### Coordinate Space
+
+| Value | Description |
+|---|---|
+| `DVZ_COORD_DATA` | `DataSpace` — normalized via panel domain (or per-visual override) |
+| `DVZ_COORD_NDC` | pre-normalized to `[-1, 1]` — no panel-domain mapping applied |
+| `DVZ_COORD_PIXEL` | pixel coordinates — converted to NDC using the current panel pixel size |
+
+`DVZ_COORD_DATA` is the default when the panel has an explicit domain.
+`DVZ_COORD_NDC` is appropriate for pre-normalized data and for fixed overlay elements.
+`DVZ_COORD_PIXEL` is appropriate for screen-space decorations such as scale bars and fixed
+annotations.
+
+### Controller Mode
+
+| Value | Description |
+|---|---|
+| `DVZ_CONTROLLER_APPLY` | panzoom or camera applies to this visual (default) |
+| `DVZ_CONTROLLER_FIXED` | visual is unaffected by navigation — stays in place |
+
+`coord_space` and `controller_mode` are independent.
+All four combinations are valid:
+
+| Combination | Typical use |
+|---|---|
+| `DATA + APPLY` | scatter, path, image data (standard case) |
+| `DATA + FIXED` | a reference marker at a fixed data position, no pan/zoom |
+| `NDC + APPLY` | a visual in NDC that should still pan with the scene |
+| `NDC + FIXED` | crosshair, border, or static NDC overlay |
+| `PIXEL + FIXED` | scale bar, pixel-exact annotation, legend at panel corner |
+| `PIXEL + APPLY` | rare; pixel-space element that follows camera — unusual but not forbidden |
+
+### Per-Visual Domain Override
+
+`domain_x`, `domain_y`, `domain_z` allow a visual to use a different normalization domain
+than the panel default on specific dimensions.
+`NULL` means use the panel domain.
+
+This enables dual-axis and mixed-space overlay patterns described in the next section.
+
+
+## Dual-Axis And Mixed-Space Overlays
+
+Two patterns in scientific visualization require per-visual domain overrides.
+
+
+### Dual Axis (twinx / twiny)
+
+Two visuals in the same panel share one axis but have independent normalization on the other.
+
+```text
+// Panel Y domain: temperature 0–100 °C
+dvz_panel_set_domain(panel, DVZ_DIM_Y, &(DvzDataDomain){.min=0, .max=100})
+
+// Primary visual uses the panel domain
+dvz_panel_add_visual(panel, temp_visual, &(DvzVisualAttachDesc){
+    .coord_space = DVZ_COORD_DATA,
+})
+
+// Secondary visual: pressure 900–1100 hPa — per-visual Y override
+DvzDataDomain pressure_y = {.min=900, .max=1100}
+dvz_panel_add_visual(panel, pressure_visual, &(DvzVisualAttachDesc){
+    .coord_space = DVZ_COORD_DATA,
+    .domain_y    = &pressure_y,
+})
+```
+
+A secondary Y axis is declared separately and attached to `pressure_y` rather than the panel
+domain.
+Panzoom applies to both visuals' `VisualSpace` positions.
+With `DVZ_ASPECT_FREE` (default), zooming X does not couple to Y — each visual's Y
+normalization remains independent.
+
+The scene treats the two visuals as occupying the same `VisualSpace`; it does not know that
+their Y domains represent different physical quantities.
+The user is responsible for the semantic consistency of the combined view.
+
+
+### Mixed-Space Overlays
+
+Two visuals in the same panel use different `DataSpace` coordinate systems.
+
+```text
+// Panel domain: voxel space
+dvz_panel_set_domain(panel, DVZ_DIM_X, &(DvzDataDomain){.min=0, .max=256})
+dvz_panel_set_domain(panel, DVZ_DIM_Y, &(DvzDataDomain){.min=0, .max=256})
+
+// Atlas image in voxel coordinates — uses panel domain
+dvz_panel_add_visual(panel, atlas, &(DvzVisualAttachDesc){
+    .coord_space = DVZ_COORD_DATA,
+})
+
+// Electrode positions in physical mm — per-visual override on both dimensions
+DvzDataDomain mm_x = {.min=-10, .max=10}
+DvzDataDomain mm_y = {.min=-10, .max=10}
+dvz_panel_add_visual(panel, electrodes, &(DvzVisualAttachDesc){
+    .coord_space = DVZ_COORD_DATA,
+    .domain_x    = &mm_x,
+    .domain_y    = &mm_y,
+})
+```
+
+The scene normalizes each visual independently.
+It has no knowledge of the physical relationship between voxels and mm.
+Aligning the two coordinate systems correctly is the caller's responsibility.
+
+
 ## Rules
 
 1. Data normalization belongs above DRP2.
@@ -373,6 +586,13 @@ DRP2 should not need to know:
 4. Panzoom or camera changes should usually not invalidate normalized visual resources.
 5. Source-data changes may invalidate normalized resources, but need not invalidate panel-local state.
 6. Family semantics should describe transform needs without leaking backend matrix or handle types.
+7. All visuals using `DVZ_COORD_DATA` without a per-visual domain override share the panel domain
+   for that dimension.
+8. Per-visual domain overrides apply only to normalization — they do not change which controller
+   applies or how `VisualSpace` is shared.
+9. Log-scale and inverted-axis behavior are normalization-side policies declared on `DvzDataDomain`,
+   not controller or shader concerns.
+10. Aspect ratio is a controller-side policy; it does not change the panel domain or normalization.
 
 
 ## Follow-On Spec Work
@@ -380,5 +600,4 @@ DRP2 should not need to know:
 This document should eventually be connected to:
 
 1. worked examples showing data-to-visual-to-panel flow for several families,
-2. family-specific notes where transform behavior is especially distinctive,
-3. future scene API sketches for declaring normalization policy explicitly.
+2. family-specific notes where transform behavior is especially distinctive.

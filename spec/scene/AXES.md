@@ -486,24 +486,35 @@ Rules:
 
 An axis tracks the data-space domain of its dimension.
 
-The domain source follows a priority order:
+The primary domain source is the panel domain declared in `TRANSFORM_PIPELINE.md`.
+When the panel has an explicit `DvzDataDomain` for the axis dimension, the axis uses it as its
+data-space reference for tick generation, label formatting, and coverage checks.
 
-1. **Explicit override** — the user sets `domain_min` / `domain_max` directly on the axis.
-   The axis uses those values and does not follow panzoom.
-   Used for fixed-range plots where the domain should not react to navigation.
+For dual-axis patterns where a secondary visual uses a per-visual domain override, a secondary
+axis is attached to that per-visual domain rather than the panel domain.
+One panel may therefore have two Y axes — one bound to the panel Y domain and one bound to a
+secondary `DvzDataDomain`.
+
+Within that domain reference, the axis applies a priority order for how it selects the visible
+portion to display:
+
+1. **Explicit override** — the user sets `domain_min` / `domain_max` directly on the axis,
+   narrowing or widening what is shown regardless of panzoom.
+   Used for fixed-range plots where the displayed domain should not react to navigation.
 
 2. **Panzoom-linked (default)** — the axis tracks the panel controller's current visible range
-   on its dimension.
+   on its dimension, converting from `VisualSpace` back to `DataSpace` using the panel domain.
    When the user pans or zooms, the visible range changes and the axis domain follows.
-   This is the default for interactive panels.
 
-3. **Fit to data (one-time operation)** — the user requests a one-time domain fit from the
-   extents of visuals in the panel.
-   This sets the panzoom state to encompass the data, after which the axis follows panzoom as
-   normal.
+3. **Fit to data (one-time operation)** — a one-time fit from visual data extents sets the
+   panzoom state to encompass the data, after which the axis follows panzoom as normal.
    It is not a live binding; it is an initialization convenience.
 
 The default is panzoom-linked.
+
+The axis inherits the scale type (`DVZ_SCALE_LINEAR` or `DVZ_SCALE_LOG`) and axis direction
+(normal or inverted) from its bound domain.
+Tick generation and label formatting apply in the correct scale and direction automatically.
 
 
 ## Controller Binding And The Pull Model

@@ -292,6 +292,7 @@ hover    = dvz_hover(scene, flags)
 
 // Optionally configure before binding
 dvz_panzoom_set_bounds(panzoom, &bounds)
+dvz_panzoom_set_aspect(panzoom, DVZ_ASPECT_EQUAL)  // see Aspect Ratio below
 ```
 
 A generic `dvz_controller(scene, type, flags)` may exist internally but is not the user-facing
@@ -299,6 +300,28 @@ default.
 
 Controllers are destroyed when the scene is destroyed.
 Explicit `dvz_controller_destroy()` is available for earlier release.
+
+
+## Aspect Ratio
+
+`dvz_panzoom` supports an aspect ratio constraint that locks X and Y zoom together.
+
+```text
+dvz_panzoom_set_aspect(panzoom, DVZ_ASPECT_EQUAL)
+```
+
+| Value | Behavior |
+|---|---|
+| `DVZ_ASPECT_FREE` | X and Y scale independently (default) |
+| `DVZ_ASPECT_EQUAL` | zoom constrains X and Y to the same data-unit-per-pixel ratio |
+
+When `DVZ_ASPECT_EQUAL` is active, any zoom gesture that would scale X and Y differently is
+adjusted so both dimensions receive the same scale factor.
+Pan remains unconstrained.
+
+The constraint operates on `VisualSpace` after normalization.
+See `TRANSFORM_PIPELINE.md` for how the panel domain and normalization interact with aspect
+ratio.
 
 
 ## Per-Dimension Binding
