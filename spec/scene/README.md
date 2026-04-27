@@ -127,7 +127,12 @@ Read the scene spec in this order during review.
 29. [SELECTION.md](SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
 30. [IMAGE_EXPORT.md](IMAGE_EXPORT.md) — still image capture, render scale (supersampling), panel-as-texture
 31. [HIGH_DPI.md](HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
-32. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+32. [TRANSPARENCY.md](TRANSPARENCY.md) — alpha modes, weighted blended OIT, per-pixel linked list OIT, render pass structure
+33. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md) — geographic projections, polar coordinates, GPU compute pre-pass
+34. [VECTOR_EXPORT.md](VECTOR_EXPORT.md) — structural SVG export: vector axes/annotations + raster visual embed
+35. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md) — user-defined visual families, descriptor registration, shader injection
+36. [THREAD_SAFETY.md](THREAD_SAFETY.md) — threading model, transfer queue, async data upload, background computation handoff
+37. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
@@ -195,6 +200,16 @@ Read the scene spec in this order during review.
   panel-as-texture with FramePlan ordering and cycle detection
 - [HIGH_DPI.md](HIGH_DPI.md): logical pixel coordinate model, device pixel ratio, pixel-unit
   quantity scaling, font rasterization at physical resolution, DPI change handling
+- [TRANSPARENCY.md](TRANSPARENCY.md): alpha modes (opaque/blended/exact/mask), weighted blended OIT
+  default, per-pixel linked list OIT opt-in, render pass split, CPU depth sort fallback
+- [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): CPU-side projection (v0.4), GPU compute
+  pre-pass for persistent derived position buffer (v0.4+), built-in and custom projections
+- [VECTOR_EXPORT.md](VECTOR_EXPORT.md): structural SVG — axes/annotations/colorbars as vector,
+  GPU visual output as embedded raster; render scale for embed resolution
+- [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md): DvzVisualDesc registration, attribute schema, shader
+  injection points, picking/selection/capability integration for user-defined visual families
+- [THREAD_SAFETY.md](THREAD_SAFETY.md): single-threaded render path, DvzTransferQueue for
+  background threads, data/uniform/callback transfer types, async upload and completion hooks
 - [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
 - [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
@@ -244,7 +259,15 @@ The current scene spec now covers:
 18. image export: still capture boundary, render scale, panel-as-texture with ordered `FramePlan`
     dependency and cycle detection,
 19. high-DPI: logical pixel model, `dpi_scale` from window surface, pixel-unit scaling,
-    font rasterization at physical resolution, DPI-change event handling.
+    font rasterization at physical resolution, DPI-change event handling,
+20. transparency: alpha modes, weighted blended OIT (default), per-pixel linked list OIT (opt-in),
+    render pass split, CPU depth sort fallback,
+21. non-linear transforms: CPU-side projection (v0.4), GPU compute pre-pass as persistent derived
+    resource (v0.4+), built-in geographic/polar projections, custom compute shaders,
+22. SVG/vector export: structural SVG with vector axes/annotations and embedded raster visuals,
+23. custom visual families: `DvzVisualDesc` registration, shader injection, full scene integration,
+24. thread safety: single-threaded render path, `DvzTransferQueue`, async upload, computation
+    result handoff, data lifetime rules.
 
 The general rule should remain:
 
