@@ -2,7 +2,8 @@
 
 This document selects the current preferred scene-facing API defaults for Datoviz v0.4.
 
-It is derived from `SCENE_API_SKETCH.md`, but it is narrower and more decision-oriented.
+It is now superseded by `spec/scene/headers/scene_api.h` for the definitive C spelling, but
+remains normative for the design rationale and the Python binding architecture.
 
 
 ## Position
@@ -70,29 +71,29 @@ The preferred construction model is:
 
 Conceptually:
 
-```text
-// Family-specific creation (schemas differ per type)
-point = dvz_point(scene, flags)
-path  = dvz_path(scene, flags)
-image = dvz_image(scene, flags)
+```c
+// Family-specific creation (variant axes encoded as flags)
+DvzVisual* point = dvz_point(scene, 0);
+DvzVisual* path  = dvz_path(scene, 0);
+DvzVisual* image = dvz_image(scene, DVZ_IMAGE_RGBA);
 
 // Optional pre-allocation hint
-dvz_visual_alloc(point, n)
+dvz_visual_alloc(point, n);
 
-// Generic write (uniform across all visual types)
-dvz_visual_write(point, DVZ_ATTR_POSITION, 0, n, xyz)
-dvz_visual_write(point, DVZ_ATTR_COLOR,    0, n, rgba)
+// Generic attribute write — uniform across all visual types.
+// Attribute name is a string matching the spec name ("position", "color", …).
+// n = 1 → CONSTANT source; n = item_count → PER_ITEM; n = group_count → PER_GROUP.
+dvz_visual_set_data(point, "position", xyz,  n);
+dvz_visual_set_data(point, "color",    rgba, n);
 
-// For grouped visuals: declare span boundaries (one span = one polyline or one string)
-dvz_visual_spans(path, n_paths, path_sizes)    // path: each span is one polyline
-dvz_visual_spans(glyph, n_strings, str_sizes)  // glyph: each span is one string
+// For grouped visuals (path, glyph): PER_GROUP attributes use n = group_count.
+// Group span sizes are passed as the data for the internal "group_size" attribute.
+dvz_visual_set_data(path, "group_size", path_sizes, n_paths);
 ```
 
-The `DVZ_ATTR_*` enum values are family-scoped: `DVZ_POINT_ATTR_POSITION`,
-`DVZ_PATH_ATTR_POSITION`, etc., to document expected types and layout per family.
-
-Visual type identity uses `DvzVisualType` with values such as `DVZ_VISUAL_POINT`,
-`DVZ_VISUAL_PATH`, `DVZ_VISUAL_IMAGE` — not the internal spec term "family".
+Attribute names are plain strings matching the per-family spec names. There is no
+`DVZ_ATTR_*` enum. Visual handles are opaque `DvzVisual*`; there is no `DvzVisualType`
+enum in the public API — family identity is fixed at construction and not queried.
 
 
 ## Preferred Ownership Model
@@ -116,31 +117,33 @@ The preferred binding model is:
 
 Conceptually:
 
-```text
-visual_set_resource(visual, ITEMS, points)
-visual_set_resource(visual, STYLE, style)
-visual_set_resource(visual, FIELD, field)
+```c
+dvz_visual_set_texture(visual, "texture", tex);   // bind a DvzTexture* to a named slot
+dvz_visual_set_scale(visual,   "colormap", scale); // bind a DvzScale* to a named slot
 ```
 
-This profile prefers one grouped-resource concept in the public model, even if implementation later
-splits storage and grouping metadata internally.
+Resource roles are identified by the slot name string from the per-family spec (e.g. `"texture"`,
+`"colormap"`). There is no numeric role enum or style-block concept in the public API.
+Item and indexed-geometry resources are managed internally through `dvz_visual_set_data`.
 
 
 ## Preferred Parameter Model
 
 The preferred parameter model is:
 
-1. explicit `StyleBlock`-like structured parameter resources by default,
-2. typed property setters allowed as convenience wrappers,
-3. variant selection kept semantically explicit.
+1. named string parameter setters as the primary surface — no style-block struct,
+2. variant selection passed as flags at construction time,
+3. Python sugar layer adds keyword-argument convenience above the C setters.
 
 Conceptually:
 
-```text
-style = scene_style_block(scene, style_desc)
-style_write(style, style_data)
-visual_set_resource(visual, STYLE, style)
-visual_set_param(visual, name, value)
+```c
+// Visual-wide parameters set by name (value is a typed pointer)
+dvz_visual_set_param(visual, "linewidth", &lw);
+dvz_visual_set_param(visual, "size_space", &space);
+
+// Mutability hint (optional, default is DYNAMIC)
+dvz_visual_set_mutability(visual, "position", DVZ_MUTABILITY_STATIC);
 ```
 
 
@@ -154,14 +157,21 @@ The preferred explanation model is:
 
 Conceptually:
 
-```text
-scale = scene_scale(scene, scale_desc)
-visual_set_mapping(visual, COLOR_SCALE, scale)
-colorbar_set_scale(colorbar, scale)
+```c
+// Typed constructors are preferred
+DvzScale* scale = dvz_scale_color(scene, "viridis", 0.0, 1.0);
+dvz_visual_set_scale(visual, "colormap", scale);
+
+// Updates without re-uploading data
+dvz_scale_set_domain(scale, new_min, new_max);
+dvz_scale_set_colormap(scale, "plasma");
+
+// Colorbar attaches to the same scale identity via the legend/colorbar API
 ```
 
-Derived convenience surfaces are allowed later, but the preferred baseline should preserve explicit
-mapping identity in the model.
+The explicit scale handle preserves sharing identity — multiple visuals or a colorbar can
+reference the same `DvzScale*`. An inline anonymous shortcut is available at the Python sugar
+layer for single-visual cases. See `SCALES.md` for the full model.
 
 
 ## Preferred Validation And Adaptation Surface
@@ -174,11 +184,10 @@ The preferred validation and adaptation surface is:
 
 Conceptually:
 
-```text
-report = scene_validate(scene)
-scene_set_capabilities(scene, runtime_caps)
-scene_set_capability_policy(scene, policy)
-scene_adapt(scene)
+```c
+dvz_scene_validate(scene, &report);
+dvz_scene_set_capabilities(scene, &caps);  // caps queried from dvz_runtime_get_capabilities()
+dvz_scene_adapt(scene, &report);
 ```
 
 The required ordering remains:
@@ -212,10 +221,11 @@ The preferred build and submission model is:
 
 Conceptually:
 
-```text
-scene_request_redraw(scene)
-scene_build_frame(scene)
-runtime_submit(runtime, frame_plan)
+```c
+dvz_figure_request_redraw(fig, DVZ_REDRAW_SCENE, NULL);
+DvzFramePlan* fp = dvz_figure_build_frame(fig, DVZ_BUILD_FLAGS_NONE, &report);
+dvz_runtime_submit(rt, fp);
+dvz_frame_plan_destroy(fp);
 ```
 
 The public API may wrap some of these in convenience entry points, but this separation should remain
@@ -243,21 +253,23 @@ to users.
 differ per type. A generic `dvz_visual_create()` may exist internally but is not the user-facing
 default.
 
-**Data upload** — generic `dvz_visual_write(visual, attr, first, count, data)` uniform across
-all visual types. Family-specific data preparation is an implementation concern, not a scene API
-concern. Span boundaries for grouped visuals declared via `dvz_visual_spans(visual, n, sizes)`.
+**Data upload** — `dvz_visual_set_data(visual, attr_name, data, n)` uniform across all visual
+types. `attr_name` is the string from the per-family spec ("position", "color", …). `n`
+determines the source: `1` → CONSTANT, `item_count` → PER_ITEM, `group_count` → PER_GROUP.
+Span/group sizes for grouped visuals (path, glyph) are written via the `"group_size"` attribute.
+Partial updates via `dvz_visual_set_data_range`. Mutability hints via `dvz_visual_set_mutability`.
 
 **Allocation** — separated from creation. Visuals are created without a committed item count.
 Size is established on first write. An optional `dvz_visual_alloc(visual, n)` hint is available
 for pre-allocation.
 
-**Parameters** — typed setters per visual type (`dvz_point_size()`, `dvz_path_linewidth()`,
-etc.) as the primary surface. No style block or bulk params struct in the public C API. The
-Python sugar layer adds keyword-argument convenience above the typed setters.
+**Parameters** — `dvz_visual_set_param(visual, name, value)` as the primary surface. No
+per-family typed setter functions and no style-block struct. The Python sugar layer adds
+keyword-argument convenience above the named-param setter.
 
-**Picking** — synchronous blocking for click and query (`dvz_panel_pick()`), async callback for
-hover (`dvz_panel_on_hover()`). Synchronous picking wraps DRP2's async readback via the runtime
-service's synchronous completion helper. See `PICKING.md` for the full model.
+**Picking** — asynchronous: `dvz_scene_request_pick(scene, panel, &req)` enqueues the request;
+result arrives via `DVZ_EVENT_PICK_RESULT` callback or `dvz_scene_poll_pick_result`. Hover uses
+`dvz_scene_on(scene, DVZ_EVENT_HOVER, cb, user_data)`. See `PICKING.md` for the full model.
 
 **`FramePlan` inspection** — readable and serializable through a diagnostics or test interface
 only. Not a first-class public user-facing API.
@@ -272,7 +284,7 @@ only. Not a first-class public user-facing API.
 
 This document should be read together with:
 
-1. `SCENE_API_SKETCH.md` for the broader design space,
+1. `headers/scene_api.h` for the authoritative C API surface (supersedes `SCENE_API_SKETCH.md`),
 2. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` for family contract details,
 3. `RESOURCE_MODEL.md` for logical resource classes,
 4. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` for stage ordering and failure semantics,

@@ -41,6 +41,7 @@ typedef struct DvzFont      DvzFont;       /* loaded typeface */
 typedef struct DvzSelection DvzSelection;  /* GPU selection + highlight state */
 typedef struct DvzFramePlan DvzFramePlan;  /* ordered frame execution plan */
 typedef struct DvzTexture   DvzTexture;    /* 2-D or 3-D GPU texture */
+typedef struct DvzRuntime  DvzRuntime;    /* runtime boundary (wraps DRP2 session) */
 
 
 
@@ -314,6 +315,33 @@ typedef enum
     DVZ_PICK_CLICK = 1,
     DVZ_PICK_QUERY = 2,
 } DvzPickKind;
+
+
+/* --- Attribute mutability hint -------------------------------------------- */
+
+typedef enum
+{
+    DVZ_MUTABILITY_DYNAMIC   = 0, /* default: scene copies data on write */
+    DVZ_MUTABILITY_STATIC    = 1, /* upload once; no further writes expected */
+    DVZ_MUTABILITY_STREAMING = 2, /* updated every frame; scene uses mapped memory */
+} DvzMutability;
+
+
+/* --- Panel side (for colorbar attachment) --------------------------------- */
+
+typedef enum
+{
+    DVZ_PANEL_SIDE_TOP    = 0,
+    DVZ_PANEL_SIDE_RIGHT  = 1,
+    DVZ_PANEL_SIDE_BOTTOM = 2,
+    DVZ_PANEL_SIDE_LEFT   = 3,
+} DvzPanelSide;
+
+
+/* --- Offscreen panel flags ------------------------------------------------ */
+
+#define DVZ_PANEL_OFFSCREEN_DEFAULT 0x00u /* render to texture only */
+#define DVZ_PANEL_OFFSCREEN_PIP     0x01u /* also composite into main framebuffer */
 
 
 /* --- Frame-build flags ---------------------------------------------------- */
@@ -624,8 +652,15 @@ DVZ_EXPORT int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual);
 
 /* Mark the panel as offscreen.
  * Returns a DvzTexture* the caller can bind to another visual (e.g. image).
- * The scene ensures the offscreen RenderNode runs before any node that samples the texture. */
-DVZ_EXPORT DvzTexture* dvz_panel_set_offscreen(DvzPanel* panel);
+ * The scene ensures the offscreen RenderNode runs before any node that samples the texture.
+ * flags: DVZ_PANEL_OFFSCREEN_DEFAULT (exclusive) or DVZ_PANEL_OFFSCREEN_PIP (also composites
+ * into the main framebuffer). */
+DVZ_EXPORT DvzTexture* dvz_panel_set_offscreen(DvzPanel* panel, uint32_t flags);
+
+/* Create a fixed-width adjacent panel for a colorbar and return its handle.
+ * Wraps the grid setup + margin boilerplate for the common colorbar-beside-panel layout. */
+DVZ_EXPORT DvzPanel* dvz_panel_attach_colorbar(DvzPanel* panel, DvzPanelSide side,
+                                                float width_px);
 
 
 /* ========================================================================= */
@@ -647,8 +682,21 @@ DVZ_EXPORT int dvz_texture_upload(DvzTexture* tex, uint32_t x, uint32_t y, uint3
 
 DVZ_EXPORT void dvz_texture_destroy(DvzTexture* tex);
 
-/* Create a DvzScale (colormap / size mapping). */
+/* Create a DvzScale (colormap / size mapping) — generic form. */
 DVZ_EXPORT DvzScale* dvz_scale(DvzScene* scene, uint32_t kind_flags);
+
+/* Typed scale constructors — preferred over the generic form. */
+DVZ_EXPORT DvzScale* dvz_scale_color(DvzScene* scene, const char* colormap_name,
+                                      double domain_min, double domain_max);
+DVZ_EXPORT DvzScale* dvz_scale_size(DvzScene* scene, float px_min, float px_max,
+                                     double domain_min, double domain_max);
+DVZ_EXPORT DvzScale* dvz_scale_opacity(DvzScene* scene, double domain_min, double domain_max);
+
+/* Update an existing scale in place. Marks all referencing visuals dirty. */
+DVZ_EXPORT void dvz_scale_set_domain(DvzScale* scale, double min, double max);
+DVZ_EXPORT void dvz_scale_set_colormap(DvzScale* scale, const char* colormap_name);
+DVZ_EXPORT void dvz_scale_set_stops(DvzScale* scale, const uint8_t* rgba_stops, uint32_t count);
+DVZ_EXPORT void dvz_scale_destroy(DvzScale* scale);
 
 /* Register a custom colormap by name (256 RGBA entries). */
 DVZ_EXPORT int dvz_colormap_register(DvzScene* scene, const char* name,
@@ -748,6 +796,11 @@ DVZ_EXPORT void dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode);
 /* Clipping region — see DvzClipMode. */
 DVZ_EXPORT void dvz_visual_set_clip(DvzVisual* visual, DvzClipMode mode);
 
+/* Set the mutability hint for one named attribute.
+ * Default is DVZ_MUTABILITY_DYNAMIC; call before the first dvz_visual_set_data for best effect. */
+DVZ_EXPORT void dvz_visual_set_mutability(DvzVisual* visual, const char* attr_name,
+                                           DvzMutability hint);
+
 /* Link a font to a glyph visual. */
 DVZ_EXPORT void dvz_visual_set_font(DvzVisual* visual, DvzFont* font);
 
@@ -836,6 +889,24 @@ DVZ_EXPORT int dvz_scene_request_pick(DvzScene* scene, DvzPanel* panel,
 
 /* Poll one interpreted pick result. Returns true when a result was written. */
 DVZ_EXPORT bool dvz_scene_poll_pick_result(DvzScene* scene, DvzPickResult* out_result);
+
+
+/* ========================================================================= */
+/* Runtime boundary                                                           */
+/* ========================================================================= */
+
+/* Create the runtime. Init params are backend-specific (e.g. window handle, Vulkan instance).
+ * The runtime wraps the DRP2 session and hides encoder/queue lifecycle from the scene layer. */
+DVZ_EXPORT DvzRuntime* dvz_runtime_create(void* backend_init_params);
+
+DVZ_EXPORT void dvz_runtime_destroy(DvzRuntime* rt);
+
+/* Execute a frame plan. Translates the plan to DRP2 commands and submits them.
+ * Returns 0 on success; negative on validation or execution failure. */
+DVZ_EXPORT int dvz_runtime_submit(DvzRuntime* rt, DvzFramePlan* frame_plan);
+
+/* Query the runtime capability snapshot. Used by dvz_scene_set_capabilities. */
+DVZ_EXPORT int dvz_runtime_get_capabilities(DvzRuntime* rt, DvzCapabilitySnapshot* out_caps);
 
 
 EXTERN_C_OFF
