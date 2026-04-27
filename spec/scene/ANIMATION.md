@@ -132,15 +132,22 @@ anim = dvz_anim_timer(scene, period_s, callback, user_data)
 // 2-point property transition: interpolates from_val to to_val over duration seconds
 // target is a typed descriptor identifying the scene property to animate
 anim = dvz_anim_transition(scene, &(DvzAnimTransitionDesc){
-    .target   = target_desc,   // identifies the property (see below)
-    .from     = from_val,
-    .to       = to_val,
-    .duration = 2.0,
-    .easing   = DVZ_EASING_EASE_OUT,
+    .target       = target_desc,      // identifies the property (see below)
+    .from         = from_val,
+    .to           = to_val,
+    .duration     = 2.0,
+    .easing       = DVZ_EASING_EASE_OUT,
+    .loop         = DVZ_LOOP_ONCE,    // see Loop Modes below
+    .repeat_count = 0,                // ignored for DVZ_LOOP_ONCE
 })
 
 // Camera path: animates a panel's camera through an ordered list of keyframes
-anim = dvz_anim_camera_path(scene, panel, keyframes, n_keyframes)
+anim = dvz_anim_camera_path(scene, panel, &(DvzAnimCameraPathDesc){
+    .keyframes    = keyframes,
+    .n_keyframes  = n_keyframes,
+    .loop         = DVZ_LOOP_ONCE,
+    .repeat_count = 0,
+})
 ```
 
 A generic `dvz_anim_create(scene, type, &desc)` may exist internally but is not the
@@ -155,6 +162,26 @@ For the first spec the supported targets are:
 
 General property-path expressions or multi-track keyframe curves are explicitly out of scope.
 The 2-point transition model covers non-camera property animation.
+
+
+## Loop Modes
+
+Finite animations (those with a `duration`) support three loop modes declared at construction:
+
+| Value | Behavior |
+|---|---|
+| `DVZ_LOOP_ONCE` | plays once then stops; default |
+| `DVZ_LOOP_REPEAT` | restarts from the beginning each cycle |
+| `DVZ_LOOP_PINGPONG` | reverses direction on each cycle |
+
+`repeat_count` controls how many cycles run before the animation stops automatically.
+`0` means infinite — the animation runs until `dvz_anim_stop()` or `dvz_anim_destroy()`.
+
+For `DVZ_LOOP_PINGPONG` the normalized time `u` runs `0→1` on odd cycles and `1→0` on even
+cycles. The easing function is applied to the reversed `u` as well, so the curve is mirrored.
+
+Timer callbacks do not use loop modes — they are inherently open-ended and are stopped
+explicitly.
 
 
 ## Animation Lifecycle
@@ -190,8 +217,8 @@ for the initial spec. A general property-path system is not introduced.
 **Lifecycle** — `dvz_anim_start()` / `dvz_anim_stop()` / `dvz_anim_destroy()` with clear
 semantics: stop retains state, destroy releases resources.
 
-**Loop and playback modes** — deferred. The active/stopped model is sufficient for the first
-contract. Ping-pong and repeat-count modes remain open.
+**Loop and playback modes** — resolved. `DVZ_LOOP_ONCE` / `DVZ_LOOP_REPEAT` / `DVZ_LOOP_PINGPONG`
+declared at construction; `repeat_count = 0` means infinite. See Loop Modes section.
 
 **Scene-level timeline** — deferred. Coordinating multiple animations by setting their
 `t_start` values explicitly is sufficient for the initial spec.
@@ -368,6 +395,5 @@ produced by animations are included in the current frame's dirty scope.
 
 ## Deferred Questions
 
-1. loop and playback modes beyond the active/stopped model (ping-pong, repeat count),
-2. whether a scene-level animation player or timeline object is needed for coordinating multiple
+1. whether a scene-level animation player or timeline object is needed for coordinating multiple
    animations in complex scripted sequences.

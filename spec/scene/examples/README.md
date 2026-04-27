@@ -27,6 +27,7 @@ Their role is narrower:
 7. `LINKED_PANELS_PROBE_COLORBAR.md`
 8. `MOUSE_BRAIN_ATLAS_EXPLORER.md`
 9. `LINKED_PANELS_AXES_PANZOOM.md`
+10. `ANIMATION_VIDEO_EXPORT.md`
 
 
 ## Common Structure
