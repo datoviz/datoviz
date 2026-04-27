@@ -7,6 +7,8 @@ The spec is otherwise complete: all visual family specs are done, all deferred q
 across `spec/scene/` are resolved, and `spec/scene/headers/scene_api.h` covers the full
 v0.4 C API surface.
 
+**Completed:** items 1, 2, 3, 4, 5 are all done as of commit 6e38fcaa.
+
 
 ## 1. Fill gaps in `scene_api.h`
 
