@@ -124,7 +124,8 @@ Read the scene spec in this order during review.
 26. [CONTROLLERS.md](CONTROLLERS.md) — event routing and interaction ownership
 27. [ANIMATION.md](ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
 28. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
-29. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+29. [SELECTION.md](SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
+30. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
@@ -186,6 +187,8 @@ Read the scene spec in this order during review.
   current preferred v0.4 visuals
 - [PANEL_LAYOUT.md](PANEL_LAYOUT.md): grid layout, free placement, fixed-size columns/rows,
   row/column span, colorbar slots, fixed aspect ratio, shared-width constraint, tight layout
+- [SELECTION.md](SELECTION.md): scene-level selection state, selection modes, parametrizable
+  input mapping, highlight descriptor, lasso via GPU ComputeNode, cross-visual linking
 - [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
 - [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
@@ -229,7 +232,9 @@ The current scene spec now covers:
     Douglas-Peucker simplification, convex hull, boolean polygon ops (Clipper2), SDF/MSDF pipeline
     including per-item atlas shape variation,
 16. panel layout: grid (weighted + fixed-px columns/rows, span), free placement, colorbar slots,
-    fixed aspect ratio, shared-width constraint, manual-only tight layout.
+    fixed aspect ratio, shared-width constraint, manual-only tight layout,
+17. selection and highlight: `DvzSelection` handle, parametrizable input mapping, `DvzHighlightDesc`,
+    GPU mask buffer approach, lasso via `ComputeNode`, cross-visual linking.
 
 The general rule should remain:
 
