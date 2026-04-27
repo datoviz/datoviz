@@ -501,11 +501,17 @@ The first visual contract is acceptable only if it can describe:
 5. one compute-assisted visual that produces data consumed by rendering.
 
 
-## Deferred Questions
+## Resolved Questions
 
-The following topics should remain open until DRP2 and runtime details are more stable:
-
-1. the final public type hierarchy of visuals,
-2. the exact shape of scene-owned descriptor or binding declarations,
-4. how much batching policy is visible above planning,
-5. whether some visuals may generate transient internal resources as part of planning.
+- **Final public type hierarchy**: `DvzVisual*` is the single opaque handle type for all visual
+  families (resolved by `scene_api.h`). There is no user-visible subtype hierarchy — family
+  identity is fixed at construction time via the typed constructor functions.
+- **Scene-owned descriptor or binding declarations**: internal implementation detail, not
+  user-facing. The scene layer owns all GPU binding state; users interact through named
+  attribute and parameter setters.
+- **Batching policy visibility above planning**: not visible. The scene and FramePlan decide
+  all batching (draw-call merging, instanced ranges, storage buffer vs. multiple draws).
+  Users see only item counts and group assignments.
+- **Transient internal resources during planning**: allowed and not user-visible. Some visuals
+  (e.g., glyph atlas expansion, isoline compute) generate intermediate GPU resources during
+  FramePlan construction. These are scene-owned and destroyed with the FramePlan.

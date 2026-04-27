@@ -136,8 +136,12 @@ Depth sorting of semi-transparent points uses the scene's transparency path
 (see `TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API spelling for `color_mode`, `size_mode`, and `size_space`.
+- **API spelling for variant axes**: passed as flags to `dvz_point(scene, flags)`.
+  - color mode: `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR`
+  - size mode: `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR`
+  - `size_space` is a visual-wide parameter set via
+    `dvz_visual_set_param(visual, "size_space", &space)` after construction.
 
 Separate `alpha` attribute: not needed — use the alpha channel of `color`.

@@ -342,10 +342,15 @@ With the following provisional non-top-level concepts:
 2. `slice` under `image`
 
 
-## Deferred Questions
+## Resolved Questions
 
-The following decisions remain intentionally open:
-
-1. the exact variant set for `sphere`,
-2. how `slice` should be modeled inside the `image` family contract,
-3. whether additional high-level families should emerge later from renderer or scene bring-up.
+- **Sphere variant set**: resolved in `visuals/SPHERE.md` — three variant axes: `color_mode`
+  (rgba, scalar, texture), `size_mode` (direct, scalar), `lighting` (phong, flat).
+  The `texture` color mode supports globe and decorative sphere workflows via
+  `texture_projection` (equirectangular, spherical).
+- **Slice inside the image family**: 2D slicing through a 3D volume is handled by the `volume`
+  family with `render_mode = slice`. The `image` family handles flat 2D rasters only; it does
+  not model 3D slicing.
+- **Additional high-level families**: no new families added for v0.4. The set is: pixel, point,
+  marker, segment, path, primitive, glyph, image, mesh, sphere, volume, errorbar, boxplot.
+  New families may emerge from bring-up if a compelling gap is found, but none are planned.

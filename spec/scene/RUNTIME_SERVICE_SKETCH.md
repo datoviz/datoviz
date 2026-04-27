@@ -201,15 +201,21 @@ This document should be read together with:
 
 ## Deferred Questions
 
-The following questions remain intentionally open, and most depend on DRP2 decisions still under
-active review:
+Questions 2 and 4 are resolved. Questions 1 and 3 remain open pending DRP2 alignment.
+
+**Resolved:**
+
+- **Completion delivery** (was #2): polling for v0.4. DRP2 does not expose async signaling
+  primitives in the active contract; `dvz_scene_poll_pick_result` and the `DVZ_EVENT_PICK_RESULT`
+  callback cover the primary readback use case. Callback delivery is added on top of polling and
+  is already in `EVENT_CALLBACKS.md`.
+- **Export helpers above or below the boundary** (was #4): above. `dvz_figure_export_png` and
+  `dvz_figure_export_svg` live in the scene layer and drive the runtime via a standard offline
+  frame sequence. They are not part of the runtime surface.
+
+**Still open (DRP2-dependent):**
 
 1. whether the final runtime surface is one object or several cooperating interfaces — depends on
    how DRP2 structures its execution entry points,
-2. whether completion delivery is callback-based, polled, or both — depends on what DRP2 provides
-   for readback and async signaling,
-3. how much diagnostic detail is standardized versus debug-only — to be aligned with the DRP2
-   error model in `spec/drp2/ERRORS.md`,
-4. whether some export-oriented helpers live above or below the strict runtime boundary.
-
-These should be resolved in coordination with DRP2 spec work, not independently.
+2. how much diagnostic detail is standardized versus debug-only — to be aligned with the DRP2
+   error model in `spec/drp2/ERRORS.md`.

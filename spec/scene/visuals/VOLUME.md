@@ -360,10 +360,10 @@ hit position. The returned item identity is the isosurface level index (0-based 
 | — | `gradient_shading`, `clip_planes` (up to 4), `value_range` (new in v0.4) |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. whether multiple simultaneous orthogonal slices (`render_mode = multiplane`) should be
-   supported — useful for medical MPR viewers; deferred to v0.4+.
-
-`isosurface_levels` stays as a simple `float32[8]` array with a parallel `isosurface_colors`
-array. Named level objects with richer metadata are not needed for v0.4.
+- **`render_mode = multiplane`** (multiple simultaneous orthogonal slices): deferred to v0.4+.
+  MPR viewers can be approximated in v0.4 with three separate `volume` visuals each using
+  `render_mode = slice` on different axes.
+- **`isosurface_levels` data structure**: stays as a simple `float32[8]` array with a parallel
+  `isosurface_colors` array. Named level objects with richer metadata are not needed for v0.4.

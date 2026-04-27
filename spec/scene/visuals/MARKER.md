@@ -303,6 +303,11 @@ v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
 `mtsdf` merged into `msdf` unless implementation evidence separates them.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API spelling for the three variant axes.
+- **API spelling for variant axes**: passed as flags to `dvz_marker(scene, flags)`.
+  Combine one value from each group with bitwise OR:
+  - render mode: `DVZ_MARKER_CODE` (default), `DVZ_MARKER_BITMAP`, `DVZ_MARKER_SDF`,
+    `DVZ_MARKER_MSDF`
+  - color mode: `DVZ_COLOR_RGBA` (default), `DVZ_COLOR_SCALAR`
+  - size mode: `DVZ_SIZE_DIRECT` (default), `DVZ_SIZE_SCALAR`

@@ -165,9 +165,15 @@ Per-item alpha is expressed through the item's color alpha channel or an opacity
 | `VISUAL_CONTRACT.md` | custom visuals must declare their alpha mode |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. blending policy for multiple overlapping volume visuals in the same panel,
-2. `DVZ_ALPHA_BLENDED_EXACT` is deferred to v0.4+; in v0.4.0 it is a reserved enum value
-   that falls back to `DVZ_ALPHA_BLENDED` with a diagnostic,
-3. the exact auxiliary buffer sizing strategy for per-pixel linked list OIT.
+- **Multiple overlapping volume visuals**: each volume's fragments enter the standard transparent
+  fragment stream. WB-OIT accumulates across all transparent fragments regardless of visual type
+  — multiple volumes in the same panel blend correctly without special ordering. This is an
+  inherent property of weighted blended OIT.
+- **`DVZ_ALPHA_BLENDED_EXACT`**: reserved enum value in v0.4.0; falls back to
+  `DVZ_ALPHA_BLENDED` with a capability diagnostic. Per-pixel linked list OIT is a v0.4+
+  feature.
+- **Auxiliary buffer sizing for per-pixel linked list OIT**: moot for v0.4 since
+  `DVZ_ALPHA_BLENDED_EXACT` is deferred. Will be specced together with the full OIT
+  implementation in v0.4+.

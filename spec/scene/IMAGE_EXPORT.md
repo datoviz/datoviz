@@ -152,10 +152,16 @@ This is the scene-native path for embedding a rendered panel inside an ImGui win
 | `RESOURCE_MODEL.md` | offscreen texture is a scene-owned `TextureResource` |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. whether render scale can be per-panel rather than per-figure,
-2. the downsampling filter for render scale,
-3. whether the offscreen panel also renders to the main framebuffer (picture-in-picture) or
-   exclusively to the texture,
-4. float-format offscreen textures for HDR or scientific precision downstream visuals.
+- **Render scale granularity**: per-figure only in v0.4. All panels in a figure scale together.
+  Per-panel render scale is a v0.4+ feature if a clear use case emerges.
+- **Downsampling filter for render scale**: bilinear for v0.4. No additional options surface
+  in the API — Lanczos or other filters are a v0.4+ quality option.
+- **Offscreen panel rendering to main framebuffer**: exclusive by default — the offscreen panel
+  renders only to its texture and is not composited into the main framebuffer. Pass
+  `DVZ_PANEL_OFFSCREEN_PIP` to `dvz_panel_set_offscreen` to enable picture-in-picture mode
+  where the panel renders to both the texture and the main framebuffer.
+- **Float-format offscreen textures**: supported. `dvz_panel_set_offscreen` uses the format of
+  the `DvzTexture*` that was passed at panel creation. Creating the texture with
+  `VK_FORMAT_R32G32B32A32_SFLOAT` via `dvz_texture_2d` gives an HDR-capable offscreen target.

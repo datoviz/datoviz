@@ -154,9 +154,24 @@ The interaction between non-linear projections and axes is deferred to the axes 
 | `AXES.md` | tick projection for non-linear panels |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. exact parameter layout for each built-in projection,
-2. interaction between non-linear projections and axes tick generation,
-3. whether per-visual projection overrides (different projection per visual in the same panel)
-   are needed.
+- **Parameter layout for built-in projections** (indices into `DvzProjectionDesc.params[8]`):
+
+  | Projection | params[0] | params[1] | params[2] | params[3] |
+  |---|---|---|---|---|
+  | `MERCATOR` | center_lon | center_lat | — | — |
+  | `EQUIRECTANGULAR` | center_lon | center_lat | scale_x | scale_y |
+  | `ORTHOGRAPHIC_GEO` | center_lon | center_lat | — | — |
+  | `POLAR` | origin_x | origin_y | — | — |
+
+  All unused entries are zero. Angles in radians; geographic coordinates in degrees.
+
+- **Interaction with axes tick generation**: tick values are generated in data space; the
+  panel's projection function is also applied to tick label anchor positions so that grid
+  lines and labels land at correct projected locations. The axes layer calls the same
+  CPU-side projection function used for data points.
+
+- **Per-visual projection overrides**: not supported in v0.4. All visuals in a panel share the
+  panel's projection. Per-visual projection would require separate transform pre-passes and
+  is a v0.4+ concern.

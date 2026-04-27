@@ -129,6 +129,8 @@ Picking returns vertex index as item identity.
 across drivers and is not available in WebGPU. For thick lines, use `path` or `segment`.
 `primitive` line topologies always render at 1 physical pixel.
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API spelling for topology declaration at creation time.
+- **API spelling for topology**: topology is the second argument to the constructor:
+  `dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags)`.
+  The full `DvzPrimitiveTopology` enum is defined in `scene_api.h`.

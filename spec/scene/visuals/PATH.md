@@ -198,10 +198,10 @@ v0.4 adds: `PER_GROUP` sources, `scalar` color mode, `linewidth_space`, `closed`
 v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds `miter`.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. per-vertex `linewidth` (tapered lines): not supported in v0.4 — complex geometry generation,
-   reserved as a future feature.
+- **Per-vertex `linewidth` (tapered lines)**: not supported in v0.4. Tapered lines require
+  complex per-segment geometry generation and are reserved as a v0.4+ feature.
 
 Partial path updates are served by the standard byte-range upload mechanism from
 `THREAD_SAFETY.md` — no dedicated streaming API needed.

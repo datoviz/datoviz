@@ -391,13 +391,15 @@ The utilities are CPU-side data preparation steps, not scene-layer extension poi
 
 ---
 
-## Deferred Questions
+## Resolved Questions
 
-1. concave hull (alpha shapes) — useful for non-convex point clusters; deferred until use cases
-   are clearer,
-2. whether boolean polygon operations should be exposed at the scene API level or remain a
-   lower-level utility,
-3. per-item shape variation via atlas — exact attribute API spelling is deferred,
-4. GPU-side SDF computation (jump flooding) — deferred to a future compute path,
-5. whether Douglas-Peucker simplification should be available as an automatic LOD strategy
-   rather than a one-shot utility.
+- **Concave hull (alpha shapes)**: deferred to v0.4+ — use cases not yet clear enough to spec.
+- **Boolean polygon operations**: stay a lower-level CPU utility; not exposed at the scene API
+  level for v0.4.
+- **Per-item shape variation via atlas**: resolved — `shape_index` `PER_ITEM` attribute in the
+  `marker` family spec covers this; no separate atlas API needed at the geometry utility level.
+- **GPU-side SDF computation (jump flooding)**: deferred to v0.4+ — the CPU msdfgen path covers
+  vector-shape SDF for markers and glyphs; jump flooding for raster segmentation masks requires
+  a full compute pipeline that is out of scope for v0.4.
+- **Douglas-Peucker as automatic LOD**: not automatic for v0.4 — exposed as a one-shot utility
+  only; automatic LOD strategies are a v0.4+ concern.

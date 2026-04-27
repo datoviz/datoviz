@@ -105,10 +105,14 @@ The logical panel size in the scene maps to the SVG `viewBox`.
 | `HIGH_DPI.md` | DPI scale affects raster embed resolution |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. whether annotation callout lines and anchor shapes are emitted as vector,
-2. per-item vector export for simple visual families (e.g., `segment`, `path`) via a
-   CPU re-draw path — useful for line art figures with few items,
-3. PDF export (SVG can be converted externally; native PDF deferred),
-4. whether font embedding uses base64 data URIs or `@font-face` references.
+- **Annotation callout lines**: yes — polyline callouts and simple anchor shapes from the
+  annotation layer emit as SVG `<line>` and `<path>` elements, not raster embeds.
+- **Per-item vector export for simple families**: yes for `path` and `segment` in v0.4, via a
+  CPU re-draw path that maps items to SVG `<polyline>` and `<line>` elements. Other families
+  (mesh, volume, sphere, glyph) remain raster-embedded.
+- **PDF export**: deferred to v0.4+. SVG output can be converted to PDF externally via standard
+  tools (Inkscape, CairoSVG).
+- **Font embedding**: base64 data URIs by default, producing a fully self-contained SVG file.
+  Setting `embed_fonts = false` in `DvzSVGExportOptions` uses `@font-face` references instead.

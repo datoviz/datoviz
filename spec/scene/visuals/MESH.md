@@ -319,10 +319,11 @@ drive the Cook-Torrance BRDF without any change to the public API surface.
 See `LIGHTING.md` for the full PBR and ray tracing upgrade path.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. additional texture slots beyond diffuse + normal map (emissive map, roughness/metallic maps)
-   — deferred to PBR activation.
+- **Additional texture slots (emissive map, roughness/metallic maps)**: deferred to PBR
+  activation. The style block already reserves `metallic` and `roughness` fields for forward
+  compatibility; new texture slots will be added when the PBR lighting path is introduced.
 
 Per-vertex `emissive`/`shininess`: not supported — uniform material per visual is sufficient;
 per-vertex material is PBR territory.

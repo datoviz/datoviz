@@ -295,11 +295,17 @@ If the figure is resized significantly, the user should call `dvz_figure_tight_l
 | — | `dvz_figure_tight_layout` — new |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. whether a convenience `dvz_panel_attach_colorbar(panel, side, width_px)` wrapper on top
-   of the fixed-column pattern is worth adding,
-2. whether panels should support non-rectangular clip regions (e.g., circular panels) — almost
-   certainly out of scope,
-3. whether `dvz_grid_link_col_width` should be automatic when two panels share a controller,
-4. minimum panel size constraints to prevent degenerate layouts on extreme resize.
+- **`dvz_panel_attach_colorbar` convenience wrapper**: yes, added. The call
+  `dvz_panel_attach_colorbar(panel, side, width_px)` creates a fixed-width column or row
+  adjacent to the panel and returns a `DvzPanel*` for the colorbar panel. This wraps the
+  4-5 lines of `dvz_figure_grid` + margin setup that would otherwise be needed every time.
+- **Non-rectangular clip regions**: not supported. Panel clipping is always rectangular
+  (scissor). Circular or custom-shape panels are out of scope.
+- **Auto-link column width on shared controller**: not automatic. If two panels share a
+  controller and should maintain linked column widths, the caller must explicitly call
+  `dvz_grid_link_col_width`. Automatic linking would create implicit coupling that is hard
+  to override.
+- **Minimum panel size**: hard minimum of 16 × 16 logical pixels. The layout engine silently
+  clamps any panel to this minimum on extreme resize rather than producing a zero-size panel.

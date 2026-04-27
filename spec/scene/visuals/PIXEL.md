@@ -117,9 +117,10 @@ Standard — see `SHARED_ATTRIBUTES.md`.
 v0.4 adds: `shift`, `size_space`, `color_mode = scalar`.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API spelling for `color_mode` at creation.
+- **API spelling for `color_mode`**: passed as a flag to `dvz_pixel(scene, flags)`.
+  Use `DVZ_COLOR_RGBA` (default) or `DVZ_COLOR_SCALAR` (scalar input mapped via a `DvzScale`).
 
 `PER_GROUP` color uses item range partitions — no explicit per-item group-index attribute is
 needed. Groups are contiguous ranges; the user declares group sizes and the scene maps each

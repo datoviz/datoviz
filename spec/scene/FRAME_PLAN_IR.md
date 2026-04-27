@@ -401,11 +401,16 @@ Material is not a first-class scene concept.
 Shading parameters are fields inside a `ParameterBlockResource`.
 
 
-## Deferred Questions
+## Resolved Questions
 
-The following questions should remain explicitly open for now:
-
-1. how shader-module and pipeline identities map onto final DRP2 object-creation commands.
+- **Shader-module and pipeline identities → DRP2 commands**: resolved by `spec/drp2/COMMANDS.md`.
+  The scene layer assigns deterministic numeric IDs to shader modules (e.g., based on a hash of
+  family + variant flags + shader source). The FramePlan emits `CreateShaderModule` once per
+  unique (stage, source) pair and `CreateRenderPipeline` referencing those module IDs.
+  Pipeline objects are cached: if the same (vertex_module_id, fragment_module_id, pipeline state)
+  was already created in a prior frame, no new `CreateRenderPipeline` command is emitted.
+  `DestroyShaderModule` and `DestroyRenderPipeline` are emitted when the referencing visual is
+  removed or its variant changes.
 
 
 ## Immediate Follow-On Specs

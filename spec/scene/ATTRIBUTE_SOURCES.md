@@ -264,10 +264,22 @@ For 1M pixels, `CONSTANT` color uses 4 bytes total.
 The user should choose based on what their data actually requires.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API shape for declaring attribute sources and mutability hints — deferred to
-   the broader C API surface work in `PREFERRED_API_PROFILE.md`.
+- **Public API shape for attribute sources and mutability hints**:
+  Sources are implicit in `n` passed to `dvz_visual_set_data(visual, attr_name, data, n)`:
+  - `n = 1` → `CONSTANT`
+  - `n = item_count` → `PER_ITEM`
+  - `n = group_count` → `PER_GROUP`
+  The scene validates that `n` matches an accepted source for the attribute (as defined in the
+  per-family spec). An `n` value inconsistent with the accepted sources is a validation error.
+
+  Mutability hints are set via a separate call:
+  ```c
+  dvz_visual_set_mutability(visual, attr_name, hint)
+  ```
+  where `hint` is one of `DVZ_MUTABILITY_STATIC`, `DVZ_MUTABILITY_DYNAMIC` (default),
+  or `DVZ_MUTABILITY_STREAMING`. This call is optional — the default is always `DYNAMIC`.
 
 The following questions are resolved:
 

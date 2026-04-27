@@ -163,7 +163,13 @@ Picking returns the segment index as item identity.
 v0.4 adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode, `linewidth_space`.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API spelling for `P0`/`P1` — two separate calls or one interleaved call as
-   in v0.3.
+- **API spelling for `P0`/`P1`**: two separate attribute calls, matching the named-attribute
+  pattern used across all visual families:
+  ```c
+  dvz_visual_set_data(seg, "pos_start", p0_array, n);
+  dvz_visual_set_data(seg, "pos_end",   p1_array, n);
+  ```
+  This is cleaner than the v0.3 interleaved layout and is consistent with how other
+  dual-position attributes (e.g., errorbar `center`/`extent`) are written.

@@ -217,12 +217,16 @@ A custom visual follows the same lifecycle as built-in visuals:
 | `NONLINEAR_TRANSFORMS.md` | custom compute shader registration for projections |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. shader language policy — GLSL for v0.4 and all built-in shaders; when the browser/WebGPU
-   target is ready, shaders will be converted to WGSL once (manually, AI-assisted) rather than
-   maintained in parallel or transpiled at runtime,
-2. hot reload of custom visual shaders at runtime,
-3. partial invalidation callback API spelling,
-4. whether custom visuals can declare their own per-item picking ID strategy beyond
-   the default instance-index convention.
+- **Shader language policy**: GLSL for all v0.4 shaders, both built-in and custom. When the
+  browser/WebGPU target is ready, shaders will be converted to WGSL once (manually,
+  AI-assisted) rather than maintained in parallel or transpiled at runtime.
+- **Hot reload of custom visual shaders**: not supported in v0.4. Shader recompilation requires
+  destroying and recreating the visual. Hot reload is a v0.4+ developer-tooling concern.
+- **Partial invalidation callback**: not exposed in v0.4. The scene always fully invalidates a
+  custom visual when any of its data or parameters change. Granular dirty tracking for custom
+  visuals is a v0.4+ optimization.
+- **Custom per-item picking ID strategy**: not supported in v0.4. Custom visuals use the default
+  instance-index convention (item index = gl_InstanceIndex). Custom picking strategies
+  (e.g., encoding compound IDs in the picking buffer) are deferred to v0.4+.

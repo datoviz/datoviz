@@ -244,13 +244,18 @@ the color arithmetic moves to the shader.
 | `RESOURCE_MODEL.md` | mask buffer is a `BufferResource` owned by `DvzSelection` |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. whether lasso CPU index sync (mask → index array readback) should be automatic or
-   opt-in via an explicit `dvz_selection_sync` call,
-2. whether `selected_size_mult` requires a separate size buffer upload or can be handled
-   entirely in the shader,
-3. whether per-item highlight overrides (different highlight per item beyond selected/unselected
-   binary) are needed for more nuanced emphasis workflows,
-4. whether `DvzSelection` should support named groups (e.g., primary selection, secondary
-   selection, hover highlight) as distinct layers on the same visual.
+- **Lasso CPU index sync**: opt-in via an explicit `dvz_selection_sync(sel)` call. Automatic
+  readback would stall the GPU pipeline every frame for users who only need the visual
+  highlight effect without a CPU index list. `dvz_selection_sync` triggers a one-shot
+  readback; the result is available on the next rendered frame via `dvz_selection_get`.
+- **`selected_size_mult` and shader handling**: the size multiplier from `DvzHighlightDesc` is
+  passed as a uniform and applied entirely in the shader. No separate per-item size buffer
+  upload is needed for selection highlighting.
+- **Per-item highlight overrides beyond binary**: not supported in v0.4. The binary
+  selected/unselected model with a uniform `DvzHighlightDesc` covers scientific visualization
+  needs. Per-item multi-level emphasis is a v0.4+ concern.
+- **Named selection groups**: deferred to v0.4+. A single selection per visual with one
+  `DvzHighlightDesc` is sufficient for v0.4. Multi-layer selection (primary, secondary, hover)
+  would require stacked mask buffers and is out of scope.

@@ -200,10 +200,14 @@ mutation except direct GPU or DRP2 calls.
 | `FRAME_PLAN_IR.md` | dirty attributes resolved into UploadNodes in the same frame |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. exact staging pool size and back-pressure policy,
-2. `DVZ_TRANSFER_CALLBACK` may perform structural mutations (add/remove visuals, create
-   panels, change scale parameters) — resolved: yes, allowed, since the callback runs on
-   the render thread during stage 2 before invalidation,
-3. multi-scene resource sharing across threads (deferred; out of scope for v0.4).
+- **Staging pool size and back-pressure**: the default staging pool is 256 MB; the ring buffer
+  holds up to 256 pending transfers. When the ring buffer is full, `dvz_scene_submit_transfer`
+  blocks the calling thread until a slot opens (back-pressure by blocking, no silent drop).
+  These limits are tuneable at scene creation time.
+- **`DVZ_TRANSFER_CALLBACK` structural mutations**: allowed. The callback runs on the render
+  thread during stage 2 (before invalidation), so adding/removing visuals, creating panels,
+  and changing scale parameters are all safe.
+- **Multi-scene resource sharing across threads**: out of scope for v0.4. Each scene owns its
+  GPU resources exclusively.

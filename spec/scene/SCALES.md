@@ -404,9 +404,24 @@ This fallback is transparent to the user except for the diagnostic and the highe
 | `CAPABILITY_ADAPTATION.md` | GPU vs CPU palette lookup fallback |
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. the exact public API spelling for scale construction and update.
+- **Public API spelling for scale construction and update**: three typed shorthand constructors
+  cover the common cases:
+  ```c
+  dvz_scale_color(scene, colormap_name, domain_min, domain_max)
+  dvz_scale_size(scene, px_min, px_max, domain_min, domain_max)
+  dvz_scale_opacity(scene, domain_min, domain_max)
+  ```
+  Update functions operate on an existing handle:
+  ```c
+  dvz_scale_set_domain(scale, min, max)
+  dvz_scale_set_colormap(scale, name)
+  dvz_scale_set_stops(scale, rgba_stops, count)  // custom color stops
+  dvz_scale_destroy(scale)
+  ```
+  Categorical scales use `dvz_scale_color` with a categorical colormap name. All three
+  constructors return a `DvzScale*` that can be passed to `dvz_visual_set_scale`.
 
 The following questions are resolved and no longer open:
 
