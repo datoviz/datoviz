@@ -684,6 +684,55 @@ It has no knowledge of the physical relationship between voxels and mm.
 Aligning the two coordinate systems correctly is the caller's responsibility.
 
 
+## CPU Precision Policy
+
+All Stage A (data-to-visual normalization) work must be performed in **64-bit floating point
+(F64)** on the CPU.
+
+F32 downcast happens exactly once: at `UploadNode` time in the `FramePlan`, after normalization
+to `VisualSpace`.
+The GPU receives F32 data whose values are already near-zero or in a well-conditioned range.
+
+This is the standard solution to the **large world coordinates (LWC)** problem, known in game
+engine literature as "floating origin" or "camera-relative rendering": by computing all
+arithmetic in F64 and subtracting the reference origin before downcasting, precision loss at
+high zoom or far from the coordinate origin is eliminated.
+Without it, floating-point cancellation at large coordinate values produces visible positional
+jitter — sometimes called "precision swimming" — as the user zooms in.
+
+### Why F32 On The GPU Is Fine After Normalization
+
+After Stage A, all position values are mapped into `VisualSpace`, typically `[-1, 1]` or
+another bounded range.
+F32 provides ~7 decimal digits of precision over that range, which is more than sufficient for
+rendering.
+The cancellation error only arises when large coordinates are differenced in the shader —
+which never happens if normalization was done correctly in F64 first.
+
+### GPU-Side F64 Emulation
+
+For cases where the GPU itself must operate on high-precision un-normalized coordinates
+(e.g., compute shaders doing distance queries on raw astronomical or geospatial data), the
+**Olano-Greer double-single technique** encodes each F64 value as two F32 values and emulates
+double arithmetic in the shader.
+This is a niche path and is not needed for standard rendering once CPU normalization is correct.
+It is reserved as a future compute path and is not part of the v0.4 baseline.
+
+### Data Ingestion
+
+The scene accepts position data as F64 arrays natively.
+Python/NumPy data is F64 by default; the scene must not silently downcast at ingestion time.
+F32 source data is also accepted and passes through without promotion.
+
+### Geometry Utility Precision
+
+All geometry utility operations (triangulation, curve tessellation, line simplification, hull
+computation, boolean polygon operations) also operate in F64 throughout.
+Their output is F64 vertex data that enters the normal upload path and is downcast at
+`UploadNode` time.
+See `GEOMETRY_UTILITIES.md` for the full geometry utility specification.
+
+
 ## Rules
 
 1. Data normalization belongs above DRP2.
@@ -699,6 +748,8 @@ Aligning the two coordinate systems correctly is the caller's responsibility.
 9. Log-scale and inverted-axis behavior are normalization-side policies declared on `DvzDataDomain`,
    not controller or shader concerns.
 10. Aspect ratio is a controller-side policy; it does not change the panel domain or normalization.
+11. All CPU-side normalization and geometry utility operations run in F64; F32 downcast happens
+    only at `UploadNode` time after normalization is complete.
 
 
 ## Follow-On Spec Work

@@ -763,6 +763,31 @@ The first resource model is acceptable only if it can cleanly represent:
 8. shared parameter blocks reused across visuals or panels.
 
 
+## Source Data Precision
+
+The scene resource model accepts position data as **F64 (double-precision float)** natively.
+
+This is intentional: the dominant source of position data in scientific Python workflows is
+NumPy, where the default float type is `float64`.
+Silently downcasting at ingestion time would introduce precision loss before normalization,
+defeating the CPU precision policy described in `TRANSFORM_PIPELINE.md`.
+
+The model therefore follows these rules:
+
+1. `BufferResource` accepts F64 position arrays at write time.
+2. The scene stores source position data in F64 internally and performs all normalization
+   (Stage A of the transform pipeline) in F64.
+3. F32 downcast happens at `UploadNode` time in `FramePlan`, after normalization to
+   `VisualSpace`.
+4. F32 source data is also accepted and is not promoted to F64.
+5. Non-position attributes (color, size, scalar values) use their natural precision and
+   are not required to be F64.
+
+The public write API should therefore accept both `float32` and `float64` arrays for position
+attributes, with the declared type stored alongside the data so the normalization stage knows
+what arithmetic to use.
+
+
 ## Data Ownership And Memory Model
 
 When the user writes data to a scene resource, the scene must decide whether to copy the buffer

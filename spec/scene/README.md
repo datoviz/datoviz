@@ -106,9 +106,10 @@ Read the scene spec in this order during review.
 
 ### 4. Data, transforms, planning, and runtime handoff
 
-16. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model
+16. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model and F64 data ingestion policy
 17. [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
-18. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization and panel-transform pipeline
+18. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization, panel-transform pipeline, and CPU precision policy (F64 throughout, F32 at upload)
+18b. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md) — triangulation, curve tessellation, simplification, hull, boolean ops, SDF/MSDF pipeline
 19. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
 20. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
 21. [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md) — conceptual runtime service surface
@@ -183,7 +184,10 @@ Read the scene spec in this order during review.
 - [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md): family-level mini-contracts for the
   current preferred v0.4 visuals
 - [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
-  upload, and readback
+  upload, readback, and F64 source data ingestion policy
+- [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
+  (earcut + Triangle/PSLG), curve tessellation (Bézier, Catmull-Rom, B-spline), Douglas-Peucker
+  simplification, 2D convex hull, boolean polygon ops (Clipper2), and SDF/MSDF pipeline
 - [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md): explicit data-normalization and panel-transform
   pipeline for scene visuals
 - [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md): producer-side intermediate representation for one planned
@@ -216,7 +220,11 @@ The current scene spec now covers:
 11. lighting model with PBR and ray tracing forward-compatibility notes,
 12. worked examples,
 13. family additions: `errorbar`, `boxplot`; heatmap isolines (`image`), volume isosurfaces
-    (`volume`), arrow caps (`segment`), quiver magnitude and arrow style (`marker`).
+    (`volume`), arrow caps (`segment`), quiver magnitude and arrow style (`marker`),
+14. CPU F64 precision policy: all normalization in F64, F32 downcast at UploadNode only,
+15. geometry utility layer: triangulation (earcut + Triangle/PSLG), curve tessellation,
+    Douglas-Peucker simplification, convex hull, boolean polygon ops (Clipper2), SDF/MSDF pipeline
+    including per-item atlas shape variation.
 
 The general rule should remain:
 
