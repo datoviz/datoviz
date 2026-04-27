@@ -118,18 +118,44 @@ Stop positions are uniform unless the user also supplies explicit stop positions
 
 ### Normalization
 
-The scale normalizes input values to `[0, 1]` before palette lookup:
+The scale normalizes input values to `[0, 1]` before palette lookup.
 
-```
-t = clamp((value - domain_min) / (domain_max - domain_min), 0, 1)
-color = palette_lookup(t)
-```
+The normalization function is controlled by the `interpolation` field:
+
+| Value | Formula | Typical use |
+|---|---|---|
+| `linear` (default) | `t = (v - min) / (max - min)` | general purpose |
+| `log` | `t = (log(v) - log(min)) / (log(max) - log(min))` | intensity maps, power-law data |
+| `sqrt` | `t = (√v - √min) / (√max - √min)` | count data, area perception |
+| `power(γ)` | `t = ((v - min) / (max - min))^γ` | gamma correction, contrast |
+
+`log` normalization requires `domain_min > 0`.
+`sqrt` normalization requires `domain_min ≥ 0`.
+All normalizations clamp `t` to `[0, 1]` (or wrap for `repeat` clamp mode).
 
 For `repeat` clamp mode:
 
 ```
 t = fmod((value - domain_min) / (domain_max - domain_min), 1.0)
 ```
+
+### Diverging Center
+
+For diverging palettes (e.g., `coolwarm`, `bwr`) where the palette midpoint should align
+with a specific data value rather than the domain midpoint, an optional `center` field
+overrides the default:
+
+| Field | Default | Description |
+|---|---|---|
+| `center` | `(domain_min + domain_max) / 2` | data value that maps to palette midpoint (`t = 0.5`) |
+
+When `center` is set, the normalization is piecewise-linear:
+- below center: `t = 0.5 * (v - domain_min) / (center - domain_min)`
+- above center: `t = 0.5 + 0.5 * (v - center) / (domain_max - center)`
+
+This allows asymmetric domains (e.g., −10 to +5 with white at 0) without artificially
+adjusting `domain_min` or `domain_max`.
+`center` is ignored when `interpolation ≠ linear`.
 
 
 ### Output Type
@@ -224,6 +250,38 @@ An opacity scale maps scalars to alpha values in `[0, 1]`.
 
 The output is a `float32` alpha value clamped to `[0, 1]`.
 It is typically combined with a base color by multiplying the alpha channel.
+
+
+## Custom Colormap Registration
+
+A user-defined colormap can be registered with the scene under a name, making it referenceable
+by string in the same way as built-in named palettes.
+
+```text
+dvz_colormap_register(scene, "my_map", colors_rgba_u8, n)
+```
+
+`colors_rgba_u8` is a flat array of `n` RGBA `u8` values defining the palette from `t = 0`
+to `t = 1`.
+`n` should be at least 2; 256 is the typical resolution for a smooth continuous colormap.
+
+Once registered, the name `"my_map"` can be used anywhere a named palette is accepted:
+
+```text
+scale = dvz_scale_color(scene, &(DvzColorScaleDesc){
+    .domain_min = 0.0,
+    .domain_max = 1.0,
+    .palette     = "my_map",
+})
+```
+
+Registration is scene-scoped — the name is valid for the lifetime of the scene.
+Registering with a name that already exists replaces the previous palette and marks all
+scales using that name dirty.
+
+This is the primary path for Python users who define colormaps as NumPy arrays
+(`uint8` or `float32` arrays of shape `(N, 3)` or `(N, 4)`) and want to pass them to
+Datoviz by name rather than constructing a scale descriptor inline.
 
 
 ## Scale Identity And Sharing
