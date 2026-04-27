@@ -132,7 +132,9 @@ Read the scene spec in this order during review.
 34. [VECTOR_EXPORT.md](VECTOR_EXPORT.md) — structural SVG export: vector axes/annotations + raster visual embed
 35. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md) — user-defined visual families, descriptor registration, shader injection
 36. [THREAD_SAFETY.md](THREAD_SAFETY.md) — threading model, transfer queue, async data upload, background computation handoff
-37. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+37. [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md) — scene event observer system: selection, pick, hover, animation, resize, DPI
+38. [CLIPPING.md](CLIPPING.md) — per-visual clip modes: data area (default), panel, none
+39. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
@@ -210,6 +212,10 @@ Read the scene spec in this order during review.
   injection points, picking/selection/capability integration for user-defined visual families
 - [THREAD_SAFETY.md](THREAD_SAFETY.md): single-threaded render path, DvzTransferQueue for
   background threads, data/uniform/callback transfer types, async upload and completion hooks
+- [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md): dvz_scene_on observer registration, event types
+  (selection changed, pick result, hover, anim step/complete, resize, DPI), lifecycle fire points
+- [CLIPPING.md](CLIPPING.md): DVZ_CLIP_DATA_AREA (default), DVZ_CLIP_PANEL, DVZ_CLIP_NONE;
+  data area derived from axes margins; scissor grouping in render pass
 - [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
 - [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
@@ -267,7 +273,10 @@ The current scene spec now covers:
 22. SVG/vector export: structural SVG with vector axes/annotations and embedded raster visuals,
 23. custom visual families: `DvzVisualDesc` registration, shader injection, full scene integration,
 24. thread safety: single-threaded render path, `DvzTransferQueue`, async upload, computation
-    result handoff, data lifetime rules.
+    result handoff, data lifetime rules,
+25. event callbacks: `dvz_scene_on` observer system for selection, pick, hover, animation, resize,
+26. clipping: `DVZ_CLIP_DATA_AREA` default, `DVZ_CLIP_PANEL`, `DVZ_CLIP_NONE`; data area from
+    axes margins; annotations unclipped by default.
 
 The general rule should remain:
 

@@ -603,8 +603,9 @@ dvz_panel_add_visual(panel, data,       &(DvzVisualAttachDesc){.z_layer =  0})
 dvz_panel_add_visual(panel, overlay,    &(DvzVisualAttachDesc){.z_layer =  1})
 ```
 
-Visuals at the same `z_layer` have implementation-defined relative draw order.
-If relative order within a layer matters, use distinct values.
+Visuals at the same `z_layer` are drawn in insertion order (the order they were added to the
+panel via `dvz_panel_add_visual`). This is deterministic and predictable without requiring
+explicit z values for every visual.
 
 A separate `visible` flag handles show/hide without changing `z_layer`.
 
