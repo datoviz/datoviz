@@ -36,7 +36,6 @@ Declared at visual creation time; cannot change without recreating the visual.
 | `line_strip` | connected line sequence |
 | `triangle_list` | independent triangles, three vertices each |
 | `triangle_strip` | connected triangle strip |
-| `triangle_fan` | triangle fan from first vertex |
 
 No indexed rendering. For indexed geometry use `mesh`.
 
@@ -126,6 +125,5 @@ Picking returns vertex index as item identity.
 
 ## Deferred Questions
 
-1. whether `triangle_fan` should be included given limited WebGPU support,
-2. the exact public API spelling for topology declaration at creation time,
+1. the exact public API spelling for topology declaration at creation time,
 3. whether `primitive` should expose a `linewidth` parameter for line topologies.

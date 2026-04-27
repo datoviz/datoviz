@@ -230,8 +230,10 @@ diffuse term.
 ## Transform Model, Stage Participation, Picking
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Picking returns the vertex index. Triangle-level picking (returning face index) is a deferred
-question.
+Picking returns the **face (triangle) index**, not the vertex index. Face picking is more
+useful for mesh interaction (the user clicks a surface region, not a vertex). The face index
+is the index of the first vertex of the triangle divided by 3 (i.e., `vertex_index / 3` for
+non-indexed triangles, or the index into the index buffer triplet for indexed geometry).
 
 
 ## Relationship To Other Families
@@ -296,19 +298,27 @@ The style block reserves two additional fields for future PBR support:
 | `metallic` | metallic factor `[0, 1]` | zero-initialized, ignored |
 | `roughness` | roughness factor `[0, 1]` | zero-initialized, ignored |
 
-A future `normal_map` texture slot is also reserved but not declared as an active resource in
-v0.4.
+A `normal_map` texture slot is supported in v0.4 alongside the diffuse `texture`.
+When `normal_map` is set, the fragment shader perturbs the surface normal using the tangent-space
+normal map before Phong shading. `texcoords` are shared between `texture` and `normal_map`.
 
-When PBR rendering is activated in a future version, these fields drive the Cook-Torrance BRDF
-without any change to the public API surface.
+```text
+dvz_visual_set_texture(mesh, 0, diffuse_tex)    // slot 0: diffuse color
+dvz_visual_set_texture(mesh, 1, normal_map_tex) // slot 1: normal map (optional)
+```
+
+When PBR rendering is activated in a future version, the `metallic` and `roughness` fields
+drive the Cook-Torrance BRDF without any change to the public API surface.
 See `LIGHTING.md` for the full PBR and ray tracing upgrade path.
 
 
 ## Deferred Questions
 
-1. triangle-level (face) picking vs. vertex picking,
+1. smooth normal auto-computation (area-weighted vertex normals) vs flat normals — resolved
+   in SHARED_ATTRIBUTES.md; auto-compute is opt-in,
 2. whether smooth normal auto-computation (area-weighted vertex normals) should be offered
    in addition to flat normals,
 3. whether per-vertex `emissive` or `shininess` is needed for heterogeneous material surfaces,
-4. whether multiple textures (e.g., diffuse + normal map) should be supported,
+4. whether additional texture slots beyond diffuse + normal map are needed (e.g., emissive,
+   roughness/metallic maps) — deferred to PBR activation,
 5. whether `isoline_color` should support a `Scale` for multi-colored isolines.

@@ -286,7 +286,7 @@ effect.
 |---|---|---|
 | `texture_mode` | `scalar`, `rgba` | `scalar` |
 | `color_mode` | `density`, `colormap` | `density` |
-| `render_mode` | `dvr`, `slice` | `dvr` |
+| `render_mode` | `dvr`, `mip`, `slice` | `dvr` |
 
 All set at visual creation time. `color_mode` applies to `texture_mode = scalar` only.
 
@@ -296,11 +296,24 @@ All set at visual creation time. `color_mode` applies to `texture_mode = scalar`
 | `scalar` | `colormap` | normalized value → `color_transfer` → colormap; opacity from `alpha_transfer` |
 | `rgba` | — | RGBA voxel sampled directly; `opacity_scale` applied to A channel |
 
+`render_mode = mip` (maximum intensity projection) accumulates the maximum voxel value along
+each ray rather than compositing with alpha. The result is mapped through `color_transfer` for
+display. `alpha_transfer` is ignored in MIP mode. MIP applies to `texture_mode = scalar` only.
+
 
 ## Transform Model, Stage Participation, Picking
 
 Standard transform model — see `SHARED_ATTRIBUTES.md`.
-Picking is not supported for `volume`.
+
+**Picking for `render_mode = dvr` and `render_mode = slice`**: not supported.
+
+**Picking for isosurface** (`isosurface_levels` non-empty): supported via depth readback.
+The fragment shader computes the world-space hit position when a ray intersects an isosurface
+level. The scene reads back the depth buffer at the pick coordinate and reconstructs the 3D
+hit position. The returned item identity is the isosurface level index (0-based index into
+`isosurface_levels`). This is a single-object pick — one volume, one level index.
+
+**Picking for `render_mode = mip`**: not supported.
 
 
 ## Relationship To Other Families
@@ -349,13 +362,8 @@ Picking is not supported for `volume`.
 
 ## Deferred Questions
 
-1. whether maximum intensity projection (MIP) should be a `render_mode` variant (`dvr`,
-   `mip`, `slice`) — common in medical imaging, requires a different accumulation loop,
-2. whether multiple simultaneous orthogonal slices (`render_mode = multiplane`) should be
+1. whether multiple simultaneous orthogonal slices (`render_mode = multiplane`) should be
    supported,
-3. picking via isosurface depth — the fragment shader already computes the hit position and
-   depth when an isosurface level is active, so single-object picking via depth readback is
-   feasible; deferred until the picking readback contract is finalized,
-4. whether multiple clip planes should be supported,
-5. whether `isosurface_levels` should be per-visual or support named level objects with
+2. whether multiple clip planes should be supported,
+3. whether `isosurface_levels` should be per-visual or support named level objects with
    richer metadata (color, opacity, label).

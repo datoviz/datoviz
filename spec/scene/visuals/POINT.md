@@ -123,10 +123,20 @@ v0.4 adds: `CONSTANT`/`PER_GROUP` sources for `color` and `size`, `scalar` modes
 `size_space`.
 
 
+## Rendering Model
+
+`point` always renders as a smooth disc using an SDF impostor (circle SDF in the fragment
+shader), not as a hardware point sprite. Hardware point sprites are square on many drivers
+and not supported in WebGPU; they are never exposed.
+
+Each point occupies a quad (two triangles); the fragment shader discards corners outside the
+circle. This is the same approach used by `marker` without the shape or rotation machinery.
+
+Depth sorting of semi-transparent points uses the scene's transparency path
+(see `TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.
+
+
 ## Deferred Questions
 
-1. whether `point` renders as a smooth disc or hardware point sprite, and whether this is a
-   variant axis or a capability-gated fallback,
-2. the exact public API spelling for `color_mode`, `size_mode`, and `size_space`,
-3. whether a separate `alpha` attribute is useful,
-4. whether depth sorting of semi-transparent points is in scope.
+1. the exact public API spelling for `color_mode`, `size_mode`, and `size_space`,
+2. whether a separate `alpha` attribute is useful beyond the alpha channel of `color`.

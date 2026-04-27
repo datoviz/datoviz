@@ -70,15 +70,15 @@ Use `segment` if per-segment width variation is needed.
 
 ## Visual-Wide Parameters
 
-### `cap`
+### `cap_start` and `cap_end`
 
 | Property | Value |
 |---|---|
 | Type | enum — same cap type list as `segment` |
-| Default | `round` |
+| Default | `round` for both |
 | Mutability | `dynamic` |
 
-Single cap style applied to both ends of every path. Applies only to open paths.
+Cap styles applied to the start and end of each open path independently.
 Ignored for closed paths.
 
 | Cap | Description |
@@ -89,6 +89,9 @@ Ignored for closed paths.
 | `butt` | flat exactly at endpoint |
 | `triangle_out` | triangular pointing outward |
 | `triangle_in` | triangular pointing inward (notch) |
+
+Setting both to the same value is equivalent to a single cap parameter.
+Use `cap_end = triangle_out` with `cap_start = butt` for directed paths (arrow at end only).
 
 
 ### `join`
@@ -175,7 +178,7 @@ Sub-item (vertex) identity is not returned.
 | `dvz_path_position` with `path_lengths` | `position` `PER_ITEM` + group structure |
 | `dvz_path_color` | `color`, extended sources and scalar mode |
 | `dvz_path_linewidth` | `linewidth`, now also `PER_GROUP` |
-| `dvz_path_cap` | `cap` (single parameter, both ends) |
+| `dvz_path_cap` | `cap_start` + `cap_end` (split; both default `round`) |
 | `dvz_path_join` | `join`, extended to `miter`/`round`/`bevel` |
 
 v0.4 adds: `PER_GROUP` sources, `scalar` color mode, `linewidth_space`, `closed` variant axis.
@@ -184,8 +187,7 @@ v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds
 
 ## Deferred Questions
 
-1. whether `cap` should split into `cap_start` and `cap_end` (as in `segment`) or remain a
-   single parameter — start and end caps of different paths could reasonably differ,
+1. whether per-vertex `linewidth` should be supported in a future version via tapered lines,
 2. whether per-vertex `linewidth` should be supported in a future version via tapered lines,
 3. whether partial path updates (updating a suffix of vertices in a streaming context) require
    a dedicated API or can be served by PER_ITEM partial uploads,
