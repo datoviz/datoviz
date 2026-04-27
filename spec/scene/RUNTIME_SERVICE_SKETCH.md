@@ -199,23 +199,20 @@ This document should be read together with:
 5. `DIAGNOSTICS_SCHEMA.md` for the shared scene-facing diagnostic record shape.
 
 
-## Deferred Questions
+## Resolved Questions
 
-Questions 2 and 4 are resolved. Questions 1 and 3 remain open pending DRP2 alignment.
-
-**Resolved:**
-
-- **Completion delivery** (was #2): polling for v0.4. DRP2 does not expose async signaling
-  primitives in the active contract; `dvz_scene_poll_pick_result` and the `DVZ_EVENT_PICK_RESULT`
-  callback cover the primary readback use case. Callback delivery is added on top of polling and
-  is already in `EVENT_CALLBACKS.md`.
-- **Export helpers above or below the boundary** (was #4): above. `dvz_figure_export_png` and
+- **Completion delivery**: polling for v0.4. DRP2 does not expose async signaling primitives in
+  the active contract; `dvz_scene_poll_pick_result` and the `DVZ_EVENT_PICK_RESULT` callback
+  cover the primary readback use case.
+- **Export helpers above or below the boundary**: above. `dvz_figure_export_png` and
   `dvz_figure_export_svg` live in the scene layer and drive the runtime via a standard offline
   frame sequence. They are not part of the runtime surface.
-
-**Still open (DRP2-dependent):**
-
-1. whether the final runtime surface is one object or several cooperating interfaces — depends on
-   how DRP2 structures its execution entry points,
-2. how much diagnostic detail is standardized versus debug-only — to be aligned with the DRP2
-   error model in `spec/drp2/ERRORS.md`.
+- **Runtime surface shape**: one object — a single opaque `DvzRuntime*`. The scene calls
+  `dvz_runtime_submit(rt, frame_plan)` and `dvz_runtime_get_capabilities(rt)`. Encoder
+  lifecycle and DRP2 session management are hidden inside the runtime; no split
+  device/encoder/queue model is exposed to the scene layer.
+- **Diagnostic detail standardization**: DRP2 error codes are debug detail only, not part of
+  the public scene API. DRP2 failures are mapped to scene-level error categories in
+  `DvzDiagnosticReport` (e.g., OOM → resource error, capability failure → validation error).
+  The raw DRP2 symbolic code appears only in a verbose debug string field and is
+  non-normative from the scene API's perspective.
