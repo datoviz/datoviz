@@ -168,5 +168,6 @@ Per-item alpha is expressed through the item's color alpha channel or an opacity
 ## Deferred Questions
 
 1. blending policy for multiple overlapping volume visuals in the same panel,
-2. whether `DVZ_ALPHA_BLENDED_EXACT` is in scope for v0.4.0 or deferred to v0.4+,
+2. `DVZ_ALPHA_BLENDED_EXACT` is deferred to v0.4+; in v0.4.0 it is a reserved enum value
+   that falls back to `DVZ_ALPHA_BLENDED` with a diagnostic,
 3. the exact auxiliary buffer sizing strategy for per-pixel linked list OIT.

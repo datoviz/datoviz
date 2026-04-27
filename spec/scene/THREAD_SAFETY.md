@@ -184,8 +184,10 @@ Background threads must not:
 4. call DRP2 or GPU functions directly.
 
 Structural mutations (add/remove visuals, create panels, change scale parameters) must
-happen on the render thread, either in the main loop or via a
-`DVZ_TRANSFER_CALLBACK` transfer.
+happen on the render thread.
+The safe path from a background thread is a `DVZ_TRANSFER_CALLBACK` transfer — the
+callback runs on the render thread during stage 2 and may perform any structural
+mutation except direct GPU or DRP2 calls.
 
 
 ## Relationship To Other Documents
@@ -201,6 +203,7 @@ happen on the render thread, either in the main loop or via a
 ## Deferred Questions
 
 1. exact staging pool size and back-pressure policy,
-2. whether `DVZ_TRANSFER_CALLBACK` may perform structural mutations (add/remove visuals)
-   or only data/uniform updates,
+2. `DVZ_TRANSFER_CALLBACK` may perform structural mutations (add/remove visuals, create
+   panels, change scale parameters) — resolved: yes, allowed, since the callback runs on
+   the render thread during stage 2 before invalidation,
 3. multi-scene resource sharing across threads (deferred; out of scope for v0.4).

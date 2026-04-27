@@ -58,8 +58,8 @@ and map `dvz_visual_set_data` calls to the correct buffer slots.
 ### Shader Sources
 
 ```text
-desc.vertex_shader   — GLSL/WGSL source or path, vertex stage
-desc.fragment_shader — GLSL/WGSL source or path, fragment stage
+desc.vertex_shader   — GLSL source or path, vertex stage
+desc.fragment_shader — GLSL source or path, fragment stage
 desc.compute_shader  — optional; compute stage for pre-pass work
 ```
 
@@ -219,7 +219,9 @@ A custom visual follows the same lifecycle as built-in visuals:
 
 ## Deferred Questions
 
-1. shader language policy — GLSL only for v0.4; WGSL support for WebGPU target deferred,
+1. shader language policy — GLSL for v0.4 and all built-in shaders; when the browser/WebGPU
+   target is ready, shaders will be converted to WGSL once (manually, AI-assisted) rather than
+   maintained in parallel or transpiled at runtime,
 2. hot reload of custom visual shaders at runtime,
 3. partial invalidation callback API spelling,
 4. whether custom visuals can declare their own per-item picking ID strategy beyond
