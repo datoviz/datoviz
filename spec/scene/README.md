@@ -87,7 +87,8 @@ Read the scene spec in this order during review.
 ### 2. Core scene concepts and public shape
 
 4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
-5. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults
+5. [PANEL_LAYOUT.md](PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
+5b. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults
 6. [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md) — tentative user-facing construction surface
 7. [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md) — C-facing mapping of the current design
 8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
@@ -183,6 +184,8 @@ Read the scene spec in this order during review.
   satisfy
 - [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md): family-level mini-contracts for the
   current preferred v0.4 visuals
+- [PANEL_LAYOUT.md](PANEL_LAYOUT.md): grid layout, free placement, fixed-size columns/rows,
+  row/column span, colorbar slots, fixed aspect ratio, shared-width constraint, tight layout
 - [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
 - [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
@@ -224,7 +227,9 @@ The current scene spec now covers:
 14. CPU F64 precision policy: all normalization in F64, F32 downcast at UploadNode only,
 15. geometry utility layer: triangulation (earcut + Triangle/PSLG), curve tessellation,
     Douglas-Peucker simplification, convex hull, boolean polygon ops (Clipper2), SDF/MSDF pipeline
-    including per-item atlas shape variation.
+    including per-item atlas shape variation,
+16. panel layout: grid (weighted + fixed-px columns/rows, span), free placement, colorbar slots,
+    fixed aspect ratio, shared-width constraint, manual-only tight layout.
 
 The general rule should remain:
 
