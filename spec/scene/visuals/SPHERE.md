@@ -155,6 +155,16 @@ v0.4 adds: `PER_GROUP` sources, `scalar` and `texture` color modes, `size_space`
 v0.4 renames: `emit` → `emissive`.
 
 
+## PBR Forward Compatibility
+
+The v0.4 shading model for sphere impostors uses Blinn-Phong.
+
+The style block reserves `metallic` and `roughness` fields (zero-initialized, ignored in v0.4)
+for future PBR support, following the same pattern as `mesh`.
+A future `normal_map` texture slot is also reserved.
+See `LIGHTING.md` for the full upgrade path.
+
+
 ## Deferred Questions
 
 1. whether per-item `emissive` or `shininess` is useful beyond `PER_GROUP`.

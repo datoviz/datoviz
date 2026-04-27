@@ -284,6 +284,26 @@ v0.4 renames: `emit` → `emissive`.
 v0.4 hides `left`/`right`/`contour` — edge distance data is computed internally.
 
 
+## PBR Forward Compatibility
+
+The v0.4 material model uses Blinn-Phong shading (`ambient`, `diffuse`, `specular`,
+`shininess`, `emissive`).
+
+The style block reserves two additional fields for future PBR support:
+
+| Reserved field | PBR role | v0.4 value |
+|---|---|---|
+| `metallic` | metallic factor `[0, 1]` | zero-initialized, ignored |
+| `roughness` | roughness factor `[0, 1]` | zero-initialized, ignored |
+
+A future `normal_map` texture slot is also reserved but not declared as an active resource in
+v0.4.
+
+When PBR rendering is activated in a future version, these fields drive the Cook-Torrance BRDF
+without any change to the public API surface.
+See `LIGHTING.md` for the full PBR and ray tracing upgrade path.
+
+
 ## Deferred Questions
 
 1. triangle-level (face) picking vs. vertex picking,

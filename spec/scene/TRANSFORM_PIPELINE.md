@@ -554,6 +554,7 @@ dvz_panel_add_visual(panel, visual, &(DvzVisualAttachDesc){
     .domain_x         = NULL,                 // NULL = use panel domain
     .domain_y         = NULL,
     .domain_z         = NULL,
+    .z_layer          = 0,                    // see Z-Layer below
 })
 ```
 
@@ -588,6 +589,25 @@ All four combinations are valid:
 | `NDC + FIXED` | crosshair, border, or static NDC overlay |
 | `PIXEL + FIXED` | scale bar, pixel-exact annotation, legend at panel corner |
 | `PIXEL + APPLY` | rare; pixel-space element that follows camera — unusual but not forbidden |
+
+### Z-Layer
+
+`z_layer` is a signed integer that controls draw order within a panel.
+Visuals are drawn in ascending `z_layer` order — lower values draw first (behind), higher values
+draw last (in front).
+Default is `0`. Negative values are valid and useful for explicit background visuals.
+
+```text
+dvz_panel_add_visual(panel, background, &(DvzVisualAttachDesc){.z_layer = -1})
+dvz_panel_add_visual(panel, data,       &(DvzVisualAttachDesc){.z_layer =  0})
+dvz_panel_add_visual(panel, overlay,    &(DvzVisualAttachDesc){.z_layer =  1})
+```
+
+Visuals at the same `z_layer` have implementation-defined relative draw order.
+If relative order within a layer matters, use distinct values.
+
+A separate `visible` flag handles show/hide without changing `z_layer`.
+
 
 ### Per-Visual Domain Override
 

@@ -316,7 +316,25 @@ The most important scene-facing capability pressures are:
 4. format and size limits,
 5. FP64 support,
 6. determinism guarantees,
-7. optional native-only ingestion paths kept outside core scene semantics.
+7. optional native-only ingestion paths kept outside core scene semantics,
+8. hardware ray tracing (future).
+
+### Hardware Ray Tracing (Future Capability Class)
+
+Hardware ray tracing (Vulkan Ray Tracing extension or equivalent) is a future capability class.
+
+When present and requested, the scene emits `RayTraceNode` instead of `RenderNode` for
+participating visuals.
+When absent or not requested, the scene falls back to `RenderNode` rasterization.
+
+The fallback policy follows the standard adaptation model:
+
+1. if ray tracing is declared **required** and unavailable, validation fails,
+2. if ray tracing is declared **preferred**, the scene silently falls back to rasterization,
+3. if ray tracing is declared **off** (default), rasterization is always used.
+
+The scene API and light source model are identical in both paths.
+See `LIGHTING.md` for the full forward-compatibility design.
 
 
 ## Compute Availability

@@ -99,9 +99,10 @@ Read the scene spec in this order during review.
 11. [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md) — family-level mini-contracts
 12. [visuals/README.md](visuals/README.md) — per-family data contracts (attribute schemas, parameters, variants)
 13. [SCALES.md](SCALES.md) — color, size, and opacity scale objects and colormap model
-14. [AXES.md](AXES.md) — axes and tick semantics
-14. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
-15. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
+14. [LIGHTING.md](LIGHTING.md) — scene-level lighting model; PBR and ray tracing upgrade path
+15. [AXES.md](AXES.md) — axes and tick semantics
+16. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
+17. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
 
 ### 4. Data, transforms, planning, and runtime handoff
 

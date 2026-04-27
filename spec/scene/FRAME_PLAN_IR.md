@@ -177,6 +177,13 @@ The minimum useful set is:
 4. `CopyNode`
 5. `ReadbackNode`
 
+A `RayTraceNode` is reserved as a future node kind for hardware ray tracing.
+It would replace `RenderNode` for ray-traced visuals when the capability is available and
+requested.
+The scene layer emits it identically to other node types; the DRP2 runtime handles BVH
+construction and ray tracing command recording.
+See `LIGHTING.md` for the forward-compatibility design.
+
 
 ## UploadNode
 
