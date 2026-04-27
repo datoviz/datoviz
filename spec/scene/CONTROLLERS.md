@@ -468,6 +468,45 @@ Controllers may internally keep gesture state machines, but the scene spec shoul
 their observable effects.
 
 
+## Touch And Multi-Touch Input
+
+Touch input is translated into the same semantic gesture events as mouse input before reaching
+controllers. Controllers require no touch-specific code.
+
+A **gesture recognizer** layer sits between the platform input source and the scene event
+system. It tracks active touch points and emits `DvzGestureEvent` objects when a recognized
+gesture is detected.
+
+### Supported Gestures
+
+| Gesture | Touch pattern | Controller action |
+|---|---|---|
+| `DVZ_GESTURE_PAN` | 1-finger drag, or 2-finger drag | pan |
+| `DVZ_GESTURE_PINCH` | 2-finger pinch / spread | zoom |
+| `DVZ_GESTURE_ROTATE` | 2-finger rotation | 3D rotation (`ArcballController`) |
+| `DVZ_GESTURE_TAP` | 1-finger tap | pick / click |
+
+Gestures above are in scope for v0.4.
+3+ finger gestures, pressure sensitivity, stylus tilt, and multi-touch picking are deferred.
+
+### Platform Sources
+
+| Platform | Touch source |
+|---|---|
+| Desktop touchscreen / tablet | GLFW touch callbacks |
+| Browser (WebGPU / Emscripten) | Emscripten touch events |
+| macOS trackpad pinch / scroll | existing GLFW scroll events — no change needed |
+
+The gesture recognizer is initialized by the runtime with the appropriate platform source.
+The scene layer consumes only `DvzGestureEvent` and is unaware of the source.
+
+### ImGui Routing
+
+Touch input follows the same routing rule as mouse input.
+`io.WantCaptureMouse` is checked first; gestures claimed by ImGui are not forwarded to scene
+controllers.
+
+
 ## Picking Integration
 
 Controllers should not interpret GPU payloads directly.
