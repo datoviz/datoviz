@@ -134,6 +134,38 @@ DvzPanel* cbar_panel = dvz_grid_panel_span(grid, 0, 1, 3, 1)
 ```
 
 
+### ImGui-Driven Layout
+
+A panel can be bound to a Dear ImGui window so that the panel viewport is determined each
+frame by the ImGui window's current position and size.
+
+```text
+dvz_panel_gui(panel, "Window Title", flags)
+```
+
+This is the **third layout mode**, alongside grid and free placement.
+
+In ImGui-driven mode:
+1. an ImGui window with the given title is created and managed by ImGui,
+2. the user can move and resize that window with the mouse,
+3. each frame, the scene reads the ImGui window's current rect and calls
+   `dvz_panel_resize()` to update the panel viewport,
+4. the `FramePlan` rebuilds with the updated viewport on the next frame.
+
+Docking is enabled with `DVZ_GUI_FLAGS_DOCKING`, which allows panels to be snapped into
+ImGui dock spaces and moved collectively.
+
+**Layout serialization** for ImGui-driven panels is handled automatically by ImGui via
+`imgui.ini`, which persists window positions and sizes across sessions.
+Datoviz does not need its own serialization mechanism for this layout mode.
+
+ImGui-driven panels and grid/free-placement panels may coexist in the same figure.
+The grid allocates space for grid panels; ImGui-driven panels float freely over the figure
+surface in their own ImGui windows.
+
+See `EXTERNAL_UI.md` for the full ImGui rendering architecture and input routing details.
+
+
 ## Panel Margins
 
 Each panel has inner margins that inset the renderable area from the panel boundary.
