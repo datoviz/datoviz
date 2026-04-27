@@ -110,8 +110,21 @@ Corner join style between consecutive segments of a path.
 | `round` | circular arc at the join |
 | `bevel` | flat diagonal cut |
 
-`miter` may produce very long spikes at near-180° angles. Implementations may apply a miter
-limit and fall back to bevel silently.
+`miter` may produce very long spikes at near-180° angles.
+The miter limit is controlled by `miter_limit` (see below).
+
+
+### `miter_limit`
+
+| Property | Value |
+|---|---|
+| Type | `float32` |
+| Default | `4.0` |
+| Mutability | `dynamic` |
+
+Maximum miter length as a multiple of `linewidth`. When a miter join would exceed this limit,
+the join falls back to `bevel` automatically. `4.0` is a standard SVG/PostScript default.
+Set to a large value to disable the limit (allows arbitrarily long miter spikes).
 
 
 ### `closed`
@@ -187,8 +200,8 @@ v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds
 
 ## Deferred Questions
 
-1. whether per-vertex `linewidth` should be supported in a future version via tapered lines,
-2. whether per-vertex `linewidth` should be supported in a future version via tapered lines,
-3. whether partial path updates (updating a suffix of vertices in a streaming context) require
-   a dedicated API or can be served by PER_ITEM partial uploads,
-4. whether a miter limit should be user-configurable or always implementation-defined.
+1. per-vertex `linewidth` (tapered lines): not supported in v0.4 — complex geometry generation,
+   reserved as a future feature.
+
+Partial path updates are served by the standard byte-range upload mechanism from
+`THREAD_SAFETY.md` — no dedicated streaming API needed.

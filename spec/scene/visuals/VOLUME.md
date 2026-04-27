@@ -179,17 +179,17 @@ Standard lighting parameters (see `SHARED_ATTRIBUTES.md`) apply when gradient sh
 enabled. Requires slightly more GPU work per sample.
 
 
-### `clip_plane`
+### `clip_planes`
 
 | Property | Value |
 |---|---|
-| Type | `vec4` — `(a, b, c, d)` defining `ax + by + cz + d = 0` in visual space |
-| Default | disabled (all voxels rendered) |
+| Type | `vec4[4]` — up to 4 planes, each `(a, b, c, d)` defining `ax + by + cz + d = 0` |
+| Default | all disabled |
 | Mutability | `dynamic` |
 
-An optional clipping plane that discards voxels on its negative side. Set to `(0,0,0,0)` to
-disable.
-Useful for revealing internal anatomy by cutting the volume with a flat plane.
+Up to 4 simultaneous clipping planes. Each plane discards voxels on its negative side.
+Set a plane to `(0,0,0,0)` to disable it.
+Multiple planes can be combined for wedge cuts, cross-sections, and "cut-away" anatomy views.
 
 
 ### `isosurface_levels`
@@ -333,7 +333,7 @@ hit position. The returned item identity is the isosurface level index (0-based 
 3. threshold opacity — `alpha_transfer` with step at threshold,
 4. CT windowing — `alpha_transfer` narrow band + `value_range = (-1000, 3000)`,
 5. gradient-shaded anatomical volume — `gradient_shading = true`,
-6. clipped volume to reveal interior — `clip_plane` set,
+6. clipped volume to reveal interior — one `clip_planes` entry set,
 7. orthographic slice, animated — `render_mode = slice`, animated `slice_position`,
 8. sub-region crop — `crop_min`/`crop_max` in data space,
 9. axis-reordered MRI — `axis_order = (2, 1, 0)`,
@@ -357,13 +357,13 @@ hit position. The returned item identity is the isosurface level index (0-based 
 | `VOLUME_DIR_*` | `direction` parameter |
 | `STEP_SIZE` hardcoded | `quality` parameter |
 | volume_slice `x_cmap/y_cmap` | `color_transfer` |
-| — | `gradient_shading`, `clip_plane`, `value_range` (new in v0.4) |
+| — | `gradient_shading`, `clip_planes` (up to 4), `value_range` (new in v0.4) |
 
 
 ## Deferred Questions
 
 1. whether multiple simultaneous orthogonal slices (`render_mode = multiplane`) should be
-   supported,
-2. whether multiple clip planes should be supported,
-3. whether `isosurface_levels` should be per-visual or support named level objects with
-   richer metadata (color, opacity, label).
+   supported — useful for medical MPR viewers; deferred to v0.4+.
+
+`isosurface_levels` stays as a simple `float32[8]` array with a parallel `isosurface_colors`
+array. Named level objects with richer metadata are not needed for v0.4.

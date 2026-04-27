@@ -119,10 +119,12 @@ The caller sets `color` per item accordingly.
 | Property | Value |
 |---|---|
 | Type | `float32`, in data-space x units or screen pixels depending on `width_space` |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
 | Default | `0.8` (data-space units) |
 | Mutability | `dynamic` |
 
-Horizontal width of the box body.
+Horizontal width of the box body. `PER_ITEM` enables variable-width boxes (e.g., proportional
+to sample size or bin count).
 
 
 ### `width_space`
@@ -162,14 +164,18 @@ Outline color for the box body and whisker lines. Visual-wide.
 
 | Axis | Values | Default |
 |---|---|---|
-| `style` | `DVZ_BOXPLOT_UNIFORM`, `DVZ_BOXPLOT_DIRECTIONAL` | `DVZ_BOXPLOT_UNIFORM` |
+| `style` | `DVZ_BOXPLOT_UNIFORM`, `DVZ_BOXPLOT_DIRECTIONAL`, `DVZ_BOXPLOT_NOTCHED` | `DVZ_BOXPLOT_UNIFORM` |
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 
 Set at visual creation time.
 
-`DVZ_BOXPLOT_UNIFORM` renders a statistical box plot (median line visible, symmetric whiskers).
+`DVZ_BOXPLOT_UNIFORM` renders a classical box plot (median line visible, symmetric whiskers).
 `DVZ_BOXPLOT_DIRECTIONAL` renders a candlestick / OHLC bar (no median, directional body
 coloring per item, open/close body with high/low wicks).
+`DVZ_BOXPLOT_NOTCHED` renders a notched box plot: the box body has a confidence-interval notch
+centered on the median. The notch width is derived from the IQR and item count via the standard
+formula `1.58 × IQR / √n`. A `notch_width` per-item attribute carries `√n` (or the full notch
+half-width directly when `notch_width_mode = absolute`).
 
 
 ## Transform Model, Stage Participation, Picking
@@ -203,8 +209,5 @@ Picking returns the item index.
 In v0.3, box plots were assembled from `segment` and `primitive` primitives by the user.
 
 
-## Deferred Questions
-
-1. whether notched box plots (confidence-interval notch on the box body) should be a variant,
-2. whether violin plot outlines could share this family contract or require a separate family,
-3. whether `width` should be per-item for variable-width box plots (e.g., bin-count encoding).
+Violin plots require a separate family (different geometry: density outline, not a fixed
+five-number summary) and are not part of `boxplot`.

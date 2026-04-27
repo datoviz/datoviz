@@ -46,8 +46,8 @@ Set at visual creation time.
 | `vbar` | vertical bar | `ring` | thick ring | `pin` | map pin |
 | `tag` | label shape | `rounded_rect` | rounded rectangle | | |
 
-Shape is visual-wide in `code` mode. All items share the same shape.
-For per-item shape variation, use multiple marker visuals or the `glyph` family.
+Shape is visual-wide by default in `code` mode.
+Per-item shape is supported via the optional `shape_index` attribute (see Per-Item Attributes).
 
 
 ## Per-Item Attributes
@@ -83,6 +83,51 @@ Applied in screen space after the panel transform — markers always face the vi
 ### `shift`
 
 Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
+
+
+### `shape_index`
+
+| Property | Value |
+|---|---|
+| Type | `uint8` — index into the built-in shape table |
+| Accepted sources | `PER_ITEM`, `PER_GROUP` |
+| Typical mutability | `dynamic` |
+| Optional | yes — when absent, the visual-wide `shape` applies to all items |
+| Applies to | `code` mode only |
+
+Per-item shape override. When set, each item renders with the shape at this index in the
+built-in shape table (same ordering as the `shape` enum). Overrides the visual-wide `shape`
+for each item independently. Enables categorical scatter plots with different symbols per
+category in a single visual.
+
+
+### `edgecolor` (per-item)
+
+| Property | Value |
+|---|---|
+| Type | `rgba_u8` |
+| Accepted sources | `PER_ITEM`, `PER_GROUP` |
+| Typical mutability | `dynamic` |
+| Optional | yes — when absent, the visual-wide `edgecolor` applies |
+| Applies to | `aspect = outline` or `aspect = stroke` |
+
+Per-item edge color override. Only allocated when explicitly set — no memory cost when not used.
+Overrides the visual-wide `edgecolor` per item.
+
+
+### `aspect_ratio`
+
+| Property | Value |
+|---|---|
+| Type | `float32` — height / width ratio |
+| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
+| Default | `1.0` (circle) |
+| Typical mutability | `dynamic` |
+| Optional | yes — ignored when `shape ≠ ellipse` |
+| Applies to | `shape = ellipse` (visual-wide or via `shape_index`) |
+
+Per-item ellipse aspect ratio. Values > 1 produce tall ellipses; values < 1 produce wide ones.
+Combined with `angle` `PER_ITEM` for oriented ellipses.
 
 
 ### `magnitude`
@@ -260,7 +305,4 @@ v0.4 adds: `size_space`, `shift`, `color_mode = scalar`, `size_mode = scalar`.
 
 ## Deferred Questions
 
-1. whether per-item `shape` should be supported via a shape index attribute in a future version,
-2. whether per-item `edgecolor` is worth the memory cost,
-3. the exact public API spelling for the three variant axes,
-4. whether `ellipse` needs a per-item aspect-ratio attribute beyond `angle`.
+1. the exact public API spelling for the three variant axes.

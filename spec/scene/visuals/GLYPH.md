@@ -99,6 +99,20 @@ Accepted sources: `CONSTANT`, `PER_ITEM`.
 Applied in screen space after the panel transform — text always faces the viewer.
 
 
+### `anchor`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — `(ax, ay)`, each in `[-1, 1]` |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Default | inherits visual-wide `anchor` value |
+| Typical mutability | `dynamic` |
+| Optional | yes |
+
+Per-string anchor override. When set, overrides the visual-wide `anchor` for that string.
+Useful for mixed-alignment label sets (e.g., left-aligned axis labels + centered title).
+
+
 ### `shift`
 
 Standard `vec2` — see `SHARED_ATTRIBUTES.md`. Screen-space pixel offset of the string anchor.
@@ -130,8 +144,21 @@ Normalized alignment point within the string bounding box.
 `ay = -1`: top edge aligns to `position`.
 `ay = 1`: bottom edge aligns to `position`.
 
-This is a visual-wide parameter. All strings share the same anchor convention.
-Per-string anchor is a deferred question.
+This is the visual-wide default. Individual strings may override it via the per-string
+`anchor` attribute (see Per-String Attributes).
+
+
+### `line_height`
+
+| Property | Value |
+|---|---|
+| Type | `float32`, multiplier of `font_size` |
+| Default | `1.2` |
+| Mutability | `dynamic` |
+
+Line spacing multiplier for multi-line strings (strings containing `\n`).
+`1.0` means lines are packed at exactly `font_size` height; `1.2` adds 20% spacing.
+Applies uniformly to all strings in the visual.
 
 
 ### `bgcolor`
@@ -139,12 +166,30 @@ Per-string anchor is a deferred question.
 | Property | Value |
 |---|---|
 | Type | `rgba_u8` |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
 | Default | transparent `(0, 0, 0, 0)` |
 | Mutability | `dynamic` |
 
-Background fill color drawn behind each character's bounding box.
+Background fill color drawn behind the string bounding box.
 Useful for readability against varying backgrounds.
-Visual-wide — all characters share the same background color.
+`PER_ITEM` allows individual strings to have different background colors.
+`CONSTANT` applies the same background to all strings (visual-wide default: transparent).
+
+
+### `up_axis`
+
+| Property | Value |
+|---|---|
+| Type | `vec3` — unit vector in visual space |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Default | `(0, 1, 0)` — screen-up (Y-up) |
+| Mutability | `dynamic` |
+
+Text orientation in 3D space. Defines which direction is "up" for the string layout.
+Combined with `position` and the panel transform to orient text anchored to 3D surfaces,
+volume slice labels, or axis labels in a 3D scene.
+In 2D panels the default `(0, 1, 0)` matches screen-space Y-up and `angle` handles rotation.
+`angle` is applied on top of `up_axis` as an additional screen-space rotation.
 
 
 ### `font`
@@ -231,12 +276,9 @@ v0.4 hides all per-character GPU details behind the scene layer. The user works 
 granularity only.
 
 
-## Deferred Questions
+`char_color` `PER_GROUP` is redundant with `color` `PER_ITEM` (both give one color per string)
+— not supported; use `color` `PER_ITEM` for per-string uniform color.
 
-1. whether per-string `anchor` should be supported (vs. visual-wide only),
-2. whether multi-line strings (newline handling, line spacing) are in scope,
-3. whether per-string `bgcolor` is worth supporting,
-4. whether `char_color` should support `PER_GROUP` (one color per string, same as `color`
-   `PER_ITEM`) or whether `color` `PER_ITEM` already covers that,
-5. whether a `letter_spacing` or `line_height` parameter is needed,
-6. whether 3D text orientation (`axis` as vec3) is needed for volume or 3D scene use cases.
+`letter_spacing` is not supported in v0.4 — standard font kerning is applied by the atlas layout.
+
+All other deferred questions resolved — see Per-String Attributes and Visual-Wide Parameters.

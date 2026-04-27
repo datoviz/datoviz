@@ -66,6 +66,35 @@ Accepted sources: `CONSTANT`, `PER_ITEM`.
 Applies to `texture_mode = none` only. Ignored when a texture is active.
 
 
+### `anchor`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — `(ax, ay)`, each in `[-1, 1]` |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Default | inherits visual-wide `anchor` value |
+| Typical mutability | `dynamic` |
+| Optional | yes |
+
+Per-item anchor override. When set, overrides the visual-wide `anchor` for that item.
+Allows mixed-alignment image sets (e.g., some images left-anchored, others centered).
+
+
+### `color_tint`
+
+| Property | Value |
+|---|---|
+| Type | `rgba_u8` |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Default | white `(255, 255, 255, 255)` — no tint |
+| Typical mutability | `dynamic` |
+| Applies to | `texture_mode = rgba` or `scalar` |
+
+Multiplicative color tint applied on top of the texture sample.
+White (default) has no effect. Use to colorize or fade individual images.
+Ignored when `texture_mode = none` (use `color` instead).
+
+
 ### `angle`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Rotation around the anchor point.
@@ -158,10 +187,12 @@ Border width. `0` means no border.
 | Property | Value |
 |---|---|
 | Type | `float32`, screen pixels |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
 | Default | `0.0` — sharp corners |
 | Mutability | `dynamic` |
 
 Rounded corner radius. `0` means rectangular.
+`PER_ITEM` allows independently rounded images in the same visual.
 
 
 ### `size_space`
@@ -292,12 +323,7 @@ Picking returns the image index as item identity.
 v0.4 adds: `angle`, `shift`, `size_space`, `texture_mode` and `color_mode` variant axes,
 `CONSTANT` sources for `size` and `texcoords`, `colormap` as Scale reference instead of enum,
 `transpose` replacing `permutation`.
-v0.4 drops per-item `anchor` — deferred to future version.
+v0.4 adds per-item `anchor`, `color_tint`, and per-item `radius`.
 
-
-## Deferred Questions
-
-1. whether per-item `anchor` is needed for mixed-alignment image sets,
-2. whether per-item `texture` (multiple textures in one visual) should be supported,
-3. whether a `color_tint` per-item modifier on top of texture sampling is useful,
-4. whether `radius` should be per-item for independently rounded images.
+Per-item `texture` (each item from a different texture resource) is not supported — use
+multiple visual instances instead.

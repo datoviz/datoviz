@@ -75,6 +75,7 @@ Per-item linewidth is the defining capability of `segment` over `primitive` line
 Standard `vec4` (dual-endpoint form) — see `SHARED_ATTRIBUTES.md`.
 `(dx0, dy0, dx1, dy1)` in screen pixels.
 Useful for aligning segment endpoints precisely to marker centers.
+Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
 
 ## Visual-Wide Parameters
@@ -164,6 +165,5 @@ v0.4 adds: `color_end` (gradient), `PER_GROUP` sources, `scalar` color mode, `li
 
 ## Deferred Questions
 
-1. whether `shift` should support `PER_GROUP` source in a future version,
-2. the exact public API spelling for `P0`/`P1` — two separate calls or one interleaved call as
+1. the exact public API spelling for `P0`/`P1` — two separate calls or one interleaved call as
    in v0.3.

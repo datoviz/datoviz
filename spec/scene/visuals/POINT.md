@@ -138,5 +138,6 @@ Depth sorting of semi-transparent points uses the scene's transparency path
 
 ## Deferred Questions
 
-1. the exact public API spelling for `color_mode`, `size_mode`, and `size_space`,
-2. whether a separate `alpha` attribute is useful beyond the alpha channel of `color`.
+1. the exact public API spelling for `color_mode`, `size_mode`, and `size_space`.
+
+Separate `alpha` attribute: not needed — use the alpha channel of `color`.

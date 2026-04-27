@@ -123,7 +123,12 @@ Picking returns vertex index as item identity.
 | `dvz_basic_size` | `size` parameter, point topology only |
 
 
+## Line Width
+
+`primitive` does not expose a `linewidth` parameter. OpenGL line width is not reliably supported
+across drivers and is not available in WebGPU. For thick lines, use `path` or `segment`.
+`primitive` line topologies always render at 1 physical pixel.
+
 ## Deferred Questions
 
-1. the exact public API spelling for topology declaration at creation time,
-3. whether `primitive` should expose a `linewidth` parameter for line topologies.
+1. the exact public API spelling for topology declaration at creation time.

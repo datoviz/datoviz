@@ -119,8 +119,13 @@ v0.4 adds: `shift`, `size_space`, `color_mode = scalar`.
 
 ## Deferred Questions
 
-1. the exact public API spelling for `color_mode` at creation,
-2. whether `PER_GROUP` color requires an explicit per-item group-index attribute or can be inferred
-   from item range partitions,
-3. the minimum and maximum supported `size` values across backends,
-4. whether `z` participates in depth sorting by default or requires an explicit flag.
+1. the exact public API spelling for `color_mode` at creation.
+
+`PER_GROUP` color uses item range partitions — no explicit per-item group-index attribute is
+needed. Groups are contiguous ranges; the user declares group sizes and the scene maps each
+item to its group by range.
+
+Minimum supported `size`: 1 physical pixel. Maximum: unspecified, backend-dependent.
+
+`z` participates in depth sorting by default when fragment alpha < 1.0. No explicit flag needed;
+use `alpha_mode` on the visual to control the transparency path (see `TRANSPARENCY.md`).

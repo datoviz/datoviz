@@ -194,11 +194,18 @@ Setting this explicitly overrides the auto-derived range.
 
 | Property | Value |
 |---|---|
-| Type | `rgba_u8` |
+| Type | `rgba_u8` or `Scale` reference (kind = color) |
 | Default | black `(0, 0, 0, 255)` |
 | Mutability | `dynamic` |
 
-Color of all isoline contours. Visual-wide.
+Color of isoline contours. Two forms:
+
+1. **Uniform** (`rgba_u8`): all isolines share one color.
+2. **Mapped** (`Scale` reference): each isoline level is colored by mapping its data value
+   through the Scale. This allows elevation-colored contours or multi-valued isofield display.
+
+When a Scale is used, the isoline value at each level is looked up through the Scale domain
+and palette, independent of the `colormap` Scale used for mesh face coloring.
 
 
 ## Shape Builders
@@ -314,11 +321,8 @@ See `LIGHTING.md` for the full PBR and ray tracing upgrade path.
 
 ## Deferred Questions
 
-1. smooth normal auto-computation (area-weighted vertex normals) vs flat normals — resolved
-   in SHARED_ATTRIBUTES.md; auto-compute is opt-in,
-2. whether smooth normal auto-computation (area-weighted vertex normals) should be offered
-   in addition to flat normals,
-3. whether per-vertex `emissive` or `shininess` is needed for heterogeneous material surfaces,
-4. whether additional texture slots beyond diffuse + normal map are needed (e.g., emissive,
-   roughness/metallic maps) — deferred to PBR activation,
-5. whether `isoline_color` should support a `Scale` for multi-colored isolines.
+1. additional texture slots beyond diffuse + normal map (emissive map, roughness/metallic maps)
+   — deferred to PBR activation.
+
+Per-vertex `emissive`/`shininess`: not supported — uniform material per visual is sufficient;
+per-vertex material is PBR territory.

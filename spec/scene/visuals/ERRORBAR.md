@@ -60,6 +60,19 @@ When only one is provided, the bar is one-sided.
 Vertical error extents. `y_low` is typically negative (downward), `y_high` positive.
 
 
+### `z_low`, `z_high`
+
+| Property | Value |
+|---|---|
+| Type | `float32`, offset from `position.z` |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
+| Typical mutability | `dynamic` |
+| Optional | yes — no depth bar if both are absent |
+
+Depth error extents for 3D scenes. Behave identically to `x_low`/`x_high` and `y_low`/`y_high`
+along the z axis. Ignored when the panel uses a 2D transform.
+
+
 ### `color`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
@@ -77,7 +90,8 @@ Applies to all line segments of the error bar for a given item.
 | Default | `1.5` |
 | Mutability | `dynamic` |
 
-Width of the error bar lines. Visual-wide.
+Width of the error bar lines.
+Accepted sources: `CONSTANT`, `PER_GROUP` — different series may use different widths.
 
 
 ### `cap_size`
@@ -85,11 +99,13 @@ Width of the error bar lines. Visual-wide.
 | Property | Value |
 |---|---|
 | Type | `float32`, screen pixels |
+| Accepted sources | `CONSTANT`, `PER_ITEM` |
 | Default | `6.0` |
 | Mutability | `dynamic` |
 
 Half-width of the flat end caps drawn at the tips of each bar.
-Set to `0` to disable caps.
+`PER_ITEM` allows per-measurement cap sizing.
+Set to `0` (constant) to disable caps entirely.
 
 
 ## Variant Axes
@@ -131,8 +147,4 @@ Picking returns the item index (the measurement point identity).
 In v0.3, error bars were typically assembled from `segment` primitives by the user.
 
 
-## Deferred Questions
-
-1. whether `cap_size` should be per-item,
-2. whether `linewidth` should be per-item or per-group,
-3. whether `z_low`/`z_high` for 3D error bars should be supported.
+All deferred questions resolved — see attribute and parameter sections above.

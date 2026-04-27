@@ -165,6 +165,7 @@ A future `normal_map` texture slot is also reserved.
 See `LIGHTING.md` for the full upgrade path.
 
 
-## Deferred Questions
+## Resolved Questions
 
-1. whether per-item `emissive` or `shininess` is useful beyond `PER_GROUP`.
+1. per-item `emissive`/`shininess` beyond `PER_GROUP`: no — uniform material per visual or group
+   is sufficient; per-vertex material is PBR territory, deferred to the PBR lighting path.
