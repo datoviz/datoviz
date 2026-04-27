@@ -213,12 +213,10 @@ The current scene spec now covers:
 9. controllers and interaction, including first-class handles, per-dimension binding, and panel
    linking via shared controller handles,
 10. animation and frame scheduling,
-11. worked examples.
-
-The next recommended iterations are:
-
-1. optional family deep dives for major families such as `point`, `path`, `image`, `sphere`, and
-   `volume`.
+11. lighting model with PBR and ray tracing forward-compatibility notes,
+12. worked examples,
+13. family additions: `errorbar`, `boxplot`; heatmap isolines (`image`), volume isosurfaces
+    (`volume`), arrow caps (`segment`), quiver magnitude and arrow style (`marker`).
 
 The general rule should remain:
 

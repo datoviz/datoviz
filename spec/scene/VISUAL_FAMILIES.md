@@ -72,6 +72,8 @@ artificial:
 9. `mesh`
 10. `sphere`
 11. `volume`
+12. `errorbar`
+13. `boxplot`
 
 
 ## Rationale For Kept Families
@@ -212,6 +214,31 @@ Reason:
 3. capability adaptation is likely to be more significant here than in simpler families.
 
 
+### `errorbar`
+
+Keep `errorbar` as its own family.
+
+Reason:
+
+1. statistical error semantics (asymmetric per-axis extents, cap treatment) differ from raw
+   segment endpoint data,
+2. it is a first-class scientific primitive with distinct picking and layout conventions,
+3. keeping it explicit simplifies integration with axes and legends.
+
+
+### `boxplot`
+
+Keep `boxplot` as its own family.
+
+Reason:
+
+1. the five-value statistical summary (whisker low/high, box low/high, median) is a
+   distinct semantic unit that cannot be expressed cleanly via `segment` or `primitive`,
+2. the `DVZ_BOXPLOT_DIRECTIONAL` / candlestick variant requires per-item directional body
+   coloring that differs fundamentally from uniform box-and-whisker semantics,
+3. it is a common primitive in both scientific and financial visualization.
+
+
 ## Remove As First-Class Families
 
 The following `v0.3` family should not carry forward as a first-class v0.4 family:
@@ -306,6 +333,8 @@ The current preferred v0.4 family set is:
 9. `mesh`
 10. `sphere`
 11. `volume`
+12. `errorbar`
+13. `boxplot`
 
 With the following provisional non-top-level concepts:
 

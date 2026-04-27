@@ -31,6 +31,8 @@ detail to implement or validate each family.
 | `mesh` | [MESH.md](MESH.md) |
 | `sphere` | [SPHERE.md](SPHERE.md) |
 | `volume` | [VOLUME.md](VOLUME.md) |
+| `errorbar` | [ERRORBAR.md](ERRORBAR.md) |
+| `boxplot` | [BOXPLOT.md](BOXPLOT.md) |
 
 
 ## Reading Order

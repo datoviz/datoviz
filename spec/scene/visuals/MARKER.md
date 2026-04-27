@@ -85,6 +85,22 @@ Applied in screen space after the panel transform — markers always face the vi
 Standard `vec2` — see `SHARED_ATTRIBUTES.md`.
 
 
+### `magnitude`
+
+| Property | Value |
+|---|---|
+| Type | `float32` |
+| Accepted sources | `CONSTANT`, `PER_ITEM`, `PER_GROUP` |
+| Typical mutability | `dynamic` or `streaming` |
+| Optional | yes — defaults to `1.0` (no scaling) |
+
+Multiplicative scale applied to `size` per item, after all other size transformations.
+Primary use: quiver plots, where `size` sets the base arrow length and `magnitude` encodes
+the field strength at each position.
+When combined with `shape = arrow` and `angle` `PER_ITEM`, produces a standard 2D vector
+field visualization.
+
+
 ## Visual-Wide Parameters
 
 ### `shape`
@@ -130,6 +146,28 @@ Edge color for `aspect = stroke` or `aspect = outline`. Visual-wide.
 | Mutability | `dynamic` |
 
 Edge width for `aspect = stroke` or `aspect = outline`.
+
+
+### `arrow_style`
+
+| Property | Value |
+|---|---|
+| Type | `DvzArrowStyle` enum — see `DvzArrowStyle` below |
+| Default | `arrow_filled` |
+| Mutability | `dynamic` |
+| Applies to | `shape = arrow` only |
+
+Controls the arrowhead style when `shape = arrow`. Uses the shared `DvzArrowStyle` enum,
+the same set used by `segment` cap types.
+
+| Value | Description |
+|---|---|
+| `DVZ_ARROW_FILLED` | solid filled arrowhead |
+| `DVZ_ARROW_OPEN` | open arrowhead (two lines) |
+| `DVZ_ARROW_STEALTH` | swept-back / chevron arrowhead |
+| `DVZ_ARROW_CIRCLE` | circular arrowhead |
+
+Ignored when `shape` is not `arrow`.
 
 
 ### `size_space`
@@ -201,7 +239,8 @@ and emits a diagnostic. `color_mode = scalar` and `size_mode = scalar` follow st
 4. directional arrows — `angle` `PER_ITEM`,
 5. outlined markers — `aspect = outline`,
 6. custom MSDF symbol — `render_mode = msdf` with texture,
-7. bubble chart with shaped markers — `size_mode = scalar` with sqrt scale.
+7. bubble chart with shaped markers — `size_mode = scalar` with sqrt scale,
+8. quiver plot — `shape = arrow`, `angle` `PER_ITEM`, `magnitude` `PER_ITEM`.
 
 
 ## v0.3 Correspondence

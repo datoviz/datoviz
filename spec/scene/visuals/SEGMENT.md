@@ -88,6 +88,8 @@ Useful for aligning segment endpoints precisely to marker centers.
 | Mutability | `dynamic` |
 
 Cap style at P0 and P1 respectively. May differ.
+Arrow cap types use the shared `DvzArrowStyle` enum, which is also used by the `marker` family
+for quiver-plot arrow markers.
 
 | Cap | Description |
 |---|---|
@@ -97,6 +99,13 @@ Cap style at P0 and P1 respectively. May differ.
 | `butt` | flat exactly at endpoint, no extension |
 | `triangle_out` | triangular cap pointing outward |
 | `triangle_in` | triangular cap pointing inward (notch) |
+| `arrow_filled` | filled (solid) arrowhead — `DVZ_ARROW_FILLED` |
+| `arrow_open` | open arrowhead (two lines forming a V) — `DVZ_ARROW_OPEN` |
+| `arrow_stealth` | swept-back stealth/chevron arrowhead — `DVZ_ARROW_STEALTH` |
+| `arrow_circle` | circular cap with arrowhead semantics — `DVZ_ARROW_CIRCLE` |
+
+`arrow_*` caps extend beyond the endpoint by a size proportional to `linewidth`.
+`cap_start = none` and `cap_end = arrow_filled` is the default pattern for directional segments.
 
 
 ### `linewidth_space`

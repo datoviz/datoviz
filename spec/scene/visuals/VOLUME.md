@@ -192,6 +192,43 @@ disable.
 Useful for revealing internal anatomy by cutting the volume with a flat plane.
 
 
+### `isosurface_levels`
+
+| Property | Value |
+|---|---|
+| Type | `float32[8]` — up to 8 normalized isovalue levels in `[0, 1]` (after `value_range`) |
+| Default | empty — isosurface disabled |
+| Mutability | `dynamic` |
+| Applies to | `texture_mode = scalar`, `render_mode = dvr` |
+
+Isovalue levels at which to render opaque surfaces inside the volume.
+Values are in the normalized domain (after `value_range` remapping), matching the same scale
+used by `alpha_transfer` control points.
+
+Surfaces are computed analytically inside the fragment shader ray-casting loop — the ray
+integrator detects zero-crossings of `(sample - level)` and computes the hit position and
+gradient-based normal directly, without producing intermediate mesh geometry.
+Multiple levels may be active simultaneously; each is rendered in the corresponding
+`isosurface_colors` entry.
+
+Setting `isoline_levels` implicitly enables opaque surface hits at those values.
+Normal alpha compositing continues for non-surface samples.
+
+
+### `isosurface_colors`
+
+| Property | Value |
+|---|---|
+| Type | `rgba_u8[8]` — one per `isosurface_levels` entry |
+| Default | white `(255, 255, 255, 255)` for each active level |
+| Mutability | `dynamic` |
+| Applies to | `texture_mode = scalar`, `render_mode = dvr` |
+
+Per-level surface color. The Phong shading model applies when `gradient_shading = true`;
+otherwise the surface is flat-shaded in this color.
+Entries beyond the active level count are ignored.
+
+
 ### `quality`
 
 | Property | Value |
@@ -271,7 +308,8 @@ Picking is not supported for `volume`.
 | Situation | Preferred family |
 |---|---|
 | 2D heatmap or image overlay | `image` |
-| 3D surface from isosurface extraction | `mesh` |
+| Pre-extracted 3D surface mesh | `mesh` |
+| Isosurface rendered inside the volume | `volume` with `isosurface_levels` (fragment shader, no intermediate mesh) |
 | Single volume slice | `volume` with `render_mode = slice` |
 
 
@@ -287,7 +325,8 @@ Picking is not supported for `volume`.
 8. sub-region crop — `crop_min`/`crop_max` in data space,
 9. axis-reordered MRI — `axis_order = (2, 1, 0)`,
 10. mirrored axis — `axis_flip = (false, true, false)`,
-11. low-quality preview — `quality = 0.1`.
+11. low-quality preview — `quality = 0.1`,
+12. isosurface of a density field — `isosurface_levels = [0.5]`, `isosurface_colors = [(200, 200, 200, 255)]`.
 
 
 ## v0.3 Correspondence
@@ -314,5 +353,9 @@ Picking is not supported for `volume`.
    `mip`, `slice`) — common in medical imaging, requires a different accumulation loop,
 2. whether multiple simultaneous orthogonal slices (`render_mode = multiplane`) should be
    supported,
-3. whether picking should be supported via ray-marching depth readback,
-4. whether multiple clip planes should be supported.
+3. picking via isosurface depth — the fragment shader already computes the hit position and
+   depth when an isosurface level is active, so single-object picking via depth readback is
+   feasible; deferred until the picking readback contract is finalized,
+4. whether multiple clip planes should be supported,
+5. whether `isosurface_levels` should be per-visual or support named level objects with
+   richer metadata (color, opacity, label).

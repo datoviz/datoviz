@@ -171,22 +171,73 @@ Use `data` when the image should cover a fixed data-space region and scale with 
 (e.g., a heatmap tile aligned to data axes).
 
 
+## Isoline Parameters
+
+Applies when `texture_mode = heatmap` and `isoline_count > 0`.
+Isolines are computed on the GPU via a marching-squares `ComputeNode` in the `FramePlan` and
+rendered as an overlay on top of the colormap-filled image.
+
+### `isoline_count`
+
+| Property | Value |
+|---|---|
+| Type | `uint32` |
+| Default | `0` — isolines disabled |
+| Mutability | `dynamic` |
+
+Number of evenly-spaced isoline levels within `isoline_range`.
+
+### `isoline_range`
+
+| Property | Value |
+|---|---|
+| Type | `vec2` — `(min, max)` |
+| Default | derived from the `colormap` Scale domain; otherwise auto-computed from data |
+| Mutability | `dynamic` |
+
+Value range over which isoline levels are distributed.
+
+### `isoline_color`
+
+| Property | Value |
+|---|---|
+| Type | `rgba_u8` |
+| Default | black `(0, 0, 0, 255)` |
+| Mutability | `dynamic` |
+
+Color of all isoline contours. Visual-wide.
+
+### `isoline_linewidth`
+
+| Property | Value |
+|---|---|
+| Type | `float32`, screen pixels |
+| Default | `1.0` |
+| Mutability | `dynamic` |
+
+Width of drawn isolines.
+
+
 ## Variant Axes
 
 | Axis | Values | Default |
 |---|---|---|
-| `texture_mode` | `rgba`, `scalar`, `none` | `rgba` |
+| `texture_mode` | `rgba`, `scalar`, `heatmap`, `none` | `rgba` |
 | `color_mode` | `rgba`, `scalar` | `rgba` |
 
 Both set at visual creation time.
 
 `texture_mode` controls how the texture is sampled:
 
-| Mode | Texture format | Color source |
-|---|---|---|
-| `rgba` | RGBA `u8` texture | texture sample |
-| `scalar` | single-channel `f32` texture | texture sample mapped via `colormap` |
-| `none` | no texture | `color` per-item fill |
+| Mode | Texture format | Color source | Isolines |
+|---|---|---|---|
+| `rgba` | RGBA `u8` texture | texture sample | no |
+| `scalar` | single-channel `f32` texture | texture sample mapped via `colormap` | no |
+| `heatmap` | single-channel `f32` texture | texture sample mapped via `colormap` | optional, GPU marching squares |
+| `none` | no texture | `color` per-item fill | no |
+
+`heatmap` is a scalar colormap display with optional isoline overlay.
+When `isoline_count > 0` the scene adds a marching-squares `ComputeNode` before the render node.
 
 `color_mode` applies only when `texture_mode = none` and determines how `color` data is encoded.
 Standard — see `SHARED_ATTRIBUTES.md`.
@@ -203,7 +254,8 @@ Picking returns the image index as item identity.
 
 | Situation | Preferred family |
 |---|---|
-| Full-panel heatmap covering axes | `image` with `size_space = data`, `texture_mode = scalar` |
+| Full-panel heatmap covering axes | `image` with `size_space = data`, `texture_mode = heatmap` |
+| Scalar field, no isolines needed | `image` with `texture_mode = scalar` |
 | Sprite icons | `image` with `texture_mode = rgba`, per-item `texcoords` |
 | Colored rectangles without texture | `image` with `texture_mode = none` |
 | 3D volume rendering | `volume` |
@@ -212,12 +264,13 @@ Picking returns the image index as item identity.
 ## Minimum Cases This Spec Must Support
 
 1. single RGBA image overlay — `texture_mode = rgba`, `CONSTANT` size and texcoords,
-2. brain activity heatmap — `texture_mode = scalar` with colormap Scale,
+2. brain activity colormap — `texture_mode = scalar` with colormap Scale,
 3. texture atlas sprite sheet — `texture_mode = rgba`, `texcoords` `PER_ITEM`,
 4. colored rectangle annotations — `texture_mode = none`, `color` `PER_ITEM`,
 5. data-aligned heatmap tile — `size_space = data`,
 6. rotated image annotations — `angle` `PER_ITEM`,
-7. transposed scientific array — `transpose = true`.
+7. transposed scientific array — `transpose = true`,
+8. heatmap with isoline contours — `texture_mode = heatmap`, `isoline_count > 0`.
 
 
 ## v0.3 Correspondence
