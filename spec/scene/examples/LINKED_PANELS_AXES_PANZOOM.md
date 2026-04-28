@@ -63,13 +63,13 @@ Panel A — marker:
 
 1. source `ItemTable` in `DataSpace` (x = time, y = spike amplitude),
 2. derived normalized `ItemTable` in `VisualSpace`,
-3. `StyleBlock` for marker size and color.
+3. `ParameterBlockResource` for marker size and color.
 
 Panel B — path:
 
 1. source `GroupedItemTable` in `DataSpace` (x = time, y = signal value),
 2. derived normalized `GroupedItemTable` in `VisualSpace`,
-3. `StyleBlock` for linewidth and color.
+3. `ParameterBlockResource` for linewidth and color.
 
 Axis-derived resources (per panel per axis):
 

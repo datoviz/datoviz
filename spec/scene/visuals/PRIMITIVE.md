@@ -84,6 +84,15 @@ In v0.3, per-group color was implemented by computing colors CPU-side from a gro
 Uniform point size. Ignored for line and triangle topologies.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf vertex skipped when possible; otherwise validation error | no |
+| `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
+| `topology` | constructor-selected topology | n/a | no |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

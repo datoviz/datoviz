@@ -69,6 +69,16 @@ Ignored when `size` source is `PER_ITEM` or `PER_GROUP`.
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf item skipped and not pickable | no |
+| `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
+| `size` | `size_default` | scalar NaN uses size-scale fallback | yes |
+| `size_default` | family-defined screen size | n/a | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

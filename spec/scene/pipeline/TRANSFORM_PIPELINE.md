@@ -294,10 +294,10 @@ Even here, the principle remains:
 2. image placement in visual-ready coordinates,
 3. panel-local viewing.
 
-For slice-like image modes backed by volumetric sampling:
+For `volume.render_mode = slice` backed by volumetric sampling:
 
 1. the sampling source may be volumetric,
-2. the resulting placed image still belongs to the `image` family,
+2. the resulting slice remains part of the `volume` family,
 3. the panel-local transform stage stays separate from the volumetric sampling semantics.
 
 

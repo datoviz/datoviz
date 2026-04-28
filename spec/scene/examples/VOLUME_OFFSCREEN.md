@@ -41,7 +41,7 @@ Variant axes:
 Scene-facing resources:
 
 1. source volumetric `SampledField`,
-2. `StyleBlock` for transfer and traversal controls,
+2. `ParameterBlockResource` for transfer and traversal controls,
 3. offscreen `DerivedField`,
 4. `ReadbackTarget` for the exported image.
 
@@ -71,7 +71,7 @@ If a future volume variant requires preprocessing:
 
 ## DRP2 Categories Implied
 
-1. resource writes for volume data and style blocks,
+1. resource writes for volume data and parameter blocks,
 2. render-pass lifecycle for the offscreen target,
 3. draw commands,
 4. copy or readback path for export,

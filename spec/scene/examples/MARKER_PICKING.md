@@ -42,7 +42,7 @@ Scene-facing resources:
 
 1. source `ItemTable` in `DataSpace` with position and marker semantics,
 2. derived normalized `ItemTable` in `VisualSpace`,
-3. `StyleBlock` for edge width, edge color, and scaling policy,
+3. `ParameterBlockResource` for edge width, edge color, and scaling policy,
 4. panel-local picking `DerivedField`,
 5. picking `ReadbackTarget`.
 

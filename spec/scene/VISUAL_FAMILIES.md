@@ -169,7 +169,7 @@ Reason:
 
 1. sampled-field semantics are central,
 2. placement, anchoring, scaling, and colormap modes are scene-visible concepts,
-3. image-like visuals are the natural semantic home for slice-like behavior.
+3. flat 2D raster, atlas, and heatmap semantics are distinct from 3D volume slicing.
 
 
 ### `mesh`

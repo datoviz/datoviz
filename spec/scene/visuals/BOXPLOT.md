@@ -160,6 +160,16 @@ Width of all outlines and whisker lines.
 Outline color for the box body and whisker lines. Visual-wide.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf box skipped and not pickable | no |
+| whisker/box/median values | required per selected style | NaN statistic skips affected box or warns in lenient mode | no |
+| `color`, `edgecolor` | defaults described above | scalar NaN uses scale missing color | yes |
+| `width`, `linewidth` | defaults described above | NaN falls back to default | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

@@ -31,7 +31,7 @@ geometry using the active font.
 `PER_ITEM` attribute sources are indexed by string.
 `PER_SPAN` is equivalent to `PER_ITEM` for `glyph` — string = span = item at the user-facing
 level. `PER_GROUP` applies when strings belong to semantic groups (e.g., neuron populations)
-declared via a per-item `"group_id"` attribute.
+declared via a per-span `"group_id"` attribute.
 
 
 ## Per-String Attributes
@@ -217,6 +217,17 @@ All strings in a visual share the same font.
 
 Same semantics as `size_space`. Use `data` when text size should scale with zoom
 (e.g., labels embedded in a physical diagram).
+
+
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `string` / glyph text | required | empty string renders nothing and is not pickable | no |
+| `position` | required | NaN/Inf string skipped and not pickable | no |
+| `color`, `char_color`, `background` | defaults described above | scalar NaN uses scale missing color | yes |
+| `font`, `size`, `anchor`, `line_height` | defaults described above | invalid font/size is validation error or fallback by policy | yes |
+| `angle`, `axis` | defaults described above | NaN angle falls back to zero | yes |
 
 
 ## Variant Axes

@@ -255,13 +255,13 @@ Expected hit identity:
 3. optional sampled-value payload or local image coordinate payload when the family chooses to expose
    it
 
-For slice-like `image` mode, any auxiliary coordinate payload should still be interpreted as image-
-family semantics, not as backend texture semantics.
+For `volume.render_mode = slice`, any auxiliary coordinate payload should still be interpreted as
+volume-slice scene semantics, not as backend texture semantics.
 
-For slice-like `image` mode backed by volumetric sampling, the preferred semantic result for an
+For volume slice mode backed by volumetric sampling, the preferred semantic result for an
 explicit query or probe-oriented request should be able to carry:
 
-1. image instance identity,
+1. volume instance identity,
 2. slice-local coordinates,
 3. world, atlas, or other declared scene-domain coordinates,
 4. sampled value at the queried position,

@@ -108,6 +108,16 @@ Half-width of the flat end caps drawn at the tips of each bar.
 Set to `0` (constant) to disable caps entirely.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf error bar skipped and not pickable | no |
+| low/high interval values | absent axis disabled | NaN interval disables that axis for the item | no |
+| `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
+| `linewidth`, `cap_size` | defaults described above | NaN falls back to default | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

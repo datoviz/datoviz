@@ -49,7 +49,7 @@ Scene-facing resources:
 
 1. one source scalar `SampledField` in `DataSpace`,
 2. one derived `SampledField` or equivalent image-ready resource in `VisualSpace`,
-3. one `StyleBlock` defining the active colormap and domain policy,
+3. one `DvzStyle` or parameter block defining the active colormap and domain policy,
 4. one source `ItemTable` for optional highlighted marker positions,
 5. one derived normalized `ItemTable` for the marker overlay,
 6. panel-local picking `DerivedField` resources for each panel,

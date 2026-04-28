@@ -24,7 +24,7 @@ Legends and colorbars sit between:
 
 1. visual-family semantic mappings,
 2. panel-attached annotation layout,
-3. scene resources such as style blocks, sampled fields, and derived labels,
+3. scene resources such as parameter blocks, sampled fields, and derived labels,
 4. `FramePlan` contributions for text, guides, ramps, and layout boxes.
 
 The intended flow is:
@@ -469,7 +469,7 @@ Legends and colorbars may depend on several scene resource classes.
 
 Typical inputs include:
 
-1. `StyleBlock`,
+1. `ParameterBlockResource`,
 2. `SampledField`,
 3. `DerivedField`,
 4. small `ItemTable`-like derived resources for sample marks,

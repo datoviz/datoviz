@@ -43,9 +43,8 @@ For per-item size, shape, or edge treatment, use `point` or `marker`.
 Standard — see `SHARED_ATTRIBUTES.md`.
 Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 
-`PER_GROUP` color uses contiguous item-range partitions (a `GroupedItemTable` model). No
-explicit per-item group-index attribute is needed; the user declares group sizes and the scene
-maps each item to its group by range.
+`PER_GROUP` color requires a per-item integer `"group_id"` attribute because `pixel` is a flat
+`ItemTable` visual. Contiguous range grouping belongs to span-structured visuals, not to `pixel`.
 
 
 ### `shift`
@@ -70,6 +69,16 @@ For per-item size, use `point`.
 ### `size_space`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
+
+
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf item skipped and not pickable | no |
+| `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
+| `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
+| `size` | `1 px` | invalid or NaN size falls back to default | yes |
 
 
 ## Variant Axes

@@ -116,7 +116,7 @@ Examples:
 1. point positions updated,
 2. one path group updated,
 3. one image field replaced,
-4. one style block rewritten,
+4. one parameter block rewritten,
 5. one sampled field region updated.
 
 This usually implies:
@@ -265,7 +265,7 @@ Examples:
 1. item tables,
 2. grouped item tables,
 3. sampled fields,
-4. style blocks.
+4. parameter blocks.
 
 This cache is authoritative.
 

@@ -219,6 +219,17 @@ Shape builders also support per-shape transforms (`scale`, `translate`, `rotate`
 multiple shapes into a single mesh visual.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf vertex invalidates affected primitive or fails validation in strict mode | no |
+| `index` | optional for non-indexed draws | invalid index is validation error | no |
+| `color`, `normal`, `texcoord` | mode-dependent defaults | scalar NaN uses scale missing color | yes |
+| edge overlay fields | disabled unless enabled | invalid width/color falls back only when explicitly configured | yes |
+| lighting parameters | shared lighting defaults | NaN falls back to family default | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |
@@ -298,7 +309,7 @@ v0.4 hides `left`/`right`/`contour` — edge distance data is computed internall
 The v0.4 material model uses Blinn-Phong shading (`ambient`, `diffuse`, `specular`,
 `shininess`, `emissive`).
 
-The style block reserves two additional fields for future PBR support:
+The visual parameter block reserves two additional fields for future PBR support:
 
 | Reserved field | PBR role | v0.4 value |
 |---|---|---|

@@ -151,6 +151,17 @@ are all open.
 Standard — see `SHARED_ATTRIBUTES.md`. Default: `screen`.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf vertex breaks or skips the affected path segment | no |
+| `span_sizes` | required | invalid span sizes are validation errors | no |
+| `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
+| `linewidth` | family-defined screen width | NaN falls back to default | yes |
+| `cap_start`, `cap_end`, `join` | defaults described above | n/a | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

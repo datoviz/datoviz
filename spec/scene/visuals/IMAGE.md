@@ -249,6 +249,17 @@ Color of all isoline contours. Visual-wide.
 Width of drawn isolines.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf image instance skipped and not pickable | no |
+| `size`, `anchor`, `texcoords` | defaults described above | invalid geometry is validation error | yes |
+| `tint`, `alpha` | white tint, alpha `1` | NaN alpha falls back to default | yes |
+| scalar texture samples | n/a | NaN maps through scale missing color | scale-owned |
+| `texture` / sampled field | required for `rgba` and `scalar` modes | missing texture is validation error | no |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

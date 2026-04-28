@@ -244,6 +244,17 @@ Tells the shader how to scale SDF distances correctly at different item sizes.
 Must match the declared render mode format.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf item skipped and not pickable | no |
+| `color`, `edgecolor` | fill white, edge transparent | scalar NaN uses scale missing color | yes |
+| `size`, `scale` | family-defined screen size, scale `1` | scalar NaN uses fallback size | yes |
+| `angle`, `aspect`, `shape` | defaults described above | invalid value is validation error | yes |
+| `shift` | `(0, 0)` | NaN component treated as zero shift | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

@@ -41,7 +41,7 @@ Default impostor-first resources:
 
 1. source `ItemTable` in `DataSpace` containing sphere centers and radii,
 2. derived normalized `ItemTable` in `VisualSpace`,
-3. `StyleBlock` for appearance and quality controls.
+3. `ParameterBlockResource` for appearance and quality controls.
 
 Optional alternate variant:
 

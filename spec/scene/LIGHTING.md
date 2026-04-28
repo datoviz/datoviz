@@ -147,7 +147,7 @@ The design is intentionally forward-compatible with PBR:
    energy-conserving PBR models. Adding PBR does not require changing the light source API.
    Only the light contribution computation in shaders changes.
 
-2. **Material fields are reserved for PBR** — the `mesh` and `sphere` visual style blocks carry
+2. **Material fields are reserved for PBR** — the `mesh` and `sphere` visual parameter blocks carry
    reserved `metallic` and `roughness` fields, zero-initialized and unused in v0.4.
    Activating PBR rendering in a future version uses these fields without changing the public
    API surface.

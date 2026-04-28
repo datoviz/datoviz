@@ -218,8 +218,8 @@ The schema should describe which kinds of logical resources may appear, and whic
 
 Examples:
 
-1. `point` typically needs an item table and may need a small style block,
-2. `marker` typically needs an item table plus a marker-style block,
+1. `point` typically needs an item table and may need a small parameter block,
+2. `marker` typically needs an item table plus marker parameters,
 3. `path` typically needs grouped item data and path-style parameters,
 4. `glyph` typically needs grouped glyph instances plus an atlas-like sampled field,
 5. `mesh` typically needs geometry, optional indices, and material/light state,
@@ -497,7 +497,7 @@ The current preferred direction from the scene spec is:
 2. keep `pixel` distinct from `point`,
 3. remove `monoglyph` as a first-class family,
 4. treat `wiggle` as path-related unless later evidence promotes it,
-5. treat `slice` as an `image`-family mode rather than a top-level family,
+5. treat slice rendering as `volume.render_mode = slice` rather than an `image` mode,
 6. keep `sphere` as a first-class family with multiple possible rendering variants.
 
 This document does not freeze final public naming, but it should be read as aligned with the current

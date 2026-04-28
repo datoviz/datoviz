@@ -8,7 +8,7 @@ This example instantiates the simplest meaningful `point` scene path.
 This example should be read against:
 
 1. `../VISUAL_FAMILY_RULES.md` for the `point` family contract,
-2. `../pipeline/RESOURCE_MODEL.md` for `ItemTable` and `StyleBlock`,
+2. `../pipeline/RESOURCE_MODEL.md` for `ItemTable` and `ParameterBlockResource`,
 3. `../pipeline/TRANSFORM_PIPELINE.md` for normalization and panel transform staging,
 4. `../pipeline/FRAME_PLAN.md` for the scene-level `FramePlan` shape.
 
@@ -41,7 +41,7 @@ Scene-facing resources:
 
 1. source `ItemTable` in `DataSpace` with per-item `x`, `y`, size, and color inputs,
 2. derived normalized `ItemTable` in `VisualSpace`,
-3. optional `StyleBlock` for family-wide defaults.
+3. optional `DvzStyle` or `ParameterBlockResource` for family-wide defaults.
 
 
 ## Transform Pipeline

@@ -100,6 +100,17 @@ visual). `PER_GROUP` is the maximum granularity supported; `PER_ITEM` material a
 are not supported. Per-item material is PBR territory, deferred to the PBR lighting path.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| `position` | required | NaN/Inf sphere skipped and not pickable | no |
+| `color` | opaque white RGBA | scalar NaN uses scale missing color | yes |
+| `size` | required unless default size is set | scalar NaN uses size fallback | yes |
+| texture fields | disabled unless texture mode is selected | missing required texture is validation error | no |
+| lighting parameters | shared lighting defaults | NaN falls back to family default | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |
@@ -160,7 +171,7 @@ v0.4 renames: `emit` → `emissive`.
 
 The v0.4 shading model for sphere impostors uses Blinn-Phong.
 
-The style block reserves `metallic` and `roughness` fields (zero-initialized, ignored in v0.4)
+The visual parameter block reserves `metallic` and `roughness` fields (zero-initialized, ignored in v0.4)
 for future PBR support, following the same pattern as `mesh`.
 A future `normal_map` texture slot is also reserved.
 See `LIGHTING.md` for the full upgrade path.

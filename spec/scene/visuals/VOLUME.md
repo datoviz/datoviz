@@ -280,6 +280,17 @@ Position of the slice plane along `slice_axis`. Animating this produces a slice-
 effect.
 
 
+## Defaults And Missing Values
+
+| Field | Default | Missing-value policy | `DvzStyle` override |
+|---|---|---|---|
+| sampled volume | required | missing or incompatible field is validation error | no |
+| bounds/crop/axis mapping | defaults described above | invalid bounds or axis mapping is validation error | yes |
+| transfer/range controls | defaults described above | NaN scalar sample maps to missing color/opacity policy | yes |
+| slice controls | disabled unless `render_mode = slice` | invalid slice axis/position is validation error | yes |
+| isosurface controls | disabled unless levels are present | NaN level ignored with warning | yes |
+
+
 ## Variant Axes
 
 | Axis | Values | Default |

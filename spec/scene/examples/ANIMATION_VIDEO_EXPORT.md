@@ -93,14 +93,14 @@ Animation update step:
 Invalidation resolution:
 
 - `VisualDataDirty` → normalized marker data is stale → `UploadNode` required,
-- `VisualPropsDirty` → marker style block is stale → `UploadNode` required,
+- `VisualPropsDirty` → marker parameter block is stale → `UploadNode` required,
 - `PanelTransformDirty` → panel transform push required, no data reupload.
 
 `FramePlan`:
 
 ```text
 UploadNode  → normalized marker positions (batch 0 updated)
-UploadNode  → marker style block (alpha = 0.0)
+UploadNode  → marker parameter block (alpha = 0.0)
 RenderNode  → panel: markers
 ```
 
@@ -122,7 +122,7 @@ Animation update step:
 
 ```text
 UploadNode  → normalized marker positions (batch 37)
-UploadNode  → marker style block (alpha = 0.853)
+UploadNode  → marker parameter block (alpha = 0.853)
 RenderNode  → panel: markers
 ```
 
@@ -147,7 +147,7 @@ unless another animation or user action changes marker properties.
 
 ```text
 UploadNode  → normalized marker positions (batch 60)
-UploadNode  → marker style block (alpha = 1.0)   ← final write; no further style uploads
+UploadNode  → marker parameter block (alpha = 1.0)   ← final write; no further parameter uploads
 RenderNode  → panel: markers
 ```
 
@@ -229,7 +229,7 @@ unchanged. The clock mode is the only difference between offline export and live
 ## DRP2 Categories Implied
 
 1. resource writes for dirty normalized marker data each frame (streaming),
-2. resource writes for the marker style block during the fade-in window only,
+2. resource writes for the marker parameter block during the fade-in window only,
 3. panel transform push each frame (camera in motion),
 4. render-pass lifecycle for the 3D panel,
 5. draw commands for markers,

@@ -1,7 +1,7 @@
 # Example: Mouse Brain Atlas Explorer With Transparent Regions And Slice Probe
 
 This example pressure-tests a realistic neuroscience scene with nested anatomical regions, a
-transparent enclosing surface, interior region meshes, one slice-like image backed by volumetric
+transparent enclosing surface, interior region meshes, one volume slice backed by volumetric
 sampling, picking-driven selection, and one linked 2D subplot.
 
 
@@ -22,7 +22,7 @@ This example should be read against:
 3. one linked 2D panel showing derived plots that update when the slice position changes,
 4. one outer `mesh` visual for the whole-brain surface,
 5. one interior `mesh` visual or grouped `mesh` representation for atlas regions,
-6. one `image` visual in slice-like mode backed by a volumetric `SampledField`,
+6. one `volume` visual in slice render mode backed by a volumetric `SampledField`,
 7. one 3D camera controller for orbit, pan, and wheel zoom,
 8. one selection controller for click-to-select region picking,
 9. one hover or probe controller for slice inspection,
@@ -37,15 +37,15 @@ This example should be read against:
 Primary visual families:
 
 1. `mesh`
-2. `image`
+2. `volume`
 
 Likely variant axes:
 
 1. outer brain `mesh` uses transparent surface styling,
 2. region `mesh` uses per-region color and opacity plus selection-dependent emphasis,
 3. `mesh` picking is enabled and should preserve at least region-level identity,
-4. `image` uses slice-like mode backed by volumetric sampling,
-5. `image` exposes filter-dependent sampled values and coordinate readout,
+4. `volume` uses slice render mode backed by volumetric sampling,
+5. the volume slice exposes filter-dependent sampled values and coordinate readout,
 6. the linked 2D panel may use `path`, `point`, or `image` depending on the derived subplot.
 
 
@@ -56,10 +56,10 @@ Scene-facing resources:
 1. one `IndexedGeometry` for the outer brain surface,
 2. one `IndexedGeometry` or one grouped mesh-oriented resource set for atlas regions,
 3. one volumetric `SampledField` for the source scalar or multi-channel volume,
-4. one `StyleBlock` for outer surface appearance,
-5. one `StyleBlock` or equivalent parameter resource for per-region visibility, opacity, and
+4. one `ParameterBlockResource` for outer surface appearance,
+5. one `ParameterBlockResource` or equivalent parameter resource for per-region visibility, opacity, and
    selection emphasis,
-6. one `StyleBlock` for slice placement, filter choice, and color interpretation,
+6. one `ParameterBlockResource` for slice placement, filter choice, and color interpretation,
 7. one or more panel-local picking `DerivedField` resources,
 8. one or more `ReadbackTarget` objects for click selection and probe sampling,
 9. one panel-local annotation resource set for probe labels, crosshair, or slice-plane guides,
@@ -164,7 +164,7 @@ Typical frame during slice probing:
 
 This example checks that:
 
-1. a realistic scientific scene can combine `mesh` and slice-like `image` semantics in one 3D panel,
+1. a realistic scientific scene can combine `mesh` and volume-slice semantics in one 3D panel,
 2. stable region identity survives batching and round-trips through picking,
 3. scene-owned selection state can drive per-region opacity and highlight policy cleanly,
 4. external UI widgets such as tree views and sliders can remain outside scene while still mutating
@@ -177,8 +177,8 @@ This example checks that:
    the scene spec to adopt backend-shaped OIT vocabulary too early,
 8. the current `mesh` family likely needs a clearer grouped-identity or region-identity story when
    one visual represents many selectable anatomical regions,
-9. the current `image` picking contract likely needs an explicit coordinate-readout expectation for
-   slice-like modes,
+9. the current `volume` picking contract likely needs an explicit coordinate-readout expectation for
+   slice modes,
 10. the scene spec should eventually state more clearly how filter selection affects derived-field
     caching and invalidation for volumetric sampling workflows,
 11. capability adaptation should preserve selected-versus-context emphasis even when transparency
