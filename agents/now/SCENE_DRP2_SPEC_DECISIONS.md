@@ -1670,7 +1670,7 @@ Spec edits if accepted:
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D062: First Implementation Target
@@ -1697,7 +1697,7 @@ boundary the cleanup just established.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D063: `DvzDrp2CommandStream` Representation
@@ -1729,7 +1729,7 @@ keeps runtime code type-safe while still allowing JSON fixture emission.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D064: Command ID Allocation
@@ -1757,7 +1757,7 @@ This keeps scene identity separate from protocol identity and makes converter fi
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D065: Converter Cache Scope
@@ -1782,7 +1782,7 @@ incremental rendering without recreating pipelines and resources every frame.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D066: First `FramePlan` C Shape
@@ -1811,7 +1811,7 @@ cases prove the need.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D067: `FramePlan` Public Visibility
@@ -1831,7 +1831,7 @@ This preserves implementation freedom while still making the converter testable.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D068: `DvzCapabilitySnapshot` Struct
@@ -1864,7 +1864,7 @@ Validation and adaptation cannot be implemented cleanly while capabilities remai
 
 Owner decision:
 
-TODO(user):
+TODO(user): ok but WBOIT is not a capability in itself? it is just a technique requiring other low level capabilities like multipass rendering etc? so you need to rewrite these minimum fields.
 
 
 ## Implementation Preflight D069: Capability Storage Shape
@@ -1889,7 +1889,7 @@ The limits can be generous and revised later.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D070: Built-In Shader Authoring
@@ -1923,7 +1923,7 @@ WGSL to SPIR-V.
 
 Owner decision:
 
-TODO(user):
+TODO(user): i like the idea of having the choice of the shader format
 
 
 ## Implementation Preflight D071: Custom Visuals In First Implementation
@@ -1943,7 +1943,7 @@ Custom visuals expose too many internals too early. They should reuse a proven b
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D072: First Visual Families To Implement
@@ -1979,7 +1979,7 @@ geometry complexity.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D073: WBOIT Timing
@@ -1999,7 +1999,7 @@ Reasoning:
 WBOIT requires multiple color attachments, blend-state details, and a composite pass. It is required
 for v0.4, but it should not block the first proof slice.
 
-Owner decision:
+Owner decision: agree
 
 TODO(user):
 
@@ -2027,7 +2027,7 @@ The runtime owns backend resources; the scene only needs logical dimensions, for
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D075: Readback Result Ownership
@@ -2048,7 +2048,7 @@ users.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D076: Picking Encoding
@@ -2074,7 +2074,7 @@ Add `rg32uint` to the DRP2/Datoviz format vocabulary if it is not already presen
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D077: Format Vocabulary Expansion
@@ -2106,7 +2106,7 @@ depth formats.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D078: Spec Lint
@@ -2135,7 +2135,7 @@ The cleanup pass found these by manual grep; future edits should catch them mech
 
 Owner decision:
 
-TODO(user):
+TODO(user): no i dont want such lint i will just ask you to do it manually
 
 
 ## Implementation Preflight D079: Fixture Count Tests
@@ -2156,7 +2156,7 @@ of the contract.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D080: First Implementation Acceptance Gate
@@ -2181,7 +2181,7 @@ This keeps runtime work from starting on a moving converter/spec boundary.
 
 Owner decision:
 
-TODO(user):
+TODO(user): agree except for 5 but this lint should be done in an ad hoc manner
 
 
 ## Notes From User
