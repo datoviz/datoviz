@@ -2,7 +2,7 @@
   "name": "pressure_picking_readback",
   "description": "Render 32-bit object IDs into an r32uint attachment, copy the result to a staging buffer, and submit.",
   "reason": "The r32uint render target has RENDER_ATTACHMENT and COPY_SRC usage. The staging buffer has COPY_DST and MAP_READ usage. CopyTextureToBuffer inside the encoder copies the rendered ID data to the staging buffer before submission. All commands are valid under the active 2.0 contract.",
-  "notes": "Pressure test #4 from LAYER1.md. The fragment shader outputs a u32 object ID directly into the r32uint render target. r32uint is 4 bytes per texel, so the 4x4 render target produces 64 bytes of readback data matching the staging buffer size. The remaining open gap in this pressure test is the absence of a result-readback primitive: DRP2 2.0 has no ReadBuffer, MapBuffer, or equivalent command. After QueueSubmit the staging buffer holds the picked pixel data on the GPU side, but the producer has no protocol-level way to observe it. Result readback requires a mechanism outside the current contract (a future reply command, a side-channel, or a 2.1 extension).",
+  "notes": "Pressure test #4 from LAYER1.md. The fragment shader outputs a u32 object ID directly into the r32uint render target. r32uint is 4 bytes per texel, so the 4x4 render target produces 64 bytes of readback data matching the staging buffer size. QueueSubmit.readbacks is the active DRP2 2.0 readback primitive: the staging buffer is copied back through QueueSubmitReply after the submitted work completes.",
   "version": {
     "major": 2,
     "minor": 0

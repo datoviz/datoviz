@@ -61,12 +61,33 @@ shape:
 The omitted fields from the broader future capability model remain planned but are not yet consumed
 by the first executable fixture corpus.
 
-Active `2.0` note:
+The fixture capability object is intentionally smaller than the runtime capability snapshot consumed
+by the future scene layer. Fixtures should declare only the fields needed to make the fixture's
+validation outcome deterministic.
 
-1. dynamic buffer offsets do not currently introduce a separate capability field,
-2. the active contract deliberately does not model backend-specific dynamic-offset alignment limits,
-3. if a future runtime needs explicit dynamic-offset alignment reporting, that should be added as a
-   later capability slice rather than retrofitted implicitly into the current fixture corpus.
+
+## Runtime Capability Snapshot
+
+A runtime that is consumed by the scene layer should expose a richer `DvzCapabilitySnapshot`.
+
+This runtime snapshot includes the fixture fields above plus scene-planning limits such as:
+
+1. `max_bind_groups`
+2. `max_color_attachments`
+3. `max_uniform_buffer_binding_size`
+4. `max_storage_buffer_binding_size`
+5. `max_texture_array_layers`
+6. `supports_readback`
+7. `supports_offscreen_targets`
+8. `supports_storage_textures`
+9. `supports_weighted_blended_oit`
+10. `min_uniform_buffer_offset_alignment`
+11. `min_storage_buffer_offset_alignment`
+12. `min_texture_copy_bytes_per_row_alignment`
+
+The three alignment fields are backend-agnostic numeric limits. They are required for scene/runtime
+planning, but individual JSON fixtures do not need to declare them unless the fixture specifically
+tests dynamic buffer offsets or texture-copy row-pitch alignment.
 
 
 ## Active `2.0` Command Gates

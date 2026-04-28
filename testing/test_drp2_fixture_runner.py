@@ -79,10 +79,13 @@ def test_drp2_fixture_runner_can_filter_pipeline_prerequisite_negatives() -> Non
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['pipeline'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 4
+    assert len(results) == 5
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'semantic_validation' for result in results)
-    assert all(result.actual_code == 'DRP2_ERR_INVALID_STATE' for result in results)
+    assert {result.actual_code for result in results} == {
+        'DRP2_ERR_INVALID_STATE',
+        'DRP2_ERR_INVALID_ARGUMENT',
+    }
 
 
 def test_drp2_fixture_runner_rejects_resubmitted_command_buffer() -> None:
@@ -353,7 +356,7 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['bind_group'])
     results = runner.run_fixtures(fixtures)
 
-    assert len(results) == 13
+    assert len(results) == 15
     assert all(result.passed for result in results)
     assert {result.actual_phase for result in results} == {
         'schema_validation',

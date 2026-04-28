@@ -41,20 +41,24 @@ Active DRP2 `2.0` surface now includes:
 5. lightweight bind groups
 6. lightweight bind-group layouts
 7. dynamic buffer offsets on bind-group bindings
-8. copy commands and queue submission
-9. destruction-safety negatives for bind-group layouts and pipelines
-10. conservative submitted-work lifetime coverage for bind-group layouts and pipelines
-11. explicit bounded-range requirement for buffer-backed bind-group entries
-12. pipeline-rebind validation for later bind-group and draw commands
+8. shader modules
+9. samplers
+10. texture views for bind-group sampling
+11. copy commands and queue submission
+12. `QueueSubmit.readbacks` and `QueueSubmitReply`
+13. destruction-safety negatives for bind-group layouts, shader modules, texture views, and
+    pipelines
+14. conservative submitted-work lifetime coverage for bind-group layouts and pipelines
+15. explicit bounded-range requirement for buffer-backed bind-group entries
+16. pipeline-rebind validation for later bind-group and draw commands
 
 What remains intentionally deferred:
 
 1. pipeline layouts
-2. shader modules
-3. samplers
-4. texture views
-5. indirect draws/dispatch
-6. richer backend-facing pipeline/shader semantics
+2. indirect draws/dispatch
+3. explicit resource barriers
+4. richer backend-facing pipeline/shader semantics
+5. protocol-visible fences and completion-based destruction
 
 
 ## Validation Snapshot
@@ -66,8 +70,8 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `80/80` fixtures passing
-2. `43` focused runner tests passing
+1. `107/107` fixtures passing
+2. focused runner tests must be kept in lockstep with fixture tag growth
 
 
 ## In Scope
@@ -108,7 +112,8 @@ Recommended next slice:
 
 1. keep the queue-submission and diagnostic checks stable across prose, fixtures, and runner behavior
 2. continue fixture-first hardening of remaining submit-time misuse cases before broadening object scope
-3. only add backend-facing alignment or capability detail if a runtime slice proves the need concretely
+3. keep the fixture capability shape minimal while documenting the richer runtime capability snapshot
+   needed by the scene planner
 4. if the next hardening pass stays in DRP2, prefer error-code precision and any remaining submission-state gaps over new object families
 5. the next likely frontier is small error-policy cleanup rather than broader resource graphs
 
@@ -116,7 +121,8 @@ Reasoning:
 
 1. the active contract now covers handshake, bind-group state, and the first real texture-layout slice end to end
 2. the highest-value follow-up remains contract hardening, not broader object promotion
-3. the current fixture shape stays backend-agnostic precisely by not exposing backend-specific alignment policy yet
+3. runtime-facing alignment limits can be exposed as backend-agnostic numbers without requiring every
+   fixture to declare them
 4. deferred object families should remain deferred until a future slice can be validated just as concretely
 
 
