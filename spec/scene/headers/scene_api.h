@@ -32,7 +32,7 @@
 typedef struct DvzCapabilitySnapshot DvzCapabilitySnapshot;
 
 typedef struct DvzScene     DvzScene;      /* logical scene graph */
-typedef struct DvzFigure    DvzFigure;     /* canvas / window */
+typedef struct DvzFigure    DvzFigure;     /* per-output layout container (one per window/target) */
 typedef struct DvzPanel     DvzPanel;      /* viewport inside a figure */
 typedef struct DvzVisual    DvzVisual;     /* one visual instance */
 typedef struct DvzResource  DvzResource;   /* GPU resource (buffer, texture, …) */
@@ -250,17 +250,17 @@ typedef enum
 } DvzSelectMode;
 
 
-/* --- Built-in non-linear projection types --------------------------------- */
+/* --- Built-in non-linear coordinate transform types ----------------------- */
 
 typedef enum
 {
-    DVZ_PROJECTION_NONE             = 0, /* identity (default) */
-    DVZ_PROJECTION_MERCATOR         = 1,
-    DVZ_PROJECTION_EQUIRECTANGULAR  = 2,
-    DVZ_PROJECTION_ORTHOGRAPHIC_GEO = 3,
-    DVZ_PROJECTION_POLAR            = 4,
-    DVZ_PROJECTION_CUSTOM           = 5,
-} DvzProjectionType;
+    DVZ_COORD_TRANSFORM_NONE             = 0, /* identity (default) */
+    DVZ_COORD_TRANSFORM_MERCATOR         = 1,
+    DVZ_COORD_TRANSFORM_EQUIRECTANGULAR  = 2,
+    DVZ_COORD_TRANSFORM_ORTHOGRAPHIC_GEO = 3,
+    DVZ_COORD_TRANSFORM_POLAR            = 4,
+    DVZ_COORD_TRANSFORM_CUSTOM           = 5,
+} DvzCoordTransformType;
 
 
 /* --- Event types ---------------------------------------------------------- */
@@ -518,15 +518,15 @@ typedef struct
 } DvzSVGExportOptions;
 
 
-/* --- Non-linear projection descriptor ------------------------------------- */
+/* --- Non-linear coordinate transform descriptor --------------------------- */
 
 typedef struct
 {
-    DvzProjectionType type;
-    double            params[8];  /* type-specific parameters */
-    /* custom compute shader source (GLSL), used when type = DVZ_PROJECTION_CUSTOM */
-    const char*       glsl_source;
-} DvzProjectionDesc;
+    DvzCoordTransformType type;
+    double                params[8];  /* type-specific parameters */
+    /* custom compute shader source (GLSL), used when type = DVZ_COORD_TRANSFORM_CUSTOM */
+    const char*           glsl_source;
+} DvzCoordTransformDesc;
 
 
 /* --- Custom visual descriptor --------------------------------------------- */
@@ -642,9 +642,9 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 /* Assign an interactive controller to the panel. */
 DVZ_EXPORT void dvz_panel_set_controller(DvzPanel* panel, DvzControllerType type);
 
-/* Set a non-linear projection for the panel.
- * Positions are projected CPU-side (v0.4); GPU compute pre-pass is a v0.4+ feature. */
-DVZ_EXPORT void dvz_panel_set_projection(DvzPanel* panel, const DvzProjectionDesc* proj);
+/* Set a non-linear coordinate transform for the panel.
+ * Positions are transformed CPU-side (v0.4); GPU compute pre-pass is a v0.4+ feature. */
+DVZ_EXPORT void dvz_panel_set_coord_transform(DvzPanel* panel, const DvzCoordTransformDesc* transform);
 
 /* Add a visual to the panel.
  * Insertion order determines draw order among visuals sharing the same z_layer. */

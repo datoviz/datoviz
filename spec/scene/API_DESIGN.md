@@ -99,11 +99,14 @@ enum in the public API — family identity is fixed at construction and not quer
 
 The preferred ownership model is:
 
-1. `Scene` owns visuals, resources, shared mappings, controllers, and scene-global invalidation
-   state,
-2. `Panel` owns panel-local view state, axes, and panel-local explanatory attachments,
-3. one scene-level `FramePlan` is built per frame,
-4. the runtime remains below the scene semantic layer.
+1. `Scene` owns shared resources (scales, fonts, textures), global invalidation state, and the
+   collection of figures,
+2. `Figure` owns layout (panels, margins, render-target binding) — one figure per output window
+   or offscreen target; one scene may have multiple figures (e.g. two windows sharing a GPU
+   context),
+3. `Panel` owns panel-local view state, controllers, axes, and panel-local attachments,
+4. one `FramePlan` per figure is built each frame,
+5. the runtime remains below the scene semantic layer.
 
 
 ## Preferred Visual And Resource Binding Model
@@ -220,12 +223,12 @@ The preferred build and submission model is:
 3. frame build is separate from runtime submission,
 4. runtime submission stays below the scene API boundary.
 
-Conceptually (using `dvz_scene_*` as the actual naming — `fig` below is pseudocode shorthand
-for the scene handle; there is no separate `DvzFigure` type):
+Conceptually:
 
 ```c
-dvz_scene_request_redraw(scene, DVZ_REDRAW_SCENE, NULL);
-DvzFramePlan* fp = dvz_scene_build_frame(scene, DVZ_BUILD_FLAGS_NONE, &report);
+// DvzFigure is the per-window layout object; redraw and frame build are per-figure.
+dvz_figure_request_redraw(fig, DVZ_REDRAW_SCENE, NULL);
+DvzFramePlan* fp = dvz_figure_build_frame(fig, DVZ_BUILD_FLAGS_NONE, &report);
 dvz_runtime_submit(rt, fp);
 dvz_frame_plan_destroy(fp);
 ```
@@ -249,10 +252,10 @@ The preferred diagnostics model is:
 
 ## Resolved C API Decisions
 
-**Naming convention** — `dvz_` prefix throughout. Opaque handles (`DvzVisual*`, `DvzPanel*`,
-etc.). Descriptor structs named `DvzXxxDesc`. There is no `DvzVisualType` enum in the public
-API — family identity is fixed at construction by the typed constructor and is not queryable.
-The internal spec term "family" is not exposed to users.
+**Naming convention** — `dvz_` prefix throughout. Opaque handles (`DvzScene*`, `DvzFigure*`,
+`DvzPanel*`, `DvzVisual*`, etc.). Descriptor structs named `DvzXxxDesc`. There is no
+`DvzVisualType` enum in the public API — family identity is fixed at construction by the typed
+constructor and is not queryable. The internal spec term "family" is not exposed to users.
 
 **Constructors** — family-specific constructors as the primary public surface (`dvz_point()`,
 `dvz_path()`, `dvz_image()`, etc.) because resource schemas and initialization requirements
@@ -261,7 +264,8 @@ default.
 
 **Data upload** — `dvz_visual_set_data(visual, attr_name, data, n)` uniform across all visual
 types. `attr_name` is the string from the per-family spec ("position", "color", …). `n`
-determines the source: `1` → CONSTANT, `item_count` → PER_ITEM, `group_count` → PER_GROUP.
+determines the source: `1` → CONSTANT, `item_count` → PER_ITEM, `span_count` → PER_SPAN,
+`group_count` → PER_GROUP.
 Span sizes for grouped visuals (path, glyph) are written via the `"span_sizes"` attribute.
 Partial updates via `dvz_visual_set_data_range`. Mutability hints via `dvz_visual_set_mutability`.
 

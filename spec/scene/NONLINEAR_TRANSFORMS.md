@@ -49,7 +49,7 @@ the scene will support a GPU projection compute pre-pass.
 The panel declares a non-linear projection:
 
 ```text
-dvz_panel_set_projection(panel, DVZ_PROJ_MERCATOR, &proj_params)
+dvz_panel_set_coord_transform(panel, &transform_desc)  // type = DVZ_COORD_TRANSFORM_MERCATOR
 ```
 
 When a non-affine projection is set on a panel, the scene:
@@ -70,7 +70,7 @@ The compute pre-pass is a **persistent derived resource**.
 It runs only when:
 
 1. the source position data is marked dirty (new data upload), or
-2. the projection parameters are marked dirty (e.g., `dvz_panel_set_projection` called
+2. the transform parameters are marked dirty (e.g., `dvz_panel_set_coord_transform` called
    with new parameters).
 
 Pan and zoom updates never trigger the compute pre-pass.
@@ -101,14 +101,14 @@ The following projections will be supported as built-in compute shaders:
 
 | Name | Description |
 |---|---|
-| `DVZ_PROJ_MERCATOR` | web Mercator (EPSG:3857) |
-| `DVZ_PROJ_EQUIRECTANGULAR` | equirectangular (plate carrée) |
-| `DVZ_PROJ_ORTHOGRAPHIC` | orthographic globe |
-| `DVZ_PROJ_POLAR` | polar (r, θ) → (x, y) |
+| `DVZ_COORD_TRANSFORM_MERCATOR` | web Mercator (EPSG:3857) |
+| `DVZ_COORD_TRANSFORM_EQUIRECTANGULAR` | equirectangular (plate carrée) |
+| `DVZ_COORD_TRANSFORM_ORTHOGRAPHIC_GEO` | orthographic globe |
+| `DVZ_COORD_TRANSFORM_POLAR` | polar (r, θ) → (x, y) |
 
 Additional built-in projections may be added without breaking the contract.
 
-**Parameter layout** — indices into `DvzProjectionDesc.params[8]` for each built-in projection:
+**Parameter layout** — indices into `DvzCoordTransformDesc.params[8]` for each built-in transform:
 
 | Projection | params[0] | params[1] | params[2] | params[3] |
 |---|---|---|---|---|
