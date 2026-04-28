@@ -537,8 +537,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-The next documents enabled by this one should be:
-
-1. `LEGENDS_AND_COLORBARS.md`,
-2. `SCENE_VALIDATION.md`,
-3. more worked examples with annotation-heavy and multi-panel cases.
+`LEGENDS_AND_COLORBARS.md` and `SCENE_VALIDATION.md` are the natural follow-ons from this
+document; annotation-heavy and multi-panel worked examples further pressure-test it.

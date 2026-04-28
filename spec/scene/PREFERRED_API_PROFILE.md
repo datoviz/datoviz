@@ -12,8 +12,7 @@ This document sits:
 
 1. above `OBJECT_MODEL.md`,
 2. above `VISUAL_CONTRACT.md` and `RESOURCE_MODEL.md`,
-3. below any final public C header decision,
-4. alongside `SCENE_API_SKETCH.md` as the preferred current interpretation of the sketch.
+3. below `headers/scene_api.h`, which is the authoritative C spelling.
 
 
 ## Normative Status
@@ -22,7 +21,7 @@ This document is normative for the current preferred API direction.
 
 It should be read as:
 
-1. selecting the default API-shape choices that `SCENE_API_SKETCH.md` intentionally left open,
+1. recording the design rationale behind `headers/scene_api.h`,
 2. constraining implementation-oriented exploration to one coherent profile,
 3. leaving only a small set of explicitly deferred questions open.
 
@@ -293,9 +292,9 @@ only. Not a first-class public user-facing API.
 
 This document should be read together with:
 
-1. `headers/scene_api.h` for the authoritative C API surface (supersedes `SCENE_API_SKETCH.md`),
+1. `headers/scene_api.h` for the authoritative C API spelling,
 2. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` for family contract details,
 3. `RESOURCE_MODEL.md` for logical resource classes,
 4. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` for stage ordering and failure semantics,
-5. `RUNTIME_BOUNDARY.md` and `RUNTIME_SERVICE_SKETCH.md` for the lower execution boundary,
+5. `RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
 6. `IMPLEMENTATION_BRIDGE.md` for one tentative implementation-facing translation of this profile.

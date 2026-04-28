@@ -1,23 +1,40 @@
-# Scene Runtime Boundary
+# Scene Runtime Boundary And Service Model
 
-This document defines the allowed contract between the future scene layer and the DRP2 runtime.
+This document defines the allowed contract between the scene layer and the DRP2 runtime, and
+the minimal conceptual service surface the runtime must expose to the scene.
+
+**The "runtime" here is the DRP2 runtime executor.**
+The scene layer emits DRP2 commands — it does not call Vulkan, vklite, or any backend API
+directly.
+The service concepts defined here are the scene-facing view of the DRP2 runtime interface,
+not a separate layer between scene and DRP2.
 
 
 ## Normative Status
 
-This document is normative for dependency boundaries and ownership boundaries.
+This document is normative for:
 
-It should be read as:
+1. dependency and ownership boundaries (what the scene may and must not rely on),
+2. the conceptual runtime service model (objects, contracts, API shape).
 
-1. defining what the scene layer may rely on,
-2. defining what must stay below the scene semantic layer,
-3. delegating more concrete service-shape questions to `RUNTIME_SERVICE_SKETCH.md`.
+It is not normative for:
+
+1. final function names,
+2. final ownership mechanics in C,
+3. whether some services are represented by one object or several helper objects.
+
+The scene spec and the DRP2 spec are designed in parallel. When the scene spec needs a capability
+or behavior that DRP2 does not yet provide, that is a DRP2 spec input, not a reason to add a
+scene-side workaround. See `spec/drp2/` for the active DRP2 command surface.
 
 
 ## Position
 
-The runtime boundary sits below scene validation, capability adaptation, and `FramePlan`
-construction.
+The runtime boundary sits below:
+
+1. scene validation (`SCENE_VALIDATION.md`),
+2. capability adaptation (`CAPABILITY_ADAPTATION.md`),
+3. `FramePlan` construction (`FRAME_PLAN_IR.md`).
 
 The intended relationship is:
 
@@ -26,21 +43,18 @@ The intended relationship is:
 3. the runtime consumes that plan through DRP2-visible services,
 4. the runtime reports execution outcomes without redefining scene meaning.
 
-This document should be read together with:
 
-1. `SCENE_VALIDATION.md` for what must fail before execution,
-2. `CAPABILITY_ADAPTATION.md` for how capability-driven simplification or rejection is chosen,
-3. `FRAME_PLAN_IR.md` for the producer-side plan shape the runtime receives,
-4. `RUNTIME_SERVICE_SKETCH.md` for the minimal conceptual runtime service surface,
-5. `DIAGNOSTICS_SCHEMA.md` for the shared scene-facing diagnostic shape.
+## Core Rules
 
-
-## Core Rule
-
-The runtime is an execution service for already-planned scene work.
-
-It may expose execution capabilities and execution results, but it should not act as a second scene
+**Boundary rule:** The runtime is an execution service for already-planned scene work. It may
+expose execution capabilities and execution results, but it should not act as a second scene
 planner or require backend-shaped data in the public scene surface.
+
+**Service rule:** The runtime service should consume already-planned scene work, expose
+capabilities needed before planning, and return execution outcomes in scene-visible terms.
+
+**Design rule:** If the scene layer needs reusable low-level behavior, prefer improving the DRP2
+or runtime-facing contract rather than adding a scene-private backend escape hatch.
 
 
 ## Allowed Dependencies
@@ -55,89 +69,6 @@ The scene layer may depend on:
 6. readback and offscreen target services expressed without backend handle leakage.
 
 
-## Required Runtime Service Surface
-
-The minimum runtime-facing service surface should include:
-
-1. capability snapshot query with stable scene-consumable semantics,
-2. execution submission for already-built plan work,
-3. offscreen-target provisioning through logical target descriptions,
-4. readback request completion and typed result delivery,
-5. runtime diagnostics that refer back to scene-visible plan or resource identity,
-6. optional frame timing or debug hooks that remain observational rather than semantic.
-
-
-## Capability Snapshot Contract
-
-Capability query should provide a stable snapshot suitable for validation and adaptation.
-
-At minimum, the scene should be able to consume capability information such as:
-
-1. supported formats and limits,
-2. sample-count availability,
-3. readback support,
-4. picking-related target constraints,
-5. compute and precision availability,
-6. determinism-relevant constraints needed by export or testing paths.
-
-The snapshot should be explicit enough that:
-
-1. adaptation can run before planning,
-2. planning does not need backend object inspection,
-3. diagnostics can explain capability-driven rejection or simplification at the scene level.
-
-
-## Submission Contract
-
-Submission should consume already-planned work.
-
-The important rule is:
-
-1. scene decides the topology of the frame plan,
-2. runtime executes the translated plan,
-3. runtime may cache backend objects internally,
-4. runtime should not silently reinterpret scene-level ordering, fallback, or identity.
-
-Submission granularity remains intentionally open:
-
-1. one submission may cover the whole scene-level `FramePlan`,
-2. one plan may translate to several backend submissions if the runtime needs that internally,
-3. but those internal execution details should not change the scene-visible semantics of one frame
-   build.
-
-
-## Readback Contract
-
-Readback and offscreen export services should be expressed in producer-visible terms.
-
-At minimum, the boundary should support:
-
-1. deterministic offscreen image capture,
-2. single-pixel or equivalent picking readback,
-3. typed completion routing back to scene-visible request or target identity,
-4. stale-result rejection where the scene model requires it, such as hover picking.
-
-Completion timing also remains intentionally open:
-
-1. the runtime may support synchronous completion helpers,
-2. the runtime may support asynchronous completion delivery,
-3. but the scene-facing result model should preserve request identity and freshness semantics in
-   either case.
-
-
-## Diagnostics Contract
-
-Runtime failures should be reportable in terms that the scene layer can map back to:
-
-1. plan node identity,
-2. logical target identity,
-3. logical resource identity,
-4. capability mismatch or execution failure category.
-
-The runtime may keep backend-specific detail internally, but the scene-facing boundary should not
-require backend handles to interpret failures.
-
-
 ## Forbidden Dependencies
 
 The scene layer must not depend on:
@@ -150,11 +81,166 @@ The scene layer must not depend on:
 6. backend command-buffer recording APIs.
 
 
+## Minimum Service Objects
+
+The minimum conceptual runtime surface includes:
+
+1. `RuntimeService` — the scene-facing execution entry point,
+2. `CapabilitySnapshot` — a stable capability record for validation and adaptation,
+3. `SubmissionResult` — execution acceptance or failure at submission time,
+4. `CompletionEvent` — typed completion for readback, picking, export, or execution failure,
+5. `RuntimeDiagnostic` — runtime failures mapped back to scene-visible identities.
+
+The scene layer interacts through a single opaque `DvzRuntime*` handle. There is no split
+device/encoder/queue model exposed to the scene. Encoder lifecycle and DRP2 session management
+are hidden inside the runtime.
+
+```c
+DvzRuntime* rt = dvz_runtime_create(/* backend init */);
+dvz_runtime_submit(rt, frame_plan);
+dvz_runtime_get_capabilities(rt, &caps);
+dvz_runtime_destroy(rt);
+```
+
+
+## `CapabilitySnapshot`
+
+`CapabilitySnapshot` provides a stable scene-consumable view of execution constraints.
+
+It should include at least:
+
+1. supported formats and limits,
+2. sample-count support,
+3. readback support,
+4. picking-related target constraints,
+5. compute and precision support,
+6. determinism-relevant export constraints.
+
+The scene should be able to retain and compare snapshots across frames without backend handle
+inspection.
+
+
+## `RuntimeService` Conceptual Interface
+
+```text
+caps       = runtime_query_capabilities(runtime)
+submission = runtime_submit(runtime, frame_plan)
+event      = runtime_poll_completion(runtime)
+```
+
+
+## `SubmissionResult`
+
+`SubmissionResult` reports whether the runtime accepted the planned work for execution.
+
+It distinguishes at least:
+
+1. accepted for execution,
+2. rejected due to execution-time capability mismatch,
+3. rejected due to invalid runtime resource state,
+4. rejected due to internal runtime failure.
+
+If submission is rejected, the result includes scene-visible diagnostics rather than backend
+handles.
+
+
+## `CompletionEvent`
+
+`CompletionEvent` supports at least:
+
+1. picking completion,
+2. offscreen image completion,
+3. optional compute-result completion for tests or tooling,
+4. execution failure completion when the failure occurs after submission acceptance.
+
+Each completion identifies:
+
+1. the originating submission or frame identity,
+2. the logical request or target identity,
+3. the typed payload,
+4. any freshness or discardability metadata needed by the scene.
+
+
+## `RuntimeDiagnostic`
+
+`RuntimeDiagnostic` maps failures back to scene-visible execution artifacts.
+
+It refers to:
+
+1. plan node identity,
+2. logical target identity,
+3. logical resource identity,
+4. failure category,
+5. optional backend detail kept as opaque debug text rather than required semantic input.
+
+
+## Capability Snapshot Contract
+
+At minimum, the scene should be able to consume capability information such as:
+
+1. supported formats and limits,
+2. sample-count availability,
+3. readback support,
+4. picking-related target constraints,
+5. compute and precision availability,
+6. determinism-relevant constraints needed by export or testing paths.
+
+The snapshot must be explicit enough that:
+
+1. adaptation can run before planning,
+2. planning does not need backend object inspection,
+3. diagnostics can explain capability-driven rejection or simplification at the scene level.
+
+
+## Submission Contract
+
+The important rules are:
+
+1. scene decides the topology of the frame plan,
+2. runtime executes the translated plan,
+3. runtime may cache backend objects internally,
+4. runtime must not silently reinterpret scene-level ordering, fallback, or identity.
+
+The runtime may internally translate one `FramePlan` into one or several backend submissions,
+with internal caching or deferred object creation. Those internal details must not alter the
+meaning of the submitted frame, the identity route for diagnostics, or the identity route for
+completions.
+
+
+## Readback Contract
+
+Readback and offscreen export services are expressed in producer-visible terms.
+
+At minimum:
+
+1. deterministic offscreen image capture,
+2. single-pixel or equivalent picking readback,
+3. typed completion routing back to scene-visible request or target identity,
+4. stale-result rejection where the scene model requires it (e.g. hover picking).
+
+Completion delivery: v0.4 uses polling — `dvz_scene_poll_pick_result` and the
+`DVZ_EVENT_PICK_RESULT` callback cover the primary readback use case. DRP2 does not expose
+async signaling primitives; the polling model is the authoritative completion path.
+
+
+## Diagnostics Contract
+
+Runtime failures are reportable in terms the scene layer can map back to:
+
+1. plan node identity,
+2. logical target identity,
+3. logical resource identity,
+4. capability mismatch or execution failure category.
+
+DRP2 error codes are non-normative from the scene API's perspective. DRP2 failures are mapped to
+scene-level error categories in `DvzDiagnosticReport`. The raw DRP2 symbolic code appears only
+in a verbose debug string field and is not required semantic input. See `DIAGNOSTICS_SCHEMA.md`
+for the shared scene-facing diagnostic record shape.
+
+
 ## Canvas And Presentation Ownership
 
 The scene layer does not own or reference the canvas, window, swapchain, or stream/sink objects.
-
-Those are application-level and runtime-level concerns.
 
 The intended ownership model is:
 
@@ -173,7 +259,6 @@ canvas fires draw callback
 ```
 
 Video and offscreen sinks are attached to the canvas stream by the application.
-The scene does not attach sinks, register callbacks on the stream, or inspect the canvas.
 
 
 ## Logical Render Target
@@ -186,22 +271,22 @@ runtime to actual backend resources.
 
 Two variants:
 
-```text
+```c
 // Interactive: target backed by the canvas swapchain
-DvzRenderTarget* target = dvz_render_target_canvas(canvas)
+DvzRenderTarget* target = dvz_render_target_canvas(canvas);
 
 // Offscreen/export: target backed by a readback-capable image
-DvzRenderTarget* target = dvz_render_target_offscreen(runtime, width, height, format)
+DvzRenderTarget* target = dvz_render_target_offscreen(runtime, width, height, format);
 ```
 
 The scene holds a `DvzRenderTarget` and uses it when building the `FramePlan`.
 It does not know whether the target is a swapchain image or an export buffer.
-That mapping is the DRP2 runtime's responsibility.
+The canvas is not a scene concept — the scene API never takes a `DvzCanvas*` argument directly.
 
 
 ## Render-Pass Attachments And Texture Views
 
-In the active DRP2 `2.0` surface, render-pass attachments reference textures **directly** via
+In the active DRP2 `2.0` surface, render-pass attachments reference textures directly via
 `texture_id`, not via texture-view objects. Texture views (`CreateTextureView`) are used only
 for bind-group bindings, not for render-pass attachment slots.
 
@@ -210,7 +295,35 @@ logical handles and let the runtime resolve them to the correct texture id — i
 assume texture-view ids are needed on the attachment path.
 
 
-## Design Rule
+## Export Helpers
 
-If the scene layer needs a reusable low-level behavior, prefer improving the DRP2 or runtime-facing
-contract instead of adding a scene-private backend escape hatch.
+`dvz_figure_export_png` and `dvz_figure_export_svg` live in the scene layer and drive the
+runtime via a standard offline frame sequence. They are not part of the runtime surface.
+
+
+## Service Boundaries
+
+The runtime service must not require the scene layer to expose:
+
+1. Vulkan, Metal, WebGPU, GLFW, or swapchain handles,
+2. backend descriptor or pipeline object identifiers,
+3. backend synchronization primitives,
+4. backend allocator state.
+
+The scene layer must not ask the runtime service to:
+
+1. reinterpret scene semantics,
+2. choose scene fallback policy after planning,
+3. discover missing validation that should already have failed earlier.
+
+
+## Relationship To Other Scene Docs
+
+| Document | Relationship |
+|---|---|
+| `FRAME_PLAN_IR.md` | the producer-side artifact this service consumes |
+| `SCENE_VALIDATION.md` | stages that must run before submission |
+| `CAPABILITY_ADAPTATION.md` | capability-driven adaptation before planning |
+| `PICKING.md` | freshness and identity semantics on picking completions |
+| `DIAGNOSTICS_SCHEMA.md` | shared scene-facing diagnostic record shape |
+| `IMPLEMENTATION_BRIDGE.md` | C object mapping, Python binding architecture |

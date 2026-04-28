@@ -534,6 +534,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-The next useful scene-spec slice after this one is
-`CAPABILITY_ADAPTATION.md`, because validation now makes explicit where the scene must reject,
-deactivate, or simplify configurations when the runtime contract is insufficient.
+`CAPABILITY_ADAPTATION.md` is the natural follow-on: it defines what happens when validation
+passes but the runtime contract is insufficient for the preferred configuration.

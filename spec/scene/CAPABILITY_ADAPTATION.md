@@ -562,7 +562,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-With validation and capability adaptation now specified, the next high-value scene-spec work is:
-
-1. more worked examples, especially multi-panel and annotation-heavy cases,
-2. then a refinement pass on `SCENE_API_SKETCH.md` using the now-larger semantic surface.
+With validation and capability adaptation specified, high-value follow-on work includes more
+worked examples, especially multi-panel and annotation-heavy cases.

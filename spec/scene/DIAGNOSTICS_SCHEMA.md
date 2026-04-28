@@ -234,7 +234,6 @@ This schema should be used by:
 2. `CAPABILITY_ADAPTATION.md`
 3. `FRAME_PLAN_IR.md`
 4. `RUNTIME_BOUNDARY.md`
-5. `RUNTIME_SERVICE_SKETCH.md`
 
 Those documents may define additional phase-specific rules, but they should reuse this common
 diagnostic shape.

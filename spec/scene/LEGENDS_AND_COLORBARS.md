@@ -600,5 +600,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-The next scene-spec slice enabled by this document should be `SCENE_VALIDATION.md`, with explicit
-coverage for legend/colorbar validation and cross-object semantic checks.
+`SCENE_VALIDATION.md` covers legend/colorbar validation and cross-object semantic checks that
+build on this document.

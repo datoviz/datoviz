@@ -32,7 +32,7 @@ requirements into each other:
 3. open questions in the scene spec that depend on DRP2 details should be left explicitly open
    until the relevant DRP2 decision is made.
 
-This parallel design constraint applies especially to `RUNTIME_SERVICE_SKETCH.md`,
+This parallel design constraint applies especially to `RUNTIME_BOUNDARY.md`,
 `FRAME_PLAN_IR.md`, and `CAPABILITY_ADAPTATION.md`.
 
 
@@ -88,9 +88,8 @@ Read the scene spec in this order during review.
 
 4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
 5. [PANEL_LAYOUT.md](PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
-5b. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults
-6. [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md) — superseded; see `headers/scene_api.h` for the authoritative C spelling
-7. [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md) — C-facing mapping of the current design
+6. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults and resolved API decisions
+7. [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md) — C-facing mapping, Python binding architecture
 8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
 
 ### 3. Visual semantics
@@ -113,7 +112,6 @@ Read the scene spec in this order during review.
 18b. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md) — triangulation, curve tessellation, simplification, hull, boolean ops, SDF/MSDF pipeline
 19. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
 20. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
-21. [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md) — conceptual runtime service surface
 
 ### 5. Validation, adaptation, interaction, and diagnostics
 
@@ -161,13 +159,15 @@ Read the scene spec in this order during review.
 - [SCALES.md](SCALES.md): color, size, and opacity scale objects; colormap palette model; domain
   and scale identity for visual attributes and colorbars
 - [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
-- [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): the current preferred scene-facing API
-  defaults selected from the API sketch
-- [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md): tentative C-facing type and operation
-  mapping derived from the current scene spec
+- [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): design rationale and resolved API decisions
+  behind `headers/scene_api.h`
+- [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md): C object mapping, Python binding
+  architecture, and per-family GPU data preparation notes
 - [headers/README.md](headers/README.md): non-authoritative draft header index for the current
   scene, runtime, and diagnostics surfaces
 - [AXES.md](AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
+- [LIGHTING.md](LIGHTING.md): scene-level lighting model, PBR shading parameters, and hardware
+  ray tracing forward-compatibility path
 - [ANNOTATIONS.md](ANNOTATIONS.md): semantic model for labels, guides, probes, overlays, legends,
   and callouts
 - [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md): semantic model for discrete legends,
@@ -178,22 +178,22 @@ Read the scene spec in this order during review.
   classes, and capability-gated checks
 - [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md): explicit fallback, simplification, and
   deactivation policy driven by runtime capabilities
-- [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md): superseded by `headers/scene_api.h`; kept for
-  historical reference only
 - [EXTERNAL_UI.md](EXTERNAL_UI.md): boundary between scene-owned semantics and app-owned UI
   frameworks such as ImGui
 - [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md): rules for dirty scopes, reuse,
   redraw, uploads, and plan rebuilds
 - [PICKING.md](PICKING.md): scene-side picking, identity round-trip, grouped hits, and readback
   semantics
+- [ANIMATION.md](ANIMATION.md): scene clock, animation handles, easing curves, camera keyframes,
+  per-attribute animation, and video export scheduling
 - [CONTROLLERS.md](CONTROLLERS.md): event routing, panel-owned navigation, picking-driven
   interaction, and redraw
 - [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md): preferred v0.4 visual-family taxonomy grounded in
   local `v0.3` terminology
 - [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md): producer-side contract every future visual type must
   satisfy
-- [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md): family-level mini-contracts for the
-  current preferred v0.4 visuals
+- [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md): cross-family boundary rules, fallback
+  constraints, and anti-patterns (the shared template; per-family detail is in `visuals/`)
 - [PANEL_LAYOUT.md](PANEL_LAYOUT.md): grid layout, free placement, fixed-size columns/rows,
   row/column span, colorbar slots, fixed aspect ratio, shared-width constraint, tight layout
 - [SELECTION.md](SELECTION.md): scene-level selection state, selection modes, parametrizable
@@ -226,60 +226,20 @@ Read the scene spec in this order during review.
 - [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md): producer-side intermediate representation for one planned
   frame
 - [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md): update/build/emit flow
-- [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md): allowed and forbidden dependencies on the runtime
-  layer
-- [RUNTIME_SERVICE_SKETCH.md](RUNTIME_SERVICE_SKETCH.md): minimal conceptual runtime service
-  surface below scene planning and above backend execution
-- [USE_CASES.md](USE_CASES.md): pressure-test scenarios
+- [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md): allowed and forbidden runtime dependencies,
+  service object model, submission/completion/diagnostics contracts, canvas and render-target
+  ownership
+- [USE_CASES.md](USE_CASES.md): pressure-test scenarios (UC1–UC7)
+- [DEFERRED_TRACKER.md](DEFERRED_TRACKER.md): consolidated index of all explicitly deferred items
+  by milestone (DRP2 2.1, v0.4+, no target)
 - [examples/README.md](examples/README.md): worked scene-spec examples that instantiate families,
   transforms, and `FramePlan` shapes
 
 
-## Next Steps
+## Guiding Principles
 
-The current scene spec now covers:
+1. Keep pushing scene semantics and producer contracts.
+2. Avoid freezing backend-shaped details too early.
+3. Let DRP2 and runtime work continue underneath without leaking upward.
 
-1. object model,
-2. visual families and family mini-contracts,
-3. resource model,
-4. transform pipeline,
-5. frame planning,
-6. axes,
-7. invalidation and caching,
-8. picking,
-9. controllers and interaction, including first-class handles, per-dimension binding, and panel
-   linking via shared controller handles,
-10. animation and frame scheduling,
-11. lighting model with PBR and ray tracing forward-compatibility notes,
-12. worked examples,
-13. family additions: `errorbar`, `boxplot`; heatmap isolines (`image`), volume isosurfaces
-    (`volume`), arrow caps (`segment`), quiver magnitude and arrow style (`marker`),
-14. CPU F64 precision policy: all normalization in F64, F32 downcast at UploadNode only,
-15. geometry utility layer: triangulation (earcut + Triangle/PSLG), curve tessellation,
-    Douglas-Peucker simplification, convex hull, boolean polygon ops (Clipper2), SDF/MSDF pipeline
-    including per-item atlas shape variation,
-16. panel layout: grid (weighted + fixed-px columns/rows, span), free placement, colorbar slots,
-    fixed aspect ratio, shared-width constraint, manual-only tight layout,
-17. selection and highlight: `DvzSelection` handle, parametrizable input mapping, `DvzHighlightDesc`,
-    GPU mask buffer approach, lasso via `ComputeNode`, cross-visual linking,
-18. image export: still capture boundary, render scale, panel-as-texture with ordered `FramePlan`
-    dependency and cycle detection,
-19. high-DPI: logical pixel model, `dpi_scale` from window surface, pixel-unit scaling,
-    font rasterization at physical resolution, DPI-change event handling,
-20. transparency: alpha modes, weighted blended OIT (default), per-pixel linked list OIT (opt-in),
-    render pass split, CPU depth sort fallback,
-21. non-linear transforms: CPU-side projection (v0.4), GPU compute pre-pass as persistent derived
-    resource (v0.4+), built-in geographic/polar projections, custom compute shaders,
-22. SVG/vector export: structural SVG with vector axes/annotations and embedded raster visuals,
-23. custom visual families: `DvzVisualDesc` registration, shader injection, full scene integration,
-24. thread safety: single-threaded render path, `DvzTransferQueue`, async upload, computation
-    result handoff, data lifetime rules,
-25. event callbacks: `dvz_scene_on` observer system for selection, pick, hover, animation, resize,
-26. clipping: `DVZ_CLIP_DATA_AREA` default, `DVZ_CLIP_PANEL`, `DVZ_CLIP_NONE`; data area from
-    axes margins; annotations unclipped by default.
-
-The general rule should remain:
-
-1. keep pushing scene semantics and producer contracts,
-2. avoid freezing backend-shaped details too early,
-3. let DRP2 and runtime work continue underneath without leaking upward.
+Deferred items by milestone are tracked in `DEFERRED_TRACKER.md`.

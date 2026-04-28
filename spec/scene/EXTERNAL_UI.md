@@ -12,7 +12,7 @@ This document is normative for the boundary between scene semantics and external
 
 It should be read together with:
 
-1. `SCENE_API_SKETCH.md` for the scene-owned state surface,
+1. `PREFERRED_API_PROFILE.md` for the scene-owned state surface,
 2. `CONTROLLERS.md` for scene-native interaction behavior,
 3. `FRAME_LIFECYCLE.md` for per-frame ordering,
 4. `RUNTIME_BOUNDARY.md` for what must remain below the scene semantic layer.
