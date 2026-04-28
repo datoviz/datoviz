@@ -1,6 +1,7 @@
 /*
  * Draft header sketch derived from spec/scene/.
- * This file is informative only and is not part of the installed public API.
+ * This file is the authoritative draft C spelling for the current scene API direction.
+ * It is not part of the installed public API yet.
  */
 
 /*************************************************************************************************/
@@ -37,11 +38,14 @@ typedef struct DvzPanel     DvzPanel;      /* viewport inside a figure */
 typedef struct DvzVisual    DvzVisual;     /* one visual instance */
 typedef struct DvzResource  DvzResource;   /* GPU resource (buffer, texture, …) */
 typedef struct DvzScale     DvzScale;      /* mapping / colormap */
+typedef struct DvzStyle     DvzStyle;      /* reusable visual defaults */
 typedef struct DvzFont      DvzFont;       /* loaded typeface */
 typedef struct DvzSelection DvzSelection;  /* GPU selection + highlight state */
 typedef struct DvzFramePlan DvzFramePlan;  /* ordered frame execution plan */
 typedef struct DvzTexture   DvzTexture;    /* 2-D or 3-D GPU texture */
+typedef struct DvzRenderTarget DvzRenderTarget; /* logical output target */
 typedef struct DvzRuntime  DvzRuntime;    /* runtime boundary (wraps DRP2 session) */
+typedef struct DvzDrp2CommandStream DvzDrp2CommandStream; /* emitted DRP2 command stream */
 
 
 
@@ -354,6 +358,31 @@ typedef enum
 } DvzBuildFlags;
 
 
+/* --- Datoviz-owned texture / target formats -------------------------------- */
+
+typedef enum
+{
+    DVZ_FORMAT_UNDEFINED  = 0,
+    DVZ_FORMAT_RGBA8_UNORM = 1,
+    DVZ_FORMAT_BGRA8_UNORM = 2,
+    DVZ_FORMAT_R32_UINT    = 3,
+    DVZ_FORMAT_R32_FLOAT   = 4,
+    DVZ_FORMAT_RGBA32_FLOAT = 5,
+    DVZ_FORMAT_DEPTH24_STENCIL8 = 6,
+    DVZ_FORMAT_DEPTH32_FLOAT = 7,
+} DvzFormat;
+
+
+/* --- Shader source language ------------------------------------------------ */
+
+typedef enum
+{
+    DVZ_SHADER_SOURCE_WGSL  = 0, /* portable DRP2 contract language */
+    DVZ_SHADER_SOURCE_GLSL  = 1, /* accepted only through explicit runtime capability */
+    DVZ_SHADER_SOURCE_SPIRV = 2, /* native-only precompiled path */
+} DvzShaderSourceLanguage;
+
+
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -524,8 +553,9 @@ typedef struct
 {
     DvzCoordTransformType type;
     double                params[8];  /* type-specific parameters */
-    /* custom compute shader source (GLSL), used when type = DVZ_COORD_TRANSFORM_CUSTOM */
-    const char*           glsl_source;
+    /* custom compute shader source, used when type = DVZ_COORD_TRANSFORM_CUSTOM */
+    DvzShaderSourceLanguage shader_language;
+    const char*             shader_source;
 } DvzCoordTransformDesc;
 
 
@@ -536,25 +566,26 @@ typedef struct
     const char* name;         /* attribute name as used in dvz_visual_set_data */
     uint32_t    binding;      /* vertex buffer binding slot */
     uint32_t    location;     /* shader input location */
-    uint32_t    format;       /* VkFormat or equivalent; 0 = auto-infer from type */
-    const char* type_glsl;    /* GLSL type string, e.g. "vec3" */
+    DvzFormat   format;       /* Datoviz-owned vertex format; UNDEFINED = auto-infer */
+    const char* type_name;    /* shader type string, e.g. "vec3f" or "vec3" */
     bool        per_item;     /* true = per-vertex/item; false = per-instance/group */
 } DvzVisualAttributeDesc;
 
 
 typedef struct
 {
-    /* shader sources (GLSL) */
-    const char* vert_glsl;
-    const char* frag_glsl;
-    const char* geom_glsl;    /* optional; NULL if not used */
+    /* shader sources. WGSL is the portable DRP2 contract language; GLSL/SPIR-V require capability. */
+    DvzShaderSourceLanguage shader_language;
+    const char* vertex_source;
+    const char* fragment_source;
+    const char* compute_source; /* optional pre-pass; NULL if not used */
 
     /* attribute schema */
     const DvzVisualAttributeDesc* attributes;
     uint32_t                      attribute_count;
 
     /* uniform parameters (struct layout copied verbatim to UBO) */
-    const char* params_glsl_struct; /* GLSL struct definition text */
+    const char* params_struct;      /* shader-language-specific parameter struct text */
     uint32_t    params_size;        /* sizeof the params struct */
 
     /* texture slots */
@@ -593,7 +624,7 @@ DVZ_EXPORT float dvz_scene_dpi_scale(DvzScene* scene);
 
 
 /* ========================================================================= */
-/* Figure (canvas / window)                                                   */
+/* Figure                                                                      */
 /* ========================================================================= */
 
 /* Create a figure owned by the scene.
@@ -606,6 +637,9 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* fig);
 /* Scale rendering resolution relative to the logical pixel size (e.g. 2.0 for 2× export).
  * Stacks multiplicatively with dpi_scale. */
 DVZ_EXPORT void dvz_figure_set_render_scale(DvzFigure* fig, float scale);
+
+/* Bind the logical runtime-resolved render target used by frame planning. */
+DVZ_EXPORT void dvz_figure_set_target(DvzFigure* fig, DvzRenderTarget* target);
 
 /* Lay out n_rows × n_cols equal panels in a grid, returning an array of panel handles.
  * Caller must free the returned array. */
@@ -667,20 +701,29 @@ DVZ_EXPORT DvzPanel* dvz_panel_attach_colorbar(DvzPanel* panel, DvzPanelSide sid
 /* Resources                                                                  */
 /* ========================================================================= */
 
-/* Create a 2-D GPU texture.
- * format is a VkFormat or equivalent (e.g. VK_FORMAT_R8G8B8A8_UNORM). */
+/* Create a 2-D GPU texture. */
 DVZ_EXPORT DvzTexture* dvz_texture_2d(DvzScene* scene, uint32_t width, uint32_t height,
-                                       uint32_t format);
+                                       DvzFormat format);
 
 /* Create a 3-D GPU texture. */
 DVZ_EXPORT DvzTexture* dvz_texture_3d(DvzScene* scene, uint32_t width, uint32_t height,
-                                       uint32_t depth, uint32_t format);
+                                       uint32_t depth, DvzFormat format);
 
 /* Upload bytes to a texture sub-region. */
 DVZ_EXPORT int dvz_texture_upload(DvzTexture* tex, uint32_t x, uint32_t y, uint32_t z,
                                    uint32_t w, uint32_t h, uint32_t d, const void* data);
 
 DVZ_EXPORT void dvz_texture_destroy(DvzTexture* tex);
+
+/* Create a reusable group of visual defaults. Individual visual parameters remain settable with
+ * dvz_visual_set_param(). */
+DVZ_EXPORT DvzStyle* dvz_style(DvzScene* scene);
+
+DVZ_EXPORT void dvz_style_destroy(DvzStyle* style);
+
+DVZ_EXPORT int dvz_style_set_param(DvzStyle* style, const char* name, const void* value);
+
+DVZ_EXPORT int dvz_visual_set_style(DvzVisual* visual, DvzStyle* style);
 
 /* Create a DvzScale (colormap / size mapping) — generic form. */
 DVZ_EXPORT DvzScale* dvz_scale(DvzScene* scene, uint32_t kind_flags);
@@ -876,9 +919,9 @@ DVZ_EXPORT void dvz_transfer_on_rendered(DvzScene* scene, uint64_t transfer_id,
 /* Custom visuals                                                             */
 /* ========================================================================= */
 
-/* Create a custom visual from a descriptor containing GLSL shader sources,
- * attribute schema, and uniform layout. The visual participates in the standard
- * frame lifecycle (picking, selection, clipping) when the corresponding flags are set. */
+/* Create a custom visual from a descriptor containing shader sources, attribute schema, and uniform
+ * layout. WGSL is the portable path; GLSL/SPIR-V require explicit runtime capability. The visual
+ * participates in the standard frame lifecycle when the corresponding flags are set. */
 DVZ_EXPORT DvzVisual* dvz_visual_custom(DvzScene* scene, const DvzCustomVisualDesc* desc,
                                          uint32_t flags);
 
@@ -906,9 +949,22 @@ DVZ_EXPORT DvzRuntime* dvz_runtime_create(void* backend_init_params);
 
 DVZ_EXPORT void dvz_runtime_destroy(DvzRuntime* rt);
 
-/* Execute a frame plan. Translates the plan to DRP2 commands and submits them.
+/* Create a runtime-resolved target backed by application/canvas presentation resources.
+ * The token type is intentionally opaque in the draft API. */
+DVZ_EXPORT DvzRenderTarget* dvz_runtime_target_canvas(DvzRuntime* rt, void* app_canvas_token);
+
+/* Create a runtime-resolved offscreen/readback-capable target. */
+DVZ_EXPORT DvzRenderTarget* dvz_runtime_target_offscreen(DvzRuntime* rt, uint32_t width,
+                                                          uint32_t height, DvzFormat format);
+
+DVZ_EXPORT void dvz_render_target_destroy(DvzRenderTarget* target);
+
+/* Submit an already emitted DRP2 command stream. This is the primary runtime boundary. */
+DVZ_EXPORT int dvz_runtime_submit_commands(DvzRuntime* rt, DvzDrp2CommandStream* commands);
+
+/* Convenience helper. Translates the plan to DRP2 commands and submits them.
  * Returns 0 on success; negative on validation or execution failure. */
-DVZ_EXPORT int dvz_runtime_submit(DvzRuntime* rt, DvzFramePlan* frame_plan);
+DVZ_EXPORT int dvz_runtime_submit_frame_plan(DvzRuntime* rt, DvzFramePlan* frame_plan);
 
 /* Query the runtime capability snapshot. Used by dvz_scene_set_capabilities. */
 DVZ_EXPORT int dvz_runtime_get_capabilities(DvzRuntime* rt, DvzCapabilitySnapshot* out_caps);

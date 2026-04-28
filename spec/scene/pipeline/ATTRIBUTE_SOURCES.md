@@ -119,11 +119,10 @@ User declaration requirements depend on the resource class of the visual:
 boundaries, so each item must carry an explicit per-item group index integer.
 The group value table is a separate small resource.
 
-**`GroupedItemTable` visuals** (`path`, `glyph`, etc.): group boundaries are already encoded in the
-table metadata.
-`PER_GROUP` source on these visuals infers group membership from those boundaries — no separate
-per-item group index attribute is needed.
-The group value table is still a separate small resource.
+**`GroupedItemTable` visuals** (`path`, `glyph`, etc.): structural span boundaries are encoded in
+the table metadata, but semantic group identity is separate. A span-structured visual uses a
+`"group_id"` array of length `span_count` when `PER_GROUP` values should be shared by several
+spans. The group value table is still a separate small resource.
 
 Scene implementation: the scene layer may choose between multiple draw calls, a storage buffer
 lookup keyed by group index, or a per-item expanded copy.
@@ -151,7 +150,8 @@ The user does not select or see the strategy.
 
 - **Group** — a semantic population identity: one neuron population, one brain region, one
   electrode channel.
-  Groups are declared by the user via a per-item integer `"group_id"` attribute.
+  Flat visuals declare groups via a per-item integer `"group_id"` attribute. Span-structured
+  visuals declare groups via a per-span integer `"group_id"` attribute.
   Attributes that vary by semantic group use **`PER_GROUP`** source.
 
 `GroupedItemTable` is a scene resource class that owns both item storage and span boundary
@@ -173,9 +173,9 @@ The valid combinations are:
    itself; each span carries a group index, and the attribute varies per group.
    Example: 200 paths where paths belong to 5 neuron populations with per-population color.
 
-4. **`GroupedItemTable` + `PER_GROUP`** (with explicit group_id): not supported — group
-   identity in `GroupedItemTable` visuals must be resolved through span boundaries or a
-   per-item group index on flat data, not through a separate mechanism.
+4. **`GroupedItemTable` without `group_id` + `PER_GROUP`**: not supported — use `PER_SPAN`
+   when one value per span is intended, or provide per-span `group_id` when several spans share
+   semantic group values.
 
 
 ## Which Sources Each Attribute Accepts
@@ -224,10 +224,9 @@ The three hint levels are:
 2. `dynamic` — the value changes occasionally, for example in response to user interaction.
 3. `streaming` — the value changes every frame or nearly every frame.
 
-The mutability hint also determines **pointer ownership semantics** when data is written to
-the scene: `static` means the scene borrows the caller's pointer (zero-copy path), `dynamic`
-means the scene copies the data, and `streaming` means the scene owns a staging buffer the
-caller writes into directly. See `RESOURCE_MODEL.md` — "Data Ownership And Memory Model" — for
+The mutability hint does not determine pointer ownership. `dvz_visual_set_data()` copies by default
+for all mutability levels. Zero-copy borrowed data requires a separate explicit API or flag with a
+clear caller lifetime contract. See `RESOURCE_MODEL.md` — "Data Ownership And Memory Model" — for
 the normative ownership rules.
 
 The hint is set via a separate call:

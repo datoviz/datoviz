@@ -40,8 +40,9 @@ The intended relationship is:
 
 1. scene owns authored semantics, dirty tracking, validation, and adaptation,
 2. scene builds one scene-level `FramePlan` for the frame,
-3. the runtime consumes that plan through DRP2-visible services,
-4. the runtime reports execution outcomes without redefining scene meaning.
+3. the scene-to-DRP2 converter translates that plan into a DRP2 command stream,
+4. the runtime consumes the DRP2 command stream,
+5. the runtime reports execution outcomes without redefining scene meaning.
 
 
 ## Core Rules
@@ -91,13 +92,14 @@ The minimum conceptual runtime surface includes:
 4. `CompletionEvent` — typed completion for readback, picking, export, or execution failure,
 5. `RuntimeDiagnostic` — runtime failures mapped back to scene-visible identities.
 
-The scene layer interacts through a single opaque `DvzRuntime*` handle. There is no split
-device/encoder/queue model exposed to the scene. Encoder lifecycle and DRP2 session management
-are hidden inside the runtime.
+The scene layer interacts through a single opaque `DvzRuntime*` handle for submission and
+completion. There is no split device/encoder/queue model exposed to the scene. Encoder lifecycle
+and DRP2 session management are hidden inside the runtime.
 
 ```c
 DvzRuntime* rt = dvz_runtime_create(/* backend init */);
-dvz_runtime_submit(rt, frame_plan);
+dvz_runtime_submit_commands(rt, command_stream);
+dvz_runtime_submit_frame_plan(rt, frame_plan);  // convenience: converts then submits
 dvz_runtime_get_capabilities(rt, &caps);
 dvz_runtime_destroy(rt);
 ```
@@ -124,7 +126,8 @@ inspection.
 
 ```text
 caps       = runtime_query_capabilities(runtime)
-submission = runtime_submit(runtime, frame_plan)
+commands   = scene_convert_frame_plan(frame_plan, caps)
+submission = runtime_submit_commands(runtime, commands)
 event      = runtime_poll_completion(runtime)
 ```
 
@@ -211,14 +214,16 @@ The snapshot must be explicit enough that:
 The important rules are:
 
 1. scene decides the topology of the frame plan,
-2. runtime executes the translated plan,
-3. runtime may cache backend objects internally,
-4. runtime must not silently reinterpret scene-level ordering, fallback, or identity.
+2. the scene-to-DRP2 converter emits the command stream,
+3. runtime executes the command stream,
+4. runtime may cache backend objects internally,
+5. runtime must not silently reinterpret scene-level ordering, fallback, or identity.
 
-The runtime may internally translate one `FramePlan` into one or several backend submissions,
-with internal caching or deferred object creation. Those internal details must not alter the
-meaning of the submitted frame, the identity route for diagnostics, or the identity route for
-completions.
+The runtime may internally translate one DRP2 command stream into one or several backend
+submissions, with internal caching or deferred object creation. A convenience
+`FramePlan` submission helper may combine conversion and command-stream submission, but that helper
+does not make `FramePlan` the primary runtime contract. Internal details must not alter the meaning
+of the submitted frame, the identity route for diagnostics, or the identity route for completions.
 
 
 ## Readback Contract
@@ -268,7 +273,8 @@ Per-frame flow:
 ```text
 canvas fires draw callback
   → application asks scene to build frame → FramePlan
-  → DRP2 runtime executes FramePlan → fills VkCommandBuffer
+  → scene-to-DRP2 converter emits a command stream
+  → DRP2 runtime executes the command stream through the active backend
   → canvas submits → stream routes to sinks (swapchain, video, etc.)
 ```
 
@@ -286,11 +292,13 @@ runtime to actual backend resources.
 Two variants:
 
 ```c
-// Interactive: target backed by the canvas swapchain
-DvzRenderTarget* target = dvz_render_target_canvas(canvas);
+// Interactive: target backed by application/canvas presentation resources
+DvzRenderTarget* target = dvz_runtime_target_canvas(runtime, app_canvas_token);
 
 // Offscreen/export: target backed by a readback-capable image
-DvzRenderTarget* target = dvz_render_target_offscreen(runtime, width, height, format);
+DvzRenderTarget* target = dvz_runtime_target_offscreen(runtime, width, height, format);
+
+dvz_figure_set_target(fig, target);
 ```
 
 The scene holds a `DvzRenderTarget` and uses it when building the `FramePlan`.

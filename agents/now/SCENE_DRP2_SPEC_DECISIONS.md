@@ -1214,6 +1214,438 @@ Owner decision:
 TODO(user): agree
 
 
+## Follow-Up D046: Source-Of-Truth Order After Cleanup
+
+Question:
+
+After the cleanup pass, which documents should be treated as the highest authority when wording
+overlaps?
+
+Recommendation:
+
+Use this order:
+
+1. DRP2 command/lifetime/error prose for protocol semantics,
+2. DRP2 active JSON schemas for machine-checkable command shape,
+3. scene normative docs for scene semantics,
+4. `spec/scene/headers/scene_api.h` as the authoritative **draft C spelling** for the scene API,
+5. examples and deferred trackers as informative only.
+
+Reasoning:
+
+The current scene docs conflict because `API_DESIGN.md` calls the header definitive while
+`headers/README.md` calls it informative. Implementation needs one C spelling, but examples should
+not become hidden normative contracts.
+
+Spec edits if accepted:
+
+1. update `spec/scene/README.md`,
+2. update `spec/scene/headers/README.md`,
+3. update the header preamble in `spec/scene/headers/scene_api.h`,
+4. add a short authority note to `API_DESIGN.md`.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D047: Runtime Submission Boundary
+
+Question:
+
+Should the primary runtime API consume DRP2 command streams, with `FramePlan` submission only as a
+convenience helper?
+
+Recommendation:
+
+Yes. Make the main boundary:
+
+```text
+Scene state -> FramePlan -> scene-to-DRP2 converter -> DRP2 command stream -> DRP2 runtime
+```
+
+Then allow an optional helper:
+
+```c
+dvz_runtime_submit_frame_plan(rt, frame_plan)
+```
+
+which internally invokes the converter.
+
+Reasoning:
+
+This keeps the converter and runtime independently testable. It also prevents the runtime from
+becoming a second scene planner.
+
+Spec edits if accepted:
+
+1. update `RUNTIME_BOUNDARY.md`,
+2. update `FRAME_PLAN.md`,
+3. update `FRAME_PLAN_SERIALIZATION.md`,
+4. update `scene_api.h` runtime function sketches.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D048: DRP2 Runtime Capability Shape Versus Fixture Capability Shape
+
+Question:
+
+Should the spec explicitly define two capability profiles: a minimal fixture capability object and a
+richer runtime capability snapshot consumed by scene planning?
+
+Recommendation:
+
+Yes. Keep DRP2 fixture capabilities minimal, but define a richer runtime capability snapshot before
+scene/runtime implementation starts.
+
+Suggested names:
+
+1. `Drp2FixtureCapabilities` — fields required by JSON fixtures and the fixture runner,
+2. `DvzCapabilitySnapshot` — scene/runtime-facing capability record used by validation,
+   adaptation, and planning.
+
+Reasoning:
+
+The fixture corpus should remain small, but real scene planning needs alignment limits, readback
+support, offscreen target support, color attachment limits, storage texture support, and WBOIT
+requirements.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D049: Alignment Limits In DRP2 Prose
+
+Question:
+
+Should dynamic-buffer and texture-copy alignment limits be documented as runtime capability fields
+now, even if most JSON fixtures omit them?
+
+Recommendation:
+
+Yes. Add them to the runtime capability snapshot and to DRP2 capability prose as optional runtime
+fields, while keeping fixture declarations minimal unless a fixture tests alignment.
+
+Fields:
+
+1. `min_uniform_buffer_offset_alignment`,
+2. `min_storage_buffer_offset_alignment`,
+3. `min_texture_copy_bytes_per_row_alignment`.
+
+Reasoning:
+
+Vulkan execution cannot ignore these limits, and the scene planner needs them when packing shared
+parameter blocks.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D050: `DvzRenderTarget` Public Shape
+
+Question:
+
+Should `DvzRenderTarget` be a public scene/runtime handle in the draft C API?
+
+Recommendation:
+
+Yes. Add `DvzRenderTarget` as an opaque handle, but keep `DvzCanvas*` out of scene APIs. If a canvas
+target helper is documented, put it on the runtime/application side, not as a scene-owned concept.
+
+Preferred sketch:
+
+```c
+typedef struct DvzRenderTarget DvzRenderTarget;
+
+DvzRenderTarget* dvz_runtime_target_canvas(DvzRuntime* rt, void* app_canvas_token);
+DvzRenderTarget* dvz_runtime_target_offscreen(DvzRuntime* rt, uint32_t width, uint32_t height,
+                                              DvzFormat format);
+void dvz_figure_set_target(DvzFigure* fig, DvzRenderTarget* target);
+```
+
+The `app_canvas_token` spelling is only illustrative; implementation can choose a safer typed
+bridge once the canvas/runtime integration is designed.
+
+Reasoning:
+
+The scene needs dimensions and format identity but must not own or inspect the canvas, swapchain, or
+backend image handles.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D051: Mutability Versus Zero-Copy Ownership
+
+Question:
+
+Should `DVZ_MUTABILITY_STATIC` remain only a planning hint, with zero-copy borrowing controlled by a
+separate explicit API or flag?
+
+Recommendation:
+
+Yes. Make all `dvz_visual_set_data()` calls copy by default regardless of mutability. Add a separate
+future zero-copy surface only when its lifetime contract is explicit.
+
+Suggested wording:
+
+1. `STATIC`, `DYNAMIC`, and `STREAMING` are update-frequency/planning hints,
+2. copying is the default ownership behavior,
+3. zero-copy borrowed data requires an explicit `BORROWED`/`NO_COPY` flag or separate function,
+4. Python bindings should default to copy or scene-owned staging.
+
+Reasoning:
+
+Tying `STATIC` to borrowed pointers is unsafe in C and awkward for Python.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D052: Public `DvzStyle` Versus Internal `StyleBlock`
+
+Question:
+
+Should the public scene API expose a reusable `DvzStyle` object, while reserving `StyleBlock` as an
+internal resource/planning term?
+
+Recommendation:
+
+Yes.
+
+Recommended vocabulary:
+
+1. public API: `DvzStyle`,
+2. visual API: `dvz_visual_set_param()` remains the primary primitive,
+3. planning/resource docs: `ParameterBlockResource`,
+4. avoid `StyleBlock` in public-facing examples unless explicitly marked internal.
+
+Reasoning:
+
+The current docs both reject a public style-block concept and introduce style/default sharing. This
+split preserves reusable defaults without leaking the internal parameter-buffer model.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D053: Defaults Tables For Visual Families
+
+Question:
+
+Should every visual-family spec get a compact defaults table before implementation starts?
+
+Recommendation:
+
+Yes. Add a standard table to every family:
+
+1. optional attribute,
+2. accepted sources,
+3. default source,
+4. default value,
+5. missing-value policy,
+6. whether the default is overridable through `DvzStyle`.
+
+Reasoning:
+
+The shared docs already promise systematic defaults and missing-value behavior. Without per-family
+tables, implementation will guess and drift.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D054: `PER_GROUP` For Flat Visuals
+
+Question:
+
+For flat `ItemTable` visuals such as `pixel`, `point`, `marker`, and `segment`, should `PER_GROUP`
+always require an explicit per-item `"group_id"` attribute?
+
+Recommendation:
+
+Yes. Contiguous ranges should be represented as spans only for span-structured visuals. Flat visuals
+using `PER_GROUP` need a per-item `group_id`.
+
+Reasoning:
+
+This keeps structural spans and semantic groups separate. It also avoids the current `PIXEL.md`
+contradiction where flat pixels imply range-based groups with no explicit group id.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D055: `PER_GROUP` For Span-Structured Visuals
+
+Question:
+
+For span-structured visuals such as `path` and `glyph`, should semantic group identity be allowed
+per span through a `"group_id"` array of length `span_count`?
+
+Recommendation:
+
+Yes. Use:
+
+1. `"span_sizes"` to define contiguous topology,
+2. `PER_SPAN` for one value per span,
+3. `"group_id"` of length `span_count` for semantic grouping of spans,
+4. `PER_GROUP` values indexed by those group ids.
+
+Reasoning:
+
+This supports many paths/strings belonging to a smaller number of semantic categories without
+confusing path identity with category identity.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D056: Volume Slice Cleanup Scope
+
+Question:
+
+Should I fully remove image-family slice semantics from the active scene spec and rewrite them as
+`volume.render_mode = slice`?
+
+Recommendation:
+
+Yes. Rename or rewrite `examples/IMAGE_SLICE.md` as a volume-slice example, and update use cases,
+resource model, transform notes, picking notes, and visual-contract references.
+
+Reasoning:
+
+The decision log already chooses volume slicing. Leaving image-slice examples in place will mislead
+the first converter implementation.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D057: Custom Visual Shader Language
+
+Question:
+
+What shader language should experimental custom visuals expose in the v0.4 scene API?
+
+Recommendation:
+
+Use WGSL at the DRP2 contract boundary. For native/Vulkan convenience, allow an implementation-side
+GLSL-to-WGSL or GLSL-to-SPIR-V ingestion path only behind an explicit capability, but do not make
+GLSL the portable scene custom-visual contract.
+
+Reasoning:
+
+DRP2 `2.0` requires WGSL for conformance. If custom visuals are specified as GLSL-only, browser
+parity becomes a later rewrite rather than a clean backend capability distinction.
+
+Owner decision:
+
+TODO(user): ok but haven't we decided to use glsl in the scene builtin visuals? so isn't this a discrepancy?
+
+Cleanup resolution:
+
+Not a discrepancy if the spec separates authoring language from DRP2 transport language. Built-in
+scene shaders may be authored in GLSL during native Vulkan bring-up, but the scene-to-DRP2
+converter must emit a DRP2-supported shader-module format. WGSL remains the portable DRP2 contract
+language; GLSL custom visual sources require an explicit runtime capability.
+
+
+## Follow-Up D058: Datoviz Format Enum Scope
+
+Question:
+
+Should `DvzFormat` be introduced in the draft scene API now as the only public format vocabulary for
+scene textures, render targets, and readback formats?
+
+Recommendation:
+
+Yes. Add a Datoviz-owned enum and remove draft wording such as `VkFormat or equivalent`.
+
+Reasoning:
+
+The scene API should not expose Vulkan numeric formats, and C users need stronger typing than DRP2
+format strings in hot paths.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D059: First Converter Fixture Set
+
+Question:
+
+Should the first scene-to-DRP2 converter acceptance tests be limited to the already-agreed proof
+slice?
+
+Recommendation:
+
+Yes. Start with converter fixtures for:
+
+1. one-panel static point or pixel plot,
+2. dynamic buffer update without pipeline rebuild,
+3. texture upload and image sampling,
+4. picking target plus readback,
+5. offscreen render plus readback,
+6. compute-assisted pressure case.
+
+Exclude initially:
+
+1. glyph,
+2. volume,
+3. sphere,
+4. boxplot/errorbar,
+5. custom visuals,
+6. exact OIT.
+
+Reasoning:
+
+This validates the architecture without making the first converter depend on every planned visual
+family.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D060: Cleanup Aggressiveness For Stale Examples
+
+Question:
+
+When an example contradicts the cleaned normative spec, should I rewrite it in place, rename it, or
+move it to deferred notes?
+
+Recommendation:
+
+Rewrite in place when the example remains useful after the decision; rename when the title encodes a
+wrong taxonomy; move to deferred notes only when it describes a non-v0.4 feature.
+
+Concrete expected changes:
+
+1. rename/rewrite `IMAGE_SLICE.md` if volume slicing is confirmed,
+2. replace public `StyleBlock` examples with `DvzStyle` or internal `ParameterBlockResource`,
+3. update mouse-brain atlas slice wording,
+4. delete stale readback-gap notes in DRP2 positive fixtures,
+5. update runner tests whose expected counts are stale.
+
+Owner decision:
+
+TODO(user): agree
+
+
 ## Notes From User
 
 Use this section for broad comments that do not fit one decision.

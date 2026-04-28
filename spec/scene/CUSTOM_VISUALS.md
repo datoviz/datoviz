@@ -58,13 +58,28 @@ and map `dvz_visual_set_data` calls to the correct buffer slots.
 ### Shader Sources
 
 ```text
-desc.vertex_shader   — GLSL source or path, vertex stage
-desc.fragment_shader — GLSL source or path, fragment stage
+desc.shader_language — WGSL, GLSL, or SPIR-V
+desc.vertex_shader   — source or path, vertex stage
+desc.fragment_shader — source or path, fragment stage
 desc.compute_shader  — optional; compute stage for pre-pass work
 ```
 
-All v0.4 shaders are written in GLSL. When a WebGPU target is ready, shaders will be converted
-to WGSL once (not maintained in parallel or transpiled at runtime).
+Custom visual shader descriptors declare their source language explicitly.
+
+Rules:
+
+1. WGSL is the portable DRP2 contract language and the only language a conforming DRP2 `2.0`
+   runtime must accept.
+2. Built-in scene shaders may be authored in GLSL internally during the native Vulkan bring-up, but
+   the scene-to-DRP2 converter must emit a DRP2-supported shader format (`wgsl` or a capability-gated
+   native format).
+3. GLSL custom visual sources are accepted only when the runtime capability snapshot advertises a
+   GLSL ingestion path.
+4. Browser-portable custom visuals should use WGSL.
+
+This resolves the apparent discrepancy between native built-in shader authoring and the DRP2
+transport contract: authoring language is an implementation choice; DRP2 shader module format is
+the runtime-facing contract.
 
 **Shader hot reload** is not supported in v0.4. To update a custom visual's shaders, the visual
 must be destroyed and recreated.

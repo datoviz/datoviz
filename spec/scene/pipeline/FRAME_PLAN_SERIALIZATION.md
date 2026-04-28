@@ -102,7 +102,8 @@ addition to) the color target.
 
 ## Relationship To DRP2 Fixtures
 
-The scene-to-DRP2 converter consumes a `FramePlan` and emits a DRP2 command stream.
+The scene-to-DRP2 converter consumes a `FramePlan` and emits a DRP2 command stream. The DRP2
+runtime consumes that command stream; direct `FramePlan` submission is only a convenience path.
 Both are serializable to JSON.
 
 Converter test fixtures take the form:

@@ -172,7 +172,7 @@ The first useful scene-facing classes are:
 2. `GroupedItemTable`
 3. `IndexedGeometry`
 4. `SampledField`
-5. `StyleBlock`
+5. `ParameterBlockResource`
 6. `DerivedField`
 7. `ReadbackTarget`
 
@@ -343,15 +343,17 @@ It should cover:
 1. `image`
 2. `volume`
 3. glyph atlas-like resources
-4. image-family slice-like modes sourced from volumetric data when needed
+4. volume slice render modes sourced from volumetric data
 
 The important semantic point is that this class describes sampled data content, not backend texture
 dimensionality alone.
 
 
-## `StyleBlock`
+## `ParameterBlockResource`
 
-`StyleBlock` is the class for small structured parameter data associated with a visual or family.
+`ParameterBlockResource` is the class for small structured parameter data associated with a visual
+or family. A public `DvzStyle` may share or override groups of defaults, but the planner sees the
+result as parameter-block data.
 
 It should cover:
 
@@ -754,7 +756,7 @@ The translation should remain free to choose:
 
 1. how logical ids are assigned,
 2. whether one logical scene resource maps to one or multiple DRP2 objects,
-3. when deferred object-creation details such as views or samplers are materialized,
+3. when active DRP2 helper objects such as texture views or samplers are materialized,
 4. how transient derived resources are represented in the active DRP2 surface.
 
 The scene resource model should therefore remain richer than the currently frozen DRP2 command set
@@ -822,13 +824,12 @@ Copying is safe but expensive for large data (volume textures, million-point arr
 meshes).
 Borrowing is zero-copy but requires a lifetime contract between the user and the scene.
 
-The preferred model ties ownership semantics to the mutability hint declared on the attribute or
+The preferred model separates ownership from the mutability hint declared on the attribute or
 resource (see `ATTRIBUTE_SOURCES.md`):
 
-1. `static` — the user declares the buffer will remain valid for the lifetime of the scene.
-   The scene borrows the pointer and does not copy.
-   The user must not free or mutate the buffer while the scene is alive.
-   This is the zero-copy path for large immutable data.
+1. `static` — the user declares the value is set once and not expected to change.
+   The scene may choose immutable or coalesced GPU storage, but `dvz_visual_set_data()` still copies
+   by default.
 
 2. `dynamic` — the scene copies the data on write.
    The user retains ownership of the source buffer and may free it after the write call returns.
@@ -840,9 +841,9 @@ resource (see `ATTRIBUTE_SOURCES.md`):
 
 The default when no hint is given is `dynamic` (copy on write).
 
-This model means large static resources (full volume textures, static atlas meshes) incur no
-redundant copy if the user explicitly declares them `static`.
-The scene trusts the declared lifetime.
+Zero-copy borrowed data is a separate explicit API or flag, not a consequence of `static`
+mutability. A borrowed-data path must define the caller lifetime contract directly before it is used
+by C or Python bindings.
 
 These ownership semantics should be enforced at the API level: a `static` resource must not be
 written to after initial upload without re-declaring it as `dynamic` or `streaming`.

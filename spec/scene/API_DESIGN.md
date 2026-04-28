@@ -2,8 +2,8 @@
 
 This document selects the current preferred scene-facing API defaults for Datoviz v0.4.
 
-It is now superseded by `spec/scene/headers/scene_api.h` for the definitive C spelling, but
-remains normative for the design rationale and the Python binding architecture.
+`spec/scene/headers/scene_api.h` is the authoritative draft C spelling. This document remains
+normative for the design rationale and the Python binding architecture.
 
 
 ## Position
@@ -85,8 +85,8 @@ dvz_visual_alloc(point, n);
 dvz_visual_set_data(point, "position", xyz,  n);
 dvz_visual_set_data(point, "color",    rgba, n);
 
-// For grouped visuals (path, glyph): PER_GROUP attributes use n = group_count.
-// Span sizes (number of vertices per span/path) are passed as the "span_sizes" attribute.
+// For span-structured visuals (path, glyph), span sizes declare topology.
+// Semantic groups use a separate "group_id" attribute.
 dvz_visual_set_data(path, "span_sizes", path_sizes, n_paths);
 ```
 
@@ -125,7 +125,7 @@ dvz_visual_set_scale(visual,   "colormap", scale); // bind a DvzScale* to a name
 ```
 
 Resource roles are identified by the slot name string from the per-family spec (e.g. `"texture"`,
-`"colormap"`). There is no numeric role enum or style-block concept in the public API.
+`"colormap"`). There is no numeric role enum or public parameter-block struct.
 Item and indexed-geometry resources are managed internally through `dvz_visual_set_data`.
 
 
@@ -133,9 +133,10 @@ Item and indexed-geometry resources are managed internally through `dvz_visual_s
 
 The preferred parameter model is:
 
-1. named string parameter setters as the primary surface — no style-block struct,
-2. variant selection passed as flags at construction time,
-3. Python sugar layer adds keyword-argument convenience above the C setters.
+1. named string parameter setters as the primary primitive,
+2. optional reusable `DvzStyle` objects for groups of visual defaults,
+3. variant selection passed as flags at construction time,
+4. Python sugar layer adds keyword-argument convenience above the C setters.
 
 Conceptually:
 
@@ -143,6 +144,11 @@ Conceptually:
 // Visual-wide parameters set by name (value is a typed pointer)
 dvz_visual_set_param(visual, "linewidth", &lw);
 dvz_visual_set_param(visual, "size_space", &space);
+
+// Optional reusable defaults.
+DvzStyle* style = dvz_style(scene);
+dvz_style_set_param(style, "linewidth", &lw);
+dvz_visual_set_style(visual, style);
 
 // Mutability hint (optional, default is DYNAMIC)
 dvz_visual_set_mutability(visual, "position", DVZ_MUTABILITY_STATIC);
@@ -229,12 +235,13 @@ Conceptually:
 // DvzFigure is the per-window layout object; redraw and frame build are per-figure.
 dvz_figure_request_redraw(fig, DVZ_REDRAW_SCENE, NULL);
 DvzFramePlan* fp = dvz_figure_build_frame(fig, DVZ_BUILD_FLAGS_NONE, &report);
-dvz_runtime_submit(rt, fp);
+DvzDrp2CommandStream* commands = dvz_frame_plan_emit_drp2(fp, &report);
+dvz_runtime_submit_commands(rt, commands);
 dvz_frame_plan_destroy(fp);
 ```
 
-The public API may wrap some of these in convenience entry points, but this separation should remain
-visible in the architecture.
+The public API may wrap conversion and submission in `dvz_runtime_submit_frame_plan()`, but the
+primary runtime boundary is the DRP2 command stream.
 
 **Terminology note**: `canvas` (from `RUNTIME_BOUNDARY.md`) is the application-owned window +
 swapchain object. The scene never holds a canvas reference. A `DvzRenderTarget` is the
@@ -266,7 +273,9 @@ default.
 types. `attr_name` is the string from the per-family spec ("position", "color", …). `n`
 determines the source: `1` → CONSTANT, `item_count` → PER_ITEM, `span_count` → PER_SPAN,
 `group_count` → PER_GROUP.
-Span sizes for grouped visuals (path, glyph) are written via the `"span_sizes"` attribute.
+Span sizes for span-structured visuals (path, glyph) are written via the `"span_sizes"` attribute.
+Semantic groups are written through `"group_id"`: per item for flat visuals, per span for
+span-structured visuals.
 Partial updates via `dvz_visual_set_data_range`. Mutability hints via `dvz_visual_set_mutability`.
 
 **Allocation** — separated from creation. Visuals are created without a committed item count.
@@ -274,7 +283,8 @@ Size is established on first write. An optional `dvz_visual_alloc(visual, n)` hi
 for pre-allocation.
 
 **Parameters** — `dvz_visual_set_param(visual, name, value)` as the primary surface. No
-per-family typed setter functions and no style-block struct. The Python sugar layer adds
+per-family typed setter functions and no public parameter-block struct. `DvzStyle` is an optional
+reusable defaults object layered over the same named parameters. The Python sugar layer adds
 keyword-argument convenience above the named-param setter.
 
 **Picking** — click and query picking are synchronous and blocking:

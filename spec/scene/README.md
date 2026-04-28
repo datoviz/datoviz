@@ -71,7 +71,17 @@ Unless a document says otherwise, this directory should be read with the followi
 3. worked examples under `examples/` are informative pressure tests, not independent sources of
    normative behavior,
 4. when two documents overlap, the more specialized contract document should win over a broader
-   orientation document.
+   orientation document,
+5. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
+   while the surrounding scene documents remain authoritative for semantics.
+
+For cross-tree overlap, use this source-of-truth order:
+
+1. DRP2 command, lifetime, and error prose for protocol semantics,
+2. DRP2 active JSON schemas for machine-checkable command shape,
+3. scene normative documents for scene semantics,
+4. `spec/scene/headers/scene_api.h` for draft C names and signatures,
+5. examples and deferred trackers as informative material.
 
 
 ## Recommended Reading Order
@@ -140,7 +150,7 @@ Read the scene spec in this order during review.
 30. [examples/POINT_2D.md](examples/POINT_2D.md)
 31. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
 32. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
-33. [examples/IMAGE_SLICE.md](examples/IMAGE_SLICE.md)
+33. [examples/VOLUME_SLICE.md](examples/VOLUME_SLICE.md)
 34. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
 35. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
 36. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
@@ -152,8 +162,8 @@ Read the scene spec in this order during review.
 ## Document Index
 
 - [REQUIREMENTS.md](REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
-- [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md): per-attribute data granularity (CONSTANT / PER_ITEM
-  / PER_GROUP) and optional mutability hints
+- [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md): per-attribute data granularity
+  (CONSTANT / PER_ITEM / PER_SPAN / PER_GROUP) and optional mutability hints
 - [visuals/README.md](visuals/README.md): per-family data contracts with attribute schemas,
   parameters, variant axes, and v0.3 correspondence
 - [SCALES.md](SCALES.md): color, size, and opacity scale objects; colormap palette model; domain
@@ -163,8 +173,8 @@ Read the scene spec in this order during review.
   behind `headers/scene_api.h`
 - [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping, Python binding
   architecture, and per-family GPU data preparation notes
-- [headers/README.md](headers/README.md): non-authoritative draft header index for the current
-  scene, runtime, and diagnostics surfaces
+- [headers/README.md](headers/README.md): draft header index for the current scene, runtime, and
+  diagnostics surfaces; `scene_api.h` is the authoritative draft C spelling
 - [AXES.md](AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
 - [LIGHTING.md](LIGHTING.md): scene-level lighting model, PBR shading parameters, and hardware
   ray tracing forward-compatibility path

@@ -1,7 +1,7 @@
 # Scene FramePlan IR
 
 This document defines the preferred intermediate representation used by the future scene layer to
-plan one frame of work before emitting DRP2.
+plan one frame of work before the scene-to-DRP2 converter emits DRP2.
 
 It is intentionally not a frozen public render-graph API.
 
@@ -9,7 +9,8 @@ Its purpose is narrower:
 
 1. give the scene layer a deterministic planning structure,
 2. separate scene-state mutation from DRP2 emission,
-3. provide a stable producer-side model while some DRP2 object details remain under active review.
+3. provide a stable producer-side model while DRP2 runtime implementation details remain below the
+   scene boundary.
 
 
 ## Normative Status
@@ -30,7 +31,9 @@ The relationship is:
 
 1. scene state is updated first,
 2. a `FramePlan` is derived from that state,
-3. DRP2 emission is a pure translation of the `FramePlan` plus runtime capabilities.
+3. the scene-to-DRP2 converter translates the `FramePlan` plus runtime capabilities into a DRP2
+   command stream,
+4. the DRP2 runtime consumes that command stream.
 
 
 ## Plan Scope
@@ -70,7 +73,7 @@ The first `FramePlan` IR should not freeze:
 
 1. a public user-facing render-graph API,
 2. final runtime object ownership,
-3. exact DRP2 object-creation policy for pipelines, bind groups, samplers, or texture views,
+3. exact DRP2 id-allocation and cache policy for pipelines, bind groups, samplers, or texture views,
 4. backend-specific scheduling or synchronization controls,
 5. performance-tuning policy beyond what is needed for deterministic planning.
 
@@ -367,9 +370,11 @@ Material is not a first-class FramePlan concept. Shading parameters (`ambient`, 
 The FramePlan references them as a regular parameter-block binding — there is no `DvzMaterial`
 handle or material-specific node kind.
 
-Shader module and pipeline identities are assigned by the scene layer before planning:
+Shader module and pipeline identities are assigned by the scene-to-DRP2 converter from deterministic
+scene shader keys:
 
-- The scene assigns deterministic numeric IDs to shader modules based on (stage, source hash).
+- The converter assigns deterministic numeric IDs to shader modules based on (stage, source hash,
+  transport format).
 - `CreateShaderModule` is emitted once per unique (stage, source) pair.
 - `CreateRenderPipeline` is emitted referencing those module IDs, keyed on
   (vertex_module_id, fragment_module_id, pipeline state). If the same key was already created
@@ -386,10 +391,11 @@ The `FramePlan` should be translatable to DRP2 command categories already in sco
 2. compute nodes become compute-pass commands,
 3. render nodes become render-pass commands and draw calls,
 4. copy nodes become DRP2 copy commands,
-5. readback nodes become offscreen/readback requests through the runtime boundary.
+5. readback nodes become `QueueSubmit.readbacks` and `QueueSubmitReply` routing metadata through
+   the runtime boundary.
 
-Where DRP2 still has deferred object-creation details under review, `FramePlan` should refer to logical
-shader, material, and binding identities rather than assuming the final command shape.
+`FramePlan` should refer to logical shader, material, and binding identities. The converter owns the
+exact DRP2 command spelling, id assignment, and omission of already-created runtime objects.
 
 
 ## Minimum Worked Examples This IR Must Cover
