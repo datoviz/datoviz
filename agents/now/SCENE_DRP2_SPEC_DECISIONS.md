@@ -385,7 +385,7 @@ Spec edits if accepted:
 
 1. update `VISUAL_CONTRACT.md`,
 2. replace or rename `examples/IMAGE_SLICE.md`,
-3. update `PICKING.md`, `USE_CASES.md`, `RESOURCE_MODEL.md`, and transform notes that mention
+3. update `interaction/PICKING.md`, `USE_CASES.md`, `pipeline/RESOURCE_MODEL.md`, and transform notes that mention
    image-family slice-like modes.
 
 Owner decision:
@@ -496,7 +496,7 @@ Should glyph-specific `PER_CHAR` remain a formal attribute source?
 
 Recommendation:
 
-Keep it, but define it as a glyph-only extended source in `ATTRIBUTE_SOURCES.md`.
+Keep it, but define it as a glyph-only extended source in `pipeline/ATTRIBUTE_SOURCES.md`.
 
 Clarification:
 
@@ -921,7 +921,7 @@ projection.
 
 Reasoning:
 
-1. `TRANSFORM_PIPELINE.md` correctly separates data-space coordinate transforms from projection,
+1. `pipeline/TRANSFORM_PIPELINE.md` correctly separates data-space coordinate transforms from projection,
 2. the draft header currently uses `DvzProjectionDesc`, which can be confused with camera
    projection,
 3. scientific transforms such as polar and Mercator happen before panel normalization.
