@@ -318,7 +318,7 @@ handle automatically have their navigation synchronized, with no additional link
 ## Controller Construction
 
 Family-specific constructors are the preferred public surface, mirroring the visual construction
-model in `PREFERRED_API_PROFILE.md`.
+model in \`../API_DESIGN.md\`.
 
 Conceptually:
 
@@ -682,7 +682,7 @@ This document defines the following concrete API-shape commitments:
 6. hover and selection state remain queryable at scene level,
 7. focus and capture remain scene-owned, not backend-owned.
 
-The exact final naming follows the resolved `dvz_` convention from `PREFERRED_API_PROFILE.md`.
+The exact final naming follows the resolved `dvz_` convention from \`../API_DESIGN.md\`.
 
 
 ## Recommended Next Step

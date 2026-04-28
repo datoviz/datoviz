@@ -221,8 +221,8 @@ A custom visual follows the same lifecycle as built-in visuals:
 |---|---|
 | `VISUAL_CONTRACT.md` | normative contract that custom visuals satisfy |
 | `TRANSPARENCY.md` | alpha_mode and render pass assignment |
-| `SELECTION.md` | selection mask injection and highlight helper |
-| `PICKING.md` | picking variant generation |
-| `CAPABILITY_ADAPTATION.md` | capability gating and deactivation |
-| `INVALIDATION_AND_CACHING.md` | dirty scope declaration |
+| `interaction/SELECTION.md` | selection mask injection and highlight helper |
+| `interaction/PICKING.md` | picking variant generation |
+| `ADAPTATION.md` | capability gating and deactivation |
+| `pipeline/INVALIDATION_AND_CACHING.md` | dirty scope declaration |
 | `NONLINEAR_TRANSFORMS.md` | custom compute shader registration for projections |

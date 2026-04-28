@@ -230,9 +230,9 @@ A report should contain:
 
 This schema should be used by:
 
-1. `SCENE_VALIDATION.md`
-2. `CAPABILITY_ADAPTATION.md`
-3. `FRAME_PLAN_IR.md`
+1. `VALIDATION.md`
+2. `ADAPTATION.md`
+3. `pipeline/FRAME_PLAN.md`
 4. `RUNTIME_BOUNDARY.md`
 
 Those documents may define additional phase-specific rules, but they should reuse this common

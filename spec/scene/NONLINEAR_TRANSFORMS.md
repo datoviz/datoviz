@@ -6,7 +6,7 @@ such as geographic projections and polar coordinates.
 
 ## Scope
 
-The `TRANSFORM_PIPELINE.md` covers the affine normalization and panel-transform stages.
+The `pipeline/TRANSFORM_PIPELINE.md` covers the affine normalization and panel-transform stages.
 This document covers transforms that are non-linear in data space — projections that
 cannot be expressed as a matrix multiply.
 
@@ -162,9 +162,9 @@ The interaction between non-linear projections and axes is deferred to the axes 
 
 | Document | Relationship |
 |---|---|
-| `TRANSFORM_PIPELINE.md` | this document extends the pipeline for non-affine stages |
-| `FRAME_PLAN_IR.md` | projection ComputeNode in FramePlan |
-| `RESOURCE_MODEL.md` | derived position buffer as persistent compute-derived resource |
-| `INVALIDATION_AND_CACHING.md` | projection dirty scope: source positions or parameters |
+| `pipeline/TRANSFORM_PIPELINE.md` | this document extends the pipeline for non-affine stages |
+| `pipeline/FRAME_PLAN.md` | projection ComputeNode in FramePlan |
+| `pipeline/RESOURCE_MODEL.md` | derived position buffer as persistent compute-derived resource |
+| `pipeline/INVALIDATION_AND_CACHING.md` | projection dirty scope: source positions or parameters |
 | `CUSTOM_VISUALS.md` | custom compute shader registration |
 | `AXES.md` | tick projection for non-linear panels |

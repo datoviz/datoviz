@@ -3,7 +3,7 @@
 This document defines the scene-level contract for still image capture, render scale
 (supersampling), and panel-as-texture offscreen rendering.
 
-Video export is covered in `ANIMATION.md`.
+Video export is covered in `interaction/ANIMATION.md`.
 
 
 ## Still Image Capture
@@ -154,8 +154,8 @@ This is the scene-native path for embedding a rendered panel inside an ImGui win
 
 | Document | Relationship |
 |---|---|
-| `ANIMATION.md` | video export workflow using offline clock mode |
+| `interaction/ANIMATION.md` | video export workflow using offline clock mode |
 | `HIGH_DPI.md` | render scale stacks with device pixel ratio |
-| `FRAME_PLAN_IR.md` | offscreen panel ordering in FramePlan |
+| `pipeline/FRAME_PLAN.md` | offscreen panel ordering in FramePlan |
 | `EXTERNAL_UI.md` | `dvz_gui_image` accepts offscreen panel textures |
-| `RESOURCE_MODEL.md` | offscreen texture is a scene-owned `TextureResource` |
+| `pipeline/RESOURCE_MODEL.md` | offscreen texture is a scene-owned `TextureResource` |

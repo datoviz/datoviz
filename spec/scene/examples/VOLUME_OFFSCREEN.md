@@ -8,10 +8,10 @@ readback.
 
 This example should be read against:
 
-1. `VISUAL_MINI_CONTRACTS.md` for the `volume` family contract,
-2. `RESOURCE_MODEL.md` for volumetric fields and readback targets,
-3. `RUNTIME_SERVICE_SKETCH.md` for offscreen completion semantics,
-4. `FRAME_PLAN_IR.md` for offscreen render and readback participation.
+1. `../VISUAL_FAMILY_RULES.md` for the `volume` family contract,
+2. `../pipeline/RESOURCE_MODEL.md` for volumetric fields and readback targets,
+3. `RUNTIME_BOUNDARY.md` for offscreen completion semantics,
+4. `../pipeline/FRAME_PLAN.md` for offscreen render and readback participation.
 
 
 ## Scene Setup

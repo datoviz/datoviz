@@ -11,14 +11,14 @@ clock.
 
 This example should be read against:
 
-1. `ANIMATION.md` for animation handles, construction, loop modes, clock modes, and the video
+1. `../interaction/ANIMATION.md` for animation handles, construction, loop modes, clock modes, and the video
    export workflow,
-2. `FRAME_LIFECYCLE.md` for the step ordering: events → controllers → animations → invalidation
+2. `../pipeline/FRAME_LIFECYCLE.md` for the step ordering: events → controllers → animations → invalidation
    → plan,
-3. `CONTROLLERS.md` for the relationship between controllers and animations,
-4. `INVALIDATION_AND_CACHING.md` for how animation-driven state changes enter the dirty-scope
+3. `../interaction/CONTROLLERS.md` for the relationship between controllers and animations,
+4. `../pipeline/INVALIDATION_AND_CACHING.md` for how animation-driven state changes enter the dirty-scope
    pipeline,
-5. `FRAME_PLAN_IR.md` for the resulting `FramePlan` shape.
+5. `../pipeline/FRAME_PLAN.md` for the resulting `FramePlan` shape.
 
 
 ## Scene Setup

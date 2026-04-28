@@ -257,6 +257,6 @@ in v0.4.
 |---|---|
 | `PICKING.md` | click selection uses the picking pipeline for item identity |
 | `CONTROLLERS.md` | controllers trigger selection actions; input map lives on `DvzSelection` |
-| `FRAME_PLAN_IR.md` | lasso inserts `ComputeNode`; selection change inserts `UploadNode` |
+| `../pipeline/FRAME_PLAN.md` | lasso inserts `ComputeNode`; selection change inserts `UploadNode` |
 | `INVALIDATION_AND_CACHING.md` | selection change marks highlight-dirty scope |
 | `RESOURCE_MODEL.md` | mask buffer is a `BufferResource` owned by `DvzSelection` |

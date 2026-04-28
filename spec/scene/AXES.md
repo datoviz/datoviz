@@ -75,7 +75,7 @@ An axis object should be responsible for:
 
 ## Coordinate-Space Role
 
-The axis pipeline should follow the general transform model in `TRANSFORM_PIPELINE.md`.
+The axis pipeline should follow the general transform model in `pipeline/TRANSFORM_PIPELINE.md`.
 
 For axes, the important split is:
 
@@ -359,7 +359,7 @@ For axes:
 2. tick geometry is placed in `VisualSpace`,
 3. panel-local transforms move that geometry afterward.
 
-This means axes are a direct consumer of `TRANSFORM_PIPELINE.md`.
+This means axes are a direct consumer of `pipeline/TRANSFORM_PIPELINE.md`.
 
 
 ## Relationship To Visual Families
@@ -486,7 +486,7 @@ Rules:
 
 An axis tracks the data-space domain of its dimension.
 
-The primary domain source is the panel domain declared in `TRANSFORM_PIPELINE.md`.
+The primary domain source is the panel domain declared in `pipeline/TRANSFORM_PIPELINE.md`.
 When the panel has an explicit `DvzDataDomain` for the axis dimension, the axis uses it as its
 data-space reference for tick generation, label formatting, and coverage checks.
 
@@ -567,7 +567,7 @@ Common scientific viz patterns this covers:
 4. any overview + detail layout where one dimension is synchronized.
 
 Controllers must be first-class scene objects with stable handles for this model to work.
-`CONTROLLERS.md` already implies this; the axis binding model depends on it being made explicit
+`interaction/CONTROLLERS.md` already implies this; the axis binding model depends on it being made explicit
 there.
 
 

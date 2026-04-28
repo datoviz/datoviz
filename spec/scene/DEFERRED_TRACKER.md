@@ -32,15 +32,15 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Automatic LOD for mesh simplification | `spec/scene/GEOMETRY_UTILITIES.md` |
 | Concave (alpha-shape) hull computation | `spec/scene/GEOMETRY_UTILITIES.md` |
 | Annotation shape generation (msdfgen integration) | `spec/scene/GEOMETRY_UTILITIES.md` |
-| Scene-level animation timeline coordination | `spec/scene/ANIMATION.md` |
+| Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/THREAD_SAFETY.md` |
-| Polar axis geometry (circular gridlines, radial labels) | `spec/scene/TRANSFORM_PIPELINE.md` |
-| Map tile loading and LOD management | `spec/scene/TRANSFORM_PIPELINE.md` |
+| Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
+| Map tile loading and LOD management | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
 | Per-item material / PBR lighting for sphere | `spec/scene/visuals/SPHERE.md` |
-| Selection state synchronization across scenes | `spec/scene/SELECTION.md` |
+| Selection state synchronization across scenes | `spec/scene/interaction/SELECTION.md` |
 | Custom visual dirty-tracking optimization | `spec/scene/CUSTOM_VISUALS.md` |
 | 3D text (per-character orientation) | `spec/scene/visuals/GLYPH.md` |
-| Volume picking (ray-cast identity) | `spec/scene/PICKING.md` |
+| Volume picking (ray-cast identity) | `spec/scene/interaction/PICKING.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/VECTOR_EXPORT.md` |
 | `wiggle` promotion to a full visual family | `spec/scene/VISUAL_FAMILIES.md` |
 
@@ -51,5 +51,5 @@ These items have no assigned milestone and are indefinitely deferred.
 
 | Item | Source |
 |---|---|
-| Hardware ray tracing capability class | `spec/scene/CAPABILITY_ADAPTATION.md` |
-| `RayTraceNode` plan node kind | `spec/scene/FRAME_PLAN_IR.md` |
+| Hardware ray tracing capability class | `spec/scene/ADAPTATION.md` |
+| `RayTraceNode` plan node kind | `spec/scene/pipeline/FRAME_PLAN.md` |

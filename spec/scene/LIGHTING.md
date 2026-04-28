@@ -175,10 +175,10 @@ The scene layer is already forward-compatible because:
 
 2. **`RayTraceNode` as a future `FramePlan` node type** — a future `RayTraceNode` would
    replace `RenderNode` for ray-traced visuals. The scene emits it when ray tracing is
-   requested and available. See `FRAME_PLAN_IR.md`.
+   requested and available. See `pipeline/FRAME_PLAN.md`.
 
 3. **Capability adaptation governs the switch** — ray tracing capability is detected at
-   runtime. `CAPABILITY_ADAPTATION.md` governs whether a visual falls back to rasterization
+   runtime. `ADAPTATION.md` governs whether a visual falls back to rasterization
    or requires ray tracing. The user policy is declarative; the scene does not hard-code
    rendering paths.
 

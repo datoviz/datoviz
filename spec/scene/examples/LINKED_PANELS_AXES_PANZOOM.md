@@ -10,11 +10,11 @@ have independent Y controllers.
 This example should be read against:
 
 1. `AXES.md` for axis derivation, regeneration policy, domain source, pull model, and panel linking,
-2. `CONTROLLERS.md` for first-class controller handles, per-dimension binding, and shared-handle
+2. `../interaction/CONTROLLERS.md` for first-class controller handles, per-dimension binding, and shared-handle
    linking,
-3. `TRANSFORM_PIPELINE.md` for the DataSpace / VisualSpace split,
-4. `FRAME_PLAN_IR.md` for the `UploadNode` and `RenderNode` structure,
-5. `INVALIDATION_AND_CACHING.md` for dirty scope rules under panzoom.
+3. `../pipeline/TRANSFORM_PIPELINE.md` for the DataSpace / VisualSpace split,
+4. `../pipeline/FRAME_PLAN.md` for the `UploadNode` and `RenderNode` structure,
+5. `../pipeline/INVALIDATION_AND_CACHING.md` for dirty scope rules under panzoom.
 
 
 ## Scene Setup

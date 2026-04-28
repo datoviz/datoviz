@@ -290,7 +290,7 @@ Typical failures:
 ## Transform Validation
 
 The scene should validate transform prerequisites from
-[TRANSFORM_PIPELINE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/TRANSFORM_PIPELINE.md).
+[pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md).
 
 Checks should include:
 
@@ -309,7 +309,7 @@ Typical failures:
 ## Picking Validation
 
 The scene should validate picking contracts from
-[PICKING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/PICKING.md).
+[interaction/PICKING.md](interaction/PICKING.md).
 
 Checks should include:
 
@@ -488,7 +488,7 @@ The key rules should be:
 ## Relationship To Frame Lifecycle
 
 Validation should fit the frame stages in
-[FRAME_LIFECYCLE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/FRAME_LIFECYCLE.md).
+[pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md).
 
 The preferred ordering is:
 
@@ -534,5 +534,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-`CAPABILITY_ADAPTATION.md` is the natural follow-on: it defines what happens when validation
+`ADAPTATION.md` is the natural follow-on: it defines what happens when validation
 passes but the runtime contract is insufficient for the preferred configuration.

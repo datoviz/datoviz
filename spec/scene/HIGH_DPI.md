@@ -111,5 +111,5 @@ It emits `FramePlan` nodes in logical coordinates throughout.
 |---|---|
 | `IMAGE_EXPORT.md` | render scale stacks with `dpi_scale` |
 | `GEOMETRY_UTILITIES.md` | `DvzFont` rasterizes at physical resolution |
-| `FRAME_LIFECYCLE.md` | DPI-change event triggers redraw and dirty propagation |
-| `INVALIDATION_AND_CACHING.md` | pixel-unit dirty scope on DPI change |
+| `pipeline/FRAME_LIFECYCLE.md` | DPI-change event triggers redraw and dirty propagation |
+| `pipeline/INVALIDATION_AND_CACHING.md` | pixel-unit dirty scope on DPI change |

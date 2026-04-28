@@ -16,7 +16,7 @@ The render thread owns:
 
 DRP2 commands are a **single-producer stream**: the render thread is the sole producer.
 `DvzTransferQueue` entries submitted from background threads are drained by the render thread
-at stage 2 of the frame lifecycle (see `FRAME_LIFECYCLE.md`) and then serialized into the DRP2
+at stage 2 of the frame lifecycle (see `pipeline/FRAME_LIFECYCLE.md`) and then serialized into the DRP2
 command stream as ordinary attribute dirty marks and upload work. Background threads never emit
 DRP2 commands directly.
 
@@ -38,7 +38,7 @@ This call is safe from any thread at any time.
 Internally it uses a lock-free ring buffer so it does not block the render thread.
 
 The render thread drains the queue once per frame during stage 2
-(App State Update, see `FRAME_LIFECYCLE.md`) before invalidation resolution.
+(App State Update, see `pipeline/FRAME_LIFECYCLE.md`) before invalidation resolution.
 All transfers drained in a given frame are applied atomically from the scene's
 perspective — they either all land in the current frame or are deferred to the next.
 
@@ -208,7 +208,7 @@ Sharing resources across multiple scenes or across threads is not supported in v
 
 | Document | Relationship |
 |---|---|
-| `FRAME_LIFECYCLE.md` | transfer queue is drained in stage 2 (App State Update) |
-| `INVALIDATION_AND_CACHING.md` | drained transfers mark affected attributes dirty |
-| `RESOURCE_MODEL.md` | staging pool and zero-copy upload path |
-| `FRAME_PLAN_IR.md` | dirty attributes resolved into UploadNodes in the same frame |
+| `pipeline/FRAME_LIFECYCLE.md` | transfer queue is drained in stage 2 (App State Update) |
+| `pipeline/INVALIDATION_AND_CACHING.md` | drained transfers mark affected attributes dirty |
+| `pipeline/RESOURCE_MODEL.md` | staging pool and zero-copy upload path |
+| `pipeline/FRAME_PLAN.md` | dirty attributes resolved into UploadNodes in the same frame |

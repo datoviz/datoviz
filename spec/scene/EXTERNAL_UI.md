@@ -12,9 +12,9 @@ This document is normative for the boundary between scene semantics and external
 
 It should be read together with:
 
-1. `PREFERRED_API_PROFILE.md` for the scene-owned state surface,
-2. `CONTROLLERS.md` for scene-native interaction behavior,
-3. `FRAME_LIFECYCLE.md` for per-frame ordering,
+1. `API_DESIGN.md` for the scene-owned state surface,
+2. `interaction/CONTROLLERS.md` for scene-native interaction behavior,
+3. `pipeline/FRAME_LIFECYCLE.md` for per-frame ordering,
 4. `RUNTIME_BOUNDARY.md` for what must remain below the scene semantic layer.
 
 
@@ -191,7 +191,7 @@ The FramePlan carries an explicit **external overlay slot** as the last executio
 after scene work and before present.
 The runtime fills this slot with the ImGui render pass at the right point in the frame.
 This makes the ordering contract explicit rather than implicit in the loop.
-See `FRAME_LIFECYCLE.md` step 10.
+See `pipeline/FRAME_LIFECYCLE.md` step 10.
 
 #### 2. Runtime-Selected ImGui Backend
 

@@ -22,7 +22,7 @@ cannot be cleanly delegated to user code or Python:
 
 All utilities operate in **F64 (double-precision float)** throughout.
 Their output vertex data enters the normal resource upload path and is downcast to F32 at
-`UploadNode` time by the standard CPU precision policy (see `TRANSFORM_PIPELINE.md`).
+`UploadNode` time by the standard CPU precision policy (see `pipeline/TRANSFORM_PIPELINE.md`).
 
 
 ## Bundled Dependencies

@@ -10,9 +10,9 @@ This example should be read against:
 
 1. `LEGENDS_AND_COLORBARS.md` for shared explanatory-object and mapping-identity rules,
 2. `ANNOTATIONS.md` for transient probe and crosshair semantics,
-3. `PICKING.md` for latest-request-wins hover semantics,
-4. `CONTROLLERS.md` for linked-panel interaction,
-5. `FRAME_PLAN_IR.md` for panel-local plus shared scene-level `FramePlan` structure.
+3. `../interaction/PICKING.md` for latest-request-wins hover semantics,
+4. `../interaction/CONTROLLERS.md` for linked-panel interaction,
+5. `../pipeline/FRAME_PLAN.md` for panel-local plus shared scene-level `FramePlan` structure.
 
 
 ## Scene Setup

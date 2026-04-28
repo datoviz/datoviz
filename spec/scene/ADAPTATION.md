@@ -276,7 +276,7 @@ Unacceptable simplifications include:
 ## Relationship To Validation
 
 Capability adaptation depends on the validation rules in
-[SCENE_VALIDATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/SCENE_VALIDATION.md).
+[VALIDATION.md](VALIDATION.md).
 
 The distinction should remain clear:
 
@@ -509,7 +509,7 @@ A useful conceptual diagnostic should report:
 4. semantic impact,
 5. whether the result is a warning, deactivation, or hard failure.
 
-In terms of `DIAGNOSTICS_SCHEMA.md`:
+In terms of `DIAGNOSTICS.md`:
 
 - **phase**: `CapabilityAdaptation`
 - **category**: `Capability`
@@ -534,7 +534,7 @@ Examples:
 4. selecting a reduced precision path may invalidate derived resources.
 
 Adaptation policy should therefore integrate with
-[INVALIDATION_AND_CACHING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/INVALIDATION_AND_CACHING.md).
+[pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md).
 
 
 ## Worked Adaptation Examples

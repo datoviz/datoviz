@@ -33,7 +33,7 @@ requirements into each other:
    until the relevant DRP2 decision is made.
 
 This parallel design constraint applies especially to `RUNTIME_BOUNDARY.md`,
-`FRAME_PLAN_IR.md`, and `CAPABILITY_ADAPTATION.md`.
+`pipeline/FRAME_PLAN.md`, and `ADAPTATION.md`.
 
 
 ## Normative Invariants
@@ -88,15 +88,15 @@ Read the scene spec in this order during review.
 
 4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
 5. [PANEL_LAYOUT.md](PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
-6. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults and resolved API decisions
-7. [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md) — C-facing mapping, Python binding architecture
+6. [API_DESIGN.md](API_DESIGN.md) — current preferred scene-facing defaults and resolved API decisions
+7. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
 
 ### 3. Visual semantics
 
 9. [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md) — family taxonomy
 10. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md) — shared producer contract across visuals
-11. [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md) — family-level mini-contracts
+11. [VISUAL_FAMILY_RULES.md](VISUAL_FAMILY_RULES.md) — family-level mini-contracts
 12. [visuals/README.md](visuals/README.md) — per-family data contracts (attribute schemas, parameters, variants)
 13. [SCALES.md](SCALES.md) — color, size, and opacity scale objects and colormap model
 14. [LIGHTING.md](LIGHTING.md) — scene-level lighting model; PBR and ray tracing upgrade path
@@ -106,23 +106,23 @@ Read the scene spec in this order during review.
 
 ### 4. Data, transforms, planning, and runtime handoff
 
-16. [RESOURCE_MODEL.md](RESOURCE_MODEL.md) — logical resource model and F64 data ingestion policy
-17. [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
-18. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md) — normalization, panel-transform pipeline, and CPU precision policy (F64 throughout, F32 at upload)
+16. [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md) — logical resource model and F64 data ingestion policy
+17. [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
+18. [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md) — normalization, panel-transform pipeline, and CPU precision policy (F64 throughout, F32 at upload)
 18b. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md) — triangulation, curve tessellation, simplification, hull, boolean ops, SDF/MSDF pipeline
-19. [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md) — canonical producer-side frame artifact
-20. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md) — update/build/emit flow
+19. [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md) — canonical producer-side frame artifact
+20. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md) — update/build/emit flow
 
 ### 5. Validation, adaptation, interaction, and diagnostics
 
-22. [SCENE_VALIDATION.md](SCENE_VALIDATION.md) — validation rules and error classes
-23. [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md) — explicit fallback and simplification policy
-24. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
-25. [PICKING.md](PICKING.md) — picking identity and readback behavior
-26. [CONTROLLERS.md](CONTROLLERS.md) — event routing and interaction ownership
-27. [ANIMATION.md](ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
+22. [VALIDATION.md](VALIDATION.md) — validation rules and error classes
+23. [ADAPTATION.md](ADAPTATION.md) — explicit fallback and simplification policy
+24. [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
+25. [interaction/PICKING.md](interaction/PICKING.md) — picking identity and readback behavior
+26. [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md) — event routing and interaction ownership
+27. [interaction/ANIMATION.md](interaction/ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
 28. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
-29. [SELECTION.md](SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
+29. [interaction/SELECTION.md](interaction/SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
 30. [IMAGE_EXPORT.md](IMAGE_EXPORT.md) — still image capture, render scale (supersampling), panel-as-texture
 31. [HIGH_DPI.md](HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
 32. [TRANSPARENCY.md](TRANSPARENCY.md) — alpha modes, weighted blended OIT, per-pixel linked list OIT, render pass structure
@@ -130,9 +130,9 @@ Read the scene spec in this order during review.
 34. [VECTOR_EXPORT.md](VECTOR_EXPORT.md) — structural SVG export: vector axes/annotations + raster visual embed
 35. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md) — user-defined visual families, descriptor registration, shader injection
 36. [THREAD_SAFETY.md](THREAD_SAFETY.md) — threading model, transfer queue, async data upload, background computation handoff
-37. [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md) — scene event observer system: selection, pick, hover, animation, resize, DPI
+37. [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md) — scene event observer system: selection, pick, hover, animation, resize, DPI
 38. [CLIPPING.md](CLIPPING.md) — per-visual clip modes: data area (default), panel, none
-39. [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md) — shared diagnostic shape across the stack
+39. [DIAGNOSTICS.md](DIAGNOSTICS.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
@@ -152,16 +152,16 @@ Read the scene spec in this order during review.
 ## Document Index
 
 - [REQUIREMENTS.md](REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
-- [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md): per-attribute data granularity (CONSTANT / PER_ITEM
+- [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md): per-attribute data granularity (CONSTANT / PER_ITEM
   / PER_GROUP) and optional mutability hints
 - [visuals/README.md](visuals/README.md): per-family data contracts with attribute schemas,
   parameters, variant axes, and v0.3 correspondence
 - [SCALES.md](SCALES.md): color, size, and opacity scale objects; colormap palette model; domain
   and scale identity for visual attributes and colorbars
 - [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
-- [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md): design rationale and resolved API decisions
+- [API_DESIGN.md](API_DESIGN.md): design rationale and resolved API decisions
   behind `headers/scene_api.h`
-- [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md): C object mapping, Python binding
+- [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping, Python binding
   architecture, and per-family GPU data preparation notes
 - [headers/README.md](headers/README.md): non-authoritative draft header index for the current
   scene, runtime, and diagnostics surfaces
@@ -172,31 +172,31 @@ Read the scene spec in this order during review.
   and callouts
 - [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md): semantic model for discrete legends,
   continuous colorbars, and shared explanatory mappings
-- [DIAGNOSTICS_SCHEMA.md](DIAGNOSTICS_SCHEMA.md): shared conceptual diagnostic shape across
+- [DIAGNOSTICS.md](DIAGNOSTICS.md): shared conceptual diagnostic shape across
   validation, adaptation, planning, and runtime execution
-- [SCENE_VALIDATION.md](SCENE_VALIDATION.md): scene-level pre-emission validation rules, error
+- [VALIDATION.md](VALIDATION.md): scene-level pre-emission validation rules, error
   classes, and capability-gated checks
-- [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md): explicit fallback, simplification, and
+- [ADAPTATION.md](ADAPTATION.md): explicit fallback, simplification, and
   deactivation policy driven by runtime capabilities
 - [EXTERNAL_UI.md](EXTERNAL_UI.md): boundary between scene-owned semantics and app-owned UI
   frameworks such as ImGui
-- [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md): rules for dirty scopes, reuse,
+- [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md): rules for dirty scopes, reuse,
   redraw, uploads, and plan rebuilds
-- [PICKING.md](PICKING.md): scene-side picking, identity round-trip, grouped hits, and readback
+- [interaction/PICKING.md](interaction/PICKING.md): scene-side picking, identity round-trip, grouped hits, and readback
   semantics
-- [ANIMATION.md](ANIMATION.md): scene clock, animation handles, easing curves, camera keyframes,
+- [interaction/ANIMATION.md](interaction/ANIMATION.md): scene clock, animation handles, easing curves, camera keyframes,
   per-attribute animation, and video export scheduling
-- [CONTROLLERS.md](CONTROLLERS.md): event routing, panel-owned navigation, picking-driven
+- [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md): event routing, panel-owned navigation, picking-driven
   interaction, and redraw
 - [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md): preferred v0.4 visual-family taxonomy grounded in
   local `v0.3` terminology
 - [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md): producer-side contract every future visual type must
   satisfy
-- [VISUAL_MINI_CONTRACTS.md](VISUAL_MINI_CONTRACTS.md): cross-family boundary rules, fallback
+- [VISUAL_FAMILY_RULES.md](VISUAL_FAMILY_RULES.md): cross-family boundary rules, fallback
   constraints, and anti-patterns (the shared template; per-family detail is in `visuals/`)
 - [PANEL_LAYOUT.md](PANEL_LAYOUT.md): grid layout, free placement, fixed-size columns/rows,
   row/column span, colorbar slots, fixed aspect ratio, shared-width constraint, tight layout
-- [SELECTION.md](SELECTION.md): scene-level selection state, selection modes, parametrizable
+- [interaction/SELECTION.md](interaction/SELECTION.md): scene-level selection state, selection modes, parametrizable
   input mapping, highlight descriptor, lasso via GPU ComputeNode, cross-visual linking
 - [IMAGE_EXPORT.md](IMAGE_EXPORT.md): still image capture boundary, render scale (supersampling),
   panel-as-texture with FramePlan ordering and cycle detection
@@ -212,20 +212,20 @@ Read the scene spec in this order during review.
   injection points, picking/selection/capability integration for user-defined visual families
 - [THREAD_SAFETY.md](THREAD_SAFETY.md): single-threaded render path, DvzTransferQueue for
   background threads, data/uniform/callback transfer types, async upload and completion hooks
-- [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md): dvz_scene_on observer registration, event types
+- [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md): dvz_scene_on observer registration, event types
   (selection changed, pick result, hover, anim step/complete, resize, DPI), lifecycle fire points
 - [CLIPPING.md](CLIPPING.md): DVZ_CLIP_DATA_AREA (default), DVZ_CLIP_PANEL, DVZ_CLIP_NONE;
   data area derived from axes margins; scissor grouping in render pass
-- [RESOURCE_MODEL.md](RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
+- [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
 - [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
   (earcut + Triangle/PSLG), curve tessellation (Bézier, Catmull-Rom, B-spline), Douglas-Peucker
   simplification, 2D convex hull, boolean polygon ops (Clipper2), and SDF/MSDF pipeline
-- [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md): explicit data-normalization and panel-transform
+- [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md): explicit data-normalization and panel-transform
   pipeline for scene visuals
-- [FRAME_PLAN_IR.md](FRAME_PLAN_IR.md): producer-side intermediate representation for one planned
+- [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md): producer-side intermediate representation for one planned
   frame
-- [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md): update/build/emit flow
+- [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit flow
 - [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md): allowed and forbidden runtime dependencies,
   service object model, submission/completion/diagnostics contracts, canvas and render-target
   ownership

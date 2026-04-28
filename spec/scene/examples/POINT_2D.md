@@ -7,10 +7,10 @@ This example instantiates the simplest meaningful `point` scene path.
 
 This example should be read against:
 
-1. `VISUAL_MINI_CONTRACTS.md` for the `point` family contract,
-2. `RESOURCE_MODEL.md` for `ItemTable` and `StyleBlock`,
-3. `TRANSFORM_PIPELINE.md` for normalization and panel transform staging,
-4. `FRAME_PLAN_IR.md` for the scene-level `FramePlan` shape.
+1. `../VISUAL_FAMILY_RULES.md` for the `point` family contract,
+2. `../pipeline/RESOURCE_MODEL.md` for `ItemTable` and `StyleBlock`,
+3. `../pipeline/TRANSFORM_PIPELINE.md` for normalization and panel transform staging,
+4. `../pipeline/FRAME_PLAN.md` for the scene-level `FramePlan` shape.
 
 
 ## Scene Setup

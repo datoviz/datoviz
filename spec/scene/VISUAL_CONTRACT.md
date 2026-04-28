@@ -96,7 +96,7 @@ execution model.
 How each backend prepares data for its own rendering pipeline is an implementation concern, not a
 scene contract.
 
-Implementors building on rasterization pipelines should consult `IMPLEMENTATION_BRIDGE.md` for
+Implementors building on rasterization pipelines should consult `IMPLEMENTATION_NOTES.md` for
 guidance on family-specific data preparation steps.
 
 

@@ -428,6 +428,6 @@ This fallback is transparent to the user except for the diagnostic and the highe
 |---|---|
 | `visuals/PIXEL.md` | first family to reference this scale model via `color_mode = scalar` |
 | `LEGENDS_AND_COLORBARS.md` | colorbars attach to scale identity defined here |
-| `ATTRIBUTE_SOURCES.md` | scalar attribute source feeds the scale mapping |
-| `INVALIDATION_AND_CACHING.md` | scale-dirty propagation rules |
-| `CAPABILITY_ADAPTATION.md` | GPU vs CPU palette lookup fallback |
+| `pipeline/ATTRIBUTE_SOURCES.md` | scalar attribute source feeds the scale mapping |
+| `pipeline/INVALIDATION_AND_CACHING.md` | scale-dirty propagation rules |
+| `ADAPTATION.md` | GPU vs CPU palette lookup fallback |

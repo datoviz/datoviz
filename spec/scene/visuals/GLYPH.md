@@ -3,7 +3,7 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `glyph` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `VISUAL_MINI_CONTRACTS.md`, `ATTRIBUTE_SOURCES.md`, and
+It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
 `VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
@@ -201,7 +201,7 @@ In 2D panels the default `(0, 1, 0)` matches screen-space Y-up and `angle` handl
 | Mutability | `static` — set at visual creation time |
 
 Typeface used for layout and rendering. The scene provides at least one built-in font.
-Custom fonts are loaded as scene resources (see `RESOURCE_MODEL.md`).
+Custom fonts are loaded as scene resources (see `../pipeline/RESOURCE_MODEL.md`).
 All strings in a visual share the same font.
 
 

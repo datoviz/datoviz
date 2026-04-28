@@ -12,7 +12,7 @@ Each document defines:
 6. fallback notes,
 7. relationship to v0.3.
 
-These documents refine `VISUAL_MINI_CONTRACTS.md` and `VISUAL_CONTRACT.md` with enough concrete
+These documents refine `../VISUAL_FAMILY_RULES.md` and `../VISUAL_CONTRACT.md` with enough concrete
 detail to implement or validate each family.
 
 
@@ -37,6 +37,6 @@ detail to implement or validate each family.
 
 ## Reading Order
 
-Read `ATTRIBUTE_SOURCES.md` in the parent directory before reading any family spec.
+Read `../pipeline/ATTRIBUTE_SOURCES.md` in the parent directory before reading any family spec.
 The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_GROUP`) and mutability hints
 (`static`, `dynamic`, `streaming`) are used throughout.

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Datoviz DRP WebGPU Triangle</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: system-ui, sans-serif;
+        background: #030b1f;
+        color: #f1f5fe;
+      }
+
+      #gpu-canvas {
+        flex: 1;
+        width: 100%;
+        display: block;
+      }
+
+      #status {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        background: rgba(3, 11, 31, 0.8);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gpu-canvas"></canvas>
+    <div id="status">Initializing WebGPU...</div>
+
+    <script>
+      (() => {
+        const status = document.getElementById("status");
+
+        function setStatus(message) {
+          status.textContent = message;
+        }
+
+        const colorWriteMask = {
+          none: 0,
+          red: GPUColorWrite.RED,
+          green: GPUColorWrite.GREEN,
+          blue: GPUColorWrite.BLUE,
+          alpha: GPUColorWrite.ALPHA,
+          all:
+            GPUColorWrite.RED |
+            GPUColorWrite.GREEN |
+            GPUColorWrite.BLUE |
+            GPUColorWrite.ALPHA,
+        };
+
+        class DRPContext {
+          constructor(device, canvasContext, format) {
+            this.device = device;
+            this.canvasContext = canvasContext;
+            this.format = format;
+            this.encoders = {};
+            this.commandBuffers = {};
+            this.passes = {};
+            this.resources = {};
+            this.resources["queue:0"] = device.queue;
+          }
+        }
+
+        function drp_create_context(device, canvasContext, format) {
+          return new DRPContext(device, canvasContext, format);
+        }
+
+        function drp_create_shader_module(ctx, id, format, code) {
+          if (format !== "wgsl") {
+            throw new Error("This demo only supports WGSL shaders.");
+          }
+
+          const module = ctx.device.createShaderModule({ code });
+          ctx.resources[`shader:${id}`] = module;
+        }
+
+        function drp_create_render_pipeline(
+          ctx,
+          id,
+          layout,
+          vertex,
+          fragment,
+          primitive,
+          depthStencil,
+          multisample
+        ) {
+          const vertexModule = ctx.resources[`shader:${vertex.module}`];
+          const fragmentModule =
+            fragment && ctx.resources[`shader:${fragment.module}`];
+
+          const pipelineDesc = {
+            layout: layout === 0 ? "auto" : ctx.resources[`pipeline-layout:${layout}`],
+            vertex: {
+              module: vertexModule,
+              entryPoint: vertex.entryPoint,
+              buffers: [],
+            },
+            primitive: {
+              topology: primitive.topology,
+              stripIndexFormat:
+                primitive.stripIndexFormat && primitive.stripIndexFormat !== "none"
+                  ? primitive.stripIndexFormat
+                  : undefined,
+              frontFace: primitive.frontFace,
+              cullMode: primitive.cullMode,
+            },
+            fragment: fragment
+              ? {
+                  module: fragmentModule,
+                  entryPoint: fragment.entryPoint,
+                  targets: [],
+                }
+              : undefined,
+            multisample: multisample
+              ? {
+                  count: multisample.count,
+                  mask: multisample.mask,
+                  alphaToCoverageEnabled: multisample.alphaToCoverageEnabled,
+                }
+              : undefined,
+          };
+
+          if (fragment) {
+            fragment.targets.forEach((target) => {
+              pipelineDesc.fragment.targets.push({
+                format: target.format,
+                blend: target.hasBlend ? target.blend : undefined,
+                writeMask: colorWriteMask[target.writeMask ?? "all"],
+              });
+            });
+          }
+
+          const pipeline = ctx.device.createRenderPipeline(pipelineDesc);
+          ctx.resources[`pipeline:${id}`] = pipeline;
+        }
+
+        function drp_begin_command_encoder(ctx, encoderId) {
+          ctx.encoders[encoderId] = ctx.device.createCommandEncoder();
+        }
+
+        function drp_finish_command_encoder(ctx, encoderId, commandBufferId) {
+          const encoder = ctx.encoders[encoderId];
+          if (!encoder) {
+            throw new Error("Encoder not found: " + encoderId);
+          }
+          const commandBuffer = encoder.finish();
+          ctx.commandBuffers[commandBufferId] = commandBuffer;
+          delete ctx.encoders[encoderId];
+        }
+
+        function drp_begin_render_pass(
+          ctx,
+          passId,
+          encoderId,
+          colors,
+          colorCount,
+          depthStencil
+        ) {
+          const encoder = ctx.encoders[encoderId];
+          if (!encoder) {
+            throw new Error("Encoder missing for render pass: " + encoderId);
+          }
+
+          const attachments = [];
+
+          for (let i = 0; i < colorCount; i++) {
+            const color = colors[i];
+            const view =
+              typeof color.view === "number"
+                ? ctx.resources[`view:${color.view}`]
+                : color.view;
+            attachments.push({
+              view,
+              loadOp: color.loadOp ?? "clear",
+              storeOp: color.storeOp ?? "store",
+              clearValue: color.hasClearValue
+                ? { r: color.r, g: color.g, b: color.b, a: color.a }
+                : undefined,
+            });
+          }
+
+          const pass = encoder.beginRenderPass({
+            colorAttachments: attachments,
+            depthStencilAttachment: depthStencil ? {} : undefined,
+          });
+
+          ctx.passes[passId] = pass;
+        }
+
+        function drp_end_render_pass(ctx, passId) {
+          const pass = ctx.passes[passId];
+          if (!pass) {
+            throw new Error("Render pass not found: " + passId);
+          }
+          pass.end();
+          delete ctx.passes[passId];
+        }
+
+        function drp_set_pipeline(ctx, passId, pipelineId) {
+          const pass = ctx.passes[passId];
+          const pipeline = ctx.resources[`pipeline:${pipelineId}`];
+          if (!pass || !pipeline) {
+            throw new Error("Pass or pipeline missing");
+          }
+          pass.setPipeline(pipeline);
+        }
+
+        function drp_draw(
+          ctx,
+          passId,
+          vertexCount,
+          instanceCount,
+          firstVertex,
+          firstInstance
+        ) {
+          const pass = ctx.passes[passId];
+          pass.draw(vertexCount, instanceCount, firstVertex, firstInstance);
+        }
+
+        function drp_queue_submit(ctx, queue, commandBuffers, count) {
+          const gpuQueue = ctx.resources[`queue:${queue}`];
+          const buffers = [];
+          for (let i = 0; i < count; i++) {
+            buffers.push(ctx.commandBuffers[commandBuffers[i]]);
+          }
+          gpuQueue.submit(buffers);
+        }
+
+        function configureCanvas(canvas, context, format, device) {
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = canvas.clientWidth * dpr;
+          canvas.height = canvas.clientHeight * dpr;
+          context.configure({
+            device,
+            format,
+            alphaMode: "opaque",
+          });
+        }
+
+        async function run() {
+          if (!navigator.gpu) {
+            setStatus("WebGPU is not supported in this browser.");
+            return;
+          }
+
+          const canvas = document.getElementById("gpu-canvas");
+          const context = canvas.getContext("webgpu");
+          if (!context) {
+            setStatus("Failed to acquire WebGPU canvas context.");
+            return;
+          }
+          const adapter = await navigator.gpu.requestAdapter();
+          if (!adapter) {
+            setStatus("Unable to find a WebGPU adapter.");
+            return;
+          }
+
+          const device = await adapter.requestDevice();
+          const format = navigator.gpu.getPreferredCanvasFormat();
+
+          configureCanvas(canvas, context, format, device);
+
+          const ctx = drp_create_context(device, context, format);
+
+          const vertexSource = `
+            @vertex
+            fn vs_main(@builtin(vertex_index) vertexIndex : u32) -> @builtin(position) vec4<f32> {
+              var positions = array<vec2<f32>, 3>(
+                vec2<f32>(0.0, 0.5),
+                vec2<f32>(-0.5, -0.5),
+                vec2<f32>(0.5, -0.5));
+              return vec4<f32>(positions[vertexIndex], 0.0, 1.0);
+            }
+          `;
+
+          const fragmentSource = `
+            @fragment
+            fn fs_main() -> @location(0) vec4<f32> {
+              return vec4<f32>(1.0, 0.6, 0.2, 1.0);
+            }
+          `;
+
+          drp_create_shader_module(ctx, 1, "wgsl", vertexSource);
+          drp_create_shader_module(ctx, 2, "wgsl", fragmentSource);
+
+          const primitiveState = {
+            topology: "triangle-list",
+            stripIndexFormat: "none",
+            frontFace: "ccw",
+            cullMode: "none",
+          };
+
+          const vertexState = {
+            module: 1,
+            entryPoint: "vs_main",
+            buffers: [],
+            bufferCount: 0,
+          };
+
+          const fragmentState = {
+            module: 2,
+            entryPoint: "fs_main",
+            targets: [
+              {
+                format,
+                hasBlend: false,
+                writeMask: "all",
+              },
+            ],
+            targetCount: 1,
+          };
+
+          drp_create_render_pipeline(
+            ctx,
+            10,
+            0,
+            vertexState,
+            fragmentState,
+            primitiveState,
+            null,
+            null
+          );
+
+          const encoderId = 20;
+          drp_begin_command_encoder(ctx, encoderId);
+
+          const viewId = 30;
+          ctx.resources[`view:${viewId}`] = context
+            .getCurrentTexture()
+            .createView();
+
+          const colorAttachment = [
+            {
+              view: viewId,
+              loadOp: "clear",
+              storeOp: "store",
+              hasClearValue: true,
+              r: 0.1,
+              g: 0.12,
+              b: 0.18,
+              a: 1,
+            },
+          ];
+
+          const passId = 40;
+          drp_begin_render_pass(ctx, passId, encoderId, colorAttachment, 1, null);
+          drp_set_pipeline(ctx, passId, 10);
+          drp_draw(ctx, passId, 3, 1, 0, 0);
+          drp_end_render_pass(ctx, passId);
+
+          drp_finish_command_encoder(ctx, encoderId, 50);
+          drp_queue_submit(ctx, 0, [50], 1);
+
+          setStatus("Triangle rendered via DRP-inspired API.");
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+          run().catch((err) => setStatus("Error: " + err.message));
+        });
+      })();
+    </script>
+  </body>
+</html>

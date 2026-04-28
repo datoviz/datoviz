@@ -33,7 +33,7 @@ They are not:
 
 These sketches are derived from:
 
-1. `../PREFERRED_API_PROFILE.md`
-2. `../RUNTIME_SERVICE_SKETCH.md`
-3. `../DIAGNOSTICS_SCHEMA.md`
-4. `../IMPLEMENTATION_BRIDGE.md`
+1. `../API_DESIGN.md`
+2. `../RUNTIME_BOUNDARY.md`
+3. `../DIAGNOSTICS.md`
+4. `../IMPLEMENTATION_NOTES.md`

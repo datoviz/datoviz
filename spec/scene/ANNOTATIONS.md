@@ -417,7 +417,7 @@ The spec should explicitly support:
 3. annotations updated by picking results,
 4. annotations mirrored across linked panels.
 
-This keeps annotation logic aligned with `PICKING.md` and `CONTROLLERS.md`.
+This keeps annotation logic aligned with `interaction/PICKING.md` and `interaction/CONTROLLERS.md`.
 
 
 ## Picking Expectations
@@ -519,11 +519,11 @@ backend-specific escape hatches.
 This document should be read alongside:
 
 1. `AXES.md` for axis-derived labels and related semantic guides,
-2. `PICKING.md` for interaction-driven probes and pickable annotation identity,
-3. `CONTROLLERS.md` for controller-driven transient overlays,
-4. `TRANSFORM_PIPELINE.md` for anchor and placement transform stages,
-5. `INVALIDATION_AND_CACHING.md` for dirty-scope and reuse behavior,
-6. `FRAME_PLAN_IR.md` for how annotation contributions enter the scene-level `FramePlan`.
+2. `interaction/PICKING.md` for interaction-driven probes and pickable annotation identity,
+3. `interaction/CONTROLLERS.md` for controller-driven transient overlays,
+4. `pipeline/TRANSFORM_PIPELINE.md` for anchor and placement transform stages,
+5. `pipeline/INVALIDATION_AND_CACHING.md` for dirty-scope and reuse behavior,
+6. `pipeline/FRAME_PLAN.md` for how annotation contributions enter the scene-level `FramePlan`.
 
 
 ## What This Document Intentionally Leaves Open
@@ -537,5 +537,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-`LEGENDS_AND_COLORBARS.md` and `SCENE_VALIDATION.md` are the natural follow-ons from this
+`LEGENDS_AND_COLORBARS.md` and `VALIDATION.md` are the natural follow-ons from this
 document; annotation-heavy and multi-panel worked examples further pressure-test it.

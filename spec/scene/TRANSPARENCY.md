@@ -160,8 +160,8 @@ Per-item alpha is expressed through the item's color alpha channel or an opacity
 
 | Document | Relationship |
 |---|---|
-| `FRAME_PLAN_IR.md` | render pass split and resolve node in FramePlan |
-| `CAPABILITY_ADAPTATION.md` | exact OIT fallback to weighted OIT; weighted OIT fallback to CPU sort |
-| `SELECTION.md` | highlight alpha multiplier applied before OIT accumulation |
+| `pipeline/FRAME_PLAN.md` | render pass split and resolve node in FramePlan |
+| `ADAPTATION.md` | exact OIT fallback to weighted OIT; weighted OIT fallback to CPU sort |
+| `interaction/SELECTION.md` | highlight alpha multiplier applied before OIT accumulation |
 | `LIGHTING.md` | transparent visuals with PBR shading use the same OIT paths |
 | `VISUAL_CONTRACT.md` | custom visuals must declare their alpha mode |

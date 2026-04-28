@@ -11,7 +11,7 @@ remains normative for the design rationale and the Python binding architecture.
 This document sits:
 
 1. above `OBJECT_MODEL.md`,
-2. above `VISUAL_CONTRACT.md` and `RESOURCE_MODEL.md`,
+2. above `VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
 3. below `headers/scene_api.h`, which is the authoritative C spelling.
 
 
@@ -46,7 +46,7 @@ A thin Python sugar layer sits above the generated binding and adds ergonomics (
 keyword arguments, context managers, inline scale shortcuts).
 All scene logic lives in C; the Python layers add no logic of their own.
 
-See `IMPLEMENTATION_BRIDGE.md` for the full three-tier binding architecture and v0.3 pipeline
+See `IMPLEMENTATION_NOTES.md` for the full three-tier binding architecture and v0.3 pipeline
 details.
 
 
@@ -208,7 +208,7 @@ The preferred picking model distinguishes two kinds:
    with `dvz_panel_on_hover`. Latest-request-wins semantics: stale hover results are discarded.
 
 In both cases, results carry scene-visible identity (panel, visual, item, group) rather than
-backend identity. See `PICKING.md` for the complete model.
+backend identity. See `interaction/PICKING.md` for the complete model.
 
 
 ## Preferred Build And Submission Surface
@@ -277,7 +277,7 @@ keyword-argument convenience above the named-param setter.
 `dvz_panel_pick(panel, x, y, DVZ_PICK_CLICK, &result)` returns a filled `DvzPickResult`.
 Hover picking is asynchronous via a callback:
 `dvz_panel_on_hover(panel, my_hover_callback, user_data)`.
-See `PICKING.md` for the full model including latest-request-wins hover semantics.
+See `interaction/PICKING.md` for the full model including latest-request-wins hover semantics.
 
 **`FramePlan` inspection** — readable and serializable through a diagnostics or test interface
 only. Not a first-class public user-facing API.
@@ -293,8 +293,8 @@ only. Not a first-class public user-facing API.
 This document should be read together with:
 
 1. `headers/scene_api.h` for the authoritative C API spelling,
-2. `VISUAL_CONTRACT.md` and `VISUAL_MINI_CONTRACTS.md` for family contract details,
-3. `RESOURCE_MODEL.md` for logical resource classes,
-4. `SCENE_VALIDATION.md` and `CAPABILITY_ADAPTATION.md` for stage ordering and failure semantics,
+2. `VISUAL_CONTRACT.md` and `VISUAL_FAMILY_RULES.md` for family contract details,
+3. `pipeline/RESOURCE_MODEL.md` for logical resource classes,
+4. `VALIDATION.md` and `ADAPTATION.md` for stage ordering and failure semantics,
 5. `RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
-6. `IMPLEMENTATION_BRIDGE.md` for one tentative implementation-facing translation of this profile.
+6. `IMPLEMENTATION_NOTES.md` for one tentative implementation-facing translation of this profile.

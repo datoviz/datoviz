@@ -32,9 +32,9 @@ scene-side workaround. See `spec/drp2/` for the active DRP2 command surface.
 
 The runtime boundary sits below:
 
-1. scene validation (`SCENE_VALIDATION.md`),
-2. capability adaptation (`CAPABILITY_ADAPTATION.md`),
-3. `FramePlan` construction (`FRAME_PLAN_IR.md`).
+1. scene validation (`VALIDATION.md`),
+2. capability adaptation (`ADAPTATION.md`),
+3. `FramePlan` construction (`pipeline/FRAME_PLAN.md`).
 
 The intended relationship is:
 
@@ -234,7 +234,7 @@ Runtime failures are reportable in terms the scene layer can map back to:
 
 DRP2 error codes are non-normative from the scene API's perspective. DRP2 failures are mapped to
 scene-level error categories in `DvzDiagnosticReport`. The raw DRP2 symbolic code appears only
-in a verbose debug string field and is not required semantic input. See `DIAGNOSTICS_SCHEMA.md`
+in a verbose debug string field and is not required semantic input. See `DIAGNOSTICS.md`
 for the shared scene-facing diagnostic record shape.
 
 
@@ -321,9 +321,9 @@ The scene layer must not ask the runtime service to:
 
 | Document | Relationship |
 |---|---|
-| `FRAME_PLAN_IR.md` | the producer-side artifact this service consumes |
-| `SCENE_VALIDATION.md` | stages that must run before submission |
-| `CAPABILITY_ADAPTATION.md` | capability-driven adaptation before planning |
-| `PICKING.md` | freshness and identity semantics on picking completions |
-| `DIAGNOSTICS_SCHEMA.md` | shared scene-facing diagnostic record shape |
-| `IMPLEMENTATION_BRIDGE.md` | C object mapping, Python binding architecture |
+| `pipeline/FRAME_PLAN.md` | the producer-side artifact this service consumes |
+| `VALIDATION.md` | stages that must run before submission |
+| `ADAPTATION.md` | capability-driven adaptation before planning |
+| `interaction/PICKING.md` | freshness and identity semantics on picking completions |
+| `DIAGNOSTICS.md` | shared scene-facing diagnostic record shape |
+| `IMPLEMENTATION_NOTES.md` | C object mapping, Python binding architecture |

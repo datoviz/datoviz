@@ -36,7 +36,9 @@ If resuming work on the branch:
    [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
    - this is no longer only a planning note; it now records the active DRP2 executable contract and
      its next recommended slice
-6. Treat
+6. Before doing a broad scene/DRP2 spec cleanup pass, resolve the open decisions in
+   [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
+7. Treat
    [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    as strategic backlog, not as the default next-task list
 
@@ -50,6 +52,7 @@ Files in this directory are actionable today and should stay short enough to dri
 1. [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
 2. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
 3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+4. [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
 
 ### `done/`
 

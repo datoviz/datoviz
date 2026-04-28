@@ -581,12 +581,12 @@ Important validation cases include:
 
 This document should be read alongside:
 
-1. [ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/ANNOTATIONS.md),
-2. [AXES.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/AXES.md),
-3. [RESOURCE_MODEL.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/RESOURCE_MODEL.md),
-4. [VISUAL_CONTRACT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/VISUAL_CONTRACT.md),
-5. [TRANSFORM_PIPELINE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/TRANSFORM_PIPELINE.md),
-6. [INVALIDATION_AND_CACHING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/INVALIDATION_AND_CACHING.md).
+1. [ANNOTATIONS.md](ANNOTATIONS.md),
+2. [AXES.md](AXES.md),
+3. [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md),
+4. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md),
+5. [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md),
+6. [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md).
 
 
 ## What This Document Intentionally Leaves Open
@@ -600,5 +600,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-`SCENE_VALIDATION.md` covers legend/colorbar validation and cross-object semantic checks that
+`VALIDATION.md` covers legend/colorbar validation and cross-object semantic checks that
 build on this document.
