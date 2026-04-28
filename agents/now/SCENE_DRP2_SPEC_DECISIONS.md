@@ -1,11 +1,14 @@
 # Scene/DRP2 Spec Cleanup Decision Log
 
-> **Status:** `AWAITING OWNER DECISIONS`
+> **Status:** `OWNER DECISIONS COMPLETE`
 > **Created on:** `2026-04-28`
 > **Purpose:** collect the owner decisions needed before a full consistency pass over
 > `spec/drp2/`, `spec/scene/`, related examples, fixtures, and draft headers.
 
 This document is intentionally not normative spec text yet.
+
+All owner decisions needed for the first full cleanup pass have been recorded. Remaining ambiguity
+should now be treated as implementation detail unless a cleanup edit exposes a concrete conflict.
 
 Use it as an inline decision log:
 
@@ -177,8 +180,8 @@ Should DRP2 `2.0` expose dynamic uniform/storage buffer offset alignment limits?
 
 Recommendation:
 
-Do not expose them in the core fixture corpus yet, but let the runtime capability snapshot include
-optional alignment fields before scene implementation starts.
+Add these fields to the runtime capability snapshot before scene implementation starts, but do not
+require every DRP2 JSON fixture to declare them.
 
 Reasoning:
 
@@ -186,6 +189,12 @@ Reasoning:
 2. real Vulkan execution cannot ignore alignment for dynamic offsets,
 3. scene planning needs this information if it packs many parameter blocks into shared buffers,
 4. making the fields optional lets existing fixtures remain narrow.
+
+Clarification:
+
+The "core fixture corpus" means the executable JSON fixtures under `spec/drp2/fixtures/`. The
+cleanup should add alignment limits to the capability model, but individual fixtures should only
+mention those limits when they are testing dynamic buffer offsets or texture-copy alignment.
 
 Suggested fields:
 
@@ -195,7 +204,8 @@ Suggested fields:
 
 Owner decision:
 
-TODO(user): ok but i don't understand what "Do not expose them in the core fixture corpus yet" means
+TODO(user): clarified; add alignment limits to runtime capabilities, but keep fixture declarations
+minimal unless the fixture exercises those limits.
 
 
 ## Decision D007: Render-Pass Attachments And Texture Views
@@ -407,8 +417,8 @@ Defer first implementation of:
 3. `sphere`,
 4. `boxplot`,
 5. `errorbar`,
-6. custom visuals,
-7. exact transparency paths beyond opaque/simple blended.
+6. custom visuals in the first proof slice, while still allowing an experimental v0.4 path later,
+7. exact per-pixel linked-list transparency.
 
 Reasoning:
 
@@ -420,38 +430,62 @@ Owner decision:
 TODO(user): agree
 
 
-## Decision D015: Group/Span Public API
+## Decision D015: Items, Spans, Groups, And Attribute Granularity
 
 Question:
 
-How should users declare grouped visual structure and `PER_GROUP` attributes?
+How should users declare structural spans, semantic groups, and attributes that vary at different
+granularities?
 
 Recommendation:
 
-Use explicit named data attributes, not special enum constants:
+Do not use "grouped visual" as formal terminology. It is ambiguous.
 
-1. `span_sizes` declares structural spans for grouped visuals such as `path` and `glyph`,
-2. `group_id` declares per-item group identity for flat `ItemTable` visuals,
-3. `PER_GROUP` data is accepted when `n == group_count`,
-4. for grouped visuals, default group identity is span identity unless an explicit future spec says
-   otherwise.
+Use four distinct concepts:
+
+1. `item`: one logical datum at the visual's primary granularity,
+2. `span`: a structural contiguous range of items, such as one path in `path` or one string in
+   `glyph`,
+3. `group`: a semantic/category identity, such as neuron population, species, condition, or class,
+4. source granularity: where an attribute value is indexed from.
+
+Use explicit named data attributes for structure and grouping:
+
+1. `span_sizes` declares structural contiguous spans,
+2. `group_id` declares semantic group identity,
+3. `group_id` may be per item or per span depending on the visual and attribute contract,
+4. a span may have a group id, but span identity and group identity are not the same thing.
+
+Recommended source vocabulary:
+
+1. `CONSTANT`: one value for the whole visual,
+2. `PER_ITEM`: one value per item,
+3. `PER_SPAN`: one value per structural span,
+4. `PER_GROUP`: one value per semantic group/category,
+5. family-specific extensions such as glyph `PER_CHAR`.
 
 Reasoning:
 
 1. this matches the string-based `dvz_visual_set_data()` model,
 2. it avoids introducing `DVZ_ATTR_*` after the API direction rejected attr enums,
-3. it handles both contiguous groups and arbitrary group ids.
+3. it prevents structural topology from being confused with semantic categories,
+4. it handles flat visuals, span-structured visuals, and category encodings without overloading
+   `PER_GROUP`.
 
 Spec edits if accepted:
 
 1. remove `dvz_visual_spans()` references unless you want that function,
 2. replace `DVZ_ATTR_GROUP_ID` wording with `"group_id"`,
-3. fix `PIXEL.md` to not imply all flat `PER_GROUP` cases are contiguous unless `span_sizes` is
-   explicitly provided.
+3. replace informal "grouped visual" wording with "span-structured visual" or a concrete family
+   name,
+4. audit every `PER_GROUP` mention and decide whether it really means `PER_GROUP` or `PER_SPAN`,
+5. fix `PIXEL.md` to not imply semantic groups require contiguous item ranges unless a structural
+   span representation is explicitly used.
 
 Owner decision:
 
-TODO(user): hold on this requires more discussion, there is a distinction between groups and spans right?
+TODO(user): agreed direction from discussion; avoid "grouped visual" terminology and separate
+structural spans from semantic groups.
 
 
 ## Decision D016: `PER_CHAR` Source For Glyph
@@ -464,6 +498,14 @@ Recommendation:
 
 Keep it, but define it as a glyph-only extended source in `ATTRIBUTE_SOURCES.md`.
 
+Clarification:
+
+The question is whether source granularity should include a special glyph case for attributes whose
+length is the total number of characters across all strings.
+
+Example: a glyph visual with 10 strings has 10 `PER_ITEM` values, but if those strings contain 80
+characters total, `char_color` with `PER_CHAR` has 80 values.
+
 Reasoning:
 
 1. per-character color is useful for text-heavy scientific labels and sequence logos,
@@ -472,7 +514,7 @@ Reasoning:
 
 Owner decision:
 
-TODO(user): i don't understand this, explain clearly
+TODO(user): clarified; keep glyph-only `PER_CHAR`.
 
 
 ## Decision D017: Missing-Data Semantics
@@ -483,7 +525,8 @@ Should NaN/Inf/missing values be specified before implementation?
 
 Recommendation:
 
-Yes. Add a shared scene rule and allow family overrides.
+Yes. Add a shared scene rule and allow family overrides. Also add a systematic default-parameter
+contract for every visual family.
 
 Recommended defaults:
 
@@ -492,6 +535,14 @@ Recommended defaults:
 3. Inf coordinates: validation warning or skip, depending on strictness mode,
 4. texture NaNs: colormap missing color for scalar textures when supported.
 
+Default-parameter contract:
+
+1. every visual family must have a defaults table for optional attributes and parameters,
+2. omitted attributes use the visual's default parameter value,
+3. missing values inside provided attributes use the attribute's missing-value policy,
+4. users may override defaults at visual or style level,
+5. missing-value fallback values should be configurable per relevant parameter where feasible.
+
 Reasoning:
 
 Scientific data routinely contains missing values. Leaving this undefined will produce inconsistent
@@ -499,7 +550,8 @@ visuals and hard-to-debug backend behavior.
 
 Owner decision:
 
-TODO(user): agree, the user should be able to specify the default value for NaN/inf for the various parameters. More generally there is the question of the default values for the parameters of each visual, like default color, size etc if none is provided. Is it tackled somewhere?
+TODO(user): agreed; add configurable missing-value fallback values and systematic defaults for every
+visual family.
 
 
 ## Decision D018: Units And Quantity Metadata
@@ -584,18 +636,23 @@ Should custom visuals remain in the v0.4 scene spec?
 
 Recommendation:
 
-Keep the concept, but move implementation to v0.4+ unless you consider it essential.
+Keep custom visuals in v0.4 as an experimental/unstable feature, but do not make them part of the
+first converter/runtime proof slice and do not treat the public custom-visual contract as stable yet.
 
 Reasoning:
 
-1. custom visuals require stable shader ingestion, binding layout, picking integration, and
-   diagnostics,
-2. they are valuable but multiply the first runtime surface,
-3. built-in families should prove the converter/runtime first.
+1. custom visuals follow the same broad pipeline as built-in visuals,
+2. the complication is that they expose more of that machinery directly: shader contracts,
+   attribute declarations, bind layouts, capabilities, picking payloads, transparency mode,
+   diagnostics, and invalidation behavior,
+3. built-in families should prove the converter/runtime first,
+4. once the path is proven, an experimental custom-visual API can reuse it without promising a
+   stable long-term contract immediately.
 
 Owner decision:
 
-TODO(user): but custom visuals would follow the same path as builtin visuals so i don't quite understand how supporting them in v0.4 would make things more complicated?
+TODO(user): agreed; v0.4 may include custom visuals, but experimental/unstable and not a first
+proof-slice blocker.
 
 
 ## Decision D022: Built-In Shader Library Ownership
@@ -673,13 +730,15 @@ What minimum picking payload should the first implementation support?
 
 Recommendation:
 
-Start with a 32-bit or 64-bit encoded object id rendered into an integer target, resolved through a
-scene-side pick table:
+Start with a logical 64-bit encoded object id resolved through a scene-side pick table:
 
 1. panel id is request-side metadata,
 2. encoded id maps to visual id and item/group/aux identity,
 3. zero means no hit,
 4. richer sampled-value probe payloads are separate readback requests.
+
+Do not require native GPU 64-bit integer render-target support. The default physical encoding should
+be two 32-bit unsigned channels, such as `rg32uint`, unless the runtime has a better supported path.
 
 Reasoning:
 
@@ -687,13 +746,9 @@ Reasoning:
 2. it avoids packing many semantic fields into shader output,
 3. it keeps grouped and batched rendering compatible with picking.
 
-Open detail:
-
-Choose 32-bit for first implementation simplicity, or 64-bit if you expect very large pick tables.
-
 Owner decision:
 
-TODO(user): 64-bit directly, we may easily have 4B+ items
+TODO(user): logical 64-bit pick ids, physically encoded without requiring GPU 64-bit target support.
 
 
 ## Decision D026: Synchronous Picking API
@@ -749,18 +804,22 @@ Which transparency modes should be in the first implementation target?
 
 Recommendation:
 
-Implement opaque and ordinary alpha blending first. Keep weighted blended OIT as planned v0.4 work
-only if the runtime slice reaches multiple color attachments comfortably. Keep exact per-pixel linked
-list OIT deferred.
+Implement opaque rendering and weighted blended OIT in v0.4. Weighted blended OIT is a hard v0.4
+requirement, not an optional stretch goal. Keep exact per-pixel linked-list OIT deferred.
 
 Reasoning:
 
-Transparency quality matters for sci-viz, but it requires substantial render-pass and attachment
-policy. It should not block the first scene-to-DRP2 path.
+Transparency quality matters for sci-viz. This requirement means the DRP2/vklite runtime must
+support the render-pass and pipeline features needed by weighted blended OIT:
+
+1. multiple color attachments,
+2. per-attachment blend state,
+3. accumulation and revealage targets,
+4. a resolve/composite pass.
 
 Owner decision:
 
-TODO(user): no, weighted blended OIT is a hard requirement for v0.4, very important
+TODO(user): weighted blended OIT is a hard v0.4 requirement.
 
 
 ## Decision D029: Volume Baseline
@@ -771,8 +830,8 @@ Should `volume` be part of the first scene-to-DRP2 implementation slice?
 
 Recommendation:
 
-No. Keep the spec, but defer implementation until 2D images, basic mesh, texture sampling,
-offscreen rendering, and picking are working.
+No for the first proof slice. Keep the spec and implement volume in v0.4 after 2D images, basic
+mesh, texture sampling, offscreen rendering, picking, and the core transparency path are working.
 
 Reasoning:
 
@@ -781,7 +840,7 @@ picking/probe rules. It is a good second wave, not the first wave.
 
 Owner decision:
 
-TODO(user): agree but still for v0.4
+TODO(user): agree; not first proof slice, but still v0.4 scope.
 
 
 ## Decision D030: Image Heatmap Isolines
@@ -813,17 +872,18 @@ Should mesh edge overlays and isolines be part of the first implementation?
 
 Recommendation:
 
-Implement basic indexed mesh with color/normal/texture modes first. Defer mesh isolines and possibly
-edge overlay until the basic mesh path is stable.
+Implement basic indexed mesh with color/normal/texture modes first, and keep mesh edge overlay in
+the v0.4 mesh baseline. Defer mesh isolines until the basic mesh and edge-overlay paths are stable.
 
 Reasoning:
 
-The first mesh target should prove indexed geometry, depth, culling, and optional lighting. Edge and
-isoline overlays add extra passes or shader variants.
+The first mesh target should prove indexed geometry, depth, culling, optional lighting, and the edge
+overlay path already known from v0.3. Isolines add extra contour-generation semantics and can remain
+a later mesh extension.
 
 Owner decision:
 
-TODO(user): ok but mesh edge overlay is pretty important, and already implemented in v0.3 with special trick in the shaders and special baking
+TODO(user): edge overlay is important and should be v0.4 mesh scope; mesh isolines may be deferred.
 
 
 ## Decision D032: Draft Header Authority
@@ -888,9 +948,17 @@ Reasoning:
 2. DRP2 already uses backend-agnostic format strings,
 3. C users need a typed enum rather than strings in hot paths.
 
+Implementation detail:
+
+Use one authoritative internal mapping table from `DvzFormat` to DRP2 format strings and Vulkan
+formats. Add implementation tests/static checks so supported scene formats cannot silently drift from
+their Vulkan mappings. Debug logs may show both the Datoviz format name and the Vulkan format name.
+Do not document or promise numeric enum equality with Vulkan.
+
 Owner decision:
 
-TODO(user): agree but would there be a way to ensure the enum values (which may be hidden to the user) actually match the vulkan formats internally, just to avoid any mismatch/bug? and easier for debugging. as implementation detail. wdyt?
+TODO(user): agreed; keep Datoviz-owned public enums and enforce internal mapping consistency without
+documenting numeric Vulkan equality.
 
 
 ## Decision D035: Resource Creation Surface
@@ -1016,6 +1084,130 @@ Reasoning:
 
 The branch explicitly allows API/spec churn for v0.4. Stale examples are actively harmful once
 implementation starts.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D041: Should `PER_SPAN` Be Formal?
+
+Question:
+
+After separating spans from groups, should `PER_SPAN` become a formal source granularity?
+
+Recommendation:
+
+Yes. Add `PER_SPAN` formally.
+
+Reasoning:
+
+1. `path` linewidth/color "per path" is structurally per span, not semantically per group,
+2. `glyph` per-string attributes are structurally per span when strings are stored as character
+   spans,
+3. using `PER_GROUP` for this would keep the old ambiguity,
+4. `PER_GROUP` should mean category-indexed data keyed by `group_id`, not contiguous topology.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D042: Defaults And Missing-Value API Shape
+
+Question:
+
+How should users override visual defaults and NaN/Inf fallback values?
+
+Recommendation:
+
+Use a style/defaults object plus direct per-visual override helpers:
+
+1. each visual family has documented built-in defaults,
+2. users may set a `DvzStyle` or family-specific default block on a visual,
+3. users may override individual defaults by attribute name,
+4. missing-value policies are per attribute where relevant, not global-only,
+5. scale objects own missing colors for scalar color mappings.
+
+Reasoning:
+
+This keeps the common path simple while making defaults inspectable, serializable, and reusable
+across visuals. It also avoids hiding important sci-viz behavior inside shader constants.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D043: Experimental Custom Visual Scope
+
+Question:
+
+What is the minimum v0.4 custom-visual surface if the API is explicitly experimental?
+
+Recommendation:
+
+Support an experimental descriptor-based path only:
+
+1. user supplies visual-family descriptor, attributes, parameters, shader source, and render state,
+2. no shader hot reload requirement,
+3. no stable ABI/API promise,
+4. picking support limited to the default 64-bit pick-id path,
+5. custom compute stages are deferred unless already needed by built-in visuals.
+
+Reasoning:
+
+This lets advanced users test the pipeline without forcing the first release to stabilize every
+custom extension point.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D044: Weighted Blended OIT Fallback Policy
+
+Question:
+
+If weighted blended OIT is a hard v0.4 requirement, what happens on a runtime that cannot provide
+the needed attachments/blend state?
+
+Recommendation:
+
+Treat missing weighted blended OIT capability as a runtime capability failure for visuals that
+request transparent rendering, not as an implicit downgrade to ordinary alpha blending.
+
+Reasoning:
+
+If WBOIT is required for correctness, silently downgrading changes visual meaning. A user-selected
+policy may explicitly request fallback, but the default should report a clear capability diagnostic.
+
+Owner decision:
+
+TODO(user): agree
+
+
+## Follow-Up D045: Mesh Edge Overlay Contract
+
+Question:
+
+How much of the v0.3 mesh edge-overlay behavior should be specified for v0.4?
+
+Recommendation:
+
+Make edge overlay a v0.4 mesh feature, but specify it as scene semantics rather than committing the
+spec to the v0.3 shader/baking trick:
+
+1. edge overlay can be enabled per mesh,
+2. edge color, width, and opacity have defaults and overrides,
+3. the implementation may use baked edge attributes, barycentric coordinates, or a separate edge
+   pass,
+4. mesh isolines remain deferred.
+
+Reasoning:
+
+This preserves the important user-facing feature while letting the v0.4 runtime choose the cleanest
+implementation path on top of DRP2/vklite.
 
 Owner decision:
 
