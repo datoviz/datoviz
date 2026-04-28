@@ -635,6 +635,18 @@ Each resource should declare its expected mutability:
 
 This is scene planning information, not backend memory-placement policy.
 
+The attribute-level mutability hints from `ATTRIBUTE_SOURCES.md` map onto these resource-level
+classes as follows:
+
+| `ATTRIBUTE_SOURCES.md` hint | `DVZ_MUTABILITY_*` enum | Resource-level class |
+|---|---|---|
+| `static` | `DVZ_MUTABILITY_STATIC` | immutable asset |
+| `dynamic` | `DVZ_MUTABILITY_DYNAMIC` | infrequently updated parameter block |
+| `streaming` | `DVZ_MUTABILITY_STREAMING` | per-frame dynamic stream |
+
+These are the same three hint levels; the enum names above are the C API spellings used in
+`dvz_visual_set_mutability`.
+
 
 ## Dirty Tracking
 

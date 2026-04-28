@@ -199,6 +199,17 @@ It does not know whether the target is a swapchain image or an export buffer.
 That mapping is the DRP2 runtime's responsibility.
 
 
+## Render-Pass Attachments And Texture Views
+
+In the active DRP2 `2.0` surface, render-pass attachments reference textures **directly** via
+`texture_id`, not via texture-view objects. Texture views (`CreateTextureView`) are used only
+for bind-group bindings, not for render-pass attachment slots.
+
+Scene-layer code that constructs render passes should therefore reference `DvzRenderTarget`
+logical handles and let the runtime resolve them to the correct texture id — it should not
+assume texture-view ids are needed on the attachment path.
+
+
 ## Design Rule
 
 If the scene layer needs a reusable low-level behavior, prefer improving the DRP2 or runtime-facing

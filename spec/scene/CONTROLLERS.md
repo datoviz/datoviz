@@ -240,7 +240,10 @@ The camera is always oriented with the sphere's north pole up unless an explicit
 override is applied.
 
 The queryable domain interface for globe axes should return the currently visible longitude and
-latitude ranges rather than raw `VisualSpace` extents.
+latitude ranges rather than raw `VisualSpace` extents. When `dvz_controller_query_domain` is
+called on a `GlobeController`, `visible_min` and `visible_max` are in geographic units:
+longitude (`DVZ_DIM_X`) in degrees east, latitude (`DVZ_DIM_Y`) in degrees north, altitude
+(`DVZ_DIM_Z`) in the same distance unit used by `dvz_globe_controller_set_altitude`.
 
 Constructor:
 
@@ -426,8 +429,14 @@ Conceptually:
 
 ```text
 // Axis queries its panel's X controller for the currently visible range
+// visible_min and visible_max are double* out-parameters; they receive data-space scalar bounds.
 dvz_controller_query_domain(panel_x_controller, DVZ_DIM_X, &visible_min, &visible_max)
 ```
+
+`visible_min` and `visible_max` are `double` scalars giving the data-space bounds of the
+currently visible range along the queried dimension. For `GlobeController` these are in
+geographic units; for other controllers they are in the same units as the declared
+`DvzDataDomain` (see `TRANSFORM_PIPELINE.md`).
 
 This makes axis update deterministic and avoids event-routing complexity for something that
 happens every frame anyway.

@@ -198,6 +198,12 @@ The three hint levels are:
 2. `dynamic` — the value changes occasionally, for example in response to user interaction.
 3. `streaming` — the value changes every frame or nearly every frame.
 
+The mutability hint also determines **pointer ownership semantics** when data is written to
+the scene: `static` means the scene borrows the caller's pointer (zero-copy path), `dynamic`
+means the scene copies the data, and `streaming` means the scene owns a staging buffer the
+caller writes into directly. See `RESOURCE_MODEL.md` — "Data Ownership And Memory Model" — for
+the normative ownership rules.
+
 The hint is set via a separate call:
 
 ```c

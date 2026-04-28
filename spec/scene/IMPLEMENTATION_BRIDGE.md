@@ -52,6 +52,12 @@ The current spec most naturally maps onto implementation-facing scene objects su
 
 The exact names remain open, but the split should stay semantic rather than backend-shaped.
 
+**Public API vs implementation names**: the `DvzScene*`-prefixed names above are tentative
+implementation-internal names for the object hierarchy. The *public* API types use shorter handles
+without the `Scene` infix: `DvzVisual*`, `DvzPanel*`, `DvzController*`, etc., as documented in
+`PREFERRED_API_PROFILE.md` and `VISUAL_CONTRACT.md`. Implementation code may use `DvzScenePanel`
+internally; users and Python bindings see only `DvzPanel*`.
+
 
 ## Descriptor Mapping
 

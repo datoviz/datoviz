@@ -509,6 +509,18 @@ A useful conceptual diagnostic should report:
 4. semantic impact,
 5. whether the result is a warning, deactivation, or hard failure.
 
+In terms of `DIAGNOSTICS_SCHEMA.md`:
+
+- **phase**: `CapabilityAdaptation`
+- **category**: `Capability`
+- **subject_kind**: typically `Visual`, `Annotation`, `Legend`, or `Panel`
+- **severity**: `Warning` for simplification; `Recoverable` for deactivation; `Fatal` for
+  hard rejection that prevents planning from proceeding.
+
+When a visual is deactivated (outcome = `deactivate`), the scene emits a `Recoverable` diagnostic
+with `subject_kind = Visual` and a message explaining which capability was missing. No DRP2 commands
+are emitted for that visual in the affected frame.
+
 
 ## Caching And Invalidation Consequences
 

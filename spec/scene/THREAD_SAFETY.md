@@ -14,6 +14,12 @@ The render thread owns:
 - all direct mutations of scene-owned semantic state,
 - GPU submission.
 
+DRP2 commands are a **single-producer stream**: the render thread is the sole producer.
+`DvzTransferQueue` entries submitted from background threads are drained by the render thread
+at stage 2 of the frame lifecycle (see `FRAME_LIFECYCLE.md`) and then serialized into the DRP2
+command stream as ordinary attribute dirty marks and upload work. Background threads never emit
+DRP2 commands directly.
+
 Background threads may not call scene mutation functions directly.
 The safe interface for background threads is the **transfer queue** described below.
 

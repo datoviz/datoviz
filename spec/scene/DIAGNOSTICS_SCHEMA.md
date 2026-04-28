@@ -195,6 +195,26 @@ Completion diagnostics should typically emphasize:
 3. freshness or discardability state when relevant.
 
 
+## DRP2 Error Code Mapping
+
+DRP2 error codes (`DRP2_ERR_*`) are protocol-level identifiers that belong below the scene
+semantic layer. From the scene's perspective they are non-normative; the scene does not surface
+DRP2 error code constants to users.
+
+When a DRP2 execution failure occurs, the runtime maps it to a `DiagnosticRecord` with:
+
+- **phase**: `RuntimeSubmission` (if the error is detected at submission time) or
+  `RuntimeCompletion` (if detected during readback or completion routing),
+- **category**: `RuntimeExecution`,
+- **subject_kind**: `RuntimeService`,
+- **severity**: `Fatal` for submission rejection; `Recoverable` if the scene can retry or
+  fall back; `Warning` for non-blocking protocol-level anomalies.
+
+The DRP2 error code may appear in the `contextual_payload` field for diagnostics tooling, but
+it must not be the primary user-visible error identifier — the scene-visible message should
+describe the affected plan node, resource, or target in scene terms.
+
+
 ## Diagnostics Aggregation
 
 The preferred aggregation unit is one `DiagnosticReport`.

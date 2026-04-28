@@ -177,6 +177,11 @@ The minimum useful set is:
 4. `CopyNode`
 5. `ReadbackNode`
 
+There is no `OverlayNode` in the `FramePlan` IR. The external UI overlay (e.g., Dear ImGui)
+is a **runtime-injected** step that executes after the scene plan completes, not a plan node.
+`FRAME_LIFECYCLE.md` describes it as an "external overlay slot" that the runtime fills after
+scene submission and before present. The `FramePlan` represents only scene-owned work.
+
 A `RayTraceNode` is reserved as a future node kind for hardware ray tracing.
 It would replace `RenderNode` for ray-traced visuals when the capability is available and
 requested.
