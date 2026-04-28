@@ -47,7 +47,7 @@ Upload new attribute data for a visual:
 DvzTransfer t = {
     .type    = DVZ_TRANSFER_DATA,
     .visual  = visual,
-    .attr    = DVZ_ATTR_POSITION,
+    .attr    = "position",
     .data    = ptr,           // must remain valid until the transfer is consumed
     .size    = n_bytes,
     .offset  = byte_offset,   // 0 for full replace
@@ -107,7 +107,7 @@ result = heavy_computation(input)   // runs freely, no scene interaction
 dvz_scene_submit_transfer(scene, &(DvzTransfer){
     .type   = DVZ_TRANSFER_DATA,
     .visual = visual,
-    .attr   = DVZ_ATTR_POSITION,
+    .attr   = "position",
     .data   = result.positions,
     .size   = result.n * sizeof(vec3),
 })
@@ -148,7 +148,7 @@ is impractical, the transfer queue supports a zero-copy path:
 DvzTransfer t = {
     .type     = DVZ_TRANSFER_DATA,
     .visual   = visual,
-    .attr     = DVZ_ATTR_POSITION,
+    .attr     = "position",
     .data     = ptr,
     .size     = n_bytes,
     .flags    = DVZ_TRANSFER_FLAG_ZERO_COPY,  // pointer mode, no staging copy

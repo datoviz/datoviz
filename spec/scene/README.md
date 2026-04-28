@@ -89,7 +89,7 @@ Read the scene spec in this order during review.
 4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
 5. [PANEL_LAYOUT.md](PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
 5b. [PREFERRED_API_PROFILE.md](PREFERRED_API_PROFILE.md) — current preferred scene-facing defaults
-6. [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md) — tentative user-facing construction surface
+6. [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md) — superseded; see `headers/scene_api.h` for the authoritative C spelling
 7. [IMPLEMENTATION_BRIDGE.md](IMPLEMENTATION_BRIDGE.md) — C-facing mapping of the current design
 8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
 
@@ -178,8 +178,8 @@ Read the scene spec in this order during review.
   classes, and capability-gated checks
 - [CAPABILITY_ADAPTATION.md](CAPABILITY_ADAPTATION.md): explicit fallback, simplification, and
   deactivation policy driven by runtime capabilities
-- [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md): tentative user-facing scene construction surface
-  above planning and DRP2
+- [SCENE_API_SKETCH.md](SCENE_API_SKETCH.md): superseded by `headers/scene_api.h`; kept for
+  historical reference only
 - [EXTERNAL_UI.md](EXTERNAL_UI.md): boundary between scene-owned semantics and app-owned UI
   frameworks such as ImGui
 - [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md): rules for dirty scopes, reuse,

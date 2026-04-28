@@ -211,7 +211,7 @@ gradient-based normal directly, without producing intermediate mesh geometry.
 Multiple levels may be active simultaneously; each is rendered in the corresponding
 `isosurface_colors` entry.
 
-Setting `isoline_levels` implicitly enables opaque surface hits at those values.
+Setting `isosurface_levels` implicitly enables opaque surface hits at those values.
 Normal alpha compositing continues for non-surface samples.
 
 

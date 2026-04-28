@@ -28,7 +28,7 @@ to integrate the visual.
 Once registered, the visual is used exactly like a built-in visual:
 
 ```text
-dvz_visual_set_data(visual, DVZ_ATTR_POSITION, positions, n)
+dvz_visual_set_data(visual, "position", positions, n)
 dvz_panel_add_visual(panel, visual)
 ```
 

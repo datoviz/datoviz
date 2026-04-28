@@ -296,6 +296,7 @@ Commands valid in an open encoder but outside any pass:
 4. `CopyBufferToBuffer`
 5. `CopyBufferToTexture`
 6. `CopyTextureToBuffer`
+7. `CopyTextureToTexture`
 
 Commands valid only in an open render pass:
 

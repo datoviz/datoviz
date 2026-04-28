@@ -573,8 +573,10 @@ This family owns semantics such as:
 1. image placement,
 2. anchor and scaling behavior,
 3. color interpretation modes,
-4. border and fill behavior,
-5. slice-like modes backed by volumetric sampling.
+4. border and fill behavior.
+
+Volume slice display belongs to the `volume` family (`render_mode = slice`), not to `image`.
+`image` handles flat 2D rasters only.
 
 
 ### Resource Classes
@@ -596,8 +598,7 @@ Expected parameters:
 1. anchor controls,
 2. size or scaling policy,
 3. border controls,
-4. colormap or fill controls,
-5. slice-placement controls when using slice-like modes.
+4. colormap or fill controls.
 
 
 ### Transform Model
@@ -628,16 +629,6 @@ Picking should be optional and mode-dependent.
 It should at least be able to identify the image instance, and may optionally resolve finer logical
 sub-identity later if a mode requires it.
 
-For slice-like modes backed by volumetric sampling, the preferred contract should also allow
-probe-oriented picking or explicit query results to expose:
-
-1. slice-local coordinates,
-2. world, atlas, or other declared scene-domain coordinates,
-3. sampled value at the queried position,
-4. optional channel, filter, or sampling-context identity.
-
-These should be treated as scene-level sampling semantics rather than backend texture payload.
-
 
 ### Variant Axes
 
@@ -645,15 +636,15 @@ Allowed axes:
 
 1. rgba versus colormap versus fill mode,
 2. placement and scaling policy,
-3. slice-like mode backed by volumetric sampling,
-4. optional border or rounded-corner mode.
+3. optional border or rounded-corner mode.
 
 
 ### Fallback Notes
 
-Slice-like behavior belongs here semantically.
-The family contract should describe it as an image mode over volumetric sampling, not as a backend
-texture-dimensionality rule.
+`image` is already the simpler 2D raster family.
+If image placement or colormap mode is unavailable, the preferred fallback is a display
+simplification rather than collapsing into another family.
+Volume slice display has its own fallback path within the `volume` family.
 
 
 ## `mesh`
