@@ -1646,6 +1646,544 @@ Owner decision:
 TODO(user): agree
 
 
+## Implementation Preflight D061: Applied Decision Log Status
+
+Question:
+
+Should this decision log remain in `agents/now/`, and how should applied decisions be represented?
+
+Recommendation:
+
+Mark decisions D001-D060 as **applied to the spec** and keep this file as historical context until
+the first implementation slice is complete. New implementation-preflight decisions start at D061.
+
+Reasoning:
+
+The old `TODO(user): agree` markers are now historical owner answers, not unresolved work. Without
+an applied-status note, the file looks noisier and more open-ended than the current spec actually is.
+
+Spec edits if accepted:
+
+1. add an "Applied Status" paragraph near the top of this file,
+2. leave individual owner-decision text intact for traceability,
+3. optionally move this file to `agents/later/` after the first implementation proof slice lands.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D062: First Implementation Target
+
+Question:
+
+Should the first code implementation target be the scene-to-DRP2 converter, the DRP2 runtime, or a
+thin vertical slice of both?
+
+Recommendation:
+
+Start with the **scene-to-DRP2 converter test surface** before GPU runtime execution:
+
+1. define a minimal `FramePlan` debug serialization,
+2. define an emitted DRP2 command-stream serialization,
+3. implement converter fixtures for static point/pixel, dynamic update, image sampling, picking
+   readback, offscreen readback, and compute-assisted path,
+4. only then implement the Vulkan runtime executor for those emitted streams.
+
+Reasoning:
+
+This gives deterministic tests before debugging Vulkan execution. It also exercises the architectural
+boundary the cleanup just established.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D063: `DvzDrp2CommandStream` Representation
+
+Question:
+
+What should the first in-memory DRP2 command stream representation be?
+
+Recommendation:
+
+Use a simple owned append-only C object first:
+
+```c
+typedef struct DvzDrp2CommandStream DvzDrp2CommandStream;
+
+DvzDrp2CommandStream* dvz_drp2_stream(void);
+void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream);
+uint32_t dvz_drp2_stream_count(const DvzDrp2CommandStream* stream);
+const DvzDrp2Command* dvz_drp2_stream_get(const DvzDrp2CommandStream* stream, uint32_t index);
+```
+
+Each command is a tagged C struct union matching the active DRP2 command surface. JSON is a debug
+serialization path, not the primary in-memory representation.
+
+Reasoning:
+
+JSON-only internals would be easy for tests but awkward for C runtime execution. A tagged C union
+keeps runtime code type-safe while still allowing JSON fixture emission.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D064: Command ID Allocation
+
+Question:
+
+Who owns DRP2 logical id allocation for resources, shader modules, pipelines, bind groups, command
+encoders, command buffers, and submissions?
+
+Recommendation:
+
+The scene-to-DRP2 converter owns deterministic id allocation for emitted streams.
+
+Rules:
+
+1. scene objects keep scene ids,
+2. converter maps scene ids and resource keys to DRP2 ids,
+3. ids are stable across frames when the underlying resource/pipeline key is unchanged,
+4. transient ids are frame-local but deterministic within a frame,
+5. no user-facing scene API exposes DRP2 ids.
+
+Reasoning:
+
+This keeps scene identity separate from protocol identity and makes converter fixtures stable.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D065: Converter Cache Scope
+
+Question:
+
+Should the converter remember previously emitted DRP2 objects across frames, or should every
+converted frame be self-contained?
+
+Recommendation:
+
+Support two modes:
+
+1. **fixture mode**: self-contained stream, emits all required object creation so tests are easy,
+2. **runtime mode**: persistent converter cache, omits object creation when the same resource or
+   pipeline key is already live.
+
+Reasoning:
+
+Self-contained streams are best for tests and replay. Persistent streams are necessary for real
+incremental rendering without recreating pipelines and resources every frame.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D066: First `FramePlan` C Shape
+
+Question:
+
+Should the first `FramePlan` implementation be a general graph, or a simpler ordered node list with
+read/write metadata?
+
+Recommendation:
+
+Use a topologically ordered node list plus per-node read/write sets.
+
+Minimum node types:
+
+1. `UPLOAD`,
+2. `COMPUTE`,
+3. `RENDER`,
+4. `COPY`,
+5. `READBACK`.
+
+Reasoning:
+
+It is enough for the first converter fixtures and avoids overbuilding a graph API before real use
+cases prove the need.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D067: `FramePlan` Public Visibility
+
+Question:
+
+Should `DvzFramePlan` be public/user-facing in v0.4, or only exposed for diagnostics/tests?
+
+Recommendation:
+
+Keep `DvzFramePlan` opaque and **diagnostic/test-facing only**. Public users build figures/scenes;
+tests and advanced tooling may inspect serialized plans.
+
+Reasoning:
+
+This preserves implementation freedom while still making the converter testable.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D068: `DvzCapabilitySnapshot` Struct
+
+Question:
+
+Should the draft C API define `DvzCapabilitySnapshot` now?
+
+Recommendation:
+
+Yes. Define a concrete draft struct before implementation.
+
+Minimum fields:
+
+1. protocol version,
+2. supported texture/render target formats,
+3. supported shader source/transport formats,
+4. max buffer size,
+5. max texture dimensions,
+6. max bind groups,
+7. max color attachments,
+8. readback/offscreen booleans,
+9. compute/fp64 booleans,
+10. WBOIT capability boolean,
+11. dynamic-buffer and texture-copy alignment limits.
+
+Reasoning:
+
+Validation and adaptation cannot be implemented cleanly while capabilities remain conceptual.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D069: Capability Storage Shape
+
+Question:
+
+How should variable-length capability lists, such as supported formats, be represented in C?
+
+Recommendation:
+
+Use fixed-size arrays in the first draft, with explicit counts:
+
+```c
+uint32_t supported_texture_format_count;
+DvzFormat supported_texture_formats[DVZ_MAX_CAPABILITY_FORMATS];
+```
+
+Reasoning:
+
+This is simple, FFI-friendly, and avoids allocator/lifetime questions in the capability snapshot.
+The limits can be generous and revised later.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D070: Built-In Shader Authoring
+
+Question:
+
+What should be the first built-in visual shader authoring language?
+
+Recommendation:
+
+Author built-in native shaders in GLSL initially, but make the converter/runtime boundary accept a
+transport shader format explicitly.
+
+Initial native runtime path:
+
+1. built-in GLSL source in scene shader registry,
+2. native runtime compiles GLSL to SPIR-V or consumes precompiled SPIR-V,
+3. DRP2 stream marks shader format as `spirv` or `glsl` only when the capability allows it,
+4. WGSL remains the required portable/browser path and must be supported before claiming full DRP2
+   Level 2 conformance.
+
+Reasoning:
+
+This matches the existing Vulkan/vklite direction while keeping the protocol honest about browser
+portability.
+
+Alternative:
+
+Use WGSL as the only built-in source language from the start, and make the native runtime compile
+WGSL to SPIR-V.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D071: Custom Visuals In First Implementation
+
+Question:
+
+Should experimental custom visuals be implemented in the first converter/runtime slice?
+
+Recommendation:
+
+No. Keep the spec, but do not implement custom visuals until built-in point/pixel/image/mesh paths
+prove the converter, shader registry, bind-group layout generation, picking, and readback paths.
+
+Reasoning:
+
+Custom visuals expose too many internals too early. They should reuse a proven built-in pipeline.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D072: First Visual Families To Implement
+
+Question:
+
+Which visual families should be implemented in the first scene-to-DRP2 converter slice?
+
+Recommendation:
+
+Implement:
+
+1. `pixel` or `point` first,
+2. `image` second,
+3. basic indexed `mesh` third,
+4. picking for `point` or `pixel`,
+5. offscreen readback path.
+
+Do not implement first:
+
+1. `glyph`,
+2. `volume`,
+3. `sphere`,
+4. `path`,
+5. `marker`,
+6. statistical families,
+7. custom visuals.
+
+Reasoning:
+
+This proves buffers, textures, pipelines, bind groups, render targets, and readback with the least
+geometry complexity.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D073: WBOIT Timing
+
+Question:
+
+Weighted blended OIT is a hard v0.4 requirement, but should it be part of the first converter/runtime
+slice?
+
+Recommendation:
+
+No. Implement opaque rendering first, then add WBOIT as the first transparency milestone after basic
+rendering/readback works.
+
+Reasoning:
+
+WBOIT requires multiple color attachments, blend-state details, and a composite pass. It is required
+for v0.4, but it should not block the first proof slice.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D074: Render Target Ownership In Code
+
+Question:
+
+Should `DvzRenderTarget` be owned by the runtime or by the scene?
+
+Recommendation:
+
+Runtime-owned, scene-referenced.
+
+Rules:
+
+1. runtime creates/destroys render targets,
+2. scene/figure stores non-owning target references,
+3. destroying a render target while a figure references it is invalid,
+4. offscreen targets expose readback metadata through runtime completion events.
+
+Reasoning:
+
+The runtime owns backend resources; the scene only needs logical dimensions, format, and identity.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D075: Readback Result Ownership
+
+Question:
+
+Who owns bytes returned by `QueueSubmitReply` / runtime readback completion?
+
+Recommendation:
+
+Runtime owns raw readback bytes until the completion event is consumed; scene copies or interprets
+them into scene-owned result structs such as `DvzPickResult` or export image buffers.
+
+Reasoning:
+
+This keeps callback/polling lifetime simple and avoids exposing backend staging memory to scene
+users.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D076: Picking Encoding
+
+Question:
+
+Should the first picking implementation use two 32-bit unsigned channels for the logical 64-bit pick
+id?
+
+Recommendation:
+
+Yes. Default physical format: `rg32uint` when available. Fallback: two `r32uint` targets or a
+capability diagnostic if neither is available.
+
+Reasoning:
+
+This avoids requiring native 64-bit integer render targets while preserving the logical 64-bit pick
+id decision.
+
+Spec edit if accepted:
+
+Add `rg32uint` to the DRP2/Datoviz format vocabulary if it is not already present.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D077: Format Vocabulary Expansion
+
+Question:
+
+Should the DRP2 and Datoviz format vocabularies be expanded before implementation starts?
+
+Recommendation:
+
+Yes, minimally.
+
+Add or verify:
+
+1. `rgba8unorm`,
+2. `bgra8unorm`,
+3. `r32uint`,
+4. `rg32uint`,
+5. `r32float`,
+6. `rgba32float`,
+7. `depth24plus`,
+8. `depth24plus-stencil8`,
+9. `depth32float`.
+
+Reasoning:
+
+The current fixtures use only a small subset. The first runtime needs color, picking, staging, and
+depth formats.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D078: Spec Lint
+
+Question:
+
+Should `just spec-check` include a lightweight stale-term lint?
+
+Recommendation:
+
+Yes. Add a small script/test that rejects stale active-spec terms:
+
+1. `IMAGE_SLICE`,
+2. `image-family slice`,
+3. public `StyleBlock`,
+4. `VkFormat` in scene API docs,
+5. `VkCommandBuffer` in normative scene docs,
+6. stale notes saying DRP2 has no readback primitive,
+7. stale notes saying shader modules/samplers/texture views are deferred.
+
+Allowlist historical decision-log entries where useful.
+
+Reasoning:
+
+The cleanup pass found these by manual grep; future edits should catch them mechanically.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D079: Fixture Count Tests
+
+Question:
+
+Should runner tests continue asserting exact tag-filter counts?
+
+Recommendation:
+
+Use exact counts only for stable fixture groups; otherwise assert semantic invariants and fixture
+names for important cases.
+
+Reasoning:
+
+Exact tag counts became stale as the corpus grew. They are useful only when the count itself is part
+of the contract.
+
+Owner decision:
+
+TODO(user):
+
+
+## Implementation Preflight D080: First Implementation Acceptance Gate
+
+Question:
+
+What should count as "ready to start the Vulkan DRP2 runtime"?
+
+Recommendation:
+
+Require:
+
+1. concrete `DvzCapabilitySnapshot` draft,
+2. concrete `DvzDrp2CommandStream` draft,
+3. `FramePlan` JSON shape for first fixtures,
+4. converter emits valid DRP2 JSON for the six proof fixtures,
+5. `just spec-check` passes, including stale-term lint.
+
+Reasoning:
+
+This keeps runtime work from starting on a moving converter/spec boundary.
+
+Owner decision:
+
+TODO(user):
+
+
 ## Notes From User
 
 Use this section for broad comments that do not fit one decision.
