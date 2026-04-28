@@ -4,6 +4,7 @@
   "type": "string",
   "enum": [
     "wgsl",
+    "glsl",
     "spirv"
   ]
 }

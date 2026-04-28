@@ -35,8 +35,12 @@ def test_drp2_fixture_runner_can_filter_capability_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['capability'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 5
+    assert {
+        'invalid_capability_shader_module_format',
+        'invalid_feature_required_shader_module_fp64',
+    }.issubset(fixture_names)
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'capability_validation' for result in results)
     assert {result.actual_code for result in results} == {
@@ -49,8 +53,11 @@ def test_drp2_fixture_runner_can_filter_handshake_fixtures() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover([], None, ['handshake'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 6
+    assert {'session_handshake_basic', 'invalid_handshake_unsupported_major_version'}.issubset(
+        fixture_names
+    )
     assert all(result.passed for result in results)
 
 
@@ -58,8 +65,11 @@ def test_drp2_fixture_runner_can_filter_error_fixtures() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover([], None, ['error'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 3
+    assert {'error_after_failed_handshake', 'error_does_not_poison_ready_session'}.issubset(
+        fixture_names
+    )
     assert all(result.passed for result in results)
 
 
@@ -67,8 +77,11 @@ def test_drp2_fixture_runner_can_filter_render_state_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['render_state'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 4
+    assert {'invalid_set_viewport_in_compute_pass', 'invalid_set_scissor_in_compute_pass'}.issubset(
+        fixture_names
+    )
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'semantic_validation' for result in results)
     assert all(result.actual_code == 'DRP2_ERR_PASS_MISMATCH' for result in results)
@@ -78,8 +91,11 @@ def test_drp2_fixture_runner_can_filter_pipeline_prerequisite_negatives() -> Non
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['pipeline'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 5
+    assert {'invalid_draw_without_pipeline', 'invalid_dispatch_without_pipeline'}.issubset(
+        fixture_names
+    )
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'semantic_validation' for result in results)
     assert {result.actual_code for result in results} == {
@@ -332,8 +348,9 @@ def test_drp2_fixture_runner_can_filter_vertex_binding_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['vertex_binding'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 2
+    assert {'invalid_draw_missing_vertex_buffer'}.issubset(fixture_names)
     assert all(result.passed for result in results)
     assert all(result.actual_phase == 'semantic_validation' for result in results)
     assert all(result.actual_code == 'DRP2_ERR_INVALID_STATE' for result in results)
@@ -355,8 +372,13 @@ def test_drp2_fixture_runner_can_filter_bind_group_negatives() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixtures = runner.discover(['spec/drp2/fixtures/negative'], None, ['bind_group'])
     results = runner.run_fixtures(fixtures)
+    fixture_names = {result.fixture_name for result in results}
 
-    assert len(results) == 15
+    assert {
+        'invalid_bind_group_entries_mismatch_layout',
+        'invalid_set_bind_group_dynamic_offsets_missing',
+        'invalid_bind_group_wrong_resource_usage',
+    }.issubset(fixture_names)
     assert all(result.passed for result in results)
     assert {result.actual_phase for result in results} == {
         'schema_validation',

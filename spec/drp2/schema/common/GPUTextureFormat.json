@@ -13,6 +13,7 @@
     "depth32float",
     "rgba8unorm-srgb",
     "r32uint",
+    "rg32uint",
     "r32sint",
     "r32float"
   ]

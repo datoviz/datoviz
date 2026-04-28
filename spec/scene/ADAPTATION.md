@@ -83,7 +83,8 @@ At minimum, adaptation may depend on capabilities such as:
 7. shader language support,
 8. FP64 availability,
 9. determinism-related guarantees,
-10. optional picking support if modeled separately.
+10. color blending and render-target attachment limits,
+11. optional picking support if modeled separately.
 
 This aligns with the DRP2 capability model in
 [spec/drp2/CAPABILITIES.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/CAPABILITIES.md).
@@ -224,6 +225,11 @@ In practice:
    preserving the highest transparency quality,
 3. treat high-fidelity transparency algorithms as quality choices unless one is explicitly required by
    the scene contract.
+
+Weighted blended OIT is an adaptation outcome derived from lower-level capabilities, not a single
+runtime capability by itself. The scene should select it when the runtime supports the required
+floating-point render targets, blending behavior, color-attachment count, and pass structure; when
+those ingredients are absent, the scene should choose a declared fallback or emit a diagnostic.
 
 
 ## Transparency And Emphasis

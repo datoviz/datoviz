@@ -46,8 +46,8 @@ Reach a point where Datoviz has:
     7. Borrowed vs owned resource lifetimes are explicit and validated.
     8. Thread-safety guarantees are documented and enforced.
     9. Deterministic compute/reduction behavior is available when requested.
-    10. WGSL is the DRP shader language; native runtimes may additionally accept
-        SPIR-V behind capability flags without changing the DRP contract.
+    10. WGSL is the portable DRP shader language; runtimes may additionally accept
+        GLSL or SPIR-V behind capability flags without changing the portable contract.
     11. Memory budget reporting, OOM handling, and leak detection are mandatory.
     12. Data layout, alignment, and stride guarantees are documented and validated.
 
@@ -76,7 +76,7 @@ Reach a point where Datoviz has:
 7. `native interop` (advanced APIs for Vulkan/CUDA interop).
 8. `memory manager` (explicit allocation policies, large-resource handling).
 9. `profiling` (public API for timing and counters).
-10. `shader pipeline` (WGSL for DRP; optional SPIR-V native ingestion).
+10. `shader pipeline` (WGSL for portable DRP; optional GLSL/SPIR-V ingestion).
 11. `tests` split by layer:
    1. DRP contract tests.
    2. Semantic/validation conformance tests shared across runtimes.
@@ -146,7 +146,7 @@ Map runtime operations to Vulkan efficiently while staying behind backend interf
 4. Command buffer recording and submission.
 5. Minimal swapchain/offscreen path for presentable output.
 6. Deterministic headless rendering path with readback.
-7. Native SPIR-V ingestion path behind capability flags (WGSL remains DRP source).
+7. Native GLSL/SPIR-V ingestion paths behind capability flags (WGSL remains the portable source).
 
 ### Deliverables
 1. Vulkan backend implementation module.
@@ -386,7 +386,7 @@ Use this workflow for every task:
 17. `T017`: Add native interop tests with platform capability coverage.
 18. `T018`: Add native interop protocol bridge for DLPack + CUDA Array Interface (capability-gated).
 19. `T019`: Add PyTorch/CuPy roundtrip tests and ownership/sync misuse negatives.
-20. `T020`: Add native SPIR-V ingestion behind capability flags.
+20. `T020`: Add native GLSL/SPIR-V ingestion behind capability flags.
 21. `T021`: Add compute pass path (mandatory) with basic fixtures.
 22. `T022`: Add deterministic compute/reduction fixtures and validation mode.
 23. `T023`: Document and test thread-safety guarantees for runtime and submission.

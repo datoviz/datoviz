@@ -36,7 +36,7 @@ If resuming work on the branch:
    [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
    - this is no longer only a planning note; it now records the active DRP2 executable contract and
      its next recommended slice
-6. Before doing a broad scene/DRP2 spec cleanup pass, resolve the open decisions in
+6. For higher-level implementation preflight context, read the applied decision log in
    [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
 7. Treat
    [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)

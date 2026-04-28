@@ -40,8 +40,8 @@ Requirements:
    current positive corpus uses stub shaders that do not produce defined pixel output,
 4. WGSL is the required shader language for `2.0` execution conformance; every positive fixture uses
    WGSL,
-5. a native runtime may additionally accept SPIR-V behind an explicit capability flag, but WGSL
-   support is still required.
+5. a runtime may additionally accept GLSL or SPIR-V behind explicit `supported_shader_formats`
+   capability entries, but WGSL support is still required.
 
 Level 2 is **required** for DRP2 `2.0` conformance but is not mechanically verified by the current
 fixture runner. It is a prose commitment until a GPU execution harness is defined.
@@ -70,7 +70,7 @@ and golden generation against actual hardware.
 For `2.0`:
 
 1. WGSL is the mandatory shader language for all conformance fixtures,
-2. SPIR-V support is optional and must be declared via `supported_shader_formats` in the
+2. GLSL and SPIR-V support are optional and must be declared via `supported_shader_formats` in the
    capability report,
 3. a runtime that claims `2.0` conformance must accept WGSL in `CreateShaderModule` commands.
 

@@ -22,26 +22,36 @@ The runtime should expose a structured capability record covering:
 6. limits
 7. determinism-related guarantees
 8. optional native escape hatches outside the core DRP2 contract
+9. lower-level rendering features used by scene techniques such as transparency
 
 
 ## Minimum Fields
 
 The first capability schema should include at least:
 
-1. `max_bind_groups`
-2. `max_color_attachments`
-3. `max_buffer_size`
-4. `max_uniform_buffer_binding_size`
-5. `max_storage_buffer_binding_size`
-6. `max_texture_dimension_1d`
-7. `max_texture_dimension_2d`
-8. `max_texture_dimension_3d`
-9. `max_texture_array_layers`
-10. `supported_texture_formats`
-11. `supported_sample_counts`
-12. `supports_timestamp_queries`
-13. `supports_fp64`
+1. `protocol_version`
+2. `max_bind_groups`
+3. `max_color_attachments`
+4. `max_buffer_size`
+5. `max_uniform_buffer_binding_size`
+6. `max_storage_buffer_binding_size`
+7. `max_texture_dimension_1d`
+8. `max_texture_dimension_2d`
+9. `max_texture_dimension_3d`
+10. `max_texture_array_layers`
+11. `supported_texture_formats`
+12. `supported_render_target_formats`
+13. `supported_sample_counts`
 14. `supported_shader_formats`
+15. `supports_timestamp_queries`
+16. `supports_fp64`
+17. `supports_readback`
+18. `supports_offscreen_targets`
+19. `supports_storage_textures`
+20. `supports_color_blending`
+21. `min_uniform_buffer_offset_alignment`
+22. `min_storage_buffer_offset_alignment`
+23. `min_texture_copy_bytes_per_row_alignment`
 
 
 ## Fixture Capability Shape
@@ -72,22 +82,29 @@ A runtime that is consumed by the scene layer should expose a richer `DvzCapabil
 
 This runtime snapshot includes the fixture fields above plus scene-planning limits such as:
 
-1. `max_bind_groups`
-2. `max_color_attachments`
-3. `max_uniform_buffer_binding_size`
-4. `max_storage_buffer_binding_size`
-5. `max_texture_array_layers`
-6. `supports_readback`
-7. `supports_offscreen_targets`
-8. `supports_storage_textures`
-9. `supports_weighted_blended_oit`
-10. `min_uniform_buffer_offset_alignment`
-11. `min_storage_buffer_offset_alignment`
-12. `min_texture_copy_bytes_per_row_alignment`
+1. `protocol_version`
+2. `max_bind_groups`
+3. `max_color_attachments`
+4. `max_uniform_buffer_binding_size`
+5. `max_storage_buffer_binding_size`
+6. `max_texture_array_layers`
+7. `supported_render_target_formats`
+8. `supports_readback`
+9. `supports_offscreen_targets`
+10. `supports_storage_textures`
+11. `supports_color_blending`
+12. `min_uniform_buffer_offset_alignment`
+13. `min_storage_buffer_offset_alignment`
+14. `min_texture_copy_bytes_per_row_alignment`
 
 The three alignment fields are backend-agnostic numeric limits. They are required for scene/runtime
 planning, but individual JSON fixtures do not need to declare them unless the fixture specifically
 tests dynamic buffer offsets or texture-copy row-pitch alignment.
+
+Weighted blended OIT is not represented as a single capability bit. The scene derives whether it can
+use that technique from lower-level facts: at least two color attachments, supported floating-point
+render-target formats for the accumulation targets, color blending support, and the ability to run
+the needed transparent accumulation and resolve render passes.
 
 
 ## Active `2.0` Command Gates
@@ -113,8 +130,9 @@ have succeeded.
 1. If a command needs a capability, that dependency must be explicit in the contract.
 2. Unsupported features fail during capability validation, before backend submission.
 3. Capability reports are declarative; they must not expose backend handle types.
-4. WGSL should be the default shader language for the contract.
-5. Native-only ingestion paths such as SPIR-V belong behind explicit capability flags.
+4. WGSL should be the default shader language for the portable contract.
+5. GLSL and native-only ingestion paths such as SPIR-V belong behind explicit capability flags in
+   `supported_shader_formats`.
 
 
 ## Error Mapping

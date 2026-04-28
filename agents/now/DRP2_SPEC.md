@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `ACTIVE SPEC / FIXTURE CONTRACT`
-> - **Updated on:** `2026-03-24`
+> - **Updated on:** `2026-04-28`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined before any runtime or scene
 >   implementation starts.
 > - **Current branch priority:** The low-level graphics stack remains the main code priority, but
@@ -110,19 +110,18 @@ The most sensible next DRP2 step is still not another large object-graph promoti
 
 Recommended next slice:
 
-1. keep the queue-submission and diagnostic checks stable across prose, fixtures, and runner behavior
-2. continue fixture-first hardening of remaining submit-time misuse cases before broadening object scope
-3. keep the fixture capability shape minimal while documenting the richer runtime capability snapshot
-   needed by the scene planner
-4. if the next hardening pass stays in DRP2, prefer error-code precision and any remaining submission-state gaps over new object families
-5. the next likely frontier is small error-policy cleanup rather than broader resource graphs
+1. define the first `DvzCapabilitySnapshot` draft and keep the fixture capability shape minimal
+2. define the first `DvzDrp2CommandStream` draft as an owned append-only C command stream
+3. keep `DvzFramePlan` diagnostic/test-facing and serialize it for converter fixtures
+4. implement scene-to-DRP2 converter fixtures before GPU runtime execution
+5. use manual stale-term cleanup during spec review rather than adding a permanent spec lint
 
 Reasoning:
 
 1. the active contract now covers handshake, bind-group state, and the first real texture-layout slice end to end
-2. the highest-value follow-up remains contract hardening, not broader object promotion
-3. runtime-facing alignment limits can be exposed as backend-agnostic numbers without requiring every
-   fixture to declare them
+2. the owner decision is to start with deterministic converter tests before Vulkan runtime execution
+3. runtime-facing alignment and transparency ingredients can be exposed as backend-agnostic numbers
+   without requiring every fixture to declare them
 4. deferred object families should remain deferred until a future slice can be validated just as concretely
 
 
@@ -132,8 +131,8 @@ Reasoning:
 2. prefer extending the existing executable fixture corpus over adding prose-only rules
 3. keep deferred object families deferred unless the runner can validate them meaningfully
 4. use `just spec-check` as the default validation gate for DRP2 spec changes
-5. only start runtime experiments once a slice is strong enough that fixtures, schemas, and prose all
-   agree on the same contract
+5. start with the scene-to-DRP2 converter test surface, then move to Vulkan runtime execution once
+   the first converter fixtures emit valid DRP2 streams
 
 
 ## Guardrails

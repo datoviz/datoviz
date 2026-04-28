@@ -121,8 +121,9 @@ At a minimum, `2.0` includes:
 ## Shader Rules
 
 1. Shader-module objects are part of the active executable `2.0` surface.
-2. WGSL is the default contract-level shader language in active `2.0`.
-3. Native-only ingestion paths such as SPIR-V may exist only behind explicit capability flags.
+2. WGSL is the default portable contract-level shader language in active `2.0`.
+3. GLSL and native-only ingestion paths such as SPIR-V may exist only behind explicit capability
+   flags.
 4. Shader modules carry only the minimum executable contract metadata: stage, format, entry point,
    and declared required features.
 5. Pipelines reference shader-module ids explicitly.

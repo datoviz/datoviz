@@ -41,6 +41,11 @@ The user does not need to specify pass ordering explicitly.
 Weighted blended OIT (McGuire & Bavoil 2013) is the default path for
 `DVZ_ALPHA_BLENDED` visuals.
 
+It is selected from lower-level runtime capabilities rather than from a standalone WBOIT flag. The
+required ingredients are compatible floating-point render targets, enough color attachments for the
+accumulation and reveal targets, color blending support, and the ability to run the accumulation and
+resolve passes.
+
 **How it works:**
 
 1. The transparent pass writes to two accumulation targets:

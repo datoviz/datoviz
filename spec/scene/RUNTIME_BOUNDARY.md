@@ -116,7 +116,8 @@ It should include at least:
 3. readback support,
 4. picking-related target constraints,
 5. compute and precision support,
-6. determinism-relevant export constraints.
+6. determinism-relevant export constraints,
+7. lower-level render-pass features needed by transparency techniques.
 
 The scene should be able to retain and compare snapshots across frames without backend handle
 inspection.
@@ -187,7 +188,8 @@ At minimum, the scene should be able to consume capability information such as:
 4. picking-related target constraints,
 5. compute and precision availability,
 6. determinism-relevant constraints needed by export or testing paths,
-7. buffer alignment limits for dynamic offset planning.
+7. buffer alignment limits for dynamic offset planning,
+8. color blending and color-attachment limits for transparent rendering.
 
 The following alignment fields must be present in the capability snapshot:
 
@@ -201,6 +203,12 @@ These fields are consumed by the scene planner when packing multiple parameter b
 shared buffers or when scheduling texture uploads.
 Individual DRP2 fixtures need not declare them unless the fixture specifically exercises dynamic
 buffer offsets or texture-copy alignment.
+
+Weighted blended OIT is derived from this lower-level snapshot. It is available only when the
+runtime reports enough color attachments for accumulation and reveal targets, compatible
+floating-point render-target formats, color blending support, and the ability to execute the
+transparent accumulation and resolve passes. There is no standalone "WBOIT supported" boolean in
+the capability snapshot.
 
 The snapshot must be explicit enough that:
 

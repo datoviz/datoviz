@@ -569,8 +569,9 @@ Optional fields:
 
 Semantics:
 
-1. active DRP2 `2.0` accepts WGSL in the core contract,
-2. SPIR-V remains capability-gated native ingestion rather than an always-available contract path,
+1. active DRP2 `2.0` accepts WGSL in the portable core contract,
+2. GLSL and SPIR-V remain capability-gated ingestion paths rather than always-available contract
+   paths,
 3. the module stage is fixed at creation time and later pipeline commands must use it consistently,
 4. `entry_point` names the callable entry in the provided module payload,
 5. `required_features` declares execution requirements that must be checked during capability

@@ -366,10 +366,12 @@ typedef enum
     DVZ_FORMAT_RGBA8_UNORM = 1,
     DVZ_FORMAT_BGRA8_UNORM = 2,
     DVZ_FORMAT_R32_UINT    = 3,
-    DVZ_FORMAT_R32_FLOAT   = 4,
-    DVZ_FORMAT_RGBA32_FLOAT = 5,
-    DVZ_FORMAT_DEPTH24_STENCIL8 = 6,
-    DVZ_FORMAT_DEPTH32_FLOAT = 7,
+    DVZ_FORMAT_RG32_UINT   = 4,
+    DVZ_FORMAT_R32_FLOAT   = 5,
+    DVZ_FORMAT_RGBA32_FLOAT = 6,
+    DVZ_FORMAT_DEPTH24_PLUS = 7,
+    DVZ_FORMAT_DEPTH24_STENCIL8 = 8,
+    DVZ_FORMAT_DEPTH32_FLOAT = 9,
 } DvzFormat;
 
 
@@ -381,6 +383,61 @@ typedef enum
     DVZ_SHADER_SOURCE_GLSL  = 1, /* accepted only through explicit runtime capability */
     DVZ_SHADER_SOURCE_SPIRV = 2, /* native-only precompiled path */
 } DvzShaderSourceLanguage;
+
+
+/* --- Capability snapshot -------------------------------------------------- */
+
+#define DVZ_MAX_CAPABILITY_FORMATS 64u
+#define DVZ_MAX_CAPABILITY_SHADER_FORMATS 8u
+#define DVZ_MAX_CAPABILITY_SAMPLE_COUNTS 8u
+
+typedef struct
+{
+    uint32_t major;
+    uint32_t minor;
+    uint32_t patch;
+} DvzProtocolVersion;
+
+
+typedef struct DvzCapabilitySnapshot
+{
+    DvzProtocolVersion protocol_version;
+
+    uint32_t supported_texture_format_count;
+    DvzFormat supported_texture_formats[DVZ_MAX_CAPABILITY_FORMATS];
+
+    uint32_t supported_render_target_format_count;
+    DvzFormat supported_render_target_formats[DVZ_MAX_CAPABILITY_FORMATS];
+
+    uint32_t supported_shader_format_count;
+    DvzShaderSourceLanguage supported_shader_formats[DVZ_MAX_CAPABILITY_SHADER_FORMATS];
+
+    uint32_t supported_sample_count_count;
+    uint32_t supported_sample_counts[DVZ_MAX_CAPABILITY_SAMPLE_COUNTS];
+
+    uint64_t max_buffer_size;
+    uint64_t max_uniform_buffer_binding_size;
+    uint64_t max_storage_buffer_binding_size;
+    uint32_t max_texture_dimension_1d;
+    uint32_t max_texture_dimension_2d;
+    uint32_t max_texture_dimension_3d;
+    uint32_t max_texture_array_layers;
+    uint32_t max_bind_groups;
+    uint32_t max_color_attachments;
+
+    bool supports_readback;
+    bool supports_offscreen_targets;
+    bool supports_storage_textures;
+    bool supports_color_blending;
+    bool supports_timestamp_queries;
+    bool supports_compute;
+    bool supports_fp64;
+    bool supports_deterministic_readback;
+
+    uint32_t min_uniform_buffer_offset_alignment;
+    uint32_t min_storage_buffer_offset_alignment;
+    uint32_t min_texture_copy_bytes_per_row_alignment;
+} DvzCapabilitySnapshot;
 
 
 

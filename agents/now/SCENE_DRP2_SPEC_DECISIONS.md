@@ -10,6 +10,13 @@ This document is intentionally not normative spec text yet.
 All owner decisions needed for the first full cleanup pass have been recorded. Remaining ambiguity
 should now be treated as implementation detail unless a cleanup edit exposes a concrete conflict.
 
+Applied status:
+
+1. decisions D001-D060 have been applied to the active spec docs and are kept here as historical
+   traceability,
+2. implementation-preflight decisions start at D061 and define the next converter/runtime work,
+3. this file should remain in `agents/now/` until the first implementation proof slice lands.
+
 Use it as an inline decision log:
 
 1. read each decision,
@@ -1855,7 +1862,8 @@ Minimum fields:
 7. max color attachments,
 8. readback/offscreen booleans,
 9. compute/fp64 booleans,
-10. WBOIT capability boolean,
+10. lower-level transparency support fields such as float render-target formats, blend support,
+    and sufficient color attachments,
 11. dynamic-buffer and texture-copy alignment limits.
 
 Reasoning:
@@ -1999,9 +2007,9 @@ Reasoning:
 WBOIT requires multiple color attachments, blend-state details, and a composite pass. It is required
 for v0.4, but it should not block the first proof slice.
 
-Owner decision: agree
+Owner decision:
 
-TODO(user):
+TODO(user): agree
 
 
 ## Implementation Preflight D074: Render Target Ownership In Code
@@ -2173,7 +2181,7 @@ Require:
 2. concrete `DvzDrp2CommandStream` draft,
 3. `FramePlan` JSON shape for first fixtures,
 4. converter emits valid DRP2 JSON for the six proof fixtures,
-5. `just spec-check` passes, including stale-term lint.
+5. `just spec-check` passes, with stale-term cleanup handled manually during spec review.
 
 Reasoning:
 

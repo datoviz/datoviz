@@ -22,7 +22,7 @@
     },
     "code": {
       "type": "string",
-      "description": "WGSL source text or base64-encoded SPIR-V bytes, depending on format."
+      "description": "WGSL/GLSL source text or base64-encoded SPIR-V bytes, depending on format."
     },
     "required_features": {
       "type": "array",
