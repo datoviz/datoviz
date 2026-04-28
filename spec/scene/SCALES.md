@@ -77,6 +77,7 @@ The domain is the range of input scalar values the scale expects.
 | `domain_min` | lower bound of the input range, `float64` |
 | `domain_max` | upper bound of the input range, `float64` |
 | `clamp` | behavior outside the domain: `clamp` (default) or `repeat` |
+| `unit` | optional display label for the quantity (e.g. `"Hz"`, `"mV"`, `"°C"`) |
 
 Values outside the domain are clamped to the nearest endpoint by default.
 `repeat` wraps the value modulo the domain width, useful for cyclic quantities such as angles.
@@ -84,6 +85,10 @@ Values outside the domain are clamped to the nearest endpoint by default.
 The domain lives in data space.
 It is the user's responsibility to set it to a meaningful range for their data.
 The scene does not auto-fit the domain unless a future API explicitly requests it.
+
+`unit` is display-only metadata. It is shown on axis tick labels and colorbar labels when the
+scale is attached to one. It does not affect the mapping computation. No unit algebra is applied
+in v0.4.
 
 
 ### Palette
@@ -233,6 +238,7 @@ A size scale maps scalars to float size values.
 | `output_min`, `output_max` | output size range in the declared unit |
 | `output_unit` | `screen_pixels` or `data_units` |
 | `interpolation` | `linear` (default) or `sqrt` or `log` |
+| `unit` | optional display label for the input quantity (e.g. `"μm"`, `"ms"`) |
 
 `sqrt` interpolation is useful when mapping scalar quantities to mark areas (so that perceived area
 scales linearly with value).

@@ -248,3 +248,57 @@ Unless a family spec states otherwise:
 | Compute | none |
 | Picking | optional |
 | Offscreen / export | same as render |
+
+
+## Missing-Value Policy
+
+These rules apply to all visual families unless the family spec overrides them.
+
+**NaN positions**: an item whose `position` contains any NaN component is skipped — it is not
+rendered and not pickable. No error is emitted.
+
+**NaN scalar color or size**: when a mapped scalar value is NaN, the scale's missing-value color
+(for color scales) or fallback size (for size scales) is used. The default missing-value color
+is a configurable field on the scale:
+
+```c
+dvz_scale_set_missing_color(scale, rgba_u8_value);  // default: transparent black (0,0,0,0)
+```
+
+**Inf coordinates**: treated as NaN for the purposes of rendering (item skipped). A validation
+diagnostic is emitted at `DVZ_DIAG_WARN` severity if strict validation is enabled.
+
+**NaN scalar in texture**: for scalar textures with a color scale, NaN maps to the scale's
+missing-value color, same as per-item scalar attributes.
+
+**Default fallback**: when an optional attribute is entirely absent and the family spec defines
+a default for it, the visual's default parameter value is used. Users may override the default
+with `dvz_visual_set_param(visual, attr_name, value)`.
+
+
+## Visual Defaults Contract
+
+Every visual family has defined default values for all optional attributes and visual-wide
+parameters. These defaults are documented in each family's spec.
+
+When the user does not set an optional attribute or parameter:
+
+1. the visual uses the documented default value,
+2. the default is applied silently — no warning is emitted,
+3. the default may be overridden per visual at any time.
+
+A `DvzStyle` object may be attached to a visual to override a group of defaults in one call:
+
+```c
+DvzStyle* style = dvz_style(scene);
+dvz_style_set_param(style, "linewidth", &lw);
+dvz_style_set_param(style, "color",     &col);
+dvz_visual_set_style(visual, style);
+```
+
+Multiple visuals may share the same `DvzStyle*`. When a style parameter changes, all attached
+visuals are marked dirty for that parameter. The style object is scene-owned and released with
+`dvz_style_destroy(style)`.
+
+`DvzStyle` is a convenience layer over `dvz_visual_set_param`. It does not change which
+parameters exist — only how they are grouped and shared.

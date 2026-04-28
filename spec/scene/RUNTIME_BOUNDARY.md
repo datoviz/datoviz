@@ -183,7 +183,21 @@ At minimum, the scene should be able to consume capability information such as:
 3. readback support,
 4. picking-related target constraints,
 5. compute and precision availability,
-6. determinism-relevant constraints needed by export or testing paths.
+6. determinism-relevant constraints needed by export or testing paths,
+7. buffer alignment limits for dynamic offset planning.
+
+The following alignment fields must be present in the capability snapshot:
+
+| Field | Type | Description |
+|---|---|---|
+| `min_uniform_buffer_offset_alignment` | `uint32` | minimum byte alignment for dynamic uniform buffer offsets |
+| `min_storage_buffer_offset_alignment` | `uint32` | minimum byte alignment for dynamic storage buffer offsets |
+| `min_texture_copy_bytes_per_row_alignment` | `uint32` | minimum row-pitch alignment for texture copy operations |
+
+These fields are consumed by the scene planner when packing multiple parameter blocks into
+shared buffers or when scheduling texture uploads.
+Individual DRP2 fixtures need not declare them unless the fixture specifically exercises dynamic
+buffer offsets or texture-copy alignment.
 
 The snapshot must be explicit enough that:
 
