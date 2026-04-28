@@ -87,8 +87,8 @@ dvz_visual_set_data(point, "position", xyz,  n);
 dvz_visual_set_data(point, "color",    rgba, n);
 
 // For grouped visuals (path, glyph): PER_GROUP attributes use n = group_count.
-// Group span sizes are passed as the data for the internal "group_size" attribute.
-dvz_visual_set_data(path, "group_size", path_sizes, n_paths);
+// Span sizes (number of vertices per span/path) are passed as the "span_sizes" attribute.
+dvz_visual_set_data(path, "span_sizes", path_sizes, n_paths);
 ```
 
 Attribute names are plain strings matching the per-family spec names. There is no
@@ -200,14 +200,16 @@ The required ordering remains:
 
 ## Preferred Picking Model
 
-The preferred picking model is:
+The preferred picking model distinguishes two kinds:
 
-1. asynchronous-capable request and completion semantics by default,
-2. freshness-preserving request identity,
-3. scene-visible result identity with panel, visual, item, group, or explanatory-object identity as
-   needed.
+1. **Click and query picking** — synchronous, blocking. `dvz_panel_pick` submits a request and
+   blocks until the result arrives via the runtime's synchronous completion helper. This is the
+   primary API for interactive click selection and tool-driven inspection.
+2. **Hover picking** — asynchronous callback. The scene delivers results via a callback registered
+   with `dvz_panel_on_hover`. Latest-request-wins semantics: stale hover results are discarded.
 
-Synchronous helper calls may be added later, but they should not become the defining semantic model.
+In both cases, results carry scene-visible identity (panel, visual, item, group) rather than
+backend identity. See `PICKING.md` for the complete model.
 
 
 ## Preferred Build And Submission Surface
@@ -219,17 +221,22 @@ The preferred build and submission model is:
 3. frame build is separate from runtime submission,
 4. runtime submission stays below the scene API boundary.
 
-Conceptually:
+Conceptually (using `dvz_scene_*` as the actual naming — `fig` below is pseudocode shorthand
+for the scene handle; there is no separate `DvzFigure` type):
 
 ```c
-dvz_figure_request_redraw(fig, DVZ_REDRAW_SCENE, NULL);
-DvzFramePlan* fp = dvz_figure_build_frame(fig, DVZ_BUILD_FLAGS_NONE, &report);
+dvz_scene_request_redraw(scene, DVZ_REDRAW_SCENE, NULL);
+DvzFramePlan* fp = dvz_scene_build_frame(scene, DVZ_BUILD_FLAGS_NONE, &report);
 dvz_runtime_submit(rt, fp);
 dvz_frame_plan_destroy(fp);
 ```
 
 The public API may wrap some of these in convenience entry points, but this separation should remain
 visible in the architecture.
+
+**Terminology note**: `canvas` (from `RUNTIME_BOUNDARY.md`) is the application-owned window +
+swapchain object. The scene never holds a canvas reference. A `DvzRenderTarget` is the
+scene-facing logical output handle resolved by the runtime — not a canvas.
 
 
 ## Preferred Error And Diagnostics Surface
@@ -244,9 +251,9 @@ The preferred diagnostics model is:
 ## Resolved C API Decisions
 
 **Naming convention** — `dvz_` prefix throughout. Opaque handles (`DvzVisual*`, `DvzPanel*`,
-etc.). Descriptor structs named `DvzXxxDesc`. Visual type identity uses `DvzVisualType` enum
-(`DVZ_VISUAL_POINT`, `DVZ_VISUAL_PATH`, etc.) — the internal spec term "family" is not exposed
-to users.
+etc.). Descriptor structs named `DvzXxxDesc`. There is no `DvzVisualType` enum in the public
+API — family identity is fixed at construction by the typed constructor and is not queryable.
+The internal spec term "family" is not exposed to users.
 
 **Constructors** — family-specific constructors as the primary public surface (`dvz_point()`,
 `dvz_path()`, `dvz_image()`, etc.) because resource schemas and initialization requirements
@@ -256,7 +263,7 @@ default.
 **Data upload** — `dvz_visual_set_data(visual, attr_name, data, n)` uniform across all visual
 types. `attr_name` is the string from the per-family spec ("position", "color", …). `n`
 determines the source: `1` → CONSTANT, `item_count` → PER_ITEM, `group_count` → PER_GROUP.
-Span/group sizes for grouped visuals (path, glyph) are written via the `"group_size"` attribute.
+Span sizes for grouped visuals (path, glyph) are written via the `"span_sizes"` attribute.
 Partial updates via `dvz_visual_set_data_range`. Mutability hints via `dvz_visual_set_mutability`.
 
 **Allocation** — separated from creation. Visuals are created without a committed item count.
@@ -267,9 +274,11 @@ for pre-allocation.
 per-family typed setter functions and no style-block struct. The Python sugar layer adds
 keyword-argument convenience above the named-param setter.
 
-**Picking** — asynchronous: `dvz_scene_request_pick(scene, panel, &req)` enqueues the request;
-result arrives via `DVZ_EVENT_PICK_RESULT` callback or `dvz_scene_poll_pick_result`. Hover uses
-`dvz_scene_on(scene, DVZ_EVENT_HOVER, cb, user_data)`. See `PICKING.md` for the full model.
+**Picking** — click and query picking are synchronous and blocking:
+`dvz_panel_pick(panel, x, y, DVZ_PICK_CLICK, &result)` returns a filled `DvzPickResult`.
+Hover picking is asynchronous via a callback:
+`dvz_panel_on_hover(panel, my_hover_callback, user_data)`.
+See `PICKING.md` for the full model including latest-request-wins hover semantics.
 
 **`FramePlan` inspection** — readable and serializable through a diagnostics or test interface
 only. Not a first-class public user-facing API.
