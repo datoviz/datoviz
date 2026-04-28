@@ -20,20 +20,20 @@ Typical uses: signal traces, time series, contour lines, trajectories, graph edg
 scientific line plots.
 
 
-## Item and Group Model
+## Item and Span Model
 
-`path` is a **grouped visual**: each logical item is one path (a connected sequence of vertices).
-The vertices within a path form the rendering primitive, not individual points.
+`path` is a **span-structured visual**: each logical span is one path (a connected sequence of
+vertices). The vertices within a path form the rendering primitive, not individual points.
 
-This maps to a `GroupedItemTable`: items are paths, vertices are sub-items within each path.
+This maps to a `GroupedItemTable`: spans are paths, items are vertices within each path.
 The user provides:
 - a flat array of vertex positions (across all paths, concatenated),
-- a path count and per-path vertex count.
+- a path count and per-path vertex count (via the `"span_sizes"` attribute).
 
 `PER_ITEM` attribute sources are indexed by vertex.
-`PER_GROUP` attribute sources are indexed by path.
+`PER_SPAN` attribute sources are indexed by path.
 
-Picking returns the path index as item identity, not the vertex index.
+Picking returns the path (span) index as item identity, not the vertex index.
 
 
 ## Per-Item (Per-Vertex) Attributes
@@ -52,9 +52,9 @@ Each entry in the flat vertex arrays corresponds to one vertex.
 ### `color`
 
 Standard — see `SHARED_ATTRIBUTES.md`. Per-vertex color produces a gradient along the path.
-Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
+Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_SPAN`.
 
-`PER_GROUP` means one color per path (all vertices of a path share the same color).
+`PER_SPAN` means one color per path (all vertices of a path share the same color).
 `PER_ITEM` means one color per vertex, enabling along-path gradients.
 `CONSTANT` means one color for all vertices of all paths.
 
@@ -62,7 +62,7 @@ Accepted sources: `CONSTANT`, `PER_ITEM`, `PER_GROUP`.
 ### `linewidth`
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Accepted sources: `CONSTANT`, `PER_GROUP`.
+Accepted sources: `CONSTANT`, `PER_SPAN`.
 
 Per-vertex linewidth (tapered lines) is not supported in v0.4 — join geometry requires uniform
 width per path. Tapered lines are a v0.4+ feature.
@@ -127,7 +127,7 @@ Maximum miter length as a multiple of `linewidth`. When a miter join would excee
 the join falls back to `bevel` automatically. `4.0` is a standard SVG/PostScript default.
 Set to a large value to disable the limit (allows arbitrarily long miter spikes).
 
-When `linewidth` is `PER_GROUP`, the miter limit is evaluated per-path using that path's own
+When `linewidth` is `PER_SPAN`, the miter limit is evaluated per-path using that path's own
 linewidth — a path with a wider line uses its width as the reference multiple.
 
 
@@ -165,7 +165,7 @@ a parameter value. Set at visual creation time.
 ## Transform Model, Stage Participation, Picking
 
 Standard — see `SHARED_ATTRIBUTES.md`.
-Picking returns the path (group) index as item identity.
+Picking returns the path (span) index as item identity.
 Sub-item (vertex) identity is not returned.
 
 
@@ -188,10 +188,10 @@ dedicated streaming API is needed.
 ## Minimum Cases This Spec Must Support
 
 1. single signal trace — one path, `color` `CONSTANT`, `linewidth` `CONSTANT`,
-2. 20 overlaid signal traces — `color` `PER_GROUP`, `linewidth` `CONSTANT`,
+2. 20 overlaid signal traces — `color` `PER_SPAN`, `linewidth` `CONSTANT`,
 3. per-vertex colored trajectory — `color` `PER_ITEM` rgba (gradient along path),
 4. scalar-colored fiber bundle — `color` `PER_ITEM` scalar,
-5. per-group-width contour lines — `linewidth` `PER_GROUP`,
+5. per-path-width contour lines — `linewidth` `PER_SPAN`,
 6. closed polygon outlines — `closed = true`, `join = miter`.
 
 
@@ -201,9 +201,9 @@ dedicated streaming API is needed.
 |---|---|
 | `dvz_path_position` with `path_lengths` | `position` `PER_ITEM` + group structure |
 | `dvz_path_color` | `color`, extended sources and scalar mode |
-| `dvz_path_linewidth` | `linewidth`, now also `PER_GROUP` |
+| `dvz_path_linewidth` | `linewidth`, now also `PER_SPAN` |
 | `dvz_path_cap` | `cap_start` + `cap_end` (split; both default `round`) |
 | `dvz_path_join` | `join`, extended to `miter`/`round`/`bevel` |
 
-v0.4 adds: `PER_GROUP` sources, `scalar` color mode, `linewidth_space`, `closed` variant axis.
+v0.4 adds: `PER_SPAN` sources, `scalar` color mode, `linewidth_space`, `closed` variant axis.
 v0.3 `join` had only `square`/`round`; v0.4 renames `square` to `bevel` and adds `miter`.

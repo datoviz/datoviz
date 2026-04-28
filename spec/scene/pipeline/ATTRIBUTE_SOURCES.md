@@ -36,11 +36,12 @@ encode group lookups — is chosen by the scene layer and is not user-visible.
 
 Every visual attribute that accepts data from the user must declare an **attribute source**.
 
-The three valid sources are:
+The four valid sources are:
 
 1. `CONSTANT`
 2. `PER_ITEM`
-3. `PER_GROUP`
+3. `PER_SPAN`
+4. `PER_GROUP`
 
 
 ### `CONSTANT`
@@ -74,6 +75,30 @@ Examples:
 Scene implementation: a dense per-item buffer, typically realized as a vertex attribute or storage
 buffer read.
 The choice depends on item count, access pattern, and capability, and is transparent to the user.
+
+
+### `PER_SPAN`
+
+One value is supplied per structural span.
+
+A span is a contiguous range of items that forms one logical unit in a span-structured visual:
+one path in `path`, one string in `glyph`.
+Span membership is encoded in the visual's span-boundary metadata (`span_sizes` attribute), not
+in a per-item group index.
+`PER_SPAN` is only valid for `GroupedItemTable` visuals; it is a validation error on flat
+`ItemTable` visuals.
+
+Examples:
+
+1. 20 paths each with its own color — one `rgba_u8` per path,
+2. 200 paths each with its own linewidth — one `float32` per path,
+3. 50 glyph strings each with its own baseline color — one `rgba_u8` per string.
+
+Scene implementation: the scene resolves span membership from the stored span boundaries and
+expands or indexes to the correct per-item value at upload or shader time.
+
+`PER_SPAN` is the correct source for attributes that "vary by path" or "vary by string".
+`PER_GROUP` (below) should not be used for this structural purpose.
 
 
 ### `PER_GROUP`
@@ -116,41 +141,41 @@ The user does not select or see the strategy.
 
 `PER_GROUP` attribute source and `GroupedItemTable` are related but distinct concepts.
 
-**Terminology**: the word "group" is used in two distinct senses in the scene spec.
-These must not be confused:
+**Terminology**: "span" and "group" are distinct concepts that must not be confused.
 
-- **Span** — a contiguous boundary unit in a `GroupedItemTable`: one polyline in `path`, one
-  string in `glyph`.
-  Spans define the structural layout of the data.
-  The public API uses `dvz_visual_spans()` to declare them.
+- **Span** — a contiguous structural boundary unit in a `GroupedItemTable`: one polyline in
+  `path`, one string in `glyph`.
+  Spans define the topological layout of the data.
+  The public API uses the `"span_sizes"` attribute to declare them.
+  Attributes that vary by span use **`PER_SPAN`** source.
 
-- **Group** — a population-level attribute bucket used with `PER_GROUP` source: one neuron
-  population, one brain region, one electrode channel.
-  Groups define which items share the same attribute value.
-  The public API uses `DVZ_ATTR_GROUP_ID` per item to declare them.
+- **Group** — a semantic population identity: one neuron population, one brain region, one
+  electrode channel.
+  Groups are declared by the user via a per-item integer `"group_id"` attribute.
+  Attributes that vary by semantic group use **`PER_GROUP`** source.
 
 `GroupedItemTable` is a scene resource class that owns both item storage and span boundary
 metadata.
 It is primarily used by visual types such as `path` and `glyph` where span membership is
-intrinsic to the data contract (items belong to an ordered sequence).
+intrinsic to the data contract.
 
-`PER_GROUP` attribute source is an attribute-level declaration.
-It says that a specific attribute value varies by group, not by item.
+The valid combinations are:
 
-The two concepts interact as follows:
-
-1. **`ItemTable` + `PER_GROUP`**: the visual has no intrinsic span structure, so the user must
-   supply an explicit per-item group index integer alongside the group value table.
+1. **`ItemTable` + `PER_GROUP`**: the visual has no intrinsic span structure; each item must
+   carry an explicit per-item group index integer alongside the group value table.
    Example: a flat scatter of 3M spikes where each spike carries a neuron group index.
 
-2. **`GroupedItemTable` + `PER_GROUP`**: span membership is already encoded in the table
-   boundaries, so no separate per-item group index is needed.
-   The scene infers group identity from the span boundary metadata.
-   Example: 200 paths each with its own color — the span boundaries define the groups.
+2. **`GroupedItemTable` + `PER_SPAN`**: span membership is already encoded in the table
+   boundaries; the user supplies one value per span.
+   Example: 200 paths each with its own color or linewidth.
 
-Group identity in `GroupedItemTable` visuals is always the table's own span structure.
-There is no supported case where a `GroupedItemTable` visual uses `PER_GROUP` with a group
-identity that differs from the table's span boundaries.
+3. **`GroupedItemTable` + `PER_GROUP`**: spans have a semantic group identity beyond the span
+   itself; each span carries a group index, and the attribute varies per group.
+   Example: 200 paths where paths belong to 5 neuron populations with per-population color.
+
+4. **`GroupedItemTable` + `PER_GROUP`** (with explicit group_id): not supported — group
+   identity in `GroupedItemTable` visuals must be resolved through span boundaries or a
+   per-item group index on flat data, not through a separate mechanism.
 
 
 ## Which Sources Each Attribute Accepts
@@ -180,7 +205,8 @@ Attribute source is encoded implicitly in the item count `n` passed to
 |---|---|
 | `1` | `CONSTANT` — one value for all items |
 | `item_count` | `PER_ITEM` — one value per item |
-| `group_count` | `PER_GROUP` — one value per group |
+| `span_count` | `PER_SPAN` — one value per structural span (GroupedItemTable visuals only) |
+| `group_count` | `PER_GROUP` — one value per semantic group |
 
 The scene validates that `n` matches an accepted source for the attribute as declared in the
 per-family spec. An `n` value that does not match any accepted source is a validation error.

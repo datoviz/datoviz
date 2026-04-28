@@ -22,14 +22,16 @@ per-character color coding.
 
 ## Item and Group Model
 
-`glyph` is a **grouped visual**: each logical item is one string (group). Characters within each
-string are sub-items managed internally by the scene layer.
+`glyph` is a **span-structured visual**: each span is one string. Characters within each string
+are sub-items managed internally by the scene layer.
 
 The user provides data at the string level. The scene layer expands each string into per-character
 geometry using the active font.
 
 `PER_ITEM` attribute sources are indexed by string.
-`PER_GROUP` is not a distinct concept here — string = group = item at the user-facing level.
+`PER_SPAN` is equivalent to `PER_ITEM` for `glyph` — string = span = item at the user-facing
+level. `PER_GROUP` applies when strings belong to semantic groups (e.g., neuron populations)
+declared via a per-item `"group_id"` attribute.
 
 
 ## Per-String Attributes
@@ -276,7 +278,7 @@ v0.4 hides all per-character GPU details behind the scene layer. The user works 
 granularity only.
 
 
-`char_color` `PER_GROUP` is redundant with `color` `PER_ITEM` (both give one color per string)
+`char_color` `PER_SPAN` is redundant with `color` `PER_ITEM` (both give one color per string)
 — not supported; use `color` `PER_ITEM` for per-string uniform color.
 
 `letter_spacing` is not supported in v0.4 — standard font kerning is applied by the atlas layout.

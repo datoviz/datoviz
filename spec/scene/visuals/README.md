@@ -38,5 +38,5 @@ detail to implement or validate each family.
 ## Reading Order
 
 Read `../pipeline/ATTRIBUTE_SOURCES.md` in the parent directory before reading any family spec.
-The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_GROUP`) and mutability hints
+The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and mutability hints
 (`static`, `dynamic`, `streaming`) are used throughout.
