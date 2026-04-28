@@ -20,6 +20,8 @@ Current status:
 4. DRP2 now also has an executable spec/fixture lane; treat
    [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) as current if you are
    working under `spec/drp2/` rather than in the low-level runtime.
+5. The active higher-level implementation plan is
+   [now/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_IMPLEMENTATION.md).
 
 
 ## Start Here
@@ -32,13 +34,15 @@ If resuming work on the branch:
    predecessor boundary-cleanup record
 4. Optionally read [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) if you
    want to continue packaging/CI cleanup after the boundary work
-5. When the branch is ready to start higher-level spec work, read
+5. When the branch is ready to start higher-level implementation work, read
+   [now/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_IMPLEMENTATION.md)
+6. For DRP2 contract details, read
    [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
    - this is no longer only a planning note; it now records the active DRP2 executable contract and
-     its next recommended slice
-6. For higher-level implementation preflight context, read the applied decision log in
+     fixture contract
+7. For higher-level implementation preflight context, read the applied decision log in
    [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
-7. Treat
+8. Treat
    [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    as strategic backlog, not as the default next-task list
 
@@ -52,7 +56,8 @@ Files in this directory are actionable today and should stay short enough to dri
 1. [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
 2. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
 3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
-4. [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
+4. [now/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_IMPLEMENTATION.md)
+5. [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
 
 ### `done/`
 

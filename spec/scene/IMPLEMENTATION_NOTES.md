@@ -244,11 +244,11 @@ The inline scale shortcut in `SCALES.md` maps to a sugar-layer convenience; it d
 a special code path in the C API.
 
 
-## Immediate Pressure On Implementation
+## Implementation Plan
 
-If implementation work starts from this bridge, the first high-value prototypes are:
+The active implementation sequence lives in
+`agents/now/SCENE_DRP2_IMPLEMENTATION.md`.
 
-1. `DvzScene`, `DvzScenePanel`, `DvzSceneVisual`, and `DvzSceneResource` descriptors,
-2. `DvzCapabilitySnapshot` and runtime query plumbing,
-3. one inspectable `DvzSceneFramePlan`,
-4. one shared diagnostic record type used by validation, adaptation, planning, and runtime.
+This document remains an implementation bridge for scene concepts and binding architecture. It
+should not duplicate the module bring-up order, canvas/runtime integration order, or validation
+matrix.

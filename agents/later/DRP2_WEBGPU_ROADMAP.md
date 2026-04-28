@@ -5,6 +5,8 @@
 > - **Current branch status:** not the immediate execution plan; active priority is still
 >   `vk`/`vklite` cleanup
 > - **Execution note:** the actionable spec-phase entry point is `agents/now/DRP2_SPEC.md`
+> - **Implementation note:** the active repo-local implementation plan is
+>   `agents/now/SCENE_DRP2_IMPLEMENTATION.md`
 
 # DRP2 / WebGPU / Scene Roadmap
 

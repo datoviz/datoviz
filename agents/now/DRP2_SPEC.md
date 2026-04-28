@@ -1,8 +1,8 @@
 > **Execution Status**
 > - **Status:** `ACTIVE SPEC / FIXTURE CONTRACT`
 > - **Updated on:** `2026-04-28`
-> - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined before any runtime or scene
->   implementation starts.
+> - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
+>   proceeds.
 > - **Current branch priority:** The low-level graphics stack remains the main code priority, but
 >   the DRP2 spec/fixture lane is now real, runnable, and worth keeping current because it has
 >   become an executable contract rather than a planning note.
@@ -104,35 +104,20 @@ Current executable DRP2 corpus status:
 5. The spec is narrow enough that implementation can proceed incrementally.
 
 
-## Recommended Next Step
+## Implementation Plan
 
-The most sensible next DRP2 step is still not another large object-graph promotion.
+Implementation sequencing is tracked in
+`agents/now/SCENE_DRP2_IMPLEMENTATION.md`.
 
-Recommended next slice:
+Keep this file focused on the active DRP2 contract and fixture lane. Do not duplicate module
+bring-up order here.
 
-1. define the first `DvzCapabilitySnapshot` draft and keep the fixture capability shape minimal
-2. define the first `DvzDrp2CommandStream` draft as an owned append-only C command stream
-3. keep `DvzFramePlan` diagnostic/test-facing and serialize it for converter fixtures
-4. implement scene-to-DRP2 converter fixtures before GPU runtime execution
-5. use manual stale-term cleanup during spec review rather than adding a permanent spec lint
+Spec maintenance rules:
 
-Reasoning:
-
-1. the active contract now covers handshake, bind-group state, and the first real texture-layout slice end to end
-2. the owner decision is to start with deterministic converter tests before Vulkan runtime execution
-3. runtime-facing alignment and transparency ingredients can be exposed as backend-agnostic numbers
-   without requiring every fixture to declare them
-4. deferred object families should remain deferred until a future slice can be validated just as concretely
-
-
-## Recommended Task Order
-
-1. keep `spec/drp2/COMMANDS.md`, `LIFETIMES.md`, `ERRORS.md`, and active schemas aligned
-2. prefer extending the existing executable fixture corpus over adding prose-only rules
-3. keep deferred object families deferred unless the runner can validate them meaningfully
-4. use `just spec-check` as the default validation gate for DRP2 spec changes
-5. start with the scene-to-DRP2 converter test surface, then move to Vulkan runtime execution once
-   the first converter fixtures emit valid DRP2 streams
+1. keep `spec/drp2/COMMANDS.md`, `LIFETIMES.md`, `ERRORS.md`, and active schemas aligned,
+2. prefer extending the existing executable fixture corpus over adding prose-only rules,
+3. keep deferred object families deferred unless the runner can validate them meaningfully,
+4. use `just spec-check` as the default validation gate for DRP2 spec changes.
 
 
 ## Guardrails
