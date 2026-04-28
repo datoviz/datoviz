@@ -1,6 +1,11 @@
 # Scene Runtime Service Sketch
 
-This document sketches the minimal conceptual runtime service surface below scene planning.
+> **Normative status:** Despite the "Sketch" title, the service concepts in this document are
+> normative for the scene layer. The title reflects the document's origin as an exploratory
+> draft; the content has since been resolved and integrated with the broader scene spec.
+> `RUNTIME_BOUNDARY.md` is the companion normative document for the runtime boundary contract.
+
+This document defines the minimal conceptual runtime service surface below scene planning.
 
 It refines `RUNTIME_BOUNDARY.md` into a smaller set of service concepts without freezing a final C
 API.

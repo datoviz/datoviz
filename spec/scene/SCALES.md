@@ -354,11 +354,14 @@ An anonymous scale has no stable identity outside the visual.
 It cannot be shared with other visuals or attached to a colorbar.
 If the user later needs to attach a colorbar, they should switch to an explicit handle.
 
-**API spelling** — three typed shorthand constructors cover the common cases:
+**API spelling** — four typed shorthand constructors cover the common cases:
 
 ```c
 /* Color scale: float input → rgba via named colormap */
 DvzScale* scale = dvz_scale_color(scene, "viridis", domain_min, domain_max);
+
+/* Categorical scale: integer input → rgba via discrete palette */
+DvzScale* scale = dvz_scale_categorical(scene, "tab10", n_categories);
 
 /* Size scale: float input → float output in [px_min, px_max] */
 DvzScale* scale = dvz_scale_size(scene, px_min, px_max, domain_min, domain_max);
@@ -376,8 +379,11 @@ dvz_scale_set_stops(scale, rgba_stops, n_stops); /* custom RGBA color stops */
 dvz_scale_destroy(scale);
 ```
 
-All three constructors return a `DvzScale*` that can be passed to `dvz_visual_set_scale`.
-Categorical scales use `dvz_scale_color` with a categorical colormap name (e.g., `"tab10"`).
+All four constructors return a `DvzScale*` that can be passed to `dvz_visual_set_scale`.
+`dvz_scale_categorical` is a convenience wrapper: it selects the first `n_categories` colors
+from the named discrete palette and maps integer item indices to those colors.
+It is equivalent to calling `dvz_scale_color` with the same palette name and a domain of
+`[0, n_categories - 1]`, but signals categorical intent at construction time.
 
 
 ## Scale Updates

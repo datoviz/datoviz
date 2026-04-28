@@ -127,6 +127,9 @@ Maximum miter length as a multiple of `linewidth`. When a miter join would excee
 the join falls back to `bevel` automatically. `4.0` is a standard SVG/PostScript default.
 Set to a large value to disable the limit (allows arbitrarily long miter spikes).
 
+When `linewidth` is `PER_GROUP`, the miter limit is evaluated per-path using that path's own
+linewidth — a path with a wider line uses its width as the reference multiple.
+
 
 ### `closed`
 

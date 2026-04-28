@@ -267,6 +267,9 @@ Current direction:
 1. treat as a specialized `path` mode, variant, or subfamily,
 2. keep the door open to promote it later if it needs a materially different contract.
 
+There is no `spec/scene/visuals/WIGGLE.md`. Wiggle behavior is covered by `PATH.md` under
+the `path` family's variant axis.
+
 Promotion to a full family would require evidence that it has meaningfully different:
 
 1. grouped-data schema,

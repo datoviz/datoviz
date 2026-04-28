@@ -45,6 +45,9 @@ Requirements:
 
 Level 2 is **required** for DRP2 `2.0` conformance but is not mechanically verified by the current
 fixture runner. It is a prose commitment until a GPU execution harness is defined.
+The planned verification path for `2.1` is a harness that executes each positive fixture against
+a real GPU backend and checks that no protocol-level error is returned and all readback replies
+have the correct shape.
 
 
 ### Level 3 — Output Conformance
