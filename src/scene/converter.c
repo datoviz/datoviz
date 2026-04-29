@@ -128,6 +128,10 @@ struct DvzFramePlanEmitter
     bool sampler_created;
     bool bind_group_layout_created;
     bool bind_group_created;
+    bool storage_bind_group_layout_created;
+    bool storage_bind_group_created;
+    bool compute_shader_created;
+    bool compute_pipeline_created;
 };
 
 
@@ -875,6 +879,71 @@ static bool _emitter_emit_texture_upload(
 
 
 /**
+ * Emit runtime-mode compute input/output buffer commands.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param upload the upload node backing the compute input
+ * @param compute the compute node naming the output resource
+ * @return whether the commands were emitted
+ */
+static bool _emitter_emit_compute_buffers(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* upload,
+    const DvzFramePlanNode* compute)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(upload);
+    ANN(compute);
+    if (compute->u.compute.write_count == 0)
+        return false;
+
+    bool input_exists = false;
+    bool output_exists = false;
+    for (uint32_t i = 0; i < emitter->resources.count; i++)
+    {
+        if (strcmp(emitter->resources.resources[i].key, upload->u.upload.resource_id) == 0)
+            input_exists = true;
+        if (strcmp(emitter->resources.resources[i].key, compute->u.compute.writes[0]) == 0)
+            output_exists = true;
+    }
+
+    uint64_t input_id = _resource_id(&emitter->resources, upload->u.upload.resource_id);
+    uint64_t output_id = _resource_id(&emitter->resources, compute->u.compute.writes[0]);
+    if (input_id == 0 || output_id == 0)
+        return false;
+
+    emitter->resources.first_compute_input_id = input_id;
+    emitter->resources.first_compute_output_id = output_id;
+    emitter->resources.first_vertex_buffer_id = output_id;
+    emitter->resources.compute_buffer_size = upload->u.upload.byte_size;
+
+    char data[128] = {0};
+    if (!_zero_base64(upload->u.upload.byte_size, data, sizeof(data)))
+        return false;
+
+    bool ok = true;
+    if (!input_exists)
+    {
+        ok = ok && dvz_drp2_stream_create_buffer(
+                       stream, input_id, upload->u.upload.byte_size,
+                       DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE);
+    }
+    ok = ok && dvz_drp2_stream_write_buffer(
+                   stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size,
+                   data);
+    if (!output_exists)
+    {
+        ok = ok && dvz_drp2_stream_create_buffer(
+                       stream, output_id, upload->u.upload.byte_size,
+                       DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_VERTEX);
+    }
+    return ok;
+}
+
+
+
+/**
  * Emit runtime-mode static render commands.
  *
  * @param emitter the persistent emitter
@@ -1078,6 +1147,137 @@ static bool _emitter_emit_texture_render(
 }
 
 
+/**
+ * Emit runtime-mode compute pass followed by render commands.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param compute the compute node
+ * @param readback the optional readback copy node
+ * @param cfg the emission config
+ * @return whether the commands were emitted
+ */
+static bool _emitter_emit_compute_assisted_render(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* compute,
+    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(compute);
+    if (emitter->resources.first_compute_input_id == 0 ||
+        emitter->resources.first_compute_output_id == 0 ||
+        emitter->resources.compute_buffer_size == 0)
+        return false;
+
+    bool ok = true;
+    if (!emitter->storage_bind_group_layout_created)
+    {
+        ok = ok && dvz_drp2_stream_create_storage_bind_group_layout(
+                       stream, DRP2_ID_BIND_GROUP_LAYOUT);
+        emitter->storage_bind_group_layout_created = ok;
+    }
+    if (ok && !emitter->compute_shader_created)
+    {
+        ok = ok && _emit_shader(
+                       stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", DRP2_COMPUTE_WGSL,
+                       DRP2_COMPUTE_GLSL, cfg);
+        emitter->compute_shader_created = ok;
+    }
+    if (ok && !emitter->compute_pipeline_created)
+    {
+        ok = ok && dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
+                       stream, DRP2_ID_COMPUTE_PIPELINE, DRP2_ID_COMPUTE_SHADER,
+                       DRP2_ID_BIND_GROUP_LAYOUT);
+        emitter->compute_pipeline_created = ok;
+    }
+    if (ok && !emitter->storage_bind_group_created)
+    {
+        ok = ok && dvz_drp2_stream_create_storage_bind_group(
+                       stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT,
+                       emitter->resources.first_compute_input_id,
+                       emitter->resources.first_compute_output_id,
+                       emitter->resources.compute_buffer_size);
+        emitter->storage_bind_group_created = ok;
+    }
+    if (ok && !emitter->vertex_shader_created)
+    {
+        ok = ok && _emit_shader(
+                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL,
+                       DRP2_VERTEX_GLSL, cfg);
+        emitter->vertex_shader_created = ok;
+    }
+    if (ok && !emitter->fragment_shader_created)
+    {
+        ok = ok && _emit_shader(
+                       stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
+                       DRP2_FRAGMENT_GLSL, cfg);
+        emitter->fragment_shader_created = ok;
+    }
+    if (ok && !emitter->render_pipeline_created)
+    {
+        ok = ok && dvz_drp2_stream_create_render_pipeline(
+                       stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER,
+                       1);
+        emitter->render_pipeline_created = ok;
+    }
+    uint64_t color_target_id = _color_target_id(cfg);
+    if (ok && !emitter->color_target_created && (cfg == NULL || !cfg->external_color_target))
+    {
+        uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+        ok = ok && dvz_drp2_stream_create_texture_2d_usage(
+                       stream, color_target_id, 4, 4, usage);
+        emitter->color_target_created = ok;
+    }
+    if (ok && readback != NULL && !emitter->readback_buffer_created)
+    {
+        ok = ok && _emit_readback_buffer(stream, readback);
+        emitter->readback_buffer_created = ok;
+    }
+    if (!ok)
+        return false;
+
+    uint64_t encoder_id = _emitter_next_transient_id(emitter);
+    uint64_t compute_pass_id = _emitter_next_transient_id(emitter);
+    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id = _emitter_next_transient_id(emitter);
+
+    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+         dvz_drp2_stream_begin_compute_pass(stream, compute_pass_id, encoder_id) &&
+         dvz_drp2_stream_set_pipeline(stream, compute_pass_id, DRP2_ID_COMPUTE_PIPELINE) &&
+         dvz_drp2_stream_set_bind_group(stream, compute_pass_id, 0, DRP2_ID_BIND_GROUP) &&
+         dvz_drp2_stream_dispatch_workgroups(
+             stream, compute_pass_id, compute->u.compute.dispatch[0],
+             compute->u.compute.dispatch[1], compute->u.compute.dispatch[2]) &&
+         dvz_drp2_stream_end_compute_pass(stream, compute_pass_id) &&
+         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_target_id) &&
+         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE) &&
+         dvz_drp2_stream_set_vertex_buffer(
+             stream, render_pass_id, 0, emitter->resources.first_compute_output_id, 0) &&
+         dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
+         dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    if (ok && readback != NULL)
+    {
+        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
+                       stream, encoder_id, color_target_id, DRP2_ID_READBACK_BUFFER, 0, 1, 1, 4,
+                       1);
+    }
+    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
+    if (readback != NULL)
+    {
+        ok = ok && dvz_drp2_stream_queue_submit_readback(
+                       stream, command_buffer_id, submission_id, DRP2_ID_READBACK_BUFFER, 0,
+                       readback->u.copy.byte_size);
+    }
+    else
+    {
+        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    }
+    return ok;
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -1260,8 +1460,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     bool texture_render = _render_uses_texture(render);
     if (compute != NULL)
     {
-        _diagnostic(report, "runtime converter currently supports render-only plans");
-        return NULL;
+        if (compute->u.compute.write_count == 0)
+        {
+            _diagnostic(report, "runtime converter requires compute output");
+            return NULL;
+        }
     }
     if (readback != NULL && copy == NULL)
     {
@@ -1289,7 +1492,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
         {
-            if (texture_render)
+            if (compute != NULL)
+            {
+                ok = _emitter_emit_compute_buffers(emitter, stream, &plan->nodes[i], compute);
+            }
+            else if (texture_render)
             {
                 ok = _emitter_emit_texture_upload(emitter, stream, &plan->nodes[i], &texture_id);
             }
@@ -1308,7 +1515,9 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         }
     }
 
-    ok = ok && (texture_render
+    ok = ok && (compute != NULL
+                    ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
+                    : texture_render
                     ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
                     : _emitter_emit_render(
                           emitter, stream, vertex_buffer_ids, vertex_buffer_count, copy, cfg));

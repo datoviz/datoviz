@@ -32,6 +32,7 @@
 #if DVZ_DRP2_HAS_VKLITE
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/graphics.h"
@@ -164,6 +165,7 @@ struct Drp2VkliteObject
     DvzImageViews* views;
     DvzShader* shader;
     DvzGraphics* graphics;
+    DvzCompute* compute;
     DvzSlots* slots;
     DvzDescriptors* descriptors;
     DvzSampler* sampler;
@@ -1808,6 +1810,12 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_graphics_free(object->graphics);
         object->graphics = NULL;
     }
+    if (object->compute != NULL)
+    {
+        dvz_compute_destroy(object->compute);
+        dvz_compute_free(object->compute);
+        object->compute = NULL;
+    }
     if (object->slots != NULL && !object->borrowed_slots)
     {
         dvz_slots_destroy(object->slots);
@@ -2463,6 +2471,73 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
 }
 
 
+/**
+ * Create a vklite compute pipeline from a DRP2 CreateComputePipeline command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 CreateComputePipeline command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_create_compute_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2VkliteObject* shader =
+        _vklite_find(state, command->u.create_compute_pipeline.compute_shader_module_id);
+    if (shader == NULL || shader->kind != DRP2_OBJECT_SHADER_COMPUTE || shader->shader == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2VkliteObject* object =
+        _vklite_add(state, command->u.create_compute_pipeline.id, DRP2_OBJECT_COMPUTE_PIPELINE);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    shader = _vklite_find(state, command->u.create_compute_pipeline.compute_shader_module_id);
+    if (shader == NULL || shader->kind != DRP2_OBJECT_SHADER_COMPUTE || shader->shader == NULL)
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    if (command->u.create_compute_pipeline.bind_group_layout_id != 0)
+    {
+        Drp2VkliteObject* layout =
+            _vklite_find(state, command->u.create_compute_pipeline.bind_group_layout_id);
+        if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
+            layout->slots == NULL)
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        object->slots = layout->slots;
+        object->borrowed_slots = true;
+    }
+    else
+    {
+        DvzDrp2ValidationResult result =
+            _vklite_create_empty_slots(state, command_index, &object->slots);
+        if (!result.ok)
+        {
+            _vklite_destroy_object(object);
+            return result;
+        }
+    }
+
+    DvzCompute* compute = dvz_compute_create_wrapper();
+    if (compute == NULL)
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->compute = compute;
+
+    dvz_compute(state->runtime->device, compute);
+    dvz_compute_shader(compute, dvz_shader_handle(shader->shader));
+    dvz_compute_layout(compute, dvz_slots_handle(object->slots));
+    if (dvz_compute_create(compute) != 0)
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
 static DvzCommands* _vklite_commands_create(DvzDevice* device)
 {
     ANN(device);
@@ -2972,7 +3047,39 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
 
 
 /**
- * Bind a vklite graphics pipeline within a DRP2 render pass.
+ * Begin a vklite command buffer for a DRP2 compute pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 BeginComputePass command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_begin_compute_pass(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2VkliteObject* pass =
+        _vklite_add(state, command->u.begin_compute_pass.id, DRP2_OBJECT_COMPUTE_PASS);
+    if (pass == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzCommands* cmds = _vklite_commands_create(state->runtime->device);
+    if (cmds == NULL)
+        return _vklite_fail_destroy_object(
+            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    pass->commands = cmds;
+
+    if (dvz_cmd_begin_result(cmds) != 0)
+        return _vklite_fail_destroy_object(
+            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+/**
+ * Bind a vklite pipeline within a DRP2 render or compute pass.
  *
  * @param state vklite runtime state
  * @param command DRP2 SetPipeline command
@@ -2986,18 +3093,27 @@ static DvzDrp2ValidationResult _vklite_set_pipeline(
     ANN(command);
     Drp2VkliteObject* pass = _vklite_find(state, command->u.set_pipeline.pass_id);
     Drp2VkliteObject* pipeline = _vklite_find(state, command->u.set_pipeline.pipeline_id);
-    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL ||
-        pipeline == NULL || pipeline->kind != DRP2_OBJECT_RENDER_PIPELINE ||
-        pipeline->graphics == NULL)
+    if (pass == NULL || pass->commands == NULL || pipeline == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    dvz_graphics_viewport(
-        pipeline->graphics, 0, 0, (float)pass->width, (float)pass->height, 0, 1,
-        DVZ_GRAPHICS_FLAGS_DYNAMIC);
-    dvz_graphics_scissor(
-        pipeline->graphics, 0, 0, pass->width, pass->height, DVZ_GRAPHICS_FLAGS_DYNAMIC);
-    dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
-    return _ok();
+    if (pass->kind == DRP2_OBJECT_RENDER_PASS && pipeline->kind == DRP2_OBJECT_RENDER_PIPELINE &&
+        pipeline->graphics != NULL)
+    {
+        dvz_graphics_viewport(
+            pipeline->graphics, 0, 0, (float)pass->width, (float)pass->height, 0, 1,
+            DVZ_GRAPHICS_FLAGS_DYNAMIC);
+        dvz_graphics_scissor(
+            pipeline->graphics, 0, 0, pass->width, pass->height, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+        dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
+        return _ok();
+    }
+    if (pass->kind == DRP2_OBJECT_COMPUTE_PASS && pipeline->kind == DRP2_OBJECT_COMPUTE_PIPELINE &&
+        pipeline->compute != NULL)
+    {
+        dvz_cmd_bind_compute(pass->commands, pipeline->compute);
+        return _ok();
+    }
+    return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 }
 
 
@@ -3028,7 +3144,7 @@ static DvzDrp2ValidationResult _vklite_set_vertex_buffer(
 
 
 /**
- * Bind a vklite descriptor set within a DRP2 render pass.
+ * Bind a vklite descriptor set within a DRP2 render or compute pass.
  *
  * @param state vklite runtime state
  * @param command DRP2 SetBindGroup command
@@ -3042,13 +3158,19 @@ static DvzDrp2ValidationResult _vklite_set_bind_group(
     ANN(command);
     Drp2VkliteObject* pass = _vklite_find(state, command->u.set_bind_group.pass_id);
     Drp2VkliteObject* bind_group = _vklite_find(state, command->u.set_bind_group.bind_group_id);
-    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL ||
-        bind_group == NULL || bind_group->descriptors == NULL)
+    if (pass == NULL || pass->commands == NULL || bind_group == NULL ||
+        bind_group->descriptors == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    VkPipelineBindPoint bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    if (pass->kind == DRP2_OBJECT_COMPUTE_PASS)
+        bind_point = VK_PIPELINE_BIND_POINT_COMPUTE;
+    else if (pass->kind != DRP2_OBJECT_RENDER_PASS)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     dvz_cmd_bind_descriptors(
-        pass->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, bind_group->descriptors,
-        command->u.set_bind_group.slot, 1, 0, NULL);
+        pass->commands, bind_point, bind_group->descriptors, command->u.set_bind_group.slot, 1, 0,
+        NULL);
     return _ok();
 }
 
@@ -3073,6 +3195,29 @@ static DvzDrp2ValidationResult _vklite_draw(
     dvz_cmd_draw(
         pass->commands, command->u.draw.first_vertex, command->u.draw.vertex_count,
         command->u.draw.first_instance, command->u.draw.instance_count);
+    return _ok();
+}
+
+
+/**
+ * Record a compute dispatch within a vklite compute pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 DispatchWorkgroups command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_dispatch_workgroups(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.dispatch.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_COMPUTE_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_cmd_dispatch(
+        pass->commands, command->u.dispatch.x, command->u.dispatch.y, command->u.dispatch.z);
     return _ok();
 }
 
@@ -3103,6 +3248,33 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
             _vklite_destroy_object(pass);
             return result;
         }
+    }
+    _vklite_destroy_object(pass);
+    return _ok();
+}
+
+
+/**
+ * End and submit a vklite compute pass.
+ *
+ * @param state vklite runtime state
+ * @param pass_id DRP2 compute pass id
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult
+_vklite_end_compute_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t command_index)
+{
+    ANN(state);
+    Drp2VkliteObject* pass = _vklite_find(state, pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_COMPUTE_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(pass->commands, command_index);
+    if (!result.ok)
+    {
+        _vklite_destroy_object(pass);
+        return result;
     }
     _vklite_destroy_object(pass);
     return _ok();
@@ -3189,10 +3361,18 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
             result = _vklite_create_render_pipeline(state, command, i);
             break;
+        case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+            result = _vklite_create_compute_pipeline(state, command, i);
+            break;
         case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
             result = _vklite_destroy_backend_object(
                 state, command->u.destroy_render_pipeline.render_pipeline_id,
                 DRP2_OBJECT_RENDER_PIPELINE, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+            result = _vklite_destroy_backend_object(
+                state, command->u.destroy_compute_pipeline.compute_pipeline_id,
+                DRP2_OBJECT_COMPUTE_PIPELINE, i);
             break;
         case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
             result = _vklite_create_sampler(state, command, i);
@@ -3233,6 +3413,9 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
             result = _vklite_begin_render_pass(state, command, i);
             break;
+        case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+            result = _vklite_begin_compute_pass(state, command, i);
+            break;
         case DVZ_DRP2_COMMAND_SET_PIPELINE:
             result = _vklite_set_pipeline(state, command, i);
             break;
@@ -3245,8 +3428,14 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_DRAW:
             result = _vklite_draw(state, command, i);
             break;
+        case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+            result = _vklite_dispatch_workgroups(state, command, i);
+            break;
         case DVZ_DRP2_COMMAND_END_RENDER_PASS:
             result = _vklite_end_render_pass(state, command->u.end_render_pass.pass_id, i);
+            break;
+        case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+            result = _vklite_end_compute_pass(state, command->u.end_compute_pass.pass_id, i);
             break;
         default:
             result = _ok();
