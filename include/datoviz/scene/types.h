@@ -16,6 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "datoviz/scene/enums.h"
@@ -56,6 +57,8 @@ struct DvzCapabilitySnapshot
     uint32_t max_texture_dimension_2d;
     uint32_t max_bind_groups;
     uint32_t max_vertex_buffers;
+    bool shader_format_wgsl;
+    bool shader_format_glsl;
 };
 
 

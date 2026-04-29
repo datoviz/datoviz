@@ -288,6 +288,8 @@ void dvz_capability_snapshot_default(DvzCapabilitySnapshot* snapshot)
     snapshot->max_texture_dimension_2d = 4096;
     snapshot->max_bind_groups = 4;
     snapshot->max_vertex_buffers = 8;
+    snapshot->shader_format_wgsl = true;
+    snapshot->shader_format_glsl = true;
 }
 
 

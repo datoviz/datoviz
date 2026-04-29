@@ -229,6 +229,126 @@ static bool _render_uses_texture(const DvzFramePlanNode* node)
 
 
 /**
+ * Add a converter diagnostic message.
+ *
+ * @param report the optional diagnostic report
+ * @param message the diagnostic message
+ */
+static void _diagnostic(DvzDiagnosticReport* report, const char* message)
+{
+    ANN(message);
+    if (report != NULL)
+        (void)dvz_diagnostic_report_add(report, message);
+}
+
+
+
+/**
+ * Return whether the requested shader format is supported by the capability snapshot.
+ *
+ * @param caps the capability snapshot
+ * @param cfg the emission config
+ * @return whether the shader format is supported
+ */
+static bool
+_validate_shader_format(const DvzCapabilitySnapshot* caps, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(caps);
+    DvzSceneShaderFormat format =
+        cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_WGSL;
+    if (format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        return caps->shader_format_glsl;
+    return caps->shader_format_wgsl;
+}
+
+
+
+/**
+ * Validate FramePlan conversion against a capability snapshot.
+ *
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param cfg the emission config
+ * @param report the optional diagnostic report
+ * @return whether the plan can be emitted
+ */
+static bool _validate_capabilities(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, const DvzFramePlanEmitConfig* cfg,
+    DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    ANN(caps);
+
+    if (!_validate_shader_format(caps, cfg))
+    {
+        _diagnostic(report, "unsupported shader format");
+        return false;
+    }
+    if (caps->max_texture_dimension_2d < 4)
+    {
+        _diagnostic(report, "max_texture_dimension_2d is too small for fixture render target");
+        return false;
+    }
+
+    uint32_t upload_count = 0;
+    bool has_compute = false;
+    bool has_texture_render = false;
+    uint64_t max_readback_size = 0;
+    const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    if (render != NULL)
+        has_texture_render = _render_uses_texture(render);
+
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        switch (node->type)
+        {
+        case DVZ_FRAME_PLAN_NODE_UPLOAD:
+            upload_count++;
+            if (node->u.upload.byte_offset + node->u.upload.byte_size > caps->max_buffer_size)
+            {
+                _diagnostic(report, "upload buffer exceeds max_buffer_size");
+                return false;
+            }
+            break;
+        case DVZ_FRAME_PLAN_NODE_COMPUTE:
+            has_compute = true;
+            break;
+        case DVZ_FRAME_PLAN_NODE_COPY:
+            if (node->u.copy.byte_size > max_readback_size)
+                max_readback_size = node->u.copy.byte_size;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (!has_texture_render && upload_count > 0 && caps->max_vertex_buffers < 1)
+    {
+        _diagnostic(report, "max_vertex_buffers is too small for fixture render pipeline");
+        return false;
+    }
+    if ((has_texture_render || has_compute) && caps->max_bind_groups < 1)
+    {
+        _diagnostic(report, "max_bind_groups is too small for fixture bind groups");
+        return false;
+    }
+    if (has_texture_render && caps->max_texture_dimension_2d < 2)
+    {
+        _diagnostic(report, "max_texture_dimension_2d is too small for fixture texture upload");
+        return false;
+    }
+    if (max_readback_size > caps->max_buffer_size)
+    {
+        _diagnostic(report, "readback buffer exceeds max_buffer_size");
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
  * Return the DRP2 shader-format token for a scene fixture emission config.
  *
  * @param cfg the emission config
@@ -643,16 +763,16 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
     if (upload == NULL || render == NULL)
     {
-        if (report != NULL)
-            (void)dvz_diagnostic_report_add(report, "fixture converter requires upload+render");
+        _diagnostic(report, "fixture converter requires upload+render");
         return NULL;
     }
     if (readback != NULL && copy == NULL)
     {
-        if (report != NULL)
-            (void)dvz_diagnostic_report_add(report, "fixture converter requires copy before readback");
+        _diagnostic(report, "fixture converter requires copy before readback");
         return NULL;
     }
+    if (caps != NULL && !_validate_capabilities(plan, caps, cfg, report))
+        return NULL;
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -692,8 +812,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
                     stream, DRP2_ID_COMMAND_BUFFER, DRP2_ID_SUBMISSION));
     if (!ok)
     {
-        if (report != NULL)
-            (void)dvz_diagnostic_report_add(report, "failed to emit DRP2 fixture stream");
+        _diagnostic(report, "failed to emit DRP2 fixture stream");
         dvz_drp2_stream_destroy(stream);
         return NULL;
     }

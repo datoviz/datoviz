@@ -356,6 +356,103 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.convert.unsupported_shader", 17);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = false;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &cfg);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strcmp(dvz_diagnostic_report_get(&report, 0), "unsupported shader format") == 0);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_emit_drp2_rejects_small_caps(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.convert.small_caps", 18);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.max_buffer_size = 8;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strcmp(dvz_diagnostic_report_get(&report, 0), "upload buffer exceeds max_buffer_size") == 0);
+
+    dvz_diagnostic_report_init(&report);
+    dvz_capability_snapshot_default(&caps);
+    caps.max_texture_dimension_2d = 3;
+    stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "max_texture_dimension_2d is too small for fixture render target") == 0);
+
+    dvz_diagnostic_report_init(&report);
+    dvz_capability_snapshot_default(&caps);
+    caps.max_vertex_buffers = 0;
+    stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "max_vertex_buffers is too small for fixture render pipeline") == 0);
+
+    DvzFramePlan* texture_plan = dvz_frame_plan("figure.convert.small_bind_group_caps", 19);
+    ANN(texture_plan);
+    AT(dvz_frame_plan_upload(texture_plan, "tex.image.rgba", 0, 16, "image.rgba"));
+    AT(dvz_frame_plan_render(texture_plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(texture_plan, "visual.image.0"));
+
+    dvz_diagnostic_report_init(&report);
+    dvz_capability_snapshot_default(&caps);
+    caps.max_bind_groups = 0;
+    stream = dvz_frame_plan_emit_drp2(texture_plan, &caps, &report);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(strcmp(
+           dvz_diagnostic_report_get(&report, 0),
+           "max_bind_groups is too small for fixture bind groups") == 0);
+
+    dvz_frame_plan_destroy(texture_plan);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstItem* item)
 {
@@ -636,6 +733,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
 #endif
