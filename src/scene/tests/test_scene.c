@@ -28,6 +28,9 @@
 #include "_log.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
+
+bool _dvz_drp2_runtime_vklite_download_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* out);
 #endif
 
 
@@ -507,6 +510,67 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstIt
     dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
+
+
+
+int test_frame_plan_emit_drp2_readback_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene readback DRP2 execution test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.readback.glsl.execute", 20);
+    ANN(plan);
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(plan, "visual.pickable.0"));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.picking", "buf.pick.readback", 4));
+    AT(dvz_frame_plan_readback(plan, "buf.pick.readback", "request.pick.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    uint8_t downloaded[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
 #endif
 
 
@@ -737,6 +801,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);
