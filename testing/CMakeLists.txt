@@ -135,6 +135,7 @@ endif()
 set(_dvz_has_core 0)
 set(_dvz_has_vk 0)
 set(_dvz_has_canvas 0)
+set(_dvz_has_drp2 0)
 
 if(TARGET datoviz_common AND TARGET datoviz_ds AND TARGET datoviz_fileio AND TARGET datoviz_math AND TARGET datoviz_thread)
     set(_dvz_has_core 1)
@@ -148,8 +149,20 @@ if(TARGET datoviz_input AND TARGET datoviz_window AND TARGET datoviz_canvas AND 
     set(_dvz_has_canvas 1)
 endif()
 
+if(TARGET datoviz_drp2)
+    set(_dvz_has_drp2 1)
+endif()
+
+if(NOT _dvz_has_drp2)
+    list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/drp2/tests/")
+    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/drp2/tests/")
+endif()
+
 set(DVZ_TEST_CORE_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_CORE_SOURCES INCLUDE REGEX "/src/(common|ds|fileio|math|thread)/tests/")
+
+set(DVZ_TEST_DRP2_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_DRP2_SOURCES INCLUDE REGEX "/src/drp2/tests/")
 
 set(DVZ_TEST_VK_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_VK_SOURCES INCLUDE REGEX "/src/(vk|vklite)/tests/")
@@ -208,6 +221,46 @@ if(_dvz_has_core)
     add_test(NAME dvztest_core COMMAND dvztest_core)
 else()
     message(STATUS "Skipping dvztest_core: core target set is not enabled.")
+endif()
+
+if(_dvz_has_core AND _dvz_has_drp2)
+    add_executable(dvztest_drp2
+        ${DVZ_TEST_DRP2_SOURCES}
+        components/dvztest_drp2.c
+    )
+
+    target_link_libraries(dvztest_drp2
+        PRIVATE
+        datoviz_common
+        datoviz_drp2
+        testing
+    )
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(dvztest_drp2 PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(dvztest_drp2
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(dvztest_drp2 PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    if(APPLE)
+        set_target_properties(dvztest_drp2 PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
+
+    add_test(NAME dvztest_drp2 COMMAND dvztest_drp2)
+else()
+    message(STATUS "Skipping dvztest_drp2: drp2 target set is not enabled.")
 endif()
 
 if(_dvz_has_core AND _dvz_has_vk)
@@ -394,6 +447,11 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_volk
         testing
     )
+
+    if(TARGET datoviz_drp2)
+        target_link_libraries(dvztest PRIVATE datoviz_drp2)
+        target_link_libraries(dvztest_integration PRIVATE datoviz_drp2)
+    endif()
 
     if(DVZ_THREADING_TARGET)
         target_link_libraries(dvztest PRIVATE ${DVZ_THREADING_TARGET})

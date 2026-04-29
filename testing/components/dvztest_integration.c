@@ -20,6 +20,9 @@
 #include "../../src/canvas/tests/test_canvas.h"
 #include "../../src/common/tests/test_common.h"
 #include "../../src/ds/tests/test_ds.h"
+#if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
+#include "../../src/drp2/tests/test_drp2.h"
+#endif
 #include "../../src/fileio/tests/test_fileio.h"
 #include "../../src/input/tests/test_input.h"
 #include "../../src/math/tests/test_math.h"
@@ -54,6 +57,9 @@ int main(int argc, char** argv)
 
     test_common(&suite);
     test_ds(&suite);
+#if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
+    test_drp2(&suite);
+#endif
     test_fileio(&suite);
     test_math(&suite);
     test_stream(&suite);

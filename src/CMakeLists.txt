@@ -225,6 +225,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     DVZ_HAS_CUDA=${DVZ_HAS_CUDA}
     DVZ_HAS_GLFW=${DVZ_HAS_GLFW}
     DVZ_HAS_KVZ=${DVZ_HAS_KVZ}
+    DVZ_HAS_DRP2=$<IF:$<BOOL:${DVZ_BUILD_DRP2}>,1,0>
 
     # Vulkan Memory Allocator uses Volk-loaded entry points.
     VMA_STATIC_VULKAN_FUNCTIONS=0
@@ -298,12 +299,20 @@ set(DVZ_CANVAS_COMPONENTS
     datoviz_video
 )
 
+set(DVZ_DRP2_COMPONENTS
+    datoviz_drp2
+)
+
 if(NOT DVZ_BUILD_CORE AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
     message(FATAL_ERROR "DVZ_BUILD_VK/DVZ_BUILD_CANVAS require DVZ_BUILD_CORE=ON.")
 endif()
 
 if(NOT DVZ_BUILD_VK AND DVZ_BUILD_CANVAS)
     message(FATAL_ERROR "DVZ_BUILD_CANVAS requires DVZ_BUILD_VK=ON.")
+endif()
+
+if(NOT DVZ_BUILD_CORE AND DVZ_BUILD_DRP2)
+    message(FATAL_ERROR "DVZ_BUILD_DRP2 requires DVZ_BUILD_CORE=ON.")
 endif()
 
 if(DVZ_BUILD_CORE)
@@ -327,6 +336,10 @@ if(DVZ_BUILD_VK)
     add_subdirectory(vklite)
 endif()
 
+if(DVZ_BUILD_DRP2)
+    add_subdirectory(drp2)
+endif()
+
 # -------------------------------------------------------------------------------------------------
 # Layered targets
 # -------------------------------------------------------------------------------------------------
@@ -341,6 +354,9 @@ if(DVZ_BUILD_VK)
 endif()
 if(DVZ_BUILD_CANVAS)
     list(APPEND DVZ_COMPONENTS ${DVZ_CANVAS_COMPONENTS})
+endif()
+if(DVZ_BUILD_DRP2)
+    list(APPEND DVZ_COMPONENTS ${DVZ_DRP2_COMPONENTS})
 endif()
 
 if(DVZ_BUILD_CORE)

@@ -49,7 +49,7 @@ option(DVZ_ENABLE_CUDA "Enable CUDA interop hooks and tests" ${_dvz_enable_cuda_
 option(DVZ_BUILD_CORE "Build the datoviz core layer (common/ds/fileio/math/thread)" ON)
 option(DVZ_BUILD_VK "Build the Vulkan layer (vk/vklite)" ON)
 option(DVZ_BUILD_CANVAS "Build the canvas layer (input/window/stream/video/canvas)" ON)
-option(DVZ_BUILD_DRP2 "Build the DRP2 layer" OFF)
+option(DVZ_BUILD_DRP2 "Build the DRP2 layer" ON)
 option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
 option(DVZ_BUILD_SCENE "Build the scene layer" OFF)
 
