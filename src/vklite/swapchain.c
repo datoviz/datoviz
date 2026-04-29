@@ -835,7 +835,7 @@ DvzPresentStatus dvz_swapchain_acquire(
     swapchain->current_image = UINT32_MAX;
     if (status == DVZ_PRESENT_STATUS_RECREATE)
     {
-        log_warn(
+        log_trace(
             "swapchain acquire requires recreate (swapchain=%p image=%u vk=%d status=%s)",
             (void*)swapchain, *image_idx, res, _swapchain_status_name(status));
         return status;
@@ -896,7 +896,7 @@ DvzPresentStatus dvz_swapchain_present(
     }
     if (status == DVZ_PRESENT_STATUS_RECREATE)
     {
-        log_warn(
+        log_trace(
             "swapchain present requires recreate (swapchain=%p image=%u vk=%d status=%s)",
             (void*)swapchain, image_idx, res, _swapchain_status_name(status));
         return status;

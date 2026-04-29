@@ -71,6 +71,7 @@ struct DvzCanvasSwapchainSlot
     VkCommandBuffer command_buffer;
     VkImageLayout offscreen_layout;
     VkImageLayout swapchain_layout;
+    VkExtent2D offscreen_extent;
     uint32_t image_index;
     int memory_fd;
     bool ready;
@@ -355,8 +356,11 @@ static void canvas_cmd_copy_frame(
     ANN(slot);
     ASSERT(cmd != VK_NULL_HANDLE);
 
-    VkExtent2D extent = dvz_swapchain_extent(swapchain->swapchain_wrapper);
-    if (extent.width == 0 || extent.height == 0)
+    VkExtent2D src_extent = slot->offscreen_extent;
+    VkExtent2D dst_extent = dvz_swapchain_extent(swapchain->swapchain_wrapper);
+    if (
+        src_extent.width == 0 || src_extent.height == 0 || dst_extent.width == 0 ||
+        dst_extent.height == 0)
     {
         return;
     }
@@ -372,13 +376,15 @@ static void canvas_cmd_copy_frame(
     ANN(cmds);
     dvz_commands_wrap(swapchain->canvas->device, cmd, cmds);
 
-    if (swapchain->frame_format == dvz_swapchain_image_format(swapchain->swapchain_wrapper))
+    if (
+        swapchain->frame_format == dvz_swapchain_image_format(swapchain->swapchain_wrapper) &&
+        src_extent.width == dst_extent.width && src_extent.height == dst_extent.height)
     {
         DvzImageCopy* copy = dvz_image_copy_create();
         ANN(copy);
         dvz_cmd_copy_source(
-            copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, extent.width, extent.height,
-            1);
+            copy, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0, src_extent.width,
+            src_extent.height, 1);
         dvz_cmd_copy_destination(copy, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
         dvz_cmd_copy_image(cmds, copy);
         dvz_image_copy_free(copy);
@@ -389,10 +395,10 @@ static void canvas_cmd_copy_frame(
         ANN(blit);
         dvz_cmd_blit_source(
             blit, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
-            (int32_t)extent.width, (int32_t)extent.height, 1);
+            (int32_t)src_extent.width, (int32_t)src_extent.height, 1);
         dvz_cmd_blit_destination(
             blit, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0,
-            (int32_t)extent.width, (int32_t)extent.height, 1);
+            (int32_t)dst_extent.width, (int32_t)dst_extent.height, 1);
         dvz_cmd_blit_filter(blit, VK_FILTER_NEAREST);
         dvz_cmd_blit_image(cmds, blit);
         dvz_image_blit_free(blit);
@@ -532,6 +538,7 @@ static bool canvas_slot_init(
     slot->image_index = UINT32_MAX;
     slot->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     slot->swapchain_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    slot->offscreen_extent = extent;
     slot->handles_dirty = handles_changed;
     slot->commands_recording = false;
     slot->memory_fd = -1;
@@ -911,6 +918,7 @@ static void canvas_destroy_slot(
     slot->swapchain_image = VK_NULL_HANDLE;
     slot->commands_recording = false;
     slot->handles_dirty = false;
+    slot->offscreen_extent = (VkExtent2D){0, 0};
     if (slot->command_buffer != VK_NULL_HANDLE)
     {
         dvz_command_buffer_free(device, queue_family, slot->command_buffer);
@@ -1267,7 +1275,7 @@ static void canvas_frame_from_slot(
         slot->offscreen_alloc != NULL ? dvz_allocation_size(slot->offscreen_alloc) : 0;
     frame->command_buffer = slot->command_buffer;
     frame->image_view = slot->offscreen_view;
-    frame->extent = dvz_swapchain_extent(state->swapchain_wrapper);
+    frame->extent = slot->offscreen_extent;
     frame->handles_dirty = slot->handles_dirty;
     frame->memory_fd = slot->memory_fd;
     frame->wait_semaphore_fd = -1;
