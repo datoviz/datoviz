@@ -2765,16 +2765,21 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     for (uint32_t i = 0; i < state->count; i++)
     {
         Drp2VkliteObject* object = &state->objects[i];
-        if (object->kind == DRP2_OBJECT_TEXTURE && object != target && object->views != NULL)
+        if (object->kind == DRP2_OBJECT_TEXTURE && object != target && object->views != NULL &&
+            !object->borrowed_frame_target)
         {
             _vklite_transition_image(
                 cmds, object, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
         }
     }
-    _vklite_transition_image(
-        cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    if (!target->borrowed_frame_target)
+    {
+        _vklite_transition_image(
+            cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    }
     dvz_cmd_rendering_begin(cmds, rendering);
     return _ok();
 }
