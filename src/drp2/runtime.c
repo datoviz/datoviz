@@ -1823,6 +1823,23 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
 
 
 /**
+ * Destroy a partially-created vklite object and return a validation failure.
+ *
+ * @param object vklite object slot to clean up
+ * @param code validation failure code
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation failure result
+ */
+static DvzDrp2ValidationResult _vklite_fail_destroy_object(
+    Drp2VkliteObject* object, DvzDrp2ValidationCode code, uint32_t command_index)
+{
+    _vklite_destroy_object(object);
+    return _fail(code, command_index);
+}
+
+
+
+/**
  * Return the image view associated with a vklite texture object.
  *
  * @param object vklite texture object
@@ -1869,7 +1886,8 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
 
     DvzBuffer* buffer = dvz_buffer_create_wrapper();
     if (buffer == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->buffer = buffer;
 
     dvz_buffer(state->runtime->device, state->runtime->allocator, buffer);
@@ -1877,7 +1895,8 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
     dvz_buffer_usage(buffer, _vklite_buffer_usage(command->u.create_buffer.usage));
     dvz_buffer_flags(buffer, _vklite_buffer_alloc_flags(command->u.create_buffer.usage));
     if (dvz_buffer_create(buffer) != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -1894,7 +1913,8 @@ static DvzDrp2ValidationResult _vklite_create_texture(
 
     DvzImages* images = dvz_images_create_wrapper();
     if (images == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->images = images;
 
     dvz_images(state->runtime->device, state->runtime->allocator, VK_IMAGE_TYPE_2D, 1, images);
@@ -1905,7 +1925,8 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     dvz_images_samples(images, VK_SAMPLE_COUNT_1_BIT);
     dvz_images_usage(images, _vklite_texture_usage(command->u.create_texture.usage));
     if (dvz_images_create(images) != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     if ((command->u.create_texture.usage &
          (DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING |
@@ -1914,12 +1935,14 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     {
         DvzImageViews* views = dvz_image_views_create_wrapper();
         if (views == NULL)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         object->views = views;
         dvz_image_views(images, views);
         dvz_image_views_create(views);
         if (dvz_image_views_handle(views, 0) == VK_NULL_HANDLE)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
 
     object->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -2038,23 +2061,19 @@ static Drp2ObjectKind _vklite_shader_object_kind(const char* stage)
  *
  * @param stage shader stage string
  * @param code GLSL source code
- * @param spv output pointer to shaderc-owned SPIR-V words
+ * @param spv output pointer to aligned SPIR-V words, freed by the caller
  * @param spv_size output SPIR-V byte size
- * @param result output shaderc compilation result to release by the caller
  * @return true when compilation succeeds, false otherwise
  */
 static bool _vklite_compile_glsl(
-    const char* stage, const char* code, const uint32_t** spv, uint64_t* spv_size,
-    shaderc_compilation_result_t* result)
+    const char* stage, const char* code, uint32_t** spv, uint64_t* spv_size)
 {
     ANN(stage);
     ANN(code);
     ANN(spv);
     ANN(spv_size);
-    ANN(result);
     *spv = NULL;
     *spv_size = 0;
-    *result = NULL;
 
     shaderc_compiler_t compiler = shaderc_compiler_initialize();
     if (compiler == NULL)
@@ -2072,20 +2091,41 @@ static bool _vklite_compile_glsl(
     shaderc_compile_options_set_target_spirv(options, shaderc_spirv_version_1_6);
 
     shaderc_shader_kind kind = _vklite_shader_kind(stage);
-    *result = shaderc_compile_into_spv(
+    shaderc_compilation_result_t result = shaderc_compile_into_spv(
         compiler, code, strlen(code), kind, "drp2_scene_fixture.glsl", "main", options);
 
     shaderc_compile_options_release(options);
     shaderc_compiler_release(compiler);
 
-    if (*result == NULL)
+    if (result == NULL)
         return false;
-    if (shaderc_result_get_compilation_status(*result) != shaderc_compilation_status_success)
+    if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
+    {
+        log_error("GLSL compilation failed: %s", shaderc_result_get_error_message(result));
+        shaderc_result_release(result);
         return false;
+    }
 
-    *spv = (const uint32_t*)shaderc_result_get_bytes(*result);
-    *spv_size = (uint64_t)shaderc_result_get_length(*result);
-    return *spv != NULL && *spv_size > 0;
+    const char* bytes = shaderc_result_get_bytes(result);
+    uint64_t size = (uint64_t)shaderc_result_get_length(result);
+    if (bytes == NULL || size == 0 || size % sizeof(uint32_t) != 0)
+    {
+        shaderc_result_release(result);
+        return false;
+    }
+
+    uint32_t* out = (uint32_t*)dvz_calloc((size_t)(size / sizeof(uint32_t)), sizeof(uint32_t));
+    if (out == NULL)
+    {
+        shaderc_result_release(result);
+        return false;
+    }
+    dvz_memcpy(out, (size_t)size, bytes, (size_t)size);
+    shaderc_result_release(result);
+
+    *spv = out;
+    *spv_size = size;
+    return true;
 }
 
 
@@ -2109,40 +2149,36 @@ static DvzDrp2ValidationResult _vklite_create_shader_module(
     if (kind == DRP2_OBJECT_NONE)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
 
-    const uint32_t* spv = NULL;
+    uint32_t* spv = NULL;
     uint64_t spv_size = 0;
-    shaderc_compilation_result_t result = NULL;
     if (!_vklite_compile_glsl(
             command->u.create_shader_module.stage, command->u.create_shader_module.code, &spv,
-            &spv_size, &result))
+            &spv_size))
     {
-        if (result != NULL)
-        {
-            log_error("GLSL compilation failed: %s", shaderc_result_get_error_message(result));
-            shaderc_result_release(result);
-        }
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     }
 
     Drp2VkliteObject* object = _vklite_add(state, command->u.create_shader_module.id, kind);
     if (object == NULL)
     {
-        shaderc_result_release(result);
+        dvz_free(spv);
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
 
     DvzShader* shader = dvz_shader_create_wrapper();
     if (shader == NULL)
     {
-        shaderc_result_release(result);
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_free(spv);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     object->shader = shader;
 
     int out = dvz_shader(state->runtime->device, spv_size, spv, shader);
-    shaderc_result_release(result);
+    dvz_free(spv);
     if (out != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -2197,7 +2233,8 @@ _vklite_create_sampler(Drp2VkliteState* state, const DvzDrp2Command* command, ui
 
     DvzSampler* sampler = dvz_sampler_create_wrapper();
     if (sampler == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->sampler = sampler;
 
     dvz_sampler(state->runtime->device, sampler);
@@ -2207,7 +2244,8 @@ _vklite_create_sampler(Drp2VkliteState* state, const DvzDrp2Command* command, ui
     dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     if (dvz_sampler_create(sampler) != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -2233,7 +2271,8 @@ static DvzDrp2ValidationResult _vklite_create_bind_group_layout(
 
     DvzSlots* slots = dvz_slots_create_wrapper();
     if (slots == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->slots = slots;
 
     dvz_slots(state->runtime->device, slots);
@@ -2251,7 +2290,8 @@ static DvzDrp2ValidationResult _vklite_create_bind_group_layout(
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
     if (dvz_slots_create(slots) != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -2281,11 +2321,13 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
 
     layout = _vklite_find(state, command->u.create_bind_group.bind_group_layout_id);
     if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout->slots == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     DvzDescriptors* descriptors = dvz_descriptors_create();
     if (descriptors == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->descriptors = descriptors;
     object->texture_id = command->u.create_bind_group.texture_id;
     object->sampler_id = command->u.create_bind_group.sampler_id;
@@ -2297,7 +2339,8 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
         Drp2VkliteObject* buffer1 = _vklite_find(state, command->u.create_bind_group.buffer1_id);
         if (buffer0 == NULL || buffer0->buffer == NULL || buffer1 == NULL ||
             buffer1->buffer == NULL)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         dvz_descriptors_buffer(
             descriptors, 0, 0, 0, dvz_buffer_handle(buffer0->buffer), 0,
             command->u.create_bind_group.buffer_size);
@@ -2311,7 +2354,8 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
         Drp2VkliteObject* sampler = _vklite_find(state, command->u.create_bind_group.sampler_id);
         VkImageView texture_view = _vklite_object_image_view(texture);
         if (texture_view == VK_NULL_HANDLE || sampler == NULL || sampler->sampler == NULL)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         dvz_descriptors_image(
             descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, texture_view,
             dvz_sampler_handle(sampler->sampler));
@@ -2353,7 +2397,8 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
     if (vertex == NULL || vertex->kind != DRP2_OBJECT_SHADER_VERTEX || vertex->shader == NULL ||
         fragment == NULL || fragment->kind != DRP2_OBJECT_SHADER_FRAGMENT ||
         fragment->shader == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     if (command->u.create_render_pipeline.bind_group_layout_id != 0)
     {
@@ -2361,7 +2406,8 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
             _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id);
         if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
             layout->slots == NULL)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         object->slots = layout->slots;
         object->borrowed_slots = true;
     }
@@ -2370,12 +2416,16 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
         DvzDrp2ValidationResult result =
             _vklite_create_empty_slots(state, command_index, &object->slots);
         if (!result.ok)
+        {
+            _vklite_destroy_object(object);
             return result;
+        }
     }
 
     DvzGraphics* graphics = dvz_graphics_create_wrapper();
     if (graphics == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->graphics = graphics;
 
     dvz_graphics(state->runtime->device, graphics);
@@ -2393,7 +2443,8 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
     dvz_graphics_scissor(graphics, 0, 0, 1, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
     if (dvz_graphics_create(graphics) != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -2778,16 +2829,19 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     target = _vklite_find(state, command->u.begin_render_pass.texture_id);
     target_view = _vklite_object_image_view(target);
     if (target == NULL || target->images == NULL || target_view == VK_NULL_HANDLE)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     DvzCommands* cmds = NULL;
     if (target->borrowed_frame_target)
     {
         if (target->command_buffer == VK_NULL_HANDLE)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         cmds = dvz_commands_create_wrapper();
         if (cmds == NULL)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         dvz_commands_wrap(state->runtime->device, target->command_buffer, cmds);
         pass->borrowed_commands = true;
     }
@@ -2795,7 +2849,8 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     {
         cmds = _vklite_commands_create(state->runtime->device);
         if (cmds == NULL)
-            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     pass->commands = cmds;
     pass->width = target->width;
@@ -2803,7 +2858,8 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
 
     DvzRendering* rendering = dvz_rendering_create();
     if (rendering == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _vklite_fail_destroy_object(
+            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->rendering = rendering;
 
     VkClearValue clear = {0};
