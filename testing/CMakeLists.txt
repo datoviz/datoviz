@@ -563,6 +563,8 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_video
         datoviz_vk
         datoviz_vklite
+        datoviz_drp2
+        datoviz_scene
         datoviz_volk
     )
 

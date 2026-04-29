@@ -26,12 +26,15 @@
 #include "_compat.h"
 #include "_log.h"
 #include "datoviz/canvas.h"
+#include "datoviz/drp2.h"
 #include "datoviz/input/keyboard.h"
 #include "datoviz/input/keycodes.h"
+#include "datoviz/scene.h"
 #include "datoviz/stream.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/rendering.h"
@@ -64,6 +67,13 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_CANVAS_DRAW_CLEAR,
+    DVZ_CANVAS_DRAW_SCENE_DRP2,
+} DvzCanvasDrawMode;
+
+
 typedef struct DvzCanvasAppOptions
 {
     DvzBackend backend;
@@ -79,6 +89,7 @@ typedef struct DvzCanvasAppOptions
     const char* record_path;
     const char* screenshot_base;
     DvzVideoCaptureMode record_mode;
+    DvzCanvasDrawMode draw_mode;
     bool start_recording;
 } DvzCanvasAppOptions;
 
@@ -90,8 +101,13 @@ typedef struct DvzCanvasApp
     DvzInstance* instance;
     DvzWindowHost* host;
     DvzDevice* device;
+    DvzVma* allocator;
     DvzWindow* window;
     DvzCanvas* canvas;
+    DvzDrp2Runtime* drp2_runtime;
+    DvzFramePlanEmitter* scene_emitter;
+    DvzCapabilitySnapshot scene_caps;
+    DvzFramePlanEmitConfig scene_emit_cfg;
     DvzVideoSinkConfig video_cfg;
     bool running;
     bool recording;
@@ -101,6 +117,8 @@ typedef struct DvzCanvasApp
     int key_prev_escape;
     int key_prev_s;
     int key_prev_r;
+    uint64_t scene_frame_index;
+    bool scene_last_ok;
 } DvzCanvasApp;
 
 
@@ -133,6 +151,7 @@ static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
     options->record_path = "canvas.mp4";
     options->screenshot_base = "canvas_capture";
     options->record_mode = DVZ_VIDEO_CAPTURE_AUTO;
+    options->draw_mode = DVZ_CANVAS_DRAW_CLEAR;
     options->start_recording = false;
 }
 
@@ -218,6 +237,7 @@ static void _dvz_canvas_usage(void)
         stderr,
         "usage: dvz_live_canvas [--backend glfw|offscreen] [--width N] [--height N]\n"
         "                  [--mode present|offscreen] [--frames N] [--bg r,g,b,a] [--fps N]\n"
+        "                  [--draw clear|scene-drp2]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
         "                  [--start-recording] [--screenshots base]\n"
@@ -323,6 +343,22 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
             if (!_dvz_canvas_parse_u32(value, &fps))
                 return false;
             options->fps = (int)fps;
+        }
+        else if (strcmp(arg, "--draw") == 0)
+        {
+            if (strcmp(value, "clear") == 0)
+            {
+                options->draw_mode = DVZ_CANVAS_DRAW_CLEAR;
+            }
+            else if (strcmp(value, "scene-drp2") == 0)
+            {
+                options->draw_mode = DVZ_CANVAS_DRAW_SCENE_DRP2;
+            }
+            else
+            {
+                dvz_fprintf(stderr, "invalid draw mode: %s\\n", value);
+                return false;
+            }
         }
         else if (strcmp(arg, "--duration") == 0)
         {
@@ -432,6 +468,58 @@ static void _dvz_canvas_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, voi
     dvz_cmd_rendering_end(cmds);
     dvz_rendering_free(rendering);
     dvz_commands_free(cmds);
+}
+
+
+/**
+ * Render a minimal scene through DRP2 into the current canvas frame.
+ *
+ * @param canvas owning canvas
+ * @param frame stream frame with command buffer and target image view
+ * @param user_data app state pointer
+ */
+static void _dvz_canvas_draw_scene_drp2(
+    DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
+{
+    (void)canvas;
+    ANN(frame);
+    DvzCanvasApp* app = (DvzCanvasApp*)user_data;
+    ANN(app);
+    app->scene_last_ok = false;
+    if (app->drp2_runtime == NULL || app->scene_emitter == NULL)
+    {
+        return;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("live.canvas.scene", app->scene_frame_index++);
+    if (plan == NULL)
+    {
+        return;
+    }
+
+    bool ok = dvz_drp2_runtime_attach_frame_target(app->drp2_runtime, 1, frame);
+    ok = ok && dvz_frame_plan_upload(plan, "buf.live.position", 0, 16, "live.position");
+    ok = ok && dvz_frame_plan_render(plan, "panel.0", "target.canvas.color", false);
+    ok = ok && dvz_frame_plan_render_visual(plan, "visual.live.fullscreen");
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = NULL;
+    if (ok)
+    {
+        stream = dvz_frame_plan_emitter_emit_drp2(
+            app->scene_emitter, plan, &app->scene_caps, &report, &app->scene_emit_cfg);
+        ok = stream != NULL && dvz_diagnostic_report_count(&report) == 0;
+    }
+    if (ok)
+    {
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->drp2_runtime, stream);
+        ok = result.ok && result.code == DVZ_DRP2_VALIDATION_OK;
+    }
+
+    app->scene_last_ok = ok;
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
 }
 
 
@@ -776,6 +864,13 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         return false;
     }
 
+    app->allocator = dvz_allocator_create();
+    if (app->allocator == NULL || dvz_device_allocator(app->device, 0, app->allocator) != 0)
+    {
+        dvz_fprintf(stderr, "failed to create Vulkan allocator\\n");
+        return false;
+    }
+
     DvzWindowConfig wcfg = dvz_window_default_config();
     wcfg.width = app->options.width;
     wcfg.height = app->options.height;
@@ -828,7 +923,29 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         return false;
     }
 
-    dvz_canvas_set_draw_callback(app->canvas, _dvz_canvas_draw, app->options.bg);
+    if (app->options.draw_mode == DVZ_CANVAS_DRAW_SCENE_DRP2)
+    {
+        DvzDrp2RuntimeConfig runtime_cfg =
+            dvz_drp2_runtime_vklite_config(app->device, app->allocator);
+        app->drp2_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+        app->scene_emitter = dvz_frame_plan_emitter();
+        if (app->drp2_runtime == NULL || app->scene_emitter == NULL)
+        {
+            dvz_fprintf(stderr, "failed to create scene/DRP2 runtime\\n");
+            return false;
+        }
+        dvz_capability_snapshot_default(&app->scene_caps);
+        app->scene_emit_cfg = dvz_frame_plan_emit_config();
+        app->scene_emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+        app->scene_emit_cfg.external_color_target = true;
+        app->scene_emit_cfg.color_target_id = 1;
+        app->scene_emit_cfg.fullscreen_triangle = true;
+        dvz_canvas_set_draw_callback(app->canvas, _dvz_canvas_draw_scene_drp2, app);
+    }
+    else
+    {
+        dvz_canvas_set_draw_callback(app->canvas, _dvz_canvas_draw, app->options.bg);
+    }
 
     DvzInputRouter* router = dvz_canvas_input(app->canvas);
     if (router != NULL)
@@ -861,6 +978,16 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
         dvz_canvas_destroy(app->canvas);
         app->canvas = NULL;
     }
+    if (app->scene_emitter != NULL)
+    {
+        dvz_frame_plan_emitter_destroy(app->scene_emitter);
+        app->scene_emitter = NULL;
+    }
+    if (app->drp2_runtime != NULL)
+    {
+        dvz_drp2_runtime_destroy(app->drp2_runtime);
+        app->drp2_runtime = NULL;
+    }
     if (app->window != NULL)
     {
         dvz_window_destroy(app->window);
@@ -873,6 +1000,12 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
     }
     if (app->device != NULL)
     {
+        if (app->allocator != NULL)
+        {
+            dvz_allocator_destroy(app->allocator);
+            dvz_allocator_free(app->allocator);
+            app->allocator = NULL;
+        }
         dvz_device_destroy(app->device);
         app->device = NULL;
     }

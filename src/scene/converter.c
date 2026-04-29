@@ -52,6 +52,10 @@
 
 #define DRP2_VERTEX_WGSL                                                                        \
     "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
+#define DRP2_FULLSCREEN_VERTEX_WGSL                                                             \
+    "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = " \
+    "array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return "          \
+    "vec4f(pos[idx], 0.0, 1.0); }"
 #define DRP2_FRAGMENT_WGSL                                                                      \
     "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
 #define DRP2_TEXTURE_VERTEX_WGSL                                                                \
@@ -69,6 +73,9 @@
 
 #define DRP2_VERTEX_GLSL                                                                        \
     "#version 450\nvoid main(){gl_Position=vec4(0.0,0.0,0.0,1.0);}"
+#define DRP2_FULLSCREEN_VERTEX_GLSL                                                             \
+    "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"                       \
+    "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"
 #define DRP2_FRAGMENT_GLSL                                                                      \
     "#version 450\nlayout(location=0)out vec4 color;void main(){color=vec4(1.0);}"
 #define DRP2_TEXTURE_VERTEX_GLSL                                                                \
@@ -421,6 +428,31 @@ static uint64_t _color_target_id(const DvzFramePlanEmitConfig* cfg)
     if (cfg != NULL && cfg->color_target_id != 0)
         return cfg->color_target_id;
     return DRP2_ID_COLOR_TARGET;
+}
+
+
+/**
+ * Return the vertex shader source used for simple render emissions.
+ *
+ * @param cfg the emission config
+ * @param wgsl output WGSL shader source
+ * @param glsl output GLSL shader source
+ */
+static void _render_vertex_shader_source(
+    const DvzFramePlanEmitConfig* cfg, const char** wgsl, const char** glsl)
+{
+    ANN(wgsl);
+    ANN(glsl);
+    if (cfg != NULL && cfg->fullscreen_triangle)
+    {
+        *wgsl = DRP2_FULLSCREEN_VERTEX_WGSL;
+        *glsl = DRP2_FULLSCREEN_VERTEX_GLSL;
+    }
+    else
+    {
+        *wgsl = DRP2_VERTEX_WGSL;
+        *glsl = DRP2_VERTEX_GLSL;
+    }
 }
 
 
@@ -867,9 +899,11 @@ static bool _emitter_emit_render(
     bool ok = true;
     if (!emitter->vertex_shader_created)
     {
+        const char* vertex_wgsl = NULL;
+        const char* vertex_glsl = NULL;
+        _render_vertex_shader_source(cfg, &vertex_wgsl, &vertex_glsl);
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL,
-                       DRP2_VERTEX_GLSL, cfg);
+                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", vertex_wgsl, vertex_glsl, cfg);
         emitter->vertex_shader_created = ok;
     }
     if (ok && !emitter->fragment_shader_created)
@@ -1060,6 +1094,7 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     cfg.external_color_target = false;
     cfg.color_target_id = DRP2_ID_COLOR_TARGET;
+    cfg.fullscreen_triangle = false;
     return cfg;
 }
 
