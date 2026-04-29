@@ -12,6 +12,12 @@ target_include_directories(datoviz_drp2
 )
 
 target_compile_definitions(datoviz_drp2 PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+if(TARGET datoviz_vklite)
+    target_link_libraries(datoviz_drp2 PUBLIC datoviz_vklite)
+    target_compile_definitions(datoviz_drp2 PUBLIC DVZ_DRP2_HAS_VKLITE=1)
+else()
+    target_compile_definitions(datoviz_drp2 PUBLIC DVZ_DRP2_HAS_VKLITE=0)
+endif()
 if(WIN32)
     target_compile_definitions(datoviz_drp2 PRIVATE DVZ_SHARED)
 endif()

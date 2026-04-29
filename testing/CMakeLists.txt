@@ -249,6 +249,10 @@ if(_dvz_has_core AND _dvz_has_drp2)
         testing
     )
 
+    if(_dvz_has_vk)
+        target_link_libraries(dvztest_drp2 PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
+    endif()
+
     if(DVZ_WITH_MIMALLOC)
         target_link_libraries(dvztest_drp2 PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
     endif()
@@ -289,6 +293,10 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         datoviz_scene
         testing
     )
+
+    if(_dvz_has_vk)
+        target_link_libraries(dvztest_scene PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
+    endif()
 
     if(DVZ_WITH_MIMALLOC)
         target_link_libraries(dvztest_scene PRIVATE $<$<CONFIG:Release>:mimalloc-static>)

@@ -21,11 +21,38 @@
 #include "test_drp2.h"
 #include "testing.h"
 
+#if DVZ_DRP2_HAS_VKLITE
+#include "_log.h"
+#include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/vk/instance.h"
+#endif
+
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+#if DVZ_DRP2_HAS_VKLITE
+/**
+ * Probe whether the current runtime can create a Vulkan instance for DRP2 vklite execution tests.
+ *
+ * @return true when the runtime can create a Vulkan instance, false otherwise
+ */
+static bool _drp2_vklite_runtime_available(void)
+{
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    DvzInstance* instance = dvz_instance_create(&cfg);
+    if (instance == NULL)
+    {
+        log_warn("DRP2 vklite execution test skipped because Vulkan instance creation failed");
+        return false;
+    }
+    dvz_instance_destroy(instance);
+    return true;
+}
+#endif
 
 static DvzDrp2CommandStream* _valid_render_stream(void)
 {
@@ -98,6 +125,10 @@ static DvzDrp2CommandStream* _valid_compute_stream(void)
     return stream;
 }
 
+
+/*************************************************************************************************/
+/*  Tests                                                                                        */
+/*************************************************************************************************/
 
 
 int test_drp2_stream_empty(TstSuite* suite, TstItem* item)
@@ -1235,6 +1266,54 @@ int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstI
 }
 
 
+#if DVZ_DRP2_HAS_VKLITE
+int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 vklite execution test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+    AT(dvz_drp2_stream_destroy_texture(stream, 2));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+#endif
+
+
 
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
@@ -1286,6 +1365,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
+#if DVZ_DRP2_HAS_VKLITE
+    TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
+#endif
 
     return 0;
 }

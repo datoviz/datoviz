@@ -22,6 +22,21 @@
 #include "_assertions.h"
 #include "_stream.h"
 
+#if DVZ_DRP2_HAS_VKLITE
+#include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/images.h"
+#endif
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#ifndef DVZ_DRP2_HAS_VKLITE
+#define DVZ_DRP2_HAS_VKLITE 0
+#endif
+
 
 
 /*************************************************************************************************/
@@ -64,6 +79,10 @@ typedef enum
 
 typedef struct Drp2Object Drp2Object;
 typedef struct Drp2RuntimeState Drp2RuntimeState;
+#if DVZ_DRP2_HAS_VKLITE
+typedef struct Drp2VkliteObject Drp2VkliteObject;
+typedef struct Drp2VkliteState Drp2VkliteState;
+#endif
 
 struct DvzDrp2Runtime
 {
@@ -114,6 +133,26 @@ struct Drp2RuntimeState
     uint32_t count;
     Drp2Object* objects;
 };
+
+#if DVZ_DRP2_HAS_VKLITE
+struct Drp2VkliteObject
+{
+    uint64_t id;
+    Drp2ObjectKind kind;
+    DvzBuffer* buffer;
+    DvzImages* images;
+    bool destroyed;
+};
+
+
+struct Drp2VkliteState
+{
+    DvzDrp2Runtime* runtime;
+    uint32_t capacity;
+    uint32_t count;
+    Drp2VkliteObject* objects;
+};
+#endif
 
 
 
@@ -1412,6 +1451,347 @@ static DvzDrp2ValidationResult _validate_command(
 }
 
 
+#if DVZ_DRP2_HAS_VKLITE
+static int _base64_value(char c)
+{
+    if (c >= 'A' && c <= 'Z')
+        return c - 'A';
+    if (c >= 'a' && c <= 'z')
+        return c - 'a' + 26;
+    if (c >= '0' && c <= '9')
+        return c - '0' + 52;
+    if (c == '+')
+        return 62;
+    if (c == '/')
+        return 63;
+    return -1;
+}
+
+
+static bool _decode_base64_exact(const char* src, uint64_t expected_size, uint8_t** out)
+{
+    ANN(src);
+    ANN(out);
+    *out = NULL;
+    if (expected_size == 0)
+        return false;
+
+    uint8_t* decoded = (uint8_t*)dvz_calloc(expected_size, sizeof(uint8_t));
+    if (decoded == NULL)
+        return false;
+
+    uint32_t quad[4] = {0};
+    uint32_t quad_count = 0;
+    uint64_t written = 0;
+    bool padded = false;
+    for (uint32_t i = 0; src[i] != '\0'; i++)
+    {
+        char c = src[i];
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
+            continue;
+        if (padded && c != '=')
+        {
+            dvz_free(decoded);
+            return false;
+        }
+
+        if (c == '=')
+        {
+            quad[quad_count++] = 64;
+            padded = true;
+        }
+        else
+        {
+            int value = _base64_value(c);
+            if (value < 0)
+            {
+                dvz_free(decoded);
+                return false;
+            }
+            quad[quad_count++] = (uint32_t)value;
+        }
+
+        if (quad_count != 4)
+            continue;
+
+        if (written < expected_size)
+            decoded[written++] = (uint8_t)((quad[0] << 2) | (quad[1] >> 4));
+        if (quad[2] != 64 && written < expected_size)
+            decoded[written++] = (uint8_t)(((quad[1] & 0x0f) << 4) | (quad[2] >> 2));
+        if (quad[3] != 64 && written < expected_size)
+            decoded[written++] = (uint8_t)(((quad[2] & 0x03) << 6) | quad[3]);
+
+        quad_count = 0;
+    }
+
+    if (quad_count != 0 || written != expected_size)
+    {
+        dvz_free(decoded);
+        return false;
+    }
+
+    *out = decoded;
+    return true;
+}
+
+
+static VkBufferUsageFlags _vklite_buffer_usage(uint32_t usage)
+{
+    VkBufferUsageFlags out = 0;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) != 0)
+        out |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_COPY_DST) != 0)
+        out |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_VERTEX) != 0)
+        out |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_INDEX) != 0)
+        out |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_UNIFORM) != 0)
+        out |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_STORAGE) != 0)
+        out |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    return out != 0 ? out : VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+}
+
+
+static DvzAllocationFlags _vklite_buffer_alloc_flags(uint32_t usage)
+{
+    DvzAllocationFlags flags = DVZ_ALLOC_FLAGS_NONE;
+    if ((usage & DVZ_DRP2_BUFFER_USAGE_MAP_READ) != 0)
+        flags |= DVZ_ALLOC_HOST_ACCESS_RANDOM;
+    if ((usage & (DVZ_DRP2_BUFFER_USAGE_MAP_WRITE | DVZ_DRP2_BUFFER_USAGE_COPY_DST)) != 0)
+        flags |= DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE;
+    return flags;
+}
+
+
+static VkImageUsageFlags _vklite_texture_usage(uint32_t usage)
+{
+    VkImageUsageFlags out = 0;
+    if ((usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) != 0)
+        out |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    if ((usage & DVZ_DRP2_TEXTURE_USAGE_COPY_DST) != 0)
+        out |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    if ((usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
+        out |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    if ((usage & DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING) != 0)
+        out |= VK_IMAGE_USAGE_STORAGE_BIT;
+    if ((usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0)
+        out |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    return out != 0 ? out : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+}
+
+
+static bool _vklite_ensure_capacity(Drp2VkliteState* state)
+{
+    ANN(state);
+    if (state->objects == NULL || state->capacity == 0)
+    {
+        state->capacity = DVZ_DRP2_RUNTIME_INITIAL_OBJECT_CAPACITY;
+        state->objects = (Drp2VkliteObject*)dvz_calloc(
+            state->capacity, sizeof(Drp2VkliteObject));
+        return state->objects != NULL;
+    }
+    if (state->count < state->capacity)
+        return true;
+
+    state->capacity *= 2;
+    state->objects = (Drp2VkliteObject*)dvz_realloc(
+        state->objects, state->capacity * sizeof(Drp2VkliteObject));
+    return state->objects != NULL;
+}
+
+
+static Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id)
+{
+    ANN(state);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        if (state->objects[i].id == id && !state->objects[i].destroyed)
+            return &state->objects[i];
+    }
+    return NULL;
+}
+
+
+static Drp2VkliteObject* _vklite_add(
+    Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind)
+{
+    ANN(state);
+    if (!_vklite_ensure_capacity(state))
+        return NULL;
+
+    Drp2VkliteObject* object = &state->objects[state->count++];
+    dvz_memset(object, sizeof(Drp2VkliteObject), 0, sizeof(Drp2VkliteObject));
+    object->id = id;
+    object->kind = kind;
+    return object;
+}
+
+
+static void _vklite_destroy_object(Drp2VkliteObject* object)
+{
+    if (object == NULL || object->destroyed)
+        return;
+    if (object->buffer != NULL)
+    {
+        dvz_buffer_destroy(object->buffer);
+        dvz_buffer_free(object->buffer);
+        object->buffer = NULL;
+    }
+    if (object->images != NULL)
+    {
+        dvz_images_destroy(object->images);
+        dvz_images_free(object->images);
+        object->images = NULL;
+    }
+    object->destroyed = true;
+}
+
+
+static void _vklite_state_cleanup(Drp2VkliteState* state)
+{
+    if (state == NULL)
+        return;
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        _vklite_destroy_object(&state->objects[i]);
+    }
+    dvz_free(state->objects);
+}
+
+
+static DvzDrp2ValidationResult _vklite_create_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* object =
+        _vklite_add(state, command->u.create_buffer.id, DRP2_OBJECT_BUFFER);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzBuffer* buffer = dvz_buffer_create_wrapper();
+    if (buffer == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->buffer = buffer;
+
+    dvz_buffer(state->runtime->device, state->runtime->allocator, buffer);
+    dvz_buffer_size(buffer, command->u.create_buffer.size);
+    dvz_buffer_usage(buffer, _vklite_buffer_usage(command->u.create_buffer.usage));
+    dvz_buffer_flags(buffer, _vklite_buffer_alloc_flags(command->u.create_buffer.usage));
+    if (dvz_buffer_create(buffer) != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+static DvzDrp2ValidationResult _vklite_create_texture(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* object =
+        _vklite_add(state, command->u.create_texture.id, DRP2_OBJECT_TEXTURE);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzImages* images = dvz_images_create_wrapper();
+    if (images == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->images = images;
+
+    dvz_images(state->runtime->device, state->runtime->allocator, VK_IMAGE_TYPE_2D, 1, images);
+    dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(images, command->u.create_texture.width, command->u.create_texture.height, 1);
+    dvz_images_mip(images, 1);
+    dvz_images_layers(images, 1);
+    dvz_images_samples(images, VK_SAMPLE_COUNT_1_BIT);
+    dvz_images_usage(images, _vklite_texture_usage(command->u.create_texture.usage));
+    if (dvz_images_create(images) != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+static DvzDrp2ValidationResult _vklite_write_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* object = _vklite_find(state, command->u.write_buffer.buffer_id);
+    if (object == NULL || object->buffer == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    uint8_t* data = NULL;
+    if (!_decode_base64_exact(
+            command->u.write_buffer.data_base64, command->u.write_buffer.size, &data))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    dvz_buffer_upload(
+        object->buffer, command->u.write_buffer.offset, command->u.write_buffer.size, data);
+    dvz_free(data);
+    return _ok();
+}
+
+
+static DvzDrp2ValidationResult _vklite_destroy_backend_object(
+    Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind, uint32_t command_index)
+{
+    ANN(state);
+    Drp2VkliteObject* object = _vklite_find(state, id);
+    if (object == NULL || object->kind != kind)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    _vklite_destroy_object(object);
+    return _ok();
+}
+
+
+static DvzDrp2ValidationResult
+_vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
+{
+    ANN(runtime);
+    ANN(stream);
+    Drp2VkliteState state = {.runtime = runtime};
+    DvzDrp2ValidationResult result = _ok();
+
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        const DvzDrp2Command* command = &stream->commands[i];
+        switch (command->type)
+        {
+        case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+            result = _vklite_create_buffer(&state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+            result = _vklite_destroy_backend_object(
+                &state, command->u.destroy_buffer.buffer_id, DRP2_OBJECT_BUFFER, i);
+            break;
+        case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+            result = _vklite_create_texture(&state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+            result = _vklite_destroy_backend_object(
+                &state, command->u.destroy_texture.texture_id, DRP2_OBJECT_TEXTURE, i);
+            break;
+        case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+            result = _vklite_write_buffer(&state, command, i);
+            break;
+        default:
+            result = _ok();
+            break;
+        }
+
+        if (!result.ok)
+            break;
+    }
+
+    _vklite_state_cleanup(&state);
+    return result;
+}
+#endif
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -1444,6 +1824,10 @@ DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
 {
     if (cfg == NULL)
         return NULL;
+#if !DVZ_DRP2_HAS_VKLITE
+    if (!cfg->semantic_only)
+        return NULL;
+#endif
     if (!cfg->semantic_only && (cfg->device == NULL || cfg->allocator == NULL))
         return NULL;
 
@@ -1499,11 +1883,11 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(const DvzDrp2CommandStream* str
 
 
 /**
- * Execute a command stream through a DRP2 runtime skeleton.
+ * Execute a command stream through a DRP2 runtime.
  *
  * @param runtime the runtime
  * @param stream the command stream
- * @return the validation result before backend execution
+ * @return the validation result after semantic validation and backend execution
  */
 DvzDrp2ValidationResult
 dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
@@ -1515,6 +1899,12 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
     if (!result.ok)
         return result;
 
-    // Native vklite execution will be added incrementally after the semantic layer is complete.
-    return result;
+    if (runtime->semantic_only)
+        return result;
+
+#if DVZ_DRP2_HAS_VKLITE
+    return _vklite_execute(runtime, stream);
+#else
+    return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+#endif
 }
