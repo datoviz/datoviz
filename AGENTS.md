@@ -432,7 +432,7 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 ## 🧾 **Coding Conventions**
 
 * Document every new module-level function with a short Doxygen-style docstring immediately above the definition. Start the block with `/**`, provide a one-sentence summary, leave a blank line, then add `@param` tags for every argument and an `@return` tag whenever the function returns a value (plus `@note`/`@see` when helpful). Use a single space between the leading `*` and tag identifiers (e.g., ` * @param ...`), avoid extra spacing, keep the description line within the project's preferred width, and treat it as the canonical explanation of the symbol's behavior.
-* Visually separate neighbouring top-level functions with three newline characters (two empty lines) to make each implementation stand out. Attach any descriptive comments directly above the function and keep extra text out of the blank space.
+* Visually separate neighbouring top-level functions with three blank lines (three empty lines) to make each implementation stand out. Attach any descriptive comments directly above the function and keep extra text out of the blank space.
 * Reserve the `dvz_` prefix for symbols exposed via public headers. Internal `static` helpers should avoid `dvz_` (use `_dvz_` or no prefix) so the public naming space stays predictable.
 * Prefer `dvz_memcpy()` / `dvz_memset()` from `src/common/_alloc.h` / `_compat.h` over `memcpy()` / `memset()` so every copy or fill goes through the shared allocator wrappers.
 * Never call `malloc`, `calloc`, or `free` directly; rely on the allocation/deallocation helpers declared in `_alloc.h` and `_compat.h` (prefer `dvz_calloc` over `dvz_malloc` when zeroed memory suffices, alongside `dvz_free`) so every allocation flows through the datoviz allocator. All structs should be zero-initialized before use, reinforcing the `dvz_calloc` preference (or `dvz_memset()` after allocation when needed).
@@ -454,7 +454,7 @@ They are not installed, so keep `src/common` in include paths whenever you touch
   Keep the section title left-aligned inside the middle comment line and repeat the delimiter before and after blocks.
 * Organize the sections in the same order every file: `Includes`, `Constants`, `Macros`, `Typedefs`, `Structs`, `Function prototypes`/`Helpers`, and finally `Functions`. If a section is empty, omit it rather than leaving a placeholder.
 * Lines should stay within 100 characters whenever possible to keep the delimiters readable and to match the Vulkan-style formatting.
-* Maintain a visual gap of two blank lines (three newline characters) between every top-level definition—structs, enums, or functions—to match the spacing seen in the Vulkan files.
+* Maintain a visual gap of three blank lines (three empty lines) between every top-level definition—structs, enums, or functions—to keep C source spacing consistent across the codebase.
 
 These rules should be followed carefully whenever Codex edits or creates C source files.
 
