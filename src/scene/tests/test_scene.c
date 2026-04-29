@@ -177,6 +177,8 @@ int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item)
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
     AT(dvz_drp2_stream_count(stream) == 16);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 0)) == DVZ_DRP2_COMMAND_HELLO_RENDERER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 2)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
@@ -223,6 +225,8 @@ int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
     AT(dvz_drp2_stream_count(stream) == 18);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 4)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 15)) ==
@@ -265,6 +269,8 @@ int test_frame_plan_emit_drp2_dynamic_uploads(TstSuite* suite, TstItem* item)
     DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
     AT(dvz_drp2_stream_count(stream) == 18);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 2)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
     AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 3)) == DVZ_DRP2_COMMAND_WRITE_BUFFER);
