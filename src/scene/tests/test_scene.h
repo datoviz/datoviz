@@ -36,6 +36,10 @@ int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item);
 
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstItem* item);
+#endif
+
 int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_emit_drp2_dynamic_uploads(TstSuite* suite, TstItem* item);

@@ -19,11 +19,13 @@
 #include <string.h>
 
 #if DVZ_DRP2_HAS_VKLITE
+#include "shaderc/shaderc.h"
 #include <volk.h>
 #endif
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "_stream.h"
 
 #if DVZ_DRP2_HAS_VKLITE
@@ -31,6 +33,7 @@
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/sync.h"
 #endif
 
@@ -151,6 +154,7 @@ struct Drp2VkliteObject
     Drp2ObjectKind kind;
     DvzBuffer* buffer;
     DvzImages* images;
+    DvzShader* shader;
     VkImageLayout image_layout;
     bool destroyed;
 };
@@ -1667,6 +1671,12 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_images_free(object->images);
         object->images = NULL;
     }
+    if (object->shader != NULL)
+    {
+        dvz_shader_destroy(object->shader);
+        dvz_shader_free(object->shader);
+        object->shader = NULL;
+    }
     object->destroyed = true;
 }
 
@@ -1737,6 +1747,158 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     if (dvz_images_create(images) != 0)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    return _ok();
+}
+
+
+/**
+ * Return the shaderc GLSL shader kind for a DRP2 shader stage string.
+ *
+ * @param stage shader stage string
+ * @return shaderc shader kind, or infer-from-source when the stage is unknown
+ */
+static shaderc_shader_kind _vklite_shader_kind(const char* stage)
+{
+    ANN(stage);
+    if (strcmp(stage, "VERTEX") == 0 || strcmp(stage, "vertex") == 0)
+        return shaderc_glsl_vertex_shader;
+    if (strcmp(stage, "FRAGMENT") == 0 || strcmp(stage, "fragment") == 0)
+        return shaderc_glsl_fragment_shader;
+    if (strcmp(stage, "COMPUTE") == 0 || strcmp(stage, "compute") == 0)
+        return shaderc_glsl_compute_shader;
+    return shaderc_glsl_infer_from_source;
+}
+
+
+/**
+ * Return the DRP2 runtime object kind for a shader stage string.
+ *
+ * @param stage shader stage string
+ * @return shader object kind, or DRP2_OBJECT_NONE when the stage is unknown
+ */
+static Drp2ObjectKind _vklite_shader_object_kind(const char* stage)
+{
+    ANN(stage);
+    if (strcmp(stage, "VERTEX") == 0 || strcmp(stage, "vertex") == 0)
+        return DRP2_OBJECT_SHADER_VERTEX;
+    if (strcmp(stage, "FRAGMENT") == 0 || strcmp(stage, "fragment") == 0)
+        return DRP2_OBJECT_SHADER_FRAGMENT;
+    if (strcmp(stage, "COMPUTE") == 0 || strcmp(stage, "compute") == 0)
+        return DRP2_OBJECT_SHADER_COMPUTE;
+    return DRP2_OBJECT_NONE;
+}
+
+
+/**
+ * Compile GLSL source code into SPIR-V with shaderc.
+ *
+ * @param stage shader stage string
+ * @param code GLSL source code
+ * @param spv output pointer to shaderc-owned SPIR-V words
+ * @param spv_size output SPIR-V byte size
+ * @param result output shaderc compilation result to release by the caller
+ * @return true when compilation succeeds, false otherwise
+ */
+static bool _vklite_compile_glsl(
+    const char* stage, const char* code, const uint32_t** spv, uint64_t* spv_size,
+    shaderc_compilation_result_t* result)
+{
+    ANN(stage);
+    ANN(code);
+    ANN(spv);
+    ANN(spv_size);
+    ANN(result);
+    *spv = NULL;
+    *spv_size = 0;
+    *result = NULL;
+
+    shaderc_compiler_t compiler = shaderc_compiler_initialize();
+    if (compiler == NULL)
+        return false;
+    shaderc_compile_options_t options = shaderc_compile_options_initialize();
+    if (options == NULL)
+    {
+        shaderc_compiler_release(compiler);
+        return false;
+    }
+
+    shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
+    shaderc_compile_options_set_target_env(
+        options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+    shaderc_compile_options_set_target_spirv(options, shaderc_spirv_version_1_6);
+
+    shaderc_shader_kind kind = _vklite_shader_kind(stage);
+    *result = shaderc_compile_into_spv(
+        compiler, code, strlen(code), kind, "drp2_scene_fixture.glsl", "main", options);
+
+    shaderc_compile_options_release(options);
+    shaderc_compiler_release(compiler);
+
+    if (*result == NULL)
+        return false;
+    if (shaderc_result_get_compilation_status(*result) != shaderc_compilation_status_success)
+        return false;
+
+    *spv = (const uint32_t*)shaderc_result_get_bytes(*result);
+    *spv_size = (uint64_t)shaderc_result_get_length(*result);
+    return *spv != NULL && *spv_size > 0;
+}
+
+
+/**
+ * Create a vklite shader module object from a DRP2 CreateShaderModule command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 CreateShaderModule command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_create_shader_module(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    if (strcmp(command->u.create_shader_module.format, "glsl") != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    Drp2ObjectKind kind = _vklite_shader_object_kind(command->u.create_shader_module.stage);
+    if (kind == DRP2_OBJECT_NONE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    const uint32_t* spv = NULL;
+    uint64_t spv_size = 0;
+    shaderc_compilation_result_t result = NULL;
+    if (!_vklite_compile_glsl(
+            command->u.create_shader_module.stage, command->u.create_shader_module.code, &spv,
+            &spv_size, &result))
+    {
+        if (result != NULL)
+        {
+            log_error("GLSL compilation failed: %s", shaderc_result_get_error_message(result));
+            shaderc_result_release(result);
+        }
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    }
+
+    Drp2VkliteObject* object = _vklite_add(state, command->u.create_shader_module.id, kind);
+    if (object == NULL)
+    {
+        shaderc_result_release(result);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
+    DvzShader* shader = dvz_shader_create_wrapper();
+    if (shader == NULL)
+    {
+        shaderc_result_release(result);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    object->shader = shader;
+
+    int out = dvz_shader(state->runtime->device, spv_size, spv, shader);
+    shaderc_result_release(result);
+    if (out != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -2102,6 +2264,30 @@ static DvzDrp2ValidationResult _vklite_destroy_backend_object(
 }
 
 
+/**
+ * Destroy a vklite shader module object by DRP2 object id.
+ *
+ * @param state vklite runtime state
+ * @param id DRP2 shader module object id
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_destroy_shader_module(
+    Drp2VkliteState* state, uint64_t id, uint32_t command_index)
+{
+    ANN(state);
+    Drp2VkliteObject* object = _vklite_find(state, id);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (object->kind != DRP2_OBJECT_SHADER_VERTEX &&
+        object->kind != DRP2_OBJECT_SHADER_FRAGMENT &&
+        object->kind != DRP2_OBJECT_SHADER_COMPUTE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    _vklite_destroy_object(object);
+    return _ok();
+}
+
+
 static DvzDrp2ValidationResult
 _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
 {
@@ -2139,6 +2325,13 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
             result = _vklite_destroy_backend_object(
                 state, command->u.destroy_texture.texture_id, DRP2_OBJECT_TEXTURE, i);
+            break;
+        case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+            result = _vklite_create_shader_module(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+            result = _vklite_destroy_shader_module(
+                state, command->u.destroy_shader_module.shader_module_id, i);
             break;
         case DVZ_DRP2_COMMAND_WRITE_BUFFER:
             result = _vklite_write_buffer(state, command, i);

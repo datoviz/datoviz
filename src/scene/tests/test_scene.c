@@ -24,11 +24,39 @@
 #include "test_scene.h"
 #include "testing.h"
 
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+#include "_log.h"
+#include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/vk/instance.h"
+#endif
+
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+/**
+ * Probe whether the current runtime can create a Vulkan instance for scene runtime tests.
+ *
+ * @return true when the runtime can create a Vulkan instance, false otherwise
+ */
+static bool _scene_vklite_runtime_available(void)
+{
+    DvzInstanceConfig cfg = dvz_instance_default_config();
+    cfg.flags = 0;
+    DvzInstance* instance = dvz_instance_create(&cfg);
+    if (instance == NULL)
+    {
+        log_warn("scene vklite runtime test skipped because Vulkan instance creation failed");
+        return false;
+    }
+    dvz_instance_destroy(instance);
+    return true;
+}
+#endif
+
 
 /**
  * Read a text fixture file into an owned NUL-terminated string.
@@ -105,6 +133,10 @@ static int _assert_stream_matches_fixture(
 }
 
 
+
+/*************************************************************************************************/
+/*  Tests                                                                                        */
+/*************************************************************************************************/
 
 int test_scene_capabilities_diagnostics(TstSuite* suite, TstItem* item)
 {
@@ -321,6 +353,63 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item)
     dvz_frame_plan_destroy(plan);
     return 0;
 }
+
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene GLSL DRP2 execution test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.convert.glsl.execute", 16);
+    ANN(plan);
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+#endif
 
 
 
@@ -546,6 +635,9 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
+#endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);
     TEST_SIMPLE(test_frame_plan_emit_drp2_texture_sampling);
