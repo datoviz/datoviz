@@ -244,6 +244,52 @@ int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_emit_drp2_dynamic_uploads(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.dynamic.convert", 12);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.dynamic.position", 0, 16, "point.position.update"));
+    AT(dvz_frame_plan_upload(plan, "buf.dynamic.color", 0, 16, "point.color.update"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.dynamic.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream) == 18);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 2)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 3)) == DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 4)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 5)) == DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 13)) ==
+       DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 17)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_dynamic_uploads");
+    ANN(json);
+    AT(strstr(json, "\"id\": 20") != NULL);
+    AT(strstr(json, "\"id\": 21") != NULL);
+    AT(strstr(json, "\"buffer_id\": 20") != NULL);
+    AT(strstr(json, "\"buffer_id\": 21") != NULL);
+    AT(strstr(json, "\"cmd\": \"Draw\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -260,6 +306,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);
 
     return 0;
 }
