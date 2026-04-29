@@ -88,6 +88,7 @@ canvas_refresh_probe_apply_frame(
 
     state->latest_memory_fd = frame->memory_fd;
     state->latest_wait_semaphore_fd = frame->wait_semaphore_fd;
+    state->latest_extent = frame->extent;
     state->latest_handles_dirty = frame->handles_dirty;
     if (is_update)
     {

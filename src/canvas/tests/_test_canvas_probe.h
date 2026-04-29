@@ -35,6 +35,7 @@ typedef struct CanvasRefreshProbeState
     uint32_t wait_value_count;
     uint32_t wait_value_non_monotonic;
     uint64_t last_wait_value;
+    VkExtent2D latest_extent;
     int latest_memory_fd;
     int latest_wait_semaphore_fd;
     bool latest_handles_dirty;

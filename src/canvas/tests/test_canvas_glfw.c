@@ -57,6 +57,8 @@ typedef struct CanvasGlfwClearContext
 {
     DvzDevice* device;
     VkFormat format;
+    VkExtent2D latest_extent;
+    uint32_t callback_count;
 } CanvasGlfwClearContext;
 
 
@@ -114,6 +116,9 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
         log_error("canvas frame missing image view");
         return;
     }
+
+    ctx->latest_extent = frame->extent;
+    ctx->callback_count++;
 
     DvzCommands* cmds = dvz_commands_create_wrapper();
     ANN(cmds);
@@ -1728,6 +1733,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suit
     DvzCanvasSurfaceInfo before_surface = dvz_canvas_window_surface_info(fixture.canvas);
     uint32_t update_before = probe.update_count;
     uint32_t submit_before = probe.submit_count;
+    uint32_t callback_before = clear_ctx.callback_count;
     probe.awaiting_refresh = true;
     probe.saw_update_since_refresh = false;
 
@@ -1765,6 +1771,11 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suit
     AT(probe.saw_update_since_refresh);
     AT(probe.stale_submit_count == 0);
     AT(probe.latest_handles_dirty);
+    AT(probe.latest_extent.width == resized.extent.width);
+    AT(probe.latest_extent.height == resized.extent.height);
+    AT(clear_ctx.callback_count > callback_before);
+    AT(clear_ctx.latest_extent.width == resized.extent.width);
+    AT(clear_ctx.latest_extent.height == resized.extent.height);
     DvzCanvasSurfaceInfo after_surface = dvz_canvas_window_surface_info(fixture.canvas);
     AT(after_surface.extent.width != before_surface.extent.width || after_surface.extent.height != before_surface.extent.height);
 
