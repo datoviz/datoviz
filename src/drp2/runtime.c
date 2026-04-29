@@ -334,6 +334,20 @@ static DvzDrp2ValidationResult _validate_destroy_object(
                 return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         }
     }
+    else if (kind == DRP2_OBJECT_BIND_GROUP_LAYOUT)
+    {
+        for (uint32_t i = 0; i < state->count; i++)
+        {
+            Drp2Object* other = &state->objects[i];
+            if (other->destroyed)
+                continue;
+            if ((other->kind == DRP2_OBJECT_BIND_GROUP ||
+                 other->kind == DRP2_OBJECT_RENDER_PIPELINE ||
+                 other->kind == DRP2_OBJECT_COMPUTE_PIPELINE) &&
+                other->bind_group_layout_id == id)
+                return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        }
+    }
 
     object->destroyed = true;
     return _ok();
@@ -667,6 +681,28 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
     object->buffer_size = command->u.create_bind_group.buffer_size;
     object->storage_buffers = layout->storage_buffers;
     return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_destroy_bind_group_layout(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(command);
+    return _validate_destroy_object(
+        state, command->u.destroy_bind_group_layout.bind_group_layout_id,
+        DRP2_OBJECT_BIND_GROUP_LAYOUT, command_index);
+}
+
+
+
+static DvzDrp2ValidationResult _validate_destroy_bind_group(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(command);
+    return _validate_destroy_object(
+        state, command->u.destroy_bind_group.bind_group_id, DRP2_OBJECT_BIND_GROUP,
+        command_index);
 }
 
 
@@ -1326,6 +1362,10 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_create_bind_group_layout(state, command, command_index);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
         return _validate_create_bind_group(state, command, command_index);
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+        return _validate_destroy_bind_group_layout(state, command, command_index);
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return _validate_destroy_bind_group(state, command, command_index);
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return _validate_write_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:

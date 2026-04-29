@@ -139,6 +139,10 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "CreateBindGroupLayout";
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
         return "CreateBindGroup";
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+        return "DestroyBindGroupLayout";
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return "DestroyBindGroup";
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return "WriteBuffer";
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
@@ -472,6 +476,17 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                 command->u.create_bind_group.bind_group_layout_id,
                 command->u.create_bind_group.texture_id, command->u.create_bind_group.sampler_id);
         }
+        break;
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"bind_group_layout_id\": %" PRIu64 " }",
+            _command_name(command->type),
+            command->u.destroy_bind_group_layout.bind_group_layout_id);
+        break;
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"bind_group_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.destroy_bind_group.bind_group_id);
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         _json_append(
@@ -1205,6 +1220,43 @@ bool dvz_drp2_stream_create_storage_bind_group(
     command->u.create_bind_group.buffer0_id = buffer0_id;
     command->u.create_bind_group.buffer1_id = buffer1_id;
     command->u.create_bind_group.buffer_size = buffer_size;
+    return true;
+}
+
+
+
+/**
+ * Append a DestroyBindGroupLayout command.
+ *
+ * @param stream the command stream
+ * @param bind_group_layout_id the bind-group layout id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT);
+    if (command == NULL)
+        return false;
+    command->u.destroy_bind_group_layout.bind_group_layout_id = bind_group_layout_id;
+    return true;
+}
+
+
+
+/**
+ * Append a DestroyBindGroup command.
+ *
+ * @param stream the command stream
+ * @param bind_group_id the bind-group id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_bind_group(DvzDrp2CommandStream* stream, uint64_t bind_group_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP);
+    if (command == NULL)
+        return false;
+    command->u.destroy_bind_group.bind_group_id = bind_group_id;
     return true;
 }
 

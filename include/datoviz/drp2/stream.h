@@ -350,6 +350,30 @@ DVZ_EXPORT bool dvz_drp2_stream_create_storage_bind_group(
 
 
 /**
+ * Append a DestroyBindGroupLayout command.
+ *
+ * @param stream the command stream
+ * @param bind_group_layout_id the bind-group layout id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_destroy_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id);
+
+
+
+/**
+ * Append a DestroyBindGroup command.
+ *
+ * @param stream the command stream
+ * @param bind_group_id the bind-group id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_destroy_bind_group(DvzDrp2CommandStream* stream, uint64_t bind_group_id);
+
+
+
+/**
  * Append a WriteBuffer command.
  *
  * @param stream the command stream

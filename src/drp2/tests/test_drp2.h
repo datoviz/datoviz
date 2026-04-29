@@ -70,6 +70,20 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
 
 int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_destroy_unused_bind_group(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group(
+    TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline(
+    TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work(
+    TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_compute_dispatch_without_bind_group(
+    TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstSuite* suite, TstItem* item);

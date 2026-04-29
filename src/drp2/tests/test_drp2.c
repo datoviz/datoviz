@@ -746,6 +746,169 @@ int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstIt
 
 
 
+int test_drp2_runtime_validate_destroy_unused_bind_group(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_sampler(stream, 200));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 100));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 13, 100, 2, 200));
+    AT(dvz_drp2_stream_destroy_bind_group(stream, 13));
+    AT(dvz_drp2_stream_destroy_bind_group_layout(stream, 100));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+
+    char* json = dvz_drp2_stream_json(stream, "destroy_bind_group_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"DestroyBindGroup\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"DestroyBindGroupLayout\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_sampler(stream, 200));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 100));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 13, 100, 2, 200));
+    AT(dvz_drp2_stream_destroy_bind_group_layout(stream, 100));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 6);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 100));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9000, "VERTEX", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9001, "FRAGMENT", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 10, 9000, 9001, 0, 100));
+    AT(dvz_drp2_stream_destroy_bind_group_layout(stream, 100));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 6);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_sampler(stream, 200));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 100));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9000, "VERTEX", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9001, "FRAGMENT", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 10, 9000, 9001, 0, 100));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 13, 100, 2, 200));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 1, 4, 4, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 21, 10));
+    AT(dvz_drp2_stream_set_bind_group(stream, 21, 0, 13));
+    AT(dvz_drp2_stream_draw(stream, 21, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 21));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 20, 22));
+    AT(dvz_drp2_stream_destroy_bind_group(stream, 13));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 17);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_compute_dispatch_without_bind_group(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_storage_bind_group_layout(stream, 100));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9000, "COMPUTE", "@compute fn main() {}"));
+    AT(dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(stream, 10, 9000, 100));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
+    AT(dvz_drp2_stream_begin_compute_pass(stream, 21, 20));
+    AT(dvz_drp2_stream_set_pipeline(stream, 21, 10));
+    AT(dvz_drp2_stream_dispatch_workgroups(stream, 21, 1, 1, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 8);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1105,6 +1268,11 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_texture_sampler_bind_group);
     TEST_SIMPLE(test_drp2_runtime_validate_compute_storage_bind_group);
+    TEST_SIMPLE(test_drp2_runtime_validate_destroy_unused_bind_group);
+    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group);
+    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_pipeline);
+    TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work);
+    TEST_SIMPLE(test_drp2_runtime_rejects_compute_dispatch_without_bind_group);
     TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_out_of_range);
     TEST_SIMPLE(test_drp2_runtime_rejects_copy_buffer_to_texture_usage);
     TEST_SIMPLE(test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass);

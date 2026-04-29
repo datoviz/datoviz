@@ -116,6 +116,14 @@ struct DvzDrp2Command
         } create_bind_group;
         struct
         {
+            uint64_t bind_group_layout_id;
+        } destroy_bind_group_layout;
+        struct
+        {
+            uint64_t bind_group_id;
+        } destroy_bind_group;
+        struct
+        {
             uint64_t buffer_id;
             uint64_t offset;
             uint64_t size;
