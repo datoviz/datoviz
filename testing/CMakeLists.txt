@@ -276,7 +276,7 @@ else()
     message(STATUS "Skipping dvztest_drp2: drp2 target set is not enabled.")
 endif()
 
-if(_dvz_has_core AND _dvz_has_scene)
+if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
     add_executable(dvztest_scene
         ${DVZ_TEST_SCENE_SOURCES}
         components/dvztest_scene.c
@@ -285,6 +285,7 @@ if(_dvz_has_core AND _dvz_has_scene)
     target_link_libraries(dvztest_scene
         PRIVATE
         datoviz_common
+        datoviz_drp2
         datoviz_scene
         testing
     )

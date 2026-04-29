@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "datoviz/drp2.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -156,6 +157,50 @@ int test_frame_plan_readbacks(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.convert", 10);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream) == 16);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 0)) == DVZ_DRP2_COMMAND_HELLO_RENDERER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 2)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 4)) ==
+       DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 6)) ==
+       DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 15)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_static_render");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CreateRenderPipeline\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"CreateTexture\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"Draw\"") != NULL);
+    AT(strstr(json, "\"command_buffer_ids\": [4]") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -170,6 +215,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_static_render);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_readbacks);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
 
     return 0;
 }

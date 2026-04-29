@@ -50,6 +50,25 @@ struct DvzDrp2Command
         } create_buffer;
         struct
         {
+            uint64_t id;
+            uint32_t width;
+            uint32_t height;
+        } create_texture;
+        struct
+        {
+            uint64_t id;
+            char stage[DVZ_DRP2_LABEL_SIZE];
+            char code[DVZ_DRP2_LABEL_SIZE];
+        } create_shader_module;
+        struct
+        {
+            uint64_t id;
+            uint64_t vertex_shader_module_id;
+            uint64_t fragment_shader_module_id;
+            uint32_t vertex_buffer_slots;
+        } create_render_pipeline;
+        struct
+        {
             uint64_t buffer_id;
             uint64_t offset;
             uint64_t size;

@@ -324,6 +324,10 @@ if(NOT DVZ_BUILD_CORE AND DVZ_BUILD_SCENE)
     message(FATAL_ERROR "DVZ_BUILD_SCENE requires DVZ_BUILD_CORE=ON.")
 endif()
 
+if(DVZ_BUILD_SCENE AND NOT DVZ_BUILD_DRP2)
+    message(FATAL_ERROR "DVZ_BUILD_SCENE requires DVZ_BUILD_DRP2=ON.")
+endif()
+
 if(DVZ_BUILD_CORE)
     add_subdirectory(common)
     add_subdirectory(ds)

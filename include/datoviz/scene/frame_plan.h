@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/drp2/types.h"
 #include "datoviz/scene/enums.h"
 #include "datoviz/scene/types.h"
 
@@ -258,6 +259,19 @@ dvz_frame_plan_readback(DvzFramePlan* plan, const char* resource_id, const char*
  * @return an owned NUL-terminated JSON string
  */
 DVZ_EXPORT char* dvz_frame_plan_json(const DvzFramePlan* plan);
+
+
+
+/**
+ * Emit a DRP2 command stream from a FramePlan in fixture mode.
+ *
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param report the diagnostic report
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
 
 
 

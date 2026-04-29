@@ -119,6 +119,50 @@ DVZ_EXPORT bool dvz_drp2_stream_create_buffer(
 
 
 /**
+ * Append a CreateTexture command for a 2D render attachment.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Append a CreateShaderModule command.
+ *
+ * @param stream the command stream
+ * @param id the shader module id
+ * @param stage the shader stage
+ * @param code the WGSL shader source
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_shader_module(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* code);
+
+
+
+/**
+ * Append a CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param vertex_shader_module_id the vertex shader module id
+ * @param fragment_shader_module_id the fragment shader module id
+ * @param vertex_buffer_slots the number of required vertex buffer slots
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots);
+
+
+
+/**
  * Append a WriteBuffer command.
  *
  * @param stream the command stream

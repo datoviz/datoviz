@@ -115,6 +115,12 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "RendererHelloReply";
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
         return "CreateBuffer";
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+        return "CreateTexture";
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        return "CreateShaderModule";
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+        return "CreateRenderPipeline";
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return "WriteBuffer";
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
@@ -260,6 +266,35 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_buffer.size);
         _json_append_usage(builder, command->u.create_buffer.usage);
         _json_append(builder, " }");
+        break;
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64
+            ", \"dimension\": \"2d\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
+            ", \"depth\": 1, \"format\": \"rgba8unorm\", \"usage\": [\"RENDER_ATTACHMENT\"], "
+            "\"mip_level_count\": 1, \"sample_count\": 1 }",
+            _command_name(command->type), command->u.create_texture.id,
+            command->u.create_texture.width, command->u.create_texture.height);
+        break;
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"stage\": \"%s\", \"format\": \"wgsl\", "
+            "\"entry_point\": \"main\", \"code\": \"%s\" }",
+            _command_name(command->type), command->u.create_shader_module.id,
+            command->u.create_shader_module.stage, command->u.create_shader_module.code);
+        break;
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"vertex_buffer_slots\": %" PRIu32
+            ", \"vertex_shader_module_id\": %" PRIu64
+            ", \"fragment_shader_module_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.create_render_pipeline.id,
+            command->u.create_render_pipeline.vertex_buffer_slots,
+            command->u.create_render_pipeline.vertex_shader_module_id,
+            command->u.create_render_pipeline.fragment_shader_module_id);
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         _json_append(
@@ -498,6 +533,78 @@ bool dvz_drp2_stream_create_buffer(
     command->u.create_buffer.id = id;
     command->u.create_buffer.size = size;
     command->u.create_buffer.usage = usage;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateTexture command for a 2D render attachment.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_2d(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.create_texture.id = id;
+    command->u.create_texture.width = width;
+    command->u.create_texture.height = height;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateShaderModule command.
+ *
+ * @param stream the command stream
+ * @param id the shader module id
+ * @param stage the shader stage
+ * @param code the WGSL shader source
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_shader_module(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* code)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
+    if (command == NULL)
+        return false;
+    command->u.create_shader_module.id = id;
+    _copy_label(command->u.create_shader_module.stage, DVZ_DRP2_LABEL_SIZE, stage ? stage : "");
+    _copy_label(command->u.create_shader_module.code, DVZ_DRP2_LABEL_SIZE, code ? code : "");
+    return true;
+}
+
+
+
+/**
+ * Append a CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param vertex_shader_module_id the vertex shader module id
+ * @param fragment_shader_module_id the fragment shader module id
+ * @param vertex_buffer_slots the number of required vertex buffer slots
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_render_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
+    if (command == NULL)
+        return false;
+    command->u.create_render_pipeline.id = id;
+    command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
+    command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
+    command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
     return true;
 }
 

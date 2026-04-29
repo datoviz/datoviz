@@ -32,6 +32,8 @@ int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_readbacks(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item);
+
 
 
 int test_scene(TstSuite* suite);
