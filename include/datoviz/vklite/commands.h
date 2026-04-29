@@ -146,8 +146,28 @@ DVZ_EXPORT void dvz_commands_current(DvzCommands* cmds, uint32_t current);
  * Start recording a command buffer.
  *
  * @param cmds the set of command buffers
+ * @return 0 on success, non-zero on Vulkan or state failure
+ */
+DVZ_EXPORT int dvz_cmd_begin_result(DvzCommands* cmds);
+
+
+
+/**
+ * Start recording a command buffer.
+ *
+ * @param cmds the set of command buffers
  */
 DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds);
+
+
+
+/**
+ * Stop recording a command buffer.
+ *
+ * @param cmds the set of command buffers
+ * @return 0 on success, non-zero on Vulkan or state failure
+ */
+DVZ_EXPORT int dvz_cmd_end_result(DvzCommands* cmds);
 
 
 
@@ -175,6 +195,18 @@ DVZ_EXPORT void dvz_cmd_reset(DvzCommands* cmds);
  * @param cmds the set of command buffers
  */
 DVZ_EXPORT void dvz_cmd_free(DvzCommands* cmds);
+
+
+
+/**
+ * Submit a command buffer on its queue.
+ *
+ * This function blocks the queue so it is not optimal.
+ *
+ * @param cmds the set of command buffers
+ * @return 0 on success, non-zero on Vulkan or state failure
+ */
+DVZ_EXPORT int dvz_cmd_submit_result(DvzCommands* cmds);
 
 
 

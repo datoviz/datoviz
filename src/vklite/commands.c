@@ -228,7 +228,13 @@ void dvz_commands_current(DvzCommands* cmds, uint32_t current)
 
 
 
-void dvz_cmd_begin(DvzCommands* cmds)
+/**
+ * Start recording a command buffer and report Vulkan failures.
+ *
+ * @param cmds the commands wrapper
+ * @return 0 on success, non-zero on Vulkan or state failure
+ */
+int dvz_cmd_begin_result(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
@@ -239,12 +245,31 @@ void dvz_cmd_begin(DvzCommands* cmds)
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
-    VK_CHECK_RESULT(vkBeginCommandBuffer(cmd, &begin_info));
+    VkResult res = vkBeginCommandBuffer(cmd, &begin_info);
+    return vk_result_check(res, __FILE__, __LINE__);
 }
 
 
 
-void dvz_cmd_end(DvzCommands* cmds)
+/**
+ * Start recording a command buffer.
+ *
+ * @param cmds the commands wrapper
+ */
+void dvz_cmd_begin(DvzCommands* cmds)
+{
+    (void)dvz_cmd_begin_result(cmds);
+}
+
+
+
+/**
+ * Stop recording a command buffer and report Vulkan failures.
+ *
+ * @param cmds the commands wrapper
+ * @return 0 on success, non-zero on Vulkan or state failure
+ */
+int dvz_cmd_end_result(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
@@ -252,9 +277,25 @@ void dvz_cmd_end(DvzCommands* cmds)
     // log_trace("end command buffer");
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
-    VK_CHECK_RESULT(vkEndCommandBuffer(cmd));
+    VkResult res = vkEndCommandBuffer(cmd);
+    int out = vk_result_check(res, __FILE__, __LINE__);
+    if (out != 0)
+        return out;
 
     dvz_obj_created(&cmds->obj);
+    return 0;
+}
+
+
+
+/**
+ * Stop recording a command buffer.
+ *
+ * @param cmds the commands wrapper
+ */
+void dvz_cmd_end(DvzCommands* cmds)
+{
+    (void)dvz_cmd_end_result(cmds);
 }
 
 
@@ -286,14 +327,20 @@ void dvz_cmd_free(DvzCommands* cmds)
 
 
 
-void dvz_cmd_submit(DvzCommands* cmds)
+/**
+ * Submit a command buffer on its queue and report Vulkan failures.
+ *
+ * @param cmds the commands wrapper
+ * @return 0 on success, non-zero on Vulkan or state failure
+ */
+int dvz_cmd_submit_result(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
     if (!dvz_obj_is_created(&cmds->obj))
     {
         log_error("cannot submit commands before recording them");
-        return;
+        return 1;
     }
 
     DvzDevice* device = cmds->device;
@@ -328,11 +375,24 @@ void dvz_cmd_submit(DvzCommands* cmds)
     if (res != VK_SUCCESS)
     {
         vk_result_check(res, __FILE__, __LINE__);
-        return;
+        return 1;
     }
 
     // Wait.
     dvz_queue_wait(queue);
+    return 0;
+}
+
+
+
+/**
+ * Submit a command buffer on its queue.
+ *
+ * @param cmds the commands wrapper
+ */
+void dvz_cmd_submit(DvzCommands* cmds)
+{
+    (void)dvz_cmd_submit_result(cmds);
 }
 
 

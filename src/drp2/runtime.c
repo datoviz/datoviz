@@ -2494,6 +2494,25 @@ static void _vklite_commands_destroy(DvzCommands* cmds)
 }
 
 
+/**
+ * End and submit a vklite command buffer, surfacing Vulkan failures to DRP2.
+ *
+ * @param cmds command buffer wrapper
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult
+_vklite_commands_end_submit(DvzCommands* cmds, uint32_t command_index)
+{
+    ANN(cmds);
+    if (dvz_cmd_end_result(cmds) != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (dvz_cmd_submit_result(cmds) != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
 static void _vklite_region(
     DvzImageRegion* region, uint32_t width, uint32_t height, uint32_t depth,
     uint32_t bytes_per_row, uint32_t rows_per_image)
@@ -2644,15 +2663,27 @@ static DvzDrp2ValidationResult _vklite_write_texture(
         &region, command->u.write_texture.origin_x, command->u.write_texture.origin_y,
         command->u.write_texture.origin_z);
 
-    dvz_cmd_begin(cmds);
+    if (dvz_cmd_begin_result(cmds) != 0)
+    {
+        _vklite_commands_destroy(cmds);
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     _vklite_transition_image(
         cmds, texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
         VK_ACCESS_2_TRANSFER_WRITE_BIT);
     dvz_cmd_copy_buffer_to_image(
         cmds, dvz_buffer_handle(staging), 0, dvz_image_handle(texture->images, 0),
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, command_index);
+    if (!result.ok)
+    {
+        _vklite_commands_destroy(cmds);
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
+        return result;
+    }
 
     _vklite_commands_destroy(cmds);
     dvz_buffer_destroy(staging);
@@ -2680,12 +2711,20 @@ static DvzDrp2ValidationResult _vklite_copy_buffer_to_buffer(
     region.dstOffset = command->u.copy_buffer_to_buffer.dst_offset;
     region.size = command->u.copy_buffer_to_buffer.size;
 
-    dvz_cmd_begin(cmds);
+    if (dvz_cmd_begin_result(cmds) != 0)
+    {
+        _vklite_commands_destroy(cmds);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     vkCmdCopyBuffer(
         dvz_commands_handle(cmds), dvz_buffer_handle(src->buffer), dvz_buffer_handle(dst->buffer),
         1, &region);
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, command_index);
+    if (!result.ok)
+    {
+        _vklite_commands_destroy(cmds);
+        return result;
+    }
     _vklite_commands_destroy(cmds);
     return _ok();
 }
@@ -2716,15 +2755,23 @@ static DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         command->u.copy_buffer_to_texture.dst_origin_y,
         command->u.copy_buffer_to_texture.dst_origin_z);
 
-    dvz_cmd_begin(cmds);
+    if (dvz_cmd_begin_result(cmds) != 0)
+    {
+        _vklite_commands_destroy(cmds);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     _vklite_transition_image(
         cmds, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
         VK_ACCESS_2_TRANSFER_WRITE_BIT);
     dvz_cmd_copy_buffer_to_image(
         cmds, dvz_buffer_handle(src->buffer), command->u.copy_buffer_to_texture.src_offset,
         dvz_image_handle(dst->images, 0), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, command_index);
+    if (!result.ok)
+    {
+        _vklite_commands_destroy(cmds);
+        return result;
+    }
 
     _vklite_commands_destroy(cmds);
     return _ok();
@@ -2752,15 +2799,23 @@ static DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
         command->u.copy_texture_to_buffer.bytes_per_row,
         command->u.copy_texture_to_buffer.rows_per_image);
 
-    dvz_cmd_begin(cmds);
+    if (dvz_cmd_begin_result(cmds) != 0)
+    {
+        _vklite_commands_destroy(cmds);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     _vklite_transition_image(
         cmds, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
         VK_ACCESS_2_TRANSFER_READ_BIT);
     dvz_cmd_copy_image_to_buffer(
         cmds, dvz_image_handle(src->images, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
         dvz_buffer_handle(dst->buffer), command->u.copy_texture_to_buffer.dst_offset);
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, command_index);
+    if (!result.ok)
+    {
+        _vklite_commands_destroy(cmds);
+        return result;
+    }
 
     _vklite_commands_destroy(cmds);
     return _ok();
@@ -2800,7 +2855,12 @@ static DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
         (int32_t)command->u.copy_texture_to_texture.dst_origin_y,
         (int32_t)command->u.copy_texture_to_texture.dst_origin_z);
 
-    dvz_cmd_begin(cmds);
+    if (dvz_cmd_begin_result(cmds) != 0)
+    {
+        dvz_image_copy_free(copy);
+        _vklite_commands_destroy(cmds);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     _vklite_transition_image(
         cmds, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
         VK_ACCESS_2_TRANSFER_READ_BIT);
@@ -2808,8 +2868,13 @@ static DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
         cmds, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
         VK_ACCESS_2_TRANSFER_WRITE_BIT);
     dvz_cmd_copy_image(cmds, copy);
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, command_index);
+    if (!result.ok)
+    {
+        dvz_image_copy_free(copy);
+        _vklite_commands_destroy(cmds);
+        return result;
+    }
 
     dvz_image_copy_free(copy);
     _vklite_commands_destroy(cmds);
@@ -2880,8 +2945,9 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     dvz_cmd_rendering_default(
         cmds, target_view, target->width, target->height, clear, rendering);
 
-    if (!target->borrowed_frame_target)
-        dvz_cmd_begin(cmds);
+    if (!target->borrowed_frame_target && dvz_cmd_begin_result(cmds) != 0)
+        return _vklite_fail_destroy_object(
+            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     for (uint32_t i = 0; i < state->count; i++)
     {
         Drp2VkliteObject* object = &state->objects[i];
@@ -3030,8 +3096,13 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
     dvz_cmd_rendering_end(pass->commands);
     if (!pass->borrowed_commands)
     {
-        dvz_cmd_end(pass->commands);
-        dvz_cmd_submit(pass->commands);
+        DvzDrp2ValidationResult result =
+            _vklite_commands_end_submit(pass->commands, command_index);
+        if (!result.ok)
+        {
+            _vklite_destroy_object(pass);
+            return result;
+        }
     }
     _vklite_destroy_object(pass);
     return _ok();
