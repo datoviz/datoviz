@@ -251,6 +251,37 @@ static void _json_append(JsonBuilder* builder, const char* format, ...)
 }
 
 
+/**
+ * Append a JSON string literal with minimal escaping.
+ *
+ * @param builder the JSON builder
+ * @param string the string to append
+ */
+static void _json_append_escaped_string(JsonBuilder* builder, const char* string)
+{
+    ANN(builder);
+    if (string == NULL)
+        string = "";
+
+    _json_append(builder, "\"");
+    for (uint32_t i = 0; string[i] != '\0'; i++)
+    {
+        char c = string[i];
+        if (c == '"' || c == '\\')
+            _json_append(builder, "\\%c", c);
+        else if (c == '\n')
+            _json_append(builder, "\\n");
+        else if (c == '\r')
+            _json_append(builder, "\\r");
+        else if (c == '\t')
+            _json_append(builder, "\\t");
+        else
+            _json_append(builder, "%c", c);
+    }
+    _json_append(builder, "\"");
+}
+
+
 
 static void _json_append_usage(JsonBuilder* builder, uint32_t usage)
 {
@@ -362,10 +393,14 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         _json_append(
             builder,
-            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"stage\": \"%s\", \"format\": \"wgsl\", "
-            "\"entry_point\": \"main\", \"code\": \"%s\" }",
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"stage\": \"%s\", \"format\": \"%s\", "
+            "\"entry_point\": \"main\", \"code\": ",
             _command_name(command->type), command->u.create_shader_module.id,
-            command->u.create_shader_module.stage, command->u.create_shader_module.code);
+            command->u.create_shader_module.stage,
+            command->u.create_shader_module.format[0] != '\0' ? command->u.create_shader_module.format
+                                                               : "wgsl");
+        _json_append_escaped_string(builder, command->u.create_shader_module.code);
+        _json_append(builder, " }");
         break;
     case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
         _json_append(
@@ -958,11 +993,33 @@ bool dvz_drp2_stream_destroy_texture(DvzDrp2CommandStream* stream, uint64_t text
 bool dvz_drp2_stream_create_shader_module(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* code)
 {
+    return dvz_drp2_stream_create_shader_module_format(stream, id, stage, "wgsl", code);
+}
+
+
+
+/**
+ * Append a CreateShaderModule command with an explicit shader source format.
+ *
+ * @param stream the command stream
+ * @param id the shader module id
+ * @param stage the shader stage
+ * @param format the shader source format
+ * @param code the shader source
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_shader_module_format(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* format,
+    const char* code)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
     if (command == NULL)
         return false;
     command->u.create_shader_module.id = id;
     _copy_label(command->u.create_shader_module.stage, DVZ_DRP2_LABEL_SIZE, stage ? stage : "");
+    _copy_label(
+        command->u.create_shader_module.format, DVZ_DRP2_LABEL_SIZE,
+        format != NULL && format[0] != '\0' ? format : "wgsl");
     _copy_label(command->u.create_shader_module.code, DVZ_DRP2_LABEL_SIZE, code ? code : "");
     return true;
 }

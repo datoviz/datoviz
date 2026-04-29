@@ -18,6 +18,8 @@
 
 #include <stdint.h>
 
+#include "datoviz/scene/enums.h"
+
 
 
 /*************************************************************************************************/
@@ -38,6 +40,7 @@
 
 typedef struct DvzCapabilitySnapshot DvzCapabilitySnapshot;
 typedef struct DvzDiagnosticReport DvzDiagnosticReport;
+typedef struct DvzFramePlanEmitConfig DvzFramePlanEmitConfig;
 typedef struct DvzFramePlan DvzFramePlan;
 typedef struct DvzFramePlanNode DvzFramePlanNode;
 
@@ -61,4 +64,10 @@ struct DvzDiagnosticReport
 {
     uint32_t count;
     char messages[DVZ_SCENE_MAX_DIAGNOSTICS][DVZ_SCENE_DIAGNOSTIC_SIZE];
+};
+
+
+struct DvzFramePlanEmitConfig
+{
+    DvzSceneShaderFormat shader_format;
 };

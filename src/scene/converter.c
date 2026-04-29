@@ -66,6 +66,19 @@
     "var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main("        \
     "@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }"
 
+#define DRP2_VERTEX_GLSL                                                                        \
+    "#version 450\nvoid main(){gl_Position=vec4(0.0,0.0,0.0,1.0);}"
+#define DRP2_FRAGMENT_GLSL                                                                      \
+    "#version 450\nlayout(location=0)out vec4 color;void main(){color=vec4(1.0);}"
+#define DRP2_TEXTURE_VERTEX_GLSL                                                                \
+    "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"                       \
+    "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"
+#define DRP2_TEXTURE_FRAGMENT_GLSL                                                              \
+    "#version 450\nlayout(set=0,binding=0)uniform sampler2D t;"                                \
+    "layout(location=0)out vec4 c;void main(){c=texture(t,vec2(.5));}"
+#define DRP2_COMPUTE_GLSL                                                                       \
+    "#version 450\nlayout(local_size_x=1)in;void main(){}"
+
 
 
 /*************************************************************************************************/
@@ -215,6 +228,61 @@ static bool _render_uses_texture(const DvzFramePlanNode* node)
 }
 
 
+/**
+ * Return the DRP2 shader-format token for a scene fixture emission config.
+ *
+ * @param cfg the emission config
+ * @return the shader-format token
+ */
+static const char* _shader_format_token(const DvzFramePlanEmitConfig* cfg)
+{
+    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        return "glsl";
+    return "wgsl";
+}
+
+
+
+/**
+ * Select shader source for a scene fixture emission config.
+ *
+ * @param cfg the emission config
+ * @param wgsl the WGSL source
+ * @param glsl the GLSL source
+ * @return the selected shader source
+ */
+static const char*
+_shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* glsl)
+{
+    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        return glsl;
+    return wgsl;
+}
+
+
+
+/**
+ * Emit a shader module command with the configured source format.
+ *
+ * @param stream the DRP2 command stream
+ * @param id the shader id
+ * @param stage the shader stage
+ * @param wgsl the WGSL source
+ * @param glsl the GLSL source
+ * @param cfg the emission config
+ * @return whether the command was emitted
+ */
+static bool _emit_shader(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* wgsl,
+    const char* glsl, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(stream);
+    ANN(stage);
+    return dvz_drp2_stream_create_shader_module_format(
+        stream, id, stage, _shader_format_token(cfg), _shader_source(cfg, wgsl, glsl));
+}
+
+
 
 /**
  * Emit DRP2 commands for an upload node.
@@ -359,7 +427,7 @@ static bool _emit_readback_buffer(DvzDrp2CommandStream* stream, const DvzFramePl
  */
 static bool _emit_compute_assisted_render(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* compute,
-    const DvzFramePlanNode* render, const ConverterState* state)
+    const DvzFramePlanNode* render, const ConverterState* state, const DvzFramePlanEmitConfig* cfg)
 {
     ANN(stream);
     ANN(compute);
@@ -370,8 +438,9 @@ static bool _emit_compute_assisted_render(
         return false;
 
     return dvz_drp2_stream_create_storage_bind_group_layout(stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
-           dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", DRP2_COMPUTE_WGSL) &&
+           _emit_shader(
+               stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", DRP2_COMPUTE_WGSL, DRP2_COMPUTE_GLSL,
+               cfg) &&
            dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
                stream, DRP2_ID_COMPUTE_PIPELINE, DRP2_ID_COMPUTE_SHADER,
                DRP2_ID_BIND_GROUP_LAYOUT) &&
@@ -379,10 +448,12 @@ static bool _emit_compute_assisted_render(
                stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT,
                state->first_compute_input_id, state->first_compute_output_id,
                state->compute_buffer_size) &&
-           dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL) &&
-           dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL) &&
+           _emit_shader(
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL, DRP2_VERTEX_GLSL,
+               cfg) &&
+           _emit_shader(
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
+               DRP2_FRAGMENT_GLSL, cfg) &&
            dvz_drp2_stream_create_render_pipeline(
                stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
@@ -416,7 +487,9 @@ static bool _emit_compute_assisted_render(
  * @return whether the commands were emitted
  */
 static bool
-_emit_texture_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node, uint64_t texture_id)
+_emit_texture_render(
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* node, uint64_t texture_id,
+    const DvzFramePlanEmitConfig* cfg)
 {
     ANN(stream);
     ANN(node);
@@ -427,10 +500,12 @@ _emit_texture_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node,
     return dvz_drp2_stream_create_sampler(stream, DRP2_ID_SAMPLER) &&
            dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
-           dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL) &&
-           dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL) &&
+           _emit_shader(
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL,
+               DRP2_TEXTURE_VERTEX_GLSL, cfg) &&
+           _emit_shader(
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL,
+               DRP2_TEXTURE_FRAGMENT_GLSL, cfg) &&
            dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 0,
                DRP2_ID_BIND_GROUP_LAYOUT) &&
@@ -457,7 +532,9 @@ _emit_texture_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node,
  * @return whether the commands were emitted
  */
 static bool
-_emit_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node, uint64_t vertex_buffer_id)
+_emit_render(
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* node, uint64_t vertex_buffer_id,
+    const DvzFramePlanEmitConfig* cfg)
 {
     ANN(stream);
     ANN(node);
@@ -465,10 +542,12 @@ _emit_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node, uint64_
     if (vertex_buffer_id == 0)
         return false;
 
-    return dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL) &&
-           dvz_drp2_stream_create_shader_module(
-               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL) &&
+    return _emit_shader(
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL, DRP2_VERTEX_GLSL,
+               cfg) &&
+           _emit_shader(
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
+               DRP2_FRAGMENT_GLSL, cfg) &&
            dvz_drp2_stream_create_render_pipeline(
                stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
@@ -511,6 +590,20 @@ static bool _emit_readback(
 /*************************************************************************************************/
 
 /**
+ * Return the default FramePlan-to-DRP2 emission configuration.
+ *
+ * @return the default emission configuration
+ */
+DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
+{
+    DvzFramePlanEmitConfig cfg = {0};
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    return cfg;
+}
+
+
+
+/**
  * Emit a DRP2 command stream from a FramePlan in fixture mode.
  *
  * @param plan the FramePlan
@@ -520,6 +613,25 @@ static bool _emit_readback(
  */
 DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
     const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+{
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    return dvz_frame_plan_emit_drp2_ex(plan, caps, report, &cfg);
+}
+
+
+
+/**
+ * Emit a DRP2 command stream from a FramePlan with explicit fixture options.
+ *
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param report the diagnostic report
+ * @param cfg the emission configuration
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg)
 {
     ANN(plan);
     (void)caps;
@@ -565,10 +677,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
         }
     }
     ok = ok && (copy == NULL || _emit_readback_buffer(stream, copy)) &&
-         (compute_render ? _emit_compute_assisted_render(stream, compute, render, &state)
+         (compute_render ? _emit_compute_assisted_render(stream, compute, render, &state, cfg)
                          : (texture_render
-                                ? _emit_texture_render(stream, render, state.first_texture_id)
-                                : _emit_render(stream, render, state.first_vertex_buffer_id))) &&
+                                ? _emit_texture_render(stream, render, state.first_texture_id, cfg)
+                                : _emit_render(
+                                      stream, render, state.first_vertex_buffer_id, cfg))) &&
          (copy == NULL || readback == NULL || _emit_readback(stream, copy, readback)) &&
          dvz_drp2_stream_finish_command_encoder(stream, DRP2_ID_ENCODER, DRP2_ID_COMMAND_BUFFER) &&
          (readback != NULL

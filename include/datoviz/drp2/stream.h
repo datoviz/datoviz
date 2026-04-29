@@ -182,6 +182,21 @@ DVZ_EXPORT bool dvz_drp2_stream_create_shader_module(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* code);
 
 
+/**
+ * Append a CreateShaderModule command with an explicit shader source format.
+ *
+ * @param stream the command stream
+ * @param id the shader module id
+ * @param stage the shader stage
+ * @param format the shader source format
+ * @param code the shader source
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_shader_module_format(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* format,
+    const char* code);
+
+
 
 /**
  * Append a DestroyShaderModule command.

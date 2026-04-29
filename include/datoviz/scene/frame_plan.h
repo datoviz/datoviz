@@ -274,6 +274,28 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
     const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
 
 
+/**
+ * Return the default FramePlan-to-DRP2 emission configuration.
+ *
+ * @return the default emission configuration
+ */
+DVZ_EXPORT DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void);
+
+
+/**
+ * Emit a DRP2 command stream from a FramePlan with explicit fixture options.
+ *
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param report the diagnostic report
+ * @param cfg the emission configuration
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg);
+
+
 
 /**
  * Destroy a JSON string returned by dvz_frame_plan_json().

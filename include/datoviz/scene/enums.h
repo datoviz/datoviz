@@ -36,3 +36,11 @@ typedef enum
     DVZ_FRAME_PLAN_NODE_COPY,
     DVZ_FRAME_PLAN_NODE_READBACK,
 } DvzFramePlanNodeType;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_SHADER_FORMAT_WGSL,
+    DVZ_SCENE_SHADER_FORMAT_GLSL,
+} DvzSceneShaderFormat;

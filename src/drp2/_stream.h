@@ -67,6 +67,7 @@ struct DvzDrp2Command
         {
             uint64_t id;
             char stage[DVZ_DRP2_LABEL_SIZE];
+            char format[DVZ_DRP2_LABEL_SIZE];
             char code[DVZ_DRP2_LABEL_SIZE];
         } create_shader_module;
         struct

@@ -284,6 +284,46 @@ int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_emit_drp2_static_render_glsl(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.convert.glsl", 15);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2_ex(plan, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+    AT(validation.ok);
+    AT(dvz_drp2_stream_count(stream) == 16);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_static_render_glsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"glsl\"") != NULL);
+    AT(strstr(json, "#version 450\\nvoid main()") != NULL);
+    AT(strstr(json, "\"format\": \"wgsl\"") == NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -505,6 +545,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);
     TEST_SIMPLE(test_frame_plan_emit_drp2_texture_sampling);
