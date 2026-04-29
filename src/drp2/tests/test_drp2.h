@@ -124,6 +124,8 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* it
 int test_drp2_runtime_vklite_writes_texture_contents(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_copies_buffer_to_texture(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_copies_texture_to_texture(TstSuite* suite, TstItem* item);
 #endif
 
 
