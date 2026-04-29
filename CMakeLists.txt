@@ -51,7 +51,7 @@ option(DVZ_BUILD_VK "Build the Vulkan layer (vk/vklite)" ON)
 option(DVZ_BUILD_CANVAS "Build the canvas layer (input/window/stream/video/canvas)" ON)
 option(DVZ_BUILD_DRP2 "Build the DRP2 layer" ON)
 option(DVZ_BUILD_WEBGPU "Build the WebGPU layer" OFF)
-option(DVZ_BUILD_SCENE "Build the scene layer" OFF)
+option(DVZ_BUILD_SCENE "Build the scene layer" ON)
 
 if(DVZ_ENABLE_GPROF)
     add_compile_options(

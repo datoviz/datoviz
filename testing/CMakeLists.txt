@@ -136,6 +136,7 @@ set(_dvz_has_core 0)
 set(_dvz_has_vk 0)
 set(_dvz_has_canvas 0)
 set(_dvz_has_drp2 0)
+set(_dvz_has_scene 0)
 
 if(TARGET datoviz_common AND TARGET datoviz_ds AND TARGET datoviz_fileio AND TARGET datoviz_math AND TARGET datoviz_thread)
     set(_dvz_has_core 1)
@@ -153,9 +154,18 @@ if(TARGET datoviz_drp2)
     set(_dvz_has_drp2 1)
 endif()
 
+if(TARGET datoviz_scene)
+    set(_dvz_has_scene 1)
+endif()
+
 if(NOT _dvz_has_drp2)
     list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/drp2/tests/")
     list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/drp2/tests/")
+endif()
+
+if(NOT _dvz_has_scene)
+    list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/scene/tests/")
+    list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/scene/tests/")
 endif()
 
 set(DVZ_TEST_CORE_SOURCES ${DVZ_MODULE_TEST_SOURCES})
@@ -163,6 +173,9 @@ list(FILTER DVZ_TEST_CORE_SOURCES INCLUDE REGEX "/src/(common|ds|fileio|math|thr
 
 set(DVZ_TEST_DRP2_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_DRP2_SOURCES INCLUDE REGEX "/src/drp2/tests/")
+
+set(DVZ_TEST_SCENE_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_SCENE_SOURCES INCLUDE REGEX "/src/scene/tests/")
 
 set(DVZ_TEST_VK_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_VK_SOURCES INCLUDE REGEX "/src/(vk|vklite)/tests/")
@@ -261,6 +274,46 @@ if(_dvz_has_core AND _dvz_has_drp2)
     add_test(NAME dvztest_drp2 COMMAND dvztest_drp2)
 else()
     message(STATUS "Skipping dvztest_drp2: drp2 target set is not enabled.")
+endif()
+
+if(_dvz_has_core AND _dvz_has_scene)
+    add_executable(dvztest_scene
+        ${DVZ_TEST_SCENE_SOURCES}
+        components/dvztest_scene.c
+    )
+
+    target_link_libraries(dvztest_scene
+        PRIVATE
+        datoviz_common
+        datoviz_scene
+        testing
+    )
+
+    if(DVZ_WITH_MIMALLOC)
+        target_link_libraries(dvztest_scene PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+    endif()
+
+    target_include_directories(dvztest_scene
+        PRIVATE
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(dvztest_scene PRIVATE ${_dvz_compile_definitions})
+    endif()
+
+    if(APPLE)
+        set_target_properties(dvztest_scene PROPERTIES
+            BUILD_RPATH "${_dvz_runtime_rpath}"
+            INSTALL_RPATH "${_dvz_runtime_rpath}"
+        )
+    endif()
+
+    add_test(NAME dvztest_scene COMMAND dvztest_scene)
+else()
+    message(STATUS "Skipping dvztest_scene: scene target set is not enabled.")
 endif()
 
 if(_dvz_has_core AND _dvz_has_vk)
@@ -451,6 +504,11 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
     if(TARGET datoviz_drp2)
         target_link_libraries(dvztest PRIVATE datoviz_drp2)
         target_link_libraries(dvztest_integration PRIVATE datoviz_drp2)
+    endif()
+
+    if(TARGET datoviz_scene)
+        target_link_libraries(dvztest PRIVATE datoviz_scene)
+        target_link_libraries(dvztest_integration PRIVATE datoviz_scene)
     endif()
 
     if(DVZ_THREADING_TARGET)

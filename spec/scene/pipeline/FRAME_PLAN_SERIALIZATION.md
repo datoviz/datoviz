@@ -22,6 +22,7 @@ A serializable FramePlan allows:
 
 ```json
 {
+  "frame_plan_schema": "0.1",
   "frame_plan": {
     "figure_id": "<string>",
     "frame_index": "<uint64>",
@@ -85,6 +86,21 @@ Each node has a `"type"` field and type-specific fields.
 
 `picking` is `true` when this render pass writes to the picking target instead of (or in
 addition to) the color target.
+
+
+### `CopyNode`
+
+```json
+{
+  "type": "copy",
+  "src_resource_id": "<string>",
+  "dst_resource_id": "<string>",
+  "byte_size": "<uint64>"
+}
+```
+
+`src_resource_id` and `dst_resource_id` identify the logical resources participating in the copy.
+`byte_size` is the planned copy size for buffer-oriented debug fixtures.
 
 
 ### `ReadbackNode`

@@ -26,6 +26,9 @@
 #include "../src/fileio/tests/test_fileio.h"
 #include "../src/input/tests/test_input.h"
 #include "../src/math/tests/test_math.h"
+#if defined(DVZ_HAS_SCENE) && DVZ_HAS_SCENE
+#include "../src/scene/tests/test_scene.h"
+#endif
 #include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
 #include "../src/window/tests/test_window.h"
@@ -55,6 +58,9 @@ int main(int argc, char** argv)
 #endif
     test_fileio(&suite);
     test_math(&suite);
+#if defined(DVZ_HAS_SCENE) && DVZ_HAS_SCENE
+    test_scene(&suite);
+#endif
     test_stream(&suite);
     test_thread(&suite);
     test_input(&suite);
