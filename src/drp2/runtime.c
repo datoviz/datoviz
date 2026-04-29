@@ -2346,8 +2346,8 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT);
     dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
-    dvz_graphics_viewport(graphics, 0, 0, 1, 1, 0, 1, DVZ_GRAPHICS_FLAGS_FIXED);
-    dvz_graphics_scissor(graphics, 0, 0, 1, 1, DVZ_GRAPHICS_FLAGS_FIXED);
+    dvz_graphics_viewport(graphics, 0, 0, 1, 1, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_scissor(graphics, 0, 0, 1, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
     if (dvz_graphics_create(graphics) != 0)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -2749,6 +2749,8 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
             return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     pass->commands = cmds;
+    pass->width = target->width;
+    pass->height = target->height;
 
     DvzRendering* rendering = dvz_rendering_create();
     if (rendering == NULL)
@@ -2805,6 +2807,11 @@ static DvzDrp2ValidationResult _vklite_set_pipeline(
         pipeline->graphics == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
+    dvz_graphics_viewport(
+        pipeline->graphics, 0, 0, (float)pass->width, (float)pass->height, 0, 1,
+        DVZ_GRAPHICS_FLAGS_DYNAMIC);
+    dvz_graphics_scissor(
+        pipeline->graphics, 0, 0, pass->width, pass->height, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
     return _ok();
 }

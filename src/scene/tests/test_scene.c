@@ -957,6 +957,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
     state.emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     state.emit_cfg.external_color_target = true;
     state.emit_cfg.color_target_id = 1;
+    state.emit_cfg.fullscreen_triangle = true;
     dvz_capability_snapshot_default(&state.caps);
 
     dvz_canvas_set_draw_callback(canvas, _scene_canvas_drp2_draw, &state);
@@ -976,6 +977,16 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
     ANN(rgba);
     AT(width == 64);
     AT(height == 64);
+    uint32_t bright_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        uint8_t* pixel = &rgba[4 * i];
+        if (pixel[0] > 200 && pixel[1] > 200 && pixel[2] > 200 && pixel[3] > 200)
+        {
+            bright_count++;
+        }
+    }
+    AT(bright_count > (width * height) / 2);
     dvz_free(rgba);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 

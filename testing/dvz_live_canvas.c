@@ -119,6 +119,8 @@ typedef struct DvzCanvasApp
     int key_prev_r;
     uint64_t scene_frame_index;
     bool scene_last_ok;
+    bool scene_reported_ok;
+    bool scene_reported_error;
 } DvzCanvasApp;
 
 
@@ -497,6 +499,9 @@ static void _dvz_canvas_draw_scene_drp2(
         return;
     }
 
+    const char* stage = "attach frame target";
+    DvzDrp2ValidationResult result = {0};
+
     bool ok = dvz_drp2_runtime_attach_frame_target(app->drp2_runtime, 1, frame);
     ok = ok && dvz_frame_plan_upload(plan, "buf.live.position", 0, 16, "live.position");
     ok = ok && dvz_frame_plan_render(plan, "panel.0", "target.canvas.color", false);
@@ -507,17 +512,34 @@ static void _dvz_canvas_draw_scene_drp2(
     DvzDrp2CommandStream* stream = NULL;
     if (ok)
     {
+        stage = "emit DRP2 stream";
         stream = dvz_frame_plan_emitter_emit_drp2(
             app->scene_emitter, plan, &app->scene_caps, &report, &app->scene_emit_cfg);
         ok = stream != NULL && dvz_diagnostic_report_count(&report) == 0;
     }
     if (ok)
     {
-        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->drp2_runtime, stream);
+        stage = "execute DRP2 stream";
+        result = dvz_drp2_runtime_execute(app->drp2_runtime, stream);
         ok = result.ok && result.code == DVZ_DRP2_VALIDATION_OK;
     }
 
     app->scene_last_ok = ok;
+    if (ok && !app->scene_reported_ok)
+    {
+        dvz_fprintf(
+            stderr, "scene-drp2: rendering into canvas target %ux%u\n", frame->extent.width,
+            frame->extent.height);
+        app->scene_reported_ok = true;
+    }
+    if (!ok && !app->scene_reported_error)
+    {
+        dvz_fprintf(
+            stderr,
+            "scene-drp2: failed to %s (diagnostics=%u, validation=%d at command %u)\n", stage,
+            dvz_diagnostic_report_count(&report), (int)result.code, result.command_index);
+        app->scene_reported_error = true;
+    }
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
 }
@@ -662,14 +684,17 @@ static void _dvz_canvas_glfw_key_callback(
     }
     if (key == GLFW_KEY_ESCAPE)
     {
+        app->key_prev_escape = GLFW_PRESS;
         app->running = false;
     }
     else if (key == GLFW_KEY_S)
     {
+        app->key_prev_s = GLFW_PRESS;
         app->screenshot_requested = true;
     }
     else if (key == GLFW_KEY_R)
     {
+        app->key_prev_r = GLFW_PRESS;
         app->toggle_record_requested = true;
     }
 }
@@ -1060,11 +1085,11 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
             _dvz_canvas_screenshot_path(app, path, sizeof(path));
             if (dvz_canvas_capture_png(app->canvas, path) == 0)
             {
-                dvz_fprintf(stderr, "screenshot: %s\\n", path);
+                dvz_fprintf(stderr, "screenshot: %s\n", path);
             }
             else
             {
-                dvz_fprintf(stderr, "failed to capture screenshot\\n");
+                dvz_fprintf(stderr, "failed to capture screenshot\n");
             }
         }
 
