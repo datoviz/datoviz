@@ -170,6 +170,7 @@ struct Drp2VkliteObject
     DvzCommands* commands;
     DvzRendering* rendering;
     VkCommandBuffer command_buffer;
+    VkImageView image_view;
     VkImageLayout image_layout;
     uint64_t texture_id;
     uint64_t sampler_id;
@@ -1729,6 +1730,18 @@ static Drp2VkliteObject* _vklite_add(
     Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind)
 {
     ANN(state);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        if (state->objects[i].destroyed)
+        {
+            Drp2VkliteObject* object = &state->objects[i];
+            dvz_memset(object, sizeof(Drp2VkliteObject), 0, sizeof(Drp2VkliteObject));
+            object->id = id;
+            object->kind = kind;
+            return object;
+        }
+    }
+
     if (!_vklite_ensure_capacity(state))
         return NULL;
 
@@ -1768,6 +1781,7 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_image_views_free(object->views);
         object->views = NULL;
     }
+    object->image_view = VK_NULL_HANDLE;
     if (object->images != NULL)
     {
         dvz_images_destroy(object->images);
@@ -1805,6 +1819,26 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
     }
     object->destroyed = true;
 }
+
+
+
+/**
+ * Return the image view associated with a vklite texture object.
+ *
+ * @param object vklite texture object
+ * @return Vulkan image view handle, or VK_NULL_HANDLE when unavailable
+ */
+static VkImageView _vklite_object_image_view(const Drp2VkliteObject* object)
+{
+    if (object == NULL)
+        return VK_NULL_HANDLE;
+    if (object->borrowed_frame_target && object->image_view != VK_NULL_HANDLE)
+        return object->image_view;
+    if (object->views == NULL)
+        return VK_NULL_HANDLE;
+    return dvz_image_views_handle(object->views, 0);
+}
+
 
 
 static void _vklite_state_cleanup(Drp2VkliteState* state)
@@ -1909,6 +1943,7 @@ static bool _vklite_attach_frame_target(
     ANN(runtime);
     ANN(frame);
     if (texture_id == 0 || frame->image == VK_NULL_HANDLE ||
+        frame->image_view == VK_NULL_HANDLE ||
         frame->command_buffer == VK_NULL_HANDLE || frame->extent.width == 0 ||
         frame->extent.height == 0)
         return false;
@@ -1932,6 +1967,7 @@ static bool _vklite_attach_frame_target(
         dvz_image_views_free(object->views);
         object->views = NULL;
     }
+    object->image_view = VK_NULL_HANDLE;
     if (object->images != NULL)
     {
         dvz_images_destroy(object->images);
@@ -1940,21 +1976,17 @@ static bool _vklite_attach_frame_target(
     }
 
     object->images = dvz_images_create_wrapper();
-    object->views = dvz_image_views_create_wrapper();
-    if (object->images == NULL || object->views == NULL)
+    if (object->images == NULL)
         return false;
 
     dvz_images_wrap(
         runtime->device, runtime->allocator, VK_IMAGE_TYPE_2D, frame->image, object->images);
     dvz_images_format(object->images, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_images_size(object->images, frame->extent.width, frame->extent.height, 1);
-    dvz_image_views(object->images, object->views);
-    dvz_image_views_create(object->views);
-    if (dvz_image_views_handle(object->views, 0) == VK_NULL_HANDLE)
-        return false;
 
     object->image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     object->command_buffer = frame->command_buffer;
+    object->image_view = frame->image_view;
     object->width = frame->extent.width;
     object->height = frame->extent.height;
     object->borrowed_frame_target = true;
@@ -2247,6 +2279,10 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
     if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
+    layout = _vklite_find(state, command->u.create_bind_group.bind_group_layout_id);
+    if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout->slots == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
     DvzDescriptors* descriptors = dvz_descriptors_create();
     if (descriptors == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -2273,12 +2309,12 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
     {
         Drp2VkliteObject* texture = _vklite_find(state, command->u.create_bind_group.texture_id);
         Drp2VkliteObject* sampler = _vklite_find(state, command->u.create_bind_group.sampler_id);
-        if (texture == NULL || texture->views == NULL || sampler == NULL ||
-            sampler->sampler == NULL)
+        VkImageView texture_view = _vklite_object_image_view(texture);
+        if (texture_view == VK_NULL_HANDLE || sampler == NULL || sampler->sampler == NULL)
             return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         dvz_descriptors_image(
-            descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(texture->views, 0), dvz_sampler_handle(sampler->sampler));
+            descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, texture_view,
+            dvz_sampler_handle(sampler->sampler));
     }
     return _ok();
 }
@@ -2310,6 +2346,13 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
     Drp2VkliteObject* object =
         _vklite_add(state, command->u.create_render_pipeline.id, DRP2_OBJECT_RENDER_PIPELINE);
     if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    vertex = _vklite_find(state, command->u.create_render_pipeline.vertex_shader_module_id);
+    fragment = _vklite_find(state, command->u.create_render_pipeline.fragment_shader_module_id);
+    if (vertex == NULL || vertex->kind != DRP2_OBJECT_SHADER_VERTEX || vertex->shader == NULL ||
+        fragment == NULL || fragment->kind != DRP2_OBJECT_SHADER_FRAGMENT ||
+        fragment->shader == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     if (command->u.create_render_pipeline.bind_group_layout_id != 0)
@@ -2723,12 +2766,18 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     ANN(state);
     ANN(command);
     Drp2VkliteObject* target = _vklite_find(state, command->u.begin_render_pass.texture_id);
-    if (target == NULL || target->images == NULL || target->views == NULL)
+    VkImageView target_view = _vklite_object_image_view(target);
+    if (target == NULL || target->images == NULL || target_view == VK_NULL_HANDLE)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     Drp2VkliteObject* pass =
         _vklite_add(state, command->u.begin_render_pass.id, DRP2_OBJECT_RENDER_PASS);
     if (pass == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    target = _vklite_find(state, command->u.begin_render_pass.texture_id);
+    target_view = _vklite_object_image_view(target);
+    if (target == NULL || target->images == NULL || target_view == VK_NULL_HANDLE)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     DvzCommands* cmds = NULL;
@@ -2759,8 +2808,7 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
 
     VkClearValue clear = {0};
     dvz_cmd_rendering_default(
-        cmds, dvz_image_views_handle(target->views, 0), target->width, target->height, clear,
-        rendering);
+        cmds, target_view, target->width, target->height, clear, rendering);
 
     if (!target->borrowed_frame_target)
         dvz_cmd_begin(cmds);
@@ -2915,6 +2963,7 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
         dvz_cmd_end(pass->commands);
         dvz_cmd_submit(pass->commands);
     }
+    _vklite_destroy_object(pass);
     return _ok();
 }
 

@@ -1000,8 +1000,7 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
         {
             dvz_input_unsubscribe_keyboard(router, _dvz_canvas_keyboard, app);
         }
-        dvz_canvas_destroy(app->canvas);
-        app->canvas = NULL;
+        dvz_canvas_set_draw_callback(app->canvas, NULL, NULL);
     }
     if (app->scene_emitter != NULL)
     {
@@ -1012,6 +1011,11 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
     {
         dvz_drp2_runtime_destroy(app->drp2_runtime);
         app->drp2_runtime = NULL;
+    }
+    if (app->canvas != NULL)
+    {
+        dvz_canvas_destroy(app->canvas);
+        app->canvas = NULL;
     }
     if (app->window != NULL)
     {
