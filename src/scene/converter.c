@@ -36,17 +36,35 @@
 #define DRP2_ID_RENDER_PASS 3
 #define DRP2_ID_COMMAND_BUFFER 4
 #define DRP2_ID_SUBMISSION 5
+#define DRP2_ID_COMPUTE_PASS 6
 #define DRP2_ID_PIPELINE 10
+#define DRP2_ID_COMPUTE_PIPELINE 30
 #define DRP2_ID_RESOURCE_BASE 20
 #define DRP2_ID_READBACK_BUFFER 12
+#define DRP2_ID_BIND_GROUP_LAYOUT 100
+#define DRP2_ID_BIND_GROUP 13
+#define DRP2_ID_SAMPLER 200
 #define DRP2_ID_VERTEX_SHADER 9000
 #define DRP2_ID_FRAGMENT_SHADER 9001
+#define DRP2_ID_COMPUTE_SHADER 9002
 #define DRP2_MAX_FIXTURE_RESOURCES 64
 
 #define DRP2_VERTEX_WGSL                                                                        \
     "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
 #define DRP2_FRAGMENT_WGSL                                                                      \
     "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
+#define DRP2_TEXTURE_VERTEX_WGSL                                                                \
+    "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = " \
+    "array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return "          \
+    "vec4f(pos[idx], 0.0, 1.0); }"
+#define DRP2_TEXTURE_FRAGMENT_WGSL                                                              \
+    "@group(0) @binding(0) var source: texture_2d<f32>; @group(0) @binding(1) var samp: "      \
+    "sampler; @fragment fn main(@builtin(position) pos: vec4f) -> @location(0) vec4f { "       \
+    "return textureSample(source, samp, vec2f(0.5, 0.5)); }"
+#define DRP2_COMPUTE_WGSL                                                                       \
+    "@group(0) @binding(0) var<storage, read> input: array<f32>; @group(0) @binding(1) "        \
+    "var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main("        \
+    "@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }"
 
 
 
@@ -68,6 +86,10 @@ struct ConverterState
     uint32_t count;
     uint64_t next_id;
     uint64_t first_vertex_buffer_id;
+    uint64_t first_texture_id;
+    uint64_t first_compute_input_id;
+    uint64_t first_compute_output_id;
+    uint64_t compute_buffer_size;
     ResourceId resources[DRP2_MAX_FIXTURE_RESOURCES];
 };
 
@@ -175,6 +197,26 @@ static const DvzFramePlanNode* _first_node_of_type(
 
 
 /**
+ * Return whether a render node targets the fixture texture-sampling path.
+ *
+ * @param node the render node
+ * @return true when one visual id names an image or texture visual
+ */
+static bool _render_uses_texture(const DvzFramePlanNode* node)
+{
+    ANN(node);
+    for (uint32_t i = 0; i < node->u.render.visual_count; i++)
+    {
+        const char* visual = node->u.render.visuals[i];
+        if (strstr(visual, "image") != NULL || strstr(visual, "texture") != NULL)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Emit DRP2 commands for an upload node.
  *
  * @param state the converter state
@@ -210,6 +252,84 @@ _emit_upload(ConverterState* state, DvzDrp2CommandStream* stream, const DvzFrame
 
 
 /**
+ * Emit DRP2 commands for a texture upload node.
+ *
+ * @param state the converter state
+ * @param stream the DRP2 command stream
+ * @param node the upload node
+ * @return whether the commands were emitted
+ */
+static bool _emit_texture_upload(
+    ConverterState* state, DvzDrp2CommandStream* stream, const DvzFramePlanNode* node)
+{
+    ANN(state);
+    ANN(stream);
+    ANN(node);
+
+    uint64_t id = _resource_id(state, node->u.upload.resource_id);
+    if (id == 0)
+        return false;
+    if (state->first_texture_id == 0)
+        state->first_texture_id = id;
+
+    char data[128] = {0};
+    if (!_zero_base64(node->u.upload.byte_size, data, sizeof(data)))
+        return false;
+
+    uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+    return dvz_drp2_stream_create_texture_2d_usage(stream, id, 2, 2, usage) &&
+           dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+}
+
+
+
+/**
+ * Emit DRP2 commands for the compute-assisted input and output buffers.
+ *
+ * @param state the converter state
+ * @param stream the DRP2 command stream
+ * @param upload the input upload node
+ * @param compute the compute node
+ * @return whether the commands were emitted
+ */
+static bool _emit_compute_buffers(
+    ConverterState* state, DvzDrp2CommandStream* stream, const DvzFramePlanNode* upload,
+    const DvzFramePlanNode* compute)
+{
+    ANN(state);
+    ANN(stream);
+    ANN(upload);
+    ANN(compute);
+    if (compute->u.compute.write_count == 0)
+        return false;
+
+    uint64_t input_id = _resource_id(state, upload->u.upload.resource_id);
+    uint64_t output_id = _resource_id(state, compute->u.compute.writes[0]);
+    if (input_id == 0 || output_id == 0)
+        return false;
+
+    state->first_compute_input_id = input_id;
+    state->first_compute_output_id = output_id;
+    state->first_vertex_buffer_id = output_id;
+    state->compute_buffer_size = upload->u.upload.byte_size;
+
+    char data[128] = {0};
+    if (!_zero_base64(upload->u.upload.byte_size, data, sizeof(data)))
+        return false;
+
+    return dvz_drp2_stream_create_buffer(
+               stream, input_id, upload->u.upload.byte_size,
+               DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE) &&
+           dvz_drp2_stream_write_buffer(
+               stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size, data) &&
+           dvz_drp2_stream_create_buffer(
+               stream, output_id, upload->u.upload.byte_size,
+               DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_VERTEX);
+}
+
+
+
+/**
  * Emit DRP2 setup commands for a readback buffer.
  *
  * @param stream the DRP2 command stream
@@ -224,6 +344,106 @@ static bool _emit_readback_buffer(DvzDrp2CommandStream* stream, const DvzFramePl
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
     return dvz_drp2_stream_create_buffer(
         stream, DRP2_ID_READBACK_BUFFER, node->u.copy.byte_size, usage);
+}
+
+
+
+/**
+ * Emit a compute pass followed by a render pass in one encoder.
+ *
+ * @param stream the DRP2 command stream
+ * @param compute the compute node
+ * @param render the render node
+ * @param state the converter state
+ * @return whether the commands were emitted
+ */
+static bool _emit_compute_assisted_render(
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* compute,
+    const DvzFramePlanNode* render, const ConverterState* state)
+{
+    ANN(stream);
+    ANN(compute);
+    ANN(render);
+    ANN(state);
+    if (state->first_compute_input_id == 0 || state->first_compute_output_id == 0 ||
+        state->compute_buffer_size == 0)
+        return false;
+
+    return dvz_drp2_stream_create_storage_bind_group_layout(stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
+           dvz_drp2_stream_create_shader_module(
+               stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", DRP2_COMPUTE_WGSL) &&
+           dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
+               stream, DRP2_ID_COMPUTE_PIPELINE, DRP2_ID_COMPUTE_SHADER,
+               DRP2_ID_BIND_GROUP_LAYOUT) &&
+           dvz_drp2_stream_create_storage_bind_group(
+               stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT,
+               state->first_compute_input_id, state->first_compute_output_id,
+               state->compute_buffer_size) &&
+           dvz_drp2_stream_create_shader_module(
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL) &&
+           dvz_drp2_stream_create_shader_module(
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL) &&
+           dvz_drp2_stream_create_render_pipeline(
+               stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
+           dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
+           dvz_drp2_stream_begin_command_encoder(stream, DRP2_ID_ENCODER) &&
+           dvz_drp2_stream_begin_compute_pass(stream, DRP2_ID_COMPUTE_PASS, DRP2_ID_ENCODER) &&
+           dvz_drp2_stream_set_pipeline(
+               stream, DRP2_ID_COMPUTE_PASS, DRP2_ID_COMPUTE_PIPELINE) &&
+           dvz_drp2_stream_set_bind_group(
+               stream, DRP2_ID_COMPUTE_PASS, 0, DRP2_ID_BIND_GROUP) &&
+           dvz_drp2_stream_dispatch_workgroups(
+               stream, DRP2_ID_COMPUTE_PASS, compute->u.compute.dispatch[0],
+               compute->u.compute.dispatch[1], compute->u.compute.dispatch[2]) &&
+           dvz_drp2_stream_end_compute_pass(stream, DRP2_ID_COMPUTE_PASS) &&
+           dvz_drp2_stream_begin_render_pass(
+               stream, DRP2_ID_RENDER_PASS, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET) &&
+           dvz_drp2_stream_set_pipeline(stream, DRP2_ID_RENDER_PASS, DRP2_ID_PIPELINE) &&
+           dvz_drp2_stream_set_vertex_buffer(
+               stream, DRP2_ID_RENDER_PASS, 0, state->first_compute_output_id, 0) &&
+           dvz_drp2_stream_draw(stream, DRP2_ID_RENDER_PASS, 3, 1, 0, 0) &&
+           dvz_drp2_stream_end_render_pass(stream, DRP2_ID_RENDER_PASS);
+}
+
+
+
+/**
+ * Emit DRP2 texture-sampling render-pass commands for a render node.
+ *
+ * @param stream the DRP2 command stream
+ * @param node the render node
+ * @param texture_id the sampled texture id
+ * @return whether the commands were emitted
+ */
+static bool
+_emit_texture_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node, uint64_t texture_id)
+{
+    ANN(stream);
+    ANN(node);
+    (void)node;
+    if (texture_id == 0)
+        return false;
+
+    return dvz_drp2_stream_create_sampler(stream, DRP2_ID_SAMPLER) &&
+           dvz_drp2_stream_create_texture_sampler_bind_group_layout(
+               stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
+           dvz_drp2_stream_create_shader_module(
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL) &&
+           dvz_drp2_stream_create_shader_module(
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL) &&
+           dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+               stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 0,
+               DRP2_ID_BIND_GROUP_LAYOUT) &&
+           dvz_drp2_stream_create_texture_sampler_bind_group(
+               stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT, texture_id, DRP2_ID_SAMPLER) &&
+           dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
+           dvz_drp2_stream_begin_command_encoder(stream, DRP2_ID_ENCODER) &&
+           dvz_drp2_stream_begin_render_pass(
+               stream, DRP2_ID_RENDER_PASS, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET) &&
+           dvz_drp2_stream_set_pipeline(stream, DRP2_ID_RENDER_PASS, DRP2_ID_PIPELINE) &&
+           dvz_drp2_stream_set_bind_group(stream, DRP2_ID_RENDER_PASS, 0, DRP2_ID_BIND_GROUP) &&
+           dvz_drp2_stream_draw(stream, DRP2_ID_RENDER_PASS, 3, 1, 0, 0) &&
+           dvz_drp2_stream_end_render_pass(stream, DRP2_ID_RENDER_PASS);
 }
 
 
@@ -305,6 +525,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
     (void)caps;
 
     const DvzFramePlanNode* upload = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
+    const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
@@ -326,16 +547,28 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
 
     ConverterState state = {0};
     _state_init(&state);
+    bool texture_render = _render_uses_texture(render);
+    bool compute_render = compute != NULL;
 
     bool ok = dvz_drp2_stream_hello_renderer(stream, "scene-fixture") &&
               dvz_drp2_stream_renderer_hello_reply(stream, "datoviz-drp2-fixture");
-    for (uint32_t i = 0; ok && i < plan->count; i++)
+    if (compute_render)
+    {
+        ok = ok && _emit_compute_buffers(&state, stream, upload, compute);
+    }
+    for (uint32_t i = 0; ok && !compute_render && i < plan->count; i++)
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
-            ok = _emit_upload(&state, stream, &plan->nodes[i]);
+        {
+            ok = texture_render ? _emit_texture_upload(&state, stream, &plan->nodes[i])
+                                : _emit_upload(&state, stream, &plan->nodes[i]);
+        }
     }
     ok = ok && (copy == NULL || _emit_readback_buffer(stream, copy)) &&
-         _emit_render(stream, render, state.first_vertex_buffer_id) &&
+         (compute_render ? _emit_compute_assisted_render(stream, compute, render, &state)
+                         : (texture_render
+                                ? _emit_texture_render(stream, render, state.first_texture_id)
+                                : _emit_render(stream, render, state.first_vertex_buffer_id))) &&
          (copy == NULL || readback == NULL || _emit_readback(stream, copy, readback)) &&
          dvz_drp2_stream_finish_command_encoder(stream, DRP2_ID_ENCODER, DRP2_ID_COMMAND_BUFFER) &&
          (readback != NULL

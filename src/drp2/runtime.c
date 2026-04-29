@@ -47,6 +47,9 @@ typedef enum
     DRP2_OBJECT_SHADER_COMPUTE,
     DRP2_OBJECT_RENDER_PIPELINE,
     DRP2_OBJECT_COMPUTE_PIPELINE,
+    DRP2_OBJECT_SAMPLER,
+    DRP2_OBJECT_BIND_GROUP_LAYOUT,
+    DRP2_OBJECT_BIND_GROUP,
     DRP2_OBJECT_ENCODER,
     DRP2_OBJECT_RENDER_PASS,
     DRP2_OBJECT_COMPUTE_PASS,
@@ -83,6 +86,12 @@ struct Drp2Object
     uint64_t vertex_shader_module_id;
     uint64_t fragment_shader_module_id;
     uint64_t compute_shader_module_id;
+    uint64_t bind_group_layout_id;
+    uint64_t texture_id;
+    uint64_t sampler_id;
+    uint64_t buffer0_id;
+    uint64_t buffer1_id;
+    uint64_t buffer_size;
     bool destroyed;
     bool referenced_by_work;
     bool open;
@@ -91,6 +100,8 @@ struct Drp2Object
     uint64_t pipeline_id;
     uint32_t bound_vertex_mask;
     bool index_buffer_bound;
+    uint32_t bound_bind_group_mask;
+    bool storage_buffers;
 };
 
 
@@ -454,6 +465,11 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
             state, command->u.create_render_pipeline.fragment_shader_module_id,
             DRP2_OBJECT_SHADER_FRAGMENT))
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.create_render_pipeline.bind_group_layout_id != 0 &&
+        !_has_object_kind(
+            state, command->u.create_render_pipeline.bind_group_layout_id,
+            DRP2_OBJECT_BIND_GROUP_LAYOUT))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     Drp2Object* object = _add_object(state, id, DRP2_OBJECT_RENDER_PIPELINE);
     if (object == NULL)
@@ -461,6 +477,7 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
     object->vertex_buffer_slots = command->u.create_render_pipeline.vertex_buffer_slots;
     object->vertex_shader_module_id = command->u.create_render_pipeline.vertex_shader_module_id;
     object->fragment_shader_module_id = command->u.create_render_pipeline.fragment_shader_module_id;
+    object->bind_group_layout_id = command->u.create_render_pipeline.bind_group_layout_id;
     return _ok();
 }
 
@@ -481,11 +498,17 @@ static DvzDrp2ValidationResult _validate_create_compute_pipeline(
             state, command->u.create_compute_pipeline.compute_shader_module_id,
             DRP2_OBJECT_SHADER_COMPUTE))
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.create_compute_pipeline.bind_group_layout_id != 0 &&
+        !_has_object_kind(
+            state, command->u.create_compute_pipeline.bind_group_layout_id,
+            DRP2_OBJECT_BIND_GROUP_LAYOUT))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     Drp2Object* object = _add_object(state, id, DRP2_OBJECT_COMPUTE_PIPELINE);
     if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->compute_shader_module_id = command->u.create_compute_pipeline.compute_shader_module_id;
+    object->bind_group_layout_id = command->u.create_compute_pipeline.bind_group_layout_id;
     return _ok();
 }
 
@@ -547,6 +570,103 @@ static DvzDrp2ValidationResult _validate_destroy_compute_pipeline(
     return _validate_destroy_object(
         state, command->u.destroy_compute_pipeline.compute_pipeline_id,
         DRP2_OBJECT_COMPUTE_PIPELINE, command_index);
+}
+
+
+
+static DvzDrp2ValidationResult _validate_create_sampler(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    uint64_t id = command->u.create_sampler.id;
+    if (id == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (_find_any_object(state, id) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (_add_object(state, id, DRP2_OBJECT_SAMPLER) == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_create_bind_group_layout(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    uint64_t id = command->u.create_bind_group_layout.id;
+    if (id == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (_find_any_object(state, id) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (_add_object(state, id, DRP2_OBJECT_BIND_GROUP_LAYOUT) == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2Object* object = _find_object(state, id);
+    ANN(object);
+    object->storage_buffers = command->u.create_bind_group_layout.storage_buffers;
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_create_bind_group(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    uint64_t id = command->u.create_bind_group.id;
+    if (id == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (_find_any_object(state, id) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (!_has_object_kind(
+            state, command->u.create_bind_group.bind_group_layout_id,
+            DRP2_OBJECT_BIND_GROUP_LAYOUT))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* layout = _find_object(state, command->u.create_bind_group.bind_group_layout_id);
+    ANN(layout);
+    if (layout->storage_buffers)
+    {
+        Drp2Object* buffer0 = _find_object(state, command->u.create_bind_group.buffer0_id);
+        Drp2Object* buffer1 = _find_object(state, command->u.create_bind_group.buffer1_id);
+        if (buffer0 == NULL || buffer0->kind != DRP2_OBJECT_BUFFER || buffer1 == NULL ||
+            buffer1->kind != DRP2_OBJECT_BUFFER)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if ((buffer0->usage & DVZ_DRP2_BUFFER_USAGE_STORAGE) == 0 ||
+            (buffer1->usage & DVZ_DRP2_BUFFER_USAGE_STORAGE) == 0)
+            return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        if (_range_overflows(0, command->u.create_bind_group.buffer_size, buffer0->size) ||
+            _range_overflows(0, command->u.create_bind_group.buffer_size, buffer1->size))
+            return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    }
+    else
+    {
+        Drp2Object* texture = _find_object(state, command->u.create_bind_group.texture_id);
+        if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if ((texture->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) == 0)
+            return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        if (!_has_object_kind(state, command->u.create_bind_group.sampler_id, DRP2_OBJECT_SAMPLER))
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
+    Drp2Object* object = _add_object(state, id, DRP2_OBJECT_BIND_GROUP);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->bind_group_layout_id = command->u.create_bind_group.bind_group_layout_id;
+    object->texture_id = command->u.create_bind_group.texture_id;
+    object->sampler_id = command->u.create_bind_group.sampler_id;
+    object->buffer0_id = command->u.create_bind_group.buffer0_id;
+    object->buffer1_id = command->u.create_bind_group.buffer1_id;
+    object->buffer_size = command->u.create_bind_group.buffer_size;
+    object->storage_buffers = layout->storage_buffers;
+    return _ok();
 }
 
 
@@ -696,7 +816,53 @@ static DvzDrp2ValidationResult _validate_set_pipeline(
     pass->pipeline_id = command->u.set_pipeline.pipeline_id;
     pass->bound_vertex_mask = 0;
     pass->index_buffer_bound = false;
+    pass->bound_bind_group_mask = 0;
     _mark_referenced(state, command->u.set_pipeline.pipeline_id);
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_set_bind_group(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.set_bind_group.pass_id);
+    if (pass == NULL || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* pipeline = _find_object(state, pass->pipeline_id);
+    if (pipeline == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (pass->kind == DRP2_OBJECT_RENDER_PASS && pipeline->kind != DRP2_OBJECT_RENDER_PIPELINE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (pass->kind == DRP2_OBJECT_COMPUTE_PASS && pipeline->kind != DRP2_OBJECT_COMPUTE_PIPELINE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (pass->kind != DRP2_OBJECT_RENDER_PASS && pass->kind != DRP2_OBJECT_COMPUTE_PASS)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.set_bind_group.slot != 0 || pipeline->bind_group_layout_id == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* bind_group = _find_object(state, command->u.set_bind_group.bind_group_id);
+    if (bind_group == NULL || bind_group->kind != DRP2_OBJECT_BIND_GROUP)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (bind_group->bind_group_layout_id != pipeline->bind_group_layout_id)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    pass->bound_bind_group_mask |= 1u;
+    _mark_referenced(state, command->u.set_bind_group.bind_group_id);
+    if (bind_group->storage_buffers)
+    {
+        _mark_referenced(state, bind_group->buffer0_id);
+        _mark_referenced(state, bind_group->buffer1_id);
+    }
+    else
+    {
+        _mark_referenced(state, bind_group->texture_id);
+        _mark_referenced(state, bind_group->sampler_id);
+    }
     return _ok();
 }
 
@@ -779,6 +945,8 @@ static DvzDrp2ValidationResult _validate_render_draw_state(
         required_mask = (uint32_t)((1u << pipeline->vertex_buffer_slots) - 1u);
     if ((pass->bound_vertex_mask & required_mask) != required_mask)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (pipeline->bind_group_layout_id != 0 && (pass->bound_bind_group_mask & 1u) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -849,6 +1017,8 @@ static DvzDrp2ValidationResult _validate_dispatch_workgroups(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (command->u.dispatch.x == 0 || command->u.dispatch.y == 0 || command->u.dispatch.z == 0)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (pipeline->bind_group_layout_id != 0 && (pass->bound_bind_group_mask & 1u) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     _mark_referenced(state, pass->pipeline_id);
     return _ok();
 }
@@ -1150,6 +1320,12 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_create_compute_pipeline(state, command, command_index);
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         return _validate_destroy_compute_pipeline(state, command, command_index);
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+        return _validate_create_sampler(state, command, command_index);
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        return _validate_create_bind_group_layout(state, command, command_index);
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return _validate_create_bind_group(state, command, command_index);
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return _validate_write_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
@@ -1162,6 +1338,8 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_begin_compute_pass(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         return _validate_set_pipeline(state, command, command_index);
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+        return _validate_set_bind_group(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         return _validate_set_vertex_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:

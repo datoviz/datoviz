@@ -25,7 +25,7 @@
 /*************************************************************************************************/
 
 #define DVZ_DRP2_INITIAL_COMMAND_CAPACITY 64
-#define DVZ_DRP2_LABEL_SIZE 128
+#define DVZ_DRP2_LABEL_SIZE 512
 
 
 
@@ -79,6 +79,7 @@ struct DvzDrp2Command
             uint64_t vertex_shader_module_id;
             uint64_t fragment_shader_module_id;
             uint32_t vertex_buffer_slots;
+            uint64_t bind_group_layout_id;
         } create_render_pipeline;
         struct
         {
@@ -88,11 +89,31 @@ struct DvzDrp2Command
         {
             uint64_t id;
             uint64_t compute_shader_module_id;
+            uint64_t bind_group_layout_id;
         } create_compute_pipeline;
         struct
         {
             uint64_t compute_pipeline_id;
         } destroy_compute_pipeline;
+        struct
+        {
+            uint64_t id;
+        } create_sampler;
+        struct
+        {
+            uint64_t id;
+            bool storage_buffers;
+        } create_bind_group_layout;
+        struct
+        {
+            uint64_t id;
+            uint64_t bind_group_layout_id;
+            uint64_t texture_id;
+            uint64_t sampler_id;
+            uint64_t buffer0_id;
+            uint64_t buffer1_id;
+            uint64_t buffer_size;
+        } create_bind_group;
         struct
         {
             uint64_t buffer_id;
@@ -134,6 +155,12 @@ struct DvzDrp2Command
             uint64_t pass_id;
             uint64_t pipeline_id;
         } set_pipeline;
+        struct
+        {
+            uint64_t pass_id;
+            uint32_t slot;
+            uint64_t bind_group_id;
+        } set_bind_group;
         struct
         {
             uint64_t pass_id;

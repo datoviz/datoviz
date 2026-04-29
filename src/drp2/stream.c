@@ -133,6 +133,12 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "CreateComputePipeline";
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         return "DestroyComputePipeline";
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+        return "CreateSampler";
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        return "CreateBindGroupLayout";
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return "CreateBindGroup";
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return "WriteBuffer";
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
@@ -145,6 +151,8 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "BeginComputePass";
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         return "SetPipeline";
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+        return "SetBindGroup";
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         return "SetVertexBuffer";
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
@@ -365,11 +373,18 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"vertex_buffer_slots\": %" PRIu32
             ", \"vertex_shader_module_id\": %" PRIu64
-            ", \"fragment_shader_module_id\": %" PRIu64 " }",
+            ", \"fragment_shader_module_id\": %" PRIu64,
             _command_name(command->type), command->u.create_render_pipeline.id,
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id);
+        if (command->u.create_render_pipeline.bind_group_layout_id != 0)
+        {
+            _json_append(
+                builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
+                command->u.create_render_pipeline.bind_group_layout_id);
+        }
+        _json_append(builder, " }");
         break;
     case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
         _json_append(
@@ -380,16 +395,83 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         _json_append(
             builder,
-            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"compute_shader_module_id\": %" PRIu64
-            " }",
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"compute_shader_module_id\": %" PRIu64,
             _command_name(command->type), command->u.create_compute_pipeline.id,
             command->u.create_compute_pipeline.compute_shader_module_id);
+        if (command->u.create_compute_pipeline.bind_group_layout_id != 0)
+        {
+            _json_append(
+                builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
+                command->u.create_compute_pipeline.bind_group_layout_id);
+        }
+        _json_append(builder, " }");
         break;
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"compute_pipeline_id\": %" PRIu64 " }",
             _command_name(command->type),
             command->u.destroy_compute_pipeline.compute_pipeline_id);
+        break;
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64
+            ", \"mag_filter\": \"linear\", \"min_filter\": \"linear\", "
+            "\"mipmap_filter\": \"nearest\", \"address_mode_u\": \"clamp-to-edge\", "
+            "\"address_mode_v\": \"clamp-to-edge\" }",
+            _command_name(command->type), command->u.create_sampler.id);
+        break;
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        if (command->u.create_bind_group_layout.storage_buffers)
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"id\": %" PRIu64
+                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"storage_buffer\" }, "
+                "{ \"binding\": 1, \"binding_type\": \"storage_buffer\" } ] }",
+                _command_name(command->type), command->u.create_bind_group_layout.id);
+        }
+        else
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"id\": %" PRIu64
+                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"sampled_texture\" }, "
+                "{ \"binding\": 1, \"binding_type\": \"sampler\" } ] }",
+                _command_name(command->type), command->u.create_bind_group_layout.id);
+        }
+        break;
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        if (command->u.create_bind_group.buffer0_id != 0 ||
+            command->u.create_bind_group.buffer1_id != 0)
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
+                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"storage_buffer\", "
+                "\"resource_kind\": \"buffer\", \"resource_id\": %" PRIu64
+                ", \"offset\": 0, \"size\": %" PRIu64
+                " }, { \"binding\": 1, \"binding_type\": \"storage_buffer\", "
+                "\"resource_kind\": \"buffer\", \"resource_id\": %" PRIu64
+                ", \"offset\": 0, \"size\": %" PRIu64 " } ] }",
+                _command_name(command->type), command->u.create_bind_group.id,
+                command->u.create_bind_group.bind_group_layout_id,
+                command->u.create_bind_group.buffer0_id, command->u.create_bind_group.buffer_size,
+                command->u.create_bind_group.buffer1_id, command->u.create_bind_group.buffer_size);
+        }
+        else
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
+                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"sampled_texture\", "
+                "\"resource_kind\": \"texture\", \"resource_id\": %" PRIu64
+                " }, { \"binding\": 1, \"binding_type\": \"sampler\", "
+                "\"resource_kind\": \"sampler\", \"resource_id\": %" PRIu64 " } ] }",
+                _command_name(command->type), command->u.create_bind_group.id,
+                command->u.create_bind_group.bind_group_layout_id,
+                command->u.create_bind_group.texture_id, command->u.create_bind_group.sampler_id);
+        }
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         _json_append(
@@ -442,6 +524,14 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                      " }",
             _command_name(command->type), command->u.set_pipeline.pass_id,
             command->u.set_pipeline.pipeline_id);
+        break;
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"slot\": %" PRIu32
+            ", \"bind_group_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.set_bind_group.pass_id,
+            command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id);
         break;
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         _json_append(
@@ -897,6 +987,27 @@ bool dvz_drp2_stream_create_render_pipeline(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots)
 {
+    return dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, id, vertex_shader_module_id, fragment_shader_module_id, vertex_buffer_slots, 0);
+}
+
+
+
+/**
+ * Append a CreateRenderPipeline command with one bind-group layout.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param vertex_shader_module_id the vertex shader module id
+ * @param fragment_shader_module_id the fragment shader module id
+ * @param vertex_buffer_slots the number of required vertex buffer slots
+ * @param bind_group_layout_id the bind-group layout id for slot 0
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots, uint64_t bind_group_layout_id)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
     if (command == NULL)
         return false;
@@ -904,6 +1015,7 @@ bool dvz_drp2_stream_create_render_pipeline(
     command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
     command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
     command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
+    command->u.create_render_pipeline.bind_group_layout_id = bind_group_layout_id;
     return true;
 }
 
@@ -939,11 +1051,31 @@ bool dvz_drp2_stream_destroy_render_pipeline(
 bool dvz_drp2_stream_create_compute_pipeline(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t compute_shader_module_id)
 {
+    return dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
+        stream, id, compute_shader_module_id, 0);
+}
+
+
+
+/**
+ * Append a CreateComputePipeline command with one bind-group layout.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param compute_shader_module_id the compute shader module id
+ * @param bind_group_layout_id the bind-group layout id for slot 0
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t compute_shader_module_id,
+    uint64_t bind_group_layout_id)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE);
     if (command == NULL)
         return false;
     command->u.create_compute_pipeline.id = id;
     command->u.create_compute_pipeline.compute_shader_module_id = compute_shader_module_id;
+    command->u.create_compute_pipeline.bind_group_layout_id = bind_group_layout_id;
     return true;
 }
 
@@ -963,6 +1095,116 @@ bool dvz_drp2_stream_destroy_compute_pipeline(
     if (command == NULL)
         return false;
     command->u.destroy_compute_pipeline.compute_pipeline_id = compute_pipeline_id;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateSampler command.
+ *
+ * @param stream the command stream
+ * @param id the sampler id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_sampler(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_SAMPLER);
+    if (command == NULL)
+        return false;
+    command->u.create_sampler.id = id;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateBindGroupLayout command for one sampled texture and one sampler.
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
+    if (command == NULL)
+        return false;
+    command->u.create_bind_group_layout.id = id;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateBindGroupLayout command for two storage buffers.
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
+    if (command == NULL)
+        return false;
+    command->u.create_bind_group_layout.id = id;
+    command->u.create_bind_group_layout.storage_buffers = true;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateBindGroup command for one sampled texture and one sampler.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param texture_id the sampled texture id
+ * @param sampler_id the sampler id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_sampler_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t texture_id,
+    uint64_t sampler_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
+    if (command == NULL)
+        return false;
+    command->u.create_bind_group.id = id;
+    command->u.create_bind_group.bind_group_layout_id = bind_group_layout_id;
+    command->u.create_bind_group.texture_id = texture_id;
+    command->u.create_bind_group.sampler_id = sampler_id;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateBindGroup command for two storage buffers.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param buffer0_id the first storage buffer id
+ * @param buffer1_id the second storage buffer id
+ * @param buffer_size the bound range size for each buffer
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_storage_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer0_id,
+    uint64_t buffer1_id, uint64_t buffer_size)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
+    if (command == NULL)
+        return false;
+    command->u.create_bind_group.id = id;
+    command->u.create_bind_group.bind_group_layout_id = bind_group_layout_id;
+    command->u.create_bind_group.buffer0_id = buffer0_id;
+    command->u.create_bind_group.buffer1_id = buffer1_id;
+    command->u.create_bind_group.buffer_size = buffer_size;
     return true;
 }
 
@@ -1109,6 +1351,29 @@ bool dvz_drp2_stream_set_pipeline(
         return false;
     command->u.set_pipeline.pass_id = pass_id;
     command->u.set_pipeline.pipeline_id = pipeline_id;
+    return true;
+}
+
+
+
+/**
+ * Append a SetBindGroup command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param slot the bind-group slot
+ * @param bind_group_id the bind-group id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_set_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t slot, uint64_t bind_group_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_SET_BIND_GROUP);
+    if (command == NULL)
+        return false;
+    command->u.set_bind_group.pass_id = pass_id;
+    command->u.set_bind_group.slot = slot;
+    command->u.set_bind_group.bind_group_id = bind_group_id;
     return true;
 }
 

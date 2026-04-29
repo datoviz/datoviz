@@ -212,6 +212,24 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
 
 
 /**
+ * Append a CreateRenderPipeline command with one bind-group layout.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param vertex_shader_module_id the vertex shader module id
+ * @param fragment_shader_module_id the fragment shader module id
+ * @param vertex_buffer_slots the number of required vertex buffer slots
+ * @param bind_group_layout_id the bind-group layout id for slot 0
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
+    uint64_t bind_group_layout_id);
+
+
+
+/**
  * Append a DestroyRenderPipeline command.
  *
  * @param stream the command stream
@@ -237,6 +255,21 @@ DVZ_EXPORT bool dvz_drp2_stream_create_compute_pipeline(
 
 
 /**
+ * Append a CreateComputePipeline command with one bind-group layout.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param compute_shader_module_id the compute shader module id
+ * @param bind_group_layout_id the bind-group layout id for slot 0
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t compute_shader_module_id,
+    uint64_t bind_group_layout_id);
+
+
+
+/**
  * Append a DestroyComputePipeline command.
  *
  * @param stream the command stream
@@ -245,6 +278,74 @@ DVZ_EXPORT bool dvz_drp2_stream_create_compute_pipeline(
  */
 DVZ_EXPORT bool dvz_drp2_stream_destroy_compute_pipeline(
     DvzDrp2CommandStream* stream, uint64_t compute_pipeline_id);
+
+
+
+/**
+ * Append a CreateSampler command.
+ *
+ * @param stream the command stream
+ * @param id the sampler id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_sampler(DvzDrp2CommandStream* stream, uint64_t id);
+
+
+
+/**
+ * Append a CreateBindGroupLayout command for one sampled texture and one sampler.
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_create_texture_sampler_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
+
+
+
+/**
+ * Append a CreateBindGroupLayout command for two storage buffers.
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
+
+
+
+/**
+ * Append a CreateBindGroup command for one sampled texture and one sampler.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param texture_id the sampled texture id
+ * @param sampler_id the sampler id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_sampler_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t texture_id,
+    uint64_t sampler_id);
+
+
+
+/**
+ * Append a CreateBindGroup command for two storage buffers.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param buffer0_id the first storage buffer id
+ * @param buffer1_id the second storage buffer id
+ * @param buffer_size the bound range size for each buffer
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_storage_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer0_id,
+    uint64_t buffer1_id, uint64_t buffer_size);
 
 
 
@@ -331,6 +432,20 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_compute_pass(
  */
 DVZ_EXPORT bool
 dvz_drp2_stream_set_pipeline(DvzDrp2CommandStream* stream, uint64_t pass_id, uint64_t pipeline_id);
+
+
+
+/**
+ * Append a SetBindGroup command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param slot the bind-group slot
+ * @param bind_group_id the bind-group id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_set_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t slot, uint64_t bind_group_id);
 
 
 

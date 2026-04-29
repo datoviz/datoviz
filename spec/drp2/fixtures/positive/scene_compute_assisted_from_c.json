@@ -1,0 +1,33 @@
+{
+  "name": "scene_compute_assisted_from_c",
+  "version": { "major": 2, "minor": 0 },
+  "commands": [
+    { "cmd": "HelloRenderer", "version": { "major": 2, "minor": 0 }, "client_name": "scene-fixture" },
+    { "cmd": "RendererHelloReply", "version": { "major": 2, "minor": 0 }, "status": "ok", "renderer_name": "datoviz-drp2-fixture" },
+    { "cmd": "CreateBuffer", "id": 20, "size": 36, "usage": ["COPY_DST", "STORAGE"] },
+    { "cmd": "WriteBuffer", "buffer_id": 20, "offset": 0, "size": 36, "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" },
+    { "cmd": "CreateBuffer", "id": 21, "size": 36, "usage": ["VERTEX", "STORAGE"] },
+    { "cmd": "CreateBindGroupLayout", "id": 100, "entries": [ { "binding": 0, "binding_type": "storage_buffer" }, { "binding": 1, "binding_type": "storage_buffer" } ] },
+    { "cmd": "CreateShaderModule", "id": 9002, "stage": "COMPUTE", "format": "wgsl", "entry_point": "main", "code": "@group(0) @binding(0) var<storage, read> input: array<f32>; @group(0) @binding(1) var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main(@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }" },
+    { "cmd": "CreateComputePipeline", "id": 30, "compute_shader_module_id": 9002, "bind_group_layout_ids": [100] },
+    { "cmd": "CreateBindGroup", "id": 13, "bind_group_layout_id": 100, "entries": [ { "binding": 0, "binding_type": "storage_buffer", "resource_kind": "buffer", "resource_id": 20, "offset": 0, "size": 36 }, { "binding": 1, "binding_type": "storage_buffer", "resource_kind": "buffer", "resource_id": 21, "offset": 0, "size": 36 } ] },
+    { "cmd": "CreateShaderModule", "id": 9000, "stage": "VERTEX", "format": "wgsl", "entry_point": "main", "code": "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }" },
+    { "cmd": "CreateShaderModule", "id": 9001, "stage": "FRAGMENT", "format": "wgsl", "entry_point": "main", "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }" },
+    { "cmd": "CreateRenderPipeline", "id": 10, "vertex_buffer_slots": 1, "vertex_shader_module_id": 9000, "fragment_shader_module_id": 9001 },
+    { "cmd": "CreateTexture", "id": 1, "dimension": "2d", "width": 4, "height": 4, "depth": 1, "format": "rgba8unorm", "usage": ["COPY_SRC", "COPY_DST", "RENDER_ATTACHMENT"], "mip_level_count": 1, "sample_count": 1 },
+    { "cmd": "BeginCommandEncoder", "id": 2 },
+    { "cmd": "BeginComputePass", "id": 6, "encoder_id": 2 },
+    { "cmd": "SetPipeline", "pass_id": 6, "pipeline_id": 30 },
+    { "cmd": "SetBindGroup", "pass_id": 6, "slot": 0, "bind_group_id": 13 },
+    { "cmd": "DispatchWorkgroups", "pass_id": 6, "x": 1, "y": 1, "z": 1 },
+    { "cmd": "EndComputePass", "pass_id": 6 },
+    { "cmd": "BeginRenderPass", "id": 3, "encoder_id": 2, "color_attachments": [ { "texture_id": 1, "load_op": "clear", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ] },
+    { "cmd": "SetPipeline", "pass_id": 3, "pipeline_id": 10 },
+    { "cmd": "SetVertexBuffer", "pass_id": 3, "slot": 0, "buffer_id": 21, "offset": 0 },
+    { "cmd": "Draw", "pass_id": 3, "vertex_count": 3, "instance_count": 1, "first_vertex": 0, "first_instance": 0 },
+    { "cmd": "EndRenderPass", "pass_id": 3 },
+    { "cmd": "FinishCommandEncoder", "encoder_id": 2, "command_buffer_id": 4 },
+    { "cmd": "QueueSubmit", "command_buffer_ids": [4], "submission_id": 5 }
+  ],
+  "expected": { "outcome": "success" }
+}
