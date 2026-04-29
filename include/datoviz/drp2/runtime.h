@@ -21,6 +21,7 @@
 
 #include "datoviz/common/macros.h"
 #include "datoviz/drp2/types.h"
+#include "datoviz/stream/frame_stream.h"
 
 
 
@@ -105,5 +106,17 @@ dvz_drp2_validate_stream(const DvzDrp2CommandStream* stream);
  */
 DVZ_EXPORT DvzDrp2ValidationResult
 dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream);
+
+
+/**
+ * Record a copy from a runtime-owned texture into a borrowed stream frame.
+ *
+ * @param runtime the runtime
+ * @param texture_id the DRP2 texture id to copy from
+ * @param frame the borrowed stream frame whose command buffer is currently recording
+ * @return whether the copy commands were recorded
+ */
+DVZ_EXPORT bool dvz_drp2_runtime_copy_texture_to_frame(
+    DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame);
 
 EXTERN_C_OFF

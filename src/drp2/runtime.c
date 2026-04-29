@@ -27,6 +27,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_stream.h"
+#include "datoviz/stream/frame_stream.h"
 
 #if DVZ_DRP2_HAS_VKLITE
 #include "datoviz/vk/device.h"
@@ -197,6 +198,19 @@ struct Drp2VkliteState
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data);
 #endif
+
+
+/**
+ * Return the smaller of two 32-bit unsigned integers.
+ *
+ * @param a the first value
+ * @param b the second value
+ * @return the smaller value
+ */
+static uint32_t _min_u32(uint32_t a, uint32_t b)
+{
+    return a < b ? a : b;
+}
 
 
 
@@ -3105,5 +3119,88 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
     return _vklite_execute(runtime, stream);
 #else
     return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+#endif
+}
+
+
+/**
+ * Record a copy from a runtime-owned texture into a borrowed stream frame.
+ *
+ * @param runtime the runtime
+ * @param texture_id the DRP2 texture id to copy from
+ * @param frame the borrowed stream frame whose command buffer is currently recording
+ * @return whether the copy commands were recorded
+ */
+bool dvz_drp2_runtime_copy_texture_to_frame(
+    DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
+{
+#if DVZ_DRP2_HAS_VKLITE
+    if (runtime == NULL || runtime->vklite_state == NULL || frame == NULL)
+        return false;
+    if (frame->command_buffer == VK_NULL_HANDLE || frame->image == VK_NULL_HANDLE)
+        return false;
+
+    Drp2VkliteObject* source = _vklite_find(runtime->vklite_state, texture_id);
+    if (source == NULL || source->images == NULL)
+        return false;
+
+    uint32_t width = _min_u32(source->width, frame->extent.width);
+    uint32_t height = _min_u32(source->height, frame->extent.height);
+    if (width == 0 || height == 0)
+        return false;
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    if (cmds == NULL)
+        return false;
+    dvz_commands_wrap(runtime->device, frame->command_buffer, cmds);
+
+    _vklite_transition_image(
+        cmds, source, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        VK_ACCESS_2_TRANSFER_READ_BIT);
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierImage* dst = dvz_barriers_image(&barriers, frame->image);
+    ANN(dst);
+    dvz_barrier_image_stage(
+        dst, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+    dvz_barrier_image_access(
+        dst, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
+    dvz_barrier_image_layout(
+        dst, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_cmd_barriers(cmds, &barriers);
+
+    DvzImageCopy* copy = dvz_image_copy_create();
+    if (copy == NULL)
+    {
+        dvz_commands_free(cmds);
+        return false;
+    }
+    dvz_cmd_copy_source(
+        copy, dvz_image_handle(source->images, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
+        width, height, 1);
+    dvz_cmd_copy_destination(
+        copy, frame->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
+    dvz_cmd_copy_image(cmds, copy);
+    dvz_image_copy_free(copy);
+
+    dvz_barriers(&barriers);
+    dst = dvz_barriers_image(&barriers, frame->image);
+    ANN(dst);
+    dvz_barrier_image_stage(
+        dst, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_image_access(
+        dst, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_image_layout(
+        dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_cmd_barriers(cmds, &barriers);
+
+    dvz_commands_free(cmds);
+    return true;
+#else
+    (void)runtime;
+    (void)texture_id;
+    (void)frame;
+    return false;
 #endif
 }
