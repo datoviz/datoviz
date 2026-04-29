@@ -886,6 +886,95 @@ int test_drp2_runtime_rejects_destroy_live_shader_module(TstSuite* suite, TstIte
 
 
 
+int test_drp2_runtime_vklite_skeleton_create_destroy(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    AT(!cfg.semantic_only);
+    AT(dvz_drp2_runtime_vklite(NULL) == NULL);
+    AT(dvz_drp2_runtime_vklite(&cfg) == NULL);
+
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_runtime_destroy(NULL);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = _valid_render_stream();
+    ANN(stream);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_write_buffer(stream, 42, 0, 16, "AAAAAAAAAAAAAAAAAAAAAA=="));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = _valid_render_stream();
+    ANN(stream);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(NULL, stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_ARGUMENT);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -925,6 +1014,10 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_rejects_destroy_texture_referenced_by_work);
     TEST_SIMPLE(test_drp2_runtime_rejects_destroy_submitted_render_pipeline);
     TEST_SIMPLE(test_drp2_runtime_rejects_destroy_live_shader_module);
+    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_create_destroy);
+    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
+    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
+    TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
 
     return 0;
 }

@@ -29,3 +29,6 @@
 
 typedef struct DvzDrp2CommandStream DvzDrp2CommandStream;
 typedef struct DvzDrp2Command DvzDrp2Command;
+typedef struct DvzDrp2Runtime DvzDrp2Runtime;
+typedef struct DvzDevice DvzDevice;
+typedef struct DvzVma DvzVma;

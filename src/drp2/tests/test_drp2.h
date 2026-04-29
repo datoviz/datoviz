@@ -88,6 +88,14 @@ int test_drp2_runtime_rejects_destroy_submitted_render_pipeline(
 
 int test_drp2_runtime_rejects_destroy_live_shader_module(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_vklite_skeleton_create_destroy(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstItem* item);
+
 
 
 int test_drp2(TstSuite* suite);

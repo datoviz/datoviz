@@ -62,6 +62,14 @@ typedef enum
 typedef struct Drp2Object Drp2Object;
 typedef struct Drp2RuntimeState Drp2RuntimeState;
 
+struct DvzDrp2Runtime
+{
+    DvzDevice* device;
+    DvzVma* allocator;
+    bool semantic_only;
+};
+
+
 struct Drp2Object
 {
     uint64_t id;
@@ -1192,6 +1200,60 @@ static DvzDrp2ValidationResult _validate_command(
 /*************************************************************************************************/
 
 /**
+ * Return a DRP2 runtime configuration for a vklite-backed runtime.
+ *
+ * @param device the borrowed Vulkan device wrapper
+ * @param allocator the borrowed Vulkan allocator wrapper
+ * @return the runtime configuration
+ */
+DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(DvzDevice* device, DvzVma* allocator)
+{
+    DvzDrp2RuntimeConfig cfg = {0};
+    cfg.device = device;
+    cfg.allocator = allocator;
+    return cfg;
+}
+
+
+
+/**
+ * Create a DRP2 runtime using the vklite backend boundary.
+ *
+ * @param cfg the runtime configuration
+ * @return the runtime, or NULL on invalid configuration
+ */
+DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
+{
+    if (cfg == NULL)
+        return NULL;
+    if (!cfg->semantic_only && (cfg->device == NULL || cfg->allocator == NULL))
+        return NULL;
+
+    DvzDrp2Runtime* runtime = (DvzDrp2Runtime*)dvz_calloc(1, sizeof(DvzDrp2Runtime));
+    ANN(runtime);
+    runtime->device = cfg->device;
+    runtime->allocator = cfg->allocator;
+    runtime->semantic_only = cfg->semantic_only;
+    return runtime;
+}
+
+
+
+/**
+ * Destroy a DRP2 runtime.
+ *
+ * @param runtime the runtime
+ */
+void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime)
+{
+    if (runtime == NULL)
+        return;
+    dvz_free(runtime);
+}
+
+
+
+/**
  * Validate a DRP2 command stream against the backend-agnostic semantic rules.
  *
  * @param stream the command stream
@@ -1213,5 +1275,28 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(const DvzDrp2CommandStream* str
     }
 
     dvz_free(state.objects);
+    return result;
+}
+
+
+
+/**
+ * Execute a command stream through a DRP2 runtime skeleton.
+ *
+ * @param runtime the runtime
+ * @param stream the command stream
+ * @return the validation result before backend execution
+ */
+DvzDrp2ValidationResult
+dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
+{
+    if (runtime == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    if (!result.ok)
+        return result;
+
+    // Native vklite execution will be added incrementally after the semantic layer is complete.
     return result;
 }
