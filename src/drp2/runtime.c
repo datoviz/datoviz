@@ -89,6 +89,9 @@ struct DvzDrp2Runtime
     DvzDevice* device;
     DvzVma* allocator;
     bool semantic_only;
+#if DVZ_DRP2_HAS_VKLITE
+    Drp2VkliteState* vklite_state;
+#endif
 };
 
 
@@ -159,6 +162,13 @@ struct Drp2VkliteState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+#if DVZ_DRP2_HAS_VKLITE
+bool _dvz_drp2_runtime_vklite_download_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data);
+#endif
+
+
 
 static DvzDrp2ValidationResult _result(
     bool ok, DvzDrp2ValidationCode code, uint32_t command_index)
@@ -1558,9 +1568,13 @@ static DvzAllocationFlags _vklite_buffer_alloc_flags(uint32_t usage)
 {
     DvzAllocationFlags flags = DVZ_ALLOC_FLAGS_NONE;
     if ((usage & DVZ_DRP2_BUFFER_USAGE_MAP_READ) != 0)
+    {
         flags |= DVZ_ALLOC_HOST_ACCESS_RANDOM;
-    if ((usage & (DVZ_DRP2_BUFFER_USAGE_MAP_WRITE | DVZ_DRP2_BUFFER_USAGE_COPY_DST)) != 0)
+    }
+    else if ((usage & (DVZ_DRP2_BUFFER_USAGE_MAP_WRITE | DVZ_DRP2_BUFFER_USAGE_COPY_DST)) != 0)
+    {
         flags |= DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE;
+    }
     return flags;
 }
 
@@ -1658,6 +1672,10 @@ static void _vklite_state_cleanup(Drp2VkliteState* state)
         _vklite_destroy_object(&state->objects[i]);
     }
     dvz_free(state->objects);
+    state->objects = NULL;
+    state->capacity = 0;
+    state->count = 0;
+    state->runtime = NULL;
 }
 
 
@@ -1752,7 +1770,18 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
 {
     ANN(runtime);
     ANN(stream);
-    Drp2VkliteState state = {.runtime = runtime};
+    if (runtime->vklite_state == NULL)
+    {
+        runtime->vklite_state = (Drp2VkliteState*)dvz_calloc(1, sizeof(Drp2VkliteState));
+        ANN(runtime->vklite_state);
+    }
+    else
+    {
+        _vklite_state_cleanup(runtime->vklite_state);
+    }
+
+    Drp2VkliteState* state = runtime->vklite_state;
+    state->runtime = runtime;
     DvzDrp2ValidationResult result = _ok();
 
     for (uint32_t i = 0; i < stream->count; i++)
@@ -1761,21 +1790,21 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         switch (command->type)
         {
         case DVZ_DRP2_COMMAND_CREATE_BUFFER:
-            result = _vklite_create_buffer(&state, command, i);
+            result = _vklite_create_buffer(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
             result = _vklite_destroy_backend_object(
-                &state, command->u.destroy_buffer.buffer_id, DRP2_OBJECT_BUFFER, i);
+                state, command->u.destroy_buffer.buffer_id, DRP2_OBJECT_BUFFER, i);
             break;
         case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
-            result = _vklite_create_texture(&state, command, i);
+            result = _vklite_create_texture(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
             result = _vklite_destroy_backend_object(
-                &state, command->u.destroy_texture.texture_id, DRP2_OBJECT_TEXTURE, i);
+                state, command->u.destroy_texture.texture_id, DRP2_OBJECT_TEXTURE, i);
             break;
         case DVZ_DRP2_COMMAND_WRITE_BUFFER:
-            result = _vklite_write_buffer(&state, command, i);
+            result = _vklite_write_buffer(state, command, i);
             break;
         default:
             result = _ok();
@@ -1786,7 +1815,6 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
     }
 
-    _vklite_state_cleanup(&state);
     return result;
 }
 #endif
@@ -1850,8 +1878,39 @@ void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime)
 {
     if (runtime == NULL)
         return;
+#if DVZ_DRP2_HAS_VKLITE
+    _vklite_state_cleanup(runtime->vklite_state);
+    dvz_free(runtime->vklite_state);
+#endif
     dvz_free(runtime);
 }
+
+
+#if DVZ_DRP2_HAS_VKLITE
+/**
+ * Download bytes from a live vklite buffer owned by a DRP2 runtime.
+ *
+ * @param runtime the DRP2 runtime
+ * @param buffer_id the DRP2 buffer id
+ * @param offset the byte offset
+ * @param size the byte count to download
+ * @param data the output buffer
+ * @return true when the buffer exists and the download was requested
+ */
+bool _dvz_drp2_runtime_vklite_download_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data)
+{
+    if (runtime == NULL || runtime->vklite_state == NULL || data == NULL || size == 0)
+        return false;
+
+    Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, buffer_id);
+    if (object == NULL || object->buffer == NULL)
+        return false;
+
+    dvz_buffer_download(object->buffer, offset, size, data);
+    return true;
+}
+#endif
 
 
 
