@@ -130,6 +130,8 @@ int test_drp2_runtime_vklite_copies_texture_to_texture(TstSuite* suite, TstItem*
 int test_drp2_runtime_vklite_creates_glsl_shader_modules(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_creates_render_pipeline(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item);
 #endif
 
 

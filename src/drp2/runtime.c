@@ -34,6 +34,7 @@
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
 #include "datoviz/vklite/sync.h"
@@ -156,10 +157,15 @@ struct Drp2VkliteObject
     Drp2ObjectKind kind;
     DvzBuffer* buffer;
     DvzImages* images;
+    DvzImageViews* views;
     DvzShader* shader;
     DvzGraphics* graphics;
     DvzSlots* slots;
+    DvzCommands* commands;
+    DvzRendering* rendering;
     VkImageLayout image_layout;
+    uint32_t width;
+    uint32_t height;
     bool destroyed;
 };
 
@@ -1669,6 +1675,23 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_buffer_free(object->buffer);
         object->buffer = NULL;
     }
+    if (object->commands != NULL)
+    {
+        dvz_commands_destroy(object->commands);
+        dvz_commands_free(object->commands);
+        object->commands = NULL;
+    }
+    if (object->rendering != NULL)
+    {
+        dvz_rendering_free(object->rendering);
+        object->rendering = NULL;
+    }
+    if (object->views != NULL)
+    {
+        dvz_image_views_destroy(object->views);
+        dvz_image_views_free(object->views);
+        object->views = NULL;
+    }
     if (object->images != NULL)
     {
         dvz_images_destroy(object->images);
@@ -1762,7 +1785,25 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     dvz_images_usage(images, _vklite_texture_usage(command->u.create_texture.usage));
     if (dvz_images_create(images) != 0)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    if ((command->u.create_texture.usage &
+         (DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING |
+          DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING |
+          DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT)) != 0)
+    {
+        DvzImageViews* views = dvz_image_views_create_wrapper();
+        if (views == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        object->views = views;
+        dvz_image_views(images, views);
+        dvz_image_views_create(views);
+        if (dvz_image_views_handle(views, 0) == VK_NULL_HANDLE)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
     object->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    object->width = command->u.create_texture.width;
+    object->height = command->u.create_texture.height;
     return _ok();
 }
 
@@ -2082,6 +2123,11 @@ static void _vklite_transition_image(
         src_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
         src_access = VK_ACCESS_2_TRANSFER_READ_BIT;
     }
+    else if (object->image_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+    {
+        src_stage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        src_access = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+    }
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
@@ -2358,6 +2404,150 @@ static DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
 }
 
 
+/**
+ * Begin a vklite dynamic-rendering pass for a DRP2 BeginRenderPass command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 BeginRenderPass command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_begin_render_pass(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* target = _vklite_find(state, command->u.begin_render_pass.texture_id);
+    if (target == NULL || target->images == NULL || target->views == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2VkliteObject* pass =
+        _vklite_add(state, command->u.begin_render_pass.id, DRP2_OBJECT_RENDER_PASS);
+    if (pass == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzCommands* cmds = _vklite_commands_create(state->runtime->device);
+    if (cmds == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    pass->commands = cmds;
+
+    DvzRendering* rendering = dvz_rendering_create();
+    if (rendering == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    pass->rendering = rendering;
+
+    VkClearValue clear = {0};
+    dvz_cmd_rendering_default(
+        cmds, dvz_image_views_handle(target->views, 0), target->width, target->height, clear,
+        rendering);
+
+    dvz_cmd_begin(cmds);
+    _vklite_transition_image(
+        cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    dvz_cmd_rendering_begin(cmds, rendering);
+    return _ok();
+}
+
+
+/**
+ * Bind a vklite graphics pipeline within a DRP2 render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 SetPipeline command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_set_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.set_pipeline.pass_id);
+    Drp2VkliteObject* pipeline = _vklite_find(state, command->u.set_pipeline.pipeline_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL ||
+        pipeline == NULL || pipeline->kind != DRP2_OBJECT_RENDER_PIPELINE ||
+        pipeline->graphics == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
+    return _ok();
+}
+
+
+/**
+ * Bind a vertex buffer within a vklite render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 SetVertexBuffer command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_set_vertex_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.set_vertex_buffer.pass_id);
+    Drp2VkliteObject* buffer = _vklite_find(state, command->u.set_vertex_buffer.buffer_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL ||
+        buffer == NULL || buffer->buffer == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzSize offset = command->u.set_vertex_buffer.offset;
+    dvz_cmd_bind_vertex_buffers(
+        pass->commands, command->u.set_vertex_buffer.slot, 1, buffer->buffer, &offset);
+    return _ok();
+}
+
+
+/**
+ * Record a direct draw within a vklite render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 Draw command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_draw(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.draw.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_cmd_draw(
+        pass->commands, command->u.draw.first_vertex, command->u.draw.vertex_count,
+        command->u.draw.first_instance, command->u.draw.instance_count);
+    return _ok();
+}
+
+
+/**
+ * End and submit a vklite dynamic-rendering pass.
+ *
+ * @param state vklite runtime state
+ * @param pass_id DRP2 render pass id
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult
+_vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t command_index)
+{
+    ANN(state);
+    Drp2VkliteObject* pass = _vklite_find(state, pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_cmd_rendering_end(pass->commands);
+    dvz_cmd_end(pass->commands);
+    dvz_cmd_submit(pass->commands);
+    return _ok();
+}
+
+
 static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind, uint32_t command_index)
 {
@@ -2464,6 +2654,21 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
         case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
             result = _vklite_copy_texture_to_texture(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+            result = _vklite_begin_render_pass(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_SET_PIPELINE:
+            result = _vklite_set_pipeline(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+            result = _vklite_set_vertex_buffer(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DRAW:
+            result = _vklite_draw(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+            result = _vklite_end_render_pass(state, command->u.end_render_pass.pass_id, i);
             break;
         default:
             result = _ok();
