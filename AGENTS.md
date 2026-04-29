@@ -458,6 +458,67 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 
 These rules should be followed carefully whenever Codex edits or creates C source files.
 
+### 🛡️ **C Robustness, Safety, and Undefined Behavior Avoidance**
+
+When editing C code, treat robustness and undefined behavior avoidance as first-class requirements:
+
+* Treat compiler warnings as defects. Prefer fixing warnings instead of suppressing them, and do not
+  introduce new warnings in touched code.
+* Do not rely on signed integer overflow, out-of-bounds pointer arithmetic, uninitialized storage,
+  use-after-free, use-after-destroy, or strict-aliasing-sensitive casts.
+* Check size arithmetic before allocation, indexing, byte copies, and row/stride calculations. Validate
+  `count * sizeof(T)`, byte offsets, dimensions, pitches, and downcasts from `size_t`/`uint64_t` to
+  narrower integer types.
+* Do not dereference possibly NULL pointers. Use existing `ANN`, `ASSERT`, and explicit runtime checks
+  according to whether the condition is an internal invariant or a recoverable runtime failure.
+* Make ownership explicit. Every pointer or Vulkan handle should be clearly owned or borrowed by the
+  current object. Destroy/free paths must be idempotent, set pointers to `NULL`, set Vulkan handles to
+  `VK_NULL_HANDLE`, and never destroy borrowed handles.
+* Avoid retaining pointers into growable arrays, registries, or object tables across calls that may append,
+  destroy, compact, grow, or reallocate them. Reacquire by stable id or index after any such mutation.
+* Keep runtime and test-control state instance-scoped. Avoid file-scope mutable state and reset test hooks
+  in fixture/object lifecycle helpers.
+* Use assertions for violated internal invariants, not for expected runtime failures. Public or recoverable
+  failure paths should return an error/status and clean up partially initialized objects.
+* Clean up every partial-initialization failure path. Do not leave half-created objects in lookup tables
+  unless they are marked destroyed/unusable and future lookups cannot accidentally use them.
+* Add focused regression coverage for lifetime, bounds, ownership, and multi-frame bugs. Prefer tests that
+  fail before the fix.
+
+Vulkan-specific C safety rules:
+
+* Distinguish owned and borrowed Vulkan handles explicitly. Borrowed swapchain/canvas image views,
+  command buffers, semaphores, and images must not be destroyed, begun, ended, reset, or submitted by a
+  subsystem that does not own that lifecycle.
+* A borrowed frame command buffer is usually already recording. Wrap it when recording into it, but do not
+  call `vkBeginCommandBuffer`/`vkEndCommandBuffer` unless the API contract gives ownership of recording.
+* Track command-buffer recording state at the owner level when possible, especially across canvas,
+  stream, DRP2, and vklite boundaries.
+* Image transitions require a live image wrapper/handle and a known previous layout. Never transition a
+  destroyed object, a borrowed handle with unknown ownership, or an object whose image wrapper is NULL.
+* Long-running live paths should not accumulate transient per-frame runtime objects indefinitely. Destroy
+  or recycle transient command/render-pass objects once their command stream has completed.
+* Run Vulkan validation-layer smoke tests for changes touching `vk`, `vklite`, `canvas`, `scene`, `drp2`,
+  command buffers, frame lifetimes, render targets, swapchains, or synchronization.
+
+### 🔎 **Static and Dynamic Analysis Guidance**
+
+Codex may and should run analysis tools when they are available and relevant to the touched code:
+
+* Always run `git diff --check` before finalizing code changes.
+* For routine C changes, run the narrowest relevant validation loop, for example `just build` plus
+  `just test <module-or-filter>`.
+* For nontrivial C changes touching allocation, byte sizes, pointer lifetimes, object tables, Vulkan
+  resources, command buffers, frame lifetimes, or synchronization, prefer at least one static or dynamic
+  analysis pass when practical.
+* Useful static checks include `clang-tidy` on touched files, `scan-build`/Clang Static Analyzer for
+  broader C changes, and `cppcheck --enable=warning,style,performance,portability` as a secondary pass.
+* Useful dynamic checks include ASan/UBSan builds for CPU-heavy paths, Valgrind for CPU-only tests when
+  allocator noise is manageable, Vulkan validation layers for graphics paths, and representative live
+  smoke loops such as `dvz_live_canvas --frames 300`.
+* If an analysis tool is unavailable, too noisy for the active subsystem, or impractical for the current
+  environment, report that explicitly and fall back to focused tests and runtime validation.
+
 ## 🚧 Refactor Roadmap Guidance
 
 - **Active graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`):** prioritize robustness,
@@ -544,6 +605,8 @@ Before submitting a PR or automated refactor:
 * [ ] Test added under `src/<module>/tests/`
 * [ ] Builds with `cmake -B build && cmake --build build`
 * [ ] Relevant validation passes (`just test` and/or the narrowest relevant `dvztest_*` target)
+* [ ] C changes reviewed for UB, ownership, bounds, lifetime, and partial-failure cleanup risks
+* [ ] Static/dynamic analysis considered for nontrivial C changes, with skipped tools noted
 * [ ] Follows naming conventions (dvz_*, *dvz**, DVZ_*)
 * [ ] Headers properly grouped and ordered (pragma once, consistent formatting)
 
