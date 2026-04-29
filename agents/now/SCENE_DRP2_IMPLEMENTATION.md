@@ -230,6 +230,27 @@ Modes:
 1. fixture mode: self-contained stream with all required object creation,
 2. runtime mode: persistent converter cache that omits already-live resources and pipelines.
 
+Runtime emitter cache limitation:
+
+1. The current runtime-mode `DvzFramePlanEmitter` is a vertical-slice prototype, not a production
+   emitter contract.
+2. Its boolean cache fields only track one shader, pipeline, bind-group layout, bind group,
+   sampler, color target, and readback buffer per category.
+3. Real `FramePlan` instances are expected to support multiple visuals, panels, resources,
+   render pipelines, compute pipelines, bind groups, samplers, render targets, and readbacks.
+4. Before building real scene objects on top of runtime-mode emission, replace the single-object
+   booleans with keyed caches:
+   - resources keyed by scene resource key plus usage and shape,
+   - shaders keyed by shader key, stage, variant flags, and source format,
+   - render pipelines keyed by visual family, vertex layout, attachment formats, blend/topology,
+     and bind-group layouts,
+   - compute pipelines keyed by shader, layout, and specialization state,
+   - bind-group layouts keyed by binding schema,
+   - bind groups keyed by layout plus resource, sampler, range, and offset bindings,
+   - transient command encoders, passes, and submissions allocated from per-frame transient ids.
+5. The current tests prove only one static, texture, or compute-assisted toy path across frames.
+   They should not be interpreted as a one-object-per-type FramePlan constraint.
+
 First converter fixtures:
 
 1. static point or pixel,
