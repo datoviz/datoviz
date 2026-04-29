@@ -163,6 +163,19 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
 
 
 /**
+ * Append a CreateComputePipeline command.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param compute_shader_module_id the compute shader module id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_compute_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t compute_shader_module_id);
+
+
+
+/**
  * Append a WriteBuffer command.
  *
  * @param stream the command stream
@@ -200,6 +213,19 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_command_encoder(DvzDrp2CommandStream* stre
  */
 DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id);
+
+
+
+/**
+ * Append a BeginComputePass command.
+ *
+ * @param stream the command stream
+ * @param id the compute pass id
+ * @param encoder_id the encoder id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_compute_pass(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id);
 
 
 
@@ -257,6 +283,32 @@ DVZ_EXPORT bool dvz_drp2_stream_draw(
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_end_render_pass(DvzDrp2CommandStream* stream, uint64_t pass_id);
+
+
+
+/**
+ * Append a DispatchWorkgroups command.
+ *
+ * @param stream the command stream
+ * @param pass_id the compute pass id
+ * @param x the x workgroup count
+ * @param y the y workgroup count
+ * @param z the z workgroup count
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_dispatch_workgroups(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t x, uint32_t y, uint32_t z);
+
+
+
+/**
+ * Append an EndComputePass command.
+ *
+ * @param stream the command stream
+ * @param pass_id the compute pass id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pass_id);
 
 
 

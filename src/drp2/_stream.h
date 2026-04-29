@@ -69,6 +69,11 @@ struct DvzDrp2Command
         } create_render_pipeline;
         struct
         {
+            uint64_t id;
+            uint64_t compute_shader_module_id;
+        } create_compute_pipeline;
+        struct
+        {
             uint64_t buffer_id;
             uint64_t offset;
             uint64_t size;
@@ -84,6 +89,11 @@ struct DvzDrp2Command
             uint64_t encoder_id;
             uint64_t texture_id;
         } begin_render_pass;
+        struct
+        {
+            uint64_t id;
+            uint64_t encoder_id;
+        } begin_compute_pass;
         struct
         {
             uint64_t pass_id;
@@ -108,6 +118,17 @@ struct DvzDrp2Command
         {
             uint64_t pass_id;
         } end_render_pass;
+        struct
+        {
+            uint64_t pass_id;
+            uint32_t x;
+            uint32_t y;
+            uint32_t z;
+        } dispatch;
+        struct
+        {
+            uint64_t pass_id;
+        } end_compute_pass;
         struct
         {
             uint64_t encoder_id;

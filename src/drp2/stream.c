@@ -121,12 +121,16 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "CreateShaderModule";
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         return "CreateRenderPipeline";
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        return "CreateComputePipeline";
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return "WriteBuffer";
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         return "BeginCommandEncoder";
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
         return "BeginRenderPass";
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+        return "BeginComputePass";
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         return "SetPipeline";
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
@@ -135,6 +139,10 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "Draw";
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         return "EndRenderPass";
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+        return "DispatchWorkgroups";
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+        return "EndComputePass";
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
         return "CopyTextureToBuffer";
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
@@ -299,6 +307,14 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id);
         break;
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"compute_shader_module_id\": %" PRIu64
+            " }",
+            _command_name(command->type), command->u.create_compute_pipeline.id,
+            command->u.create_compute_pipeline.compute_shader_module_id);
+        break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         _json_append(
             builder,
@@ -322,6 +338,12 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             "\"clear_value\": { \"r\": 0, \"g\": 0, \"b\": 0, \"a\": 1 } } ] }",
             _command_name(command->type), command->u.begin_render_pass.id,
             command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id);
+        break;
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.begin_compute_pass.id,
+            command->u.begin_compute_pass.encoder_id);
         break;
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         _json_append(
@@ -353,6 +375,19 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
             _command_name(command->type), command->u.end_render_pass.pass_id);
+        break;
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"x\": %" PRIu32
+            ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }",
+            _command_name(command->type), command->u.dispatch.pass_id, command->u.dispatch.x,
+            command->u.dispatch.y, command->u.dispatch.z);
+        break;
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.end_compute_pass.pass_id);
         break;
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
         _json_append(
@@ -630,6 +665,27 @@ bool dvz_drp2_stream_create_render_pipeline(
 
 
 /**
+ * Append a CreateComputePipeline command.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param compute_shader_module_id the compute shader module id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_compute_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t compute_shader_module_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE);
+    if (command == NULL)
+        return false;
+    command->u.create_compute_pipeline.id = id;
+    command->u.create_compute_pipeline.compute_shader_module_id = compute_shader_module_id;
+    return true;
+}
+
+
+
+/**
  * Append a WriteBuffer command.
  *
  * @param stream the command stream
@@ -693,6 +749,27 @@ bool dvz_drp2_stream_begin_render_pass(
     command->u.begin_render_pass.id = id;
     command->u.begin_render_pass.encoder_id = encoder_id;
     command->u.begin_render_pass.texture_id = texture_id;
+    return true;
+}
+
+
+
+/**
+ * Append a BeginComputePass command.
+ *
+ * @param stream the command stream
+ * @param id the compute pass id
+ * @param encoder_id the encoder id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_begin_compute_pass(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS);
+    if (command == NULL)
+        return false;
+    command->u.begin_compute_pass.id = id;
+    command->u.begin_compute_pass.encoder_id = encoder_id;
     return true;
 }
 
@@ -786,6 +863,49 @@ bool dvz_drp2_stream_end_render_pass(DvzDrp2CommandStream* stream, uint64_t pass
     if (command == NULL)
         return false;
     command->u.end_render_pass.pass_id = pass_id;
+    return true;
+}
+
+
+
+/**
+ * Append a DispatchWorkgroups command.
+ *
+ * @param stream the command stream
+ * @param pass_id the compute pass id
+ * @param x the x workgroup count
+ * @param y the y workgroup count
+ * @param z the z workgroup count
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_dispatch_workgroups(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t x, uint32_t y, uint32_t z)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS);
+    if (command == NULL)
+        return false;
+    command->u.dispatch.pass_id = pass_id;
+    command->u.dispatch.x = x;
+    command->u.dispatch.y = y;
+    command->u.dispatch.z = z;
+    return true;
+}
+
+
+
+/**
+ * Append an EndComputePass command.
+ *
+ * @param stream the command stream
+ * @param pass_id the compute pass id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pass_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_END_COMPUTE_PASS);
+    if (command == NULL)
+        return false;
+    command->u.end_compute_pass.pass_id = pass_id;
     return true;
 }
 

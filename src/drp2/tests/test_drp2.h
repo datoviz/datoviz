@@ -44,6 +44,16 @@ int test_drp2_runtime_rejects_finish_with_open_pass(TstSuite* suite, TstItem* it
 
 int test_drp2_runtime_rejects_bad_readback_buffer(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_compute_stream(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_dispatch_without_pipeline(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_dispatch_outside_compute_pass(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_wrong_pipeline_type(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstSuite* suite, TstItem* item);
+
 
 
 int test_drp2(TstSuite* suite);

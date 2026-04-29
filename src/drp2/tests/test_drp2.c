@@ -54,6 +54,26 @@ static DvzDrp2CommandStream* _valid_render_stream(void)
 
 
 
+static DvzDrp2CommandStream* _valid_compute_stream(void)
+{
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    dvz_drp2_stream_hello_renderer(stream, "test-client");
+    dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer");
+    dvz_drp2_stream_create_shader_module(stream, 9000, "COMPUTE", "@compute fn main() {}");
+    dvz_drp2_stream_create_compute_pipeline(stream, 20, 9000);
+    dvz_drp2_stream_begin_command_encoder(stream, 1);
+    dvz_drp2_stream_begin_compute_pass(stream, 2, 1);
+    dvz_drp2_stream_set_pipeline(stream, 2, 20);
+    dvz_drp2_stream_dispatch_workgroups(stream, 2, 1, 1, 1);
+    dvz_drp2_stream_end_compute_pass(stream, 2);
+    dvz_drp2_stream_finish_command_encoder(stream, 1, 3);
+    return stream;
+}
+
+
+
 int test_drp2_stream_empty(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -280,6 +300,138 @@ int test_drp2_runtime_rejects_bad_readback_buffer(TstSuite* suite, TstItem* item
 
 
 
+int test_drp2_runtime_validate_compute_stream(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = _valid_compute_stream();
+    ANN(stream);
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    char* json = dvz_drp2_stream_json(stream, "compute_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CreateComputePipeline\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"BeginComputePass\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"DispatchWorkgroups\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"EndComputePass\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_dispatch_without_pipeline(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9000, "COMPUTE", "@compute fn main() {}"));
+    AT(dvz_drp2_stream_create_compute_pipeline(stream, 20, 9000));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 1));
+    AT(dvz_drp2_stream_begin_compute_pass(stream, 2, 1));
+    AT(dvz_drp2_stream_dispatch_workgroups(stream, 2, 1, 1, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 6);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_dispatch_outside_compute_pass(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9000, "COMPUTE", "@compute fn main() {}"));
+    AT(dvz_drp2_stream_create_compute_pipeline(stream, 20, 9000));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 1));
+    AT(dvz_drp2_stream_dispatch_workgroups(stream, 2, 1, 1, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 5);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_wrong_pipeline_type(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 0));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 1));
+    AT(dvz_drp2_stream_begin_compute_pass(stream, 5, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 5, 4));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 7);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 1));
+    AT(dvz_drp2_stream_begin_compute_pass(stream, 2, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 1, 3));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 4);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -299,6 +451,11 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_rejects_draw_without_vertex_buffer);
     TEST_SIMPLE(test_drp2_runtime_rejects_finish_with_open_pass);
     TEST_SIMPLE(test_drp2_runtime_rejects_bad_readback_buffer);
+    TEST_SIMPLE(test_drp2_runtime_validate_compute_stream);
+    TEST_SIMPLE(test_drp2_runtime_rejects_dispatch_without_pipeline);
+    TEST_SIMPLE(test_drp2_runtime_rejects_dispatch_outside_compute_pass);
+    TEST_SIMPLE(test_drp2_runtime_rejects_wrong_pipeline_type);
+    TEST_SIMPLE(test_drp2_runtime_rejects_finish_with_open_compute_pass);
 
     return 0;
 }

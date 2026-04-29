@@ -43,9 +43,12 @@ typedef enum
     DRP2_OBJECT_TEXTURE,
     DRP2_OBJECT_SHADER_VERTEX,
     DRP2_OBJECT_SHADER_FRAGMENT,
+    DRP2_OBJECT_SHADER_COMPUTE,
     DRP2_OBJECT_RENDER_PIPELINE,
+    DRP2_OBJECT_COMPUTE_PIPELINE,
     DRP2_OBJECT_ENCODER,
     DRP2_OBJECT_RENDER_PASS,
+    DRP2_OBJECT_COMPUTE_PASS,
     DRP2_OBJECT_COMMAND_BUFFER,
 } Drp2ObjectKind;
 
@@ -201,7 +204,9 @@ static Drp2Object* _open_pass(Drp2RuntimeState* state)
     ANN(state);
     for (uint32_t i = 0; i < state->count; i++)
     {
-        if (state->objects[i].kind == DRP2_OBJECT_RENDER_PASS && state->objects[i].open)
+        if ((state->objects[i].kind == DRP2_OBJECT_RENDER_PASS ||
+             state->objects[i].kind == DRP2_OBJECT_COMPUTE_PASS) &&
+            state->objects[i].open)
             return &state->objects[i];
     }
     return NULL;
@@ -280,6 +285,9 @@ static DvzDrp2ValidationResult _validate_create_shader_module(
     else if (strcmp(command->u.create_shader_module.stage, "fragment") == 0 ||
              strcmp(command->u.create_shader_module.stage, "FRAGMENT") == 0)
         kind = DRP2_OBJECT_SHADER_FRAGMENT;
+    else if (strcmp(command->u.create_shader_module.stage, "compute") == 0 ||
+             strcmp(command->u.create_shader_module.stage, "COMPUTE") == 0)
+        kind = DRP2_OBJECT_SHADER_COMPUTE;
     else
         return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
@@ -314,6 +322,29 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
     if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->vertex_buffer_slots = command->u.create_render_pipeline.vertex_buffer_slots;
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_create_compute_pipeline(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    uint64_t id = command->u.create_compute_pipeline.id;
+    if (id == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    if (_find_object(state, id) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (!_has_object_kind(
+            state, command->u.create_compute_pipeline.compute_shader_module_id,
+            DRP2_OBJECT_SHADER_COMPUTE))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    if (_add_object(state, id, DRP2_OBJECT_COMPUTE_PIPELINE) == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
 
@@ -385,6 +416,32 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
 
 
 
+static DvzDrp2ValidationResult _validate_begin_compute_pass(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    if (_open_pass(state) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (_find_object(state, command->u.begin_compute_pass.id) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* encoder = _find_object(state, command->u.begin_compute_pass.encoder_id);
+    if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* pass =
+        _add_object(state, command->u.begin_compute_pass.id, DRP2_OBJECT_COMPUTE_PASS);
+    if (pass == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    pass->open = true;
+    pass->encoder_id = command->u.begin_compute_pass.encoder_id;
+    return _ok();
+}
+
+
+
 static DvzDrp2ValidationResult _validate_set_pipeline(
     Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
@@ -392,9 +449,18 @@ static DvzDrp2ValidationResult _validate_set_pipeline(
     ANN(command);
 
     Drp2Object* pass = _find_object(state, command->u.set_pipeline.pass_id);
-    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
+    if (pass == NULL || !pass->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (!_has_object_kind(state, command->u.set_pipeline.pipeline_id, DRP2_OBJECT_RENDER_PIPELINE))
+
+    Drp2ObjectKind pipeline_kind = DRP2_OBJECT_NONE;
+    if (pass->kind == DRP2_OBJECT_RENDER_PASS)
+        pipeline_kind = DRP2_OBJECT_RENDER_PIPELINE;
+    else if (pass->kind == DRP2_OBJECT_COMPUTE_PASS)
+        pipeline_kind = DRP2_OBJECT_COMPUTE_PIPELINE;
+    else
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    if (!_has_object_kind(state, command->u.set_pipeline.pipeline_id, pipeline_kind))
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     pass->pipeline_id = command->u.set_pipeline.pipeline_id;
@@ -469,6 +535,41 @@ static DvzDrp2ValidationResult _validate_end_render_pass(
 
     Drp2Object* pass = _find_object(state, command->u.end_render_pass.pass_id);
     if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    pass->open = false;
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_dispatch_workgroups(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.dispatch.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_COMPUTE_PASS || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* pipeline = _find_object(state, pass->pipeline_id);
+    if (pipeline == NULL || pipeline->kind != DRP2_OBJECT_COMPUTE_PIPELINE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.dispatch.x == 0 || command->u.dispatch.y == 0 || command->u.dispatch.z == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_end_compute_pass(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.end_compute_pass.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_COMPUTE_PASS || !pass->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->open = false;
     return _ok();
@@ -600,12 +701,16 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_create_shader_module(state, command, command_index);
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         return _validate_create_render_pipeline(state, command, command_index);
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        return _validate_create_compute_pipeline(state, command, command_index);
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return _validate_write_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         return _validate_begin_encoder(state, command, command_index);
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
         return _validate_begin_render_pass(state, command, command_index);
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+        return _validate_begin_compute_pass(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         return _validate_set_pipeline(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
@@ -614,6 +719,10 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_draw(state, command, command_index);
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         return _validate_end_render_pass(state, command, command_index);
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+        return _validate_dispatch_workgroups(state, command, command_index);
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+        return _validate_end_compute_pass(state, command, command_index);
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
         return _validate_copy_texture_to_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
