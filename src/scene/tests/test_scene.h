@@ -53,6 +53,8 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
 
 int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     TstSuite* suite, TstItem* item);
+
+int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item);
 #endif
 
 int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item);

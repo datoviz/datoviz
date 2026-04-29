@@ -26,8 +26,10 @@
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
+#include "datoviz/canvas.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz/window.h"
 
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* out);
@@ -40,6 +42,21 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*************************************************************************************************/
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+typedef struct SceneCanvasDrawState SceneCanvasDrawState;
+
+struct SceneCanvasDrawState
+{
+    DvzFramePlanEmitter* emitter;
+    DvzDrp2Runtime* runtime;
+    DvzCapabilitySnapshot caps;
+    DvzFramePlanEmitConfig emit_cfg;
+    uint32_t callback_count;
+    bool emit_ok;
+    bool execute_ok;
+    bool copy_ok;
+};
+
+
 /**
  * Probe whether the current runtime can create a Vulkan instance for scene runtime tests.
  *
@@ -57,6 +74,53 @@ static bool _scene_vklite_runtime_available(void)
     }
     dvz_instance_destroy(instance);
     return true;
+}
+
+
+/**
+ * Draw one scene frame through DRP2 and copy its runtime target into the canvas frame.
+ *
+ * @param canvas the canvas
+ * @param frame the borrowed stream frame
+ * @param user_data callback state
+ */
+static void _scene_canvas_drp2_draw(
+    DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
+{
+    (void)canvas;
+    ANN(frame);
+    SceneCanvasDrawState* state = (SceneCanvasDrawState*)user_data;
+    ANN(state);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.canvas.offscreen", state->callback_count);
+    if (plan == NULL)
+        return;
+
+    state->emit_ok = dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position") &&
+                     dvz_frame_plan_render(
+                         plan, "panel.0", "target.panel.0.color", false) &&
+                     dvz_frame_plan_render_visual(plan, "visual.point.0");
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = NULL;
+    if (state->emit_ok)
+    {
+        stream = dvz_frame_plan_emitter_emit_drp2(
+            state->emitter, plan, &state->caps, &report, &state->emit_cfg);
+        state->emit_ok = stream != NULL && dvz_diagnostic_report_count(&report) == 0;
+    }
+    if (state->emit_ok)
+    {
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(state->runtime, stream);
+        state->execute_ok = result.ok && result.code == DVZ_DRP2_VALIDATION_OK;
+    }
+    if (state->execute_ok)
+        state->copy_ok = dvz_drp2_runtime_copy_texture_to_frame(state->runtime, 1, frame);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    state->callback_count++;
 }
 #endif
 
@@ -820,6 +884,99 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
+
+
+int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene offscreen canvas test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+
+    DvzWindowConfig window_cfg = dvz_window_default_config();
+    window_cfg.title = "scene-drp2-offscreen-canvas";
+    window_cfg.width = 64;
+    window_cfg.height = 64;
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        log_warn("scene offscreen canvas test skipped because headless window creation failed");
+        dvz_window_host_destroy(host);
+        dvz_gpu_ctx_destroy(ctx);
+        return 0;
+    }
+
+    DvzCanvasConfig canvas_cfg = dvz_canvas_default_config();
+    canvas_cfg.window = window;
+    canvas_cfg.device = dvz_gpu_ctx_device(ctx);
+    canvas_cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    canvas_cfg.timing_history = 2;
+    DvzCanvas* canvas = dvz_canvas_create(&canvas_cfg);
+    ANN(canvas);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    SceneCanvasDrawState state = {0};
+    state.emitter = emitter;
+    state.runtime = runtime;
+    state.emit_cfg = dvz_frame_plan_emit_config();
+    state.emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&state.caps);
+
+    dvz_canvas_set_draw_callback(canvas, _scene_canvas_drp2_draw, &state);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(state.callback_count == 1);
+    AT(state.emit_ok);
+    AT(state.execute_ok);
+    AT(state.copy_ok);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+    dvz_free(rgba);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_canvas_destroy(canvas);
+    dvz_window_destroy(window);
+    dvz_window_host_destroy(host);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
 #endif
 
 
@@ -1293,6 +1450,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
+    TEST_SIMPLE(test_scene_drp2_offscreen_canvas_frame);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);

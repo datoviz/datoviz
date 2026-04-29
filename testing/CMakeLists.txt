@@ -289,6 +289,15 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
     target_link_libraries(dvztest_scene
         PRIVATE
         datoviz_common
+        datoviz_ds
+        datoviz_fileio
+        datoviz_math
+        datoviz_thread
+        datoviz_input
+        datoviz_window
+        datoviz_canvas
+        datoviz_stream
+        datoviz_video
         datoviz_drp2
         datoviz_scene
         testing
@@ -307,6 +316,8 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/external/volk
     )
 
     if(_dvz_compile_definitions)

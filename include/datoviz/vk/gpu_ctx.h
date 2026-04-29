@@ -48,8 +48,10 @@ struct DvzGpuCtxConfig
     uint32_t gpu_index;
     VkExternalMemoryHandleTypeFlagsKHR export_handle_type;
     bool has_features10;
+    bool has_features12;
     bool has_features13;
     VkPhysicalDeviceFeatures features10;
+    VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceVulkan13Features features13;
 };
 
@@ -110,6 +112,16 @@ dvz_gpu_ctx_config_alloc(DvzGpuCtxConfig* cfg, VkExternalMemoryHandleTypeFlagsKH
  */
 DVZ_EXPORT void
 dvz_gpu_ctx_config_features10(DvzGpuCtxConfig* cfg, const VkPhysicalDeviceFeatures* features);
+
+
+/**
+ * Copy Vulkan 1.2 features into a GPU-context configuration.
+ *
+ * @param cfg the GPU-context configuration
+ * @param features the Vulkan 1.2 feature struct
+ */
+DVZ_EXPORT void dvz_gpu_ctx_config_features12(
+    DvzGpuCtxConfig* cfg, const VkPhysicalDeviceVulkan12Features* features);
 
 
 

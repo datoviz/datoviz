@@ -170,6 +170,22 @@ void dvz_gpu_ctx_config_features10(DvzGpuCtxConfig* cfg, const VkPhysicalDeviceF
 }
 
 
+/**
+ * Copy Vulkan 1.2 features into a GPU-context configuration.
+ *
+ * @param cfg the GPU-context configuration
+ * @param features the Vulkan 1.2 feature struct
+ */
+void dvz_gpu_ctx_config_features12(
+    DvzGpuCtxConfig* cfg, const VkPhysicalDeviceVulkan12Features* features)
+{
+    ANN(cfg);
+    ANN(features);
+    cfg->features12 = *features;
+    cfg->has_features12 = true;
+}
+
+
 
 /**
  * Copy Vulkan 1.3 features into a GPU-context configuration.
@@ -233,6 +249,10 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
     if (cfg->has_features10)
     {
         dvz_device_config_set_features10(&dcfg, &cfg->features10);
+    }
+    if (cfg->has_features12)
+    {
+        dvz_device_config_set_features12(&dcfg, &cfg->features12);
     }
     if (cfg->has_features13)
     {
