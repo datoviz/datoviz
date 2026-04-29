@@ -310,10 +310,17 @@ static bool _ensure_capacity(Drp2RuntimeState* state)
     if (state->count < state->capacity)
         return true;
 
-    state->capacity *= 2;
-    state->objects =
-        (Drp2Object*)dvz_realloc(state->objects, state->capacity * sizeof(Drp2Object));
-    return state->objects != NULL;
+    if (state->capacity > UINT32_MAX / 2)
+        return false;
+    uint32_t capacity = state->capacity * 2;
+    Drp2Object* objects =
+        (Drp2Object*)dvz_realloc(state->objects, capacity * sizeof(Drp2Object));
+    if (objects == NULL)
+        return false;
+
+    state->capacity = capacity;
+    state->objects = objects;
+    return true;
 }
 
 
@@ -1707,10 +1714,17 @@ static bool _vklite_ensure_capacity(Drp2VkliteState* state)
     if (state->count < state->capacity)
         return true;
 
-    state->capacity *= 2;
-    state->objects = (Drp2VkliteObject*)dvz_realloc(
-        state->objects, state->capacity * sizeof(Drp2VkliteObject));
-    return state->objects != NULL;
+    if (state->capacity > UINT32_MAX / 2)
+        return false;
+    uint32_t capacity = state->capacity * 2;
+    Drp2VkliteObject* objects = (Drp2VkliteObject*)dvz_realloc(
+        state->objects, capacity * sizeof(Drp2VkliteObject));
+    if (objects == NULL)
+        return false;
+
+    state->capacity = capacity;
+    state->objects = objects;
+    return true;
 }
 
 
