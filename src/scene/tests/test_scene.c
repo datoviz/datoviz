@@ -652,6 +652,91 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstSuite* suite, Ts
     dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
+
+
+
+int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn(
+            "scene dynamic runtime-mode DRP2 execution test skipped because GPU context creation "
+            "failed");
+        return 0;
+    }
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* frame0 = dvz_frame_plan("figure.runtime.dynamic.glsl.execute", 0);
+    DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.dynamic.glsl.execute", 1);
+    ANN(frame0);
+    ANN(frame1);
+    AT(dvz_frame_plan_upload(frame0, "buf.dynamic.position", 0, 16, "point.position.0"));
+    AT(dvz_frame_plan_upload(frame0, "buf.dynamic.color", 0, 16, "point.color.0"));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame0, "visual.dynamic.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+
+    AT(dvz_frame_plan_upload(frame1, "buf.dynamic.position", 0, 16, "point.position.1"));
+    AT(dvz_frame_plan_upload(frame1, "buf.dynamic.color", 0, 16, "point.color.1"));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame1, "visual.dynamic.0"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    DvzDrp2CommandStream* stream1 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
+    ANN(stream1);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream1);
+    AT(result.ok);
+
+    uint8_t downloaded[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream1);
+    dvz_drp2_stream_destroy(stream0);
+    dvz_frame_plan_destroy(frame1);
+    dvz_frame_plan_destroy(frame0);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
 #endif
 
 
@@ -940,6 +1025,88 @@ int test_frame_plan_emitter_runtime_two_frames(TstSuite* suite, TstItem* item)
 }
 
 
+int test_frame_plan_emitter_runtime_dynamic_two_frames(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* frame0 = dvz_frame_plan("figure.runtime.dynamic", 0);
+    DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.dynamic", 1);
+    ANN(frame0);
+    ANN(frame1);
+    AT(dvz_frame_plan_upload(frame0, "buf.dynamic.position", 0, 16, "point.position.0"));
+    AT(dvz_frame_plan_upload(frame0, "buf.dynamic.color", 0, 16, "point.color.0"));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame0, "visual.dynamic.0"));
+    AT(dvz_frame_plan_copy(frame0, "target.panel.0.picking", "buf.pick.readback", 4));
+    AT(dvz_frame_plan_readback(frame0, "buf.pick.readback", "request.pick.0"));
+
+    AT(dvz_frame_plan_upload(frame1, "buf.dynamic.position", 0, 16, "point.position.1"));
+    AT(dvz_frame_plan_upload(frame1, "buf.dynamic.color", 0, 16, "point.color.1"));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame1, "visual.dynamic.0"));
+    AT(dvz_frame_plan_copy(frame1, "target.panel.0.picking", "buf.pick.readback", 4));
+    AT(dvz_frame_plan_readback(frame1, "buf.pick.readback", "request.pick.1"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream0) == 21);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 2)) ==
+       DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 4)) ==
+       DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 14)) ==
+       DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 15)) ==
+       DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
+    ANN(stream1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream1) == 12);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 0)) ==
+       DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 1)) ==
+       DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 5)) ==
+       DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 6)) ==
+       DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream1);
+    AT(result.ok);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream1);
+    dvz_drp2_stream_destroy(stream0);
+    dvz_frame_plan_destroy(frame1);
+    dvz_frame_plan_destroy(frame0);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
@@ -963,12 +1130,14 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames_glsl_executes);
+    TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);
     TEST_SIMPLE(test_frame_plan_emit_drp2_texture_sampling);
     TEST_SIMPLE(test_frame_plan_emit_drp2_compute_assisted);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames);
+    TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames);
 
     return 0;
 }

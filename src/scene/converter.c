@@ -350,7 +350,7 @@ static bool _validate_capabilities(
         }
     }
 
-    if (!has_texture_render && upload_count > 0 && caps->max_vertex_buffers < 1)
+    if (!has_texture_render && upload_count > caps->max_vertex_buffers)
     {
         _diagnostic(report, "max_vertex_buffers is too small for fixture render pipeline");
         return false;
@@ -740,11 +740,13 @@ static bool _emit_readback(
  * @return whether the commands were emitted
  */
 static bool _emitter_emit_upload(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* node)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* node,
+    uint64_t* out_id)
 {
     ANN(emitter);
     ANN(stream);
     ANN(node);
+    ANN(out_id);
 
     bool exists = false;
     for (uint32_t i = 0; i < emitter->resources.count; i++)
@@ -770,6 +772,7 @@ static bool _emitter_emit_upload(
         return false;
     if (emitter->resources.first_vertex_buffer_id == 0)
         emitter->resources.first_vertex_buffer_id = id;
+    *out_id = id;
     return dvz_drp2_stream_write_buffer(
         stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, data);
 }
@@ -781,18 +784,21 @@ static bool _emitter_emit_upload(
  *
  * @param emitter the persistent emitter
  * @param stream the DRP2 command stream
- * @param vertex_buffer_id the vertex buffer id
+ * @param vertex_buffer_ids the vertex buffer ids
+ * @param vertex_buffer_count the vertex buffer count
  * @param readback the optional readback copy node
  * @param cfg the emission config
  * @return whether the commands were emitted
  */
 static bool _emitter_emit_render(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t vertex_buffer_id,
-    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const uint64_t* vertex_buffer_ids,
+    uint32_t vertex_buffer_count, const DvzFramePlanNode* readback,
+    const DvzFramePlanEmitConfig* cfg)
 {
     ANN(emitter);
     ANN(stream);
-    if (vertex_buffer_id == 0)
+    ANN(vertex_buffer_ids);
+    if (vertex_buffer_count == 0)
         return false;
 
     bool ok = true;
@@ -814,7 +820,7 @@ static bool _emitter_emit_render(
     {
         ok = ok && dvz_drp2_stream_create_render_pipeline(
                        stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER,
-                       1);
+                       vertex_buffer_count);
         emitter->render_pipeline_created = ok;
     }
     if (ok && !emitter->color_target_created)
@@ -841,9 +847,10 @@ static bool _emitter_emit_render(
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_render_pass(
              stream, render_pass_id, encoder_id, DRP2_ID_COLOR_TARGET) &&
-         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE) &&
-         dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, 0, vertex_buffer_id, 0) &&
-         dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
+         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE);
+    for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
+        ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
+    ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     if (ok && readback != NULL)
     {
@@ -1059,6 +1066,8 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     ANN(stream);
 
     bool ok = true;
+    uint64_t vertex_buffer_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
+    uint32_t vertex_buffer_count = 0;
     if (!emitter->handshake_sent)
     {
         ok = dvz_drp2_stream_hello_renderer(stream, "scene-runtime") &&
@@ -1069,11 +1078,21 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     for (uint32_t i = 0; ok && i < plan->count; i++)
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
-            ok = _emitter_emit_upload(emitter, stream, &plan->nodes[i]);
+        {
+            if (vertex_buffer_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+            {
+                ok = false;
+                break;
+            }
+            ok = _emitter_emit_upload(
+                emitter, stream, &plan->nodes[i], &vertex_buffer_ids[vertex_buffer_count]);
+            if (ok)
+                vertex_buffer_count++;
+        }
     }
 
     ok = ok && _emitter_emit_render(
-                   emitter, stream, emitter->resources.first_vertex_buffer_id, copy, cfg);
+                   emitter, stream, vertex_buffer_ids, vertex_buffer_count, copy, cfg);
     if (!ok)
     {
         _diagnostic(report, "failed to emit runtime DRP2 stream");
