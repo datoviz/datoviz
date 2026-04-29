@@ -102,6 +102,7 @@ struct DvzDrp2Runtime
     DvzDevice* device;
     DvzVma* allocator;
     bool semantic_only;
+    Drp2RuntimeState* semantic_state;
 #if DVZ_DRP2_HAS_VKLITE
     Drp2VkliteState* vklite_state;
 #endif
@@ -1483,6 +1484,56 @@ static DvzDrp2ValidationResult _validate_command(
 }
 
 
+/**
+ * Release runtime semantic validation state.
+ *
+ * @param state the runtime state
+ */
+static void _runtime_state_cleanup(Drp2RuntimeState* state)
+{
+    if (state == NULL)
+        return;
+    dvz_free(state->objects);
+    state->objects = NULL;
+    state->capacity = 0;
+    state->count = 0;
+    state->hello_seen = false;
+    state->reply_seen = false;
+    state->failed = false;
+}
+
+
+
+/**
+ * Validate a command stream against a runtime-persistent semantic state.
+ *
+ * @param runtime the DRP2 runtime
+ * @param stream the command stream
+ * @return the validation result
+ */
+static DvzDrp2ValidationResult
+_runtime_validate_stream(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
+{
+    ANN(runtime);
+    ANN(stream);
+    if (runtime->semantic_state == NULL)
+    {
+        runtime->semantic_state = (Drp2RuntimeState*)dvz_calloc(1, sizeof(Drp2RuntimeState));
+        ANN(runtime->semantic_state);
+    }
+
+    DvzDrp2ValidationResult result = _ok();
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        result = _validate_command(runtime->semantic_state, &stream->commands[i], i);
+        if (!result.ok)
+            break;
+    }
+    return result;
+}
+
+
+
 #if DVZ_DRP2_HAS_VKLITE
 static int _base64_value(char c)
 {
@@ -2594,10 +2645,6 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         runtime->vklite_state = (Drp2VkliteState*)dvz_calloc(1, sizeof(Drp2VkliteState));
         ANN(runtime->vklite_state);
     }
-    else
-    {
-        _vklite_state_cleanup(runtime->vklite_state);
-    }
 
     Drp2VkliteState* state = runtime->vklite_state;
     state->runtime = runtime;
@@ -2742,6 +2789,8 @@ void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime)
 {
     if (runtime == NULL)
         return;
+    _runtime_state_cleanup(runtime->semantic_state);
+    dvz_free(runtime->semantic_state);
 #if DVZ_DRP2_HAS_VKLITE
     _vklite_state_cleanup(runtime->vklite_state);
     dvz_free(runtime->vklite_state);
@@ -2817,8 +2866,10 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 {
     if (runtime == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+    if (stream == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
 
-    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    DvzDrp2ValidationResult result = _runtime_validate_stream(runtime, stream);
     if (!result.ok)
         return result;
 

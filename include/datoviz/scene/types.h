@@ -41,6 +41,7 @@
 
 typedef struct DvzCapabilitySnapshot DvzCapabilitySnapshot;
 typedef struct DvzDiagnosticReport DvzDiagnosticReport;
+typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
 typedef struct DvzFramePlanEmitConfig DvzFramePlanEmitConfig;
 typedef struct DvzFramePlan DvzFramePlan;
 typedef struct DvzFramePlanNode DvzFramePlanNode;

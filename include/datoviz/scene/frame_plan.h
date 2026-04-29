@@ -296,6 +296,37 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     const DvzFramePlanEmitConfig* cfg);
 
 
+/**
+ * Create a persistent FramePlan-to-DRP2 emitter for runtime-mode streams.
+ *
+ * @return the emitter
+ */
+DVZ_EXPORT DvzFramePlanEmitter* dvz_frame_plan_emitter(void);
+
+
+/**
+ * Destroy a persistent FramePlan-to-DRP2 emitter.
+ *
+ * @param emitter the emitter
+ */
+DVZ_EXPORT void dvz_frame_plan_emitter_destroy(DvzFramePlanEmitter* emitter);
+
+
+/**
+ * Emit a runtime-mode DRP2 command stream from a FramePlan.
+ *
+ * @param emitter the persistent emitter
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param report the diagnostic report
+ * @param cfg the emission configuration
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
+    DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,
+    DvzDiagnosticReport* report, const DvzFramePlanEmitConfig* cfg);
+
+
 
 /**
  * Destroy a JSON string returned by dvz_frame_plan_json().

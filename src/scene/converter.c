@@ -48,6 +48,7 @@
 #define DRP2_ID_FRAGMENT_SHADER 9001
 #define DRP2_ID_COMPUTE_SHADER 9002
 #define DRP2_MAX_FIXTURE_RESOURCES 64
+#define DRP2_RUNTIME_TRANSIENT_ID_BASE 10000
 
 #define DRP2_VERTEX_WGSL                                                                        \
     "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
@@ -107,6 +108,19 @@ struct ConverterState
 };
 
 
+struct DvzFramePlanEmitter
+{
+    ConverterState resources;
+    uint64_t next_transient_id;
+    bool handshake_sent;
+    bool vertex_shader_created;
+    bool fragment_shader_created;
+    bool render_pipeline_created;
+    bool color_target_created;
+    bool readback_buffer_created;
+};
+
+
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
@@ -122,6 +136,19 @@ static void _state_init(ConverterState* state)
     ANN(state);
     dvz_memset(state, sizeof(ConverterState), 0, sizeof(ConverterState));
     state->next_id = DRP2_ID_RESOURCE_BASE;
+}
+
+
+/**
+ * Return the next runtime-mode transient id.
+ *
+ * @param emitter the persistent emitter
+ * @return a unique transient DRP2 id
+ */
+static uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter)
+{
+    ANN(emitter);
+    return emitter->next_transient_id++;
 }
 
 
@@ -704,6 +731,141 @@ static bool _emit_readback(
 }
 
 
+/**
+ * Emit runtime-mode upload commands.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param node the upload node
+ * @return whether the commands were emitted
+ */
+static bool _emitter_emit_upload(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* node)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(node);
+
+    bool exists = false;
+    for (uint32_t i = 0; i < emitter->resources.count; i++)
+    {
+        if (strcmp(emitter->resources.resources[i].key, node->u.upload.resource_id) == 0)
+        {
+            exists = true;
+            break;
+        }
+    }
+
+    uint64_t id = _resource_id(&emitter->resources, node->u.upload.resource_id);
+    if (id == 0)
+        return false;
+
+    char data[128] = {0};
+    if (!_zero_base64(node->u.upload.byte_size, data, sizeof(data)))
+        return false;
+
+    uint64_t buffer_size = node->u.upload.byte_offset + node->u.upload.byte_size;
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
+    if (!exists && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
+        return false;
+    if (emitter->resources.first_vertex_buffer_id == 0)
+        emitter->resources.first_vertex_buffer_id = id;
+    return dvz_drp2_stream_write_buffer(
+        stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, data);
+}
+
+
+
+/**
+ * Emit runtime-mode static render commands.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param vertex_buffer_id the vertex buffer id
+ * @param readback the optional readback copy node
+ * @param cfg the emission config
+ * @return whether the commands were emitted
+ */
+static bool _emitter_emit_render(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t vertex_buffer_id,
+    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+    if (vertex_buffer_id == 0)
+        return false;
+
+    bool ok = true;
+    if (!emitter->vertex_shader_created)
+    {
+        ok = ok && _emit_shader(
+                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL,
+                       DRP2_VERTEX_GLSL, cfg);
+        emitter->vertex_shader_created = ok;
+    }
+    if (ok && !emitter->fragment_shader_created)
+    {
+        ok = ok && _emit_shader(
+                       stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
+                       DRP2_FRAGMENT_GLSL, cfg);
+        emitter->fragment_shader_created = ok;
+    }
+    if (ok && !emitter->render_pipeline_created)
+    {
+        ok = ok && dvz_drp2_stream_create_render_pipeline(
+                       stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER,
+                       1);
+        emitter->render_pipeline_created = ok;
+    }
+    if (ok && !emitter->color_target_created)
+    {
+        uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+        ok = ok && dvz_drp2_stream_create_texture_2d_usage(
+                       stream, DRP2_ID_COLOR_TARGET, 4, 4, usage);
+        emitter->color_target_created = ok;
+    }
+    if (ok && readback != NULL && !emitter->readback_buffer_created)
+    {
+        ok = ok && _emit_readback_buffer(stream, readback);
+        emitter->readback_buffer_created = ok;
+    }
+    if (!ok)
+        return false;
+
+    uint64_t encoder_id = _emitter_next_transient_id(emitter);
+    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id = _emitter_next_transient_id(emitter);
+
+    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+         dvz_drp2_stream_begin_render_pass(
+             stream, render_pass_id, encoder_id, DRP2_ID_COLOR_TARGET) &&
+         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE) &&
+         dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, 0, vertex_buffer_id, 0) &&
+         dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
+         dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    if (ok && readback != NULL)
+    {
+        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
+                       stream, encoder_id, DRP2_ID_COLOR_TARGET, DRP2_ID_READBACK_BUFFER, 0, 1,
+                       1, 4, 1);
+    }
+    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
+    if (readback != NULL)
+    {
+        ok = ok && dvz_drp2_stream_queue_submit_readback(
+                       stream, command_buffer_id, submission_id, DRP2_ID_READBACK_BUFFER, 0,
+                       readback->u.copy.byte_size);
+    }
+    else
+    {
+        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    }
+    return ok;
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -813,6 +975,108 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     if (!ok)
     {
         _diagnostic(report, "failed to emit DRP2 fixture stream");
+        dvz_drp2_stream_destroy(stream);
+        return NULL;
+    }
+    return stream;
+}
+
+
+
+/**
+ * Create a persistent FramePlan-to-DRP2 emitter for runtime-mode streams.
+ *
+ * @return the emitter
+ */
+DvzFramePlanEmitter* dvz_frame_plan_emitter(void)
+{
+    DvzFramePlanEmitter* emitter = (DvzFramePlanEmitter*)dvz_calloc(
+        1, sizeof(DvzFramePlanEmitter));
+    ANN(emitter);
+    _state_init(&emitter->resources);
+    emitter->next_transient_id = DRP2_RUNTIME_TRANSIENT_ID_BASE;
+    return emitter;
+}
+
+
+
+/**
+ * Destroy a persistent FramePlan-to-DRP2 emitter.
+ *
+ * @param emitter the emitter
+ */
+void dvz_frame_plan_emitter_destroy(DvzFramePlanEmitter* emitter)
+{
+    if (emitter == NULL)
+        return;
+    dvz_free(emitter);
+}
+
+
+
+/**
+ * Emit a runtime-mode DRP2 command stream from a FramePlan.
+ *
+ * @param emitter the persistent emitter
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param report the diagnostic report
+ * @param cfg the emission configuration
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
+    DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,
+    DvzDiagnosticReport* report, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(plan);
+
+    const DvzFramePlanNode* upload = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
+    const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
+    const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
+    const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
+
+    if (upload == NULL || render == NULL)
+    {
+        _diagnostic(report, "runtime converter requires upload+render");
+        return NULL;
+    }
+    if (compute != NULL || _render_uses_texture(render))
+    {
+        _diagnostic(report, "runtime converter currently supports static render plans");
+        return NULL;
+    }
+    if (readback != NULL && copy == NULL)
+    {
+        _diagnostic(report, "runtime converter requires copy before readback");
+        return NULL;
+    }
+    if (caps != NULL && !_validate_capabilities(plan, caps, cfg, report))
+        return NULL;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    bool ok = true;
+    if (!emitter->handshake_sent)
+    {
+        ok = dvz_drp2_stream_hello_renderer(stream, "scene-runtime") &&
+             dvz_drp2_stream_renderer_hello_reply(stream, "datoviz-drp2-runtime");
+        emitter->handshake_sent = ok;
+    }
+
+    for (uint32_t i = 0; ok && i < plan->count; i++)
+    {
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
+            ok = _emitter_emit_upload(emitter, stream, &plan->nodes[i]);
+    }
+
+    ok = ok && _emitter_emit_render(
+                   emitter, stream, emitter->resources.first_vertex_buffer_id, copy, cfg);
+    if (!ok)
+    {
+        _diagnostic(report, "failed to emit runtime DRP2 stream");
         dvz_drp2_stream_destroy(stream);
         return NULL;
     }
