@@ -1739,6 +1739,90 @@ int test_drp2_runtime_vklite_creates_render_pipeline(TstSuite* suite, TstItem* i
 
 
 
+int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 vklite object-table realloc test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 1, "VERTEX", "glsl",
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 2, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 color;void main(){color=vec4(1.0);}"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 4, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+
+    for (uint64_t id = 100; id < 161; id++)
+    {
+        AT(dvz_drp2_stream_create_sampler(stream, id));
+    }
+
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 5, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+
+    for (uint64_t id = 200; id < 262; id++)
+    {
+        AT(dvz_drp2_stream_create_sampler(stream, id));
+    }
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 11, 10, 4));
+    AT(dvz_drp2_stream_set_pipeline(stream, 11, 3));
+    AT(dvz_drp2_stream_draw(stream, 11, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 11));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 10, 4, 5, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 12));
+    AT(dvz_drp2_stream_queue_submit(stream, 12, 13));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t downloaded[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 5, 0, 4, downloaded));
+    AT(downloaded[0] == 255);
+    AT(downloaded[1] == 255);
+    AT(downloaded[2] == 255);
+    AT(downloaded[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1871,6 +1955,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_texture_to_texture);
     TEST_SIMPLE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
     TEST_SIMPLE(test_drp2_runtime_vklite_creates_render_pipeline);
+    TEST_SIMPLE(test_drp2_runtime_vklite_reallocates_object_table_safely);
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_render_pass);
 #endif
 
