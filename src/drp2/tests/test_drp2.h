@@ -120,6 +120,10 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem
 int test_drp2_runtime_vklite_writes_buffer_contents(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_writes_texture_contents(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_copies_buffer_to_texture(TstSuite* suite, TstItem* item);
 #endif
 
 
