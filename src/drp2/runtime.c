@@ -32,8 +32,10 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/shader.h"
+#include "datoviz/vklite/slots.h"
 #include "datoviz/vklite/sync.h"
 #endif
 
@@ -155,6 +157,8 @@ struct Drp2VkliteObject
     DvzBuffer* buffer;
     DvzImages* images;
     DvzShader* shader;
+    DvzGraphics* graphics;
+    DvzSlots* slots;
     VkImageLayout image_layout;
     bool destroyed;
 };
@@ -1671,6 +1675,18 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_images_free(object->images);
         object->images = NULL;
     }
+    if (object->graphics != NULL)
+    {
+        dvz_graphics_destroy(object->graphics);
+        dvz_graphics_free(object->graphics);
+        object->graphics = NULL;
+    }
+    if (object->slots != NULL)
+    {
+        dvz_slots_destroy(object->slots);
+        dvz_slots_free(object->slots);
+        object->slots = NULL;
+    }
     if (object->shader != NULL)
     {
         dvz_shader_destroy(object->shader);
@@ -1898,6 +1914,96 @@ static DvzDrp2ValidationResult _vklite_create_shader_module(
     int out = dvz_shader(state->runtime->device, spv_size, spv, shader);
     shaderc_result_release(result);
     if (out != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+/**
+ * Create an empty pipeline layout for vklite graphics pipelines without bind groups.
+ *
+ * @param state vklite runtime state
+ * @param command_index command index used for validation reporting
+ * @param slots output slots wrapper
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_create_empty_slots(
+    Drp2VkliteState* state, uint32_t command_index, DvzSlots** slots)
+{
+    ANN(state);
+    ANN(slots);
+    *slots = NULL;
+
+    DvzSlots* out = dvz_slots_create_wrapper();
+    if (out == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_slots(state->runtime->device, out);
+    if (dvz_slots_create(out) != 0)
+    {
+        dvz_slots_free(out);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    *slots = out;
+    return _ok();
+}
+
+
+/**
+ * Create a vklite graphics pipeline from a DRP2 CreateRenderPipeline command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 CreateRenderPipeline command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_create_render_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    if (command->u.create_render_pipeline.bind_group_layout_id != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    Drp2VkliteObject* vertex =
+        _vklite_find(state, command->u.create_render_pipeline.vertex_shader_module_id);
+    Drp2VkliteObject* fragment =
+        _vklite_find(state, command->u.create_render_pipeline.fragment_shader_module_id);
+    if (vertex == NULL || vertex->kind != DRP2_OBJECT_SHADER_VERTEX || vertex->shader == NULL ||
+        fragment == NULL || fragment->kind != DRP2_OBJECT_SHADER_FRAGMENT ||
+        fragment->shader == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2VkliteObject* object =
+        _vklite_add(state, command->u.create_render_pipeline.id, DRP2_OBJECT_RENDER_PIPELINE);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzDrp2ValidationResult result =
+        _vklite_create_empty_slots(state, command_index, &object->slots);
+    if (!result.ok)
+        return result;
+
+    DvzGraphics* graphics = dvz_graphics_create_wrapper();
+    if (graphics == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->graphics = graphics;
+
+    dvz_graphics(state->runtime->device, graphics);
+    dvz_graphics_layout(graphics, dvz_slots_handle(object->slots));
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vertex->shader));
+    dvz_graphics_shader(
+        graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fragment->shader));
+    dvz_graphics_attachment_color(graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_graphics_color_write_mask(
+        graphics, 0,
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT);
+    dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+    dvz_graphics_viewport(graphics, 0, 0, 1, 1, 0, 1, DVZ_GRAPHICS_FLAGS_FIXED);
+    dvz_graphics_scissor(graphics, 0, 0, 1, 1, DVZ_GRAPHICS_FLAGS_FIXED);
+
+    if (dvz_graphics_create(graphics) != 0)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
@@ -2332,6 +2438,14 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
             result = _vklite_destroy_shader_module(
                 state, command->u.destroy_shader_module.shader_module_id, i);
+            break;
+        case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+            result = _vklite_create_render_pipeline(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+            result = _vklite_destroy_backend_object(
+                state, command->u.destroy_render_pipeline.render_pipeline_id,
+                DRP2_OBJECT_RENDER_PIPELINE, i);
             break;
         case DVZ_DRP2_COMMAND_WRITE_BUFFER:
             result = _vklite_write_buffer(state, command, i);

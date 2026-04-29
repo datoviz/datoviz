@@ -368,6 +368,7 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstIt
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
     features13.synchronization2 = true;
     dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
