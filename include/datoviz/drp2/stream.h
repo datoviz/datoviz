@@ -119,6 +119,17 @@ DVZ_EXPORT bool dvz_drp2_stream_create_buffer(
 
 
 /**
+ * Append a DestroyBuffer command.
+ *
+ * @param stream the command stream
+ * @param buffer_id the buffer id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_destroy_buffer(DvzDrp2CommandStream* stream, uint64_t buffer_id);
+
+
+
+/**
  * Append a CreateTexture command for a 2D render attachment.
  *
  * @param stream the command stream
@@ -148,6 +159,17 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
 
 
 /**
+ * Append a DestroyTexture command.
+ *
+ * @param stream the command stream
+ * @param texture_id the texture id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_destroy_texture(DvzDrp2CommandStream* stream, uint64_t texture_id);
+
+
+
+/**
  * Append a CreateShaderModule command.
  *
  * @param stream the command stream
@@ -158,6 +180,18 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_shader_module(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* code);
+
+
+
+/**
+ * Append a DestroyShaderModule command.
+ *
+ * @param stream the command stream
+ * @param shader_module_id the shader module id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_destroy_shader_module(DvzDrp2CommandStream* stream, uint64_t shader_module_id);
 
 
 
@@ -178,6 +212,18 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
 
 
 /**
+ * Append a DestroyRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param render_pipeline_id the render pipeline id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_destroy_render_pipeline(DvzDrp2CommandStream* stream, uint64_t render_pipeline_id);
+
+
+
+/**
  * Append a CreateComputePipeline command.
  *
  * @param stream the command stream
@@ -187,6 +233,18 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline(
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_compute_pipeline(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t compute_shader_module_id);
+
+
+
+/**
+ * Append a DestroyComputePipeline command.
+ *
+ * @param stream the command stream
+ * @param compute_pipeline_id the compute pipeline id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_destroy_compute_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t compute_pipeline_id);
 
 
 
@@ -377,6 +435,24 @@ DVZ_EXPORT bool dvz_drp2_stream_dispatch_workgroups(
  * @return whether the command was appended
  */
 DVZ_EXPORT bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pass_id);
+
+
+
+/**
+ * Append a CopyBufferToBuffer command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_buffer_id the source buffer id
+ * @param src_offset the source byte offset
+ * @param dst_buffer_id the destination buffer id
+ * @param dst_offset the destination byte offset
+ * @param size the copied byte size
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_copy_buffer_to_buffer(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_buffer_id,
+    uint64_t src_offset, uint64_t dst_buffer_id, uint64_t dst_offset, uint64_t size);
 
 
 

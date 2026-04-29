@@ -115,14 +115,24 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "RendererHelloReply";
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
         return "CreateBuffer";
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+        return "DestroyBuffer";
     case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
         return "CreateTexture";
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+        return "DestroyTexture";
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         return "CreateShaderModule";
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+        return "DestroyShaderModule";
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         return "CreateRenderPipeline";
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+        return "DestroyRenderPipeline";
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         return "CreateComputePipeline";
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+        return "DestroyComputePipeline";
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return "WriteBuffer";
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
@@ -149,6 +159,8 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "DispatchWorkgroups";
     case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
         return "EndComputePass";
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+        return "CopyBufferToBuffer";
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
         return "CopyBufferToTexture";
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
@@ -314,6 +326,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append_usage(builder, command->u.create_buffer.usage);
         _json_append(builder, " }");
         break;
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"buffer_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.destroy_buffer.buffer_id);
+        break;
     case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
         _json_append(
             builder,
@@ -325,6 +342,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append_texture_usage(builder, command->u.create_texture.usage);
         _json_append(builder, ", \"mip_level_count\": 1, \"sample_count\": 1 }");
         break;
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"texture_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.destroy_texture.texture_id);
+        break;
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         _json_append(
             builder,
@@ -332,6 +354,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             "\"entry_point\": \"main\", \"code\": \"%s\" }",
             _command_name(command->type), command->u.create_shader_module.id,
             command->u.create_shader_module.stage, command->u.create_shader_module.code);
+        break;
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"shader_module_id\": %" PRIu64 " }",
+            _command_name(command->type), command->u.destroy_shader_module.shader_module_id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         _json_append(
@@ -344,6 +371,12 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id);
         break;
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"render_pipeline_id\": %" PRIu64 " }",
+            _command_name(command->type),
+            command->u.destroy_render_pipeline.render_pipeline_id);
+        break;
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         _json_append(
             builder,
@@ -351,6 +384,12 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             " }",
             _command_name(command->type), command->u.create_compute_pipeline.id,
             command->u.create_compute_pipeline.compute_shader_module_id);
+        break;
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"compute_pipeline_id\": %" PRIu64 " }",
+            _command_name(command->type),
+            command->u.destroy_compute_pipeline.compute_pipeline_id);
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         _json_append(
@@ -460,6 +499,18 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
             _command_name(command->type), command->u.end_compute_pass.pass_id);
+        break;
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"src_buffer_id\": %" PRIu64
+            ", \"src_offset\": %" PRIu64 ", \"dst_buffer_id\": %" PRIu64
+            ", \"dst_offset\": %" PRIu64 ", \"size\": %" PRIu64 " }",
+            _command_name(command->type), command->u.copy_buffer_to_buffer.encoder_id,
+            command->u.copy_buffer_to_buffer.src_buffer_id,
+            command->u.copy_buffer_to_buffer.src_offset,
+            command->u.copy_buffer_to_buffer.dst_buffer_id,
+            command->u.copy_buffer_to_buffer.dst_offset, command->u.copy_buffer_to_buffer.size);
         break;
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
         _json_append(
@@ -710,6 +761,24 @@ bool dvz_drp2_stream_create_buffer(
 
 
 /**
+ * Append a DestroyBuffer command.
+ *
+ * @param stream the command stream
+ * @param buffer_id the buffer id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_buffer(DvzDrp2CommandStream* stream, uint64_t buffer_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_BUFFER);
+    if (command == NULL)
+        return false;
+    command->u.destroy_buffer.buffer_id = buffer_id;
+    return true;
+}
+
+
+
+/**
  * Append a CreateTexture command for a 2D render attachment.
  *
  * @param stream the command stream
@@ -755,6 +824,24 @@ bool dvz_drp2_stream_create_texture_2d_usage(
 
 
 /**
+ * Append a DestroyTexture command.
+ *
+ * @param stream the command stream
+ * @param texture_id the texture id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_texture(DvzDrp2CommandStream* stream, uint64_t texture_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.destroy_texture.texture_id = texture_id;
+    return true;
+}
+
+
+
+/**
  * Append a CreateShaderModule command.
  *
  * @param stream the command stream
@@ -772,6 +859,25 @@ bool dvz_drp2_stream_create_shader_module(
     command->u.create_shader_module.id = id;
     _copy_label(command->u.create_shader_module.stage, DVZ_DRP2_LABEL_SIZE, stage ? stage : "");
     _copy_label(command->u.create_shader_module.code, DVZ_DRP2_LABEL_SIZE, code ? code : "");
+    return true;
+}
+
+
+
+/**
+ * Append a DestroyShaderModule command.
+ *
+ * @param stream the command stream
+ * @param shader_module_id the shader module id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_shader_module(
+    DvzDrp2CommandStream* stream, uint64_t shader_module_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE);
+    if (command == NULL)
+        return false;
+    command->u.destroy_shader_module.shader_module_id = shader_module_id;
     return true;
 }
 
@@ -804,6 +910,25 @@ bool dvz_drp2_stream_create_render_pipeline(
 
 
 /**
+ * Append a DestroyRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param render_pipeline_id the render pipeline id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_render_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t render_pipeline_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE);
+    if (command == NULL)
+        return false;
+    command->u.destroy_render_pipeline.render_pipeline_id = render_pipeline_id;
+    return true;
+}
+
+
+
+/**
  * Append a CreateComputePipeline command.
  *
  * @param stream the command stream
@@ -819,6 +944,25 @@ bool dvz_drp2_stream_create_compute_pipeline(
         return false;
     command->u.create_compute_pipeline.id = id;
     command->u.create_compute_pipeline.compute_shader_module_id = compute_shader_module_id;
+    return true;
+}
+
+
+
+/**
+ * Append a DestroyComputePipeline command.
+ *
+ * @param stream the command stream
+ * @param compute_pipeline_id the compute pipeline id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_destroy_compute_pipeline(
+    DvzDrp2CommandStream* stream, uint64_t compute_pipeline_id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE);
+    if (command == NULL)
+        return false;
+    command->u.destroy_compute_pipeline.compute_pipeline_id = compute_pipeline_id;
     return true;
 }
 
@@ -1138,6 +1282,36 @@ bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pas
     if (command == NULL)
         return false;
     command->u.end_compute_pass.pass_id = pass_id;
+    return true;
+}
+
+
+
+/**
+ * Append a CopyBufferToBuffer command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_buffer_id the source buffer id
+ * @param src_offset the source byte offset
+ * @param dst_buffer_id the destination buffer id
+ * @param dst_offset the destination byte offset
+ * @param size the copied byte size
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_copy_buffer_to_buffer(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_buffer_id,
+    uint64_t src_offset, uint64_t dst_buffer_id, uint64_t dst_offset, uint64_t size)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER);
+    if (command == NULL)
+        return false;
+    command->u.copy_buffer_to_buffer.encoder_id = encoder_id;
+    command->u.copy_buffer_to_buffer.src_buffer_id = src_buffer_id;
+    command->u.copy_buffer_to_buffer.src_offset = src_offset;
+    command->u.copy_buffer_to_buffer.dst_buffer_id = dst_buffer_id;
+    command->u.copy_buffer_to_buffer.dst_offset = dst_offset;
+    command->u.copy_buffer_to_buffer.size = size;
     return true;
 }
 

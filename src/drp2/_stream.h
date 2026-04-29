@@ -50,6 +50,10 @@ struct DvzDrp2Command
         } create_buffer;
         struct
         {
+            uint64_t buffer_id;
+        } destroy_buffer;
+        struct
+        {
             uint64_t id;
             uint32_t width;
             uint32_t height;
@@ -57,10 +61,18 @@ struct DvzDrp2Command
         } create_texture;
         struct
         {
+            uint64_t texture_id;
+        } destroy_texture;
+        struct
+        {
             uint64_t id;
             char stage[DVZ_DRP2_LABEL_SIZE];
             char code[DVZ_DRP2_LABEL_SIZE];
         } create_shader_module;
+        struct
+        {
+            uint64_t shader_module_id;
+        } destroy_shader_module;
         struct
         {
             uint64_t id;
@@ -70,9 +82,17 @@ struct DvzDrp2Command
         } create_render_pipeline;
         struct
         {
+            uint64_t render_pipeline_id;
+        } destroy_render_pipeline;
+        struct
+        {
             uint64_t id;
             uint64_t compute_shader_module_id;
         } create_compute_pipeline;
+        struct
+        {
+            uint64_t compute_pipeline_id;
+        } destroy_compute_pipeline;
         struct
         {
             uint64_t buffer_id;
@@ -160,6 +180,15 @@ struct DvzDrp2Command
         {
             uint64_t pass_id;
         } end_compute_pass;
+        struct
+        {
+            uint64_t encoder_id;
+            uint64_t src_buffer_id;
+            uint64_t src_offset;
+            uint64_t dst_buffer_id;
+            uint64_t dst_offset;
+            uint64_t size;
+        } copy_buffer_to_buffer;
         struct
         {
             uint64_t encoder_id;
