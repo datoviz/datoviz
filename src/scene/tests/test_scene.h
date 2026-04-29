@@ -50,6 +50,9 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstSuite* suite, Ts
 
 int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     TstSuite* suite, TstItem* item);
+
+int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
+    TstSuite* suite, TstItem* item);
 #endif
 
 int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item);
@@ -63,6 +66,8 @@ int test_frame_plan_emit_drp2_compute_assisted(TstSuite* suite, TstItem* item);
 int test_frame_plan_emitter_runtime_two_frames(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_emitter_runtime_dynamic_two_frames(TstSuite* suite, TstItem* item);
+
+int test_frame_plan_emitter_runtime_texture_two_frames(TstSuite* suite, TstItem* item);
 
 
 

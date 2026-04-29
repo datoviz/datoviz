@@ -32,9 +32,11 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/descriptors.h"
 #include "datoviz/vklite/graphics.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/rendering.h"
+#include "datoviz/vklite/sampler.h"
 #include "datoviz/vklite/shader.h"
 #include "datoviz/vklite/slots.h"
 #include "datoviz/vklite/sync.h"
@@ -162,11 +164,16 @@ struct Drp2VkliteObject
     DvzShader* shader;
     DvzGraphics* graphics;
     DvzSlots* slots;
+    DvzDescriptors* descriptors;
+    DvzSampler* sampler;
     DvzCommands* commands;
     DvzRendering* rendering;
     VkImageLayout image_layout;
+    uint64_t texture_id;
+    uint64_t sampler_id;
     uint32_t width;
     uint32_t height;
+    bool borrowed_slots;
     bool destroyed;
 };
 
@@ -1755,11 +1762,22 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_graphics_free(object->graphics);
         object->graphics = NULL;
     }
-    if (object->slots != NULL)
+    if (object->slots != NULL && !object->borrowed_slots)
     {
         dvz_slots_destroy(object->slots);
         dvz_slots_free(object->slots);
         object->slots = NULL;
+    }
+    if (object->descriptors != NULL)
+    {
+        dvz_descriptors_free(object->descriptors);
+        object->descriptors = NULL;
+    }
+    if (object->sampler != NULL)
+    {
+        dvz_sampler_destroy(object->sampler);
+        dvz_sampler_free(object->sampler);
+        object->sampler = NULL;
     }
     if (object->shader != NULL)
     {
@@ -1775,9 +1793,9 @@ static void _vklite_state_cleanup(Drp2VkliteState* state)
 {
     if (state == NULL)
         return;
-    for (uint32_t i = 0; i < state->count; i++)
+    for (uint32_t i = state->count; i > 0; i--)
     {
-        _vklite_destroy_object(&state->objects[i]);
+        _vklite_destroy_object(&state->objects[i - 1]);
     }
     dvz_free(state->objects);
     state->objects = NULL;
@@ -2042,6 +2060,145 @@ static DvzDrp2ValidationResult _vklite_create_empty_slots(
 
 
 /**
+ * Create a vklite sampler from a DRP2 CreateSampler command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 CreateSampler command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult
+_vklite_create_sampler(Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2VkliteObject* object = _vklite_add(state, command->u.create_sampler.id, DRP2_OBJECT_SAMPLER);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzSampler* sampler = dvz_sampler_create_wrapper();
+    if (sampler == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->sampler = sampler;
+
+    dvz_sampler(state->runtime->device, sampler);
+    dvz_sampler_min_filter(sampler, VK_FILTER_LINEAR);
+    dvz_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    if (dvz_sampler_create(sampler) != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+/**
+ * Create a vklite bind-group layout from a DRP2 CreateBindGroupLayout command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 CreateBindGroupLayout command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_create_bind_group_layout(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2VkliteObject* object =
+        _vklite_add(state, command->u.create_bind_group_layout.id, DRP2_OBJECT_BIND_GROUP_LAYOUT);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzSlots* slots = dvz_slots_create_wrapper();
+    if (slots == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->slots = slots;
+
+    dvz_slots(state->runtime->device, slots);
+    if (command->u.create_bind_group_layout.storage_buffers)
+    {
+        dvz_slots_binding(
+            slots, 0, 0, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        dvz_slots_binding(
+            slots, 0, 1, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    }
+    else
+    {
+        dvz_slots_binding(
+            slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    }
+    if (dvz_slots_create(slots) != 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+/**
+ * Create vklite descriptors from a DRP2 CreateBindGroup command.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 CreateBindGroup command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_create_bind_group(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2VkliteObject* layout = _vklite_find(state, command->u.create_bind_group.bind_group_layout_id);
+    if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout->slots == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2VkliteObject* object =
+        _vklite_add(state, command->u.create_bind_group.id, DRP2_OBJECT_BIND_GROUP);
+    if (object == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzDescriptors* descriptors = dvz_descriptors_create();
+    if (descriptors == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    object->descriptors = descriptors;
+    object->texture_id = command->u.create_bind_group.texture_id;
+    object->sampler_id = command->u.create_bind_group.sampler_id;
+    dvz_descriptors(layout->slots, descriptors);
+
+    if (command->u.create_bind_group.buffer_size != 0)
+    {
+        Drp2VkliteObject* buffer0 = _vklite_find(state, command->u.create_bind_group.buffer0_id);
+        Drp2VkliteObject* buffer1 = _vklite_find(state, command->u.create_bind_group.buffer1_id);
+        if (buffer0 == NULL || buffer0->buffer == NULL || buffer1 == NULL ||
+            buffer1->buffer == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_descriptors_buffer(
+            descriptors, 0, 0, 0, dvz_buffer_handle(buffer0->buffer), 0,
+            command->u.create_bind_group.buffer_size);
+        dvz_descriptors_buffer(
+            descriptors, 0, 1, 0, dvz_buffer_handle(buffer1->buffer), 0,
+            command->u.create_bind_group.buffer_size);
+    }
+    else
+    {
+        Drp2VkliteObject* texture = _vklite_find(state, command->u.create_bind_group.texture_id);
+        Drp2VkliteObject* sampler = _vklite_find(state, command->u.create_bind_group.sampler_id);
+        if (texture == NULL || texture->views == NULL || sampler == NULL ||
+            sampler->sampler == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_descriptors_image(
+            descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            dvz_image_views_handle(texture->views, 0), dvz_sampler_handle(sampler->sampler));
+    }
+    return _ok();
+}
+
+
+/**
  * Create a vklite graphics pipeline from a DRP2 CreateRenderPipeline command.
  *
  * @param state vklite runtime state
@@ -2054,8 +2211,6 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
 {
     ANN(state);
     ANN(command);
-    if (command->u.create_render_pipeline.bind_group_layout_id != 0)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
 
     Drp2VkliteObject* vertex =
         _vklite_find(state, command->u.create_render_pipeline.vertex_shader_module_id);
@@ -2071,10 +2226,23 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
     if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzDrp2ValidationResult result =
-        _vklite_create_empty_slots(state, command_index, &object->slots);
-    if (!result.ok)
-        return result;
+    if (command->u.create_render_pipeline.bind_group_layout_id != 0)
+    {
+        Drp2VkliteObject* layout =
+            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id);
+        if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
+            layout->slots == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        object->slots = layout->slots;
+        object->borrowed_slots = true;
+    }
+    else
+    {
+        DvzDrp2ValidationResult result =
+            _vklite_create_empty_slots(state, command_index, &object->slots);
+        if (!result.ok)
+            return result;
+    }
 
     DvzGraphics* graphics = dvz_graphics_create_wrapper();
     if (graphics == NULL)
@@ -2493,6 +2661,16 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
         rendering);
 
     dvz_cmd_begin(cmds);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        Drp2VkliteObject* object = &state->objects[i];
+        if (object->kind == DRP2_OBJECT_TEXTURE && object != target && object->views != NULL)
+        {
+            _vklite_transition_image(
+                cmds, object, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+        }
+    }
     _vklite_transition_image(
         cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
@@ -2548,6 +2726,32 @@ static DvzDrp2ValidationResult _vklite_set_vertex_buffer(
     DvzSize offset = command->u.set_vertex_buffer.offset;
     dvz_cmd_bind_vertex_buffers(
         pass->commands, command->u.set_vertex_buffer.slot, 1, buffer->buffer, &offset);
+    return _ok();
+}
+
+
+/**
+ * Bind a vklite descriptor set within a DRP2 render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 SetBindGroup command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_set_bind_group(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.set_bind_group.pass_id);
+    Drp2VkliteObject* bind_group = _vklite_find(state, command->u.set_bind_group.bind_group_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL ||
+        bind_group == NULL || bind_group->descriptors == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_cmd_bind_descriptors(
+        pass->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, bind_group->descriptors,
+        command->u.set_bind_group.slot, 1, 0, NULL);
     return _ok();
 }
 
@@ -2684,6 +2888,24 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
                 state, command->u.destroy_render_pipeline.render_pipeline_id,
                 DRP2_OBJECT_RENDER_PIPELINE, i);
             break;
+        case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+            result = _vklite_create_sampler(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+            result = _vklite_create_bind_group_layout(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+            result = _vklite_destroy_backend_object(
+                state, command->u.destroy_bind_group_layout.bind_group_layout_id,
+                DRP2_OBJECT_BIND_GROUP_LAYOUT, i);
+            break;
+        case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+            result = _vklite_create_bind_group(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+            result = _vklite_destroy_backend_object(
+                state, command->u.destroy_bind_group.bind_group_id, DRP2_OBJECT_BIND_GROUP, i);
+            break;
         case DVZ_DRP2_COMMAND_WRITE_BUFFER:
             result = _vklite_write_buffer(state, command, i);
             break;
@@ -2710,6 +2932,9 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
         case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
             result = _vklite_set_vertex_buffer(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+            result = _vklite_set_bind_group(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_DRAW:
             result = _vklite_draw(state, command, i);
