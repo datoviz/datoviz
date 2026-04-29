@@ -109,11 +109,27 @@ struct DvzDrp2Command
         struct
         {
             uint64_t pass_id;
+            uint64_t buffer_id;
+            char index_format[DVZ_DRP2_LABEL_SIZE];
+            uint64_t offset;
+        } set_index_buffer;
+        struct
+        {
+            uint64_t pass_id;
             uint32_t vertex_count;
             uint32_t instance_count;
             uint32_t first_vertex;
             uint32_t first_instance;
         } draw;
+        struct
+        {
+            uint64_t pass_id;
+            uint32_t index_count;
+            uint32_t instance_count;
+            uint32_t first_index;
+            int32_t base_vertex;
+            uint32_t first_instance;
+        } draw_indexed;
         struct
         {
             uint64_t pass_id;

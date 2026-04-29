@@ -54,6 +54,32 @@ static DvzDrp2CommandStream* _valid_render_stream(void)
 
 
 
+static DvzDrp2CommandStream* _valid_indexed_render_stream(void)
+{
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    dvz_drp2_stream_hello_renderer(stream, "test-client");
+    dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer");
+    dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}");
+    dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}");
+    dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1);
+    dvz_drp2_stream_create_buffer(stream, 11, 64, DVZ_DRP2_BUFFER_USAGE_VERTEX);
+    dvz_drp2_stream_create_buffer(stream, 12, 64, DVZ_DRP2_BUFFER_USAGE_INDEX);
+    dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4);
+    dvz_drp2_stream_begin_command_encoder(stream, 6);
+    dvz_drp2_stream_begin_render_pass(stream, 7, 6, 5);
+    dvz_drp2_stream_set_pipeline(stream, 7, 4);
+    dvz_drp2_stream_set_vertex_buffer(stream, 7, 0, 11, 0);
+    dvz_drp2_stream_set_index_buffer(stream, 7, 12, "uint16", 0);
+    dvz_drp2_stream_draw_indexed(stream, 7, 3, 1, 0, 0, 0);
+    dvz_drp2_stream_end_render_pass(stream, 7);
+    dvz_drp2_stream_finish_command_encoder(stream, 6, 8);
+    return stream;
+}
+
+
+
 static DvzDrp2CommandStream* _valid_compute_stream(void)
 {
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
@@ -432,6 +458,102 @@ int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstSuite* suite, Tst
 
 
 
+int test_drp2_runtime_validate_indexed_render_stream(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = _valid_indexed_render_stream();
+    ANN(stream);
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    char* json = dvz_drp2_stream_json(stream, "indexed_render_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"SetIndexBuffer\"") != NULL);
+    AT(strstr(json, "\"cmd\": \"DrawIndexed\"") != NULL);
+    AT(strstr(json, "\"index_format\": \"uint16\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_draw_indexed_without_index_buffer(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1));
+    AT(dvz_drp2_stream_create_buffer(stream, 11, 64, DVZ_DRP2_BUFFER_USAGE_VERTEX));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 7, 6, 5));
+    AT(dvz_drp2_stream_set_pipeline(stream, 7, 4));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 7, 0, 11, 0));
+    AT(dvz_drp2_stream_draw_indexed(stream, 7, 3, 1, 0, 0, 0));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 11);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = _valid_indexed_render_stream();
+    ANN(stream);
+
+    // Build an otherwise equivalent stream where the index buffer has only VERTEX usage.
+    dvz_drp2_stream_destroy(stream);
+    stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1));
+    AT(dvz_drp2_stream_create_buffer(stream, 11, 64, DVZ_DRP2_BUFFER_USAGE_VERTEX));
+    AT(dvz_drp2_stream_create_buffer(stream, 12, 64, DVZ_DRP2_BUFFER_USAGE_VERTEX));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 7, 6, 5));
+    AT(dvz_drp2_stream_set_pipeline(stream, 7, 4));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 7, 0, 11, 0));
+    AT(dvz_drp2_stream_set_index_buffer(stream, 7, 12, "uint16", 0));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 12);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -456,6 +578,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_rejects_dispatch_outside_compute_pass);
     TEST_SIMPLE(test_drp2_runtime_rejects_wrong_pipeline_type);
     TEST_SIMPLE(test_drp2_runtime_rejects_finish_with_open_compute_pass);
+    TEST_SIMPLE(test_drp2_runtime_validate_indexed_render_stream);
+    TEST_SIMPLE(test_drp2_runtime_rejects_draw_indexed_without_index_buffer);
+    TEST_SIMPLE(test_drp2_runtime_rejects_wrong_index_buffer_usage);
 
     return 0;
 }

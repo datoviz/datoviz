@@ -259,6 +259,22 @@ DVZ_EXPORT bool dvz_drp2_stream_set_vertex_buffer(
 
 
 /**
+ * Append a SetIndexBuffer command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param buffer_id the index buffer id
+ * @param index_format the index format token
+ * @param offset the byte offset
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_set_index_buffer(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint64_t buffer_id, const char* index_format,
+    uint64_t offset);
+
+
+
+/**
  * Append a Draw command.
  *
  * @param stream the command stream
@@ -272,6 +288,24 @@ DVZ_EXPORT bool dvz_drp2_stream_set_vertex_buffer(
 DVZ_EXPORT bool dvz_drp2_stream_draw(
     DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t vertex_count,
     uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance);
+
+
+
+/**
+ * Append a DrawIndexed command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param index_count the index count
+ * @param instance_count the instance count
+ * @param first_index the first index
+ * @param base_vertex the base vertex
+ * @param first_instance the first instance
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_draw_indexed(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t index_count,
+    uint32_t instance_count, uint32_t first_index, int32_t base_vertex, uint32_t first_instance);
 
 
 

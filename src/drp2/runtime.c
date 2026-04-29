@@ -73,6 +73,7 @@ struct Drp2Object
     uint64_t encoder_id;
     uint64_t pipeline_id;
     uint32_t bound_vertex_mask;
+    bool index_buffer_bound;
 };
 
 
@@ -501,15 +502,38 @@ static DvzDrp2ValidationResult _validate_set_vertex_buffer(
 
 
 
-static DvzDrp2ValidationResult _validate_draw(
+static DvzDrp2ValidationResult _validate_set_index_buffer(
     Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
     ANN(state);
     ANN(command);
 
-    Drp2Object* pass = _find_object(state, command->u.draw.pass_id);
+    Drp2Object* pass = _find_object(state, command->u.set_index_buffer.pass_id);
     if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* buffer = _find_object(state, command->u.set_index_buffer.buffer_id);
+    if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((buffer->usage & DVZ_DRP2_BUFFER_USAGE_INDEX) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (command->u.set_index_buffer.offset > buffer->size)
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (strcmp(command->u.set_index_buffer.index_format, "uint16") != 0 &&
+        strcmp(command->u.set_index_buffer.index_format, "uint32") != 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+
+    pass->index_buffer_bound = true;
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_render_draw_state(
+    Drp2RuntimeState* state, Drp2Object* pass, uint32_t command_index)
+{
+    ANN(state);
+    ANN(pass);
 
     Drp2Object* pipeline = _find_object(state, pass->pipeline_id);
     if (pipeline == NULL || pipeline->kind != DRP2_OBJECT_RENDER_PIPELINE)
@@ -521,6 +545,41 @@ static DvzDrp2ValidationResult _validate_draw(
     else if (pipeline->vertex_buffer_slots > 0)
         required_mask = (uint32_t)((1u << pipeline->vertex_buffer_slots) - 1u);
     if ((pass->bound_vertex_mask & required_mask) != required_mask)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_draw(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.draw.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    return _validate_render_draw_state(state, pass, command_index);
+}
+
+
+
+static DvzDrp2ValidationResult _validate_draw_indexed(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.draw_indexed.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzDrp2ValidationResult result = _validate_render_draw_state(state, pass, command_index);
+    if (!result.ok)
+        return result;
+    if (!pass->index_buffer_bound)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
@@ -715,8 +774,12 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_set_pipeline(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         return _validate_set_vertex_buffer(state, command, command_index);
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        return _validate_set_index_buffer(state, command, command_index);
     case DVZ_DRP2_COMMAND_DRAW:
         return _validate_draw(state, command, command_index);
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        return _validate_draw_indexed(state, command, command_index);
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         return _validate_end_render_pass(state, command, command_index);
     case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:

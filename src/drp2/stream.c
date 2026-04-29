@@ -135,8 +135,12 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "SetPipeline";
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         return "SetVertexBuffer";
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        return "SetIndexBuffer";
     case DVZ_DRP2_COMMAND_DRAW:
         return "Draw";
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        return "DrawIndexed";
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         return "EndRenderPass";
     case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
@@ -361,6 +365,15 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
             command->u.set_vertex_buffer.offset);
         break;
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"buffer_id\": %" PRIu64
+            ", \"index_format\": \"%s\", \"offset\": %" PRIu64 " }",
+            _command_name(command->type), command->u.set_index_buffer.pass_id,
+            command->u.set_index_buffer.buffer_id, command->u.set_index_buffer.index_format,
+            command->u.set_index_buffer.offset);
+        break;
     case DVZ_DRP2_COMMAND_DRAW:
         _json_append(
             builder,
@@ -370,6 +383,17 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _command_name(command->type), command->u.draw.pass_id, command->u.draw.vertex_count,
             command->u.draw.instance_count, command->u.draw.first_vertex,
             command->u.draw.first_instance);
+        break;
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"index_count\": %" PRIu32
+            ", \"instance_count\": %" PRIu32 ", \"first_index\": %" PRIu32
+            ", \"base_vertex\": %" PRId32 ", \"first_instance\": %" PRIu32 " }",
+            _command_name(command->type), command->u.draw_indexed.pass_id,
+            command->u.draw_indexed.index_count, command->u.draw_indexed.instance_count,
+            command->u.draw_indexed.first_index, command->u.draw_indexed.base_vertex,
+            command->u.draw_indexed.first_instance);
         break;
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         _json_append(
@@ -823,6 +847,34 @@ bool dvz_drp2_stream_set_vertex_buffer(
 
 
 /**
+ * Append a SetIndexBuffer command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param buffer_id the index buffer id
+ * @param index_format the index format token
+ * @param offset the byte offset
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_set_index_buffer(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint64_t buffer_id, const char* index_format,
+    uint64_t offset)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_SET_INDEX_BUFFER);
+    if (command == NULL)
+        return false;
+    command->u.set_index_buffer.pass_id = pass_id;
+    command->u.set_index_buffer.buffer_id = buffer_id;
+    _copy_label(
+        command->u.set_index_buffer.index_format, DVZ_DRP2_LABEL_SIZE,
+        index_format ? index_format : "");
+    command->u.set_index_buffer.offset = offset;
+    return true;
+}
+
+
+
+/**
  * Append a Draw command.
  *
  * @param stream the command stream
@@ -845,6 +897,36 @@ bool dvz_drp2_stream_draw(
     command->u.draw.instance_count = instance_count;
     command->u.draw.first_vertex = first_vertex;
     command->u.draw.first_instance = first_instance;
+    return true;
+}
+
+
+
+/**
+ * Append a DrawIndexed command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param index_count the index count
+ * @param instance_count the instance count
+ * @param first_index the first index
+ * @param base_vertex the base vertex
+ * @param first_instance the first instance
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_draw_indexed(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t index_count,
+    uint32_t instance_count, uint32_t first_index, int32_t base_vertex, uint32_t first_instance)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_DRAW_INDEXED);
+    if (command == NULL)
+        return false;
+    command->u.draw_indexed.pass_id = pass_id;
+    command->u.draw_indexed.index_count = index_count;
+    command->u.draw_indexed.instance_count = instance_count;
+    command->u.draw_indexed.first_index = first_index;
+    command->u.draw_indexed.base_vertex = base_vertex;
+    command->u.draw_indexed.first_instance = first_instance;
     return true;
 }
 

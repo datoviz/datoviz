@@ -54,6 +54,12 @@ int test_drp2_runtime_rejects_wrong_pipeline_type(TstSuite* suite, TstItem* item
 
 int test_drp2_runtime_rejects_finish_with_open_compute_pass(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_indexed_render_stream(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_draw_indexed_without_index_buffer(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstSuite* suite, TstItem* item);
+
 
 
 int test_drp2(TstSuite* suite);
