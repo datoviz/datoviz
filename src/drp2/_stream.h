@@ -111,6 +111,17 @@ struct DvzDrp2Command
         struct
         {
             uint64_t encoder_id;
+            uint64_t src_texture_id;
+            uint64_t dst_buffer_id;
+            uint64_t dst_offset;
+            uint32_t width;
+            uint32_t height;
+            uint32_t bytes_per_row;
+            uint32_t rows_per_image;
+        } copy_texture_to_buffer;
+        struct
+        {
+            uint64_t encoder_id;
             uint64_t command_buffer_id;
         } finish_command_encoder;
         struct

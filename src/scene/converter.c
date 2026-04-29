@@ -36,6 +36,7 @@
 #define DRP2_ID_SUBMISSION 5
 #define DRP2_ID_PIPELINE 10
 #define DRP2_ID_VERTEX_BUFFER 11
+#define DRP2_ID_READBACK_BUFFER 12
 #define DRP2_ID_VERTEX_SHADER 9000
 #define DRP2_ID_FRAGMENT_SHADER 9001
 
@@ -134,7 +135,26 @@ static bool _emit_upload(DvzDrp2CommandStream* stream, const DvzFramePlanNode* n
 
 
 /**
- * Emit DRP2 commands for a render node.
+ * Emit DRP2 setup commands for a readback buffer.
+ *
+ * @param stream the DRP2 command stream
+ * @param node the copy node
+ * @return whether the commands were emitted
+ */
+static bool _emit_readback_buffer(DvzDrp2CommandStream* stream, const DvzFramePlanNode* node)
+{
+    ANN(stream);
+    ANN(node);
+
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+    return dvz_drp2_stream_create_buffer(
+        stream, DRP2_ID_READBACK_BUFFER, node->u.copy.byte_size, usage);
+}
+
+
+
+/**
+ * Emit DRP2 render-pass commands for a render node.
  *
  * @param stream the DRP2 command stream
  * @param node the render node
@@ -160,10 +180,29 @@ static bool _emit_render(DvzDrp2CommandStream* stream, const DvzFramePlanNode* n
            dvz_drp2_stream_set_vertex_buffer(
                stream, DRP2_ID_RENDER_PASS, 0, DRP2_ID_VERTEX_BUFFER, 0) &&
            dvz_drp2_stream_draw(stream, DRP2_ID_RENDER_PASS, 3, 1, 0, 0) &&
-           dvz_drp2_stream_end_render_pass(stream, DRP2_ID_RENDER_PASS) &&
-           dvz_drp2_stream_finish_command_encoder(
-               stream, DRP2_ID_ENCODER, DRP2_ID_COMMAND_BUFFER) &&
-           dvz_drp2_stream_queue_submit(stream, DRP2_ID_COMMAND_BUFFER, DRP2_ID_SUBMISSION);
+           dvz_drp2_stream_end_render_pass(stream, DRP2_ID_RENDER_PASS);
+}
+
+
+
+/**
+ * Emit DRP2 commands for a copy/readback path.
+ *
+ * @param stream the DRP2 command stream
+ * @param copy the copy node
+ * @param readback the readback node
+ * @return whether the commands were emitted
+ */
+static bool _emit_readback(
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* copy, const DvzFramePlanNode* readback)
+{
+    ANN(stream);
+    ANN(copy);
+    ANN(readback);
+    (void)readback;
+
+    return dvz_drp2_stream_copy_texture_to_buffer(
+        stream, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET, DRP2_ID_READBACK_BUFFER, 0, 1, 1, 4, 1);
 }
 
 
@@ -188,10 +227,18 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
 
     const DvzFramePlanNode* upload = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
+    const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
     if (upload == NULL || render == NULL)
     {
         if (report != NULL)
             (void)dvz_diagnostic_report_add(report, "fixture converter requires upload+render");
+        return NULL;
+    }
+    if (readback != NULL && copy == NULL)
+    {
+        if (report != NULL)
+            (void)dvz_diagnostic_report_add(report, "fixture converter requires copy before readback");
         return NULL;
     }
 
@@ -200,7 +247,18 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2(
 
     bool ok = dvz_drp2_stream_hello_renderer(stream, "scene-fixture") &&
               dvz_drp2_stream_renderer_hello_reply(stream, "datoviz-drp2-fixture") &&
-              _emit_upload(stream, upload) && _emit_render(stream, render);
+              _emit_upload(stream, upload) &&
+              (copy == NULL || _emit_readback_buffer(stream, copy)) &&
+              _emit_render(stream, render) &&
+              (copy == NULL || readback == NULL || _emit_readback(stream, copy, readback)) &&
+              dvz_drp2_stream_finish_command_encoder(
+                  stream, DRP2_ID_ENCODER, DRP2_ID_COMMAND_BUFFER) &&
+              (readback != NULL
+                   ? dvz_drp2_stream_queue_submit_readback(
+                         stream, DRP2_ID_COMMAND_BUFFER, DRP2_ID_SUBMISSION,
+                         DRP2_ID_READBACK_BUFFER, 0, copy->u.copy.byte_size)
+                   : dvz_drp2_stream_queue_submit(
+                         stream, DRP2_ID_COMMAND_BUFFER, DRP2_ID_SUBMISSION));
     if (!ok)
     {
         if (report != NULL)

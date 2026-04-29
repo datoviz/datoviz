@@ -135,6 +135,8 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "Draw";
     case DVZ_DRP2_COMMAND_END_RENDER_PASS:
         return "EndRenderPass";
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        return "CopyTextureToBuffer";
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
         return "FinishCommandEncoder";
     case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
@@ -272,8 +274,9 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64
             ", \"dimension\": \"2d\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
-            ", \"depth\": 1, \"format\": \"rgba8unorm\", \"usage\": [\"RENDER_ATTACHMENT\"], "
-            "\"mip_level_count\": 1, \"sample_count\": 1 }",
+            ", \"depth\": 1, \"format\": \"rgba8unorm\", "
+            "\"usage\": [\"RENDER_ATTACHMENT\", \"COPY_SRC\"], \"mip_level_count\": 1, "
+            "\"sample_count\": 1 }",
             _command_name(command->type), command->u.create_texture.id,
             command->u.create_texture.width, command->u.create_texture.height);
         break;
@@ -350,6 +353,22 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
             _command_name(command->type), command->u.end_render_pass.pass_id);
+        break;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"src_texture_id\": %" PRIu64
+            ", \"src_mip_level\": 0, \"src_origin\": { \"x\": 0, \"y\": 0, \"z\": 0 }, "
+            "\"size\": { \"width\": %" PRIu32 ", \"height\": %" PRIu32
+            ", \"depth\": 1 }, \"dst_buffer_id\": %" PRIu64 ", \"dst_offset\": %" PRIu64
+            ", \"bytes_per_row\": %" PRIu32 ", \"rows_per_image\": %" PRIu32 " }",
+            _command_name(command->type), command->u.copy_texture_to_buffer.encoder_id,
+            command->u.copy_texture_to_buffer.src_texture_id,
+            command->u.copy_texture_to_buffer.width, command->u.copy_texture_to_buffer.height,
+            command->u.copy_texture_to_buffer.dst_buffer_id,
+            command->u.copy_texture_to_buffer.dst_offset,
+            command->u.copy_texture_to_buffer.bytes_per_row,
+            command->u.copy_texture_to_buffer.rows_per_image);
         break;
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
         _json_append(
@@ -767,6 +786,41 @@ bool dvz_drp2_stream_end_render_pass(DvzDrp2CommandStream* stream, uint64_t pass
     if (command == NULL)
         return false;
     command->u.end_render_pass.pass_id = pass_id;
+    return true;
+}
+
+
+
+/**
+ * Append a CopyTextureToBuffer command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_texture_id the source texture id
+ * @param dst_buffer_id the destination buffer id
+ * @param dst_offset the destination byte offset
+ * @param width the copy width in pixels
+ * @param height the copy height in pixels
+ * @param bytes_per_row the destination bytes per row
+ * @param rows_per_image the destination rows per image
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_copy_texture_to_buffer(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_texture_id,
+    uint64_t dst_buffer_id, uint64_t dst_offset, uint32_t width, uint32_t height,
+    uint32_t bytes_per_row, uint32_t rows_per_image)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER);
+    if (command == NULL)
+        return false;
+    command->u.copy_texture_to_buffer.encoder_id = encoder_id;
+    command->u.copy_texture_to_buffer.src_texture_id = src_texture_id;
+    command->u.copy_texture_to_buffer.dst_buffer_id = dst_buffer_id;
+    command->u.copy_texture_to_buffer.dst_offset = dst_offset;
+    command->u.copy_texture_to_buffer.width = width;
+    command->u.copy_texture_to_buffer.height = height;
+    command->u.copy_texture_to_buffer.bytes_per_row = bytes_per_row;
+    command->u.copy_texture_to_buffer.rows_per_image = rows_per_image;
     return true;
 }
 

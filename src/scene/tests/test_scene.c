@@ -201,6 +201,49 @@ int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.readback.convert", 11);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(plan, "visual.pickable.0"));
+    AT(dvz_frame_plan_copy(plan, "target.panel.0.picking", "buf.pick.readback", 4));
+    AT(dvz_frame_plan_readback(plan, "buf.pick.readback", "request.pick.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream) == 18);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 4)) == DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 15)) ==
+       DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 17)) == DVZ_DRP2_COMMAND_QUEUE_SUBMIT);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_readback");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CopyTextureToBuffer\"") != NULL);
+    AT(strstr(json, "\"usage\": [\"COPY_DST\", \"MAP_READ\"]") != NULL);
+    AT(strstr(json, "\"readbacks\": [ { \"buffer_id\": 12, \"offset\": 0, \"size\": 4 } ]") !=
+       NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -216,6 +259,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
+    TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
 
     return 0;
 }

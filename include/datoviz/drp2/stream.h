@@ -261,6 +261,27 @@ DVZ_EXPORT bool dvz_drp2_stream_end_render_pass(DvzDrp2CommandStream* stream, ui
 
 
 /**
+ * Append a CopyTextureToBuffer command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_texture_id the source texture id
+ * @param dst_buffer_id the destination buffer id
+ * @param dst_offset the destination byte offset
+ * @param width the copy width in pixels
+ * @param height the copy height in pixels
+ * @param bytes_per_row the destination bytes per row
+ * @param rows_per_image the destination rows per image
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_copy_texture_to_buffer(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_texture_id,
+    uint64_t dst_buffer_id, uint64_t dst_offset, uint32_t width, uint32_t height,
+    uint32_t bytes_per_row, uint32_t rows_per_image);
+
+
+
+/**
  * Append a FinishCommandEncoder command.
  *
  * @param stream the command stream
