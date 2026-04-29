@@ -410,6 +410,20 @@ _shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* 
 }
 
 
+/**
+ * Return the configured DRP2 color target id.
+ *
+ * @param cfg the emission config
+ * @return the color target id
+ */
+static uint64_t _color_target_id(const DvzFramePlanEmitConfig* cfg)
+{
+    if (cfg != NULL && cfg->color_target_id != 0)
+        return cfg->color_target_id;
+    return DRP2_ID_COLOR_TARGET;
+}
+
+
 
 /**
  * Emit a shader module command with the configured source format.
@@ -872,12 +886,13 @@ static bool _emitter_emit_render(
                        vertex_buffer_count);
         emitter->render_pipeline_created = ok;
     }
-    if (ok && !emitter->color_target_created)
+    uint64_t color_target_id = _color_target_id(cfg);
+    if (ok && !emitter->color_target_created && (cfg == NULL || !cfg->external_color_target))
     {
         uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
                          DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
         ok = ok && dvz_drp2_stream_create_texture_2d_usage(
-                       stream, DRP2_ID_COLOR_TARGET, 4, 4, usage);
+                       stream, color_target_id, 4, 4, usage);
         emitter->color_target_created = ok;
     }
     if (ok && readback != NULL && !emitter->readback_buffer_created)
@@ -894,8 +909,7 @@ static bool _emitter_emit_render(
     uint64_t submission_id = _emitter_next_transient_id(emitter);
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass(
-             stream, render_pass_id, encoder_id, DRP2_ID_COLOR_TARGET) &&
+         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_target_id) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
@@ -904,7 +918,7 @@ static bool _emitter_emit_render(
     if (ok && readback != NULL)
     {
         ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, DRP2_ID_COLOR_TARGET, DRP2_ID_READBACK_BUFFER, 0, 1,
+                       stream, encoder_id, color_target_id, DRP2_ID_READBACK_BUFFER, 0, 1,
                        1, 4, 1);
     }
     ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
@@ -981,12 +995,13 @@ static bool _emitter_emit_texture_render(
                        DRP2_ID_SAMPLER);
         emitter->bind_group_created = ok;
     }
-    if (ok && !emitter->color_target_created)
+    uint64_t color_target_id = _color_target_id(cfg);
+    if (ok && !emitter->color_target_created && (cfg == NULL || !cfg->external_color_target))
     {
         uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
                          DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
         ok = ok && dvz_drp2_stream_create_texture_2d_usage(
-                       stream, DRP2_ID_COLOR_TARGET, 4, 4, usage);
+                       stream, color_target_id, 4, 4, usage);
         emitter->color_target_created = ok;
     }
     if (ok && readback != NULL && !emitter->readback_buffer_created)
@@ -1003,8 +1018,7 @@ static bool _emitter_emit_texture_render(
     uint64_t submission_id = _emitter_next_transient_id(emitter);
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass(
-             stream, render_pass_id, encoder_id, DRP2_ID_COLOR_TARGET) &&
+         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_target_id) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE) &&
          dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, DRP2_ID_BIND_GROUP) &&
          dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
@@ -1012,7 +1026,7 @@ static bool _emitter_emit_texture_render(
     if (ok && readback != NULL)
     {
         ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, DRP2_ID_COLOR_TARGET, DRP2_ID_READBACK_BUFFER, 0, 1,
+                       stream, encoder_id, color_target_id, DRP2_ID_READBACK_BUFFER, 0, 1,
                        1, 4, 1);
     }
     ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
@@ -1044,6 +1058,8 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
 {
     DvzFramePlanEmitConfig cfg = {0};
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    cfg.external_color_target = false;
+    cfg.color_target_id = DRP2_ID_COLOR_TARGET;
     return cfg;
 }
 

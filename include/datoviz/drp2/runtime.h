@@ -109,6 +109,18 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 
 
 /**
+ * Attach a borrowed stream frame as a runtime render target.
+ *
+ * @param runtime the runtime
+ * @param texture_id the DRP2 texture id to expose for render passes
+ * @param frame the borrowed stream frame whose command buffer is currently recording
+ * @return whether the frame target was attached
+ */
+DVZ_EXPORT bool dvz_drp2_runtime_attach_frame_target(
+    DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame);
+
+
+/**
  * Record a copy from a runtime-owned texture into a borrowed stream frame.
  *
  * @param runtime the runtime

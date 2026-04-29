@@ -51,9 +51,10 @@ struct SceneCanvasDrawState
     DvzCapabilitySnapshot caps;
     DvzFramePlanEmitConfig emit_cfg;
     uint32_t callback_count;
+    bool attach_ok;
     bool emit_ok;
+    bool direct_target_ok;
     bool execute_ok;
-    bool copy_ok;
 };
 
 
@@ -96,6 +97,7 @@ static void _scene_canvas_drp2_draw(
     if (plan == NULL)
         return;
 
+    state->attach_ok = dvz_drp2_runtime_attach_frame_target(state->runtime, 1, frame);
     state->emit_ok = dvz_frame_plan_upload(plan, "buf.point.position", 0, 16, "point.position") &&
                      dvz_frame_plan_render(
                          plan, "panel.0", "target.panel.0.color", false) &&
@@ -104,19 +106,24 @@ static void _scene_canvas_drp2_draw(
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream = NULL;
-    if (state->emit_ok)
+    if (state->attach_ok && state->emit_ok)
     {
         stream = dvz_frame_plan_emitter_emit_drp2(
             state->emitter, plan, &state->caps, &report, &state->emit_cfg);
         state->emit_ok = stream != NULL && dvz_diagnostic_report_count(&report) == 0;
+        state->direct_target_ok = state->emit_ok;
+        for (uint32_t i = 0; state->direct_target_ok && i < dvz_drp2_stream_count(stream); i++)
+        {
+            state->direct_target_ok =
+                dvz_drp2_command_type(dvz_drp2_stream_get(stream, i)) !=
+                DVZ_DRP2_COMMAND_CREATE_TEXTURE;
+        }
     }
     if (state->emit_ok)
     {
         DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(state->runtime, stream);
         state->execute_ok = result.ok && result.code == DVZ_DRP2_VALIDATION_OK;
     }
-    if (state->execute_ok)
-        state->copy_ok = dvz_drp2_runtime_copy_texture_to_frame(state->runtime, 1, frame);
 
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_destroy(plan);
@@ -948,14 +955,17 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
     state.runtime = runtime;
     state.emit_cfg = dvz_frame_plan_emit_config();
     state.emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    state.emit_cfg.external_color_target = true;
+    state.emit_cfg.color_target_id = 1;
     dvz_capability_snapshot_default(&state.caps);
 
     dvz_canvas_set_draw_callback(canvas, _scene_canvas_drp2_draw, &state);
     AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
     AT(state.callback_count == 1);
+    AT(state.attach_ok);
     AT(state.emit_ok);
+    AT(state.direct_target_ok);
     AT(state.execute_ok);
-    AT(state.copy_ok);
     AT(dvz_canvas_submit(canvas) == 0);
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
 

@@ -169,12 +169,15 @@ struct Drp2VkliteObject
     DvzSampler* sampler;
     DvzCommands* commands;
     DvzRendering* rendering;
+    VkCommandBuffer command_buffer;
     VkImageLayout image_layout;
     uint64_t texture_id;
     uint64_t sampler_id;
     uint32_t width;
     uint32_t height;
     bool borrowed_slots;
+    bool borrowed_commands;
+    bool borrowed_frame_target;
     bool destroyed;
 };
 
@@ -1749,7 +1752,8 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
     }
     if (object->commands != NULL)
     {
-        dvz_commands_destroy(object->commands);
+        if (!object->borrowed_commands)
+            dvz_commands_destroy(object->commands);
         dvz_commands_free(object->commands);
         object->commands = NULL;
     }
@@ -1888,6 +1892,74 @@ static DvzDrp2ValidationResult _vklite_create_texture(
     object->width = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     return _ok();
+}
+
+
+/**
+ * Attach a borrowed frame image as a vklite texture object.
+ *
+ * @param runtime the DRP2 runtime
+ * @param texture_id the DRP2 texture id
+ * @param frame the borrowed stream frame
+ * @return true when the frame target was attached
+ */
+static bool _vklite_attach_frame_target(
+    DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
+{
+    ANN(runtime);
+    ANN(frame);
+    if (texture_id == 0 || frame->image == VK_NULL_HANDLE ||
+        frame->command_buffer == VK_NULL_HANDLE || frame->extent.width == 0 ||
+        frame->extent.height == 0)
+        return false;
+
+    if (runtime->vklite_state == NULL)
+    {
+        runtime->vklite_state = (Drp2VkliteState*)dvz_calloc(1, sizeof(Drp2VkliteState));
+        ANN(runtime->vklite_state);
+        runtime->vklite_state->runtime = runtime;
+    }
+
+    Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, texture_id);
+    if (object == NULL)
+        object = _vklite_add(runtime->vklite_state, texture_id, DRP2_OBJECT_TEXTURE);
+    if (object == NULL || object->kind != DRP2_OBJECT_TEXTURE)
+        return false;
+
+    if (object->views != NULL)
+    {
+        dvz_image_views_destroy(object->views);
+        dvz_image_views_free(object->views);
+        object->views = NULL;
+    }
+    if (object->images != NULL)
+    {
+        dvz_images_destroy(object->images);
+        dvz_images_free(object->images);
+        object->images = NULL;
+    }
+
+    object->images = dvz_images_create_wrapper();
+    object->views = dvz_image_views_create_wrapper();
+    if (object->images == NULL || object->views == NULL)
+        return false;
+
+    dvz_images_wrap(
+        runtime->device, runtime->allocator, VK_IMAGE_TYPE_2D, frame->image, object->images);
+    dvz_images_format(object->images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(object->images, frame->extent.width, frame->extent.height, 1);
+    dvz_image_views(object->images, object->views);
+    dvz_image_views_create(object->views);
+    if (dvz_image_views_handle(object->views, 0) == VK_NULL_HANDLE)
+        return false;
+
+    object->image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    object->command_buffer = frame->command_buffer;
+    object->width = frame->extent.width;
+    object->height = frame->extent.height;
+    object->borrowed_frame_target = true;
+    object->destroyed = false;
+    return true;
 }
 
 
@@ -2659,9 +2731,23 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     if (pass == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzCommands* cmds = _vklite_commands_create(state->runtime->device);
-    if (cmds == NULL)
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    DvzCommands* cmds = NULL;
+    if (target->borrowed_frame_target)
+    {
+        if (target->command_buffer == VK_NULL_HANDLE)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        cmds = dvz_commands_create_wrapper();
+        if (cmds == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_commands_wrap(state->runtime->device, target->command_buffer, cmds);
+        pass->borrowed_commands = true;
+    }
+    else
+    {
+        cmds = _vklite_commands_create(state->runtime->device);
+        if (cmds == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     pass->commands = cmds;
 
     DvzRendering* rendering = dvz_rendering_create();
@@ -2674,7 +2760,8 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
         cmds, dvz_image_views_handle(target->views, 0), target->width, target->height, clear,
         rendering);
 
-    dvz_cmd_begin(cmds);
+    if (!target->borrowed_frame_target)
+        dvz_cmd_begin(cmds);
     for (uint32_t i = 0; i < state->count; i++)
     {
         Drp2VkliteObject* object = &state->objects[i];
@@ -2811,8 +2898,11 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     dvz_cmd_rendering_end(pass->commands);
-    dvz_cmd_end(pass->commands);
-    dvz_cmd_submit(pass->commands);
+    if (!pass->borrowed_commands)
+    {
+        dvz_cmd_end(pass->commands);
+        dvz_cmd_submit(pass->commands);
+    }
     return _ok();
 }
 
@@ -3119,6 +3209,50 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
     return _vklite_execute(runtime, stream);
 #else
     return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+#endif
+}
+
+
+/**
+ * Attach a borrowed stream frame as a runtime render target.
+ *
+ * @param runtime the runtime
+ * @param texture_id the DRP2 texture id to expose for render passes
+ * @param frame the borrowed stream frame whose command buffer is currently recording
+ * @return whether the frame target was attached
+ */
+bool dvz_drp2_runtime_attach_frame_target(
+    DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
+{
+    if (runtime == NULL || frame == NULL || texture_id == 0 || frame->extent.width == 0 ||
+        frame->extent.height == 0)
+        return false;
+
+    if (runtime->semantic_state == NULL)
+    {
+        runtime->semantic_state = (Drp2RuntimeState*)dvz_calloc(1, sizeof(Drp2RuntimeState));
+        ANN(runtime->semantic_state);
+    }
+
+    Drp2Object* object = _find_any_object(runtime->semantic_state, texture_id);
+    if (object == NULL)
+        object = _add_object(runtime->semantic_state, texture_id, DRP2_OBJECT_TEXTURE);
+    if (object == NULL || object->kind != DRP2_OBJECT_TEXTURE)
+        return false;
+
+    object->destroyed = false;
+    object->width = frame->extent.width;
+    object->height = frame->extent.height;
+    object->depth = 1;
+    object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+
+    if (runtime->semantic_only)
+        return true;
+
+#if DVZ_DRP2_HAS_VKLITE
+    return _vklite_attach_frame_target(runtime, texture_id, frame);
+#else
+    return false;
 #endif
 }
 
