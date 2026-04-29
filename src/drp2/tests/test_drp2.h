@@ -118,6 +118,8 @@ int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstI
 int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_writes_buffer_contents(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* item);
 #endif
 
 

@@ -18,12 +18,18 @@
 #include <stdint.h>
 #include <string.h>
 
+#if DVZ_DRP2_HAS_VKLITE
+#include <volk.h>
+#endif
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_stream.h"
 
 #if DVZ_DRP2_HAS_VKLITE
+#include "datoviz/vk/device.h"
 #include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
 #endif
 
@@ -1753,6 +1759,48 @@ static DvzDrp2ValidationResult _vklite_write_buffer(
 }
 
 
+static DvzDrp2ValidationResult _vklite_copy_buffer_to_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* src = _vklite_find(state, command->u.copy_buffer_to_buffer.src_buffer_id);
+    Drp2VkliteObject* dst = _vklite_find(state, command->u.copy_buffer_to_buffer.dst_buffer_id);
+    if (src == NULL || src->buffer == NULL || dst == NULL || dst->buffer == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzQueue* queue = dvz_device_queue(state->runtime->device, DVZ_QUEUE_MAIN);
+    if (queue == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    if (cmds == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_commands(state->runtime->device, queue, 1, cmds);
+    if (dvz_commands_count(cmds) == 0 || dvz_commands_handle(cmds) == VK_NULL_HANDLE)
+    {
+        dvz_commands_free(cmds);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
+    VkBufferCopy region = {0};
+    region.srcOffset = command->u.copy_buffer_to_buffer.src_offset;
+    region.dstOffset = command->u.copy_buffer_to_buffer.dst_offset;
+    region.size = command->u.copy_buffer_to_buffer.size;
+
+    dvz_cmd_begin(cmds);
+    vkCmdCopyBuffer(
+        dvz_commands_handle(cmds), dvz_buffer_handle(src->buffer), dvz_buffer_handle(dst->buffer),
+        1, &region);
+    dvz_cmd_end(cmds);
+    dvz_cmd_submit(cmds);
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
+    return _ok();
+}
+
+
 static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind, uint32_t command_index)
 {
@@ -1805,6 +1853,9 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
         case DVZ_DRP2_COMMAND_WRITE_BUFFER:
             result = _vklite_write_buffer(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+            result = _vklite_copy_buffer_to_buffer(state, command, i);
             break;
         default:
             result = _ok();

@@ -1279,6 +1279,10 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem
         return 0;
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     if (ctx == NULL)
     {
@@ -1326,6 +1330,10 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstSuite* suite, TstItem* it
         return 0;
 
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
     if (ctx == NULL)
     {
@@ -1357,6 +1365,69 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstSuite* suite, TstItem* it
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
     uint8_t downloaded[16] = {0};
     AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 1, 8, 16, downloaded));
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        AT(downloaded[i] == expected[i]);
+    }
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 vklite buffer copy test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, 32,
+        DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST |
+            DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 2, 32, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_write_buffer(stream, 1, 4, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 10, 1, 4, 2, 12, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 11));
+    AT(dvz_drp2_stream_queue_submit(stream, 11, 12));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t expected[16] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    uint8_t downloaded[16] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 2, 12, 16, downloaded));
     for (uint32_t i = 0; i < 16; i++)
     {
         AT(downloaded[i] == expected[i]);
@@ -1424,6 +1495,7 @@ int test_drp2(TstSuite* suite)
 #if DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
+    TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_contents);
 #endif
 
     return 0;
