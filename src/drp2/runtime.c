@@ -29,6 +29,7 @@
 /*************************************************************************************************/
 
 #define DVZ_DRP2_RUNTIME_INITIAL_OBJECT_CAPACITY 64
+#define DVZ_DRP2_RGBA8_BYTES_PER_TEXEL 4
 
 
 
@@ -67,6 +68,9 @@ struct Drp2Object
     Drp2ObjectKind kind;
     uint64_t size;
     uint32_t usage;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
     uint32_t vertex_buffer_slots;
     bool open;
     bool submitted;
@@ -126,6 +130,48 @@ static bool _range_overflows(uint64_t offset, uint64_t size, uint64_t total)
     if (size > total - offset)
         return true;
     return false;
+}
+
+
+
+static bool _texture_box_overflows(
+    const Drp2Object* texture, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
+    uint32_t width, uint32_t height, uint32_t depth)
+{
+    ANN(texture);
+    if (width == 0 || height == 0 || depth == 0)
+        return true;
+    if (origin_x > texture->width || width > texture->width - origin_x)
+        return true;
+    if (origin_y > texture->height || height > texture->height - origin_y)
+        return true;
+    if (origin_z > texture->depth || depth > texture->depth - origin_z)
+        return true;
+    return false;
+}
+
+
+
+static bool _texture_layout_invalid(
+    uint32_t width, uint32_t height, uint32_t depth, uint32_t bytes_per_row,
+    uint32_t rows_per_image)
+{
+    if (width == 0 || height == 0 || depth == 0)
+        return true;
+    uint64_t min_row = (uint64_t)width * DVZ_DRP2_RGBA8_BYTES_PER_TEXEL;
+    if (bytes_per_row < min_row)
+        return true;
+    if (rows_per_image < height)
+        return true;
+    return false;
+}
+
+
+
+static uint64_t _texture_layout_size(
+    uint32_t depth, uint32_t bytes_per_row, uint32_t rows_per_image)
+{
+    return (uint64_t)depth * rows_per_image * bytes_per_row;
 }
 
 
@@ -262,6 +308,12 @@ static DvzDrp2ValidationResult _validate_create_texture(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (_add_object(state, id, DRP2_OBJECT_TEXTURE) == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2Object* object = _find_object(state, id);
+    ANN(object);
+    object->width = command->u.create_texture.width;
+    object->height = command->u.create_texture.height;
+    object->depth = 1;
+    object->usage = command->u.create_texture.usage;
     return _ok();
 }
 
@@ -364,6 +416,34 @@ static DvzDrp2ValidationResult _validate_write_buffer(
         return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (_range_overflows(command->u.write_buffer.offset, command->u.write_buffer.size, object->size))
         return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_write_texture(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* texture = _find_object(state, command->u.write_texture.texture_id);
+    if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((texture->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_DST) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (command->u.write_texture.mip_level != 0)
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_box_overflows(
+            texture, command->u.write_texture.origin_x, command->u.write_texture.origin_y,
+            command->u.write_texture.origin_z, command->u.write_texture.width,
+            command->u.write_texture.height, command->u.write_texture.depth))
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_layout_invalid(
+            command->u.write_texture.width, command->u.write_texture.height,
+            command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
+            command->u.write_texture.rows_per_image))
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     return _ok();
 }
 
@@ -636,6 +716,54 @@ static DvzDrp2ValidationResult _validate_end_compute_pass(
 
 
 
+static DvzDrp2ValidationResult _validate_copy_buffer_to_texture(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    if (_open_pass(state) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* encoder = _find_object(state, command->u.copy_buffer_to_texture.encoder_id);
+    if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* buffer = _find_object(state, command->u.copy_buffer_to_texture.src_buffer_id);
+    if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((buffer->usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+
+    Drp2Object* texture = _find_object(state, command->u.copy_buffer_to_texture.dst_texture_id);
+    if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((texture->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_DST) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (command->u.copy_buffer_to_texture.dst_mip_level != 0)
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_box_overflows(
+            texture, command->u.copy_buffer_to_texture.dst_origin_x,
+            command->u.copy_buffer_to_texture.dst_origin_y,
+            command->u.copy_buffer_to_texture.dst_origin_z, command->u.copy_buffer_to_texture.width,
+            command->u.copy_buffer_to_texture.height, command->u.copy_buffer_to_texture.depth))
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_layout_invalid(
+            command->u.copy_buffer_to_texture.width, command->u.copy_buffer_to_texture.height,
+            command->u.copy_buffer_to_texture.depth, command->u.copy_buffer_to_texture.bytes_per_row,
+            command->u.copy_buffer_to_texture.rows_per_image))
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+
+    uint64_t size = _texture_layout_size(
+        command->u.copy_buffer_to_texture.depth, command->u.copy_buffer_to_texture.bytes_per_row,
+        command->u.copy_buffer_to_texture.rows_per_image);
+    if (_range_overflows(command->u.copy_buffer_to_texture.src_offset, size, buffer->size))
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    return _ok();
+}
+
+
+
 static DvzDrp2ValidationResult _validate_copy_texture_to_buffer(
     Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
@@ -648,8 +776,20 @@ static DvzDrp2ValidationResult _validate_copy_texture_to_buffer(
     Drp2Object* encoder = _find_object(state, command->u.copy_texture_to_buffer.encoder_id);
     if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (!_has_object_kind(state, command->u.copy_texture_to_buffer.src_texture_id, DRP2_OBJECT_TEXTURE))
+    Drp2Object* texture = _find_object(state, command->u.copy_texture_to_buffer.src_texture_id);
+    if (texture == NULL || texture->kind != DRP2_OBJECT_TEXTURE)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((texture->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (_texture_box_overflows(
+            texture, 0, 0, 0, command->u.copy_texture_to_buffer.width,
+            command->u.copy_texture_to_buffer.height, 1))
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_layout_invalid(
+            command->u.copy_texture_to_buffer.width, command->u.copy_texture_to_buffer.height, 1,
+            command->u.copy_texture_to_buffer.bytes_per_row,
+            command->u.copy_texture_to_buffer.rows_per_image))
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     Drp2Object* buffer = _find_object(state, command->u.copy_texture_to_buffer.dst_buffer_id);
     if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
@@ -657,12 +797,53 @@ static DvzDrp2ValidationResult _validate_copy_texture_to_buffer(
     if ((buffer->usage & DVZ_DRP2_BUFFER_USAGE_COPY_DST) == 0)
         return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
-    uint64_t rows = command->u.copy_texture_to_buffer.rows_per_image;
-    uint64_t bytes_per_row = command->u.copy_texture_to_buffer.bytes_per_row;
-    uint64_t required = rows * bytes_per_row;
-    if (rows != 0 && required / rows != bytes_per_row)
-        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    uint64_t required = _texture_layout_size(
+        1, command->u.copy_texture_to_buffer.bytes_per_row,
+        command->u.copy_texture_to_buffer.rows_per_image);
     if (_range_overflows(command->u.copy_texture_to_buffer.dst_offset, required, buffer->size))
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_copy_texture_to_texture(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    if (_open_pass(state) != NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* encoder = _find_object(state, command->u.copy_texture_to_texture.encoder_id);
+    if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* src = _find_object(state, command->u.copy_texture_to_texture.src_texture_id);
+    Drp2Object* dst = _find_object(state, command->u.copy_texture_to_texture.dst_texture_id);
+    if (src == NULL || src->kind != DRP2_OBJECT_TEXTURE || dst == NULL ||
+        dst->kind != DRP2_OBJECT_TEXTURE)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if ((src->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) == 0 ||
+        (dst->usage & DVZ_DRP2_TEXTURE_USAGE_COPY_DST) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    if (command->u.copy_texture_to_texture.src_mip_level != 0 ||
+        command->u.copy_texture_to_texture.dst_mip_level != 0)
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_box_overflows(
+            src, command->u.copy_texture_to_texture.src_origin_x,
+            command->u.copy_texture_to_texture.src_origin_y,
+            command->u.copy_texture_to_texture.src_origin_z,
+            command->u.copy_texture_to_texture.width, command->u.copy_texture_to_texture.height,
+            command->u.copy_texture_to_texture.depth))
+        return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (_texture_box_overflows(
+            dst, command->u.copy_texture_to_texture.dst_origin_x,
+            command->u.copy_texture_to_texture.dst_origin_y,
+            command->u.copy_texture_to_texture.dst_origin_z,
+            command->u.copy_texture_to_texture.width, command->u.copy_texture_to_texture.height,
+            command->u.copy_texture_to_texture.depth))
         return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     return _ok();
 }
@@ -764,6 +945,8 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_create_compute_pipeline(state, command, command_index);
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return _validate_write_buffer(state, command, command_index);
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        return _validate_write_texture(state, command, command_index);
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         return _validate_begin_encoder(state, command, command_index);
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
@@ -786,8 +969,12 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_dispatch_workgroups(state, command, command_index);
     case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
         return _validate_end_compute_pass(state, command, command_index);
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        return _validate_copy_buffer_to_texture(state, command, command_index);
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
         return _validate_copy_texture_to_buffer(state, command, command_index);
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return _validate_copy_texture_to_texture(state, command, command_index);
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
         return _validate_finish_encoder(state, command, command_index);
     case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:

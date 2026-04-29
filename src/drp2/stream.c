@@ -125,6 +125,8 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "CreateComputePipeline";
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
         return "WriteBuffer";
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        return "WriteTexture";
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         return "BeginCommandEncoder";
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
@@ -147,8 +149,12 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "DispatchWorkgroups";
     case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
         return "EndComputePass";
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        return "CopyBufferToTexture";
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
         return "CopyTextureToBuffer";
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return "CopyTextureToTexture";
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
         return "FinishCommandEncoder";
     case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
@@ -252,6 +258,33 @@ static void _json_append_usage(JsonBuilder* builder, uint32_t usage)
 
 
 
+static void _json_append_texture_usage(JsonBuilder* builder, uint32_t usage)
+{
+    ANN(builder);
+    bool needs_comma = false;
+    _json_append(builder, "[");
+#define APPEND_TEXTURE_USAGE(flag, label)                                                         \
+    do                                                                                            \
+    {                                                                                             \
+        if ((usage & (flag)) != 0)                                                                \
+        {                                                                                         \
+            _json_append(builder, "%s\"%s\"", needs_comma ? ", " : "", (label));              \
+            needs_comma = true;                                                                   \
+        }                                                                                         \
+    } while (0)
+
+    APPEND_TEXTURE_USAGE(DVZ_DRP2_TEXTURE_USAGE_COPY_SRC, "COPY_SRC");
+    APPEND_TEXTURE_USAGE(DVZ_DRP2_TEXTURE_USAGE_COPY_DST, "COPY_DST");
+    APPEND_TEXTURE_USAGE(DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING, "TEXTURE_BINDING");
+    APPEND_TEXTURE_USAGE(DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING, "STORAGE_BINDING");
+    APPEND_TEXTURE_USAGE(DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT, "RENDER_ATTACHMENT");
+
+#undef APPEND_TEXTURE_USAGE
+    _json_append(builder, "]");
+}
+
+
+
 static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* command)
 {
     ANN(builder);
@@ -286,11 +319,11 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64
             ", \"dimension\": \"2d\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
-            ", \"depth\": 1, \"format\": \"rgba8unorm\", "
-            "\"usage\": [\"RENDER_ATTACHMENT\", \"COPY_SRC\"], \"mip_level_count\": 1, "
-            "\"sample_count\": 1 }",
+            ", \"depth\": 1, \"format\": \"rgba8unorm\", \"usage\": ",
             _command_name(command->type), command->u.create_texture.id,
             command->u.create_texture.width, command->u.create_texture.height);
+        _json_append_texture_usage(builder, command->u.create_texture.usage);
+        _json_append(builder, ", \"mip_level_count\": 1, \"sample_count\": 1 }");
         break;
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
         _json_append(
@@ -327,6 +360,21 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _command_name(command->type), command->u.write_buffer.buffer_id,
             command->u.write_buffer.offset, command->u.write_buffer.size,
             command->u.write_buffer.data_base64);
+        break;
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"texture_id\": %" PRIu64 ", \"mip_level\": %" PRIu32
+            ", \"origin\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32 ", \"z\": %" PRIu32
+            " }, \"size\": { \"width\": %" PRIu32 ", \"height\": %" PRIu32
+            ", \"depth\": %" PRIu32 " }, \"bytes_per_row\": %" PRIu32
+            ", \"rows_per_image\": %" PRIu32 ", \"data\": \"%s\" }",
+            _command_name(command->type), command->u.write_texture.texture_id,
+            command->u.write_texture.mip_level, command->u.write_texture.origin_x,
+            command->u.write_texture.origin_y, command->u.write_texture.origin_z,
+            command->u.write_texture.width, command->u.write_texture.height,
+            command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
+            command->u.write_texture.rows_per_image, command->u.write_texture.data_base64);
         break;
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         _json_append(
@@ -413,6 +461,28 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder, "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 " }",
             _command_name(command->type), command->u.end_compute_pass.pass_id);
         break;
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"src_buffer_id\": %" PRIu64
+            ", \"src_offset\": %" PRIu64 ", \"bytes_per_row\": %" PRIu32
+            ", \"rows_per_image\": %" PRIu32 ", \"dst_texture_id\": %" PRIu64
+            ", \"dst_mip_level\": %" PRIu32 ", \"dst_origin\": { \"x\": %" PRIu32
+            ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"size\": { \"width\": %" PRIu32
+            ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " } }",
+            _command_name(command->type), command->u.copy_buffer_to_texture.encoder_id,
+            command->u.copy_buffer_to_texture.src_buffer_id,
+            command->u.copy_buffer_to_texture.src_offset,
+            command->u.copy_buffer_to_texture.bytes_per_row,
+            command->u.copy_buffer_to_texture.rows_per_image,
+            command->u.copy_buffer_to_texture.dst_texture_id,
+            command->u.copy_buffer_to_texture.dst_mip_level,
+            command->u.copy_buffer_to_texture.dst_origin_x,
+            command->u.copy_buffer_to_texture.dst_origin_y,
+            command->u.copy_buffer_to_texture.dst_origin_z,
+            command->u.copy_buffer_to_texture.width, command->u.copy_buffer_to_texture.height,
+            command->u.copy_buffer_to_texture.depth);
+        break;
     case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
         _json_append(
             builder,
@@ -428,6 +498,29 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.copy_texture_to_buffer.dst_offset,
             command->u.copy_texture_to_buffer.bytes_per_row,
             command->u.copy_texture_to_buffer.rows_per_image);
+        break;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"encoder_id\": %" PRIu64 ", \"src_texture_id\": %" PRIu64
+            ", \"src_mip_level\": %" PRIu32 ", \"src_origin\": { \"x\": %" PRIu32
+            ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"dst_texture_id\": %" PRIu64
+            ", \"dst_mip_level\": %" PRIu32 ", \"dst_origin\": { \"x\": %" PRIu32
+            ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"size\": { \"width\": %" PRIu32
+            ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " } }",
+            _command_name(command->type), command->u.copy_texture_to_texture.encoder_id,
+            command->u.copy_texture_to_texture.src_texture_id,
+            command->u.copy_texture_to_texture.src_mip_level,
+            command->u.copy_texture_to_texture.src_origin_x,
+            command->u.copy_texture_to_texture.src_origin_y,
+            command->u.copy_texture_to_texture.src_origin_z,
+            command->u.copy_texture_to_texture.dst_texture_id,
+            command->u.copy_texture_to_texture.dst_mip_level,
+            command->u.copy_texture_to_texture.dst_origin_x,
+            command->u.copy_texture_to_texture.dst_origin_y,
+            command->u.copy_texture_to_texture.dst_origin_z,
+            command->u.copy_texture_to_texture.width, command->u.copy_texture_to_texture.height,
+            command->u.copy_texture_to_texture.depth);
         break;
     case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
         _json_append(
@@ -628,12 +721,34 @@ bool dvz_drp2_stream_create_buffer(
 bool dvz_drp2_stream_create_texture_2d(
     DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height)
 {
+    return dvz_drp2_stream_create_texture_2d_usage(
+        stream, id, width, height,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC |
+            DVZ_DRP2_TEXTURE_USAGE_COPY_DST);
+}
+
+
+
+/**
+ * Append a CreateTexture command for a 2D texture with explicit usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param usage texture usage flags
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_texture_2d_usage(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t usage)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
     if (command == NULL)
         return false;
     command->u.create_texture.id = id;
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
+    command->u.create_texture.usage = usage;
     return true;
 }
 
@@ -731,6 +846,41 @@ bool dvz_drp2_stream_write_buffer(
     command->u.write_buffer.size = size;
     _copy_label(
         command->u.write_buffer.data_base64, DVZ_DRP2_LABEL_SIZE,
+        data_base64 ? data_base64 : "");
+    return true;
+}
+
+
+
+/**
+ * Append a WriteTexture command.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param width the written width
+ * @param height the written height
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data_base64 base64-encoded payload
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_write_texture_2d(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
+    uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.write_texture.texture_id = texture_id;
+    command->u.write_texture.mip_level = mip_level;
+    command->u.write_texture.width = width;
+    command->u.write_texture.height = height;
+    command->u.write_texture.depth = 1;
+    command->u.write_texture.bytes_per_row = bytes_per_row;
+    command->u.write_texture.rows_per_image = rows_per_image;
+    _copy_label(
+        command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,
         data_base64 ? data_base64 : "");
     return true;
 }
@@ -994,6 +1144,42 @@ bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, uint64_t pas
 
 
 /**
+ * Append a CopyBufferToTexture command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_buffer_id the source buffer id
+ * @param src_offset the source byte offset
+ * @param dst_texture_id the destination texture id
+ * @param width the copy width in pixels
+ * @param height the copy height in pixels
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_copy_buffer_to_texture(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_buffer_id,
+    uint64_t src_offset, uint64_t dst_texture_id, uint32_t width, uint32_t height,
+    uint32_t bytes_per_row, uint32_t rows_per_image)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.copy_buffer_to_texture.encoder_id = encoder_id;
+    command->u.copy_buffer_to_texture.src_buffer_id = src_buffer_id;
+    command->u.copy_buffer_to_texture.src_offset = src_offset;
+    command->u.copy_buffer_to_texture.bytes_per_row = bytes_per_row;
+    command->u.copy_buffer_to_texture.rows_per_image = rows_per_image;
+    command->u.copy_buffer_to_texture.dst_texture_id = dst_texture_id;
+    command->u.copy_buffer_to_texture.width = width;
+    command->u.copy_buffer_to_texture.height = height;
+    command->u.copy_buffer_to_texture.depth = 1;
+    return true;
+}
+
+
+
+/**
  * Append a CopyTextureToBuffer command.
  *
  * @param stream the command stream
@@ -1023,6 +1209,35 @@ bool dvz_drp2_stream_copy_texture_to_buffer(
     command->u.copy_texture_to_buffer.height = height;
     command->u.copy_texture_to_buffer.bytes_per_row = bytes_per_row;
     command->u.copy_texture_to_buffer.rows_per_image = rows_per_image;
+    return true;
+}
+
+
+
+/**
+ * Append a CopyTextureToTexture command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_texture_id the source texture id
+ * @param dst_texture_id the destination texture id
+ * @param width the copy width in pixels
+ * @param height the copy height in pixels
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_copy_texture_to_texture(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_texture_id,
+    uint64_t dst_texture_id, uint32_t width, uint32_t height)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.copy_texture_to_texture.encoder_id = encoder_id;
+    command->u.copy_texture_to_texture.src_texture_id = src_texture_id;
+    command->u.copy_texture_to_texture.dst_texture_id = dst_texture_id;
+    command->u.copy_texture_to_texture.width = width;
+    command->u.copy_texture_to_texture.height = height;
+    command->u.copy_texture_to_texture.depth = 1;
     return true;
 }
 

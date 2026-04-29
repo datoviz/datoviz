@@ -133,6 +133,21 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d(
 
 
 /**
+ * Append a CreateTexture command for a 2D texture with explicit usage.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param usage texture usage flags
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t usage);
+
+
+
+/**
  * Append a CreateShaderModule command.
  *
  * @param stream the command stream
@@ -188,6 +203,25 @@ DVZ_EXPORT bool dvz_drp2_stream_create_compute_pipeline(
 DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
     DvzDrp2CommandStream* stream, uint64_t buffer_id, uint64_t offset, uint64_t size,
     const char* data_base64);
+
+
+
+/**
+ * Append a WriteTexture command.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param width the written width
+ * @param height the written height
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data_base64 base64-encoded payload
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
+    uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64);
 
 
 
@@ -347,6 +381,27 @@ DVZ_EXPORT bool dvz_drp2_stream_end_compute_pass(DvzDrp2CommandStream* stream, u
 
 
 /**
+ * Append a CopyBufferToTexture command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_buffer_id the source buffer id
+ * @param src_offset the source byte offset
+ * @param dst_texture_id the destination texture id
+ * @param width the copy width in pixels
+ * @param height the copy height in pixels
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_copy_buffer_to_texture(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_buffer_id,
+    uint64_t src_offset, uint64_t dst_texture_id, uint32_t width, uint32_t height,
+    uint32_t bytes_per_row, uint32_t rows_per_image);
+
+
+
+/**
  * Append a CopyTextureToBuffer command.
  *
  * @param stream the command stream
@@ -364,6 +419,23 @@ DVZ_EXPORT bool dvz_drp2_stream_copy_texture_to_buffer(
     DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_texture_id,
     uint64_t dst_buffer_id, uint64_t dst_offset, uint32_t width, uint32_t height,
     uint32_t bytes_per_row, uint32_t rows_per_image);
+
+
+
+/**
+ * Append a CopyTextureToTexture command.
+ *
+ * @param stream the command stream
+ * @param encoder_id the encoder id
+ * @param src_texture_id the source texture id
+ * @param dst_texture_id the destination texture id
+ * @param width the copy width in pixels
+ * @param height the copy height in pixels
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_copy_texture_to_texture(
+    DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t src_texture_id,
+    uint64_t dst_texture_id, uint32_t width, uint32_t height);
 
 
 

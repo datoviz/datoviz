@@ -53,6 +53,7 @@ struct DvzDrp2Command
             uint64_t id;
             uint32_t width;
             uint32_t height;
+            uint32_t usage;
         } create_texture;
         struct
         {
@@ -79,6 +80,20 @@ struct DvzDrp2Command
             uint64_t size;
             char data_base64[DVZ_DRP2_LABEL_SIZE];
         } write_buffer;
+        struct
+        {
+            uint64_t texture_id;
+            uint32_t mip_level;
+            uint32_t origin_x;
+            uint32_t origin_y;
+            uint32_t origin_z;
+            uint32_t width;
+            uint32_t height;
+            uint32_t depth;
+            uint32_t bytes_per_row;
+            uint32_t rows_per_image;
+            char data_base64[DVZ_DRP2_LABEL_SIZE];
+        } write_texture;
         struct
         {
             uint64_t id;
@@ -148,6 +163,22 @@ struct DvzDrp2Command
         struct
         {
             uint64_t encoder_id;
+            uint64_t src_buffer_id;
+            uint64_t src_offset;
+            uint32_t bytes_per_row;
+            uint32_t rows_per_image;
+            uint64_t dst_texture_id;
+            uint32_t dst_mip_level;
+            uint32_t dst_origin_x;
+            uint32_t dst_origin_y;
+            uint32_t dst_origin_z;
+            uint32_t width;
+            uint32_t height;
+            uint32_t depth;
+        } copy_buffer_to_texture;
+        struct
+        {
+            uint64_t encoder_id;
             uint64_t src_texture_id;
             uint64_t dst_buffer_id;
             uint64_t dst_offset;
@@ -156,6 +187,23 @@ struct DvzDrp2Command
             uint32_t bytes_per_row;
             uint32_t rows_per_image;
         } copy_texture_to_buffer;
+        struct
+        {
+            uint64_t encoder_id;
+            uint64_t src_texture_id;
+            uint32_t src_mip_level;
+            uint32_t src_origin_x;
+            uint32_t src_origin_y;
+            uint32_t src_origin_z;
+            uint64_t dst_texture_id;
+            uint32_t dst_mip_level;
+            uint32_t dst_origin_x;
+            uint32_t dst_origin_y;
+            uint32_t dst_origin_z;
+            uint32_t width;
+            uint32_t height;
+            uint32_t depth;
+        } copy_texture_to_texture;
         struct
         {
             uint64_t encoder_id;

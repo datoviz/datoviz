@@ -554,6 +554,182 @@ int test_drp2_runtime_rejects_wrong_index_buffer_usage(TstSuite* suite, TstItem*
 
 
 
+int test_drp2_runtime_validate_write_texture(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_texture_2d(stream, 1, 0, 2, 1, 8, 1, "AAAAAAAAAAA="));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+
+    char* json = dvz_drp2_stream_json(stream, "write_texture_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"WriteTexture\"") != NULL);
+    AT(strstr(json, "\"usage\": [\"COPY_DST\"]") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_validate_copy_buffer_to_texture(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_texture(stream, 3, 1, 0, 2, 2, 1, 8, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+
+    char* json = dvz_drp2_stream_json(stream, "copy_buffer_to_texture_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CopyBufferToTexture\"") != NULL);
+    AT(strstr(json, "\"dst_texture_id\": 2") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_validate_copy_texture_to_texture(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_copy_texture_to_texture(stream, 10, 1, 2, 2, 2));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 11));
+    AT(dvz_drp2_stream_queue_submit(stream, 11, 12));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+
+    char* json = dvz_drp2_stream_json(stream, "copy_texture_to_texture_from_c");
+    ANN(json);
+    AT(strstr(json, "\"cmd\": \"CopyTextureToTexture\"") != NULL);
+    AT(strstr(json, "\"src_texture_id\": 1") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_texture_2d(stream, 1, 0, 3, 1, 12, 1, "AAAAAAAAAAAAAAAA"));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OUT_OF_RANGE);
+    AT(result.command_index == 3);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_texture(stream, 3, 1, 0, 2, 2, 1, 8, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 5);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 1, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_begin_compute_pass(stream, 11, 10));
+    AT(dvz_drp2_stream_copy_texture_to_texture(stream, 10, 1, 2, 2, 2));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 6);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -581,6 +757,12 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_validate_indexed_render_stream);
     TEST_SIMPLE(test_drp2_runtime_rejects_draw_indexed_without_index_buffer);
     TEST_SIMPLE(test_drp2_runtime_rejects_wrong_index_buffer_usage);
+    TEST_SIMPLE(test_drp2_runtime_validate_write_texture);
+    TEST_SIMPLE(test_drp2_runtime_validate_copy_buffer_to_texture);
+    TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
+    TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_out_of_range);
+    TEST_SIMPLE(test_drp2_runtime_rejects_copy_buffer_to_texture_usage);
+    TEST_SIMPLE(test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass);
 
     return 0;
 }
