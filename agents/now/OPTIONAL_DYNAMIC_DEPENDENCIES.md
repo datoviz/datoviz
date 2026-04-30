@@ -122,86 +122,65 @@ For shader compilation:
 2. Load shaderc only when an API call asks to compile GLSL at runtime.
 3. Preserve a clear error if runtime compilation is requested but the compiler library is unavailable.
 
-## Memory Estimate
+## Memory Measurements
 
-The current 1M-frame `scene-drp2` memory run reached about 232 MB peak RSS/HWM. A large part of that is
-driver/runtime startup cost, not Datoviz scene data.
+### Before lazy loading (2026-04-30, eager deps)
 
-Rough expected baseline after removing eager optional loads:
-
-```text
-current peak RSS/HWM:          ~230-232 MB
-expected lean canvas RSS:      ~120-170 MB
-aggressive best-case target:   ~90-130 MB
-```
-
-This is an estimate, not a measured result. The reason for the wide range is that RSS includes driver
-page mappings, loader behavior, shader/compiler runtime state, C++ runtime pages, and GPU-driver caches.
-The first measurement to confirm this should be a profile build where CUDA/NVENC/NVCUVID are disabled or
-lazy, followed by:
-
-```bash
-ldd build-profile/testing/dvz_live_canvas
-just memory-canvas-release --frames 1000000 --draw scene-drp2
-```
-
-Success means the NVIDIA video/decode libraries disappear from `ldd`, and peak RSS drops materially
-without changing the benchmark behavior.
-
-## Latest Memory Profile
-
-Report:
+Report: `build/profiles/live-canvas-memory-20260430-120309`
 
 ```text
-build/profiles/live-canvas-memory-20260430-120309
+first_vmrss_kb:            10800
+peak_vmrss_or_vmhwm_kb:   232012
+last_vmhwm_kb:             230868
+steady drift:              ~8.3 MB/min (stable window ~50 s)
 ```
 
-Command:
+### After lazy loading (2026-04-30)
+
+Report: `build/profiles/live-canvas-memory-20260430-172727`
+
+`ldd` confirms `libcuda.so.1`, `libnvidia-encode.so.1`, `libnvcuvid.so.1`, and `libshaderc_shared.so`
+are absent from the binary's link-time dependencies.
 
 ```text
-./build-profile/testing/dvz_live_canvas --benchmark --frames 1000000 --draw scene-drp2
+first_vmrss_kb:            6312   (−4.5 MB vs before)
+peak_vmrss_or_vmhwm_kb:   227228  (−4.8 MB vs before)
+last_vmhwm_kb:             227228
+steady drift:              ~7.4 MB/min (stable window ~65 s)
 ```
 
 Benchmark result:
 
 ```text
 frames=1000000
-elapsed=55.423837s
-fps=18039.17
-avg_ms=0.0554
-p50=0.0482
-p90=0.1019
-p95=0.1262
-p99=0.1328
-max=33.5523
-stutters >2ms=71 >5ms=13 >10ms=11 >16.67ms=3
+elapsed=65.656330s
+fps=15227.78
+avg_ms=0.0657
+p50=0.0576
+p90=0.1110
+p95=0.1243
+p99=0.2282
+max=11.3866
+stutters >2ms=74 >5ms=6 >10ms=1 >16.67ms=0
 ```
 
-Memory summary:
+### Interpretation
 
-```text
-first_vmrss_kb: 10800
-last_vmrss_kb: 152668
-peak_vmrss_or_vmhwm_kb: 232012
-last_vmhwm_kb: 230868
-```
+The original pre-implementation estimate of 60–110 MB savings was wrong. Actual peak RSS savings
+are ~4.8 MB. The bulk of resident memory is the NVIDIA Vulkan driver stack (vkspirv, rtcore,
+allocator, gpucomp, glcore), which is always loaded for a Vulkan canvas and is unaffected by
+removing the video/shader compiler libraries from the link.
 
-Important interpretation:
+The slow RSS drift (~7–8 MB/min) is also unchanged. The drift was already traced (via Massif,
+Valgrind, and pmap) to a growing private anonymous mapping near NVIDIA driver pages, not to
+Datoviz heap allocations or to the video/compiler libraries. The lazy-load work does not fix
+this drift and was never expected to.
 
-1. Startup dominates the RSS jump:
-   - ~10.8 MB at process start,
-   - ~140.5 MB after 0.21 s,
-   - ~224.2 MB after 0.42 s.
-2. The steady run then rises from ~224.2 MB to ~232.0 MB over about 55 seconds.
-3. That steady rise is about 7.8 MB across almost 1M frames, or roughly 8 bytes per frame if it is truly
-   frame-linear.
-4. The final RSS sample drops to ~152.7 MB while HWM stays high, which is probably process teardown and
-   should not be treated as the steady-state memory level.
+The drift investigation conclusion stands:
 
-This does not show a catastrophic per-frame accumulation. It does show enough slow drift to justify a
-follow-up leak/cache investigation after the optional-library baseline is fixed. The most useful next
-memory test is to rerun the same 1M-frame benchmark after CUDA/NVENC/NVCUVID and shaderc are made lazy or
-build-disabled for the plain canvas path.
+1. The drift is almost certainly NVIDIA driver-internal (JIT cache, shader cache, or similar).
+2. No Datoviz-owned definite leak was found.
+3. A long-run memory gate (RSS/PSS slope threshold) remains a future goal.
 
 ## Leak/Drift Investigation Notes
 
