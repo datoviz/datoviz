@@ -219,6 +219,14 @@ Recommended policy:
    clear.
 
 
+## Related Memory Optimization
+
+The next important memory optimization is to lazy-load heavyweight optional dynamic libraries such as
+CUDA/NVENC/NVCUVID and shaderc. Plain canvas and DRP2 rendering should not load video encoder, decoder, or
+runtime shader compiler libraries unless those features are requested. See
+`agents/now/OPTIONAL_DYNAMIC_DEPENDENCIES.md`.
+
+
 ## Suggested Next Profiling Slices
 
 1. Add a DRP2 runtime mode that skips semantic validation after a successful prepare step, then rerun:
