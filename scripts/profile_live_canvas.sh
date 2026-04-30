@@ -5,6 +5,7 @@ frames=50000
 stat_runs=5
 bench_runs=3
 sample_freq=999
+profile_timeout=120
 out_dir=""
 run_nsys=0
 bin="./build/testing/dvz_live_canvas"
@@ -20,6 +21,7 @@ Options:
   --stat-runs N    Repetitions for perf stat -r (default: 5)
   --bench-runs N   Plain benchmark repetitions before profiling (default: 3)
   --freq N         perf record sample frequency (default: 999)
+  --timeout N      Timeout in seconds for perf record and nsys runs (default: 120)
   --out DIR        Output directory (default: build/profiles/live-canvas-<timestamp>)
   --bin PATH       dvz_live_canvas path (default: ./build/testing/dvz_live_canvas)
   --nsys           Also capture an Nsight Systems Vulkan/OS runtime trace for scene-drp2
@@ -47,6 +49,10 @@ while (($# > 0)); do
             ;;
         --freq)
             sample_freq="${2:?missing value for --freq}"
+            shift 2
+            ;;
+        --timeout)
+            profile_timeout="${2:?missing value for --timeout}"
             shift 2
             ;;
         --out)
@@ -89,6 +95,10 @@ if [[ ! "$sample_freq" =~ ^[0-9]+$ ]] || ((sample_freq == 0)); then
     echo "error: --freq must be a positive integer" >&2
     exit 1
 fi
+if [[ ! "$profile_timeout" =~ ^[0-9]+$ ]] || ((profile_timeout == 0)); then
+    echo "error: --timeout must be a positive integer" >&2
+    exit 1
+fi
 if [[ ! -x "$bin" ]]; then
     echo "error: '$bin' is missing or not executable; run 'just build RelWithDebInfo' first" >&2
     exit 1
@@ -96,12 +106,13 @@ fi
 perf_available=0
 perf_unavailable_reason=""
 if command -v perf >/dev/null 2>&1; then
-    perf_probe="$(perf stat -e task-clock -- true 2>&1 >/dev/null || true)"
-    if [[ -z "$perf_probe" ]]; then
+    perf_probe_file="$(mktemp)"
+    if perf stat -e task-clock -- true >/dev/null 2>"$perf_probe_file"; then
         perf_available=1
     else
-        perf_unavailable_reason="$perf_probe"
+        perf_unavailable_reason="$(cat "$perf_probe_file")"
     fi
+    rm -f "$perf_probe_file"
 else
     perf_unavailable_reason="perf was not found in PATH"
 fi
@@ -115,6 +126,14 @@ run_case() {
     local mode="$1"
     shift
     "$bin" --benchmark --frames "$frames" --draw "$mode" "$@"
+}
+
+run_with_timeout() {
+    if command -v timeout >/dev/null 2>&1; then
+        timeout --kill-after=5s "$profile_timeout" "$@"
+    else
+        "$@"
+    fi
 }
 
 record_command() {
@@ -133,6 +152,7 @@ record_command() {
     echo "bench_runs: $bench_runs"
     echo "stat_runs: $stat_runs"
     echo "sample_freq: $sample_freq"
+    echo "profile_timeout: $profile_timeout"
     echo
     echo "binary file:"
     file "$bin" || true
@@ -184,7 +204,7 @@ if ((perf_available)); then
             echo "===== $mode perf record ====="
             record_command perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
                 "$bin" --benchmark --frames "$frames" --draw "$mode"
-            perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
+            run_with_timeout perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
                 "$bin" --benchmark --frames "$frames" --draw "$mode" || true
         } >"$log" 2>&1
 
@@ -216,7 +236,7 @@ fi
 if ((run_nsys)); then
     if command -v nsys >/dev/null 2>&1; then
         nsys_base="$out_dir/nsys-scene-drp2"
-        nsys profile --force-overwrite=true --trace=vulkan,osrt --sample=cpu \
+        run_with_timeout nsys profile --force-overwrite=true --trace=vulkan,osrt --sample=cpu \
             --output="$nsys_base" \
             "$bin" --benchmark --frames "$frames" --draw scene-drp2 \
             >"$out_dir/nsys-scene-drp2.log" 2>&1 || true
