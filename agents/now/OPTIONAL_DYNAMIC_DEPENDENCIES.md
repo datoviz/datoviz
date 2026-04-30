@@ -145,3 +145,106 @@ This does not show a catastrophic per-frame accumulation. It does show enough sl
 follow-up leak/cache investigation after the optional-library baseline is fixed. The most useful next
 memory test is to rerun the same 1M-frame benchmark after CUDA/NVENC/NVCUVID and shaderc are made lazy or
 build-disabled for the plain canvas path.
+
+## Leak/Drift Investigation Notes
+
+Follow-up runs on `2026-04-30` compared `scene-drp2` against `clear`.
+
+Clear path report:
+
+```text
+build/profiles/live-canvas-memory-20260430-121158
+```
+
+Command:
+
+```text
+./build-profile/testing/dvz_live_canvas --benchmark --frames 1000000 --draw clear
+```
+
+Result:
+
+```text
+frames=1000000
+elapsed=63.383946s
+fps=15773.71
+avg_ms=0.0634
+peak_vmrss_or_vmhwm_kb=173824
+```
+
+The clear path shows nearly the same slow RSS drift as `scene-drp2`:
+
+```text
+clear stable window:     +7700 KB over ~62.5 s, ~7.22 MB/min
+scene-drp2 stable window: +7152 KB over ~50.4 s, ~8.32 MB/min
+```
+
+This strongly suggests the drift is below DRP2/scene emission, because it happens even when the app only
+clears and presents.
+
+Valgrind leak check:
+
+```text
+build/profiles/valgrind-live-canvas-20260430/clear-leak.log
+```
+
+The only definite leak reported was:
+
+```text
+184 bytes direct, 1,809 bytes indirect, from libdbus
+```
+
+No Datoviz-owned definite leak was visible in that small `clear` run. The rest of the Valgrind output was
+dominated by NVIDIA/GLX uninitialized-value noise.
+
+Massif:
+
+```text
+build/profiles/valgrind-live-canvas-20260430/clear-massif.out
+```
+
+Massif showed ordinary heap usage plateauing around:
+
+```text
+peak heap: ~20.78 MB
+last heap after teardown: ~0.81 MB
+```
+
+This means the RSS drift is probably not normal malloc/free heap accumulation in Datoviz.
+
+`smaps_rollup` and `pmap`:
+
+```text
+build/profiles/valgrind-live-canvas-20260430/clear-smaps-rollup.tsv
+build/profiles/valgrind-live-canvas-20260430/clear-pmap2-5s.txt
+build/profiles/valgrind-live-canvas-20260430/clear-pmap2-45s.txt
+```
+
+The steady drift from 5s to 60s was private anonymous memory:
+
+```text
+Private_Dirty: +6728 KB
+Anonymous:     +6728 KB
+Shared_Clean:  +12 KB
+```
+
+The 5s-to-45s `pmap` comparison pointed at one anonymous mapping:
+
+```text
+000072e0c06d3000 drss=5828 KB ddirty=5828 KB rw--- [ anon ]
+```
+
+That mapping sits near NVIDIA Vulkan/GL driver mappings (`libnvidia-rtcore`,
+`libnvidia-glvkspirv`, `libnvidia-allocator`, `nvidiactl`, `libnvidia-gpucomp`,
+`libnvidia-glcore`). This is not proof that the driver owns the growth, but it makes a Datoviz heap leak
+less likely than driver/runtime anonymous cache growth.
+
+Policy conclusion:
+
+1. Treat long-run bounded memory as a Datoviz requirement even if the growth comes from the GPU driver.
+2. Keep the `clear` path as the baseline memory guard; if `clear` drifts, investigate canvas/Vulkan/window
+   or driver behavior before DRP2/scene.
+3. Add a future long-run memory gate that samples RSS/PSS/private-dirty and fails only on sustained
+   post-warmup growth above a configured slope.
+4. After optional dynamic dependencies are made lazy, rerun the same tests. Removing eager video/compiler
+   libraries should make the remaining driver/runtime footprint easier to interpret.
