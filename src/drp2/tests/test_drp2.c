@@ -1456,6 +1456,61 @@ int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
 }
 
 
+
+int test_drp2_runtime_frame_lifecycle_edge_cases(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    /* Execute a stream that creates a texture, then attach a frame target to that texture id.
+       The attach should succeed because the semantic object is already a DRP2_OBJECT_TEXTURE. */
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 9, 4, 4,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+
+    DvzStreamFrame frame = _test_stream_frame(0x100, 4, 4);
+    AT(dvz_drp2_runtime_attach_frame_target(runtime, 9, &frame));
+
+    /* Attach fails for a non-texture runtime object. */
+    DvzDrp2CommandStream* stream2 = dvz_drp2_stream();
+    ANN(stream2);
+    AT(dvz_drp2_stream_create_buffer(
+        stream2, 11, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    result = dvz_drp2_runtime_execute(runtime, stream2);
+    AT(result.ok);
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 11, &frame));
+
+    /* After attach failure, valid streams still execute. */
+    DvzDrp2CommandStream* stream3 = dvz_drp2_stream();
+    ANN(stream3);
+    AT(dvz_drp2_stream_destroy_buffer(stream3, 11));
+    result = dvz_drp2_runtime_execute(runtime, stream3);
+    AT(result.ok);
+
+    /* copy_texture_to_frame rejects NULL in semantic-only mode. */
+    AT(!dvz_drp2_runtime_copy_texture_to_frame(NULL, 9, &frame));
+    AT(!dvz_drp2_runtime_copy_texture_to_frame(runtime, 9, NULL));
+
+    dvz_drp2_stream_destroy(stream3);
+    dvz_drp2_stream_destroy(stream2);
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item)
 {
@@ -2224,6 +2279,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
     TEST_SIMPLE(test_drp2_runtime_frame_target_validation);
+    TEST_SIMPLE(test_drp2_runtime_frame_lifecycle_edge_cases);
 #if DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
