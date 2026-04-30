@@ -327,6 +327,19 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     DvzDiagnosticReport* report, const DvzFramePlanEmitConfig* cfg);
 
 
+/**
+ * Look up the DRP2 object id assigned to an emitter-internal key.
+ *
+ * Returns the id previously assigned to `key`, or 0 if the key has not been allocated yet.
+ *
+ * @param emitter the persistent emitter
+ * @param key the internal object key (e.g. "_rb", "_vs", "_pipe0")
+ * @return the DRP2 id, or 0 if not found
+ */
+DVZ_EXPORT uint64_t
+dvz_frame_plan_emitter_object_id(const DvzFramePlanEmitter* emitter, const char* key);
+
+
 
 /**
  * Destroy a JSON string returned by dvz_frame_plan_json().

@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -49,6 +50,7 @@
 #define DRP2_ID_COMPUTE_SHADER 9002
 #define DRP2_MAX_FIXTURE_RESOURCES 64
 #define DRP2_RUNTIME_TRANSIENT_ID_BASE 10000
+#define DRP2_EMITTER_OBJECT_ID_BASE    5000
 
 #define DRP2_VERTEX_WGSL                                                                        \
     "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
@@ -118,20 +120,9 @@ struct ConverterState
 struct DvzFramePlanEmitter
 {
     ConverterState resources;
+    ConverterState objects;
     uint64_t next_transient_id;
     bool handshake_sent;
-    bool vertex_shader_created;
-    bool fragment_shader_created;
-    bool render_pipeline_created;
-    bool color_target_created;
-    bool readback_buffer_created;
-    bool sampler_created;
-    bool bind_group_layout_created;
-    bool bind_group_created;
-    bool storage_bind_group_layout_created;
-    bool storage_bind_group_created;
-    bool compute_shader_created;
-    bool compute_pipeline_created;
 };
 
 
@@ -191,6 +182,30 @@ static uint64_t _resource_id(ConverterState* state, const char* key)
     resource->id = state->next_id++;
     return resource->id;
 }
+
+
+
+static const char* _shader_format_tag(const DvzFramePlanEmitConfig* cfg)
+{
+    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        return "g";
+    return "w";
+}
+
+
+
+static uint64_t _obj_id(DvzFramePlanEmitter* emitter, const char* key, bool* is_new)
+{
+    ANN(emitter);
+    ANN(key);
+    ANN(is_new);
+    uint32_t n = emitter->objects.count;
+    uint64_t id = _resource_id(&emitter->objects, key);
+    *is_new = (id != 0) && (emitter->objects.count > n);
+    return id;
+}
+
+
 
 /**
  * Fill a base64 string representing zero-initialized bytes.
@@ -970,43 +985,75 @@ static bool _emitter_emit_render(
         return false;
 
     bool ok = true;
-    if (!emitter->vertex_shader_created)
+    bool is_new = false;
+    const char* fmt = _shader_format_tag(cfg);
+
+    char vs_key[32];
+    if (cfg != NULL && cfg->fullscreen_triangle)
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_full%s", fmt);
+    else
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs%s", fmt);
+    uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
+    if (vs_id == 0)
+        return false;
+    if (is_new)
     {
         const char* vertex_wgsl = NULL;
         const char* vertex_glsl = NULL;
         _render_vertex_shader_source(cfg, &vertex_wgsl, &vertex_glsl);
-        ok = ok && _emit_shader(
-                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", vertex_wgsl, vertex_glsl, cfg);
-        emitter->vertex_shader_created = ok;
+        ok = ok && _emit_shader(stream, vs_id, "VERTEX", vertex_wgsl, vertex_glsl, cfg);
     }
-    if (ok && !emitter->fragment_shader_created)
-    {
+
+    char fs_key[16];
+    dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
+    uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
+    if (fs_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
-                       DRP2_FRAGMENT_GLSL, cfg);
-        emitter->fragment_shader_created = ok;
-    }
-    if (ok && !emitter->render_pipeline_created)
-    {
+                       stream, fs_id, "FRAGMENT", DRP2_FRAGMENT_WGSL, DRP2_FRAGMENT_GLSL, cfg);
+
+    char pipe_key[32];
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe%u%s", vertex_buffer_count, fmt);
+    uint64_t pipe_id = _obj_id(emitter, pipe_key, &is_new);
+    if (pipe_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && dvz_drp2_stream_create_render_pipeline(
-                       stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER,
-                       vertex_buffer_count);
-        emitter->render_pipeline_created = ok;
-    }
-    uint64_t color_target_id = _color_target_id(cfg);
-    if (ok && !emitter->color_target_created && (cfg == NULL || !cfg->external_color_target))
+                       stream, pipe_id, vs_id, fs_id, vertex_buffer_count);
+
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
     {
-        uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-        ok = ok && dvz_drp2_stream_create_texture_2d_usage(
-                       stream, color_target_id, 4, 4, usage);
-        emitter->color_target_created = ok;
+        color_id = _color_target_id(cfg);
     }
-    if (ok && readback != NULL && !emitter->readback_buffer_created)
+    else
     {
-        ok = ok && _emit_readback_buffer(stream, readback);
-        emitter->readback_buffer_created = ok;
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
     }
+
+    uint64_t rb_id = 0;
+    if (readback != NULL)
+    {
+        rb_id = _obj_id(emitter, "_rb", &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
+    }
+
     if (!ok)
         return false;
 
@@ -1016,8 +1063,8 @@ static bool _emitter_emit_render(
     uint64_t submission_id = _emitter_next_transient_id(emitter);
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_target_id) &&
-         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE);
+         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_id) &&
+         dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
@@ -1025,14 +1072,13 @@ static bool _emitter_emit_render(
     if (ok && readback != NULL)
     {
         ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_target_id, DRP2_ID_READBACK_BUFFER, 0, 1,
-                       1, 4, 1);
+                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
     }
     ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
     if (readback != NULL)
     {
         ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, DRP2_ID_READBACK_BUFFER, 0,
+                       stream, command_buffer_id, submission_id, rb_id, 0,
                        readback->u.copy.byte_size);
     }
     else
@@ -1063,59 +1109,91 @@ static bool _emitter_emit_texture_render(
         return false;
 
     bool ok = true;
-    if (!emitter->sampler_created)
-    {
-        ok = ok && dvz_drp2_stream_create_sampler(stream, DRP2_ID_SAMPLER);
-        emitter->sampler_created = ok;
-    }
-    if (ok && !emitter->bind_group_layout_created)
-    {
-        ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
-                       stream, DRP2_ID_BIND_GROUP_LAYOUT);
-        emitter->bind_group_layout_created = ok;
-    }
-    if (ok && !emitter->vertex_shader_created)
-    {
+    bool is_new = false;
+    const char* fmt = _shader_format_tag(cfg);
+
+    uint64_t sampler_id = _obj_id(emitter, "_sampler", &is_new);
+    if (sampler_id == 0)
+        return false;
+    if (is_new)
+        ok = ok && dvz_drp2_stream_create_sampler(stream, sampler_id);
+
+    uint64_t bgl_id = _obj_id(emitter, "_bgl_tex", &is_new);
+    if (bgl_id == 0)
+        return false;
+    if (ok && is_new)
+        ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
+
+    char vs_key[16];
+    dvz_snprintf(vs_key, sizeof(vs_key), "_vs_tex%s", fmt);
+    uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
+    if (vs_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL,
+                       stream, vs_id, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL,
                        DRP2_TEXTURE_VERTEX_GLSL, cfg);
-        emitter->vertex_shader_created = ok;
-    }
-    if (ok && !emitter->fragment_shader_created)
-    {
+
+    char fs_key[16];
+    dvz_snprintf(fs_key, sizeof(fs_key), "_fs_tex%s", fmt);
+    uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
+    if (fs_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL,
+                       stream, fs_id, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL,
                        DRP2_TEXTURE_FRAGMENT_GLSL, cfg);
-        emitter->fragment_shader_created = ok;
-    }
-    if (ok && !emitter->render_pipeline_created)
-    {
+
+    char pipe_key[32];
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_tex%s_%" PRIu64, fmt, bgl_id);
+    uint64_t pipe_id = _obj_id(emitter, pipe_key, &is_new);
+    if (pipe_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
-                       stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER,
-                       0, DRP2_ID_BIND_GROUP_LAYOUT);
-        emitter->render_pipeline_created = ok;
-    }
-    if (ok && !emitter->bind_group_created)
-    {
+                       stream, pipe_id, vs_id, fs_id, 0, bgl_id);
+
+    char bg_key[32];
+    dvz_snprintf(bg_key, sizeof(bg_key), "_bg_tex_%" PRIu64, texture_id);
+    uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
+    if (bg_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
-                       stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT, texture_id,
-                       DRP2_ID_SAMPLER);
-        emitter->bind_group_created = ok;
-    }
-    uint64_t color_target_id = _color_target_id(cfg);
-    if (ok && !emitter->color_target_created && (cfg == NULL || !cfg->external_color_target))
+                       stream, bg_id, bgl_id, texture_id, sampler_id);
+
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
     {
-        uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-        ok = ok && dvz_drp2_stream_create_texture_2d_usage(
-                       stream, color_target_id, 4, 4, usage);
-        emitter->color_target_created = ok;
+        color_id = _color_target_id(cfg);
     }
-    if (ok && readback != NULL && !emitter->readback_buffer_created)
+    else
     {
-        ok = ok && _emit_readback_buffer(stream, readback);
-        emitter->readback_buffer_created = ok;
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
     }
+
+    uint64_t rb_id = 0;
+    if (readback != NULL)
+    {
+        rb_id = _obj_id(emitter, "_rb", &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
+    }
+
     if (!ok)
         return false;
 
@@ -1125,22 +1203,21 @@ static bool _emitter_emit_texture_render(
     uint64_t submission_id = _emitter_next_transient_id(emitter);
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_target_id) &&
-         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE) &&
-         dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, DRP2_ID_BIND_GROUP) &&
+         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_id) &&
+         dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id) &&
+         dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, bg_id) &&
          dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     if (ok && readback != NULL)
     {
         ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_target_id, DRP2_ID_READBACK_BUFFER, 0, 1,
-                       1, 4, 1);
+                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
     }
     ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
     if (readback != NULL)
     {
         ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, DRP2_ID_READBACK_BUFFER, 0,
+                       stream, command_buffer_id, submission_id, rb_id, 0,
                        readback->u.copy.byte_size);
     }
     else
@@ -1174,70 +1251,107 @@ static bool _emitter_emit_compute_assisted_render(
         return false;
 
     bool ok = true;
-    if (!emitter->storage_bind_group_layout_created)
-    {
-        ok = ok && dvz_drp2_stream_create_storage_bind_group_layout(
-                       stream, DRP2_ID_BIND_GROUP_LAYOUT);
-        emitter->storage_bind_group_layout_created = ok;
-    }
-    if (ok && !emitter->compute_shader_created)
-    {
+    bool is_new = false;
+    const char* fmt = _shader_format_tag(cfg);
+
+    uint64_t bgl_stor_id = _obj_id(emitter, "_bgl_stor", &is_new);
+    if (bgl_stor_id == 0)
+        return false;
+    if (is_new)
+        ok = ok &&
+             dvz_drp2_stream_create_storage_bind_group_layout(stream, bgl_stor_id);
+
+    char cs_key[16];
+    dvz_snprintf(cs_key, sizeof(cs_key), "_cs%s", fmt);
+    uint64_t cs_id = _obj_id(emitter, cs_key, &is_new);
+    if (cs_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", DRP2_COMPUTE_WGSL,
-                       DRP2_COMPUTE_GLSL, cfg);
-        emitter->compute_shader_created = ok;
-    }
-    if (ok && !emitter->compute_pipeline_created)
-    {
+                       stream, cs_id, "COMPUTE", DRP2_COMPUTE_WGSL, DRP2_COMPUTE_GLSL, cfg);
+
+    char cpipe_key[32];
+    dvz_snprintf(cpipe_key, sizeof(cpipe_key), "_cpipe%s_%" PRIu64, fmt, bgl_stor_id);
+    uint64_t cpipe_id = _obj_id(emitter, cpipe_key, &is_new);
+    if (cpipe_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
-                       stream, DRP2_ID_COMPUTE_PIPELINE, DRP2_ID_COMPUTE_SHADER,
-                       DRP2_ID_BIND_GROUP_LAYOUT);
-        emitter->compute_pipeline_created = ok;
-    }
-    if (ok && !emitter->storage_bind_group_created)
-    {
+                       stream, cpipe_id, cs_id, bgl_stor_id);
+
+    char bg_stor_key[64];
+    dvz_snprintf(
+        bg_stor_key, sizeof(bg_stor_key), "_bg_stor_%" PRIu64 "_%" PRIu64,
+        emitter->resources.first_compute_input_id,
+        emitter->resources.first_compute_output_id);
+    uint64_t bg_stor_id = _obj_id(emitter, bg_stor_key, &is_new);
+    if (bg_stor_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && dvz_drp2_stream_create_storage_bind_group(
-                       stream, DRP2_ID_BIND_GROUP, DRP2_ID_BIND_GROUP_LAYOUT,
+                       stream, bg_stor_id, bgl_stor_id,
                        emitter->resources.first_compute_input_id,
                        emitter->resources.first_compute_output_id,
                        emitter->resources.compute_buffer_size);
-        emitter->storage_bind_group_created = ok;
-    }
-    if (ok && !emitter->vertex_shader_created)
-    {
+
+    char vs_key[16];
+    dvz_snprintf(vs_key, sizeof(vs_key), "_vs%s", fmt);
+    uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
+    if (vs_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL,
-                       DRP2_VERTEX_GLSL, cfg);
-        emitter->vertex_shader_created = ok;
-    }
-    if (ok && !emitter->fragment_shader_created)
-    {
+                       stream, vs_id, "VERTEX", DRP2_VERTEX_WGSL, DRP2_VERTEX_GLSL, cfg);
+
+    char fs_key[16];
+    dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
+    uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
+    if (fs_id == 0)
+        return false;
+    if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
-                       DRP2_FRAGMENT_GLSL, cfg);
-        emitter->fragment_shader_created = ok;
-    }
-    if (ok && !emitter->render_pipeline_created)
+                       stream, fs_id, "FRAGMENT", DRP2_FRAGMENT_WGSL, DRP2_FRAGMENT_GLSL, cfg);
+
+    char pipe_key[32];
+    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe1%s", fmt);
+    uint64_t pipe_id = _obj_id(emitter, pipe_key, &is_new);
+    if (pipe_id == 0)
+        return false;
+    if (ok && is_new)
+        ok = ok && dvz_drp2_stream_create_render_pipeline(stream, pipe_id, vs_id, fs_id, 1);
+
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
     {
-        ok = ok && dvz_drp2_stream_create_render_pipeline(
-                       stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER,
-                       1);
-        emitter->render_pipeline_created = ok;
+        color_id = _color_target_id(cfg);
     }
-    uint64_t color_target_id = _color_target_id(cfg);
-    if (ok && !emitter->color_target_created && (cfg == NULL || !cfg->external_color_target))
+    else
     {
-        uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                         DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-        ok = ok && dvz_drp2_stream_create_texture_2d_usage(
-                       stream, color_target_id, 4, 4, usage);
-        emitter->color_target_created = ok;
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
     }
-    if (ok && readback != NULL && !emitter->readback_buffer_created)
+
+    uint64_t rb_id = 0;
+    if (readback != NULL)
     {
-        ok = ok && _emit_readback_buffer(stream, readback);
-        emitter->readback_buffer_created = ok;
+        rb_id = _obj_id(emitter, "_rb", &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
     }
+
     if (!ok)
         return false;
 
@@ -1249,14 +1363,14 @@ static bool _emitter_emit_compute_assisted_render(
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_compute_pass(stream, compute_pass_id, encoder_id) &&
-         dvz_drp2_stream_set_pipeline(stream, compute_pass_id, DRP2_ID_COMPUTE_PIPELINE) &&
-         dvz_drp2_stream_set_bind_group(stream, compute_pass_id, 0, DRP2_ID_BIND_GROUP) &&
+         dvz_drp2_stream_set_pipeline(stream, compute_pass_id, cpipe_id) &&
+         dvz_drp2_stream_set_bind_group(stream, compute_pass_id, 0, bg_stor_id) &&
          dvz_drp2_stream_dispatch_workgroups(
              stream, compute_pass_id, compute->u.compute.dispatch[0],
              compute->u.compute.dispatch[1], compute->u.compute.dispatch[2]) &&
          dvz_drp2_stream_end_compute_pass(stream, compute_pass_id) &&
-         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_target_id) &&
-         dvz_drp2_stream_set_pipeline(stream, render_pass_id, DRP2_ID_PIPELINE) &&
+         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_id) &&
+         dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id) &&
          dvz_drp2_stream_set_vertex_buffer(
              stream, render_pass_id, 0, emitter->resources.first_compute_output_id, 0) &&
          dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
@@ -1264,14 +1378,13 @@ static bool _emitter_emit_compute_assisted_render(
     if (ok && readback != NULL)
     {
         ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_target_id, DRP2_ID_READBACK_BUFFER, 0, 1, 1, 4,
-                       1);
+                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
     }
     ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
     if (readback != NULL)
     {
         ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, DRP2_ID_READBACK_BUFFER, 0,
+                       stream, command_buffer_id, submission_id, rb_id, 0,
                        readback->u.copy.byte_size);
     }
     else
@@ -1414,6 +1527,8 @@ DvzFramePlanEmitter* dvz_frame_plan_emitter(void)
     if (emitter == NULL)
         return NULL;
     _state_init(&emitter->resources);
+    _state_init(&emitter->objects);
+    emitter->objects.next_id = DRP2_EMITTER_OBJECT_ID_BASE;
     emitter->next_transient_id = DRP2_RUNTIME_TRANSIENT_ID_BASE;
     return emitter;
 }
@@ -1430,6 +1545,21 @@ void dvz_frame_plan_emitter_destroy(DvzFramePlanEmitter* emitter)
     if (emitter == NULL)
         return;
     dvz_free(emitter);
+}
+
+
+
+uint64_t dvz_frame_plan_emitter_object_id(const DvzFramePlanEmitter* emitter, const char* key)
+{
+    ANN(emitter);
+    ANN(key);
+    const ConverterState* state = &emitter->objects;
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        if (strcmp(state->resources[i].key, key) == 0)
+            return state->resources[i].id;
+    }
+    return 0;
 }
 
 

@@ -746,7 +746,9 @@ int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstSuite* suite, Ts
     AT(result.ok);
 
     uint8_t downloaded[4] = {0};
-    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
+    AT(rb_id != 0);
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_runtime_destroy(runtime);
@@ -831,7 +833,9 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     AT(result.ok);
 
     uint8_t downloaded[4] = {0};
-    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
+    AT(rb_id != 0);
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_runtime_destroy(runtime);
@@ -914,7 +918,9 @@ int test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes(
     AT(result.ok);
 
     uint8_t downloaded[4] = {0};
-    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
+    AT(rb_id != 0);
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_runtime_destroy(runtime);
@@ -1002,7 +1008,9 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
     AT(result.ok);
 
     uint8_t downloaded[4] = {0};
-    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 12, 0, 4, downloaded));
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
+    AT(rb_id != 0);
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, rb_id, 0, 4, downloaded));
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
 
     dvz_drp2_runtime_destroy(runtime);
