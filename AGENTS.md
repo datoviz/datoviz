@@ -424,6 +424,9 @@ They are not installed, so keep `src/common` in include paths whenever you touch
 * **Public headers live in `include/datoviz/`; shared `_*.h` stay in `src/common` and remain reachable via include dirs**
 * **One unified test executable** (`dvztest`)
 * **Public headers cleanly grouped by module**
+* **Performance is a core requirement** — keep the graphics stack lean, preserve immediate present mode
+  for run-as-fast-as-possible benchmarks, and treat unexpected frame pacing or overhead regressions as
+  first-class issues to investigate.
 * **Roadmap discipline** — stabilize active modules first; keep non-activated modules as scaffolding until
   explicitly requested.
 
@@ -522,8 +525,10 @@ Codex may and should run analysis tools when they are available and relevant to 
 ## 🚧 Refactor Roadmap Guidance
 
 - **Active graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`):** prioritize robustness,
-  resource-lifetime correctness, and clear public/internal boundaries. The current highest-value work
-  is finishing `vk`/`vklite` boundary hardening rather than reopening broad canvas/video bring-up.
+  resource-lifetime correctness, performance, and clear public/internal boundaries. Preserve immediate
+  presentation paths for high-FPS benchmarking, and profile carefully before accepting slower live-loop
+  behavior. The current highest-value work is finishing `vk`/`vklite` boundary hardening rather than
+  reopening broad canvas/video bring-up.
 - **Cross-module helpers:** if multiple modules need the same low-level utility, move it to `src/common`
   instead of duplicating it.
 - **Scaffolding modules (`color`, `wasm`, and higher-level renderer/scene/client layers):** keep untouched

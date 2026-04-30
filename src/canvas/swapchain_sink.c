@@ -245,11 +245,7 @@ static VkFormat canvas_frame_format(const DvzCanvas* canvas)
 static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 {
     ANN(canvas);
-    if (canvas->cfg.present_mode != 0)
-    {
-        return canvas->cfg.present_mode;
-    }
-    return VK_PRESENT_MODE_FIFO_KHR;
+    return canvas->cfg.present_mode;
 }
 
 
