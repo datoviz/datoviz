@@ -1,10 +1,9 @@
 > **Execution Status**
-> - **Status:** `ACTIVE HARDENING PLAN`
+> - **Status:** `COMPLETED`
 > - **Created on:** `2026-04-30`
+> - **Completed on:** `2026-04-30`
 > - **Purpose:** make the active DRP2/scene implementation more robust while it is being wired into
 >   the existing canvas, stream/sink, and vklite stack.
-> - **Current priority:** fix concrete C safety risks first, then tighten borrowed-frame and
->   vklite lifecycle contracts with focused tests and static/dynamic analysis.
 
 # DRP2/Scene Safety Hardening Plan
 
@@ -152,14 +151,40 @@ For changes touching vklite/canvas/stream boundaries, also run relevant graphics
 practical, Vulkan validation-layer checks.
 
 
-## Active Findings
+## Completion Summary
 
-Initial code review found these concrete first-pass risks:
+All six phases completed on `2026-04-30`.
 
-1. `src/drp2/stream.c` grows command and JSON buffers without overflow-safe arithmetic.
-2. `src/scene/frame_plan.c` has the same grow/realloc and JSON arithmetic pattern.
-3. `src/scene/converter.c` computes base64 output sizes with unchecked multiplication/addition.
-4. `src/drp2/runtime.c` already has safer capacity growth in several places, but still needs an
-   object-pointer lifetime audit around `_vklite_add()` and borrowed frame target replacement.
-5. v0.4-dev analysis recipes exist, but `just cppcheck` should be treated as legacy-broad until it is
-   narrowed or supplemented for active `src/drp2` and `src/scene` work.
+Phase 0: Baseline green — `just build`, `just test drp2`, `just test scene`, `just spec-check`
+all passed before and after.
+
+Phase 1: Overflow-safe arithmetic was already in place in `stream.c` and `frame_plan.c` before
+this pass. `converter.c` base64 size arithmetic was also already guarded. No new changes needed.
+
+Phase 2: Public API NULL handling was already correct throughout `runtime.c` and `stream.c`.
+All public create/execute functions return `NULL`/`false` for recoverable conditions. Internal
+helpers use `ANN`/`ASSERT` only for invariants.
+
+Phase 3: Object-table pointer lifetime was already correct in `runtime.c`. The
+reacquire-after-add pattern was in place for every call site where `_add_object()` or
+`_vklite_add()` could invalidate a pointer.
+
+Phase 4: Added `test_drp2_runtime_frame_lifecycle_edge_cases` in `src/drp2/tests/test_drp2.c`
+covering:
+- attaching a frame target over a runtime-owned texture (allowed),
+- attaching a frame target to a non-texture runtime object (rejected),
+- executing a stream after attach failure (succeeds),
+- `dvz_drp2_runtime_copy_texture_to_frame` NULL rejection in semantic-only mode.
+
+Phase 5: `cppcheck` not available in the environment. `just asan` + `just atest drp2` + `just
+atest scene` all passed clean.
+
+Phase 6: Full validation gate green — 244/244 tests passed, spec-check 112/112 passed.
+
+## Initial Findings (closed)
+
+1. `src/drp2/stream.c` — overflow-safe arithmetic already present.
+2. `src/scene/frame_plan.c` — overflow-safe arithmetic already present.
+3. `src/scene/converter.c` — base64 arithmetic already guarded.
+4. `src/drp2/runtime.c` — reacquire-after-add pattern already correct.
+5. `just cppcheck` not available in this environment; ASan used instead.
