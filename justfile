@@ -330,6 +330,18 @@ build-gprof release="RelWithDebInfo":
 #
 
 [linux]
+build-profile:
+    @set -e
+    @unset CC
+    @unset CXX
+    @mkdir -p docs/images
+    @mkdir -p build-profile
+    @if [ -d libs/vulkan/linux ]; then cp -L libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build-profile/; fi
+    @cd build-profile/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDVZ_USE_VALIDATION=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    @cd build-profile/ && ninja dvz_live_canvas
+#
+
+[linux]
 run-gprof *args:
     @set -e
     @if [ ! -x "build-gprof/testing/dvztest" ]; then echo "build-gprof/testing/dvztest missing; run 'just build-gprof' first"; exit 1; fi
@@ -1564,6 +1576,12 @@ canvas *args:
 [linux]
 profile-canvas *args:
     scripts/profile_live_canvas.sh {{args}}
+#
+
+[linux]
+profile-canvas-release *args:
+    just build-profile
+    scripts/profile_live_canvas.sh --bin ./build-profile/testing/dvz_live_canvas {{args}}
 #
 
 [macos]
