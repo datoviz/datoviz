@@ -185,6 +185,8 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value);
 
 void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
 
+bool dvz_canvas_swapchain_present_mode(const DvzCanvas* canvas, VkPresentModeKHR* out_mode);
+
 bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas);
 
 void dvz_canvas_swapchain_handles_refreshed(DvzCanvas* canvas);

@@ -25,6 +25,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "canvas_internal.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/input/keyboard.h"
@@ -121,6 +122,7 @@ typedef struct DvzCanvasApp
     bool scene_last_ok;
     bool scene_reported_ok;
     bool scene_reported_error;
+    bool present_mode_reported;
 } DvzCanvasApp;
 
 
@@ -226,6 +228,62 @@ static bool _dvz_canvas_parse_bg(const char* arg, float rgba[4])
     rgba[2] = b;
     rgba[3] = a;
     return true;
+}
+
+
+
+/**
+ * Return a display name for a Vulkan present mode.
+ *
+ * @param mode Vulkan present mode
+ * @returns static present mode name
+ */
+static const char* _dvz_canvas_present_mode_name(VkPresentModeKHR mode)
+{
+    switch (mode)
+    {
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        return "immediate";
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return "mailbox";
+    case VK_PRESENT_MODE_FIFO_KHR:
+        return "fifo";
+    case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+        return "fifo-relaxed";
+    default:
+        return "unknown";
+    }
+}
+
+
+
+/**
+ * Print the requested and resolved swapchain present modes once they are available.
+ *
+ * @param app canvas app state
+ */
+static void _dvz_canvas_report_present_mode(DvzCanvasApp* app)
+{
+    ANN(app);
+    if (
+        app->present_mode_reported ||
+        app->options.render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT || app->canvas == NULL)
+    {
+        return;
+    }
+
+    VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
+    if (!dvz_canvas_swapchain_present_mode(app->canvas, &resolved))
+    {
+        return;
+    }
+
+    VkPresentModeKHR requested = app->options.present_mode;
+    dvz_fprintf(
+        stderr, "present mode: requested=%s (%d), resolved=%s (%d)\n",
+        _dvz_canvas_present_mode_name(requested), (int)requested,
+        _dvz_canvas_present_mode_name(resolved), (int)resolved);
+    app->present_mode_reported = true;
 }
 
 
@@ -1112,6 +1170,7 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
             dvz_fprintf(stderr, "canvas submit error\\n");
             break;
         }
+        _dvz_canvas_report_present_mode(app);
         submitted_frames++;
         if (app->options.max_frames > 0 && submitted_frames >= app->options.max_frames)
         {

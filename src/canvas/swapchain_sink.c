@@ -1693,6 +1693,31 @@ DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas*
 
 
 
+/**
+ * Return the resolved present mode of the live swapchain.
+ *
+ * @param canvas canvas owning the swapchain
+ * @param out_mode destination for the resolved present mode
+ * @returns true when a live swapchain has a resolved present mode
+ */
+bool dvz_canvas_swapchain_present_mode(const DvzCanvas* canvas, VkPresentModeKHR* out_mode)
+{
+    if (out_mode == NULL)
+    {
+        return false;
+    }
+    if (
+        !canvas || !canvas->swapchain || canvas->swapchain->swapchain_wrapper == NULL ||
+        !dvz_swapchain_ready(canvas->swapchain->swapchain_wrapper))
+    {
+        return false;
+    }
+    *out_mode = dvz_swapchain_present_mode(canvas->swapchain->swapchain_wrapper);
+    return true;
+}
+
+
+
 bool dvz_canvas_swapchain_handles_dirty(const DvzCanvas* canvas)
 {
     if (!canvas || !canvas->swapchain || !canvas->swapchain->active_slot)
