@@ -1135,7 +1135,9 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     }
 
     DvzInstanceConfig icfg = dvz_instance_default_config();
+#if ENABLE_VALIDATION_LAYERS
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
+#endif
     uint32_t ext_count =
         dvz_window_host_required_extension_count(app->host, app->options.backend);
     if (ext_count > 0)
