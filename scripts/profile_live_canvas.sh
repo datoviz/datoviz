@@ -93,9 +93,17 @@ if [[ ! -x "$bin" ]]; then
     echo "error: '$bin' is missing or not executable; run 'just build RelWithDebInfo' first" >&2
     exit 1
 fi
-if ! command -v perf >/dev/null 2>&1; then
-    echo "error: perf is required for this profiling script" >&2
-    exit 1
+perf_available=0
+perf_unavailable_reason=""
+if command -v perf >/dev/null 2>&1; then
+    perf_probe="$(perf stat -e task-clock -- true 2>&1 >/dev/null || true)"
+    if [[ -z "$perf_probe" ]]; then
+        perf_available=1
+    else
+        perf_unavailable_reason="$perf_probe"
+    fi
+else
+    perf_unavailable_reason="perf was not found in PATH"
 fi
 
 if [[ -z "$out_dir" ]]; then
@@ -157,28 +165,53 @@ for mode in clear scene-drp2; do
         echo "===== $mode perf stat ====="
         record_command perf stat -r "$stat_runs" -d -- \
             "$bin" --benchmark --frames "$frames" --draw "$mode"
-        perf stat -r "$stat_runs" -d -- \
-            "$bin" --benchmark --frames "$frames" --draw "$mode"
+        if ((perf_available)); then
+            perf stat -r "$stat_runs" -d -- \
+                "$bin" --benchmark --frames "$frames" --draw "$mode" || true
+        else
+            echo "perf is unavailable in this environment."
+            echo
+            printf '%s\n' "$perf_unavailable_reason"
+        fi
     } >"$log" 2>&1
 done
 
-for mode in clear scene-drp2; do
-    data="$out_dir/perf-$mode.data"
-    log="$out_dir/perf-record-$mode.log"
+if ((perf_available)); then
+    for mode in clear scene-drp2; do
+        data="$out_dir/perf-$mode.data"
+        log="$out_dir/perf-record-$mode.log"
+        {
+            echo "===== $mode perf record ====="
+            record_command perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
+                "$bin" --benchmark --frames "$frames" --draw "$mode"
+            perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
+                "$bin" --benchmark --frames "$frames" --draw "$mode" || true
+        } >"$log" 2>&1
+
+        if [[ -f "$data" ]]; then
+            perf report --stdio --no-children -i "$data" \
+                >"$out_dir/perf-report-$mode.no-children.txt" 2>&1 || true
+            perf report --stdio --children -i "$data" \
+                >"$out_dir/perf-report-$mode.children.txt" 2>&1 || true
+        fi
+    done
+
+    if [[ -f "$out_dir/perf-clear.data" && -f "$out_dir/perf-scene-drp2.data" ]]; then
+        perf diff "$out_dir/perf-clear.data" "$out_dir/perf-scene-drp2.data" \
+            >"$out_dir/perf-diff-clear-vs-scene-drp2.txt" 2>&1 || true
+    fi
+else
     {
-        echo "===== $mode perf record ====="
-        record_command perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
-            "$bin" --benchmark --frames "$frames" --draw "$mode"
-        perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
-            "$bin" --benchmark --frames "$frames" --draw "$mode"
-    } >"$log" 2>&1
-
-    perf report --stdio --no-children -i "$data" >"$out_dir/perf-report-$mode.no-children.txt" 2>&1 || true
-    perf report --stdio --children -i "$data" >"$out_dir/perf-report-$mode.children.txt" 2>&1 || true
-done
-
-perf diff "$out_dir/perf-clear.data" "$out_dir/perf-scene-drp2.data" \
-    >"$out_dir/perf-diff-clear-vs-scene-drp2.txt" 2>&1 || true
+        echo "perf is unavailable in this environment."
+        echo
+        printf '%s\n' "$perf_unavailable_reason"
+        echo
+        echo "On Linux, this is commonly caused by a restrictive perf_event_paranoid setting."
+        if [[ -r /proc/sys/kernel/perf_event_paranoid ]]; then
+            echo "Current perf_event_paranoid: $(cat /proc/sys/kernel/perf_event_paranoid)"
+        fi
+    } >"$out_dir/perf-unavailable.txt"
+fi
 
 if ((run_nsys)); then
     if command -v nsys >/dev/null 2>&1; then
