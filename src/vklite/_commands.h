@@ -35,4 +35,5 @@ struct DvzCommands
     uint32_t current;
     VkCommandBuffer cmds[DVZ_MAX_SWAPCHAIN_IMAGES];
     bool blocked[DVZ_MAX_SWAPCHAIN_IMAGES];
+    bool borrowed_recording;
 };

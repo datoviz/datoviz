@@ -238,6 +238,11 @@ int dvz_cmd_begin_result(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
+    if (cmds->borrowed_recording)
+    {
+        log_error("cannot begin a borrowed recording command buffer");
+        return 1;
+    }
 
 
     // log_trace("begin command buffer");
@@ -273,6 +278,11 @@ int dvz_cmd_end_result(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
+    if (cmds->borrowed_recording)
+    {
+        log_error("cannot end a borrowed recording command buffer");
+        return 1;
+    }
 
     // log_trace("end command buffer");
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
@@ -304,6 +314,11 @@ void dvz_cmd_reset(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
+    if (cmds->borrowed_recording)
+    {
+        log_error("cannot reset a borrowed recording command buffer");
+        return;
+    }
 
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
 
@@ -321,6 +336,16 @@ void dvz_cmd_reset(DvzCommands* cmds)
 void dvz_cmd_free(DvzCommands* cmds)
 {
     ANN(cmds);
+    if (cmds->borrowed_recording)
+    {
+        log_error("cannot free a borrowed recording command buffer");
+        cmds->count = 0;
+        cmds->current = 0;
+        cmds->borrowed_recording = false;
+        dvz_memset(cmds->cmds, sizeof(cmds->cmds), 0, sizeof(cmds->cmds));
+        dvz_obj_destroyed(&cmds->obj);
+        return;
+    }
     _commands_release(cmds);
     dvz_obj_init(&cmds->obj);
 }
@@ -337,6 +362,11 @@ int dvz_cmd_submit_result(DvzCommands* cmds)
 {
     ANN(cmds);
     ASSERT(cmds->count > 0);
+    if (cmds->borrowed_recording)
+    {
+        log_error("cannot submit a borrowed recording command buffer");
+        return 1;
+    }
     if (!dvz_obj_is_created(&cmds->obj))
     {
         log_error("cannot submit commands before recording them");
@@ -403,6 +433,16 @@ void dvz_commands_destroy(DvzCommands* cmds)
     {
         return;
     }
+    if (cmds->borrowed_recording)
+    {
+        log_error("cannot destroy a borrowed recording command buffer");
+        cmds->count = 0;
+        cmds->current = 0;
+        cmds->borrowed_recording = false;
+        dvz_memset(cmds->cmds, sizeof(cmds->cmds), 0, sizeof(cmds->cmds));
+        dvz_obj_destroyed(&cmds->obj);
+        return;
+    }
     if (cmds->count == 0)
     {
         log_trace("skip destruction of already-destroyed commands");
@@ -424,6 +464,23 @@ void dvz_commands_wrap(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* c
     cmds->device = device;
     cmds->count = 1;
     cmds->cmds[0] = vk_cmd;
+    cmds->borrowed_recording = false;
 
     dvz_obj_created(&cmds->obj);
+}
+
+
+
+/**
+ * Wrap an externally-owned Vulkan command buffer that is already recording.
+ *
+ * @param device the device
+ * @param vk_cmd the borrowed recording Vulkan command buffer
+ * @param[out] cmds the created command buffers
+ */
+void dvz_commands_wrap_borrowed_recording(
+    DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds)
+{
+    dvz_commands_wrap(device, vk_cmd, cmds);
+    cmds->borrowed_recording = true;
 }

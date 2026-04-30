@@ -194,6 +194,48 @@ int test_vklite_commands_destroy_without_recording(TstSuite* suite, TstItem* tst
 
 
 
+int test_vklite_commands_borrowed_recording_rejects_lifecycle(TstSuite* suite, TstItem* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtx* ctx = _commands_ctx();
+    ANN(ctx);
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    ANN(device);
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap_borrowed_recording(
+        device, (VkCommandBuffer)(uintptr_t)0x12345678, cmds);
+    AT(dvz_commands_count(cmds) == 1);
+    AT(dvz_commands_handle(cmds) != VK_NULL_HANDLE);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_cmd_begin_result(cmds) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_cmd_end_result(cmds) != 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_cmd_submit_result(cmds) != 0);
+
+    tst_expect_error_begin(suite);
+    dvz_cmd_reset(cmds);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(dvz_commands_count(cmds) == 1);
+
+    tst_expect_error_begin(suite);
+    dvz_commands_destroy(cmds);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(dvz_commands_count(cmds) == 0);
+    AT(dvz_commands_handle(cmds) == VK_NULL_HANDLE);
+    dvz_commands_free(cmds);
+
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+
+    return err_count > 0;
+}
+
+
+
 int test_vklite_barriers_reset(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);

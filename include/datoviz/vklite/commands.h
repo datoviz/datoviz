@@ -236,11 +236,29 @@ DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
 /**
  * Wrap an existing Vulkan command buffer in a DvzCommands struct.
  *
+ * The wrapped command buffer remains externally owned. This helper is intended for command buffers
+ * whose owner still grants recording-control operations such as begin, end, reset, or submit.
+ *
  * @param device the device
  * @param vk_cmd the Vulkan command buffer
  * @param[out] cmds the created command buffers
  */
 DVZ_EXPORT void dvz_commands_wrap(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds);
+
+
+/**
+ * Wrap an externally-owned Vulkan command buffer that is already recording.
+ *
+ * The returned wrapper may be passed to vklite command-recording helpers only. Calls that would
+ * begin, end, reset, submit, or destroy the borrowed command buffer are rejected before touching
+ * Vulkan.
+ *
+ * @param device the device
+ * @param vk_cmd the borrowed recording Vulkan command buffer
+ * @param[out] cmds the created command buffers
+ */
+DVZ_EXPORT void
+dvz_commands_wrap_borrowed_recording(DvzDevice* device, VkCommandBuffer vk_cmd, DvzCommands* cmds);
 
 
 
