@@ -1,6 +1,6 @@
 # Optional Dynamic Dependencies
 
-Status: implementation in progress (2026-04-30).
+Status: implementation complete (2026-04-30).
 
 ## Motivation
 
