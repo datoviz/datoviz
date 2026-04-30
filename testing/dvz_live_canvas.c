@@ -61,6 +61,8 @@
 #define DVZ_CANVAS_DEFAULT_FPS  60
 #define DVZ_CANVAS_DEFAULT_WIDTH 1024
 #define DVZ_CANVAS_DEFAULT_HEIGHT 640
+#define DVZ_CANVAS_BENCHMARK_DEFAULT_FRAMES 10000
+#define DVZ_CANVAS_BENCHMARK_WARMUP_FRAMES 200
 
 
 
@@ -92,6 +94,7 @@ typedef struct DvzCanvasAppOptions
     DvzVideoCaptureMode record_mode;
     DvzCanvasDrawMode draw_mode;
     bool start_recording;
+    bool benchmark;
 } DvzCanvasAppOptions;
 
 
@@ -123,6 +126,11 @@ typedef struct DvzCanvasApp
     bool scene_reported_ok;
     bool scene_reported_error;
     bool present_mode_reported;
+    double* benchmark_frame_ms;
+    uint32_t benchmark_warmup_frames;
+    uint32_t benchmark_sample_count;
+    double benchmark_start_s;
+    double benchmark_last_s;
 } DvzCanvasApp;
 
 
@@ -157,6 +165,7 @@ static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
     options->record_mode = DVZ_VIDEO_CAPTURE_AUTO;
     options->draw_mode = DVZ_CANVAS_DRAW_CLEAR;
     options->start_recording = false;
+    options->benchmark = false;
 }
 
 
@@ -258,6 +267,247 @@ static const char* _dvz_canvas_present_mode_name(VkPresentModeKHR mode)
 
 
 /**
+ * Return a high-resolution monotonic timestamp in seconds.
+ *
+ * @returns monotonic timestamp in seconds
+ */
+static double _dvz_canvas_benchmark_now(void)
+{
+    struct timespec ts = {0};
+#if defined(CLOCK_MONOTONIC)
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+#else
+    timespec_get(&ts, TIME_UTC);
+#endif
+    return (double)ts.tv_sec + (double)ts.tv_nsec * 1e-9;
+}
+
+
+
+/**
+ * Compare two double values for qsort().
+ *
+ * @param a first value pointer
+ * @param b second value pointer
+ * @returns negative, zero, or positive comparison result
+ */
+static int _dvz_canvas_compare_double(const void* a, const void* b)
+{
+    const double da = *(const double*)a;
+    const double db = *(const double*)b;
+    if (da < db)
+    {
+        return -1;
+    }
+    if (da > db)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Return an integer percentile from a sorted frame-time array.
+ *
+ * @param sorted sorted frame-time samples in milliseconds
+ * @param count number of samples
+ * @param percentile percentile in the [0, 100] range
+ * @returns selected percentile value, or zero without samples
+ */
+static double
+_dvz_canvas_benchmark_percentile(const double* sorted, uint32_t count, uint32_t percentile)
+{
+    if (sorted == NULL || count == 0)
+    {
+        return 0.0;
+    }
+    if (percentile >= 100)
+    {
+        return sorted[count - 1];
+    }
+    uint64_t numerator = (uint64_t)percentile * (uint64_t)(count - 1) + 50;
+    uint32_t idx = (uint32_t)(numerator / 100);
+    if (idx >= count)
+    {
+        idx = count - 1;
+    }
+    return sorted[idx];
+}
+
+
+
+/**
+ * Initialize benchmark state before entering the frame loop.
+ *
+ * @param app canvas app state
+ * @returns true on success, false on allocation failure
+ */
+static bool _dvz_canvas_benchmark_begin(DvzCanvasApp* app)
+{
+    ANN(app);
+    if (!app->options.benchmark)
+    {
+        return true;
+    }
+
+    uint32_t max_frames = app->options.max_frames;
+    if (max_frames == 0)
+    {
+        max_frames = DVZ_CANVAS_BENCHMARK_DEFAULT_FRAMES;
+        app->options.max_frames = max_frames;
+    }
+
+    uint32_t max_warmup = max_frames / 10;
+    app->benchmark_warmup_frames = DVZ_CANVAS_BENCHMARK_WARMUP_FRAMES;
+    if (app->benchmark_warmup_frames > max_warmup)
+    {
+        app->benchmark_warmup_frames = max_warmup;
+    }
+
+    uint32_t sample_capacity = max_frames - app->benchmark_warmup_frames;
+    app->benchmark_frame_ms = (double*)dvz_calloc(sample_capacity, sizeof(double));
+    if (app->benchmark_frame_ms == NULL)
+    {
+        dvz_fprintf(stderr, "benchmark: failed to allocate frame-time buffer\n");
+        return false;
+    }
+    app->benchmark_sample_count = 0;
+
+    double now = _dvz_canvas_benchmark_now();
+    app->benchmark_start_s = now;
+    app->benchmark_last_s = now;
+    return true;
+}
+
+
+
+/**
+ * Record one submitted frame in the active benchmark.
+ *
+ * @param app canvas app state
+ * @param submitted_frames submitted frame count after the current submit
+ */
+static void _dvz_canvas_benchmark_record(DvzCanvasApp* app, uint64_t submitted_frames)
+{
+    ANN(app);
+    if (!app->options.benchmark)
+    {
+        return;
+    }
+
+    double now = _dvz_canvas_benchmark_now();
+    if (submitted_frames == app->benchmark_warmup_frames)
+    {
+        app->benchmark_start_s = now;
+        app->benchmark_last_s = now;
+        return;
+    }
+    if (submitted_frames < app->benchmark_warmup_frames)
+    {
+        return;
+    }
+
+    uint32_t capacity = app->options.max_frames - app->benchmark_warmup_frames;
+    if (app->benchmark_sample_count >= capacity)
+    {
+        return;
+    }
+
+    app->benchmark_frame_ms[app->benchmark_sample_count++] =
+        (now - app->benchmark_last_s) * 1000.0;
+    app->benchmark_last_s = now;
+}
+
+
+
+/**
+ * Print benchmark throughput, frame-time distribution, and stutter counts.
+ *
+ * @param app canvas app state
+ */
+static void _dvz_canvas_benchmark_end(DvzCanvasApp* app)
+{
+    ANN(app);
+    if (!app->options.benchmark || app->benchmark_sample_count == 0)
+    {
+        return;
+    }
+
+    uint32_t count = app->benchmark_sample_count;
+    double* sorted = (double*)dvz_calloc(count, sizeof(double));
+    if (sorted == NULL)
+    {
+        dvz_fprintf(stderr, "benchmark: failed to allocate percentile buffer\n");
+        return;
+    }
+    dvz_memcpy(sorted, count * sizeof(double), app->benchmark_frame_ms, count * sizeof(double));
+    qsort(sorted, count, sizeof(double), _dvz_canvas_compare_double);
+
+    double sum_ms = 0.0;
+    double max_ms = sorted[count - 1];
+    uint32_t stutter_2ms = 0;
+    uint32_t stutter_5ms = 0;
+    uint32_t stutter_10ms = 0;
+    uint32_t stutter_16ms = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        double dt = app->benchmark_frame_ms[i];
+        sum_ms += dt;
+        if (dt > 2.0)
+        {
+            stutter_2ms++;
+        }
+        if (dt > 5.0)
+        {
+            stutter_5ms++;
+        }
+        if (dt > 10.0)
+        {
+            stutter_10ms++;
+        }
+        if (dt > 16.6667)
+        {
+            stutter_16ms++;
+        }
+    }
+
+    double elapsed_s = app->benchmark_last_s - app->benchmark_start_s;
+    double fps = elapsed_s > 0.0 ? (double)count / elapsed_s : 0.0;
+    double avg_ms = count > 0 ? sum_ms / (double)count : 0.0;
+    VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
+    bool has_resolved = dvz_canvas_swapchain_present_mode(app->canvas, &resolved);
+
+    dvz_fprintf(
+        stderr,
+        "benchmark: frames=%u warmup=%u samples=%u elapsed=%.6fs fps=%.2f avg_ms=%.4f\n",
+        app->options.max_frames, app->benchmark_warmup_frames, count, elapsed_s, fps, avg_ms);
+    if (has_resolved)
+    {
+        dvz_fprintf(
+            stderr, "benchmark: present requested=%s (%d), resolved=%s (%d)\n",
+            _dvz_canvas_present_mode_name(app->options.present_mode),
+            (int)app->options.present_mode, _dvz_canvas_present_mode_name(resolved),
+            (int)resolved);
+    }
+    dvz_fprintf(
+        stderr,
+        "benchmark: frame_ms min=%.4f p50=%.4f p90=%.4f p95=%.4f p99=%.4f max=%.4f\n",
+        sorted[0], _dvz_canvas_benchmark_percentile(sorted, count, 50),
+        _dvz_canvas_benchmark_percentile(sorted, count, 90),
+        _dvz_canvas_benchmark_percentile(sorted, count, 95),
+        _dvz_canvas_benchmark_percentile(sorted, count, 99), max_ms);
+    dvz_fprintf(
+        stderr, "benchmark: stutters >2ms=%u >5ms=%u >10ms=%u >16.67ms=%u\n", stutter_2ms,
+        stutter_5ms, stutter_10ms, stutter_16ms);
+
+    dvz_free(sorted);
+}
+
+
+
+/**
  * Print the requested and resolved swapchain present modes once they are available.
  *
  * @param app canvas app state
@@ -300,7 +550,7 @@ static void _dvz_canvas_usage(void)
         "                  [--draw clear|scene-drp2]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
-        "                  [--start-recording] [--screenshots base]\n"
+        "                  [--start-recording] [--screenshots base] [--benchmark]\n"
         "\n"
         "hotkeys: Esc quit, S screenshot, R toggle recording\n");
 }
@@ -320,6 +570,7 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
     ANN(options);
     bool mode_explicit = false;
     bool backend_explicit = false;
+    bool present_explicit = false;
     for (int i = 1; i < argc; ++i)
     {
         const char* arg = argv[i];
@@ -335,6 +586,11 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         if (strcmp(arg, "--start-recording") == 0)
         {
             options->start_recording = true;
+            continue;
+        }
+        if (strcmp(arg, "--benchmark") == 0)
+        {
+            options->benchmark = true;
             continue;
         }
         if (i + 1 >= argc)
@@ -455,6 +711,7 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         }
         else if (strcmp(arg, "--present") == 0)
         {
+            present_explicit = true;
             if (strcmp(value, "immediate") == 0)
             {
                 options->present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
@@ -488,6 +745,17 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         dvz_fprintf(
             stderr, "invalid combination: --backend offscreen requires --mode offscreen\\n");
         return false;
+    }
+    if (options->benchmark)
+    {
+        if (options->max_frames == 0)
+        {
+            options->max_frames = DVZ_CANVAS_BENCHMARK_DEFAULT_FRAMES;
+        }
+        if (!present_explicit && options->render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT)
+        {
+            options->present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+        }
     }
     return true;
 }
@@ -1051,6 +1319,11 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
     {
         return;
     }
+    if (app->benchmark_frame_ms != NULL)
+    {
+        dvz_free(app->benchmark_frame_ms);
+        app->benchmark_frame_ms = NULL;
+    }
     if (app->canvas != NULL)
     {
         DvzInputRouter* router = dvz_canvas_input(app->canvas);
@@ -1124,6 +1397,10 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
     {
         _dvz_canvas_toggle_recording(app);
     }
+    if (!_dvz_canvas_benchmark_begin(app))
+    {
+        return 1;
+    }
 
     while (app->running)
     {
@@ -1172,6 +1449,7 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
         }
         _dvz_canvas_report_present_mode(app);
         submitted_frames++;
+        _dvz_canvas_benchmark_record(app, submitted_frames);
         if (app->options.max_frames > 0 && submitted_frames >= app->options.max_frames)
         {
             break;
@@ -1192,6 +1470,7 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
     {
         dvz_device_wait(app->device);
     }
+    _dvz_canvas_benchmark_end(app);
     return 0;
 }
 
