@@ -3695,6 +3695,22 @@ bool dvz_drp2_runtime_attach_frame_target(
     }
 
     Drp2Object* object = _find_any_object(runtime->semantic_state, texture_id);
+    if (object != NULL && object->kind != DRP2_OBJECT_TEXTURE)
+        return false;
+    if (object == NULL && !_ensure_capacity(runtime->semantic_state))
+        return false;
+
+    if (!runtime->semantic_only)
+    {
+#if DVZ_DRP2_HAS_VKLITE
+        if (!_vklite_attach_frame_target(runtime, texture_id, frame))
+            return false;
+#else
+        return false;
+#endif
+    }
+
+    object = _find_any_object(runtime->semantic_state, texture_id);
     if (object == NULL)
         object = _add_object(runtime->semantic_state, texture_id, DRP2_OBJECT_TEXTURE);
     if (object == NULL || object->kind != DRP2_OBJECT_TEXTURE)
@@ -3705,15 +3721,7 @@ bool dvz_drp2_runtime_attach_frame_target(
     object->height = frame->extent.height;
     object->depth = 1;
     object->usage = DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-
-    if (runtime->semantic_only)
-        return true;
-
-#if DVZ_DRP2_HAS_VKLITE
-    return _vklite_attach_frame_target(runtime, texture_id, frame);
-#else
-    return false;
-#endif
+    return true;
 }
 
 
