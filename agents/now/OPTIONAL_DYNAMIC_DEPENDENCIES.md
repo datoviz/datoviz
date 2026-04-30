@@ -1,6 +1,6 @@
 # Optional Dynamic Dependencies
 
-Status: important near-term memory optimization, not started.
+Status: implementation in progress (2026-04-30).
 
 ## Motivation
 
@@ -46,7 +46,64 @@ Optional heavyweight dynamic libraries should be loaded lazily.
 Do not spend effort lazy-loading small or core dependencies such as `cglm`, tiny threading helpers, or
 Vulkan itself in graphics builds.
 
-## Architecture Sketch
+## Implementation Strategy
+
+### Cross-platform dynload abstraction
+
+A single small header `src/common/_dynload.h` wraps `dlopen`/`dlsym`/`dlclose` (Linux/macOS)
+and `LoadLibrary`/`GetProcAddress`/`FreeLibrary` (Windows) behind three macros:
+
+```c
+dvz_dynlib_open(path)    // returns DvzDynLib handle (NULL on failure)
+dvz_dynlib_sym(h, name)  // returns void* function pointer (NULL on failure)
+dvz_dynlib_close(h)      // releases the handle
+```
+
+Each lazy-loader calls `dvz_dynlib_open` once behind a `static bool loaded` guard. Subsequent
+calls skip the load entirely. The guard is set only when all required symbols resolve
+successfully; a missing symbol leaves the backend unavailable and logs a clear error.
+
+### shaderc (libshaderc_shared)
+
+- **Symbols needed:** ~13 (`shaderc_compiler_initialize`, `shaderc_compile_into_spv`,
+  `shaderc_result_get_bytes`, etc.)
+- **Path:** bundled in the repo at `libs/shaderc/{linux,windows,macos_*}/`. CMake passes the
+  resolved absolute path as `DVZ_SHADERC_LIB_PATH` compile definition, so `dvz_dynlib_open`
+  gets an exact path — no search, no ambiguity.
+- **Header:** keep `#include "shaderc/shaderc.h"` for type definitions; only the link-time
+  symbol reference is removed.
+- **CMake change:** remove `target_link_libraries(datoviz_drp2 PUBLIC datoviz_shaderc)`.
+- **Failure mode:** GLSL compilation returns an error; WGSL/SPIR-V paths are unaffected.
+
+### CUDA driver (libcuda)
+
+- **Scope:** Linux and Windows only — already `#ifdef DVZ_HAS_CUDA` gated; macOS excluded.
+- **Symbols needed:** ~10 (`cuInit`, `cuDeviceGet`, `cuCtxCreate`, `cuCtxSetCurrent`,
+  `cuCtxDestroy`, `cuMemAlloc`, `cuMemFree`, `cuMemcpyHtoD`, `cuMemcpyDtoH`, plus
+  `cuImportExternalMemory`-family for Vulkan interop).
+- **Library name:** `"libcuda.so.1"` on Linux, `"nvcuda.dll"` on Windows.
+- **Pattern:** static `_cuda_syms` struct of function pointers, filled by `_cuda_load()` on
+  first encoder creation. `CU_CHECK` macro updated to go through the pointer table.
+- **CMake change:** remove `target_link_libraries(datoviz_video PUBLIC CUDA::cuda_driver)`.
+- **Side effect:** `libnvcuvid.so.1` disappears from `ldd` automatically — it was a transitive
+  dep of `libcuda.so.1` at link time, not a direct Datoviz dependency.
+
+### NVENC (libnvidia-encode)
+
+- **Scope:** Linux and Windows, `DVZ_HAS_CUDA` gated.
+- **Symbols needed:** 1 (`NvEncodeAPICreateInstance`). Everything else already goes through the
+  `g_nvenc` function-pointer table that `NvEncodeAPICreateInstance` fills.
+- **Library name:** `"libnvidia-encode.so.1"` on Linux, `"nvEncodeAPI64.dll"` on Windows.
+- **CMake change:** remove `DVZ_NVENC_LIB` from `target_link_libraries`.
+- **Failure mode:** encoder creation returns an error; the stub backend activates.
+
+### Performance
+
+`dlopen` on a warm page cache takes < 1 ms. The one-time load is buried inside encoder
+creation (hundreds of ms of device setup) or first GLSL compile (50–200 ms of shader
+compilation). No frame-path overhead after the first call.
+
+### Architecture Sketch (original, for reference)
 
 Keep the public Datoviz API stable around lightweight capability objects and backend registries.
 
