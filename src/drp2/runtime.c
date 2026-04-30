@@ -2759,6 +2759,11 @@ static void _vklite_transition_image(
         src_stage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
         src_access = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
     }
+    else if (object->image_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        src_stage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        src_access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+    }
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
