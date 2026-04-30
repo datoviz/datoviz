@@ -80,6 +80,7 @@ int test_vklite(TstSuite* suite)
     TEST_SIMPLE(test_vklite_shader_1);
     TEST_SIMPLE(test_vklite_shader_create_requires_destroy);
     TEST_SIMPLE(test_vklite_slots_1);
+    TEST_SIMPLE(test_vklite_slots_create_failure_unwinds_layouts);
     TEST_SIMPLE(test_vklite_compute_1);
     TEST_SIMPLE(test_vklite_compute_create_requires_destroy);
     TEST_SIMPLE(test_vklite_buffers_1);

@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <volk.h>
 
@@ -30,6 +31,94 @@
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return whether a slots wrapper owns live Vulkan handles.
+ *
+ * @param slots the slots wrapper
+ * @return whether at least one descriptor-set layout or pipeline layout exists
+ */
+static bool _slots_has_handles(DvzSlots* slots)
+{
+    ANN(slots);
+    if (slots->pipeline_layout != VK_NULL_HANDLE)
+        return true;
+    for (uint32_t set = 0; set < slots->set_count; set++)
+    {
+        if (slots->set_layouts[set] != VK_NULL_HANDLE)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Release all Vulkan handles currently owned by a slots wrapper.
+ *
+ * @param slots the slots wrapper
+ */
+static void _slots_release_handles(DvzSlots* slots)
+{
+    ANN(slots);
+    ANN(slots->device);
+    VkDevice vkd = dvz_device_handle(slots->device);
+    ANNVK(vkd);
+
+    log_trace("destroying %d descriptor set layout(s)", slots->set_count);
+    for (uint32_t set = 0; set < slots->set_count; set++)
+    {
+        if (slots->set_layouts[set] != VK_NULL_HANDLE)
+        {
+            vkDestroyDescriptorSetLayout(vkd, slots->set_layouts[set], NULL);
+            slots->set_layouts[set] = VK_NULL_HANDLE;
+        }
+    }
+
+    log_trace("destroying the pipeline layout...");
+    if (slots->pipeline_layout != VK_NULL_HANDLE)
+    {
+        vkDestroyPipelineLayout(vkd, slots->pipeline_layout, NULL);
+        slots->pipeline_layout = VK_NULL_HANDLE;
+    }
+    log_trace("pipeline layout destroyed");
+}
+
+
+
+/**
+ * Return whether all configured push-constant ranges fit the physical-device limit.
+ *
+ * @param slots the slots wrapper
+ * @return whether every push-constant range is valid
+ */
+static bool _slots_push_ranges_valid(DvzSlots* slots)
+{
+    ANN(slots);
+    ANN(slots->device);
+
+    VkPhysicalDeviceProperties props = {0};
+    vkGetPhysicalDeviceProperties(dvz_device_physical_device(slots->device), &props);
+    uint64_t limit = props.limits.maxPushConstantsSize;
+
+    for (uint32_t i = 0; i < slots->push_count; i++)
+    {
+        uint64_t offset = slots->pushs[i].offset;
+        uint64_t size = slots->pushs[i].size;
+        if (offset > limit || size > limit - offset)
+        {
+            uint64_t end = offset > UINT64_MAX - size ? UINT64_MAX : offset + size;
+            log_error(
+                "push constant range %" PRIu64 "..%" PRIu64
+                " exceeds device limit %" PRIu64,
+                offset, end, limit);
+            return false;
+        }
+    }
+    return true;
+}
+
+
 
 /**
  * Allocate an empty slots wrapper.
@@ -114,7 +203,18 @@ int dvz_slots_create(DvzSlots* slots)
 
         log_trace(
             "creating descriptor set layout for set #%d with %d bindings", set, binding_count);
-        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(vkd, &info, NULL, &slots->set_layouts[set]));
+        VkResult res = vkCreateDescriptorSetLayout(vkd, &info, NULL, &slots->set_layouts[set]);
+        if (vk_result_check(res, __FILE__, __LINE__) != 0)
+        {
+            _slots_release_handles(slots);
+            return 1;
+        }
+    }
+
+    if (!_slots_push_ranges_valid(slots))
+    {
+        _slots_release_handles(slots);
+        return 1;
     }
 
     // Pipeline layout.
@@ -128,14 +228,16 @@ int dvz_slots_create(DvzSlots* slots)
     info.pPushConstantRanges = slots->pushs;
 
     log_trace("creating pipeline layout...");
-    VK_RETURN_RESULT(vkCreatePipelineLayout(vkd, &info, NULL, &slots->pipeline_layout));
-    if (out == 0)
+    VkResult res = vkCreatePipelineLayout(vkd, &info, NULL, &slots->pipeline_layout);
+    if (vk_result_check(res, __FILE__, __LINE__) != 0)
     {
-        log_trace("pipeline layout created");
-        dvz_obj_created(&slots->obj);
+        _slots_release_handles(slots);
+        return 1;
     }
 
-    return out;
+    log_trace("pipeline layout created");
+    dvz_obj_created(&slots->obj);
+    return 0;
 }
 
 
@@ -243,34 +345,13 @@ VkDescriptorSetLayout dvz_slots_set_layout(DvzSlots* slots, uint32_t set)
 void dvz_slots_destroy(DvzSlots* slots)
 {
     ANN(slots);
-    if (!dvz_obj_is_created(&slots->obj))
+    if (!dvz_obj_is_created(&slots->obj) && !_slots_has_handles(slots))
     {
         log_trace("skip destruction of already-destroyed slots");
         return;
     }
 
-    ANN(slots->device);
-    VkDevice vkd = dvz_device_handle(slots->device);
-    ANNVK(vkd);
-
-    log_trace("destroying %d descriptor set layout(s)", slots->set_count);
-    for (uint32_t set = 0; set < slots->set_count; set++)
-    {
-        if (slots->set_layouts[set] != VK_NULL_HANDLE)
-        {
-            vkDestroyDescriptorSetLayout(vkd, slots->set_layouts[set], NULL);
-            slots->set_layouts[set] = VK_NULL_HANDLE;
-        }
-    }
-
-    log_trace("destroying the pipeline layout...");
-    if (slots->pipeline_layout != VK_NULL_HANDLE)
-    {
-        vkDestroyPipelineLayout(vkd, slots->pipeline_layout, NULL);
-        slots->pipeline_layout = VK_NULL_HANDLE;
-    }
-    log_trace("pipeline layout destroyed");
-
+    _slots_release_handles(slots);
     dvz_obj_destroyed(&slots->obj);
 }
 

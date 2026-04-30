@@ -2302,6 +2302,7 @@ static DvzDrp2ValidationResult _vklite_create_empty_slots(
     dvz_slots(state->runtime->device, out);
     if (dvz_slots_create(out) != 0)
     {
+        dvz_slots_destroy(out);
         dvz_slots_free(out);
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }

@@ -95,6 +95,7 @@ int test_vklite_shader_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_shader_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_slots_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_slots_create_failure_unwinds_layouts(TstSuite* suite, TstItem* tstitem);
 
 int test_vklite_compute_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_compute_create_requires_destroy(TstSuite* suite, TstItem* tstitem);
