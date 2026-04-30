@@ -59,17 +59,19 @@ if(DVZ_HAS_CUDA)
         PUBLIC
             ${CUDAToolkit_INCLUDE_DIRS}
     )
-    target_link_libraries(datoviz_video PUBLIC CUDA::cuda_driver)
+    # libcuda and libnvidia-encode are loaded lazily via dlopen at runtime — no link-time dep.
+    if(NOT WIN32)
+        target_link_libraries(datoviz_video PRIVATE dl)
+    endif()
 
     if(DVZ_NVENC_LIB_DIR)
-        target_link_directories(datoviz_video PRIVATE "${DVZ_NVENC_LIB_DIR}")
+        # Keep rpath so the runtime loader can find the library in non-standard locations.
         set_property(TARGET datoviz_video APPEND PROPERTY BUILD_RPATH "${DVZ_NVENC_LIB_DIR}")
     endif()
 
     if(DVZ_NVENC_LIB)
-        message(STATUS "Linking NVENC library: ${DVZ_NVENC_LIB}")
-        target_link_libraries(datoviz_video PUBLIC ${DVZ_NVENC_LIB})
+        message(STATUS "NVENC library found at: ${DVZ_NVENC_LIB} (loaded lazily at runtime)")
     else()
-        message(FATAL_ERROR "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset.")
+        message(STATUS "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset — NVENC will be unavailable at runtime.")
     endif()
 endif()

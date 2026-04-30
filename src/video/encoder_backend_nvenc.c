@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "_alloc.h"
+#include "_dynload.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
 #include "encoder_backend.h"
@@ -31,6 +32,157 @@
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
+
+
+/*************************************************************************************************/
+/*  Lazy CUDA driver loader                                                                      */
+/*************************************************************************************************/
+
+/* Library name is platform-specific; libcuda.so.1 on Linux, nvcuda.dll on Windows. */
+#ifdef _WIN32
+#define DVZ_CUDA_LIB "nvcuda.dll"
+#define DVZ_NVENC_LIB_NAME "nvEncodeAPI64.dll"
+#else
+#define DVZ_CUDA_LIB "libcuda.so.1"
+#define DVZ_NVENC_LIB_NAME "libnvidia-encode.so.1"
+#endif
+
+typedef struct
+{
+    CUresult (*Init)(unsigned int);
+    CUresult (*DeviceGet)(CUdevice*, int);
+    CUresult (*CtxCreate)(CUcontext*, unsigned int, CUdevice);
+    CUresult (*CtxSetCurrent)(CUcontext);
+    CUresult (*CtxDestroy)(CUcontext);
+    CUresult (*StreamCreate)(CUstream*, unsigned int);
+    CUresult (*StreamSynchronize)(CUstream);
+    CUresult (*StreamDestroy)(CUstream);
+    CUresult (*MemAlloc)(CUdeviceptr*, size_t);
+    CUresult (*MemFree)(CUdeviceptr);
+    CUresult (*Memcpy2DAsync)(const CUDA_MEMCPY2D*, CUstream);
+    CUresult (*LaunchKernel)(
+        CUfunction, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int,
+        unsigned int, unsigned int, CUstream, void**, void**);
+    CUresult (*ModuleLoadDataEx)(CUmodule*, const void*, unsigned int, CUjit_option*, void**);
+    CUresult (*ModuleGetFunction)(CUfunction*, CUmodule, const char*);
+    CUresult (*ModuleUnload)(CUmodule);
+    CUresult (*MipmappedArrayGetLevel)(CUarray*, CUmipmappedArray, unsigned int);
+    CUresult (*MipmappedArrayDestroy)(CUmipmappedArray);
+    CUresult (*ImportExternalMemory)(CUexternalMemory*, const CUDA_EXTERNAL_MEMORY_HANDLE_DESC*);
+    CUresult (*ExternalMemoryGetMappedMipmappedArray)(
+        CUmipmappedArray*, CUexternalMemory, const CUDA_EXTERNAL_MEMORY_MIPMAPPED_ARRAY_DESC*);
+    CUresult (*DestroyExternalMemory)(CUexternalMemory);
+    CUresult (*ImportExternalSemaphore)(
+        CUexternalSemaphore*, const CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC*);
+    CUresult (*WaitExternalSemaphoresAsync)(
+        const CUexternalSemaphore*, const CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS*, unsigned int,
+        CUstream);
+    CUresult (*DestroyExternalSemaphore)(CUexternalSemaphore);
+    CUresult (*GetErrorName)(CUresult, const char**);
+} CudaSyms;
+
+static CudaSyms g_cu = {0};
+static bool g_cu_loaded = false;
+static bool g_cu_available = false;
+
+static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
+
+static bool _cuda_load(void)
+{
+    if (g_cu_loaded)
+        return g_cu_available;
+    g_cu_loaded = true;
+
+    DvzDynLib lib = dvz_dynlib_open(DVZ_CUDA_LIB);
+    if (lib == NULL)
+    {
+        log_error("CUDA not available: could not load " DVZ_CUDA_LIB);
+        return false;
+    }
+
+#define _CU_SYM(field, name)                                                                      \
+    {                                                                                             \
+        void* _p = dvz_dynlib_sym(lib, name);                                                     \
+        if (_p == NULL)                                                                           \
+        {                                                                                         \
+            log_error("CUDA: symbol '%s' not found", name);                                       \
+            dvz_dynlib_close(lib);                                                                \
+            return false;                                                                         \
+        }                                                                                         \
+        memcpy(&g_cu.field, &_p, sizeof(_p));                                                     \
+    }
+
+    _CU_SYM(Init, "cuInit")
+    _CU_SYM(DeviceGet, "cuDeviceGet")
+    _CU_SYM(CtxCreate, "cuCtxCreate_v2")
+    _CU_SYM(CtxSetCurrent, "cuCtxSetCurrent")
+    _CU_SYM(CtxDestroy, "cuCtxDestroy_v2")
+    _CU_SYM(StreamCreate, "cuStreamCreate")
+    _CU_SYM(StreamSynchronize, "cuStreamSynchronize")
+    _CU_SYM(StreamDestroy, "cuStreamDestroy_v2")
+    _CU_SYM(MemAlloc, "cuMemAlloc_v2")
+    _CU_SYM(MemFree, "cuMemFree_v2")
+    _CU_SYM(Memcpy2DAsync, "cuMemcpy2DAsync_v2")
+    _CU_SYM(LaunchKernel, "cuLaunchKernel")
+    _CU_SYM(ModuleLoadDataEx, "cuModuleLoadDataEx")
+    _CU_SYM(ModuleGetFunction, "cuModuleGetFunction")
+    _CU_SYM(ModuleUnload, "cuModuleUnload")
+    _CU_SYM(MipmappedArrayGetLevel, "cuMipmappedArrayGetLevel")
+    _CU_SYM(MipmappedArrayDestroy, "cuMipmappedArrayDestroy")
+    _CU_SYM(ImportExternalMemory, "cuImportExternalMemory")
+    _CU_SYM(ExternalMemoryGetMappedMipmappedArray, "cuExternalMemoryGetMappedMipmappedArray")
+    _CU_SYM(DestroyExternalMemory, "cuDestroyExternalMemory")
+    _CU_SYM(ImportExternalSemaphore, "cuImportExternalSemaphore")
+    _CU_SYM(WaitExternalSemaphoresAsync, "cuWaitExternalSemaphoresAsync")
+    _CU_SYM(DestroyExternalSemaphore, "cuDestroyExternalSemaphore")
+    _CU_SYM(GetErrorName, "cuGetErrorName")
+#undef _CU_SYM
+
+    g_cu_available = true;
+    return true;
+}
+
+/* Lazy NVENC entry-point loader. */
+typedef NVENCSTATUS(NVENCAPI* PfnNvEncodeAPICreateInstance)(NV_ENCODE_API_FUNCTION_LIST*);
+
+static bool g_nvenc_loaded = false;
+static bool g_nvenc_available = false;
+
+static bool _nvenc_load(void)
+{
+    if (g_nvenc_loaded)
+        return g_nvenc_available;
+    g_nvenc_loaded = true;
+
+    DvzDynLib lib = dvz_dynlib_open(DVZ_NVENC_LIB_NAME);
+    if (lib == NULL)
+    {
+        log_error("NVENC not available: could not load " DVZ_NVENC_LIB_NAME);
+        return false;
+    }
+    PfnNvEncodeAPICreateInstance fn = NULL;
+    {
+        void* _p = dvz_dynlib_sym(lib, "NvEncodeAPICreateInstance");
+        if (_p == NULL)
+        {
+            log_error("NVENC: symbol 'NvEncodeAPICreateInstance' not found");
+            dvz_dynlib_close(lib);
+            return false;
+        }
+        memcpy(&fn, &_p, sizeof(_p));
+    }
+
+    dvz_memset(&g_nvenc, sizeof(g_nvenc), 0, sizeof(g_nvenc));
+    g_nvenc.version = (uint32_t)NV_ENCODE_API_FUNCTION_LIST_VER;
+    if (fn(&g_nvenc) != NV_ENC_SUCCESS)
+    {
+        log_error("NVENC: NvEncodeAPICreateInstance failed");
+        dvz_dynlib_close(lib);
+        return false;
+    }
+    g_nvenc_available = true;
+    return true;
+}
 
 
 
@@ -56,8 +208,6 @@
 #define PITCH_ALIGN          256
 #define NVENC_INVALID_OFFSET UINT64_MAX
 
-static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
-
 
 
 /*************************************************************************************************/
@@ -71,7 +221,8 @@ static NV_ENCODE_API_FUNCTION_LIST g_nvenc = {0};
         if (_e != CUDA_SUCCESS)                                                                   \
         {                                                                                         \
             const char* _s = NULL;                                                                \
-            cuGetErrorName(_e, &_s);                                                              \
+            if (g_cu.GetErrorName)                                                                \
+                g_cu.GetErrorName(_e, &_s);                                                       \
             dvz_fprintf(                                                                          \
                 stderr, "CUDA error %s at %s:%d\n", _s ? _s : "?", __FILE__, __LINE__);           \
             exit(1);                                                                              \
@@ -351,47 +502,47 @@ static void nvenc_state_free(DvzVideoBackendNvenc* state)
 
     if (state->rgba.dptr)
     {
-        cuMemFree(state->rgba.dptr);
+        g_cu.MemFree(state->rgba.dptr);
         state->rgba.dptr = 0;
     }
     if (state->nv12.dptr)
     {
-        cuMemFree(state->nv12.dptr);
+        g_cu.MemFree(state->nv12.dptr);
         state->nv12.dptr = 0;
     }
 
     if (state->wait_semaphore_ready)
     {
-        cuDestroyExternalSemaphore(state->wait_semaphore);
+        g_cu.DestroyExternalSemaphore(state->wait_semaphore);
         state->wait_semaphore = NULL;
         state->wait_semaphore_ready = false;
     }
 
     if (state->cuda.cuMod)
     {
-        cuModuleUnload(state->cuda.cuMod);
+        g_cu.ModuleUnload(state->cuda.cuMod);
         state->cuda.cuMod = NULL;
     }
     if (state->cuda.mmArr)
     {
-        cuMipmappedArrayDestroy(state->cuda.mmArr);
+        g_cu.MipmappedArrayDestroy(state->cuda.mmArr);
         state->cuda.mmArr = NULL;
     }
     if (state->cuda.extMem)
     {
-        cuDestroyExternalMemory(state->cuda.extMem);
+        g_cu.DestroyExternalMemory(state->cuda.extMem);
         state->cuda.extMem = NULL;
     }
     if (state->cuda.stream)
     {
-        CU_CHECK(cuStreamDestroy(state->cuda.stream));
+        CU_CHECK(g_cu.StreamDestroy(state->cuda.stream));
         state->cuda.stream = NULL;
     }
     if (state->cuda.cuCtx)
     {
-        CU_CHECK(cuCtxSetCurrent(state->cuda.cuCtx));
-        CU_CHECK(cuCtxSetCurrent(NULL));
-        cuCtxDestroy(state->cuda.cuCtx);
+        CU_CHECK(g_cu.CtxSetCurrent(state->cuda.cuCtx));
+        CU_CHECK(g_cu.CtxSetCurrent(NULL));
+        g_cu.CtxDestroy(state->cuda.cuCtx);
         state->cuda.cuCtx = NULL;
     }
     dvz_memset(state, sizeof(*state), 0, sizeof(*state));
@@ -403,13 +554,15 @@ static void
 cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, size_t alloc_size)
 {
     ANN(cu);
+    if (!_cuda_load())
+        return;
     dvz_memset(cu, sizeof(*cu), 0, sizeof(*cu));
     CUdevice dev;
-    CU_CHECK(cuInit(0));
-    CU_CHECK(cuDeviceGet(&dev, 0));
-    CU_CHECK(cuCtxCreate(&cu->cuCtx, 0, dev));
-    CU_CHECK(cuCtxSetCurrent(cu->cuCtx));
-    CU_CHECK(cuStreamCreate(&cu->stream, CU_STREAM_DEFAULT));
+    CU_CHECK(g_cu.Init(0));
+    CU_CHECK(g_cu.DeviceGet(&dev, 0));
+    CU_CHECK(g_cu.CtxCreate(&cu->cuCtx, 0, dev));
+    CU_CHECK(g_cu.CtxSetCurrent(cu->cuCtx));
+    CU_CHECK(g_cu.StreamCreate(&cu->stream, CU_STREAM_DEFAULT));
 
     CUDA_EXTERNAL_MEMORY_HANDLE_DESC hdesc = {
         .type = CU_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD,
@@ -419,7 +572,7 @@ cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, 
         .size = alloc_size,
         .flags = 0,
     };
-    CU_CHECK(cuImportExternalMemory(&cu->extMem, &hdesc));
+    CU_CHECK(g_cu.ImportExternalMemory(&cu->extMem, &hdesc));
 
     CUDA_EXTERNAL_MEMORY_MIPMAPPED_ARRAY_DESC mdesc = {0};
     mdesc.offset = 0;
@@ -431,11 +584,11 @@ cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, 
     mdesc.arrayDesc.Format = CU_AD_FORMAT_UNSIGNED_INT8;
     mdesc.arrayDesc.Flags = 0;
 
-    CU_CHECK(cuExternalMemoryGetMappedMipmappedArray(&cu->mmArr, cu->extMem, &mdesc));
-    CU_CHECK(cuMipmappedArrayGetLevel(&cu->arr0, cu->mmArr, 0));
+    CU_CHECK(g_cu.ExternalMemoryGetMappedMipmappedArray(&cu->mmArr, cu->extMem, &mdesc));
+    CU_CHECK(g_cu.MipmappedArrayGetLevel(&cu->arr0, cu->mmArr, 0));
 
-    CU_CHECK(cuModuleLoadDataEx(&cu->cuMod, PTX, 0, NULL, NULL));
-    CU_CHECK(cuModuleGetFunction(&cu->cuFun, cu->cuMod, "rgba2nv12"));
+    CU_CHECK(g_cu.ModuleLoadDataEx(&cu->cuMod, PTX, 0, NULL, NULL));
+    CU_CHECK(g_cu.ModuleGetFunction(&cu->cuFun, cu->cuMod, "rgba2nv12"));
 }
 
 
@@ -446,7 +599,7 @@ static void alloc_nv12(Nv12Buf* nb, uint32_t w, uint32_t h, uint32_t pitch_align
     size_t y_bytes = (size_t)pitch * h;
     size_t uv_bytes = (size_t)pitch * (h / 2);
     size_t total = y_bytes + uv_bytes;
-    CU_CHECK(cuMemAlloc(&nb->dptr, total));
+    CU_CHECK(g_cu.MemAlloc(&nb->dptr, total));
     nb->pitch = pitch;
     nb->size = total;
 }
@@ -457,7 +610,7 @@ static void alloc_rgba(RgbaBuf* rb, uint32_t w, uint32_t h, uint32_t pitch_align
 {
     uint32_t pitch = align_up(w * 4, pitch_align);
     size_t total = (size_t)pitch * h;
-    CU_CHECK(cuMemAlloc(&rb->dptr, total));
+    CU_CHECK(g_cu.MemAlloc(&rb->dptr, total));
     rb->pitch = pitch;
     rb->size = total;
 }
@@ -475,7 +628,7 @@ static void copy_array_to_linear_rgba(CudaCtx* cu, RgbaBuf* rb, uint32_t w, uint
     c2d.dstPitch = rb->pitch;
     c2d.WidthInBytes = w * 4;
     c2d.Height = h;
-    CU_CHECK(cuMemcpy2DAsync(&c2d, cu->stream));
+    CU_CHECK(g_cu.Memcpy2DAsync(&c2d, cu->stream));
 }
 
 
@@ -494,18 +647,16 @@ static void launch_rgba_to_nv12(CudaCtx* cu, RgbaBuf* rb, Nv12Buf* nb, uint32_t 
     unsigned int block_x = (unsigned int)Bx;
     unsigned int block_y = (unsigned int)By;
 
-    CU_CHECK(cuLaunchKernel(
+    CU_CHECK(g_cu.LaunchKernel(
         cu->cuFun, grid_x, grid_y, 1, block_x, block_y, 1, 0, cu->stream, args, NULL));
-    CU_CHECK(cuStreamSynchronize(cu->stream));
+    CU_CHECK(g_cu.StreamSynchronize(cu->stream));
 }
 
 
 
 static void nvenc_load_api(void)
 {
-    dvz_memset(&g_nvenc, sizeof(g_nvenc), 0, sizeof(g_nvenc));
-    g_nvenc.version = (uint32_t)NV_ENCODE_API_FUNCTION_LIST_VER;
-    NVENC_API_CALL(NvEncodeAPICreateInstance(&g_nvenc));
+    _nvenc_load();
 }
 
 
@@ -586,7 +737,7 @@ static DvzNvencProfile nvenc_profile(DvzVideoCodec codec)
 static void nvenc_open_session_cuda(NvEncCtx* nctx, CUcontext cuCtx)
 {
     ANN(nctx);
-    CU_CHECK(cuCtxSetCurrent(cuCtx));
+    CU_CHECK(g_cu.CtxSetCurrent(cuCtx));
     NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS open = {0};
     open.version = (uint32_t)NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS_VER;
     open.device = cuCtx;
@@ -833,7 +984,7 @@ static int nvenc_start(DvzVideoEncoder* enc)
             },
             .flags = 0,
         };
-        CU_CHECK(cuImportExternalSemaphore(&state->wait_semaphore, &shdesc));
+        CU_CHECK(g_cu.ImportExternalSemaphore(&state->wait_semaphore, &shdesc));
         state->wait_semaphore_ready = true;
 #if OS_UNIX
         close(enc->wait_semaphore_fd);
@@ -875,7 +1026,7 @@ static int nvenc_submit(DvzVideoEncoder* enc, uint64_t wait_value)
     {
         CUDA_EXTERNAL_SEMAPHORE_WAIT_PARAMS wait_params = {0};
         wait_params.params.fence.value = wait_value;
-        CU_CHECK(cuWaitExternalSemaphoresAsync(
+        CU_CHECK(g_cu.WaitExternalSemaphoresAsync(
             &state->wait_semaphore, &wait_params, 1, state->cuda.stream));
     }
 
