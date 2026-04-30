@@ -1584,6 +1584,12 @@ profile-canvas-release *args:
     scripts/profile_live_canvas.sh --bin ./build-profile/testing/dvz_live_canvas {{args}}
 #
 
+[linux]
+memory-canvas-release *args:
+    just build-profile
+    scripts/memory_live_canvas.sh --bin ./build-profile/testing/dvz_live_canvas {{args}}
+#
+
 [macos]
 canvas *args:
     @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
