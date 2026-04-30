@@ -765,6 +765,36 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
 
 
 
+int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 1, 4, 4, DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_sampler(stream, 2));
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, 3));
+
+    for (uint64_t id = 100; id < 161; id++)
+        AT(dvz_drp2_stream_create_buffer(stream, id, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+
+    AT(dvz_drp2_stream_create_texture_sampler_bind_group(stream, 4, 3, 1, 2));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1956,6 +1986,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_validate_copy_buffer_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_texture_sampler_bind_group);
+    TEST_SIMPLE(test_drp2_runtime_validate_bind_group_after_table_growth);
     TEST_SIMPLE(test_drp2_runtime_validate_compute_storage_bind_group);
     TEST_SIMPLE(test_drp2_runtime_validate_destroy_unused_bind_group);
     TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group);

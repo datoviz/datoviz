@@ -257,6 +257,25 @@ static bool _range_overflows(uint64_t offset, uint64_t size, uint64_t total)
 
 
 
+/**
+ * Multiply two unsigned 64-bit integers with overflow detection.
+ *
+ * @param a the first operand
+ * @param b the second operand
+ * @param out the product output
+ * @return whether the multiplication would overflow
+ */
+static bool _mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
+{
+    ANN(out);
+    if (a != 0 && b > UINT64_MAX / a)
+        return true;
+    *out = a * b;
+    return false;
+}
+
+
+
 static bool _texture_box_overflows(
     const Drp2Object* texture, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth)
@@ -315,8 +334,11 @@ static bool _ensure_capacity(Drp2RuntimeState* state)
     if (state->capacity > UINT32_MAX / 2)
         return false;
     uint32_t capacity = state->capacity * 2;
-    Drp2Object* objects =
-        (Drp2Object*)dvz_realloc(state->objects, capacity * sizeof(Drp2Object));
+    uint64_t bytes = 0;
+    if (_mul_u64_overflows(capacity, sizeof(Drp2Object), &bytes))
+        return false;
+
+    Drp2Object* objects = (Drp2Object*)dvz_realloc(state->objects, bytes);
     if (objects == NULL)
         return false;
 
@@ -751,7 +773,8 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
 
     Drp2Object* layout = _find_object(state, command->u.create_bind_group.bind_group_layout_id);
     ANN(layout);
-    if (layout->storage_buffers)
+    bool storage_buffers = layout->storage_buffers;
+    if (storage_buffers)
     {
         Drp2Object* buffer0 = _find_object(state, command->u.create_bind_group.buffer0_id);
         Drp2Object* buffer1 = _find_object(state, command->u.create_bind_group.buffer1_id);
@@ -785,7 +808,7 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
     object->buffer0_id = command->u.create_bind_group.buffer0_id;
     object->buffer1_id = command->u.create_bind_group.buffer1_id;
     object->buffer_size = command->u.create_bind_group.buffer_size;
-    object->storage_buffers = layout->storage_buffers;
+    object->storage_buffers = storage_buffers;
     return _ok();
 }
 
@@ -891,16 +914,24 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     if (_find_any_object(state, command->u.begin_render_pass.id) != NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    Drp2Object* encoder = _find_object(state, command->u.begin_render_pass.encoder_id);
+    const Drp2Object* encoder = _find_object(state, command->u.begin_render_pass.encoder_id);
     if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (!_has_object_kind(state, command->u.begin_render_pass.texture_id, DRP2_OBJECT_TEXTURE))
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    _mark_referenced(state, command->u.begin_render_pass.texture_id);
 
     Drp2Object* pass = _add_object(state, command->u.begin_render_pass.id, DRP2_OBJECT_RENDER_PASS);
     if (pass == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    encoder = _find_object(state, command->u.begin_render_pass.encoder_id);
+    if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open ||
+        !_has_object_kind(state, command->u.begin_render_pass.texture_id, DRP2_OBJECT_TEXTURE))
+    {
+        pass->destroyed = true;
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
+    _mark_referenced(state, command->u.begin_render_pass.texture_id);
     pass->open = true;
     pass->encoder_id = command->u.begin_render_pass.encoder_id;
     return _ok();
@@ -919,7 +950,7 @@ static DvzDrp2ValidationResult _validate_begin_compute_pass(
     if (_find_any_object(state, command->u.begin_compute_pass.id) != NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    Drp2Object* encoder = _find_object(state, command->u.begin_compute_pass.encoder_id);
+    const Drp2Object* encoder = _find_object(state, command->u.begin_compute_pass.encoder_id);
     if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
@@ -927,6 +958,12 @@ static DvzDrp2ValidationResult _validate_begin_compute_pass(
         _add_object(state, command->u.begin_compute_pass.id, DRP2_OBJECT_COMPUTE_PASS);
     if (pass == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    encoder = _find_object(state, command->u.begin_compute_pass.encoder_id);
+    if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
+    {
+        pass->destroyed = true;
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     pass->open = true;
     pass->encoder_id = command->u.begin_compute_pass.encoder_id;
     return _ok();
@@ -1370,15 +1407,24 @@ static DvzDrp2ValidationResult _validate_finish_encoder(
     if (_find_any_object(state, command->u.finish_command_encoder.command_buffer_id) != NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    Drp2Object* encoder = _find_object(state, command->u.finish_command_encoder.encoder_id);
+    const Drp2Object* encoder = _find_object(state, command->u.finish_command_encoder.encoder_id);
     if (encoder == NULL || encoder->kind != DRP2_OBJECT_ENCODER || !encoder->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    encoder->open = false;
 
-    if (_add_object(
-            state, command->u.finish_command_encoder.command_buffer_id,
-            DRP2_OBJECT_COMMAND_BUFFER) == NULL)
+    Drp2Object* command_buffer = _add_object(
+        state, command->u.finish_command_encoder.command_buffer_id, DRP2_OBJECT_COMMAND_BUFFER);
+    if (command_buffer == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    Drp2Object* mutable_encoder =
+        _find_object(state, command->u.finish_command_encoder.encoder_id);
+    if (mutable_encoder == NULL || mutable_encoder->kind != DRP2_OBJECT_ENCODER ||
+        !mutable_encoder->open)
+    {
+        command_buffer->destroyed = true;
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    mutable_encoder->open = false;
     return _ok();
 }
 
@@ -1395,10 +1441,12 @@ static DvzDrp2ValidationResult _validate_queue_submit(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (command_buffer->submitted)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    command_buffer->submitted = true;
 
     if (!command->u.queue_submit.has_readback)
+    {
+        command_buffer->submitted = true;
         return _ok();
+    }
 
     Drp2Object* buffer = _find_object(state, command->u.queue_submit.buffer_id);
     if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
@@ -1407,6 +1455,7 @@ static DvzDrp2ValidationResult _validate_queue_submit(
         return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (_range_overflows(command->u.queue_submit.offset, command->u.queue_submit.size, buffer->size))
         return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    command_buffer->submitted = true;
     return _ok();
 }
 
@@ -1719,8 +1768,11 @@ static bool _vklite_ensure_capacity(Drp2VkliteState* state)
     if (state->capacity > UINT32_MAX / 2)
         return false;
     uint32_t capacity = state->capacity * 2;
-    Drp2VkliteObject* objects = (Drp2VkliteObject*)dvz_realloc(
-        state->objects, capacity * sizeof(Drp2VkliteObject));
+    uint64_t bytes = 0;
+    if (_mul_u64_overflows(capacity, sizeof(Drp2VkliteObject), &bytes))
+        return false;
+
+    Drp2VkliteObject* objects = (Drp2VkliteObject*)dvz_realloc(state->objects, bytes);
     if (objects == NULL)
         return false;
 
