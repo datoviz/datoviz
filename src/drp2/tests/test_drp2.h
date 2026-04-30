@@ -118,6 +118,8 @@ int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstSuite* suite, Ts
 
 int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item);
+
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item);
 

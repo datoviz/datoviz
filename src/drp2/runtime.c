@@ -219,6 +219,24 @@ static uint32_t _min_u32(uint32_t a, uint32_t b)
 }
 
 
+/**
+ * Return whether a borrowed stream frame can be exposed as a render target.
+ *
+ * @param texture_id the DRP2 texture id assigned to the frame
+ * @param frame the borrowed stream frame
+ * @return whether the frame has the required target handles and extent
+ */
+static bool _frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
+{
+    if (texture_id == 0 || frame == NULL)
+        return false;
+    if (frame->image == VK_NULL_HANDLE || frame->image_view == VK_NULL_HANDLE ||
+        frame->command_buffer == VK_NULL_HANDLE)
+        return false;
+    return frame->extent.width != 0 && frame->extent.height != 0;
+}
+
+
 
 static DvzDrp2ValidationResult _result(
     bool ok, DvzDrp2ValidationCode code, uint32_t command_index)
@@ -2038,25 +2056,32 @@ static bool _vklite_attach_frame_target(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
 {
     ANN(runtime);
-    ANN(frame);
-    if (texture_id == 0 || frame->image == VK_NULL_HANDLE ||
-        frame->image_view == VK_NULL_HANDLE ||
-        frame->command_buffer == VK_NULL_HANDLE || frame->extent.width == 0 ||
-        frame->extent.height == 0)
+    if (!_frame_target_valid(texture_id, frame))
         return false;
 
     if (runtime->vklite_state == NULL)
     {
         runtime->vklite_state = (Drp2VkliteState*)dvz_calloc(1, sizeof(Drp2VkliteState));
-        ANN(runtime->vklite_state);
+        if (runtime->vklite_state == NULL)
+            return false;
         runtime->vklite_state->runtime = runtime;
     }
+
+    DvzImages* images = dvz_images_create_wrapper();
+    if (images == NULL)
+        return false;
+    dvz_images_wrap(runtime->device, runtime->allocator, VK_IMAGE_TYPE_2D, frame->image, images);
+    dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(images, frame->extent.width, frame->extent.height, 1);
 
     Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, texture_id);
     if (object == NULL)
         object = _vklite_add(runtime->vklite_state, texture_id, DRP2_OBJECT_TEXTURE);
     if (object == NULL || object->kind != DRP2_OBJECT_TEXTURE)
+    {
+        dvz_images_free(images);
         return false;
+    }
 
     if (object->views != NULL)
     {
@@ -2072,15 +2097,7 @@ static bool _vklite_attach_frame_target(
         object->images = NULL;
     }
 
-    object->images = dvz_images_create_wrapper();
-    if (object->images == NULL)
-        return false;
-
-    dvz_images_wrap(
-        runtime->device, runtime->allocator, VK_IMAGE_TYPE_2D, frame->image, object->images);
-    dvz_images_format(object->images, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_images_size(object->images, frame->extent.width, frame->extent.height, 1);
-
+    object->images = images;
     object->image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     object->command_buffer = frame->command_buffer;
     object->image_view = frame->image_view;
@@ -3667,14 +3684,14 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 bool dvz_drp2_runtime_attach_frame_target(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
 {
-    if (runtime == NULL || frame == NULL || texture_id == 0 || frame->extent.width == 0 ||
-        frame->extent.height == 0)
+    if (runtime == NULL || !_frame_target_valid(texture_id, frame))
         return false;
 
     if (runtime->semantic_state == NULL)
     {
         runtime->semantic_state = (Drp2RuntimeState*)dvz_calloc(1, sizeof(Drp2RuntimeState));
-        ANN(runtime->semantic_state);
+        if (runtime->semantic_state == NULL)
+            return false;
     }
 
     Drp2Object* object = _find_any_object(runtime->semantic_state, texture_id);

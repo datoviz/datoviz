@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdint.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -126,6 +127,25 @@ static DvzDrp2CommandStream* _valid_compute_stream(void)
     dvz_drp2_stream_end_compute_pass(stream, 2);
     dvz_drp2_stream_finish_command_encoder(stream, 1, 3);
     return stream;
+}
+
+
+/**
+ * Return a non-owning stream frame descriptor with stable fake handles.
+ *
+ * @param seed seed used to make the fake handles distinct
+ * @param width frame width
+ * @param height frame height
+ * @return stream frame descriptor
+ */
+static DvzStreamFrame _test_stream_frame(uintptr_t seed, uint32_t width, uint32_t height)
+{
+    DvzStreamFrame frame = {0};
+    frame.image = (VkImage)(seed + 1);
+    frame.image_view = (VkImageView)(seed + 2);
+    frame.command_buffer = (VkCommandBuffer)(seed + 3);
+    frame.extent = (VkExtent2D){width, height};
+    return frame;
 }
 
 
@@ -1327,6 +1347,66 @@ int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstI
 }
 
 
+int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzStreamFrame frame = _test_stream_frame(0x100, 4, 4);
+    AT(!dvz_drp2_runtime_attach_frame_target(NULL, 7, &frame));
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 0, &frame));
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, NULL));
+
+    DvzStreamFrame invalid = frame;
+    invalid.image = VK_NULL_HANDLE;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.image_view = VK_NULL_HANDLE;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.command_buffer = VK_NULL_HANDLE;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.extent.width = 0;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    AT(dvz_drp2_runtime_attach_frame_target(runtime, 7, &frame));
+    frame = _test_stream_frame(0x200, 8, 4);
+    AT(dvz_drp2_runtime_attach_frame_target(runtime, 7, &frame));
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 4));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 5, 4, 7));
+    AT(dvz_drp2_stream_set_pipeline(stream, 5, 3));
+    AT(dvz_drp2_stream_draw(stream, 5, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 5));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 4, 6));
+    AT(dvz_drp2_stream_queue_submit(stream, 6, 8));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item)
 {
@@ -2006,6 +2086,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
+    TEST_SIMPLE(test_drp2_runtime_frame_target_validation);
 #if DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
