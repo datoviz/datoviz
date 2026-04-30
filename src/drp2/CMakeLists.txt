@@ -33,13 +33,15 @@ if(TARGET datoviz_vklite)
     endif()
 
     if(EXISTS "${_dvz_shaderc_lib}")
-        if(NOT TARGET datoviz_shaderc)
-            add_library(datoviz_shaderc SHARED IMPORTED GLOBAL)
-            set_target_properties(datoviz_shaderc PROPERTIES IMPORTED_LOCATION "${_dvz_shaderc_lib}")
-        endif()
-        target_link_libraries(datoviz_drp2 PUBLIC datoviz_shaderc)
+        # Pass the absolute path so _vklite_compile_glsl can dlopen it at runtime without a
+        # library search. No link-time dependency on the shared object.
+        target_compile_definitions(datoviz_drp2 PRIVATE
+            DVZ_SHADERC_LIB_PATH="${_dvz_shaderc_lib}")
     else()
         message(FATAL_ERROR "shaderc shared library not found: ${_dvz_shaderc_lib}")
+    endif()
+    if(NOT WIN32)
+        target_link_libraries(datoviz_drp2 PRIVATE dl)
     endif()
 else()
     target_compile_definitions(datoviz_drp2 PUBLIC DVZ_DRP2_HAS_VKLITE=0)

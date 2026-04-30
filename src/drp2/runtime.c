@@ -21,6 +21,7 @@
 #if DVZ_DRP2_HAS_VKLITE
 #include "shaderc/shaderc.h"
 #include <volk.h>
+#include "_dynload.h"
 #endif
 
 #include "_alloc.h"
@@ -2176,6 +2177,84 @@ static bool _vklite_attach_frame_target(
 }
 
 
+/* Lazy-loaded shaderc function-pointer table. Populated once on first GLSL compile call. */
+typedef struct
+{
+    shaderc_compiler_t (*compiler_initialize)(void);
+    void (*compiler_release)(shaderc_compiler_t);
+    shaderc_compile_options_t (*compile_options_initialize)(void);
+    void (*compile_options_release)(shaderc_compile_options_t);
+    void (*compile_options_set_source_language)(
+        shaderc_compile_options_t, shaderc_source_language);
+    void (*compile_options_set_target_env)(
+        shaderc_compile_options_t, shaderc_target_env, uint32_t);
+    void (*compile_options_set_target_spirv)(
+        shaderc_compile_options_t, shaderc_spirv_version);
+    shaderc_compilation_result_t (*compile_into_spv)(
+        shaderc_compiler_t, const char*, size_t, shaderc_shader_kind, const char*, const char*,
+        const shaderc_compile_options_t);
+    shaderc_compilation_status (*result_get_compilation_status)(shaderc_compilation_result_t);
+    const char* (*result_get_error_message)(shaderc_compilation_result_t);
+    const char* (*result_get_bytes)(shaderc_compilation_result_t);
+    size_t (*result_get_length)(shaderc_compilation_result_t);
+    void (*result_release)(shaderc_compilation_result_t);
+} ShadercSyms;
+
+static ShadercSyms g_shaderc = {0};
+static bool g_shaderc_loaded = false;
+static bool g_shaderc_available = false;
+
+static bool _shaderc_load(void)
+{
+    if (g_shaderc_loaded)
+        return g_shaderc_available;
+    g_shaderc_loaded = true;
+
+#ifndef DVZ_SHADERC_LIB_PATH
+#define DVZ_SHADERC_LIB_PATH "libshaderc_shared.so.1"
+#endif
+    DvzDynLib lib = dvz_dynlib_open(DVZ_SHADERC_LIB_PATH);
+    if (lib == NULL)
+    {
+        log_error("shaderc not available: could not load " DVZ_SHADERC_LIB_PATH);
+        return false;
+    }
+
+    /* POSIX allows void* <-> function pointer via memcpy to avoid -Wpedantic warnings. */
+#define _SC_SYM(field, name)                                                                      \
+    {                                                                                             \
+        void* _p = dvz_dynlib_sym(lib, name);                                                     \
+        if (_p == NULL)                                                                           \
+        {                                                                                         \
+            log_error("shaderc: symbol '%s' not found", name);                                    \
+            dvz_dynlib_close(lib);                                                                \
+            return false;                                                                         \
+        }                                                                                         \
+        memcpy(&g_shaderc.field, &_p, sizeof(_p));                                                \
+    }
+
+    _SC_SYM(compiler_initialize, "shaderc_compiler_initialize")
+    _SC_SYM(compiler_release, "shaderc_compiler_release")
+    _SC_SYM(compile_options_initialize, "shaderc_compile_options_initialize")
+    _SC_SYM(compile_options_release, "shaderc_compile_options_release")
+    _SC_SYM(compile_options_set_source_language, "shaderc_compile_options_set_source_language")
+    _SC_SYM(compile_options_set_target_env, "shaderc_compile_options_set_target_env")
+    _SC_SYM(compile_options_set_target_spirv, "shaderc_compile_options_set_target_spirv")
+    _SC_SYM(compile_into_spv, "shaderc_compile_into_spv")
+    _SC_SYM(result_get_compilation_status, "shaderc_result_get_compilation_status")
+    _SC_SYM(result_get_error_message, "shaderc_result_get_error_message")
+    _SC_SYM(result_get_bytes, "shaderc_result_get_bytes")
+    _SC_SYM(result_get_length, "shaderc_result_get_length")
+    _SC_SYM(result_release, "shaderc_result_release")
+#undef _SC_SYM
+
+    /* Keep the library resident — we do not dlclose it. The handle is intentionally retained
+       so the symbols remain valid for the process lifetime without re-opening on each call. */
+    g_shaderc_available = true;
+    return true;
+}
+
+
 /**
  * Return the shaderc GLSL shader kind for a DRP2 shader stage string.
  *
@@ -2233,53 +2312,56 @@ static bool _vklite_compile_glsl(
     *spv = NULL;
     *spv_size = 0;
 
-    shaderc_compiler_t compiler = shaderc_compiler_initialize();
+    if (!_shaderc_load())
+        return false;
+
+    shaderc_compiler_t compiler = g_shaderc.compiler_initialize();
     if (compiler == NULL)
         return false;
-    shaderc_compile_options_t options = shaderc_compile_options_initialize();
+    shaderc_compile_options_t options = g_shaderc.compile_options_initialize();
     if (options == NULL)
     {
-        shaderc_compiler_release(compiler);
+        g_shaderc.compiler_release(compiler);
         return false;
     }
 
-    shaderc_compile_options_set_source_language(options, shaderc_source_language_glsl);
-    shaderc_compile_options_set_target_env(
+    g_shaderc.compile_options_set_source_language(options, shaderc_source_language_glsl);
+    g_shaderc.compile_options_set_target_env(
         options, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
-    shaderc_compile_options_set_target_spirv(options, shaderc_spirv_version_1_6);
+    g_shaderc.compile_options_set_target_spirv(options, shaderc_spirv_version_1_6);
 
     shaderc_shader_kind kind = _vklite_shader_kind(stage);
-    shaderc_compilation_result_t result = shaderc_compile_into_spv(
+    shaderc_compilation_result_t result = g_shaderc.compile_into_spv(
         compiler, code, strlen(code), kind, "drp2_scene_fixture.glsl", "main", options);
 
-    shaderc_compile_options_release(options);
-    shaderc_compiler_release(compiler);
+    g_shaderc.compile_options_release(options);
+    g_shaderc.compiler_release(compiler);
 
     if (result == NULL)
         return false;
-    if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
+    if (g_shaderc.result_get_compilation_status(result) != shaderc_compilation_status_success)
     {
-        log_error("GLSL compilation failed: %s", shaderc_result_get_error_message(result));
-        shaderc_result_release(result);
+        log_error("GLSL compilation failed: %s", g_shaderc.result_get_error_message(result));
+        g_shaderc.result_release(result);
         return false;
     }
 
-    const char* bytes = shaderc_result_get_bytes(result);
-    uint64_t size = (uint64_t)shaderc_result_get_length(result);
+    const char* bytes = g_shaderc.result_get_bytes(result);
+    uint64_t size = (uint64_t)g_shaderc.result_get_length(result);
     if (bytes == NULL || size == 0 || size % sizeof(uint32_t) != 0)
     {
-        shaderc_result_release(result);
+        g_shaderc.result_release(result);
         return false;
     }
 
     uint32_t* out = (uint32_t*)dvz_calloc((size_t)(size / sizeof(uint32_t)), sizeof(uint32_t));
     if (out == NULL)
     {
-        shaderc_result_release(result);
+        g_shaderc.result_release(result);
         return false;
     }
     dvz_memcpy(out, (size_t)size, bytes, (size_t)size);
-    shaderc_result_release(result);
+    g_shaderc.result_release(result);
 
     *spv = out;
     *spv_size = size;
