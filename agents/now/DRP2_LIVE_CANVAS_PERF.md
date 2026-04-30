@@ -3,6 +3,7 @@
 > **Status:** `ACTIVE`
 > **Measured on:** `2026-04-30`
 > **Primary report:** `build/profiles/live-canvas-20260430-114526`
+> **Post-fix report:** `build/profiles/live-canvas-20260430-115310`
 > **Command:** `just profile-canvas-release --frames 10000`
 > **Binary:** `build-profile/testing/dvz_live_canvas`
 
@@ -21,8 +22,13 @@ Important caveat: before commit `2896e823`, `testing/dvz_live_canvas.c` hardcode
 for this binary. The useful baseline is the report generated after that fix:
 `build/profiles/live-canvas-20260430-114526`.
 
-The latest report no longer samples `libVkLayer_khronos_validation.so`. `libVkLayer_MESA_device_select.so`
-still appears, but that is environment/device-selection noise rather than Khronos validation.
+The validation-free baseline report no longer samples `libVkLayer_khronos_validation.so`.
+`libVkLayer_MESA_device_select.so` still appears, but that is environment/device-selection noise rather
+than Khronos validation.
+
+Commit `11625c84` fixed the largest measured issue by retiring submitted transient encoder/pass/command-
+buffer semantic objects and searching runtime object tables newest-first. This prevents the persistent
+semantic state from growing every frame and keeps hot object lookups near the newest entries.
 
 
 ## Benchmark Summary
@@ -55,6 +61,19 @@ Approximate DRP2 overhead:
 The absolute overhead is small for normal 60/120/240 Hz display budgets, but it is large for the
 run-as-fast-as-possible immediate-present benchmark and should be treated as a real hot-path issue.
 
+After commit `11625c84`, the same profiling command produced:
+
+```text
+clear avg_ms:      ~0.044-0.058 ms/frame
+scene-drp2 avg_ms: ~0.044-0.046 ms/frame
+scene-drp2 fps:    ~21.9k-22.6k
+scene-drp2 p50:    ~0.030-0.032 ms
+scene-drp2 p90:    ~0.068 ms
+```
+
+This makes the original DRP2 runtime lookup problem effectively resolved for the benchmark. The remaining
+gap is small enough that the next optimization should be justified by another profile before implementation.
+
 
 ## Perf Counter Summary
 
@@ -86,6 +105,12 @@ scene core L1 miss rate:               ~62.44%
 This strongly suggests pointer-heavy, cache-unfriendly runtime interpretation/lookup work in the DRP2
 execution path.
 
+Post-fix cache behavior is back near the direct clear path:
+
+```text
+post-fix scene core L1 miss rate: ~3.58%
+```
+
 
 ## Hotspots
 
@@ -110,8 +135,24 @@ _open_pass                   ~13.10% children, ~13.05% self
 Interpretation: the bottleneck is not primarily Vulkan submission. The cost is DRP2 runtime
 interpretation/semantic validation/object lookup in the per-frame draw path.
 
+Post-fix, `_find_object`, `_validate_command`, and `_open_pass` no longer dominate. The remaining profile
+is diffuse and includes frame-plan/stream emission and shaderc/glslang samples at low percentages.
+
 
 ## Optimization Ideas
+
+### Completed
+
+1. Retire submitted transient semantic objects after queue submission.
+   - Implemented in commit `11625c84`.
+   - Prevents per-frame accumulation of encoder/pass/command-buffer semantic objects.
+   - Allows repeated transient ids in runtime execution without growing the semantic table.
+
+2. Search runtime object tables newest-first.
+   - Implemented in commit `11625c84`.
+   - Keeps hot transient lookup cheap even when persistent resources exist.
+
+### Deferred
 
 1. Move semantic validation out of the per-frame hot loop for unchanged streams.
    - Validate the stream when it is built or updated.
@@ -148,6 +189,36 @@ interpretation/semantic validation/object lookup in the per-frame draw path.
    - Confirm whether those samples are one-time startup/report noise or repeated per-frame work.
 
 
+## Next Interesting Optimization
+
+The next interesting optimization is cached frame-plan/DRP2 stream emission, but it is explicitly deferred
+for now.
+
+The live path still rebuilds a frame plan and emits a DRP2 stream every frame:
+
+```text
+dvz_frame_plan(...)
+dvz_frame_plan_upload(...)
+dvz_frame_plan_render(...)
+dvz_frame_plan_render_visual(...)
+dvz_frame_plan_emitter_emit_drp2(...)
+dvz_drp2_runtime_execute(...)
+```
+
+A narrow experiment would cache the emitted DRP2 stream for this benchmark and keep only the borrowed
+canvas frame target dynamic. A general prepared-plan API would be more complex because it needs explicit
+ownership, invalidation, diagnostics, dynamic target handling, and resource lifetime tests.
+
+Recommended policy:
+
+1. Do not implement the general prepared-plan optimization immediately.
+2. If future profiles show frame-plan/stream emission as a meaningful bottleneck, first prototype cached
+   emission locally in the live canvas or scene path.
+3. Promote it to an internal prepared execution API only if the local prototype produces a measurable win.
+4. Expose a public prepared-plan API only after multiple callers need it and the invalidation semantics are
+   clear.
+
+
 ## Suggested Next Profiling Slices
 
 1. Add a DRP2 runtime mode that skips semantic validation after a successful prepare step, then rerun:
@@ -170,6 +241,7 @@ interpretation/semantic validation/object lookup in the per-frame draw path.
 
 ## Current Conclusion
 
-The DRP2 live canvas slowdown is a real CPU-side runtime architecture cost. The highest-value fix is to stop
-executing the full DRP2 interpreter/validator path every frame. Build a prepared execution plan with resolved
-object references once, then make steady-state frame execution a compact linear pass.
+The original DRP2 live canvas slowdown was a CPU-side runtime-state growth and lookup problem, and it was
+addressed by commit `11625c84`. Prepared frame-plan/stream emission remains an interesting future
+optimization, but it should stay deferred until a fresh profile shows that the remaining emission work is
+worth the added API and invalidation complexity.
