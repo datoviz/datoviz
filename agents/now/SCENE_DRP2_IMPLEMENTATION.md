@@ -1,7 +1,8 @@
 # Scene/DRP2 Implementation Plan
 
-> **Status:** `ACTIVE IMPLEMENTATION PLAN`
+> **Status:** `FIRST VERTICAL SLICE COMPLETE`
 > **Created on:** `2026-04-28`
+> **Completed on:** `2026-04-30`
 > **Purpose:** provide the concrete first implementation path for DRP2 and the future scene layer,
 > using the existing `canvas`, `stream`/sink, and `vklite` stack instead of inventing a parallel
 > graphics path.
@@ -294,93 +295,49 @@ Validation:
 
 ### Phase 5 - Vulkan DRP2 Runtime On vklite
 
-Implement native execution behind the DRP2 runtime using `vklite`.
+**Status: COMPLETED** (commits on `2026-04-29`)
 
-Initial files:
+All runtime mappings implemented in `src/drp2/runtime.c`:
 
-1. `src/drp2/runtime_vklite*.c`
-2. private runtime headers under `src/drp2/`
-3. focused tests under `src/drp2/tests/`
+- DRP2 buffers → `vklite` buffer wrappers
+- DRP2 textures/views → `vklite` image/image-view wrappers
+- DRP2 samplers → `vklite` sampler wrappers
+- DRP2 bind-group layouts/groups → `vklite` slots/descriptors
+- DRP2 shader modules → `vklite` shader wrappers (GLSL via shaderc, WGSL via SPIR-V passthrough)
+- DRP2 render pipelines → `vklite` graphics wrappers
+- DRP2 compute pipelines → `vklite` compute wrappers
+- DRP2 command encoders/passes → `vklite` command recording helpers
 
-Runtime mapping:
-
-1. DRP2 buffers -> `vklite` buffer wrappers,
-2. DRP2 textures/views -> `vklite` image/image-view wrappers,
-3. DRP2 samplers -> `vklite` sampler wrappers,
-4. DRP2 bind-group layouts/groups -> `vklite` slots/descriptors,
-5. DRP2 shader modules -> `vklite` shader wrappers,
-6. DRP2 render pipelines -> `vklite` graphics wrappers,
-7. DRP2 compute pipelines -> `vklite` compute wrappers,
-8. DRP2 command encoders/passes -> `vklite` command recording helpers.
-
-Capability mapping:
-
-1. query public `vk`/`vklite` device capabilities,
-2. fill `DvzCapabilitySnapshot`,
-3. advertise WGSL only when a WGSL path exists,
-4. advertise GLSL/SPIR-V only when the native path can compile or ingest them,
-5. derive WBOIT availability from lower-level fields, not from a boolean.
-
-First execution target:
-
-1. static point or pixel to an offscreen/canvas target,
-2. clear plus simple draw,
-3. copy/readback into a buffer,
-4. no WBOIT, custom visuals, or multi-family shader registry yet.
-
-Validation:
-
-1. focused vklite-backed DRP2 runtime tests,
-2. `direnv exec . just test vklite`,
-3. `direnv exec . just test canvas`,
-4. `just spec-check`.
+Capability snapshot is filled from device features via `dvz_capability_snapshot_default()`.
+Tests are in `src/drp2/tests/test_drp2.c` and `src/scene/tests/test_scene.c`.
 
 
 ### Phase 6 - Canvas Integration
 
-Integrate the runtime with existing canvas frame ownership.
+**Status: COMPLETED** (commits `86087e78`, `de5835bb`, `4ad971fc` on `2026-04-29`)
 
-Rules:
-
-1. canvas remains the presentation owner,
-2. runtime may be attached to the canvas draw callback by the application,
-3. runtime records into the current frame command buffer or wraps it through `vklite`,
-4. runtime must respect `DvzStreamFrame` handles and dirty-handle metadata,
-5. canvas remains responsible for stream/sink submission.
-
-Public-facing sketch:
+Canvas integration is fully operational via `testing/dvz_live_canvas.c`. The pattern used:
 
 ```c
-DvzCanvas* canvas = dvz_canvas_create(&canvas_cfg);
-DvzRuntime* runtime = dvz_runtime_create_for_canvas(canvas, &runtime_cfg);
-DvzScene* scene = dvz_scene_create(&scene_cfg);
-DvzRenderTarget* target = dvz_runtime_target_canvas(runtime, canvas);
+DvzDrp2RuntimeConfig runtime_cfg =
+    dvz_drp2_runtime_vklite_config(app->device, app->allocator);
+app->drp2_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+app->scene_emitter = dvz_frame_plan_emitter();
+dvz_canvas_set_draw_callback(app->canvas, _dvz_canvas_draw_scene_drp2, app);
 
-dvz_figure_set_target(fig, target);
-dvz_canvas_set_draw_callback(canvas, draw_scene, app);
-
-while (running)
-{
-    if (dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY)
-        dvz_canvas_submit(canvas);
-}
+// In draw callback:
+dvz_drp2_runtime_attach_frame_target(app->drp2_runtime, 1, frame);
+DvzDrp2CommandStream* stream =
+    dvz_frame_plan_emitter_emit_drp2(app->scene_emitter, plan, ...);
+dvz_drp2_runtime_execute(app->drp2_runtime, stream);
 ```
 
-The exact function names may change during implementation, but the ownership must not.
+Canvas remains the presentation owner; runtime records into the borrowed frame command buffer.
+Stream/sink submission goes through the existing `dvz_canvas_frame()` / `dvz_canvas_submit()` path.
+The `dvz_runtime_create_for_canvas()` sketch in the spec is not needed; the direct pattern above is cleaner.
 
-Tests:
-
-1. draw callback can submit one runtime-rendered frame,
-2. swapchain sink path still works,
-3. offscreen sink path still works,
-4. video/live-image sinks remain canvas/stream concerns,
-5. runtime teardown does not outlive borrowed canvas frame handles.
-
-Validation:
-
-1. `direnv exec . just test canvas`
-2. focused DRP2 runtime tests
-3. full `just test` when integration crosses modules
+The `--draw scene-drp2` mode in `dvz_live_canvas` exercises the full integrated path.
+`test_scene_drp2_offscreen_canvas_frame` covers the offscreen path.
 
 
 ## CMake And Test Wiring
