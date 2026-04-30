@@ -209,15 +209,17 @@ if ((perf_available)); then
         } >"$log" 2>&1
 
         if [[ -f "$data" ]]; then
-            perf report --stdio --no-children -i "$data" \
+            run_with_timeout perf report --stdio --no-inline --call-graph none --no-children \
+                -i "$data" \
                 >"$out_dir/perf-report-$mode.no-children.txt" 2>&1 || true
-            perf report --stdio --children -i "$data" \
+            run_with_timeout perf report --stdio --no-inline --call-graph none --children \
+                -i "$data" \
                 >"$out_dir/perf-report-$mode.children.txt" 2>&1 || true
         fi
     done
 
     if [[ -f "$out_dir/perf-clear.data" && -f "$out_dir/perf-scene-drp2.data" ]]; then
-        perf diff "$out_dir/perf-clear.data" "$out_dir/perf-scene-drp2.data" \
+        run_with_timeout perf diff "$out_dir/perf-clear.data" "$out_dir/perf-scene-drp2.data" \
             >"$out_dir/perf-diff-clear-vs-scene-drp2.txt" 2>&1 || true
     fi
 else
