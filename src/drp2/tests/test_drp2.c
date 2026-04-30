@@ -213,6 +213,34 @@ int test_drp2_stream_json(TstSuite* suite, TstItem* item)
 
 
 
+int test_drp2_stream_growth_json(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    for (uint32_t i = 0; i < 160; i++)
+        AT(dvz_drp2_stream_create_buffer(stream, i + 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+
+    AT(dvz_drp2_stream_count(stream) == 160);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream, 159)) ==
+       DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_stream_get(stream, 160) == NULL);
+
+    char* json = dvz_drp2_stream_json(stream, "stream_growth");
+    ANN(json);
+    AT(strstr(json, "\"name\": \"stream_growth\"") != NULL);
+    AT(strstr(json, "\"id\": 160") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_validate_render_stream(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1909,6 +1937,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_stream_empty);
     TEST_SIMPLE(test_drp2_stream_append);
     TEST_SIMPLE(test_drp2_stream_json);
+    TEST_SIMPLE(test_drp2_stream_growth_json);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
     TEST_SIMPLE(test_drp2_runtime_rejects_duplicate_id);
     TEST_SIMPLE(test_drp2_runtime_rejects_unknown_buffer_write);

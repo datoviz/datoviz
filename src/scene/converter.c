@@ -208,8 +208,12 @@ static bool _zero_base64(uint64_t byte_size, char* out, uint64_t out_size)
 
     uint64_t groups = byte_size / 3;
     uint64_t remainder = byte_size % 3;
-    uint64_t count = groups * 4 + (remainder == 0 ? 0 : 4);
-    if (count + 1 > out_size)
+    uint64_t extra = remainder == 0 ? 0 : 4;
+    if (groups > (UINT64_MAX - extra) / 4)
+        return false;
+
+    uint64_t count = groups * 4 + extra;
+    if (count == UINT64_MAX || count + 1 > out_size)
         return false;
 
     for (uint64_t i = 0; i < count; i++)
@@ -1407,7 +1411,8 @@ DvzFramePlanEmitter* dvz_frame_plan_emitter(void)
 {
     DvzFramePlanEmitter* emitter = (DvzFramePlanEmitter*)dvz_calloc(
         1, sizeof(DvzFramePlanEmitter));
-    ANN(emitter);
+    if (emitter == NULL)
+        return NULL;
     _state_init(&emitter->resources);
     emitter->next_transient_id = DRP2_RUNTIME_TRANSIENT_ID_BASE;
     return emitter;

@@ -14,11 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <inttypes.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
 #include "test_scene.h"
@@ -266,6 +267,40 @@ int test_frame_plan_static_render(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"type\": \"render\"") != NULL);
     AT(strstr(json, "\"visuals\": [\"visual.point.0\"]") != NULL);
     AT(strstr(json, "\"picking\": false") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_growth_json(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.growth", 9);
+    ANN(plan);
+
+    char resource_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    char data_tag[DVZ_SCENE_LABEL_SIZE] = {0};
+    for (uint32_t i = 0; i < 80; i++)
+    {
+        dvz_snprintf(resource_id, sizeof(resource_id), "buf.growth.%03" PRIu32, i);
+        dvz_snprintf(data_tag, sizeof(data_tag), "growth.payload.%03" PRIu32, i);
+        AT(dvz_frame_plan_upload(plan, resource_id, i * 16, 16, data_tag));
+    }
+
+    AT(dvz_frame_plan_node_count(plan) == 80);
+    AT(dvz_frame_plan_node_type(dvz_frame_plan_node_get(plan, 79)) ==
+       DVZ_FRAME_PLAN_NODE_UPLOAD);
+    AT(dvz_frame_plan_node_get(plan, 80) == NULL);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"figure_id\": \"figure.growth\"") != NULL);
+    AT(strstr(json, "\"resource_id\": \"buf.growth.079\"") != NULL);
 
     dvz_frame_plan_json_destroy(json);
     dvz_frame_plan_destroy(plan);
@@ -1635,6 +1670,7 @@ int test_scene(TstSuite* suite)
 
     TEST_SIMPLE(test_scene_capabilities_diagnostics);
     TEST_SIMPLE(test_frame_plan_static_render);
+    TEST_SIMPLE(test_frame_plan_growth_json);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);

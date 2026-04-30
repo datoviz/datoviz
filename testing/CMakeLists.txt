@@ -757,6 +757,8 @@ foreach(_dvz_test_target
     testing
     dvztest
     dvztest_core
+    dvztest_drp2
+    dvztest_scene
     dvztest_vk
     dvztest_canvas
     dvztest_integration
@@ -772,6 +774,8 @@ if(DVZ_SANITIZER_FLAGS)
         testing
         dvztest
         dvztest_core
+        dvztest_drp2
+        dvztest_scene
         dvztest_vk
         dvztest_canvas
         dvztest_integration

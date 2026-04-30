@@ -46,6 +46,7 @@ struct JsonBuilder
     char* data;
     uint64_t count;
     uint64_t capacity;
+    bool failed;
 };
 
 
@@ -53,6 +54,48 @@ struct JsonBuilder
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Multiply two unsigned 64-bit integers with overflow detection.
+ *
+ * @param a the first operand
+ * @param b the second operand
+ * @param out the product output
+ * @return whether the multiplication would overflow
+ */
+static bool _mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
+{
+    ANN(out);
+    if (a != 0 && b > UINT64_MAX / a)
+        return true;
+    *out = a * b;
+    return false;
+}
+
+
+
+/**
+ * Add three unsigned 64-bit integers with overflow detection.
+ *
+ * @param a the first operand
+ * @param b the second operand
+ * @param c the third operand
+ * @param out the sum output
+ * @return whether the addition would overflow
+ */
+static bool _add3_u64_overflows(uint64_t a, uint64_t b, uint64_t c, uint64_t* out)
+{
+    ANN(out);
+    if (b > UINT64_MAX - a)
+        return true;
+    uint64_t ab = a + b;
+    if (c > UINT64_MAX - ab)
+        return true;
+    *out = ab + c;
+    return false;
+}
+
+
 
 static bool _ensure_stream_capacity(DvzDrp2CommandStream* stream)
 {
@@ -67,9 +110,19 @@ static bool _ensure_stream_capacity(DvzDrp2CommandStream* stream)
     if (stream->count < stream->capacity)
         return true;
 
-    stream->capacity *= 2;
-    stream->commands =
-        (DvzDrp2Command*)dvz_realloc(stream->commands, stream->capacity * sizeof(DvzDrp2Command));
+    if (stream->capacity > UINT32_MAX / 2)
+        return false;
+    uint32_t capacity = stream->capacity * 2;
+    uint64_t bytes = 0;
+    if (_mul_u64_overflows(capacity, sizeof(DvzDrp2Command), &bytes))
+        return false;
+
+    DvzDrp2Command* commands = (DvzDrp2Command*)dvz_realloc(stream->commands, bytes);
+    if (commands == NULL)
+        return false;
+
+    stream->capacity = capacity;
+    stream->commands = commands;
     return stream->commands != NULL;
 }
 
@@ -194,28 +247,64 @@ static const char* _command_name(DvzDrp2CommandType type)
 
 
 
-static void _json_init(JsonBuilder* builder)
+static bool _json_init(JsonBuilder* builder)
 {
     ANN(builder);
     builder->capacity = DVZ_DRP2_JSON_INITIAL_CAPACITY;
     builder->count = 0;
+    builder->failed = false;
     builder->data = (char*)dvz_calloc(builder->capacity, sizeof(char));
-    ANN(builder->data);
+    if (builder->data == NULL)
+    {
+        builder->failed = true;
+        return false;
+    }
+    return true;
 }
 
 
 
-static void _json_ensure(JsonBuilder* builder, uint64_t count)
+static bool _json_ensure(JsonBuilder* builder, uint64_t count)
 {
     ANN(builder);
-    ANN(builder->data);
-    if (builder->count + count + 1 <= builder->capacity)
-        return;
+    if (builder->failed)
+        return false;
+    if (builder->data == NULL)
+    {
+        builder->failed = true;
+        return false;
+    }
 
-    while (builder->count + count + 1 > builder->capacity)
-        builder->capacity *= 2;
-    builder->data = (char*)dvz_realloc(builder->data, builder->capacity);
-    ANN(builder->data);
+    uint64_t required = 0;
+    if (_add3_u64_overflows(builder->count, count, 1, &required))
+    {
+        builder->failed = true;
+        return false;
+    }
+
+    if (required <= builder->capacity)
+        return true;
+
+    uint64_t capacity = builder->capacity;
+    while (required > capacity)
+    {
+        if (capacity > UINT64_MAX / 2)
+        {
+            builder->failed = true;
+            return false;
+        }
+        capacity *= 2;
+    }
+
+    char* data = (char*)dvz_realloc(builder->data, capacity);
+    if (data == NULL)
+    {
+        builder->failed = true;
+        return false;
+    }
+    builder->capacity = capacity;
+    builder->data = data;
+    return true;
 }
 
 
@@ -224,29 +313,39 @@ static void _json_append(JsonBuilder* builder, const char* format, ...)
 {
     ANN(builder);
     ANN(format);
+    if (builder->failed)
+        return;
 
     while (true)
     {
+        if (builder->data == NULL || builder->count >= builder->capacity)
+        {
+            builder->failed = true;
+            return;
+        }
+
+        uint64_t available = builder->capacity - builder->count;
         va_list args;
         va_start(args, format);
         int written = dvz_vsnprintf(
-            builder->data + builder->count, (size_t)(builder->capacity - builder->count), format,
-            args);
+            builder->data + builder->count, (size_t)available, format, args);
         va_end(args);
 
         if (written < 0)
         {
-            _json_ensure(builder, builder->capacity);
+            if (!_json_ensure(builder, builder->capacity))
+                return;
             continue;
         }
 
         uint64_t written_u = (uint64_t)written;
-        if (builder->count + written_u + 1 <= builder->capacity)
+        if (written_u < available)
         {
             builder->count += written_u;
             return;
         }
-        _json_ensure(builder, written_u);
+        if (!_json_ensure(builder, written_u))
+            return;
     }
 }
 
@@ -771,10 +870,15 @@ DvzDrp2CommandStream* dvz_drp2_stream(void)
 {
     DvzDrp2CommandStream* stream = (DvzDrp2CommandStream*)dvz_calloc(
         1, sizeof(DvzDrp2CommandStream));
-    ANN(stream);
+    if (stream == NULL)
+        return NULL;
     stream->capacity = DVZ_DRP2_INITIAL_COMMAND_CAPACITY;
     stream->commands = (DvzDrp2Command*)dvz_calloc(stream->capacity, sizeof(DvzDrp2Command));
-    ANN(stream->commands);
+    if (stream->commands == NULL)
+    {
+        dvz_free(stream);
+        return NULL;
+    }
     return stream;
 }
 
@@ -1875,7 +1979,8 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
         return NULL;
 
     JsonBuilder builder = {0};
-    _json_init(&builder);
+    if (!_json_init(&builder))
+        return NULL;
 
     const char* fixture_name = name != NULL ? name : "drp2_stream";
     _json_append(
@@ -1898,6 +2003,11 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
         "  ],\n"
         "  \"expected\": { \"outcome\": \"success\" }\n"
         "}\n");
+    if (builder.failed)
+    {
+        dvz_free(builder.data);
+        return NULL;
+    }
     return builder.data;
 }
 

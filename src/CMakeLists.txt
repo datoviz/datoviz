@@ -659,9 +659,15 @@ if(DVZ_SANITIZER_FLAGS)
         datoviz_fileio
         datoviz_math
         datoviz_thread
+        datoviz_input
+        datoviz_window
+        datoviz_canvas
+        datoviz_stream
         datoviz_video
         datoviz_vk
-        datoviz_vklite)
+        datoviz_vklite
+        datoviz_drp2
+        datoviz_scene)
         if(TARGET ${target_name})
             # Always add sanitizer compile flags in Debug.
             target_compile_options(${target_name} PRIVATE $<$<CONFIG:Debug>:${DVZ_SANITIZER_FLAGS}>)

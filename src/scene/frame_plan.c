@@ -46,6 +46,7 @@ struct JsonBuilder
     char* data;
     uint64_t count;
     uint64_t capacity;
+    bool failed;
 };
 
 
@@ -63,6 +64,48 @@ static void _copy_label(char* dst, uint64_t dst_size, const char* src)
 
 
 
+/**
+ * Multiply two unsigned 64-bit integers with overflow detection.
+ *
+ * @param a the first operand
+ * @param b the second operand
+ * @param out the product output
+ * @return whether the multiplication would overflow
+ */
+static bool _mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
+{
+    ANN(out);
+    if (a != 0 && b > UINT64_MAX / a)
+        return true;
+    *out = a * b;
+    return false;
+}
+
+
+
+/**
+ * Add three unsigned 64-bit integers with overflow detection.
+ *
+ * @param a the first operand
+ * @param b the second operand
+ * @param c the third operand
+ * @param out the sum output
+ * @return whether the addition would overflow
+ */
+static bool _add3_u64_overflows(uint64_t a, uint64_t b, uint64_t c, uint64_t* out)
+{
+    ANN(out);
+    if (b > UINT64_MAX - a)
+        return true;
+    uint64_t ab = a + b;
+    if (c > UINT64_MAX - ab)
+        return true;
+    *out = ab + c;
+    return false;
+}
+
+
+
 static bool _ensure_node_capacity(DvzFramePlan* plan)
 {
     ANN(plan);
@@ -76,9 +119,19 @@ static bool _ensure_node_capacity(DvzFramePlan* plan)
     if (plan->count < plan->capacity)
         return true;
 
-    plan->capacity *= 2;
-    plan->nodes =
-        (DvzFramePlanNode*)dvz_realloc(plan->nodes, plan->capacity * sizeof(DvzFramePlanNode));
+    if (plan->capacity > UINT32_MAX / 2)
+        return false;
+    uint32_t capacity = plan->capacity * 2;
+    uint64_t bytes = 0;
+    if (_mul_u64_overflows(capacity, sizeof(DvzFramePlanNode), &bytes))
+        return false;
+
+    DvzFramePlanNode* nodes = (DvzFramePlanNode*)dvz_realloc(plan->nodes, bytes);
+    if (nodes == NULL)
+        return false;
+
+    plan->capacity = capacity;
+    plan->nodes = nodes;
     return plan->nodes != NULL;
 }
 
@@ -141,28 +194,64 @@ static const char* _node_type_name(DvzFramePlanNodeType type)
 
 
 
-static void _json_init(JsonBuilder* builder)
+static bool _json_init(JsonBuilder* builder)
 {
     ANN(builder);
     builder->capacity = DVZ_FRAME_PLAN_JSON_INITIAL_CAPACITY;
     builder->count = 0;
+    builder->failed = false;
     builder->data = (char*)dvz_calloc(builder->capacity, sizeof(char));
-    ANN(builder->data);
+    if (builder->data == NULL)
+    {
+        builder->failed = true;
+        return false;
+    }
+    return true;
 }
 
 
 
-static void _json_ensure(JsonBuilder* builder, uint64_t count)
+static bool _json_ensure(JsonBuilder* builder, uint64_t count)
 {
     ANN(builder);
-    ANN(builder->data);
-    if (builder->count + count + 1 <= builder->capacity)
-        return;
+    if (builder->failed)
+        return false;
+    if (builder->data == NULL)
+    {
+        builder->failed = true;
+        return false;
+    }
 
-    while (builder->count + count + 1 > builder->capacity)
-        builder->capacity *= 2;
-    builder->data = (char*)dvz_realloc(builder->data, builder->capacity);
-    ANN(builder->data);
+    uint64_t required = 0;
+    if (_add3_u64_overflows(builder->count, count, 1, &required))
+    {
+        builder->failed = true;
+        return false;
+    }
+
+    if (required <= builder->capacity)
+        return true;
+
+    uint64_t capacity = builder->capacity;
+    while (required > capacity)
+    {
+        if (capacity > UINT64_MAX / 2)
+        {
+            builder->failed = true;
+            return false;
+        }
+        capacity *= 2;
+    }
+
+    char* data = (char*)dvz_realloc(builder->data, capacity);
+    if (data == NULL)
+    {
+        builder->failed = true;
+        return false;
+    }
+    builder->capacity = capacity;
+    builder->data = data;
+    return true;
 }
 
 
@@ -171,29 +260,39 @@ static void _json_append(JsonBuilder* builder, const char* format, ...)
 {
     ANN(builder);
     ANN(format);
+    if (builder->failed)
+        return;
 
     while (true)
     {
+        if (builder->data == NULL || builder->count >= builder->capacity)
+        {
+            builder->failed = true;
+            return;
+        }
+
+        uint64_t available = builder->capacity - builder->count;
         va_list args;
         va_start(args, format);
         int written = dvz_vsnprintf(
-            builder->data + builder->count, (size_t)(builder->capacity - builder->count), format,
-            args);
+            builder->data + builder->count, (size_t)available, format, args);
         va_end(args);
 
         if (written < 0)
         {
-            _json_ensure(builder, builder->capacity);
+            if (!_json_ensure(builder, builder->capacity))
+                return;
             continue;
         }
 
         uint64_t written_u = (uint64_t)written;
-        if (builder->count + written_u + 1 <= builder->capacity)
+        if (written_u < available)
         {
             builder->count += written_u;
             return;
         }
-        _json_ensure(builder, written_u);
+        if (!_json_ensure(builder, written_u))
+            return;
     }
 }
 
@@ -384,12 +483,17 @@ const char* dvz_diagnostic_report_get(const DvzDiagnosticReport* report, uint32_
 DvzFramePlan* dvz_frame_plan(const char* figure_id, uint64_t frame_index)
 {
     DvzFramePlan* plan = (DvzFramePlan*)dvz_calloc(1, sizeof(DvzFramePlan));
-    ANN(plan);
+    if (plan == NULL)
+        return NULL;
     _copy_label(plan->figure_id, DVZ_SCENE_LABEL_SIZE, figure_id ? figure_id : "");
     plan->frame_index = frame_index;
     plan->capacity = DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY;
     plan->nodes = (DvzFramePlanNode*)dvz_calloc(plan->capacity, sizeof(DvzFramePlanNode));
-    ANN(plan->nodes);
+    if (plan->nodes == NULL)
+    {
+        dvz_free(plan);
+        return NULL;
+    }
     return plan;
 }
 
@@ -656,7 +760,8 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         return NULL;
 
     JsonBuilder builder = {0};
-    _json_init(&builder);
+    if (!_json_init(&builder))
+        return NULL;
 
     _json_append(
         &builder,
@@ -680,6 +785,11 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         "    ]\n"
         "  }\n"
         "}\n");
+    if (builder.failed)
+    {
+        dvz_free(builder.data);
+        return NULL;
+    }
     return builder.data;
 }
 
