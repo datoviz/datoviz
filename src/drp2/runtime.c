@@ -375,10 +375,11 @@ static bool _ensure_capacity(Drp2RuntimeState* state)
 static Drp2Object* _find_any_object(Drp2RuntimeState* state, uint64_t id)
 {
     ANN(state);
-    for (uint32_t i = 0; i < state->count; i++)
+    for (uint32_t i = state->count; i > 0; i--)
     {
-        if (state->objects[i].id == id)
-            return &state->objects[i];
+        Drp2Object* object = &state->objects[i - 1];
+        if (object->id == id)
+            return object;
     }
     return NULL;
 }
@@ -398,10 +399,11 @@ static Drp2Object* _find_object(Drp2RuntimeState* state, uint64_t id)
 static const Drp2Object* _find_any_object_const(const Drp2RuntimeState* state, uint64_t id)
 {
     ANN(state);
-    for (uint32_t i = 0; i < state->count; i++)
+    for (uint32_t i = state->count; i > 0; i--)
     {
-        if (state->objects[i].id == id)
-            return &state->objects[i];
+        const Drp2Object* object = &state->objects[i - 1];
+        if (object->id == id)
+            return object;
     }
     return NULL;
 }
@@ -446,6 +448,63 @@ static void _mark_referenced(Drp2RuntimeState* state, uint64_t id)
     Drp2Object* object = _find_object(state, id);
     if (object != NULL)
         object->referenced_by_work = true;
+}
+
+
+
+/**
+ * Remove destroyed objects from the end of the semantic object table.
+ *
+ * @param state the runtime semantic state
+ */
+static void _trim_destroyed_tail(Drp2RuntimeState* state)
+{
+    ANN(state);
+    while (state->count > 0 && state->objects[state->count - 1].destroyed)
+    {
+        state->count--;
+        dvz_memset(
+            &state->objects[state->count], sizeof(Drp2Object), 0, sizeof(Drp2Object));
+    }
+}
+
+
+
+/**
+ * Retire transient encoder, pass, and command-buffer objects after queue submission.
+ *
+ * @param state the runtime semantic state
+ * @param command_buffer the submitted command-buffer object
+ */
+static void _retire_submitted_work(Drp2RuntimeState* state, Drp2Object* command_buffer)
+{
+    ANN(state);
+    ANN(command_buffer);
+    uint64_t encoder_id = command_buffer->encoder_id;
+
+    command_buffer->submitted = true;
+    command_buffer->destroyed = true;
+    if (encoder_id == 0)
+    {
+        _trim_destroyed_tail(state);
+        return;
+    }
+
+    for (uint32_t i = state->count; i > 0; i--)
+    {
+        Drp2Object* object = &state->objects[i - 1];
+        if (object->destroyed)
+            continue;
+        if (object->id == encoder_id ||
+            ((object->kind == DRP2_OBJECT_RENDER_PASS ||
+              object->kind == DRP2_OBJECT_COMPUTE_PASS) &&
+             object->encoder_id == encoder_id))
+        {
+            object->open = false;
+            object->destroyed = true;
+        }
+    }
+    _trim_destroyed_tail(state);
 }
 
 
@@ -1438,6 +1497,7 @@ static DvzDrp2ValidationResult _validate_finish_encoder(
         state, command->u.finish_command_encoder.command_buffer_id, DRP2_OBJECT_COMMAND_BUFFER);
     if (command_buffer == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    command_buffer->encoder_id = command->u.finish_command_encoder.encoder_id;
 
     Drp2Object* mutable_encoder =
         _find_object(state, command->u.finish_command_encoder.encoder_id);
@@ -1467,7 +1527,7 @@ static DvzDrp2ValidationResult _validate_queue_submit(
 
     if (!command->u.queue_submit.has_readback)
     {
-        command_buffer->submitted = true;
+        _retire_submitted_work(state, command_buffer);
         return _ok();
     }
 
@@ -1478,7 +1538,7 @@ static DvzDrp2ValidationResult _validate_queue_submit(
         return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (_range_overflows(command->u.queue_submit.offset, command->u.queue_submit.size, buffer->size))
         return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
-    command_buffer->submitted = true;
+    _retire_submitted_work(state, command_buffer);
     return _ok();
 }
 
@@ -1808,10 +1868,11 @@ static bool _vklite_ensure_capacity(Drp2VkliteState* state)
 static Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id)
 {
     ANN(state);
-    for (uint32_t i = 0; i < state->count; i++)
+    for (uint32_t i = state->count; i > 0; i--)
     {
-        if (state->objects[i].id == id && !state->objects[i].destroyed)
-            return &state->objects[i];
+        Drp2VkliteObject* object = &state->objects[i - 1];
+        if (object->id == id && !object->destroyed)
+            return object;
     }
     return NULL;
 }

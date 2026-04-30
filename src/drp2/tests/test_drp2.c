@@ -815,6 +815,55 @@ int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, Ts
 
 
 
+int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = {0};
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(setup, 1, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(setup, 2, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(setup, 3, 1, 2, 0));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        setup, 4, 2, 2, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzDrp2CommandStream* frame = dvz_drp2_stream();
+        ANN(frame);
+        AT(dvz_drp2_stream_begin_command_encoder(frame, 10));
+        AT(dvz_drp2_stream_begin_render_pass(frame, 11, 10, 4));
+        AT(dvz_drp2_stream_set_pipeline(frame, 11, 3));
+        AT(dvz_drp2_stream_draw(frame, 11, 3, 1, 0, 0));
+        AT(dvz_drp2_stream_end_render_pass(frame, 11));
+        AT(dvz_drp2_stream_finish_command_encoder(frame, 10, 12));
+        AT(dvz_drp2_stream_queue_submit(frame, 12, 13));
+
+        result = dvz_drp2_runtime_execute(runtime, frame);
+        AT(result.ok);
+        AT(result.code == DVZ_DRP2_VALIDATION_OK);
+        dvz_drp2_stream_destroy(frame);
+    }
+
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2154,6 +2203,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_texture_sampler_bind_group);
     TEST_SIMPLE(test_drp2_runtime_validate_bind_group_after_table_growth);
+    TEST_SIMPLE(test_drp2_runtime_reuses_submitted_transient_ids);
     TEST_SIMPLE(test_drp2_runtime_validate_compute_storage_bind_group);
     TEST_SIMPLE(test_drp2_runtime_validate_destroy_unused_bind_group);
     TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group);

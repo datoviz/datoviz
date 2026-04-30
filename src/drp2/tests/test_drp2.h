@@ -72,6 +72,8 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
 
 int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_validate_compute_storage_bind_group(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_validate_destroy_unused_bind_group(TstSuite* suite, TstItem* item);
