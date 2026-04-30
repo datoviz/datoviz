@@ -1561,6 +1561,11 @@ canvas *args:
     ./build/testing/dvz_live_canvas {{args}}
 #
 
+[linux]
+profile-canvas *args:
+    scripts/profile_live_canvas.sh {{args}}
+#
+
 [macos]
 canvas *args:
     @if [ -f libs/vulkan/macos/MoltenVK_icd.json ]; then \
