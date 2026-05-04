@@ -2565,7 +2565,7 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzDescriptors* descriptors = dvz_descriptors_create();
+    DvzDescriptors* descriptors = dvz_descriptors_create_wrapper();
     if (descriptors == NULL)
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -3279,7 +3279,7 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->width = target->width;
     pass->height = target->height;
 
-    DvzRendering* rendering = dvz_rendering_create();
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
     if (rendering == NULL)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);

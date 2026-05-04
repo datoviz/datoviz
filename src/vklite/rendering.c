@@ -78,7 +78,7 @@ void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue clear)
  *
  * @return allocated rendering wrapper, or NULL on allocation failure
  */
-DvzRendering* dvz_rendering_create(void)
+DvzRendering* dvz_rendering_create_wrapper(void)
 {
     DvzRendering* rendering = (DvzRendering*)dvz_calloc(1, sizeof(DvzRendering));
     ANN(rendering);

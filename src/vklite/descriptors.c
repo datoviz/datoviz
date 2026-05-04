@@ -54,7 +54,7 @@ static bool _dvz_descriptors_allocated(DvzDescriptors* descriptors)
  *
  * @return allocated descriptor wrapper, or NULL on allocation failure
  */
-DvzDescriptors* dvz_descriptors_create(void)
+DvzDescriptors* dvz_descriptors_create_wrapper(void)
 {
     DvzDescriptors* descriptors = (DvzDescriptors*)dvz_calloc(1, sizeof(DvzDescriptors));
     ANN(descriptors);

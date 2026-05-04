@@ -66,7 +66,7 @@ int test_vklite_commands_1(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_begin(cmds);
     dvz_cmd_end(cmds);
     dvz_cmd_reset(cmds);
-    dvz_cmd_free(cmds);
+    dvz_cmd_release(cmds);
     dvz_commands_free(cmds);
 
     uint32_t err_count = dvz_gpu_ctx_error_count(ctx);

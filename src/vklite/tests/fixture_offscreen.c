@@ -89,14 +89,14 @@ dvz_fixture_offscreen(DvzFixtureGpu* gpu, uint32_t width, uint32_t height)
     fixture->graphics = dvz_graphics_create_wrapper();
     fixture->slots = dvz_slots_create_wrapper();
     fixture->cmds = dvz_commands_create_wrapper();
-    fixture->desc = dvz_descriptors_create();
+    fixture->desc = dvz_descriptors_create_wrapper();
     ANN(fixture->desc);
     ANN(fixture->vs);
     ANN(fixture->fs);
     ANN(fixture->graphics);
     ANN(fixture->slots);
     ANN(fixture->cmds);
-    fixture->rendering = dvz_rendering_create();
+    fixture->rendering = dvz_rendering_create_wrapper();
     ANN(fixture->rendering);
 
     DvzDevice* device = dvz_fixture_gpu_device(gpu);

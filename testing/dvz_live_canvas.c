@@ -787,7 +787,7 @@ static void _dvz_canvas_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, voi
     ANN(cmds);
     dvz_commands_wrap(device, frame->command_buffer, cmds);
 
-    DvzRendering* rendering = dvz_rendering_create();
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
     ANN(rendering);
     dvz_cmd_rendering_default(
         cmds, frame->image_view, frame->extent.width, frame->extent.height,

@@ -125,7 +125,7 @@ int test_vklite_graphics_1(TstSuite* suite, TstItem* tstitem)
     AT(dvz_graphics_layout_handle(graphics) == dvz_slots_handle(slots));
 
     // Rendering.
-    DvzRendering* rendering = dvz_rendering_create();
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
     ANN(rendering);
     dvz_rendering_area(rendering, 0, 0, WIDTH, HEIGHT);
 

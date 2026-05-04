@@ -333,7 +333,7 @@ void dvz_cmd_reset(DvzCommands* cmds)
 
 
 
-void dvz_cmd_free(DvzCommands* cmds)
+void dvz_cmd_release(DvzCommands* cmds)
 {
     ANN(cmds);
     if (cmds->borrowed_recording)

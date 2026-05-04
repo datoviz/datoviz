@@ -97,7 +97,7 @@ int test_vklite_descriptors_1(TstSuite* suite, TstItem* tstitem)
 
 
     // Descriptors.
-    DvzDescriptors* desc = dvz_descriptors_create();
+    DvzDescriptors* desc = dvz_descriptors_create_wrapper();
     ANN(desc);
     dvz_descriptors(slots, desc);
     AT(dvz_descriptors_set_count(desc) == 2);
@@ -142,7 +142,7 @@ int test_vklite_rendering_reset(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzRendering* rendering = dvz_rendering_create();
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
     ANN(rendering);
     AT(dvz_rendering_layer_count(rendering) == 1);
     AT(dvz_rendering_color_count(rendering) == 0);

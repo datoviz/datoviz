@@ -56,7 +56,7 @@ EXTERN_C_ON
  *
  * @return allocated descriptor wrapper, or NULL on allocation failure
  */
-DVZ_EXPORT DvzDescriptors* dvz_descriptors_create(void);
+DVZ_EXPORT DvzDescriptors* dvz_descriptors_create_wrapper(void);
 
 
 

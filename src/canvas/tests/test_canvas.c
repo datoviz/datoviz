@@ -158,7 +158,7 @@ canvas_offscreen_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void
     ANN(cmds);
     dvz_commands_wrap(canvas->device, cmd, cmds);
 
-    DvzRendering* rendering = dvz_rendering_create();
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
     ANN(rendering);
     dvz_cmd_rendering_default(
         cmds, frame->image_view, frame->extent.width, frame->extent.height,

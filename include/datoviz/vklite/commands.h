@@ -190,11 +190,15 @@ DVZ_EXPORT void dvz_cmd_reset(DvzCommands* cmds);
 
 
 /**
- * Free a set of command buffers.
+ * Release the command buffers back to the Vulkan command pool.
+ *
+ * The wrapper itself remains alive; call dvz_commands_destroy() to also
+ * tear down the underlying pool and dvz_commands_free() to reclaim the heap
+ * wrapper allocation.
  *
  * @param cmds the set of command buffers
  */
-DVZ_EXPORT void dvz_cmd_free(DvzCommands* cmds);
+DVZ_EXPORT void dvz_cmd_release(DvzCommands* cmds);
 
 
 

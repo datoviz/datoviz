@@ -235,7 +235,7 @@ int test_technique_render_texture(TstSuite* suite, TstItem* tstitem)
 
 
     // Inner rendering.
-    DvzRendering* irendering = dvz_rendering_create();
+    DvzRendering* irendering = dvz_rendering_create_wrapper();
     ANN(irendering);
     {
         dvz_rendering_area(irendering, 0, 0, DVZ_FIXTURE_WIDTH / 2, DVZ_FIXTURE_HEIGHT / 2);
@@ -456,7 +456,7 @@ int test_technique_stencil(TstSuite* suite, TstItem* tstitem)
     }
 
     // Mask rendering.
-    DvzRendering* mrendering = dvz_rendering_create();
+    DvzRendering* mrendering = dvz_rendering_create_wrapper();
     ANN(mrendering);
     {
         DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
@@ -799,7 +799,7 @@ int test_technique_compute_graphics(TstSuite* suite, TstItem* tstitem)
     AT(dvz_compute_create(compute) == 0);
 
     // Descriptors for compute
-    DvzDescriptors* desc = dvz_descriptors_create();
+    DvzDescriptors* desc = dvz_descriptors_create_wrapper();
     ANN(desc);
     dvz_descriptors(slots, desc);
     dvz_descriptors_buffer(desc, 0, 0, 0, dvz_buffer_handle(&buf), 0, sizeof(positions));
@@ -1090,7 +1090,7 @@ int test_technique_picking(TstSuite* suite, TstItem* tstitem)
     dvz_cmd_rendering_end(cmds);
 
     /* PICKING PASS */
-    DvzRendering* pickrend = dvz_rendering_create();
+    DvzRendering* pickrend = dvz_rendering_create_wrapper();
     ANN(pickrend);
     dvz_rendering_area(pickrend, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
 
@@ -1407,7 +1407,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     DvzSlots* slots_comp = dvz_slots_create_wrapper();
     ANN(g_comp);
     ANN(slots_comp);
-    DvzDescriptors* desc_comp = dvz_descriptors_create();
+    DvzDescriptors* desc_comp = dvz_descriptors_create_wrapper();
     ANN(desc_comp);
     {
         dvz_graphics(device, g_comp);
@@ -1486,7 +1486,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     // Renderings
     // -----------------------------------------------------------------------------------------
     // Accumulation rendering: writes to accum_color + accum_weight + depth.
-    DvzRendering* accum_rendering = dvz_rendering_create();
+    DvzRendering* accum_rendering = dvz_rendering_create_wrapper();
     ANN(accum_rendering);
     {
         dvz_rendering_area(accum_rendering, 0, 0, W, H);
@@ -1515,7 +1515,7 @@ int test_technique_wboit(TstSuite* suite, TstItem* tstitem)
     }
 
     // Composite rendering: color-only pass directly to the fixture color target.
-    DvzRendering* composite_rendering = dvz_rendering_create();
+    DvzRendering* composite_rendering = dvz_rendering_create_wrapper();
     ANN(composite_rendering);
     {
         dvz_rendering_area(composite_rendering, 0, 0, W, H);
@@ -1785,7 +1785,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     }
 
     // Rendering for depth pass: color = fixture color (ignored), depth = depth_img.
-    DvzRendering* depth_rendering = dvz_rendering_create();
+    DvzRendering* depth_rendering = dvz_rendering_create_wrapper();
     ANN(depth_rendering);
     {
         DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
@@ -1814,7 +1814,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     DvzSlots* ssao_slots = dvz_slots_create_wrapper();
     ANN(ssao_graphics);
     ANN(ssao_slots);
-    DvzDescriptors* ssao_desc = dvz_descriptors_create();
+    DvzDescriptors* ssao_desc = dvz_descriptors_create_wrapper();
     ANN(ssao_desc);
     {
         dvz_graphics(device, ssao_graphics);
@@ -1881,7 +1881,7 @@ int test_technique_ssao(TstSuite* suite, TstItem* tstitem)
     }
 
     // Rendering for SSAO pass: color attachment = fixture main image, no depth/stencil.
-    DvzRendering* ssao_rendering = dvz_rendering_create();
+    DvzRendering* ssao_rendering = dvz_rendering_create_wrapper();
     ANN(ssao_rendering);
     {
         DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);

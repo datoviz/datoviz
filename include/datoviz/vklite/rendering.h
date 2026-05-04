@@ -106,7 +106,7 @@ DVZ_EXPORT void dvz_attachment_clear(DvzAttachment* attachment, VkClearValue cle
  *
  * @return allocated rendering wrapper, or NULL on allocation failure
  */
-DVZ_EXPORT DvzRendering* dvz_rendering_create(void);
+DVZ_EXPORT DvzRendering* dvz_rendering_create_wrapper(void);
 
 
 

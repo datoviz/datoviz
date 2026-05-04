@@ -124,7 +124,7 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
     ANN(cmds);
     dvz_commands_wrap(canvas->device, cmd, cmds);
 
-    DvzRendering* rendering = dvz_rendering_create();
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
     ANN(rendering);
     dvz_cmd_rendering_default(
         cmds, image_view, frame->extent.width, frame->extent.height,
