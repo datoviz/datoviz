@@ -1,0 +1,138 @@
+{
+  "name": "invalid_destroy_texture_view_still_referenced_by_submitted_work",
+  "description": "A texture view is destroyed after the command buffer referencing it (via a bind group) has already been submitted.",
+  "reason": "Active DRP2 2.0 has no completion primitive, so submitted work must conservatively retain every captured texture view until a future completion signal is defined.",
+  "fix": "Keep the texture view alive for the full lifetime of the submitted work, or define a later protocol slice with explicit completion tracking.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative",
+    "texture_view",
+    "lifetime",
+    "usage",
+    "submission"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 1,
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["TEXTURE_BINDING", "STORAGE_BINDING"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTextureView",
+      "id": 2,
+      "texture_id": 1,
+      "format": "rgba8unorm",
+      "dimension": "2d",
+      "aspect": "all"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 3,
+      "entries": [
+        { "binding": 0, "binding_type": "storage_texture" }
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 4,
+      "bind_group_layout_id": 3,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "storage_texture",
+          "resource_kind": "texture_view",
+          "resource_id": 2
+        }
+      ]
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "COMPUTE",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@compute @workgroup_size(1) fn main() {}"
+    },
+    {
+      "cmd": "CreateComputePipeline",
+      "id": 11,
+      "compute_shader_module_id": 10,
+      "bind_group_layout_ids": [3]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 20
+    },
+    {
+      "cmd": "BeginComputePass",
+      "id": 21,
+      "encoder_id": 20
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 21,
+      "pipeline_id": 11
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 21,
+      "slot": 0,
+      "bind_group_id": 4,
+      "dynamic_offsets": []
+    },
+    {
+      "cmd": "DispatchWorkgroups",
+      "pass_id": 21,
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "cmd": "EndComputePass",
+      "pass_id": 21
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 20,
+      "command_buffer_id": 22
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [
+        22
+      ],
+      "submission_id": 23
+    },
+    {
+      "cmd": "DestroyTextureView",
+      "id": 2
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "semantic_validation",
+    "code": "DRP2_ERR_USAGE",
+    "command_index": 16
+  }
+}
