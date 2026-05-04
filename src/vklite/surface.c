@@ -582,6 +582,9 @@ void dvz_surface_destroy(DvzSurface* surface)
         return;
     }
 
+    // Surface does not own the VkSurfaceKHR handle (owned by the window/instance layer) and
+    // does not use DvzObject lifecycle tracking. Idempotency is guaranteed by resetting all
+    // fields to zero/null on first call, making repeated calls harmless.
     _surface_cache_clear(surface);
     surface->capabilities = (VkSurfaceCapabilitiesKHR){0};
     surface->preferred_format = (VkSurfaceFormatKHR){0};

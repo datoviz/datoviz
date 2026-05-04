@@ -345,7 +345,7 @@ VkDescriptorSetLayout dvz_slots_set_layout(DvzSlots* slots, uint32_t set)
 void dvz_slots_destroy(DvzSlots* slots)
 {
     ANN(slots);
-    if (!dvz_obj_is_created(&slots->obj) && !_slots_has_handles(slots))
+    if (!dvz_obj_is_created(&slots->obj))
     {
         log_trace("skip destruction of already-destroyed slots");
         return;

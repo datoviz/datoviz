@@ -443,6 +443,9 @@ void dvz_commands_destroy(DvzCommands* cmds)
         dvz_obj_destroyed(&cmds->obj);
         return;
     }
+    // NOTE: dvz_obj_is_created() is intentionally NOT used here. For commands, the CREATED
+    // state is set after dvz_cmd_end() (recording complete), not after dvz_commands()
+    // (allocation). count == 0 is the correct allocation-state guard.
     if (cmds->count == 0)
     {
         log_trace("skip destruction of already-destroyed commands");

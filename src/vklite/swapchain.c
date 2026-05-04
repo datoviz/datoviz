@@ -921,6 +921,9 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
         return;
     }
 
+    // Swapchain does not use DvzObject lifecycle tracking (lifecycle is managed by the canvas
+    // owner). Idempotency is guaranteed by the handle != VK_NULL_HANDLE guard on the Vulkan
+    // call and by nulling the handle immediately after.
     _swapchain_wait_idle(swapchain);
     _swapchain_destroy_views(swapchain);
 
