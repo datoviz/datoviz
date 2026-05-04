@@ -46,9 +46,9 @@ Active DRP2 `2.0` surface now includes:
 10. texture views for bind-group sampling
 11. copy commands and queue submission
 12. `QueueSubmit.readbacks` and `QueueSubmitReply`
-13. destruction-safety negatives for bind-group layouts, shader modules, texture views, and
-    pipelines
-14. conservative submitted-work lifetime coverage for bind-group layouts and pipelines
+13. destruction-safety negatives for all resource types (buffers, textures, texture views,
+    samplers, bind groups, bind-group layouts, shader modules, render and compute pipelines)
+14. conservative submitted-work lifetime coverage for all resource types
 15. explicit bounded-range requirement for buffer-backed bind-group entries
 16. pipeline-rebind validation for later bind-group and draw commands
 
