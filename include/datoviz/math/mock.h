@@ -16,8 +16,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/color/enums.h"
-#include "datoviz/color/types.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/math/types.h"
 #include <float.h>
@@ -163,18 +161,6 @@ DVZ_EXPORT DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha);
  * @returns colors
  */
 DVZ_EXPORT DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono);
-
-
-
-/**
- * Generate a set of colormap colors.
- *
- * @param count the number of colors to generate
- * @param cmap the colormap
- * @param alpha the alpha value
- * @returns colors
- */
-DVZ_EXPORT DvzColor* dvz_mock_cmap(uint32_t count, DvzColormap cmap, DvzAlpha alpha);
 
 
 

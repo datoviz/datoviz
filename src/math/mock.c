@@ -19,7 +19,6 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "datoviz/color/types.h"
 #include "datoviz/math/mock.h"
 #include "datoviz/math/rand.h"
 #include "datoviz/math/types.h"

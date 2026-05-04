@@ -46,6 +46,12 @@ typedef struct DvzFramePlanEmitConfig DvzFramePlanEmitConfig;
 typedef struct DvzFramePlan DvzFramePlan;
 typedef struct DvzFramePlanNode DvzFramePlanNode;
 
+/* Scene graph objects (opaque handles) */
+typedef struct DvzScene  DvzScene;
+typedef struct DvzFigure DvzFigure;
+typedef struct DvzPanel  DvzPanel;
+typedef struct DvzVisual DvzVisual;
+
 
 
 /*************************************************************************************************/
@@ -78,3 +84,12 @@ struct DvzFramePlanEmitConfig
     uint64_t color_target_id;
     bool fullscreen_triangle;
 };
+
+
+
+struct DvzPanelDesc
+{
+    float x, y;           /* top-left in normalized figure coords [0, 1] */
+    float width, height;  /* extent in normalized figure coords */
+};
+typedef struct DvzPanelDesc DvzPanelDesc;

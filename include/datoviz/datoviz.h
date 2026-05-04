@@ -16,20 +16,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "axes.h"
-#include "color.h"
 #include "common.h"
-#include "drp.h"
 #include "drp2.h"
 #include "dvzmath.h"
 #include "geom.h"
 #include "input.h"
 #include "stream.h"
 #include "scene.h"
-#include "scene_data.h"
-#include "scene_graph.h"
 #include "video.h"
 #include "window.h"
-#include "visuals.h"
 #include "vk.h"
 #include "vklite.h"

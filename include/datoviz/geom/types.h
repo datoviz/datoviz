@@ -16,7 +16,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz/color/types.h"
 #include "datoviz/math/types.h"
 #include "enums.h"
 #include <inttypes.h>

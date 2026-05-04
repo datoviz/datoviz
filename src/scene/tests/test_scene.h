@@ -80,4 +80,6 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 
 
 
+int test_scene_point_emit(TstSuite* suite, TstItem* item);
+
 int test_scene(TstSuite* suite);

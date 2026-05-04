@@ -1667,6 +1667,64 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 
 
 /*************************************************************************************************/
+/*  Scene graph tests                                                                            */
+/*************************************************************************************************/
+
+int test_scene_point_emit(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    /* Build a minimal scene: one figure, one full-frame panel, one point visual. */
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    AT(figure != NULL);
+
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    int rc = dvz_visual_set_data(visual, "position", positions, 3);
+    AT(rc == 0);
+
+    rc = dvz_panel_add_visual(panel, visual);
+    AT(rc == 0);
+
+    /* Emit the DRP2 command stream. */
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.max_vertex_buffers = 4;
+    caps.max_bind_groups    = 4;
+    caps.max_buffer_size    = 256 * 1024 * 1024;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+    AT(dvz_drp2_stream_count(stream) > 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
@@ -1685,6 +1743,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
+    TEST_SIMPLE(test_scene_point_emit);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);

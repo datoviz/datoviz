@@ -145,6 +145,9 @@ typedef uint8_t cvec2[2];
 typedef uint8_t cvec3[3];
 typedef uint8_t cvec4[4]; // used for color index
 
+#define DvzColor cvec4
+#define DvzAlpha uint8_t
+
 
 
 /*************************************************************************************************/
