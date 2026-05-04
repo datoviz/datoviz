@@ -178,7 +178,7 @@ static bool _surface_update_extent(DvzSurface* surface)
  *
  * @return allocated surface wrapper, or NULL on allocation failure
  */
-DvzSurface* dvz_surface_create(void)
+DvzSurface* dvz_surface_create_wrapper(void)
 {
     DvzSurface* surface = (DvzSurface*)dvz_calloc(1, sizeof(DvzSurface));
     ANN(surface);

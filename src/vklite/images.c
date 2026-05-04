@@ -486,13 +486,13 @@ void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint32_t count)
 
 
 
-void dvz_image_views_create(DvzImageViews* views)
+int dvz_image_views_create(DvzImageViews* views)
 {
     ANN(views);
     if (dvz_obj_is_created(&views->obj))
     {
         log_error("cannot create image views twice without destroying them first");
-        return;
+        return -1;
     }
 
     DvzImages* img = views->img;
@@ -500,7 +500,7 @@ void dvz_image_views_create(DvzImageViews* views)
     if (!dvz_obj_is_created(&img->obj))
     {
         log_error("cannot create image views from images that are not created");
-        return;
+        return -1;
     }
 
     DvzDevice* device = views->device;
@@ -523,11 +523,12 @@ void dvz_image_views_create(DvzImageViews* views)
                     views->vk_views[j] = VK_NULL_HANDLE;
                 }
             }
-            return;
+            return -1;
         }
     }
 
     dvz_obj_created(&views->obj);
+    return 0;
 }
 
 

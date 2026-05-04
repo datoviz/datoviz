@@ -394,7 +394,7 @@ static void _swapchain_wait_idle(DvzSwapchain* swapchain)
  *
  * @return allocated swapchain wrapper, or NULL on allocation failure
  */
-DvzSwapchain* dvz_swapchain_create(void)
+DvzSwapchain* dvz_swapchain_create_wrapper(void)
 {
     DvzSwapchain* swapchain = (DvzSwapchain*)dvz_calloc(1, sizeof(DvzSwapchain));
     ANN(swapchain);

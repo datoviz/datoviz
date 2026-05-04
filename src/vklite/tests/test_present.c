@@ -387,8 +387,8 @@ static bool _present_ready_swapchain(
     ANN(surface);
     ANN(swapchain);
 
-    *surface = dvz_surface_create();
-    *swapchain = dvz_swapchain_create();
+    *surface = dvz_surface_create_wrapper();
+    *swapchain = dvz_swapchain_create_wrapper();
     ANN(*surface);
     ANN(*swapchain);
 
@@ -543,7 +543,7 @@ int test_vklite_surface_query(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
-    DvzSurface* surface = dvz_surface_create();
+    DvzSurface* surface = dvz_surface_create_wrapper();
     ANN(surface);
 
     const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
@@ -598,8 +598,8 @@ int test_vklite_swapchain_recreate(TstSuite* suite, TstItem* tstitem)
         return 0;
     }
 
-    DvzSurface* surface = dvz_surface_create();
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSurface* surface = dvz_surface_create_wrapper();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(surface);
     ANN(swapchain);
 
@@ -671,8 +671,8 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstSuite* suite, TstItem* t
         return 0;
     }
 
-    DvzSurface* surface = dvz_surface_create();
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSurface* surface = dvz_surface_create_wrapper();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(surface);
     ANN(swapchain);
 
@@ -748,8 +748,8 @@ int test_vklite_swapchain_config_present_mode_immediate(TstSuite* suite, TstItem
         return 0;
     }
 
-    DvzSurface* surface = dvz_surface_create();
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSurface* surface = dvz_surface_create_wrapper();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(surface);
     ANN(swapchain);
 
@@ -801,7 +801,7 @@ int test_vklite_swapchain_config_defaults_partial(TstSuite* suite, TstItem* tsti
     ANN(suite);
     ANN(tstitem);
 
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(swapchain);
     DvzSwapchainConfig cfg = {0};
     cfg.image_format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -836,7 +836,7 @@ int test_vklite_swapchain_present_invalid_index(TstSuite* suite, TstItem* tstite
     ANN(suite);
     ANN(tstitem);
 
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(swapchain);
 
     DvzPresentStatus status = DVZ_PRESENT_STATUS_OK;
@@ -870,8 +870,8 @@ int test_vklite_swapchain_recreate_resolved_state(TstSuite* suite, TstItem* tsti
         return 0;
     }
 
-    DvzSurface* surface = dvz_surface_create();
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSurface* surface = dvz_surface_create_wrapper();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(surface);
     ANN(swapchain);
 
@@ -1203,8 +1203,8 @@ int test_vklite_wrap_backend_external_surface_present(TstSuite* suite, TstItem* 
         return 0;
     }
 
-    DvzSurface* surface = dvz_surface_create();
-    DvzSwapchain* swapchain = dvz_swapchain_create();
+    DvzSurface* surface = dvz_surface_create_wrapper();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
     ANN(surface);
     ANN(swapchain);
     AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));

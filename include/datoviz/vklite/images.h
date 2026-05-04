@@ -345,8 +345,9 @@ DVZ_EXPORT void dvz_image_views_layers(DvzImageViews* views, uint32_t base, uint
  * again.
  *
  * @param views the image views
+ * @return 0 on success, -1 on error
  */
-DVZ_EXPORT void dvz_image_views_create(DvzImageViews* views);
+DVZ_EXPORT int dvz_image_views_create(DvzImageViews* views);
 
 
 

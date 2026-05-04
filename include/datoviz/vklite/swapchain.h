@@ -76,7 +76,7 @@ EXTERN_C_ON
  *
  * @return allocated swapchain wrapper, or NULL on allocation failure
  */
-DVZ_EXPORT DvzSwapchain* dvz_swapchain_create(void);
+DVZ_EXPORT DvzSwapchain* dvz_swapchain_create_wrapper(void);
 
 
 

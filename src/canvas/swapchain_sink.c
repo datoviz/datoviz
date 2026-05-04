@@ -1502,9 +1502,9 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->test_force_recreate_status = -1;
     canvas->swapchain->test_force_acquire_status = -1;
     canvas->swapchain->test_force_present_status = -1;
-    canvas->swapchain->surface_wrapper = dvz_surface_create();
+    canvas->swapchain->surface_wrapper = dvz_surface_create_wrapper();
     ANN(canvas->swapchain->surface_wrapper);
-    canvas->swapchain->swapchain_wrapper = dvz_swapchain_create();
+    canvas->swapchain->swapchain_wrapper = dvz_swapchain_create_wrapper();
     ANN(canvas->swapchain->swapchain_wrapper);
     DvzQueue* queue_ref = dvz_device_queue(canvas->device, DVZ_QUEUE_MAIN);
     ANN(queue_ref);

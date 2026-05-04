@@ -47,7 +47,7 @@ EXTERN_C_ON
  *
  * @return allocated surface wrapper, or NULL on allocation failure
  */
-DVZ_EXPORT DvzSurface* dvz_surface_create(void);
+DVZ_EXPORT DvzSurface* dvz_surface_create_wrapper(void);
 
 
 
