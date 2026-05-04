@@ -638,6 +638,12 @@ class DRP2SemanticValidator:
     def _handle_DestroySampler(self, index: int, command: Dict[str, Any]) -> None:
         sampler_id = command['id']
         state = self._resolve_live(index, sampler_id, 'sampler')
+        if self._resource_in_use('sampler', sampler_id):
+            raise SemanticFailure(
+                'DRP2_ERR_USAGE',
+                index,
+                f'sampler {sampler_id} is still referenced by recorded work',
+            )
         state.live = False
 
     def _handle_CreateTextureView(self, index: int, command: Dict[str, Any]) -> None:

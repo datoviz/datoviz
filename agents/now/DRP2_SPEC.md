@@ -70,7 +70,7 @@ Verified on this revision:
 
 Current executable DRP2 corpus status:
 
-1. `116/116` fixtures passing
+1. `119/119` fixtures passing
 2. focused runner tests must be kept in lockstep with fixture tag growth
 
 

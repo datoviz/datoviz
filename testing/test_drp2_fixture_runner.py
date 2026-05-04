@@ -595,3 +595,98 @@ def test_drp2_fixture_runner_cli_json_output_for_capability_negative() -> None:
     assert result['actual_code'] == 'DRP2_ERR_UNSUPPORTED_CAPABILITY'
     assert result['actual_command_index'] == 2
     assert result['passed'] is True
+
+
+def test_drp2_fixture_runner_rejects_destroying_buffer_still_referenced_by_submitted_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_buffer_still_referenced_by_submitted_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_buffer_still_referenced_by_submitted_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 8
+
+
+def test_drp2_fixture_runner_rejects_destroying_texture_still_referenced_by_submitted_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_texture_still_referenced_by_submitted_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_texture_still_referenced_by_submitted_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 8
+
+
+def test_drp2_fixture_runner_rejects_destroying_texture_view_still_referenced_by_submitted_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_texture_view_still_referenced_by_submitted_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_texture_view_still_referenced_by_submitted_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 16
+
+
+def test_drp2_fixture_runner_rejects_destroying_bind_group_still_referenced_by_submitted_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_bind_group_still_referenced_by_submitted_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_bind_group_still_referenced_by_submitted_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 19
+
+
+def test_drp2_fixture_runner_accepts_sampler_create_and_bind() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path('spec/drp2/fixtures/positive/sampler_create_and_bind_basic.json')
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'sampler_create_and_bind_basic'
+    assert result.passed is True
+    assert result.actual_phase is None
+    assert result.actual_code is None
+
+
+def test_drp2_fixture_runner_rejects_destroying_sampler_still_referenced_by_recorded_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_sampler_still_referenced_by_recorded_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_sampler_still_referenced_by_recorded_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 17
+
+
+def test_drp2_fixture_runner_rejects_destroying_sampler_still_referenced_by_submitted_work() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    fixture = Path(
+        'spec/drp2/fixtures/negative/invalid_destroy_sampler_still_referenced_by_submitted_work.json'
+    )
+    result = runner.run_fixture(runner.root_dir / fixture)
+
+    assert result.fixture_name == 'invalid_destroy_sampler_still_referenced_by_submitted_work'
+    assert result.passed is True
+    assert result.actual_phase == 'semantic_validation'
+    assert result.actual_code == 'DRP2_ERR_USAGE'
+    assert result.actual_command_index == 18
