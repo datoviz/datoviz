@@ -83,3 +83,7 @@ endfunction()
 if(TARGET datoviz_scene)
     dvz_add_example(hello_point)
 endif()
+
+if(TARGET datoviz_drp2)
+    dvz_add_example(raw_triangle)
+endif()
