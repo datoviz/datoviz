@@ -31,6 +31,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void _outpath(const char* exe, const char* name, char* buf, size_t n)
+{
+    const char* slash = strrchr(exe, '/');
+    if (slash) snprintf(buf, n, "%.*s/%s", (int)(slash - exe), exe, name);
+    else        snprintf(buf, n, "%s", name);
+}
+
 #include <volk.h>
 #include <vulkan/vulkan_core.h>
 
@@ -276,8 +283,11 @@ int main(int argc, char** argv)
         vsink.encoder.width    = wcfg.width;
         vsink.encoder.height   = wcfg.height;
         vsink.encoder.fps      = 30;
-        vsink.encoder.mp4_path = "raw_triangle.mp4";
-        vsink.encoder.raw_path = "raw_triangle.h26x";
+        char mp4_out[512], h26x_out[512];
+        _outpath(argv[0], "raw_triangle.mp4",  mp4_out,  sizeof(mp4_out));
+        _outpath(argv[0], "raw_triangle.h26x", h26x_out, sizeof(h26x_out));
+        vsink.encoder.mp4_path = mp4_out;
+        vsink.encoder.raw_path = h26x_out;
         if (dvz_canvas_configure_video_sink(canvas, true, &vsink) != 0)
             fprintf(stderr, "Warning: video sink could not be enabled\n");
     }
@@ -305,10 +315,14 @@ int main(int argc, char** argv)
 
     /* Save PNG for offscreen mode */
     if (!video_mode) {
-        dvz_canvas_capture_png(canvas, "raw_triangle.png");
-        printf("raw_triangle: saved raw_triangle.png\n");
+        char png_out[512];
+        _outpath(argv[0], "raw_triangle.png", png_out, sizeof(png_out));
+        dvz_canvas_capture_png(canvas, png_out);
+        printf("raw_triangle: saved %s\n", png_out);
     } else {
-        printf("raw_triangle: saved raw_triangle.mp4\n");
+        char mp4_msg[512];
+        _outpath(argv[0], "raw_triangle.mp4", mp4_msg, sizeof(mp4_msg));
+        printf("raw_triangle: saved %s\n", mp4_msg);
     }
 
     /* Cleanup */

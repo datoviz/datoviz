@@ -14,12 +14,21 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 
-int main(void)
+static void _outpath(const char* exe, const char* name, char* buf, size_t n)
 {
+    const char* slash = strrchr(exe, '/');
+    if (slash) snprintf(buf, n, "%.*s/%s", (int)(slash - exe), exe, name);
+    else        snprintf(buf, n, "%s", name);
+}
+
+int main(int argc, char** argv)
+{
+    (void)argc;
     /* Scene */
     DvzScene* scene = dvz_scene();
     if (!scene) { fprintf(stderr, "dvz_scene() failed\n"); return 1; }
@@ -63,8 +72,10 @@ int main(void)
     dvz_app_run(app, 1);
 
     /* Save PNG */
-    dvz_app_window_capture_png(win, "hello_point.png");
-    printf("hello_point: saved hello_point.png\n");
+    char out[512];
+    _outpath(argv[0], "hello_point.png", out, sizeof(out));
+    dvz_app_window_capture_png(win, out);
+    printf("hello_point: saved %s\n", out);
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

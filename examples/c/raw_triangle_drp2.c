@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <vulkan/vulkan_core.h>
 
@@ -94,8 +95,16 @@ static const char* FRAG_GLSL =
 /*  Main                                                                                         */
 /*************************************************************************************************/
 
-int main(void)
+static void _outpath(const char* exe, const char* name, char* buf, size_t n)
 {
+    const char* slash = strrchr(exe, '/');
+    if (slash) snprintf(buf, n, "%.*s/%s", (int)(slash - exe), exe, name);
+    else        snprintf(buf, n, "%s", name);
+}
+
+int main(int argc, char** argv)
+{
+    (void)argc;
     /* ------------------------------------------------------------------------------------------
      * 1. GPU context (dynamicRendering + synchronization2 required by the vklite runtime).
      * ------------------------------------------------------------------------------------------ */
@@ -243,10 +252,12 @@ int main(void)
     }
 
     dvz_drp2_runtime_download_buffer(runtime, ID_RBUF, 0, pixel_count, pixels);
-    dvz_write_png("raw_triangle_drp2.png", WIDTH, HEIGHT, pixels);
+    char out[512];
+    _outpath(argv[0], "raw_triangle_drp2.png", out, sizeof(out));
+    dvz_write_png(out, WIDTH, HEIGHT, pixels);
     free(pixels);
 
-    printf("raw_triangle_drp2: saved raw_triangle_drp2.png\n");
+    printf("raw_triangle_drp2: saved %s\n", out);
 
 
     /* ------------------------------------------------------------------------------------------
