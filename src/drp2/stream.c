@@ -25,6 +25,37 @@
 #include "_log.h"
 #include "_stream.h"
 
+/* Minimal base64 encoder used by dvz_drp2_stream_write_buffer_bytes(). */
+static const char _B64_CHARS[] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static uint64_t _b64_encoded_len(uint64_t n) { return ((n + 2) / 3) * 4; }
+
+static bool _b64_encode(const uint8_t* data, uint64_t n, char* out, uint64_t out_cap)
+{
+    if (!data || !out || _b64_encoded_len(n) + 1 > out_cap) return false;
+    uint64_t i = 0, j = 0;
+    for (; i + 2 < n; i += 3) {
+        out[j++] = _B64_CHARS[(data[i] >> 2) & 0x3F];
+        out[j++] = _B64_CHARS[((data[i] & 0x3) << 4) | ((data[i+1] >> 4) & 0xF)];
+        out[j++] = _B64_CHARS[((data[i+1] & 0xF) << 2) | ((data[i+2] >> 6) & 0x3)];
+        out[j++] = _B64_CHARS[data[i+2] & 0x3F];
+    }
+    if (i < n) {
+        out[j++] = _B64_CHARS[(data[i] >> 2) & 0x3F];
+        if (i + 1 < n) {
+            out[j++] = _B64_CHARS[((data[i] & 0x3) << 4) | ((data[i+1] >> 4) & 0xF)];
+            out[j++] = _B64_CHARS[((data[i+1] & 0xF) << 2)];
+        } else {
+            out[j++] = _B64_CHARS[(data[i] & 0x3) << 4];
+            out[j++] = '=';
+        }
+        out[j++] = '=';
+    }
+    out[j] = '\0';
+    return true;
+}
+
 
 
 /*************************************************************************************************/
@@ -2094,3 +2125,24 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
  * @param json the JSON string
  */
 void dvz_drp2_stream_json_destroy(char* json) { dvz_free(json); }
+
+
+bool dvz_drp2_stream_write_buffer_bytes(
+    DvzDrp2CommandStream* stream, uint64_t buffer_id, uint64_t offset, uint64_t size,
+    const void* data)
+{
+    ANN(stream);
+    if (data == NULL || size == 0)
+        return false;
+
+    uint64_t enc_len = _b64_encoded_len(size) + 1;
+    char* b64 = (char*)dvz_calloc((size_t)enc_len, 1);
+    if (b64 == NULL)
+        return false;
+
+    bool ok = _b64_encode((const uint8_t*)data, size, b64, enc_len);
+    if (ok)
+        ok = dvz_drp2_stream_write_buffer(stream, buffer_id, offset, size, b64);
+    dvz_free(b64);
+    return ok;
+}

@@ -417,6 +417,24 @@ DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
     const char* data_base64);
 
 
+/**
+ * Append a WriteBuffer command from raw bytes (base64-encodes internally).
+ *
+ * Convenience wrapper over dvz_drp2_stream_write_buffer() for callers that
+ * have a raw byte pointer rather than a pre-encoded base64 string.
+ *
+ * @param stream the command stream
+ * @param buffer_id the destination buffer id
+ * @param offset byte offset within the buffer
+ * @param size number of bytes to write
+ * @param data raw source bytes
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_write_buffer_bytes(
+    DvzDrp2CommandStream* stream, uint64_t buffer_id, uint64_t offset, uint64_t size,
+    const void* data);
+
+
 
 /**
  * Append a WriteTexture command.

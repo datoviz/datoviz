@@ -86,4 +86,5 @@ endif()
 
 if(TARGET datoviz_drp2)
     dvz_add_example(raw_triangle)
+    dvz_add_example(raw_triangle_drp2)
 endif()
