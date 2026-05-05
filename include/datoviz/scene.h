@@ -194,6 +194,24 @@ DVZ_EXPORT int dvz_visual_set_data(DvzVisual* visual, const char* attr_name, con
                                     uint32_t item_count);
 
 
+/**
+ * Write a contiguous sub-range of attribute data to a visual.
+ *
+ * The attribute must already be fully allocated by a prior dvz_visual_set_data() call.
+ * Only the items in [first_item, first_item + item_count) are uploaded on the next emit.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param data packed array of item_count items to write
+ * @param first_item index of the first item to update
+ * @param item_count number of items to update
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_data_range(
+    DvzVisual* visual, const char* attr_name, const void* data,
+    uint32_t first_item, uint32_t item_count);
+
+
 
 /*************************************************************************************************/
 /*  Visual family constructors                                                                   */

@@ -196,7 +196,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 DvzVisualAttr* attr = &visual->attrs[ai];
-                if (!attr->dirty || attr->data == NULL || attr->item_count == 0)
+                if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
                     continue;
                 char resource_id[128];
                 uint32_t vidx = 0;
@@ -209,8 +209,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     }
                 }
                 dvz_snprintf(resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
-                uint64_t byte_size = (uint64_t)attr->item_count * attr->item_size;
-                dvz_frame_plan_upload(plan, resource_id, 0, byte_size, attr->name);
+                uint64_t byte_offset =
+                    (uint64_t)attr->dirty_first_item * attr->item_size;
+                uint64_t byte_size =
+                    (uint64_t)attr->dirty_item_count * attr->item_size;
+                dvz_frame_plan_upload(plan, resource_id, byte_offset, byte_size, attr->name);
             }
         }
     }
@@ -278,7 +281,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 if (visual == NULL)
                     continue;
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
-                    visual->attrs[ai].dirty = false;
+                    visual->attrs[ai].dirty_item_count = 0;
             }
         }
     }
@@ -380,7 +383,7 @@ int dvz_visual_set_data(
 
     uint64_t byte_size = (uint64_t)item_count * item_size;
 
-    /* Reallocate if size changed */
+    /* Reallocate if total size changed */
     if (attr->data != NULL && attr->item_count != item_count)
     {
         dvz_free(attr->data);
@@ -390,8 +393,59 @@ int dvz_visual_set_data(
         attr->data = dvz_malloc(byte_size);
 
     dvz_memcpy(attr->data, byte_size, data, byte_size);
-    attr->item_count = item_count;
-    attr->dirty      = true;
+    attr->item_count       = item_count;
+    attr->dirty_first_item = 0;
+    attr->dirty_item_count = item_count; /* whole buffer dirty */
+    return 0;
+}
+
+
+
+int dvz_visual_set_data_range(
+    DvzVisual* visual, const char* attr_name, const void* data,
+    uint32_t first_item, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    ANN(data);
+    if (item_count == 0)
+        return -1;
+
+    uint32_t item_size = _attr_item_size(visual->type, attr_name);
+    if (item_size == 0)
+        return -1;
+
+    DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
+    if (attr == NULL)
+        return -1;
+
+    /* The attribute must already be fully allocated */
+    if (attr->data == NULL || attr->item_count == 0)
+        return -1;
+    if ((uint64_t)first_item + item_count > attr->item_count)
+        return -1;
+
+    uint64_t byte_offset = (uint64_t)first_item * item_size;
+    uint64_t byte_size   = (uint64_t)item_count * item_size;
+    dvz_memcpy((uint8_t*)attr->data + byte_offset, byte_size, data, byte_size);
+
+    /* Extend dirty range to cover the new update */
+    if (attr->dirty_item_count == 0)
+    {
+        attr->dirty_first_item = first_item;
+        attr->dirty_item_count = item_count;
+    }
+    else
+    {
+        uint64_t old_end = attr->dirty_first_item + attr->dirty_item_count;
+        uint64_t new_end = (uint64_t)first_item + item_count;
+        uint64_t merged_first = attr->dirty_first_item < first_item
+                                    ? attr->dirty_first_item
+                                    : first_item;
+        uint64_t merged_end = old_end > new_end ? old_end : new_end;
+        attr->dirty_first_item = merged_first;
+        attr->dirty_item_count = merged_end - merged_first;
+    }
     return 0;
 }
 
