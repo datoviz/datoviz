@@ -1,6 +1,6 @@
-# Next steps: raw triangle examples — implementation brief for future agents
+# Raw triangle examples — implementation brief (COMPLETED)
 
-**Priority: HIGH — this is one of the main next steps in the examples/ roadmap.**
+**Status: DONE as of 2026-05-05.** All items below have been implemented.
 
 This document describes two C examples to be added under `examples/c/`, plus one small API
 addition needed to support them.  The existing `examples/c/hello_point.c` and
