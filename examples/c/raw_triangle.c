@@ -137,6 +137,7 @@ static int tri_state_create(TriState* s, DvzDevice* device, DvzVma* alloc)
     dvz_graphics_vertex_attr(s->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT,
                              offsetof(Vertex, r));
 
+    dvz_graphics_primitive(s->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     dvz_graphics_attachment_color(s->pipeline, 0, DVZ_DEFAULT_COLOR_FORMAT);
     dvz_graphics_layout(s->pipeline, dvz_slots_handle(s->slots));
     dvz_graphics_viewport(s->pipeline, 0, 0, 0, 0, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);

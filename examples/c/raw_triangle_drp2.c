@@ -11,6 +11,8 @@
  * and DvzCanvas, constructs a DRP2 command stream from scratch, executes it
  * with the vklite runtime, downloads the pixels, and saves a PNG.
  *
+ * Vertex layout is declared explicitly via dvz_drp2_stream_create_render_pipeline_ex().
+ *
  * It is intentionally verbose — the goal is to show every step of the
  * protocol so that developers of other scientific-visualization libraries can
  * understand how DRP2 works and experiment with it directly.
@@ -23,6 +25,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <vulkan/vulkan_core.h>
 
 #include "datoviz/drp2.h"
 #include "datoviz/fileio/fileio.h"
@@ -160,8 +164,20 @@ int main(void)
     dvz_drp2_stream_create_shader_module_format(stream, ID_VS, "vertex",   "glsl", VERT_GLSL);
     dvz_drp2_stream_create_shader_module_format(stream, ID_FS, "fragment", "glsl", FRAG_GLSL);
 
-    /* Render pipeline: 1 color attachment, vertex layout inferred from SPIR-V reflection. */
-    dvz_drp2_stream_create_render_pipeline(stream, ID_PIPE, ID_VS, ID_FS, /*n_color_att=*/1);
+    /* Render pipeline: explicit vertex layout — binding 0 stride=20 (vec2+vec3), TRIANGLE_LIST. */
+    {
+        uint32_t strides[1]   = {5 * sizeof(float)};           /* binding 0: Vertex = 5 floats */
+        uint32_t bindings[2]  = {0, 0};                        /* both attrs from binding 0    */
+        uint32_t locations[2] = {0, 1};
+        uint32_t formats[2]   = {VK_FORMAT_R32G32_SFLOAT,      /* inPos:   vec2                */
+                                  VK_FORMAT_R32G32B32_SFLOAT};  /* inColor: vec3                */
+        uint32_t offsets[2]   = {0, 2 * sizeof(float)};
+        dvz_drp2_stream_create_render_pipeline_ex(
+            stream, ID_PIPE, ID_VS, ID_FS, /*slots=*/1,
+            VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            /*bindings=*/1, strides,
+            /*attrs=*/2, bindings, locations, formats, offsets);
+    }
 
     /* Color target texture: RENDER_ATTACHMENT so it can be drawn into, COPY_SRC so it can
        be copied to the readback buffer afterwards. */

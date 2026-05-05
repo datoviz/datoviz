@@ -2683,9 +2683,31 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
         graphics, 0,
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT);
-    dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
+
+    /* binding_count==0 means old-style call (no vertex layout); use TRIANGLE_LIST as default.
+       Otherwise respect the topology set via create_render_pipeline_ex. */
+    VkPrimitiveTopology topology =
+        command->u.create_render_pipeline.binding_count > 0
+            ? (VkPrimitiveTopology)command->u.create_render_pipeline.topology
+            : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    dvz_graphics_primitive(graphics, topology, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_viewport(graphics, 0, 0, 1, 1, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(graphics, 0, 0, 1, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+
+    /* Vertex input layout (only when explicitly provided). */
+    uint32_t nb = command->u.create_render_pipeline.binding_count;
+    for (uint32_t i = 0; i < nb; i++)
+        dvz_graphics_vertex_binding(
+            graphics, i, command->u.create_render_pipeline.binding_strides[i],
+            VK_VERTEX_INPUT_RATE_VERTEX);
+    uint32_t na = command->u.create_render_pipeline.attr_count;
+    for (uint32_t i = 0; i < na; i++)
+        dvz_graphics_vertex_attr(
+            graphics,
+            command->u.create_render_pipeline.attr_bindings[i],
+            command->u.create_render_pipeline.attr_locations[i],
+            (VkFormat)command->u.create_render_pipeline.attr_formats[i],
+            command->u.create_render_pipeline.attr_offsets[i]);
 
     if (dvz_graphics_create(graphics) != 0)
         return _vklite_fail_destroy_object(

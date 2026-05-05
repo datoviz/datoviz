@@ -205,7 +205,10 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     (uint64_t)attr->dirty_first_item * attr->item_size;
                 uint64_t byte_size =
                     (uint64_t)attr->dirty_item_count * attr->item_size;
-                dvz_frame_plan_upload(plan, resource_id, byte_offset, byte_size, attr->name);
+                const void* data_ptr =
+                    (const uint8_t*)attr->data + byte_offset;
+                dvz_frame_plan_upload_bytes(
+                    plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
             }
         }
     }

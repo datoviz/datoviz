@@ -259,6 +259,34 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
 
 
 /**
+ * Append a CreateRenderPipeline command with explicit vertex input layout and topology.
+ *
+ * @param stream the command stream
+ * @param id the pipeline id
+ * @param vertex_shader_module_id the vertex shader module id
+ * @param fragment_shader_module_id the fragment shader module id
+ * @param vertex_buffer_slots the number of required vertex buffer slots
+ * @param topology VkPrimitiveTopology value (e.g. VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
+ * @param binding_count number of vertex binding descriptors
+ * @param binding_strides stride in bytes for each binding
+ * @param attr_count number of vertex attribute descriptors
+ * @param attr_bindings binding index for each attribute
+ * @param attr_locations shader location for each attribute
+ * @param attr_formats VkFormat for each attribute
+ * @param attr_offsets byte offset within the binding for each attribute
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
+    uint32_t topology,
+    uint32_t binding_count, const uint32_t* binding_strides,
+    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
+    const uint32_t* attr_formats, const uint32_t* attr_offsets);
+
+
+
+/**
  * Append a DestroyRenderPipeline command.
  *
  * @param stream the command stream

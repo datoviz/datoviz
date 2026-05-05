@@ -163,6 +163,23 @@ DVZ_EXPORT bool dvz_frame_plan_upload(
 
 
 /**
+ * Append an upload node with actual data to be encoded into the DRP2 stream.
+ *
+ * @param plan the FramePlan
+ * @param resource_id the resource id
+ * @param byte_offset the byte offset
+ * @param byte_size the byte size
+ * @param data_tag the debug data tag
+ * @param data pointer to the bytes to upload (must remain valid until emit time)
+ * @return whether the node was appended
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_bytes(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset, uint64_t byte_size,
+    const char* data_tag, const void* data);
+
+
+
+/**
  * Append a compute node.
  *
  * @param plan the FramePlan

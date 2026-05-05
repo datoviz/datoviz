@@ -447,6 +447,15 @@ bool dvz_frame_plan_upload(
     DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset, uint64_t byte_size,
     const char* data_tag)
 {
+    return dvz_frame_plan_upload_bytes(plan, resource_id, byte_offset, byte_size, data_tag, NULL);
+}
+
+
+
+bool dvz_frame_plan_upload_bytes(
+    DvzFramePlan* plan, const char* resource_id, uint64_t byte_offset, uint64_t byte_size,
+    const char* data_tag, const void* data)
+{
     DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     if (node == NULL)
         return false;
@@ -454,6 +463,7 @@ bool dvz_frame_plan_upload(
     node->u.upload.byte_offset = byte_offset;
     node->u.upload.byte_size = byte_size;
     _copy_label(node->u.upload.data_tag, DVZ_SCENE_LABEL_SIZE, data_tag ? data_tag : "");
+    node->u.upload.data = data;
     return true;
 }
 

@@ -1232,6 +1232,44 @@ bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
 
 
 /**
+ * Append a CreateRenderPipeline command with explicit vertex input layout and topology.
+ */
+bool dvz_drp2_stream_create_render_pipeline_ex(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
+    uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
+    uint32_t topology,
+    uint32_t binding_count, const uint32_t* binding_strides,
+    uint32_t attr_count, const uint32_t* attr_bindings, const uint32_t* attr_locations,
+    const uint32_t* attr_formats, const uint32_t* attr_offsets)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
+    if (command == NULL)
+        return false;
+    command->u.create_render_pipeline.id = id;
+    command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
+    command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
+    command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
+    command->u.create_render_pipeline.bind_group_layout_id = 0;
+    command->u.create_render_pipeline.topology = topology;
+    uint32_t nb = binding_count < 16 ? binding_count : 16;
+    command->u.create_render_pipeline.binding_count = nb;
+    for (uint32_t i = 0; i < nb; i++)
+        command->u.create_render_pipeline.binding_strides[i] = binding_strides[i];
+    uint32_t na = attr_count < 16 ? attr_count : 16;
+    command->u.create_render_pipeline.attr_count = na;
+    for (uint32_t i = 0; i < na; i++)
+    {
+        command->u.create_render_pipeline.attr_bindings[i]  = attr_bindings[i];
+        command->u.create_render_pipeline.attr_locations[i] = attr_locations[i];
+        command->u.create_render_pipeline.attr_formats[i]   = attr_formats[i];
+        command->u.create_render_pipeline.attr_offsets[i]   = attr_offsets[i];
+    }
+    return true;
+}
+
+
+
+/**
  * Append a DestroyRenderPipeline command.
  *
  * @param stream the command stream

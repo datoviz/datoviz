@@ -43,6 +43,7 @@ struct DvzFramePlanNode
             uint64_t byte_offset;
             uint64_t byte_size;
             char data_tag[DVZ_SCENE_LABEL_SIZE];
+            const void* data; /* optional: if non-NULL, actual bytes to upload */
         } upload;
         struct
         {

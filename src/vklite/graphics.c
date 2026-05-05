@@ -127,7 +127,9 @@ static void set_viewport(DvzGraphics* graphics, VkPipelineViewportStateCreateInf
     viewport->viewportCount = 1;
     viewport->pViewports = &graphics->viewport;
 
-    viewport->scissorCount = graphics->scissor.extent.width > 0;
+    /* Vulkan requires scissorCount>=1 when using VK_DYNAMIC_STATE_SCISSOR (not WITH_COUNT). */
+    viewport->scissorCount = is_dynamic(graphics, VK_DYNAMIC_STATE_SCISSOR) ? 1u :
+                             (graphics->scissor.extent.width > 0 ? 1u : 0u);
     viewport->pScissors = &graphics->scissor;
 }
 
@@ -261,6 +263,9 @@ void dvz_graphics_attachment_color(DvzGraphics* graphics, uint32_t idx, VkFormat
     graphics->attachments_colors[idx] = format;
     graphics->rendering.colorAttachmentCount =
         MAX(graphics->rendering.colorAttachmentCount, idx + 1);
+    /* Default: write all channels. Callers can override via dvz_graphics_blend_color(). */
+    if (graphics->blend_attachments[idx].colorWriteMask == 0)
+        graphics->blend_attachments[idx].colorWriteMask = 0xF;
 }
 
 
@@ -917,14 +922,15 @@ void dvz_cmd_bind_graphics(DvzCommands* cmds, DvzGraphics* graphics)
         }
     }
 
-    // Scissor.
-    if (is_dynamic(graphics, VK_DYNAMIC_STATE_SCISSOR))
+    // Scissor — only emit if a non-zero extent was stored; callers that manage the scissor
+    // dynamically per-frame set it themselves after dvz_cmd_bind_graphics().
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_SCISSOR) && graphics->scissor.extent.width > 0)
     {
         vkCmdSetScissor(cmd, 0, 1, &graphics->scissor);
     }
 
-    // Viewport.
-    if (is_dynamic(graphics, VK_DYNAMIC_STATE_VIEWPORT))
+    // Viewport — same convention: skip auto-set when width is 0 (caller handles it).
+    if (is_dynamic(graphics, VK_DYNAMIC_STATE_VIEWPORT) && graphics->viewport.width > 0.0f)
     {
         vkCmdSetViewport(cmd, 0, 1, &graphics->viewport);
     }

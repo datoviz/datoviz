@@ -82,6 +82,15 @@ struct DvzDrp2Command
             uint64_t fragment_shader_module_id;
             uint32_t vertex_buffer_slots;
             uint64_t bind_group_layout_id;
+            /* Vertex input layout (binding_count==0 → no vertex attributes). */
+            uint32_t topology;        /* VkPrimitiveTopology; 0 = TRIANGLE_LIST           */
+            uint32_t binding_count;
+            uint32_t binding_strides[16]; /* stride in bytes per binding slot             */
+            uint32_t attr_count;
+            uint32_t attr_bindings[16];   /* which binding each attribute reads from      */
+            uint32_t attr_locations[16];  /* layout(location=N)                           */
+            uint32_t attr_formats[16];    /* VkFormat                                     */
+            uint32_t attr_offsets[16];    /* byte offset within the binding stride        */
         } create_render_pipeline;
         struct
         {
