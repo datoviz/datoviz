@@ -1129,6 +1129,78 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item)
     dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
+
+
+
+int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("test_scene_point_emit_glsl_executes skipped: GPU context creation failed");
+        return 0;
+    }
+
+    /* Build scene */
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    /* Emit with GLSL */
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    /* Execute on GPU */
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
 #endif
 
 
@@ -1752,6 +1824,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
     TEST_SIMPLE(test_scene_drp2_offscreen_canvas_frame);
+    TEST_SIMPLE(test_scene_point_emit_glsl_executes);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);

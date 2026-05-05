@@ -156,14 +156,16 @@ void dvz_figure_destroy(DvzFigure* figure)
 }
 
 
-DvzDrp2CommandStream* dvz_figure_emit(
-    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+DvzDrp2CommandStream* dvz_figure_emit_ex(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg)
 {
     ANN(figure);
     ANN(figure->emitter);
 
     /* Use a stable figure_id from its position in the scene array */
     char figure_id[64];
+    dvz_strlcpy(figure_id, "fig0", sizeof(figure_id));
     if (figure->scene != NULL)
     {
         for (uint32_t i = 0; i < figure->scene->figure_count; i++)
@@ -174,10 +176,6 @@ DvzDrp2CommandStream* dvz_figure_emit(
                 break;
             }
         }
-    }
-    else
-    {
-        dvz_strlcpy(figure_id, "fig0", sizeof(figure_id));
     }
 
     /* Build a fresh FramePlan */
@@ -200,7 +198,6 @@ DvzDrp2CommandStream* dvz_figure_emit(
                 if (!attr->dirty || attr->data == NULL || attr->item_count == 0)
                     continue;
                 char resource_id[128];
-                /* Determine visual index in scene for stable ID */
                 uint32_t vidx = 0;
                 for (uint32_t k = 0; k < figure->scene->visual_count; k++)
                 {
@@ -210,8 +207,7 @@ DvzDrp2CommandStream* dvz_figure_emit(
                         break;
                     }
                 }
-                dvz_snprintf(
-                    resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
+                dvz_snprintf(resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
                 uint64_t byte_size = (uint64_t)attr->item_count * attr->item_size;
                 dvz_frame_plan_upload(plan, resource_id, 0, byte_size, attr->name);
             }
@@ -227,7 +223,6 @@ DvzDrp2CommandStream* dvz_figure_emit(
 
         char panel_id[64];
         dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);
-
         dvz_frame_plan_render(plan, panel_id, "rt", false);
 
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
@@ -250,14 +245,16 @@ DvzDrp2CommandStream* dvz_figure_emit(
         }
     }
 
-    /* Emit */
+    /* Resolve nullable args */
     DvzCapabilitySnapshot default_caps;
     if (caps == NULL)
     {
         dvz_capability_snapshot_default(&default_caps);
         caps = &default_caps;
     }
-    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    DvzFramePlanEmitConfig default_cfg = dvz_frame_plan_emit_config();
+    if (cfg == NULL)
+        cfg = &default_cfg;
     DvzDiagnosticReport local_report;
     if (report == NULL)
     {
@@ -266,7 +263,7 @@ DvzDrp2CommandStream* dvz_figure_emit(
     }
 
     DvzDrp2CommandStream* stream =
-        dvz_frame_plan_emitter_emit_drp2(figure->emitter, plan, caps, report, &cfg);
+        dvz_frame_plan_emitter_emit_drp2(figure->emitter, plan, caps, report, cfg);
 
     /* Clear dirty flags after successful emit */
     if (stream != NULL)
@@ -287,6 +284,14 @@ DvzDrp2CommandStream* dvz_figure_emit(
 
     dvz_frame_plan_destroy(plan);
     return stream;
+}
+
+
+
+DvzDrp2CommandStream* dvz_figure_emit(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report)
+{
+    return dvz_figure_emit_ex(figure, caps, report, NULL);
 }
 
 

@@ -92,6 +92,20 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report);
 
 
+/**
+ * Emit a DRP2 command stream from a figure with an explicit emit configuration.
+ *
+ * @param figure the figure
+ * @param caps the capability snapshot (nullable — defaults applied if NULL)
+ * @param report the diagnostic report (nullable)
+ * @param cfg the emission configuration (nullable — defaults applied if NULL)
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit_ex(
+    DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
+    const DvzFramePlanEmitConfig* cfg);
+
+
 
 /*************************************************************************************************/
 /*  Panel                                                                                        */
