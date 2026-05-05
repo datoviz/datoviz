@@ -29,6 +29,7 @@
 #include "_log.h"
 #include "_stream.h"
 #include "datoviz/stream/frame_stream.h"
+#include "datoviz/vk/gpu_ctx.h"
 
 #if DVZ_DRP2_HAS_VKLITE
 #include "datoviz/vk/device.h"
@@ -4008,4 +4009,24 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
     (void)frame;
     return false;
 #endif
+}
+
+
+
+/*************************************************************************************************/
+/*  Public GLSL compilation utility                                                              */
+/*************************************************************************************************/
+
+uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_size)
+{
+    ANN(stage);
+    ANN(glsl);
+    ANN(out_size);
+    *out_size = 0;
+    uint32_t* spv = NULL;
+    uint64_t spv_size = 0;
+    if (!_vklite_compile_glsl(stage, glsl, &spv, &spv_size))
+        return NULL;
+    *out_size = spv_size;
+    return spv;
 }
