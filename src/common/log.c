@@ -223,17 +223,27 @@ static void _lock(void* udata, int lock)
 /**
  * Set the logger level from the DVZ_LOG_LEVEL environment variable.
  *
- * @param void This function has no arguments.
- * @return void This function does not return a value.
+ * Accepts string names ("trace", "debug", "info", "warn", "error", "fatal")
+ * or integer values ("0"–"5").
  */
 void log_set_level_env(void)
 {
     const char* level = getenv("DVZ_LOG_LEVEL");
     int level_int = DVZ_DEFAULT_LOG_LEVEL;
     if (level != NULL)
-        level_int = strtol(level, NULL, 10);
+    {
+        if (strcmp(level, "trace") == 0)       level_int = LOG_TRACE;
+        else if (strcmp(level, "debug") == 0)  level_int = LOG_DEBUG;
+        else if (strcmp(level, "info") == 0)   level_int = LOG_INFO;
+        else if (strcmp(level, "warn") == 0)   level_int = LOG_WARN;
+        else if (strcmp(level, "error") == 0)  level_int = LOG_ERROR;
+        else if (strcmp(level, "fatal") == 0)  level_int = LOG_FATAL;
+        else                                    level_int = (int)strtol(level, NULL, 10);
+    }
     log_set_level(level_int);
-
-    // HACK: temporarily remove the log lock for now.
-    // log_set_lock(_lock);
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((constructor))
+static void _log_init(void) { log_set_level_env(); }
+#endif
