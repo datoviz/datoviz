@@ -57,6 +57,7 @@ struct DvzDrp2Command
             uint64_t id;
             uint32_t width;
             uint32_t height;
+            uint32_t depth;  /* 1 for 2D, >1 for 3D */
             uint32_t usage;
         } create_texture;
         struct

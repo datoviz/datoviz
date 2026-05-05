@@ -477,10 +477,12 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64
-            ", \"dimension\": \"2d\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
-            ", \"depth\": 1, \"format\": \"rgba8unorm\", \"usage\": ",
+            ", \"dimension\": \"%s\", \"width\": %" PRIu32 ", \"height\": %" PRIu32
+            ", \"depth\": %" PRIu32 ", \"format\": \"rgba8unorm\", \"usage\": ",
             _command_name(command->type), command->u.create_texture.id,
-            command->u.create_texture.width, command->u.create_texture.height);
+            command->u.create_texture.depth > 1 ? "3d" : "2d",
+            command->u.create_texture.width, command->u.create_texture.height,
+            command->u.create_texture.depth > 0 ? command->u.create_texture.depth : 1);
         _json_append_texture_usage(builder, command->u.create_texture.usage);
         _json_append(builder, ", \"mip_level_count\": 1, \"sample_count\": 1 }");
         break;
@@ -1061,6 +1063,7 @@ bool dvz_drp2_stream_create_texture_2d_usage(
     command->u.create_texture.id = id;
     command->u.create_texture.width = width;
     command->u.create_texture.height = height;
+    command->u.create_texture.depth = 1;
     command->u.create_texture.usage = usage;
     return true;
 }
@@ -1477,6 +1480,78 @@ bool dvz_drp2_stream_write_texture_2d(
     command->u.write_texture.height = height;
     command->u.write_texture.depth = 1;
     command->u.write_texture.bytes_per_row = bytes_per_row;
+    command->u.write_texture.rows_per_image = rows_per_image;
+    _copy_label(
+        command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,
+        data_base64 ? data_base64 : "");
+    return true;
+}
+
+
+
+bool dvz_drp2_stream_write_texture_2d_region(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
+    uint32_t origin_x, uint32_t origin_y,
+    uint32_t width, uint32_t height,
+    uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.write_texture.texture_id    = texture_id;
+    command->u.write_texture.mip_level     = mip_level;
+    command->u.write_texture.origin_x      = origin_x;
+    command->u.write_texture.origin_y      = origin_y;
+    command->u.write_texture.origin_z      = 0;
+    command->u.write_texture.width         = width;
+    command->u.write_texture.height        = height;
+    command->u.write_texture.depth         = 1;
+    command->u.write_texture.bytes_per_row = bytes_per_row;
+    command->u.write_texture.rows_per_image = rows_per_image;
+    _copy_label(
+        command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,
+        data_base64 ? data_base64 : "");
+    return true;
+}
+
+
+
+bool dvz_drp2_stream_create_texture_3d(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.create_texture.id    = id;
+    command->u.create_texture.width = width;
+    command->u.create_texture.height = height;
+    command->u.create_texture.depth = depth;
+    command->u.create_texture.usage =
+        DVZ_DRP2_TEXTURE_USAGE_COPY_SRC | DVZ_DRP2_TEXTURE_USAGE_COPY_DST |
+        DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    return true;
+}
+
+
+
+bool dvz_drp2_stream_write_texture_3d(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
+    uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
+    uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->u.write_texture.texture_id     = texture_id;
+    command->u.write_texture.mip_level      = mip_level;
+    command->u.write_texture.origin_x       = origin_x;
+    command->u.write_texture.origin_y       = origin_y;
+    command->u.write_texture.origin_z       = origin_z;
+    command->u.write_texture.width          = width;
+    command->u.write_texture.height         = height;
+    command->u.write_texture.depth          = depth;
+    command->u.write_texture.bytes_per_row  = bytes_per_row;
     command->u.write_texture.rows_per_image = rows_per_image;
     _copy_label(
         command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,

@@ -159,6 +159,20 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_2d_usage(
 
 
 /**
+ * Append a CreateTexture command for a 3D texture.
+ *
+ * @param stream the command stream
+ * @param id the texture id
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth (number of slices)
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_texture_3d(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t width, uint32_t height, uint32_t depth);
+
+
+/**
  * Append a DestroyTexture command.
  *
  * @param stream the command stream
@@ -420,6 +434,52 @@ DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
 DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d(
     DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
     uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64);
+
+
+/**
+ * Append a WriteTexture command for a 2D sub-region with explicit origin.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param origin_x x offset in texels
+ * @param origin_y y offset in texels
+ * @param width the written width
+ * @param height the written height
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data_base64 base64-encoded payload
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
+    uint32_t origin_x, uint32_t origin_y,
+    uint32_t width, uint32_t height,
+    uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64);
+
+
+/**
+ * Append a WriteTexture command for a 3D sub-region.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param origin_x x offset in texels
+ * @param origin_y y offset in texels
+ * @param origin_z z offset in texels
+ * @param width the written width
+ * @param height the written height
+ * @param depth the written depth
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data_base64 base64-encoded payload
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_3d(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level,
+    uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
+    uint32_t width, uint32_t height, uint32_t depth,
+    uint32_t bytes_per_row, uint32_t rows_per_image, const char* data_base64);
 
 
 

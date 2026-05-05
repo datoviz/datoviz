@@ -630,10 +630,10 @@ static DvzDrp2ValidationResult _validate_create_texture(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     Drp2Object* object = _find_object(state, id);
     ANN(object);
-    object->width = command->u.create_texture.width;
+    object->width  = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
-    object->depth = 1;
-    object->usage = command->u.create_texture.usage;
+    object->depth  = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
+    object->usage  = command->u.create_texture.usage;
     return _ok();
 }
 
@@ -2077,9 +2077,12 @@ static DvzDrp2ValidationResult _vklite_create_texture(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->images = images;
 
-    dvz_images(state->runtime->device, state->runtime->allocator, VK_IMAGE_TYPE_2D, 1, images);
+    uint32_t depth = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
+    VkImageType img_type = depth > 1 ? VK_IMAGE_TYPE_3D : VK_IMAGE_TYPE_2D;
+    dvz_images(state->runtime->device, state->runtime->allocator, img_type, 1, images);
     dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_images_size(images, command->u.create_texture.width, command->u.create_texture.height, 1);
+    dvz_images_size(
+        images, command->u.create_texture.width, command->u.create_texture.height, depth);
     dvz_images_mip(images, 1);
     dvz_images_layers(images, 1);
     dvz_images_samples(images, VK_SAMPLE_COUNT_1_BIT);
