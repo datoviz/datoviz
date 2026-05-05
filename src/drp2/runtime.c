@@ -4030,3 +4030,19 @@ uint32_t* dvz_compile_glsl(const char* stage, const char* glsl, uint64_t* out_si
     *out_size = spv_size;
     return spv;
 }
+
+
+bool dvz_drp2_runtime_download_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* dst)
+{
+#if DVZ_DRP2_HAS_VKLITE
+    return _dvz_drp2_runtime_vklite_download_buffer(runtime, buffer_id, offset, size, dst);
+#else
+    (void)runtime;
+    (void)buffer_id;
+    (void)offset;
+    (void)size;
+    (void)dst;
+    return false;
+#endif
+}

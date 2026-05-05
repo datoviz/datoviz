@@ -131,4 +131,21 @@ DVZ_EXPORT bool dvz_drp2_runtime_attach_frame_target(
 DVZ_EXPORT bool dvz_drp2_runtime_copy_texture_to_frame(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame);
 
+
+/**
+ * Download bytes from a DRP2 buffer into CPU memory.
+ *
+ * Must be called after dvz_drp2_runtime_execute() has completed.
+ * The buffer must have been created with DVZ_DRP2_BUFFER_USAGE_COPY_DST usage.
+ *
+ * @param runtime the vklite runtime
+ * @param buffer_id the DRP2 buffer id used in the stream
+ * @param offset byte offset within the buffer
+ * @param size number of bytes to read
+ * @param dst destination CPU buffer (caller-allocated, at least size bytes)
+ * @return true on success
+ */
+DVZ_EXPORT bool dvz_drp2_runtime_download_buffer(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* dst);
+
 EXTERN_C_OFF
