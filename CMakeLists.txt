@@ -239,6 +239,7 @@ set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(testing)
+add_subdirectory(examples/c)
 
 get_property(_dvz_targets GLOBAL PROPERTY DVZ_ALL_TARGETS)
 list(REMOVE_DUPLICATES _dvz_targets)
