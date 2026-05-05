@@ -1747,6 +1747,36 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 /*  Scene graph tests                                                                            */
 /*************************************************************************************************/
 
+int test_scene_json(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene*  scene  = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    DvzPanel*  panel  = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    DvzVisual* visual = dvz_point(scene, 0);
+
+    float positions[] = {-0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f};
+    dvz_visual_set_data(visual, "position", positions, 2);
+    dvz_panel_add_visual(panel, visual);
+
+    char* json = dvz_scene_json(scene);
+    AT(json != NULL);
+    AT(strstr(json, "\"figures\"") != NULL);
+    AT(strstr(json, "\"fig0\"") != NULL);
+    AT(strstr(json, "\"point\"") != NULL);
+    AT(strstr(json, "\"position\"") != NULL);
+    AT(strstr(json, "\"item_count\":2") != NULL);
+    AT(strstr(json, "\"data\":\"") != NULL); /* base64 data present */
+
+    dvz_scene_json_destroy(json);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_emit(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -1827,6 +1857,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
+    TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_point_emit);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);

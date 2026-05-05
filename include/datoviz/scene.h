@@ -54,6 +54,26 @@ DVZ_EXPORT void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilityS
 DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
 
 
+/**
+ * Serialize the scene to a JSON string.
+ *
+ * The JSON document contains the full scene graph: figures, panels, visuals, and attribute data
+ * (base64-encoded). The caller must free the returned string with dvz_scene_json_destroy().
+ *
+ * @param scene the scene
+ * @return an owned NUL-terminated JSON string, or NULL on failure
+ */
+DVZ_EXPORT char* dvz_scene_json(const DvzScene* scene);
+
+
+/**
+ * Free a JSON string returned by dvz_scene_json().
+ *
+ * @param json the JSON string
+ */
+DVZ_EXPORT void dvz_scene_json_destroy(char* json);
+
+
 
 /*************************************************************************************************/
 /*  Figure                                                                                       */

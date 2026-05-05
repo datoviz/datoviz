@@ -23,31 +23,8 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_frame_plan.h"
+#include "_json.h"
 #include "_log.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DVZ_FRAME_PLAN_JSON_INITIAL_CAPACITY 4096
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct JsonBuilder JsonBuilder;
-
-struct JsonBuilder
-{
-    char* data;
-    uint64_t count;
-    uint64_t capacity;
-    bool failed;
-};
 
 
 
@@ -189,110 +166,6 @@ static const char* _node_type_name(DvzFramePlanNodeType type)
         return "none";
     default:
         return "none";
-    }
-}
-
-
-
-static bool _json_init(JsonBuilder* builder)
-{
-    ANN(builder);
-    builder->capacity = DVZ_FRAME_PLAN_JSON_INITIAL_CAPACITY;
-    builder->count = 0;
-    builder->failed = false;
-    builder->data = (char*)dvz_calloc(builder->capacity, sizeof(char));
-    if (builder->data == NULL)
-    {
-        builder->failed = true;
-        return false;
-    }
-    return true;
-}
-
-
-
-static bool _json_ensure(JsonBuilder* builder, uint64_t count)
-{
-    ANN(builder);
-    if (builder->failed)
-        return false;
-    if (builder->data == NULL)
-    {
-        builder->failed = true;
-        return false;
-    }
-
-    uint64_t required = 0;
-    if (_add3_u64_overflows(builder->count, count, 1, &required))
-    {
-        builder->failed = true;
-        return false;
-    }
-
-    if (required <= builder->capacity)
-        return true;
-
-    uint64_t capacity = builder->capacity;
-    while (required > capacity)
-    {
-        if (capacity > UINT64_MAX / 2)
-        {
-            builder->failed = true;
-            return false;
-        }
-        capacity *= 2;
-    }
-
-    char* data = (char*)dvz_realloc(builder->data, capacity);
-    if (data == NULL)
-    {
-        builder->failed = true;
-        return false;
-    }
-    builder->capacity = capacity;
-    builder->data = data;
-    return true;
-}
-
-
-
-static void _json_append(JsonBuilder* builder, const char* format, ...)
-{
-    ANN(builder);
-    ANN(format);
-    if (builder->failed)
-        return;
-
-    while (true)
-    {
-        if (builder->data == NULL || builder->count >= builder->capacity)
-        {
-            builder->failed = true;
-            return;
-        }
-
-        uint64_t available = builder->capacity - builder->count;
-        va_list args;
-        va_start(args, format);
-        int written = dvz_vsnprintf(
-            builder->data + builder->count, (size_t)available, format, args);
-        va_end(args);
-
-        if (written < 0)
-        {
-            if (!_json_ensure(builder, builder->capacity))
-                return;
-            continue;
-        }
-
-        uint64_t written_u = (uint64_t)written;
-        if (written_u < available)
-        {
-            builder->count += written_u;
-            return;
-        }
-        if (!_json_ensure(builder, written_u))
-            return;
     }
 }
 

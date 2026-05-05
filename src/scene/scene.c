@@ -22,6 +22,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_json.h"
 #include "_scene.h"
 
 
@@ -412,4 +413,119 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
     visual->visible = true;
     visual->z_layer = 0;
     return visual;
+}
+
+
+
+/*************************************************************************************************/
+/*  Scene JSON serialization                                                                     */
+/*************************************************************************************************/
+
+static const char* _visual_type_name(DvzVisualType type)
+{
+    switch (type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+        return "point";
+    case DVZ_VISUAL_TYPE_PIXEL:
+        return "pixel";
+    case DVZ_VISUAL_TYPE_MARKER:
+        return "marker";
+    case DVZ_VISUAL_TYPE_SEGMENT:
+        return "segment";
+    case DVZ_VISUAL_TYPE_PATH:
+        return "path";
+    case DVZ_VISUAL_TYPE_IMAGE:
+        return "image";
+    case DVZ_VISUAL_TYPE_MESH:
+        return "mesh";
+    case DVZ_VISUAL_TYPE_VOLUME:
+        return "volume";
+    default:
+        return "unknown";
+    }
+}
+
+/* Return the scene-global index of a visual, or UINT32_MAX if not found. */
+static uint32_t _visual_index(const DvzScene* scene, const DvzVisual* visual)
+{
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+        if (&scene->visuals[i] == visual)
+            return i;
+    return UINT32_MAX;
+}
+
+char* dvz_scene_json(const DvzScene* scene)
+{
+    ANN(scene);
+
+    JsonBuilder b = {0};
+    if (!_json_init(&b))
+        return NULL;
+
+    _json_append(&b, "{\"figures\":[");
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        const DvzFigure* fig = &scene->figures[fi];
+        if (fig->scene == NULL)
+            continue;
+        _json_append(&b, "%s{\"id\":\"fig%u\",\"width\":%u,\"height\":%u,\"panels\":[",
+                     fi == 0 ? "" : ",", fi, fig->width, fig->height);
+
+        for (uint32_t pi = 0; pi < fig->panel_count; pi++)
+        {
+            const DvzPanel* panel = &fig->panels[pi];
+            _json_append(
+                &b,
+                "%s{\"id\":\"fig%u_p%u\","
+                "\"desc\":{\"x\":%.6g,\"y\":%.6g,\"width\":%.6g,\"height\":%.6g},"
+                "\"visuals\":[",
+                pi == 0 ? "" : ",", fi, pi,
+                (double)panel->desc.x, (double)panel->desc.y,
+                (double)panel->desc.width, (double)panel->desc.height);
+
+            for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+            {
+                const DvzVisual* vis = panel->visuals[vi];
+                if (vis == NULL)
+                    continue;
+                uint32_t vidx = _visual_index(scene, vis);
+                _json_append(
+                    &b,
+                    "%s{\"id\":\"v%u\",\"type\":\"%s\",\"visible\":%s,\"attrs\":[",
+                    vi == 0 ? "" : ",", vidx,
+                    _visual_type_name(vis->type),
+                    vis->visible ? "true" : "false");
+
+                for (uint32_t ai = 0; ai < vis->attr_count; ai++)
+                {
+                    const DvzVisualAttr* attr = &vis->attrs[ai];
+                    uint64_t byte_size = (uint64_t)attr->item_count * attr->item_size;
+                    _json_append(
+                        &b,
+                        "%s{\"name\":\"%s\",\"item_count\":%u,\"item_size\":%u,\"data\":",
+                        ai == 0 ? "" : ",",
+                        attr->name, attr->item_count, attr->item_size);
+                    if (attr->data != NULL && byte_size > 0)
+                        _json_append_base64(&b, (const uint8_t*)attr->data, byte_size);
+                    else
+                        _json_append(&b, "null");
+                    _json_append(&b, "}");
+                }
+                _json_append(&b, "]}"); /* close attrs + visual */
+            }
+            _json_append(&b, "]}"); /* close visuals + panel */
+        }
+        _json_append(&b, "]}"); /* close panels + figure */
+    }
+    _json_append(&b, "]}"); /* close figures + root */
+
+    return _json_finish(&b);
+}
+
+
+
+void dvz_scene_json_destroy(char* json)
+{
+    dvz_free(json);
 }
