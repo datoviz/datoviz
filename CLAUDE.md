@@ -2,10 +2,13 @@
 
 ## Next steps (read this first)
 
-**`docs/architecture/next_scene_examples.md`** — HIGH PRIORITY.  Brief for three new scene+app
-examples: `hello_scatter.c` (ready to write now — uses existing `dvz_point`),
-`hello_triangle.c` and `hello_texture.c` (each needs a new visual constructor first).
-Includes data layouts, code skeletons, and pointers to reference code.
+**`docs/architecture/drp2_base64_inprocess.md`** — HIGH PRIORITY (correctness/perf debt).
+Eliminate base64 encode/decode from the in-process vklite execution path.  Base64 is only for
+JSON wire serialization; raw `const void*` pointers should be used for everything else.
+Detailed fix approach and file list in the doc.
+
+**`docs/architecture/next_scene_examples.md`** — next scene+app examples: `hello_scatter.c`
+is done; `hello_triangle.c` and `hello_texture.c` each need a new visual constructor first.
 
 ## Git commits
 
