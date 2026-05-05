@@ -1,92 +1,117 @@
 # Using Datoviz in C
 
-Datoviz is written in portable C and can be used directly in C applications for high-performance GPU visualization. The C API gives you full access to the library's core functionality, including visuals, scenes, interactivity, and rendering.
-
-This guide shows how to build and run a simple C program with Datoviz, and how the Python API relates to it.
-
----
-
-## C API Overview
-
-The C API is defined in a single public header (which includes a few other files in `include/`):
-
-```c
-#include <datoviz.h>
-```
-
-You create and manage:
-
-* `DvzApp` and `DvzBatch`: top-level context and command submission
-* `DvzScene`, `DvzFigure`, `DvzPanel`: layout and interaction
-* `DvzVisual`: one of the GPU-accelerated visual types
-
-See the [C API reference](../reference/api_c.md) for the full list of functions and types.
+Datoviz is written in C and can be used directly from C applications.  The
+library is layered: you can work at whichever level of abstraction suits your
+use case, from a high-level scene API all the way down to the raw DRP2
+rendering protocol.
 
 ---
 
-## Python ↔ C Correspondence
+## API layers
 
-The Datoviz **Python bindings** consist of:
+| Layer | Headers | Use case |
+|-------|---------|----------|
+| **Scene + App** | `datoviz/scene.h`, `datoviz/app.h` | Most users — declare visuals, let the library handle GPU execution |
+| **vklite + Canvas** | `datoviz/vklite.h`, `datoviz/canvas.h` | Power users who want to write their own Vulkan draw commands |
+| **DRP2 stream** | `datoviz/drp2.h` | Library developers and researchers exploring the rendering protocol |
 
-1. Low-level `ctypes` bindings that directly wrap the C library,
-2. A high-level Python wrapper built on top, with objects like `App`, `Visual`, `Panel`, etc.
-
-The mapping for the raw `ctypes` bindings is:
-
-| C API                   | Python API                 |
-| ----------------------- | -------------------------- |
-| `dvz_point_alloc(...)`  | `dvz.point_alloc(...)` |
-| `dvz_mock_color(...)`   | `dvz.mock_color(...)`      |
-| `DVZ_MARKER_SHAPE_DISC` | `dvz.MARKER_SHAPE_DISC`    |
-
-Python functions are named the same (minus the `dvz_` prefix) and constants use `dvz.CONSTANT_NAME`.
+All three layers share the same build setup.
 
 ---
 
-## Building a C Program
+## Building the examples (from source)
 
-To build a C application based on Datoviz:
-
-1. Ensure Datoviz is compiled from source or use a prebuilt version (not yet available).
-2. Include the `datoviz/` header directory.
-3. Specify the link directories containing `libdatoviz.so` (or the equivalent for your OS).
-4. Link against `libdatoviz` and the standard math library.
-
-### Example (GCC):
+The examples live under `examples/c/` and are built as part of the main CMake
+tree — no separate install step needed during development.
 
 ```bash
-gcc -std=c11 -O2 -I/path/to/datoviz/include \
-    my_program.c -L/path/to/datoviz/build -ldatoviz -lm -o my_program
+# Build everything (first time)
+just build
+
+# Build and run a specific example
+just example-c hello_point
+just example-c raw_triangle
+just example-c raw_triangle_drp2
 ```
 
-!!! note
-
-    We plan to provide downloadable builds for major platforms in the future.
+The executables land in `build/examples/c/`.
 
 ---
 
-## Full Example
+## Example 1 — `hello_point.c` (scene + app)
+
+The highest-level path.  You declare visuals and data; `DvzApp` takes care of
+GPU context, runtime, and rendering.
 
 ```c
---8<-- "examples/c/scatter.c"
+--8<-- "examples/c/hello_point.c"
 ```
 
-This program creates a scatter plot with 10,000 points using the point visual. It uses mock data helpers for positions, colors, and sizes.
+After one `dvz_app_run()` call the frame is in the offscreen canvas.
+`dvz_app_window_capture_png()` reads it back and saves a PNG.
 
 ---
 
-## Notes
+## Example 2 — `raw_triangle.c` (vklite draw commands into DvzCanvas)
 
-* C usage provides the lowest-level, most performant access to Datoviz.
-* The API is designed to be clear and safe to use in systems programming.
-* The auto-generated Python `ctypes` bindings is identical to this C API to ensure consistent behavior across both languages.
-* Most examples and documentation use the higher-level Python wrapper built on top of the `ctypes` bindings, for user convenience and to better decouple user code from the C API, which may still change with each release.
+For power users who know Vulkan and want to write their own draw commands
+while letting `DvzCanvas` manage all presentation plumbing (frame timing,
+offscreen images, submission, video recording).
 
+The draw callback receives a `VkCommandBuffer` (via `DvzStreamFrame`) that is
+already allocated and begun.  You record your own commands into it; the canvas
+handles the rest.
+
+The **same draw callback** runs unchanged for every backend — only the canvas
+configuration differs.
+
+```
+./raw_triangle           → raw_triangle.png  (one offscreen frame)
+./raw_triangle video     → raw_triangle.mp4  (120 frames)
+```
+
+```c
+--8<-- "examples/c/raw_triangle.c"
+```
 
 ---
 
-## See Also
+## Example 3 — `raw_triangle_drp2.c` (manual DRP2 command stream)
 
-* [Python Quickstart](../quickstart.md)
-* [C API Reference](../reference/api_c.md)
-* [Datoviz Architecture](../discussions/ARCHITECTURE.md)
+DRP2 (Datoviz Rendering Protocol 2) is the backend-agnostic IR that sits
+between the scene layer and the GPU.  This example bypasses both `DvzScene`
+and `DvzCanvas` and constructs a DRP2 stream by hand.
+
+It is intentionally verbose — the goal is to show every step of the protocol
+so that developers of other scientific-visualization libraries can understand
+how DRP2 works and experiment with it directly.
+
+```
+./raw_triangle_drp2      → raw_triangle_drp2.png
+```
+
+```c
+--8<-- "examples/c/raw_triangle_drp2.c"
+```
+
+---
+
+## Key public APIs introduced in v0.4
+
+| Function | Description |
+|----------|-------------|
+| `dvz_app()` | Create an app bound to a scene (owns GPU ctx + DRP2 runtime) |
+| `dvz_app_window()` | Register an offscreen canvas for a figure |
+| `dvz_app_run()` | Render N frames |
+| `dvz_app_window_canvas()` | Access the underlying `DvzCanvas` |
+| `dvz_app_window_capture_png()` | Save the last rendered frame as a PNG |
+| `dvz_compile_glsl()` | Compile a GLSL string to SPIR-V at runtime (shaderc) |
+| `dvz_drp2_runtime_download_buffer()` | Download GPU buffer bytes to CPU after execution |
+| `dvz_drp2_stream_write_buffer_bytes()` | Append a WriteBuffer command from raw bytes |
+
+---
+
+## See also
+
+- `docs/architecture/drp2-overview.md` — DRP2 protocol design
+- `docs/architecture/next_raw_triangle_examples.md` — implementation notes for future contributors
