@@ -138,7 +138,7 @@ struct DvzDrp2Command
             uint64_t buffer_id;
             uint64_t offset;
             uint64_t size;
-            char data_base64[DVZ_DRP2_LABEL_SIZE];
+            char* data_base64; /* heap-allocated; freed by dvz_drp2_stream_destroy */
         } write_buffer;
         struct
         {
@@ -152,7 +152,7 @@ struct DvzDrp2Command
             uint32_t depth;
             uint32_t bytes_per_row;
             uint32_t rows_per_image;
-            char data_base64[DVZ_DRP2_LABEL_SIZE];
+            char* data_base64; /* heap-allocated; freed by dvz_drp2_stream_destroy */
         } write_texture;
         struct
         {

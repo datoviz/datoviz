@@ -926,6 +926,14 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
 {
     if (stream == NULL)
         return;
+    for (uint32_t i = 0; i < stream->count; i++)
+    {
+        DvzDrp2Command* cmd = &stream->commands[i];
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            dvz_free(cmd->u.write_buffer.data_base64);
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            dvz_free(cmd->u.write_texture.data_base64);
+    }
     dvz_free(stream->commands);
     dvz_free(stream);
 }
@@ -1515,10 +1523,14 @@ bool dvz_drp2_stream_write_buffer(
     command->u.write_buffer.buffer_id = buffer_id;
     command->u.write_buffer.offset = offset;
     command->u.write_buffer.size = size;
-    _copy_label(
-        command->u.write_buffer.data_base64, DVZ_DRP2_LABEL_SIZE,
-        data_base64 ? data_base64 : "");
-    return true;
+    {
+        const char* src = data_base64 ? data_base64 : "";
+        size_t n = strlen(src) + 1;
+        command->u.write_buffer.data_base64 = (char*)dvz_malloc(n);
+        if (command->u.write_buffer.data_base64)
+            memcpy(command->u.write_buffer.data_base64, src, n);
+    }
+    return command->u.write_buffer.data_base64 != NULL;
 }
 
 
@@ -1550,10 +1562,14 @@ bool dvz_drp2_stream_write_texture_2d(
     command->u.write_texture.depth = 1;
     command->u.write_texture.bytes_per_row = bytes_per_row;
     command->u.write_texture.rows_per_image = rows_per_image;
-    _copy_label(
-        command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,
-        data_base64 ? data_base64 : "");
-    return true;
+    {
+        const char* src = data_base64 ? data_base64 : "";
+        size_t n = strlen(src) + 1;
+        command->u.write_texture.data_base64 = (char*)dvz_malloc(n);
+        if (command->u.write_texture.data_base64)
+            memcpy(command->u.write_texture.data_base64, src, n);
+    }
+    return command->u.write_texture.data_base64 != NULL;
 }
 
 
@@ -1577,10 +1593,14 @@ bool dvz_drp2_stream_write_texture_2d_region(
     command->u.write_texture.depth         = 1;
     command->u.write_texture.bytes_per_row = bytes_per_row;
     command->u.write_texture.rows_per_image = rows_per_image;
-    _copy_label(
-        command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,
-        data_base64 ? data_base64 : "");
-    return true;
+    {
+        const char* src = data_base64 ? data_base64 : "";
+        size_t n = strlen(src) + 1;
+        command->u.write_texture.data_base64 = (char*)dvz_malloc(n);
+        if (command->u.write_texture.data_base64)
+            memcpy(command->u.write_texture.data_base64, src, n);
+    }
+    return command->u.write_texture.data_base64 != NULL;
 }
 
 
@@ -1622,10 +1642,14 @@ bool dvz_drp2_stream_write_texture_3d(
     command->u.write_texture.depth          = depth;
     command->u.write_texture.bytes_per_row  = bytes_per_row;
     command->u.write_texture.rows_per_image = rows_per_image;
-    _copy_label(
-        command->u.write_texture.data_base64, DVZ_DRP2_LABEL_SIZE,
-        data_base64 ? data_base64 : "");
-    return true;
+    {
+        const char* src = data_base64 ? data_base64 : "";
+        size_t n = strlen(src) + 1;
+        command->u.write_texture.data_base64 = (char*)dvz_malloc(n);
+        if (command->u.write_texture.data_base64)
+            memcpy(command->u.write_texture.data_base64, src, n);
+    }
+    return command->u.write_texture.data_base64 != NULL;
 }
 
 

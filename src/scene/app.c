@@ -19,6 +19,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 
@@ -108,7 +109,12 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream = dvz_figure_emit_ex(win->figure, &caps, &report, &cfg);
     if (stream == NULL)
+    {
+        uint32_t n = dvz_diagnostic_report_count(&report);
+        for (uint32_t i = 0; i < n; i++)
+            log_error("_app_draw emit failed: %s", dvz_diagnostic_report_get(&report, i));
         return;
+    }
 
     dvz_drp2_runtime_execute(app->runtime, stream);
     dvz_drp2_stream_destroy(stream);

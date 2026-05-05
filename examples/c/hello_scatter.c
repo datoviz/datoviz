@@ -64,7 +64,7 @@ int main(int argc, char** argv)
         colors[i][0] = (uint8_t)(randf() * 255);
         colors[i][1] = (uint8_t)(randf() * 255);
         colors[i][2] = (uint8_t)(randf() * 255);
-        colors[i][3] = 200;
+        colors[i][3] = 255;
 
         sizes[i] = 4.0f + randf() * 12.0f;  /* 4–16 px diameter */
     }
