@@ -127,8 +127,6 @@ struct DvzFigure
 
     uint32_t   panel_count;
     DvzPanel   panels[DVZ_SCENE_MAX_PANELS];
-
-    DvzFramePlanEmitter* emitter; /* persistent emitter — owned by figure */
 };
 
 
@@ -140,6 +138,8 @@ struct DvzFigure
 struct DvzScene
 {
     DvzCapabilitySnapshot caps;
+
+    DvzFramePlanEmitter* emitter; /* shared across all figures — owns GPU resource key→ID map */
 
     uint32_t  figure_count;
     DvzFigure figures[DVZ_SCENE_MAX_FIGURES];

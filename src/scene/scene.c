@@ -82,6 +82,7 @@ DvzScene* dvz_scene(void)
 {
     DvzScene* scene = (DvzScene*)dvz_calloc(1, sizeof(DvzScene));
     dvz_capability_snapshot_default(&scene->caps);
+    scene->emitter = dvz_frame_plan_emitter();
     return scene;
 }
 
@@ -110,15 +111,10 @@ void dvz_scene_destroy(DvzScene* scene)
             }
         }
     }
-    /* Destroy figures (and their emitters) */
-    for (uint32_t i = 0; i < scene->figure_count; i++)
+    if (scene->emitter != NULL)
     {
-        DvzFigure* fig = &scene->figures[i];
-        if (fig->emitter != NULL)
-        {
-            dvz_frame_plan_emitter_destroy(fig->emitter);
-            fig->emitter = NULL;
-        }
+        dvz_frame_plan_emitter_destroy(scene->emitter);
+        scene->emitter = NULL;
     }
     dvz_free(scene);
 }
@@ -135,11 +131,10 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
     if (scene->figure_count >= DVZ_SCENE_MAX_FIGURES)
         return NULL;
     DvzFigure* fig = &scene->figures[scene->figure_count++];
-    fig->scene   = scene;
-    fig->width   = width;
-    fig->height  = height;
-    fig->flags   = flags;
-    fig->emitter = dvz_frame_plan_emitter();
+    fig->scene  = scene;
+    fig->width  = width;
+    fig->height = height;
+    fig->flags  = flags;
     return fig;
 }
 
@@ -147,12 +142,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
 void dvz_figure_destroy(DvzFigure* figure)
 {
     ANN(figure);
-    if (figure->emitter != NULL)
-    {
-        dvz_frame_plan_emitter_destroy(figure->emitter);
-        figure->emitter = NULL;
-    }
-    /* Mark slot as empty so the scene destroy loop doesn't double-free */
+    /* Mark slot as empty */
     figure->scene = NULL;
 }
 
@@ -162,7 +152,9 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     const DvzFramePlanEmitConfig* cfg)
 {
     ANN(figure);
-    ANN(figure->emitter);
+    ANN(figure->scene);
+    ANN(figure->scene->emitter);
+    DvzFramePlanEmitter* emitter = figure->scene->emitter;
 
     /* Use a stable figure_id from its position in the scene array */
     char figure_id[64];
@@ -267,7 +259,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     }
 
     DvzDrp2CommandStream* stream =
-        dvz_frame_plan_emitter_emit_drp2(figure->emitter, plan, caps, report, cfg);
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, report, cfg);
 
     /* Clear dirty flags after successful emit */
     if (stream != NULL)
