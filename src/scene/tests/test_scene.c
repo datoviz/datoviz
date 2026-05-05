@@ -1169,7 +1169,12 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
          0.5f, -0.5f, 0.0f,
          0.0f,  0.5f, 0.0f,
     };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3]     = {10.0f, 20.0f, 15.0f};
+
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
     AT(dvz_panel_add_visual(panel, visual) == 0);
 
     /* Emit with GLSL */
@@ -1766,7 +1771,14 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item)
          0.5f, -0.5f, 0.0f,
          0.0f,  0.5f, 0.0f,
     };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3]     = {10.0f, 20.0f, 15.0f};
+
     int rc = dvz_visual_set_data(visual, "position", positions, 3);
+    AT(rc == 0);
+    rc = dvz_visual_set_data(visual, "color", colors, 3);
+    AT(rc == 0);
+    rc = dvz_visual_set_data(visual, "size", sizes, 3);
     AT(rc == 0);
 
     rc = dvz_panel_add_visual(panel, visual);
@@ -1776,7 +1788,7 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item)
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
     caps.shader_format_wgsl = true;
-    caps.max_vertex_buffers = 4;
+    caps.max_vertex_buffers = 8;
     caps.max_bind_groups    = 4;
     caps.max_buffer_size    = 256 * 1024 * 1024;
 
