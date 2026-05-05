@@ -14,6 +14,11 @@ target_include_directories(datoviz_scene
 )
 
 target_compile_definitions(datoviz_scene PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+if(TARGET datoviz_vklite)
+    target_compile_definitions(datoviz_scene PUBLIC DVZ_DRP2_HAS_VKLITE=1)
+else()
+    target_compile_definitions(datoviz_scene PUBLIC DVZ_DRP2_HAS_VKLITE=0)
+endif()
 if(WIN32)
     target_compile_definitions(datoviz_scene PRIVATE DVZ_SHARED)
 endif()

@@ -27,6 +27,7 @@
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
+#include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
@@ -1206,6 +1207,54 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
     dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
+
+
+
+int test_app_offscreen(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    /* Build scene */
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float positions[] = {-0.5f, -0.5f, 0.0f,  0.5f, -0.5f, 0.0f,  0.0f, 0.5f, 0.0f};
+    uint8_t colors[3][4] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {10.0f, 20.0f, 15.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    /* Create app and offscreen window */
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    /* Run two frames */
+    dvz_app_run(app, 2);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
 #endif
 
 
@@ -1868,6 +1917,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
     TEST_SIMPLE(test_scene_drp2_offscreen_canvas_frame);
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
+    TEST_SIMPLE(test_app_offscreen);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
     TEST_SIMPLE(test_frame_plan_emit_drp2_dynamic_uploads);

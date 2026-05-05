@@ -62,6 +62,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes(
 int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen(TstSuite* suite, TstItem* item);
 #endif
 
 int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item);
