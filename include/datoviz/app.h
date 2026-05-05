@@ -79,6 +79,30 @@ DVZ_EXPORT DvzAppWindow*
 dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height);
 
 
+/**
+ * Return the underlying DvzCanvas for a window.
+ *
+ * Gives access to the full canvas API (capture, video sink, live-image sink, etc.).
+ *
+ * @param win the app-window
+ * @return the canvas, or NULL if the window was not created with GPU support
+ */
+DVZ_EXPORT struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win);
+
+
+/**
+ * Capture the last rendered frame and write it to a PNG file.
+ *
+ * Convenience wrapper around dvz_app_window_canvas() + dvz_canvas_capture_png().
+ * Call after at least one dvz_app_run() iteration.
+ *
+ * @param win the app-window
+ * @param path output file path
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
+
+
 
 /*************************************************************************************************/
 /*  Frame loop                                                                                   */

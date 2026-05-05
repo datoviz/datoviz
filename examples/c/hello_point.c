@@ -62,7 +62,9 @@ int main(void)
     /* Render one frame */
     dvz_app_run(app, 1);
 
-    printf("hello_point: rendered one frame successfully\n");
+    /* Save PNG */
+    dvz_app_window_capture_png(win, "hello_point.png");
+    printf("hello_point: saved hello_point.png\n");
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

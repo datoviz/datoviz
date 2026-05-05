@@ -259,6 +259,34 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 
 
 /*************************************************************************************************/
+/*  Window accessors                                                                             */
+/*************************************************************************************************/
+
+struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return win->canvas;
+#else
+    return NULL;
+#endif
+}
+
+
+int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
+{
+    ANN(win);
+    ANN(path);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return dvz_canvas_capture_png(win->canvas, path);
+#else
+    return -1;
+#endif
+}
+
+
+
+/*************************************************************************************************/
 /*  Frame loop                                                                                   */
 /*************************************************************************************************/
 
