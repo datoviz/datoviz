@@ -30,6 +30,7 @@ just build
 
 # Build and run a specific example
 just example-c hello_point
+just example-c hello_scatter
 just example-c raw_triangle
 just example-c raw_triangle_drp2
 ```
@@ -52,7 +53,22 @@ After one `dvz_app_run()` call the frame is in the offscreen canvas.
 
 ---
 
-## Example 2 — `raw_triangle.c` (vklite draw commands into DvzCanvas)
+## Example 2 — `hello_scatter.c` (scene + app, 1 000 random points)
+
+Same scene+app path as `hello_point.c`, but with 1 000 points each assigned a random
+position, colour, and size.  Shows `dvz_visual_set_data()` with larger arrays.
+
+```
+./hello_scatter      → hello_scatter.png
+```
+
+```c
+--8<-- "examples/c/hello_scatter.c"
+```
+
+---
+
+## Example 3 — `raw_triangle.c` (vklite draw commands into DvzCanvas)
 
 For power users who know Vulkan and want to write their own draw commands
 while letting `DvzCanvas` manage all presentation plumbing (frame timing,
@@ -76,7 +92,7 @@ configuration differs.
 
 ---
 
-## Example 3 — `raw_triangle_drp2.c` (manual DRP2 command stream)
+## Example 4 — `raw_triangle_drp2.c` (manual DRP2 command stream)
 
 DRP2 (Datoviz Rendering Protocol 2) is the backend-agnostic IR that sits
 between the scene layer and the GPU.  This example bypasses both `DvzScene`

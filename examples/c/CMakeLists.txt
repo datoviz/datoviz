@@ -82,6 +82,7 @@ endfunction()
 
 if(TARGET datoviz_scene)
     dvz_add_example(hello_point)
+    dvz_add_example(hello_scatter)
 endif()
 
 if(TARGET datoviz_drp2)
