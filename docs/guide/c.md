@@ -114,4 +114,5 @@ how DRP2 works and experiment with it directly.
 ## See also
 
 - `docs/architecture/drp2-overview.md` — DRP2 protocol design
-- `docs/architecture/next_raw_triangle_examples.md` — implementation notes for future contributors
+- `docs/architecture/next_raw_triangle_examples.md` — implementation notes (completed)
+- `docs/architecture/next_scene_examples.md` — upcoming scene-layer examples roadmap

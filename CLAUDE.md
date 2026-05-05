@@ -2,7 +2,10 @@
 
 ## Next steps (read this first)
 
-*(No outstanding high-priority items — the raw triangle examples brief has been completed.)*
+**`docs/architecture/next_scene_examples.md`** — HIGH PRIORITY.  Brief for three new scene+app
+examples: `hello_scatter.c` (ready to write now — uses existing `dvz_point`),
+`hello_triangle.c` and `hello_texture.c` (each needs a new visual constructor first).
+Includes data layouts, code skeletons, and pointers to reference code.
 
 ## Git commits
 
