@@ -555,6 +555,25 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass(
 
 
 /**
+ * Append a BeginRenderPass command with an explicit RGBA clear color.
+ *
+ * @param stream the command stream
+ * @param id the render pass id
+ * @param encoder_id the encoder id
+ * @param texture_id the color attachment texture id
+ * @param r red clear value [0, 1]
+ * @param g green clear value [0, 1]
+ * @param b blue clear value [0, 1]
+ * @param a alpha clear value [0, 1]
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_clear(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id,
+    float r, float g, float b, float a);
+
+
+
+/**
  * Append a BeginComputePass command.
  *
  * @param stream the command stream

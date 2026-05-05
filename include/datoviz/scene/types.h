@@ -83,6 +83,7 @@ struct DvzFramePlanEmitConfig
     bool external_color_target;
     uint64_t color_target_id;
     bool fullscreen_triangle;
+    float clear_color[4]; /* RGBA clear color for the render pass [0,1]; default opaque black */
 };
 
 

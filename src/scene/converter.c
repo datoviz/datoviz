@@ -1221,8 +1221,13 @@ static bool _emitter_emit_render(
     uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
     uint64_t submission_id = _emitter_next_transient_id(emitter);
 
+    float cr = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca = cfg ? cfg->clear_color[3] : 1.0f;
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_id) &&
+         dvz_drp2_stream_begin_render_pass_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
@@ -1361,8 +1366,13 @@ static bool _emitter_emit_texture_render(
     uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
     uint64_t submission_id = _emitter_next_transient_id(emitter);
 
+    float cr2 = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg2 = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb2 = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca2 = cfg ? cfg->clear_color[3] : 1.0f;
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_id) &&
+         dvz_drp2_stream_begin_render_pass_clear(
+             stream, render_pass_id, encoder_id, color_id, cr2, cg2, cb2, ca2) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id) &&
          dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, bg_id) &&
          dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
@@ -1528,7 +1538,10 @@ static bool _emitter_emit_compute_assisted_render(
              stream, compute_pass_id, compute->u.compute.dispatch[0],
              compute->u.compute.dispatch[1], compute->u.compute.dispatch[2]) &&
          dvz_drp2_stream_end_compute_pass(stream, compute_pass_id) &&
-         dvz_drp2_stream_begin_render_pass(stream, render_pass_id, encoder_id, color_id) &&
+         dvz_drp2_stream_begin_render_pass_clear(
+             stream, render_pass_id, encoder_id, color_id,
+             cfg ? cfg->clear_color[0] : 0.0f, cfg ? cfg->clear_color[1] : 0.0f,
+             cfg ? cfg->clear_color[2] : 0.0f, cfg ? cfg->clear_color[3] : 1.0f) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id) &&
          dvz_drp2_stream_set_vertex_buffer(
              stream, render_pass_id, 0, emitter->resources.first_compute_output_id, 0) &&
@@ -1571,6 +1584,11 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
     cfg.external_color_target = false;
     cfg.color_target_id = DRP2_ID_COLOR_TARGET;
     cfg.fullscreen_triangle = false;
+    /* Default clear: opaque black. */
+    cfg.clear_color[0] = 0.0f;
+    cfg.clear_color[1] = 0.0f;
+    cfg.clear_color[2] = 0.0f;
+    cfg.clear_color[3] = 1.0f;
     return cfg;
 }
 

@@ -3311,7 +3311,12 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->rendering = rendering;
 
-    VkClearValue clear = {0};
+    VkClearValue clear = {.color.float32 = {
+        command->u.begin_render_pass.clear_color[0],
+        command->u.begin_render_pass.clear_color[1],
+        command->u.begin_render_pass.clear_color[2],
+        command->u.begin_render_pass.clear_color[3],
+    }};
     dvz_cmd_rendering_default(
         cmds, target_view, target->width, target->height, clear, rendering);
 

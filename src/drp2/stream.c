@@ -1660,12 +1660,26 @@ bool dvz_drp2_stream_begin_command_encoder(DvzDrp2CommandStream* stream, uint64_
 bool dvz_drp2_stream_begin_render_pass(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id)
 {
+    return dvz_drp2_stream_begin_render_pass_clear(stream, id, encoder_id, texture_id,
+                                                   0.0f, 0.0f, 0.0f, 1.0f);
+}
+
+
+
+bool dvz_drp2_stream_begin_render_pass_clear(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id,
+    float r, float g, float b, float a)
+{
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
     if (command == NULL)
         return false;
     command->u.begin_render_pass.id = id;
     command->u.begin_render_pass.encoder_id = encoder_id;
     command->u.begin_render_pass.texture_id = texture_id;
+    command->u.begin_render_pass.clear_color[0] = r;
+    command->u.begin_render_pass.clear_color[1] = g;
+    command->u.begin_render_pass.clear_color[2] = b;
+    command->u.begin_render_pass.clear_color[3] = a;
     return true;
 }
 
