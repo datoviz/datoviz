@@ -970,6 +970,8 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
             dvz_free(cmd->u.write_buffer.data_base64);
         else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
             dvz_free(cmd->u.write_texture.data_base64);
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+            dvz_free(cmd->u.create_shader_module.code);
     }
     dvz_free(stream->commands);
     dvz_free(stream);
@@ -1198,12 +1200,23 @@ bool dvz_drp2_stream_create_shader_module_format(
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
     if (command == NULL)
         return false;
+
+    const char* src = code ? code : "";
+    size_t n = strlen(src) + 1;
+    char* code_copy = (char*)dvz_malloc(n);
+    if (code_copy == NULL)
+    {
+        stream->count--;
+        return false;
+    }
+    memcpy(code_copy, src, n);
+
     command->u.create_shader_module.id = id;
     _copy_label(command->u.create_shader_module.stage, DVZ_DRP2_LABEL_SIZE, stage ? stage : "");
     _copy_label(
         command->u.create_shader_module.format, DVZ_DRP2_LABEL_SIZE,
         format != NULL && format[0] != '\0' ? format : "wgsl");
-    _copy_label(command->u.create_shader_module.code, DVZ_DRP2_LABEL_SIZE, code ? code : "");
+    command->u.create_shader_module.code = code_copy;
     return true;
 }
 
