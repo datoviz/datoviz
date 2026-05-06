@@ -109,6 +109,8 @@ int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item)
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
 #endif
 

@@ -2244,6 +2244,76 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 
 
 
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float position[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 0, 255};
+    float size = 32.0f;
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_retained_render_second_frame skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t yellow_counts[2] = {0, 0};
+    for (uint32_t frame = 0; frame < 2; frame++)
+    {
+        dvz_app_run(app, 1);
+
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        AT(width == 64);
+        AT(height == 64);
+
+        for (uint32_t i = 0; i < width * height; i++)
+        {
+            uint8_t* pixel = &rgba[4 * i];
+            if (pixel[0] > 200 && pixel[1] > 200)
+                yellow_counts[frame]++;
+        }
+        dvz_free(rgba);
+    }
+    AT(yellow_counts[0] > 0);
+    AT(yellow_counts[1] > 0);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item)
 {
@@ -2587,6 +2657,7 @@ int test_scene(TstSuite* suite)
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_clear_color);
 #endif
     TEST_SIMPLE(test_scene_point_large_count_executes);
