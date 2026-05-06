@@ -723,9 +723,13 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64
             ", \"color_attachments\": [ { \"texture_id\": %" PRIu64
             ", \"load_op\": \"clear\", \"store_op\": \"store\", "
-            "\"clear_value\": { \"r\": 0, \"g\": 0, \"b\": 0, \"a\": 1 } } ] }",
+            "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } } ] }",
             _command_name(command->type), command->u.begin_render_pass.id,
-            command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id);
+            command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id,
+            (double)command->u.begin_render_pass.clear_color[0],
+            (double)command->u.begin_render_pass.clear_color[1],
+            (double)command->u.begin_render_pass.clear_color[2],
+            (double)command->u.begin_render_pass.clear_color[3]);
         break;
     case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
         _json_append(
