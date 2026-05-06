@@ -136,7 +136,11 @@ static void _json_append_string_array(
     ANN(builder);
     _json_append(builder, "[");
     for (uint32_t i = 0; i < count; i++)
-        _json_append(builder, "%s\"%s\"", i == 0 ? "" : ", ", values[i]);
+    {
+        if (i > 0)
+            _json_append(builder, ", ");
+        _json_append_escaped_string(builder, values[i]);
+    }
     _json_append(builder, "]");
 }
 
@@ -150,46 +154,48 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
     switch (node->type)
     {
     case DVZ_FRAME_PLAN_NODE_UPLOAD:
+        _json_append(builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
+        _json_append_escaped_string(builder, node->u.upload.resource_id);
         _json_append(
-            builder,
-            "{ \"type\": \"%s\", \"resource_id\": \"%s\", \"byte_offset\": %" PRIu64
-            ", \"byte_size\": %" PRIu64 ", \"data_tag\": \"%s\" }",
-            _node_type_name(node->type), node->u.upload.resource_id, node->u.upload.byte_offset,
-            node->u.upload.byte_size, node->u.upload.data_tag);
+            builder, ", \"byte_offset\": %" PRIu64 ", \"byte_size\": %" PRIu64 ", \"data_tag\": ",
+            node->u.upload.byte_offset, node->u.upload.byte_size);
+        _json_append_escaped_string(builder, node->u.upload.data_tag);
+        _json_append(builder, " }");
         break;
     case DVZ_FRAME_PLAN_NODE_COMPUTE:
+        _json_append(builder, "{ \"type\": \"%s\", \"shader_key\": ", _node_type_name(node->type));
+        _json_append_escaped_string(builder, node->u.compute.shader_key);
         _json_append(
-            builder,
-            "{ \"type\": \"%s\", \"shader_key\": \"%s\", \"dispatch\": { \"x\": %" PRIu32
-            ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"reads\": ",
-            _node_type_name(node->type), node->u.compute.shader_key, node->u.compute.dispatch[0],
-            node->u.compute.dispatch[1], node->u.compute.dispatch[2]);
+            builder, ", \"dispatch\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32
+                     ", \"z\": %" PRIu32 " }, \"reads\": ",
+            node->u.compute.dispatch[0], node->u.compute.dispatch[1], node->u.compute.dispatch[2]);
         _json_append_string_array(builder, node->u.compute.read_count, node->u.compute.reads);
         _json_append(builder, ", \"writes\": ");
         _json_append_string_array(builder, node->u.compute.write_count, node->u.compute.writes);
         _json_append(builder, " }");
         break;
     case DVZ_FRAME_PLAN_NODE_RENDER:
-        _json_append(
-            builder,
-            "{ \"type\": \"%s\", \"panel_id\": \"%s\", \"render_target_id\": \"%s\", "
-            "\"visuals\": ",
-            _node_type_name(node->type), node->u.render.panel_id, node->u.render.render_target_id);
+        _json_append(builder, "{ \"type\": \"%s\", \"panel_id\": ", _node_type_name(node->type));
+        _json_append_escaped_string(builder, node->u.render.panel_id);
+        _json_append(builder, ", \"render_target_id\": ");
+        _json_append_escaped_string(builder, node->u.render.render_target_id);
+        _json_append(builder, ", \"visuals\": ");
         _json_append_string_array(builder, node->u.render.visual_count, node->u.render.visuals);
         _json_append(builder, ", \"picking\": %s }", node->u.render.picking ? "true" : "false");
         break;
     case DVZ_FRAME_PLAN_NODE_COPY:
-        _json_append(
-            builder,
-            "{ \"type\": \"%s\", \"src_resource_id\": \"%s\", \"dst_resource_id\": \"%s\", "
-            "\"byte_size\": %" PRIu64 " }",
-            _node_type_name(node->type), node->u.copy.src_resource_id,
-            node->u.copy.dst_resource_id, node->u.copy.byte_size);
+        _json_append(builder, "{ \"type\": \"%s\", \"src_resource_id\": ", _node_type_name(node->type));
+        _json_append_escaped_string(builder, node->u.copy.src_resource_id);
+        _json_append(builder, ", \"dst_resource_id\": ");
+        _json_append_escaped_string(builder, node->u.copy.dst_resource_id);
+        _json_append(builder, ", \"byte_size\": %" PRIu64 " }", node->u.copy.byte_size);
         break;
     case DVZ_FRAME_PLAN_NODE_READBACK:
-        _json_append(
-            builder, "{ \"type\": \"%s\", \"resource_id\": \"%s\", \"request_id\": \"%s\" }",
-            _node_type_name(node->type), node->u.readback.resource_id, node->u.readback.request_id);
+        _json_append(builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
+        _json_append_escaped_string(builder, node->u.readback.resource_id);
+        _json_append(builder, ", \"request_id\": ");
+        _json_append_escaped_string(builder, node->u.readback.request_id);
+        _json_append(builder, " }");
         break;
     case DVZ_FRAME_PLAN_NODE_NONE:
         _json_append(builder, "{ \"type\": \"none\" }");
@@ -610,10 +616,14 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         "{\n"
         "  \"frame_plan_schema\": \"0.1\",\n"
         "  \"frame_plan\": {\n"
-        "    \"figure_id\": \"%s\",\n"
+        "    \"figure_id\": ");
+    _json_append_escaped_string(&builder, plan->figure_id);
+    _json_append(
+        &builder,
+        ",\n"
         "    \"frame_index\": %" PRIu64 ",\n"
         "    \"nodes\": [\n",
-        plan->figure_id, plan->frame_index);
+        plan->frame_index);
 
     for (uint32_t i = 0; i < plan->count; i++)
     {

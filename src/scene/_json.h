@@ -63,6 +63,11 @@ static inline bool _json_ensure(JsonBuilder* builder, uint64_t extra)
         builder->failed = true;
         return false;
     }
+    if (extra > UINT64_MAX - 1 || builder->count > UINT64_MAX - extra - 1)
+    {
+        builder->failed = true;
+        return false;
+    }
     uint64_t required = builder->count + extra + 1;
     if (required <= builder->capacity)
         return true;
@@ -114,6 +119,69 @@ static inline void _json_append(JsonBuilder* builder, const char* fmt, ...)
         if (!_json_ensure(builder, wu))
             return;
     }
+}
+
+/* Append a JSON string with escaping for quotes, slashes, and control characters. */
+static inline void _json_append_escaped_string(JsonBuilder* builder, const char* value)
+{
+    if (builder->failed)
+        return;
+    if (value == NULL)
+    {
+        _json_append(builder, "null");
+        return;
+    }
+
+    if (!_json_ensure(builder, 1))
+        return;
+    builder->data[builder->count++] = '"';
+    builder->data[builder->count]   = '\0';
+
+    for (const unsigned char* p = (const unsigned char*)value; *p != '\0'; p++)
+    {
+        switch (*p)
+        {
+        case '"':
+            _json_append(builder, "\\\"");
+            break;
+        case '\\':
+            _json_append(builder, "\\\\");
+            break;
+        case '\b':
+            _json_append(builder, "\\b");
+            break;
+        case '\f':
+            _json_append(builder, "\\f");
+            break;
+        case '\n':
+            _json_append(builder, "\\n");
+            break;
+        case '\r':
+            _json_append(builder, "\\r");
+            break;
+        case '\t':
+            _json_append(builder, "\\t");
+            break;
+        default:
+            if (*p < 0x20)
+            {
+                _json_append(builder, "\\u%04x", (unsigned int)*p);
+            }
+            else
+            {
+                if (!_json_ensure(builder, 1))
+                    return;
+                builder->data[builder->count++] = (char)*p;
+                builder->data[builder->count]   = '\0';
+            }
+            break;
+        }
+    }
+
+    if (!_json_ensure(builder, 1))
+        return;
+    builder->data[builder->count++] = '"';
+    builder->data[builder->count]   = '\0';
 }
 
 /* Append base64-encoded bytes directly into the JSON string. */

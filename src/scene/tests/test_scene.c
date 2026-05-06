@@ -311,6 +311,35 @@ int test_frame_plan_growth_json(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("fig\"escape\\test", 1);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "buf\"x\\y", 0, 16, "tag\nline"));
+    AT(dvz_frame_plan_compute(plan, "shader\tkey", 1, 1, 1));
+    AT(dvz_frame_plan_compute_read(plan, "read\"id"));
+    AT(dvz_frame_plan_compute_write(plan, "write\\id"));
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"figure_id\": \"fig\\\"escape\\\\test\"") != NULL);
+    AT(strstr(json, "\"resource_id\": \"buf\\\"x\\\\y\"") != NULL);
+    AT(strstr(json, "\"data_tag\": \"tag\\nline\"") != NULL);
+    AT(strstr(json, "\"shader_key\": \"shader\\tkey\"") != NULL);
+    AT(strstr(json, "\"read\\\"id\"") != NULL);
+    AT(strstr(json, "\"write\\\\id\"") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1827,6 +1856,32 @@ int test_scene_json(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene_a = dvz_scene();
+    DvzScene* scene_b = dvz_scene();
+    ANN(scene_a);
+    ANN(scene_b);
+
+    DvzFigure* figure = dvz_figure(scene_a, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzVisual* foreign = dvz_point(scene_b, 0);
+    ANN(foreign);
+
+    AT(dvz_panel_add_visual(panel, foreign) == -1);
+
+    dvz_scene_destroy(scene_b);
+    dvz_scene_destroy(scene_a);
+    return 0;
+}
+
+
+
 int test_scene_point_emit(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -2319,6 +2374,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_capabilities_diagnostics);
     TEST_SIMPLE(test_frame_plan_static_render);
     TEST_SIMPLE(test_frame_plan_growth_json);
+    TEST_SIMPLE(test_frame_plan_json_escapes_labels);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
@@ -2326,6 +2382,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
     TEST_SIMPLE(test_scene_json);
+    TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_point_emit);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_second_emit_no_uploads_when_not_dirty);

@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_json.h"
+#include "_overflow.h"
 #include "_scene.h"
 
 
@@ -74,6 +75,27 @@ static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, u
 
 
 
+static bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index)
+{
+    ANN(out_index);
+    *out_index = 0;
+    if (figure == NULL || figure->scene == NULL || visual == NULL)
+        return false;
+    if (visual->scene != figure->scene)
+        return false;
+    for (uint32_t i = 0; i < figure->scene->visual_count; i++)
+    {
+        if (&figure->scene->visuals[i] == visual)
+        {
+            *out_index = i;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scene                                                                                        */
 /*************************************************************************************************/
@@ -81,8 +103,15 @@ static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, u
 DvzScene* dvz_scene(void)
 {
     DvzScene* scene = (DvzScene*)dvz_calloc(1, sizeof(DvzScene));
+    if (scene == NULL)
+        return NULL;
     dvz_capability_snapshot_default(&scene->caps);
     scene->emitter = dvz_frame_plan_emitter();
+    if (scene->emitter == NULL)
+    {
+        dvz_free(scene);
+        return NULL;
+    }
     return scene;
 }
 
@@ -97,7 +126,8 @@ void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* ca
 
 void dvz_scene_destroy(DvzScene* scene)
 {
-    ANN(scene);
+    if (scene == NULL)
+        return;
     /* Destroy all visuals first (free attribute data) */
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
@@ -141,7 +171,8 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
 
 void dvz_figure_destroy(DvzFigure* figure)
 {
-    ANN(figure);
+    if (figure == NULL)
+        return;
     /* Mark slot as empty */
     figure->scene = NULL;
 }
@@ -176,12 +207,6 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     if (plan == NULL)
         return NULL;
 
-    /* Resolve a visual pointer to its scene-global index via pointer arithmetic.
-       The visuals array is a contiguous slot pool owned by DvzScene, so this is
-       O(1) and avoids the previous O(scene_visuals) inner-loop scan. */
-    DvzVisual* visuals_base = figure->scene->visuals;
-    uint32_t scene_vc       = figure->scene->visual_count;
-
     /* --- Upload nodes: one per dirty visual attribute --- */
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
@@ -191,8 +216,9 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             DvzVisual* visual = panel->visuals[vi];
             if (visual == NULL || !visual->visible)
                 continue;
-            uint32_t vidx = (uint32_t)(visual - visuals_base);
-            if (vidx >= scene_vc)
+            /* Resolve visual membership by identity, avoiding cross-array pointer arithmetic. */
+            uint32_t vidx = 0;
+            if (!_figure_visual_index(figure, visual, &vidx))
                 continue; /* not from this scene */
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
@@ -228,8 +254,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             DvzVisual* visual = panel->visuals[vi];
             if (visual == NULL || !visual->visible)
                 continue;
-            uint32_t vidx = (uint32_t)(visual - visuals_base);
-            if (vidx >= scene_vc)
+            uint32_t vidx = 0;
+            if (!_figure_visual_index(figure, visual, &vidx))
                 continue;
             char visual_id[64];
             dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
@@ -307,7 +333,8 @@ DvzPanel* dvz_panel(DvzFigure* figure, DvzPanelDesc desc)
 
 void dvz_panel_destroy(DvzPanel* panel)
 {
-    ANN(panel);
+    if (panel == NULL)
+        return;
     panel->figure       = NULL;
     panel->visual_count = 0;
 }
@@ -317,6 +344,10 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual)
 {
     ANN(panel);
     ANN(visual);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return -1;
+    if (visual->scene != panel->figure->scene)
+        return -1;
     if (panel->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return -1;
     panel->visuals[panel->visual_count++] = visual;
@@ -331,7 +362,8 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual)
 
 void dvz_visual_destroy(DvzVisual* visual)
 {
-    ANN(visual);
+    if (visual == NULL)
+        return;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (visual->attrs[i].data != NULL)
@@ -369,7 +401,9 @@ int dvz_visual_set_data(
     if (attr == NULL)
         return -1;
 
-    uint64_t byte_size = (uint64_t)item_count * item_size;
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows(item_count, item_size, &byte_size))
+        return -1;
 
     /* Reallocate if total size changed */
     if (attr->data != NULL && attr->item_count != item_count)
@@ -419,11 +453,18 @@ int dvz_visual_set_data_range(
     /* The attribute must already be fully allocated */
     if (attr->data == NULL || attr->item_count == 0)
         return -1;
-    if ((uint64_t)first_item + item_count > attr->item_count)
+    uint64_t item_end = 0;
+    if (_dvz_add_u64_overflows(first_item, item_count, &item_end))
+        return -1;
+    if (item_end > attr->item_count)
         return -1;
 
-    uint64_t byte_offset = (uint64_t)first_item * item_size;
-    uint64_t byte_size   = (uint64_t)item_count * item_size;
+    uint64_t byte_offset = 0;
+    uint64_t byte_size   = 0;
+    if (_dvz_mul_u64_overflows(first_item, item_size, &byte_offset))
+        return -1;
+    if (_dvz_mul_u64_overflows(item_count, item_size, &byte_size))
+        return -1;
     dvz_memcpy((uint8_t*)attr->data + byte_offset, byte_size, data, byte_size);
 
     /* Extend dirty range to cover the new update */
@@ -434,8 +475,12 @@ int dvz_visual_set_data_range(
     }
     else
     {
-        uint64_t old_end = attr->dirty_first_item + attr->dirty_item_count;
-        uint64_t new_end = (uint64_t)first_item + item_count;
+        uint64_t old_end = 0;
+        uint64_t new_end = 0;
+        if (_dvz_add_u64_overflows(attr->dirty_first_item, attr->dirty_item_count, &old_end))
+            return -1;
+        if (_dvz_add_u64_overflows(first_item, item_count, &new_end))
+            return -1;
         uint64_t merged_first = attr->dirty_first_item < first_item
                                     ? attr->dirty_first_item
                                     : first_item;

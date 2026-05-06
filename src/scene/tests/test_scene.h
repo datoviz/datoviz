@@ -30,6 +30,8 @@ int test_frame_plan_static_render(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_growth_json(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_readbacks(TstSuite* suite, TstItem* item);
@@ -85,6 +87,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 
 
 int test_scene_json(TstSuite* suite, TstItem* item);
+
+int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit(TstSuite* suite, TstItem* item);
 

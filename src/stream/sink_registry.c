@@ -10,6 +10,7 @@
 
 #include "datoviz/stream.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,7 +44,17 @@ static bool stream_registry_reserve(DvzStreamSinkRegistry* registry, size_t capa
     size_t new_cap = (registry->capacity == 0) ? 4 : registry->capacity;
     while (new_cap < capacity)
     {
+        if (new_cap > SIZE_MAX / 2)
+        {
+            log_error("stream sink registry capacity overflow");
+            return false;
+        }
         new_cap *= 2;
+    }
+    if (new_cap > SIZE_MAX / sizeof(const DvzStreamSinkBackend*))
+    {
+        log_error("stream sink registry byte-size overflow");
+        return false;
     }
     const DvzStreamSinkBackend** ptr =
         (const DvzStreamSinkBackend**)dvz_realloc(registry->items, new_cap * sizeof(*ptr));

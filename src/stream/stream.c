@@ -10,6 +10,7 @@
 
 #include "datoviz/stream.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -79,7 +80,17 @@ static DvzStreamSink* stream_sink_slot(DvzStream* stream)
     ANN(stream);
     if (stream->sink_count == stream->sink_capacity)
     {
+        if (stream->sink_capacity > SIZE_MAX / 2)
+        {
+            log_error("frame sink array capacity overflow");
+            return NULL;
+        }
         size_t new_cap = stream->sink_capacity == 0 ? 2 : stream->sink_capacity * 2;
+        if (new_cap > SIZE_MAX / sizeof(DvzStreamSink))
+        {
+            log_error("frame sink array byte-size overflow");
+            return NULL;
+        }
         DvzStreamSink* sinks =
             (DvzStreamSink*)dvz_realloc(stream->sinks, new_cap * sizeof(DvzStreamSink));
         if (!sinks)
