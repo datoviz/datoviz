@@ -96,6 +96,12 @@ int test_scene_json(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 
+int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
+
+int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstItem* item);
+
+int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item);
+
 int test_scene_point_emit(TstSuite* suite, TstItem* item);
 
 int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item);
@@ -116,6 +122,8 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
 #endif

@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_json.h"
+#include "_log.h"
 #include "_overflow.h"
 #include "_scene.h"
 
@@ -31,6 +32,10 @@
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+static const char* _visual_type_name(DvzVisualType type);
+
+
 
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
 {
@@ -42,6 +47,22 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
     if (strcmp(name, "size") == 0)
         return sizeof(float);
     return 0;
+}
+
+
+
+static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size)
+{
+    ANN(name);
+    ANN(item_size);
+    *item_size = _attr_item_size(type, name);
+    if (*item_size != 0)
+        return true;
+
+    log_error(
+        "unsupported %s visual attribute '%s' (expected one of: position, color, size)",
+        _visual_type_name(type), name);
+    return false;
 }
 
 
@@ -71,6 +92,33 @@ static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, u
     dvz_strlcpy(attr->name, name, sizeof(attr->name));
     attr->item_size = item_size;
     return attr;
+}
+
+
+
+static bool _visual_attr_count_consistent(
+    const DvzVisual* visual, const char* attr_name, uint32_t item_count)
+{
+    ANN(visual);
+    ANN(attr_name);
+    if (item_count == 0)
+        return false;
+
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[i];
+        if (strcmp(attr->name, attr_name) == 0 || attr->item_count == 0 || attr->data == NULL)
+            continue;
+        if (attr->item_count == item_count)
+            continue;
+
+        log_error(
+            "%s visual attribute '%s' item_count %u does not match existing attribute '%s' "
+            "item_count %u",
+            _visual_type_name(visual->type), attr_name, item_count, attr->name, attr->item_count);
+        return false;
+    }
+    return true;
 }
 
 
@@ -394,19 +442,32 @@ int dvz_visual_set_data(
     ANN(attr_name);
     ANN(data);
     if (item_count == 0)
+    {
+        log_error("visual attribute '%s' requires item_count > 0", attr_name);
         return -1;
+    }
 
-    uint32_t item_size = _attr_item_size(visual->type, attr_name);
-    if (item_size == 0)
+    uint32_t item_size = 0;
+    if (!_attr_supported(visual->type, attr_name, &item_size))
+        return -1;
+    if (!_visual_attr_count_consistent(visual, attr_name, item_count))
         return -1;
 
     DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
     if (attr == NULL)
+    {
+        log_error("visual attribute '%s' could not be registered", attr_name);
         return -1;
+    }
 
     uint64_t byte_size = 0;
     if (_dvz_mul_u64_overflows(item_count, item_size, &byte_size))
+    {
+        log_error(
+            "visual attribute '%s' byte size overflow for item_count=%u item_size=%u", attr_name,
+            item_count, item_size);
         return -1;
+    }
 
     /* Reallocate if total size changed */
     if (attr->data != NULL && attr->item_count != item_count)
@@ -419,6 +480,9 @@ int dvz_visual_set_data(
         attr->data = dvz_malloc(byte_size);
         if (attr->data == NULL)
         {
+            log_error(
+                "visual attribute '%s' allocation failed for %" PRIu64 " bytes", attr_name,
+                byte_size);
             attr->item_count       = 0;
             attr->dirty_first_item = 0;
             attr->dirty_item_count = 0;
@@ -443,31 +507,63 @@ int dvz_visual_set_data_range(
     ANN(attr_name);
     ANN(data);
     if (item_count == 0)
+    {
+        log_error("visual attribute '%s' range update requires item_count > 0", attr_name);
         return -1;
+    }
 
-    uint32_t item_size = _attr_item_size(visual->type, attr_name);
-    if (item_size == 0)
+    uint32_t item_size = 0;
+    if (!_attr_supported(visual->type, attr_name, &item_size))
         return -1;
 
     DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
     if (attr == NULL)
+    {
+        log_error("visual attribute '%s' could not be registered", attr_name);
         return -1;
+    }
 
     /* The attribute must already be fully allocated */
     if (attr->data == NULL || attr->item_count == 0)
+    {
+        log_error(
+            "visual attribute '%s' range update requires prior full allocation with "
+            "dvz_visual_set_data()",
+            attr_name);
         return -1;
+    }
     uint64_t item_end = 0;
     if (_dvz_add_u64_overflows(first_item, item_count, &item_end))
+    {
+        log_error(
+            "visual attribute '%s' range update overflow for first_item=%u item_count=%u",
+            attr_name, first_item, item_count);
         return -1;
+    }
     if (item_end > attr->item_count)
+    {
+        log_error(
+            "visual attribute '%s' range update [%u, %" PRIu64 ") exceeds item_count %u",
+            attr_name, first_item, item_end, attr->item_count);
         return -1;
+    }
 
     uint64_t byte_offset = 0;
     uint64_t byte_size   = 0;
     if (_dvz_mul_u64_overflows(first_item, item_size, &byte_offset))
+    {
+        log_error(
+            "visual attribute '%s' byte offset overflow for first_item=%u item_size=%u", attr_name,
+            first_item, item_size);
         return -1;
+    }
     if (_dvz_mul_u64_overflows(item_count, item_size, &byte_size))
+    {
+        log_error(
+            "visual attribute '%s' byte size overflow for item_count=%u item_size=%u", attr_name,
+            item_count, item_size);
         return -1;
+    }
     dvz_memcpy((uint8_t*)attr->data + byte_offset, byte_size, data, byte_size);
 
     /* Extend dirty range to cover the new update */

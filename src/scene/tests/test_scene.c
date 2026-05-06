@@ -46,6 +46,21 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static bool _captured_log_contains(const TstSuite* suite, const char* needle)
+{
+    ANN(suite);
+    ANN(needle);
+    for (uint32_t i = 0; i < tst_log_capture_count(suite); i++)
+    {
+        const TstLogRecord* rec = tst_log_capture_get(suite, i);
+        if (rec != NULL && strstr(rec->message, needle) != NULL)
+            return true;
+    }
+    return false;
+}
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 typedef struct SceneCanvasDrawState SceneCanvasDrawState;
 
@@ -2072,6 +2087,78 @@ int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float opacity[2] = {0.25f, 0.75f};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "opacity", opacity, 2) == -1);
+    AT(_captured_log_contains(suite, "unsupported point visual attribute 'opacity'"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[2 * 3] = {
+        -0.25f, 0.00f, 0.0f,
+         0.25f, 0.00f, 0.0f,
+    };
+    DvzColor color = {255, 0, 0, 255};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "color", &color, 1) == -1);
+    AT(_captured_log_contains(suite, "item_count 1 does not match existing attribute 'position'"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float update[3] = {0.5f, 0.0f, 0.0f};
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data_range(visual, "position", update, 0, 1) == -1);
+    AT(_captured_log_contains(suite, "range update requires prior full allocation"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_emit(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -2401,6 +2488,92 @@ int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* it
     AT(yellow_counts[0] > 0);
     AT(yellow_counts[1] > 0);
 
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    AT(left != NULL);
+    AT(right != NULL);
+
+    DvzVisual* left_visual = dvz_point(scene, 0);
+    DvzVisual* right_visual = dvz_point(scene, 0);
+    AT(left_visual != NULL);
+    AT(right_visual != NULL);
+
+    float position[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor red = {255, 32, 32, 255};
+    DvzColor green = {32, 255, 32, 255};
+    float size = 24.0f;
+
+    AT(dvz_visual_set_data(left_visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(left_visual, "color", &red, 1) == 0);
+    AT(dvz_visual_set_data(left_visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(left, left_visual) == 0);
+
+    AT(dvz_visual_set_data(right_visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(right_visual, "color", &green, 1) == 0);
+    AT(dvz_visual_set_data(right_visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(right, right_visual) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_two_panel_points_light_both_halves skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 96);
+    AT(height == 64);
+
+    uint32_t left_red_count = 0;
+    uint32_t right_green_count = 0;
+    for (uint32_t y = 0; y < height; y++)
+    {
+        for (uint32_t x = 0; x < width; x++)
+        {
+            uint8_t* pixel = &rgba[4 * (y * width + x)];
+            if (x < width / 2 && pixel[0] > 150 && pixel[0] > pixel[1] + 40)
+                left_red_count++;
+            if (x >= width / 2 && pixel[1] > 150 && pixel[1] > pixel[0] + 40)
+                right_green_count++;
+        }
+    }
+    AT(left_red_count > 0);
+    AT(right_green_count > 0);
+
+    dvz_free(rgba);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
@@ -2978,6 +3151,9 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
+    TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
+    TEST_SIMPLE(test_scene_rejects_mismatched_point_attribute_counts);
+    TEST_SIMPLE(test_scene_rejects_range_update_without_full_allocation);
     TEST_SIMPLE(test_scene_point_emit);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
@@ -2999,6 +3175,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
+    TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);
 #endif
     TEST_SIMPLE(test_scene_point_large_count_executes);

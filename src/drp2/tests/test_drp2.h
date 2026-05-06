@@ -134,6 +134,8 @@ int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_frame_lifecycle_edge_cases(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstItem* item);
+
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_runtime_vklite_executes_resource_commands(TstSuite* suite, TstItem* item);
 

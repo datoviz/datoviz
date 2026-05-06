@@ -193,6 +193,10 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
 /**
  * Write attribute data to a visual.
  *
+ * Current point visuals accept the attributes `"position"` (vec3f), `"color"`
+ * (RGBA8), and `"size"` (float). All configured attributes on one visual must
+ * use the same item_count.
+ *
  * @param visual the visual
  * @param attr_name attribute name (family-specific, e.g. "position", "color")
  * @param data packed data array
@@ -206,8 +210,9 @@ DVZ_EXPORT int dvz_visual_set_data(DvzVisual* visual, const char* attr_name, con
 /**
  * Write a contiguous sub-range of attribute data to a visual.
  *
- * The attribute must already be fully allocated by a prior dvz_visual_set_data() call.
- * Only the items in [first_item, first_item + item_count) are uploaded on the next emit.
+ * The attribute must already be fully allocated by a prior
+ * dvz_visual_set_data() call. Only the items in
+ * [first_item, first_item + item_count) are uploaded on the next emit.
  *
  * @param visual the visual
  * @param attr_name attribute name

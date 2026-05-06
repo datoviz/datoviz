@@ -39,6 +39,21 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+static bool _captured_log_contains(const TstSuite* suite, const char* needle)
+{
+    ANN(suite);
+    ANN(needle);
+    for (uint32_t i = 0; i < tst_log_capture_count(suite); i++)
+    {
+        const TstLogRecord* rec = tst_log_capture_get(suite, i);
+        if (rec != NULL && strstr(rec->message, needle) != NULL)
+            return true;
+    }
+    return false;
+}
+
+
+
 #if DVZ_DRP2_HAS_VKLITE
 /**
  * Probe whether the current runtime can create a Vulkan instance for DRP2 vklite execution tests.
@@ -1756,6 +1771,68 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* it
 
 
 
+int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn(
+            "DRP2 vklite out-of-range download test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, 32,
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ |
+            DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    AT(dvz_drp2_stream_write_buffer(stream, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    uint8_t downloaded[16] = {0};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_runtime_download_buffer(runtime, 1, 24, 12, downloaded));
+    AT(_captured_log_contains(suite, "runtime buffer download [24, 36) exceeds buffer 1 size 32"));
+
+    uint8_t expected[16] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 0, 16, downloaded));
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        AT(downloaded[i] == expected[i]);
+    }
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_vklite_writes_texture_contents(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2561,6 +2638,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
     TEST_SIMPLE(test_drp2_runtime_frame_target_validation);
     TEST_SIMPLE(test_drp2_runtime_frame_lifecycle_edge_cases);
+    TEST_SIMPLE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_payload_executes);
     TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);

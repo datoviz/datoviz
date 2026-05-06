@@ -3851,6 +3851,20 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
     Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, buffer_id);
     if (object == NULL || object->buffer == NULL)
         return false;
+    if (runtime->semantic_state == NULL)
+        return false;
+
+    Drp2Object* semantic = _find_any_object(runtime->semantic_state, buffer_id);
+    if (semantic == NULL || semantic->kind != DRP2_OBJECT_BUFFER)
+        return false;
+    if (_range_overflows(offset, size, semantic->size))
+    {
+        log_error(
+            "runtime buffer download [%" PRIu64 ", %" PRIu64 ") exceeds buffer %" PRIu64
+            " size %" PRIu64,
+            offset, offset + size, buffer_id, semantic->size);
+        return false;
+    }
 
     dvz_buffer_download(object->buffer, offset, size, data);
     return true;
