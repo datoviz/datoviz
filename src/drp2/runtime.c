@@ -627,10 +627,9 @@ static DvzDrp2ValidationResult _validate_create_texture(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     if (_find_any_object(state, id) != NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (_add_object(state, id, DRP2_OBJECT_TEXTURE) == NULL)
+    Drp2Object* object = _add_object(state, id, DRP2_OBJECT_TEXTURE);
+    if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    Drp2Object* object = _find_object(state, id);
-    ANN(object);
     object->width  = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     object->depth  = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
@@ -829,10 +828,9 @@ static DvzDrp2ValidationResult _validate_create_bind_group_layout(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     if (_find_any_object(state, id) != NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (_add_object(state, id, DRP2_OBJECT_BIND_GROUP_LAYOUT) == NULL)
+    Drp2Object* object = _add_object(state, id, DRP2_OBJECT_BIND_GROUP_LAYOUT);
+    if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    Drp2Object* object = _find_object(state, id);
-    ANN(object);
     object->storage_buffers = command->u.create_bind_group_layout.storage_buffers;
     return _ok();
 }

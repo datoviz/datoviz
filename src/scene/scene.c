@@ -176,6 +176,12 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     if (plan == NULL)
         return NULL;
 
+    /* Resolve a visual pointer to its scene-global index via pointer arithmetic.
+       The visuals array is a contiguous slot pool owned by DvzScene, so this is
+       O(1) and avoids the previous O(scene_visuals) inner-loop scan. */
+    DvzVisual* visuals_base = figure->scene->visuals;
+    uint32_t scene_vc       = figure->scene->visual_count;
+
     /* --- Upload nodes: one per dirty visual attribute --- */
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
@@ -185,28 +191,21 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             DvzVisual* visual = panel->visuals[vi];
             if (visual == NULL || !visual->visible)
                 continue;
+            uint32_t vidx = (uint32_t)(visual - visuals_base);
+            if (vidx >= scene_vc)
+                continue; /* not from this scene */
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 DvzVisualAttr* attr = &visual->attrs[ai];
                 if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
                     continue;
                 char resource_id[128];
-                uint32_t vidx = 0;
-                for (uint32_t k = 0; k < figure->scene->visual_count; k++)
-                {
-                    if (&figure->scene->visuals[k] == visual)
-                    {
-                        vidx = k;
-                        break;
-                    }
-                }
                 dvz_snprintf(resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
                 uint64_t byte_offset =
                     (uint64_t)attr->dirty_first_item * attr->item_size;
                 uint64_t byte_size =
                     (uint64_t)attr->dirty_item_count * attr->item_size;
-                const void* data_ptr =
-                    (const uint8_t*)attr->data + byte_offset;
+                const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
                 dvz_frame_plan_upload_bytes(
                     plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
             }
@@ -229,15 +228,9 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             DvzVisual* visual = panel->visuals[vi];
             if (visual == NULL || !visual->visible)
                 continue;
-            uint32_t vidx = 0;
-            for (uint32_t k = 0; k < figure->scene->visual_count; k++)
-            {
-                if (&figure->scene->visuals[k] == visual)
-                {
-                    vidx = k;
-                    break;
-                }
-            }
+            uint32_t vidx = (uint32_t)(visual - visuals_base);
+            if (vidx >= scene_vc)
+                continue;
             char visual_id[64];
             dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
             dvz_frame_plan_render_visual(plan, visual_id);
