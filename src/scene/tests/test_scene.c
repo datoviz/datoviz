@@ -2303,6 +2303,67 @@ int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, Tst
 
 
 
+static int
+test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(visual->scene == scene);
+    AT(visual->attr_count == 3);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+        AT(visual->attrs[i].data != NULL);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(scene->outstanding_emitted_streams == 1);
+
+    tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
+    dvz_visual_destroy(visual);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(_captured_log_contains(suite, "cannot destroy scene-owned visual data while an emitted stream is still live"));
+    AT(scene->outstanding_emitted_streams == 1);
+    AT(visual->scene == scene);
+    AT(visual->attr_count == 3);
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+        AT(visual->attrs[i].data != NULL);
+
+    dvz_drp2_stream_destroy(stream);
+    AT(scene->outstanding_emitted_streams == 0);
+
+    dvz_visual_destroy(visual);
+    AT(visual->scene == NULL);
+    AT(visual->attr_count == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3355,6 +3416,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_mutation_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_rejects_range_mutation_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_rejects_destroy_while_emitted_stream_is_live);
+    TEST_SIMPLE(test_scene_rejects_visual_destroy_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_live_stream_count_tracks_multiple_emits);
     TEST_SIMPLE(test_scene_point_emit);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
