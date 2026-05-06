@@ -90,10 +90,16 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item);
 
+int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* item);
+
+int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item);
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
 #endif
 
 int test_scene(TstSuite* suite);
