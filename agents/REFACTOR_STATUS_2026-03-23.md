@@ -3,6 +3,25 @@
 This note is a re-entry summary for the current `v0.4-dev` branch after the February-March 2026
 refactor burst.
 
+> **Historical note:** this file is a March checkpoint. For current May 2026 execution guidance,
+> start with [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md).
+
+
+## May 2026 Addendum
+
+Since this snapshot, the branch has moved beyond low-level stabilization:
+
+1. `drp2` and `scene` are now active default-build modules.
+2. The first scene -> frame-plan -> DRP2 -> vklite/runtime -> canvas/stream vertical slice has
+   landed and is recorded in
+   [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md).
+3. A focused safety pass for DRP2/scene lifetime and borrowed-frame behavior is recorded in
+   [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md).
+4. The low-level `vk`/`vklite` cleanup notes remain useful background, but they are no longer the
+   default active plan.
+5. The current best next work is to harden the point-only scene path, add the next minimal visual
+   families with tests/examples, and keep the DRP2 executable contract aligned with implementation.
+
 
 ## Snapshot
 
@@ -96,7 +115,7 @@ Main period: `2026-02-18` to `2026-02-20`
 
 Key outcomes:
 
-- [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) records the current contract.
+- [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) records the current contract.
 - `proto` was removed from the active tree and replaced in tests by explicit fixture helpers.
 - The old bootstrap helper has now been removed and replaced by `gpu_ctx`.
 - `surface` and `swapchain` were refactored around more opaque public handles/accessors.
@@ -263,7 +282,7 @@ Status: active and materially further along than older notes imply
 Recommended order:
 
 1. Finish the remaining `vk`/`vklite` ownership-boundary work from
-   [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md), starting with the items
+   [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md), starting with the items
    already listed there:
    - keep `DvzBarriers` intentionally public as a builder/config type
    - verify no remaining `vklite` public structs are accidental ownership leaks
@@ -297,7 +316,7 @@ Recommended order:
 If resuming work now, the shortest sensible sequence is:
 
 1. Read [OWNERSHIP.md](/home/cyrille/GIT/Viz/datoviz/agents/done/OWNERSHIP.md)
-2. Read [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
+2. Read [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md)
 3. Inspect `testing/CMakeLists.txt`, `src/CMakeLists.txt`, and current `include/datoviz/vklite/*.h`
 4. Run:
    - `just build`

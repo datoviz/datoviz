@@ -7,44 +7,38 @@ This directory is organized by lifecycle state rather than by topic.
 
 Active execution surface:
 
-1. [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
-2. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
+1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
+2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
 Current status:
 
-1. The active low-level graphics stack is green on this machine:
-   - `just build` passed on `2026-03-23`
-   - `just test` passed on `2026-03-23` with `146/146` tests passing
-2. The active boundary-cleanup pass is effectively complete for the current low-level surface.
-3. The highest-value next work is naming/lifecycle consistency across the active low-level modules.
-4. DRP2 now also has an executable spec/fixture lane; treat
-   [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) as current if you are
-   working under `spec/drp2/` rather than in the low-level runtime.
-5. The active higher-level implementation plan is
-   [now/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_IMPLEMENTATION.md).
+1. The low-level graphics stack cleanup has moved from active plan to completed context. The useful
+   phase records live under `agents/done/`.
+2. `drp2` and `scene` are active default-build modules. The first scene -> DRP2 -> vklite/canvas
+   vertical slice exists, with focused tests and basic C examples.
+3. The highest-value next work is to make that vertical slice less toy-like without broadening the
+   architecture prematurely: more visuals, better examples, runtime/frame-target hardening, and
+   focused validation.
+4. The DRP2 spec/fixture lane remains active and should stay aligned with implementation changes.
 
 
 ## Start Here
 
 If resuming work on the branch:
 
-1. Read [REFACTOR_STATUS_2026-03-23.md](/home/cyrille/GIT/Viz/datoviz/agents/REFACTOR_STATUS_2026-03-23.md)
-2. Read [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
-3. Read [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md) for the
-   predecessor boundary-cleanup record
-4. Optionally read [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) if you
-   want to continue packaging/CI cleanup after the boundary work
-5. When the branch is ready to start higher-level implementation work, read
-   [now/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_IMPLEMENTATION.md)
-6. For DRP2 contract details, read
-   [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
-   - this is no longer only a planning note; it now records the active DRP2 executable contract and
-     fixture contract
-7. For higher-level implementation preflight context, read the applied decision log in
-   [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
-8. Treat
-   [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
-   as strategic backlog, not as the default next-task list
+1. Read [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
+2. Read [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) if touching
+   `spec/drp2/`, `src/drp2/`, or DRP2-emitting scene code.
+3. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+   for the completed first vertical slice.
+4. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+   before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
+5. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+   [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
+   only when a task touches low-level ownership or naming contracts.
+6. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+   and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
+   next-task list.
 
 
 ## Directory Layout
@@ -53,11 +47,8 @@ If resuming work on the branch:
 
 Files in this directory are actionable today and should stay short enough to drive real execution.
 
-1. [now/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/now/LOW_LEVEL_CONSISTENCY.md)
-2. [now/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md)
-3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
-4. [now/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_IMPLEMENTATION.md)
-5. [now/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_DRP2_SPEC_DECISIONS.md)
+1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
+2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
 ### `done/`
 
@@ -70,6 +61,11 @@ current execution plans.
 4. [done/OWNERSHIP.md](/home/cyrille/GIT/Viz/datoviz/agents/done/OWNERSHIP.md)
 5. [done/PRESENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/PRESENTATION.md)
 6. [done/PROTO_FIXTURE_MIGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/PROTO_FIXTURE_MIGRATION.md)
+7. [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md)
+8. [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
+9. [done/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_SPEC_DECISIONS.md)
+10. [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+11. [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 
 ### `later/`
 

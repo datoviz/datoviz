@@ -11,7 +11,8 @@ It replaces older v0.3-era descriptions and focuses on what is currently built, 
 - Modular implementation through per-module object libraries.
 - Clear separation between public headers (`include/datoviz`) and internal implementation (`src`).
 - Unified test runner (`dvztest`) for all active modules.
-- Incremental stabilization of the active graphics stack before bringing higher layers online.
+- Incremental stabilization of the active graphics stack while bringing higher layers online through
+  DRP2 rather than backend-specific shortcuts.
 
 
 ## Repository layout
@@ -40,10 +41,12 @@ The root source build (`src/CMakeLists.txt`) currently brings these modules into
 - `video`
 - `vk`
 - `vklite`
+- `drp2`
+- `scene`
 
 These are added as subdirectories and linked into the shared target as object-library components.
 
-Scaffolding modules (for example `color`, `wasm`, and higher-level renderer/scene/client layers) exist but are
+Scaffolding modules (for example `color`, `wasm`, text/gui, and broader renderer/client layers) exist but are
 not part of the active v0.4-dev link surface unless explicitly activated.
 
 
@@ -54,6 +57,8 @@ Datoviz uses:
 - One shared target: `datoviz`
 - One object library per module: `datoviz_<module>`
 - One shared Vulkan entry-point provider: `datoviz_volk`
+- Optional layer shared targets for narrower linking, including `datoviz_core`, `datoviz_vk`, and
+  `datoviz_canvas`
 
 Compile definitions are centralized in `DVZ_COMPILE_DEFINITIONS` and propagated across source and test targets.
 This includes OS/compiler feature flags, validation toggles, and Vulkan configuration (`VK_NO_PROTOTYPES`).
@@ -81,6 +86,15 @@ At runtime, the active rendering path is:
 6. `vk` provides lower-level Vulkan bootstrap/device/queue/memory primitives.
 7. `vklite` provides higher-level wrappers for commands, buffers, images, descriptors, graphics, compute,
    rendering, swapchain, and synchronization.
+
+The active higher-level path is:
+
+1. `scene` owns user-facing scene objects, capability snapshots, diagnostics, and frame plans.
+2. `scene` emits `DvzDrp2CommandStream` objects.
+3. `drp2` validates and executes command streams.
+4. The native `drp2` runtime maps commands to `vklite`.
+5. When rendering through canvas, the runtime records into a borrowed `DvzStreamFrame` target supplied by
+   the canvas draw callback.
 
 
 ## Canvas rendering surface area
@@ -139,11 +153,23 @@ Internally, canvas renders into an offscreen image, then copies/blits to the swa
 ## Test architecture
 
 - Unified test executable: `dvztest` (`testing/dvztest.c`)
+- Focused test executables include `dvztest_core`, `dvztest_drp2`, `dvztest_scene`, `dvztest_vk`,
+  `dvztest_canvas`, and `dvztest_integration` when their target dependencies are enabled.
 - Module tests under: `src/<module>/tests/`
 - Test framework: `testing/testing.h` and `testing/testing.cpp`
 - Interactive canvas smoke app: `dvz_live_canvas` (`testing/dvz_live_canvas.c`)
 
 The runner composes module test suites into one process and supports optional filtering by name/tag.
+
+
+## Active examples
+
+The C examples intentionally cover different layers:
+
+- `examples/c/hello_point.c`: minimal high-level scene + app path.
+- `examples/c/hello_scatter.c`: point visual with non-trivial per-item arrays.
+- `examples/c/raw_triangle.c`: vklite commands recorded into a `DvzCanvas` frame callback.
+- `examples/c/raw_triangle_drp2.c`: hand-written DRP2 command stream executed by the native runtime.
 
 
 ## Planned Python binding architecture
@@ -196,7 +222,8 @@ See `spec/scene/IMPLEMENTATION_BRIDGE.md` for the full design rationale.
 
 ## Current status and direction
 
-- Core active modules above are the stabilization focus for v0.4-dev.
-- Graphics-path modules (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`) are under active iteration.
-- Non-activated higher-level systems remain scaffolded until explicitly brought online.
-
+- Core and graphics-path modules are now the foundation rather than the only active work.
+- `drp2` and `scene` are active default-build modules with a first vertical slice in place.
+- Near-term development should harden the point-only scene path, add the next minimal visual families
+  (triangle/mesh, then image/texture), keep examples current, and preserve the runtime boundary:
+  scene emits DRP2; DRP2 runtime executes through vklite/canvas; scene does not own backend lifecycles.

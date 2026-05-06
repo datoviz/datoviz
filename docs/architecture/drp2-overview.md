@@ -1,7 +1,6 @@
 # DRP2 Overview
 
-DRP2 is the intended contract between future high-level Datoviz producers and future rendering
-runtimes.
+DRP2 is the active contract between high-level Datoviz producers and rendering runtimes.
 
 The architectural point is simple:
 
@@ -21,8 +20,8 @@ contract.
 
 ## Why DRP2 Exists
 
-The current low-level stack is native and Vulkan-centered.
-That is the right place to finish correctness and lifecycle cleanup first.
+The current low-level stack is native and Vulkan-centered, but higher-level code now targets DRP2
+instead of directly targeting that low-level stack.
 
 But higher-level Datoviz layers need a future-facing boundary that:
 
@@ -46,29 +45,32 @@ The main failure mode to avoid is over-designing the protocol around every futur
 
 ## Current Status
 
-DRP2 is no longer only a design direction.
+DRP2 is no longer only a design direction or fixture lane.
 
-The current spec now includes:
+The current source tree now includes:
 
 1. a human-readable Layer 1 contract,
 2. command, lifetime, error, and capability documents,
 3. machine-readable schemas,
-4. executable conformance fixtures.
+4. executable conformance fixtures,
+5. a C command-stream implementation in `src/drp2`,
+6. semantic validation and a native vklite-backed runtime,
+7. tests that exercise resource commands, render passes, texture copies, sampling, readback, and
+   object-table growth.
 
 That makes DRP2 an active contract-definition surface rather than a vague future interface.
 
 
 ## Relationship To Current Work
 
-The current branch priority remains low-level `vk`/`vklite`/`canvas` cleanup.
-DRP2 work can proceed in parallel at the spec level, but it should not force premature abstraction
-freezes into the active low-level code.
+The current branch priority is hardening the active scene -> DRP2 -> vklite/canvas vertical slice.
+DRP2 should remain narrow and executable: implementation changes that alter contract semantics should
+update prose, schemas, fixtures, and focused tests together.
 
 
 ## Relationship To Scene
 
-The future scene layer is expected to consume DRP2 through a runtime-facing boundary, not through
-backend internals.
+The scene layer consumes DRP2 through a runtime-facing boundary, not through backend internals.
 
 The current scene source of truth is
 [spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md).

@@ -1,6 +1,7 @@
 # Spec Index
 
-This directory contains normative design material for features that are not yet fully implemented.
+This directory contains normative design material for v0.4 contracts and features, including some
+surfaces that now have partial implementations.
 
 Use `spec/` for contracts that should drive implementation and tests.
 Do not use it for execution planning or broad architecture essays.
@@ -9,7 +10,7 @@ Do not use it for execution planning or broad architecture essays.
 ## Layout
 
 - `drp2/`: backend-agnostic rendering protocol contract, schemas, and fixtures
-- `scene/`: future scene-layer requirements and consumer-side object model
+- `scene/`: scene-layer requirements and consumer-side object model
 
 
 ## Rules

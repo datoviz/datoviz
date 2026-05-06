@@ -1,11 +1,11 @@
 > **Execution Status**
 > - **Status:** `ACTIVE SPEC / FIXTURE CONTRACT`
-> - **Updated on:** `2026-04-28`
+> - **Updated on:** `2026-05-06`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
 >   proceeds.
-> - **Current branch priority:** The low-level graphics stack remains the main code priority, but
->   the DRP2 spec/fixture lane is now real, runnable, and worth keeping current because it has
->   become an executable contract rather than a planning note.
+> - **Current branch priority:** DRP2 is now both an executable spec lane and an active C
+>   implementation/runtime lane. Keep prose, schemas, fixtures, stream code, runtime behavior, and
+>   scene emitters aligned.
 
 # DRP2 Spec Phase
 
@@ -20,7 +20,7 @@ browser runtime, without coupling the contract to Vulkan internals.
 
 ## Current Status
 
-The DRP2 spec is no longer just an outline.
+The DRP2 spec is no longer just an outline, and DRP2 is no longer spec-only.
 
 What is now in place:
 
@@ -31,6 +31,9 @@ What is now in place:
 5. fixture format, fixture schema, and runner contract under `spec/drp2/fixtures/`
 6. a runnable Python validator in `tools/drp2_fixture_runner.py`
 7. an active conformance corpus exercised by `just spec-check`
+8. a C command-stream and JSON/debug serialization implementation in `src/drp2`
+9. semantic validation plus a native vklite-backed runtime
+10. scene pressure fixtures emitted from C and tested against committed JSON
 
 Active DRP2 `2.0` surface now includes:
 
@@ -106,8 +109,9 @@ Current executable DRP2 corpus status:
 
 ## Implementation Plan
 
-Implementation sequencing is tracked in
-`agents/now/SCENE_DRP2_IMPLEMENTATION.md`.
+The first implementation sequencing plan is complete and recorded in
+`agents/done/SCENE_DRP2_IMPLEMENTATION.md`. Current implementation sequencing is tracked in
+`agents/now/V0_4_NEXT_STEPS.md`.
 
 Keep this file focused on the active DRP2 contract and fixture lane. Do not duplicate module
 bring-up order here.

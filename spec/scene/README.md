@@ -1,6 +1,6 @@
 # Scene Spec
 
-This directory defines the future scene layer as a consumer of DRP2, not as a backend runtime.
+This directory defines the scene layer as a consumer of DRP2, not as a backend runtime.
 
 The scene layer should remain pure high-level logic:
 
@@ -12,9 +12,15 @@ The scene layer should remain pure high-level logic:
 
 ## Status
 
-- Status: planning only
-- Implementation priority: after the DRP2 contract is frozen enough to avoid churn
+- Status: active specification with a first implementation slice in `src/scene`
+- Implementation priority: harden the point-only scene path, then add minimal mesh/triangle and
+  image/texture visuals with tests and examples
 - Primary constraint: do not let scene design leak backend details into its public API
+
+Current source implementation is intentionally smaller than this spec. It includes scene/figure/panel
+objects, point visuals, capability snapshots, diagnostic reports, frame plans, DRP2 emission, and an
+early scene/app/offscreen path. Treat broader sections of this spec as design pressure and direction,
+not as a claim that all families and interactions are already implemented.
 
 
 ## Relationship To The DRP2 Spec

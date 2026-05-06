@@ -11,10 +11,14 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 
 ## Status
 
-- Status: **active 2.0 contract** — command surface, schemas, and fixture corpus are stable and growing toward a release
+- Status: **active 2.0 contract plus native implementation slice** — command surface, schemas,
+  fixture corpus, C command streams, validation, and the vklite runtime are stable enough for
+  incremental scene work
 - Conformance: Level 1 (validation) mechanically verified; Level 2 (execution) prose commitment; Level 3 (output) deferred to `2.1`
-- Build integration: fixture validation available through the Python runner
-- Implementation priority: after the current `vk`/`vklite` boundary cleanup is sufficiently stable
+- Build integration: fixture validation available through the Python runner; focused C tests available
+  through `just test drp2`
+- Implementation priority: harden the active scene -> DRP2 -> runtime slice and keep fixtures aligned
+  with implementation behavior
 
 
 ## Recommended Reading Order

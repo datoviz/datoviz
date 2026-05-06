@@ -1,6 +1,6 @@
 # Scene Overview
 
-The future scene layer should be a pure high-level consumer of DRP2.
+The scene layer should remain a pure high-level consumer of DRP2.
 
 It should own user-facing visualization state and convert that state into a frame plan and DRP2
 commands, without knowing how Vulkan or WebGPU implement those commands internally.
@@ -16,9 +16,10 @@ indexes.
 
 Current branch status:
 
-1. scene remains planning-only,
-2. the scene spec is now materially broader than this overview alone,
-3. implementation should still follow the DRP2/runtime boundary rather than the current low-level
+1. scene is now an active default-build module with a first implementation slice,
+2. the current implementation covers scene/figure/panel/point visual basics, capability snapshots,
+   diagnostics, frame plans, DRP2 emission, and an app/offscreen path,
+3. implementation should continue to follow the DRP2/runtime boundary rather than the low-level
    Vulkan stack directly.
 
 
@@ -72,16 +73,28 @@ This means the scene layer is no longer just:
 It is now a broader producer-side semantic layer with explicit planning, validation, and fallback
 policy.
 
+In source, the current implementation is intentionally much smaller than the full spec. It includes:
+
+1. `include/datoviz/scene.h` and `include/datoviz/scene/*` public draft headers,
+2. `src/scene/scene.c` for scene graph lifecycle and the point visual,
+3. `src/scene/frame_plan.c` for frame-plan construction and JSON/debug serialization,
+4. `src/scene/converter.c` for frame-plan to DRP2 emission,
+5. `src/scene/app.c` for the early scene/app/offscreen convenience path,
+6. focused tests in `src/scene/tests/test_scene.c`,
+7. C examples `hello_point.c` and `hello_scatter.c`.
+
 
 ## Sequencing
 
-The correct order is:
+The correct near-term order is:
 
-1. finish stabilizing the current low-level layers enough to understand the durable backend boundary,
+1. harden the existing point-only scene path across repeated updates, multiple panels, multiple visuals,
+   diagnostics, and offscreen capture,
 2. keep the DRP2 contract and runtime boundary as the source of truth for scene dependencies,
-3. continue refining scene semantics in `spec/scene/`,
-4. only then start bringing up the real scene implementation against the stabilized DRP2/runtime
-   surface.
+3. add the next minimal visual family, likely triangle/mesh, with tests and a C example,
+4. add a minimal image/texture visual after mesh to pressure-test texture upload, samplers, views, and
+   bind groups,
+5. continue refining scene semantics in `spec/scene/` as implementation reveals concrete needs.
 
-Trying to implement the scene layer before the DRP2 boundary is stable would very likely lock the
-project into the wrong abstractions.
+Avoid broad scene API growth before each new visual family has tests, an example, and a clear DRP2
+emission/runtime story.

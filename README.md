@@ -74,16 +74,27 @@ VTK is a powerful, heavyweight toolkit for 3D visualization, simulation, and sci
 
 
 
-## 🕐 Current status [July 2025]
+## 🕐 Current status [May 2026]
 
-**The current version is v0.3.x**
-This release introduces major updates over v0.2, including 2D axes and a new Pythonic API.
+**The latest released version remains v0.3.x.**
+The active development branch is the v0.4 refactor. It is rebuilding the C core around modular
+targets, the Vulkan/vklite/canvas runtime stack, and a new scene -> DRP2 -> runtime path. That v0.4
+API is still experimental and may change aggressively before release.
 
 
 
 ## 🕐 Roadmap
 
-Looking ahead, the upcoming v0.4 release (2026) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
+The upcoming v0.4 release focuses on foundational improvements to the low-level engine and the first
+backend-agnostic rendering path. Current development priorities are:
+
+* 🧱 Modular C library architecture with focused build/test targets
+* 🎛️ Hardened Vulkan/vklite/canvas/stream runtime boundaries
+* 🔁 DRP2 command streams as the backend-agnostic rendering contract
+* 🧩 First scene-to-DRP2 implementation path with C examples
+* 🧪 Executable DRP2 fixtures and focused `drp2`/`scene` tests
+
+These foundations are intended to support the following later features:
 
 * 🧊 Correct transparency in 3D mesh and volume rendering
 * ✨ Multisample anti-aliasing (MSAA)

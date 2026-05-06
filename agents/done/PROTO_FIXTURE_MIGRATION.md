@@ -30,7 +30,7 @@ Replace the internal `proto` test helper with explicitly named fixture helpers t
 2. Offscreen render-target / command / screenshot infrastructure
 
 The replacement should improve naming, make test intent clearer, and finish the remaining `proto`
-boundary cleanup tracked in [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VK_REFACTOR.md).
+boundary cleanup tracked in [VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md).
 
 
 ## Why this change

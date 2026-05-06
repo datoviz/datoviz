@@ -23,24 +23,29 @@ maintainability.
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
 
-### Validated snapshot (2026-03-23)
+### Current branch snapshot (2026-05-06)
 
-* `just build` passed on this machine on `2026-03-23`.
-* `just test` passed on this machine on `2026-03-23` with `141/141` tests passing.
-* The active low-level graphics stack is currently green; the main remaining refactor frontier is
-  `vk`/`vklite` public-boundary and lifecycle cleanup, especially across `vklite`.
-* For the most recent branch re-entry summary and execution guidance, start with
-  `agents/REFACTOR_STATUS_2026-03-23.md` and `agents/now/VK_REFACTOR.md`.
+* The low-level graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`) has completed
+  its main ownership/boundary cleanup pass and remains the runtime foundation for v0.4.
+* `drp2` and `scene` are now active v0.4 modules, not future scaffolding. The first vertical slice
+  exists: scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream frame
+  execution, with focused tests and basic C examples.
+* Current focused validation on `2026-05-06`: `just spec-check` passed with `119/119` DRP2 fixtures
+  and `52` fixture-runner tests; `just test drp2` passed `73/73`; `just test scene` passed `34/34`.
+  The most recent recorded full-suite validation was on `2026-04-30` with `244/244` tests passing.
+* For the current execution summary and next-step guidance, start with
+  `agents/now/V0_4_NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
 
 ### 🏗️ Current refactor status (v0.4-dev)
 
 * ✅ Active modules currently linked into `libdatoviz` are: `common`, `ds`, `fileio`, `math`, `thread`,
-  `input`, `window`, `canvas`, `stream`, `video`, `vk`, and `vklite`.
-* ✅ The active low-level graphics stack is currently building and testing cleanly on this machine.
-* 🚧 The highest-value remaining refactor work is `vk`/`vklite` boundary hardening and lifecycle
-  cleanup; `vklite` is the main active frontier.
-* ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, and higher-level
-  renderer/scene/client layers); keep them untouched unless explicitly requested.
+  `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, and `scene`.
+* ✅ The active low-level graphics stack is the stable foundation; use it rather than creating a
+  parallel presentation, frame-stream, or Vulkan wrapper path.
+* 🚧 The highest-value remaining work has moved up a layer: harden the scene -> DRP2 -> runtime path,
+  expand the minimal point-only scene surface, and keep examples/tests in lockstep with that path.
+* ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, text/gui,
+  and richer renderer/client layers); keep them untouched unless explicitly requested.
 
 ---
 
@@ -54,8 +59,8 @@ datoviz/
 ├── include/                    # Public headers (installed)
 │   └── datoviz/
 │       ├── datoviz.h           # Umbrella header
-│       ├── axes.h, color.h, common.h, ds.h, fileio.h, math.h, renderer.h, visuals.h, vk.h ...
-│       ├── axes/…, canvas/…, color/…, common/…, ds/…, math/…, thread/… # Sub-headers per module
+│       ├── app.h, canvas.h, common.h, drp2.h, ds.h, fileio.h, scene.h, stream.h, vk.h ...
+│       ├── canvas/…, common/…, drp2/…, ds/…, math/…, scene/…, thread/…, vk/…, vklite/…
 │       └── (additional module directories exist; many are stubs for upcoming work)
 │
 ├── src/                        # Internal implementation (not installed)
@@ -80,6 +85,8 @@ datoviz/
 │   ├── video/                  # Video encoder backends and sink
 │   ├── vk/                     # Vulkan backend (core Vulkan helpers)
 │   ├── vklite/                 # Higher-level Vulkan convenience layer
+│   ├── drp2/                   # Backend-agnostic rendering protocol stream + runtime
+│   ├── scene/                  # Early scene graph, frame-plan, app, and DRP2 emitter
 │   ├── empty.c                 # Keeps the shared library non-empty
 │   └── CMakeLists.txt          # Collects object modules into libdatoviz
 │       (additional module folders exist; some are placeholders)
@@ -94,16 +101,18 @@ datoviz/
 └── CMakeLists.txt              # Root build definition
 ```
 
-Modules currently compiled into `libdatoviz`: **`common`, `ds`, `fileio`, `math`, `thread`, `input`,
-`window`, `canvas`, `stream`, `video`, `vk`, `vklite`**. Modules such as `color`/`wasm` are currently
-not linked and should remain untouched unless explicitly requested.
+Modules currently compiled into `libdatoviz` when the default build options are on: **`common`, `ds`,
+`fileio`, `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`,
+and `scene`**. Modules such as `color`/`wasm` remain inactive scaffolding and should stay untouched
+unless explicitly requested.
 
 ### ⏩ Planned activation order
 
-1. Finish the remaining `vk`/`vklite` ownership-boundary and lifecycle cleanup, with emphasis on
-   `vklite` public-struct hardening and accessor-driven APIs.
-2. Keep non-activated modules as scaffolding unless a task explicitly brings one online.
-3. Continue staged bring-up of higher-level systems (renderer/scene/client layers) only when requested.
+1. Harden the first active scene/DRP2 vertical slice: point visuals, frame-plan emission, borrowed
+   canvas frame targets, runtime execution, readback/capture, and failure paths.
+2. Expand the minimal scene visual surface deliberately: next likely targets are a simple triangle/mesh
+   visual and an image/texture visual, each with tests and examples before broader API growth.
+3. Keep non-activated modules as scaffolding unless a task explicitly brings one online.
 
 ---
 
@@ -148,6 +157,8 @@ not linked and should remain untouched unless explicitly requested.
   add_subdirectory(video)
   add_subdirectory(vk)
   add_subdirectory(vklite)
+  add_subdirectory(drp2)
+  add_subdirectory(scene)
 
   target_link_libraries(datoviz
       PRIVATE
@@ -163,6 +174,8 @@ not linked and should remain untouched unless explicitly requested.
           datoviz_video
           datoviz_vk
           datoviz_vklite
+          datoviz_drp2
+          datoviz_scene
           datoviz_volk
   )
 
@@ -285,8 +298,10 @@ int test_common(TstSuite* suite)
 // testing/dvztest.c
 #include "../src/common/tests/test_common.h"
 #include "../src/ds/tests/test_ds.h"
+#include "../src/drp2/tests/test_drp2.h"
 #include "../src/fileio/tests/test_fileio.h"
 #include "../src/math/tests/test_math.h"
+#include "../src/scene/tests/test_scene.h"
 #include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
 #include "../src/input/tests/test_input.h"
@@ -305,8 +320,10 @@ int main(int argc, char** argv)
 
     test_common(&suite);
     test_ds(&suite);
+    test_drp2(&suite);
     test_fileio(&suite);
     test_math(&suite);
+    test_scene(&suite);
     test_stream(&suite);
     test_thread(&suite);
     test_input(&suite);
@@ -352,6 +369,8 @@ target_link_libraries(dvztest PRIVATE
     datoviz_video
     datoviz_vk
     datoviz_vklite
+    datoviz_drp2
+    datoviz_scene
     datoviz_volk
     testing
 )
@@ -367,8 +386,8 @@ add_test(NAME dvztest COMMAND dvztest)
 Prefer the narrowest relevant validation loop for the slice you are changing:
 
 * use `just test` for broad validation,
-* use focused targets such as `dvztest_vk`, `dvztest_canvas`, or `dvztest_integration` when working
-  in a specific subsystem,
+* use focused targets such as `dvztest_drp2`, `dvztest_scene`, `dvztest_vk`, `dvztest_canvas`, or
+  `dvztest_integration` when working in a specific subsystem,
 * keep `dvztest` as the unified end-to-end runner.
 
 ---
@@ -527,11 +546,13 @@ Codex may and should run analysis tools when they are available and relevant to 
 - **Active graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`):** prioritize robustness,
   resource-lifetime correctness, performance, and clear public/internal boundaries. Preserve immediate
   presentation paths for high-FPS benchmarking, and profile carefully before accepting slower live-loop
-  behavior. The current highest-value work is finishing `vk`/`vklite` boundary hardening rather than
-  reopening broad canvas/video bring-up.
+  behavior. Treat this stack as the foundation for higher layers.
+- **Active scene/DRP2 stack (`scene`, `drp2`):** prioritize a small, tested vertical slice over broad API
+  growth. Scene should emit frame plans and DRP2 streams; the native runtime should execute through
+  `vklite` and borrowed canvas frames without scene owning swapchains, command-buffer lifecycle, or sinks.
 - **Cross-module helpers:** if multiple modules need the same low-level utility, move it to `src/common`
   instead of duplicating it.
-- **Scaffolding modules (`color`, `wasm`, and higher-level renderer/scene/client layers):** keep untouched
+- **Scaffolding modules (`color`, `wasm`, text/gui, and broader renderer/client layers):** keep untouched
   unless explicitly asked to activate them; when activated, follow the standard pattern (OBJECT lib + public
   headers + tests + integration in `src/CMakeLists.txt` and `testing/dvztest.c`).
 

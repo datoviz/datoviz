@@ -1,9 +1,9 @@
 # Next scene-layer examples — implementation brief
 
-**Priority: HIGH — main next step in the examples/ roadmap.**
+**Priority: MEDIUM — continue after the first scene examples.**
 
-Three new examples to add under `examples/c/`, building on the existing `hello_point.c`.
-All three use the **scene + app** layer (`dvz_scene`, `dvz_figure`, `dvz_panel`, `dvz_app`).
+This note tracks the next scene examples after the first point/scatter slice. All examples use the
+**scene + app** layer (`dvz_scene`, `dvz_figure`, `dvz_panel`, `dvz_app`).
 
 ---
 
@@ -11,16 +11,20 @@ All three use the **scene + app** layer (`dvz_scene`, `dvz_figure`, `dvz_panel`,
 
 | Example             | Visual needed         | New API required?            | Status  |
 |---------------------|-----------------------|------------------------------|---------|
-| `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Ready   |
+| `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
 | `hello_triangle.c`  | `dvz_triangle` / mesh | New visual constructor        | Blocked |
 | `hello_texture.c`   | `dvz_image`           | New visual constructor        | Blocked |
 
-`hello_scatter.c` can be written immediately; the other two first need a new visual added to
-the scene layer.
+`hello_scatter.c` now exists under `examples/c/`. The next example work should add one new visual
+family at a time, with tests before broadening the scene API.
 
 ---
 
 ## Part 1 — `hello_scatter.c` (scene + app, many points)
+
+### Status
+
+Done. `examples/c/hello_scatter.c` renders 1 000 random colored points through the scene/app path.
 
 ### Goal
 
@@ -47,7 +51,7 @@ DvzFigure* fig    = dvz_figure(scene, 800, 600, 0);
 DvzPanel*  panel  = dvz_panel(fig, dvz_panel_default());
 DvzVisual* visual = dvz_point(scene, 0);
 
-dvz_visual_set_data(visual, "pos",   pos,   N);
+dvz_visual_set_data(visual, "position", pos,   N);
 dvz_visual_set_data(visual, "color", color, N);
 dvz_visual_set_data(visual, "size",  size,  N);
 dvz_panel_add_visual(panel, visual);
@@ -62,8 +66,8 @@ dvz_figure_destroy(fig);
 dvz_scene_destroy(scene);
 ```
 
-Check `hello_point.c` and `dvz_app()` docs for the exact `DvzApp` setup.  Check
-`src/scene/tests/test_scene.c` for the attribute names accepted by `dvz_point`.
+Check `hello_point.c`, `hello_scatter.c`, and `src/scene/tests/test_scene.c` for the current
+attribute names accepted by `dvz_point`.
 
 ### CMakeLists addition
 
@@ -89,7 +93,8 @@ Expected attributes (analogous to the vklite raw example):
 - `"color"` — `uint8_t[N][4]` per-vertex RGBA
 
 The implementation should emit the appropriate DRP2 pipeline + draw commands via the scene's
-frame plan.  Reference: `src/scene/visuals/` (pattern used by the point visual).
+frame plan. Reference the current point visual path in `src/scene/scene.c`, `src/scene/converter.c`,
+and `src/scene/tests/test_scene.c`.
 
 Once the visual exists the example itself is straightforward: hard-code three vertices, set
 data, run one offscreen frame, save PNG.
@@ -121,10 +126,11 @@ For texture upload, check whether a public `dvz_texture_*` API already exists (s
 
 ## Existing code to read before starting
 
-- `examples/c/hello_point.c` — canonical scene+app skeleton
+- `examples/c/hello_point.c` — minimal scene+app skeleton
+- `examples/c/hello_scatter.c` — non-trivial point data through the same path
 - `src/scene/tests/test_scene.c` — shows attribute names, data shapes, and the full
   scene→figure→panel→visual→app flow used in tests
-- `src/scene/visuals/` — existing visual implementations to follow as a pattern
+- `src/scene/scene.c` and `src/scene/converter.c` — existing point visual implementation/emission path
 - `src/scene/app.c` — `dvz_app()` internals
 
 ---

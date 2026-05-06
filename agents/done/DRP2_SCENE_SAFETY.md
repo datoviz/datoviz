@@ -9,8 +9,9 @@
 
 This document tracks the safety and quality pass for the current DRP2/scene implementation.
 
-The implementation plan remains in `agents/now/SCENE_DRP2_IMPLEMENTATION.md`. The executable DRP2
-contract remains in `spec/drp2/`.
+The implementation plan is recorded in `agents/done/SCENE_DRP2_IMPLEMENTATION.md`; current follow-up
+work is tracked in `agents/now/V0_4_NEXT_STEPS.md`. The executable DRP2 contract remains in
+`spec/drp2/`.
 
 
 ## Goals

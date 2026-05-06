@@ -15,7 +15,7 @@ The normative contract remains in:
 2. `spec/scene/`
 3. `spec/scene/headers/`
 
-The decision history remains in `agents/now/SCENE_DRP2_SPEC_DECISIONS.md`.
+The decision history remains in `agents/done/SCENE_DRP2_SPEC_DECISIONS.md`.
 
 
 ## Goal

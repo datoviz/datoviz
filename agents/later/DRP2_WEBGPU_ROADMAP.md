@@ -2,11 +2,11 @@
 > - **Status:** `STRATEGIC BACKLOG`
 > - **Verified on:** `2026-03-23`
 > - **Role:** long-horizon direction for DRP2, WebGPU runtime work, and eventual scene bring-up
-> - **Current branch status:** not the immediate execution plan; active priority is still
->   `vk`/`vklite` cleanup
+> - **Current branch status:** not the immediate execution plan; active priority is the native
+>   scene -> DRP2 -> vklite/canvas slice
 > - **Execution note:** the actionable spec-phase entry point is `agents/now/DRP2_SPEC.md`
-> - **Implementation note:** the active repo-local implementation plan is
->   `agents/now/SCENE_DRP2_IMPLEMENTATION.md`
+> - **Implementation note:** the active repo-local implementation guide is
+>   `agents/now/V0_4_NEXT_STEPS.md`
 
 # DRP2 / WebGPU / Scene Roadmap
 

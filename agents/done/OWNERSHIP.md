@@ -10,7 +10,7 @@
 > - **Boundary note:** Low-level `DvzGpu` pointer helpers are now internal-only (`src/vk/_gpu.h`) and remain used by vk internals and vk-focused tests.
 > - **Current branch status:** This file is a completed phase record. The active remaining ownership
 >   work is the broader `vk`/`vklite` boundary cleanup tracked in
->   `agents/now/VK_REFACTOR.md`, now focused mainly on final policy/audit closure and the remaining
+>   `agents/done/VK_REFACTOR.md`, now focused mainly on final policy/audit closure and the remaining
 >   allocator/memory exposure in `vk`, not this GPU-specific slice.
 
 # Datoviz v0.4-dev API Ownership Unification Plan
