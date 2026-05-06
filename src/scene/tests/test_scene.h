@@ -102,6 +102,14 @@ int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstIte
 
 int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item);
 
+int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
+
+int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
+
+int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
+
+int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem* item);
+
 int test_scene_point_emit(TstSuite* suite, TstItem* item);
 
 int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item);

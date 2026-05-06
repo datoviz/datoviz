@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../_scene.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
 #include "datoviz/scene.h"
@@ -2159,6 +2160,203 @@ int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, Tst
 
 
 
+int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(scene->outstanding_emitted_streams == 1);
+
+    float update[2 * 3] = {-0.5f, 0.1f, 0.0f, 0.5f, 0.1f, 0.0f};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "position", update, 2) == -1);
+    AT(_captured_log_contains(suite, "cannot mutate scene visual data while an emitted stream is still live"));
+
+    dvz_drp2_stream_destroy(stream);
+    AT(scene->outstanding_emitted_streams == 0);
+    AT(dvz_visual_set_data(visual, "position", update, 2) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[4 * 3] = {-0.75f, 0.0f, 0.0f, -0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f, 0.75f, 0.0f, 0.0f};
+    DvzColor colors[4] = {{255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}};
+    float sizes[4] = {8.0f, 8.0f, 8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(scene->outstanding_emitted_streams == 1);
+
+    float update[2 * 3] = {-0.1f, 0.2f, 0.0f, 0.1f, 0.2f, 0.0f};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data_range(visual, "position", update, 1, 2) == -1);
+    AT(_captured_log_contains(suite, "cannot mutate scene visual data while an emitted stream is still live"));
+
+    dvz_drp2_stream_destroy(stream);
+    AT(scene->outstanding_emitted_streams == 0);
+    AT(dvz_visual_set_data_range(visual, "position", update, 1, 2) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float position[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 0, 255};
+    float size = 12.0f;
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(scene->outstanding_emitted_streams == 1);
+
+    tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
+    dvz_scene_destroy(scene);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(_captured_log_contains(suite, "cannot destroy scene-owned visual data while an emitted stream is still live"));
+    AT(scene->outstanding_emitted_streams == 1);
+
+    dvz_drp2_stream_destroy(stream);
+    AT(scene->outstanding_emitted_streams == 0);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float positions[2 * 3] = {-0.25f, 0.0f, 0.0f, 0.25f, 0.0f, 0.0f};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    AT(stream1 != NULL);
+    AT(scene->outstanding_emitted_streams == 1);
+
+    float update[2] = {9.0f, 10.0f};
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_range(visual, "size", update, 0, 2) == -1);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    AT(stream2 != NULL);
+    AT(scene->outstanding_emitted_streams == 2);
+
+    dvz_drp2_stream_destroy(stream1);
+    AT(scene->outstanding_emitted_streams == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_range(visual, "size", update, 0, 2) == -1);
+
+    dvz_drp2_stream_destroy(stream2);
+    AT(scene->outstanding_emitted_streams == 0);
+    AT(dvz_visual_set_data_range(visual, "size", update, 0, 2) == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_point_emit(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -3154,6 +3352,10 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_rejects_mismatched_point_attribute_counts);
     TEST_SIMPLE(test_scene_rejects_range_update_without_full_allocation);
+    TEST_SIMPLE(test_scene_rejects_mutation_while_emitted_stream_is_live);
+    TEST_SIMPLE(test_scene_rejects_range_mutation_while_emitted_stream_is_live);
+    TEST_SIMPLE(test_scene_rejects_destroy_while_emitted_stream_is_live);
+    TEST_SIMPLE(test_scene_live_stream_count_tracks_multiple_emits);
     TEST_SIMPLE(test_scene_point_emit);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);

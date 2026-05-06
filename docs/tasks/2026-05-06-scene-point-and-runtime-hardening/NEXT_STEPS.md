@@ -2,11 +2,12 @@
 
 ## Remaining follow-up
 
-- Keep the borrowed-pointer lifetime contract around emitted streams explicit in docs/tests.
-- Consider adding a dedicated mutation-after-emit rejection/guard path if the runtime contract should
-  become stricter than documentation-only guidance.
-- Consider extending runtime readback/capture guards beyond buffer-download bounds into broader
-  layout/size assertions where practical.
+- Decide whether the live-stream guard should remain B1+B5 (release on destroy, scene-wide scope) or
+  later relax toward execute-or-destroy release and/or finer-than-scene tracking.
+- Consider whether `dvz_visual_destroy()` also deserves direct focused regression coverage, even though
+  it now shares the same live-stream guard path as other scene-owned visual destruction.
+- Consider extending live-stream protection to any future scene APIs that mutate figure/panel topology if
+  those operations should also be forbidden while emitted streams are live.
 
 ## Resume commands
 
