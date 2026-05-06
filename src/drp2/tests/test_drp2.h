@@ -46,6 +46,8 @@ int test_drp2_runtime_validate_render_stream(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_rejects_duplicate_id(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_failed_stream_does_not_commit_state(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_rejects_unknown_buffer_write(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_rejects_draw_without_vertex_buffer(TstSuite* suite, TstItem* item);

@@ -305,6 +305,50 @@ int test_drp2_runtime_rejects_duplicate_id(TstSuite* suite, TstItem* item)
 
 
 
+int test_drp2_runtime_failed_stream_does_not_commit_state(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+
+    DvzDrp2CommandStream* bad = dvz_drp2_stream();
+    ANN(bad);
+    AT(dvz_drp2_stream_create_buffer(bad, 2, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_create_buffer(bad, 2, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+
+    result = dvz_drp2_runtime_execute(runtime, bad);
+    AT(!result.ok);
+
+    DvzDrp2CommandStream* retry = dvz_drp2_stream();
+    ANN(retry);
+    AT(dvz_drp2_stream_create_buffer(retry, 2, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+
+    result = dvz_drp2_runtime_execute(runtime, retry);
+    AT(result.ok);
+
+    dvz_drp2_stream_destroy(retry);
+    dvz_drp2_stream_destroy(bad);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_rejects_unknown_buffer_write(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2450,6 +2494,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
     TEST_SIMPLE(test_drp2_runtime_rejects_duplicate_id);
+    TEST_SIMPLE(test_drp2_runtime_failed_stream_does_not_commit_state);
     TEST_SIMPLE(test_drp2_runtime_rejects_unknown_buffer_write);
     TEST_SIMPLE(test_drp2_runtime_rejects_draw_without_vertex_buffer);
     TEST_SIMPLE(test_drp2_runtime_rejects_finish_with_open_pass);

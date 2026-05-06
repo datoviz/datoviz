@@ -1654,27 +1654,105 @@ static void _runtime_state_cleanup(Drp2RuntimeState* state)
 
 
 /**
+ * Clone runtime semantic validation state.
+ *
+ * @param dst the destination state
+ * @param src the source state, or NULL for an empty state
+ * @return whether the clone succeeded
+ */
+static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* src)
+{
+    ANN(dst);
+    dvz_memset(dst, sizeof(Drp2RuntimeState), 0, sizeof(Drp2RuntimeState));
+    if (src == NULL)
+        return true;
+
+    *dst = *src;
+    dst->objects = NULL;
+    if (src->capacity == 0)
+        return true;
+
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(src->capacity, sizeof(Drp2Object), &bytes))
+        return false;
+    dst->objects = (Drp2Object*)dvz_calloc(src->capacity, sizeof(Drp2Object));
+    if (dst->objects == NULL)
+        return false;
+    if (src->count > 0)
+        dvz_memcpy(dst->objects, bytes, src->objects, (uint64_t)src->count * sizeof(Drp2Object));
+    return true;
+}
+
+
+
+/**
+ * Ensure a runtime has a semantic state object ready for commit.
+ *
+ * @param runtime the runtime
+ * @return whether the state object is available
+ */
+static bool _runtime_state_ensure(DvzDrp2Runtime* runtime)
+{
+    ANN(runtime);
+    if (runtime->semantic_state != NULL)
+        return true;
+    runtime->semantic_state = (Drp2RuntimeState*)dvz_calloc(1, sizeof(Drp2RuntimeState));
+    return runtime->semantic_state != NULL;
+}
+
+
+
+/**
+ * Replace the runtime semantic state with a validated next state.
+ *
+ * @param runtime the runtime
+ * @param next_state the validated next state
+ * @return whether the commit succeeded
+ */
+static bool _runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_state)
+{
+    ANN(runtime);
+    ANN(next_state);
+    if (!_runtime_state_ensure(runtime))
+        return false;
+
+    _runtime_state_cleanup(runtime->semantic_state);
+    *runtime->semantic_state = *next_state;
+    next_state->objects = NULL;
+    next_state->capacity = 0;
+    next_state->count = 0;
+    next_state->hello_seen = false;
+    next_state->reply_seen = false;
+    next_state->failed = false;
+    return true;
+}
+
+
+
+/**
  * Validate a command stream against a runtime-persistent semantic state.
  *
  * @param runtime the DRP2 runtime
  * @param stream the command stream
+ * @param next_state the validated next state
  * @return the validation result
  */
 static DvzDrp2ValidationResult
-_runtime_validate_stream(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
+_runtime_validate_stream(
+    const DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream,
+    Drp2RuntimeState* next_state)
 {
     ANN(runtime);
     ANN(stream);
-    if (runtime->semantic_state == NULL)
-    {
-        runtime->semantic_state = (Drp2RuntimeState*)dvz_calloc(1, sizeof(Drp2RuntimeState));
-        ANN(runtime->semantic_state);
-    }
+    ANN(next_state);
+
+    if (!_runtime_state_clone(next_state, runtime->semantic_state))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
 
     DvzDrp2ValidationResult result = _ok();
     for (uint32_t i = 0; i < stream->count; i++)
     {
-        result = _validate_command(runtime->semantic_state, &stream->commands[i], i);
+        result = _validate_command(next_state, &stream->commands[i], i);
         if (!result.ok)
             break;
     }
@@ -3813,16 +3891,45 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
     if (stream == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
 
-    DvzDrp2ValidationResult result = _runtime_validate_stream(runtime, stream);
+    Drp2RuntimeState next_state = {0};
+    DvzDrp2ValidationResult result = _runtime_validate_stream(runtime, stream, &next_state);
     if (!result.ok)
+    {
+        _runtime_state_cleanup(&next_state);
         return result;
+    }
+
+    if (!_runtime_state_ensure(runtime))
+    {
+        _runtime_state_cleanup(&next_state);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+    }
 
     if (runtime->semantic_only)
+    {
+        if (!_runtime_state_commit(runtime, &next_state))
+        {
+            _runtime_state_cleanup(&next_state);
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+        }
         return result;
+    }
 
 #if DVZ_DRP2_HAS_VKLITE
-    return _vklite_execute(runtime, stream);
+    DvzDrp2ValidationResult backend_result = _vklite_execute(runtime, stream);
+    if (!backend_result.ok)
+    {
+        _runtime_state_cleanup(&next_state);
+        return backend_result;
+    }
+    if (!_runtime_state_commit(runtime, &next_state))
+    {
+        _runtime_state_cleanup(&next_state);
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+    }
+    return backend_result;
 #else
+    _runtime_state_cleanup(&next_state);
     return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
 #endif
 }
