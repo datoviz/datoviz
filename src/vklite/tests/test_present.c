@@ -24,6 +24,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_env.h"
 #include "_log.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu.h"
@@ -72,6 +73,18 @@ typedef struct DvzVklitePresentFixture
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return whether automated vklite present tests should create visible windows.
+ *
+ * @return true when DVZ_TEST_VISIBLE is set to a non-zero value
+ */
+static bool _present_test_visible(void)
+{
+    return checkenv("DVZ_TEST_VISIBLE");
+}
+
+
 
 /**
  * Destroy all resources owned by a presentation fixture.
@@ -311,6 +324,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
     cfg.title = "vklite-present-test";
     cfg.width = 320;
     cfg.height = 240;
+    cfg.visible = _present_test_visible();
 
     fixture->window = dvz_window_create(fixture->host, DVZ_BACKEND_GLFW, &cfg);
     if (fixture->window == NULL || dvz_window_backend_type(fixture->window) != DVZ_BACKEND_GLFW)
@@ -452,7 +466,10 @@ static bool _wrap_surface_fixture_create(
         return false;
     }
 
-    wrap->external_handle = glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_VISIBLE, cfg->visible ? GLFW_TRUE : GLFW_FALSE);
+    wrap->external_handle =
+        glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
     if (wrap->external_handle == NULL)
     {
         log_warn("vklite wrap present test skipped because external GLFW window creation failed");
