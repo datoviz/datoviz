@@ -31,7 +31,7 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
   exists: scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream frame
   execution, with focused tests and basic C examples.
 * Current focused validation on `2026-05-06`: `just spec-check` passed with `119/119` DRP2 fixtures
-  and `52` fixture-runner tests; `just test drp2` passed `73/73`; `just test scene` passed `34/34`.
+  and `52` fixture-runner tests; `just test drp2` passed `73/73`; `just test scene` passed `52/52`.
   The most recent recorded full-suite validation was on `2026-04-30` with `244/244` tests passing.
 * For the current execution summary and next-step guidance, start with
   `agents/now/V0_4_NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
@@ -43,7 +43,10 @@ When refactoring, do NOT delete existing comments, keep them and update them if 
 * ✅ The active low-level graphics stack is the stable foundation; use it rather than creating a
   parallel presentation, frame-stream, or Vulkan wrapper path.
 * 🚧 The highest-value remaining work has moved up a layer: harden the scene -> DRP2 -> runtime path,
-  expand the minimal point-only scene surface, and keep examples/tests in lockstep with that path.
+  expand the minimal point-based scene surface, and keep examples/tests in lockstep with that path.
+* ✅ The active point slice now covers retained point-buffer rendering, repeated partial updates,
+  multi-panel figures, and per-panel runtime viewport/scissor handling through the scene -> DRP2 ->
+  vklite/canvas path.
 * ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, text/gui,
   and richer renderer/client layers); keep them untouched unless explicitly requested.
 

@@ -14,7 +14,7 @@ Focused validation on `2026-05-06`:
 
 1. `just spec-check`: `119/119` DRP2 fixtures passed; `52` fixture-runner tests passed.
 2. `just test drp2`: `73/73` tests passed.
-3. `just test scene`: `34/34` tests passed.
+3. `just test scene`: `52/52` tests passed.
 4. `git diff --check`: passed for this documentation update.
 
 Recent follow-up validation on `2026-05-06`:
@@ -43,15 +43,18 @@ The active higher layer now exists:
 4. Empty scene panels now emit explicit clear-only FramePlan nodes instead of relying on an empty render
    node convention, and the runtime path can render retained point buffers on later frames with no dirty
    uploads.
-5. Focused scene tests now cover repeated partial point updates across emitted frames and multi-panel /
-   multi-point visual emission in one figure.
-5. Automated GLFW canvas and vklite present tests create hidden windows by default; set
+5. Focused scene tests now cover repeated partial point updates across emitted frames, multi-panel /
+   multi-point visual emission in one figure, direct live-stream destroy guards, and per-panel runtime
+   render regions in the emitted DRP2 path.
+6. The app/offscreen scene path now preserves prior panel contents correctly across later `LOAD`
+   render passes and validates a two-panel red/green offscreen render in the unified scene suite.
+7. Automated GLFW canvas and vklite present tests create hidden windows by default; set
    `DVZ_TEST_VISIBLE=1` only for local visual debugging.
 
 
 ## Best Next Development Steps
 
-### 1. Finish the point-only scene slice properly
+### 1. Finish the point-based scene slice properly
 
 Before adding many visual families, make the existing point path feel production-shaped:
 
