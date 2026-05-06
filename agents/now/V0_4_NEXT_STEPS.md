@@ -17,6 +17,13 @@ Focused validation on `2026-05-06`:
 3. `just test scene`: `34/34` tests passed.
 4. `git diff --check`: passed for this documentation update.
 
+Recent follow-up validation on `2026-05-06`:
+
+1. `just test scene`: passed after explicit clear-plan and retained-render updates.
+2. `just test vklite_swapchain`: passed with automated present windows hidden by default.
+3. `DVZ_TEST_VISIBLE=1 just test vklite_swapchain`: was terminated after hanging in visible
+   compositor-dependent present execution; keep visible mode manual/debug-only.
+
 The low-level stack is now the foundation:
 
 1. `vk` owns low-level Vulkan instance/device/queue/memory primitives.
@@ -33,6 +40,11 @@ The active higher layer now exists:
 2. `scene` owns early scene graph objects, capability snapshots, diagnostic reports, frame plans,
    DRP2 emission, and a minimal app/offscreen path.
 3. Current examples cover `hello_point`, `hello_scatter`, `raw_triangle`, and `raw_triangle_drp2`.
+4. Empty scene panels now emit explicit clear-only FramePlan nodes instead of relying on an empty render
+   node convention, and the runtime path can render retained point buffers on later frames with no dirty
+   uploads.
+5. Automated GLFW canvas and vklite present tests create hidden windows by default; set
+   `DVZ_TEST_VISIBLE=1` only for local visual debugging.
 
 
 ## Best Next Development Steps
@@ -45,7 +57,7 @@ Before adding many visual families, make the existing point path feel production
 2. add regression tests for repeated `dvz_visual_set_data_range()` updates across multiple emitted
    frames,
 3. exercise multiple panels and multiple point visuals in one figure,
-4. verify offscreen capture output in a deterministic smoke test where practical,
+4. expand deterministic offscreen capture smoke tests beyond the current retained-render point case,
 5. keep the borrowed-pointer lifetime contract around emitted streams explicit.
 
 ### 2. Add the next minimal visual family
