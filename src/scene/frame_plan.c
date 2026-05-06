@@ -522,6 +522,16 @@ bool dvz_frame_plan_compute_write(DvzFramePlan* plan, const char* resource_id)
 bool dvz_frame_plan_render(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking)
 {
+    return dvz_frame_plan_render_panel(
+        plan, panel_id, render_target_id, picking, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+}
+
+
+
+bool dvz_frame_plan_render_panel(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
+    DvzPanelDesc desc)
+{
     DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (node == NULL)
         return false;
@@ -530,6 +540,7 @@ bool dvz_frame_plan_render(
         node->u.render.render_target_id, DVZ_SCENE_LABEL_SIZE,
         render_target_id ? render_target_id : "");
     node->u.render.picking = picking;
+    node->u.render.desc = desc;
     return true;
 }
 
@@ -545,6 +556,15 @@ bool dvz_frame_plan_render(
  */
 bool dvz_frame_plan_clear(DvzFramePlan* plan, const char* panel_id, const char* render_target_id)
 {
+    return dvz_frame_plan_clear_panel(
+        plan, panel_id, render_target_id, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+}
+
+
+
+bool dvz_frame_plan_clear_panel(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc)
+{
     DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
     if (node == NULL)
         return false;
@@ -552,6 +572,7 @@ bool dvz_frame_plan_clear(DvzFramePlan* plan, const char* panel_id, const char* 
     _copy_label(
         node->u.clear.render_target_id, DVZ_SCENE_LABEL_SIZE,
         render_target_id ? render_target_id : "");
+    node->u.clear.desc = desc;
     return true;
 }
 

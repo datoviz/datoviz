@@ -583,6 +583,34 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_clear(
     float r, float g, float b, float a);
 
 
+/**
+ * Append a BeginRenderPass command for a normalized target sub-region.
+ *
+ * The render pass targets the rectangle `(x, y, width, height)` in normalized
+ * [0, 1] attachment coordinates. When `clear` is true, the runtime clears the
+ * full target before rendering; when false, existing target contents are
+ * preserved and only subsequent draw commands are clipped to the region.
+ *
+ * @param stream the command stream
+ * @param id the render pass id
+ * @param encoder_id the encoder id
+ * @param texture_id the color attachment texture id
+ * @param r clear color red channel
+ * @param g clear color green channel
+ * @param b clear color blue channel
+ * @param a clear color alpha channel
+ * @param x normalized left coordinate in [0, 1]
+ * @param y normalized top coordinate in [0, 1]
+ * @param width normalized width in [0, 1]
+ * @param height normalized height in [0, 1]
+ * @param clear whether to clear the target at render-pass begin
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_region_clear(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id,
+    float r, float g, float b, float a, float x, float y, float width, float height, bool clear);
+
+
 
 /**
  * Append a BeginComputePass command.

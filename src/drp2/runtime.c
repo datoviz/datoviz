@@ -182,6 +182,10 @@ struct Drp2VkliteObject
     uint64_t sampler_id;
     uint32_t width;
     uint32_t height;
+    float viewport_x;
+    float viewport_y;
+    float viewport_width;
+    float viewport_height;
     bool borrowed_slots;
     bool borrowed_commands;
     bool borrowed_frame_target;
@@ -213,6 +217,78 @@ static DvzCommands*
 _vklite_borrowed_frame_commands_create(DvzDevice* device, VkCommandBuffer command_buffer);
 static void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
 #endif
+
+
+/**
+ * Clamp a normalized float to the closed [0, 1] interval.
+ *
+ * @param value the input value
+ * @return the clamped value
+ */
+static float _clamp_unit(float value)
+{
+    if (value < 0.0f)
+        return 0.0f;
+    if (value > 1.0f)
+        return 1.0f;
+    return value;
+}
+
+
+/**
+ * Convert a normalized [0, 1] viewport to an in-bounds pixel render area.
+ *
+ * @param target_width render-target width in pixels
+ * @param target_height render-target height in pixels
+ * @param viewport normalized x/y/width/height
+ * @param out_x output left pixel coordinate
+ * @param out_y output top pixel coordinate
+ * @param out_width output width in pixels
+ * @param out_height output height in pixels
+ */
+static void _render_area_from_viewport(
+    uint32_t target_width, uint32_t target_height, const float viewport[4], uint32_t* out_x,
+    uint32_t* out_y, uint32_t* out_width, uint32_t* out_height)
+{
+    ANN(viewport);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+
+    float x0 = _clamp_unit(viewport[0]);
+    float y0 = _clamp_unit(viewport[1]);
+    float x1 = _clamp_unit(viewport[0] + viewport[2]);
+    float y1 = _clamp_unit(viewport[1] + viewport[3]);
+    if (x1 < x0)
+        x1 = x0;
+    if (y1 < y0)
+        y1 = y0;
+
+    uint32_t px0 = (uint32_t)(x0 * (float)target_width);
+    uint32_t py0 = (uint32_t)(y0 * (float)target_height);
+    uint32_t px1 = (uint32_t)(x1 * (float)target_width);
+    uint32_t py1 = (uint32_t)(y1 * (float)target_height);
+
+    if (px0 > target_width)
+        px0 = target_width;
+    if (py0 > target_height)
+        py0 = target_height;
+    if (px1 > target_width)
+        px1 = target_width;
+    if (py1 > target_height)
+        py1 = target_height;
+
+    if (px1 <= px0 && target_width > px0)
+        px1 = px0 + 1;
+    if (py1 <= py0 && target_height > py0)
+        py1 = py0 + 1;
+
+    *out_x = px0;
+    *out_y = py0;
+    *out_width = px1 > px0 ? px1 - px0 : 0;
+    *out_height = py1 > py0 ? py1 - py0 : 0;
+}
 
 
 /**
@@ -3316,6 +3392,10 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->commands = cmds;
     pass->width = target->width;
     pass->height = target->height;
+    pass->viewport_x = command->u.begin_render_pass.viewport[0];
+    pass->viewport_y = command->u.begin_render_pass.viewport[1];
+    pass->viewport_width = command->u.begin_render_pass.viewport[2];
+    pass->viewport_height = command->u.begin_render_pass.viewport[3];
 
     DvzRendering* rendering = dvz_rendering_create_wrapper();
     if (rendering == NULL)
@@ -3329,8 +3409,16 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
         command->u.begin_render_pass.clear_color[2],
         command->u.begin_render_pass.clear_color[3],
     }};
-    dvz_cmd_rendering_default(
-        cmds, target_view, target->width, target->height, clear, rendering);
+    dvz_rendering(rendering);
+    dvz_rendering_area(rendering, 0, 0, target->width, target->height);
+    DvzAttachment* catt = dvz_rendering_color(rendering, 0);
+    dvz_attachment_image(catt, target_view, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_attachment_ops(
+        catt, command->u.begin_render_pass.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR :
+                                                   VK_ATTACHMENT_LOAD_OP_LOAD,
+        VK_ATTACHMENT_STORE_OP_STORE);
+    if (command->u.begin_render_pass.clear)
+        dvz_attachment_clear(catt, clear);
 
     if (!target->borrowed_frame_target && dvz_cmd_begin_result(cmds) != 0)
         return _vklite_fail_destroy_object(
@@ -3351,7 +3439,7 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
         _vklite_transition_image(
             cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+            VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     }
     dvz_cmd_rendering_begin(cmds, rendering);
     return _ok();
@@ -3411,11 +3499,25 @@ static DvzDrp2ValidationResult _vklite_set_pipeline(
     if (pass->kind == DRP2_OBJECT_RENDER_PASS && pipeline->kind == DRP2_OBJECT_RENDER_PIPELINE &&
         pipeline->graphics != NULL)
     {
+        uint32_t viewport_x = 0, viewport_y = 0, viewport_width = pass->width,
+                 viewport_height = pass->height;
+        float viewport[4] = {
+            pass->viewport_x,
+            pass->viewport_y,
+            pass->viewport_width,
+            pass->viewport_height,
+        };
+        _render_area_from_viewport(
+            pass->width, pass->height, viewport, &viewport_x, &viewport_y, &viewport_width,
+            &viewport_height);
         dvz_graphics_viewport(
-            pipeline->graphics, 0, 0, (float)pass->width, (float)pass->height, 0, 1,
+            pipeline->graphics, (float)viewport_x, (float)viewport_y, (float)viewport_width,
+            (float)viewport_height, 0, 1,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
         dvz_graphics_scissor(
-            pipeline->graphics, 0, 0, pass->width, pass->height, DVZ_GRAPHICS_FLAGS_DYNAMIC);
+            pipeline->graphics, (int32_t)viewport_x, (int32_t)viewport_y, viewport_width,
+            viewport_height,
+            DVZ_GRAPHICS_FLAGS_DYNAMIC);
         dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
         return _ok();
     }

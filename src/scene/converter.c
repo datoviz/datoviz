@@ -1308,12 +1308,13 @@ static bool _emitter_resolve_render_vertex_buffers(
  * @return whether the commands were emitted
  */
 static bool _emitter_emit_render(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const uint64_t* vertex_buffer_ids,
-    uint32_t vertex_buffer_count, const DvzFramePlanNode* readback,
-    const DvzFramePlanEmitConfig* cfg)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const uint64_t* vertex_buffer_ids, uint32_t vertex_buffer_count,
+    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg)
 {
     ANN(emitter);
     ANN(stream);
+    ANN(render);
     ANN(vertex_buffer_ids);
     if (vertex_buffer_count == 0)
         return false;
@@ -1475,8 +1476,10 @@ static bool _emitter_emit_render(
     float cb = cfg ? cfg->clear_color[2] : 0.0f;
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass_clear(
-             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca) &&
+         dvz_drp2_stream_begin_render_pass_region_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, render->u.render.desc.x,
+             render->u.render.desc.y, render->u.render.desc.width, render->u.render.desc.height,
+             clear) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
@@ -1546,8 +1549,8 @@ static bool _emitter_emit_plain_renders(
         if (ok)
         {
             ok = _emitter_emit_render(
-                emitter, stream, vertex_buffer_ids, vertex_buffer_count,
-                render_count == 0 ? readback : NULL, cfg);
+                emitter, stream, render, vertex_buffer_ids, vertex_buffer_count,
+                render_count == 0 ? readback : NULL, render_count == 0, cfg);
         }
         render_count++;
     }
@@ -1566,11 +1569,12 @@ static bool _emitter_emit_plain_renders(
  * @return whether the commands were emitted
  */
 static bool _emitter_emit_clear_only(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* readback,
-    const DvzFramePlanEmitConfig* cfg)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* clear_node,
+    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg)
 {
     ANN(emitter);
     ANN(stream);
+    ANN(clear_node);
 
     bool ok = true;
     bool is_new = false;
@@ -1619,8 +1623,10 @@ static bool _emitter_emit_clear_only(
     float cb = cfg ? cfg->clear_color[2] : 0.0f;
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass_clear(
-             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca) &&
+         dvz_drp2_stream_begin_render_pass_region_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca,
+             clear_node->u.clear.desc.x, clear_node->u.clear.desc.y, clear_node->u.clear.desc.width,
+             clear_node->u.clear.desc.height, clear) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     if (ok && readback != NULL)
     {
@@ -2221,7 +2227,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     }
 
     ok = ok && (clear_only
-                    ? _emitter_emit_clear_only(emitter, stream, copy, cfg)
+                    ? _emitter_emit_clear_only(emitter, stream, clear, copy, true, cfg)
                     : compute != NULL
                     ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
                     : texture_render

@@ -1690,15 +1690,34 @@ bool dvz_drp2_stream_begin_command_encoder(DvzDrp2CommandStream* stream, uint64_
 bool dvz_drp2_stream_begin_render_pass(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id)
 {
-    return dvz_drp2_stream_begin_render_pass_clear(stream, id, encoder_id, texture_id,
-                                                   0.0f, 0.0f, 0.0f, 1.0f);
+    return dvz_drp2_stream_begin_render_pass_region_clear(
+        stream, id, encoder_id, texture_id, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+        false);
 }
 
 
 
-bool dvz_drp2_stream_begin_render_pass_clear(
+/**
+ * Append a BeginRenderPass command for a normalized sub-region.
+ *
+ * @param stream the command stream
+ * @param id the render pass id
+ * @param encoder_id the encoder id
+ * @param texture_id the color attachment texture id
+ * @param r clear color red channel
+ * @param g clear color green channel
+ * @param b clear color blue channel
+ * @param a clear color alpha channel
+ * @param x normalized left coordinate in [0, 1]
+ * @param y normalized top coordinate in [0, 1]
+ * @param width normalized width in [0, 1]
+ * @param height normalized height in [0, 1]
+ * @param clear whether to clear the target at pass begin
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_begin_render_pass_region_clear(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id,
-    float r, float g, float b, float a)
+    float r, float g, float b, float a, float x, float y, float width, float height, bool clear)
 {
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
     if (command == NULL)
@@ -1710,7 +1729,22 @@ bool dvz_drp2_stream_begin_render_pass_clear(
     command->u.begin_render_pass.clear_color[1] = g;
     command->u.begin_render_pass.clear_color[2] = b;
     command->u.begin_render_pass.clear_color[3] = a;
+    command->u.begin_render_pass.viewport[0] = x;
+    command->u.begin_render_pass.viewport[1] = y;
+    command->u.begin_render_pass.viewport[2] = width;
+    command->u.begin_render_pass.viewport[3] = height;
+    command->u.begin_render_pass.clear = clear;
     return true;
+}
+
+
+
+bool dvz_drp2_stream_begin_render_pass_clear(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id,
+    float r, float g, float b, float a)
+{
+    return dvz_drp2_stream_begin_render_pass_region_clear(
+        stream, id, encoder_id, texture_id, r, g, b, a, 0.0f, 0.0f, 1.0f, 1.0f, true);
 }
 
 

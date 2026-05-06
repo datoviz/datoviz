@@ -358,10 +358,10 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);
         if (panel->visual_count == 0)
         {
-            dvz_frame_plan_clear(plan, panel_id, "rt");
+            dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc);
             continue;
         }
-        dvz_frame_plan_render(plan, panel_id, "rt", false);
+        dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
 
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {

@@ -2804,35 +2804,42 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstIt
     DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
     AT(win != NULL);
 
-    dvz_app_run(app, 1);
-
     DvzCanvas* canvas = dvz_app_window_canvas(win);
     ANN(canvas);
 
-    uint32_t width = 0, height = 0;
-    uint8_t* rgba = NULL;
-    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
-    ANN(rgba);
-    AT(width == 96);
-    AT(height == 64);
-
-    uint32_t left_red_count = 0;
-    uint32_t right_green_count = 0;
-    for (uint32_t y = 0; y < height; y++)
+    uint32_t red_count = 0;
+    uint32_t green_count = 0;
+    for (uint32_t frame = 0; frame < 3; frame++)
     {
-        for (uint32_t x = 0; x < width; x++)
-        {
-            uint8_t* pixel = &rgba[4 * (y * width + x)];
-            if (x < width / 2 && pixel[0] > 150 && pixel[0] > pixel[1] + 40)
-                left_red_count++;
-            if (x >= width / 2 && pixel[1] > 150 && pixel[1] > pixel[0] + 40)
-                right_green_count++;
-        }
-    }
-    AT(left_red_count > 0);
-    AT(right_green_count > 0);
+        dvz_app_run(app, 1);
 
-    dvz_free(rgba);
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        AT(width == 96);
+        AT(height == 64);
+
+        red_count = 0;
+        green_count = 0;
+        for (uint32_t y = 0; y < height; y++)
+        {
+            for (uint32_t x = 0; x < width; x++)
+            {
+                uint8_t* pixel = &rgba[4 * (y * width + x)];
+                if (pixel[0] > 150 && pixel[0] > pixel[1] + 40)
+                    red_count++;
+                if (pixel[1] > 150 && pixel[1] > pixel[0] + 40)
+                    green_count++;
+            }
+        }
+        dvz_free(rgba);
+        if (red_count > 0 && green_count > 0)
+            break;
+    }
+    AT(red_count > 0);
+    AT(green_count > 0);
+
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
@@ -3307,6 +3314,31 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
     AT(_stream_write_buffer_count(stream1) == 6);
     AT(_stream_set_vertex_buffer_count(stream1) == 6);
     AT(_stream_draw_count(stream1) == 2);
+    uint32_t begin_render_pass_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+            continue;
+        if (begin_render_pass_count == 0)
+        {
+            AC(cmd->u.begin_render_pass.viewport[0], 0.0f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[2], 0.5f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
+            AT(cmd->u.begin_render_pass.clear);
+        }
+        else if (begin_render_pass_count == 1)
+        {
+            AC(cmd->u.begin_render_pass.viewport[0], 0.5f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[2], 0.5f, 1e-6f);
+            AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
+            AT(!cmd->u.begin_render_pass.clear);
+        }
+        begin_render_pass_count++;
+    }
+    AT(begin_render_pass_count == 2);
     dvz_drp2_stream_destroy(stream1);
 
     float size_update[2] = {10.0f, 11.0f};

@@ -61,11 +61,13 @@ struct DvzFramePlanNode
             uint32_t visual_count;
             char visuals[DVZ_SCENE_MAX_RENDER_VISUALS][DVZ_SCENE_LABEL_SIZE];
             bool picking;
+            DvzPanelDesc desc;
         } render;
         struct
         {
             char panel_id[DVZ_SCENE_LABEL_SIZE];
             char render_target_id[DVZ_SCENE_LABEL_SIZE];
+            DvzPanelDesc desc;
         } clear;
         struct
         {
@@ -91,3 +93,16 @@ struct DvzFramePlan
     uint32_t count;
     DvzFramePlanNode* nodes;
 };
+
+
+
+/*************************************************************************************************/
+/*  Internal helpers                                                                            */
+/*************************************************************************************************/
+
+bool dvz_frame_plan_render_panel(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
+    DvzPanelDesc desc);
+
+bool dvz_frame_plan_clear_panel(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc);

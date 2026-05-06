@@ -170,6 +170,8 @@ struct DvzDrp2Command
             uint64_t encoder_id;
             uint64_t texture_id;
             float clear_color[4]; /* RGBA clear values; {0,0,0,0} = transparent black */
+            float viewport[4];    /* normalized x, y, width, height in [0,1] target space */
+            bool clear;
         } begin_render_pass;
         struct
         {
