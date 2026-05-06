@@ -656,15 +656,46 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _command_name(command->type), command->u.destroy_bind_group.bind_group_id);
         break;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+    {
+        const char* b64_wb = command->u.write_buffer.data_base64;
+        char* b64_wb_tmp   = NULL;
+        if (b64_wb == NULL && command->u.write_buffer.data_raw != NULL)
+        {
+            uint64_t enc_len = _b64_encoded_len(command->u.write_buffer.size) + 1;
+            b64_wb_tmp = (char*)dvz_calloc((size_t)enc_len, 1);
+            if (b64_wb_tmp)
+                _b64_encode(
+                    (const uint8_t*)command->u.write_buffer.data_raw,
+                    command->u.write_buffer.size, b64_wb_tmp, enc_len);
+            b64_wb = b64_wb_tmp;
+        }
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"buffer_id\": %" PRIu64 ", \"offset\": %" PRIu64
             ", \"size\": %" PRIu64 ", \"data\": \"%s\" }",
             _command_name(command->type), command->u.write_buffer.buffer_id,
             command->u.write_buffer.offset, command->u.write_buffer.size,
-            command->u.write_buffer.data_base64);
+            b64_wb ? b64_wb : "");
+        dvz_free(b64_wb_tmp);
         break;
+    }
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+    {
+        uint64_t tex_size = (uint64_t)command->u.write_texture.depth *
+                            command->u.write_texture.rows_per_image *
+                            command->u.write_texture.bytes_per_row;
+        const char* b64_wt = command->u.write_texture.data_base64;
+        char* b64_wt_tmp   = NULL;
+        if (b64_wt == NULL && command->u.write_texture.data_raw != NULL)
+        {
+            uint64_t enc_len = _b64_encoded_len(tex_size) + 1;
+            b64_wt_tmp = (char*)dvz_calloc((size_t)enc_len, 1);
+            if (b64_wt_tmp)
+                _b64_encode(
+                    (const uint8_t*)command->u.write_texture.data_raw, tex_size, b64_wt_tmp,
+                    enc_len);
+            b64_wt = b64_wt_tmp;
+        }
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"texture_id\": %" PRIu64 ", \"mip_level\": %" PRIu32
@@ -677,8 +708,10 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.write_texture.origin_y, command->u.write_texture.origin_z,
             command->u.write_texture.width, command->u.write_texture.height,
             command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
-            command->u.write_texture.rows_per_image, command->u.write_texture.data_base64);
+            command->u.write_texture.rows_per_image, b64_wt ? b64_wt : "");
+        dvz_free(b64_wt_tmp);
         break;
+    }
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         _json_append(
             builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 " }", _command_name(command->type),
@@ -2211,14 +2244,14 @@ bool dvz_drp2_stream_write_buffer_bytes(
     if (data == NULL || size == 0)
         return false;
 
-    uint64_t enc_len = _b64_encoded_len(size) + 1;
-    char* b64 = (char*)dvz_calloc((size_t)enc_len, 1);
-    if (b64 == NULL)
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    if (command == NULL)
         return false;
-
-    bool ok = _b64_encode((const uint8_t*)data, size, b64, enc_len);
-    if (ok)
-        ok = dvz_drp2_stream_write_buffer(stream, buffer_id, offset, size, b64);
-    dvz_free(b64);
-    return ok;
+    command->type                    = DVZ_DRP2_COMMAND_WRITE_BUFFER;
+    command->u.write_buffer.buffer_id = buffer_id;
+    command->u.write_buffer.offset   = offset;
+    command->u.write_buffer.size     = size;
+    command->u.write_buffer.data_raw = data;    /* borrowed; caller keeps alive */
+    command->u.write_buffer.data_base64 = NULL; /* populated only for JSON serialization */
+    return true;
 }

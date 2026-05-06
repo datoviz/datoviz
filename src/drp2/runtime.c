@@ -2982,14 +2982,21 @@ static DvzDrp2ValidationResult _vklite_write_buffer(
     if (object == NULL || object->buffer == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    uint8_t* data = NULL;
-    if (!_decode_base64_exact(
-            command->u.write_buffer.data_base64, command->u.write_buffer.size, &data))
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+    uint64_t offset = command->u.write_buffer.offset;
+    uint64_t size   = command->u.write_buffer.size;
 
-    dvz_buffer_upload(
-        object->buffer, command->u.write_buffer.offset, command->u.write_buffer.size, data);
-    dvz_free(data);
+    if (command->u.write_buffer.data_raw != NULL)
+    {
+        dvz_buffer_upload(object->buffer, offset, size, command->u.write_buffer.data_raw);
+    }
+    else
+    {
+        uint8_t* data = NULL;
+        if (!_decode_base64_exact(command->u.write_buffer.data_base64, size, &data))
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+        dvz_buffer_upload(object->buffer, offset, size, data);
+        dvz_free(data);
+    }
     return _ok();
 }
 
@@ -3006,18 +3013,24 @@ static DvzDrp2ValidationResult _vklite_write_texture(
     uint64_t size = _texture_layout_size(
         command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
         command->u.write_texture.rows_per_image);
-    uint8_t* data = NULL;
-    if (!_decode_base64_exact(command->u.write_texture.data_base64, size, &data))
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    const void* upload_src = command->u.write_texture.data_raw;
+    uint8_t* decoded = NULL;
+    if (upload_src == NULL)
+    {
+        if (!_decode_base64_exact(command->u.write_texture.data_base64, size, &decoded))
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+        upload_src = decoded;
+    }
 
     DvzBuffer* staging = NULL;
     if (!_vklite_create_staging_buffer(state, size, &staging, VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
     {
-        dvz_free(data);
+        dvz_free(decoded);
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
-    dvz_buffer_upload(staging, 0, size, data);
-    dvz_free(data);
+    dvz_buffer_upload(staging, 0, size, upload_src);
+    dvz_free(decoded);
 
     DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
     if (cmds == NULL)
