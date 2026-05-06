@@ -1655,6 +1655,72 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames(TstSuite* suite, TstItem*
 }
 
 
+int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* frame0 = dvz_frame_plan("figure.runtime.grow", 0);
+    DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.grow", 1);
+    ANN(frame0);
+    ANN(frame1);
+
+    AT(dvz_frame_plan_upload(frame0, "buf.grow.position", 0, 16, "point.position.0"));
+    AT(dvz_frame_plan_render(frame0, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(frame0, "visual.grow.0"));
+
+    AT(dvz_frame_plan_upload(frame1, "buf.grow.position", 0, 256, "point.position.1"));
+    AT(dvz_frame_plan_render(frame1, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(frame1, "visual.grow.0"));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame0, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream0, 2)) ==
+       DVZ_DRP2_COMMAND_CREATE_BUFFER);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame1, &caps, &report, &emit_cfg);
+    ANN(stream1);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 0)) ==
+       DVZ_DRP2_COMMAND_CREATE_BUFFER);
+    AT(dvz_drp2_command_type(dvz_drp2_stream_get(stream1, 1)) ==
+       DVZ_DRP2_COMMAND_WRITE_BUFFER);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream1);
+    AT(result.ok);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream1);
+    dvz_drp2_stream_destroy(stream0);
+    dvz_frame_plan_destroy(frame1);
+    dvz_frame_plan_destroy(frame0);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
+
 int test_frame_plan_emitter_runtime_texture_two_frames(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2407,6 +2473,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_compute_assisted);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames);
+    TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_grow_buffer);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames);
 

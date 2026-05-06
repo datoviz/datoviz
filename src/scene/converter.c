@@ -25,6 +25,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_frame_plan.h"
+#include "_overflow.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -207,6 +208,95 @@ static uint64_t _resource_id(ConverterState* state, const char* key)
 
 
 
+/**
+ * Return the mutable resource entry for a scene resource key.
+ *
+ * @param state the converter state
+ * @param key the scene resource key
+ * @return the resource entry, or NULL when not found
+ */
+static ResourceId* _resource_find(ConverterState* state, const char* key)
+{
+    ANN(state);
+    ANN(key);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        if (strcmp(state->resources[i].key, key) == 0)
+            return &state->resources[i];
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Return a resource entry, creating it when needed.
+ *
+ * @param state the converter state
+ * @param key the scene resource key
+ * @param is_new whether a new entry was created
+ * @return the resource entry, or NULL when the map is full
+ */
+static ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new)
+{
+    ANN(state);
+    ANN(key);
+    ANN(is_new);
+
+    ResourceId* resource = _resource_find(state, key);
+    if (resource != NULL)
+    {
+        *is_new = false;
+        return resource;
+    }
+    if (state->count >= DRP2_MAX_FIXTURE_RESOURCES)
+        return NULL;
+
+    resource = &state->resources[state->count++];
+    dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
+    dvz_strlcpy(resource->key, key, sizeof(resource->key));
+    resource->id = state->next_id++;
+    *is_new = true;
+    return resource;
+}
+
+
+
+/**
+ * Ensure a persisted resource has enough byte capacity.
+ *
+ * @param state the converter state
+ * @param resource the resource entry
+ * @param required_size the required byte size
+ * @param needs_create whether a CreateBuffer command must be emitted
+ * @return whether the resource was sized successfully
+ */
+static bool _resource_ensure_byte_size(
+    ConverterState* state, ResourceId* resource, uint64_t required_size, bool* needs_create)
+{
+    ANN(state);
+    ANN(resource);
+    ANN(needs_create);
+
+    if (*needs_create || resource->byte_size == 0)
+    {
+        resource->byte_size = required_size;
+        *needs_create = true;
+        return true;
+    }
+    if (required_size <= resource->byte_size)
+        return true;
+
+    if (state->next_id == UINT64_MAX)
+        return false;
+    resource->id = state->next_id++;
+    resource->byte_size = required_size;
+    *needs_create = true;
+    return true;
+}
+
+
+
 static const char* _shader_format_tag(const DvzFramePlanEmitConfig* cfg)
 {
     if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
@@ -269,6 +359,32 @@ static uint64_t _obj_id(DvzFramePlanEmitter* emitter, const char* key, bool* is_
 
 
 /**
+ * Return a persistent runtime object id for a buffer with at least the requested size.
+ *
+ * @param emitter the persistent emitter
+ * @param key the object key
+ * @param byte_size the required byte size
+ * @param is_new whether a CreateBuffer command must be emitted
+ * @return the object id, or 0 on failure
+ */
+static uint64_t
+_obj_buffer_id(DvzFramePlanEmitter* emitter, const char* key, uint64_t byte_size, bool* is_new)
+{
+    ANN(emitter);
+    ANN(key);
+    ANN(is_new);
+
+    ResourceId* resource = _resource_entry(&emitter->objects, key, is_new);
+    if (resource == NULL)
+        return 0;
+    if (!_resource_ensure_byte_size(&emitter->objects, resource, byte_size, is_new))
+        return 0;
+    return resource->id;
+}
+
+
+
+/**
  * Fill a base64 string representing zero-initialized bytes.
  *
  * @param byte_size the decoded byte size
@@ -305,6 +421,37 @@ static bool _zero_base64(uint64_t byte_size, char* out, uint64_t out_size)
     }
     out[count] = '\0';
     return true;
+}
+
+
+
+/**
+ * Allocate a base64 string representing zero-initialized bytes.
+ *
+ * @param byte_size the decoded byte size
+ * @return the owned base64 string, or NULL on failure
+ */
+static char* _zero_base64_alloc(uint64_t byte_size)
+{
+    uint64_t groups = byte_size / 3;
+    uint64_t remainder = byte_size % 3;
+    uint64_t extra = remainder == 0 ? 0 : 4;
+    if (groups > (UINT64_MAX - extra) / 4)
+        return NULL;
+
+    uint64_t count = groups * 4 + extra;
+    if (count == UINT64_MAX)
+        return NULL;
+
+    char* out = (char*)dvz_malloc(count + 1);
+    if (out == NULL)
+        return NULL;
+    if (!_zero_base64(byte_size, out, count + 1))
+    {
+        dvz_free(out);
+        return NULL;
+    }
+    return out;
 }
 
 
@@ -426,7 +573,10 @@ static bool _validate_capabilities(
         {
         case DVZ_FRAME_PLAN_NODE_UPLOAD:
             upload_count++;
-            if (node->u.upload.byte_offset + node->u.upload.byte_size > caps->max_buffer_size)
+            uint64_t upload_end = 0;
+            if (_dvz_add_u64_overflows(
+                    node->u.upload.byte_offset, node->u.upload.byte_size, &upload_end) ||
+                upload_end > caps->max_buffer_size)
             {
                 _diagnostic(report, "upload buffer exceeds max_buffer_size");
                 return false;
@@ -585,16 +735,22 @@ _emit_upload(ConverterState* state, DvzDrp2CommandStream* stream, const DvzFrame
     if (state->first_vertex_buffer_id == 0)
         state->first_vertex_buffer_id = id;
 
-    char data[128] = {0};
-    if (!_zero_base64(node->u.upload.byte_size, data, sizeof(data)))
+    char* data = _zero_base64_alloc(node->u.upload.byte_size);
+    if (data == NULL)
         return false;
 
-    uint64_t buffer_size = node->u.upload.byte_offset + node->u.upload.byte_size;
+    uint64_t buffer_size = 0;
+    if (_dvz_add_u64_overflows(node->u.upload.byte_offset, node->u.upload.byte_size, &buffer_size))
+    {
+        dvz_free(data);
+        return false;
+    }
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
-    return dvz_drp2_stream_create_buffer(
-               stream, id, buffer_size, usage) &&
-           dvz_drp2_stream_write_buffer(
-               stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, data);
+    bool ok = dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage) &&
+              dvz_drp2_stream_write_buffer(
+                  stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, data);
+    dvz_free(data);
+    return ok;
 }
 
 
@@ -620,13 +776,15 @@ static bool _emit_texture_upload(
     if (state->first_texture_id == 0)
         state->first_texture_id = id;
 
-    char data[128] = {0};
-    if (!_zero_base64(node->u.upload.byte_size, data, sizeof(data)))
+    char* data = _zero_base64_alloc(node->u.upload.byte_size);
+    if (data == NULL)
         return false;
 
     uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
-    return dvz_drp2_stream_create_texture_2d_usage(stream, id, 2, 2, usage) &&
-           dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+    bool ok = dvz_drp2_stream_create_texture_2d_usage(stream, id, 2, 2, usage) &&
+              dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+    dvz_free(data);
+    return ok;
 }
 
 
@@ -661,18 +819,21 @@ static bool _emit_compute_buffers(
     state->first_vertex_buffer_id = output_id;
     state->compute_buffer_size = upload->u.upload.byte_size;
 
-    char data[128] = {0};
-    if (!_zero_base64(upload->u.upload.byte_size, data, sizeof(data)))
+    char* data = _zero_base64_alloc(upload->u.upload.byte_size);
+    if (data == NULL)
         return false;
 
-    return dvz_drp2_stream_create_buffer(
-               stream, input_id, upload->u.upload.byte_size,
-               DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE) &&
-           dvz_drp2_stream_write_buffer(
-               stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size, data) &&
-           dvz_drp2_stream_create_buffer(
-               stream, output_id, upload->u.upload.byte_size,
-               DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_VERTEX);
+    bool ok = dvz_drp2_stream_create_buffer(
+                  stream, input_id, upload->u.upload.byte_size,
+                  DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE) &&
+              dvz_drp2_stream_write_buffer(
+                  stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size,
+                  data) &&
+              dvz_drp2_stream_create_buffer(
+                  stream, output_id, upload->u.upload.byte_size,
+                  DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_VERTEX);
+    dvz_free(data);
+    return ok;
 }
 
 
@@ -881,36 +1042,22 @@ static bool _emitter_emit_upload(
     ANN(node);
     ANN(out_id);
 
-    bool exists = false;
-    for (uint32_t i = 0; i < emitter->resources.count; i++)
-    {
-        if (strcmp(emitter->resources.resources[i].key, node->u.upload.resource_id) == 0)
-        {
-            exists = true;
-            break;
-        }
-    }
-
-    uint64_t id = _resource_id(&emitter->resources, node->u.upload.resource_id);
-    if (id == 0)
+    uint64_t buffer_size = 0;
+    if (_dvz_add_u64_overflows(node->u.upload.byte_offset, node->u.upload.byte_size, &buffer_size))
         return false;
 
-    /* Store data_tag and byte_size for vertex layout inference in _emitter_emit_render. */
-    for (uint32_t i = 0; i < emitter->resources.count; i++)
-    {
-        if (emitter->resources.resources[i].id == id)
-        {
-            dvz_strlcpy(emitter->resources.resources[i].data_tag,
-                        node->u.upload.data_tag,
-                        sizeof(emitter->resources.resources[i].data_tag));
-            emitter->resources.resources[i].byte_size = node->u.upload.byte_size;
-            break;
-        }
-    }
+    bool is_new = false;
+    ResourceId* resource =
+        _resource_entry(&emitter->resources, node->u.upload.resource_id, &is_new);
+    if (resource == NULL)
+        return false;
+    if (!_resource_ensure_byte_size(&emitter->resources, resource, buffer_size, &is_new))
+        return false;
 
-    uint64_t buffer_size = node->u.upload.byte_offset + node->u.upload.byte_size;
+    dvz_strlcpy(resource->data_tag, node->u.upload.data_tag, sizeof(resource->data_tag));
+    uint64_t id = resource->id;
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
-    if (!exists && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
+    if (is_new && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
         return false;
     if (emitter->resources.first_vertex_buffer_id == 0)
         emitter->resources.first_vertex_buffer_id = id;
@@ -926,11 +1073,13 @@ static bool _emitter_emit_upload(
     else
     {
         /* No data: write zeros (placeholder / test path). */
-        char zero_data[128] = {0};
-        if (!_zero_base64(node->u.upload.byte_size, zero_data, sizeof(zero_data)))
+        char* zero_data = _zero_base64_alloc(node->u.upload.byte_size);
+        if (zero_data == NULL)
             return false;
-        return dvz_drp2_stream_write_buffer(
+        bool ok = dvz_drp2_stream_write_buffer(
             stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, zero_data);
+        dvz_free(zero_data);
+        return ok;
     }
 }
 
@@ -967,17 +1116,22 @@ static bool _emitter_emit_texture_upload(
     if (id == 0)
         return false;
 
-    char data[128] = {0};
-    if (!_zero_base64(node->u.upload.byte_size, data, sizeof(data)))
+    char* data = _zero_base64_alloc(node->u.upload.byte_size);
+    if (data == NULL)
         return false;
 
     uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
     if (!exists && !dvz_drp2_stream_create_texture_2d_usage(stream, id, 2, 2, usage))
+    {
+        dvz_free(data);
         return false;
+    }
     if (emitter->resources.first_texture_id == 0)
         emitter->resources.first_texture_id = id;
     *out_id = id;
-    return dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+    bool ok = dvz_drp2_stream_write_texture_2d(stream, id, 0, 2, 2, 8, 2, data);
+    dvz_free(data);
+    return ok;
 }
 
 
@@ -1002,46 +1156,52 @@ static bool _emitter_emit_compute_buffers(
     if (compute->u.compute.write_count == 0)
         return false;
 
-    bool input_exists = false;
-    bool output_exists = false;
-    for (uint32_t i = 0; i < emitter->resources.count; i++)
-    {
-        if (strcmp(emitter->resources.resources[i].key, upload->u.upload.resource_id) == 0)
-            input_exists = true;
-        if (strcmp(emitter->resources.resources[i].key, compute->u.compute.writes[0]) == 0)
-            output_exists = true;
-    }
-
-    uint64_t input_id = _resource_id(&emitter->resources, upload->u.upload.resource_id);
-    uint64_t output_id = _resource_id(&emitter->resources, compute->u.compute.writes[0]);
-    if (input_id == 0 || output_id == 0)
+    uint64_t input_size = 0;
+    if (_dvz_add_u64_overflows(
+            upload->u.upload.byte_offset, upload->u.upload.byte_size, &input_size))
         return false;
 
+    bool input_create = false;
+    bool output_create = false;
+    ResourceId* input =
+        _resource_entry(&emitter->resources, upload->u.upload.resource_id, &input_create);
+    ResourceId* output =
+        _resource_entry(&emitter->resources, compute->u.compute.writes[0], &output_create);
+    if (input == NULL || output == NULL)
+        return false;
+    if (!_resource_ensure_byte_size(&emitter->resources, input, input_size, &input_create))
+        return false;
+    if (!_resource_ensure_byte_size(&emitter->resources, output, input_size, &output_create))
+        return false;
+
+    uint64_t input_id = input->id;
+    uint64_t output_id = output->id;
     emitter->resources.first_compute_input_id = input_id;
     emitter->resources.first_compute_output_id = output_id;
     emitter->resources.first_vertex_buffer_id = output_id;
-    emitter->resources.compute_buffer_size = upload->u.upload.byte_size;
+    emitter->resources.compute_buffer_size = input_size;
 
-    char data[128] = {0};
-    if (!_zero_base64(upload->u.upload.byte_size, data, sizeof(data)))
+    char* data = _zero_base64_alloc(upload->u.upload.byte_size);
+    if (data == NULL)
         return false;
 
     bool ok = true;
-    if (!input_exists)
+    if (input_create)
     {
         ok = ok && dvz_drp2_stream_create_buffer(
-                       stream, input_id, upload->u.upload.byte_size,
+                       stream, input_id, input_size,
                        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_STORAGE);
     }
     ok = ok && dvz_drp2_stream_write_buffer(
                    stream, input_id, upload->u.upload.byte_offset, upload->u.upload.byte_size,
                    data);
-    if (!output_exists)
+    if (output_create)
     {
         ok = ok && dvz_drp2_stream_create_buffer(
-                       stream, output_id, upload->u.upload.byte_size,
+                       stream, output_id, input_size,
                        DVZ_DRP2_BUFFER_USAGE_STORAGE | DVZ_DRP2_BUFFER_USAGE_VERTEX);
     }
+    dvz_free(data);
     return ok;
 }
 
@@ -1202,7 +1362,7 @@ static bool _emitter_emit_render(
     uint64_t rb_id = 0;
     if (readback != NULL)
     {
-        rb_id = _obj_id(emitter, "_rb", &is_new);
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
         if (rb_id == 0)
             return false;
         if (ok && is_new)
@@ -1347,7 +1507,7 @@ static bool _emitter_emit_texture_render(
     uint64_t rb_id = 0;
     if (readback != NULL)
     {
-        rb_id = _obj_id(emitter, "_rb", &is_new);
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
         if (rb_id == 0)
             return false;
         if (ok && is_new)
@@ -1510,7 +1670,7 @@ static bool _emitter_emit_compute_assisted_render(
     uint64_t rb_id = 0;
     if (readback != NULL)
     {
-        rb_id = _obj_id(emitter, "_rb", &is_new);
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
         if (rb_id == 0)
             return false;
         if (ok && is_new)
