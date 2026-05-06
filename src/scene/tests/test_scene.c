@@ -265,14 +265,12 @@ static uint32_t _stream_write_buffer_range_count(
 
 
 /**
- * Count DRAW commands with a given vertex count in a DRP2 stream.
+ * Count DRAW commands in a DRP2 stream.
  *
  * @param stream the command stream
- * @param vertex_count expected vertex count
- * @return number of matching DRAW commands
+ * @return number of DRAW commands
  */
-static uint32_t _stream_draw_vertex_count(
-    const DvzDrp2CommandStream* stream, uint32_t vertex_count)
+static uint32_t _stream_draw_count(const DvzDrp2CommandStream* stream)
 {
     ANN(stream);
 
@@ -280,7 +278,29 @@ static uint32_t _stream_draw_vertex_count(
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        if (cmd->type == DVZ_DRP2_COMMAND_DRAW && cmd->u.draw.vertex_count == vertex_count)
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Count SET_VERTEX_BUFFER commands in a DRP2 stream.
+ *
+ * @param stream the command stream
+ * @return number of SET_VERTEX_BUFFER commands
+ */
+static uint32_t _stream_set_vertex_buffer_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
             count++;
     }
     return count;
@@ -2797,6 +2817,85 @@ int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem
 
 
 
+int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    AT(left != NULL);
+    AT(right != NULL);
+
+    DvzVisual* visual_a = dvz_point(scene, 0);
+    DvzVisual* visual_b = dvz_point(scene, 0);
+    AT(visual_a != NULL);
+    AT(visual_b != NULL);
+
+    float pos_a[2 * 3] = {
+        -0.75f, 0.0f, 0.0f,
+        -0.60f, 0.0f, 0.0f,
+    };
+    float pos_b[3 * 3] = {
+        0.15f, 0.0f, 0.0f,
+        0.30f, 0.0f, 0.0f,
+        0.45f, 0.0f, 0.0f,
+    };
+    DvzColor color_a[2] = {{255, 0, 0, 255}, {255, 0, 0, 255}};
+    DvzColor color_b[3] = {
+        {0, 255, 0, 255},
+        {0, 255, 0, 255},
+        {0, 255, 0, 255},
+    };
+    float size_a[2] = {5.0f, 5.0f};
+    float size_b[3] = {6.0f, 6.0f, 6.0f};
+
+    AT(dvz_visual_set_data(visual_a, "position", pos_a, 2) == 0);
+    AT(dvz_visual_set_data(visual_a, "color", color_a, 2) == 0);
+    AT(dvz_visual_set_data(visual_a, "size", size_a, 2) == 0);
+    AT(dvz_visual_set_data(visual_b, "position", pos_b, 3) == 0);
+    AT(dvz_visual_set_data(visual_b, "color", color_b, 3) == 0);
+    AT(dvz_visual_set_data(visual_b, "size", size_b, 3) == 0);
+    AT(dvz_panel_add_visual(left, visual_a) == 0);
+    AT(dvz_panel_add_visual(right, visual_b) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream1 != NULL);
+    AT(_stream_write_buffer_count(stream1) == 6);
+    AT(_stream_set_vertex_buffer_count(stream1) == 6);
+    AT(_stream_draw_count(stream1) == 2);
+    dvz_drp2_stream_destroy(stream1);
+
+    float size_update[2] = {10.0f, 11.0f};
+    AT(dvz_visual_set_data_range(visual_b, "size", size_update, 1, 2) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
+    AT(_stream_write_buffer_count(stream2) == 1);
+    AT(_stream_write_buffer_range_count(stream2, sizeof(float), 2 * sizeof(float)) == 1);
+    AT(_stream_set_vertex_buffer_count(stream2) == 6);
+    AT(_stream_draw_count(stream2) == 2);
+
+    dvz_drp2_stream_destroy(stream2);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
 {
@@ -2886,6 +2985,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_partial_update_uploads_only_range);
     TEST_SIMPLE(test_scene_repeated_partial_updates_across_frames);
     TEST_SIMPLE(test_scene_partial_update_merges_ranges_before_emit);
+    TEST_SIMPLE(test_scene_multiple_panels_multiple_point_visuals_emit);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);

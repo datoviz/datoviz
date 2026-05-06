@@ -110,6 +110,8 @@ int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* 
 
 int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem* item);
 
+int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstItem* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 

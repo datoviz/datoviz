@@ -1502,6 +1502,60 @@ static bool _emitter_emit_render(
 }
 
 
+
+/**
+ * Emit all plain render nodes in a runtime-mode FramePlan.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param plan the FramePlan
+ * @param fallback_vertex_buffer_ids uploaded vertex buffer ids used when visual ids are generic
+ * @param fallback_vertex_buffer_count number of fallback vertex buffer ids
+ * @param readback the optional readback copy node
+ * @param cfg the emission config
+ * @return whether all render commands were emitted
+ */
+static bool _emitter_emit_plain_renders(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const uint64_t* fallback_vertex_buffer_ids, uint32_t fallback_vertex_buffer_count,
+    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(plan);
+
+    bool ok = true;
+    uint32_t render_count = 0;
+    for (uint32_t i = 0; ok && i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+
+        uint64_t vertex_buffer_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
+        uint32_t vertex_buffer_count = 0;
+        ok = _emitter_resolve_render_vertex_buffers(
+            emitter, render, vertex_buffer_ids, &vertex_buffer_count);
+        if (!ok && fallback_vertex_buffer_ids != NULL && fallback_vertex_buffer_count > 0)
+        {
+            ok = true;
+            vertex_buffer_count = fallback_vertex_buffer_count;
+            for (uint32_t j = 0; j < vertex_buffer_count; j++)
+                vertex_buffer_ids[j] = fallback_vertex_buffer_ids[j];
+        }
+        if (ok)
+        {
+            ok = _emitter_emit_render(
+                emitter, stream, vertex_buffer_ids, vertex_buffer_count,
+                render_count == 0 ? readback : NULL, cfg);
+        }
+        render_count++;
+    }
+    return ok && render_count > 0;
+}
+
+
+
 /**
  * Emit runtime-mode clear-only render commands.
  *
@@ -2133,8 +2187,8 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     ANN(stream);
 
     bool ok = true;
-    uint64_t vertex_buffer_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
-    uint32_t vertex_buffer_count = 0;
+    uint64_t fallback_vertex_buffer_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
+    uint32_t fallback_vertex_buffer_count = 0;
     uint64_t texture_id = 0;
     if (!emitter->handshake_sent)
     {
@@ -2157,21 +2211,14 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
             }
             else
             {
-                if (vertex_buffer_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
-                {
-                    ok = false;
-                    break;
-                }
+                uint64_t uploaded_id = 0;
                 ok = _emitter_emit_upload(
-                    emitter, stream, &plan->nodes[i], &vertex_buffer_ids[vertex_buffer_count]);
-                if (ok)
-                    vertex_buffer_count++;
+                    emitter, stream, &plan->nodes[i], &uploaded_id);
+                if (ok && fallback_vertex_buffer_count < DVZ_SCENE_MAX_NODE_RESOURCES)
+                    fallback_vertex_buffer_ids[fallback_vertex_buffer_count++] = uploaded_id;
             }
         }
     }
-    if (ok && !clear_only && compute == NULL && !texture_render && vertex_buffer_count == 0)
-        ok = _emitter_resolve_render_vertex_buffers(
-            emitter, render, vertex_buffer_ids, &vertex_buffer_count);
 
     ok = ok && (clear_only
                     ? _emitter_emit_clear_only(emitter, stream, copy, cfg)
@@ -2179,8 +2226,9 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
                     ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
                     : texture_render
                     ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
-                    : _emitter_emit_render(
-                          emitter, stream, vertex_buffer_ids, vertex_buffer_count, copy, cfg));
+                    : _emitter_emit_plain_renders(
+                          emitter, stream, plan, fallback_vertex_buffer_ids,
+                          fallback_vertex_buffer_count, copy, cfg));
     if (!ok)
     {
         _diagnostic(report, "failed to emit runtime DRP2 stream");
