@@ -385,7 +385,16 @@ int dvz_visual_set_data(
         attr->data = NULL;
     }
     if (attr->data == NULL)
+    {
         attr->data = dvz_malloc(byte_size);
+        if (attr->data == NULL)
+        {
+            attr->item_count       = 0;
+            attr->dirty_first_item = 0;
+            attr->dirty_item_count = 0;
+            return -1;
+        }
+    }
 
     dvz_memcpy(attr->data, byte_size, data, byte_size);
     attr->item_count       = item_count;

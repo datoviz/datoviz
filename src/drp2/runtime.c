@@ -2989,13 +2989,17 @@ static DvzDrp2ValidationResult _vklite_write_buffer(
     {
         dvz_buffer_upload(object->buffer, offset, size, command->u.write_buffer.data_raw);
     }
-    else
+    else if (command->u.write_buffer.data_base64 != NULL)
     {
         uint8_t* data = NULL;
         if (!_decode_base64_exact(command->u.write_buffer.data_base64, size, &data))
             return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
         dvz_buffer_upload(object->buffer, offset, size, data);
         dvz_free(data);
+    }
+    else
+    {
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     }
     return _ok();
 }
@@ -3018,7 +3022,8 @@ static DvzDrp2ValidationResult _vklite_write_texture(
     uint8_t* decoded = NULL;
     if (upload_src == NULL)
     {
-        if (!_decode_base64_exact(command->u.write_texture.data_base64, size, &decoded))
+        if (command->u.write_texture.data_base64 == NULL ||
+            !_decode_base64_exact(command->u.write_texture.data_base64, size, &decoded))
             return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
         upload_src = decoded;
     }

@@ -1557,17 +1557,24 @@ bool dvz_drp2_stream_write_buffer(
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_BUFFER);
     if (command == NULL)
         return false;
-    command->u.write_buffer.buffer_id = buffer_id;
-    command->u.write_buffer.offset = offset;
-    command->u.write_buffer.size = size;
+
+    const char* src = data_base64 ? data_base64 : "";
+    size_t n = strlen(src) + 1;
+    char* buf = (char*)dvz_malloc(n);
+    if (buf == NULL)
     {
-        const char* src = data_base64 ? data_base64 : "";
-        size_t n = strlen(src) + 1;
-        command->u.write_buffer.data_base64 = (char*)dvz_malloc(n);
-        if (command->u.write_buffer.data_base64)
-            memcpy(command->u.write_buffer.data_base64, src, n);
+        /* Roll back: leaving a half-built WriteBuffer command in the stream would
+           crash the runtime when both data_raw and data_base64 are NULL. */
+        stream->count--;
+        return false;
     }
-    return command->u.write_buffer.data_base64 != NULL;
+    memcpy(buf, src, n);
+
+    command->u.write_buffer.buffer_id   = buffer_id;
+    command->u.write_buffer.offset      = offset;
+    command->u.write_buffer.size        = size;
+    command->u.write_buffer.data_base64 = buf;
+    return true;
 }
 
 
@@ -1592,21 +1599,26 @@ bool dvz_drp2_stream_write_texture_2d(
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
     if (command == NULL)
         return false;
-    command->u.write_texture.texture_id = texture_id;
-    command->u.write_texture.mip_level = mip_level;
-    command->u.write_texture.width = width;
-    command->u.write_texture.height = height;
-    command->u.write_texture.depth = 1;
-    command->u.write_texture.bytes_per_row = bytes_per_row;
-    command->u.write_texture.rows_per_image = rows_per_image;
+
+    const char* src = data_base64 ? data_base64 : "";
+    size_t n = strlen(src) + 1;
+    char* buf = (char*)dvz_malloc(n);
+    if (buf == NULL)
     {
-        const char* src = data_base64 ? data_base64 : "";
-        size_t n = strlen(src) + 1;
-        command->u.write_texture.data_base64 = (char*)dvz_malloc(n);
-        if (command->u.write_texture.data_base64)
-            memcpy(command->u.write_texture.data_base64, src, n);
+        stream->count--;
+        return false;
     }
-    return command->u.write_texture.data_base64 != NULL;
+    memcpy(buf, src, n);
+
+    command->u.write_texture.texture_id     = texture_id;
+    command->u.write_texture.mip_level      = mip_level;
+    command->u.write_texture.width          = width;
+    command->u.write_texture.height         = height;
+    command->u.write_texture.depth          = 1;
+    command->u.write_texture.bytes_per_row  = bytes_per_row;
+    command->u.write_texture.rows_per_image = rows_per_image;
+    command->u.write_texture.data_base64    = buf;
+    return true;
 }
 
 
@@ -1620,24 +1632,29 @@ bool dvz_drp2_stream_write_texture_2d_region(
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
     if (command == NULL)
         return false;
-    command->u.write_texture.texture_id    = texture_id;
-    command->u.write_texture.mip_level     = mip_level;
-    command->u.write_texture.origin_x      = origin_x;
-    command->u.write_texture.origin_y      = origin_y;
-    command->u.write_texture.origin_z      = 0;
-    command->u.write_texture.width         = width;
-    command->u.write_texture.height        = height;
-    command->u.write_texture.depth         = 1;
-    command->u.write_texture.bytes_per_row = bytes_per_row;
-    command->u.write_texture.rows_per_image = rows_per_image;
+
+    const char* src = data_base64 ? data_base64 : "";
+    size_t n = strlen(src) + 1;
+    char* buf = (char*)dvz_malloc(n);
+    if (buf == NULL)
     {
-        const char* src = data_base64 ? data_base64 : "";
-        size_t n = strlen(src) + 1;
-        command->u.write_texture.data_base64 = (char*)dvz_malloc(n);
-        if (command->u.write_texture.data_base64)
-            memcpy(command->u.write_texture.data_base64, src, n);
+        stream->count--;
+        return false;
     }
-    return command->u.write_texture.data_base64 != NULL;
+    memcpy(buf, src, n);
+
+    command->u.write_texture.texture_id     = texture_id;
+    command->u.write_texture.mip_level      = mip_level;
+    command->u.write_texture.origin_x       = origin_x;
+    command->u.write_texture.origin_y       = origin_y;
+    command->u.write_texture.origin_z       = 0;
+    command->u.write_texture.width          = width;
+    command->u.write_texture.height         = height;
+    command->u.write_texture.depth          = 1;
+    command->u.write_texture.bytes_per_row  = bytes_per_row;
+    command->u.write_texture.rows_per_image = rows_per_image;
+    command->u.write_texture.data_base64    = buf;
+    return true;
 }
 
 
@@ -1669,6 +1686,17 @@ bool dvz_drp2_stream_write_texture_3d(
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
     if (command == NULL)
         return false;
+
+    const char* src = data_base64 ? data_base64 : "";
+    size_t n = strlen(src) + 1;
+    char* buf = (char*)dvz_malloc(n);
+    if (buf == NULL)
+    {
+        stream->count--;
+        return false;
+    }
+    memcpy(buf, src, n);
+
     command->u.write_texture.texture_id     = texture_id;
     command->u.write_texture.mip_level      = mip_level;
     command->u.write_texture.origin_x       = origin_x;
@@ -1679,14 +1707,8 @@ bool dvz_drp2_stream_write_texture_3d(
     command->u.write_texture.depth          = depth;
     command->u.write_texture.bytes_per_row  = bytes_per_row;
     command->u.write_texture.rows_per_image = rows_per_image;
-    {
-        const char* src = data_base64 ? data_base64 : "";
-        size_t n = strlen(src) + 1;
-        command->u.write_texture.data_base64 = (char*)dvz_malloc(n);
-        if (command->u.write_texture.data_base64)
-            memcpy(command->u.write_texture.data_base64, src, n);
-    }
-    return command->u.write_texture.data_base64 != NULL;
+    command->u.write_texture.data_base64    = buf;
+    return true;
 }
 
 
