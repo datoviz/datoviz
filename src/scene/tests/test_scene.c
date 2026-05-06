@@ -2633,6 +2633,170 @@ int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    const uint32_t N = 20;
+    float positions[20 * 3];
+    DvzColor colors[20];
+    float sizes[20];
+    for (uint32_t i = 0; i < N; i++)
+    {
+        positions[3 * i]     = (float)i / (float)N * 2.0f - 1.0f;
+        positions[3 * i + 1] = 0.0f;
+        positions[3 * i + 2] = 0.0f;
+        colors[i][0]         = 255;
+        colors[i][1]         = 0;
+        colors[i][2]         = 0;
+        colors[i][3]         = 255;
+        sizes[i]             = 5.0f;
+    }
+    AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, N) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, N) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream1 != NULL);
+    dvz_drp2_stream_destroy(stream1);
+
+    const uint64_t item_size = 3 * sizeof(float);
+
+    float frame2_pos[3 * 3] = {
+        -0.25f, 0.25f, 0.0f,
+        -0.15f, 0.25f, 0.0f,
+        -0.05f, 0.25f, 0.0f,
+    };
+    uint64_t frame2_offset = 2 * item_size;
+    uint64_t frame2_size = 3 * item_size;
+    AT(dvz_visual_set_data_range(visual, "position", frame2_pos, 2, 3) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
+    AT(_stream_write_buffer_count(stream2) == 1);
+    AT(_stream_write_buffer_range_count(stream2, frame2_offset, frame2_size) == 1);
+    dvz_drp2_stream_destroy(stream2);
+
+    float frame3_pos[2 * 3] = {
+        0.25f, -0.25f, 0.0f,
+        0.35f, -0.25f, 0.0f,
+    };
+    uint64_t frame3_offset = 10 * item_size;
+    uint64_t frame3_size = 2 * item_size;
+    AT(dvz_visual_set_data_range(visual, "position", frame3_pos, 10, 2) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream3 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream3 != NULL);
+    AT(_stream_write_buffer_count(stream3) == 1);
+    AT(_stream_write_buffer_range_count(stream3, frame2_offset, frame2_size) == 0);
+    AT(_stream_write_buffer_range_count(stream3, frame3_offset, frame3_size) == 1);
+
+    dvz_drp2_stream_destroy(stream3);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    const uint32_t N = 20;
+    float positions[20 * 3];
+    DvzColor colors[20];
+    float sizes[20];
+    for (uint32_t i = 0; i < N; i++)
+    {
+        positions[3 * i]     = (float)i / (float)N * 2.0f - 1.0f;
+        positions[3 * i + 1] = 0.0f;
+        positions[3 * i + 2] = 0.0f;
+        colors[i][0]         = 0;
+        colors[i][1]         = 255;
+        colors[i][2]         = 0;
+        colors[i][3]         = 255;
+        sizes[i]             = 5.0f;
+    }
+    AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, N) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, N) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream1 != NULL);
+    dvz_drp2_stream_destroy(stream1);
+
+    float update_a[2 * 3] = {
+        -0.75f, 0.1f, 0.0f,
+        -0.65f, 0.1f, 0.0f,
+    };
+    float update_b[3 * 3] = {
+        0.15f, 0.1f, 0.0f,
+        0.25f, 0.1f, 0.0f,
+        0.35f, 0.1f, 0.0f,
+    };
+    AT(dvz_visual_set_data_range(visual, "position", update_a, 2, 2) == 0);
+    AT(dvz_visual_set_data_range(visual, "position", update_b, 8, 3) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
+
+    const uint64_t item_size = 3 * sizeof(float);
+    const uint64_t expected_offset = 2 * item_size;
+    const uint64_t expected_size = 9 * item_size;
+    AT(_stream_write_buffer_count(stream2) == 1);
+    AT(_stream_write_buffer_range_count(stream2, expected_offset, expected_size) == 1);
+
+    dvz_drp2_stream_destroy(stream2);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
 {
@@ -2720,6 +2884,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_second_emit_no_uploads_when_not_dirty);
     TEST_SIMPLE(test_scene_partial_update_uploads_only_range);
+    TEST_SIMPLE(test_scene_repeated_partial_updates_across_frames);
+    TEST_SIMPLE(test_scene_partial_update_merges_ranges_before_emit);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);
