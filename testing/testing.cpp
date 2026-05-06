@@ -34,6 +34,7 @@
 /*************************************************************************************************/
 
 #define TST_LOG_CAPTURE_DEFAULT_CAPACITY 16
+#define TST_RESULT_NAME_WIDTH           68
 
 static void _tst_log_capture_reset(TstSuite* suite)
 {
@@ -161,14 +162,14 @@ static void print_test(int index, const char* name)
 
 static void print_res(int index, const char* name, int res)
 {
-    printf("%50s", name ? name : "");
+    printf("%*s", TST_RESULT_NAME_WIDTH, name ? name : "");
     printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
 }
 
 static void print_res_begin(int index, const char* name)
 {
     log_debug("starting test #%03d %s", index, name ? name : "");
-    printf("%50s...", name);
+    printf("%*s...", TST_RESULT_NAME_WIDTH, name);
 }
 
 static void print_res_end(int index, const char* name, int res)
