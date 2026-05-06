@@ -163,9 +163,9 @@ static void _present_log_loader_env(void)
     const char* drv = getenv("VK_DRIVER_FILES");
     const char* dyld = getenv("DYLD_LIBRARY_PATH");
 
-    log_warn("vklite present tests: VK_ICD_FILENAMES=%s", icd ? icd : "(null)");
-    log_warn("vklite present tests: VK_DRIVER_FILES=%s", drv ? drv : "(null)");
-    log_warn("vklite present tests: DYLD_LIBRARY_PATH=%s", dyld ? dyld : "(null)");
+    log_debug("vklite present tests: VK_ICD_FILENAMES=%s", icd ? icd : "(null)");
+    log_debug("vklite present tests: VK_DRIVER_FILES=%s", drv ? drv : "(null)");
+    log_debug("vklite present tests: DYLD_LIBRARY_PATH=%s", dyld ? dyld : "(null)");
 
 #if OS_UNIX
     if (icd != NULL && icd[0] != '\0')
@@ -182,7 +182,7 @@ static void _present_log_loader_env(void)
             }
             first[len] = '\0';
             int exists = access(first, R_OK);
-            log_warn(
+            log_debug(
                 "vklite present tests: first ICD path '%s' readable=%d", first,
                 exists == 0 ? 1 : 0);
             dvz_free(first);
