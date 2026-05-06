@@ -58,6 +58,7 @@ struct DvzWindowConfig
     uint32_t height;
     const char* title;
     bool resizable;
+    bool visible;
     float user_scale;
 };
 

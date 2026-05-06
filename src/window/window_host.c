@@ -238,6 +238,7 @@ DvzWindowConfig dvz_window_default_config(void)
         .height = DVZ_WINDOW_DEFAULT_HEIGHT,
         .title = DVZ_WINDOW_DEFAULT_TITLE,
         .resizable = true,
+        .visible = true,
         .user_scale = 1.f,
     };
     return config;

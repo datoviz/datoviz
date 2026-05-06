@@ -277,6 +277,9 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     ANN(config);
     if (!_glfw_init())
         return false;
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, config->resizable ? GLFW_TRUE : GLFW_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, config->visible ? GLFW_TRUE : GLFW_FALSE);
     GLFWwindow* handle = glfwCreateWindow(
         (int)config->width, (int)config->height, config->title ? config->title : "", NULL, NULL);
     if (handle == NULL)
