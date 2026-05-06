@@ -21,40 +21,11 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_base64.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_overflow.h"
 #include "_stream.h"
-
-/* Minimal base64 encoder used by dvz_drp2_stream_write_buffer_bytes(). */
-static const char _B64_CHARS[] =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-static uint64_t _b64_encoded_len(uint64_t n) { return ((n + 2) / 3) * 4; }
-
-static bool _b64_encode(const uint8_t* data, uint64_t n, char* out, uint64_t out_cap)
-{
-    if (!data || !out || _b64_encoded_len(n) + 1 > out_cap) return false;
-    uint64_t i = 0, j = 0;
-    for (; i + 2 < n; i += 3) {
-        out[j++] = _B64_CHARS[(data[i] >> 2) & 0x3F];
-        out[j++] = _B64_CHARS[((data[i] & 0x3) << 4) | ((data[i+1] >> 4) & 0xF)];
-        out[j++] = _B64_CHARS[((data[i+1] & 0xF) << 2) | ((data[i+2] >> 6) & 0x3)];
-        out[j++] = _B64_CHARS[data[i+2] & 0x3F];
-    }
-    if (i < n) {
-        out[j++] = _B64_CHARS[(data[i] >> 2) & 0x3F];
-        if (i + 1 < n) {
-            out[j++] = _B64_CHARS[((data[i] & 0x3) << 4) | ((data[i+1] >> 4) & 0xF)];
-            out[j++] = _B64_CHARS[((data[i+1] & 0xF) << 2)];
-        } else {
-            out[j++] = _B64_CHARS[(data[i] & 0x3) << 4];
-            out[j++] = '=';
-        }
-        out[j++] = '=';
-    }
-    out[j] = '\0';
-    return true;
-}
 
 
 
@@ -86,48 +57,6 @@ struct JsonBuilder
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-/**
- * Multiply two unsigned 64-bit integers with overflow detection.
- *
- * @param a the first operand
- * @param b the second operand
- * @param out the product output
- * @return whether the multiplication would overflow
- */
-static bool _mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
-{
-    ANN(out);
-    if (a != 0 && b > UINT64_MAX / a)
-        return true;
-    *out = a * b;
-    return false;
-}
-
-
-
-/**
- * Add three unsigned 64-bit integers with overflow detection.
- *
- * @param a the first operand
- * @param b the second operand
- * @param c the third operand
- * @param out the sum output
- * @return whether the addition would overflow
- */
-static bool _add3_u64_overflows(uint64_t a, uint64_t b, uint64_t c, uint64_t* out)
-{
-    ANN(out);
-    if (b > UINT64_MAX - a)
-        return true;
-    uint64_t ab = a + b;
-    if (c > UINT64_MAX - ab)
-        return true;
-    *out = ab + c;
-    return false;
-}
-
-
-
 static bool _ensure_stream_capacity(DvzDrp2CommandStream* stream)
 {
     ANN(stream);
@@ -145,7 +74,7 @@ static bool _ensure_stream_capacity(DvzDrp2CommandStream* stream)
         return false;
     uint32_t capacity = stream->capacity * 2;
     uint64_t bytes = 0;
-    if (_mul_u64_overflows(capacity, sizeof(DvzDrp2Command), &bytes))
+    if (_dvz_mul_u64_overflows(capacity, sizeof(DvzDrp2Command), &bytes))
         return false;
 
     DvzDrp2Command* commands = (DvzDrp2Command*)dvz_realloc(stream->commands, bytes);
@@ -307,7 +236,7 @@ static bool _json_ensure(JsonBuilder* builder, uint64_t count)
     }
 
     uint64_t required = 0;
-    if (_add3_u64_overflows(builder->count, count, 1, &required))
+    if (_dvz_add3_u64_overflows(builder->count, count, 1, &required))
     {
         builder->failed = true;
         return false;
@@ -661,10 +590,10 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         char* b64_wb_tmp   = NULL;
         if (b64_wb == NULL && command->u.write_buffer.data_raw != NULL)
         {
-            uint64_t enc_len = _b64_encoded_len(command->u.write_buffer.size) + 1;
+            uint64_t enc_len = _dvz_b64_encoded_len(command->u.write_buffer.size) + 1;
             b64_wb_tmp = (char*)dvz_calloc((size_t)enc_len, 1);
             if (b64_wb_tmp)
-                _b64_encode(
+                _dvz_b64_encode(
                     (const uint8_t*)command->u.write_buffer.data_raw,
                     command->u.write_buffer.size, b64_wb_tmp, enc_len);
             b64_wb = b64_wb_tmp;
@@ -688,10 +617,10 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         char* b64_wt_tmp   = NULL;
         if (b64_wt == NULL && command->u.write_texture.data_raw != NULL)
         {
-            uint64_t enc_len = _b64_encoded_len(tex_size) + 1;
+            uint64_t enc_len = _dvz_b64_encoded_len(tex_size) + 1;
             b64_wt_tmp = (char*)dvz_calloc((size_t)enc_len, 1);
             if (b64_wt_tmp)
-                _b64_encode(
+                _dvz_b64_encode(
                     (const uint8_t*)command->u.write_texture.data_raw, tex_size, b64_wt_tmp,
                     enc_len);
             b64_wt = b64_wt_tmp;

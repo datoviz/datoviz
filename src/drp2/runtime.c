@@ -26,7 +26,9 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_base64.h"
 #include "_log.h"
+#include "_overflow.h"
 #include "_stream.h"
 #include "datoviz/stream/frame_stream.h"
 #include "datoviz/vk/gpu_ctx.h"
@@ -282,25 +284,6 @@ static bool _range_overflows(uint64_t offset, uint64_t size, uint64_t total)
 
 
 
-/**
- * Multiply two unsigned 64-bit integers with overflow detection.
- *
- * @param a the first operand
- * @param b the second operand
- * @param out the product output
- * @return whether the multiplication would overflow
- */
-static bool _mul_u64_overflows(uint64_t a, uint64_t b, uint64_t* out)
-{
-    ANN(out);
-    if (a != 0 && b > UINT64_MAX / a)
-        return true;
-    *out = a * b;
-    return false;
-}
-
-
-
 static bool _texture_box_overflows(
     const Drp2Object* texture, uint32_t origin_x, uint32_t origin_y, uint32_t origin_z,
     uint32_t width, uint32_t height, uint32_t depth)
@@ -360,7 +343,7 @@ static bool _ensure_capacity(Drp2RuntimeState* state)
         return false;
     uint32_t capacity = state->capacity * 2;
     uint64_t bytes = 0;
-    if (_mul_u64_overflows(capacity, sizeof(Drp2Object), &bytes))
+    if (_dvz_mul_u64_overflows(capacity, sizeof(Drp2Object), &bytes))
         return false;
 
     Drp2Object* objects = (Drp2Object*)dvz_realloc(state->objects, bytes);
@@ -1701,89 +1684,6 @@ _runtime_validate_stream(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 
 
 #if DVZ_DRP2_HAS_VKLITE
-static int _base64_value(char c)
-{
-    if (c >= 'A' && c <= 'Z')
-        return c - 'A';
-    if (c >= 'a' && c <= 'z')
-        return c - 'a' + 26;
-    if (c >= '0' && c <= '9')
-        return c - '0' + 52;
-    if (c == '+')
-        return 62;
-    if (c == '/')
-        return 63;
-    return -1;
-}
-
-
-static bool _decode_base64_exact(const char* src, uint64_t expected_size, uint8_t** out)
-{
-    ANN(src);
-    ANN(out);
-    *out = NULL;
-    if (expected_size == 0)
-        return false;
-
-    uint8_t* decoded = (uint8_t*)dvz_calloc(expected_size, sizeof(uint8_t));
-    if (decoded == NULL)
-        return false;
-
-    uint32_t quad[4] = {0};
-    uint32_t quad_count = 0;
-    uint64_t written = 0;
-    bool padded = false;
-    for (uint32_t i = 0; src[i] != '\0'; i++)
-    {
-        char c = src[i];
-        if (c == ' ' || c == '\n' || c == '\r' || c == '\t')
-            continue;
-        if (padded && c != '=')
-        {
-            dvz_free(decoded);
-            return false;
-        }
-
-        if (c == '=')
-        {
-            quad[quad_count++] = 64;
-            padded = true;
-        }
-        else
-        {
-            int value = _base64_value(c);
-            if (value < 0)
-            {
-                dvz_free(decoded);
-                return false;
-            }
-            quad[quad_count++] = (uint32_t)value;
-        }
-
-        if (quad_count != 4)
-            continue;
-
-        if (written < expected_size)
-            decoded[written++] = (uint8_t)((quad[0] << 2) | (quad[1] >> 4));
-        if (quad[2] != 64 && written < expected_size)
-            decoded[written++] = (uint8_t)(((quad[1] & 0x0f) << 4) | (quad[2] >> 2));
-        if (quad[3] != 64 && written < expected_size)
-            decoded[written++] = (uint8_t)(((quad[2] & 0x03) << 6) | quad[3]);
-
-        quad_count = 0;
-    }
-
-    if (quad_count != 0 || written != expected_size)
-    {
-        dvz_free(decoded);
-        return false;
-    }
-
-    *out = decoded;
-    return true;
-}
-
-
 static VkBufferUsageFlags _vklite_buffer_usage(uint32_t usage)
 {
     VkBufferUsageFlags out = 0;
@@ -1852,7 +1752,7 @@ static bool _vklite_ensure_capacity(Drp2VkliteState* state)
         return false;
     uint32_t capacity = state->capacity * 2;
     uint64_t bytes = 0;
-    if (_mul_u64_overflows(capacity, sizeof(Drp2VkliteObject), &bytes))
+    if (_dvz_mul_u64_overflows(capacity, sizeof(Drp2VkliteObject), &bytes))
         return false;
 
     Drp2VkliteObject* objects = (Drp2VkliteObject*)dvz_realloc(state->objects, bytes);
@@ -2994,7 +2894,7 @@ static DvzDrp2ValidationResult _vklite_write_buffer(
     else if (command->u.write_buffer.data_base64 != NULL)
     {
         uint8_t* data = NULL;
-        if (!_decode_base64_exact(command->u.write_buffer.data_base64, size, &data))
+        if (!_dvz_b64_decode_exact(command->u.write_buffer.data_base64, size, &data))
             return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
         dvz_buffer_upload(object->buffer, offset, size, data);
         dvz_free(data);
@@ -3029,7 +2929,7 @@ static DvzDrp2ValidationResult _vklite_write_texture(
     if (upload_src == NULL)
     {
         if (command->u.write_texture.data_base64 == NULL ||
-            !_decode_base64_exact(command->u.write_texture.data_base64, size, &decoded))
+            !_dvz_b64_decode_exact(command->u.write_texture.data_base64, size, &decoded))
             return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
         upload_src = decoded;
     }
