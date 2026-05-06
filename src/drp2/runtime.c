@@ -2983,6 +2983,10 @@ static DvzDrp2ValidationResult _vklite_write_buffer(
     uint64_t offset = command->u.write_buffer.offset;
     uint64_t size   = command->u.write_buffer.size;
 
+    /* WebGPU-shaped: size==0 is a valid no-op. */
+    if (size == 0)
+        return _ok();
+
     if (command->u.write_buffer.data_raw != NULL)
     {
         dvz_buffer_upload(object->buffer, offset, size, command->u.write_buffer.data_raw);
@@ -3015,6 +3019,10 @@ static DvzDrp2ValidationResult _vklite_write_texture(
     uint64_t size = _texture_layout_size(
         command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
         command->u.write_texture.rows_per_image);
+
+    /* WebGPU-shaped: zero-size write is a valid no-op. */
+    if (size == 0)
+        return _ok();
 
     const void* upload_src = command->u.write_texture.data_raw;
     uint8_t* decoded = NULL;

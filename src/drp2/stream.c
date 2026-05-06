@@ -2280,17 +2280,20 @@ bool dvz_drp2_stream_write_buffer_bytes(
     const void* data)
 {
     ANN(stream);
-    if (data == NULL || size == 0)
+    /* WebGPU-shaped: size==0 is a valid no-op that does not need to be recorded. */
+    if (size == 0)
+        return true;
+    if (data == NULL)
         return false;
 
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_BUFFER);
     if (command == NULL)
         return false;
-    command->type                    = DVZ_DRP2_COMMAND_WRITE_BUFFER;
-    command->u.write_buffer.buffer_id = buffer_id;
-    command->u.write_buffer.offset   = offset;
-    command->u.write_buffer.size     = size;
-    command->u.write_buffer.data_raw = data;    /* borrowed; caller keeps alive */
+    command->type                       = DVZ_DRP2_COMMAND_WRITE_BUFFER;
+    command->u.write_buffer.buffer_id   = buffer_id;
+    command->u.write_buffer.offset      = offset;
+    command->u.write_buffer.size        = size;
+    command->u.write_buffer.data_raw    = data; /* borrowed; caller keeps alive */
     command->u.write_buffer.data_base64 = NULL; /* populated only for JSON serialization */
     return true;
 }
