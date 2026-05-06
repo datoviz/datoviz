@@ -64,6 +64,11 @@ struct DvzFramePlanNode
         } render;
         struct
         {
+            char panel_id[DVZ_SCENE_LABEL_SIZE];
+            char render_target_id[DVZ_SCENE_LABEL_SIZE];
+        } clear;
+        struct
+        {
             char src_resource_id[DVZ_SCENE_LABEL_SIZE];
             char dst_resource_id[DVZ_SCENE_LABEL_SIZE];
             uint64_t byte_size;

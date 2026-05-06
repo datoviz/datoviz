@@ -1965,11 +1965,11 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     const DvzFramePlanNode* upload = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    const DvzFramePlanNode* clear = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
-    bool clear_only = upload == NULL && compute == NULL && render != NULL &&
-                      render->u.render.visual_count == 0;
-    if ((!clear_only && upload == NULL) || render == NULL)
+    bool clear_only = upload == NULL && compute == NULL && clear != NULL;
+    if ((!clear_only && upload == NULL) || (clear_only ? clear == NULL : render == NULL))
     {
         _diagnostic(report, "fixture converter requires upload+render");
         return NULL;
@@ -2100,14 +2100,14 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     const DvzFramePlanNode* upload = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
     const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    const DvzFramePlanNode* clear = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
-    bool clear_only = upload == NULL && compute == NULL && render != NULL &&
-                      render->u.render.visual_count == 0;
+    bool clear_only = upload == NULL && compute == NULL && clear != NULL;
     bool retained_render = upload == NULL && compute == NULL && render != NULL &&
                            render->u.render.visual_count > 0;
 
-    if ((!clear_only && !retained_render && upload == NULL) || render == NULL)
+    if ((!clear_only && !retained_render && upload == NULL) || (clear_only ? clear == NULL : render == NULL))
     {
         _diagnostic(report, "runtime converter requires upload+render");
         return NULL;

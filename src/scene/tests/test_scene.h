@@ -28,6 +28,8 @@ int test_scene_capabilities_diagnostics(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_static_render(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_clear(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_growth_json(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item);

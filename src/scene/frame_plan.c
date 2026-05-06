@@ -117,6 +117,8 @@ static const char* _node_type_name(DvzFramePlanNodeType type)
         return "compute";
     case DVZ_FRAME_PLAN_NODE_RENDER:
         return "render";
+    case DVZ_FRAME_PLAN_NODE_CLEAR:
+        return "clear";
     case DVZ_FRAME_PLAN_NODE_COPY:
         return "copy";
     case DVZ_FRAME_PLAN_NODE_READBACK:
@@ -182,6 +184,13 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append(builder, ", \"visuals\": ");
         _json_append_string_array(builder, node->u.render.visual_count, node->u.render.visuals);
         _json_append(builder, ", \"picking\": %s }", node->u.render.picking ? "true" : "false");
+        break;
+    case DVZ_FRAME_PLAN_NODE_CLEAR:
+        _json_append(builder, "{ \"type\": \"%s\", \"panel_id\": ", _node_type_name(node->type));
+        _json_append_escaped_string(builder, node->u.clear.panel_id);
+        _json_append(builder, ", \"render_target_id\": ");
+        _json_append_escaped_string(builder, node->u.clear.render_target_id);
+        _json_append(builder, " }");
         break;
     case DVZ_FRAME_PLAN_NODE_COPY:
         _json_append(builder, "{ \"type\": \"%s\", \"src_resource_id\": ", _node_type_name(node->type));
@@ -521,6 +530,28 @@ bool dvz_frame_plan_render(
         node->u.render.render_target_id, DVZ_SCENE_LABEL_SIZE,
         render_target_id ? render_target_id : "");
     node->u.render.picking = picking;
+    return true;
+}
+
+
+
+/**
+ * Append a clear-only render node.
+ *
+ * @param plan the FramePlan
+ * @param panel_id the panel id
+ * @param render_target_id the render target id
+ * @return whether the node was appended
+ */
+bool dvz_frame_plan_clear(DvzFramePlan* plan, const char* panel_id, const char* render_target_id)
+{
+    DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
+    if (node == NULL)
+        return false;
+    _copy_label(node->u.clear.panel_id, DVZ_SCENE_LABEL_SIZE, panel_id ? panel_id : "");
+    _copy_label(
+        node->u.clear.render_target_id, DVZ_SCENE_LABEL_SIZE,
+        render_target_id ? render_target_id : "");
     return true;
 }
 

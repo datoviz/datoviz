@@ -245,6 +245,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
         char panel_id[64];
         dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);
+        if (panel->visual_count == 0)
+        {
+            dvz_frame_plan_clear(plan, panel_id, "rt");
+            continue;
+        }
         dvz_frame_plan_render(plan, panel_id, "rt", false);
 
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)

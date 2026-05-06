@@ -279,6 +279,31 @@ int test_frame_plan_static_render(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_clear(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.clear", 3);
+    ANN(plan);
+
+    AT(dvz_frame_plan_clear(plan, "panel.empty", "target.clear"));
+    AT(dvz_frame_plan_node_count(plan) == 1);
+    AT(dvz_frame_plan_node_type(dvz_frame_plan_node_get(plan, 0)) == DVZ_FRAME_PLAN_NODE_CLEAR);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"type\": \"clear\"") != NULL);
+    AT(strstr(json, "\"panel_id\": \"panel.empty\"") != NULL);
+    AT(strstr(json, "\"render_target_id\": \"target.clear\"") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 int test_frame_plan_growth_json(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2534,6 +2559,7 @@ int test_scene(TstSuite* suite)
 
     TEST_SIMPLE(test_scene_capabilities_diagnostics);
     TEST_SIMPLE(test_frame_plan_static_render);
+    TEST_SIMPLE(test_frame_plan_clear);
     TEST_SIMPLE(test_frame_plan_growth_json);
     TEST_SIMPLE(test_frame_plan_json_escapes_labels);
     TEST_SIMPLE(test_frame_plan_dynamic_update);

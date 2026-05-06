@@ -231,6 +231,19 @@ DVZ_EXPORT bool dvz_frame_plan_render(
 
 
 /**
+ * Append a clear-only render node.
+ *
+ * @param plan the FramePlan
+ * @param panel_id the panel id
+ * @param render_target_id the render target id
+ * @return whether the node was appended
+ */
+DVZ_EXPORT bool
+dvz_frame_plan_clear(DvzFramePlan* plan, const char* panel_id, const char* render_target_id);
+
+
+
+/**
  * Add a visual to the most recent render node.
  *
  * @param plan the FramePlan
