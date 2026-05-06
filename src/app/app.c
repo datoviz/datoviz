@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <inttypes.h>
 #include <stdint.h>
 
 #include "_alloc.h"
@@ -89,7 +90,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     ANN(app);
 
     /* Attach the canvas frame to the reserved DRP2 texture ID. */
-    dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame);
+    if (!dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame))
+    {
+        log_error("_app_draw failed to attach canvas frame target");
+        return;
+    }
 
     /* Emit the DRP2 command stream with the canvas as external color target. */
     DvzCapabilitySnapshot caps;
@@ -116,7 +121,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
-    dvz_drp2_runtime_execute(app->runtime, stream);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
+    if (!result.ok)
+        log_error("_app_draw runtime execution failed at command %" PRIu32, result.command_index);
     dvz_drp2_stream_destroy(stream);
 }
 
@@ -134,6 +141,8 @@ DvzApp* dvz_app(DvzScene* scene)
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzApp* app = (DvzApp*)dvz_calloc(1, sizeof(DvzApp));
+    if (app == NULL)
+        return NULL;
     app->scene  = scene;
 
     /* GPU context — request dynamic rendering, synchronization2, and timeline semaphores. */
@@ -166,6 +175,13 @@ DvzApp* dvz_app(DvzScene* scene)
     }
 
     app->window_host = dvz_window_host();
+    if (app->window_host == NULL)
+    {
+        dvz_drp2_runtime_destroy(app->runtime);
+        dvz_gpu_ctx_destroy(app->gpu_ctx);
+        dvz_free(app);
+        return NULL;
+    }
     return app;
 #else
     (void)scene;
@@ -176,7 +192,8 @@ DvzApp* dvz_app(DvzScene* scene)
 
 void dvz_app_destroy(DvzApp* app)
 {
-    ANN(app);
+    if (app == NULL)
+        return;
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     for (uint32_t i = 0; i < app->window_count; i++)

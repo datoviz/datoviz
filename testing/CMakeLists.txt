@@ -137,6 +137,7 @@ set(_dvz_has_vk 0)
 set(_dvz_has_canvas 0)
 set(_dvz_has_drp2 0)
 set(_dvz_has_scene 0)
+set(_dvz_has_app 0)
 
 if(TARGET datoviz_common AND TARGET datoviz_ds AND TARGET datoviz_fileio AND TARGET datoviz_math AND TARGET datoviz_thread)
     set(_dvz_has_core 1)
@@ -156,6 +157,10 @@ endif()
 
 if(TARGET datoviz_scene)
     set(_dvz_has_scene 1)
+endif()
+
+if(TARGET datoviz_app)
+    set(_dvz_has_app 1)
 endif()
 
 if(NOT _dvz_has_drp2)
@@ -302,6 +307,10 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         datoviz_scene
         testing
     )
+
+    if(_dvz_has_app)
+        target_link_libraries(dvztest_scene PRIVATE datoviz_app)
+    endif()
 
     if(_dvz_has_vk)
         target_link_libraries(dvztest_scene PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
@@ -531,6 +540,11 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         target_link_libraries(dvztest_integration PRIVATE datoviz_scene)
     endif()
 
+    if(TARGET datoviz_app)
+        target_link_libraries(dvztest PRIVATE datoviz_app)
+        target_link_libraries(dvztest_integration PRIVATE datoviz_app)
+    endif()
+
     if(DVZ_THREADING_TARGET)
         target_link_libraries(dvztest PRIVATE ${DVZ_THREADING_TARGET})
         target_link_libraries(dvztest_integration PRIVATE ${DVZ_THREADING_TARGET})
@@ -567,6 +581,10 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         datoviz_scene
         datoviz_volk
     )
+
+    if(TARGET datoviz_app)
+        target_link_libraries(dvz_live_canvas PRIVATE datoviz_app)
+    endif()
 
     if(DVZ_THREADING_TARGET)
         target_link_libraries(dvz_live_canvas PRIVATE ${DVZ_THREADING_TARGET})

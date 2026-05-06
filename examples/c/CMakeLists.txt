@@ -35,7 +35,10 @@ function(dvz_add_example name)
         datoviz_scene
     )
 
-    get_property(_dvz_has_vk GLOBAL PROPERTY DVZ_HAS_VK)
+    if(TARGET datoviz_app)
+        target_link_libraries(${name} PRIVATE datoviz_app)
+    endif()
+
     if(TARGET datoviz_vklite)
         target_link_libraries(${name} PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
     endif()
@@ -80,7 +83,7 @@ endfunction()
 # Examples
 # -------------------------------------------------------------------------------------------------
 
-if(TARGET datoviz_scene)
+if(TARGET datoviz_app)
     dvz_add_example(hello_point)
     dvz_add_example(hello_scatter)
 endif()

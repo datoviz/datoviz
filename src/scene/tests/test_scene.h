@@ -65,7 +65,9 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item);
 
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstSuite* suite, TstItem* item);
+#endif
 #endif
 
 int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item);
@@ -100,12 +102,14 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
 
 int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item);
 
-#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
-int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item);
-
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
+#endif
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item);
 #endif
 
 int test_scene(TstSuite* suite);

@@ -227,6 +227,7 @@ set(DVZ_COMPILE_DEFINITIONS ${DVZ_COMPILE_DEFINITIONS}
     DVZ_HAS_KVZ=${DVZ_HAS_KVZ}
     DVZ_HAS_DRP2=$<IF:$<BOOL:${DVZ_BUILD_DRP2}>,1,0>
     DVZ_HAS_SCENE=$<IF:$<BOOL:${DVZ_BUILD_SCENE}>,1,0>
+    DVZ_HAS_APP=$<IF:$<BOOL:${DVZ_BUILD_APP}>,1,0>
 
     # Vulkan Memory Allocator uses Volk-loaded entry points.
     VMA_STATIC_VULKAN_FUNCTIONS=0
@@ -308,6 +309,10 @@ set(DVZ_SCENE_COMPONENTS
     datoviz_scene
 )
 
+set(DVZ_APP_COMPONENTS
+    datoviz_app
+)
+
 if(NOT DVZ_BUILD_CORE AND (DVZ_BUILD_VK OR DVZ_BUILD_CANVAS))
     message(FATAL_ERROR "DVZ_BUILD_VK/DVZ_BUILD_CANVAS require DVZ_BUILD_CORE=ON.")
 endif()
@@ -326,6 +331,18 @@ endif()
 
 if(DVZ_BUILD_SCENE AND NOT DVZ_BUILD_DRP2)
     message(FATAL_ERROR "DVZ_BUILD_SCENE requires DVZ_BUILD_DRP2=ON.")
+endif()
+
+if(DVZ_BUILD_APP AND NOT DVZ_BUILD_SCENE)
+    message(FATAL_ERROR "DVZ_BUILD_APP requires DVZ_BUILD_SCENE=ON.")
+endif()
+
+if(DVZ_BUILD_APP AND NOT DVZ_BUILD_CANVAS)
+    message(FATAL_ERROR "DVZ_BUILD_APP requires DVZ_BUILD_CANVAS=ON.")
+endif()
+
+if(DVZ_BUILD_APP AND NOT DVZ_BUILD_VK)
+    message(FATAL_ERROR "DVZ_BUILD_APP requires DVZ_BUILD_VK=ON.")
 endif()
 
 if(DVZ_BUILD_CORE)
@@ -357,6 +374,10 @@ if(DVZ_BUILD_SCENE)
     add_subdirectory(scene)
 endif()
 
+if(DVZ_BUILD_APP)
+    add_subdirectory(app)
+endif()
+
 # -------------------------------------------------------------------------------------------------
 # Layered targets
 # -------------------------------------------------------------------------------------------------
@@ -377,6 +398,9 @@ if(DVZ_BUILD_DRP2)
 endif()
 if(DVZ_BUILD_SCENE)
     list(APPEND DVZ_COMPONENTS ${DVZ_SCENE_COMPONENTS})
+endif()
+if(DVZ_BUILD_APP)
+    list(APPEND DVZ_COMPONENTS ${DVZ_APP_COMPONENTS})
 endif()
 
 if(DVZ_BUILD_CORE)

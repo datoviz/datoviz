@@ -28,11 +28,13 @@
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
-#include "datoviz/app.h"
 #include "datoviz/canvas.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/window.h"
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+#include "datoviz/app.h"
+#endif
 
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* out);
@@ -1240,6 +1242,7 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
 
 
 
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -1334,6 +1337,7 @@ int test_frame_plan_emit_drp2_readback(TstSuite* suite, TstItem* item)
     dvz_frame_plan_destroy(plan);
     return 0;
 }
+#endif
 
 
 
@@ -2069,7 +2073,7 @@ int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item)
 
 
 
-#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2134,9 +2138,11 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
     dvz_scene_destroy(scene);
     return 0;
 }
+#endif
 
 
 
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2368,7 +2374,7 @@ int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item)
 
 
 
-#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2462,9 +2468,11 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames_glsl_executes);
     TEST_SIMPLE(test_scene_drp2_offscreen_canvas_frame);
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_clear_color);
+#endif
     TEST_SIMPLE(test_scene_point_large_count_executes);
 #endif
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback);
