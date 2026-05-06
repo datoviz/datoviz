@@ -49,6 +49,9 @@ DVZ_EXPORT void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilityS
 /**
  * Destroy a scene and all objects it owns.
  *
+ * This call is rejected while any emitted scene stream is still live. Destroy
+ * all streams returned by dvz_figure_emit() / dvz_figure_emit_ex() first.
+ *
  * @param scene the scene
  */
 DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
@@ -104,10 +107,9 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
  * Build the ordered frame execution plan for one frame.
  *
  * Lifetime: the returned stream embeds borrowed pointers into the visuals'
- * attribute buffers (see dvz_visual_set_data). The stream MUST be executed (or
- * destroyed unused) before the next call to dvz_visual_set_data on any
- * referenced visual; otherwise the next set_data call may realloc the
- * underlying buffer and leave the stream's data pointers dangling.
+ * attribute buffers (see dvz_visual_set_data). The stream remains live until
+ * dvz_drp2_stream_destroy() is called. While it is live, calls that mutate or
+ * destroy scene-owned visual data are rejected.
  *
  * @param figure the figure
  * @param caps the capability snapshot
@@ -121,8 +123,8 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit(
 /**
  * Emit a DRP2 command stream from a figure with an explicit emit configuration.
  *
- * Lifetime: same borrowed-pointer contract as dvz_figure_emit. Execute or
- * destroy the returned stream before mutating any visual's attribute data.
+ * Lifetime: same borrowed-pointer contract as dvz_figure_emit. The returned
+ * stream remains live until dvz_drp2_stream_destroy() is called.
  *
  * @param figure the figure
  * @param caps the capability snapshot (nullable — defaults applied if NULL)
@@ -195,7 +197,8 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
  *
  * Current point visuals accept the attributes `"position"` (vec3f), `"color"`
  * (RGBA8), and `"size"` (float). All configured attributes on one visual must
- * use the same item_count.
+ * use the same item_count. This call is rejected while any emitted scene
+ * stream is still live.
  *
  * @param visual the visual
  * @param attr_name attribute name (family-specific, e.g. "position", "color")
@@ -212,7 +215,8 @@ DVZ_EXPORT int dvz_visual_set_data(DvzVisual* visual, const char* attr_name, con
  *
  * The attribute must already be fully allocated by a prior
  * dvz_visual_set_data() call. Only the items in
- * [first_item, first_item + item_count) are uploaded on the next emit.
+ * [first_item, first_item + item_count) are uploaded on the next emit. This
+ * call is rejected while any emitted scene stream is still live.
  *
  * @param visual the visual
  * @param attr_name attribute name

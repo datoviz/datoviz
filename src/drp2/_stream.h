@@ -33,6 +33,10 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef void (*DvzDrp2StreamOwnerRelease)(void* owner);
+
+
+
 struct DvzDrp2Command
 {
     DvzDrp2CommandType type;
@@ -307,4 +311,7 @@ struct DvzDrp2CommandStream
     uint32_t capacity;
     uint32_t count;
     DvzDrp2Command* commands;
+    void* owner;
+    DvzDrp2StreamOwnerRelease owner_release;
+    bool owner_released;
 };

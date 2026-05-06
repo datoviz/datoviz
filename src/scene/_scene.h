@@ -141,6 +141,8 @@ struct DvzScene
 
     DvzFramePlanEmitter* emitter; /* shared across all figures — owns GPU resource key→ID map */
 
+    uint32_t outstanding_emitted_streams;
+
     uint32_t  figure_count;
     DvzFigure figures[DVZ_SCENE_MAX_FIGURES];
 

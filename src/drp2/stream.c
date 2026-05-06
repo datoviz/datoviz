@@ -892,6 +892,11 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
 {
     if (stream == NULL)
         return;
+    if (stream->owner_release != NULL && !stream->owner_released)
+    {
+        stream->owner_release(stream->owner);
+        stream->owner_released = true;
+    }
     for (uint32_t i = 0; i < stream->count; i++)
     {
         DvzDrp2Command* cmd = &stream->commands[i];

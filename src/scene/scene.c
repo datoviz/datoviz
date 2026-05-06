@@ -25,6 +25,7 @@
 #include "_json.h"
 #include "_log.h"
 #include "_overflow.h"
+#include "../drp2/_stream.h"
 #include "_scene.h"
 
 
@@ -34,6 +35,14 @@
 /*************************************************************************************************/
 
 static const char* _visual_type_name(DvzVisualType type);
+
+static void _scene_stream_release(void* owner);
+
+static bool _scene_stream_register(DvzScene* scene, DvzDrp2CommandStream* stream);
+
+static bool _scene_has_live_streams(const DvzScene* scene);
+
+static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
 
 
@@ -144,6 +153,58 @@ static bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visua
 
 
 
+static void _scene_stream_release(void* owner)
+{
+    DvzScene* scene = (DvzScene*)owner;
+    if (scene == NULL)
+        return;
+    if (scene->outstanding_emitted_streams == 0)
+    {
+        log_error("scene emitted stream release underflow");
+        return;
+    }
+    scene->outstanding_emitted_streams--;
+}
+
+
+
+static bool _scene_stream_register(DvzScene* scene, DvzDrp2CommandStream* stream)
+{
+    ANN(scene);
+    ANN(stream);
+    if (scene->outstanding_emitted_streams == UINT32_MAX)
+    {
+        log_error("scene emitted stream count overflow");
+        return false;
+    }
+    scene->outstanding_emitted_streams++;
+    stream->owner = scene;
+    stream->owner_release = _scene_stream_release;
+    stream->owner_released = false;
+    return true;
+}
+
+
+
+static bool _scene_has_live_streams(const DvzScene* scene)
+{
+    return scene != NULL && scene->outstanding_emitted_streams > 0;
+}
+
+
+
+static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action)
+{
+    ANN(action);
+    if (!_scene_has_live_streams(scene))
+        return true;
+    log_error(
+        "cannot %s while an emitted stream is still live; destroy the stream first", action);
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scene                                                                                        */
 /*************************************************************************************************/
@@ -175,6 +236,8 @@ void dvz_scene_set_capabilities(DvzScene* scene, const DvzCapabilitySnapshot* ca
 void dvz_scene_destroy(DvzScene* scene)
 {
     if (scene == NULL)
+        return;
+    if (!_scene_visual_mutation_allowed(scene, "destroy scene-owned visual data"))
         return;
     /* Destroy all visuals first (free attribute data) */
     for (uint32_t i = 0; i < scene->visual_count; i++)
@@ -333,6 +396,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, report, cfg);
+    if (stream != NULL && !_scene_stream_register(figure->scene, stream))
+    {
+        dvz_drp2_stream_destroy(stream);
+        stream = NULL;
+    }
 
     /* Clear dirty flags after successful emit */
     if (stream != NULL)
@@ -415,6 +483,8 @@ void dvz_visual_destroy(DvzVisual* visual)
 {
     if (visual == NULL)
         return;
+    if (!_scene_visual_mutation_allowed(visual->scene, "destroy scene-owned visual data"))
+        return;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         if (visual->attrs[i].data != NULL)
@@ -441,6 +511,8 @@ int dvz_visual_set_data(
     ANN(visual);
     ANN(attr_name);
     ANN(data);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
+        return -1;
     if (item_count == 0)
     {
         log_error("visual attribute '%s' requires item_count > 0", attr_name);
@@ -506,6 +578,8 @@ int dvz_visual_set_data_range(
     ANN(visual);
     ANN(attr_name);
     ANN(data);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
+        return -1;
     if (item_count == 0)
     {
         log_error("visual attribute '%s' range update requires item_count > 0", attr_name);
