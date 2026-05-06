@@ -43,6 +43,8 @@ The active higher layer now exists:
 4. Empty scene panels now emit explicit clear-only FramePlan nodes instead of relying on an empty render
    node convention, and the runtime path can render retained point buffers on later frames with no dirty
    uploads.
+5. Focused scene tests now cover repeated partial point updates across emitted frames and multi-panel /
+   multi-point visual emission in one figure.
 5. Automated GLFW canvas and vklite present tests create hidden windows by default; set
    `DVZ_TEST_VISIBLE=1` only for local visual debugging.
 
@@ -54,11 +56,8 @@ The active higher layer now exists:
 Before adding many visual families, make the existing point path feel production-shaped:
 
 1. make attribute names, data shapes, and error messages strict and documented,
-2. add regression tests for repeated `dvz_visual_set_data_range()` updates across multiple emitted
-   frames,
-3. exercise multiple panels and multiple point visuals in one figure,
-4. expand deterministic offscreen capture smoke tests beyond the current retained-render point case,
-5. keep the borrowed-pointer lifetime contract around emitted streams explicit.
+2. expand deterministic offscreen capture smoke tests beyond the current retained-render point case,
+3. keep the borrowed-pointer lifetime contract around emitted streams explicit.
 
 ### 2. Add the next minimal visual family
 
@@ -112,10 +111,9 @@ The next runtime work should be failure and lifetime oriented:
 
 1. repeated frame-target attach/detach across frames,
 2. runtime destroy after partial execution failure,
-3. object-table growth while bind groups and pipelines are live,
-4. command-stream execution after scene-side data mutation is rejected or clearly documented,
-5. GL shader compile failure paths in examples and runtime tests,
-6. readback/capture paths with explicit layout and byte-size validation.
+3. command-stream execution after scene-side data mutation is rejected or clearly documented,
+4. GL shader compile failure paths in examples and runtime tests,
+5. readback/capture paths with explicit layout and byte-size validation.
 
 Use [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 as the safety baseline.
