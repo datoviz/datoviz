@@ -103,6 +103,12 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 /**
  * Build the ordered frame execution plan for one frame.
  *
+ * Lifetime: the returned stream embeds borrowed pointers into the visuals'
+ * attribute buffers (see dvz_visual_set_data). The stream MUST be executed (or
+ * destroyed unused) before the next call to dvz_visual_set_data on any
+ * referenced visual; otherwise the next set_data call may realloc the
+ * underlying buffer and leave the stream's data pointers dangling.
+ *
  * @param figure the figure
  * @param caps the capability snapshot
  * @param report output diagnostic report
@@ -114,6 +120,9 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit(
 
 /**
  * Emit a DRP2 command stream from a figure with an explicit emit configuration.
+ *
+ * Lifetime: same borrowed-pointer contract as dvz_figure_emit. Execute or
+ * destroy the returned stream before mutating any visual's attribute data.
  *
  * @param figure the figure
  * @param caps the capability snapshot (nullable — defaults applied if NULL)

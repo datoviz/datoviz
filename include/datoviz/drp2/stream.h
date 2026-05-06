@@ -446,17 +446,28 @@ DVZ_EXPORT bool dvz_drp2_stream_write_buffer(
 
 
 /**
- * Append a WriteBuffer command from raw bytes (base64-encodes internally).
+ * Append a WriteBuffer command from raw bytes.
  *
- * Convenience wrapper over dvz_drp2_stream_write_buffer() for callers that
- * have a raw byte pointer rather than a pre-encoded base64 string.
+ * In-process callers that have a raw byte pointer should prefer this entry
+ * point over dvz_drp2_stream_write_buffer (which takes a pre-encoded base64
+ * string and is intended for JSON wire-loading paths).
+ *
+ * IMPORTANT (lifetime): `data` is borrowed, NOT copied. The caller MUST keep
+ * the buffer alive and unchanged from this call until the stream is executed
+ * (or destroyed unused). Modifying or freeing `data` between emit and execute
+ * is undefined behavior. The base64 string is computed lazily, only if the
+ * stream is later serialized to JSON.
+ *
+ * size==0 is a valid WebGPU-shaped no-op: returns true without recording a
+ * command and does not retain `data` (which may legitimately be NULL).
  *
  * @param stream the command stream
  * @param buffer_id the destination buffer id
  * @param offset byte offset within the buffer
- * @param size number of bytes to write
- * @param data raw source bytes
- * @return whether the command was appended
+ * @param size number of bytes to write (0 is a valid no-op)
+ * @param data raw source bytes (must be non-NULL when size>0)
+ * @return whether the call succeeded (true on size==0 no-op even though no
+ *         command was recorded)
  */
 DVZ_EXPORT bool dvz_drp2_stream_write_buffer_bytes(
     DvzDrp2CommandStream* stream, uint64_t buffer_id, uint64_t offset, uint64_t size,
