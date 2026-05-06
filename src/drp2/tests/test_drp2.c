@@ -2345,6 +2345,90 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem
 
 
 
+int test_drp2_begin_render_pass_clear_color_stored(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 1, 2, 3, 0.2f, 0.4f, 0.6f, 1.0f));
+    AT(dvz_drp2_stream_count(stream) == 1);
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    AC(cmd->u.begin_render_pass.clear_color[0], 0.2f, 1e-6f);
+    AC(cmd->u.begin_render_pass.clear_color[1], 0.4f, 1e-6f);
+    AC(cmd->u.begin_render_pass.clear_color[2], 0.6f, 1e-6f);
+    AC(cmd->u.begin_render_pass.clear_color[3], 1.0f, 1e-6f);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_stream_json_preserves_clear_color(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    /* Use a distinctive non-zero clear color so the hardcoded-zeros bug is visible. */
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 1, 2, 3, 0.5f, 0.25f, 0.125f, 1.0f));
+
+    char* json = dvz_drp2_stream_json(stream, "clear_color_json_test");
+    ANN(json);
+    /* JSON must contain the actual red component, not the hardcoded 0. */
+    AT(strstr(json, "0.5") != NULL);
+    AT(strstr(json, "0.25") != NULL);
+    AT(strstr(json, "0.125") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_write_buffer_bytes_large_json_roundtrip(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    /* 3000 floats = 12000 bytes — verifies JSON serializer encodes the full data_raw payload. */
+    const uint32_t N    = 3000;
+    const uint64_t SIZE = N * sizeof(float);
+    float* data = (float*)dvz_malloc(SIZE);
+    ANN(data);
+    for (uint32_t i = 0; i < N; i++)
+        data[i] = (float)i * 0.5f;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, SIZE, data));
+
+    char* json = dvz_drp2_stream_json(stream, "large_json_roundtrip");
+    ANN(json);
+    /* JSON must contain a "data" field — non-empty base64 encoding of the full payload. */
+    AT(strstr(json, "\"data\": \"") != NULL);
+    /* The base64 of 12000 bytes is 16000 chars — verify the JSON is large enough. */
+    AT(strlen(json) > 16000);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_free(data);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -2361,6 +2445,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_stream_growth_json);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_uses_data_raw);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
+    TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
+    TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
+    TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
     TEST_SIMPLE(test_drp2_runtime_rejects_duplicate_id);
     TEST_SIMPLE(test_drp2_runtime_rejects_unknown_buffer_write);
