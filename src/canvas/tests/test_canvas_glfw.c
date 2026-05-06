@@ -23,6 +23,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_env.h"
 #include "_log.h"
 #include "_time_utils.h"
 #include "datoviz/canvas.h"
@@ -83,6 +84,18 @@ typedef struct CanvasWrapSurfaceFixture
     DvzWindowExternalSurfaceInfo info;
 } CanvasWrapSurfaceFixture;
 #endif
+
+
+
+/**
+ * Return whether automated GLFW tests should create visible windows.
+ *
+ * @return true when DVZ_TEST_VISIBLE is set to a non-zero value
+ */
+static bool _canvas_glfw_test_visible(void)
+{
+    return checkenv("DVZ_TEST_VISIBLE");
+}
 
 
 
@@ -280,6 +293,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
 
     DvzWindowConfig window_cfg = dvz_window_default_config();
     window_cfg.title = "canvas-glfw-test";
+    window_cfg.visible = _canvas_glfw_test_visible();
     fixture->window = dvz_window_create(fixture->host, DVZ_BACKEND_GLFW, &window_cfg);
     if (fixture->window == NULL || dvz_window_backend_type(fixture->window) != DVZ_BACKEND_GLFW)
     {
@@ -377,7 +391,10 @@ static bool _canvas_wrap_surface_fixture_create(
         return false;
     }
 
-    wrap->external_handle = glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_VISIBLE, cfg->visible ? GLFW_TRUE : GLFW_FALSE);
+    wrap->external_handle =
+        glfwCreateWindow((int)cfg->width, (int)cfg->height, cfg->title, NULL, NULL);
     if (wrap->external_handle == NULL)
     {
         log_warn("canvas wrap test skipped because external GLFW window creation failed");
@@ -1904,6 +1921,7 @@ int test_canvas_glfw(TstSuite* suite, TstItem* item)
     log_trace("creating window");
     DvzWindowConfig window_cfg = dvz_window_default_config();
     window_cfg.title = "canvas-glfw-test";
+    window_cfg.visible = _canvas_glfw_test_visible();
     window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
     {

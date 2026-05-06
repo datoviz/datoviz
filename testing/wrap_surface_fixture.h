@@ -16,6 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_env.h"
 #include "datoviz/window.h"
 
 
@@ -39,6 +40,7 @@ dvz_test_wrap_window_config(const char* title, uint32_t width, uint32_t height)
     cfg.title = title;
     cfg.width = width;
     cfg.height = height;
+    cfg.visible = checkenv("DVZ_TEST_VISIBLE");
     return cfg;
 }
 
