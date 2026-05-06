@@ -2013,6 +2013,83 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item)
 
 
 
+/**
+ * Check that an empty panel emits an explicit clear-only render pass.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.clear_color[0] = 0.05f;
+    emit_cfg.clear_color[1] = 0.06f;
+    emit_cfg.clear_color[2] = 0.07f;
+    emit_cfg.clear_color[3] = 1.0f;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    bool found_begin = false;
+    bool found_end = false;
+    bool found_draw = false;
+    bool found_pipeline = false;
+    uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
+            found_begin = true;
+            AC(cmd->u.begin_render_pass.clear_color[0], 0.05f, 1e-6f);
+            AC(cmd->u.begin_render_pass.clear_color[1], 0.06f, 1e-6f);
+            AC(cmd->u.begin_render_pass.clear_color[2], 0.07f, 1e-6f);
+            AC(cmd->u.begin_render_pass.clear_color[3], 1.0f, 1e-6f);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_END_RENDER_PASS)
+        {
+            found_end = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = true;
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_PIPELINE)
+        {
+            found_pipeline = true;
+        }
+    }
+    AT(found_begin);
+    AT(found_end);
+    AT(!found_draw);
+    AT(!found_pipeline);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /* ---- New regression tests ---- */
 
 int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item)
@@ -2277,14 +2354,26 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
     AT(wb_count1 > 0);
     dvz_drp2_stream_destroy(stream1);
 
-    /* Second emit — nothing dirty → converter rejects (no upload nodes).
-       This documents the constraint: callers must ensure at least one dirty
-       attribute per frame or the stream will be NULL. */
+    /* Second emit — nothing dirty, so no WRITE_BUFFER commands should be emitted. */
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream2 = dvz_figure_emit(figure, &caps, &report);
-    AT(stream2 == NULL);
-    AT(dvz_diagnostic_report_count(&report) > 0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream2 != NULL);
 
+    uint32_t wb_count2 = 0;
+    bool found_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream2); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream2, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            wb_count2++;
+        else if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            found_draw = true;
+    }
+    AT(wb_count2 == 0);
+    AT(found_draw);
+
+    dvz_drp2_stream_destroy(stream2);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2456,6 +2545,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_point_emit);
+    TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_second_emit_no_uploads_when_not_dirty);
     TEST_SIMPLE(test_scene_partial_update_uploads_only_range);

@@ -96,6 +96,8 @@ int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit(TstSuite* suite, TstItem* item);
 
+int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item);
+
 int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item);
 
 int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* item);

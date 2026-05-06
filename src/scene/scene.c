@@ -242,8 +242,6 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
         DvzPanel* panel = &figure->panels[pi];
-        if (panel->visual_count == 0)
-            continue;
 
         char panel_id[64];
         dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);

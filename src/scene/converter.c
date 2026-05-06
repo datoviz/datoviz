@@ -209,6 +209,27 @@ static uint64_t _resource_id(ConverterState* state, const char* key)
 
 
 /**
+ * Look up an existing deterministic DRP2 id for a scene resource key.
+ *
+ * @param state the converter state
+ * @param key the scene resource key
+ * @return the DRP2 id, or 0 when the key is unknown
+ */
+static uint64_t _resource_lookup_id(const ConverterState* state, const char* key)
+{
+    ANN(state);
+    ANN(key);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        if (strcmp(state->resources[i].key, key) == 0)
+            return state->resources[i].id;
+    }
+    return 0;
+}
+
+
+
+/**
  * Return the mutable resource entry for a scene resource key.
  *
  * @param state the converter state
@@ -1005,6 +1026,33 @@ _emit_render(
 
 
 /**
+ * Emit DRP2 commands for a clear-only render pass in fixture mode.
+ *
+ * @param stream the DRP2 command stream
+ * @param cfg the emission config
+ * @return whether the commands were emitted
+ */
+static bool
+_emit_clear_only(DvzDrp2CommandStream* stream, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(stream);
+
+    float cr = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca = cfg ? cfg->clear_color[3] : 1.0f;
+
+    return dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
+           dvz_drp2_stream_begin_command_encoder(stream, DRP2_ID_ENCODER) &&
+           dvz_drp2_stream_begin_render_pass_clear(
+               stream, DRP2_ID_RENDER_PASS, DRP2_ID_ENCODER, DRP2_ID_COLOR_TARGET, cr, cg, cb,
+               ca) &&
+           dvz_drp2_stream_end_render_pass(stream, DRP2_ID_RENDER_PASS);
+}
+
+
+
+/**
  * Emit DRP2 commands for a copy/readback path.
  *
  * @param stream the DRP2 command stream
@@ -1208,6 +1256,47 @@ static bool _emitter_emit_compute_buffers(
 
 
 /**
+ * Resolve persistent vertex-buffer ids for a render node with no new uploads.
+ *
+ * @param emitter the persistent emitter
+ * @param render the render node
+ * @param out_ids the output vertex buffer ids
+ * @param out_count the output vertex buffer count
+ * @return whether all ids were resolved
+ */
+static bool _emitter_resolve_render_vertex_buffers(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint64_t* out_ids,
+    uint32_t* out_count)
+{
+    ANN(emitter);
+    ANN(render);
+    ANN(out_ids);
+    ANN(out_count);
+
+    *out_count = 0;
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        const char* visual_id = render->u.render.visuals[i];
+        const char* attrs[] = {"position", "color", "size"};
+        for (uint32_t ai = 0; ai < 3; ai++)
+        {
+            if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+                return false;
+            char resource_id[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(resource_id, sizeof(resource_id), "%s_%s", visual_id, attrs[ai]);
+            uint64_t id = _resource_lookup_id(&emitter->resources, resource_id);
+            if (id == 0)
+                return false;
+            out_ids[*out_count] = id;
+            (*out_count)++;
+        }
+    }
+    return *out_count > 0;
+}
+
+
+
+/**
  * Emit runtime-mode static render commands.
  *
  * @param emitter the persistent emitter
@@ -1392,6 +1481,92 @@ static bool _emitter_emit_render(
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, vertex_count, 1, 0, 0) &&
+         dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    if (ok && readback != NULL)
+    {
+        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
+                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
+    }
+    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
+    if (readback != NULL)
+    {
+        ok = ok && dvz_drp2_stream_queue_submit_readback(
+                       stream, command_buffer_id, submission_id, rb_id, 0,
+                       readback->u.copy.byte_size);
+    }
+    else
+    {
+        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    }
+    return ok;
+}
+
+
+/**
+ * Emit runtime-mode clear-only render commands.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param readback the optional readback copy node
+ * @param cfg the emission config
+ * @return whether the commands were emitted
+ */
+static bool _emitter_emit_clear_only(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* readback,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+
+    bool ok = true;
+    bool is_new = false;
+
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
+    {
+        color_id = _color_target_id(cfg);
+    }
+    else
+    {
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
+    }
+
+    uint64_t rb_id = 0;
+    if (readback != NULL)
+    {
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
+    }
+    if (!ok)
+        return false;
+
+    uint64_t encoder_id = _emitter_next_transient_id(emitter);
+    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id = _emitter_next_transient_id(emitter);
+
+    float cr = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca = cfg ? cfg->clear_color[3] : 1.0f;
+    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+         dvz_drp2_stream_begin_render_pass_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     if (ok && readback != NULL)
     {
@@ -1792,7 +1967,9 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
-    if (upload == NULL || render == NULL)
+    bool clear_only = upload == NULL && compute == NULL && render != NULL &&
+                      render->u.render.visual_count == 0;
+    if ((!clear_only && upload == NULL) || render == NULL)
     {
         _diagnostic(report, "fixture converter requires upload+render");
         return NULL;
@@ -1810,7 +1987,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
 
     ConverterState state = {0};
     _state_init(&state);
-    bool texture_render = _render_uses_texture(render);
+    bool texture_render = !clear_only && _render_uses_texture(render);
     bool compute_render = compute != NULL;
 
     bool ok = dvz_drp2_stream_hello_renderer(stream, "scene-fixture") &&
@@ -1828,11 +2005,13 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
         }
     }
     ok = ok && (copy == NULL || _emit_readback_buffer(stream, copy)) &&
-         (compute_render ? _emit_compute_assisted_render(stream, compute, render, &state, cfg)
-                         : (texture_render
-                                ? _emit_texture_render(stream, render, state.first_texture_id, cfg)
-                                : _emit_render(
-                                      stream, render, state.first_vertex_buffer_id, cfg))) &&
+         (clear_only ? _emit_clear_only(stream, cfg)
+                     : (compute_render
+                            ? _emit_compute_assisted_render(stream, compute, render, &state, cfg)
+                            : (texture_render
+                                   ? _emit_texture_render(stream, render, state.first_texture_id, cfg)
+                                   : _emit_render(
+                                         stream, render, state.first_vertex_buffer_id, cfg)))) &&
          (copy == NULL || readback == NULL || _emit_readback(stream, copy, readback)) &&
          dvz_drp2_stream_finish_command_encoder(stream, DRP2_ID_ENCODER, DRP2_ID_COMMAND_BUFFER) &&
          (readback != NULL
@@ -1923,13 +2102,17 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
+    bool clear_only = upload == NULL && compute == NULL && render != NULL &&
+                      render->u.render.visual_count == 0;
+    bool retained_render = upload == NULL && compute == NULL && render != NULL &&
+                           render->u.render.visual_count > 0;
 
-    if (upload == NULL || render == NULL)
+    if ((!clear_only && !retained_render && upload == NULL) || render == NULL)
     {
         _diagnostic(report, "runtime converter requires upload+render");
         return NULL;
     }
-    bool texture_render = _render_uses_texture(render);
+    bool texture_render = !clear_only && _render_uses_texture(render);
     if (compute != NULL)
     {
         if (compute->u.compute.write_count == 0)
@@ -1986,8 +2169,13 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
             }
         }
     }
+    if (ok && !clear_only && compute == NULL && !texture_render && vertex_buffer_count == 0)
+        ok = _emitter_resolve_render_vertex_buffers(
+            emitter, render, vertex_buffer_ids, &vertex_buffer_count);
 
-    ok = ok && (compute != NULL
+    ok = ok && (clear_only
+                    ? _emitter_emit_clear_only(emitter, stream, copy, cfg)
+                    : compute != NULL
                     ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
                     : texture_render
                     ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
