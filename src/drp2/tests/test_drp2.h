@@ -32,6 +32,14 @@ int test_drp2_stream_json(TstSuite* suite, TstItem* item);
 
 int test_drp2_stream_growth_json(TstSuite* suite, TstItem* item);
 
+int test_drp2_write_buffer_bytes_uses_data_raw(TstSuite* suite, TstItem* item);
+
+int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstSuite* suite, TstItem* item);
+
+#if DVZ_DRP2_HAS_VKLITE
+int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem* item);
+#endif
+
 
 
 int test_drp2_runtime_validate_render_stream(TstSuite* suite, TstItem* item);

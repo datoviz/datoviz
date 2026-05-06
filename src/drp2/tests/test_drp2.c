@@ -17,7 +17,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
+#include "../_stream.h"
 #include "datoviz/drp2.h"
 #include "test_drp2.h"
 #include "testing.h"
@@ -2225,6 +2227,124 @@ int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstIte
 
 
 
+/* ---- New regression tests ---- */
+
+int test_drp2_write_buffer_bytes_uses_data_raw(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    static const uint8_t payload[8] = {1, 2, 3, 4, 5, 6, 7, 8};
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(payload), payload));
+    AT(dvz_drp2_stream_count(stream) == 1);
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER);
+    /* The in-process path must store the raw pointer, NOT encode to base64. */
+    AT(cmd->u.write_buffer.data_raw == (const void*)payload);
+    AT(cmd->u.write_buffer.data_base64 == NULL);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_write_buffer_bytes_json_encodes_data_raw(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    /* {1,2,3,4} → base64 "AQIDBA==" */
+    static const uint8_t payload[4] = {1, 2, 3, 4};
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, sizeof(payload), payload));
+
+    char* json = dvz_drp2_stream_json(stream, "write_buffer_bytes_json_test");
+    ANN(json);
+    /* Verify the JSON serializer correctly encodes data_raw on the fly. */
+    AT(strstr(json, "\"data\": \"AQIDBA==\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+#if DVZ_DRP2_HAS_VKLITE
+int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("large payload test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    /* 3000 floats = 12000 bytes — well above the old 4096-byte dvz_strdup cap. */
+    const uint32_t N    = 3000;
+    const uint64_t SIZE = N * sizeof(float);
+    float* upload = (float*)dvz_malloc(SIZE);
+    ANN(upload);
+    for (uint32_t i = 0; i < N; i++)
+        upload[i] = (float)i;
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, SIZE,
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_write_buffer_bytes(stream, 1, 0, SIZE, upload));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    float* downloaded = (float*)dvz_malloc(SIZE);
+    ANN(downloaded);
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 1, 0, SIZE, downloaded));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        AT(downloaded[i] == upload[i]);
+    }
+
+    dvz_free(downloaded);
+    dvz_free(upload);
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+#endif
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -2239,6 +2359,8 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_stream_append);
     TEST_SIMPLE(test_drp2_stream_json);
     TEST_SIMPLE(test_drp2_stream_growth_json);
+    TEST_SIMPLE(test_drp2_write_buffer_bytes_uses_data_raw);
+    TEST_SIMPLE(test_drp2_write_buffer_bytes_json_encodes_data_raw);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
     TEST_SIMPLE(test_drp2_runtime_rejects_duplicate_id);
     TEST_SIMPLE(test_drp2_runtime_rejects_unknown_buffer_write);
@@ -2281,6 +2403,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_frame_target_validation);
     TEST_SIMPLE(test_drp2_runtime_frame_lifecycle_edge_cases);
 #if DVZ_DRP2_HAS_VKLITE
+    TEST_SIMPLE(test_drp2_write_buffer_bytes_large_payload_executes);
     TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_contents);
