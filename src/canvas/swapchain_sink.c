@@ -1272,6 +1272,14 @@ static void canvas_frame_from_slot(
     frame->command_buffer = slot->command_buffer;
     frame->image_view = slot->offscreen_view;
     frame->extent = slot->offscreen_extent;
+    frame->color_format = state->frame_format;
+    frame->image_layout = slot->offscreen_layout;
+    frame->usage = DVZ_STREAM_FRAME_USAGE_RENDER_TARGET | DVZ_STREAM_FRAME_USAGE_COPY_SRC |
+                   DVZ_STREAM_FRAME_USAGE_COPY_DST;
+    frame->command_buffer_recording = slot->commands_recording;
+    frame->image_borrowed = true;
+    frame->image_view_borrowed = true;
+    frame->command_buffer_borrowed = true;
     frame->handles_dirty = slot->handles_dirty;
     frame->memory_fd = slot->memory_fd;
     frame->wait_semaphore_fd = -1;

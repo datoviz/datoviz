@@ -242,6 +242,16 @@ static bool _frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame
     if (frame->image == VK_NULL_HANDLE || frame->image_view == VK_NULL_HANDLE ||
         frame->command_buffer == VK_NULL_HANDLE)
         return false;
+    if (!frame->image_borrowed || !frame->image_view_borrowed || !frame->command_buffer_borrowed)
+        return false;
+    if (!frame->command_buffer_recording)
+        return false;
+    if (frame->color_format == VK_FORMAT_UNDEFINED)
+        return false;
+    if (frame->image_layout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        return false;
+    if ((frame->usage & DVZ_STREAM_FRAME_USAGE_RENDER_TARGET) == 0)
+        return false;
     return frame->extent.width != 0 && frame->extent.height != 0;
 }
 
@@ -2119,7 +2129,7 @@ static bool _vklite_attach_frame_target(
     if (images == NULL)
         return false;
     dvz_images_wrap(runtime->device, runtime->allocator, VK_IMAGE_TYPE_2D, frame->image, images);
-    dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_format(images, frame->color_format);
     dvz_images_size(images, frame->extent.width, frame->extent.height, 1);
 
     Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, texture_id);
@@ -2146,7 +2156,7 @@ static bool _vklite_attach_frame_target(
     }
 
     object->images = images;
-    object->image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    object->image_layout = frame->image_layout;
     object->command_buffer = frame->command_buffer;
     object->image_view = frame->image_view;
     object->width = frame->extent.width;
@@ -4001,7 +4011,9 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
 #if DVZ_DRP2_HAS_VKLITE
     if (runtime == NULL || runtime->vklite_state == NULL || frame == NULL)
         return false;
-    if (frame->command_buffer == VK_NULL_HANDLE || frame->image == VK_NULL_HANDLE)
+    if (!_frame_target_valid(texture_id, frame))
+        return false;
+    if ((frame->usage & DVZ_STREAM_FRAME_USAGE_COPY_DST) == 0)
         return false;
 
     Drp2VkliteObject* source = _vklite_find(runtime->vklite_state, texture_id);
@@ -4031,7 +4043,7 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
     dvz_barrier_image_access(
         dst, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
     dvz_barrier_image_layout(
-        dst, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        dst, frame->image_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     dvz_cmd_barriers(cmds, &barriers);
 
     DvzImageCopy* copy = dvz_image_copy_create();
@@ -4056,7 +4068,7 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
     dvz_barrier_image_access(
         dst, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     dvz_barrier_image_layout(
-        dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, frame->image_layout);
     dvz_cmd_barriers(cmds, &barriers);
 
     _vklite_borrowed_frame_commands_free(cmds);

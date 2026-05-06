@@ -54,6 +54,17 @@ typedef struct
 
 
 
+// Stream frame usage flags.
+typedef enum
+{
+    DVZ_STREAM_FRAME_USAGE_NONE = 0,
+    DVZ_STREAM_FRAME_USAGE_RENDER_TARGET = 1u << 0,
+    DVZ_STREAM_FRAME_USAGE_COPY_SRC = 1u << 1,
+    DVZ_STREAM_FRAME_USAGE_COPY_DST = 1u << 2,
+} DvzStreamFrameUsage;
+
+
+
 // Stream frame descriptor.
 typedef struct
 {
@@ -63,6 +74,13 @@ typedef struct
     VkCommandBuffer command_buffer;
     VkImageView image_view;
     VkExtent2D extent;
+    VkFormat color_format;
+    VkImageLayout image_layout;
+    uint32_t usage;
+    bool command_buffer_recording;
+    bool image_borrowed;
+    bool image_view_borrowed;
+    bool command_buffer_borrowed;
     bool handles_dirty;
     int memory_fd;
     int wait_semaphore_fd;

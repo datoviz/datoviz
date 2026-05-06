@@ -99,7 +99,9 @@ static int canvas_live_image_submit(DvzStreamSink* sink, uint64_t wait_value)
     DvzCanvasLiveImageFrame frame = {
         .frame_id = state->frame_id++,
         .wait_value = wait_value,
-        .color_format = DVZ_DEFAULT_COLOR_FORMAT,
+        .color_format = state->frame.color_format != VK_FORMAT_UNDEFINED ?
+                            state->frame.color_format :
+                            DVZ_DEFAULT_COLOR_FORMAT,
         .image = state->frame.image,
         .image_view = state->frame.image_view,
         .command_buffer = state->frame.command_buffer,

@@ -390,6 +390,14 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     frame->image_view = canvas->offscreen_view;
     frame->command_buffer = canvas->offscreen_command_buffer;
     frame->extent = canvas->offscreen_extent;
+    frame->color_format = canvas->offscreen_format;
+    frame->image_layout = canvas->offscreen_layout;
+    frame->usage = DVZ_STREAM_FRAME_USAGE_RENDER_TARGET | DVZ_STREAM_FRAME_USAGE_COPY_SRC |
+                   DVZ_STREAM_FRAME_USAGE_COPY_DST;
+    frame->command_buffer_recording = true;
+    frame->image_borrowed = true;
+    frame->image_view_borrowed = true;
+    frame->command_buffer_borrowed = true;
     frame->memory = VK_NULL_HANDLE;
     frame->memory_size = 0;
     frame->memory_fd = canvas->offscreen_memory_fd;
@@ -829,6 +837,9 @@ static void canvas_init_offscreen_frame(const DvzCanvas* canvas, DvzStreamFrame*
     dvz_memset(frame, sizeof(*frame), 0, sizeof(*frame));
     frame->memory_fd = -1;
     frame->wait_semaphore_fd = -1;
+    frame->color_format = VK_FORMAT_UNDEFINED;
+    frame->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    frame->usage = DVZ_STREAM_FRAME_USAGE_NONE;
     if (canvas->surface)
     {
         frame->extent = canvas->surface->extent;

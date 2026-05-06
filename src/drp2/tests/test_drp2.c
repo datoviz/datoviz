@@ -147,6 +147,13 @@ static DvzStreamFrame _test_stream_frame(uintptr_t seed, uint32_t width, uint32_
     frame.image_view = (VkImageView)(seed + 2);
     frame.command_buffer = (VkCommandBuffer)(seed + 3);
     frame.extent = (VkExtent2D){width, height};
+    frame.color_format = VK_FORMAT_R8G8B8A8_UNORM;
+    frame.image_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    frame.usage = DVZ_STREAM_FRAME_USAGE_RENDER_TARGET | DVZ_STREAM_FRAME_USAGE_COPY_DST;
+    frame.command_buffer_recording = true;
+    frame.image_borrowed = true;
+    frame.image_view_borrowed = true;
+    frame.command_buffer_borrowed = true;
     return frame;
 }
 
@@ -1471,6 +1478,26 @@ int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
 
     invalid = frame;
     invalid.extent.width = 0;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.color_format = VK_FORMAT_UNDEFINED;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.image_layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.usage = DVZ_STREAM_FRAME_USAGE_COPY_DST;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.command_buffer_recording = false;
+    AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
+
+    invalid = frame;
+    invalid.image_borrowed = false;
     AT(!dvz_drp2_runtime_attach_frame_target(runtime, 7, &invalid));
 
     AT(dvz_drp2_runtime_attach_frame_target(runtime, 7, &frame));

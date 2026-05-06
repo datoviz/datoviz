@@ -51,6 +51,13 @@ static void stream_reset_frame(DvzStreamFrame* frame)
     frame->command_buffer = VK_NULL_HANDLE;
     frame->image_view = VK_NULL_HANDLE;
     frame->extent = (VkExtent2D){0, 0};
+    frame->color_format = VK_FORMAT_UNDEFINED;
+    frame->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    frame->usage = DVZ_STREAM_FRAME_USAGE_NONE;
+    frame->command_buffer_recording = false;
+    frame->image_borrowed = false;
+    frame->image_view_borrowed = false;
+    frame->command_buffer_borrowed = false;
     frame->handles_dirty = false;
     frame->memory_fd = -1;
     frame->wait_semaphore_fd = -1;
