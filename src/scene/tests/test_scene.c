@@ -213,6 +213,81 @@ static int _assert_stream_matches_fixture(
 
 
 
+/**
+ * Count WRITE_BUFFER commands in a DRP2 stream.
+ *
+ * @param stream the command stream
+ * @return number of WRITE_BUFFER commands
+ */
+static uint32_t _stream_write_buffer_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Count WRITE_BUFFER commands matching a byte range in a DRP2 stream.
+ *
+ * @param stream the command stream
+ * @param offset expected byte offset
+ * @param size expected byte size
+ * @return number of matching WRITE_BUFFER commands
+ */
+static uint32_t _stream_write_buffer_range_count(
+    const DvzDrp2CommandStream* stream, uint64_t offset, uint64_t size)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.offset == offset &&
+            cmd->u.write_buffer.size == size)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+
+/**
+ * Count DRAW commands with a given vertex count in a DRP2 stream.
+ *
+ * @param stream the command stream
+ * @param vertex_count expected vertex count
+ * @return number of matching DRAW commands
+ */
+static uint32_t _stream_draw_vertex_count(
+    const DvzDrp2CommandStream* stream, uint32_t vertex_count)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW && cmd->u.draw.vertex_count == vertex_count)
+            count++;
+    }
+    return count;
+}
+
+
+
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
