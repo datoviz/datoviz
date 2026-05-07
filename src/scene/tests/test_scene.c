@@ -387,22 +387,13 @@ int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item)
 
     DvzPanzoom* pz = dvz_panzoom(800.0f, 800.0f, 0);
 
-    /* Wheel sign differs between macOS and other platforms in the current input mapping.
-     * Use the platform convention so the helper is tested against the same direction that
-     * the backend emits into panzoom. */
-#if defined(__APPLE__)
-    vec2 wheel_in = {0.0f, -1.0f};
-    vec2 wheel_out = {0.0f, 1.0f};
-#else
-    vec2 wheel_in = {0.0f, 1.0f};
-    vec2 wheel_out = {0.0f, -1.0f};
-#endif
-    dvz_panzoom_zoom_wheel(pz, wheel_in, (vec2){400.0f, 400.0f});
+    /* Positive wheel delta should zoom in regardless of platform. */
+    dvz_panzoom_zoom_wheel(pz, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f});
     AT(pz->zoom[0] > 1.0f);
     AT(pz->zoom[1] > 1.0f);
 
     DvzPanzoom* pz2 = dvz_panzoom(800.0f, 800.0f, 0);
-    dvz_panzoom_zoom_wheel(pz2, wheel_out, (vec2){400.0f, 400.0f});
+    dvz_panzoom_zoom_wheel(pz2, (vec2){0.0f, -1.0f}, (vec2){400.0f, 400.0f});
     AT(pz2->zoom[0] < 1.0f);
     AT(pz2->zoom[1] < 1.0f);
 

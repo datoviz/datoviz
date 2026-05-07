@@ -155,6 +155,11 @@ static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
     int win_width = 0;
     int win_height = 0;
     glfwGetWindowSize(handle, &win_width, &win_height);
+#if defined(__APPLE__)
+    /* Normalize macOS scroll-wheel direction so the input layer sees a single
+     * sign convention across platforms. */
+    dy = -dy;
+#endif
     dvz_pointer_emit_wheel(
         router, (float)xpos, (float)ypos, (float)win_width, (float)win_height, (float)dx,
         (float)dy, 0, window->surface.scale_x, dvz_input_timestamp_ns(),
