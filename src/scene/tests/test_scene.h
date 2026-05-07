@@ -104,6 +104,14 @@ int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
+int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);
+
+int test_scene_primitive_rejects_size_attribute(TstSuite* suite, TstItem* item);
+
+int test_scene_image_rejects_size_attribute(TstSuite* suite, TstItem* item);
+
+int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item);

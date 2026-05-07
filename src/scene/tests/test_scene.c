@@ -2289,6 +2289,101 @@ int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* ite
 
 
 
+int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float uv[2] = {0.0f, 0.0f};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "texcoords", uv, 1) == -1);
+    AT(_captured_log_contains(suite, "unsupported point visual attribute 'texcoords'"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_primitive_rejects_size_attribute(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    float sz[1] = {10.0f};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "size", sz, 1) == -1);
+    AT(_captured_log_contains(suite, "unsupported primitive visual attribute 'size'"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_image_rejects_size_attribute(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_image(scene, 0);
+    ANN(visual);
+
+    float sz[1] = {10.0f};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "size", sz, 1) == -1);
+    AT(_captured_log_contains(suite, "unsupported image visual attribute 'size'"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    /* Emit with no position set — should warn but not crash. */
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    tst_log_capture_begin(suite);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(_captured_log_contains(suite, "has no 'position' data"));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3754,6 +3849,10 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
+    TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
+    TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
+    TEST_SIMPLE(test_scene_image_rejects_size_attribute);
+    TEST_SIMPLE(test_scene_emit_warns_visual_with_no_position);
     TEST_SIMPLE(test_scene_rejects_mismatched_point_attribute_counts);
     TEST_SIMPLE(test_scene_rejects_range_update_without_full_allocation);
     TEST_SIMPLE(test_scene_rejects_mutation_while_emitted_stream_is_live);

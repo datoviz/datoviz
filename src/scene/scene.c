@@ -48,15 +48,24 @@ static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* ac
 
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
 {
-    (void)type; /* all families share the same conventions for now */
-    if (strcmp(name, "position") == 0)
-        return 3 * sizeof(float); /* vec3f */
-    if (strcmp(name, "color") == 0)
-        return 4 * sizeof(uint8_t); /* cvec4 */
-    if (strcmp(name, "size") == 0)
-        return sizeof(float);
-    if (strcmp(name, "texcoords") == 0)
-        return 2 * sizeof(float); /* vec2f */
+    switch (type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+        if (strcmp(name, "position") == 0) return 3 * sizeof(float);
+        if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
+        if (strcmp(name, "size") == 0)     return sizeof(float);
+        break;
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+        if (strcmp(name, "position") == 0) return 3 * sizeof(float);
+        if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
+        break;
+    case DVZ_VISUAL_TYPE_IMAGE:
+        if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
+        if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
+        break;
+    default:
+        break;
+    }
     return 0;
 }
 
@@ -70,10 +79,15 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     if (*item_size != 0)
         return true;
 
+    const char* expected = "position, color, size";
+    if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
+        expected = "position, color";
+    else if (type == DVZ_VISUAL_TYPE_IMAGE)
+        expected = "position, texcoords";
+
     log_error(
-        "unsupported %s visual attribute '%s' (expected one of: position, color, size, "
-        "texcoords)",
-        _visual_type_name(type), name);
+        "unsupported %s visual attribute '%s' (expected one of: %s)",
+        _visual_type_name(type), name, expected);
     return false;
 }
 
@@ -377,7 +391,26 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
 
         char panel_id[64];
         dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);
-        if (panel->visual_count == 0)
+        /* Count drawable visuals — those with position data set. */
+        uint32_t drawable_count = 0;
+        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        {
+            DvzVisual* visual = panel->visuals[vi];
+            if (visual == NULL || !visual->visible)
+                continue;
+            uint32_t vidx = 0;
+            if (!_figure_visual_index(figure, visual, &vidx))
+                continue;
+            int pos_idx = _attr_index(visual, "position");
+            if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
+                drawable_count++;
+            else
+                log_warn(
+                    "%s visual (index %u) has no 'position' data — it will render nothing",
+                    _visual_type_name(visual->type), vidx);
+        }
+
+        if (drawable_count == 0)
         {
             dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc);
             continue;
@@ -391,6 +424,9 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 continue;
             uint32_t vidx = 0;
             if (!_figure_visual_index(figure, visual, &vidx))
+                continue;
+            int pos_idx = _attr_index(visual, "position");
+            if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
                 continue;
             char visual_id[64];
             dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
