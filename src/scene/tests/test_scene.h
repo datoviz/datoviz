@@ -24,6 +24,16 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_panzoom_create_reset(TstSuite* suite, TstItem* item);
+
+int test_panzoom_pan_shift(TstSuite* suite, TstItem* item);
+
+int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item);
+
+int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item);
+
+int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item);
+
 int test_scene_capabilities_diagnostics(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_static_render(TstSuite* suite, TstItem* item);

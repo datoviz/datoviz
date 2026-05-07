@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -23,7 +24,9 @@
 #include "../_scene.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
+#include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
+#include "datoviz/scene/panzoom.h"
 #include "test_scene.h"
 #include "testing.h"
 
@@ -320,6 +323,129 @@ static uint32_t _stream_set_vertex_buffer_count(const DvzDrp2CommandStream* stre
             count++;
     }
     return count;
+}
+
+
+
+/*************************************************************************************************/
+/*  Panzoom tests                                                                                */
+/*************************************************************************************************/
+
+int test_panzoom_create_reset(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+    ANN(pz);
+    AT(pz->zoom[0] == 1.0f);
+    AT(pz->zoom[1] == 1.0f);
+    AT(pz->pan[0] == 0.0f);
+    AT(pz->pan[1] == 0.0f);
+
+    /* Modify state then reset. */
+    dvz_panzoom_pan(pz, (vec2){0.5f, -0.3f});
+    dvz_panzoom_zoom(pz, (vec2){2.0f, 2.0f});
+    dvz_panzoom_reset(pz);
+
+    AT(pz->pan[0] == 0.0f);
+    AT(pz->pan[1] == 0.0f);
+    AT(pz->zoom[0] == 1.0f);
+    AT(pz->zoom[1] == 1.0f);
+
+    dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
+
+int test_panzoom_pan_shift(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+
+    /* Shift by half the viewport width → pan[0] should move by 1.0 NDC unit (at zoom=1). */
+    dvz_panzoom_pan_shift(pz, (vec2){400.0f, 0.0f}, (vec2){0, 0});
+    /* shift[0] = 2 * 400 / 800 = 1.0; pan[0] = pan_center[0] + 1.0 / zoom[0] = 1.0 */
+    AT(fabsf(pz->pan[0] - 1.0f) < 1e-5f);
+    AT(fabsf(pz->pan[1]) < 1e-5f);
+
+    dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
+
+int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = dvz_panzoom(800.0f, 800.0f, 0);
+
+    /* Positive wheel delta → zoom in → zoom factor > 1. */
+    dvz_panzoom_zoom_wheel(pz, (vec2){0.0f, 1.0f}, (vec2){400.0f, 400.0f});
+    AT(pz->zoom[0] > 1.0f);
+    AT(pz->zoom[1] > 1.0f);
+
+    /* Negative delta on a fresh panzoom → zoom out → zoom factor < 1. */
+    DvzPanzoom* pz2 = dvz_panzoom(800.0f, 800.0f, 0);
+    dvz_panzoom_zoom_wheel(pz2, (vec2){0.0f, -1.0f}, (vec2){400.0f, 400.0f});
+    AT(pz2->zoom[0] < 1.0f);
+    AT(pz2->zoom[1] < 1.0f);
+
+    dvz_panzoom_destroy(pz);
+    dvz_panzoom_destroy(pz2);
+    return 0;
+}
+
+
+
+int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+    dvz_panzoom_zoom(pz, (vec2){3.0f, 3.0f});
+    dvz_panzoom_pan(pz, (vec2){0.5f, 0.5f});
+
+    DvzPointerEvent ev = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
+    bool consumed = dvz_panzoom_pointer(pz, &ev);
+    AT(consumed);
+    AT(pz->zoom[0] == 1.0f);
+    AT(pz->pan[0] == 0.0f);
+
+    dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
+
+int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* pz = dvz_panzoom(800.0f, 600.0f, 0);
+
+    DvzMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    dvz_panzoom_mvp(pz, &mvp);
+
+    /* At identity panzoom the view matrix should place the camera looking down Z. */
+    /* view[3][2] (translation z) should be -2 for lookat from (0,0,2) to (0,0,0). */
+    AT(fabsf(mvp.view[3][2] - (-2.0f)) < 1e-4f);
+
+    /* At identity panzoom proj maps NDC [-1,1] → [-1,1]. */
+    /* For ortho(-1,1,-1,1,-10,10): proj[0][0] = 1, proj[1][1] = 1. */
+    AT(fabsf(mvp.proj[0][0] - 1.0f) < 1e-4f);
+    AT(fabsf(mvp.proj[1][1] - 1.0f) < 1e-4f);
+
+    dvz_panzoom_destroy(pz);
+    return 0;
 }
 
 
@@ -4008,6 +4134,12 @@ int test_scene(TstSuite* suite)
     ANN(suite);
 
     const char* tags = "scene";
+
+    TEST_SIMPLE(test_panzoom_create_reset);
+    TEST_SIMPLE(test_panzoom_pan_shift);
+    TEST_SIMPLE(test_panzoom_zoom_wheel);
+    TEST_SIMPLE(test_panzoom_double_click_resets);
+    TEST_SIMPLE(test_panzoom_mvp_identity);
 
     TEST_SIMPLE(test_scene_capabilities_diagnostics);
     TEST_SIMPLE(test_frame_plan_static_render);

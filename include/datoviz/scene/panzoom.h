@@ -1,0 +1,198 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Panzoom controller                                                                           */
+/*************************************************************************************************/
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "datoviz/common/macros.h"
+#include "datoviz/input/pointer.h"
+#include "datoviz/input/router.h"
+#include "datoviz/math/types.h"
+#include "datoviz/scene/types.h"
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_PANZOOM_FLAGS_NONE        = 0x00,
+    DVZ_PANZOOM_FLAGS_FIXED_X     = 0x01,
+    DVZ_PANZOOM_FLAGS_FIXED_Y     = 0x02,
+    DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 0x04,
+} DvzPanzoomFlags;
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzMVP DvzMVP;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzMVP
+{
+    mat4     model;
+    mat4     view;
+    mat4     proj;
+    float    time;
+    uint32_t flags;
+};
+
+
+
+struct DvzPanzoom
+{
+    vec2 viewport_size;
+    int  flags;
+
+    vec2 pan;
+    vec2 pan_center;
+    vec2 zoom;
+    vec2 zoom_center;
+
+    vec2 pan_lock;
+    vec2 zoom_lock;
+    bool pan_locked[2];
+    bool zoom_locked[2];
+};
+
+
+
+EXTERN_C_ON
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Create a panzoom controller.
+ *
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @param flags DvzPanzoomFlags bitmask
+ */
+DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags);
+
+
+
+/**
+ * Reset to the identity transform.
+ */
+DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
+
+
+
+/**
+ * Update the viewport size (call on window resize).
+ */
+DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
+
+
+
+/**
+ * Set the pan offset in NDC.
+ */
+DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
+
+
+
+/**
+ * Set the zoom factors.
+ */
+DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
+
+
+
+/**
+ * Apply a pan shift (pixel delta).
+ */
+DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
+
+
+
+/**
+ * Apply a zoom shift driven by right-drag (pixel delta + anchor).
+ */
+DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
+
+
+
+/**
+ * Apply a wheel zoom.
+ */
+DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
+
+
+
+/**
+ * Commit the current pan/zoom as the new drag baseline (call at drag stop).
+ */
+DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz);
+
+
+
+/**
+ * Fill the view and proj matrices of an MVP struct from the current panzoom state.
+ * The model matrix is left untouched.
+ */
+DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
+
+
+
+/**
+ * Process a pointer event and update panzoom state.
+ *
+ * @returns true if the event was consumed
+ */
+DVZ_EXPORT bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev);
+
+
+
+/**
+ * Subscribe the panzoom to an input router.
+ * The panzoom pointer callback will be registered; call dvz_panzoom_disconnect() to remove it.
+ */
+DVZ_EXPORT void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router);
+
+
+
+/**
+ * Unsubscribe the panzoom from a router.
+ */
+DVZ_EXPORT void dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router);
+
+
+
+/**
+ * Destroy the panzoom.
+ */
+DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
+
+
+
+EXTERN_C_OFF

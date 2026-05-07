@@ -19,6 +19,7 @@
 #include "datoviz/common/macros.h"
 #include "scene/enums.h"
 #include "scene/frame_plan.h"
+#include "scene/panzoom.h"
 #include "scene/types.h"
 
 
