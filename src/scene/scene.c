@@ -686,6 +686,23 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
 
 
 
+DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags)
+{
+    ANN(scene);
+    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+        return NULL;
+    DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    visual->scene    = scene;
+    visual->type     = DVZ_VISUAL_TYPE_PRIMITIVE;
+    visual->flags    = flags;
+    visual->visible  = true;
+    visual->z_layer  = 0;
+    visual->topology = topology;
+    return visual;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scene JSON serialization                                                                     */
 /*************************************************************************************************/
@@ -710,6 +727,8 @@ static const char* _visual_type_name(DvzVisualType type)
         return "mesh";
     case DVZ_VISUAL_TYPE_VOLUME:
         return "volume";
+    case DVZ_VISUAL_TYPE_PRIMITIVE:
+        return "primitive";
     default:
         return "unknown";
     }

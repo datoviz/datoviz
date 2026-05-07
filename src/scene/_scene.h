@@ -38,15 +38,16 @@
 
 typedef enum
 {
-    DVZ_VISUAL_TYPE_NONE    = 0,
-    DVZ_VISUAL_TYPE_POINT   = 1,
-    DVZ_VISUAL_TYPE_PIXEL   = 2,
-    DVZ_VISUAL_TYPE_MARKER  = 3,
-    DVZ_VISUAL_TYPE_SEGMENT = 4,
-    DVZ_VISUAL_TYPE_PATH    = 5,
-    DVZ_VISUAL_TYPE_IMAGE   = 6,
-    DVZ_VISUAL_TYPE_MESH    = 7,
-    DVZ_VISUAL_TYPE_VOLUME  = 8,
+    DVZ_VISUAL_TYPE_NONE      = 0,
+    DVZ_VISUAL_TYPE_POINT     = 1,
+    DVZ_VISUAL_TYPE_PIXEL     = 2,
+    DVZ_VISUAL_TYPE_MARKER    = 3,
+    DVZ_VISUAL_TYPE_SEGMENT   = 4,
+    DVZ_VISUAL_TYPE_PATH      = 5,
+    DVZ_VISUAL_TYPE_IMAGE     = 6,
+    DVZ_VISUAL_TYPE_MESH      = 7,
+    DVZ_VISUAL_TYPE_VOLUME    = 8,
+    DVZ_VISUAL_TYPE_PRIMITIVE = 9,
 } DvzVisualType;
 
 
@@ -91,6 +92,8 @@ struct DvzVisual
     uint32_t     flags;
     bool         visible;
     int32_t      z_layer;
+
+    DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;
