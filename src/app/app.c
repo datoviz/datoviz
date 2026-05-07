@@ -28,11 +28,16 @@
 #include "datoviz/canvas.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/stream.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
 #endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 
@@ -418,6 +423,13 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
     ANN(app);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    /* FPS counter — opt in via DVZ_FPS=1 (default on for interactive runs to aid profiling). */
+    const char* fps_env = getenv("DVZ_FPS");
+    bool fps_enabled = (fps_env == NULL) ? (frame_count == 0)
+                                         : (strcmp(fps_env, "0") != 0);
+    uint64_t fps_window_start = fps_enabled ? dvz_input_timestamp_ns() : 0;
+    uint32_t fps_window_frames = 0;
+
     if (frame_count == 0)
     {
         /* Interactive mode: loop until every interactive window requests close. */
@@ -439,6 +451,20 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
                 int rc = dvz_canvas_frame(win->canvas);
                 if (rc == DVZ_CANVAS_FRAME_READY)
                     dvz_canvas_submit(win->canvas);
+            }
+            if (fps_enabled)
+            {
+                fps_window_frames++;
+                uint64_t now = dvz_input_timestamp_ns();
+                uint64_t elapsed_ns = now - fps_window_start;
+                if (elapsed_ns >= 1000000000ULL)
+                {
+                    double fps = (double)fps_window_frames * 1e9 / (double)elapsed_ns;
+                    fprintf(stderr, "FPS: %6.1f  (%u frames in %.3f s)\n",
+                            fps, fps_window_frames, (double)elapsed_ns / 1e9);
+                    fps_window_start = now;
+                    fps_window_frames = 0;
+                }
             }
         }
     }
