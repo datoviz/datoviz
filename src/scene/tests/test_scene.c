@@ -2537,6 +2537,78 @@ int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    /* One panel with a panzoom (APPLY) and a FIXED visual: the converter must allocate
+     * two MVP UBOs, one per controller_mode. APPLY gets the panzoom MVP, FIXED gets
+     * identity, and writes never overwrite each other. */
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    /* Note: we don't actually run a panzoom here — the controller_mode flag alone
+     * determines whether the converter writes identity or the controller MVP. */
+
+    float pos[3 * 3] = {0};
+    DvzColor col[3] = {0};
+    float sz[3] = {0};
+
+    DvzVisual* v_apply = dvz_point(scene, 0);
+    DvzVisual* v_fixed = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(v_apply, "position", pos, 3) == 0);
+    AT(dvz_visual_set_data(v_apply, "color", col, 3) == 0);
+    AT(dvz_visual_set_data(v_apply, "size", sz, 3) == 0);
+    AT(dvz_visual_set_data(v_fixed, "position", pos, 3) == 0);
+    AT(dvz_visual_set_data(v_fixed, "color", col, 3) == 0);
+    AT(dvz_visual_set_data(v_fixed, "size", sz, 3) == 0);
+
+    AT(dvz_panel_add_visual(panel, v_apply, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, v_fixed,
+                            &(DvzVisualAttachDesc){.controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups    = 4;
+    caps.max_buffer_size    = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    char* json = dvz_drp2_stream_json(stream, "controller_mode_test");
+    ANN(json);
+
+    /* Two distinct MVP UBOs (size 208 = sizeof(DvzMVP) + std140 padding) must be
+     * created — one keyed by ("_mvp_buf_<panel>_apply") for the APPLY visual and
+     * one keyed by ("_mvp_buf_<panel>_fixed") for the FIXED visual. The cache key
+     * split prevents the FIXED visual's identity MVP from clobbering the APPLY
+     * visual's controller MVP. */
+    uint32_t mvp_buffers = 0;
+    const char* p = json;
+    while ((p = strstr(p, "\"size\": 208, \"usage\": [\"COPY_DST\"")) != NULL)
+    {
+        mvp_buffers++;
+        p += 1;
+    }
+    AT(mvp_buffers == 2);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -4329,6 +4401,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_z_layer_orders_emit);
+    TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);

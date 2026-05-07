@@ -220,19 +220,19 @@ static uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter)
 
 
 
-static DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* panel_id)
+static DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key)
 {
     ANN(emitter);
-    ANN(panel_id);
+    ANN(key);
     for (uint32_t i = 0; i < emitter->mvp_panel_count; i++)
     {
-        if (strncmp(emitter->mvp_panel_ids[i], panel_id, DVZ_SCENE_LABEL_SIZE) == 0)
+        if (strncmp(emitter->mvp_panel_ids[i], key, DVZ_SCENE_LABEL_SIZE) == 0)
             return &emitter->mvp_cache[i];
     }
     if (emitter->mvp_panel_count >= DVZ_SCENE_MAX_PANELS)
         return NULL;
     uint32_t slot = emitter->mvp_panel_count++;
-    strncpy(emitter->mvp_panel_ids[slot], panel_id, DVZ_SCENE_LABEL_SIZE - 1);
+    strncpy(emitter->mvp_panel_ids[slot], key, DVZ_SCENE_LABEL_SIZE - 1);
     return &emitter->mvp_cache[slot];
 }
 
@@ -1643,9 +1643,15 @@ static bool _emitter_emit_render(
         if (mvp_bgl_new)
             ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, mvp_bgl_id);
 
-        char mvp_buf_key[96], mvp_bg_key[96];
-        dvz_snprintf(mvp_buf_key, sizeof(mvp_buf_key), "_mvp_buf_%s", render->u.render.panel_id);
-        dvz_snprintf(mvp_bg_key, sizeof(mvp_bg_key), "_mvp_bg_%s", render->u.render.panel_id);
+        const char* mode_tag = (render->u.render.controller_mode == DVZ_CONTROLLER_FIXED)
+                                   ? "fixed"
+                                   : "apply";
+        char mvp_buf_key[128], mvp_bg_key[128];
+        dvz_snprintf(
+            mvp_buf_key, sizeof(mvp_buf_key), "_mvp_buf_%s_%s", render->u.render.panel_id,
+            mode_tag);
+        dvz_snprintf(
+            mvp_bg_key, sizeof(mvp_bg_key), "_mvp_bg_%s_%s", render->u.render.panel_id, mode_tag);
 
         bool mvp_buf_new = false;
         mvp_buf_id = _obj_id(emitter, mvp_buf_key, &mvp_buf_new);
@@ -1668,8 +1674,12 @@ static bool _emitter_emit_render(
             ok = ok && dvz_drp2_stream_create_uniform_bind_group(
                            stream, mvp_bg_id, mvp_bgl_id, mvp_buf_id, 0, sizeof(DvzMVP));
 
-        /* Copy MVP into the emitter's per-panel cache (persists past frame plan destruction). */
-        DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, render->u.render.panel_id);
+        /* Copy MVP into the emitter's per-(panel, controller_mode) cache (persists past
+         * frame plan destruction so write_buffer_bytes' borrowed pointer stays valid). */
+        char mvp_slot_key[128];
+        dvz_snprintf(
+            mvp_slot_key, sizeof(mvp_slot_key), "%s_%s", render->u.render.panel_id, mode_tag);
+        DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
         if (mvp_slot != NULL)
             *mvp_slot = render->u.render.mvp;
         ok = ok && dvz_drp2_stream_write_buffer_bytes(

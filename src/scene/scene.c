@@ -416,25 +416,6 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc);
             continue;
         }
-        dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
-
-        /* Always initialise the MVP to identity; controller overwrites if present. */
-        {
-            DvzFramePlanNode* node = dvz_frame_plan_last_render_node(plan);
-            if (node != NULL)
-            {
-                node->u.render.has_mvp = true;
-                glm_mat4_identity(node->u.render.mvp.model);
-                glm_mat4_identity(node->u.render.mvp.view);
-                glm_mat4_identity(node->u.render.mvp.proj);
-                node->u.render.mvp.time  = 0.0f;
-                node->u.render.mvp.flags = 0;
-                if (panel->panzoom != NULL)
-                    dvz_panzoom_mvp(panel->panzoom, &node->u.render.mvp);
-                if (panel->arcball != NULL)
-                    dvz_arcball_mvp(panel->arcball, &node->u.render.mvp);
-            }
-        }
 
         /* Build a stable z-layer-sorted index list (insertion sort: stable, small N). */
         uint32_t order[DVZ_SCENE_MAX_VISUALS];
@@ -459,10 +440,27 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             order[j] = cur;
         }
 
+        /* Pre-compute the panel's APPLY MVP (panzoom/arcball). FIXED visuals always
+         * use identity, so we recompute that fresh per node to avoid carrying state. */
+        DvzMVP panel_apply_mvp;
+        glm_mat4_identity(panel_apply_mvp.model);
+        glm_mat4_identity(panel_apply_mvp.view);
+        glm_mat4_identity(panel_apply_mvp.proj);
+        panel_apply_mvp.time  = 0.0f;
+        panel_apply_mvp.flags = 0;
+        if (panel->panzoom != NULL)
+            dvz_panzoom_mvp(panel->panzoom, &panel_apply_mvp);
+        if (panel->arcball != NULL)
+            dvz_arcball_mvp(panel->arcball, &panel_apply_mvp);
+
+        /* Emit one render node per visual in z-sorted order. The first node clears,
+         * subsequent ones LOAD (handled by the converter's render_count == 0 check).
+         * Per-visual nodes let APPLY and FIXED visuals each carry their own MVP. */
         for (uint32_t k = 0; k < panel->visual_count; k++)
         {
             uint32_t vi = order[k];
-            DvzVisual* visual = panel->visuals[vi].visual;
+            DvzPanelAttach* attach = &panel->visuals[vi];
+            DvzVisual* visual = attach->visual;
             if (visual == NULL || !visual->visible)
                 continue;
             uint32_t vidx = 0;
@@ -471,6 +469,27 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             int pos_idx = _attr_index(visual, "position");
             if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
                 continue;
+
+            dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
+            DvzFramePlanNode* node = dvz_frame_plan_last_render_node(plan);
+            if (node != NULL)
+            {
+                node->u.render.has_mvp = true;
+                node->u.render.controller_mode = attach->controller_mode;
+                if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+                {
+                    glm_mat4_identity(node->u.render.mvp.model);
+                    glm_mat4_identity(node->u.render.mvp.view);
+                    glm_mat4_identity(node->u.render.mvp.proj);
+                    node->u.render.mvp.time  = 0.0f;
+                    node->u.render.mvp.flags = 0;
+                }
+                else
+                {
+                    node->u.render.mvp = panel_apply_mvp;
+                }
+            }
+
             char visual_id[64];
             dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
             dvz_frame_plan_render_visual(plan, visual_id);
