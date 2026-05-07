@@ -45,3 +45,16 @@ typedef enum
     DVZ_SCENE_SHADER_FORMAT_WGSL,
     DVZ_SCENE_SHADER_FORMAT_GLSL,
 } DvzSceneShaderFormat;
+
+
+
+// Primitive topology for the `primitive` visual family.
+// Maps 1:1 to VK_PRIMITIVE_TOPOLOGY_* / WebGPU primitive topology.
+typedef enum
+{
+    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
+    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
+    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
+    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
+    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
+} DvzPrimitiveTopology;

@@ -245,4 +245,19 @@ DVZ_EXPORT int dvz_visual_set_data_range(
 DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
 
 
+/**
+ * Create a primitive visual.
+ *
+ * Renders raw GPU primitives (point lists, line lists/strips, triangle lists/strips) with
+ * built-in pass-through shaders. Accepts `position` (vec3) and `color` (RGBA8) attributes.
+ *
+ * @param scene the scene
+ * @param topology primitive topology, fixed at construction time
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_primitive(
+    DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags);
+
+
 EXTERN_C_OFF
