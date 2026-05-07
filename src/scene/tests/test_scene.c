@@ -2659,6 +2659,53 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_image_emit(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_image(scene, 0);
+    AT(visual != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    memset(pixels, 128, sizeof(pixels));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+    AT(dvz_drp2_stream_count(stream) > 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 /**
  * Check that an empty panel emits an explicit clear-only render pass.
  *
@@ -2855,6 +2902,90 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
             yellow_count++;
     }
     AT(yellow_count > 0);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_image(scene, 0);
+    AT(visual != NULL);
+
+    /* Large quad covering most of the panel. TRIANGLE_STRIP order: TL, BL, TR, BR */
+    float positions[4][3] = {
+        {-0.9f, -0.9f, 0.0f}, {-0.9f, 0.9f, 0.0f},
+        { 0.9f, -0.9f, 0.0f}, { 0.9f, 0.9f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+
+    /* Solid red 4x4 texture. */
+    uint8_t pixels[4 * 4 * 4];
+    for (uint32_t i = 0; i < 4 * 4; i++)
+    {
+        pixels[i * 4 + 0] = 255;
+        pixels[i * 4 + 1] = 0;
+        pixels[i * 4 + 2] = 0;
+        pixels[i * 4 + 3] = 255;
+    }
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_image_has_nonblank_pixels skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    /* Count pixels that are red-dominant (from the solid red texture). */
+    uint32_t red_count = 0;
+    for (uint32_t i = 0; i < width * height; i++)
+    {
+        uint8_t* pixel = &rgba[4 * i];
+        if (pixel[0] > 200 && pixel[1] < 50 && pixel[2] < 50)
+            red_count++;
+    }
+    AT(red_count > 0);
 
     dvz_free(rgba);
     dvz_app_destroy(app);
@@ -3631,6 +3762,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_visual_destroy_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_live_stream_count_tracks_multiple_emits);
     TEST_SIMPLE(test_scene_point_emit);
+    TEST_SIMPLE(test_scene_image_emit);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_second_emit_no_uploads_when_not_dirty);
@@ -3653,6 +3785,7 @@ int test_scene(TstSuite* suite)
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);

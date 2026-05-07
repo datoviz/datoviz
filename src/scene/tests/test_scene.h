@@ -118,6 +118,8 @@ int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem*
 
 int test_scene_point_emit(TstSuite* suite, TstItem* item);
 
+int test_scene_image_emit(TstSuite* suite, TstItem* item);
+
 int test_scene_empty_figure_emit_clear_only(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item);
@@ -134,6 +136,8 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item);
 
