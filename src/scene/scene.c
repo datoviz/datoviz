@@ -667,7 +667,12 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
         (uint8_t)(b * 255.0f + 0.5f),
         (uint8_t)(a * 255.0f + 0.5f),
     };
-    DvzColor colors[4] = {color, color, color, color};
+    DvzColor colors[4] = {
+        {color[0], color[1], color[2], color[3]},
+        {color[0], color[1], color[2], color[3]},
+        {color[0], color[1], color[2], color[3]},
+        {color[0], color[1], color[2], color[3]},
+    };
 
     if (panel->background_visual == NULL)
     {
