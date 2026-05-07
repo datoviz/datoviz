@@ -1754,9 +1754,39 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstSuite* suit
     probe.awaiting_refresh = true;
     probe.saw_update_since_refresh = false;
 
+    /* Actually resize the underlying GLFW window so VkSurfaceCapabilitiesKHR.currentExtent
+     * picks up the new size — otherwise the canvas swapchain will resolve to the old extent
+     * and the offscreen image (which we keep in sync with the swapchain to avoid blit
+     * stretching) won't reach the requested resized.extent. */
     DvzWindowExternalSurfaceInfo resized = wrap.info;
-    resized.extent.width = wrap.info.extent.width + 64;
-    resized.extent.height = wrap.info.extent.height + 32;
+    int target_w = (int)wrap.info.extent.width + 64;
+    int target_h = (int)wrap.info.extent.height + 32;
+    glfwSetWindowSize(wrap.external_handle, target_w, target_h);
+    int observed_w = 0, observed_h = 0;
+    for (uint32_t i = 0; i < 32; i++)
+    {
+        glfwPollEvents();
+        glfwGetFramebufferSize(wrap.external_handle, &observed_w, &observed_h);
+        if (observed_w == target_w && observed_h == target_h)
+            break;
+    }
+    if (observed_w != target_w || observed_h != target_h)
+    {
+        log_warn(
+            "wrap external GLFW window did not reach %dx%d (got %dx%d); skipping resize test",
+            target_w, target_h, observed_w, observed_h);
+        if (fixture.canvas != NULL)
+        {
+            dvz_canvas_set_draw_callback(fixture.canvas, NULL, NULL);
+            dvz_canvas_destroy(fixture.canvas);
+            fixture.canvas = NULL;
+        }
+        _canvas_wrap_surface_fixture_destroy(&fixture, &wrap);
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+    resized.extent.width = (uint32_t)observed_w;
+    resized.extent.height = (uint32_t)observed_h;
     AT(dvz_window_wrap_update_surface(wrap.wrap_window, &resized) == 0);
     const DvzWindowSurface* resized_surface = dvz_window_surface(wrap.wrap_window);
     ANN(resized_surface);

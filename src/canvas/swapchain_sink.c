@@ -848,6 +848,15 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         return recreate_rc;
     }
 
+    /* Use the actual post-recreate swapchain extent for the offscreen images. The driver
+     * may resolve the extent to caps.currentExtent (e.g. during a fullscreen transition),
+     * which can differ from the GLFW-reported surface->extent. Allocating the offscreen
+     * image at the requested size while the swapchain ends up at the resolved size means
+     * the frame copy goes through a non-uniform blit and points/primitives get stretched. */
+    VkExtent2D resolved_extent = dvz_swapchain_extent(swapchain->swapchain_wrapper);
+    if (resolved_extent.width > 0 && resolved_extent.height > 0)
+        extent = resolved_extent;
+
     swapchain->frame_format = frame_format;
     if (!canvas_swapchain_init_slot_state(swapchain, extent, frame_format))
     {
