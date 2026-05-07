@@ -89,6 +89,11 @@ struct DvzInputRouter
     DvzScaleSubscription* scale_subs;
     uint32_t scale_count;
     uint32_t scale_capacity;
+
+    /* Last seen resize event — cached so subscribers joining after the initial resize
+     * can still query the current window/framebuffer dimensions. */
+    DvzInputResizeEvent last_resize;
+    bool has_last_resize;
 };
 
 
@@ -463,8 +468,22 @@ void dvz_input_emit_resize(DvzInputRouter* router, const DvzInputResizeEvent* ev
 {
     ANN(router);
     ANN(event);
+    router->last_resize = *event;
+    router->has_last_resize = true;
     _dispatch_resize_subs(router, event);
     _emit_union_resize(router, event);
+}
+
+
+
+bool dvz_input_router_last_resize(const DvzInputRouter* router, DvzInputResizeEvent* out)
+{
+    ANN(router);
+    ANN(out);
+    if (!router->has_last_resize)
+        return false;
+    *out = router->last_resize;
+    return true;
 }
 
 

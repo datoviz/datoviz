@@ -405,12 +405,16 @@ void dvz_pointer_emit_position(
     void* user_data)
 {
     ANN(router);
+    /* window_x/window_y are reserved for future use (e.g. multi-window cursor mapping)
+     * and currently ignored — pos is the cursor position in window/cursor coordinates. */
+    (void)window_x;
+    (void)window_y;
     if (timestamp_ns == 0)
         timestamp_ns = dvz_input_timestamp_ns();
     DvzPointerEvent event = {0};
     event.type = type;
-    event.pos[0] = raw_x - window_x;
-    event.pos[1] = raw_y - window_y;
+    event.pos[0] = raw_x;
+    event.pos[1] = raw_y;
     event.button = button;
     event.mods = mods;
     event.content_scale = content_scale;
@@ -425,10 +429,12 @@ static DvzPointerEvent _make_wheel_event(
     float raw_x, float raw_y, float window_x, float window_y, float dir_x, float dir_y, int mods,
     float content_scale, uint64_t timestamp_ns, void* user_data)
 {
+    (void)window_x;
+    (void)window_y;
     DvzPointerEvent event = {0};
     event.type = DVZ_POINTER_EVENT_WHEEL;
-    event.pos[0] = raw_x - window_x;
-    event.pos[1] = raw_y - window_y;
+    event.pos[0] = raw_x;
+    event.pos[1] = raw_y;
     event.mods = mods;
     event.content_scale = content_scale;
     event.user_data = user_data;

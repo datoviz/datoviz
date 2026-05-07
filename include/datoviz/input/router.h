@@ -185,6 +185,20 @@ dvz_input_emit_resize(DvzInputRouter* router, const DvzInputResizeEvent* event);
 
 
 /**
+ * Read the most recent resize event seen by the router.
+ *
+ * Returns true and fills @p out when a resize has been emitted at least once,
+ * false otherwise (e.g. for routers that have never had a backend resize).
+ * Useful for late subscribers (e.g. controllers connected after window creation)
+ * to learn the current window/framebuffer dimensions without waiting for the
+ * next resize.
+ */
+DVZ_EXPORT bool
+dvz_input_router_last_resize(const DvzInputRouter* router, DvzInputResizeEvent* out);
+
+
+
+/**
  * Subscribe to content scale events.
  */
 DVZ_EXPORT void

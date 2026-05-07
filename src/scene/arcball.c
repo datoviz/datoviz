@@ -78,10 +78,17 @@ static void _constrain(versor q, vec3 axis)
 static void _arcball_input_callback(
     DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
 {
-    if (ev->type != DVZ_INPUT_EVENT_POINTER)
-        return;
     DvzArcball* arcball = (DvzArcball*)user_data;
-    dvz_arcball_pointer(arcball, &ev->content.pointer);
+    if (ev->type == DVZ_INPUT_EVENT_POINTER)
+    {
+        dvz_arcball_pointer(arcball, &ev->content.pointer);
+    }
+    else if (ev->type == DVZ_INPUT_EVENT_RESIZE)
+    {
+        const DvzInputResizeEvent* r = &ev->content.resize;
+        if (r->window_width > 0 && r->window_height > 0)
+            dvz_arcball_resize(arcball, (float)r->window_width, (float)r->window_height);
+    }
 }
 
 
@@ -259,6 +266,9 @@ void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
 {
     ANN(arcball);
     ANN(router);
+    DvzInputResizeEvent r;
+    if (dvz_input_router_last_resize(router, &r) && r.window_width > 0 && r.window_height > 0)
+        dvz_arcball_resize(arcball, (float)r.window_width, (float)r.window_height);
     dvz_input_subscribe_event(router, _arcball_input_callback, arcball);
 }
 

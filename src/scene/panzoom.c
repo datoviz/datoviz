@@ -188,10 +188,19 @@ static void _lock(DvzPanzoom* pz)
 static void _panzoom_input_callback(
     DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
 {
-    if (ev->type != DVZ_INPUT_EVENT_POINTER)
-        return;
     DvzPanzoom* pz = (DvzPanzoom*)user_data;
-    dvz_panzoom_pointer(pz, &ev->content.pointer);
+    if (ev->type == DVZ_INPUT_EVENT_POINTER)
+    {
+        dvz_panzoom_pointer(pz, &ev->content.pointer);
+    }
+    else if (ev->type == DVZ_INPUT_EVENT_RESIZE)
+    {
+        /* Track the actual window size so cursor-pixel shifts convert to NDC at
+         * the correct rate (window_width is the cursor coordinate space). */
+        const DvzInputResizeEvent* r = &ev->content.resize;
+        if (r->window_width > 0 && r->window_height > 0)
+            dvz_panzoom_resize(pz, (float)r->window_width, (float)r->window_height);
+    }
 }
 
 
@@ -411,6 +420,12 @@ void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
 {
     ANN(pz);
     ANN(router);
+    /* Adopt the router's current window dimensions if a resize has already fired
+     * (the typical case: the GLFW backend emits a resize at window creation,
+     * before the controller is connected). */
+    DvzInputResizeEvent r;
+    if (dvz_input_router_last_resize(router, &r) && r.window_width > 0 && r.window_height > 0)
+        dvz_panzoom_resize(pz, (float)r.window_width, (float)r.window_height);
     dvz_input_subscribe_event(router, _panzoom_input_callback, pz);
 }
 
