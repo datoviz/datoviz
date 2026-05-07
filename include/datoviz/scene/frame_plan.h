@@ -180,6 +180,20 @@ DVZ_EXPORT bool dvz_frame_plan_upload_bytes(
 
 
 /**
+ * Tag the most recently appended upload node with a primitive topology hint.
+ *
+ * Used by visual families that pick topology at the visual level (`dvz_primitive`).
+ * Pass `UINT32_MAX` to clear the hint.
+ *
+ * @param plan the FramePlan
+ * @param topology the primitive topology (DvzPrimitiveTopology), or UINT32_MAX
+ * @return whether the hint was applied (false if the most recent node is not an upload)
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t topology);
+
+
+
+/**
  * Append a compute node.
  *
  * @param plan the FramePlan

@@ -44,6 +44,9 @@ struct DvzFramePlanNode
             uint64_t byte_size;
             char data_tag[DVZ_SCENE_LABEL_SIZE];
             const void* data; /* optional: if non-NULL, actual bytes to upload */
+            /* Optional primitive topology hint, propagated to the converter resource entry.
+             * UINT32_MAX = unspecified (default; used by POINT and other typed families). */
+            uint32_t topology;
         } upload;
         struct
         {

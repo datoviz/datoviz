@@ -345,6 +345,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
                 dvz_frame_plan_upload_bytes(
                     plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
+                if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE &&
+                    strcmp(attr->name, "position") == 0)
+                {
+                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+                }
             }
         }
     }

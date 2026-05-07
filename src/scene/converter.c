@@ -110,6 +110,19 @@
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=fragColor;}\n"
 
+/* Primitive visual: position (vec3) + color (u8 RGBA→vec4); topology selected per visual. */
+#define DRP2_PRIMITIVE_VERTEX_GLSL                                                              \
+    "#version 450\n"                                                                            \
+    "layout(location=0)in vec3 inPos;\n"                                                        \
+    "layout(location=1)in vec4 inColor;\n"                                                      \
+    "layout(location=0)out vec4 fragColor;\n"                                                   \
+    "void main(){gl_Position=vec4(inPos,1.0);fragColor=inColor;}\n"
+#define DRP2_PRIMITIVE_FRAGMENT_GLSL                                                            \
+    "#version 450\n"                                                                            \
+    "layout(location=0)in vec4 fragColor;\n"                                                    \
+    "layout(location=0)out vec4 outColor;\n"                                                    \
+    "void main(){outColor=fragColor;}\n"
+
 
 
 /*************************************************************************************************/
@@ -125,6 +138,7 @@ struct ResourceId
     uint64_t id;
     char data_tag[DVZ_SCENE_LABEL_SIZE]; /* attribute name, e.g. "position", "color", "size" */
     uint64_t byte_size;                  /* total bytes uploaded to this buffer               */
+    uint32_t topology;                   /* primitive topology hint (UINT32_MAX = unset)      */
 };
 
 struct ConverterState
@@ -277,6 +291,7 @@ static ResourceId* _resource_entry(ConverterState* state, const char* key, bool*
     dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
     dvz_strlcpy(resource->key, key, sizeof(resource->key));
     resource->id = state->next_id++;
+    resource->topology = UINT32_MAX;
     *is_new = true;
     return resource;
 }
@@ -344,6 +359,14 @@ static uint64_t _resource_byte_size(const ConverterState* state, uint64_t id)
     return 0;
 }
 
+static uint32_t _resource_topology(const ConverterState* state, uint64_t id)
+{
+    for (uint32_t i = 0; i < state->count; i++)
+        if (state->resources[i].id == id)
+            return state->resources[i].topology;
+    return UINT32_MAX;
+}
+
 /*
  * Return true when vertex_buffer_ids[0..n-1] carry data_tags "position", "color", "size"
  * (in any order), which identifies a DvzPoint visual.
@@ -362,6 +385,31 @@ static bool _is_point_visual(
         if (strcmp(tag, "size") == 0)     has_sz  = true;
     }
     return has_pos && has_col && has_sz;
+}
+
+/*
+ * Return true when ids carry exactly "position" + "color" with a topology hint on the
+ * position resource, identifying a DvzPrimitive visual.
+ */
+static bool _is_primitive_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n)
+{
+    if (n != 2)
+        return false;
+    bool has_pos = false, has_col = false, has_topo = false;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        const char* tag = _resource_data_tag(state, ids[i]);
+        if (strcmp(tag, "position") == 0)
+        {
+            has_pos = true;
+            if (_resource_topology(state, ids[i]) != UINT32_MAX)
+                has_topo = true;
+        }
+        if (strcmp(tag, "color") == 0)
+            has_col = true;
+    }
+    return has_pos && has_col && has_topo;
 }
 
 
@@ -1103,6 +1151,8 @@ static bool _emitter_emit_upload(
         return false;
 
     dvz_strlcpy(resource->data_tag, node->u.upload.data_tag, sizeof(resource->data_tag));
+    if (node->u.upload.topology != UINT32_MAX)
+        resource->topology = node->u.upload.topology;
     uint64_t id = resource->id;
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
     if (is_new && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
@@ -1277,17 +1327,28 @@ static bool _emitter_resolve_render_vertex_buffers(
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
         const char* visual_id = render->u.render.visuals[i];
-        const char* attrs[] = {"position", "color", "size"};
-        for (uint32_t ai = 0; ai < 3; ai++)
+        /* "position" and "color" are required; "size" is point-specific (optional). */
+        const char* required[] = {"position", "color"};
+        for (uint32_t ai = 0; ai < 2; ai++)
         {
             if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
                 return false;
             char resource_id[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(resource_id, sizeof(resource_id), "%s_%s", visual_id, attrs[ai]);
+            dvz_snprintf(resource_id, sizeof(resource_id), "%s_%s", visual_id, required[ai]);
             uint64_t id = _resource_lookup_id(&emitter->resources, resource_id);
             if (id == 0)
                 return false;
             out_ids[*out_count] = id;
+            (*out_count)++;
+        }
+        char size_id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(size_id, sizeof(size_id), "%s_size", visual_id);
+        uint64_t size_buf = _resource_lookup_id(&emitter->resources, size_id);
+        if (size_buf != 0)
+        {
+            if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+                return false;
+            out_ids[*out_count] = size_buf;
             (*out_count)++;
         }
     }
@@ -1325,6 +1386,8 @@ static bool _emitter_emit_render(
 
     /* Detect DvzPoint visual (position + color + size attributes). */
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+    bool is_primitive =
+        !is_point && _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
 
     const char* vs_glsl = NULL;
     const char* fs_glsl = NULL;
@@ -1356,6 +1419,26 @@ static bool _emitter_emit_render(
                 break;
             }
         }
+    }
+    else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    {
+        /* Primitive visual: pass-through shaders with visual-selected topology. */
+        for (uint32_t i = 0; i < vertex_buffer_count; i++)
+        {
+            if (strcmp(_resource_data_tag(&emitter->resources, vertex_buffer_ids[i]),
+                       "position") == 0)
+            {
+                uint64_t sz = _resource_byte_size(&emitter->resources, vertex_buffer_ids[i]);
+                if (sz > 0)
+                    vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
+                topology = _resource_topology(&emitter->resources, vertex_buffer_ids[i]);
+                break;
+            }
+        }
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
+        vs_glsl = DRP2_PRIMITIVE_VERTEX_GLSL;
+        fs_glsl = DRP2_PRIMITIVE_FRAGMENT_GLSL;
     }
     else if (cfg != NULL && cfg->fullscreen_triangle)
     {
@@ -1400,6 +1483,8 @@ static bool _emitter_emit_render(
 
     if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
+    else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
     else
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe%u%s", vertex_buffer_count, fmt);
 
@@ -1423,6 +1508,20 @@ static bool _emitter_emit_render(
                            topology,
                            3, strides,
                            3, bindings, locations, formats, offsets);
+        }
+        else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        {
+            /* binding0=position(vec3), binding1=color(u8vec4) */
+            uint32_t strides[2]   = {3*sizeof(float), 4*sizeof(uint8_t)};
+            uint32_t bindings[2]  = {0, 1};
+            uint32_t locations[2] = {0, 1};
+            uint32_t formats[2]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM};
+            uint32_t offsets[2]   = {0, 0};
+            ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
+                           topology,
+                           2, strides,
+                           2, bindings, locations, formats, offsets);
         }
         else
         {

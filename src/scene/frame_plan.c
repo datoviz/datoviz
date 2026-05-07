@@ -438,6 +438,20 @@ bool dvz_frame_plan_upload_bytes(
     node->u.upload.byte_size = byte_size;
     _copy_label(node->u.upload.data_tag, DVZ_SCENE_LABEL_SIZE, data_tag ? data_tag : "");
     node->u.upload.data = data;
+    node->u.upload.topology = UINT32_MAX;
+    return true;
+}
+
+
+
+bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t topology)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.topology = topology;
     return true;
 }
 
