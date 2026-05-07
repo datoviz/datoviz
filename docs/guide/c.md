@@ -31,6 +31,8 @@ just build
 # Build and run a specific example
 just example-c hello_point
 just example-c hello_scatter
+just example-c hello_triangle
+just example-c hello_texture
 just example-c raw_triangle
 just example-c raw_triangle_drp2
 ```
@@ -68,7 +70,38 @@ position, colour, and size.  Shows `dvz_visual_set_data()` with larger arrays.
 
 ---
 
-## Example 3 — `raw_triangle.c` (vklite draw commands into DvzCanvas)
+## Example 3 — `hello_triangle.c` (scene + app, primitive visual)
+
+Uses the `dvz_primitive` visual family with `DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`.  The same
+constructor covers point lists, line lists, line strips, and triangle strips — only the topology
+constant changes.
+
+```
+./hello_triangle      → hello_triangle.png
+```
+
+```c
+--8<-- "examples/c/hello_triangle.c"
+```
+
+---
+
+## Example 4 — `hello_texture.c` (scene + app, image visual)
+
+Uses `dvz_image` to display a 16×16 procedural RGBA texture on a quad.  Demonstrates
+`dvz_visual_set_texture()` for uploading CPU pixel data.
+
+```
+./hello_texture      → hello_texture.png
+```
+
+```c
+--8<-- "examples/c/hello_texture.c"
+```
+
+---
+
+## Example 5 — `raw_triangle.c` (vklite draw commands into DvzCanvas)
 
 For power users who know Vulkan and want to write their own draw commands
 while letting `DvzCanvas` manage all presentation plumbing (frame timing,
@@ -92,7 +125,7 @@ configuration differs.
 
 ---
 
-## Example 4 — `raw_triangle_drp2.c` (manual DRP2 command stream)
+## Example 6 — `raw_triangle_drp2.c` (manual DRP2 command stream)
 
 DRP2 (Datoviz Rendering Protocol 2) is the backend-agnostic IR that sits
 between the scene layer and the GPU.  This example bypasses both `DvzScene`
@@ -124,6 +157,9 @@ how DRP2 works and experiment with it directly.
 | `dvz_compile_glsl()` | Compile a GLSL string to SPIR-V at runtime (shaderc) |
 | `dvz_drp2_runtime_download_buffer()` | Download GPU buffer bytes to CPU after execution |
 | `dvz_drp2_stream_write_buffer_bytes()` | Append a WriteBuffer command from raw bytes |
+| `dvz_primitive()` | Create a topology-parametric primitive visual (point/line/triangle lists and strips) |
+| `dvz_image()` | Create a 2-D textured-quad visual |
+| `dvz_visual_set_texture()` | Upload CPU pixel bytes as a 2-D RGBA8 texture on a visual |
 
 ---
 
@@ -131,4 +167,4 @@ how DRP2 works and experiment with it directly.
 
 - `docs/architecture/drp2-overview.md` — DRP2 protocol design
 - `docs/architecture/next_raw_triangle_examples.md` — implementation notes (completed)
-- `docs/architecture/next_scene_examples.md` — upcoming scene-layer examples roadmap
+- `docs/architecture/next_scene_examples.md` — scene-layer examples implementation notes
