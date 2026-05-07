@@ -32,6 +32,7 @@
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "datoviz/scene/panzoom.h"
+#include "_scene.h"
 
 
 
@@ -179,6 +180,11 @@ struct DvzFramePlanEmitter
     ConverterState objects;
     uint64_t next_transient_id;
     bool handshake_sent;
+
+    /* Per-panel MVP cache: persists across frames so write_buffer_bytes borrows remain valid. */
+    char mvp_panel_ids[DVZ_SCENE_MAX_PANELS][DVZ_SCENE_LABEL_SIZE];
+    DvzMVP mvp_cache[DVZ_SCENE_MAX_PANELS];
+    uint32_t mvp_panel_count;
 };
 
 
@@ -210,6 +216,24 @@ static uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter)
 {
     ANN(emitter);
     return emitter->next_transient_id++;
+}
+
+
+
+static DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* panel_id)
+{
+    ANN(emitter);
+    ANN(panel_id);
+    for (uint32_t i = 0; i < emitter->mvp_panel_count; i++)
+    {
+        if (strncmp(emitter->mvp_panel_ids[i], panel_id, DVZ_SCENE_LABEL_SIZE) == 0)
+            return &emitter->mvp_cache[i];
+    }
+    if (emitter->mvp_panel_count >= DVZ_SCENE_MAX_PANELS)
+        return NULL;
+    uint32_t slot = emitter->mvp_panel_count++;
+    strncpy(emitter->mvp_panel_ids[slot], panel_id, DVZ_SCENE_LABEL_SIZE - 1);
+    return &emitter->mvp_cache[slot];
 }
 
 
@@ -1644,9 +1668,12 @@ static bool _emitter_emit_render(
             ok = ok && dvz_drp2_stream_create_uniform_bind_group(
                            stream, mvp_bg_id, mvp_bgl_id, mvp_buf_id, 0, sizeof(DvzMVP));
 
-        /* Borrow MVP from the render node (scene.c always initialises it to identity). */
+        /* Copy MVP into the emitter's per-panel cache (persists past frame plan destruction). */
+        DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, render->u.render.panel_id);
+        if (mvp_slot != NULL)
+            *mvp_slot = render->u.render.mvp;
         ok = ok && dvz_drp2_stream_write_buffer_bytes(
-                       stream, mvp_buf_id, 0, sizeof(DvzMVP), &render->u.render.mvp);
+                       stream, mvp_buf_id, 0, sizeof(DvzMVP), mvp_slot ? mvp_slot : &render->u.render.mvp);
     }
 
     /* SPIR-V resource names (stem of .vert.spv / .frag.spv after embed_resources key mangling). */

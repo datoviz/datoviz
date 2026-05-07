@@ -189,6 +189,7 @@ static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzP
         {
             handler->state = DVZ_POINTER_STATE_DRAGGING;
             ev.type = DVZ_POINTER_EVENT_DRAG_START;
+            ev.button = handler->button;
             _vec2_copy(handler->press_pos, ev.content.d.press_pos);
             ev.content.d.is_press_valid = true;
         }
@@ -207,6 +208,7 @@ static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzP
 
     case DVZ_POINTER_STATE_DRAGGING:
         ev.type = DVZ_POINTER_EVENT_DRAG;
+        ev.button = handler->button;
         _vec2_copy(handler->press_pos, ev.content.d.press_pos);
         _vec2_copy(handler->last_pos, ev.content.d.last_pos);
         ev.content.d.shift[0] = handler->cur_pos[0] - handler->press_pos[0];

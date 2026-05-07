@@ -19,6 +19,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
 
@@ -328,6 +329,7 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
     window->host = host;
     window->router = dvz_input_router();
     ANN(window->router);
+    window->gesture_handler = dvz_pointer_gesture_handler(window->router);
     _window_setup_config(window, &chosen);
     window->backend_slot = slot;
     if (!slot->backend.procs.create(&slot->backend, window, &window->config))
@@ -355,6 +357,8 @@ void dvz_window_destroy(DvzWindow* window)
         return;
     if (window->backend_slot != NULL && window->backend_slot->backend.procs.destroy != NULL)
         window->backend_slot->backend.procs.destroy(&window->backend_slot->backend, window);
+    dvz_pointer_gesture_handler_destroy(window->gesture_handler);
+    window->gesture_handler = NULL;
     dvz_input_router_destroy(window->router);
     _window_array_remove(window->host, window);
     dvz_free(window);

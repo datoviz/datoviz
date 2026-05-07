@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/window.h"
 #include "datoviz/window/types.h"
 
@@ -71,6 +72,7 @@ struct DvzWindow
     void* backend_handle;
     void* backend_payload;
     DvzInputRouter* router;
+    DvzPointerGestureHandler* gesture_handler;
     DvzWindowConfig config;
     DvzWindowSurface surface;
     bool backend_owns_surface;
