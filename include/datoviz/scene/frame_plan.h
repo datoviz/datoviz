@@ -194,6 +194,23 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t 
 
 
 /**
+ * Mark the most recently appended upload node as a 2D texture upload of the given extent.
+ *
+ * `byte_size` on that node should equal `width * height * 4` (RGBA8). When `width` and
+ * `height` are non-zero the converter routes the upload to a 2D texture (via
+ * CreateTexture + WriteTexture) instead of a vertex buffer.
+ *
+ * @param plan the FramePlan
+ * @param width texture width in pixels
+ * @param height texture height in pixels
+ * @return whether the hint was applied (false if the most recent node is not an upload)
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height);
+
+
+
+/**
  * Append a compute node.
  *
  * @param plan the FramePlan

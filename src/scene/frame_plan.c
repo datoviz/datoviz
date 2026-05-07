@@ -457,6 +457,21 @@ bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t topology)
 
 
 
+bool dvz_frame_plan_upload_set_texture_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_width  = width;
+    node->u.upload.texture_height = height;
+    return true;
+}
+
+
+
 /**
  * Append a compute node.
  *

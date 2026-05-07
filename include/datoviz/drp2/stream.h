@@ -285,6 +285,20 @@ DVZ_EXPORT bool dvz_drp2_stream_create_render_pipeline_ex(
     const uint32_t* attr_formats, const uint32_t* attr_offsets);
 
 
+/**
+ * Attach a bind-group layout to the most recently appended CreateRenderPipeline command.
+ *
+ * Use after `dvz_drp2_stream_create_render_pipeline_ex` to combine an explicit vertex layout
+ * with a bind-group layout (mirrors what `_with_bind_group_layout` does on its own).
+ *
+ * @param stream the command stream
+ * @param bind_group_layout_id the bind-group layout id (0 = none)
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id);
+
+
 
 /**
  * Append a DestroyRenderPipeline command.

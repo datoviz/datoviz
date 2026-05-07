@@ -354,6 +354,19 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
                 }
             }
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->texture.dirty &&
+                visual->texture.data != NULL && visual->texture.width > 0 &&
+                visual->texture.height > 0)
+            {
+                char tex_resource_id[128];
+                dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
+                uint64_t bytes = (uint64_t)visual->texture.width *
+                                 (uint64_t)visual->texture.height * 4ull;
+                dvz_frame_plan_upload_bytes(
+                    plan, tex_resource_id, 0, bytes, "texture", visual->texture.data);
+                dvz_frame_plan_upload_set_texture_extent(
+                    plan, visual->texture.width, visual->texture.height);
+            }
         }
     }
 
@@ -423,6 +436,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     continue;
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                     visual->attrs[ai].dirty_item_count = 0;
+                if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
+                    visual->texture.dirty = false;
             }
         }
     }

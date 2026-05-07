@@ -1226,6 +1226,20 @@ bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
 /**
  * Append a CreateRenderPipeline command with explicit vertex input layout and topology.
  */
+bool dvz_drp2_stream_pipeline_set_bind_group_layout(
+    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.bind_group_layout_id = bind_group_layout_id;
+    return true;
+}
+
+
 bool dvz_drp2_stream_create_render_pipeline_ex(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,

@@ -123,6 +123,20 @@
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=fragColor;}\n"
 
+/* Image visual: position (vec3) + texcoords (vec2); samples a 2D RGBA8 texture. */
+#define DRP2_IMAGE_VERTEX_GLSL                                                                  \
+    "#version 450\n"                                                                            \
+    "layout(location=0)in vec3 inPos;\n"                                                        \
+    "layout(location=1)in vec2 inUV;\n"                                                         \
+    "layout(location=0)out vec2 fragUV;\n"                                                      \
+    "void main(){gl_Position=vec4(inPos,1.0);fragUV=inUV;}\n"
+#define DRP2_IMAGE_FRAGMENT_GLSL                                                                \
+    "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform sampler2D tex;\n"                                           \
+    "layout(location=0)in vec2 fragUV;\n"                                                       \
+    "layout(location=0)out vec4 outColor;\n"                                                    \
+    "void main(){outColor=texture(tex,fragUV);}\n"
+
 
 
 /*************************************************************************************************/
@@ -410,6 +424,32 @@ static bool _is_primitive_visual(
             has_col = true;
     }
     return has_pos && has_col && has_topo;
+}
+
+/*
+ * Return true when ids carry exactly "position" + "texcoords" + "texture", identifying
+ * a DvzImage visual. Outputs the position id, texcoords id, and texture id.
+ */
+static bool _is_image_visual(
+    const ConverterState* state, const uint64_t* ids, uint32_t n,
+    uint64_t* out_pos, uint64_t* out_uv, uint64_t* out_tex)
+{
+    if (n != 3)
+        return false;
+    uint64_t pos = 0, uv = 0, tex = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        const char* tag = _resource_data_tag(state, ids[i]);
+        if (strcmp(tag, "position") == 0)  pos = ids[i];
+        else if (strcmp(tag, "texcoords") == 0) uv = ids[i];
+        else if (strcmp(tag, "texture") == 0)   tex = ids[i];
+    }
+    if (pos == 0 || uv == 0 || tex == 0)
+        return false;
+    if (out_pos) *out_pos = pos;
+    if (out_uv)  *out_uv  = uv;
+    if (out_tex) *out_tex = tex;
+    return true;
 }
 
 
@@ -1138,6 +1178,36 @@ static bool _emitter_emit_upload(
     ANN(node);
     ANN(out_id);
 
+    /* Texture upload: routed when texture_width > 0 (RGBA8 2D). */
+    if (node->u.upload.texture_width > 0 && node->u.upload.texture_height > 0)
+    {
+        bool is_new = false;
+        ResourceId* resource =
+            _resource_entry(&emitter->resources, node->u.upload.resource_id, &is_new);
+        if (resource == NULL)
+            return false;
+        dvz_strlcpy(resource->data_tag, node->u.upload.data_tag, sizeof(resource->data_tag));
+        resource->byte_size = node->u.upload.byte_size;
+        uint64_t id = resource->id;
+        uint32_t w  = node->u.upload.texture_width;
+        uint32_t h  = node->u.upload.texture_height;
+        uint32_t bpr = w * 4;
+        if (is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+            if (!dvz_drp2_stream_create_texture_2d_usage(stream, id, w, h, usage))
+                return false;
+        }
+        if (emitter->resources.first_texture_id == 0)
+            emitter->resources.first_texture_id = id;
+        *out_id = id;
+        if (node->u.upload.data == NULL)
+            return false;
+        return dvz_drp2_stream_write_texture_2d_bytes(
+            stream, id, 0, w, h, bpr, h, node->u.upload.data);
+    }
+
     uint64_t buffer_size = 0;
     if (_dvz_add_u64_overflows(node->u.upload.byte_offset, node->u.upload.byte_size, &buffer_size))
         return false;
@@ -1327,29 +1397,32 @@ static bool _emitter_resolve_render_vertex_buffers(
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
         const char* visual_id = render->u.render.visuals[i];
-        /* "position" and "color" are required; "size" is point-specific (optional). */
-        const char* required[] = {"position", "color"};
-        for (uint32_t ai = 0; ai < 2; ai++)
+        /* "position" is always required. Other attrs are family-dependent and optional. */
+        char pos_id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(pos_id, sizeof(pos_id), "%s_position", visual_id);
+        uint64_t pos = _resource_lookup_id(&emitter->resources, pos_id);
+        if (pos == 0)
+            return false;
+        if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+            return false;
+        out_ids[(*out_count)++] = pos;
+
+        /* Optional attrs — collect any that exist. Order matches family pipeline expectations:
+         * POINT      = position, color, size
+         * PRIMITIVE  = position, color
+         * IMAGE      = position, texcoords (+ texture, registered alongside).
+         */
+        const char* optional[] = {"color", "size", "texcoords", "texture"};
+        for (uint32_t ai = 0; ai < 4; ai++)
         {
-            if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
-                return false;
-            char resource_id[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(resource_id, sizeof(resource_id), "%s_%s", visual_id, required[ai]);
-            uint64_t id = _resource_lookup_id(&emitter->resources, resource_id);
+            char rid[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optional[ai]);
+            uint64_t id = _resource_lookup_id(&emitter->resources, rid);
             if (id == 0)
-                return false;
-            out_ids[*out_count] = id;
-            (*out_count)++;
-        }
-        char size_id[DVZ_SCENE_LABEL_SIZE];
-        dvz_snprintf(size_id, sizeof(size_id), "%s_size", visual_id);
-        uint64_t size_buf = _resource_lookup_id(&emitter->resources, size_id);
-        if (size_buf != 0)
-        {
+                continue;
             if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
                 return false;
-            out_ids[*out_count] = size_buf;
-            (*out_count)++;
+            out_ids[(*out_count)++] = id;
         }
     }
     return *out_count > 0;
@@ -1388,11 +1461,28 @@ static bool _emitter_emit_render(
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     bool is_primitive =
         !is_point && _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+    uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
+    bool is_image = !is_point && !is_primitive &&
+                    _is_image_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+                                     &image_pos, &image_uv, &image_tex);
 
     const char* vs_glsl = NULL;
     const char* fs_glsl = NULL;
     uint32_t topology = 0;
     uint32_t vertex_count = 3; /* default for stub / non-point path */
+    uint64_t bgl_id = 0;
+    uint64_t bg_id  = 0;
+
+    /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
+     * is bound through a bind group, not as a vertex buffer. */
+    uint64_t image_vertex_ids[2];
+    if (is_image)
+    {
+        image_vertex_ids[0] = image_pos;
+        image_vertex_ids[1] = image_uv;
+        vertex_buffer_ids   = image_vertex_ids;
+        vertex_buffer_count = 2;
+    }
 
     char vs_key[32];
     char fs_key[16];
@@ -1440,6 +1530,43 @@ static bool _emitter_emit_render(
         vs_glsl = DRP2_PRIMITIVE_VERTEX_GLSL;
         fs_glsl = DRP2_PRIMITIVE_FRAGMENT_GLSL;
     }
+    else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    {
+        /* Image visual: textured-quad shaders, TRIANGLE_STRIP topology, 4 vertices. */
+        uint64_t pos_size = _resource_byte_size(&emitter->resources, image_pos);
+        if (pos_size > 0)
+            vertex_count = (uint32_t)(pos_size / (3 * sizeof(float)));
+        topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
+        vs_glsl = DRP2_IMAGE_VERTEX_GLSL;
+        fs_glsl = DRP2_IMAGE_FRAGMENT_GLSL;
+
+        /* Sampler + texture-sampler bind-group layout + bind-group, all persistent. */
+        bool bgl_new = false;
+        bgl_id = _obj_id(emitter, "_bgl_img", &bgl_new);
+        if (bgl_id == 0)
+            return false;
+        if (bgl_new)
+            ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(stream, bgl_id);
+
+        bool sampler_new = false;
+        uint64_t sampler_id = _obj_id(emitter, "_sampler_img", &sampler_new);
+        if (sampler_id == 0)
+            return false;
+        if (ok && sampler_new)
+            ok = ok && dvz_drp2_stream_create_sampler(stream, sampler_id);
+
+        char bg_key[48];
+        dvz_snprintf(bg_key, sizeof(bg_key), "_bg_img_%" PRIu64, image_tex);
+        bool bg_new = false;
+        bg_id = _obj_id(emitter, bg_key, &bg_new);
+        if (bg_id == 0)
+            return false;
+        if (ok && bg_new)
+            ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
+                           stream, bg_id, bgl_id, image_tex, sampler_id);
+    }
     else if (cfg != NULL && cfg->fullscreen_triangle)
     {
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_full%s", fmt);
@@ -1485,6 +1612,8 @@ static bool _emitter_emit_render(
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
     else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
+    else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
     else
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe%u%s", vertex_buffer_count, fmt);
 
@@ -1522,6 +1651,21 @@ static bool _emitter_emit_render(
                            topology,
                            2, strides,
                            2, bindings, locations, formats, offsets);
+        }
+        else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        {
+            /* binding0=position(vec3), binding1=texcoords(vec2); bgl=img */
+            uint32_t strides[2]   = {3*sizeof(float), 2*sizeof(float)};
+            uint32_t bindings[2]  = {0, 1};
+            uint32_t locations[2] = {0, 1};
+            uint32_t formats[2]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
+            uint32_t offsets[2]   = {0, 0};
+            ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                           stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
+                           topology,
+                           2, strides,
+                           2, bindings, locations, formats, offsets);
+            ok = ok && dvz_drp2_stream_pipeline_set_bind_group_layout(stream, bgl_id);
         }
         else
         {
@@ -1580,6 +1724,8 @@ static bool _emitter_emit_render(
              render->u.render.desc.y, render->u.render.desc.width, render->u.render.desc.height,
              clear) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
+    if (ok && is_image && bg_id != 0)
+        ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, bg_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, vertex_count, 1, 0, 0) &&
