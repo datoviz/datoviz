@@ -251,6 +251,7 @@ if(GLSLC)
     file(MAKE_DIRECTORY "${SPIRV_DIR}")
 
     file(GLOB GLSL_SOURCES "${GLSL_SOURCE_DIR}/*.vert" "${GLSL_SOURCE_DIR}/*.frag")
+    file(GLOB GLSL_INCLUDES "${GLSL_SOURCE_DIR}/*.glsl")
 
     set(SPIRV_OUTPUTS "")
     foreach(glsl_src ${GLSL_SOURCES})
@@ -258,8 +259,8 @@ if(GLSLC)
         set(spv_out "${SPIRV_DIR}/${shader_name}.spv")
         add_custom_command(
             OUTPUT  "${spv_out}"
-            COMMAND "${GLSLC}" -o "${spv_out}" "${glsl_src}"
-            DEPENDS "${glsl_src}"
+            COMMAND "${GLSLC}" -I "${GLSL_SOURCE_DIR}" -o "${spv_out}" "${glsl_src}"
+            DEPENDS "${glsl_src}" ${GLSL_INCLUDES}
             COMMENT "Compiling ${shader_name} to SPIR-V"
         )
         list(APPEND SPIRV_OUTPUTS "${spv_out}")
