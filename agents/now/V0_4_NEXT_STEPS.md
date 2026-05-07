@@ -89,15 +89,29 @@ via `dvz_visual_set_texture(visual, pixels, w, h)`. Sampler and bind group emiss
 (`test_scene_image_emit`, `test_app_offscreen_image_has_nonblank_pixels`). Example:
 `examples/c/hello_texture.c`.
 
-### 4. Harden the scene/DRP2 runtime boundary
+### 4. Harden the scene/DRP2 runtime boundary — PARTIAL
 
-The next runtime work should be failure and lifetime oriented:
+Items completed:
 
-1. repeated frame-target attach/detach across frames,
-2. runtime destroy after partial execution failure,
-3. command-stream execution after scene-side data mutation is rejected or clearly documented,
-4. GL shader compile failure paths in examples and runtime tests,
-5. readback/capture paths with explicit layout and byte-size validation.
+4. **GL shader compile failure paths** — two new DRP2 runtime tests:
+   `test_drp2_runtime_vklite_rejects_invalid_glsl_shader` verifies that invalid GLSL causes
+   `dvz_drp2_runtime_execute` to return `!result.ok` with `INVALID_ARGUMENT` and log a clear
+   compile error message. `test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader` verifies
+   the cascade: bad vertex shader → pipeline creation also fails, no GPU validation errors.
+
+5. **Readback/capture paths** — two new scene tests:
+   `test_app_capture_rejects_wrong_dimensions` confirms `dvz_canvas_capture_rgba_into` returns
+   non-zero when the caller requests dimensions that don't match the offscreen canvas.
+   `test_app_capture_rejects_undersized_buffer` confirms it rejects a buffer that is one byte
+   short of the required `width * height * 4` bytes.
+
+Items still open:
+
+1. Repeated frame-target attach/detach across frames.
+2. Runtime destroy after partial execution failure.
+3. Command-stream execution after scene-side data mutation — already guarded and tested in
+   `test_scene_rejects_mutation_while_emitted_stream_is_live`; document contract more explicitly
+   if needed.
 
 Use [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 as the safety baseline.
