@@ -119,17 +119,27 @@ Items deferred (out of scope for offscreen-only path):
 Use [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 as the safety baseline.
 
-### 5. Keep examples as the API pressure test
+### 5. Keep examples as the API pressure test — DONE
 
-Near-term examples should stay small and honest:
+Near-term examples completed: `hello_point`, `hello_scatter`, `hello_triangle`, `hello_texture`,
+`raw_triangle`, `raw_triangle_drp2`.
 
-1. `hello_point` and `hello_scatter`: high-level scene/app path with `dvz_point`.
-2. `hello_triangle`: `dvz_primitive` with `TRIANGLE_LIST` topology.
-3. `hello_texture`: first texture/sampler scene visual once implemented.
-4. `raw_triangle`: vklite into canvas for users who need low-level control.
-5. `raw_triangle_drp2`: hand-written DRP2 for protocol/runtime developers.
+`hello_point_glfw` adds interactive GLFW windowed rendering (`dvz_app_window_glfw` + interactive
+frame loop). This required `dvz_window_should_close()` vtable dispatch, GLFW surface extensions
+wired through `DvzGpuCtxConfig`, and a `dvz_app_run(app, 0)` interactive loop.
 
-Do not add examples that require broad axes/controllers/layout behavior until those APIs exist.
+### 6. Interactive pan/zoom and arcball controllers — NEXT
+
+Full design documented in `agents/now/CONTROLLER_TRANSFORM_DESIGN.md`. Summary:
+
+- Shared UBO pool in `DvzApp` (one large VkBuffer, bump-allocated per panel)
+- Two descriptor sets: set 0 = MVP+viewport (panel-level), set 1 = visual params+samplers
+- GLSL transform pipeline with specialization constants for transform type
+- Builtin shaders precompiled to SPIR-V at build time via `glslc` + `embed_resources.cmake`
+- Port v0.3 panzoom and arcball controllers, connect to `DvzInputRouter`
+- DRP2 extensions: uniform buffer bind group layout, buffer offset, second pipeline layout slot
+
+Action items in order: see `CONTROLLER_TRANSFORM_DESIGN.md §8`.
 
 
 ## Validation Defaults
