@@ -177,14 +177,21 @@ static void _lock(DvzPanzoom* pz)
 
 
 /*************************************************************************************************/
-/*  Pointer callback (registered with dvz_input_subscribe_pointer)                              */
+/*  Input callback (registered with dvz_input_subscribe_event)                                   */
+/*                                                                                               */
+/*  We listen to union events rather than raw pointer events so we receive gesture-derived       */
+/*  events (DRAG, DRAG_STOP, DOUBLE_CLICK) emitted by the per-window gesture handler via         */
+/*  dvz_input_emit_event. Raw WHEEL events also reach us here because dvz_input_emit_pointer     */
+/*  re-emits them onto the union event stream.                                                   */
 /*************************************************************************************************/
 
-static void _panzoom_pointer_callback(
-    DvzInputRouter* router, const DvzPointerEvent* ev, void* user_data)
+static void _panzoom_input_callback(
+    DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
 {
+    if (ev->type != DVZ_INPUT_EVENT_POINTER)
+        return;
     DvzPanzoom* pz = (DvzPanzoom*)user_data;
-    dvz_panzoom_pointer(pz, ev);
+    dvz_panzoom_pointer(pz, &ev->content.pointer);
 }
 
 
@@ -404,7 +411,7 @@ void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
 {
     ANN(pz);
     ANN(router);
-    dvz_input_subscribe_pointer(router, _panzoom_pointer_callback, pz);
+    dvz_input_subscribe_event(router, _panzoom_input_callback, pz);
 }
 
 
@@ -413,7 +420,7 @@ void dvz_panzoom_disconnect(DvzPanzoom* pz, DvzInputRouter* router)
 {
     ANN(pz);
     ANN(router);
-    dvz_input_unsubscribe_pointer(router, _panzoom_pointer_callback, pz);
+    dvz_input_unsubscribe_event(router, _panzoom_input_callback, pz);
 }
 
 

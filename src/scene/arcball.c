@@ -68,14 +68,20 @@ static void _constrain(versor q, vec3 axis)
 
 
 /*************************************************************************************************/
-/*  Pointer callback                                                                             */
+/*  Input callback                                                                               */
+/*                                                                                               */
+/*  Subscribed to union events so gesture-derived events (DRAG, DRAG_STOP, DOUBLE_CLICK) are      */
+/*  delivered. The pointer-only stream skips those because the gesture handler emits them via    */
+/*  dvz_input_emit_event.                                                                        */
 /*************************************************************************************************/
 
-static void _arcball_pointer_callback(
-    DvzInputRouter* router, const DvzPointerEvent* ev, void* user_data)
+static void _arcball_input_callback(
+    DvzInputRouter* router, const DvzInputEvent* ev, void* user_data)
 {
+    if (ev->type != DVZ_INPUT_EVENT_POINTER)
+        return;
     DvzArcball* arcball = (DvzArcball*)user_data;
-    dvz_arcball_pointer(arcball, ev);
+    dvz_arcball_pointer(arcball, &ev->content.pointer);
 }
 
 
@@ -253,7 +259,7 @@ void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
 {
     ANN(arcball);
     ANN(router);
-    dvz_input_subscribe_pointer(router, _arcball_pointer_callback, arcball);
+    dvz_input_subscribe_event(router, _arcball_input_callback, arcball);
 }
 
 
@@ -262,7 +268,7 @@ void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router)
 {
     ANN(arcball);
     ANN(router);
-    dvz_input_unsubscribe_pointer(router, _arcball_pointer_callback, arcball);
+    dvz_input_unsubscribe_event(router, _arcball_input_callback, arcball);
 }
 
 

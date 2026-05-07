@@ -15,7 +15,11 @@ layout(location = 2) in float inSize;
 layout(location = 0) out vec4 fragColor;
 
 void main() {
-    gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPos, 1.0);
+    vec4 tr = mvp.proj * mvp.view * mvp.model * vec4(inPos, 1.0);
+    /* OpenGL -> Vulkan NDC: flip Y, remap depth from [-1,1] to [0,1]. */
+    tr.y = -tr.y;
+    tr.z = 0.5 * (tr.z + tr.w);
+    gl_Position = tr;
     gl_PointSize = inSize;
     fragColor = inColor;
 }
