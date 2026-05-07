@@ -147,6 +147,8 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item);

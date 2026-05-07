@@ -3162,6 +3162,87 @@ int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* it
 
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_image(scene, 0);
+    AT(visual != NULL);
+
+    float positions[4][3] = {
+        {-0.9f, -0.9f, 0.0f}, {-0.9f, 0.9f, 0.0f},
+        { 0.9f, -0.9f, 0.0f}, { 0.9f, 0.9f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    for (uint32_t i = 0; i < 4 * 4; i++)
+    {
+        pixels[i * 4 + 0] = 255; pixels[i * 4 + 1] = 0;
+        pixels[i * 4 + 2] = 0;   pixels[i * 4 + 3] = 255;
+    }
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_image_retained_render_second_frame skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    /* Both frames should show red pixels from the retained texture. */
+    uint32_t red_counts[2] = {0, 0};
+    for (uint32_t frame = 0; frame < 2; frame++)
+    {
+        dvz_app_run(app, 1);
+
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        AT(width == 64);
+        AT(height == 64);
+
+        for (uint32_t i = 0; i < width * height; i++)
+        {
+            uint8_t* pixel = &rgba[4 * i];
+            if (pixel[0] > 200 && pixel[1] < 50 && pixel[2] < 50)
+                red_counts[frame]++;
+        }
+        dvz_free(rgba);
+    }
+    AT(red_counts[0] > 0);
+    AT(red_counts[1] > 0);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3885,6 +3966,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);
