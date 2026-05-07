@@ -67,6 +67,10 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* item);
+
+int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstSuite* suite, TstItem* item);
 #endif
