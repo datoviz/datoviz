@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-06`
+> - **Updated on:** `2026-05-07`
 > - **Purpose:** orient near-term v0.4 work after the first scene -> DRP2 -> vklite/canvas slice.
 
 
@@ -39,7 +39,7 @@ The active higher layer now exists:
    vklite runtime.
 2. `scene` owns early scene graph objects, capability snapshots, diagnostic reports, frame plans,
    DRP2 emission, and a minimal app/offscreen path.
-3. Current examples cover `hello_point`, `hello_scatter`, `raw_triangle`, and `raw_triangle_drp2`.
+3. Current examples cover `hello_point`, `hello_scatter`, `hello_triangle`, `hello_texture`, `raw_triangle`, and `raw_triangle_drp2`.
 4. Empty scene panels now emit explicit clear-only FramePlan nodes instead of relying on an empty render
    node convention, and the runtime path can render retained point buffers on later frames with no dirty
    uploads.
@@ -72,23 +72,14 @@ cover triangle-list and line-strip emit; `examples/c/hello_triangle.c` saves a c
 PNG identical to `raw_triangle.c`. Heavier mesh concerns (indexing, normals, lighting) still
 belong to a later `dvz_mesh` family.
 
-### 3. Add a minimal image/texture visual
+### 3. Add a minimal image/texture visual — DONE
 
-This is now the top of the queue. Add `dvz_image(scene, flags)` as the second non-point family.
-
-Keep it constrained:
-
-1. 2D RGBA8 texture upload,
-2. a quad with generated positions/UVs,
-3. one sampler mode,
-4. one offscreen example,
-5. a clear resource ownership story for CPU image bytes and runtime texture ids.
-
-This will pressure-test DRP2 texture upload, texture views, samplers, bind groups, and scene-side
-resource identity. Expect this slice to be larger than `dvz_primitive` because samplers and bind
-groups are new code in `src/scene/converter.c` — `_emitter_emit_texture_upload` currently only
-emits a 2×2 stub. Spec contract: see `spec/scene/visuals/IMAGE.md` if present, otherwise
-`docs/architecture/next_scene_examples.md` Part 3.
+`dvz_image(scene, flags)` is in place as the second non-point family. Attributes: `"position"`
+(four clip-space corners, TRIANGLE_STRIP order), `"texcoords"` (four UV pairs), texture supplied
+via `dvz_visual_set_texture(visual, pixels, w, h)`. Sampler and bind group emission live in
+`src/scene/converter.c`. Scene tests cover CPU-side emit and app-layer pixel readback
+(`test_scene_image_emit`, `test_app_offscreen_image_has_nonblank_pixels`). Example:
+`examples/c/hello_texture.c`.
 
 ### 4. Harden the scene/DRP2 runtime boundary
 

@@ -13,7 +13,7 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 |---------------------|-----------------------|------------------------------|---------|
 | `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
 | `hello_triangle.c`  | `dvz_primitive`       | New topology-parametric family | Done    |
-| `hello_texture.c`   | `dvz_image`           | New visual constructor        | Blocked |
+| `hello_texture.c`   | `dvz_image`           | New visual constructor        | Done    |
 
 `hello_scatter.c` now exists under `examples/c/`. The next example work should add one new visual
 family at a time, with tests before broadening the scene API.
@@ -169,24 +169,19 @@ same constructor with a different topology — no new visual code required.
 
 ## Part 3 — `hello_texture.c` (scene + app, image visual)
 
-### Blocked on: `dvz_image` visual constructor
+### Status
 
-Add a 2-D image visual to the scene layer:
+Done. `examples/c/hello_texture.c` renders a 16×16 procedural RGBA texture on a quad covering
+most of the panel. The visual accepts `"position"` (four clip-space corners, TRIANGLE_STRIP
+order TL/BL/TR/BR), `"texcoords"` (four UV pairs), and a texture supplied via
+`dvz_visual_set_texture(visual, pixels, width, height)`.
 
-```c
-DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
-```
+Scene tests cover both CPU-side emit (stream is non-empty, no diagnostics) and app-layer
+pixel readback (`test_app_offscreen_image_has_nonblank_pixels` checks that a solid-red texture
+produces red-dominant pixels in the captured frame).
 
-Expected attributes:
-- `"pos"` — four corner positions (a quad)
-- `"texcoords"` — corresponding UV coordinates
-- `"texture"` — a `DvzTexture*` or equivalent handle
-
-The example would load a small test image (or generate a procedural RGBA buffer), upload it as
-a texture, and display it via the visual.
-
-For texture upload, check whether a public `dvz_texture_*` API already exists (search
-`include/datoviz/` for `dvz_texture`); add one if not.
+`dvz_image` is implemented in `src/scene/scene.c`; the converter arm (sampler + bind group
+creation, texture upload emission) lives in `src/scene/converter.c`.
 
 ---
 
