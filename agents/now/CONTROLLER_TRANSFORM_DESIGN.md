@@ -1,6 +1,6 @@
 # Controller & Transform Architecture — v0.4
 
-> **Status:** `ACTIVE DESIGN`
+> **Status:** `IMPLEMENTED` — all action items complete as of 2026-05-07
 > **Updated:** `2026-05-07`
 
 ---
@@ -136,12 +136,12 @@ Frame emit reads controller state → uploads MVP UBO → emits DRP2 stream.
 ## 8. Ordered Action Items
 
 1. **Docs commit** — save this file + update `V0_4_NEXT_STEPS.md` ✓
-2. **DRP2: uniform bind group** — `_stream.h`, `stream.c`, `runtime.c`
-3. **DRP2: second bind group layout in pipeline** — `create_render_pipeline` + runtime
-4. **Shader infrastructure** — `embed_resources.cmake`, GLSL source files, CMake rules, update `converter.c`
-5. **Shared UBO pool in DvzApp** — bump allocator, panel slot claim at creation
-6. **Scene emit wiring** — `WRITE_BUFFER` + `SET_BIND_GROUP(set=0)` per frame
-7. **Port panzoom**
-8. **Port arcball**
-9. **Panel controller API** — `dvz_panel_set_panzoom` / `dvz_panel_set_arcball`
-10. **`hello_point_glfw` extended** — live pan/zoom demo
+2. **DRP2: uniform bind group** — `_stream.h`, `stream.c`, `runtime.c` ✓
+3. **DRP2: second bind group layout in pipeline** — `create_render_pipeline` + runtime ✓
+4. **Shader infrastructure** — builtin GLSL compiled to SPIR-V at build time; converter uses embedded binaries ✓
+5. **MVP UBO infrastructure** — per-panel buffer + bind group created in converter on first emit ✓
+6. **Scene emit wiring** — `WRITE_BUFFER` + `SET_BIND_GROUP(set=0)` per frame in converter ✓
+7. **Port panzoom** — `src/scene/panzoom.c` + `include/datoviz/scene/panzoom.h` ✓
+8. **Port arcball** — `src/scene/arcball.c` + `include/datoviz/scene/arcball.h` ✓
+9. **Panel controller API** — `dvz_panel_set_panzoom` / `dvz_panel_set_arcball` + `dvz_app_window_input` ✓
+10. **`hello_point_glfw` extended** — live pan/zoom demo ✓

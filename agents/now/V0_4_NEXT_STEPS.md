@@ -128,18 +128,24 @@ Near-term examples completed: `hello_point`, `hello_scatter`, `hello_triangle`, 
 frame loop). This required `dvz_window_should_close()` vtable dispatch, GLFW surface extensions
 wired through `DvzGpuCtxConfig`, and a `dvz_app_run(app, 0)` interactive loop.
 
-### 6. Interactive pan/zoom and arcball controllers — NEXT
+### 6. Interactive pan/zoom and arcball controllers — DONE
 
-Full design documented in `agents/now/CONTROLLER_TRANSFORM_DESIGN.md`. Summary:
+Full design documented in `agents/now/CONTROLLER_TRANSFORM_DESIGN.md` (all items complete).
 
-- Shared UBO pool in `DvzApp` (one large VkBuffer, bump-allocated per panel)
-- Two descriptor sets: set 0 = MVP+viewport (panel-level), set 1 = visual params+samplers
-- GLSL transform pipeline with specialization constants for transform type
-- Builtin shaders precompiled to SPIR-V at build time via `glslc` + `embed_resources.cmake`
-- Port v0.3 panzoom and arcball controllers, connect to `DvzInputRouter`
-- DRP2 extensions: uniform buffer bind group layout, buffer offset, second pipeline layout slot
+What was implemented:
+- DRP2 uniform buffer bind group layout + second pipeline layout slot
+- Builtin shaders (point, primitive, image) precompiled to SPIR-V at build time
+- Per-panel MVP UBO: created once by converter, written every frame with controller state
+- Panzoom (`src/scene/panzoom.c`) and arcball (`src/scene/arcball.c`) ported from v0.3
+- `dvz_panel_set_panzoom()` / `dvz_panel_set_arcball()` panel API
+- `dvz_app_window_input()` to expose the input router from an app-window
+- `hello_point_glfw` updated with live pan/zoom
 
-Action items in order: see `CONTROLLER_TRANSFORM_DESIGN.md §8`.
+### 7. Next priorities
+
+- More visual families: text, line, mesh
+- Viewport UBO (panel pixel dimensions for size-invariant visuals)
+- Per-panel clear color and depth attachment
 
 
 ## Validation Defaults
