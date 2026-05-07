@@ -87,6 +87,7 @@ if(TARGET datoviz_app)
     dvz_add_example(hello_point)
     dvz_add_example(hello_scatter)
     dvz_add_example(hello_triangle)
+    dvz_add_example(hello_texture)
 endif()
 
 if(TARGET datoviz_drp2)
