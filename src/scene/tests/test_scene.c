@@ -1470,6 +1470,94 @@ int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item
 
 
 
+int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_image(scene, 0);
+    AT(visual != NULL);
+
+    /* TRIANGLE_STRIP: TL, BL, TR, BR */
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {-0.5f,  0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f},
+        { 0.5f,  0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    /* 4x4 RGBA8 checker pattern. */
+    uint8_t pixels[4 * 4 * 4];
+    for (uint32_t y = 0; y < 4; y++)
+    {
+        for (uint32_t x = 0; x < 4; x++)
+        {
+            uint32_t i = (y * 4 + x) * 4;
+            uint8_t v = ((x ^ y) & 1) ? 255 : 0;
+            pixels[i+0] = v; pixels[i+1] = v; pixels[i+2] = v; pixels[i+3] = 255;
+        }
+    }
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstSuite* suite, TstItem* item)
 {
@@ -3561,6 +3649,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_triangle_list_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_line_strip_glsl_executes);
+    TEST_SIMPLE(test_scene_image_glsl_executes);
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
