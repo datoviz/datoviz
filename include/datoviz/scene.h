@@ -183,6 +183,26 @@ DVZ_EXPORT int dvz_panel_add_visual(
 
 
 /**
+ * Set or update a uniform-color background for a panel.
+ *
+ * Internally creates a fullscreen-quad visual attached at z_layer=-1 with
+ * controller_mode=FIXED so the background fills the panel rect and is unaffected by
+ * panzoom/arcball navigation. Repeat calls update the existing background's color
+ * instead of stacking new visuals.
+ *
+ * Components are in [0, 1].
+ *
+ * @param panel the panel
+ * @param r red component
+ * @param g green component
+ * @param b blue component
+ * @param a alpha component
+ */
+DVZ_EXPORT void dvz_panel_set_background_color(
+    DvzPanel* panel, float r, float g, float b, float a);
+
+
+/**
  * Attach a panzoom controller to a panel and connect it to an input router.
  *
  * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.

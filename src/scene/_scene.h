@@ -143,6 +143,11 @@ struct DvzPanel
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */
+
+    /* Optional background visual created by dvz_panel_set_background_*. The visual itself
+     * lives in scene->visuals[] (weak ref); this pointer lets repeat calls update the
+     * existing visual instead of stacking new ones. */
+    DvzVisual* background_visual;
 };
 
 

@@ -69,6 +69,9 @@ int main(void)
     dvz_visual_set_data(visual, "size",     sizes,     3);
     dvz_panel_add_visual(panel, visual, NULL);
 
+    /* Solid panel background; stays anchored even when panning/zooming. */
+    dvz_panel_set_background_color(panel, 0.10f, 0.12f, 0.18f, 1.0f);
+
     /* App */
     DvzApp* app = dvz_app(scene);
     if (!app)

@@ -645,6 +645,63 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAtta
 
 
 
+void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, float a)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return;
+    DvzScene* scene = panel->figure->scene;
+
+    /* Fullscreen quad in clip space, TRIANGLE_STRIP order (TL, BL, TR, BR). The visual
+     * is attached with controller_mode=FIXED so the panzoom/arcball MVP doesn't move it,
+     * and z_layer=-1 so it draws behind every default-layer visual. */
+    static const float positions[4 * 3] = {
+        -1.0f, +1.0f, 0.0f, /* TL */
+        -1.0f, -1.0f, 0.0f, /* BL */
+        +1.0f, +1.0f, 0.0f, /* TR */
+        +1.0f, -1.0f, 0.0f, /* BR */
+    };
+    DvzColor color = {
+        (uint8_t)(r * 255.0f + 0.5f),
+        (uint8_t)(g * 255.0f + 0.5f),
+        (uint8_t)(b * 255.0f + 0.5f),
+        (uint8_t)(a * 255.0f + 0.5f),
+    };
+    DvzColor colors[4] = {color, color, color, color};
+
+    if (panel->background_visual == NULL)
+    {
+        DvzVisual* bg = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, 0);
+        if (bg == NULL)
+        {
+            log_error("dvz_panel_set_background_color: failed to allocate background visual");
+            return;
+        }
+        if (dvz_visual_set_data(bg, "position", positions, 4) != 0 ||
+            dvz_visual_set_data(bg, "color", colors, 4) != 0)
+        {
+            log_error("dvz_panel_set_background_color: failed to set background data");
+            return;
+        }
+        if (dvz_panel_add_visual(
+                panel, bg,
+                &(DvzVisualAttachDesc){
+                    .z_layer = -1, .controller_mode = DVZ_CONTROLLER_FIXED}) != 0)
+        {
+            log_error("dvz_panel_set_background_color: failed to attach background visual");
+            return;
+        }
+        panel->background_visual = bg;
+    }
+    else
+    {
+        /* Existing background — just update its color. Position is already correct. */
+        dvz_visual_set_data(panel->background_visual, "color", colors, 4);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual — lifecycle and data                                                                  */
 /*************************************************************************************************/

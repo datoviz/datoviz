@@ -2537,6 +2537,53 @@ int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    /* Initially no visuals. */
+    AT(panel->visual_count == 0);
+    AT(panel->background_visual == NULL);
+
+    /* First call: creates a hidden background visual at z_layer=-1, FIXED. */
+    dvz_panel_set_background_color(panel, 0.1f, 0.2f, 0.3f, 1.0f);
+    AT(panel->visual_count == 1);
+    ANN(panel->background_visual);
+    AT(panel->visuals[0].visual == panel->background_visual);
+    AT(panel->visuals[0].z_layer == -1);
+    AT(panel->visuals[0].controller_mode == DVZ_CONTROLLER_FIXED);
+
+    /* Second call with a different color: updates in place, no new visual. */
+    DvzVisual* before = panel->background_visual;
+    dvz_panel_set_background_color(panel, 0.9f, 0.8f, 0.7f, 1.0f);
+    AT(panel->visual_count == 1);
+    AT(panel->background_visual == before);
+
+    /* A regular visual added afterwards has default attach (z=0, APPLY) and lands
+     * in front of the background per stable z-sort. */
+    float pos[3 * 3] = {0};
+    DvzColor col[3]  = {0};
+    float sz[3]      = {0};
+    DvzVisual* v = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(v, "position", pos, 3) == 0);
+    AT(dvz_visual_set_data(v, "color", col, 3) == 0);
+    AT(dvz_visual_set_data(v, "size", sz, 3) == 0);
+    AT(dvz_panel_add_visual(panel, v, NULL) == 0);
+    AT(panel->visual_count == 2);
+    AT(panel->visuals[1].z_layer == 0);
+    AT(panel->visuals[1].controller_mode == DVZ_CONTROLLER_APPLY);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -4402,6 +4449,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_z_layer_orders_emit);
     TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);
+    TEST_SIMPLE(test_scene_background_color_creates_fixed_quad);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
