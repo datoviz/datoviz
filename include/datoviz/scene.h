@@ -260,4 +260,35 @@ DVZ_EXPORT DvzVisual* dvz_primitive(
     DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags);
 
 
+/**
+ * Create an image visual.
+ *
+ * First-slice scope: one textured quad per visual. Accepts `position` (vec3, 4 corner
+ * vertices in TRIANGLE_STRIP order: TL, BL, TR, BR) and `texcoords` (vec2, matching UVs).
+ * Attach the texture bytes via `dvz_visual_set_texture`. Per-item rectangles, anchors,
+ * sizes, and color tinting from `spec/scene/visuals/IMAGE.md` are deferred.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
+
+
+/**
+ * Attach a 2D RGBA8 texture to an image visual.
+ *
+ * The pixel data must remain valid until emit time (borrowed pointer, scene-side ownership
+ * matches `dvz_visual_set_data`). One texture per visual; calling again replaces it.
+ *
+ * @param visual the visual (must be of type IMAGE)
+ * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
+ * @param width the texture width in pixels
+ * @param height the texture height in pixels
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_texture(
+    DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height);
+
+
 EXTERN_C_OFF
