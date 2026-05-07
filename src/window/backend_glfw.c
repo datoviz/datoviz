@@ -368,6 +368,19 @@ static void _glfw_poll(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 
+static bool _glfw_should_close(DvzWindowBackend* backend, DvzWindow* window)
+{
+    (void)backend;
+    if (window == NULL)
+        return true;
+    GLFWwindow* handle = (GLFWwindow*)dvz_window_backend_handle(window);
+    if (handle == NULL)
+        return true;
+    return glfwWindowShouldClose(handle) != 0;
+}
+
+
+
 /**
  * Register the GLFW backend.
  */
@@ -385,6 +398,7 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
                 .destroy = _glfw_destroy,
                 .poll = _glfw_poll,
                 .request_frame = NULL,
+                .should_close = _glfw_should_close,
                 .required_extension_count = _glfw_required_extension_count,
                 .required_extension_at = _glfw_required_extension_at,
             },

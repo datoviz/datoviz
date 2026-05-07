@@ -173,4 +173,16 @@ DVZ_EXPORT DvzBackend dvz_window_backend_type(const DvzWindow* window);
 
 
 
+/**
+ * Return whether the window has been requested to close by the user or OS.
+ *
+ * Returns false for backends that have no interactive close signal (headless, offscreen).
+ *
+ * @param window window to query
+ * @returns true if the window should be closed
+ */
+DVZ_EXPORT bool dvz_window_should_close(const DvzWindow* window);
+
+
+
 EXTERN_C_OFF

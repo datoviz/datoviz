@@ -80,6 +80,26 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height);
 
 
 /**
+ * Create an interactive GLFW window for a figure.
+ *
+ * Opens a visible window backed by a present (swapchain) canvas.  The frame loop started by
+ * dvz_app_run(app, 0) drives rendering until the user closes the window.
+ *
+ * Requires that the platform supports GLFW and that a display is available.  Returns NULL when
+ * GLFW is unavailable or window creation fails.
+ *
+ * @param app the app
+ * @param figure the figure to render (borrowed)
+ * @param width window width in pixels
+ * @param height window height in pixels
+ * @param title window title string, or NULL for a default title
+ * @return the app-window handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAppWindow* dvz_app_window_glfw(
+    DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title);
+
+
+/**
  * Return the underlying DvzCanvas for a window.
  *
  * Gives access to the full canvas API (capture, video sink, live-image sink, etc.).
@@ -116,7 +136,7 @@ DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
  * command stream for its associated figure.
  *
  * @param app the app
- * @param frame_count number of frames to render per window (0 = one iteration)
+ * @param frame_count number of frames to render (0 = interactive loop until all windows close)
  */
 DVZ_EXPORT void dvz_app_run(DvzApp* app, uint32_t frame_count);
 

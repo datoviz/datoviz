@@ -31,6 +31,7 @@
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #endif
 
 
@@ -57,6 +58,7 @@ struct DvzAppWindow
     DvzCanvas* canvas;
 #endif
     uint64_t   target_id;
+    bool       is_interactive;
 };
 
 
@@ -143,7 +145,15 @@ DvzApp* dvz_app(DvzScene* scene)
     DvzApp* app = (DvzApp*)dvz_calloc(1, sizeof(DvzApp));
     if (app == NULL)
         return NULL;
-    app->scene  = scene;
+    app->scene = scene;
+
+    /* Window host first — needed to query GLFW surface extensions before building the instance. */
+    app->window_host = dvz_window_host();
+    if (app->window_host == NULL)
+    {
+        dvz_free(app);
+        return NULL;
+    }
 
     /* GPU context — request dynamic rendering, synchronization2, and timeline semaphores. */
     DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
@@ -156,9 +166,32 @@ DvzApp* dvz_app(DvzScene* scene)
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
     dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+
+#if DVZ_HAS_GLFW
+    /* If GLFW is available, add surface extensions so the same instance supports windowed mode. */
+    if (dvz_window_glfw_init())
+    {
+        uint32_t ext_count =
+            dvz_window_host_required_extension_count(app->window_host, DVZ_BACKEND_GLFW);
+        if (ext_count > 0)
+        {
+            const char* extensions[16] = {0};
+            int written = dvz_window_host_required_extensions(
+                app->window_host, DVZ_BACKEND_GLFW, ext_count, extensions);
+            if (written == (int)ext_count)
+            {
+                for (uint32_t i = 0; i < ext_count; i++)
+                    dvz_gpu_ctx_config_add_instance_extension(&gpu_cfg, extensions[i]);
+                dvz_gpu_ctx_config_enable_canvas_extensions(&gpu_cfg, true);
+            }
+        }
+    }
+#endif
+
     app->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
     if (app->gpu_ctx == NULL)
     {
+        dvz_window_host_destroy(app->window_host);
         dvz_free(app);
         return NULL;
     }
@@ -170,18 +203,11 @@ DvzApp* dvz_app(DvzScene* scene)
     if (app->runtime == NULL)
     {
         dvz_gpu_ctx_destroy(app->gpu_ctx);
+        dvz_window_host_destroy(app->window_host);
         dvz_free(app);
         return NULL;
     }
 
-    app->window_host = dvz_window_host();
-    if (app->window_host == NULL)
-    {
-        dvz_drp2_runtime_destroy(app->runtime);
-        dvz_gpu_ctx_destroy(app->gpu_ctx);
-        dvz_free(app);
-        return NULL;
-    }
     return app;
 #else
     (void)scene;
@@ -285,6 +311,65 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
 
 
 
+DvzAppWindow*
+dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height,
+                    const char* title)
+{
+    ANN(app);
+    ANN(figure);
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE && DVZ_HAS_GLFW
+    if (app->window_count >= DVZ_APP_MAX_WINDOWS)
+        return NULL;
+
+    DvzWindowConfig wcfg = dvz_window_default_config();
+    wcfg.width  = width;
+    wcfg.height = height;
+    if (title != NULL)
+        wcfg.title = title;
+    DvzWindow* window = dvz_window_create(app->window_host, DVZ_BACKEND_GLFW, &wcfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
+    {
+        if (window != NULL)
+            dvz_window_destroy(window);
+        return NULL;
+    }
+
+    /* Poll once so the initial resize event sets the surface extent. */
+    dvz_window_host_poll(app->window_host);
+
+    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    ccfg.window = window;
+    ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
+    /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
+    DvzCanvas* canvas = dvz_canvas_create(&ccfg);
+    if (canvas == NULL)
+    {
+        dvz_window_destroy(window);
+        return NULL;
+    }
+
+    DvzAppWindow* win = &app->windows[app->window_count];
+    win->app            = app;
+    win->figure         = figure;
+    win->window         = window;
+    win->canvas         = canvas;
+    win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    win->is_interactive = true;
+    app->window_count++;
+
+    dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    return win;
+#else
+    (void)width;
+    (void)height;
+    (void)title;
+    return NULL;
+#endif
+}
+
+
+
 /*************************************************************************************************/
 /*  Window accessors                                                                             */
 /*************************************************************************************************/
@@ -322,16 +407,42 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
     ANN(app);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    uint32_t target = frame_count == 0 ? 1 : frame_count;
-    for (uint32_t f = 0; f < target; f++)
+    if (frame_count == 0)
     {
-        dvz_window_host_poll(app->window_host);
-        for (uint32_t i = 0; i < app->window_count; i++)
+        /* Interactive mode: loop until every interactive window requests close. */
+        for (;;)
         {
-            DvzAppWindow* win = &app->windows[i];
-            int rc = dvz_canvas_frame(win->canvas);
-            if (rc == DVZ_CANVAS_FRAME_READY)
-                dvz_canvas_submit(win->canvas);
+            dvz_window_host_poll(app->window_host);
+            bool any_open = false;
+            for (uint32_t i = 0; i < app->window_count; i++)
+            {
+                DvzAppWindow* win = &app->windows[i];
+                if (win->is_interactive && !dvz_window_should_close(win->window))
+                    any_open = true;
+            }
+            if (!any_open)
+                break;
+            for (uint32_t i = 0; i < app->window_count; i++)
+            {
+                DvzAppWindow* win = &app->windows[i];
+                int rc = dvz_canvas_frame(win->canvas);
+                if (rc == DVZ_CANVAS_FRAME_READY)
+                    dvz_canvas_submit(win->canvas);
+            }
+        }
+    }
+    else
+    {
+        for (uint32_t f = 0; f < frame_count; f++)
+        {
+            dvz_window_host_poll(app->window_host);
+            for (uint32_t i = 0; i < app->window_count; i++)
+            {
+                DvzAppWindow* win = &app->windows[i];
+                int rc = dvz_canvas_frame(win->canvas);
+                if (rc == DVZ_CANVAS_FRAME_READY)
+                    dvz_canvas_submit(win->canvas);
+            }
         }
     }
 #else

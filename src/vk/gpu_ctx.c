@@ -205,6 +205,34 @@ void dvz_gpu_ctx_config_features13(
 
 
 /**
+ * Request an additional Vulkan instance extension.
+ */
+void dvz_gpu_ctx_config_add_instance_extension(DvzGpuCtxConfig* cfg, const char* extension)
+{
+    ANN(cfg);
+    ANN(extension);
+    if (cfg->instance_extension_count >= 16)
+    {
+        log_warn("too many instance extensions in DvzGpuCtxConfig");
+        return;
+    }
+    cfg->instance_extensions[cfg->instance_extension_count++] = extension;
+}
+
+
+
+/**
+ * Enable or disable canvas device extensions.
+ */
+void dvz_gpu_ctx_config_enable_canvas_extensions(DvzGpuCtxConfig* cfg, bool enable)
+{
+    ANN(cfg);
+    cfg->enable_canvas_extensions = enable;
+}
+
+
+
+/**
  * Create an owned GPU context from a configuration.
  *
  * @param cfg the GPU-context configuration
@@ -220,6 +248,8 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
 
     DvzInstanceConfig icfg = dvz_instance_default_config();
     icfg.flags = cfg->enable_validation ? DVZ_INSTANCE_VALIDATION_FLAGS : 0;
+    for (uint32_t i = 0; i < cfg->instance_extension_count; i++)
+        dvz_instance_config_request_extension(&icfg, cfg->instance_extensions[i]);
     ctx->instance = dvz_instance_create(&icfg);
     if (ctx->instance == NULL)
     {
@@ -257,6 +287,10 @@ DvzGpuCtx* dvz_gpu_ctx(const DvzGpuCtxConfig* cfg)
     if (cfg->has_features13)
     {
         dvz_device_config_set_features13(&dcfg, &cfg->features13);
+    }
+    if (cfg->enable_canvas_extensions)
+    {
+        dvz_device_config_enable_canvas_extensions(&dcfg, true);
     }
 
     ctx->device = dvz_device_create(&dcfg);

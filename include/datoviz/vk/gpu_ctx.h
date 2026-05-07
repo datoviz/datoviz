@@ -53,6 +53,9 @@ struct DvzGpuCtxConfig
     VkPhysicalDeviceFeatures features10;
     VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceVulkan13Features features13;
+    uint32_t instance_extension_count;
+    const char* instance_extensions[16];
+    bool enable_canvas_extensions;
 };
 
 
@@ -133,6 +136,29 @@ DVZ_EXPORT void dvz_gpu_ctx_config_features12(
  */
 DVZ_EXPORT void dvz_gpu_ctx_config_features13(
     DvzGpuCtxConfig* cfg, const VkPhysicalDeviceVulkan13Features* features);
+
+
+
+/**
+ * Request an additional Vulkan instance extension for a GPU-context configuration.
+ *
+ * @param cfg the GPU-context configuration
+ * @param extension null-terminated extension name (must outlive the config)
+ */
+DVZ_EXPORT void
+dvz_gpu_ctx_config_add_instance_extension(DvzGpuCtxConfig* cfg, const char* extension);
+
+
+
+/**
+ * Enable or disable canvas (swapchain/surface) device extensions for a GPU-context configuration.
+ *
+ * Must be set before dvz_gpu_ctx() is called.  Required when creating present canvases.
+ *
+ * @param cfg the GPU-context configuration
+ * @param enable whether canvas extensions should be enabled on the device
+ */
+DVZ_EXPORT void dvz_gpu_ctx_config_enable_canvas_extensions(DvzGpuCtxConfig* cfg, bool enable);
 
 
 
