@@ -86,6 +86,7 @@ struct DvzDrp2Command
             uint64_t fragment_shader_module_id;
             uint32_t vertex_buffer_slots;
             uint64_t bind_group_layout_id;
+            uint64_t bind_group_layout_id2; /* optional second descriptor set; 0 = unused */
             /* Vertex input layout (binding_count==0 → no vertex attributes). */
             uint32_t topology;        /* VkPrimitiveTopology; 0 = TRIANGLE_LIST           */
             uint32_t binding_count;
@@ -118,6 +119,7 @@ struct DvzDrp2Command
         {
             uint64_t id;
             bool storage_buffers;
+            bool uniform_buffer;
         } create_bind_group_layout;
         struct
         {
@@ -128,6 +130,7 @@ struct DvzDrp2Command
             uint64_t buffer0_id;
             uint64_t buffer1_id;
             uint64_t buffer_size;
+            uint64_t buffer0_offset;
         } create_bind_group;
         struct
         {

@@ -1240,6 +1240,21 @@ bool dvz_drp2_stream_pipeline_set_bind_group_layout(
 }
 
 
+
+bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
+    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id2)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.bind_group_layout_id2 = bind_group_layout_id2;
+    return true;
+}
+
+
 bool dvz_drp2_stream_create_render_pipeline_ex(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
@@ -1411,6 +1426,25 @@ bool dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stre
 
 
 /**
+ * Append a CreateBindGroupLayout command for one uniform buffer (VS + FS visible).
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_uniform_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
+    if (command == NULL)
+        return false;
+    command->u.create_bind_group_layout.id = id;
+    command->u.create_bind_group_layout.uniform_buffer = true;
+    return true;
+}
+
+
+
+/**
  * Append a CreateBindGroup command for one sampled texture and one sampler.
  *
  * @param stream the command stream
@@ -1459,6 +1493,34 @@ bool dvz_drp2_stream_create_storage_bind_group(
     command->u.create_bind_group.buffer0_id = buffer0_id;
     command->u.create_bind_group.buffer1_id = buffer1_id;
     command->u.create_bind_group.buffer_size = buffer_size;
+    return true;
+}
+
+
+
+/**
+ * Append a CreateBindGroup command for one uniform buffer with a sub-allocation offset.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param buffer_id the uniform buffer id
+ * @param offset byte offset into the buffer for this sub-allocation
+ * @param size bound range size in bytes
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_create_uniform_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer_id,
+    uint64_t offset, uint64_t size)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
+    if (command == NULL)
+        return false;
+    command->u.create_bind_group.id               = id;
+    command->u.create_bind_group.bind_group_layout_id = bind_group_layout_id;
+    command->u.create_bind_group.buffer0_id        = buffer_id;
+    command->u.create_bind_group.buffer0_offset    = offset;
+    command->u.create_bind_group.buffer_size       = size;
     return true;
 }
 

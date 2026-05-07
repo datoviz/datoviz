@@ -250,6 +250,28 @@ VkPipelineLayout dvz_slots_handle(DvzSlots* slots)
 
 
 
+VkPipelineLayout dvz_slots_combined_pipeline_layout(
+    DvzDevice* device, VkDescriptorSetLayout layout0, VkDescriptorSetLayout layout1)
+{
+    ANN(device);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
+
+    VkDescriptorSetLayout set_layouts[2] = {layout0, layout1};
+    VkPipelineLayoutCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    info.setLayoutCount = 2;
+    info.pSetLayouts = set_layouts;
+
+    VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkResult res = vkCreatePipelineLayout(vkd, &info, NULL, &layout);
+    if (vk_result_check(res, __FILE__, __LINE__) != 0)
+        return VK_NULL_HANDLE;
+    return layout;
+}
+
+
+
 /**
  * Return the device that owns a slots wrapper.
  *

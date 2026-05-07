@@ -134,6 +134,22 @@ DVZ_EXPORT VkPipelineLayout dvz_slots_handle(DvzSlots* slots);
 
 
 /**
+ * Create a pipeline layout that combines two existing descriptor set layouts.
+ *
+ * The resulting pipeline layout covers set 0 (from layout0) and set 1 (from layout1).
+ * The returned VkPipelineLayout must be destroyed by the caller with vkDestroyPipelineLayout.
+ *
+ * @param device the device
+ * @param layout0 descriptor set layout for set 0
+ * @param layout1 descriptor set layout for set 1
+ * @return the combined pipeline layout, or VK_NULL_HANDLE on failure
+ */
+DVZ_EXPORT VkPipelineLayout dvz_slots_combined_pipeline_layout(
+    DvzDevice* device, VkDescriptorSetLayout layout0, VkDescriptorSetLayout layout1);
+
+
+
+/**
  * Return the device that owns a slots wrapper.
  *
  * @param slots the slots

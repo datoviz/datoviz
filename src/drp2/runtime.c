@@ -131,6 +131,7 @@ struct Drp2Object
     uint64_t fragment_shader_module_id;
     uint64_t compute_shader_module_id;
     uint64_t bind_group_layout_id;
+    uint64_t bind_group_layout_id2;
     uint64_t texture_id;
     uint64_t sampler_id;
     uint64_t buffer0_id;
@@ -146,6 +147,7 @@ struct Drp2Object
     bool index_buffer_bound;
     uint32_t bound_bind_group_mask;
     bool storage_buffers;
+    bool uniform_buffer;
 };
 
 
@@ -186,6 +188,8 @@ struct Drp2VkliteObject
     float viewport_y;
     float viewport_width;
     float viewport_height;
+    VkPipelineLayout combined_pipeline_layout; /* owned combined layout for two-set pipelines */
+    VkDevice         combined_layout_device;   /* VkDevice needed to destroy combined_pipeline_layout */
     bool borrowed_slots;
     bool borrowed_commands;
     bool borrowed_frame_target;
@@ -764,6 +768,11 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
             state, command->u.create_render_pipeline.bind_group_layout_id,
             DRP2_OBJECT_BIND_GROUP_LAYOUT))
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.create_render_pipeline.bind_group_layout_id2 != 0 &&
+        !_has_object_kind(
+            state, command->u.create_render_pipeline.bind_group_layout_id2,
+            DRP2_OBJECT_BIND_GROUP_LAYOUT))
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     Drp2Object* object = _add_object(state, id, DRP2_OBJECT_RENDER_PIPELINE);
     if (object == NULL)
@@ -771,7 +780,8 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
     object->vertex_buffer_slots = command->u.create_render_pipeline.vertex_buffer_slots;
     object->vertex_shader_module_id = command->u.create_render_pipeline.vertex_shader_module_id;
     object->fragment_shader_module_id = command->u.create_render_pipeline.fragment_shader_module_id;
-    object->bind_group_layout_id = command->u.create_render_pipeline.bind_group_layout_id;
+    object->bind_group_layout_id  = command->u.create_render_pipeline.bind_group_layout_id;
+    object->bind_group_layout_id2 = command->u.create_render_pipeline.bind_group_layout_id2;
     return _ok();
 }
 
@@ -901,6 +911,7 @@ static DvzDrp2ValidationResult _validate_create_bind_group_layout(
     if (object == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->storage_buffers = command->u.create_bind_group_layout.storage_buffers;
+    object->uniform_buffer  = command->u.create_bind_group_layout.uniform_buffer;
     return _ok();
 }
 
@@ -925,7 +936,20 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
     Drp2Object* layout = _find_object(state, command->u.create_bind_group.bind_group_layout_id);
     ANN(layout);
     bool storage_buffers = layout->storage_buffers;
-    if (storage_buffers)
+    bool uniform_buffer  = layout->uniform_buffer;
+    if (uniform_buffer)
+    {
+        Drp2Object* buffer0 = _find_object(state, command->u.create_bind_group.buffer0_id);
+        if (buffer0 == NULL || buffer0->kind != DRP2_OBJECT_BUFFER)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if ((buffer0->usage & DVZ_DRP2_BUFFER_USAGE_UNIFORM) == 0)
+            return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+        uint64_t offset = command->u.create_bind_group.buffer0_offset;
+        uint64_t size   = command->u.create_bind_group.buffer_size;
+        if (_range_overflows(offset, size, buffer0->size))
+            return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    }
+    else if (storage_buffers)
     {
         Drp2Object* buffer0 = _find_object(state, command->u.create_bind_group.buffer0_id);
         Drp2Object* buffer1 = _find_object(state, command->u.create_bind_group.buffer1_id);
@@ -960,6 +984,7 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
     object->buffer1_id = command->u.create_bind_group.buffer1_id;
     object->buffer_size = command->u.create_bind_group.buffer_size;
     object->storage_buffers = storage_buffers;
+    object->uniform_buffer  = uniform_buffer;
     return _ok();
 }
 
@@ -1172,16 +1197,23 @@ static DvzDrp2ValidationResult _validate_set_bind_group(
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (pass->kind != DRP2_OBJECT_RENDER_PASS && pass->kind != DRP2_OBJECT_COMPUTE_PASS)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (command->u.set_bind_group.slot != 0 || pipeline->bind_group_layout_id == 0)
+    uint32_t slot = command->u.set_bind_group.slot;
+    if (slot == 0 && pipeline->bind_group_layout_id == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (slot == 1 && pipeline->bind_group_layout_id2 == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (slot > 1)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
+    uint64_t expected_layout_id =
+        (slot == 0) ? pipeline->bind_group_layout_id : pipeline->bind_group_layout_id2;
     Drp2Object* bind_group = _find_object(state, command->u.set_bind_group.bind_group_id);
     if (bind_group == NULL || bind_group->kind != DRP2_OBJECT_BIND_GROUP)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (bind_group->bind_group_layout_id != pipeline->bind_group_layout_id)
+    if (bind_group->bind_group_layout_id != expected_layout_id)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    pass->bound_bind_group_mask |= 1u;
+    pass->bound_bind_group_mask |= (1u << slot);
     _mark_referenced(state, command->u.set_bind_group.bind_group_id);
     if (bind_group->storage_buffers)
     {
@@ -1276,6 +1308,8 @@ static DvzDrp2ValidationResult _validate_render_draw_state(
     if ((pass->bound_vertex_mask & required_mask) != required_mask)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (pipeline->bind_group_layout_id != 0 && (pass->bound_bind_group_mask & 1u) == 0)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (pipeline->bind_group_layout_id2 != 0 && (pass->bound_bind_group_mask & 2u) == 0)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _ok();
 }
@@ -2005,6 +2039,13 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_images_free(object->images);
         object->images = NULL;
     }
+    if (object->combined_pipeline_layout != VK_NULL_HANDLE &&
+        object->combined_layout_device != VK_NULL_HANDLE)
+    {
+        vkDestroyPipelineLayout(
+            object->combined_layout_device, object->combined_pipeline_layout, NULL);
+        object->combined_pipeline_layout = VK_NULL_HANDLE;
+    }
     if (object->graphics != NULL)
     {
         dvz_graphics_destroy(object->graphics);
@@ -2590,6 +2631,13 @@ static DvzDrp2ValidationResult _vklite_create_bind_group_layout(
         dvz_slots_binding(
             slots, 0, 1, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     }
+    else if (command->u.create_bind_group_layout.uniform_buffer)
+    {
+        dvz_slots_binding(
+            slots, 0, 0, 1,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    }
     else
     {
         dvz_slots_binding(
@@ -2640,8 +2688,22 @@ static DvzDrp2ValidationResult _vklite_create_bind_group(
     object->sampler_id = command->u.create_bind_group.sampler_id;
     dvz_descriptors(layout->slots, descriptors);
 
-    if (command->u.create_bind_group.buffer_size != 0)
+    if (command->u.create_bind_group.buffer_size != 0 &&
+        command->u.create_bind_group.buffer1_id == 0)
     {
+        /* Uniform buffer: single buffer with a sub-allocation offset. */
+        Drp2VkliteObject* buffer0 = _vklite_find(state, command->u.create_bind_group.buffer0_id);
+        if (buffer0 == NULL || buffer0->buffer == NULL)
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_descriptors_buffer(
+            descriptors, 0, 0, 0, dvz_buffer_handle(buffer0->buffer),
+            command->u.create_bind_group.buffer0_offset,
+            command->u.create_bind_group.buffer_size);
+    }
+    else if (command->u.create_bind_group.buffer_size != 0)
+    {
+        /* Storage buffers: two buffers, no offset. */
         Drp2VkliteObject* buffer0 = _vklite_find(state, command->u.create_bind_group.buffer0_id);
         Drp2VkliteObject* buffer1 = _vklite_find(state, command->u.create_bind_group.buffer1_id);
         if (buffer0 == NULL || buffer0->buffer == NULL || buffer1 == NULL ||
@@ -2707,7 +2769,34 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    if (command->u.create_render_pipeline.bind_group_layout_id != 0)
+    VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
+
+    if (command->u.create_render_pipeline.bind_group_layout_id2 != 0)
+    {
+        /* Two-descriptor-set pipeline: build a combined pipeline layout. */
+        Drp2VkliteObject* layout0 =
+            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id);
+        Drp2VkliteObject* layout1 =
+            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id2);
+        if (layout0 == NULL || layout0->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
+            layout0->slots == NULL || layout1 == NULL ||
+            layout1->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout1->slots == NULL)
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        pipeline_layout = dvz_slots_combined_pipeline_layout(
+            state->runtime->device,
+            dvz_slots_set_layout(layout0->slots, 0),
+            dvz_slots_set_layout(layout1->slots, 0));
+        if (pipeline_layout == VK_NULL_HANDLE)
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        object->combined_pipeline_layout = pipeline_layout;
+        object->combined_layout_device   = dvz_device_handle(state->runtime->device);
+        /* Borrow first layout's slots pointer for bookkeeping; layout is driven by combined. */
+        object->slots = layout0->slots;
+        object->borrowed_slots = true;
+    }
+    else if (command->u.create_render_pipeline.bind_group_layout_id != 0)
     {
         Drp2VkliteObject* layout =
             _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id);
@@ -2715,6 +2804,7 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
             layout->slots == NULL)
             return _vklite_fail_destroy_object(
                 object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        pipeline_layout = dvz_slots_handle(layout->slots);
         object->slots = layout->slots;
         object->borrowed_slots = true;
     }
@@ -2727,6 +2817,7 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
             _vklite_destroy_object(object);
             return result;
         }
+        pipeline_layout = dvz_slots_handle(object->slots);
     }
 
     DvzGraphics* graphics = dvz_graphics_create_wrapper();
@@ -2736,7 +2827,7 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
     object->graphics = graphics;
 
     dvz_graphics(state->runtime->device, graphics);
-    dvz_graphics_layout(graphics, dvz_slots_handle(object->slots));
+    dvz_graphics_layout(graphics, pipeline_layout);
     dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vertex->shader));
     dvz_graphics_shader(
         graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fragment->shader));

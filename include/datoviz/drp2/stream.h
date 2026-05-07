@@ -301,6 +301,19 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout(
 
 
 /**
+ * Attach a second bind-group layout (descriptor set 1) to the most recently appended
+ * CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param bind_group_layout_id2 the second bind-group layout id (0 = none)
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
+    DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id2);
+
+
+
+/**
  * Append a DestroyRenderPipeline command.
  *
  * @param stream the command stream
@@ -388,6 +401,18 @@ dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stream, u
 
 
 /**
+ * Append a CreateBindGroupLayout command for one uniform buffer (VS + FS visible).
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_create_uniform_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
+
+
+
+/**
  * Append a CreateBindGroup command for one sampled texture and one sampler.
  *
  * @param stream the command stream
@@ -417,6 +442,23 @@ DVZ_EXPORT bool dvz_drp2_stream_create_texture_sampler_bind_group(
 DVZ_EXPORT bool dvz_drp2_stream_create_storage_bind_group(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer0_id,
     uint64_t buffer1_id, uint64_t buffer_size);
+
+
+
+/**
+ * Append a CreateBindGroup command for one uniform buffer with a sub-allocation offset.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param buffer_id the uniform buffer id
+ * @param offset byte offset into the buffer for this sub-allocation
+ * @param size bound range size in bytes
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_uniform_bind_group(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer_id,
+    uint64_t offset, uint64_t size);
 
 
 
