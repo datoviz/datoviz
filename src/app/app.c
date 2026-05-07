@@ -347,6 +347,19 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
+    /* DVZ_PRESENT_MODE: fifo (default, vsync), mailbox (vsync+latest), immediate (no vsync). */
+    const char* pm_env = getenv("DVZ_PRESENT_MODE");
+    if (pm_env != NULL)
+    {
+        if (strcmp(pm_env, "immediate") == 0)
+            ccfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+        else if (strcmp(pm_env, "mailbox") == 0)
+            ccfg.present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+        else if (strcmp(pm_env, "fifo") == 0)
+            ccfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+        else
+            log_warn("ignoring DVZ_PRESENT_MODE='%s' (expected fifo|mailbox|immediate)", pm_env);
+    }
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {
