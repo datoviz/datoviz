@@ -2231,6 +2231,54 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstSuite* suite
 
 
 
+int test_drp2_runtime_vklite_destroy_after_partial_failure(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("test_drp2_runtime_vklite_destroy_after_partial_failure skipped: no GPU");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    /* Execute a stream that fails mid-way (bad GLSL). */
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 1, "VERTEX", "glsl", "this is not valid glsl {}}}}}"));
+
+    tst_log_capture_begin(suite);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(!result.ok);
+    dvz_drp2_stream_destroy(stream);
+
+    /* Destroy the runtime after the failed execution — must not crash or leak. */
+    dvz_drp2_runtime_destroy(runtime);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2750,6 +2798,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_creates_glsl_shader_modules);
     TEST_SIMPLE(test_drp2_runtime_vklite_rejects_invalid_glsl_shader);
     TEST_SIMPLE(test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader);
+    TEST_SIMPLE(test_drp2_runtime_vklite_destroy_after_partial_failure);
     TEST_SIMPLE(test_drp2_runtime_vklite_creates_render_pipeline);
     TEST_SIMPLE(test_drp2_runtime_vklite_reallocates_object_table_safely);
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_render_pass);

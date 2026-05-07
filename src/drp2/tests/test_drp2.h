@@ -157,6 +157,8 @@ int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstSuite* suite, TstIte
 
 int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_vklite_destroy_after_partial_failure(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_vklite_reallocates_object_table_safely(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_draws_render_pass(TstSuite* suite, TstItem* item);
