@@ -2265,3 +2265,28 @@ bool dvz_drp2_stream_write_buffer_bytes(
     command->u.write_buffer.data_base64 = NULL; /* populated only for JSON serialization */
     return true;
 }
+
+
+bool dvz_drp2_stream_write_texture_2d_bytes(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t width,
+    uint32_t height, uint32_t bytes_per_row, uint32_t rows_per_image, const void* data)
+{
+    ANN(stream);
+    if (data == NULL)
+        return false;
+
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_WRITE_TEXTURE);
+    if (command == NULL)
+        return false;
+    command->type                            = DVZ_DRP2_COMMAND_WRITE_TEXTURE;
+    command->u.write_texture.texture_id      = texture_id;
+    command->u.write_texture.mip_level       = mip_level;
+    command->u.write_texture.width           = width;
+    command->u.write_texture.height          = height;
+    command->u.write_texture.depth           = 1;
+    command->u.write_texture.bytes_per_row   = bytes_per_row;
+    command->u.write_texture.rows_per_image  = rows_per_image;
+    command->u.write_texture.data_raw        = data; /* borrowed; caller keeps alive */
+    command->u.write_texture.data_base64     = NULL;
+    return true;
+}
