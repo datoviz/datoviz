@@ -9,6 +9,11 @@ It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRI
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 > **v0.3 note**: this family was called `basic` in v0.3.
+>
+> **v0.4-dev implementation**: landed. `dvz_primitive(scene, topology, flags)` supports
+> `POINT_LIST`, `LINE_LIST`, `LINE_STRIP`, `TRIANGLE_LIST`, `TRIANGLE_STRIP` with `position` +
+> `color` attributes. `size` parameter for `point_list` topology and `PER_GROUP`/`scalar` color
+> modes are not yet wired up.
 
 
 ## Semantic Purpose

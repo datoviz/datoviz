@@ -12,7 +12,7 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 | Example             | Visual needed         | New API required?            | Status  |
 |---------------------|-----------------------|------------------------------|---------|
 | `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
-| `hello_triangle.c`  | `dvz_primitive`       | New topology-parametric family | Blocked |
+| `hello_triangle.c`  | `dvz_primitive`       | New topology-parametric family | Done    |
 | `hello_texture.c`   | `dvz_image`           | New visual constructor        | Blocked |
 
 `hello_scatter.c` now exists under `examples/c/`. The next example work should add one new visual
@@ -79,7 +79,11 @@ dvz_add_example(hello_scatter)
 
 ## Part 2 — `hello_triangle.c` (scene + app, primitive visual)
 
-### Blocked on: `dvz_primitive` visual constructor
+### Status
+
+Done. `examples/c/hello_triangle.c` renders a single colored triangle through `dvz_primitive`
+with `DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`. The visual family supports POINT_LIST, LINE_LIST,
+LINE_STRIP, TRIANGLE_LIST, TRIANGLE_STRIP. Scene tests cover triangle-list and line-strip emit.
 
 The full contract is specified in [`spec/scene/visuals/PRIMITIVE.md`](../../spec/scene/visuals/PRIMITIVE.md);
 this section summarises what the example needs.

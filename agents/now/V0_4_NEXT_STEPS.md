@@ -62,43 +62,19 @@ Before adding many visual families, make the existing point path feel production
 2. expand deterministic offscreen capture smoke tests beyond the current retained-render point case,
 3. keep the borrowed-pointer lifetime contract around emitted streams explicit.
 
-### 2. Add the next minimal visual family
+### 2. dvz_primitive — DONE
 
-The best next visual is a single topology-parametric family with built-in pass-through shaders,
-not a per-shape constructor and not a broad renderer.
+A topology-parametric `primitive` visual family is now in place. `dvz_primitive(scene, topology,
+flags)` accepts `POINT_LIST`, `LINE_LIST`, `LINE_STRIP`, `TRIANGLE_LIST`, `TRIANGLE_STRIP` (no
+`TRIANGLE_FAN`, per `spec/scene/visuals/PRIMITIVE.md`). Built-in pass-through pos+color shaders,
+2-binding pipeline, topology forwarded to `VkPipelineInputAssemblyStateCreateInfo`. Scene tests
+cover triangle-list and line-strip emit; `examples/c/hello_triangle.c` saves a colored triangle
+PNG identical to `raw_triangle.c`. Heavier mesh concerns (indexing, normals, lighting) still
+belong to a later `dvz_mesh` family.
 
-Target API shape:
+### 3. Add a minimal image/texture visual
 
-```c
-DVZ_EXPORT DvzVisual* dvz_primitive(
-    DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags);
-```
-
-`DvzPrimitiveTopology` covers `POINT_LIST`, `LINE_LIST`, `LINE_STRIP`, `TRIANGLE_LIST`,
-`TRIANGLE_STRIP`, `TRIANGLE_FAN`. One family, one shader pair, one pipeline shape — the
-topology is just a parameter to the pipeline state. This subsumes triangle/line/strip
-examples without inventing per-shape visuals or per-shape shaders. Heavier mesh concerns
-(indexing, normals, lighting) belong to a later `dvz_mesh` family, not here.
-
-Keep the first version narrow:
-
-1. positions,
-2. per-vertex color,
-3. one pipeline shape, with topology supplied by the visual,
-4. trivial pass-through vertex shader (positions in clip space until the panel transform
-   path lands),
-5. one offscreen example (`hello_triangle.c`) using `TRIANGLE_LIST`.
-
-Exit criteria:
-
-1. focused scene tests,
-2. DRP2 fixture or JSON assertion for the emitted stream,
-3. a C example that saves an image,
-4. no new scene dependency on Vulkan headers outside runtime-facing code.
-
-### 3. Add a minimal image/texture visual after mesh
-
-Once mesh/triangle exists, add image as the second non-point family.
+This is now the top of the queue. Add `dvz_image(scene, flags)` as the second non-point family.
 
 Keep it constrained:
 
@@ -109,7 +85,10 @@ Keep it constrained:
 5. a clear resource ownership story for CPU image bytes and runtime texture ids.
 
 This will pressure-test DRP2 texture upload, texture views, samplers, bind groups, and scene-side
-resource identity more usefully than adding more point variants.
+resource identity. Expect this slice to be larger than `dvz_primitive` because samplers and bind
+groups are new code in `src/scene/converter.c` — `_emitter_emit_texture_upload` currently only
+emits a 2×2 stub. Spec contract: see `spec/scene/visuals/IMAGE.md` if present, otherwise
+`docs/architecture/next_scene_examples.md` Part 3.
 
 ### 4. Harden the scene/DRP2 runtime boundary
 
@@ -128,8 +107,8 @@ as the safety baseline.
 
 Near-term examples should stay small and honest:
 
-1. `hello_point` and `hello_scatter`: high-level scene/app path.
-2. `hello_triangle`: first `dvz_primitive` example (`TRIANGLE_LIST` topology) once implemented.
+1. `hello_point` and `hello_scatter`: high-level scene/app path with `dvz_point`.
+2. `hello_triangle`: `dvz_primitive` with `TRIANGLE_LIST` topology.
 3. `hello_texture`: first texture/sampler scene visual once implemented.
 4. `raw_triangle`: vklite into canvas for users who need low-level control.
 5. `raw_triangle_drp2`: hand-written DRP2 for protocol/runtime developers.
