@@ -28,6 +28,7 @@
 #include "_overflow.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
+#include "datoviz/fileio/fileio.h"
 #include "datoviz/scene.h"
 
 
@@ -823,6 +824,24 @@ static bool _emit_shader(
 
 
 
+/* Emit a shader using precompiled SPIR-V when available; fall back to runtime GLSL. */
+static bool _emit_shader_spirv(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
+    const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(stream);
+    ANN(stage);
+    unsigned long spv_size = 0;
+    const unsigned char* spv = dvz_resource_shader(spirv_key, &spv_size);
+    if (spv != NULL && spv_size > 0)
+        return dvz_drp2_stream_create_shader_module_spirv(
+            stream, id, stage, (const uint32_t*)spv, (uint64_t)spv_size);
+    /* Fallback: runtime GLSL compilation. */
+    return dvz_drp2_stream_create_shader_module_format(stream, id, stage, "glsl", glsl);
+}
+
+
+
 /**
  * Emit DRP2 commands for an upload node.
  *
@@ -1578,12 +1597,36 @@ static bool _emitter_emit_render(
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
     }
 
+    /* SPIR-V resource names (stem of .vert.spv / .frag.spv after embed_resources key mangling). */
+    const char* vs_spirv_key = NULL;
+    const char* fs_spirv_key = NULL;
+    if (is_point)
+    {
+        vs_spirv_key = "point_vert";
+        fs_spirv_key = "point_frag";
+    }
+    else if (is_primitive)
+    {
+        vs_spirv_key = "primitive_vert";
+        fs_spirv_key = "primitive_frag";
+    }
+    else if (is_image)
+    {
+        vs_spirv_key = "image_vert";
+        fs_spirv_key = "image_frag";
+    }
+
     uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
     if (vs_id == 0)
         return false;
     if (is_new)
     {
-        if (vs_glsl != NULL)
+        if (vs_glsl != NULL && vs_spirv_key != NULL &&
+            cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        {
+            ok = ok && _emit_shader_spirv(stream, vs_id, "VERTEX", vs_spirv_key, vs_glsl, cfg);
+        }
+        else if (vs_glsl != NULL)
         {
             ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, vs_glsl, cfg);
         }
@@ -1601,11 +1644,20 @@ static bool _emitter_emit_render(
         return false;
     if (ok && is_new)
     {
-        if (fs_glsl != NULL)
+        if (fs_glsl != NULL && fs_spirv_key != NULL &&
+            cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        {
+            ok = ok && _emit_shader_spirv(stream, fs_id, "FRAGMENT", fs_spirv_key, fs_glsl, cfg);
+        }
+        else if (fs_glsl != NULL)
+        {
             ok = ok && _emit_shader(stream, fs_id, "FRAGMENT", NULL, fs_glsl, cfg);
+        }
         else
+        {
             ok = ok && _emit_shader(
                            stream, fs_id, "FRAGMENT", DRP2_FRAGMENT_WGSL, DRP2_FRAGMENT_GLSL, cfg);
+        }
     }
 
     if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)

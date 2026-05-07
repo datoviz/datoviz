@@ -213,6 +213,24 @@ DVZ_EXPORT bool dvz_drp2_stream_create_shader_module_format(
 
 
 /**
+ * Append a CreateShaderModule command from a precompiled SPIR-V binary (in-process path).
+ *
+ * The caller retains ownership of `spirv`; it must remain valid until the stream is executed.
+ *
+ * @param stream the command stream
+ * @param id the shader module id
+ * @param stage the shader stage ("VERTEX" or "FRAGMENT")
+ * @param spirv pointer to SPIR-V bytecode
+ * @param spirv_size size in bytes
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_shader_module_spirv(
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
+    const uint32_t* spirv, uint64_t spirv_size);
+
+
+
+/**
  * Append a DestroyShaderModule command.
  *
  * @param stream the command stream

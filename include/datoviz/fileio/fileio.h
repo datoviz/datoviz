@@ -183,7 +183,7 @@ uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint3
 /*************************************************************************************************/
 
 // Defined in cmake-generated file build/_shaders.c
-unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
+const unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
 
 
 

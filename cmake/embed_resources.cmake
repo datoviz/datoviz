@@ -1,74 +1,57 @@
-# Creates C resources file from files in given directory
-# from: https://stackoverflow.com/a/27206982
+# Embed binary files as C byte arrays.
+#
+# Invoked by CMake add_custom_command with -P flag:
+#   cmake -D FILES="file1;file2;..." -D PREFIX=shader -D OUTPUT=path/_shaders.c
+#         -P embed_resources.cmake
+#
+# Generates a .c file with:
+#   static const unsigned char DVZ_RESOURCE_<PREFIX>_<name>[] = { ... };
+#   static const unsigned long DVZ_RESOURCE_<PREFIX>_<name>_size = N;
+#
+# and a lookup function:
+#   const unsigned char* dvz_resource_<prefix>(const char* name, unsigned long* size);
+#
+# <name> is derived from the filename with extension stripped and non-alnum chars → '_'.
+
 function(create_resources files prefix output)
-    # Create empty output file
-    file(WRITE ${output} "")
-    file(APPEND ${output} "#include <string.h>\n")
-    file(APPEND ${output} "#include \"../include/datoviz_macros.h\"\n")
-    file(APPEND ${output} "#include \"../include/datoviz/common.h\"\n")
-    file(APPEND ${output} "#include \"../include/datoviz/fileio.h\"\n")
+    file(WRITE "${output}" "")
+    file(APPEND "${output}" "#include <string.h>\n\n")
 
-    # Collect input files
-    # HACK: if "files" has a * in it, it should be interpreted as a GLOB
-    # otherwise, it is a list of files
-    # We need this distinction because for shaders, the glob must be done at call time rathen than
-    # at CMakeLists.txt evaluation time since the shaders are first compiled by glslc by CMake.
-    if(<${files}|string> MATCHES "\\*")
-        file(GLOB files_l ${files})
-    else()
-        # Iterate through input files
-        set(files_l ${files})
-        separate_arguments(files_l)
-    endif()
-
-    foreach(bin ${files_l})
-        # Get short filename
-        string(REGEX MATCH "([^/]+)$" filename ${bin})
-
-        # HACK: do not include non graphics shaders in the embeded resources files.
-        if(${filename} MATCHES ".spv" AND ${filename} MATCHES "test_")
+    # FILES is passed as a semicolon-separated CMake list via -D FILES="..."
+    # Use IN LISTS to iterate properly.
+    foreach(bin IN LISTS files)
+        if(NOT EXISTS "${bin}")
+            message(WARNING "embed_resources: ${bin} does not exist, skipping")
             continue()
         endif()
+        get_filename_component(filename "${bin}" NAME)
+        string(REGEX REPLACE "\\.[^.]*$" "" stem "${filename}")
+        string(REGEX REPLACE "[^A-Za-z0-9]" "_" cname "${stem}")
 
-        # Remove the file extension
-        string(REGEX REPLACE "\\.[^.]*$" "" filename ${filename})
+        file(READ "${bin}" filedata HEX)
+        file(SIZE "${bin}" filesize)
+        string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata "${filedata}")
 
-        # Replace filename spaces & extension separator for C compatibility
-        string(REGEX REPLACE "\\.| |-" "_" filename ${filename})
-
-        # Read hex data from file
-        file(READ ${bin} filedata HEX)
-        file(SIZE ${bin} filesize)
-
-        # Convert hex data for C compatibility
-        string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
-
-        # Append data to output file
-        file(APPEND ${output} "unsigned char DVZ_RESOURCE_${prefix}_${filename}[] = {${filedata}};\n")
-        file(APPEND ${output} "unsigned long DVZ_RESOURCE_${prefix}_${filename}_size = ${filesize};\n")
+        file(APPEND "${output}" "static const unsigned char DVZ_RESOURCE_${prefix}_${cname}[] = {${filedata}};\n")
+        file(APPEND "${output}" "static const unsigned long DVZ_RESOURCE_${prefix}_${cname}_size = ${filesize}UL;\n\n")
     endforeach()
 
-    # Loading function.
-    file(APPEND ${output} "unsigned char* dvz_resource_${prefix}(const char* name, unsigned long* size)\n")
-    file(APPEND ${output} "{\n")
-
-    # file(APPEND ${output} "printf(\"%s\\n\", name);\n")
-    # Iterate through input files
-    foreach(bin ${files_l})
-        string(REGEX MATCH "([^/]+)$" filename ${bin})
-
-        # HACK: do not include non graphics shaders in the embeded resources files.
-        if(${filename} MATCHES ".spv" AND ${filename} MATCHES "test_")
+    file(APPEND "${output}" "const unsigned char* dvz_resource_${prefix}(const char* name, unsigned long* size)\n{\n")
+    file(APPEND "${output}" "    if (size) *size = 0;\n")
+    foreach(bin IN LISTS files)
+        if(NOT EXISTS "${bin}")
             continue()
         endif()
+        get_filename_component(filename "${bin}" NAME)
+        string(REGEX REPLACE "\\.[^.]*$" "" stem "${filename}")
+        string(REGEX REPLACE "[^A-Za-z0-9]" "_" cname "${stem}")
 
-        string(REGEX REPLACE "\\.[^.]*$" "" filename ${filename})
-        string(REGEX REPLACE "\\.| |-" "_" filename ${filename})
-        file(APPEND ${output} "if (strcmp(name, \"${filename}\") == 0) {*size = DVZ_RESOURCE_${prefix}_${filename}_size; return DVZ_RESOURCE_${prefix}_${filename};}\n")
+        file(APPEND "${output}" "    if (strcmp(name, \"${cname}\") == 0) {\n")
+        file(APPEND "${output}" "        if (size) *size = DVZ_RESOURCE_${prefix}_${cname}_size;\n")
+        file(APPEND "${output}" "        return DVZ_RESOURCE_${prefix}_${cname};\n")
+        file(APPEND "${output}" "    }\n")
     endforeach()
-
-    file(APPEND ${output} "if (*size == 0) log_error(\"unable to find file %s\", name);\n")
-    file(APPEND ${output} "return NULL;}\n")
+    file(APPEND "${output}" "    return 0;\n}\n")
 endfunction()
 
-create_resources(${DIR} ${PREFIX} ${OUTPUT})
+create_resources("${FILES}" "${PREFIX}" "${OUTPUT}")

@@ -3,6 +3,12 @@
 # -------------------------------------------------------------------------------------------------
 
 file(GLOB SCENE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
+
+# Include precompiled SPIR-V shaders if glslc was found.
+if(DVZ_HAS_PRECOMPILED_SHADERS AND DVZ_SHADERS_C)
+    list(APPEND SCENE_SRC "${DVZ_SHADERS_C}")
+endif()
+
 add_library(datoviz_scene OBJECT ${SCENE_SRC})
 
 target_include_directories(datoviz_scene

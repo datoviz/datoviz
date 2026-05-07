@@ -2489,40 +2489,54 @@ static DvzDrp2ValidationResult _vklite_create_shader_module(
 {
     ANN(state);
     ANN(command);
-    if (strcmp(command->u.create_shader_module.format, "glsl") != 0)
+    const char* fmt = command->u.create_shader_module.format;
+    bool is_glsl   = (strcmp(fmt, "glsl")  == 0);
+    bool is_spirv  = (strcmp(fmt, "spirv") == 0);
+    if (!is_glsl && !is_spirv)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
 
     Drp2ObjectKind kind = _vklite_shader_object_kind(command->u.create_shader_module.stage);
     if (kind == DRP2_OBJECT_NONE)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
 
-    uint32_t* spv = NULL;
+    uint32_t* spv_owned = NULL;
+    const uint32_t* spv = NULL;
     uint64_t spv_size = 0;
-    if (!_vklite_compile_glsl(
-            command->u.create_shader_module.stage, command->u.create_shader_module.code, &spv,
-            &spv_size))
+
+    if (is_glsl)
     {
-        return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+        if (!_vklite_compile_glsl(
+                command->u.create_shader_module.stage, command->u.create_shader_module.code,
+                &spv_owned, &spv_size))
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+        spv = spv_owned;
+    }
+    else
+    {
+        spv      = command->u.create_shader_module.spirv;
+        spv_size = command->u.create_shader_module.spirv_size;
+        if (spv == NULL || spv_size == 0)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     }
 
     Drp2VkliteObject* object = _vklite_add(state, command->u.create_shader_module.id, kind);
     if (object == NULL)
     {
-        dvz_free(spv);
+        dvz_free(spv_owned);
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
 
     DvzShader* shader = dvz_shader_create_wrapper();
     if (shader == NULL)
     {
-        dvz_free(spv);
+        dvz_free(spv_owned);
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     object->shader = shader;
 
     int out = dvz_shader(state->runtime->device, spv_size, spv, shader);
-    dvz_free(spv);
+    dvz_free(spv_owned);
     if (out != 0)
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);

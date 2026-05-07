@@ -237,6 +237,59 @@ include_directories(
 # Prepare a shared list of targets so subdirectories can register themselves.
 set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
 
+# -------------------------------------------------------------------------------------------------
+# Shader precompilation — builtin scene visual shaders compiled to SPIR-V at build time.
+# -------------------------------------------------------------------------------------------------
+
+find_program(GLSLC glslc
+    HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin"
+)
+
+if(GLSLC)
+    set(GLSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/glsl")
+    set(SPIRV_DIR       "${CMAKE_BINARY_DIR}/shaders")
+    file(MAKE_DIRECTORY "${SPIRV_DIR}")
+
+    file(GLOB GLSL_SOURCES "${GLSL_SOURCE_DIR}/*.vert" "${GLSL_SOURCE_DIR}/*.frag")
+
+    set(SPIRV_OUTPUTS "")
+    foreach(glsl_src ${GLSL_SOURCES})
+        get_filename_component(shader_name "${glsl_src}" NAME)
+        set(spv_out "${SPIRV_DIR}/${shader_name}.spv")
+        add_custom_command(
+            OUTPUT  "${spv_out}"
+            COMMAND "${GLSLC}" -o "${spv_out}" "${glsl_src}"
+            DEPENDS "${glsl_src}"
+            COMMENT "Compiling ${shader_name} to SPIR-V"
+        )
+        list(APPEND SPIRV_OUTPUTS "${spv_out}")
+    endforeach()
+
+    add_custom_target(datoviz_shaders_spirv DEPENDS ${SPIRV_OUTPUTS})
+
+    set(SHADERS_C "${CMAKE_BINARY_DIR}/_shaders.c")
+    # Pass the file list with semicolons escaped so cmake -P receives a proper CMake list.
+    string(REPLACE ";" "\\;" _spirv_list_escaped "${SPIRV_OUTPUTS}")
+    add_custom_command(
+        OUTPUT  "${SHADERS_C}"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DFILES=${_spirv_list_escaped}"
+            "-DPREFIX=shader"
+            "-DOUTPUT=${SHADERS_C}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
+        DEPENDS datoviz_shaders_spirv ${SPIRV_OUTPUTS}
+        COMMENT "Embedding SPIR-V shaders into _shaders.c"
+    )
+    add_custom_target(datoviz_shaders DEPENDS "${SHADERS_C}")
+
+    set(DVZ_HAS_PRECOMPILED_SHADERS 1)
+    set(DVZ_SHADERS_C "${SHADERS_C}")
+else()
+    message(WARNING "glslc not found — builtin shaders will use runtime GLSL compilation.")
+    set(DVZ_HAS_PRECOMPILED_SHADERS 0)
+    set(DVZ_SHADERS_C "")
+endif()
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(testing)
