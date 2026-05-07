@@ -1505,7 +1505,6 @@ analyze:
 # Examples
 # -------------------------------------------------------------------------------------------------
 
-[linux]
 example-c name: build
     #!/usr/bin/env bash
     set -euo pipefail
