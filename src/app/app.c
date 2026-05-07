@@ -385,6 +385,17 @@ struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win)
 }
 
 
+struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return win->canvas ? dvz_canvas_input(win->canvas) : NULL;
+#else
+    return NULL;
+#endif
+}
+
+
 int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
 {
     ANN(win);

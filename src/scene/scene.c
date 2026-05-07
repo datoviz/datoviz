@@ -25,6 +25,7 @@
 #include "_json.h"
 #include "_log.h"
 #include "_overflow.h"
+#include "datoviz/math/_cglm.h"
 #include "../drp2/_stream.h"
 #include "_scene.h"
 
@@ -417,6 +418,24 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         }
         dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
 
+        /* Always initialise the MVP to identity; controller overwrites if present. */
+        {
+            DvzFramePlanNode* node = dvz_frame_plan_last_render_node(plan);
+            if (node != NULL)
+            {
+                node->u.render.has_mvp = true;
+                glm_mat4_identity(node->u.render.mvp.model);
+                glm_mat4_identity(node->u.render.mvp.view);
+                glm_mat4_identity(node->u.render.mvp.proj);
+                node->u.render.mvp.time  = 0.0f;
+                node->u.render.mvp.flags = 0;
+                if (panel->panzoom != NULL)
+                    dvz_panzoom_mvp(panel->panzoom, &node->u.render.mvp);
+                if (panel->arcball != NULL)
+                    dvz_arcball_mvp(panel->arcball, &node->u.render.mvp);
+            }
+        }
+
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {
             DvzVisual* visual = panel->visuals[vi];
@@ -513,8 +532,52 @@ void dvz_panel_destroy(DvzPanel* panel)
 {
     if (panel == NULL)
         return;
+    if (panel->panzoom != NULL)
+    {
+        dvz_panzoom_destroy(panel->panzoom);
+        panel->panzoom = NULL;
+    }
+    if (panel->arcball != NULL)
+    {
+        dvz_arcball_destroy(panel->arcball);
+        panel->arcball = NULL;
+    }
     panel->figure       = NULL;
     panel->visual_count = 0;
+}
+
+
+void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags)
+{
+    ANN(panel);
+    if (panel->panzoom != NULL)
+        dvz_panzoom_destroy(panel->panzoom);
+    float w = panel->desc.width * (panel->figure ? (float)panel->figure->width : 800.0f);
+    float h = panel->desc.height * (panel->figure ? (float)panel->figure->height : 600.0f);
+    if (w <= 0)
+        w = 800.0f;
+    if (h <= 0)
+        h = 600.0f;
+    panel->panzoom = dvz_panzoom(w, h, flags);
+    if (router != NULL)
+        dvz_panzoom_connect(panel->panzoom, router);
+}
+
+
+void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags)
+{
+    ANN(panel);
+    if (panel->arcball != NULL)
+        dvz_arcball_destroy(panel->arcball);
+    float w = panel->desc.width * (panel->figure ? (float)panel->figure->width : 800.0f);
+    float h = panel->desc.height * (panel->figure ? (float)panel->figure->height : 600.0f);
+    if (w <= 0)
+        w = 800.0f;
+    if (h <= 0)
+        h = 600.0f;
+    panel->arcball = dvz_arcball(w, h, flags);
+    if (router != NULL)
+        dvz_arcball_connect(panel->arcball, router);
 }
 
 

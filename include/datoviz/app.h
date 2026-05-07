@@ -111,6 +111,18 @@ DVZ_EXPORT struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win);
 
 
 /**
+ * Return the input router for a GLFW app-window.
+ *
+ * Pass the returned router to dvz_panel_set_panzoom() or dvz_panel_set_arcball() to attach
+ * interactive controllers.  Returns NULL for offscreen windows or when GPU support is absent.
+ *
+ * @param win the app-window
+ * @return the input router, or NULL
+ */
+DVZ_EXPORT struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win);
+
+
+/**
  * Capture the last rendered frame and write it to a PNG file.
  *
  * Convenience wrapper around dvz_app_window_canvas() + dvz_canvas_capture_png().

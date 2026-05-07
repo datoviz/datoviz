@@ -70,6 +70,8 @@ struct DvzFramePlanNode
             char visuals[DVZ_SCENE_MAX_RENDER_VISUALS][DVZ_SCENE_LABEL_SIZE];
             bool picking;
             DvzPanelDesc desc;
+            bool has_mvp;  /* true when a panel controller has set a non-identity MVP */
+            DvzMVP mvp;    /* model/view/proj matrices supplied by the panel controller */
         } render;
         struct
         {
@@ -114,3 +116,5 @@ bool dvz_frame_plan_render_panel(
 
 bool dvz_frame_plan_clear_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc);
+
+DvzFramePlanNode* dvz_frame_plan_last_render_node(DvzFramePlan* plan);

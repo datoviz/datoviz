@@ -172,6 +172,30 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 DVZ_EXPORT int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual);
 
 
+/**
+ * Attach a panzoom controller to a panel and connect it to an input router.
+ *
+ * Pan: left-drag. Zoom: right-drag or scroll wheel. Double-click: reset.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to (may be NULL to create without connecting)
+ * @param flags DvzPanzoomFlags bitmask
+ */
+DVZ_EXPORT void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags);
+
+
+/**
+ * Attach an arcball controller to a panel and connect it to an input router.
+ *
+ * Rotate: left-drag. Double-click: reset.
+ *
+ * @param panel the panel
+ * @param router input router to subscribe to (may be NULL to create without connecting)
+ * @param flags DvzArcballFlags bitmask
+ */
+DVZ_EXPORT void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags);
+
+
 
 /*************************************************************************************************/
 /*  Visuals                                                                                      */

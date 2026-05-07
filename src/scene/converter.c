@@ -29,7 +29,9 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/fileio/fileio.h"
+#include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
+#include "datoviz/scene/panzoom.h"
 
 
 
@@ -97,12 +99,13 @@
 /* Point visual: separate vertex buffers for position (vec3), color (u8 RGBA→vec4), size (float). */
 #define DRP2_POINT_VERTEX_GLSL                                                                  \
     "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec4 inColor;\n"                                                      \
     "layout(location=2)in float inSize;\n"                                                      \
     "layout(location=0)out vec4 fragColor;\n"                                                   \
     "void main(){"                                                                               \
-    "gl_Position=vec4(inPos.xy,0.0,1.0);"                                                       \
+    "gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                                 \
     "gl_PointSize=inSize;"                                                                       \
     "fragColor=inColor;}\n"
 #define DRP2_POINT_FRAGMENT_GLSL                                                                \
@@ -114,10 +117,11 @@
 /* Primitive visual: position (vec3) + color (u8 RGBA→vec4); topology selected per visual. */
 #define DRP2_PRIMITIVE_VERTEX_GLSL                                                              \
     "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec4 inColor;\n"                                                      \
     "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "void main(){gl_Position=vec4(inPos,1.0);fragColor=inColor;}\n"
+    "void main(){gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);fragColor=inColor;}\n"
 #define DRP2_PRIMITIVE_FRAGMENT_GLSL                                                            \
     "#version 450\n"                                                                            \
     "layout(location=0)in vec4 fragColor;\n"                                                    \
@@ -1492,6 +1496,14 @@ static bool _emitter_emit_render(
     uint64_t bgl_id = 0;
     uint64_t bg_id  = 0;
 
+    /* MVP UBO bind group IDs — used for GLSL point/primitive path. */
+    uint64_t mvp_bgl_id = 0;
+    uint64_t mvp_buf_id = 0;
+    uint64_t mvp_bg_id  = 0;
+    bool uses_mvp =
+        (is_point || is_primitive) &&
+        cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL;
+
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
      * is bound through a bind group, not as a vertex buffer. */
     uint64_t image_vertex_ids[2];
@@ -1597,6 +1609,46 @@ static bool _emitter_emit_render(
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
     }
 
+    /* MVP UBO infrastructure (GLSL point/primitive path only). */
+    if (uses_mvp)
+    {
+        bool mvp_bgl_new = false;
+        mvp_bgl_id = _obj_id(emitter, "_bgl_mvp", &mvp_bgl_new);
+        if (mvp_bgl_id == 0)
+            return false;
+        if (mvp_bgl_new)
+            ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, mvp_bgl_id);
+
+        char mvp_buf_key[96], mvp_bg_key[96];
+        dvz_snprintf(mvp_buf_key, sizeof(mvp_buf_key), "_mvp_buf_%s", render->u.render.panel_id);
+        dvz_snprintf(mvp_bg_key, sizeof(mvp_bg_key), "_mvp_bg_%s", render->u.render.panel_id);
+
+        bool mvp_buf_new = false;
+        mvp_buf_id = _obj_id(emitter, mvp_buf_key, &mvp_buf_new);
+        if (mvp_buf_id == 0)
+            return false;
+        if (mvp_buf_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+            ok = ok && dvz_drp2_stream_create_buffer(stream, mvp_buf_id, sizeof(DvzMVP), usage);
+        }
+
+        bool mvp_bg_new = false;
+        mvp_bg_id = _obj_id(emitter, mvp_bg_key, &mvp_bg_new);
+        if (mvp_bg_id == 0)
+            return false;
+        if (mvp_bg_new)
+            ok = ok && dvz_drp2_stream_create_uniform_bind_group(
+                           stream, mvp_bg_id, mvp_bgl_id, mvp_buf_id, 0, sizeof(DvzMVP));
+
+        /* Borrow MVP from the render node (scene.c always initialises it to identity). */
+        ok = ok && dvz_drp2_stream_write_buffer_bytes(
+                       stream, mvp_buf_id, 0, sizeof(DvzMVP), &render->u.render.mvp);
+    }
+
     /* SPIR-V resource names (stem of .vert.spv / .frag.spv after embed_resources key mangling). */
     const char* vs_spirv_key = NULL;
     const char* fs_spirv_key = NULL;
@@ -1689,6 +1741,8 @@ static bool _emitter_emit_render(
                            topology,
                            3, strides,
                            3, bindings, locations, formats, offsets);
+            if (ok && uses_mvp && mvp_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
         }
         else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
@@ -1703,6 +1757,8 @@ static bool _emitter_emit_render(
                            topology,
                            2, strides,
                            2, bindings, locations, formats, offsets);
+            if (ok && uses_mvp && mvp_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
         }
         else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
@@ -1778,6 +1834,8 @@ static bool _emitter_emit_render(
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
     if (ok && is_image && bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, bg_id);
+    if (ok && uses_mvp && mvp_bg_id != 0)
+        ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, mvp_bg_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, vertex_count, 1, 0, 0) &&

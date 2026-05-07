@@ -15,8 +15,10 @@
 
 #include "_frame_plan.h"
 #include "datoviz/drp2/types.h"
+#include "datoviz/scene/arcball.h"
 #include "datoviz/scene/enums.h"
 #include "datoviz/scene/frame_plan.h"
+#include "datoviz/scene/panzoom.h"
 #include "datoviz/scene/types.h"
 
 
@@ -126,6 +128,9 @@ struct DvzPanel
 
     uint32_t    visual_count;
     DvzVisual*  visuals[DVZ_SCENE_MAX_VISUALS]; /* weak refs — owned by scene */
+
+    DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
+    DvzArcball* arcball; /* optional arcball controller (owned) */
 };
 
 

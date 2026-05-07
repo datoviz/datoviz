@@ -4,9 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* hello_point_glfw — interactive windowed scene example.
+/* hello_point_glfw — interactive windowed scene example with pan/zoom.
  *
- * Opens a GLFW window showing three colored points.  Close the window to exit.
+ * Opens a GLFW window showing three colored points.
+ * Left-drag to pan, right-drag or scroll to zoom, double-click to reset.
+ * Close the window to exit.
  *
  * Build:  just example-c hello_point_glfw
  * Run:    ./build/examples/c/hello_point_glfw
@@ -84,6 +86,9 @@ int main(void)
         dvz_scene_destroy(scene);
         return 1;
     }
+
+    /* Attach panzoom controller: left-drag=pan, right-drag/scroll=zoom, dbl-click=reset. */
+    dvz_panel_set_panzoom(panel, dvz_app_window_input(win), 0);
 
     /* Run interactive loop — returns when the window is closed. */
     dvz_app_run(app, 0);

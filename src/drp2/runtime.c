@@ -1021,7 +1021,7 @@ static DvzDrp2ValidationResult _validate_write_buffer(
     Drp2Object* object = _find_object(state, command->u.write_buffer.buffer_id);
     if (object == NULL || object->kind != DRP2_OBJECT_BUFFER)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if ((object->usage & DVZ_DRP2_BUFFER_USAGE_COPY_DST) == 0)
+    if ((object->usage & (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE)) == 0)
         return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (_range_overflows(command->u.write_buffer.offset, command->u.write_buffer.size, object->size))
         return _fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);

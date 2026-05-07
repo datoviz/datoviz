@@ -575,6 +575,13 @@ bool dvz_frame_plan_render_panel(
 
 
 
+DvzFramePlanNode* dvz_frame_plan_last_render_node(DvzFramePlan* plan)
+{
+    return _last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+}
+
+
+
 /**
  * Append a clear-only render node.
  *
