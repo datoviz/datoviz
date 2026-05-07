@@ -55,6 +55,8 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         return 4 * sizeof(uint8_t); /* cvec4 */
     if (strcmp(name, "size") == 0)
         return sizeof(float);
+    if (strcmp(name, "texcoords") == 0)
+        return 2 * sizeof(float); /* vec2f */
     return 0;
 }
 
@@ -69,7 +71,8 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         return true;
 
     log_error(
-        "unsupported %s visual attribute '%s' (expected one of: position, color, size)",
+        "unsupported %s visual attribute '%s' (expected one of: position, color, size, "
+        "texcoords)",
         _visual_type_name(type), name);
     return false;
 }
@@ -704,6 +707,47 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     visual->z_layer  = 0;
     visual->topology = topology;
     return visual;
+}
+
+
+
+DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+        return NULL;
+    DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    visual->scene   = scene;
+    visual->type    = DVZ_VISUAL_TYPE_IMAGE;
+    visual->flags   = flags;
+    visual->visible = true;
+    visual->z_layer = 0;
+    return visual;
+}
+
+
+
+int dvz_visual_set_texture(
+    DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    {
+        log_error("dvz_visual_set_texture is only supported for image visuals");
+        return -1;
+    }
+    if (rgba == NULL || width == 0 || height == 0)
+    {
+        log_error("dvz_visual_set_texture: NULL data or zero extent (%ux%u)", width, height);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set image texture"))
+        return -1;
+    visual->texture.data   = rgba;
+    visual->texture.width  = width;
+    visual->texture.height = height;
+    visual->texture.dirty  = true;
+    return 0;
 }
 
 

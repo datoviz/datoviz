@@ -52,6 +52,18 @@ typedef enum
 
 
 
+/* Image texture payload (first-slice: one RGBA8 texture per visual). */
+typedef struct DvzVisualTexture DvzVisualTexture;
+struct DvzVisualTexture
+{
+    const void* data;   /* borrowed RGBA8, row-major */
+    uint32_t    width;  /* pixels */
+    uint32_t    height; /* pixels */
+    bool        dirty;  /* needs upload on next emit */
+};
+
+
+
 /*************************************************************************************************/
 /*  Forward declarations                                                                         */
 /*************************************************************************************************/
@@ -94,6 +106,7 @@ struct DvzVisual
     int32_t      z_layer;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
+    DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;
