@@ -3906,6 +3906,99 @@ int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
 
 
 
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    (void)panel;
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_capture_rejects_wrong_dimensions skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    /* Ask for a dimension that doesn't match the 64x64 offscreen canvas. */
+    uint8_t buf[128 * 128 * 4];
+    tst_log_capture_begin(suite);
+    AT(dvz_canvas_capture_rgba_into(canvas, 128, 128, buf, sizeof(buf)) != 0);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_capture_rejects_undersized_buffer(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
+    DvzPanel* panel = dvz_panel(figure, desc);
+    AT(panel != NULL);
+    (void)panel;
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_capture_rejects_undersized_buffer skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    dvz_app_run(app, 1);
+
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    /* Buffer is one byte short of the required 64*64*4 bytes. */
+    size_t required = 64 * 64 * 4;
+    uint8_t* buf = dvz_malloc(required - 1);
+    ANN(buf);
+    tst_log_capture_begin(suite);
+    AT(dvz_canvas_capture_rgba_into(canvas, 64, 64, buf, required - 1) != 0);
+    dvz_free(buf);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -3970,6 +4063,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);
+    TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
+    TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);
 #endif
     TEST_SIMPLE(test_scene_point_large_count_executes);
 #endif

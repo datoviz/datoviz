@@ -154,6 +154,10 @@ int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* it
 int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
+
+int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item);
+
+int test_app_capture_rejects_undersized_buffer(TstSuite* suite, TstItem* item);
 #endif
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
