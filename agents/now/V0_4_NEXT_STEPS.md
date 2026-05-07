@@ -89,7 +89,7 @@ via `dvz_visual_set_texture(visual, pixels, w, h)`. Sampler and bind group emiss
 (`test_scene_image_emit`, `test_app_offscreen_image_has_nonblank_pixels`). Example:
 `examples/c/hello_texture.c`.
 
-### 4. Harden the scene/DRP2 runtime boundary — PARTIAL
+### 4. Harden the scene/DRP2 runtime boundary — DONE
 
 Items completed:
 
@@ -105,13 +105,16 @@ Items completed:
    `test_app_capture_rejects_undersized_buffer` confirms it rejects a buffer that is one byte
    short of the required `width * height * 4` bytes.
 
-Items still open:
+2. **Runtime destroy after partial failure** — `test_drp2_runtime_vklite_destroy_after_partial_failure`
+   executes a bad GLSL stream, gets `!result.ok`, then calls `dvz_drp2_runtime_destroy` and
+   verifies no GPU validation errors and no crash.
 
-1. Repeated frame-target attach/detach across frames.
-2. Runtime destroy after partial execution failure.
-3. Command-stream execution after scene-side data mutation — already guarded and tested in
-   `test_scene_rejects_mutation_while_emitted_stream_is_live`; document contract more explicitly
-   if needed.
+Items deferred (out of scope for offscreen-only path):
+
+1. Repeated frame-target attach/detach — only relevant once the swapchain/presentation path
+   is active.
+3. Mutation-after-emit contract — already fully covered by
+   `test_scene_rejects_mutation_while_emitted_stream_is_live` and friends.
 
 Use [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 as the safety baseline.
