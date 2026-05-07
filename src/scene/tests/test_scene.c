@@ -16,6 +16,7 @@
 
 #include <inttypes.h>
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -1572,7 +1573,7 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     /* Emit with GLSL */
     DvzCapabilitySnapshot caps;
@@ -1646,7 +1647,7 @@ static int _scene_primitive_emit_executes(DvzPrimitiveTopology topology, uint32_
     }
     AT(dvz_visual_set_data(visual, "position", positions, vertex_count) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, vertex_count) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -1754,7 +1755,7 @@ int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -1812,7 +1813,7 @@ int test_app_offscreen(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     /* Create app and offscreen window */
     DvzApp* app = dvz_app(scene);
@@ -2452,7 +2453,7 @@ int test_scene_json(TstSuite* suite, TstItem* item)
 
     float positions[] = {-0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f};
     dvz_visual_set_data(visual, "position", positions, 2);
-    dvz_panel_add_visual(panel, visual);
+    dvz_panel_add_visual(panel, visual, NULL);
 
     char* json = dvz_scene_json(scene);
     AT(json != NULL);
@@ -2464,6 +2465,72 @@ int test_scene_json(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"data\":\"") != NULL); /* base64 data present */
 
     dvz_scene_json_destroy(json);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    /* Two point visuals on one panel: behind=3 verts (z=-1), front=5 verts (z=+1).
+     * Add front first, behind second, so insertion order ≠ z order. After stable
+     * sort by z_layer the first vertex-buffer slot should be the behind-visual's
+     * position buffer, and the converter's single Draw should pick its vertex_count.
+     * (The converter currently emits one composite Draw per panel; this test verifies
+     * the z-sorted visual is the one that drives the draw, which is enough to confirm
+     * the sort took effect.) */
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    float pos5[5 * 3] = {0};
+    float pos3[3 * 3] = {0};
+    DvzColor col[5] = {0};
+    float sz[5] = {0};
+
+    DvzVisual* v_front  = dvz_point(scene, 0);  /* z=+1, 5 verts */
+    DvzVisual* v_behind = dvz_point(scene, 0);  /* z=-1, 3 verts */
+
+    AT(dvz_visual_set_data(v_front, "position", pos5, 5) == 0);
+    AT(dvz_visual_set_data(v_front, "color",    col,  5) == 0);
+    AT(dvz_visual_set_data(v_front, "size",     sz,   5) == 0);
+    AT(dvz_visual_set_data(v_behind, "position", pos3, 3) == 0);
+    AT(dvz_visual_set_data(v_behind, "color",    col,  3) == 0);
+    AT(dvz_visual_set_data(v_behind, "size",     sz,   3) == 0);
+
+    AT(dvz_panel_add_visual(panel, v_front,  &(DvzVisualAttachDesc){.z_layer = +1}) == 0);
+    AT(dvz_panel_add_visual(panel, v_behind, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups    = 4;
+    caps.max_buffer_size    = 256 * 1024 * 1024;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(stream != NULL);
+
+    char* json = dvz_drp2_stream_json(stream, "z_layer_order");
+    ANN(json);
+
+    /* Single Draw per panel — its vertex_count comes from the first sorted visual's
+     * position buffer. With z-sort: behind (3 verts) is first → vertex_count == 3.
+     * Without z-sort (insertion order): front (5 verts) would lead → vertex_count == 5. */
+    const char* draw3 = strstr(json, "\"cmd\": \"Draw\", \"pass_id\": 10001, \"vertex_count\": 3");
+    const char* draw5 = strstr(json, "\"cmd\": \"Draw\", \"pass_id\": 10001, \"vertex_count\": 5");
+    AT(draw3 != NULL);
+    AT(draw5 == NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2487,7 +2554,7 @@ int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item)
     DvzVisual* foreign = dvz_point(scene_b, 0);
     ANN(foreign);
 
-    AT(dvz_panel_add_visual(panel, foreign) == -1);
+    AT(dvz_panel_add_visual(panel, foreign, NULL) == -1);
 
     dvz_scene_destroy(scene_b);
     dvz_scene_destroy(scene_a);
@@ -2593,7 +2660,7 @@ int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item
     ANN(panel);
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     /* Emit with no position set — should warn but not crash. */
     DvzCapabilitySnapshot caps;
@@ -2683,7 +2750,7 @@ int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, Ts
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -2731,7 +2798,7 @@ int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* sui
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 4) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -2779,7 +2846,7 @@ int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, Tst
     AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
     AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -2827,7 +2894,7 @@ test_scene_rejects_visual_destroy_while_emitted_stream_is_live(TstSuite* suite, 
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(visual->scene == scene);
     AT(visual->attr_count == 3);
     for (uint32_t i = 0; i < visual->attr_count; i++)
@@ -2887,7 +2954,7 @@ int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem*
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -2955,7 +3022,7 @@ int test_scene_point_emit(TstSuite* suite, TstItem* item)
     rc = dvz_visual_set_data(visual, "size", sizes, 3);
     AT(rc == 0);
 
-    rc = dvz_panel_add_visual(panel, visual);
+    rc = dvz_panel_add_visual(panel, visual, NULL);
     AT(rc == 0);
 
     /* Emit the DRP2 command stream. */
@@ -3010,7 +3077,7 @@ int test_scene_image_emit(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -3129,7 +3196,7 @@ int test_scene_point_emit_has_vertex_layout(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -3192,7 +3259,7 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
     AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
@@ -3276,7 +3343,7 @@ int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
@@ -3344,7 +3411,7 @@ int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* it
     AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
     AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
@@ -3424,7 +3491,7 @@ int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstIt
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
@@ -3501,12 +3568,12 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstIt
     AT(dvz_visual_set_data(left_visual, "position", position, 1) == 0);
     AT(dvz_visual_set_data(left_visual, "color", &red, 1) == 0);
     AT(dvz_visual_set_data(left_visual, "size", &size, 1) == 0);
-    AT(dvz_panel_add_visual(left, left_visual) == 0);
+    AT(dvz_panel_add_visual(left, left_visual, NULL) == 0);
 
     AT(dvz_visual_set_data(right_visual, "position", position, 1) == 0);
     AT(dvz_visual_set_data(right_visual, "color", &green, 1) == 0);
     AT(dvz_visual_set_data(right_visual, "size", &size, 1) == 0);
-    AT(dvz_panel_add_visual(right, right_visual) == 0);
+    AT(dvz_panel_add_visual(right, right_visual, NULL) == 0);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
@@ -3618,7 +3685,7 @@ int test_scene_point_large_count_executes(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, N) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, N) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -3675,7 +3742,7 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -3754,7 +3821,7 @@ int test_scene_partial_update_uploads_only_range(TstSuite* suite, TstItem* item)
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, N) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, N) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -3840,7 +3907,7 @@ int test_scene_repeated_partial_updates_across_frames(TstSuite* suite, TstItem* 
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, N) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, N) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -3928,7 +3995,7 @@ int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem
     AT(dvz_visual_set_data(visual, "position", positions, N) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, N) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, N) == 0);
-    AT(dvz_panel_add_visual(panel, visual) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -4014,8 +4081,8 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
     AT(dvz_visual_set_data(visual_b, "position", pos_b, 3) == 0);
     AT(dvz_visual_set_data(visual_b, "color", color_b, 3) == 0);
     AT(dvz_visual_set_data(visual_b, "size", size_b, 3) == 0);
-    AT(dvz_panel_add_visual(left, visual_a) == 0);
-    AT(dvz_panel_add_visual(right, visual_b) == 0);
+    AT(dvz_panel_add_visual(left, visual_a, NULL) == 0);
+    AT(dvz_panel_add_visual(right, visual_b, NULL) == 0);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -4261,6 +4328,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
+    TEST_SIMPLE(test_scene_z_layer_orders_emit);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);

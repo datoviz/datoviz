@@ -121,13 +121,25 @@ struct DvzVisual
 /*  DvzPanel                                                                                    */
 /*************************************************************************************************/
 
+/* Per-visual attachment state on a panel. Stored alongside the visual pointer in the
+ * panel's visuals array so the converter can sort by z_layer and choose APPLY vs FIXED MVP. */
+typedef struct DvzPanelAttach
+{
+    DvzVisual*        visual;          /* weak ref — owned by scene */
+    int32_t           z_layer;         /* signed; default 0 */
+    DvzControllerMode controller_mode; /* default APPLY */
+    uint32_t          insertion_index; /* used as stable tie-breaker when z_layer ties */
+} DvzPanelAttach;
+
+
+
 struct DvzPanel
 {
     DvzFigure*  figure;
     DvzPanelDesc desc; /* normalized position and size */
 
-    uint32_t    visual_count;
-    DvzVisual*  visuals[DVZ_SCENE_MAX_VISUALS]; /* weak refs — owned by scene */
+    uint32_t       visual_count;
+    DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */

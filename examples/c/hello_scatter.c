@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     dvz_visual_set_data(visual, "position", positions, N);
     dvz_visual_set_data(visual, "color",    colors,    N);
     dvz_visual_set_data(visual, "size",     sizes,     N);
-    dvz_panel_add_visual(panel, visual);
+    dvz_panel_add_visual(panel, visual, NULL);
 
     /* App */
     DvzApp* app = dvz_app(scene);

@@ -94,3 +94,19 @@ struct DvzPanelDesc
     float width, height;  /* extent in normalized figure coords */
 };
 typedef struct DvzPanelDesc DvzPanelDesc;
+
+
+
+/* Per-visual attachment options.
+ *
+ * Passed to dvz_panel_add_visual() to control draw order and controller behavior
+ * for a visual within a panel. Pass NULL to use defaults (z_layer=0, controller_mode=APPLY).
+ *
+ * Spec: spec/scene/pipeline/TRANSFORM_PIPELINE.md "Visual Attachment And Coordinate Space".
+ */
+struct DvzVisualAttachDesc
+{
+    int32_t           z_layer;          /* signed; lower draws behind, higher in front; default 0 */
+    DvzControllerMode controller_mode;  /* APPLY (default) or FIXED (ignore panzoom/arcball) */
+};
+typedef struct DvzVisualAttachDesc DvzVisualAttachDesc;

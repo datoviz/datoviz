@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     dvz_visual_set_data(visual, "position", positions, 4);
     dvz_visual_set_data(visual, "texcoords", texcoords, 4);
     dvz_visual_set_texture(visual, pixels, IMG, IMG);
-    dvz_panel_add_visual(panel, visual);
+    dvz_panel_add_visual(panel, visual, NULL);
 
     DvzApp* app = dvz_app(scene);
     if (!app) { fprintf(stderr, "dvz_app() failed (no GPU?)\n"); dvz_scene_destroy(scene); return 1; }

@@ -120,6 +120,8 @@ int test_scene_json(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 
+int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);

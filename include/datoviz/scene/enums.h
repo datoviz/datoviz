@@ -50,3 +50,12 @@ typedef enum
 
 
 
+/* Whether a visual is affected by its panel's controller (panzoom/arcball). */
+typedef enum
+{
+    DVZ_CONTROLLER_APPLY = 0, /* default: panzoom/arcball MVP applies to the visual */
+    DVZ_CONTROLLER_FIXED = 1, /* visual is unaffected by navigation; identity MVP */
+} DvzControllerMode;
+
+
+

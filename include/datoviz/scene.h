@@ -169,7 +169,17 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
  * @param visual the visual
  * @return 0 on success, -1 on error
  */
-DVZ_EXPORT int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual);
+/**
+ * Add a visual to a panel.
+ *
+ * @param panel the panel
+ * @param visual the visual
+ * @param desc per-visual attachment options (z_layer, controller_mode); pass NULL for
+ *             defaults (z_layer=0, controller_mode=DVZ_CONTROLLER_APPLY)
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_panel_add_visual(
+    DvzPanel* panel, DvzVisual* visual, const DvzVisualAttachDesc* desc);
 
 
 /**

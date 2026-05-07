@@ -342,7 +342,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         DvzPanel* panel = &figure->panels[pi];
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {
-            DvzVisual* visual = panel->visuals[vi];
+            DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
             /* Resolve visual membership by identity, avoiding cross-array pointer arithmetic. */
@@ -396,7 +396,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         uint32_t drawable_count = 0;
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {
-            DvzVisual* visual = panel->visuals[vi];
+            DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
             uint32_t vidx = 0;
@@ -436,9 +436,33 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             }
         }
 
-        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        /* Build a stable z-layer-sorted index list (insertion sort: stable, small N). */
+        uint32_t order[DVZ_SCENE_MAX_VISUALS];
+        for (uint32_t k = 0; k < panel->visual_count; k++)
+            order[k] = k;
+        for (uint32_t k = 1; k < panel->visual_count; k++)
         {
-            DvzVisual* visual = panel->visuals[vi];
+            uint32_t cur = order[k];
+            int32_t cur_z = panel->visuals[cur].z_layer;
+            uint32_t cur_ins = panel->visuals[cur].insertion_index;
+            uint32_t j = k;
+            while (j > 0)
+            {
+                uint32_t prev = order[j - 1];
+                int32_t prev_z = panel->visuals[prev].z_layer;
+                uint32_t prev_ins = panel->visuals[prev].insertion_index;
+                if (prev_z < cur_z || (prev_z == cur_z && prev_ins <= cur_ins))
+                    break;
+                order[j] = order[j - 1];
+                j--;
+            }
+            order[j] = cur;
+        }
+
+        for (uint32_t k = 0; k < panel->visual_count; k++)
+        {
+            uint32_t vi = order[k];
+            DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
             uint32_t vidx = 0;
@@ -486,7 +510,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             DvzPanel* panel = &figure->panels[pi];
             for (uint32_t vi = 0; vi < panel->visual_count; vi++)
             {
-                DvzVisual* visual = panel->visuals[vi];
+                DvzVisual* visual = panel->visuals[vi].visual;
                 if (visual == NULL)
                     continue;
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
@@ -581,7 +605,7 @@ void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags)
 }
 
 
-int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual)
+int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisualAttachDesc* desc)
 {
     ANN(panel);
     ANN(visual);
@@ -591,7 +615,12 @@ int dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual)
         return -1;
     if (panel->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return -1;
-    panel->visuals[panel->visual_count++] = visual;
+    DvzPanelAttach* slot = &panel->visuals[panel->visual_count];
+    slot->visual = visual;
+    slot->z_layer = desc ? desc->z_layer : 0;
+    slot->controller_mode = desc ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
+    slot->insertion_index = panel->visual_count;
+    panel->visual_count++;
     return 0;
 }
 
@@ -937,7 +966,7 @@ char* dvz_scene_json(const DvzScene* scene)
 
             for (uint32_t vi = 0; vi < panel->visual_count; vi++)
             {
-                const DvzVisual* vis = panel->visuals[vi];
+                const DvzVisual* vis = panel->visuals[vi].visual;
                 if (vis == NULL)
                     continue;
                 uint32_t vidx = _visual_index(scene, vis);
