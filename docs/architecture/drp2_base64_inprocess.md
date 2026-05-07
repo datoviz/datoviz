@@ -1,6 +1,21 @@
-# DRP2: eliminate base64 from the in-process execution path
+# DRP2: eliminate base64 from the in-process execution path (COMPLETED)
 
-**Priority: HIGH — correctness/performance debt introduced by the write_buffer fix.**
+**Status: DONE.** All items below have been implemented:
+
+- `DvzDrp2Command.write_buffer` and `write_texture` carry both `const void* data_raw`
+  (borrowed; in-process path) and `char* data_base64` (heap-allocated; JSON path) — see
+  `src/drp2/_stream.h`.
+- `dvz_drp2_stream_write_buffer_bytes` sets `data_raw = data` and `data_base64 = NULL`
+  (`src/drp2/stream.c`).
+- The vklite runtime prefers `data_raw` and only decodes base64 when it is the only thing
+  available (`src/drp2/runtime.c` `_vklite_write_buffer` / `_vklite_write_texture`).
+- The JSON serializer encodes `data_raw` to base64 on the fly when `data_base64` is NULL
+  (`src/drp2/stream.c`).
+- `stream_destroy` only frees `data_base64`; `data_raw` is borrowed.
+
+This document is kept for historical context only; no further work is required.
+
+---
 
 ## Problem
 

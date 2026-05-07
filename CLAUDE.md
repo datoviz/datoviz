@@ -2,13 +2,10 @@
 
 ## Next steps (read this first)
 
-**`docs/architecture/drp2_base64_inprocess.md`** — HIGH PRIORITY (correctness/perf debt).
-Eliminate base64 encode/decode from the in-process vklite execution path.  Base64 is only for
-JSON wire serialization; raw `const void*` pointers should be used for everything else.
-Detailed fix approach and file list in the doc.
-
 **`docs/architecture/next_scene_examples.md`** — next scene+app examples: `hello_scatter.c`
 is done; `hello_triangle.c` and `hello_texture.c` each need a new visual constructor first.
+
+For broader v0.4 direction, see `agents/now/V0_4_NEXT_STEPS.md`.
 
 ## Git commits
 

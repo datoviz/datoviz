@@ -91,9 +91,10 @@ The correct near-term order is:
 1. harden the existing point-only scene path across repeated updates, multiple panels, multiple visuals,
    diagnostics, and offscreen capture,
 2. keep the DRP2 contract and runtime boundary as the source of truth for scene dependencies,
-3. add the next minimal visual family, likely triangle/mesh, with tests and a C example,
-4. add a minimal image/texture visual after mesh to pressure-test texture upload, samplers, views, and
-   bind groups,
+3. add the `primitive` visual family (topology-parametric, built-in pass-through shaders) with tests
+   and a C example — see `spec/scene/visuals/PRIMITIVE.md` for the contract,
+4. add a minimal image/texture visual after `primitive` to pressure-test texture upload, samplers,
+   views, and bind groups,
 5. continue refining scene semantics in `spec/scene/` as implementation reveals concrete needs.
 
 Avoid broad scene API growth before each new visual family has tests, an example, and a clear DRP2

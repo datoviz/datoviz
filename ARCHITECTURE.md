@@ -226,6 +226,7 @@ See `spec/scene/IMPLEMENTATION_BRIDGE.md` for the full design rationale.
 - `drp2` and `scene` are active default-build modules with a first vertical slice in place.
 - Near-term development should harden the current point-based scene path — now including retained
   point rendering across frames, repeated partial updates, multi-panel figures, and per-panel
-  runtime viewport/scissor handling — add the next minimal visual families (triangle/mesh, then
-  image/texture), keep examples current, and preserve the runtime boundary:
+  runtime viewport/scissor handling — add the next minimal visual families (`primitive` for
+  topology-driven rendering, then image/texture), keep examples current, and preserve the
+  runtime boundary:
   scene emits DRP2; DRP2 runtime executes through vklite/canvas; scene does not own backend lifecycles.

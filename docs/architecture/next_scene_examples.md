@@ -12,7 +12,7 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 | Example             | Visual needed         | New API required?            | Status  |
 |---------------------|-----------------------|------------------------------|---------|
 | `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
-| `hello_triangle.c`  | `dvz_triangle` / mesh | New visual constructor        | Blocked |
+| `hello_triangle.c`  | `dvz_primitive`       | New topology-parametric family | Blocked |
 | `hello_texture.c`   | `dvz_image`           | New visual constructor        | Blocked |
 
 `hello_scatter.c` now exists under `examples/c/`. The next example work should add one new visual
@@ -77,27 +77,89 @@ dvz_add_example(hello_scatter)
 
 ---
 
-## Part 2 — `hello_triangle.c` (scene + app, mesh visual)
+## Part 2 — `hello_triangle.c` (scene + app, primitive visual)
 
-### Blocked on: `dvz_triangle` or `dvz_mesh` visual constructor
+### Blocked on: `dvz_primitive` visual constructor
 
-The scene layer currently only exposes `dvz_point`.  Before writing this example, add a
-minimal triangle / filled-polygon visual to the scene layer:
+The full contract is specified in [`spec/scene/visuals/PRIMITIVE.md`](../../spec/scene/visuals/PRIMITIVE.md);
+this section summarises what the example needs.
+
+The scene layer currently only exposes `dvz_point`.  Rather than a per-shape family
+(`dvz_triangle`, `dvz_line`, `dvz_strip`, …), add **one** topology-parametric family with
+built-in pass-through shaders:
 
 ```c
-DVZ_EXPORT DvzVisual* dvz_triangle(DvzScene* scene, uint32_t flags);
+DVZ_EXPORT DvzVisual* dvz_primitive(
+    DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags);
 ```
 
-Expected attributes (analogous to the vklite raw example):
-- `"pos"` — `float[3][2]` or `float[N][3]` vertex positions
+`DvzPrimitiveTopology` is a public scene-layer enum (per the spec):
+
+```
+DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST
+DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST
+DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP
+DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
+```
+
+(No `TRIANGLE_FAN`, no indexed rendering — indexed geometry belongs to the future `mesh`
+family.)
+
+Why one family, not many: the visual is just `position + color → standard MVP transform →
+varying color → fragment color`.  Nothing else differs between a triangle list and a line
+strip except the topology constant fed to the pipeline.  A single family covers triangles,
+lines, strips, fans, and raw points all at once with no CPU-side preprocessing and no
+shader specialisation.
+
+This is **not** a "raw" or "custom shader" escape hatch.  Users who need their own shaders
+go through the lower-level `examples/c/raw_triangle.c` (vklite) or `raw_triangle_drp2.c`
+(DRP2 stream) paths, which are already in the tree.
+
+### Attributes
+
+- `"position"` — `float[N][3]` vertex positions
 - `"color"` — `uint8_t[N][4]` per-vertex RGBA
 
-The implementation should emit the appropriate DRP2 pipeline + draw commands via the scene's
-frame plan. Reference the current point visual path in `src/scene/scene.c`, `src/scene/converter.c`,
-and `src/scene/tests/test_scene.c`.
+(Match the existing `dvz_point` attribute names so users moving between families don't have
+to relearn the API.)
 
-Once the visual exists the example itself is straightforward: hard-code three vertices, set
-data, run one offscreen frame, save PNG.
+### Implementation notes
+
+1. Add `DVZ_VISUAL_TYPE_PRIMITIVE` to `DvzVisualType` in `src/scene/_scene.h` (alongside
+   the existing POINT/PIXEL/MARKER/… entries).
+2. Store the topology in the visual struct; `src/scene/converter.c` (`_resolve_pipeline`
+   path around line 1340) already branches on `DvzVisualType` to pick shaders + topology —
+   add a `DVZ_VISUAL_TYPE_PRIMITIVE` arm that uses the new pass-through shader pair and
+   forwards the visual's topology to `VkPipelineInputAssemblyStateCreateInfo.topology`.
+3. Built-in shaders are trivial:
+   ```glsl
+   /* vertex */
+   #version 450
+   layout(location=0) in vec3 inPos;
+   layout(location=1) in vec4 inColor;
+   layout(location=0) out vec4 vColor;
+   void main() { gl_Position = vec4(inPos, 1.0); vColor = inColor; }
+
+   /* fragment */
+   #version 450
+   layout(location=0) in vec4 vColor;
+   layout(location=0) out vec4 outColor;
+   void main() { outColor = vColor; }
+   ```
+   Wire up the standard MVP UBO once the panel transform path lands; until then leave
+   positions in clip space (consistent with the current `dvz_point` story).
+4. Reference the current point visual path in `src/scene/scene.c`,
+   `src/scene/converter.c`, and `src/scene/tests/test_scene.c`.
+
+### Example
+
+`hello_triangle.c` itself is then a few lines: hard-code three vertices, call
+`dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0)`, set data, run one
+offscreen frame, save PNG.
+
+Once the family exists, follow-up examples (`hello_lines.c`, `hello_strip.c`) reuse the
+same constructor with a different topology — no new visual code required.
 
 ---
 
