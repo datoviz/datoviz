@@ -1,0 +1,274 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Arcball controller                                                                           */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include "_alloc.h"
+#include "_assertions.h"
+#include "_log.h"
+#include "datoviz/math/_cglm.h"
+#include "datoviz/scene/arcball.h"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+static void _screen_to_arcball(vec2 p, versor q)
+{
+    float dist = glm_vec2_dot(p, p);
+    if (dist <= 1.0f)
+    {
+        glm_vec4_copy((vec4){p[0], p[1], sqrtf(1.0f - dist), 0.0f}, q);
+    }
+    else
+    {
+        glm_vec2_normalize(p);
+        glm_vec4_copy((vec4){p[0], p[1], 0.0f, 0.0f}, q);
+    }
+}
+
+
+
+static void _constrain(versor q, vec3 axis)
+{
+    glm_vec3_normalize(axis);
+    float dot = glm_vec3_dot(q, axis);
+    vec3 proj, t;
+    glm_vec3_scale(axis, dot, t);
+    glm_vec3_sub(q, t, proj);
+    float norm = glm_vec3_norm(proj);
+    if (norm > 0.0f)
+    {
+        float s = proj[2] >= 0.0f ? 1.0f / norm : -1.0f / norm;
+        glm_vec3_scale(proj, s, q);
+    }
+    else if (axis[2] == 1.0f)
+    {
+        glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, q);
+    }
+    else
+    {
+        glm_vec3_normalize_to((vec3){-axis[1], axis[0], 0.0f}, q);
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Pointer callback                                                                             */
+/*************************************************************************************************/
+
+static void _arcball_pointer_callback(
+    DvzInputRouter* router, const DvzPointerEvent* ev, void* user_data)
+{
+    DvzArcball* arcball = (DvzArcball*)user_data;
+    dvz_arcball_pointer(arcball, ev);
+}
+
+
+
+/*************************************************************************************************/
+/*  Public API                                                                                   */
+/*************************************************************************************************/
+
+DvzArcball* dvz_arcball(float width, float height, int flags)
+{
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
+    DvzArcball* arcball = (DvzArcball*)calloc(1, sizeof(DvzArcball));
+    arcball->flags = flags;
+    arcball->viewport_size[0] = width;
+    arcball->viewport_size[1] = height;
+    dvz_arcball_reset(arcball);
+    return arcball;
+}
+
+
+
+void dvz_arcball_initial(DvzArcball* arcball, vec3 angles)
+{
+    ANN(arcball);
+    glm_vec3_copy(angles, arcball->init);
+    dvz_arcball_reset(arcball);
+}
+
+
+
+void dvz_arcball_reset(DvzArcball* arcball)
+{
+    ANN(arcball);
+    dvz_arcball_set(arcball, arcball->init);
+    glm_quat_identity(arcball->rotation);
+}
+
+
+
+void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
+{
+    ANN(arcball);
+    glm_euler(angles, arcball->mat);
+}
+
+
+
+void dvz_arcball_resize(DvzArcball* arcball, float width, float height)
+{
+    ANN(arcball);
+    arcball->viewport_size[0] = width;
+    arcball->viewport_size[1] = height;
+}
+
+
+
+void dvz_arcball_constrain(DvzArcball* arcball, vec3 axis)
+{
+    ANN(arcball);
+    if (glm_vec3_norm(axis) == 0.0f)
+    {
+        log_warn("null arcball constrain axis, ignoring");
+        return;
+    }
+    glm_vec3_normalize_to(axis, arcball->constrain);
+    arcball->flags |= DVZ_ARCBALL_FLAGS_CONSTRAIN;
+}
+
+
+
+void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles)
+{
+    ANN(arcball);
+    glm_euler_angles(arcball->mat, out_angles);
+}
+
+
+
+void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
+{
+    ANN(arcball);
+
+    versor cur_ball = {0}, prev_ball = {0};
+    _screen_to_arcball(cur_pos, cur_ball);
+    _screen_to_arcball(last_pos, prev_ball);
+
+    if ((arcball->flags & DVZ_ARCBALL_FLAGS_CONSTRAIN) != 0)
+    {
+        _constrain(cur_ball, arcball->constrain);
+        _constrain(prev_ball, arcball->constrain);
+    }
+
+    glm_quat_identity(arcball->rotation);
+    glm_quat_mul(prev_ball, arcball->rotation, arcball->rotation);
+    glm_quat_mul(cur_ball, arcball->rotation, arcball->rotation);
+}
+
+
+
+void dvz_arcball_model(DvzArcball* arcball, mat4 model)
+{
+    ANN(arcball);
+    mat4 rot = GLM_MAT4_IDENTITY_INIT;
+    glm_quat_mat4(arcball->rotation, rot);
+    glm_mat4_mul(rot, arcball->mat, model);
+}
+
+
+
+void dvz_arcball_end(DvzArcball* arcball)
+{
+    ANN(arcball);
+    mat4 rot = GLM_MAT4_IDENTITY_INIT;
+    glm_quat_mat4(arcball->rotation, rot);
+    glm_mat4_mul(rot, arcball->mat, arcball->mat);
+    glm_quat_identity(arcball->rotation);
+}
+
+
+
+void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp)
+{
+    ANN(arcball);
+    ANN(mvp);
+    dvz_arcball_model(arcball, mvp->model);
+}
+
+
+
+bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
+{
+    ANN(arcball);
+    ANN(ev);
+
+    float width  = arcball->viewport_size[0];
+    float height = arcball->viewport_size[1];
+
+    switch (ev->type)
+    {
+    case DVZ_POINTER_EVENT_DRAG:
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+        {
+            vec2 cur_pos = {
+                -1.0f + 2.0f * ev->pos[0] / width,
+                +1.0f - 2.0f * ev->pos[1] / height,
+            };
+            vec2 last_pos = {
+                -1.0f + 2.0f * ev->content.d.press_pos[0] / width,
+                +1.0f - 2.0f * ev->content.d.press_pos[1] / height,
+            };
+            dvz_arcball_rotate(arcball, cur_pos, last_pos);
+        }
+        break;
+
+    case DVZ_POINTER_EVENT_DRAG_STOP:
+        dvz_arcball_end(arcball);
+        break;
+
+    case DVZ_POINTER_EVENT_DOUBLE_CLICK:
+        dvz_arcball_reset(arcball);
+        break;
+
+    default:
+        return false;
+    }
+
+    return true;
+}
+
+
+
+void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router)
+{
+    ANN(arcball);
+    ANN(router);
+    dvz_input_subscribe_pointer(router, _arcball_pointer_callback, arcball);
+}
+
+
+
+void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router)
+{
+    ANN(arcball);
+    ANN(router);
+    dvz_input_unsubscribe_pointer(router, _arcball_pointer_callback, arcball);
+}
+
+
+
+void dvz_arcball_destroy(DvzArcball* arcball)
+{
+    ANN(arcball);
+    dvz_free(arcball);
+}

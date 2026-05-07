@@ -26,6 +26,7 @@
 #include "datoviz/drp2.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
+#include "datoviz/scene/arcball.h"
 #include "datoviz/scene/panzoom.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -445,6 +446,107 @@ int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item)
     AT(fabsf(mvp.proj[1][1] - 1.0f) < 1e-4f);
 
     dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Arcball tests                                                                                */
+/*************************************************************************************************/
+
+int test_arcball_create_reset(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    ANN(arc);
+
+    /* At construction the accumulated matrix should be identity (init angles all zero). */
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model);
+    mat4 identity = GLM_MAT4_IDENTITY_INIT;
+    AT(memcmp(model, identity, sizeof(mat4)) == 0);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+
+int test_arcball_rotate_produces_nonidentity_model(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+
+    /* Simulate a drag: current position != press position → rotation quaternion not identity. */
+    dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f});
+
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model);
+    mat4 identity = GLM_MAT4_IDENTITY_INIT;
+    AT(memcmp(model, identity, sizeof(mat4)) != 0);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+
+int test_arcball_end_commits_rotation(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+
+    dvz_arcball_rotate(arc, (vec2){0.5f, 0.0f}, (vec2){0.0f, 0.0f});
+    mat4 model_before = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model_before);
+
+    dvz_arcball_end(arc);
+
+    /* After end(), in-flight rotation is identity; mat has been updated.
+       dvz_arcball_model should give the same result as before. */
+    mat4 model_after = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model_after);
+    AT(memcmp(model_before, model_after, sizeof(mat4)) == 0);
+
+    /* The in-flight rotation is now identity — another rotate from same positions gives same. */
+    versor id = GLM_QUAT_IDENTITY_INIT;
+    AT(memcmp(arc->rotation, id, sizeof(versor)) == 0);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+
+int test_arcball_double_click_resets(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+
+    /* Apply a rotation then commit it. */
+    dvz_arcball_rotate(arc, (vec2){0.5f, 0.3f}, (vec2){-0.2f, -0.1f});
+    dvz_arcball_end(arc);
+
+    /* Double-click resets. */
+    DvzPointerEvent ev = {.type = DVZ_POINTER_EVENT_DOUBLE_CLICK};
+    bool consumed = dvz_arcball_pointer(arc, &ev);
+    AT(consumed);
+
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model);
+    mat4 identity = GLM_MAT4_IDENTITY_INIT;
+    AT(memcmp(model, identity, sizeof(mat4)) == 0);
+
+    dvz_arcball_destroy(arc);
     return 0;
 }
 
@@ -4140,6 +4242,11 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_panzoom_zoom_wheel);
     TEST_SIMPLE(test_panzoom_double_click_resets);
     TEST_SIMPLE(test_panzoom_mvp_identity);
+
+    TEST_SIMPLE(test_arcball_create_reset);
+    TEST_SIMPLE(test_arcball_rotate_produces_nonidentity_model);
+    TEST_SIMPLE(test_arcball_end_commits_rotation);
+    TEST_SIMPLE(test_arcball_double_click_resets);
 
     TEST_SIMPLE(test_scene_capabilities_diagnostics);
     TEST_SIMPLE(test_frame_plan_static_render);

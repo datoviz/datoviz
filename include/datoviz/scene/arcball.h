@@ -1,0 +1,189 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Arcball controller                                                                           */
+/*************************************************************************************************/
+
+// References:
+// https://github.com/Twinklebear/arcball-cpp
+// https://tommyhinks.com/wp-content/uploads/2012/02/shoemake92_arcball.pdf
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "datoviz/common/macros.h"
+#include "datoviz/input/pointer.h"
+#include "datoviz/input/router.h"
+#include "datoviz/math/types.h"
+#include "datoviz/scene/panzoom.h" /* for DvzMVP */
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_ARCBALL_FLAGS_NONE      = 0x00,
+    DVZ_ARCBALL_FLAGS_CONSTRAIN = 0x01,
+} DvzArcballFlags;
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzArcball DvzArcball;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzArcball
+{
+    vec2   viewport_size;
+    int    flags;
+
+    mat4 mat;        /* accumulated model matrix */
+    vec3 init;       /* initial Euler angles (used by reset) */
+    vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
+    vec3 constrain;  /* constrain axis; null if no constraint */
+};
+
+
+
+EXTERN_C_ON
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Create an arcball controller.
+ *
+ * @param width viewport width in pixels
+ * @param height viewport height in pixels
+ * @param flags DvzArcballFlags bitmask
+ */
+DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags);
+
+
+
+/**
+ * Set the initial Euler angles and reset.
+ */
+DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
+
+
+
+/**
+ * Reset to the initial orientation.
+ */
+DVZ_EXPORT void dvz_arcball_reset(DvzArcball* arcball);
+
+
+
+/**
+ * Set the orientation directly from Euler angles.
+ */
+DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
+
+
+
+/**
+ * Update the viewport size (call on window resize).
+ */
+DVZ_EXPORT void dvz_arcball_resize(DvzArcball* arcball, float width, float height);
+
+
+
+/**
+ * Set a rotation constraint axis.
+ */
+DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* arcball, vec3 axis);
+
+
+
+/**
+ * Read current Euler angles.
+ */
+DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
+
+
+
+/**
+ * Apply an in-flight rotation from two NDC screen positions.
+ */
+DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
+
+
+
+/**
+ * Compute the model matrix (accumulated × in-flight rotation).
+ */
+DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
+
+
+
+/**
+ * Commit the in-flight rotation into the accumulated matrix (call at drag stop).
+ */
+DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
+
+
+
+/**
+ * Fill the model matrix of an MVP struct from the current arcball state.
+ * View and proj matrices are left untouched.
+ */
+DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
+
+
+
+/**
+ * Process a pointer event and update arcball state.
+ *
+ * @returns true if the event was consumed
+ */
+DVZ_EXPORT bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev);
+
+
+
+/**
+ * Subscribe the arcball to an input router.
+ */
+DVZ_EXPORT void dvz_arcball_connect(DvzArcball* arcball, DvzInputRouter* router);
+
+
+
+/**
+ * Unsubscribe the arcball from a router.
+ */
+DVZ_EXPORT void dvz_arcball_disconnect(DvzArcball* arcball, DvzInputRouter* router);
+
+
+
+/**
+ * Destroy the arcball.
+ */
+DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* arcball);
+
+
+
+EXTERN_C_OFF

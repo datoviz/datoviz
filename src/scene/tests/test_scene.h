@@ -34,6 +34,14 @@ int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item);
 
 int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item);
 
+int test_arcball_create_reset(TstSuite* suite, TstItem* item);
+
+int test_arcball_rotate_produces_nonidentity_model(TstSuite* suite, TstItem* item);
+
+int test_arcball_end_commits_rotation(TstSuite* suite, TstItem* item);
+
+int test_arcball_double_click_resets(TstSuite* suite, TstItem* item);
+
 int test_scene_capabilities_diagnostics(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_static_render(TstSuite* suite, TstItem* item);
