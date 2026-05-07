@@ -54,13 +54,21 @@ The active higher layer now exists:
 
 ## Best Next Development Steps
 
-### 1. Finish the point-based scene slice properly
+### 1. Finish the point-based scene slice properly — DONE
 
-Before adding many visual families, make the existing point path feel production-shaped:
-
-1. make attribute names, data shapes, and error messages strict and documented,
-2. expand deterministic offscreen capture smoke tests beyond the current retained-render point case,
-3. keep the borrowed-pointer lifetime contract around emitted streams explicit.
+1. `_attr_item_size` is now type-specific: `dvz_point` accepts `position/color/size`,
+   `dvz_primitive` accepts `position/color`, `dvz_image` accepts `position/texcoords`. Cross-type
+   attribute names (e.g. "texcoords" on a point visual) are rejected with a clear error message
+   naming the accepted set. Tests: `test_scene_point_rejects_texcoords_attribute`,
+   `test_scene_primitive_rejects_size_attribute`, `test_scene_image_rejects_size_attribute`.
+2. Visuals with no `position` data are detected at emit time, warned, and skipped cleanly
+   (emit returns a valid stream; the visual renders nothing). Test:
+   `test_scene_emit_warns_visual_with_no_position`.
+3. Offscreen smoke tests expanded: `test_app_offscreen_image_has_nonblank_pixels` (red pixel
+   check for dvz_image), `test_app_offscreen_image_retained_render_second_frame` (texture
+   data retained across frame 1 → frame 2 without re-upload).
+4. The borrowed-pointer lifetime contract was already documented in `include/datoviz/scene.h`
+   on `dvz_figure_emit` / `dvz_figure_emit_ex`.
 
 ### 2. dvz_primitive — DONE
 
