@@ -70,14 +70,9 @@ struct DvzFramePlanNode
             char visuals[DVZ_SCENE_MAX_RENDER_VISUALS][DVZ_SCENE_LABEL_SIZE];
             bool picking;
             DvzPanelDesc desc;
-            bool has_mvp;  /* true when a panel controller has set a non-identity MVP */
-            DvzMVP mvp;    /* model/view/proj matrices supplied by the panel controller */
-            /* APPLY (default) or FIXED. When FIXED, the visuals on this node ignore the
-             * panel controller and use an identity MVP (handy for backgrounds, overlays,
-             * scale bars). The converter keys its MVP UBO/bind-group cache by
-             * (panel_id, controller_mode) so APPLY and FIXED visuals on the same panel
-             * each receive their own MVP. */
-            DvzControllerMode controller_mode;
+            bool has_mvp;
+            DvzMVP apply_mvp;  /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED computed by converter */
+            DvzControllerMode controller_modes[DVZ_SCENE_MAX_RENDER_VISUALS];  /* parallel to visuals[] */
         } render;
         struct
         {
