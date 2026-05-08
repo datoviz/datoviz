@@ -1477,6 +1477,433 @@ static bool _emitter_resolve_render_vertex_buffers(
 
 
 
+/* Scene render path: one BeginRenderPass per panel, one Draw per visual inside it. */
+static bool _emitter_emit_render_multi(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(render);
+
+    bool ok = true;
+    bool is_new = false;
+    const char* fmt = _shader_format_tag(cfg);
+
+    /* --- MVP UBO infrastructure (one BGL shared across all panels) --- */
+    uint64_t mvp_bgl_id = _obj_id(emitter, "_bgl_mvp", &is_new);
+    if (mvp_bgl_id == 0)
+        return false;
+    if (is_new)
+        ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, mvp_bgl_id);
+
+    /* Determine which modes are needed for this panel. */
+    bool needs_apply = false, needs_fixed = false;
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
+            needs_fixed = true;
+        else
+            needs_apply = true;
+    }
+
+    uint64_t apply_bg_id = 0, fixed_bg_id = 0;
+
+    if (needs_apply && ok)
+    {
+        char buf_key[128], bg_key[128], slot_key[128];
+        dvz_snprintf(buf_key, sizeof(buf_key), "_mvp_buf_%s_apply", render->u.render.panel_id);
+        dvz_snprintf(bg_key, sizeof(bg_key), "_mvp_bg_%s_apply", render->u.render.panel_id);
+        dvz_snprintf(slot_key, sizeof(slot_key), "%s_apply", render->u.render.panel_id);
+
+        uint64_t buf_id = _obj_id(emitter, buf_key, &is_new);
+        if (buf_id == 0)
+            return false;
+        if (is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                             DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+            ok = ok && dvz_drp2_stream_create_buffer(stream, buf_id, sizeof(DvzMVP), usage);
+        }
+        uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
+        if (bg_id == 0)
+            return false;
+        if (ok && is_new)
+            ok = ok && dvz_drp2_stream_create_uniform_bind_group(
+                           stream, bg_id, mvp_bgl_id, buf_id, 0, sizeof(DvzMVP));
+
+        DvzMVP* slot = _emitter_mvp_slot(emitter, slot_key);
+        if (slot != NULL)
+            *slot = render->u.render.apply_mvp;
+        ok = ok && dvz_drp2_stream_write_buffer_bytes(
+                       stream, buf_id, 0, sizeof(DvzMVP),
+                       slot ? slot : &render->u.render.apply_mvp);
+        apply_bg_id = bg_id;
+    }
+
+    if (needs_fixed && ok)
+    {
+        char buf_key[128], bg_key[128], slot_key[128];
+        dvz_snprintf(buf_key, sizeof(buf_key), "_mvp_buf_%s_fixed", render->u.render.panel_id);
+        dvz_snprintf(bg_key, sizeof(bg_key), "_mvp_bg_%s_fixed", render->u.render.panel_id);
+        dvz_snprintf(slot_key, sizeof(slot_key), "%s_fixed", render->u.render.panel_id);
+
+        uint64_t buf_id = _obj_id(emitter, buf_key, &is_new);
+        if (buf_id == 0)
+            return false;
+        if (is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                             DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+            ok = ok && dvz_drp2_stream_create_buffer(stream, buf_id, sizeof(DvzMVP), usage);
+        }
+        uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
+        if (bg_id == 0)
+            return false;
+        if (ok && is_new)
+            ok = ok && dvz_drp2_stream_create_uniform_bind_group(
+                           stream, bg_id, mvp_bgl_id, buf_id, 0, sizeof(DvzMVP));
+
+        DvzMVP* slot = _emitter_mvp_slot(emitter, slot_key);
+        if (slot != NULL)
+        {
+            glm_mat4_identity(slot->model);
+            glm_mat4_identity(slot->view);
+            glm_mat4_identity(slot->proj);
+            slot->time  = 0.0f;
+            slot->flags = 0;
+        }
+        DvzMVP local_identity = {0};
+        glm_mat4_identity(local_identity.model);
+        glm_mat4_identity(local_identity.view);
+        glm_mat4_identity(local_identity.proj);
+        ok = ok && dvz_drp2_stream_write_buffer_bytes(
+                       stream, buf_id, 0, sizeof(DvzMVP),
+                       slot ? slot : &local_identity);
+        fixed_bg_id = bg_id;
+    }
+
+    /* Image BGL + sampler (shared, created lazily on first image visual). */
+    uint64_t img_bgl_id = 0, img_sampler_id = 0;
+
+    /* Per-visual draw descriptors. */
+    struct {
+        uint64_t pipeline_id;
+        uint64_t bg_set0;  /* MVP bg (point/prim) or texture bg (image); 0 = none */
+        uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];
+        uint32_t vbuf_count;
+        uint32_t vertex_count;
+    } draws[DVZ_SCENE_MAX_RENDER_VISUALS];
+    uint32_t draw_count = 0;
+
+    for (uint32_t i = 0; ok && i < render->u.render.visual_count; i++)
+    {
+        const char* visual_id = render->u.render.visuals[i];
+
+        /* Resolve vertex buffers for this visual. */
+        uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
+        uint32_t vbuf_count = 0;
+
+        char pos_key[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(pos_key, sizeof(pos_key), "%s_position", visual_id);
+        uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
+        if (pos_buf == 0)
+            continue;
+        vbuf_ids[vbuf_count++] = pos_buf;
+
+        const char* optionals[] = {"color", "size", "texcoords", "texture"};
+        for (uint32_t ai = 0; ai < 4; ai++)
+        {
+            char rid[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optionals[ai]);
+            uint64_t rid_id = _resource_lookup_id(&emitter->resources, rid);
+            if (rid_id == 0 || vbuf_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+                continue;
+            vbuf_ids[vbuf_count++] = rid_id;
+        }
+
+        /* Detect visual family. */
+        bool vis_is_point = _is_point_visual(&emitter->resources, vbuf_ids, vbuf_count);
+        bool vis_is_prim =
+            !vis_is_point && _is_primitive_visual(&emitter->resources, vbuf_ids, vbuf_count);
+        uint64_t img_pos = 0, img_uv = 0, img_tex = 0;
+        bool vis_is_image =
+            !vis_is_point && !vis_is_prim &&
+            _is_image_visual(&emitter->resources, vbuf_ids, vbuf_count, &img_pos, &img_uv, &img_tex);
+
+        if (!vis_is_point && !vis_is_prim && !vis_is_image)
+            continue;
+
+        /* Vertex count from position buffer. */
+        uint64_t pos_sz = _resource_byte_size(&emitter->resources, pos_buf);
+        uint32_t vertex_count = (pos_sz > 0) ? (uint32_t)(pos_sz / (3 * sizeof(float))) : 3;
+
+        /* Topology. */
+        uint32_t topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        if (vis_is_prim)
+            topology = _resource_topology(&emitter->resources, pos_buf);
+        else if (vis_is_image)
+            topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+        /* Shader keys. */
+        char vs_key[32], fs_key[16], pipe_key[48];
+        const char* vs_glsl      = NULL;
+        const char* fs_glsl      = NULL;
+        const char* vs_spirv_key = NULL;
+        const char* fs_spirv_key = NULL;
+
+        if (vis_is_point)
+        {
+            dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
+            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
+            vs_glsl      = DRP2_POINT_VERTEX_GLSL;
+            fs_glsl      = DRP2_POINT_FRAGMENT_GLSL;
+            vs_spirv_key = "point_vert";
+            fs_spirv_key = "point_frag";
+        }
+        else if (vis_is_prim)
+        {
+            dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
+            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
+            vs_glsl      = DRP2_PRIMITIVE_VERTEX_GLSL;
+            fs_glsl      = DRP2_PRIMITIVE_FRAGMENT_GLSL;
+            vs_spirv_key = "primitive_vert";
+            fs_spirv_key = "primitive_frag";
+        }
+        else /* vis_is_image */
+        {
+            dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
+            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
+            vs_glsl      = DRP2_IMAGE_VERTEX_GLSL;
+            fs_glsl      = DRP2_IMAGE_FRAGMENT_GLSL;
+            vs_spirv_key = "image_vert";
+            fs_spirv_key = "image_frag";
+        }
+
+        /* Shaders (cached). */
+        uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
+        if (vs_id == 0) { ok = false; break; }
+        if (is_new)
+            ok = ok && _emit_shader_spirv(stream, vs_id, "VERTEX", vs_spirv_key, vs_glsl, cfg);
+
+        uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
+        if (fs_id == 0) { ok = false; break; }
+        if (ok && is_new)
+            ok = ok && _emit_shader_spirv(stream, fs_id, "FRAGMENT", fs_spirv_key, fs_glsl, cfg);
+
+        /* Pipeline (cached by family + topology). */
+        if (vis_is_point)
+            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
+        else if (vis_is_prim)
+            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
+        else
+            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
+
+        uint64_t pipe_id = _obj_id(emitter, pipe_key, &is_new);
+        if (pipe_id == 0) { ok = false; break; }
+        if (ok && is_new)
+        {
+            if (vis_is_point)
+            {
+                uint32_t strides[3]   = {3 * sizeof(float), 4 * sizeof(uint8_t), sizeof(float)};
+                uint32_t bindings[3]  = {0, 1, 2};
+                uint32_t locations[3] = {0, 1, 2};
+                uint32_t formats[3]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
+                                       VK_FORMAT_R32_SFLOAT};
+                uint32_t offsets[3]   = {0, 0, 0};
+                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                               stream, pipe_id, vs_id, fs_id, 3, topology,
+                               3, strides, 3, bindings, locations, formats, offsets);
+                if (ok && mvp_bgl_id != 0)
+                    ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            }
+            else if (vis_is_prim)
+            {
+                uint32_t strides[2]   = {3 * sizeof(float), 4 * sizeof(uint8_t)};
+                uint32_t bindings[2]  = {0, 1};
+                uint32_t locations[2] = {0, 1};
+                uint32_t formats[2]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM};
+                uint32_t offsets[2]   = {0, 0};
+                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                               stream, pipe_id, vs_id, fs_id, 2, topology,
+                               2, strides, 2, bindings, locations, formats, offsets);
+                if (ok && mvp_bgl_id != 0)
+                    ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            }
+            else /* vis_is_image */
+            {
+                uint32_t strides[2]   = {3 * sizeof(float), 2 * sizeof(float)};
+                uint32_t bindings[2]  = {0, 1};
+                uint32_t locations[2] = {0, 1};
+                uint32_t formats[2]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
+                uint32_t offsets[2]   = {0, 0};
+
+                /* Image BGL (lazy). */
+                if (img_bgl_id == 0)
+                {
+                    img_bgl_id = _obj_id(emitter, "_bgl_img", &is_new);
+                    if (img_bgl_id == 0) { ok = false; break; }
+                    if (is_new)
+                        ok = ok &&
+                             dvz_drp2_stream_create_texture_sampler_bind_group_layout(
+                                 stream, img_bgl_id);
+                }
+                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                               stream, pipe_id, vs_id, fs_id, 2,
+                               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+                               2, strides, 2, bindings, locations, formats, offsets);
+                if (ok && img_bgl_id != 0)
+                    ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, img_bgl_id);
+            }
+        }
+
+        /* Bind group at set 0. */
+        uint64_t vis_bg_set0 = 0;
+        if (vis_is_point || vis_is_prim)
+        {
+            vis_bg_set0 = (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
+                              ? fixed_bg_id
+                              : apply_bg_id;
+        }
+        else /* vis_is_image */
+        {
+            /* Image BGL + sampler (lazy). */
+            if (img_bgl_id == 0)
+            {
+                img_bgl_id = _obj_id(emitter, "_bgl_img", &is_new);
+                if (img_bgl_id == 0) { ok = false; break; }
+                if (is_new)
+                    ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
+                                   stream, img_bgl_id);
+            }
+            if (img_sampler_id == 0)
+            {
+                img_sampler_id = _obj_id(emitter, "_sampler_img", &is_new);
+                if (img_sampler_id == 0) { ok = false; break; }
+                if (ok && is_new)
+                    ok = ok && dvz_drp2_stream_create_sampler(stream, img_sampler_id);
+            }
+            char img_bg_key[64];
+            dvz_snprintf(img_bg_key, sizeof(img_bg_key), "_bg_img_%" PRIu64, img_tex);
+            uint64_t img_bg_id = _obj_id(emitter, img_bg_key, &is_new);
+            if (img_bg_id == 0) { ok = false; break; }
+            if (ok && is_new)
+                ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
+                               stream, img_bg_id, img_bgl_id, img_tex, img_sampler_id);
+            vis_bg_set0 = img_bg_id;
+
+            /* Narrow vertex buffers to (position, texcoords) for image draw. */
+            vbuf_ids[0] = img_pos;
+            vbuf_ids[1] = img_uv;
+            vbuf_count  = 2;
+        }
+
+        if (!ok)
+            break;
+
+        draws[draw_count].pipeline_id = pipe_id;
+        draws[draw_count].bg_set0     = vis_bg_set0;
+        draws[draw_count].vertex_count = vertex_count;
+        draws[draw_count].vbuf_count  = vbuf_count;
+        for (uint32_t j = 0; j < vbuf_count; j++)
+            draws[draw_count].vbuf_ids[j] = vbuf_ids[j];
+        draw_count++;
+    }
+
+    if (!ok || draw_count == 0)
+        return false;
+
+    /* Color target. */
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
+    {
+        color_id = _color_target_id(cfg);
+    }
+    else
+    {
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
+    }
+
+    /* Readback buffer. */
+    uint64_t rb_id = 0;
+    if (readback != NULL)
+    {
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
+    }
+
+    if (!ok)
+        return false;
+
+    /* Single render pass, N draws. */
+    uint64_t encoder_id       = _emitter_next_transient_id(emitter);
+    uint64_t render_pass_id   = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id    = _emitter_next_transient_id(emitter);
+
+    float cr = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca = cfg ? cfg->clear_color[3] : 1.0f;
+
+    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+         dvz_drp2_stream_begin_render_pass_region_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca,
+             render->u.render.desc.x, render->u.render.desc.y,
+             render->u.render.desc.width, render->u.render.desc.height, clear);
+
+    uint64_t last_pipeline = 0, last_bg_set0 = 0;
+    for (uint32_t d = 0; ok && d < draw_count; d++)
+    {
+        if (draws[d].pipeline_id != last_pipeline)
+        {
+            ok = ok && dvz_drp2_stream_set_pipeline(stream, render_pass_id, draws[d].pipeline_id);
+            last_pipeline = draws[d].pipeline_id;
+            last_bg_set0  = 0;
+        }
+        if (draws[d].bg_set0 != 0 && draws[d].bg_set0 != last_bg_set0)
+        {
+            ok = ok &&
+                 dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, draws[d].bg_set0);
+            last_bg_set0 = draws[d].bg_set0;
+        }
+        for (uint32_t j = 0; ok && j < draws[d].vbuf_count; j++)
+            ok = ok && dvz_drp2_stream_set_vertex_buffer(
+                           stream, render_pass_id, j, draws[d].vbuf_ids[j], 0);
+        ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, draws[d].vertex_count, 1, 0, 0);
+    }
+
+    ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    if (ok && readback != NULL)
+        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
+                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
+    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
+    if (readback != NULL)
+        ok = ok && dvz_drp2_stream_queue_submit_readback(
+                       stream, command_buffer_id, submission_id, rb_id, 0,
+                       readback->u.copy.byte_size);
+    else
+        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    return ok;
+}
+
+
+
 /**
  * Emit runtime-mode static render commands.
  *
@@ -1496,6 +1923,13 @@ static bool _emitter_emit_render(
     ANN(emitter);
     ANN(stream);
     ANN(render);
+
+    /* Scene render node: per-visual multi-draw in a single pass. */
+    if (vertex_buffer_count == 0 && render->u.render.visual_count > 0 &&
+        cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        return _emitter_emit_render_multi(emitter, stream, render, readback, clear, cfg);
+
+    /* Generic single-draw path (non-scene nodes, WGSL, or fallback). */
     ANN(vertex_buffer_ids);
     if (vertex_buffer_count == 0)
         return false;
@@ -1643,7 +2077,7 @@ static bool _emitter_emit_render(
         if (mvp_bgl_new)
             ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, mvp_bgl_id);
 
-        const char* mode_tag = (render->u.render.controller_mode == DVZ_CONTROLLER_FIXED)
+        const char* mode_tag = (render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED)
                                    ? "fixed"
                                    : "apply";
         char mvp_buf_key[128], mvp_bg_key[128];
@@ -1681,9 +2115,10 @@ static bool _emitter_emit_render(
             mvp_slot_key, sizeof(mvp_slot_key), "%s_%s", render->u.render.panel_id, mode_tag);
         DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
         if (mvp_slot != NULL)
-            *mvp_slot = render->u.render.mvp;
+            *mvp_slot = render->u.render.apply_mvp;
         ok = ok && dvz_drp2_stream_write_buffer_bytes(
-                       stream, mvp_buf_id, 0, sizeof(DvzMVP), mvp_slot ? mvp_slot : &render->u.render.mvp);
+                       stream, mvp_buf_id, 0, sizeof(DvzMVP),
+                       mvp_slot ? mvp_slot : &render->u.render.apply_mvp);
     }
 
     /* SPIR-V resource names (stem of .vert.spv / .frag.spv after embed_resources key mangling). */
@@ -1929,15 +2364,31 @@ static bool _emitter_emit_plain_renders(
 
         uint64_t vertex_buffer_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
         uint32_t vertex_buffer_count = 0;
-        ok = _emitter_resolve_render_vertex_buffers(
-            emitter, render, vertex_buffer_ids, &vertex_buffer_count);
-        if (!ok && fallback_vertex_buffer_ids != NULL && fallback_vertex_buffer_count > 0)
+
+        /* Scene render nodes (visual_count > 0 with named resources) skip flat resolution;
+         * _emitter_emit_render dispatches to _emitter_emit_render_multi instead. */
+        bool is_scene_node = false;
+        if (render->u.render.visual_count > 0 &&
+            cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
-            ok = true;
-            vertex_buffer_count = fallback_vertex_buffer_count;
-            for (uint32_t j = 0; j < vertex_buffer_count; j++)
-                vertex_buffer_ids[j] = fallback_vertex_buffer_ids[j];
+            char probe[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(probe, sizeof(probe), "%s_position", render->u.render.visuals[0]);
+            is_scene_node = _resource_lookup_id(&emitter->resources, probe) != 0;
         }
+
+        if (!is_scene_node)
+        {
+            ok = _emitter_resolve_render_vertex_buffers(
+                emitter, render, vertex_buffer_ids, &vertex_buffer_count);
+            if (!ok && fallback_vertex_buffer_ids != NULL && fallback_vertex_buffer_count > 0)
+            {
+                ok = true;
+                vertex_buffer_count = fallback_vertex_buffer_count;
+                for (uint32_t j = 0; j < vertex_buffer_count; j++)
+                    vertex_buffer_ids[j] = fallback_vertex_buffer_ids[j];
+            }
+        }
+
         if (ok)
         {
             ok = _emitter_emit_render(
