@@ -827,11 +827,22 @@ static void _dvz_canvas_draw_scene_drp2(
 
     const char* stage = "attach frame target";
     DvzDrp2ValidationResult result = {0};
+    static const float live_point_position[3] = {0.0f, 0.0f, 0.0f};
+    static const DvzColor live_point_color[1] = {{255, 96, 32, 255}};
+    static const float live_point_size[1] = {12.0f};
 
     bool ok = dvz_drp2_runtime_attach_frame_target(app->drp2_runtime, 1, frame);
-    ok = ok && dvz_frame_plan_upload(plan, "buf.live.position", 0, 16, "live.position");
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "visual.point.0_position", 0, sizeof(live_point_position), "position",
+                   live_point_position);
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "visual.point.0_color", 0, sizeof(live_point_color), "color",
+                   live_point_color);
+    ok = ok && dvz_frame_plan_upload_bytes(
+                   plan, "visual.point.0_size", 0, sizeof(live_point_size), "size",
+                   live_point_size);
     ok = ok && dvz_frame_plan_render(plan, "panel.0", "target.canvas.color", false);
-    ok = ok && dvz_frame_plan_render_visual(plan, "visual.live.fullscreen");
+    ok = ok && dvz_frame_plan_render_visual(plan, "visual.point.0");
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -1292,7 +1303,6 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         app->scene_emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
         app->scene_emit_cfg.external_color_target = true;
         app->scene_emit_cfg.color_target_id = 1;
-        app->scene_emit_cfg.fullscreen_triangle = true;
         dvz_canvas_set_draw_callback(app->canvas, _dvz_canvas_draw_scene_drp2, app);
     }
     else
