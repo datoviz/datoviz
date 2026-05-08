@@ -475,7 +475,7 @@ bool dvz_window_should_close(const DvzWindow* window)
     if (window->backend_slot == NULL || window->backend_slot->backend.procs.should_close == NULL)
         return false;
     return window->backend_slot->backend.procs.should_close(
-        (DvzWindowBackend*)&window->backend_slot->backend, (DvzWindow*)window);
+        &window->backend_slot->backend, window);
 }
 
 

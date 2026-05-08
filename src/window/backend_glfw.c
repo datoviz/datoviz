@@ -373,7 +373,7 @@ static void _glfw_poll(DvzWindowBackend* backend, DvzWindowHost* host)
 
 
 
-static bool _glfw_should_close(DvzWindowBackend* backend, DvzWindow* window)
+static bool _glfw_should_close(const DvzWindowBackend* backend, const DvzWindow* window)
 {
     (void)backend;
     if (window == NULL)

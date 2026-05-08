@@ -15,7 +15,8 @@
 
 function(create_resources files prefix output)
     file(WRITE "${output}" "")
-    file(APPEND "${output}" "#include <string.h>\n\n")
+    file(APPEND "${output}" "#include <string.h>\n")
+    file(APPEND "${output}" "#include \"datoviz/fileio/fileio.h\"\n\n")
 
     # FILES is passed as a semicolon-separated CMake list via -D FILES="..."
     # Use IN LISTS to iterate properly.
