@@ -19,8 +19,9 @@ Since this snapshot, the branch has moved beyond low-level stabilization:
    [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md).
 4. The low-level `vk`/`vklite` cleanup notes remain useful background, but they are no longer the
    default active plan.
-5. The current best next work is to harden the point-only scene path, add the next minimal visual
-   families with tests/examples, and keep the DRP2 executable contract aligned with implementation.
+5. The current active execution order is now: native 3D baseline (`mesh`, depth, viewport UBO,
+   arcball validation), then an early browser/WebGPU feasibility pass, then transparency, axes,
+   and picking.
 
 
 ## Snapshot

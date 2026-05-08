@@ -16,10 +16,12 @@ Current status:
    phase records live under `agents/done/`.
 2. `drp2` and `scene` are active default-build modules. The first scene -> DRP2 -> vklite/canvas
    vertical slice exists, with focused tests and basic C examples.
-3. The highest-value next work is to make that vertical slice less toy-like without broadening the
-   architecture prematurely: more visual families, viewport/depth support, background API
-   extensions, better examples, runtime/frame-target hardening, and focused validation.
-4. The DRP2 spec/fixture lane remains active and should stay aligned with implementation changes.
+3. The active execution plan is now a phased scene roadmap: native 3D baseline first (`mesh`,
+   depth, viewport UBO, arcball validation), then early browser/WebGPU feasibility work, then
+   transparency, axes/text, and picking.
+4. The DRP2 spec/fixture lane remains active and should stay aligned with implementation changes,
+   especially around depth state, dynamic viewport/scissor, multi-pass sequencing, and backend
+   parity pressure from browser experiments.
 
 
 ## Start Here
@@ -33,10 +35,12 @@ If resuming work on the branch:
    for the completed first vertical slice.
 4. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-5. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+5. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+   when touching panel transforms, per-panel UBOs, or controller input flow.
+6. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-6. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+7. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -67,6 +71,7 @@ current execution plans.
 10. [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
 11. [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 12. [done/RENDER_PASS_BATCHING.md](/home/cyrille/GIT/Viz/datoviz/agents/done/RENDER_PASS_BATCHING.md)
+13. [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
 
 ### `later/`
 

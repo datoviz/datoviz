@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `ACTIVE SPEC / FIXTURE CONTRACT`
-> - **Updated on:** `2026-05-06`
+> - **Updated on:** `2026-05-08`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
 >   proceeds.
 > - **Current branch priority:** DRP2 is now both an executable spec lane and an active C
@@ -16,6 +16,14 @@ This document describes the active DRP2 spec/fixture phase for higher-level Dato
 
 Keep a small DRP2 renderer contract strong enough to support future scene layers and a future
 browser runtime, without coupling the contract to Vulkan internals.
+
+The current implementation plan now specifically pressures DRP2 with:
+
+1. one minimal indexed 3D visual (`mesh`) on the native runtime,
+2. per-panel depth attachments and depth/stencil state,
+3. viewport/scissor and panel-relative UBO usage,
+4. an early browser/WebGPU feasibility replay,
+5. later transparency and picking paths.
 
 
 ## Current Status
@@ -63,6 +71,14 @@ What remains intentionally deferred:
 4. richer backend-facing pipeline/shader semantics
 5. protocol-visible fences and completion-based destruction
 
+Pressure areas expected next:
+
+1. richer render-pipeline fixed-function state validation for the native 3D slice,
+2. fixture coverage that combines viewport/scissor, depth state, and draw sequencing,
+3. browser-oriented replay checks for the currently active command subset,
+4. multi-pass sequencing pressure from transparency work,
+5. readback and identity-routing pressure from scene picking flows.
+
 
 ## Validation Snapshot
 
@@ -75,6 +91,12 @@ Current executable DRP2 corpus status:
 
 1. `119/119` fixtures passing
 2. focused runner tests must be kept in lockstep with fixture tag growth
+
+Current rule for upcoming work:
+
+1. do not widen the spec only because a future visual family might want it,
+2. do widen the spec when `mesh`, browser replay, transparency, or picking expose a concrete gap
+   that the active fixture runner can validate meaningfully.
 
 
 ## In Scope
@@ -90,12 +112,18 @@ Current executable DRP2 corpus status:
 
 ## Explicitly Out Of Scope
 
-1. browser runtime implementation
+1. full browser runtime implementation
 2. wasm transport implementation
-3. scene runtime implementation
+3. a second scene runtime implementation path
 4. public production headers under `include/datoviz/`
 5. native interop API design
 6. performance and profiling API design
+
+Clarification:
+
+Small browser/WebGPU feasibility experiments are now expected to pressure the contract, but this
+file is still not the execution checklist for browser implementation work. Keep the active spec lane
+focused on contract quality and executable conformance material.
 
 
 ## Acceptance Criteria
@@ -122,6 +150,14 @@ Spec maintenance rules:
 2. prefer extending the existing executable fixture corpus over adding prose-only rules,
 3. keep deferred object families deferred unless the runner can validate them meaningfully,
 4. use `just spec-check` as the default validation gate for DRP2 spec changes.
+
+Near-term spec work should concentrate on:
+
+1. depth-attachment and depth-state fixtures required by the first `mesh` slice,
+2. viewport/scissor and panel-region sequencing fixtures where scene emission now relies on them,
+3. browser-portability review of shader/module and pipeline assumptions,
+4. keeping transparency and picking requirements explicit but deferred until their first executable
+   fixture slice is ready.
 
 
 ## Guardrails

@@ -1,6 +1,6 @@
 > **Implementation Status**
 > - **Status:** `STRATEGIC BACKLOG`
-> - **Verified on:** `2026-03-23`
+> - **Verified on:** `2026-05-08`
 > - **Role:** long-horizon direction for DRP2, WebGPU runtime work, and eventual scene bring-up
 > - **Current branch status:** not the immediate execution plan; active priority is the native
 >   scene -> DRP2 -> vklite/canvas slice
@@ -57,14 +57,14 @@ Reach a point where Datoviz has:
 ## Current Baseline Snapshot
 
 1. The active low-level graphics stack (`vk`, `vklite`, `window`, `canvas`, `stream`, `video`) has
-   undergone a substantial February 2026 refactor and is currently green.
-2. High-level scene/visual layers are still thin/placeholders in this branch and are not part of the
-   active v0.4-dev stabilization effort.
-3. The repo now builds both layered shared targets (`datoviz_core`, `datoviz_vk_layer`,
-   `datoviz_canvas_layer`) and the aggregate `datoviz` target.
-4. Testing is broader than before: component runners (`dvztest_core`, `dvztest_vk`,
-   `dvztest_canvas`, `dvztest_integration`) exist alongside the legacy `dvztest` runner.
-5. On this machine today, `just build` passes and `just test` passes `146/146` tests.
+   undergone a substantial February 2026 refactor and is currently the stable runtime foundation.
+2. `drp2` and `scene` are now active default-build modules with a working first vertical slice:
+   scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream execution.
+3. Built-in scene visuals currently implemented are `point`, `primitive`, and `image`.
+4. Per-panel runtime viewport/scissor and controller-driven panel transforms are already live on the
+   native path.
+5. The next native pressure target is a minimal `mesh` + depth slice before broader browser parity
+   or long-tail visual expansion.
 
 
 ## Target Architecture
@@ -88,6 +88,13 @@ Reach a point where Datoviz has:
 
 
 ## Phase Order
+
+This document remains backlog-oriented, but the recommended ordering has changed:
+
+1. native 3D baseline first,
+2. early WebGPU feasibility second,
+3. broader browser/runtime parity later,
+4. long-tail scene growth after the contract survives both native 3D and browser pressure.
 
 ## P0 - DRP2 Contract Freeze
 
@@ -214,6 +221,12 @@ Provide Vulkan/CUDA interop without contaminating DRP or browser paths.
 ### Goal
 Run the same DRP v2 fixtures in browser via a JS runtime implemented on top of WebGPU.
 
+Updated sequencing note:
+
+The first browser pass should now happen earlier than this old backlog wording implied. The active
+branch plan is to attempt a narrow feasibility pass soon after the first native `mesh`/depth slice,
+before transparency, axes/text, and many additional visual families harden native-only assumptions.
+
 ### Scope
 1. JS DRP decoder/dispatcher with identical command semantics.
 2. WebGPU object mapping:
@@ -227,6 +240,8 @@ Run the same DRP v2 fixtures in browser via a JS runtime implemented on top of W
 1. Browser runtime module under a dedicated path (for example `web/` or `js/`).
 2. Conformance runner in headless browser (or CI browser environment).
 3. DRP fixture replay parity report: native vs browser.
+4. Explicit portability-gap report for any native assumptions exposed by:
+   depth state, viewport/scissor handling, shader ingestion, or readback semantics.
 
 ### Tests
 1. DRP conformance fixtures replay in browser.
@@ -237,6 +252,13 @@ Run the same DRP v2 fixtures in browser via a JS runtime implemented on top of W
 1. Minimal draw fixtures pass in browser runtime.
 2. Capability and validation behavior matches DRP spec expectations.
 3. WASM transport can feed DRP commands to JS runtime.
+
+Practical first browser subset:
+
+1. `point`
+2. `primitive`
+3. `image`
+4. one minimal `mesh` scene with depth testing
 
 
 ## P5 - Contract Parity And Renderer v1 Slice
