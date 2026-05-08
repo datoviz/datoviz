@@ -440,8 +440,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             order[j] = cur;
         }
 
-        /* Pre-compute the panel's APPLY MVP (panzoom/arcball). FIXED visuals always
-         * use identity, so we recompute that fresh per node to avoid carrying state. */
+        /* Pre-compute the panel's APPLY MVP (panzoom/arcball). Identity MVP for FIXED
+         * visuals is computed by the converter from controller_modes[]. */
         DvzMVP panel_apply_mvp;
         glm_mat4_identity(panel_apply_mvp.model);
         glm_mat4_identity(panel_apply_mvp.view);
@@ -453,9 +453,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         if (panel->arcball != NULL)
             dvz_arcball_mvp(panel->arcball, &panel_apply_mvp);
 
-        /* Emit one render node per visual in z-sorted order. The first node clears,
-         * subsequent ones LOAD (handled by the converter's render_count == 0 check).
-         * Per-visual nodes let APPLY and FIXED visuals each carry their own MVP. */
+        /* One render node per panel; populate visuals[] and controller_modes[] in z order. */
+        DvzFramePlanNode* node = NULL;
         for (uint32_t k = 0; k < panel->visual_count; k++)
         {
             uint32_t vi = order[k];
@@ -470,29 +469,23 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
                 continue;
 
-            dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
-            DvzFramePlanNode* node = dvz_frame_plan_last_render_node(plan);
-            if (node != NULL)
+            if (node == NULL)
             {
-                node->u.render.has_mvp = true;
-                node->u.render.controller_mode = attach->controller_mode;
-                if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+                dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
+                node = dvz_frame_plan_last_render_node(plan);
+                if (node != NULL)
                 {
-                    glm_mat4_identity(node->u.render.mvp.model);
-                    glm_mat4_identity(node->u.render.mvp.view);
-                    glm_mat4_identity(node->u.render.mvp.proj);
-                    node->u.render.mvp.time  = 0.0f;
-                    node->u.render.mvp.flags = 0;
-                }
-                else
-                {
-                    node->u.render.mvp = panel_apply_mvp;
+                    node->u.render.has_mvp = true;
+                    node->u.render.apply_mvp = panel_apply_mvp;
                 }
             }
 
             char visual_id[64];
             dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
             dvz_frame_plan_render_visual(plan, visual_id);
+            if (node != NULL)
+                node->u.render.controller_modes[node->u.render.visual_count - 1] =
+                    attach->controller_mode;
         }
     }
 
