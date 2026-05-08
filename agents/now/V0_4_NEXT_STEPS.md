@@ -143,15 +143,12 @@ What was implemented:
 
 ### 7. Next priorities
 
-- **Render pass batching** — `RENDER_PASS_BATCHING.md`. Phases 1, 2, and 3 are now
-  landed on the active scene -> DRP2 -> native runtime path: multi-visual panels draw
-  inside one panel pass, compatible pipeline / bind-group state is reused, and
-  multi-panel figures now collapse to one figure-wide pass with per-panel
-  `SetViewport` / `SetScissor` commands.
 - More visual families: text, line, mesh
 - Viewport UBO (panel pixel dimensions for size-invariant visuals)
 - Per-panel depth attachment for arcball / 3D visuals
 - Background API extensions: gradient + image variants on `dvz_panel_set_background_*`
+- Optional batching follow-up: pipeline-sort within one `z_layer` slab if profiling
+  shows pipeline-switch cost matters on real scenes
 
 
 ## Validation Defaults

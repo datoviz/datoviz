@@ -17,8 +17,8 @@ Current status:
 2. `drp2` and `scene` are active default-build modules. The first scene -> DRP2 -> vklite/canvas
    vertical slice exists, with focused tests and basic C examples.
 3. The highest-value next work is to make that vertical slice less toy-like without broadening the
-   architecture prematurely: more visuals, better examples, runtime/frame-target hardening, and
-   focused validation.
+   architecture prematurely: more visual families, viewport/depth support, background API
+   extensions, better examples, runtime/frame-target hardening, and focused validation.
 4. The DRP2 spec/fixture lane remains active and should stay aligned with implementation changes.
 
 
@@ -66,6 +66,7 @@ current execution plans.
 9. [done/SCENE_DRP2_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_SPEC_DECISIONS.md)
 10. [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
 11. [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+12. [done/RENDER_PASS_BATCHING.md](/home/cyrille/GIT/Viz/datoviz/agents/done/RENDER_PASS_BATCHING.md)
 
 ### `later/`
 
