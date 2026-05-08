@@ -2476,12 +2476,9 @@ int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
     (void)item;
 
     /* Two point visuals on one panel: behind=3 verts (z=-1), front=5 verts (z=+1).
-     * Add front first, behind second, so insertion order ≠ z order. After stable
-     * sort by z_layer the first vertex-buffer slot should be the behind-visual's
-     * position buffer, and the converter's single Draw should pick its vertex_count.
-     * (The converter currently emits one composite Draw per panel; this test verifies
-     * the z-sorted visual is the one that drives the draw, which is enough to confirm
-     * the sort took effect.) */
+     * Add front first, behind second, so insertion order ≠ z order. After phase 1
+     * both visuals draw inside one render pass; the behind visual (z=-1) must draw
+     * before the front visual (z=+1). */
     DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
@@ -2511,22 +2508,25 @@ int test_scene_z_layer_orders_emit(TstSuite* suite, TstItem* item)
     caps.max_bind_groups    = 4;
     caps.max_buffer_size    = 256 * 1024 * 1024;
 
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(stream != NULL);
 
     char* json = dvz_drp2_stream_json(stream, "z_layer_order");
     ANN(json);
 
-    /* Single Draw per panel — its vertex_count comes from the first sorted visual's
-     * position buffer. With z-sort: behind (3 verts) is first → vertex_count == 3.
-     * Without z-sort (insertion order): front (5 verts) would lead → vertex_count == 5. */
+    /* Both draws appear in the single render pass (pass_id 10001).
+     * The behind visual (3 verts, z=-1) must appear before the front visual (5 verts, z=+1). */
     const char* draw3 = strstr(json, "\"cmd\": \"Draw\", \"pass_id\": 10001, \"vertex_count\": 3");
     const char* draw5 = strstr(json, "\"cmd\": \"Draw\", \"pass_id\": 10001, \"vertex_count\": 5");
     AT(draw3 != NULL);
-    AT(draw5 == NULL);
+    AT(draw5 != NULL);
+    AT(draw3 < draw5);  /* behind drawn first */
 
     dvz_drp2_stream_json_destroy(json);
     dvz_drp2_stream_destroy(stream);
@@ -2652,6 +2652,161 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+int test_scene_panel_one_pass_per_panel(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+
+    float pos[3 * 3] = {0};
+    DvzColor col[3]  = {0};
+    float sz[3]      = {0};
+
+    DvzVisual* v0 = dvz_point(scene, 0);
+    DvzVisual* v1 = dvz_point(scene, 0);
+    DvzVisual* v2 = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(v0, "position", pos, 3) == 0);
+    AT(dvz_visual_set_data(v0, "color",    col, 3) == 0);
+    AT(dvz_visual_set_data(v0, "size",     sz,  3) == 0);
+    AT(dvz_visual_set_data(v1, "position", pos, 3) == 0);
+    AT(dvz_visual_set_data(v1, "color",    col, 3) == 0);
+    AT(dvz_visual_set_data(v1, "size",     sz,  3) == 0);
+    AT(dvz_visual_set_data(v2, "position", pos, 3) == 0);
+    AT(dvz_visual_set_data(v2, "color",    col, 3) == 0);
+    AT(dvz_visual_set_data(v2, "size",     sz,  3) == 0);
+    AT(dvz_panel_add_visual(panel, v0, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, v1, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, v2, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups    = 4;
+    caps.max_buffer_size    = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    /* Exactly one BeginRenderPass and three Draws in that pass. */
+    uint32_t pass_count = 0, draw_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+            pass_count++;
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            draw_count++;
+    }
+    AT(pass_count == 1);
+    AT(draw_count == 3);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    AT(panel != NULL);
+
+    /* Three non-overlapping points: red (left), green (center), blue (right). */
+    float pos_r[3] = {-0.6f, 0.0f, 0.0f};
+    float pos_g[3] = { 0.0f, 0.0f, 0.0f};
+    float pos_b[3] = { 0.6f, 0.0f, 0.0f};
+    DvzColor red   = {220, 20, 20, 255};
+    DvzColor green = {20, 220, 20, 255};
+    DvzColor blue  = {20, 20, 220, 255};
+    float size = 10.0f;
+
+    DvzVisual* vr = dvz_point(scene, 0);
+    DvzVisual* vg = dvz_point(scene, 0);
+    DvzVisual* vb = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(vr, "position", pos_r, 1) == 0);
+    AT(dvz_visual_set_data(vr, "color",    &red,  1) == 0);
+    AT(dvz_visual_set_data(vr, "size",     &size, 1) == 0);
+    AT(dvz_visual_set_data(vg, "position", pos_g, 1) == 0);
+    AT(dvz_visual_set_data(vg, "color",    &green, 1) == 0);
+    AT(dvz_visual_set_data(vg, "size",     &size, 1) == 0);
+    AT(dvz_visual_set_data(vb, "position", pos_b, 1) == 0);
+    AT(dvz_visual_set_data(vb, "color",    &blue, 1) == 0);
+    AT(dvz_visual_set_data(vb, "size",     &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, vr, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, vg, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, vb, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_panel_three_visuals_all_drawn skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t red_count = 0, green_count = 0, blue_count = 0;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+
+        red_count = green_count = blue_count = 0;
+        for (uint32_t i = 0; i < width * height; i++)
+        {
+            uint8_t* px = &rgba[4 * i];
+            if (px[0] > 150 && px[0] > px[1] + 80 && px[0] > px[2] + 80)
+                red_count++;
+            if (px[1] > 150 && px[1] > px[0] + 80 && px[1] > px[2] + 80)
+                green_count++;
+            if (px[2] > 150 && px[2] > px[0] + 80 && px[2] > px[1] + 80)
+                blue_count++;
+        }
+        dvz_free(rgba);
+        if (red_count > 0 && green_count > 0 && blue_count > 0)
+            break;
+    }
+    AT(red_count > 0);
+    AT(green_count > 0);
+    AT(blue_count > 0);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
 
 
 
@@ -4448,6 +4603,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_z_layer_orders_emit);
     TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);
+    TEST_SIMPLE(test_scene_panel_one_pass_per_panel);
     TEST_SIMPLE(test_scene_background_color_creates_fixed_quad);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
@@ -4489,6 +4645,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
+    TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_clear_color);
     TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
     TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);

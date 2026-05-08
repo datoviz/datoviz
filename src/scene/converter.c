@@ -699,10 +699,14 @@ static bool _validate_capabilities(
     uint32_t upload_count = 0;
     bool has_compute = false;
     bool has_texture_render = false;
+    bool has_scene_render = false;  /* scene nodes do per-visual draws, not one composite draw */
     uint64_t max_readback_size = 0;
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (render != NULL)
+    {
         has_texture_render = _render_uses_texture(render);
+        has_scene_render   = render->u.render.visual_count > 0;
+    }
 
     for (uint32_t i = 0; i < plan->count; i++)
     {
@@ -732,10 +736,18 @@ static bool _validate_capabilities(
         }
     }
 
-    if (!has_texture_render && upload_count > caps->max_vertex_buffers)
+    /* For the fixture (non-scene) render pipeline, all uploads become vertex buffers in one draw.
+     * For scene render nodes, each visual uses at most DVZ_SCENE_MAX_NODE_RESOURCES buffers per
+     * draw, so check that bound rather than total upload count. */
+    if (!has_texture_render)
     {
-        _diagnostic(report, "max_vertex_buffers is too small for fixture render pipeline");
-        return false;
+        uint32_t effective_count =
+            has_scene_render ? DVZ_SCENE_MAX_NODE_RESOURCES : upload_count;
+        if (effective_count > caps->max_vertex_buffers)
+        {
+            _diagnostic(report, "max_vertex_buffers is too small for fixture render pipeline");
+            return false;
+        }
     }
     if ((has_texture_render || has_compute) && caps->max_bind_groups < 1)
     {
