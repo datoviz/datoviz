@@ -146,10 +146,12 @@ What was implemented:
 - **Render pass batching** — `RENDER_PASS_BATCHING.md`. Phase 1 is now landed:
   scene emits one render node per panel, the converter emits one render pass per
   panel with one draw per visual, and scene tests cover single-pass multi-visual
-  panels plus offscreen RGB readback for three visuals. The next batching step is
-  phase 2: carry compatible pipeline / bind-group state across panel passes within
-  a frame so redundant `SetPipeline` / `SetBindGroup` commands are omitted from the
-  DRP2 stream when panels reuse the same state.
+  panels plus offscreen RGB readback for three visuals. Phase 2 is now landed as
+  well: compatible pipeline / bind-group state is reused across panel passes within
+  one emitted DRP2 encoder, the validator accepts inherited render state across
+  later passes, and the fixed identity MVP bind group is shared globally. The next
+  batching step is phase 3: collapse per-panel passes into one figure pass with
+  per-panel viewport/scissor commands.
 - More visual families: text, line, mesh
 - Viewport UBO (panel pixel dimensions for size-invariant visuals)
 - Per-panel depth attachment for arcball / 3D visuals

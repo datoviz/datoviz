@@ -146,6 +146,10 @@ struct Drp2Object
     uint32_t bound_vertex_mask;
     bool index_buffer_bound;
     uint32_t bound_bind_group_mask;
+    uint64_t render_pipeline_id;
+    uint32_t render_bound_vertex_mask;
+    bool render_index_buffer_bound;
+    uint32_t render_bound_bind_group_mask;
     bool storage_buffers;
     bool uniform_buffer;
 };
@@ -1110,6 +1114,10 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     _mark_referenced(state, command->u.begin_render_pass.texture_id);
     pass->open = true;
     pass->encoder_id = command->u.begin_render_pass.encoder_id;
+    pass->pipeline_id = encoder->render_pipeline_id;
+    pass->bound_vertex_mask = encoder->render_bound_vertex_mask;
+    pass->index_buffer_bound = encoder->render_index_buffer_bound;
+    pass->bound_bind_group_mask = encoder->render_bound_bind_group_mask;
     return _ok();
 }
 
@@ -1360,6 +1368,14 @@ static DvzDrp2ValidationResult _validate_end_render_pass(
     Drp2Object* pass = _find_object(state, command->u.end_render_pass.pass_id);
     if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2Object* encoder = _find_object(state, pass->encoder_id);
+    if (encoder != NULL && encoder->kind == DRP2_OBJECT_ENCODER && encoder->open)
+    {
+        encoder->render_pipeline_id = pass->pipeline_id;
+        encoder->render_bound_vertex_mask = pass->bound_vertex_mask;
+        encoder->render_index_buffer_bound = pass->index_buffer_bound;
+        encoder->render_bound_bind_group_mask = pass->bound_bind_group_mask;
+    }
     pass->open = false;
     return _ok();
 }

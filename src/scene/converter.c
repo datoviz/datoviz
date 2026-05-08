@@ -151,6 +151,7 @@
 
 typedef struct ResourceId ResourceId;
 typedef struct ConverterState ConverterState;
+typedef struct SceneRenderStateCache SceneRenderStateCache;
 
 struct ResourceId
 {
@@ -174,6 +175,13 @@ struct ConverterState
 };
 
 
+struct SceneRenderStateCache
+{
+    uint64_t pipeline_id;
+    uint64_t bg_set0;
+};
+
+
 struct DvzFramePlanEmitter
 {
     ConverterState resources;
@@ -181,7 +189,7 @@ struct DvzFramePlanEmitter
     uint64_t next_transient_id;
     bool handshake_sent;
 
-    /* Per-panel MVP cache: persists across frames so write_buffer_bytes borrows remain valid. */
+    /* MVP cache: APPLY slots are panel-specific, FIXED uses a shared identity slot. */
     char mvp_panel_ids[DVZ_SCENE_MAX_PANELS][DVZ_SCENE_LABEL_SIZE];
     DvzMVP mvp_cache[DVZ_SCENE_MAX_PANELS];
     uint32_t mvp_panel_count;
@@ -1492,7 +1500,8 @@ static bool _emitter_resolve_render_vertex_buffers(
 /* Scene render path: one BeginRenderPass per panel, one Draw per visual inside it. */
 static bool _emitter_emit_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg)
+    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
+    SceneRenderStateCache* cache)
 {
     ANN(emitter);
     ANN(stream);
@@ -1555,10 +1564,9 @@ static bool _emitter_emit_render_multi(
 
     if (needs_fixed && ok)
     {
-        char buf_key[128], bg_key[128], slot_key[128];
-        dvz_snprintf(buf_key, sizeof(buf_key), "_mvp_buf_%s_fixed", render->u.render.panel_id);
-        dvz_snprintf(bg_key, sizeof(bg_key), "_mvp_bg_%s_fixed", render->u.render.panel_id);
-        dvz_snprintf(slot_key, sizeof(slot_key), "%s_fixed", render->u.render.panel_id);
+        const char* buf_key = "_mvp_buf_fixed";
+        const char* bg_key = "_mvp_bg_fixed";
+        const char* slot_key = "_fixed";
 
         uint64_t buf_id = _obj_id(emitter, buf_key, &is_new);
         if (buf_id == 0)
@@ -1879,7 +1887,8 @@ static bool _emitter_emit_render_multi(
              render->u.render.desc.x, render->u.render.desc.y,
              render->u.render.desc.width, render->u.render.desc.height, clear);
 
-    uint64_t last_pipeline = 0, last_bg_set0 = 0;
+    uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
+    uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
     for (uint32_t d = 0; ok && d < draw_count; d++)
     {
         if (draws[d].pipeline_id != last_pipeline)
@@ -1898,6 +1907,12 @@ static bool _emitter_emit_render_multi(
             ok = ok && dvz_drp2_stream_set_vertex_buffer(
                            stream, render_pass_id, j, draws[d].vbuf_ids[j], 0);
         ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, draws[d].vertex_count, 1, 0, 0);
+    }
+
+    if (cache != NULL)
+    {
+        cache->pipeline_id = last_pipeline;
+        cache->bg_set0 = last_bg_set0;
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
@@ -1930,7 +1945,8 @@ static bool _emitter_emit_render_multi(
 static bool _emitter_emit_render(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const uint64_t* vertex_buffer_ids, uint32_t vertex_buffer_count,
-    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg)
+    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
+    SceneRenderStateCache* cache)
 {
     ANN(emitter);
     ANN(stream);
@@ -1939,7 +1955,7 @@ static bool _emitter_emit_render(
     /* Scene render node: per-visual multi-draw in a single pass. */
     if (vertex_buffer_count == 0 && render->u.render.visual_count > 0 &&
         cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
-        return _emitter_emit_render_multi(emitter, stream, render, readback, clear, cfg);
+        return _emitter_emit_render_multi(emitter, stream, render, readback, clear, cfg, cache);
 
     /* Generic single-draw path (non-scene nodes, WGSL, or fallback). */
     ANN(vertex_buffer_ids);
@@ -2368,6 +2384,7 @@ static bool _emitter_emit_plain_renders(
 
     bool ok = true;
     uint32_t render_count = 0;
+    SceneRenderStateCache scene_cache = {0};
     for (uint32_t i = 0; ok && i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
@@ -2399,13 +2416,16 @@ static bool _emitter_emit_plain_renders(
                 for (uint32_t j = 0; j < vertex_buffer_count; j++)
                     vertex_buffer_ids[j] = fallback_vertex_buffer_ids[j];
             }
+            scene_cache.pipeline_id = 0;
+            scene_cache.bg_set0 = 0;
         }
 
         if (ok)
         {
             ok = _emitter_emit_render(
                 emitter, stream, render, vertex_buffer_ids, vertex_buffer_count,
-                render_count == 0 ? readback : NULL, render_count == 0, cfg);
+                render_count == 0 ? readback : NULL, render_count == 0, cfg,
+                is_scene_node ? &scene_cache : NULL);
         }
         render_count++;
     }

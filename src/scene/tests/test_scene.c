@@ -2720,6 +2720,76 @@ int test_scene_panel_one_pass_per_panel(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
+    TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* left = dvz_panel(figure, (DvzPanelDesc){0, 0, 0.5f, 1});
+    DvzPanel* right = dvz_panel(figure, (DvzPanelDesc){0.5f, 0, 0.5f, 1});
+
+    float pos_l[3] = {-0.5f, 0.0f, 0.0f};
+    float pos_r[3] = {0.5f, 0.0f, 0.0f};
+    DvzColor col = {255, 255, 255, 255};
+    float sz = 6.0f;
+
+    DvzVisual* vl = dvz_point(scene, 0);
+    DvzVisual* vr = dvz_point(scene, 0);
+    AT(dvz_visual_set_data(vl, "position", pos_l, 1) == 0);
+    AT(dvz_visual_set_data(vl, "color", &col, 1) == 0);
+    AT(dvz_visual_set_data(vl, "size", &sz, 1) == 0);
+    AT(dvz_visual_set_data(vr, "position", pos_r, 1) == 0);
+    AT(dvz_visual_set_data(vr, "color", &col, 1) == 0);
+    AT(dvz_visual_set_data(vr, "size", &sz, 1) == 0);
+
+    DvzVisualAttachDesc fixed = {.controller_mode = DVZ_CONTROLLER_FIXED};
+    AT(dvz_panel_add_visual(left, vl, &fixed) == 0);
+    AT(dvz_panel_add_visual(right, vr, &fixed) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint32_t pass_count = 0, draw_count = 0, pipeline_count = 0, bind_group_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+            pass_count++;
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW)
+            draw_count++;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_PIPELINE)
+            pipeline_count++;
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+            bind_group_count++;
+    }
+    AT(pass_count == 2);
+    AT(draw_count == 2);
+    AT(pipeline_count == 1);
+    AT(bind_group_count == 1);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item)
 {
@@ -4604,6 +4674,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_z_layer_orders_emit);
     TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);
     TEST_SIMPLE(test_scene_panel_one_pass_per_panel);
+    TEST_SIMPLE(test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state);
     TEST_SIMPLE(test_scene_background_color_creates_fixed_quad);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);

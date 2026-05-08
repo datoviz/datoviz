@@ -44,6 +44,9 @@ int test_drp2_write_buffer_bytes_large_payload_executes(TstSuite* suite, TstItem
 
 int test_drp2_runtime_validate_render_stream(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_render_state_inherited_across_passes(
+    TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_rejects_duplicate_id(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_failed_stream_does_not_commit_state(TstSuite* suite, TstItem* item);

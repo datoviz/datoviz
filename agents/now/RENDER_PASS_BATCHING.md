@@ -1,7 +1,6 @@
 # Render Pass Batching — Plan
 
-> **Status:** `ACTIVE` — Phase 1 complete (commits ae3c77b4, 3328f4fc, 0bf62fc6, 27a3a310);
-> next implementation target is phase 2.
+> **Status:** `ACTIVE` — Phases 1 and 2 complete; next implementation target is phase 3.
 > **Updated:** `2026-05-08`
 > **Owner-of-record:** scene + drp2 emitter.
 > **Predecessor:** commit `70f057d1` ("scene: emit one render node per visual; FIXED
@@ -200,13 +199,25 @@ more than 4 attrs).
 
 Same pattern as the within-panel tracker, but across passes within a frame: many
 panels share the same point pipeline, the same identity MVP bind group, etc. The
-`last_*` trackers can survive across panels (a `BeginRenderPass` doesn't invalidate
-them at the *DRP2 stream* level even if Vulkan considers state pass-scoped). For
-Vulkan, state IS pass-scoped, so each pass still re-binds — but the DRP2 emit can
-skip redundant emit if the same panel emits the same state on its own subsequent
-draws.
+`last_*` trackers can survive across panels because compatible graphics pipeline
+and descriptor-set bindings persist in the command buffer across later render-pass
+instances. That makes it valid for the DRP2 emit to skip redundant `SetPipeline` /
+`SetBindGroup` commands at the start of a later panel pass when the prior panel
+ended with the same compatible state still bound.
 
 Tiny code change once phase 1 is in. ~30 lines.
+
+Status on `2026-05-08`:
+
+- DONE in the runtime scene emitter: compatible `SetPipeline` / `SetBindGroup`
+  commands are now omitted across panel render passes within one emitted DRP2
+  command encoder.
+- DONE in DRP2 validation: render-pass validation now inherits graphics state
+  from the enclosing command encoder so the optimized stream remains valid.
+- DONE for the fixed controller path: the identity MVP buffer / bind group are
+  now shared globally (`_mvp_buf_fixed`, `_mvp_bg_fixed`) instead of being
+  duplicated per panel, which makes cross-panel bind-group reuse real rather than
+  theoretical.
 
 
 ### Phase 3 — one render pass per figure, panels as scissored sub-regions

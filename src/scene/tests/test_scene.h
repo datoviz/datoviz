@@ -126,6 +126,9 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem
 
 int test_scene_panel_one_pass_per_panel(TstSuite* suite, TstItem* item);
 
+int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
+    TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item);
 
 int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* item);
