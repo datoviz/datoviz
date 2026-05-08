@@ -89,6 +89,8 @@ int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* i
 
 int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item);
+
 int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
@@ -142,6 +144,8 @@ int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item)
 
 int test_scene_primitive_rejects_size_attribute(TstSuite* suite, TstItem* item);
 
+int test_scene_path_rejects_size_attribute(TstSuite* suite, TstItem* item);
+
 int test_scene_image_rejects_size_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_emit_warns_visual_with_no_position(TstSuite* suite, TstItem* item);
@@ -159,6 +163,8 @@ int test_scene_rejects_destroy_while_emitted_stream_is_live(TstSuite* suite, Tst
 int test_scene_live_stream_count_tracks_multiple_emits(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit(TstSuite* suite, TstItem* item);
+
+int test_scene_path_emit(TstSuite* suite, TstItem* item);
 
 int test_scene_image_emit(TstSuite* suite, TstItem* item);
 

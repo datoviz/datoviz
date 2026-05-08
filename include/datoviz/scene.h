@@ -251,10 +251,13 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
 /**
  * Write attribute data to a visual.
  *
- * Current point visuals accept the attributes `"position"` (vec3f), `"color"`
- * (RGBA8), and `"size"` (float). All configured attributes on one visual must
- * use the same item_count. This call is rejected while any emitted scene
- * stream is still live.
+ * First-slice visual families currently accept:
+ * point: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float)
+ * primitive/path: `"position"` (vec3f), `"color"` (RGBA8)
+ * image: `"position"` (vec3f), `"texcoords"` (vec2f)
+ *
+ * All configured attributes on one visual must use the same item_count. This
+ * call is rejected while any emitted scene stream is still live.
  *
  * @param visual the visual
  * @param attr_name attribute name (family-specific, e.g. "position", "color")
@@ -314,6 +317,20 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  */
 DVZ_EXPORT DvzVisual* dvz_primitive(
     DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags);
+
+
+/**
+ * Create a path visual.
+ *
+ * First-slice scope: a path is a convenience wrapper over the primitive line-strip
+ * pipeline. Accepts `position` (vec3) and `color` (RGBA8) attributes and always uses
+ * `DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP`.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_path(DvzScene* scene, uint32_t flags);
 
 
 /**

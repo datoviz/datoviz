@@ -57,6 +57,7 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "size") == 0)     return sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_PATH:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         break;
@@ -81,7 +82,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         return true;
 
     const char* expected = "position, color, size";
-    if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
+    if (type == DVZ_VISUAL_TYPE_PRIMITIVE || type == DVZ_VISUAL_TYPE_PATH)
         expected = "position, color";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, texcoords";
@@ -363,7 +364,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
                 dvz_frame_plan_upload_bytes(
                     plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
-                if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE &&
+                if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                     visual->type == DVZ_VISUAL_TYPE_PATH) &&
                     strcmp(attr->name, "position") == 0)
                 {
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
@@ -923,6 +925,32 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     visual->visible  = true;
     visual->z_layer  = 0;
     visual->topology = topology;
+    return visual;
+}
+
+
+
+/**
+ * Create a path visual.
+ *
+ * First-slice path visuals reuse the primitive line-strip execution path.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+        return NULL;
+    DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    visual->scene    = scene;
+    visual->type     = DVZ_VISUAL_TYPE_PATH;
+    visual->flags    = flags;
+    visual->visible  = true;
+    visual->z_layer  = 0;
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
     return visual;
 }
 
