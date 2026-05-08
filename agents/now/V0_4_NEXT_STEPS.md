@@ -143,9 +143,14 @@ What was implemented:
 
 ### 7. Next priorities
 
+- **Render pass batching** — `RENDER_PASS_BATCHING.md`. Phase 1 is a prerequisite
+  for correct multi-visual panels: the current converter silently truncates all
+  but the first visual's draw on multi-visual panels. Land before the next visual
+  family.
 - More visual families: text, line, mesh
 - Viewport UBO (panel pixel dimensions for size-invariant visuals)
-- Per-panel clear color and depth attachment
+- Per-panel depth attachment for arcball / 3D visuals
+- Background API extensions: gradient + image variants on `dvz_panel_set_background_*`
 
 
 ## Validation Defaults
