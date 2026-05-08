@@ -323,7 +323,7 @@ int test_drp2_runtime_validate_render_state_inherited_across_passes(
     AT(dvz_drp2_stream_create_shader_module(stream, 2, "vertex", "@vertex fn main() {}"));
     AT(dvz_drp2_stream_create_shader_module(stream, 3, "fragment", "@fragment fn main() {}"));
     AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 1));
-    AT(dvz_drp2_stream_pipeline_set_bind_group_layout(stream, 4, 11));
+    AT(dvz_drp2_stream_pipeline_set_bind_group_layout(stream, 11));
     AT(dvz_drp2_stream_create_texture_2d(stream, 5, 4, 4));
     AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
 
