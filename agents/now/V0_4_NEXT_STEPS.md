@@ -143,10 +143,13 @@ What was implemented:
 
 ### 7. Next priorities
 
-- **Render pass batching** — `RENDER_PASS_BATCHING.md`. Phase 1 is a prerequisite
-  for correct multi-visual panels: the current converter silently truncates all
-  but the first visual's draw on multi-visual panels. Land before the next visual
-  family.
+- **Render pass batching** — `RENDER_PASS_BATCHING.md`. Phase 1 is now landed:
+  scene emits one render node per panel, the converter emits one render pass per
+  panel with one draw per visual, and scene tests cover single-pass multi-visual
+  panels plus offscreen RGB readback for three visuals. The next batching step is
+  phase 2: carry compatible pipeline / bind-group state across panel passes within
+  a frame so redundant `SetPipeline` / `SetBindGroup` commands are omitted from the
+  DRP2 stream when panels reuse the same state.
 - More visual families: text, line, mesh
 - Viewport UBO (panel pixel dimensions for size-invariant visuals)
 - Per-panel depth attachment for arcball / 3D visuals
