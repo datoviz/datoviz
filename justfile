@@ -1584,7 +1584,8 @@ canvas *args:
 
 [linux]
 profile-canvas *args:
-    scripts/profile_live_canvas.sh {{args}}
+    just build-profile
+    scripts/profile_live_canvas.sh --bin ./build-profile/testing/dvz_live_canvas {{args}}
 #
 
 [linux]

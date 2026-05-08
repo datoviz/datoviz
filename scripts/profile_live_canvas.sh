@@ -8,7 +8,7 @@ sample_freq=999
 profile_timeout=120
 out_dir=""
 run_nsys=0
-bin="./build/testing/dvz_live_canvas"
+bin="./build-profile/testing/dvz_live_canvas"
 
 usage() {
     cat <<'EOF'
@@ -23,7 +23,7 @@ Options:
   --freq N         perf record sample frequency (default: 999)
   --timeout N      Timeout in seconds for perf record and nsys runs (default: 120)
   --out DIR        Output directory (default: build/profiles/live-canvas-<timestamp>)
-  --bin PATH       dvz_live_canvas path (default: ./build/testing/dvz_live_canvas)
+  --bin PATH       dvz_live_canvas path (default: ./build-profile/testing/dvz_live_canvas)
   --nsys           Also capture an Nsight Systems Vulkan/OS runtime trace for scene-drp2
   -h, --help       Show this help
 
@@ -100,7 +100,7 @@ if [[ ! "$profile_timeout" =~ ^[0-9]+$ ]] || ((profile_timeout == 0)); then
     exit 1
 fi
 if [[ ! -x "$bin" ]]; then
-    echo "error: '$bin' is missing or not executable; run 'just build RelWithDebInfo' first" >&2
+    echo "error: '$bin' is missing or not executable; run 'just build-profile' first" >&2
     exit 1
 fi
 perf_available=0
@@ -181,6 +181,7 @@ done
 
 for mode in clear scene-drp2; do
     log="$out_dir/perf-stat-$mode.txt"
+    echo "===== $mode perf stat ===== (logging to $log)"
     {
         echo "===== $mode perf stat ====="
         record_command perf stat -r "$stat_runs" -d -- \
@@ -200,6 +201,7 @@ if ((perf_available)); then
     for mode in clear scene-drp2; do
         data="$out_dir/perf-$mode.data"
         log="$out_dir/perf-record-$mode.log"
+        echo "===== $mode perf record ===== (logging to $log)"
         {
             echo "===== $mode perf record ====="
             record_command perf record -F "$sample_freq" -g --call-graph dwarf -o "$data" -- \
@@ -238,6 +240,7 @@ fi
 if ((run_nsys)); then
     if command -v nsys >/dev/null 2>&1; then
         nsys_base="$out_dir/nsys-scene-drp2"
+        echo "===== scene-drp2 nsys profile ===== (logging to $out_dir/nsys-scene-drp2.log)"
         run_with_timeout nsys profile --force-overwrite=true --trace=vulkan,osrt --sample=cpu \
             --output="$nsys_base" \
             "$bin" --benchmark --frames "$frames" --draw scene-drp2 \
@@ -249,6 +252,8 @@ if ((run_nsys)); then
         echo "nsys requested but not found" >"$out_dir/nsys-scene-drp2.log"
     fi
 fi
+
+echo "Profiling report complete: $out_dir"
 
 cat >"$out_dir/README.txt" <<EOF
 Live canvas profiling report
