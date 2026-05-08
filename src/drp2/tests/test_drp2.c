@@ -352,6 +352,35 @@ int test_drp2_runtime_validate_render_state_inherited_across_passes(
 
 
 
+int test_drp2_runtime_validate_dynamic_viewport_scissor(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = _valid_render_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 5));
+    AT(dvz_drp2_stream_set_viewport(stream, 21, 0.25f, 0.0f, 0.5f, 1.0f));
+    AT(dvz_drp2_stream_set_scissor(stream, 21, 0.25f, 0.0f, 0.5f, 1.0f));
+    AT(dvz_drp2_stream_set_pipeline(stream, 21, 4));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 21, 0, 1, 0));
+    AT(dvz_drp2_stream_draw(stream, 21, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 21));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 20, 22));
+    AT(dvz_drp2_stream_queue_submit(stream, 22, 23));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_rejects_duplicate_id(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2795,6 +2824,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
     TEST_SIMPLE(test_drp2_runtime_validate_render_stream);
     TEST_SIMPLE(test_drp2_runtime_validate_render_state_inherited_across_passes);
+    TEST_SIMPLE(test_drp2_runtime_validate_dynamic_viewport_scissor);
     TEST_SIMPLE(test_drp2_runtime_rejects_duplicate_id);
     TEST_SIMPLE(test_drp2_runtime_failed_stream_does_not_commit_state);
     TEST_SIMPLE(test_drp2_runtime_rejects_unknown_buffer_write);

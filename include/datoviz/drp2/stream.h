@@ -721,6 +721,38 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_compute_pass(
 
 
 /**
+ * Append a SetViewport command.
+ *
+ * @param stream the command stream
+ * @param pass_id the render pass id
+ * @param x normalized left coordinate in [0, 1]
+ * @param y normalized top coordinate in [0, 1]
+ * @param width normalized width in [0, 1]
+ * @param height normalized height in [0, 1]
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_set_viewport(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, float x, float y, float width, float height);
+
+
+
+/**
+ * Append a SetScissor command.
+ *
+ * @param stream the command stream
+ * @param pass_id the render pass id
+ * @param x normalized left coordinate in [0, 1]
+ * @param y normalized top coordinate in [0, 1]
+ * @param width normalized width in [0, 1]
+ * @param height normalized height in [0, 1]
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_set_scissor(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, float x, float y, float width, float height);
+
+
+
+/**
  * Append a SetPipeline command.
  *
  * @param stream the command stream

@@ -186,6 +186,16 @@ struct DvzDrp2Command
         struct
         {
             uint64_t pass_id;
+            float viewport[4]; /* normalized x, y, width, height in [0,1] target space */
+        } set_viewport;
+        struct
+        {
+            uint64_t pass_id;
+            float scissor[4]; /* normalized x, y, width, height in [0,1] target space */
+        } set_scissor;
+        struct
+        {
+            uint64_t pass_id;
             uint64_t pipeline_id;
         } set_pipeline;
         struct

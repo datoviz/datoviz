@@ -152,6 +152,14 @@ struct Drp2Object
     uint32_t render_bound_bind_group_mask;
     bool storage_buffers;
     bool uniform_buffer;
+    float viewport_x;
+    float viewport_y;
+    float viewport_width;
+    float viewport_height;
+    float scissor_x;
+    float scissor_y;
+    float scissor_width;
+    float scissor_height;
 };
 
 
@@ -192,6 +200,10 @@ struct Drp2VkliteObject
     float viewport_y;
     float viewport_width;
     float viewport_height;
+    float scissor_x;
+    float scissor_y;
+    float scissor_width;
+    float scissor_height;
     VkPipelineLayout combined_pipeline_layout; /* owned combined layout for two-set pipelines */
     VkDevice         combined_layout_device;   /* VkDevice needed to destroy combined_pipeline_layout */
     bool borrowed_slots;
@@ -1114,6 +1126,14 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     _mark_referenced(state, command->u.begin_render_pass.texture_id);
     pass->open = true;
     pass->encoder_id = command->u.begin_render_pass.encoder_id;
+    pass->viewport_x = command->u.begin_render_pass.viewport[0];
+    pass->viewport_y = command->u.begin_render_pass.viewport[1];
+    pass->viewport_width = command->u.begin_render_pass.viewport[2];
+    pass->viewport_height = command->u.begin_render_pass.viewport[3];
+    pass->scissor_x = command->u.begin_render_pass.viewport[0];
+    pass->scissor_y = command->u.begin_render_pass.viewport[1];
+    pass->scissor_width = command->u.begin_render_pass.viewport[2];
+    pass->scissor_height = command->u.begin_render_pass.viewport[3];
     pass->pipeline_id = encoder->render_pipeline_id;
     pass->bound_vertex_mask = encoder->render_bound_vertex_mask;
     pass->index_buffer_bound = encoder->render_index_buffer_bound;
@@ -1150,6 +1170,44 @@ static DvzDrp2ValidationResult _validate_begin_compute_pass(
     }
     pass->open = true;
     pass->encoder_id = command->u.begin_compute_pass.encoder_id;
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_set_viewport(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.set_viewport.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    pass->viewport_x = command->u.set_viewport.viewport[0];
+    pass->viewport_y = command->u.set_viewport.viewport[1];
+    pass->viewport_width = command->u.set_viewport.viewport[2];
+    pass->viewport_height = command->u.set_viewport.viewport[3];
+    return _ok();
+}
+
+
+
+static DvzDrp2ValidationResult _validate_set_scissor(
+    Drp2RuntimeState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+
+    Drp2Object* pass = _find_object(state, command->u.set_scissor.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || !pass->open)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    pass->scissor_x = command->u.set_scissor.scissor[0];
+    pass->scissor_y = command->u.set_scissor.scissor[1];
+    pass->scissor_width = command->u.set_scissor.scissor[2];
+    pass->scissor_height = command->u.set_scissor.scissor[3];
     return _ok();
 }
 
@@ -1733,6 +1791,10 @@ static DvzDrp2ValidationResult _validate_command(
         return _validate_begin_render_pass(state, command, command_index);
     case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
         return _validate_begin_compute_pass(state, command, command_index);
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+        return _validate_set_viewport(state, command, command_index);
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+        return _validate_set_scissor(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         return _validate_set_pipeline(state, command, command_index);
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
@@ -3517,6 +3579,10 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
     pass->viewport_y = command->u.begin_render_pass.viewport[1];
     pass->viewport_width = command->u.begin_render_pass.viewport[2];
     pass->viewport_height = command->u.begin_render_pass.viewport[3];
+    pass->scissor_x = command->u.begin_render_pass.viewport[0];
+    pass->scissor_y = command->u.begin_render_pass.viewport[1];
+    pass->scissor_width = command->u.begin_render_pass.viewport[2];
+    pass->scissor_height = command->u.begin_render_pass.viewport[3];
 
     DvzRendering* rendering = dvz_rendering_create_wrapper();
     if (rendering == NULL)
@@ -3628,16 +3694,27 @@ static DvzDrp2ValidationResult _vklite_set_pipeline(
             pass->viewport_width,
             pass->viewport_height,
         };
+        uint32_t scissor_x = 0, scissor_y = 0, scissor_width = pass->width,
+                 scissor_height = pass->height;
+        float scissor[4] = {
+            pass->scissor_x,
+            pass->scissor_y,
+            pass->scissor_width,
+            pass->scissor_height,
+        };
         _render_area_from_viewport(
             pass->width, pass->height, viewport, &viewport_x, &viewport_y, &viewport_width,
             &viewport_height);
+        _render_area_from_viewport(
+            pass->width, pass->height, scissor, &scissor_x, &scissor_y, &scissor_width,
+            &scissor_height);
         dvz_graphics_viewport(
             pipeline->graphics, (float)viewport_x, (float)viewport_y, (float)viewport_width,
             (float)viewport_height, 0, 1,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
         dvz_graphics_scissor(
-            pipeline->graphics, (int32_t)viewport_x, (int32_t)viewport_y, viewport_width,
-            viewport_height,
+            pipeline->graphics, (int32_t)scissor_x, (int32_t)scissor_y, scissor_width,
+            scissor_height,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
         dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
         return _ok();
@@ -3674,6 +3751,79 @@ static DvzDrp2ValidationResult _vklite_set_vertex_buffer(
     DvzSize offset = command->u.set_vertex_buffer.offset;
     dvz_cmd_bind_vertex_buffers(
         pass->commands, command->u.set_vertex_buffer.slot, 1, buffer->buffer, &offset);
+    return _ok();
+}
+
+
+/**
+ * Set a dynamic viewport within a vklite render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 SetViewport command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_set_viewport(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.set_viewport.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    pass->viewport_x = command->u.set_viewport.viewport[0];
+    pass->viewport_y = command->u.set_viewport.viewport[1];
+    pass->viewport_width = command->u.set_viewport.viewport[2];
+    pass->viewport_height = command->u.set_viewport.viewport[3];
+
+    uint32_t x = 0, y = 0, width = pass->width, height = pass->height;
+    _render_area_from_viewport(
+        pass->width, pass->height, command->u.set_viewport.viewport, &x, &y, &width, &height);
+    VkViewport viewport = {
+        .x = (float)x,
+        .y = (float)y,
+        .width = (float)width,
+        .height = (float)height,
+        .minDepth = 0.0f,
+        .maxDepth = 1.0f,
+    };
+    vkCmdSetViewport(dvz_commands_handle(pass->commands), 0, 1, &viewport);
+    return _ok();
+}
+
+
+
+/**
+ * Set a dynamic scissor within a vklite render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 SetScissor command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_set_scissor(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.set_scissor.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    pass->scissor_x = command->u.set_scissor.scissor[0];
+    pass->scissor_y = command->u.set_scissor.scissor[1];
+    pass->scissor_width = command->u.set_scissor.scissor[2];
+    pass->scissor_height = command->u.set_scissor.scissor[3];
+
+    uint32_t x = 0, y = 0, width = pass->width, height = pass->height;
+    _render_area_from_viewport(
+        pass->width, pass->height, command->u.set_scissor.scissor, &x, &y, &width, &height);
+    VkRect2D scissor = {
+        .offset = {.x = (int32_t)x, .y = (int32_t)y},
+        .extent = {.width = width, .height = height},
+    };
+    vkCmdSetScissor(dvz_commands_handle(pass->commands), 0, 1, &scissor);
     return _ok();
 }
 
@@ -3950,6 +4100,12 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
         case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
             result = _vklite_begin_compute_pass(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+            result = _vklite_set_viewport(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_SET_SCISSOR:
+            result = _vklite_set_scissor(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_SET_PIPELINE:
             result = _vklite_set_pipeline(state, command, i);

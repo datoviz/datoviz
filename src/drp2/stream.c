@@ -166,6 +166,10 @@ static const char* _command_name(DvzDrp2CommandType type)
         return "BeginRenderPass";
     case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
         return "BeginComputePass";
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+        return "SetViewport";
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+        return "SetScissor";
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         return "SetPipeline";
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
@@ -665,6 +669,28 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64 " }",
             _command_name(command->type), command->u.begin_compute_pass.id,
             command->u.begin_compute_pass.encoder_id);
+        break;
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"viewport\": { \"x\": %g, \"y\": %g, "
+            "\"width\": %g, \"height\": %g } }",
+            _command_name(command->type), command->u.set_viewport.pass_id,
+            (double)command->u.set_viewport.viewport[0],
+            (double)command->u.set_viewport.viewport[1],
+            (double)command->u.set_viewport.viewport[2],
+            (double)command->u.set_viewport.viewport[3]);
+        break;
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"scissor\": { \"x\": %g, \"y\": %g, "
+            "\"width\": %g, \"height\": %g } }",
+            _command_name(command->type), command->u.set_scissor.pass_id,
+            (double)command->u.set_scissor.scissor[0],
+            (double)command->u.set_scissor.scissor[1],
+            (double)command->u.set_scissor.scissor[2],
+            (double)command->u.set_scissor.scissor[3]);
         break;
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         _json_append(
@@ -1868,6 +1894,60 @@ bool dvz_drp2_stream_begin_compute_pass(
         return false;
     command->u.begin_compute_pass.id = id;
     command->u.begin_compute_pass.encoder_id = encoder_id;
+    return true;
+}
+
+
+
+/**
+ * Append a SetViewport command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param x normalized left coordinate in [0, 1]
+ * @param y normalized top coordinate in [0, 1]
+ * @param width normalized width in [0, 1]
+ * @param height normalized height in [0, 1]
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_set_viewport(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, float x, float y, float width, float height)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_SET_VIEWPORT);
+    if (command == NULL)
+        return false;
+    command->u.set_viewport.pass_id = pass_id;
+    command->u.set_viewport.viewport[0] = x;
+    command->u.set_viewport.viewport[1] = y;
+    command->u.set_viewport.viewport[2] = width;
+    command->u.set_viewport.viewport[3] = height;
+    return true;
+}
+
+
+
+/**
+ * Append a SetScissor command.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param x normalized left coordinate in [0, 1]
+ * @param y normalized top coordinate in [0, 1]
+ * @param width normalized width in [0, 1]
+ * @param height normalized height in [0, 1]
+ * @return whether the command was appended
+ */
+bool dvz_drp2_stream_set_scissor(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, float x, float y, float width, float height)
+{
+    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_SET_SCISSOR);
+    if (command == NULL)
+        return false;
+    command->u.set_scissor.pass_id = pass_id;
+    command->u.set_scissor.scissor[0] = x;
+    command->u.set_scissor.scissor[1] = y;
+    command->u.set_scissor.scissor[2] = width;
+    command->u.set_scissor.scissor[3] = height;
     return true;
 }
 
