@@ -226,7 +226,7 @@ DVZ_EXPORT bool dvz_drp2_stream_create_shader_module_format(
  */
 DVZ_EXPORT bool dvz_drp2_stream_create_shader_module_spirv(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
-    const uint32_t* spirv, uint64_t spirv_size);
+    const unsigned char* spirv, uint64_t spirv_size);
 
 
 

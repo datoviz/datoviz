@@ -883,7 +883,7 @@ static bool _emit_shader_spirv(
     const unsigned char* spv = dvz_resource_shader(spirv_key, &spv_size);
     if (spv != NULL && spv_size > 0)
         return dvz_drp2_stream_create_shader_module_spirv(
-            stream, id, stage, (const uint32_t*)spv, (uint64_t)spv_size);
+            stream, id, stage, spv, (uint64_t)spv_size);
     /* Fallback: runtime GLSL compilation. */
     return dvz_drp2_stream_create_shader_module_format(stream, id, stage, "glsl", glsl);
 }

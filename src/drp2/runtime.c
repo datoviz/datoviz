@@ -2591,10 +2591,15 @@ static DvzDrp2ValidationResult _vklite_create_shader_module(
     }
     else
     {
-        spv      = command->u.create_shader_module.spirv;
         spv_size = command->u.create_shader_module.spirv_size;
-        if (spv == NULL || spv_size == 0)
+        if (spv_size == 0 || (spv_size % sizeof(uint32_t)) != 0)
             return _fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+        spv_owned = (uint32_t*)dvz_calloc(spv_size, 1);
+        if (spv_owned == NULL)
+            return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_memcpy(spv_owned, (size_t)spv_size, command->u.create_shader_module.spirv,
+            (size_t)spv_size);
+        spv = spv_owned;
     }
 
     Drp2VkliteObject* object = _vklite_add(state, command->u.create_shader_module.id, kind);

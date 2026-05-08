@@ -1194,7 +1194,7 @@ bool dvz_drp2_stream_create_shader_module_format(
  */
 bool dvz_drp2_stream_create_shader_module_spirv(
     DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
-    const uint32_t* spirv, uint64_t spirv_size)
+    const unsigned char* spirv, uint64_t spirv_size)
 {
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
     if (command == NULL)

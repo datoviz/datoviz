@@ -74,7 +74,7 @@ struct DvzDrp2Command
             char            stage[DVZ_DRP2_LABEL_SIZE];
             char            format[DVZ_DRP2_LABEL_SIZE];
             char*           code;      /* heap-allocated; freed by stream_destroy */
-            const uint32_t* spirv;     /* in-process SPIR-V: borrowed pointer, not freed */
+            const unsigned char* spirv; /* in-process SPIR-V bytes: borrowed, not freed */
             uint64_t        spirv_size; /* byte count */
         } create_shader_module;
         struct
