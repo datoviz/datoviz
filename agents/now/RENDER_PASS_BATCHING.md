@@ -1,6 +1,6 @@
 # Render Pass Batching — Plan
 
-> **Status:** `PROPOSED` — not started.
+> **Status:** `DONE` — Phase 1 complete (commits ae3c77b4, 3328f4fc, 0bf62fc6, 27a3a310).
 > **Updated:** `2026-05-08`
 > **Owner-of-record:** scene + drp2 emitter.
 > **Predecessor:** commit `70f057d1` ("scene: emit one render node per visual; FIXED
