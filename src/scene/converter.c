@@ -1497,11 +1497,10 @@ static bool _emitter_resolve_render_vertex_buffers(
 
 
 
-/* Scene render path: one BeginRenderPass per panel, one Draw per visual inside it. */
-static bool _emitter_emit_render_multi(
+/* Scene render path: one panel's draws emitted inside an already-open render pass. */
+static bool _emitter_emit_render_multi_in_pass(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
-    SceneRenderStateCache* cache)
+    uint64_t render_pass_id, const DvzFramePlanEmitConfig* cfg, SceneRenderStateCache* cache)
 {
     ANN(emitter);
     ANN(stream);
@@ -1833,59 +1832,15 @@ static bool _emitter_emit_render_multi(
     if (!ok || draw_count == 0)
         return false;
 
-    /* Color target. */
-    uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
-
-    /* Readback buffer. */
-    uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
-
     if (!ok)
         return false;
 
-    /* Single render pass, N draws. */
-    uint64_t encoder_id       = _emitter_next_transient_id(emitter);
-    uint64_t render_pass_id   = _emitter_next_transient_id(emitter);
-    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
-    uint64_t submission_id    = _emitter_next_transient_id(emitter);
-
-    float cr = cfg ? cfg->clear_color[0] : 0.0f;
-    float cg = cfg ? cfg->clear_color[1] : 0.0f;
-    float cb = cfg ? cfg->clear_color[2] : 0.0f;
-    float ca = cfg ? cfg->clear_color[3] : 1.0f;
-
-    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
-         dvz_drp2_stream_begin_render_pass_region_clear(
-             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca,
-             render->u.render.desc.x, render->u.render.desc.y,
-             render->u.render.desc.width, render->u.render.desc.height, clear);
+    ok = ok && dvz_drp2_stream_set_viewport(
+                   stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
+                   render->u.render.desc.width, render->u.render.desc.height) &&
+         dvz_drp2_stream_set_scissor(
+             stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
+             render->u.render.desc.width, render->u.render.desc.height);
 
     uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
@@ -1913,6 +1868,171 @@ static bool _emitter_emit_render_multi(
     {
         cache->pipeline_id = last_pipeline;
         cache->bg_set0 = last_bg_set0;
+    }
+
+    return ok;
+}
+
+
+
+/* Scene render path: one BeginRenderPass per panel, one Draw per visual inside it. */
+static bool _emitter_emit_render_multi(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
+    SceneRenderStateCache* cache)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(render);
+
+    bool ok = true;
+    bool is_new = false;
+
+    /* Color target. */
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
+    {
+        color_id = _color_target_id(cfg);
+    }
+    else
+    {
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
+    }
+
+    uint64_t rb_id = 0;
+    if (readback != NULL)
+    {
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
+    }
+    if (!ok)
+        return false;
+
+    uint64_t encoder_id = _emitter_next_transient_id(emitter);
+    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id = _emitter_next_transient_id(emitter);
+
+    float cr = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca = cfg ? cfg->clear_color[3] : 1.0f;
+
+    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+         dvz_drp2_stream_begin_render_pass_region_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
+             1.0f, clear) &&
+         _emitter_emit_render_multi_in_pass(
+             emitter, stream, render, render_pass_id, cfg, cache) &&
+         dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    if (ok && readback != NULL)
+        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
+                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
+    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
+    if (readback != NULL)
+        ok = ok && dvz_drp2_stream_queue_submit_readback(
+                       stream, command_buffer_id, submission_id, rb_id, 0,
+                       readback->u.copy.byte_size);
+    else
+        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    return ok;
+}
+
+
+
+/**
+ * Emit all scene render nodes inside one figure-wide render pass.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param plan the FramePlan
+ * @param readback the optional readback copy node
+ * @param cfg the emission config
+ * @return whether the commands were emitted
+ */
+static bool _emitter_emit_scene_figure_renders(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(plan);
+
+    bool ok = true;
+    bool is_new = false;
+
+    uint64_t color_id = 0;
+    if (cfg != NULL && cfg->external_color_target)
+    {
+        color_id = _color_target_id(cfg);
+    }
+    else
+    {
+        color_id = _obj_id(emitter, "_ct", &is_new);
+        if (color_id == 0)
+            return false;
+        if (is_new)
+        {
+            uint32_t usage =
+                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
+        }
+    }
+
+    uint64_t rb_id = 0;
+    if (readback != NULL)
+    {
+        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
+        if (rb_id == 0)
+            return false;
+        if (ok && is_new)
+        {
+            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
+            ok = ok &&
+                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
+        }
+    }
+    if (!ok)
+        return false;
+
+    uint64_t encoder_id = _emitter_next_transient_id(emitter);
+    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id = _emitter_next_transient_id(emitter);
+
+    float cr = cfg ? cfg->clear_color[0] : 0.0f;
+    float cg = cfg ? cfg->clear_color[1] : 0.0f;
+    float cb = cfg ? cfg->clear_color[2] : 0.0f;
+    float ca = cfg ? cfg->clear_color[3] : 1.0f;
+
+    ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+         dvz_drp2_stream_begin_render_pass_region_clear(
+             stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
+             1.0f, true);
+
+    SceneRenderStateCache scene_cache = {0};
+    for (uint32_t i = 0; ok && i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
+            continue;
+        ok = _emitter_emit_render_multi_in_pass(
+            emitter, stream, render, render_pass_id, cfg, &scene_cache);
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
@@ -2381,6 +2501,26 @@ static bool _emitter_emit_plain_renders(
     ANN(emitter);
     ANN(stream);
     ANN(plan);
+
+    uint32_t render_node_count = 0;
+    uint32_t scene_render_node_count = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+            continue;
+        render_node_count++;
+        if (render->u.render.visual_count > 0 &&
+            cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        {
+            char probe[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(probe, sizeof(probe), "%s_position", render->u.render.visuals[0]);
+            if (_resource_lookup_id(&emitter->resources, probe) != 0)
+                scene_render_node_count++;
+        }
+    }
+    if (render_node_count > 0 && render_node_count == scene_render_node_count)
+        return _emitter_emit_scene_figure_renders(emitter, stream, plan, readback, cfg);
 
     bool ok = true;
     uint32_t render_count = 0;

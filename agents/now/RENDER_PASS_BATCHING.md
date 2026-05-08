@@ -1,6 +1,7 @@
 # Render Pass Batching — Plan
 
-> **Status:** `ACTIVE` — Phases 1 and 2 complete; next implementation target is phase 3.
+> **Status:** `DONE` — Phases 1, 2, and 3 are complete on the active scene -> DRP2 ->
+> native runtime path.
 > **Updated:** `2026-05-08`
 > **Owner-of-record:** scene + drp2 emitter.
 > **Predecessor:** commit `70f057d1` ("scene: emit one render node per visual; FIXED
@@ -242,7 +243,7 @@ What this requires:
   uses it both as render area and as viewport. Split: the render area becomes the
   whole figure framebuffer; the viewport / scissor is per-panel via DRP2
   `SetViewport` / `SetScissor` commands inside the pass.
-- DRP2 already has set_viewport / set_scissor. Confirmed.
+- DRP2 now has explicit `SetViewport` / `SetScissor` commands.
 - Per-panel "clear color" (when distinct from figure's clear color) becomes either
   a quad inside the panel's scissor (already what `dvz_panel_set_background_color`
   does — perfect), or `vkCmdClearAttachments` with `pRects` if we ever want
@@ -250,10 +251,17 @@ What this requires:
 - Multi-pass things that *do* need separate passes — e.g. transparent-OIT accumulate
   + resolve from `spec/scene/TRANSPARENCY.md` — must be done before this phase 3
   collapse, because OIT's resolve pass naturally requires its own pass anyway.
-  This is fine; OIT comes after.
 
-Bigger change than phase 1, deserves its own design pass before implementation.
-Defer.
+Status on `2026-05-08`:
+
+- DONE on the active GLSL scene runtime path: all scene render nodes in a figure now
+  share one `BeginRenderPass` / `EndRenderPass`, with per-panel `SetViewport` and
+  `SetScissor` commands inside the pass.
+- DONE in DRP2: explicit `SetViewport` / `SetScissor` commands were added to the
+  command stream, JSON/debug surface, semantic validator, and vklite runtime.
+- DONE in tests: scene emit tests now cover one-pass multi-panel GLSL output with
+  explicit viewport/scissor commands, and the existing two-panel offscreen runtime
+  pixel test continues to pass.
 
 
 ### Phase 4 — sort by pipeline within a z-layer slab
