@@ -16,8 +16,9 @@ Support precise scientific picking with a coherent scene-level model for:
 
 1. object-level picking,
 2. mesh face-level picking,
-3. vertex/item-level picking for point/scatter/path-like visuals,
-4. scene-owned result routing and selection integration.
+3. mesh instance-aware picking,
+4. vertex/item-level picking for point/scatter/path-like visuals,
+5. scene-owned result routing and selection integration.
 
 
 ## Existing Grounding In The Repo
@@ -58,7 +59,8 @@ Recommended precision requirements:
 
 1. object-level picking for all pickable visuals,
 2. mesh face-level picking for mesh visuals,
-3. vertex/item-level picking for point/scatter/path-like visuals.
+3. mesh instance-aware picking for instanced mesh visuals,
+4. vertex/item-level picking for point/scatter/path-like visuals.
 
 Deferred:
 
@@ -107,6 +109,7 @@ Examples:
 
 1. mesh:
    - visual id
+   - optional instance id
    - payload kind = face
    - payload-local id = triangle index
 2. point/scatter/path:
@@ -123,10 +126,11 @@ Recommended conceptual pick result:
 
 1. panel id
 2. visual id
-3. payload kind
-4. payload-local id
-5. optional world or local hit position later
-6. optional extra metadata later if needed
+3. optional instance id
+4. payload kind
+5. payload-local id
+6. optional world or local hit position later
+7. optional extra metadata later if needed
 
 Payload kind should be explicit rather than inferred by the caller from which visual family was
 clicked.
@@ -227,11 +231,33 @@ Mesh face picking is required now.
 
 Recommended mesh behavior:
 
-1. the returned identity is triangle/face index, not vertex index,
-2. mesh resource ordering must preserve stable face ordering for result interpretation,
-3. future world/local hit position is optional and can be added later.
+1. the returned identity includes instance id when the visual is instanced,
+2. the returned face identity is triangle/face index, not vertex index,
+3. mesh resource ordering must preserve stable face ordering for result interpretation,
+4. future world/local hit position is optional and can be added later.
 
 Do not start with object-only mesh picking.
+
+
+## Instanced Mesh Picking
+
+Instanced mesh visuals need instance-aware picking from the beginning.
+
+Recommended behavior:
+
+1. one shared mesh resource may back many instances,
+2. pick result must identify which instance was hit,
+3. face picking is resolved within that instance,
+4. scene-level logical identity may therefore include both instance id and face id.
+
+Typical result interpretation:
+
+1. visual id
+2. instance id
+3. payload kind = mesh_face
+4. face id
+
+This is important for repeated objects such as many squares, cubes, or glyph-like mesh markers.
 
 
 ## Point / Scatter / Path Picking

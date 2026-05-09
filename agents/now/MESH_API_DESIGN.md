@@ -18,7 +18,8 @@ This note defines how the future scene `mesh` visual family should sit between:
 ## Objective
 
 Land a first `mesh` visual family that is narrow enough for the active 3D slice, but structured so
-future texturing, picking, transparency, and richer material work do not force a redesign.
+future texturing, instancing, picking, transparency, and richer material work do not force a
+redesign.
 
 
 ## Current Scene Surface
@@ -75,7 +76,7 @@ Instead:
 This is the clean retained-mode design and will scale better to:
 
 1. shared meshes across panels,
-2. later instancing or repeated use,
+2. repeated use and explicit instancing,
 3. shared imported assets,
 4. browser/runtime portability,
 5. efficient partial updates.
@@ -97,6 +98,27 @@ The public scene-facing workflow should read naturally as:
 4. attach the visual to a panel,
 5. mutate transform/material/visibility/picking state on the visual,
 6. mutate geometry through the mesh resource API when needed.
+
+
+## Instancing Requirement
+
+Instancing is an active mesh requirement, not just a future optimization.
+
+Important use case:
+
+1. many objects share one geometry resource,
+2. each object has its own model transform,
+3. each object may also need its own pick identity,
+4. the runtime should be free to realize this as natural Vulkan instancing.
+
+Typical example:
+
+1. hundreds of squares or cubes sharing one mesh resource,
+2. one transform per instance,
+3. possibly one color or small style override per instance later.
+
+The scene API should leave a direct place for this instead of forcing the caller to duplicate the
+same geometry into many mesh resources.
 
 
 ## Visual Versus Resource State
@@ -121,6 +143,25 @@ Mesh visual owns:
 7. per-panel attachment options such as z-layer and controller behavior
 
 This split avoids making geometry replacement and visual styling the same operation.
+
+
+## Visual Versus Instance State
+
+Instancing adds one more explicit layer of ownership.
+
+Recommended conceptual split:
+
+1. mesh resource
+   - shared geometry
+2. mesh visual
+   - shared shading/material/render-mode state for one rendered population
+3. mesh instances within that visual
+   - per-instance model transform
+   - per-instance logical/pick identity
+   - later small per-instance overrides if truly needed
+
+This means the first mesh API should not hard-code the assumption that one mesh visual always means
+exactly one object transform.
 
 
 ## Geometry Input Contract
@@ -187,6 +228,42 @@ Suggested conceptual API shape:
 
 This aligns with the already-active scene rule that retained data mutations are rejected while an
 emitted borrowed stream is still live.
+
+
+## Instance Data Model
+
+Instancing should have an explicit retained data model at the visual level.
+
+Recommended first per-instance payload:
+
+1. model transform
+2. stable instance id
+
+Good early optional additions:
+
+1. per-instance base color multiplier
+2. visibility/mask flag
+
+The first public API does not need to expose a giant open-ended instance schema. A narrow retained
+instance table is enough.
+
+
+## Instance Update Model
+
+The retained update contract should include instance data updates from the beginning.
+
+Required update classes:
+
+1. full instance-table replacement,
+2. instance subrange updates for transforms and ids.
+
+Recommendation:
+
+1. geometry updates remain on the mesh resource,
+2. instance updates remain on the mesh visual or on a visual-owned instance resource,
+3. both follow the same retained dirty-range principles as the rest of the scene.
+
+This keeps geometry sharing and instance churn separate.
 
 
 ## Texture Ownership
@@ -279,16 +356,35 @@ Recommended visual-owned picking state:
 
 1. stable logical visual/object id,
 2. opt-in pickable flag or mode,
-3. face-level result routing through scene-owned lookup tables.
+3. face-level result routing through scene-owned lookup tables,
+4. instance-aware result routing when the visual is instanced.
 
 Recommended pick result for mesh visuals:
 
 1. visual id
-2. pick kind = mesh face
-3. face id
-4. optional hit position later
+2. optional instance id
+3. pick kind = mesh face
+4. face id
+5. optional hit position later
 
 The mesh resource should provide the stable primitive ordering needed for face-id resolution.
+
+
+## Scene-Facing Instancing Direction
+
+The public API should support both:
+
+1. one-instance mesh visuals for simple cases,
+2. explicit instanced mesh visuals for shared-geometry populations.
+
+Recommended conceptual direction:
+
+1. a mesh visual may hold zero, one, or many instances,
+2. one-instance use remains the trivial case,
+3. many-instance use maps naturally to backend instancing where supported.
+
+I would avoid creating a completely separate top-level visual family just for “instanced mesh”.
+This is better treated as one capability of the mesh family.
 
 
 ## Transparency Contract
@@ -347,15 +443,18 @@ Visual creation:
 
 1. `DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);`
 2. bind a mesh resource to the visual
-3. set material/shading state on the visual
-4. attach the visual to a panel
+3. set instance data on the visual
+4. set material/shading state on the visual
+5. attach the visual to a panel
 
 Suggested conceptual calls:
 
 1. `int dvz_mesh_set_resource(DvzVisual* visual, DvzMeshResource* mesh);`
-2. `int dvz_mesh_set_material(...)`
-3. `int dvz_mesh_set_render_mode(...)`
-4. `int dvz_mesh_set_pickable(...)`
+2. `int dvz_mesh_set_instances(...)`
+3. `int dvz_mesh_set_instance_range(...)`
+4. `int dvz_mesh_set_material(...)`
+5. `int dvz_mesh_set_render_mode(...)`
+6. `int dvz_mesh_set_pickable(...)`
 
 The exact naming is less important than keeping resource mutation and visual styling separate.
 
@@ -371,7 +470,8 @@ Reasons:
 2. mesh picking needs stable face ordering on a shared resource,
 3. mesh resources need explicit vertex/index update APIs,
 4. later texturing/material/resource sharing is cleaner with a distinct resource layer,
-5. imported/generated geometry should not need to be copied independently into every visual.
+5. imported/generated geometry should not need to be copied independently into every visual,
+6. explicit instancing is cleaner when shared geometry and per-instance state are not conflated.
 
 So the mesh family should introduce an explicit scene resource model rather than forcing everything
 through generic visual attribute setters.
@@ -413,18 +513,19 @@ For the first implementation, the narrowest useful mesh API slice is:
 2. upload from `DvzGeometry`,
 3. full replace and vertex/index subrange updates,
 4. mesh visual bound to one mesh resource,
-5. object/model transform on the visual,
-6. classic-lit material state on the visual,
-7. opaque mode first,
-8. face-picking-ready resource ordering,
-9. one offscreen and one GLFW example using a colored cube.
+5. one-instance and multi-instance paths using one shared geometry resource,
+6. per-instance model transforms,
+7. classic-lit material state on the visual,
+8. opaque mode first,
+9. face-picking-ready resource ordering,
+10. one offscreen and one GLFW example using a colored cube.
 
 
 ## Explicit Non-Goals For The First Slice
 
 1. multiple materials per one mesh resource
 2. skeletal animation
-3. mesh-instancing API
+3. per-instance arbitrary material structs
 4. contour/isoline visual variants
 5. texture-material combinatorics
 6. PBR implementation
