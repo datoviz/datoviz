@@ -140,7 +140,9 @@ Recommended rule:
 
 1. a click may both select and produce a probe result,
 2. persistent selection state should not be required for one-off readout,
-3. a selected item may drive a pinned readout annotation later.
+3. images and slices should support both probe-only behavior and optional persistent pixel/sample
+   selection through explicit API policy,
+4. a selected item may drive a pinned readout annotation later.
 
 
 ## Annotation And UI Relationship
@@ -165,7 +167,9 @@ Recommended direction:
 1. simple probe requests can ride on the same pick/readback path,
 2. richer sampled-value queries may require additional readback or semantic resolution work,
 3. the public API should expose one coherent query model rather than separate unrelated picking and
-   probing systems.
+   probing systems,
+4. interaction policy should be able to decide whether a probe request also mutates persistent
+   selection state.
 
 
 ## Capability And Failure Model
@@ -186,7 +190,9 @@ The exact names can still move, but the conceptual API should support:
 1. scene or panel probe request,
 2. structured `DvzProbeResult` or equivalent payload,
 3. family-specific semantic resolvers behind one common result shape,
-4. formatted text helpers layered on top of the structured payload.
+4. formatted text helpers layered on top of the structured payload,
+5. explicit policy for probe-only versus probe-plus-persistent-selection behavior where that
+   distinction matters.
 
 
 ## Immediate Scope Recommendation

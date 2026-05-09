@@ -61,7 +61,9 @@ Recommended rule:
 3. grouped primitive families such as strip-based lines or triangles may expose both parent-group
    selection and sub-primitive selection when both identities are meaningful,
 4. meshes should support both object-level selection and face-level selection,
-5. images and slices may expose pixel or sample selection only when that identity is stable and
+5. images and slices should support both probe-only interaction and optional persistent
+   pixel/sample selection through explicit API policy,
+6. images and slices may expose pixel or sample selection only when that identity is stable and
    useful.
 
 Do not coarsen a precise pick result into object-only selection unless the caller requests that.
@@ -103,6 +105,35 @@ Recommended direction:
 This is important for scientific exploration workflows and for external UI inspectors.
 
 
+## Scene-Owned Link Keys
+
+Linked selection needs more than ad hoc app-side glue.
+
+Recommended model:
+
+1. the scene owns stable semantic link keys,
+2. a visual may provide a per-object, per-face, per-item, or per-sample mapping to those keys,
+3. selection and hover operate on link keys when linked behavior is requested,
+4. each attached visual resolves the selected link key back into its own local identity domain.
+
+This means one semantic entity can be represented simultaneously as:
+
+1. one point item,
+2. one mesh face set or one mesh object,
+3. one label or annotation,
+4. one image region or slice sample later.
+
+Recommended properties of the link-key model:
+
+1. keys are scene-owned and backend-agnostic,
+2. keys are stable across retained updates unless the semantic object is explicitly replaced,
+3. visuals may attach no key, one key, or one key per local identity depending on family needs,
+4. applications may author the key tables directly when the data model is domain-specific.
+
+This should be a first-class scene concept because otherwise linked selection becomes duplicated
+application policy instead of shared visualization semantics.
+
+
 ## Selection Shape
 
 The active contract should allow more than one selected identity.
@@ -116,6 +147,20 @@ Required baseline:
 
 Lasso and box selection can remain follow-on interaction modes, but the data model should already
 support multi-selection.
+
+
+## Selection Policy And Input Mapping
+
+Selection semantics should be configurable at the API level.
+
+Recommended direction:
+
+1. applications should be able to map input gestures and modifiers to selection actions,
+2. that mapping should also be able to choose the active identity granularity when a visual exposes
+   more than one meaningful mode,
+3. mesh interactions should be able to switch between object-level and face-level selection,
+4. image and slice interactions should be able to choose probe-only behavior or persistent
+   pixel/sample selection.
 
 
 ## Highlight Styling Model

@@ -109,7 +109,8 @@ Recommended initial family expectations:
    - expose the most specific stable authored identity they retain
    - may report both a parent-group identity and a sub-primitive identity when both are meaningful
 11. `mesh`
-   - face-level picking
+   - object-level picking always available
+   - face-level picking available when explicitly enabled
 12. `image`
    - pixel/data-cell-level picking
 13. `text`
@@ -317,12 +318,34 @@ Mesh face picking is required now.
 
 Recommended mesh behavior:
 
-1. the returned identity includes instance id when the visual is instanced,
-2. the returned face identity is triangle/face index, not vertex index,
-3. mesh resource ordering must preserve stable face ordering for result interpretation,
-4. future world/local hit position is optional and can be added later.
+1. object-level picking should remain available by default,
+2. face-level picking should be opt-in at the visual or interaction-policy level,
+3. when face-level picking is enabled, the default resolved pick should be the face,
+4. the returned identity includes instance id when the visual is instanced,
+5. the returned face identity is triangle/face index, not vertex index,
+6. mesh resource ordering must preserve stable face ordering for result interpretation,
+7. future world/local hit position is optional and can be added later.
 
 Do not start with object-only mesh picking.
+
+
+## Picking Policy And Input Mapping
+
+Picking semantics should not be hard-wired to one mouse/keyboard convention.
+
+Recommended direction:
+
+1. the API should let applications map input gestures and modifiers to picking semantics,
+2. this mapping may choose object-level versus face-level mesh picking,
+3. this mapping may choose probe-only versus persistent selection behavior for images and slices,
+4. defaults should stay simple, but applications must be able to replace them.
+
+Mesh-specific default:
+
+1. face picking disabled by default,
+2. object-level mesh picking available by default,
+3. if the application enables face picking, the default resolved mesh pick mode becomes face-level
+   unless the input mapping requests object-level picking for that gesture.
 
 
 ## Instanced Mesh Picking
