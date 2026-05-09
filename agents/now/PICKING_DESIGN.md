@@ -360,7 +360,9 @@ Recommended behavior:
 1. one shared mesh resource may back many instances,
 2. pick result must identify which instance was hit,
 3. face picking is resolved within that instance,
-4. scene-level logical identity may therefore include both instance id and face id.
+4. scene-level logical identity may therefore include both instance id and face id,
+5. in `all_hits_sorted` mode, overlapping instanced objects should appear as separate hit
+   candidates rather than being collapsed by visual.
 
 Typical result interpretation:
 

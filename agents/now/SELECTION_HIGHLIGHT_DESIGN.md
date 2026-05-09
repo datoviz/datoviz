@@ -134,7 +134,8 @@ Linked selection needs more than ad hoc app-side glue.
 Recommended model:
 
 1. the scene owns stable semantic link keys,
-2. a visual may provide a per-object, per-face, per-item, or per-sample mapping to those keys,
+2. a visual may provide a per-object, per-instance, per-face, per-item, or per-sample mapping to
+   those keys,
 3. selection and hover may operate on link keys when linked behavior is requested,
 4. each attached visual resolves the selected link key back into its own local identity domain.
 
@@ -194,6 +195,12 @@ Required baseline:
 
 Lasso and box selection can remain follow-on interaction modes, but the data model should already
 support multi-selection.
+
+Mesh implication:
+
+1. face-level mesh selection should participate in the same additive, subtractive, and toggle
+   selection modes,
+2. do not create a separate mesh-only multi-face selection model for the first slice.
 
 
 ## Selection Resolution Rule

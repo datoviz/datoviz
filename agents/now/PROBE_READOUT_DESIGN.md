@@ -128,9 +128,11 @@ Probe results should integrate with scales and axes rather than bypassing them.
 
 Recommended behavior:
 
-1. coordinate formatting may use panel/domain formatting policy,
+1. coordinate formatting should reuse panel/domain formatting policy by default,
 2. sampled scalar interpretation may reference the shared scale object,
-3. colorbar/legend UI can reflect the same value domain seen by probes.
+3. colorbar/legend UI can reflect the same value domain seen by probes,
+4. local probe-format overrides may exist, but they should layer on top of the shared formatting
+   machinery rather than replacing it wholesale.
 
 
 ## Selection Relationship
@@ -163,6 +165,12 @@ Recommended consumers:
 3. property inspector,
 4. status-bar coordinate readout,
 5. linked colorbar/scale indicator later.
+
+Recommended state split:
+
+1. transient hover readout is separate from pinned readout state,
+2. pinned readout should be retained scene-owned state,
+3. do not model pinned readout as only “the last hover result frozen in place”.
 
 
 ## Request Model
