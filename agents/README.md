@@ -18,6 +18,7 @@ Active execution surface:
 9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
 10. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
 11. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+12. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
 
 Current status:
 
@@ -49,6 +50,8 @@ Current status:
     policy, and the split between world-space and screen-space placement.
 13. The active annotation/measurement note records the intended scale-bar, dimension, and bounding-box
     overlay model, including unit-aware formatting and placement rules.
+14. The active resource-update note records the intended retained partial-update contract for mesh,
+    image, text-atlas, and grouped-resource mutations.
 
 
 ## Start Here
@@ -78,16 +81,19 @@ If resuming work on the branch:
 11. Read [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
    before implementing scale bars, dimension helpers, bounding-box overlays, or mixed placement
    annotations.
-12. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+12. Read [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
+   before adding mesh-resource updates, texture-region writes, atlas updates, or new retained
+   mutable resource types.
+13. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the completed first vertical slice.
-13. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+14. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-14. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+15. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
    when touching panel transforms, per-panel UBOs, or controller input flow.
-15. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+16. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-16. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+17. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -109,6 +115,7 @@ Files in this directory are actionable today and should stay short enough to dri
 9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
 10. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
 11. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+12. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
 
 ### `done/`
 
