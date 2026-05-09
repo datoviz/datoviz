@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-08`
+> - **Updated on:** `2026-05-09`
 > - **Purpose:** orient near-term and mid-term v0.4 work after the first scene -> DRP2 -> vklite/canvas slice.
 
 
@@ -99,6 +99,8 @@ Deliverables:
 3. Viewport UBO completed and used intentionally by built-in visuals that need panel-pixel context.
 4. Arcball-driven 3D example and regression coverage.
 5. Focused DRP2/runtime tests that exercise depth compare/write state and viewport/scissor updates.
+6. A written mesh shading/material contract that keeps the first implementation narrow while leaving
+   room for later contour/isoline and PBR work.
 
 Scope notes:
 
@@ -109,6 +111,8 @@ Scope notes:
 3. Depth attachment ownership must remain with canvas/runtime boundaries, not scene.
 4. Scene should keep emitting frame plans and DRP2; it should not begin owning pass lifecycle
    details directly.
+5. Use [MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
+   as the Phase 1 shading/material contract.
 
 Exit criteria:
 
@@ -255,12 +259,14 @@ Every new family should land with a pressure example, not only an isolated smoke
 
 If work resumes right now, this is the preferred order:
 
-1. Start the first narrow `mesh` implementation and keep the DRP2/spec lane aligned with it.
+1. Use [MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
+   to freeze the first mesh geometry/material/light scope.
 2. Implement per-panel depth attachment support and add tests before broadening the mesh API.
-3. Land the first `mesh` family plus one offscreen and one live example.
-4. Finish viewport-UBO usage for the built-in visuals that need pixel-aware sizing or overlays.
-5. Run a minimal browser/WebGPU experiment against the resulting 2D+3D slice.
-6. Use the findings from that experiment to decide whether DRP2 needs small contract corrections
+3. Start the first narrow `mesh` implementation and keep the DRP2/spec lane aligned with it.
+4. Land the first `mesh` family plus one offscreen and one live example.
+5. Finish viewport-UBO usage for the built-in visuals that need pixel-aware sizing or overlays.
+6. Run a minimal browser/WebGPU experiment against the resulting 2D+3D slice.
+7. Use the findings from that experiment to decide whether DRP2 needs small contract corrections
    before transparency and axes work begin.
 
 
