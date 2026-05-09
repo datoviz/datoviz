@@ -17,10 +17,13 @@
 /*************************************************************************************************/
 
 #include "datoviz/common/macros.h"
+#include "scene/annotation.h"
 #include "scene/arcball.h"
 #include "scene/enums.h"
 #include "scene/frame_plan.h"
+#include "scene/interaction.h"
 #include "scene/panzoom.h"
+#include "scene/text.h"
 #include "scene/types.h"
 
 

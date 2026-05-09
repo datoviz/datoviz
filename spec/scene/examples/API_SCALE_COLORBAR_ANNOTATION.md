@@ -29,12 +29,12 @@ DvzScale* depth = dvz_scale(scene, &(DvzScaleDesc){
 });
 dvz_scale_set_domain(depth, -600.0, 0.0);
 
-DvzColormap* depth_map = dvz_colormap_builtin(scene, DVZ_CMAP_MAGMA);
+DvzColormap* depth_map = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_MAGMA);
 dvz_scale_set_colormap(depth, depth_map);
 
 DvzColorbar* colorbar = dvz_colorbar(panel, depth, &(DvzColorbarDesc){
-    .orientation = DVZ_ORIENTATION_VERTICAL,
-    .anchor = DVZ_ANCHOR_RIGHT,
+    .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
+    .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
     .title = "Depth",
 });
 dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){
@@ -44,8 +44,12 @@ dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){
 
 DvzAnnotation* label = dvz_annotation_label(panel, &(DvzLabelDesc){
     .text = "Layer boundary",
-    .anchor = DVZ_ANCHOR_DATA,
-    .position = {125.0, -320.0, 0.0},
+    .placement =
+        (DvzTextPlacement){
+            .mode = DVZ_TEXT_PLACEMENT_DATA,
+            .anchor = DVZ_SCENE_ANCHOR_DATA,
+            .position = {125.0, -320.0, 0.0},
+        },
 });
 dvz_annotation_set_format(label, &(DvzFormatDesc){
     .unit = "um",

@@ -38,7 +38,8 @@ annotation handles.
 ## Files
 
 1. `scene_api.h`: authoritative draft C spelling for the handles, descriptors, enums, and entry points it covers
-2. `diagnostics.h`: draft shared diagnostic enums and record/report types
+2. `scene_public_api_draft.h`: focused companion draft for interaction, scales, colorbars, text, and annotations
+3. `diagnostics.h`: draft shared diagnostic enums and record/report types
 
 Runtime-facing capability, submission, completion, and diagnostic sketches currently live in
 `scene_api.h` until a separate header is useful.

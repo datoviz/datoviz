@@ -29,7 +29,7 @@ DvzScale* intensity = dvz_scale(scene, &(DvzScaleDesc){
 });
 dvz_scale_set_domain(intensity, 0.0, 1.0);
 
-DvzColormap* cmap = dvz_colormap_builtin(scene, DVZ_CMAP_VIRIDIS);
+DvzColormap* cmap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
 dvz_scale_set_colormap(intensity, cmap);
 
 DvzVisual* image = dvz_image(panel, &(DvzImageDesc){
@@ -41,7 +41,7 @@ DvzVisual* image = dvz_image(panel, &(DvzImageDesc){
 dvz_image_set_data(image, pixels, width, height, sizeof(float));
 
 dvz_panel_probe(panel, mouse_x, mouse_y, &(DvzProbeRequest){
-    .kind = DVZ_PROBE_IMAGE_SAMPLE,
+    .target = DVZ_SCENE_TARGET_PIXEL,
 });
 
 DvzProbeResult probe = {0};
