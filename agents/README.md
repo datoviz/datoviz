@@ -16,16 +16,17 @@ Active execution surface:
 7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
 8. [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
 9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
-10. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
-11. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
-12. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
-13. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
-14. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
-15. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
-16. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
-17. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-18. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
-19. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+10. [now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
+11. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
+12. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+13. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
+14. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
+15. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
+16. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+17. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
+18. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+19. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
+20. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
 
 Current status:
 
@@ -53,25 +54,27 @@ Current status:
     runtime, and capability levels.
 11. The active picking note records per-family picking precision, scene-owned identity routing, and
     the intended request/readback contract.
-12. The active transform/controller note records the model-space arcball contract, fixed-camera
+12. The active selection/highlight note records the intended scene-owned hover/selection state,
+    linked identity highlighting, and family-level emphasis rules.
+13. The active transform/controller note records the model-space arcball contract, fixed-camera
     policy, and the split between world-space and screen-space placement.
-13. The active annotation/measurement note records the intended scale-bar, dimension, and bounding-box
+14. The active annotation/measurement note records the intended scale-bar, dimension, and bounding-box
     overlay model, including unit-aware formatting and placement rules.
-14. The active resource-update note records the intended retained partial-update contract for mesh,
+15. The active resource-update note records the intended retained partial-update contract for mesh,
     image, text-atlas, and grouped-resource mutations.
-15. The active material/lighting note records the intended panel-light-set model, visual-owned
+16. The active material/lighting note records the intended panel-light-set model, visual-owned
     materials, and the narrow first classic-lit shading contract.
-16. The active axes/domain note records the intended panel-owned domain semantics, unit-sharing with
+17. The active axes/domain note records the intended panel-owned domain semantics, unit-sharing with
     measurement overlays, and the split between 2D axes and early 3D orientation aids.
-17. The active volume note records the intended mixed volume/mesh/slice design, including semantic
+18. The active volume note records the intended mixed volume/mesh/slice design, including semantic
     slice picking and shared scientific framing with 3D meshes.
-18. The active colorbar/colormap note records the intended shared-scale model, panel-attached
+19. The active colorbar/colormap note records the intended shared-scale model, panel-attached
     colorbars, and interactive range-control direction.
-19. The active scientific-coordinate note consolidates the current F64 normalization policy and the
+20. The active scientific-coordinate note consolidates the current F64 normalization policy and the
     need for shared 3D framing across related mesh/volume scenes.
-20. The active ray-tracing note records which current scene-level decisions should remain semantic so
+21. The active ray-tracing note records which current scene-level decisions should remain semantic so
     a future ray path can land without a public-API rewrite.
-21. The active UI/backend note records the scene-boundary implications of Dear ImGui, Qt/PyQt-style
+22. The active UI/backend note records the scene-boundary implications of Dear ImGui, Qt/PyQt-style
     embedding, host-driven layout, and external retained mutation.
 
 
@@ -97,39 +100,42 @@ If resuming work on the branch:
    before implementing transparent visual modes or WBOIT-related frame-plan/runtime work.
 9. Read [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
    before implementing object/face/item picking paths or result-routing APIs.
-10. Read [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
+10. Read [now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
+   before implementing scene-owned selection state, hover/highlight routing, or linked selection
+   behavior across visuals.
+11. Read [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
    before changing controller semantics, placement modes, or model/camera ownership rules.
-11. Read [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+12. Read [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
    before implementing scale bars, dimension helpers, bounding-box overlays, or mixed placement
    annotations.
-12. Read [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
+13. Read [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
    before adding mesh-resource updates, texture-region writes, atlas updates, or new retained
    mutable resource types.
-13. Read [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
+14. Read [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
    before implementing scene light objects, material setters, or lit-family shading selection.
-14. Read [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
+15. Read [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
    before implementing panel-owned domains, unit-aware axes, or scale-bar/axis shared formatting.
-15. Read [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+16. Read [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
    before implementing active volume work, slice-plane interaction, or mixed mesh/volume picking.
-16. Read [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
+17. Read [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
    before implementing shared scales, panel colorbars, or interactive colormap/range editing.
-17. Read [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+18. Read [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
    before changing F64 normalization policy, mixed 3D framing, or semantic coordinate readback.
-18. Read [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
+19. Read [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
    before freezing raster-only assumptions into mesh, volume, transparency, or picking APIs.
-19. Read [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+20. Read [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
    before tightening external UI mutation paths, host embedding, or texture-handle presentation
    assumptions.
-20. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+21. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the completed first vertical slice.
-21. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+22. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-22. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+23. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
    when touching panel transforms, per-panel UBOs, or controller input flow.
-23. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+24. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-24. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+25. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -149,16 +155,17 @@ Files in this directory are actionable today and should stay short enough to dri
 7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
 8. [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
 9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
-10. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
-11. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
-12. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
-13. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
-14. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
-15. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
-16. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
-17. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-18. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
-19. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+10. [now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
+11. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
+12. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+13. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
+14. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
+15. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
+16. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+17. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
+18. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+19. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
+20. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
 
 ### `done/`
 
