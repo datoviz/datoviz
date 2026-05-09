@@ -137,7 +137,9 @@ Recommended model:
 2. a visual may provide a per-object, per-instance, per-face, per-item, or per-sample mapping to
    those keys,
 3. selection and hover may operate on link keys when linked behavior is requested,
-4. each attached visual resolves the selected link key back into its own local identity domain.
+4. each attached visual resolves the selected link key back into its own local identity domain,
+5. per-instance and per-face link-key mappings should be allowed to coexist within the same mesh
+   visual when the workflow needs both levels.
 
 This means one semantic entity can be represented simultaneously as:
 
@@ -184,7 +186,9 @@ Recommended first-slice interaction rule:
 4. linked hover and linked selection should be controlled by separate policy flags,
 5. linked selection may be enabled while linked hover remains disabled,
 6. selection state should remember which active link channel produced the current linked selection
-   so later UI and follow-up actions stay coherent.
+   so later UI and follow-up actions stay coherent,
+7. switching the active channel should not retroactively reinterpret an existing linked selection;
+   the existing selection stays as-is until a new linked selection action occurs.
 
 This should be a first-class scene concept because otherwise linked selection becomes duplicated
 application policy instead of shared visualization semantics.
@@ -209,6 +213,13 @@ Mesh implication:
 1. face-level mesh selection should participate in the same additive, subtractive, and toggle
    selection modes,
 2. do not create a separate mesh-only multi-face selection model for the first slice.
+
+Image/slice implication:
+
+1. persistent sample selection should support arbitrary selected sample sets rather than only one
+   selected sample at a time,
+2. use the same replace, additive, subtractive, and toggle modes rather than a special-case image
+   selection contract.
 
 
 ## Selection Resolution Rule

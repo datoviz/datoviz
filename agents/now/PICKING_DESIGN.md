@@ -281,7 +281,9 @@ Recommended direction:
    on the workflow,
 5. a future custom filter or reducer callback is a valid extension point later,
 6. sorting should be scene-semantic enough to explain how transparency and overlay priorities were
-   handled.
+   handled,
+7. ties between otherwise equivalent candidates should still be broken deterministically so the
+   result order remains stable.
 
 The first implementation can still return one result by default, but the spec should leave room for
 multi-hit queries now.

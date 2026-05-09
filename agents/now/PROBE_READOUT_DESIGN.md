@@ -131,8 +131,10 @@ Recommended behavior:
 1. coordinate formatting should reuse panel/domain formatting policy by default,
 2. sampled scalar interpretation may reference the shared scale object,
 3. colorbar/legend UI can reflect the same value domain seen by probes,
-4. local probe-format overrides may exist, but they should layer on top of the shared formatting
-   machinery rather than replacing it wholesale.
+4. panel-level probe-format defaults may exist on top of the shared formatting machinery,
+5. per-readout local overrides may also exist when one readout needs custom presentation,
+6. local overrides should layer on top of the shared formatting machinery rather than replacing it
+   wholesale.
 
 
 ## Selection Relationship
@@ -173,7 +175,9 @@ Recommended state split:
 1. transient hover readout is separate from pinned readout state,
 2. pinned readout should be retained scene-owned state,
 3. do not model pinned readout as only “the last hover result frozen in place”,
-4. the first slice should allow several pinned readouts rather than only one.
+4. the first slice should allow several pinned readouts rather than only one,
+5. when available, a pinned readout should retain both the raw originating hit and the resolved
+   semantic payload that was stored from it.
 
 
 ## Request Model
