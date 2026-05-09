@@ -45,7 +45,7 @@ Read in this order:
 
 1. [../../spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md)
 2. [../../spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
-3. [../../spec/scene/decisions/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/README.md)
+3. [../../spec/scene/proposals/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/README.md)
 4. [SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 
 Deliver the next public API draft in this order:

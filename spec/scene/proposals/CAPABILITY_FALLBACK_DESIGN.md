@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 scene-facing contract for capability checks, explicit
 >   degradation policy, and runtime diagnostics across rendering features.
@@ -28,11 +28,11 @@ Useful existing context:
 1. DRP2 capability model:
    [spec/drp2/CAPABILITIES.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/CAPABILITIES.md)
 2. active transparency note:
-   [spec/scene/decisions/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TRANSPARENCY_WBOIT_DESIGN.md)
+   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md)
 3. active picking note:
-   [spec/scene/decisions/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
 4. active ray-tracing note:
-   [spec/scene/decisions/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/RAY_TRACING_FORWARD_COMPAT.md)
+   [spec/scene/proposals/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/RAY_TRACING_FORWARD_COMPAT.md)
 5. completed presentation/offscreen notes:
    [agents/done/PRESENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/PRESENTATION.md)
    and

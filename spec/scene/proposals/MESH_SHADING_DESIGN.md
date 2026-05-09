@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the first v0.4 `mesh` shading contract so Phase 1 implementation stays
 >   narrow without blocking later contour/isoline, transparency, or PBR work.

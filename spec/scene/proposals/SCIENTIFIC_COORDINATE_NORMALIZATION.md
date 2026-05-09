@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** consolidate the active v0.4 normalization and precision decisions for scientific
 >   coordinates across mesh, point, image, and volume workflows.
@@ -30,9 +30,9 @@ The underlying policy already exists in the broader scene spec:
 2. resource precision policy:
    [spec/scene/pipeline/RESOURCE_MODEL.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/pipeline/RESOURCE_MODEL.md)
 3. axes/domain semantics:
-   [spec/scene/decisions/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/AXES_DOMAIN_DESIGN.md)
+   [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/AXES_DOMAIN_DESIGN.md)
 4. volume framing pressure:
-   [spec/scene/decisions/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/VOLUME_DESIGN.md)
+   [spec/scene/proposals/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/VOLUME_DESIGN.md)
 
 This note is not a new transform model. It is an active consolidation of the decisions that matter
 for implementation.

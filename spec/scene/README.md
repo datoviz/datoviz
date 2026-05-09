@@ -38,8 +38,9 @@ The scene spec is split by kind of authority:
 8. [integration](integration/README.md): host UI, threading, high-DPI, and custom visuals.
 9. [export](export/README.md): image and vector export semantics.
 10. [headers](headers/README.md): implementation-facing draft C header sketches.
-11. [decisions](decisions/README.md): decision records awaiting promotion into specialized specs.
-12. [examples](examples/README.md): worked examples and API-shape pressure tests.
+11. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
+12. [decisions](decisions/README.md): historical ADR-style decision records.
+13. [examples](examples/README.md): worked examples and API-shape pressure tests.
 
 
 ## Relationship To The DRP2 Spec
@@ -97,10 +98,12 @@ Unless a document says otherwise, this directory should be read with the followi
    normative behavior,
 4. when two documents overlap, the more specialized contract document should win over a broader
    orientation document,
-5. `decisions/` records are spec-side decision records used to clarify or extend the normative
-   documents until those decisions are promoted into specialized spec files,
-6. `api/API_SURFACE.md` is the normative bridge from scene semantics to the next public C header draft,
-7. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
+5. `proposals/` records are active design addenda used to clarify or extend the normative documents
+   until those rules are promoted into specialized spec files,
+6. `decisions/` records are historical ADR-style records and should explain rationale, not hold
+   current implementation-facing rules on their own,
+7. `api/API_SURFACE.md` is the normative bridge from scene semantics to the next public C header draft,
+8. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
    while the surrounding scene documents remain authoritative for semantics.
 
 For cross-tree overlap, use this source-of-truth order:
@@ -108,10 +111,11 @@ For cross-tree overlap, use this source-of-truth order:
 1. DRP2 command, lifetime, and error prose for protocol semantics,
 2. DRP2 active JSON schemas for machine-checkable command shape,
 3. scene normative documents for scene semantics,
-4. scene decision records for decisions not yet promoted into specialized spec files,
-5. `spec/scene/api/API_SURFACE.md` for public API shape policy,
-6. `spec/scene/headers/scene_api.h` for draft C names and signatures,
-7. examples and deferred trackers as informative material.
+4. scene proposals for rules not yet promoted into specialized spec files,
+5. historical scene decision records for rationale behind older choices,
+6. `spec/scene/api/API_SURFACE.md` for public API shape policy,
+7. `spec/scene/headers/scene_api.h` for draft C names and signatures,
+8. examples and deferred trackers as informative material.
 
 
 ## Recommended Reading Order
@@ -131,7 +135,7 @@ Read the scene spec in this order during review.
 3. [api/API_DESIGN.md](api/API_DESIGN.md) — current preferred scene-facing defaults and resolved API decisions
 4. [api/API_SURFACE.md](api/API_SURFACE.md) — public header drafting policy for interaction, scales, text, and annotations
 5. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
-6. [decisions/README.md](decisions/README.md) — active scene decision records awaiting promotion
+6. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
 7. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 
 ### 3. Visual semantics
@@ -212,8 +216,9 @@ Read the scene spec in this order during review.
   architecture, and per-family GPU data preparation notes
 - [headers/README.md](headers/README.md): draft header index for the current scene, runtime, and
   diagnostics surfaces; `scene_api.h` is the authoritative draft C spelling
-- [decisions/README.md](decisions/README.md): spec-side decision records that used to live in
-  `agents/now/`, with promotion targets for implementation-ready spec work
+- [proposals/README.md](proposals/README.md): active design addenda with promotion targets for
+  implementation-ready spec work
+- [decisions/README.md](decisions/README.md): historical ADR-style records and authority policy
 - [semantics/AXES.md](semantics/AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
 - [semantics/LIGHTING.md](semantics/LIGHTING.md): scene-level lighting model, PBR shading parameters, and hardware
   ray tracing forward-compatibility path

@@ -15,8 +15,8 @@ Active execution notes:
 2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
-The scene semantic decision records that used to live in `agents/now/` now live under
-[../spec/scene/decisions](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions).
+The scene design addenda that used to live in `agents/now/` now live under
+[../spec/scene/proposals](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals).
 
 
 ## Start Here
@@ -82,8 +82,9 @@ Backlog, strategic direction, or secondary cleanup tracks.
 ## Maintenance Rules
 
 1. Keep `agents/now/` small and practical.
-2. Move stable scene semantics to `spec/scene/` or `spec/scene/decisions/`.
-3. Move completed implementation records to `agents/done/`.
-4. Move speculative or long-horizon execution ideas to `agents/later/`.
-5. On the `v0.4` branch, prefer architecture, correctness, and maintainability over API or ABI
+2. Move stable scene semantics to specialized files under `spec/scene/`.
+3. Keep active not-yet-promoted design addenda in `spec/scene/proposals/`.
+4. Move completed implementation records to `agents/done/`.
+5. Move speculative or long-horizon execution ideas to `agents/later/`.
+6. On the `v0.4` branch, prefer architecture, correctness, and maintainability over API or ABI
    compatibility with earlier work.

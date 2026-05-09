@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended first scene-facing API shape for text visuals, shared scales,
 >   colorbars, measurement annotations, and pinned semantic labels.
@@ -21,15 +21,15 @@ Define a coherent first API for:
 5. pinned semantic labels and readout annotations.
 
 
-## Existing Grounding In Scene Decision Records
+## Existing Grounding In Scene Proposals
 
 This API note consolidates:
 
-1. [spec/scene/decisions/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TEXT_DESIGN.md)
-2. [spec/scene/decisions/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/COLORBAR_COLORMAP_DESIGN.md)
-3. [spec/scene/decisions/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/ANNOTATION_MEASUREMENT_DESIGN.md)
-4. [spec/scene/decisions/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/AXES_DOMAIN_DESIGN.md)
-5. [spec/scene/decisions/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PROBE_READOUT_DESIGN.md)
+1. [spec/scene/proposals/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TEXT_DESIGN.md)
+2. [spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md)
+3. [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md)
+4. [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/AXES_DOMAIN_DESIGN.md)
+5. [spec/scene/proposals/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PROBE_READOUT_DESIGN.md)
 
 
 ## Core Recommendation

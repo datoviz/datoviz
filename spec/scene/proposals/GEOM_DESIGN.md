@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 geometry module so procedural mesh generation,
 >   triangulation, and CPU-side mesh preprocessing have a stable home before broader `mesh`

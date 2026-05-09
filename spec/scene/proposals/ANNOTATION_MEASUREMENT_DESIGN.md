@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 annotation and measurement model for scale bars,
 >   dimensions, bounding boxes, and mixed screen-space/world-space overlays.
@@ -28,11 +28,11 @@ There is already useful broader spec context:
 1. annotation semantics in
    [spec/scene/semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md)
 2. text direction in
-   [spec/scene/decisions/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TEXT_DESIGN.md)
+   [spec/scene/proposals/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TEXT_DESIGN.md)
 3. transform/controller direction in
-   [spec/scene/decisions/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TRANSFORM_CONTROLLER_DESIGN.md)
+   [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md)
 4. picking direction in
-   [spec/scene/decisions/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
 
 This note does not replace the larger annotation spec. It defines the active v0.4 decisions for the
 measurement-heavy subset that you already need now.

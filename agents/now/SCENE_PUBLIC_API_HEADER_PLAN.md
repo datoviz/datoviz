@@ -10,7 +10,7 @@
 
 Stop expanding prose and draft the next scene-facing public header surface.
 
-The next agent should turn the spec-side API surface and decision records into concrete API spelling
+The next agent should turn the spec-side API surface and active proposals into concrete API spelling
 in public headers and one implementation-facing scratch companion.
 
 
@@ -23,10 +23,10 @@ in public headers and one implementation-facing scratch companion.
 3. Write `2-3` tiny end-to-end usage examples in docs before implementation starts.
 4. Only after the header surface feels coherent, begin the narrow first implementation slice.
 
-Normative starting points:
+Spec starting points:
 
 1. [spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
-2. [spec/scene/decisions/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/README.md)
+2. [spec/scene/proposals/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/README.md)
 3. [spec/scene/headers/scene_api.h](/home/cyrille/GIT/Viz/datoviz/spec/scene/headers/scene_api.h)
 
 
@@ -123,14 +123,14 @@ Before implementation starts, the next agent should verify:
 1. the draft names fit existing `Dvz*` naming and module boundaries,
 2. public structs are small, stable, and do not leak runtime ownership,
 3. the examples do not require hidden callbacks or undocumented global state,
-4. the new surface still matches the spec and decision records:
+4. the new surface still matches the spec and active proposals:
    `spec/scene/api/API_SURFACE.md`,
-   `spec/scene/decisions/INTERACTION_API_DESIGN.md`,
-   `spec/scene/decisions/ANNOTATION_TEXT_SCALE_API.md`,
-   `spec/scene/decisions/PICKING_DESIGN.md`,
-   `spec/scene/decisions/PROBE_READOUT_DESIGN.md`,
-   `spec/scene/decisions/COLORBAR_COLORMAP_DESIGN.md`,
-   `spec/scene/decisions/AXES_DOMAIN_DESIGN.md`.
+   `spec/scene/proposals/INTERACTION_API_DESIGN.md`,
+   `spec/scene/proposals/ANNOTATION_TEXT_SCALE_API.md`,
+   `spec/scene/proposals/PICKING_DESIGN.md`,
+   `spec/scene/proposals/PROBE_READOUT_DESIGN.md`,
+   `spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md`,
+   `spec/scene/proposals/AXES_DOMAIN_DESIGN.md`.
 
 
 ## Handoff Summary

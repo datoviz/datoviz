@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** record the current high-priority v0.4 technical decisions around scene resources,
 >   controllers, picking, transparency, text, and measurement annotations before implementation

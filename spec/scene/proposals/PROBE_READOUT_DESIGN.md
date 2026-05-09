@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC DECISION RECORD`
+> - **Status:** `SCENE SPEC PROPOSAL`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 contract for semantic probe results and readout payloads
 >   across image, volume, mesh, and annotation workflows.
@@ -26,15 +26,15 @@ Support coherent probe/readout behavior for:
 Useful current context:
 
 1. active picking note:
-   [spec/scene/decisions/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
 2. active volume note:
-   [spec/scene/decisions/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/VOLUME_DESIGN.md)
+   [spec/scene/proposals/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/VOLUME_DESIGN.md)
 3. active scientific-coordinate note:
-   [spec/scene/decisions/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+   [spec/scene/proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
 4. active axes/domain note:
-   [spec/scene/decisions/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/AXES_DOMAIN_DESIGN.md)
+   [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/AXES_DOMAIN_DESIGN.md)
 5. active colorbar/colormap note:
-   [spec/scene/decisions/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/COLORBAR_COLORMAP_DESIGN.md)
+   [spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md)
 
 This note defines the active cross-family contract.
 
@@ -52,7 +52,7 @@ Recommended split:
 
 ## Why A Separate Note Is Needed
 
-Several scene decision records already depend on this contract:
+Several scene proposals already depend on this contract:
 
 1. image picking wants pixel-level semantics,
 2. volume picking wants sampled values and scientific coordinates,

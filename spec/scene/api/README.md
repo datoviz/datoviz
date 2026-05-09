@@ -17,5 +17,5 @@ scene concepts into C and language bindings.
 ## Related Directories
 
 1. [../headers](../headers): implementation-facing draft header sketches.
-2. [../decisions](../decisions): decision records that feed future API drafts.
+2. [../proposals](../proposals): active design addenda that feed future API drafts.
 3. [../examples](../examples): API pressure sketches and worked examples.
