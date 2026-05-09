@@ -51,7 +51,8 @@ Recommended split:
 1. runtime reports structured low-level capability facts,
 2. scene or planning derives whether a requested semantic feature can be realized,
 3. unsupported requests produce explicit diagnostics by default,
-4. any fallback must be an intentional declared policy.
+4. any fallback must be an intentional declared policy,
+5. capability/support and interaction policy should remain separate API concerns.
 
 
 ## Capability Layers
@@ -198,7 +199,9 @@ The exact names can still move, but the conceptual API should support:
 1. runtime capability snapshot query,
 2. feature requirement declaration at scene or visual level,
 3. optional fallback policy declaration,
-4. validation/planning result objects carrying structured diagnostics.
+4. validation/planning result objects carrying structured diagnostics,
+5. interaction-policy objects that consume only capabilities already declared as supported rather
+   than doubling as capability declarations themselves.
 
 
 ## Test And Example Policy

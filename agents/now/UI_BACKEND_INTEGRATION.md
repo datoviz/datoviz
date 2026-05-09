@@ -46,7 +46,9 @@ Recommended split:
 
 1. UI frameworks own widgets, docking, and application-level interaction,
 2. scene owns visualization semantics and retained state,
-3. runtime/window backends own embedding and presentation details.
+3. runtime/window backends own embedding and presentation details,
+4. scene-facing APIs should remain host-agnostic and should not embed host-specific object types or
+   backend-native handles.
 
 This keeps the scene model clean while still making real apps practical.
 
@@ -88,7 +90,9 @@ Recommended rule:
 1. sliders, checkboxes, trees, and inspectors mutate scene-owned resources or parameters,
 2. the scene performs dirty tracking and validation,
 3. the next frame reflects the change through the normal retained pipeline,
-4. no special “UI-only mutation path” should exist.
+4. no special “UI-only mutation path” should exist,
+5. offscreen or embedded presentation handles exposed upward should remain logical scene/runtime
+   handles rather than native backend objects.
 
 Examples:
 

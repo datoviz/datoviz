@@ -107,7 +107,9 @@ Recommended requirement:
 
 1. stable item, face, pixel, or sample ordering should be defined at the semantic-object layer,
 2. scene resource updates preserve that ordering unless explicitly replaced,
-3. export/readback paths refer back to semantic identities rather than runtime encodings.
+3. export/readback paths refer back to semantic identities rather than runtime encodings,
+4. picking, selection, probe/readout, and semantic export should all route back through this same
+   semantic-identity layer rather than inventing separate runtime-facing id systems.
 
 This matters directly for picking, selection, probe readout, and reproducible annotations.
 
@@ -127,7 +129,9 @@ Useful export/result classes to reserve now:
 Recommended rule:
 
 1. export objects should be described in semantic terms,
-2. runtime-specific staging, readback, and encoding mechanics stay below that boundary.
+2. runtime-specific staging, readback, and encoding mechanics stay below that boundary,
+3. screenshot or video capture should remain distinct from semantic export/readout payloads even
+   when both originate from one interaction workflow.
 
 
 ## Relationship To Text
