@@ -18,7 +18,9 @@ Support precise scientific picking with a coherent scene-level model for:
 2. mesh face-level picking,
 3. mesh instance-aware picking,
 4. vertex/item-level picking for point/scatter/path-like visuals,
-5. scene-owned result routing and selection integration.
+5. image pixel-level picking,
+6. configurable hit-selection semantics across transparency and mixed overlays,
+7. scene-owned result routing and selection integration.
 
 
 ## Existing Grounding In The Repo
@@ -60,7 +62,8 @@ Recommended precision requirements:
 1. object-level picking for all pickable visuals,
 2. mesh face-level picking for mesh visuals,
 3. mesh instance-aware picking for instanced mesh visuals,
-4. vertex/item-level picking for point/scatter/path-like visuals.
+4. vertex/item-level picking for point/scatter/path-like visuals,
+5. pixel-level picking for image visuals.
 
 Deferred:
 
@@ -85,13 +88,17 @@ Recommended initial family expectations:
    - item/vertex picking
 3. `path`
    - item/vertex picking at the path point identity level, not just object-level
-4. `primitive`
-   - object-level by default; item-level only when semantics are defined clearly
-5. `mesh`
+4. `marker`
+   - item-level picking
+5. `segment`
+   - item-level picking
+6. `primitive`
+   - object-level by default; item-level when used as repeated independent items
+7. `mesh`
    - face-level picking
-6. `image`
-   - object-level unless later a pixel/data-cell model is explicitly introduced
-7. `text`
+8. `image`
+   - pixel/data-cell-level picking
+9. `text`
    - object/string-level first; glyph-level not required initially
 
 
@@ -116,6 +123,10 @@ Examples:
    - visual id
    - payload kind = item/vertex
    - payload-local id = item index
+3. image:
+   - visual id
+   - payload kind = image_pixel
+   - payload-local id = pixel or cell index
 
 Do not expose raw backend resource ids or encoded attachment integers as the public result.
 
@@ -140,6 +151,7 @@ Useful payload kinds to reserve now:
 1. object
 2. mesh_face
 3. item_vertex
+4. image_pixel
 
 
 ## Scene-Owned Resolution Tables
@@ -193,6 +205,46 @@ This should support both:
 
 1. click/query picking,
 2. hover picking.
+
+
+## Hit-Selection Policy
+
+Picking semantics cannot always be “return the frontmost fragment”.
+
+Important example:
+
+1. a transparent shell surrounds opaque structures,
+2. the click first intersects the shell,
+3. the user may actually want the interior opaque object,
+4. in other workflows the shell itself may be the intended target.
+
+Recommended solution:
+
+1. define explicit hit-selection policy at the scene or request level,
+2. do not hard-code one universal rule into the picking path.
+
+Recommended initial policies to reserve:
+
+1. `frontmost`
+2. `opaque_preferred`
+3. `all_hits_sorted`
+
+`opaque_preferred` is especially important for mixed transparent-shell and interior-mesh workflows.
+
+
+## Multi-Hit Results
+
+Some picking workflows need more than one candidate result.
+
+Recommended direction:
+
+1. simple workflows may ask for one resolved hit,
+2. richer workflows may request a sorted hit list,
+3. sorting should be scene-semantic enough to explain how transparency and overlay priorities were
+   handled.
+
+The first implementation can still return one result by default, but the spec should leave room for
+multi-hit queries now.
 
 
 ## Synchronous Versus Asynchronous Use
@@ -268,12 +320,27 @@ Recommended behavior:
 
 1. point/scatter/path-like visuals return item or vertex identity directly,
 2. the picked payload id maps back to the original retained item ordering,
-3. this should work with large retained datasets and incremental updates.
+3. marker and segment-like repeated-item families should follow the same item-identity rule,
+4. this should work with large retained datasets and incremental updates.
 
 Why this is important:
 
 1. scientific visualization often relies on probing one exact sample,
 2. object-level picking is insufficient for dense point and path data.
+
+
+## Image Picking
+
+Image visuals need pixel-level picking.
+
+Recommended behavior:
+
+1. returned result identifies the image visual,
+2. result includes pixel or cell coordinate/index,
+3. future result may also include sampled value if the image semantic layer can provide it,
+4. image picking should work even when the image is one panel layer among other overlays.
+
+This is important for scientific rasters, heatmaps, atlas slices, and image-backed probes.
 
 
 ## Text and Annotation Picking
@@ -297,7 +364,8 @@ Recommendation:
 
 1. picking should not reuse transparent color-composite outputs as identity surfaces,
 2. transparent visuals should still participate in picking according to their declared pick model,
-3. pick identity rendering remains its own path even when visible rendering uses WBOIT.
+3. pick identity rendering remains its own path even when visible rendering uses WBOIT,
+4. hit-selection policy must remain explicit when transparent and opaque objects overlap.
 
 This keeps identity semantics independent from transparency math.
 
@@ -362,13 +430,15 @@ The first implementation target should cover:
 2. scene-owned result resolution,
 3. point item-level picking,
 4. mesh face-level picking,
-5. controller-facing request/result path suitable for hover and click.
+5. image pixel-level picking,
+6. controller-facing request/result path suitable for hover and click.
 
 This is enough to support:
 
 1. scientific point/scatter probing,
 2. face selection on 3D meshes,
-3. later selection/highlight integration.
+3. pixel probing on images and slices,
+4. later selection/highlight integration.
 
 
 ## Explicit Non-Goals For The First Picking Slice
