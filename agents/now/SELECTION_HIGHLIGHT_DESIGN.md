@@ -89,6 +89,25 @@ Recommended precedence:
 4. unselected
 
 
+## Hover Resolution Rule
+
+Hover should keep both the raw hit and the post-policy resolved hover target.
+
+Recommended rule:
+
+1. picking may first report the most specific hover hit identity available,
+2. interaction policy may resolve that hit into a coarser hover target for highlight behavior,
+3. hover state should retain the raw hit for probe/readout or tooltip detail,
+4. hover state should also retain the resolved target for highlight and linked-hover behavior.
+
+Example:
+
+1. a mesh face is under the cursor,
+2. object-hover mode is active,
+3. the raw hover hit remains the face identity,
+4. the resolved hover target is the mesh object identity used for highlight.
+
+
 ## Linked Selection
 
 Linked highlighting across visuals is a first-class requirement.
