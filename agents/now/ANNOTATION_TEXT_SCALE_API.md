@@ -50,9 +50,10 @@ Recommended first-class scene-facing concepts:
 1. text visual
 2. font resource
 3. scale object
-4. colorbar object
-5. annotation object
-6. optional pinned annotation/readout object
+4. colormap object
+5. colorbar object
+6. annotation object
+7. optional pinned annotation/readout object
 
 
 ## Text Visual Surface
@@ -155,7 +156,35 @@ Recommended scale semantics:
 1. semantic domain
 2. visible view/window
 3. formatting metadata
-4. colormap semantics
+4. optional referenced colormap
+
+
+## Colormap Surface
+
+Colormaps should be explicit semantic objects that scales can reference.
+
+Conceptual API shape:
+
+```text
+DvzColormap* cmap = dvz_colormap(scene, DVZ_COLORMAP_CONTINUOUS);
+dvz_colormap_set_builtin(cmap, DVZ_CMAP_VIRIDIS);
+dvz_colormap_set_stops(cmap, stops, count);
+dvz_colormap_set_center(cmap, center);
+dvz_scale_set_colormap(scale, cmap);
+```
+
+Recommended first-slice semantics:
+
+1. builtin named perceptual maps,
+2. custom color-stop ramps,
+3. diverging maps with explicit center,
+4. categorical palettes later as a separate semantic case when needed.
+
+Recommended ownership:
+
+1. colormap is a scene-owned semantic object,
+2. one scale references one active colormap at a time,
+3. colorbars explain the scale-colormap pair without owning either object.
 
 
 ## Colorbar Surface
@@ -175,7 +204,9 @@ dvz_colorbar_set_format(cb, format_override);
 Recommended rule:
 
 1. colorbars explain scales,
-2. they do not become the owner of the scale.
+2. they do not become the owner of the scale,
+3. they inherit colormap appearance from the referenced scale unless an explicit explanatory
+   override is introduced later.
 
 
 ## Annotation Surface
@@ -279,6 +310,10 @@ dvz_scale_set_domain(scale, 0, 4095)
 dvz_scale_set_view_range(scale, 200, 1200)
 dvz_scale_set_units(scale, "HU")
 
+cmap = dvz_colormap(scene, DVZ_COLORMAP_CONTINUOUS)
+dvz_colormap_set_builtin(cmap, DVZ_CMAP_VIRIDIS)
+dvz_scale_set_colormap(scale, cmap)
+
 image = dvz_image(panel, flags)
 dvz_visual_set_scale(image, scale)
 
@@ -301,9 +336,10 @@ The narrowest useful first API slice is:
 1. scene-owned font resource
 2. text visual with string/style/placement setters
 3. scene-owned continuous scale
-4. panel-owned colorbar bound to scale
-5. scale bar and dimension annotations
-6. pinned readout labels as retained annotation objects
+4. scene-owned colormap bound to that scale
+5. panel-owned colorbar bound to scale
+6. scale bar and dimension annotations
+7. pinned readout labels as retained annotation objects
 
 
 ## Explicit Non-Goals For The First Slice
