@@ -58,11 +58,14 @@ Recommended rule:
 1. object-level visuals may expose object-level selection only,
 2. point, marker, segment, repeated primitive, and similar retained-item visuals expose item-level
    selection,
-3. meshes expose face-level selection first when face-level picking is enabled,
-4. images and slices may expose pixel or sample selection only when that identity is stable and
+3. grouped primitive families such as strip-based lines or triangles may expose both parent-group
+   selection and sub-primitive selection when both identities are meaningful,
+4. meshes should support both object-level selection and face-level selection,
+5. images and slices may expose pixel or sample selection only when that identity is stable and
    useful.
 
 Do not coarsen a precise pick result into object-only selection unless the caller requests that.
+Likewise, do not forbid object-level selection when a family also supports a finer face/item mode.
 
 
 ## Hover Versus Selection
@@ -92,7 +95,9 @@ Recommended direction:
 
 1. one logical selection object may be attached to several visuals,
 2. each visual resolves the shared logical identity into its own item domain,
-3. one user action can therefore highlight a point cloud, a mesh region, and a label together when
+3. linked selection may therefore map one semantic entity onto object-level, face-level, or
+   item-level manifestations in different visuals,
+4. one user action can therefore highlight a point cloud, a mesh region, and a label together when
    they reference the same semantic entity.
 
 This is important for scientific exploration workflows and for external UI inspectors.
@@ -195,8 +200,9 @@ The narrowest useful active implementation target is:
 1. scene-owned hover state,
 2. scene-owned multi-selection set,
 3. item-level selection for point and repeated primitive families,
-4. face-level selection for meshes,
-5. visual-driven highlight styling through existing retained update paths.
+4. both object-level and face-level selection for meshes,
+5. separate hover and persistent-selection channels,
+6. visual-driven highlight styling through existing retained update paths.
 
 
 ## Explicit Non-Goals For The First Slice

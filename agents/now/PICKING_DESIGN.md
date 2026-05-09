@@ -62,20 +62,23 @@ Recommended precision requirements:
 1. object-level picking for all pickable visuals,
 2. mesh face-level picking for mesh visuals,
 3. mesh instance-aware picking for instanced mesh visuals,
-4. vertex/item-level picking for point/scatter/path-like visuals,
-5. pixel-level picking for image visuals.
+4. grouped primitive picking where the authored family carries both parent-group and sub-primitive
+   identity,
+5. vertex/item-level picking for point/scatter/path-like visuals,
+6. pixel-level picking for image visuals.
 
 Deferred:
 
 1. mesh vertex-level picking unless a concrete need appears,
 2. sub-character text picking,
-3. exact edge/segment sub-primitive picking beyond what active workflows require.
+3. richer barycentric or within-segment geometric detail beyond stable authored identity.
 
 Why:
 
 1. scientific picking often needs precise item identity,
 2. point/scatter/path workflows require per-item precision now,
-3. mesh face picking is the right first high-resolution mesh mode.
+3. retained primitive workflows sometimes need both group identity and sub-primitive identity,
+4. mesh face picking is the right first high-resolution mesh mode.
 
 
 ## Picking Modes By Family
@@ -86,21 +89,30 @@ Recommended initial family expectations:
    - item/vertex picking
 2. future `scatter`-style point families
    - item/vertex picking
-3. `path`
+3. `line_strip`
+   - strip-group identity
+   - line-segment-within-strip identity
+4. `lines`
+   - line-item identity
+5. `triangle`
+   - triangle-item identity
+6. `triangle_strip`
+   - strip-group identity
+   - triangle-within-strip identity
+7. `path`
    - item/vertex picking at the path point identity level, not just object-level
-4. `marker`
+8. `marker`
    - item-level picking
-5. `segment`
+9. `segment`
    - item-level picking
-6. `primitive`
-   - item-level picking when the family represents repeated retained primitive items
-   - object-level only for one-off aggregate primitive objects that do not expose stable item
-     identity
-7. `mesh`
+10. broader `primitive` families
+   - expose the most specific stable authored identity they retain
+   - may report both a parent-group identity and a sub-primitive identity when both are meaningful
+11. `mesh`
    - face-level picking
-8. `image`
+12. `image`
    - pixel/data-cell-level picking
-9. `text`
+13. `text`
    - object/string-level first; glyph-level not required initially
 
 
@@ -111,8 +123,10 @@ Picking needs stable scene-owned logical identities.
 Recommended identity layers:
 
 1. visual/object id
-2. payload kind
-3. payload-local id
+2. optional parent payload kind
+3. optional parent payload-local id
+4. payload kind
+5. payload-local id
 
 Examples:
 
@@ -125,7 +139,19 @@ Examples:
    - visual id
    - payload kind = item/vertex
    - payload-local id = item index
-3. image:
+3. `line_strip`:
+   - visual id
+   - parent payload kind = strip_group
+   - parent payload-local id = strip index
+   - payload kind = line_segment
+   - payload-local id = segment index within strip
+4. `triangle_strip`:
+   - visual id
+   - parent payload kind = strip_group
+   - parent payload-local id = strip index
+   - payload kind = triangle_item
+   - payload-local id = triangle index within strip
+5. image:
    - visual id
    - payload kind = image_pixel
    - payload-local id = pixel or cell index
@@ -140,10 +166,12 @@ Recommended conceptual pick result:
 1. panel id
 2. visual id
 3. optional instance id
-4. payload kind
-5. payload-local id
-6. optional world or local hit position later
-7. optional extra metadata later if needed
+4. optional parent payload kind
+5. optional parent payload-local id
+6. payload kind
+7. payload-local id
+8. optional world or local hit position later
+9. optional extra metadata later if needed
 
 Payload kind should be explicit rather than inferred by the caller from which visual family was
 clicked.
@@ -155,6 +183,9 @@ Useful payload kinds to reserve now:
 3. item_vertex
 4. image_pixel
 5. primitive_item
+6. strip_group
+7. line_segment
+8. triangle_item
 
 
 ## Scene-Owned Resolution Tables
@@ -315,23 +346,27 @@ Typical result interpretation:
 This is important for repeated objects such as many squares, cubes, or glyph-like mesh markers.
 
 
-## Point / Scatter / Path Picking
+## Point / Scatter / Path / Primitive Picking
 
-These families require item-level precision.
+These families require stable authored identity precision.
 
 Recommended behavior:
 
 1. point/scatter/path-like visuals return item or vertex identity directly,
 2. the picked payload id maps back to the original retained item ordering,
 3. marker and segment-like repeated-item families should follow the same item-identity rule,
-4. repeated primitive families should follow the same item-identity rule when authored as retained
-   per-item data,
-5. this should work with large retained datasets and incremental updates.
+4. `lines` should return the specific line item,
+5. `triangle` should return the specific triangle item,
+6. `line_strip` and `triangle_strip` should return both the parent strip identity and the specific
+   segment or triangle within that strip,
+7. repeated primitive families should follow the same stable-authored-identity rule when authored
+   as retained per-item data,
+8. this should work with large retained datasets and incremental updates.
 
 Why this is important:
 
 1. scientific visualization often relies on probing one exact sample,
-2. object-level picking is insufficient for dense point and path data.
+2. object-level picking is insufficient for dense point and grouped primitive data.
 
 
 ## Image Picking
@@ -434,17 +469,19 @@ The first implementation target should cover:
 1. panel-local picking target and readback path,
 2. scene-owned result resolution,
 3. point item-level picking,
-4. primitive item-level picking for repeated retained primitive families,
-5. mesh face-level picking,
-6. image pixel-level picking,
-7. controller-facing request/result path suitable for hover and click.
+4. line-item and triangle-item primitive picking,
+5. line-strip and triangle-strip parent-group plus sub-primitive picking,
+6. mesh face-level picking,
+7. image pixel-level picking,
+8. controller-facing request/result path suitable for hover and click.
 
 This is enough to support:
 
 1. scientific point/scatter probing,
-2. face selection on 3D meshes,
-3. pixel probing on images and slices,
-4. later selection/highlight integration.
+2. primitive-aware picking for retained lines, strips, and triangles,
+3. face selection on 3D meshes,
+4. pixel probing on images and slices,
+5. later selection/highlight integration.
 
 
 ## Explicit Non-Goals For The First Picking Slice
