@@ -17,7 +17,9 @@ Support text as a first-class scene feature, including:
 2. world-space 3D text,
 3. simple equation/math rendering,
 4. shared font and glyph resources,
-5. a backend-agnostic design that can evolve beyond the first implementation.
+5. per-glyph color and minimal style/decorations,
+6. DPI-aware rendering,
+7. a backend-agnostic design that can evolve beyond the first implementation.
 
 
 ## Why This Is Active Now
@@ -30,7 +32,8 @@ It is already needed for:
 2. measurement annotations and dimensions,
 3. adaptive scale bars,
 4. future axes and figure labels,
-5. simple equation rendering.
+5. simple equation rendering,
+6. UI overlays that must stay crisp under DPI scaling.
 
 The architecture should be defined now so mesh, annotation, picking, and resource update work do
 not harden around the wrong assumptions.
@@ -132,7 +135,8 @@ Phase-1 text requirements:
 1. atlas texture region uploads,
 2. retained string/glyph-run updates,
 3. geometry subrange updates for text quads when content changes,
-4. explicit dirty tracking for newly added glyphs and changed strings.
+4. explicit dirty tracking for newly added glyphs and changed strings,
+5. DPI-driven atlas rebuild or glyph-patch behavior when physical resolution changes.
 
 This is one reason the scene resource-update contract is important now.
 
@@ -150,10 +154,58 @@ Recommended public concepts:
 4. world-space or screen-space placement mode,
 5. alignment / anchor,
 6. scale mode,
-7. optional equation content source.
+7. per-run or per-glyph color policy,
+8. minimal style/decorations,
+9. optional equation content source.
 
 The public API should not require most callers to manually set per-glyph UVs, shifts, and atlas
 coordinates.
+
+
+## Color Model
+
+Text needs more than one flat run color.
+
+Recommended baseline support:
+
+1. one default color per text run,
+2. optional per-glyph color override,
+3. alpha participates normally in transparency/render-mode rules.
+
+Why:
+
+1. equations and annotations often need emphasis within one run,
+2. scientific overlays may need per-glyph semantic coloring,
+3. this should be supported without forcing one visual per color change.
+
+Recommendation:
+
+1. the common path remains run-level color,
+2. per-glyph color is supported as an optional richer content path,
+3. the public API should not force every simple label through per-glyph payloads.
+
+
+## Color Fonts And Emoji
+
+Color-glyph support should be acknowledged now.
+
+Recommended split:
+
+1. the baseline text path is monochrome/SDF/MSDF-style glyph rendering,
+2. color fonts and emoji use a distinct glyph-rendering path when the font exposes color glyphs,
+3. the text API remains the same at the content level.
+
+Why:
+
+1. color emoji are not well represented by the same assumptions as monochrome atlas text,
+2. scientific apps may still want Unicode-rich labels or symbols,
+3. this should not distort the baseline text architecture.
+
+Recommendation:
+
+1. do not make color emoji the baseline rendering path,
+2. do reserve a color-glyph fallback/backend path in the design,
+3. treat color glyphs as an atlas/backend capability question, not a separate public text family.
 
 
 ## 2D and 3D Text
@@ -248,7 +300,8 @@ Recommended rule:
 
 1. text shaping should be a dedicated step,
 2. public text APIs should not assume ASCII-only forever,
-3. plain single-line labels should remain easy to use.
+3. plain single-line labels should remain easy to use,
+4. style runs should be allowed to influence shaping when a font/style system requires it.
 
 Even if many scientific labels are simple, shaping should not be designed out of the system.
 
@@ -278,6 +331,27 @@ The key boundary is: the equation backend should produce a display list or struc
 composition that the scene text/annotation layer can render.
 
 
+## Minimal Style And Decoration Support
+
+Minimal style support is needed now, but it should stay narrow.
+
+Recommended baseline:
+
+1. regular
+2. bold
+3. italic
+4. underline
+
+Recommendation:
+
+1. bold and italic should be style-run properties,
+2. underline should be a derived decoration primitive, not a separate font requirement,
+3. do not overbuild rich-text editing or CSS-like styling.
+
+This is enough for labels, equations, and measurement annotations without turning text into a full
+document system.
+
+
 ## Font Choices and Bundled Assets
 
 The architecture should not assume one hardcoded font, but it should support curated bundled fonts
@@ -291,6 +365,25 @@ Recommendation:
 
 1. font resources should be generic,
 2. bundled fonts should be treated as convenience assets, not architectural assumptions.
+
+
+## DPI And UI Scaling
+
+High-DPI behavior should be explicit in the text design rather than left to implementation folklore.
+
+Relevant broader context:
+
+1. [spec/scene/HIGH_DPI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/HIGH_DPI.md)
+
+Recommended policy:
+
+1. scene-facing text sizes remain expressed in logical pixels or world units, depending on scale mode,
+2. raster/atlas generation uses physical resolution derived from current `dpi_scale`,
+3. DPI changes mark dependent text resources dirty,
+4. screen-space text, annotation labels, and UI-adjacent overlays should remain visually crisp under
+   DPI changes.
+
+This is important not only for labels but also for future external-UI integration.
 
 
 ## Backend-Agnostic Rendering Direction
@@ -404,5 +497,8 @@ The first useful text implementation should aim for:
 4. world-space 3D labels,
 5. anchor/alignment support,
 6. screen-size versus world-size scaling,
-7. text content updates compatible with retained scene resources,
-8. room for later equation display-list integration.
+7. run-level color with optional per-glyph color support,
+8. minimal style/decorations,
+9. DPI-aware atlas behavior,
+10. text content updates compatible with retained scene resources,
+11. room for later equation display-list integration.
