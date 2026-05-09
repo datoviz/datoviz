@@ -146,6 +146,12 @@ This means one semantic entity can be represented simultaneously as:
 3. one label or annotation,
 4. one image region or slice sample later.
 
+Image/slice implication:
+
+1. link-key mapping may exist per pixel or sample when needed,
+2. link-key mapping may also exist at a coarser region or label-object level,
+3. both granularities should be allowed because they serve different workflows.
+
 Recommended properties of the link-key model:
 
 1. keys are scene-owned and backend-agnostic,
@@ -176,7 +182,9 @@ Recommended first-slice interaction rule:
 2. applications may switch the active channel through explicit policy or UI,
 3. do not combine several active link channels in one linked-selection action initially,
 4. linked hover and linked selection should be controlled by separate policy flags,
-5. linked selection may be enabled while linked hover remains disabled.
+5. linked selection may be enabled while linked hover remains disabled,
+6. selection state should remember which active link channel produced the current linked selection
+   so later UI and follow-up actions stay coherent.
 
 This should be a first-class scene concept because otherwise linked selection becomes duplicated
 application policy instead of shared visualization semantics.
@@ -240,7 +248,9 @@ Recommended direction:
 2. that mapping should also be able to choose the active identity granularity when a visual exposes
    more than one meaningful mode,
 3. mesh interactions should be able to switch between object-level and face-level selection,
-4. image and slice interactions should be able to choose probe-only behavior or persistent
+4. grouped primitive visuals should be able to override object/group/item selection policy per
+   visual instance,
+5. image and slice interactions should be able to choose probe-only behavior or persistent
    pixel/sample selection.
 
 

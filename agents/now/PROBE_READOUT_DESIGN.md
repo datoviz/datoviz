@@ -145,7 +145,9 @@ Recommended rule:
 2. persistent selection state should not be required for one-off readout,
 3. images and slices should support both probe-only behavior and optional persistent pixel/sample
    selection through explicit API policy,
-4. a selected item may drive a pinned readout annotation later.
+4. a selected item may drive a pinned readout annotation later,
+5. policy may optionally create pinned readouts automatically from persistent sample selection, but
+   this should remain disabled by default.
 
 Recommended identity rule for persistent image/slice selection:
 
@@ -170,7 +172,8 @@ Recommended state split:
 
 1. transient hover readout is separate from pinned readout state,
 2. pinned readout should be retained scene-owned state,
-3. do not model pinned readout as only “the last hover result frozen in place”.
+3. do not model pinned readout as only “the last hover result frozen in place”,
+4. the first slice should allow several pinned readouts rather than only one.
 
 
 ## Request Model

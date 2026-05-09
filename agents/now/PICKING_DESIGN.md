@@ -277,7 +277,10 @@ Recommended direction:
 2. richer workflows may request a sorted hit list,
 3. each multi-hit candidate should preserve both the raw hit identity and the post-policy resolved
    target,
-4. sorting should be scene-semantic enough to explain how transparency and overlay priorities were
+4. interaction policy may choose the first resolved candidate or the first raw candidate depending
+   on the workflow,
+5. a future custom filter or reducer callback is a valid extension point later,
+6. sorting should be scene-semantic enough to explain how transparency and overlay priorities were
    handled.
 
 The first implementation can still return one result by default, but the spec should leave room for
