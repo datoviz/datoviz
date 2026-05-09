@@ -93,7 +93,9 @@ Recommended initial family expectations:
 5. `segment`
    - item-level picking
 6. `primitive`
-   - object-level by default; item-level when used as repeated independent items
+   - item-level picking when the family represents repeated retained primitive items
+   - object-level only for one-off aggregate primitive objects that do not expose stable item
+     identity
 7. `mesh`
    - face-level picking
 8. `image`
@@ -152,6 +154,7 @@ Useful payload kinds to reserve now:
 2. mesh_face
 3. item_vertex
 4. image_pixel
+5. primitive_item
 
 
 ## Scene-Owned Resolution Tables
@@ -321,7 +324,9 @@ Recommended behavior:
 1. point/scatter/path-like visuals return item or vertex identity directly,
 2. the picked payload id maps back to the original retained item ordering,
 3. marker and segment-like repeated-item families should follow the same item-identity rule,
-4. this should work with large retained datasets and incremental updates.
+4. repeated primitive families should follow the same item-identity rule when authored as retained
+   per-item data,
+5. this should work with large retained datasets and incremental updates.
 
 Why this is important:
 
@@ -429,9 +434,10 @@ The first implementation target should cover:
 1. panel-local picking target and readback path,
 2. scene-owned result resolution,
 3. point item-level picking,
-4. mesh face-level picking,
-5. image pixel-level picking,
-6. controller-facing request/result path suitable for hover and click.
+4. primitive item-level picking for repeated retained primitive families,
+5. mesh face-level picking,
+6. image pixel-level picking,
+7. controller-facing request/result path suitable for hover and click.
 
 This is enough to support:
 
