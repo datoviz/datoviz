@@ -135,7 +135,7 @@ Recommended model:
 
 1. the scene owns stable semantic link keys,
 2. a visual may provide a per-object, per-face, per-item, or per-sample mapping to those keys,
-3. selection and hover operate on link keys when linked behavior is requested,
+3. selection and hover may operate on link keys when linked behavior is requested,
 4. each attached visual resolves the selected link key back into its own local identity domain.
 
 This means one semantic entity can be represented simultaneously as:
@@ -165,7 +165,9 @@ Recommended first-slice interaction rule:
 
 1. linked selection operates on one active link channel at a time,
 2. applications may switch the active channel through explicit policy or UI,
-3. do not combine several active link channels in one linked-selection action initially.
+3. do not combine several active link channels in one linked-selection action initially,
+4. linked hover and linked selection should be controlled by separate policy flags,
+5. linked selection may be enabled while linked hover remains disabled.
 
 This should be a first-class scene concept because otherwise linked selection becomes duplicated
 application policy instead of shared visualization semantics.
