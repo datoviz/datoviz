@@ -42,7 +42,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | 3D text (per-character orientation) | `spec/scene/visuals/GLYPH.md` |
 | Volume picking (ray-cast identity) | `spec/scene/interaction/PICKING.md` |
 | Vector export tile-based rendering and SVG-level effects | `spec/scene/export/VECTOR_EXPORT.md` |
-| `wiggle` promotion to a full visual family | `spec/scene/semantics/VISUAL_FAMILIES.md` |
+| `wiggle` promotion to a full visual family | `spec/scene/../semantics/VISUAL_FAMILIES.md` |
 
 
 ## No Target Set

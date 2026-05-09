@@ -33,7 +33,7 @@ Use this map when turning proposals into implementation-ready spec changes.
 2. `ANNOTATION_MEASUREMENT_DESIGN.md`, `ANNOTATION_TEXT_SCALE_API.md`,
    `COLORBAR_COLORMAP_DESIGN.md`, `AXES_DOMAIN_DESIGN.md`, and `TEXT_DESIGN.md` promote into
    `../semantics/ANNOTATIONS.md`, `../semantics/SCALES.md`,
-   `../semantics/LEGENDS_AND_COLORBARS.md`, `../semantics/AXES.md`, a future text spec if added,
+   `../semantics/LEGENDS_AND_COLORBARS.md`, `../semantics/AXES.md`, `../semantics/TEXT.md`,
    and `../api/API_SURFACE.md`.
 3. `MESH_API_DESIGN.md`, `MESH_SHADING_DESIGN.md`, `MATERIAL_LIGHTING_API.md`,
    `TRANSPARENCY_WBOIT_DESIGN.md`, `VOLUME_DESIGN.md`, and

@@ -26,7 +26,7 @@ redesign.
 
 The active scene surface already provides:
 
-1. scene/figure/panel/visual ownership in [include/datoviz/scene.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene.h)
+1. scene/figure/panel/visual ownership in [include/datoviz/scene.h](../../../include/datoviz/scene.h)
 2. per-panel visual attachment via `dvz_panel_add_visual()`
 3. retained attribute data on visuals via `dvz_visual_set_data()`
 4. retained attribute subrange updates via `dvz_visual_set_data_range()`
@@ -293,7 +293,7 @@ Why:
 3. this fits later transparency and picking overlays better.
 
 Phase-1 material scope is the classic-lit baseline described in
-[spec/scene/proposals/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/MESH_SHADING_DESIGN.md):
+[spec/scene/proposals/MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md):
 
 1. base color
 2. ambient
@@ -317,7 +317,7 @@ For the active 3D slice:
    application.
 
 This matches the current active decision in
-[spec/scene/proposals/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/HIGH_PRIORITY_SPEC_DECISIONS.md).
+[spec/scene/proposals/HIGH_PRIORITY_SPEC_DECISIONS.md](HIGH_PRIORITY_SPEC_DECISIONS.md).
 
 The mesh API should not require geometry rewrites just to rotate or reposition an object.
 

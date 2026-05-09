@@ -95,7 +95,7 @@ That makes them different from ordinary visuals because:
 ## Relationship To Annotations
 
 Legends and colorbars are annotation classes as defined in
-[semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md).
+[semantics/ANNOTATIONS.md](ANNOTATIONS.md).
 
 They should inherit the same broad rules:
 

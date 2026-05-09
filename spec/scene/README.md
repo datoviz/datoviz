@@ -106,6 +106,20 @@ Unless a document says otherwise, this directory should be read with the followi
 8. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
    while the surrounding scene documents remain authoritative for semantics.
 
+## Status Vocabulary
+
+Scene spec files should use one of these statuses, either explicitly in a `Normative Status` section
+or by inheriting the directory role from the nearest `README.md`:
+
+1. `Normative`: implementation-facing rules for the current v0.4 planning baseline.
+2. `Proposal`: active design addendum that may contain planning rules not yet absorbed into a
+   specialized normative spec.
+3. `Informative`: examples, rationale, implementation notes, or trackers that do not override
+   normative specs.
+4. `Historical Decision`: ADR-style rationale for older choices; not a current standalone source
+   of implementation rules.
+
+
 For cross-tree overlap, use this source-of-truth order:
 
 1. DRP2 command, lifetime, and error prose for protocol semantics,
@@ -149,6 +163,7 @@ Read the scene spec in this order during review.
 7. [semantics/AXES.md](semantics/AXES.md) — axes and tick semantics
 8. [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
 9. [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
+10. [semantics/TEXT.md](semantics/TEXT.md) — text content, placement, resources, and DPI behavior
 
 ### 4. Data, transforms, planning, and runtime handoff
 
@@ -226,6 +241,7 @@ Read the scene spec in this order during review.
   and callouts
 - [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md): semantic model for discrete legends,
   continuous colorbars, and shared explanatory mappings
+- [semantics/TEXT.md](semantics/TEXT.md): text content, placement, font/atlas resources, and DPI behavior
 - [validation/DIAGNOSTICS.md](validation/DIAGNOSTICS.md): shared conceptual diagnostic shape across
   validation, adaptation, planning, and runtime execution
 - [validation/VALIDATION.md](validation/VALIDATION.md): scene-level pre-emission validation rules, error

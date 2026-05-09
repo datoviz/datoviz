@@ -27,7 +27,7 @@ These files are not:
 4. independent sources of scene semantics.
 
 Public API policy now lives in
-[../api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md). Keep
+[../api/API_SURFACE.md](../api/API_SURFACE.md). Keep
 `scene_api.h` aligned with that document when drafting interaction, scale, colorbar, text, and
 annotation handles.
 

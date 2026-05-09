@@ -26,13 +26,13 @@ Support a volume workflow that can coexist cleanly with the active 3D mesh work:
 There is already substantial background material:
 
 1. family spec:
-   [spec/scene/visuals/VOLUME.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/visuals/VOLUME.md)
+   [spec/scene/visuals/VOLUME.md](../visuals/VOLUME.md)
 2. realistic mixed-use example:
-   [spec/scene/examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+   [spec/scene/examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](../examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 3. active transparency direction:
-   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md)
+   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
 4. active picking direction:
-   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](PICKING_DESIGN.md)
 
 This note turns that background into an active recommendation set.
 

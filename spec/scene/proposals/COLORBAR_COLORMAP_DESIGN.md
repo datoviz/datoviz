@@ -26,13 +26,13 @@ Support colormaps and colorbars as first-class scientific semantics, including:
 There is already substantial background context:
 
 1. scale model:
-   [spec/scene/semantics/SCALES.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/SCALES.md)
+   [spec/scene/semantics/SCALES.md](../semantics/SCALES.md)
 2. legend/colorbar semantics:
-   [spec/scene/semantics/LEGENDS_AND_COLORBARS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/LEGENDS_AND_COLORBARS.md)
+   [spec/scene/semantics/LEGENDS_AND_COLORBARS.md](../semantics/LEGENDS_AND_COLORBARS.md)
 3. annotation/measurement direction:
-   [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md)
+   [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
 4. volume direction:
-   [spec/scene/proposals/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/VOLUME_DESIGN.md)
+   [spec/scene/proposals/VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 
 This note makes the active decisions more explicit.
 

@@ -26,13 +26,13 @@ Support scientific annotations that are actually useful in interactive and expor
 There is already useful broader spec context:
 
 1. annotation semantics in
-   [spec/scene/semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md)
+   [spec/scene/semantics/ANNOTATIONS.md](../semantics/ANNOTATIONS.md)
 2. text direction in
-   [spec/scene/proposals/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TEXT_DESIGN.md)
+   [spec/scene/proposals/TEXT_DESIGN.md](TEXT_DESIGN.md)
 3. transform/controller direction in
-   [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md)
+   [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 4. picking direction in
-   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](PICKING_DESIGN.md)
 
 This note does not replace the larger annotation spec. It defines the active v0.4 decisions for the
 measurement-heavy subset that you already need now.

@@ -26,17 +26,17 @@ Keep feature support, degradation, and failure behavior explicit for:
 Useful existing context:
 
 1. DRP2 capability model:
-   [spec/drp2/CAPABILITIES.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/CAPABILITIES.md)
+   [spec/drp2/CAPABILITIES.md](../../drp2/CAPABILITIES.md)
 2. active transparency note:
-   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md)
+   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
 3. active picking note:
-   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](PICKING_DESIGN.md)
 4. active ray-tracing note:
-   [spec/scene/proposals/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/RAY_TRACING_FORWARD_COMPAT.md)
+   [spec/scene/proposals/RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
 5. completed presentation/offscreen notes:
-   [agents/done/PRESENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/PRESENTATION.md)
+   [agents/done/PRESENTATION.md](../../../agents/done/PRESENTATION.md)
    and
-   [agents/done/OFFSCREEN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/OFFSCREEN.md)
+   [agents/done/OFFSCREEN.md](../../../agents/done/OFFSCREEN.md)
 
 This note records what the active scene and visual API should assume.
 

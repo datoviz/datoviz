@@ -6,7 +6,13 @@
 
 # Text Design
 
-This note records the intended v0.4 text architecture before a new text visual family lands.
+This note records the rationale and forward-looking design details behind the v0.4 text
+architecture.
+
+The normative text contract now lives in
+[../semantics/TEXT.md](../semantics/TEXT.md). Keep this proposal as background for future
+implementation work, equation-backend integration, and lower-level rendering choices that are not
+yet implementation-ready.
 
 
 ## Objective
@@ -44,9 +50,9 @@ not harden around the wrong assumptions.
 v0.3 already had useful text-related pieces:
 
 1. glyph-based visuals in
-   [v0.3/src/scene/visuals/glyph.c](/home/cyrille/GIT/Viz/datoviz/v0.3/src/scene/visuals/glyph.c)
+   [v0.3/src/scene/visuals/glyph.c](../../../v0.3/src/scene/visuals/glyph.c)
 2. atlas/font helpers in
-   [v0.3/include/datoviz/scene/atlas.h](/home/cyrille/GIT/Viz/datoviz/v0.3/include/datoviz/scene/atlas.h)
+   [v0.3/include/datoviz/scene/atlas.h](../../../v0.3/include/datoviz/scene/atlas.h)
 3. font metrics/loading support in `v0.3/src/scene/font.c`
 4. world-positioned glyph placement through per-glyph `position`, `axis`, `anchor`, `shift`,
    `group_size`, and related attributes
@@ -402,7 +408,7 @@ High-DPI behavior should be explicit in the text design rather than left to impl
 
 Relevant broader context:
 
-1. [spec/scene/integration/HIGH_DPI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/integration/HIGH_DPI.md)
+1. [spec/scene/integration/HIGH_DPI.md](../integration/HIGH_DPI.md)
 
 Recommended policy:
 

@@ -70,7 +70,7 @@ Panels may be onscreen, offscreen, or virtual for composition.
 A visual is a high-level scientific renderable.
 
 The broad concept should stay consistent with the local `v0.3` scene stack, but the current v0.4
-direction should follow `semantics/VISUAL_FAMILIES.md`.
+direction should follow `../semantics/VISUAL_FAMILIES.md`.
 
 The current preferred first-class families are:
 

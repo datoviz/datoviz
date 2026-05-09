@@ -26,15 +26,15 @@ Support coherent probe/readout behavior for:
 Useful current context:
 
 1. active picking note:
-   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](PICKING_DESIGN.md)
 2. active volume note:
-   [spec/scene/proposals/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/VOLUME_DESIGN.md)
+   [spec/scene/proposals/VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 3. active scientific-coordinate note:
-   [spec/scene/proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+   [spec/scene/proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md)
 4. active axes/domain note:
-   [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/AXES_DOMAIN_DESIGN.md)
+   [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md)
 5. active colorbar/colormap note:
-   [spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md)
+   [spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)
 
 This note defines the active cross-family contract.
 

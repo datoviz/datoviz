@@ -25,13 +25,13 @@ Clarify the boundary between:
 Useful current context:
 
 1. active geometry note:
-   [spec/scene/proposals/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/GEOM_DESIGN.md)
+   [spec/scene/proposals/GEOM_DESIGN.md](GEOM_DESIGN.md)
 2. active resource-update note:
-   [spec/scene/proposals/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/RESOURCE_UPDATE_DESIGN.md)
+   [spec/scene/proposals/RESOURCE_UPDATE_DESIGN.md](RESOURCE_UPDATE_DESIGN.md)
 3. active volume note:
-   [spec/scene/proposals/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/VOLUME_DESIGN.md)
+   [spec/scene/proposals/VOLUME_DESIGN.md](VOLUME_DESIGN.md)
 4. completed offscreen/export context:
-   [agents/done/OFFSCREEN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/OFFSCREEN.md)
+   [agents/done/OFFSCREEN.md](../../../agents/done/OFFSCREEN.md)
 
 This note narrows what should be kept distinct in the active implementation path.
 

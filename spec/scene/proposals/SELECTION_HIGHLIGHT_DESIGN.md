@@ -26,13 +26,13 @@ Support coherent scene-level interaction state for:
 Useful existing context:
 
 1. broad future selection note:
-   [spec/scene/interaction/SELECTION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/interaction/SELECTION.md)
+   [spec/scene/interaction/SELECTION.md](../interaction/SELECTION.md)
 2. active picking note:
-   [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
+   [spec/scene/proposals/PICKING_DESIGN.md](PICKING_DESIGN.md)
 3. active transparency note:
-   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md)
+   [spec/scene/proposals/TRANSPARENCY_WBOIT_DESIGN.md](TRANSPARENCY_WBOIT_DESIGN.md)
 4. active UI mutation note:
-   [spec/scene/proposals/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/UI_BACKEND_INTEGRATION.md)
+   [spec/scene/proposals/UI_BACKEND_INTEGRATION.md](UI_BACKEND_INTEGRATION.md)
 
 This note records the tighter active recommendation set.
 

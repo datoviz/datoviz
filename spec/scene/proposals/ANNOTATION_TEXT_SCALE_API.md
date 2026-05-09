@@ -25,11 +25,11 @@ Define a coherent first API for:
 
 This API note consolidates:
 
-1. [spec/scene/proposals/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TEXT_DESIGN.md)
-2. [spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md)
-3. [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md)
-4. [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/AXES_DOMAIN_DESIGN.md)
-5. [spec/scene/proposals/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PROBE_READOUT_DESIGN.md)
+1. [spec/scene/proposals/TEXT_DESIGN.md](TEXT_DESIGN.md)
+2. [spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md](COLORBAR_COLORMAP_DESIGN.md)
+3. [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
+4. [spec/scene/proposals/AXES_DOMAIN_DESIGN.md](AXES_DOMAIN_DESIGN.md)
+5. [spec/scene/proposals/PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
 
 
 ## Core Recommendation

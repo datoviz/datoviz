@@ -5,7 +5,7 @@ headers.
 
 It defines the first header-drafting target for interaction objects, selection/link/probe result
 types, shared scales and colorbars, and retained text/annotation objects. Detailed behavior remains
-in the specialized spec documents and decision records.
+in the specialized spec documents and active proposals.
 
 
 ## Normative Status
@@ -21,7 +21,7 @@ this document should be corrected to match it.
 
 The public scene API should use this split:
 
-1. [include/datoviz/scene.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene.h) remains the
+1. [include/datoviz/scene.h](../../../include/datoviz/scene.h) remains the
    umbrella header.
 2. Small, focused public subheaders under `include/datoviz/scene/` are preferred once a topic would
    make `scene.h` hard to scan.
@@ -201,9 +201,9 @@ drift.
 
 Before implementation starts, keep tiny usage examples for:
 
-1. [examples/API_MESH_SELECTION_LINK.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/examples/API_MESH_SELECTION_LINK.md),
-2. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/examples/API_IMAGE_PROBE_PINNED_READOUT.md),
-3. [examples/API_SCALE_COLORBAR_ANNOTATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/examples/API_SCALE_COLORBAR_ANNOTATION.md).
+1. [examples/API_MESH_SELECTION_LINK.md](../examples/API_MESH_SELECTION_LINK.md),
+2. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](../examples/API_IMAGE_PROBE_PINNED_READOUT.md),
+3. [examples/API_SCALE_COLORBAR_ANNOTATION.md](../examples/API_SCALE_COLORBAR_ANNOTATION.md).
 
 These examples are API pressure tests. They do not need to compile until the corresponding header
 draft exists, but awkward examples should block implementation.

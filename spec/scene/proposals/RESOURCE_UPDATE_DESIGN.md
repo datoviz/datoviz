@@ -27,13 +27,13 @@ Keep scene resources retained and backend-agnostic while making partial mutation
 The current branch already has real retained dirty-range behavior:
 
 1. public visual subrange updates in
-   [include/datoviz/scene.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene.h)
+   [include/datoviz/scene.h](../../../include/datoviz/scene.h)
 2. dirty-range tracking in
-   [src/scene/_scene.h](/home/cyrille/GIT/Viz/datoviz/src/scene/_scene.h)
+   [src/scene/_scene.h](../../../src/scene/_scene.h)
 3. upload emission from dirty state in
-   [src/scene/scene.c](/home/cyrille/GIT/Viz/datoviz/src/scene/scene.c)
+   [src/scene/scene.c](../../../src/scene/scene.c)
 4. broader resource-model context in
-   [spec/scene/pipeline/RESOURCE_MODEL.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/pipeline/RESOURCE_MODEL.md)
+   [spec/scene/pipeline/RESOURCE_MODEL.md](../pipeline/RESOURCE_MODEL.md)
 
 This note defines what should remain stable as the system grows beyond point and image visuals.
 

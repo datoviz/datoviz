@@ -12,7 +12,7 @@ remains normative for broader design rationale and the Python binding architectu
 This document sits:
 
 1. above `core/OBJECT_MODEL.md`,
-2. above `semantics/VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
+2. above `../semantics/VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
 3. beside `api/API_SURFACE.md`, which owns the next header-drafting policy,
 4. below `headers/scene_api.h` only for exact draft C spelling once the header sketch is updated.
 
@@ -309,7 +309,7 @@ only. Not a first-class public user-facing API.
 This document should be read together with:
 
 1. `headers/scene_api.h` for the authoritative C API spelling,
-2. `semantics/VISUAL_CONTRACT.md` and `semantics/VISUAL_FAMILY_RULES.md` for family contract details,
+2. `../semantics/VISUAL_CONTRACT.md` and `../semantics/VISUAL_FAMILY_RULES.md` for family contract details,
 3. `pipeline/RESOURCE_MODEL.md` for logical resource classes,
 4. `validation/VALIDATION.md` and `validation/ADAPTATION.md` for stage ordering and failure semantics,
 5. `core/RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,

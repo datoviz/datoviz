@@ -7,7 +7,7 @@ This example instantiates the simplest meaningful `point` scene path.
 
 This example should be read against:
 
-1. `../VISUAL_FAMILY_RULES.md` for the `point` family contract,
+1. `../semantics/VISUAL_FAMILY_RULES.md` for the `point` family contract,
 2. `../pipeline/RESOURCE_MODEL.md` for `ItemTable` and `ParameterBlockResource`,
 3. `../pipeline/TRANSFORM_PIPELINE.md` for normalization and panel transform staging,
 4. `../pipeline/FRAME_PLAN.md` for the scene-level `FramePlan` shape.

@@ -234,7 +234,7 @@ A custom visual follows the same lifecycle as built-in visuals:
 
 | Document | Relationship |
 |---|---|
-| `semantics/VISUAL_CONTRACT.md` | normative contract that custom visuals satisfy |
+| `../semantics/VISUAL_CONTRACT.md` | normative contract that custom visuals satisfy |
 | `semantics/TRANSPARENCY.md` | alpha_mode and render pass assignment |
 | `interaction/SELECTION.md` | selection mask injection and highlight helper |
 | `interaction/PICKING.md` | picking variant generation |

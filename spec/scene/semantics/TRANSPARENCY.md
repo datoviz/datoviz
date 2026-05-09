@@ -169,4 +169,4 @@ Per-item alpha is expressed through the item's color alpha channel or an opacity
 | `validation/ADAPTATION.md` | exact OIT fallback to weighted OIT; weighted OIT fallback to CPU sort |
 | `interaction/SELECTION.md` | highlight alpha multiplier applied before OIT accumulation |
 | `semantics/LIGHTING.md` | transparent visuals with PBR shading use the same OIT paths |
-| `semantics/VISUAL_CONTRACT.md` | custom visuals must declare their alpha mode |
+| `../semantics/VISUAL_CONTRACT.md` | custom visuals must declare their alpha mode |

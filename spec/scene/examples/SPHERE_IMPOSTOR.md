@@ -8,7 +8,7 @@ This example instantiates the first-class `sphere` family with its default impos
 This example should be read against:
 
 1. `../semantics/VISUAL_FAMILIES.md` for `sphere` as a first-class family,
-2. `../VISUAL_FAMILY_RULES.md` for the `sphere` family contract,
+2. `../semantics/VISUAL_FAMILY_RULES.md` for the `sphere` family contract,
 3. `../validation/ADAPTATION.md` for optional fallback pressure,
 4. `../pipeline/FRAME_PLAN.md` for the expected render-path participation.
 

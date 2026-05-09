@@ -21,11 +21,11 @@ making today’s mesh, volume, transparency, or lighting APIs rasterization-shap
 There is already broad future-facing guidance here:
 
 1. capability adaptation:
-   [spec/scene/validation/ADAPTATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/validation/ADAPTATION.md)
+   [spec/scene/validation/ADAPTATION.md](../validation/ADAPTATION.md)
 2. lighting forward-compatibility:
-   [spec/scene/semantics/LIGHTING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/LIGHTING.md)
+   [spec/scene/semantics/LIGHTING.md](../semantics/LIGHTING.md)
 3. active material/light direction:
-   [spec/scene/proposals/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/MATERIAL_LIGHTING_API.md)
+   [spec/scene/proposals/MATERIAL_LIGHTING_API.md](MATERIAL_LIGHTING_API.md)
 
 This note narrows the implications for the active v0.4 design set.
 

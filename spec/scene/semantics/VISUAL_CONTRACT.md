@@ -26,7 +26,7 @@ It sits:
 ## Terminology Baseline
 
 The future scene spec should keep the broad `v0.3` idea of a visual while following the preferred
-v0.4 family direction in `semantics/VISUAL_FAMILIES.md`.
+v0.4 family direction in `../semantics/VISUAL_FAMILIES.md`.
 
 The current preferred first-class family set is:
 
@@ -150,7 +150,7 @@ FramePlan; they are not user-visible.
 
 Each visual must declare its semantic family.
 
-The family vocabulary should follow `semantics/VISUAL_FAMILIES.md`.
+The family vocabulary should follow `../semantics/VISUAL_FAMILIES.md`.
 
 The important separation is:
 

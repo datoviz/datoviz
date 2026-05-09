@@ -8,7 +8,7 @@ readback.
 
 This example should be read against:
 
-1. `../VISUAL_FAMILY_RULES.md` for the `volume` family contract,
+1. `../semantics/VISUAL_FAMILY_RULES.md` for the `volume` family contract,
 2. `../pipeline/RESOURCE_MODEL.md` for volumetric fields and readback targets,
 3. `../core/RUNTIME_BOUNDARY.md` for offscreen completion semantics,
 4. `../pipeline/FRAME_PLAN.md` for offscreen render and readback participation.

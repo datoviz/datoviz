@@ -38,7 +38,7 @@ The first implementation should prove:
 What is worth carrying forward from `./v0.3`:
 
 1. the basic lighting model shape from
-   [v0.3/include/datoviz/scene/glsl/lighting.glsl](/home/cyrille/GIT/Viz/datoviz/v0.3/include/datoviz/scene/glsl/lighting.glsl)
+   [v0.3/include/datoviz/scene/glsl/lighting.glsl](../../../v0.3/include/datoviz/scene/glsl/lighting.glsl)
 2. the practical mesh feature surface proven by old examples/tests: indexed geometry, normals,
    optional texturing, configurable light/material defaults
 3. shape/OBJ expectations from the old mesh path

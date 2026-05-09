@@ -25,13 +25,13 @@ Define how panels, domains, axes, and unit-aware explanatory objects should fit 
 Relevant context already exists in:
 
 1. broad axis semantics:
-   [spec/scene/semantics/AXES.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/AXES.md)
+   [spec/scene/semantics/AXES.md](../semantics/AXES.md)
 2. scale and unit-adjacent mappings:
-   [spec/scene/semantics/SCALES.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/SCALES.md)
+   [spec/scene/semantics/SCALES.md](../semantics/SCALES.md)
 3. transform/controller direction:
-   [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md)
+   [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 4. measurement overlays:
-   [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md)
+   [spec/scene/proposals/ANNOTATION_MEASUREMENT_DESIGN.md](ANNOTATION_MEASUREMENT_DESIGN.md)
 
 This note records the active v0.4 recommendation at the level most likely to affect implementation
 soon.

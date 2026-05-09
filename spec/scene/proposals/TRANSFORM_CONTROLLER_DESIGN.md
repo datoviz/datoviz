@@ -27,11 +27,11 @@ Keep the transform model simple, explicit, and compatible with:
 The active branch already has controller primitives and an implemented first pass:
 
 1. arcball header:
-   [include/datoviz/scene/arcball.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene/arcball.h)
+   [include/datoviz/scene/arcball.h](../../../include/datoviz/scene/arcball.h)
 2. panzoom header:
-   [include/datoviz/scene/panzoom.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene/panzoom.h)
+   [include/datoviz/scene/panzoom.h](../../../include/datoviz/scene/panzoom.h)
 3. earlier implementation record:
-   [agents/done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+   [agents/done/CONTROLLER_TRANSFORM_DESIGN.md](../../../agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
 
 This note narrows the public and architectural intent around those pieces.
 

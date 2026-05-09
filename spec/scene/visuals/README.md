@@ -12,7 +12,7 @@ Each document defines:
 6. fallback notes,
 7. relationship to v0.3.
 
-These documents refine `../VISUAL_FAMILY_RULES.md` and `../VISUAL_CONTRACT.md` with enough concrete
+These documents refine `../semantics/VISUAL_FAMILY_RULES.md` and `../semantics/VISUAL_CONTRACT.md` with enough concrete
 detail to implement or validate each family.
 
 

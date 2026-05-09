@@ -25,13 +25,13 @@ Define a material and lighting model that:
 Relevant context already exists here:
 
 1. mesh shading direction:
-   [spec/scene/proposals/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/MESH_SHADING_DESIGN.md)
+   [spec/scene/proposals/MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md)
 2. mesh visual ownership split:
-   [spec/scene/proposals/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/MESH_API_DESIGN.md)
+   [spec/scene/proposals/MESH_API_DESIGN.md](MESH_API_DESIGN.md)
 3. older broad lighting note:
-   [spec/scene/semantics/LIGHTING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/LIGHTING.md)
+   [spec/scene/semantics/LIGHTING.md](../semantics/LIGHTING.md)
 4. v0.3 shader reference:
-   [v0.3/include/datoviz/scene/glsl/lighting.glsl](/home/cyrille/GIT/Viz/datoviz/v0.3/include/datoviz/scene/glsl/lighting.glsl)
+   [v0.3/include/datoviz/scene/glsl/lighting.glsl](../../../v0.3/include/datoviz/scene/glsl/lighting.glsl)
 
 This note records the active recommendation where those sources are still too broad or too tied to
 older assumptions.

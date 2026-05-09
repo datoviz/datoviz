@@ -28,15 +28,15 @@ Support precise scientific picking with a coherent scene-level model for:
 There is already meaningful picking-related material in the repo:
 
 1. frame-plan support for picking render nodes and readback in
-   [include/datoviz/scene/frame_plan.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene/frame_plan.h)
+   [include/datoviz/scene/frame_plan.h](../../../include/datoviz/scene/frame_plan.h)
 2. active frame-plan tests in
-   [src/scene/tests/test_scene.c](/home/cyrille/GIT/Viz/datoviz/src/scene/tests/test_scene.c)
+   [src/scene/tests/test_scene.c](../../../src/scene/tests/test_scene.c)
 3. broader scene-spec material such as:
-   - [spec/scene/semantics/VISUAL_CONTRACT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/VISUAL_CONTRACT.md)
-   - [spec/scene/interaction/SELECTION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/interaction/SELECTION.md)
-   - [spec/scene/pipeline/RESOURCE_MODEL.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/pipeline/RESOURCE_MODEL.md)
+   - [spec/scene/semantics/VISUAL_CONTRACT.md](../semantics/VISUAL_CONTRACT.md)
+   - [spec/scene/interaction/SELECTION.md](../interaction/SELECTION.md)
+   - [spec/scene/pipeline/RESOURCE_MODEL.md](../pipeline/RESOURCE_MODEL.md)
 4. visual-family hints, for example mesh face picking in
-   [spec/scene/visuals/MESH.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/visuals/MESH.md)
+   [spec/scene/visuals/MESH.md](../visuals/MESH.md)
 
 This note narrows that larger material into the active implementation contract.
 

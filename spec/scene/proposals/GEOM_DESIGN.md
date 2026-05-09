@@ -32,9 +32,9 @@ The chosen module direction is:
 1. module name: `geom`
 2. public umbrella header: `datoviz/geom.h`
 3. current supporting headers:
-   [include/datoviz/geom.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/geom.h),
-   [include/datoviz/geom/types.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/geom/types.h),
-   [include/datoviz/geom/enums.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/geom/enums.h)
+   [include/datoviz/geom.h](../../../include/datoviz/geom.h),
+   [include/datoviz/geom/types.h](../../../include/datoviz/geom/types.h),
+   [include/datoviz/geom/enums.h](../../../include/datoviz/geom/enums.h)
 
 Preferred core type name:
 
@@ -206,7 +206,7 @@ meshes.
 ## Earcut
 
 The v0.3 code already had a lightweight `earcut` wrapper in
-[v0.3/src/scene/geometry.cpp](/home/cyrille/GIT/Viz/datoviz/v0.3/src/scene/geometry.cpp).
+[v0.3/src/scene/geometry.cpp](../../../v0.3/src/scene/geometry.cpp).
 
 That is still useful in v0.4.
 

@@ -25,10 +25,10 @@ Define a coherent first API for:
 
 This API note is a consolidation of:
 
-1. [spec/scene/proposals/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PICKING_DESIGN.md)
-2. [spec/scene/proposals/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/SELECTION_HIGHLIGHT_DESIGN.md)
-3. [spec/scene/proposals/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/PROBE_READOUT_DESIGN.md)
-4. [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md)
+1. [spec/scene/proposals/PICKING_DESIGN.md](PICKING_DESIGN.md)
+2. [spec/scene/proposals/SELECTION_HIGHLIGHT_DESIGN.md](SELECTION_HIGHLIGHT_DESIGN.md)
+3. [spec/scene/proposals/PROBE_READOUT_DESIGN.md](PROBE_READOUT_DESIGN.md)
+4. [spec/scene/proposals/TRANSFORM_CONTROLLER_DESIGN.md](TRANSFORM_CONTROLLER_DESIGN.md)
 
 
 ## Core Recommendation

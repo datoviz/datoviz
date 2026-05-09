@@ -316,7 +316,7 @@ Every retained family should eventually specify:
 7. variant axes,
 8. fallback rules.
 
-Those family-level details should refine `semantics/VISUAL_CONTRACT.md`, not replace it.
+Those family-level details should refine `../semantics/VISUAL_CONTRACT.md`, not replace it.
 
 
 ## Immediate v0.4 Family Set

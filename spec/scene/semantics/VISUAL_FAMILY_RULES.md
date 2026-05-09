@@ -64,7 +64,7 @@ toward expanding `segment`.
 ### `path`
 
 Wiggle-like behavior is path-scoped unless it later proves to require a materially different
-family contract. See `semantics/VISUAL_FAMILIES.md` for the current direction on `wiggle`.
+family contract. See `../semantics/VISUAL_FAMILIES.md` for the current direction on `wiggle`.
 
 `monoglyph` must not return as a separate family; any useful simplification is a `glyph`
 variant or implementation path.

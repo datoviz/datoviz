@@ -330,7 +330,7 @@ Typical failures:
 ## Annotation Validation
 
 The scene should validate annotation contracts from
-[semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md).
+[semantics/ANNOTATIONS.md](../semantics/ANNOTATIONS.md).
 
 Checks should include:
 
@@ -352,7 +352,7 @@ Typical failures:
 ## Legend And Colorbar Validation
 
 The scene should validate contracts from
-[semantics/LEGENDS_AND_COLORBARS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/LEGENDS_AND_COLORBARS.md).
+[semantics/LEGENDS_AND_COLORBARS.md](../semantics/LEGENDS_AND_COLORBARS.md).
 
 Checks should include:
 
@@ -504,7 +504,7 @@ The scene should not rely on runtime submission to discover ordinary scene-contr
 ## Relationship To Runtime Boundary
 
 Validation must respect the runtime boundary in
-[core/RUNTIME_BOUNDARY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/core/RUNTIME_BOUNDARY.md).
+[core/RUNTIME_BOUNDARY.md](../core/RUNTIME_BOUNDARY.md).
 
 That means scene validation may talk about:
 

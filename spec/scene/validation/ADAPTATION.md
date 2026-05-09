@@ -87,7 +87,7 @@ At minimum, adaptation may depend on capabilities such as:
 11. optional picking support if modeled separately.
 
 This aligns with the DRP2 capability model in
-[spec/drp2/CAPABILITIES.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/CAPABILITIES.md).
+[spec/drp2/CAPABILITIES.md](../../drp2/CAPABILITIES.md).
 
 
 ## Adaptation Outcomes
@@ -295,7 +295,7 @@ The distinction should remain clear:
 ## Relationship To Runtime Boundary
 
 Capability adaptation must respect the runtime boundary in
-[core/RUNTIME_BOUNDARY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/core/RUNTIME_BOUNDARY.md).
+[core/RUNTIME_BOUNDARY.md](../core/RUNTIME_BOUNDARY.md).
 
 This means the scene may adapt based on:
 

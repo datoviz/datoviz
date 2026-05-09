@@ -38,7 +38,7 @@ The current spec most naturally maps onto implementation-facing scene objects su
 **Public API vs implementation names**: the `DvzScene*`-prefixed names above are tentative
 implementation-internal names. The public API types use shorter handles without the `Scene`
 infix: `DvzVisual*`, `DvzPanel*`, `DvzController*`, etc. (see `api/API_DESIGN.md` and
-`semantics/VISUAL_CONTRACT.md`). Implementation code may use `DvzScenePanel` internally; users and Python
+`../semantics/VISUAL_CONTRACT.md`). Implementation code may use `DvzScenePanel` internally; users and Python
 bindings see only `DvzPanel*`.
 
 
@@ -79,7 +79,7 @@ Semantic resource roles map onto an implementation enum:
 7. `DVZ_SCENE_ROLE_READBACK`
 8. `DVZ_SCENE_ROLE_DERIVED`
 
-See `pipeline/RESOURCE_MODEL.md` and `semantics/VISUAL_CONTRACT.md` for the normative resource role definitions.
+See `pipeline/RESOURCE_MODEL.md` and `../semantics/VISUAL_CONTRACT.md` for the normative resource role definitions.
 
 
 ## Family And Variant Mapping

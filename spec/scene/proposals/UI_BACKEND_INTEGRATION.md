@@ -26,9 +26,9 @@ system, including:
 Useful existing context:
 
 1. external UI design:
-   [spec/scene/integration/EXTERNAL_UI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/integration/EXTERNAL_UI.md)
+   [spec/scene/integration/EXTERNAL_UI.md](../integration/EXTERNAL_UI.md)
 2. current window/backend hook:
-   [include/datoviz/window/backend.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/window/backend.h)
+   [include/datoviz/window/backend.h](../../../include/datoviz/window/backend.h)
 
 Notably, the tree already exposes:
 

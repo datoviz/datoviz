@@ -44,14 +44,14 @@ visual.
 There is already useful grounding material in the tree:
 
 1. scene-level transparency spec in
-   [spec/scene/semantics/TRANSPARENCY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/TRANSPARENCY.md)
+   [spec/scene/semantics/TRANSPARENCY.md](../semantics/TRANSPARENCY.md)
 2. DRP2 capability notes in
-   [spec/drp2/CAPABILITIES.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/CAPABILITIES.md)
+   [spec/drp2/CAPABILITIES.md](../../drp2/CAPABILITIES.md)
 3. low-level WBOIT technique coverage in
-   [src/vklite/tests/test_techniques.c](/home/cyrille/GIT/Viz/datoviz/src/vklite/tests/test_techniques.c)
+   [src/vklite/tests/test_techniques.c](../../../src/vklite/tests/test_techniques.c)
 4. existing test shaders:
-   [wboit_accum.frag](/home/cyrille/GIT/Viz/datoviz/src/vklite/tests/shaders/wboit_accum.frag),
-   [wboit_comp.frag](/home/cyrille/GIT/Viz/datoviz/src/vklite/tests/shaders/wboit_comp.frag)
+   [wboit_accum.frag](../../../src/vklite/tests/shaders/wboit_accum.frag),
+   [wboit_comp.frag](../../../src/vklite/tests/shaders/wboit_comp.frag)
 
 This note narrows those ideas into the active implementation direction.
 
