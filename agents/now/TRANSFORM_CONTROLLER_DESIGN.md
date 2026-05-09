@@ -15,10 +15,11 @@ has already landed.
 Keep the transform model simple, explicit, and compatible with:
 
 1. model-space arcball interaction,
-2. fixed panel cameras for the active use cases,
+2. fixed panel cameras for the current object-inspection use cases,
 3. pan/zoom for 2D views,
-4. world-space text and annotations,
-5. future measurement overlays and picking.
+4. future camera-orbit and fly/FPS camera modes,
+5. world-space text and annotations,
+6. future measurement overlays and picking.
 
 
 ## Existing Grounding In The Repo
@@ -44,7 +45,8 @@ The active v0.4 model should be:
 3. panels own camera/view/projection state,
 4. model-space arcball rotates objects while the camera remains fixed,
 5. panzoom adjusts panel navigation for 2D-style views,
-6. overlays and annotations declare explicitly whether they participate in controller transforms.
+6. camera-centric controllers are distinct from model-space arcball,
+7. overlays and annotations declare explicitly whether they participate in controller transforms.
 
 
 ## Why Model-Space Arcball
@@ -62,6 +64,9 @@ Recommendation:
 
 1. keep model-space arcball as the primary arcball mode,
 2. treat camera-orbit behavior as a later distinct controller mode rather than the same API.
+
+This remains the right default for the current mesh and annotation work, but it should not block a
+real camera-controller family.
 
 
 ## Transform Layers
@@ -122,6 +127,61 @@ This gives a clear separation:
 
 1. object manipulation via model transforms,
 2. panel navigation via panel camera/panzoom state.
+
+
+## Camera Controller Family
+
+Camera manipulation is also important and should be recognized explicitly now.
+
+Recommended camera-controller family:
+
+1. orbit camera
+2. fly camera
+3. FPS camera
+
+These should be treated as camera controllers, not as alternate meanings of model-space arcball.
+
+
+## Orbit Camera
+
+The orbit camera is the most likely next 3D controller after model-space arcball.
+
+Recommended behavior:
+
+1. camera orbits around a target point,
+2. target point remains explicit,
+3. dolly/zoom changes distance to target,
+4. pan translates target and camera together when supported.
+
+This is the best camera-centric complement to the current object-centric arcball.
+
+
+## Fly Camera
+
+Fly camera is also worth reserving now.
+
+Recommended behavior:
+
+1. camera position moves freely through 3D space,
+2. orientation changes from mouse/drag or equivalent input,
+3. translation uses forward/right/up motion,
+4. no fixed orbit target is required.
+
+This is useful for immersive inspection and internal navigation.
+
+
+## FPS Camera
+
+FPS camera is close to fly camera but not identical in expected constraints.
+
+Recommended behavior:
+
+1. movement is primarily along a ground or application-defined plane,
+2. yaw/pitch semantics are explicit,
+3. roll is typically suppressed,
+4. applications may choose whether vertical lift is allowed.
+
+This may matter for certain anatomy, microscopy, or architectural walkthrough-style scenes.
 
 
 ## Arcball Contract
@@ -216,7 +276,7 @@ Recommended behavior:
 
 1. panels start with a fixed camera state suitable for the view,
 2. model-space arcball manipulates objects,
-3. later camera manipulation can be introduced as a separate controller family if truly needed.
+3. camera manipulation is introduced through explicit camera-controller modes when needed.
 
 This avoids mixed semantics where the same controller sometimes rotates the object and sometimes the
 camera with no explicit contract.
@@ -230,6 +290,19 @@ Recommended rule:
 
 1. do not overload the current `arcball` concept to mean both model rotation and camera orbit,
 2. if camera orbit is added later, make it an explicit camera controller choice.
+
+
+## Public Controller Modes
+
+The public model should eventually be able to express at least these distinct controller choices:
+
+1. `panzoom_2d`
+2. `arcball_model`
+3. `camera_orbit`
+4. `camera_fly`
+5. `camera_fps`
+
+The exact names can still move, but the semantic split should remain explicit.
 
 
 ## Picking Interaction
@@ -277,8 +350,9 @@ The next scene-facing API work should focus on:
 
 1. visual/object transform setters,
 2. clear placement modes for text/annotations,
-3. perhaps explicit camera helpers later,
-4. keeping controller semantics stable across visual families.
+3. explicit camera helpers and target/pose setters,
+4. controller selection per panel,
+5. keeping controller semantics stable across visual families.
 
 
 ## Relationship To UBOs And Runtime
@@ -300,8 +374,9 @@ The following rules should be treated as active contract:
 1. geometry data is local/object-space,
 2. arcball rotates the object/model, not the camera,
 3. panels own camera/view/projection state,
-4. `controller_mode` decides whether a visual participates in panel navigation,
-5. screen-space and world-space placement are distinct concepts.
+4. camera-orbit, fly, and FPS modes are separate camera-controller choices,
+5. `controller_mode` decides whether a visual participates in panel navigation,
+6. screen-space and world-space placement are distinct concepts.
 
 
 ## Explicit Non-Goals For The Current Slice
@@ -309,4 +384,4 @@ The following rules should be treated as active contract:
 1. unify model arcball and camera orbit under one ambiguous controller API,
 2. rewrite geometry for interactive transforms,
 3. hide overlay versus world-space placement distinctions,
-4. add every possible camera controller before the current object-centric workflow is stable.
+4. collapse all camera semantics into one generic “3D controller” with fuzzy behavior.
