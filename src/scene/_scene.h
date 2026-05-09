@@ -59,14 +59,26 @@ typedef enum
 
 
 
-/* Image texture payload (first-slice: one RGBA8 texture per visual). */
+typedef enum
+{
+    DVZ_SCENE_TEXTURE_NONE = 0,
+    DVZ_SCENE_TEXTURE_RGBA8,
+    DVZ_SCENE_TEXTURE_SCALAR_F32,
+} DvzSceneTextureFormat;
+
+
+
+/* Image texture payload (first-slice: RGBA8 or scalar F32 lowered to RGBA8). */
 typedef struct DvzVisualTexture DvzVisualTexture;
 struct DvzVisualTexture
 {
-    const void* data;   /* borrowed RGBA8, row-major */
-    uint32_t    width;  /* pixels */
-    uint32_t    height; /* pixels */
-    bool        dirty;  /* needs upload on next emit */
+    const void* data;           /* borrowed source data */
+    void* rgba;                 /* owned RGBA8 staging for scalar textures */
+    uint64_t rgba_size;         /* bytes */
+    uint32_t width;             /* pixels */
+    uint32_t height;            /* pixels */
+    DvzSceneTextureFormat format;
+    bool dirty;                 /* needs upload on next emit */
 };
 
 

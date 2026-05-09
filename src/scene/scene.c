@@ -47,6 +47,15 @@ static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* ac
 
 static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
 
+static void _scene_mark_scale_dirty(DvzScale* scale);
+
+static void _scene_mark_colormap_dirty(DvzColormap* colormap);
+
+static bool _scene_color_from_colormap(
+    const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
+
+static bool _scene_prepare_image_texture(DvzVisual* visual);
+
 
 
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
@@ -244,6 +253,140 @@ static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* sr
 }
 
 
+static void _scene_mark_scale_dirty(DvzScale* scale)
+{
+    if (scale == NULL || scale->scene == NULL)
+        return;
+    DvzScene* scene = scale->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene != scene || visual->scale != scale)
+            continue;
+        if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+            visual->texture.format == DVZ_SCENE_TEXTURE_SCALAR_F32)
+            visual->texture.dirty = true;
+    }
+}
+
+
+static void _scene_mark_colormap_dirty(DvzColormap* colormap)
+{
+    if (colormap == NULL || colormap->scene == NULL)
+        return;
+    DvzScene* scene = colormap->scene;
+    for (uint32_t i = 0; i < scene->scale_count; i++)
+    {
+        DvzScale* scale = &scene->scales[i];
+        if (scale->scene == scene && scale->colormap == colormap)
+            _scene_mark_scale_dirty(scale);
+    }
+}
+
+
+static bool _scene_color_from_colormap(
+    const DvzColormap* colormap, double t, uint8_t out_rgba[4])
+{
+    ANN(out_rgba);
+    if (t < 0.0)
+        t = 0.0;
+    if (t > 1.0)
+        t = 1.0;
+
+    if (colormap != NULL && colormap->stop_count >= 2)
+    {
+        const DvzColormapStop* lo = &colormap->stops[0];
+        const DvzColormapStop* hi = &colormap->stops[colormap->stop_count - 1];
+        for (uint32_t i = 1; i < colormap->stop_count; i++)
+        {
+            if (t <= colormap->stops[i].position)
+            {
+                lo = &colormap->stops[i - 1];
+                hi = &colormap->stops[i];
+                break;
+            }
+        }
+        double span = hi->position - lo->position;
+        double u = span > 0.0 ? (t - lo->position) / span : 0.0;
+        if (u < 0.0)
+            u = 0.0;
+        if (u > 1.0)
+            u = 1.0;
+        for (uint32_t c = 0; c < 4; c++)
+        {
+            double value = (1.0 - u) * lo->rgba[c] + u * hi->rgba[c];
+            out_rgba[c] = (uint8_t)(value + 0.5);
+        }
+        return true;
+    }
+
+    uint8_t gray = (uint8_t)(255.0 * t + 0.5);
+    out_rgba[0] = gray;
+    out_rgba[1] = gray;
+    out_rgba[2] = gray;
+    out_rgba[3] = 255;
+    return true;
+}
+
+
+static bool _scene_prepare_image_texture(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+        return false;
+    if (visual->texture.format != DVZ_SCENE_TEXTURE_SCALAR_F32)
+        return true;
+    if (visual->scale == NULL || visual->scale->colormap == NULL)
+    {
+        log_error("scalar image texture requires a bound scale with a colormap");
+        return false;
+    }
+    if (visual->texture.data == NULL || visual->texture.width == 0 || visual->texture.height == 0)
+        return false;
+
+    uint64_t pixel_count = (uint64_t)visual->texture.width * (uint64_t)visual->texture.height;
+    uint64_t rgba_size = pixel_count * 4ull;
+    if (visual->texture.rgba == NULL || visual->texture.rgba_size != rgba_size)
+    {
+        if (visual->texture.rgba != NULL)
+            dvz_free(visual->texture.rgba);
+        visual->texture.rgba = dvz_malloc(rgba_size);
+        if (visual->texture.rgba == NULL)
+        {
+            visual->texture.rgba_size = 0;
+            log_error("scalar image texture RGBA staging allocation failed");
+            return false;
+        }
+        visual->texture.rgba_size = rgba_size;
+    }
+
+    const float* values = (const float*)visual->texture.data;
+    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    double domain_min = 0.0;
+    double domain_max = 1.0;
+    if (visual->scale->has_view_range)
+    {
+        domain_min = visual->scale->view_min;
+        domain_max = visual->scale->view_max;
+    }
+    else if (visual->scale->has_domain)
+    {
+        domain_min = visual->scale->domain_min;
+        domain_max = visual->scale->domain_max;
+    }
+    double denom = domain_max - domain_min;
+    if (denom == 0.0)
+        denom = 1.0;
+
+    for (uint64_t i = 0; i < pixel_count; i++)
+    {
+        double t = ((double)values[i] - domain_min) / denom;
+        _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
+    }
+    return true;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scene                                                                                        */
@@ -290,6 +433,12 @@ void dvz_scene_destroy(DvzScene* scene)
                 dvz_free(v->attrs[j].data);
                 v->attrs[j].data = NULL;
             }
+        }
+        if (v->texture.rgba != NULL)
+        {
+            dvz_free(v->texture.rgba);
+            v->texture.rgba = NULL;
+            v->texture.rgba_size = 0;
         }
     }
     if (scene->emitter != NULL)
@@ -396,12 +545,16 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 visual->texture.data != NULL && visual->texture.width > 0 &&
                 visual->texture.height > 0)
             {
+                if (!_scene_prepare_image_texture(visual))
+                    continue;
                 char tex_resource_id[128];
                 dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
                 uint64_t bytes = (uint64_t)visual->texture.width *
                                  (uint64_t)visual->texture.height * 4ull;
                 dvz_frame_plan_upload_bytes(
-                    plan, tex_resource_id, 0, bytes, "texture", visual->texture.data);
+                    plan, tex_resource_id, 0, bytes, "texture",
+                    visual->texture.format == DVZ_SCENE_TEXTURE_SCALAR_F32 ? visual->texture.rgba
+                                                                           : visual->texture.data);
                 dvz_frame_plan_upload_set_texture_extent(
                     plan, visual->texture.width, visual->texture.height);
             }
@@ -788,6 +941,7 @@ void dvz_scale_set_domain(DvzScale* scale, double min, double max)
     scale->domain_min = min;
     scale->domain_max = max;
     scale->has_domain = true;
+    _scene_mark_scale_dirty(scale);
 }
 
 
@@ -804,6 +958,7 @@ void dvz_scale_set_view_range(DvzScale* scale, double min, double max)
     scale->view_min = min;
     scale->view_max = max;
     scale->has_view_range = true;
+    _scene_mark_scale_dirty(scale);
 }
 
 
@@ -822,6 +977,7 @@ void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
         return;
     }
     scale->colormap = colormap;
+    _scene_mark_scale_dirty(scale);
 }
 
 
@@ -835,6 +991,7 @@ void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
 {
     ANN(scale);
     _format_state_copy(&scale->format, format);
+    _scene_mark_scale_dirty(scale);
 }
 
 
@@ -921,6 +1078,7 @@ void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops,
     colormap->stop_count = count;
     if (count > 0)
         dvz_memcpy(colormap->stops, sizeof(colormap->stops), stops, count * sizeof(DvzColormapStop));
+    _scene_mark_colormap_dirty(colormap);
 }
 
 
@@ -935,6 +1093,7 @@ void dvz_colormap_set_center(DvzColormap* colormap, double center)
     ANN(colormap);
     colormap->center = center;
     colormap->has_center = true;
+    _scene_mark_colormap_dirty(colormap);
 }
 
 
@@ -1049,6 +1208,12 @@ void dvz_visual_destroy(DvzVisual* visual)
             dvz_free(visual->attrs[i].data);
             visual->attrs[i].data = NULL;
         }
+    }
+    if (visual->texture.rgba != NULL)
+    {
+        dvz_free(visual->texture.rgba);
+        visual->texture.rgba = NULL;
+        visual->texture.rgba_size = 0;
     }
     visual->attr_count = 0;
     visual->scene      = NULL;
@@ -1321,7 +1486,46 @@ int dvz_visual_set_texture(
     visual->texture.data   = rgba;
     visual->texture.width  = width;
     visual->texture.height = height;
+    visual->texture.format = DVZ_SCENE_TEXTURE_RGBA8;
     visual->texture.dirty  = true;
+    return 0;
+}
+
+
+/**
+ * Attach a 2D scalar F32 texture to an image visual.
+ *
+ * The scalar data must remain valid until emit time. The bound scale and
+ * colormap are applied on the CPU during emit to produce the RGBA texture used
+ * by the current first-slice image runtime path.
+ *
+ * @param visual the visual (must be of type IMAGE)
+ * @param values scalar F32 pixel data, tightly packed, row-major
+ * @param width the texture width in pixels
+ * @param height the texture height in pixels
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_texture_f32(
+    DvzVisual* visual, const float* values, uint32_t width, uint32_t height)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    {
+        log_error("dvz_visual_set_texture_f32 is only supported for image visuals");
+        return -1;
+    }
+    if (values == NULL || width == 0 || height == 0)
+    {
+        log_error("dvz_visual_set_texture_f32: NULL data or zero extent (%ux%u)", width, height);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set scalar image texture"))
+        return -1;
+    visual->texture.data = values;
+    visual->texture.width = width;
+    visual->texture.height = height;
+    visual->texture.format = DVZ_SCENE_TEXTURE_SCALAR_F32;
+    visual->texture.dirty = true;
     return 0;
 }
 

@@ -2875,6 +2875,72 @@ int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* 
 
 
 
+int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* visual = dvz_image(scene, 0);
+    ANN(visual);
+    AT(dvz_visual_set_scale(visual, "colormap", scale) == 0);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    float pixels[4 * 4];
+    for (uint32_t i = 0; i < 16; i++)
+        pixels[i] = 1.0f;
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture_f32(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    AT(visual->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    AT(rgba[0] == 255);
+    AT(rgba[1] == 0);
+    AT(rgba[2] == 0);
+    AT(rgba[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -5171,6 +5237,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_colorbar_rejects_cross_scene_scale);
     TEST_SIMPLE(test_scene_image_visual_binds_colormap_scale);
     TEST_SIMPLE(test_scene_visual_scale_rejects_cross_scene_scale);
+    TEST_SIMPLE(test_scene_image_scalar_texture_uses_bound_scale);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);

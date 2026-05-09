@@ -368,4 +368,21 @@ DVZ_EXPORT int dvz_visual_set_texture(
     DvzVisual* visual, const void* rgba, uint32_t width, uint32_t height);
 
 
+/**
+ * Attach a 2D scalar F32 texture to an image visual.
+ *
+ * The scalar data must remain valid until emit time. The bound scale and
+ * colormap are applied on the CPU during emit to produce the RGBA texture used
+ * by the current first-slice image runtime path.
+ *
+ * @param visual the visual (must be of type IMAGE)
+ * @param values scalar F32 pixel data, tightly packed, row-major
+ * @param width the texture width in pixels
+ * @param height the texture height in pixels
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_texture_f32(
+    DvzVisual* visual, const float* values, uint32_t width, uint32_t height);
+
+
 EXTERN_C_OFF
