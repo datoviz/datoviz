@@ -73,7 +73,8 @@ Recommended baseline fields:
 4. payload-local id when relevant,
 5. logical/world/scientific coordinate,
 6. one or more sampled or derived values,
-7. optional units and formatted label text.
+7. optional units,
+8. optional formatted display string or label text.
 
 Do not make callers reconstruct semantic meaning from raw pick ids alone.
 
@@ -144,6 +145,12 @@ Recommended rule:
    selection through explicit API policy,
 4. a selected item may drive a pinned readout annotation later.
 
+Recommended identity rule for persistent image/slice selection:
+
+1. store the stable selected identity as pixel or cell index,
+2. derive semantic coordinates and formatted readout from probe resolution rather than storing them
+   as the primary selection identity.
+
 
 ## Annotation And UI Relationship
 
@@ -169,7 +176,10 @@ Recommended direction:
 3. the public API should expose one coherent query model rather than separate unrelated picking and
    probing systems,
 4. interaction policy should be able to decide whether a probe request also mutates persistent
-   selection state.
+   selection state,
+5. empty clicks or misses should clear the current transient probe by default,
+6. probe-retention versus clear-on-miss behavior should still be policy-controlled for pinned or
+   inspector-driven workflows.
 
 
 ## Capability And Failure Model

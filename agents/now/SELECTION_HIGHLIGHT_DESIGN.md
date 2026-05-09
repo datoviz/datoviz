@@ -161,6 +161,14 @@ Recommended future extension:
 2. each channel still keeps the simpler rule of zero or one link key per local identity,
 3. do not start with an unstructured many-keys-per-item model.
 
+Recommended channel representation:
+
+1. the scene may store channels internally as stable handles,
+2. the API should still let applications create and refer to channels through meaningful typed or
+   named identifiers,
+3. unrelated semantic grouping domains should not be forced to share one ambiguous channel name
+   space.
+
 Recommended first-slice interaction rule:
 
 1. linked selection operates on one active link channel at a time,

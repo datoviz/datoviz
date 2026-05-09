@@ -275,7 +275,9 @@ Recommended direction:
 
 1. simple workflows may ask for one resolved hit,
 2. richer workflows may request a sorted hit list,
-3. sorting should be scene-semantic enough to explain how transparency and overlay priorities were
+3. each multi-hit candidate should preserve both the raw hit identity and the post-policy resolved
+   target,
+4. sorting should be scene-semantic enough to explain how transparency and overlay priorities were
    handled.
 
 The first implementation can still return one result by default, but the spec should leave room for
@@ -478,17 +480,20 @@ Examples:
 
 The exact names can still move, but the public scene-facing model should include:
 
-1. per-visual pickability declaration,
+1. per-visual pickability or capability declaration,
 2. panel-level or scene-level pick request helpers,
 3. `DvzPickResult` or equivalent result object,
-4. result polling/callback routing.
+4. result polling/callback routing,
+5. separate interaction-policy controls that decide how supported pick identities are resolved and
+   consumed.
 
 Useful conceptual calls:
 
-1. `dvz_visual_set_pick_mode(...)`
+1. `dvz_visual_set_pick_capabilities(...)`
 2. `dvz_panel_pick(...)`
 3. `dvz_scene_poll_pick_result(...)`
-4. hover/click callbacks later as convenience layers
+4. `dvz_interaction_set_pick_policy(...)`
+5. hover/click callbacks later as convenience layers
 
 The internal implementation may use panel-local picking targets and readback buffers, but the
 public contract should stay logical and scene-oriented.
