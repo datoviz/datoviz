@@ -321,10 +321,11 @@ Recommended mesh behavior:
 1. object-level picking should remain available by default,
 2. face-level picking should be opt-in at the visual or interaction-policy level,
 3. when face-level picking is enabled, the default resolved pick should be the face,
-4. the returned identity includes instance id when the visual is instanced,
-5. the returned face identity is triangle/face index, not vertex index,
-6. mesh resource ordering must preserve stable face ordering for result interpretation,
-7. future world/local hit position is optional and can be added later.
+4. object-level mesh picking should resolve to `visual id + optional instance id`,
+5. the returned identity includes instance id when the visual is instanced,
+6. the returned face identity is triangle/face index, not vertex index,
+7. mesh resource ordering must preserve stable face ordering for result interpretation,
+8. future world/local hit position is optional and can be added later.
 
 Do not start with object-only mesh picking.
 

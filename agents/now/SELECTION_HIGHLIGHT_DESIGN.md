@@ -211,6 +211,8 @@ If face-selection mode is active instead, the same hit stores the face identity.
 The same rule applies to grouped primitives such as `line_strip` or `triangle_strip`: the raw hit
 may be one segment or one triangle, while the stored selection target may resolve to the parent
 strip when group-selection mode is active.
+For instanced meshes, object-level selection should still resolve to one concrete object instance:
+`visual id + optional instance id`, not the entire visual family at once.
 
 
 ## Selection Policy And Input Mapping
