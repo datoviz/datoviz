@@ -164,6 +164,28 @@ Lasso and box selection can remain follow-on interaction modes, but the data mod
 support multi-selection.
 
 
+## Selection Resolution Rule
+
+Selection state should store the post-policy resolved identity, not the raw low-level hit.
+
+Recommended rule:
+
+1. picking may first report the most specific hit identity available,
+2. interaction policy then resolves that hit into the intended selection target,
+3. the selection object stores that resolved target as authoritative state,
+4. downstream highlight, linked selection, and UI inspection operate on the resolved selection
+   target rather than the pre-policy hit.
+
+Example:
+
+1. a mesh face is hit,
+2. object-selection mode is active,
+3. the interaction resolves the face hit to the mesh object,
+4. the selection stores the mesh object identity rather than the face identity.
+
+If face-selection mode is active instead, the same hit stores the face identity.
+
+
 ## Selection Policy And Input Mapping
 
 Selection semantics should be configurable at the API level.
