@@ -274,12 +274,17 @@ correctly.
 This is the recommended path for custom marker shapes defined as SVG paths.
 
 
-### Font Glyph Atlas — `DvzFont` And `DvzAtlas`
+### Font Glyph Atlas — `DvzFont` And Glyph Atlas Resources
+
+The semantic text contract is defined in [TEXT.md](TEXT.md). This section covers only the
+geometry/atlas utility path used by glyph and marker rendering.
 
 #### Scene-Level Font Handle — `DvzFont`
 
 `DvzFont` is the scene-level resource for a loaded typeface.
-It owns a `DvzAtlas` internally and is the object that `glyph` visuals reference.
+It provides metrics and shaping-facing font identity. Glyph atlas storage is a separate scene
+resource role that may be created lazily and shared by all glyph/text users of the same font and
+rasterization policy.
 
 ```text
 // Load a custom font from TTF bytes
@@ -298,17 +303,17 @@ A `glyph` visual references a font at creation time:
 visual = dvz_glyph(scene, &(DvzGlyphParams){ .font = font, ... })
 ```
 
-All `glyph` visuals referencing the same `DvzFont*` handle share one atlas texture.
-No per-visual atlas copies are made.
+All `glyph` visuals and retained text objects referencing the same compatible `DvzFont*` handle
+share glyph atlas resources. No per-visual atlas copies are made by default.
 
 
 #### Codepoint Declaration Policy
 
-The scene uses **lazy auto-grow** by default.
+The scene uses **lazy auto-grow** by default for glyph atlas resources.
 
 The user sets strings directly; the scene tracks which codepoints are required across all
-`glyph` visuals that reference a given `DvzFont`, and regenerates the atlas automatically
-when new characters appear.
+`glyph` visuals or retained text objects that reference a compatible font/atlas pair, and
+regenerates or patches the atlas automatically when new characters appear.
 Regeneration is deferred to the next frame boundary — it never happens mid-render.
 
 For performance-sensitive cases where any runtime regeneration must be avoided, an explicit
@@ -321,15 +326,15 @@ dvz_font_preload_codepoints(font, codepoints, n)
 
 Calling either function before the first frame bakes the atlas ahead of time.
 If a string later introduces codepoints not in the pre-declared set, the auto-grow policy
-still applies unless the font was created with `DVZ_FONT_FLAG_STATIC_ATLAS`.
+still applies unless the atlas resource was created with a static-atlas policy.
 
 
 #### Atlas Invalidation On Growth
 
 When auto-grow triggers, the full atlas is regenerated via msdf-atlas-gen repacking and
 re-uploaded on the next frame.
-All `glyph` visuals referencing the font are marked dirty: their per-character UV coordinates
-are recomputed against the new atlas layout before the next render.
+All `glyph` visuals and retained text objects referencing the atlas are marked dirty: their
+per-character UV coordinates are recomputed against the new atlas layout before the next render.
 
 For typical scientific character sets (< 200 glyphs, Latin + digits + symbols), regeneration
 is fast and usually happens at most once or twice during application startup.
@@ -342,7 +347,7 @@ DvzFont* font = dvz_font_import(scene, path)  // load at startup, skip generatio
 ```
 
 These carry forward the `dvz_atlas_export` / `dvz_atlas_import` v0.3 functionality at the
-`DvzFont` level.
+font/atlas resource level.
 
 
 ### Per-Item Shape Variation Via Atlas

@@ -3,9 +3,9 @@
 This document defines text content, placement, font/atlas resources, DPI behavior, and interaction
 semantics for the scene layer.
 
-Text is a scene-side semantic feature. It may render through a `text` visual family, annotation
-objects, axis labels, legends, colorbars, probes, or equation/layout display lists, but those
-rendering paths must resolve back to semantic scene text objects.
+Text is a scene-side semantic feature. It may lower to the `glyph` visual family, annotation
+objects, axis labels, legends, colorbars, probes, or equation/layout display lists. Those rendering
+paths must resolve back to semantic scene text objects.
 
 
 ## Normative Status
@@ -64,10 +64,10 @@ Required resource roles:
 
 1. font resource: source font bytes/path, metrics identity, and shaping-facing identity,
 2. glyph atlas resource: atlas image pages plus glyph metadata and UV mapping,
-3. text object or visual: content, placement, style, transform, and semantic identity.
+3. text object or glyph visual: content, placement, style, transform, and semantic identity.
 
-Text visuals and annotation objects should borrow shared font and atlas resources. They should not
-own private atlas lifetime by default.
+Text objects, glyph visuals, and annotation objects should borrow shared font and atlas resources.
+They should not own private atlas lifetime by default.
 
 
 ## Content Model

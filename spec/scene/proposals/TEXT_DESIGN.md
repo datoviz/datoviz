@@ -129,7 +129,7 @@ Suggested conceptual ownership:
    - references font/atlas resources
    - owns placement, styling, alignment, transform, and content binding state
 
-Do not make each text visual own its own private atlas by default.
+Do not make each text object or glyph visual own its own private atlas by default.
 
 
 ## Update Model
@@ -475,14 +475,14 @@ Recommended direction:
 
 ## Recommended First Visual Family Shape
 
-A practical first v0.4 text family should expose one or both of:
+A practical first v0.4 text surface should expose one or both of:
 
-1. a high-level text visual for common labels,
-2. an annotation-oriented visual that can consume text plus simple geometric primitives.
+1. a high-level retained text object for common labels,
+2. an annotation-oriented object that can consume text plus simple geometric primitives.
 
 The simpler path is:
 
-1. create a `text` visual family,
+1. create a retained semantic `DvzText` object that lowers to `glyph` visual contributions,
 2. give it high-level content/style/placement setters,
 3. let future equation and measurement layers build on top of it.
 
@@ -493,7 +493,7 @@ The exact names can still change, but the intended public shape should look some
 
 1. create font resource,
 2. create atlas resource,
-3. create text visual,
+3. create retained text object,
 4. set content or shaped run,
 5. set placement mode,
 6. set anchor/alignment,
@@ -502,8 +502,8 @@ The exact names can still change, but the intended public shape should look some
 
 Suggested conceptual calls:
 
-1. `DvzTextResource* dvz_text_resource(...)`
-2. `DvzVisual* dvz_text(DvzScene* scene, uint32_t flags);`
+1. `DvzFont* dvz_font(...)`
+2. `DvzText* dvz_text(DvzScene* scene, const DvzTextDesc* desc);`
 3. `int dvz_text_set_string(...)`
 4. `int dvz_text_set_world_position(...)`
 5. `int dvz_text_set_screen_position(...)`

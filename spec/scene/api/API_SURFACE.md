@@ -43,7 +43,8 @@ Use opaque handles for retained scene-owned objects:
 6. `DvzColormap`
 7. `DvzColorbar`
 8. `DvzFont`
-9. `DvzAnnotation`
+9. `DvzText`
+10. `DvzAnnotation`
 
 Use public structs for value-like data:
 
@@ -165,17 +166,19 @@ not as an external UI-only behavior.
 
 ## Text And Annotation Surface
 
-Text should be a retained visual family or retained annotation object with semantic content and
-placement descriptors.
+Text should be a retained semantic object or retained annotation object with semantic content and
+placement descriptors. The implementation may lower text objects to `glyph` visual contributions,
+but glyph atlas details are not part of the public text API.
 
 The first public surface should expose:
 
 1. font resource handles,
-2. text style descriptors,
-3. screen-space and world-space placement descriptors,
-4. retained annotation handles,
-5. label, callout, scale-bar, dimension, and pinned-readout annotation kinds,
-6. shared formatting descriptors.
+2. retained text handles,
+3. text style descriptors,
+4. screen-space and world-space placement descriptors,
+5. retained annotation handles,
+6. label, callout, scale-bar, dimension, and pinned-readout annotation kinds,
+7. shared formatting descriptors.
 
 Text callers should bind content, style, font, placement, and color. They should not manage glyph
 atlases, glyph UVs, or text render-pass resources directly.

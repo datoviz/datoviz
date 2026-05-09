@@ -160,6 +160,11 @@ Reason:
 2. atlas-backed grouped instance data is central to the family,
 3. picking and anchoring behavior are distinctive enough to justify a dedicated family.
 
+`glyph` is the renderable visual-family contract for shaped text/glyph runs. Higher-level retained
+text, annotation, axis-label, legend, and colorbar objects are semantic scene objects that may lower
+to `glyph` contributions. They are not separate top-level visual families unless a later spec proves
+that their resource schema, picking behavior, or fallback policy materially differs from `glyph`.
+
 
 ### `image`
 

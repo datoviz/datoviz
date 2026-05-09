@@ -103,8 +103,9 @@ Unless a document says otherwise, this directory should be read with the followi
 6. `decisions/` records are historical ADR-style records and should explain rationale, not hold
    current implementation-facing rules on their own,
 7. `api/API_SURFACE.md` is the normative bridge from scene semantics to the next public C header draft,
-8. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
-   while the surrounding scene documents remain authoritative for semantics.
+8. `headers/scene_api.h` is authoritative for draft C spelling it already covers, while
+   `api/API_SURFACE.md` owns next API groups not yet spelled there and the surrounding scene
+   documents remain authoritative for semantics.
 
 ## Status Vocabulary
 
@@ -128,7 +129,7 @@ For cross-tree overlap, use this source-of-truth order:
 4. scene proposals for rules not yet promoted into specialized spec files,
 5. historical scene decision records for rationale behind older choices,
 6. `spec/scene/api/API_SURFACE.md` for public API shape policy,
-7. `spec/scene/headers/scene_api.h` for draft C names and signatures,
+7. `spec/scene/headers/scene_api.h` for draft C names and signatures it already covers,
 8. examples and deferred trackers as informative material.
 
 
@@ -148,9 +149,10 @@ Read the scene spec in this order during review.
 2. [core/PANEL_LAYOUT.md](core/PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
 3. [api/API_DESIGN.md](api/API_DESIGN.md) — current preferred scene-facing defaults and resolved API decisions
 4. [api/API_SURFACE.md](api/API_SURFACE.md) — public header drafting policy for interaction, scales, text, and annotations
-5. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
-6. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
-7. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
+5. [api/API_IMPLEMENTATION_READINESS.md](api/API_IMPLEMENTATION_READINESS.md) — checklist for the next public API pass
+6. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
+7. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
+8. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 
 ### 3. Visual semantics
 
@@ -227,10 +229,12 @@ Read the scene spec in this order during review.
   behind `headers/scene_api.h`
 - [api/API_SURFACE.md](api/API_SURFACE.md): next public-header shape for retained interaction, scales,
   colorbars, text, and annotation objects
+- [api/API_IMPLEMENTATION_READINESS.md](api/API_IMPLEMENTATION_READINESS.md): implementation-readiness
+  checklist for the next public scene API pass
 - [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md): C object mapping, Python binding
   architecture, and per-family GPU data preparation notes
 - [headers/README.md](headers/README.md): draft header index for the current scene, runtime, and
-  diagnostics surfaces; `scene_api.h` is the authoritative draft C spelling
+  diagnostics surfaces; `scene_api.h` is authoritative for the API groups it covers
 - [proposals/README.md](proposals/README.md): active design addenda with promotion targets for
   implementation-ready spec work
 - [decisions/README.md](decisions/README.md): historical ADR-style records and authority policy

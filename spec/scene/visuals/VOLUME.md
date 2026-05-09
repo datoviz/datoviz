@@ -320,7 +320,13 @@ display. `alpha_transfer` is ignored in MIP mode. MIP applies to `texture_mode =
 
 Standard transform model — see `SHARED_ATTRIBUTES.md`.
 
-**Picking for `render_mode = dvr` and `render_mode = slice`**: not supported.
+**Picking for `render_mode = slice`**: supported for probe/readout workflows.
+The result should identify the volume visual, the active slice state, slice-local coordinates,
+scene-domain coordinates when available, and the sampled value at the queried position.
+Persistent slice sample selection may reuse the same payload shape when enabled.
+
+**Picking for `render_mode = dvr`**: deferred for the first implementation slice unless an
+isosurface level is active.
 
 **Picking for isosurface** (`isosurface_levels` non-empty): supported via depth readback.
 The fragment shader computes the world-space hit position when a ray intersects an isosurface
@@ -328,7 +334,7 @@ level. The scene reads back the depth buffer at the pick coordinate and reconstr
 hit position. The returned item identity is the isosurface level index (0-based index into
 `isosurface_levels`). This is a single-object pick — one volume, one level index.
 
-**Picking for `render_mode = mip`**: not supported.
+**Picking for `render_mode = mip`**: not supported in the first implementation slice.
 
 
 ## Relationship To Other Families

@@ -11,7 +11,9 @@ scene concepts into C and language bindings.
 1. [API_DESIGN.md](API_DESIGN.md): preferred scene-facing API profile and rationale.
 2. [API_SURFACE.md](API_SURFACE.md): immediate public-header target for interaction, scales,
    colorbars, text, and annotations.
-3. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping and binding architecture.
+3. [API_IMPLEMENTATION_READINESS.md](API_IMPLEMENTATION_READINESS.md): implementation-readiness
+   checklist for the next public API pass.
+4. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping and binding architecture.
 
 
 ## Related Directories

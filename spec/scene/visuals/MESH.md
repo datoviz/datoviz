@@ -14,16 +14,32 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 `mesh` renders indexed triangle geometry with optional lighting, texture mapping, edge overlay,
 and isoline rendering.
 
-Each item is one vertex. Triangles are defined by an index buffer (three vertex indices per
-triangle). This is the primary family for 3D surface geometry.
+Each item in the mesh geometry resource is one vertex. Triangles are defined by an index buffer
+(three vertex indices per triangle). This is the primary family for 3D surface geometry.
 
 Typical uses: brain surfaces, terrain, 3D anatomical models, procedural geometry, height fields,
 isosurfaces, polyhedral shapes.
 
 
+## Geometry Resource
+
+The `mesh` visual references a scene-owned mesh geometry resource.
+
+The resource owns:
+
+1. vertex attributes,
+2. the index buffer,
+3. dirty ranges for partial vertex/index updates,
+4. resource identity used for sharing across visuals and panels.
+
+The visual owns material, transform, visibility, picking policy, and other instance state.
+Convenience APIs may upload geometry directly when constructing a mesh visual, but semantically that
+creates or replaces a scene mesh resource rather than making the visual privately own geometry.
+
+
 ## Per-Vertex Attributes
 
-Each item is one vertex.
+Each item in the geometry resource is one vertex.
 
 ### `position`
 
@@ -93,9 +109,10 @@ Isolines are placed at `isoline_count` evenly-spaced levels within `isoline_rang
 | Type | flat `uint32` array, three indices per triangle |
 | Mutability | `dynamic` |
 
-Defines the triangle list. No indexed lines or points — triangle list only.
+Defines the triangle list for the mesh resource. No indexed lines or points — triangle list only.
 The index count must be a multiple of 3.
-Can be replaced at any time; the visual resizes as needed.
+Can be replaced at any time; visuals referencing the resource observe the new geometry on the next
+validated frame plan.
 
 
 ## Visual-Wide Parameters
@@ -212,11 +229,12 @@ and palette, independent of the `colormap` Scale used for mesh face coloring.
 
 `mesh` integrates with a `Shape` builder API that generates vertex and index data for common
 geometries: `square`, `disc`, `sphere`, `cube`, `cylinder`, `cone`, `torus`, `surface` (height
-field), and the Platonic solids. Shape builders produce a `Shape` object that is uploaded to the
-mesh visual in one call. This is a CPU-side convenience layer, not a separate visual family.
+field), and the Platonic solids. Shape builders produce a `Shape` object that is uploaded to a
+mesh geometry resource in one call. This is a CPU-side convenience layer, not a separate visual
+family.
 
 Shape builders also support per-shape transforms (`scale`, `translate`, `rotate`) and merging
-multiple shapes into a single mesh visual.
+multiple shapes into a single mesh resource.
 
 
 ## Defaults And Missing Values

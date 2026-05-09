@@ -3,8 +3,9 @@
 This document selects the current preferred scene-facing API defaults for Datoviz v0.4.
 
 `api/API_SURFACE.md` is the current bridge from scene semantics to the next public header draft.
-`spec/scene/headers/scene_api.h` remains the implementation-facing draft C spelling. This document
-remains normative for broader design rationale and the Python binding architecture.
+`spec/scene/headers/scene_api.h` remains the implementation-facing draft C spelling for the API
+groups it already covers. This document remains normative for broader design rationale and the
+Python binding architecture.
 
 
 ## Position
@@ -12,7 +13,7 @@ remains normative for broader design rationale and the Python binding architectu
 This document sits:
 
 1. above `core/OBJECT_MODEL.md`,
-2. above `../semantics/VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
+2. above `../semantics/VISUAL_CONTRACT.md` and `../pipeline/RESOURCE_MODEL.md`,
 3. beside `api/API_SURFACE.md`, which owns the next header-drafting policy,
 4. below `headers/scene_api.h` only for exact draft C spelling once the header sketch is updated.
 
@@ -308,9 +309,9 @@ only. Not a first-class public user-facing API.
 
 This document should be read together with:
 
-1. `headers/scene_api.h` for the authoritative C API spelling,
+1. `headers/scene_api.h` for the authoritative C API spelling it already covers,
 2. `../semantics/VISUAL_CONTRACT.md` and `../semantics/VISUAL_FAMILY_RULES.md` for family contract details,
-3. `pipeline/RESOURCE_MODEL.md` for logical resource classes,
-4. `validation/VALIDATION.md` and `validation/ADAPTATION.md` for stage ordering and failure semantics,
-5. `core/RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
-6. `api/IMPLEMENTATION_NOTES.md` for one tentative implementation-facing translation of this profile.
+3. `../pipeline/RESOURCE_MODEL.md` for logical resource classes,
+4. `../validation/VALIDATION.md` and `../validation/ADAPTATION.md` for stage ordering and failure semantics,
+5. `../core/RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
+6. `IMPLEMENTATION_NOTES.md` for one tentative implementation-facing translation of this profile.
