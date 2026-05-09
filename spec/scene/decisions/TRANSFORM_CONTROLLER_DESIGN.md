@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE TRANSFORM / CONTROLLER DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 transform ownership model, controller behavior, and the
 >   relationship between model-space interaction, panel camera state, and overlay placement.

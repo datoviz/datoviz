@@ -13,14 +13,15 @@ The scene layer should remain pure high-level logic:
 ## Status
 
 - Status: active specification with a first implementation slice in `src/scene`
-- Implementation priority: harden the point-only scene path, then add minimal mesh/triangle and
-  image/texture visuals with tests and examples
+- Implementation priority: draft the next public scene API surface, then implement interaction,
+  scale/colormap/colorbar, and text/annotation retained objects in narrow slices
 - Primary constraint: do not let scene design leak backend details into its public API
 
 Current source implementation is intentionally smaller than this spec. It includes scene/figure/panel
-objects, point visuals, capability snapshots, diagnostic reports, frame plans, DRP2 emission, and an
-early scene/app/offscreen path. Treat broader sections of this spec as design pressure and direction,
-not as a claim that all families and interactions are already implemented.
+objects, `point` / `primitive` / `image` visuals, capability snapshots, diagnostic reports, frame
+plans, DRP2 emission, panel controllers, and an early scene/app/offscreen path. Treat broader
+sections of this spec as design pressure and direction, not as a claim that all families and
+interactions are already implemented.
 
 
 ## Relationship To The DRP2 Spec
@@ -78,7 +79,10 @@ Unless a document says otherwise, this directory should be read with the followi
    normative behavior,
 4. when two documents overlap, the more specialized contract document should win over a broader
    orientation document,
-5. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
+5. `decisions/` records are spec-side decision records used to clarify or extend the normative
+   documents until those decisions are promoted into specialized spec files,
+6. `API_SURFACE.md` is the normative bridge from scene semantics to the next public C header draft,
+7. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
    while the surrounding scene documents remain authoritative for semantics.
 
 For cross-tree overlap, use this source-of-truth order:
@@ -86,8 +90,10 @@ For cross-tree overlap, use this source-of-truth order:
 1. DRP2 command, lifetime, and error prose for protocol semantics,
 2. DRP2 active JSON schemas for machine-checkable command shape,
 3. scene normative documents for scene semantics,
-4. `spec/scene/headers/scene_api.h` for draft C names and signatures,
-5. examples and deferred trackers as informative material.
+4. scene decision records for decisions not yet promoted into specialized spec files,
+5. `spec/scene/API_SURFACE.md` for public API shape policy,
+6. `spec/scene/headers/scene_api.h` for draft C names and signatures,
+7. examples and deferred trackers as informative material.
 
 
 ## Recommended Reading Order
@@ -105,8 +111,10 @@ Read the scene spec in this order during review.
 4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
 5. [PANEL_LAYOUT.md](PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
 6. [API_DESIGN.md](API_DESIGN.md) — current preferred scene-facing defaults and resolved API decisions
-7. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
+7. [API_SURFACE.md](API_SURFACE.md) — public header drafting policy for interaction, scales, text, and annotations
 8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
+9. [decisions/README.md](decisions/README.md) — active scene decision records awaiting promotion
+10. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 
 ### 3. Visual semantics
 
@@ -163,6 +171,9 @@ Read the scene spec in this order during review.
 37. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 38. [examples/LINKED_PANELS_AXES_PANZOOM.md](examples/LINKED_PANELS_AXES_PANZOOM.md)
 39. [examples/ANIMATION_VIDEO_EXPORT.md](examples/ANIMATION_VIDEO_EXPORT.md)
+40. [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md)
+41. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md)
+42. [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md)
 
 
 ## Document Index
@@ -177,10 +188,14 @@ Read the scene spec in this order during review.
 - [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
 - [API_DESIGN.md](API_DESIGN.md): design rationale and resolved API decisions
   behind `headers/scene_api.h`
+- [API_SURFACE.md](API_SURFACE.md): next public-header shape for retained interaction, scales,
+  colorbars, text, and annotation objects
 - [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping, Python binding
   architecture, and per-family GPU data preparation notes
 - [headers/README.md](headers/README.md): draft header index for the current scene, runtime, and
   diagnostics surfaces; `scene_api.h` is the authoritative draft C spelling
+- [decisions/README.md](decisions/README.md): spec-side decision records that used to live in
+  `agents/now/`, with promotion targets for implementation-ready spec work
 - [AXES.md](AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
 - [LIGHTING.md](LIGHTING.md): scene-level lighting model, PBR shading parameters, and hardware
   ray tracing forward-compatibility path
@@ -250,6 +265,10 @@ Read the scene spec in this order during review.
   by milestone (DRP2 2.1, v0.4+, no target)
 - [examples/README.md](examples/README.md): worked scene-spec examples that instantiate families,
   transforms, and `FramePlan` shapes
+- [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md),
+  [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md), and
+  [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md): tiny
+  public API-shape pressure tests for the next header draft
 
 
 ## Guiding Principles

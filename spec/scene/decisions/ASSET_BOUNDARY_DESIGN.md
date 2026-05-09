@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE ASSET BOUNDARY DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 boundary between imported/authored assets, scene-owned
 >   runtime resources, and exported semantic outputs.
@@ -25,11 +25,11 @@ Clarify the boundary between:
 Useful current context:
 
 1. active geometry note:
-   [agents/now/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/GEOM_DESIGN.md)
+   [spec/scene/decisions/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/GEOM_DESIGN.md)
 2. active resource-update note:
-   [agents/now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
+   [spec/scene/decisions/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/RESOURCE_UPDATE_DESIGN.md)
 3. active volume note:
-   [agents/now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+   [spec/scene/decisions/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/VOLUME_DESIGN.md)
 4. completed offscreen/export context:
    [agents/done/OFFSCREEN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/OFFSCREEN.md)
 

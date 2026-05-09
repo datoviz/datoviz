@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE MATERIAL / LIGHTING API NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 scene-facing material and lighting object model for mesh
 >   and future lit visual families.
@@ -25,9 +25,9 @@ Define a material and lighting model that:
 Relevant context already exists here:
 
 1. mesh shading direction:
-   [agents/now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
+   [spec/scene/decisions/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/MESH_SHADING_DESIGN.md)
 2. mesh visual ownership split:
-   [agents/now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
+   [spec/scene/decisions/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/MESH_API_DESIGN.md)
 3. older broad lighting note:
    [spec/scene/LIGHTING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/LIGHTING.md)
 4. v0.3 shader reference:

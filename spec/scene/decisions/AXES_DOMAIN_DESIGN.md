@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE AXES / DOMAIN DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 panel-domain, axes, and unit-semantics model for 2D
 >   scientific views and the first 3D orientation aids.
@@ -29,9 +29,9 @@ Relevant context already exists in:
 2. scale and unit-adjacent mappings:
    [spec/scene/SCALES.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/SCALES.md)
 3. transform/controller direction:
-   [agents/now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
+   [spec/scene/decisions/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TRANSFORM_CONTROLLER_DESIGN.md)
 4. measurement overlays:
-   [agents/now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+   [spec/scene/decisions/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/ANNOTATION_MEASUREMENT_DESIGN.md)
 
 This note records the active v0.4 recommendation at the level most likely to affect implementation
 soon.

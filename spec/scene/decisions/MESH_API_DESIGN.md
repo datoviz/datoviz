@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE MESH API DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 scene-facing `mesh` API, resource ownership model, and
 >   mutation/update contract before the first implementation lands.
@@ -293,7 +293,7 @@ Why:
 3. this fits later transparency and picking overlays better.
 
 Phase-1 material scope is the classic-lit baseline described in
-[agents/now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md):
+[spec/scene/decisions/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/MESH_SHADING_DESIGN.md):
 
 1. base color
 2. ambient
@@ -317,7 +317,7 @@ For the active 3D slice:
    application.
 
 This matches the current active decision in
-[agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md).
+[spec/scene/decisions/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/HIGH_PRIORITY_SPEC_DECISIONS.md).
 
 The mesh API should not require geometry rewrites just to rotate or reposition an object.
 

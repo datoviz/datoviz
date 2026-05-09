@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE INTERACTION API NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended first scene-facing API shape for picking, hover, selection,
 >   linked selection, probes, and pinned readouts.
@@ -21,14 +21,14 @@ Define a coherent first API for:
 6. pinned readouts.
 
 
-## Existing Grounding In Active Notes
+## Existing Grounding In Scene Decision Records
 
 This API note is a consolidation of:
 
-1. [agents/now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
-2. [agents/now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
-3. [agents/now/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PROBE_READOUT_DESIGN.md)
-4. [agents/now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
+1. [spec/scene/decisions/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PICKING_DESIGN.md)
+2. [spec/scene/decisions/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/SELECTION_HIGHLIGHT_DESIGN.md)
+3. [spec/scene/decisions/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PROBE_READOUT_DESIGN.md)
+4. [spec/scene/decisions/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TRANSFORM_CONTROLLER_DESIGN.md)
 
 
 ## Core Recommendation

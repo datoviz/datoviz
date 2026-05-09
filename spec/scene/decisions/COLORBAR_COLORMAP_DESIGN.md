@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE COLORBAR / COLORMAP DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended active v0.4 direction for shared colormap scales, colorbars,
 >   and user-facing range control.
@@ -30,9 +30,9 @@ There is already substantial background context:
 2. legend/colorbar semantics:
    [spec/scene/LEGENDS_AND_COLORBARS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/LEGENDS_AND_COLORBARS.md)
 3. annotation/measurement direction:
-   [agents/now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
+   [spec/scene/decisions/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/ANNOTATION_MEASUREMENT_DESIGN.md)
 4. volume direction:
-   [agents/now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+   [spec/scene/decisions/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/VOLUME_DESIGN.md)
 
 This note makes the active decisions more explicit.
 

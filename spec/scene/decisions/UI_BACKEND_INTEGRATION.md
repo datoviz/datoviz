@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE UI / BACKEND INTEGRATION NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the active implications of external UI frameworks and host backends for the
 >   scene boundary, including Dear ImGui and Qt/PyQt-style embedding.

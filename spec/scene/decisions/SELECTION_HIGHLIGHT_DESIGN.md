@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE SELECTION / HIGHLIGHT DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 scene-level model for selection, hover, highlight, and
 >   linked identity styling across visual families.
@@ -28,11 +28,11 @@ Useful existing context:
 1. broad future selection note:
    [spec/scene/interaction/SELECTION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/interaction/SELECTION.md)
 2. active picking note:
-   [agents/now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
+   [spec/scene/decisions/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PICKING_DESIGN.md)
 3. active transparency note:
-   [agents/now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
+   [spec/scene/decisions/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TRANSPARENCY_WBOIT_DESIGN.md)
 4. active UI mutation note:
-   [agents/now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+   [spec/scene/decisions/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/UI_BACKEND_INTEGRATION.md)
 
 This note records the tighter active recommendation set.
 

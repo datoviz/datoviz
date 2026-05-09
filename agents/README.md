@@ -1,96 +1,22 @@
 # Agents Index
 
-This directory is organized by lifecycle state rather than by topic.
+This directory contains execution guidance for automation agents.
+
+Stable scene semantics belong in [../spec/scene](/home/cyrille/GIT/Viz/datoviz/spec/scene).
+Completed implementation records belong in `agents/done/`. Long-horizon backlog belongs in
+`agents/later/`.
 
 
 ## Current Priority
 
-Active execution surface:
+Active execution notes:
 
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
-3. [now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
-4. [now/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/GEOM_DESIGN.md)
-5. [now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md)
-6. [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
-7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
-8. [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
-9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
-10. [now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
-11. [now/CAPABILITY_FALLBACK_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/CAPABILITY_FALLBACK_DESIGN.md)
-12. [now/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PROBE_READOUT_DESIGN.md)
-13. [now/INTERACTION_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/INTERACTION_API_DESIGN.md)
-14. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
-15. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
-16. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
-17. [now/ASSET_BOUNDARY_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ASSET_BOUNDARY_DESIGN.md)
-18. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
-19. [now/ANNOTATION_TEXT_SCALE_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_TEXT_SCALE_API.md)
-20. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
-21. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
-22. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
-23. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-24. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
-25. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
-Current status:
-
-1. The low-level graphics stack cleanup has moved from active plan to completed context. The useful
-   phase records live under `agents/done/`.
-2. `drp2` and `scene` are active default-build modules. The first scene -> DRP2 -> vklite/canvas
-   vertical slice exists, with focused tests and basic C examples.
-3. The active execution plan is now a phased scene roadmap: native 3D baseline first (`mesh`,
-   depth, viewport UBO, arcball validation), then early browser/WebGPU feasibility work, then
-   transparency, axes/text, and picking.
-4. The DRP2 spec/fixture lane remains active and should stay aligned with implementation changes,
-   especially around depth state, dynamic viewport/scissor, multi-pass sequencing, and backend
-   parity pressure from browser experiments.
-5. The active mesh design note records the intended Phase 1 shading/material contract and the
-   deferred path for contour/isoline and PBR growth.
-6. The active geometry design note records the intended `geom` module, `DvzGeometry` direction,
-   procedural-shape scope, and triangulation split for v0.4.
-7. The active cross-cutting spec note records current decisions around resource updates,
-   model-space arcball, picking precision, WBOIT, text, and measurement annotations.
-8. The active mesh API note records how `DvzGeometry`, scene mesh resources, mesh visuals,
-   materials, picking, and partial updates should fit together.
-9. The active text note records the intended font/atlas/shaping/render split, world-space text
-   requirements, and equation-backend direction.
-10. The active transparency note records how WBOIT should appear at the visual, frame-plan, DRP2,
-    runtime, and capability levels.
-11. The active picking note records per-family picking precision, scene-owned identity routing, and
-    the intended request/readback contract.
-12. The active selection/highlight note records the intended scene-owned hover/selection state,
-    linked identity highlighting, and family-level emphasis rules.
-13. The active capability/fallback note records the intended runtime-fact, derived-feature, and
-    explicit-degradation policy across scene features.
-14. The active probe/readout note records the intended semantic payload contract for picked or
-    queried image, volume, mesh, and point data.
-15. The active interaction API note records the intended first scene-facing API shape for picking,
-    hover, selection, linked selection, probes, and pinned readouts.
-16. The active transform/controller note records the model-space arcball contract, fixed-camera
-    policy, and the split between world-space and screen-space placement.
-17. The active annotation/measurement note records the intended scale-bar, dimension, and bounding-box
-    overlay model, including unit-aware formatting and placement rules.
-18. The active resource-update note records the intended retained partial-update contract for mesh,
-    image, text-atlas, and grouped-resource mutations.
-19. The active asset-boundary note records the intended split between imported/authored assets,
-    CPU-side semantic objects, scene-owned resources, and exported semantic outputs.
-20. The active material/lighting note records the intended panel-light-set model, visual-owned
-    materials, and the narrow first classic-lit shading contract.
-21. The active text/scale/annotation API note records the intended first scene-facing API shape for
-    text visuals, shared scales, colorbars, measurement annotations, and pinned semantic labels.
-22. The active axes/domain note records the intended panel-owned domain semantics, unit-sharing with
-    measurement overlays, and the split between 2D axes and early 3D orientation aids.
-23. The active volume note records the intended mixed volume/mesh/slice design, including semantic
-    slice picking and shared scientific framing with 3D meshes.
-24. The active colorbar/colormap note records the intended shared-scale model, panel-attached
-    colorbars, and interactive range-control direction.
-25. The active scientific-coordinate note consolidates the current F64 normalization policy and the
-    need for shared 3D framing across related mesh/volume scenes.
-26. The active ray-tracing note records which current scene-level decisions should remain semantic so
-    a future ray path can land without a public-API rewrite.
-27. The active UI/backend note records the scene-boundary implications of Dear ImGui, Qt/PyQt-style
-    embedding, host-driven layout, and external retained mutation.
+The scene semantic decision records that used to live in `agents/now/` now live under
+[../spec/scene/decisions](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions).
 
 
 ## Start Here
@@ -98,112 +24,38 @@ Current status:
 If resuming work on the branch:
 
 1. Read [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. Read [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) if touching
+   for the current practical task list.
+2. Read [../spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md) before
+   changing scene semantics, public scene API shape, frame planning, visual families, interaction,
+   annotations, scales, or runtime boundaries.
+3. Read [../spec/scene/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/API_SURFACE.md)
+   before changing `include/datoviz/scene.h`, adding public scene subheaders, or drafting
+   interaction / annotation / scale object types.
+4. Read [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+   for the immediate public-header drafting sequence.
+5. Read [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) if touching
    `spec/drp2/`, `src/drp2/`, or DRP2-emitting scene code.
-3. Read [now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
-   before implementing the first `mesh` visual family or changing mesh shading/material direction.
-4. Read [now/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/GEOM_DESIGN.md) before
-   reviving `DvzShape`-like functionality or implementing the v0.4 geometry module.
-5. Read [now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md)
-   before locking scene resource updates, controller behavior, picking, transparency, or text
-   direction.
-6. Read [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
-   before implementing the scene-facing `mesh` resource/visual API.
-7. Read [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md) before
-   implementing the text visual family, world-space labels, or equation/text-resource direction.
-8. Read [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
-   before implementing transparent visual modes or WBOIT-related frame-plan/runtime work.
-9. Read [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
-   before implementing object/face/item picking paths or result-routing APIs.
-10. Read [now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
-   before implementing scene-owned selection state, hover/highlight routing, or linked selection
-   behavior across visuals.
-11. Read [now/CAPABILITY_FALLBACK_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/CAPABILITY_FALLBACK_DESIGN.md)
-   before hardening fallback behavior, feature validation, or capability-driven planning.
-12. Read [now/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PROBE_READOUT_DESIGN.md)
-   before implementing semantic readout payloads, probe APIs, or value/coordinate tooltips.
-13. Read [now/INTERACTION_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/INTERACTION_API_DESIGN.md)
-   before designing the public interaction surface for pick requests, selection objects, link
-   channels, probe results, or pinned readouts.
-14. Read [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
-   before changing controller semantics, placement modes, or model/camera ownership rules.
-15. Read [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
-   before implementing scale bars, dimension helpers, bounding-box overlays, or mixed placement
-   annotations.
-16. Read [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
-   before adding mesh-resource updates, texture-region writes, atlas updates, or new retained
-   mutable resource types.
-17. Read [now/ASSET_BOUNDARY_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ASSET_BOUNDARY_DESIGN.md)
-   before binding imported geometry/image/volume/text assets into scene resources or semantic export
-   payloads.
-18. Read [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
-   before implementing scene light objects, material setters, or lit-family shading selection.
-19. Read [now/ANNOTATION_TEXT_SCALE_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_TEXT_SCALE_API.md)
-   before designing the public API for text visuals, shared scales, colorbars, and retained
-   annotation objects.
-20. Read [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
-   before implementing panel-owned domains, unit-aware axes, or scale-bar/axis shared formatting.
-21. Read [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
-   before implementing active volume work, slice-plane interaction, or mixed mesh/volume picking.
-22. Read [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
-   before implementing shared scales, panel colorbars, or interactive colormap/range editing.
-23. Read [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-   before changing F64 normalization policy, mixed 3D framing, or semantic coordinate readback.
-24. Read [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
-   before freezing raster-only assumptions into mesh, volume, transparency, or picking APIs.
-25. Read [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
-   before tightening external UI mutation paths, host embedding, or texture-handle presentation
-   assumptions.
-26. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
-   for the completed first vertical slice.
-27. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
-   before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-28. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
-   when touching panel transforms, per-panel UBOs, or controller input flow.
-29. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
-   [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
-   only when a task touches low-level ownership or naming contracts.
-30. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
-   and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
-   next-task list.
+6. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+   and [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+   when touching the completed first scene -> DRP2 -> runtime slice.
+7. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+   and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog.
 
 
 ## Directory Layout
 
 ### `now/`
 
-Files in this directory are actionable today and should stay short enough to drive real execution.
+Short practical next-step notes. These files should answer what to do next and where to read the
+normative spec. They should not be the long-term home for scene semantics.
 
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
-3. [now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
-4. [now/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/GEOM_DESIGN.md)
-5. [now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md)
-6. [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
-7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
-8. [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
-9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
-10. [now/SELECTION_HIGHLIGHT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SELECTION_HIGHLIGHT_DESIGN.md)
-11. [now/CAPABILITY_FALLBACK_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/CAPABILITY_FALLBACK_DESIGN.md)
-12. [now/PROBE_READOUT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PROBE_READOUT_DESIGN.md)
-13. [now/INTERACTION_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/INTERACTION_API_DESIGN.md)
-14. [now/TRANSFORM_CONTROLLER_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSFORM_CONTROLLER_DESIGN.md)
-15. [now/ANNOTATION_MEASUREMENT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_MEASUREMENT_DESIGN.md)
-16. [now/RESOURCE_UPDATE_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RESOURCE_UPDATE_DESIGN.md)
-17. [now/ASSET_BOUNDARY_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ASSET_BOUNDARY_DESIGN.md)
-18. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
-19. [now/ANNOTATION_TEXT_SCALE_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/ANNOTATION_TEXT_SCALE_API.md)
-20. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
-21. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
-22. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
-23. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-24. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
-25. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
 ### `done/`
 
-Files in this directory are completed phase records. They are useful context, but they are not
-current execution plans.
+Completed phase records. These are useful context, but they are not current execution plans.
 
 1. [done/EXTERNAL.md](/home/cyrille/GIT/Viz/datoviz/agents/done/EXTERNAL.md)
 2. [done/BOOTSTRAP_GPU_CTX_MIGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/BOOTSTRAP_GPU_CTX_MIGRATION.md)
@@ -221,7 +73,7 @@ current execution plans.
 
 ### `later/`
 
-Files in this directory are backlog, strategic direction, or secondary cleanup tracks.
+Backlog, strategic direction, or secondary cleanup tracks.
 
 1. [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md)
 2. [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
@@ -229,10 +81,9 @@ Files in this directory are backlog, strategic direction, or secondary cleanup t
 
 ## Maintenance Rules
 
-1. If a document is not actionable this week, it should not live under `now/`.
-2. Completed plans should move to `done/` once the code and tests agree they are complete.
-3. Long-horizon architecture and speculative work should live under `later/`.
-4. Keep the number of active docs under `now/` small; one primary active plan is ideal.
-5. On the `v0.4` branch, backward compatibility with earlier `v0.4` code or with `v0.3` is not a priority.
-6. Prefer changes that improve architecture, correctness, and long-term maintainability, even when they
-   require API or ABI breakage.
+1. Keep `agents/now/` small and practical.
+2. Move stable scene semantics to `spec/scene/` or `spec/scene/decisions/`.
+3. Move completed implementation records to `agents/done/`.
+4. Move speculative or long-horizon execution ideas to `agents/later/`.
+5. On the `v0.4` branch, prefer architecture, correctness, and maintainability over API or ABI
+   compatibility with earlier work.

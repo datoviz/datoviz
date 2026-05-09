@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE TEXT DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 text architecture, including world-space text,
 >   screen-space annotations, font/atlas resources, and equation-backend integration.

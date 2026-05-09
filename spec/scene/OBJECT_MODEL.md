@@ -6,25 +6,50 @@ This document defines the minimum stable concepts for the future scene layer.
 ## Core Objects
 
 1. `Scene`
-2. `Panel`
-3. `Visual`
-4. `Resource`
-5. `Camera`
-6. `Controller`
-7. `FramePlan`
-8. `Animation`
-9. `RenderTarget`
+2. `Figure`
+3. `Panel`
+4. `Visual`
+5. `Resource`
+6. `Camera`
+7. `Controller`
+8. `InteractionPolicy`
+9. `Selection`
+10. `LinkChannel`
+11. `Scale`
+12. `Colormap`
+13. `Colorbar`
+14. `Font`
+15. `Annotation`
+16. `FramePlan`
+17. `Animation`
+18. `RenderTarget`
 
 
 ## Scene
 
 The scene is the top-level owner of:
 
-1. panels,
+1. figures,
 2. shared resources,
-3. global scheduling,
-4. controller registration,
-5. frame build and DRP2 emission.
+3. interaction policies and retained interaction state,
+4. scales, colormaps, fonts, and other semantic shared objects,
+5. global scheduling,
+6. controller registration,
+7. frame build and DRP2 emission.
+
+
+## Figure
+
+A figure is a layout container for one output surface.
+
+It owns:
+
+1. panel layout,
+2. figure-level background and margins,
+3. figure-level render target binding,
+4. one frame plan build per output frame.
+
+One scene may own multiple figures that share semantic resources and interaction state.
 
 
 ## Panel
@@ -101,6 +126,68 @@ Projection math and interaction policies belong to scene-side logic, not DRP2.
 Controllers are pure scene-side state machines that react to input/events and mutate scene state.
 
 They should not emit backend commands directly.
+
+
+## InteractionPolicy
+
+An interaction policy maps input gestures to picking, hover, selection, probe, and linked
+highlight behavior.
+
+It is scene-owned and may bind to one or more panels.
+
+
+## Selection
+
+A selection is retained scene state containing resolved scene targets.
+
+It should store resolved identities rather than raw backend picking payloads so external UI,
+annotations, and linked highlighting all observe the same state.
+
+
+## LinkChannel
+
+A link channel maps local visual identities to shared semantic keys.
+
+It is the scene-level mechanism for linked hover and linked selection across panels or visuals.
+
+
+## Scale
+
+A scale is a scene-owned semantic mapping from data values to visual values such as color, size, or
+opacity.
+
+It owns domain/view-range metadata, unit metadata, and optional formatting metadata.
+
+
+## Colormap
+
+A colormap is a scene-owned semantic palette object referenced by scales.
+
+It may represent a built-in map, custom continuous stops, a diverging center, or later categorical
+palettes.
+
+
+## Colorbar
+
+A colorbar is a panel-attached explanatory object bound to a scale.
+
+It does not own the scale or colormap it explains.
+
+
+## Font
+
+A font is a scene-owned text resource.
+
+The public object is semantic; atlas pages, glyph UVs, and runtime text resources remain internal.
+
+
+## Annotation
+
+An annotation is a retained semantic object for labels, guides, callouts, measurements, scale bars,
+probe readouts, and related overlays.
+
+Annotations may be scene-global, panel-attached, visual-attached, axis-attached, or
+interaction-derived.
 
 
 ## FramePlan

@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE RAY-TRACING FORWARD-COMPAT NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define what the current v0.4 scene design must preserve so a future ray-tracing
 >   path can land without forcing a public scene-API rewrite.
@@ -25,7 +25,7 @@ There is already broad future-facing guidance here:
 2. lighting forward-compatibility:
    [spec/scene/LIGHTING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/LIGHTING.md)
 3. active material/light direction:
-   [agents/now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
+   [spec/scene/decisions/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/MATERIAL_LIGHTING_API.md)
 
 This note narrows the implications for the active v0.4 design set.
 

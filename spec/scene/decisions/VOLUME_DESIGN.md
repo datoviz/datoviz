@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE VOLUME DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended active v0.4 volume direction, especially for mixed scenes with
 >   transparent meshes, interior opaque meshes, movable slice planes, and precise picking.
@@ -30,9 +30,9 @@ There is already substantial background material:
 2. realistic mixed-use example:
    [spec/scene/examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
 3. active transparency direction:
-   [agents/now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
+   [spec/scene/decisions/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TRANSPARENCY_WBOIT_DESIGN.md)
 4. active picking direction:
-   [agents/now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
+   [spec/scene/decisions/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/PICKING_DESIGN.md)
 
 This note turns that background into an active recommendation set.
 

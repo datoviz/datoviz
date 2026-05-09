@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE RESOURCE UPDATE DESIGN NOTE`
+> - **Status:** `SCENE SPEC DECISION RECORD`
 > - **Updated on:** `2026-05-09`
 > - **Purpose:** define the intended v0.4 retained update contract for scene geometry, textures,
 >   glyph atlases, and other mutable resources.

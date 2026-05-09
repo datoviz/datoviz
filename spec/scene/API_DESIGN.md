@@ -2,8 +2,9 @@
 
 This document selects the current preferred scene-facing API defaults for Datoviz v0.4.
 
-`spec/scene/headers/scene_api.h` is the authoritative draft C spelling. This document remains
-normative for the design rationale and the Python binding architecture.
+`API_SURFACE.md` is the current bridge from scene semantics to the next public header draft.
+`spec/scene/headers/scene_api.h` remains the implementation-facing draft C spelling. This document
+remains normative for broader design rationale and the Python binding architecture.
 
 
 ## Position
@@ -12,7 +13,8 @@ This document sits:
 
 1. above `OBJECT_MODEL.md`,
 2. above `VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
-3. below `headers/scene_api.h`, which is the authoritative C spelling.
+3. beside `API_SURFACE.md`, which owns the next header-drafting policy,
+4. below `headers/scene_api.h` only for exact draft C spelling once the header sketch is updated.
 
 
 ## Normative Status
@@ -34,9 +36,9 @@ The C scene API is the primary and canonical public surface.
 
 It must be designed as an FFI target:
 
-1. opaque handles only in public headers,
-2. descriptor structs for construction,
-3. explicit lifecycle with paired create/destroy,
+1. opaque handles for retained scene-owned objects,
+2. public value structs for descriptors, requests, and result payloads,
+3. explicit lifecycle with paired create/destroy where ownership is not scene-scoped,
 4. no raw function pointers in public structs.
 
 Python binds to the C API through an auto-generated ctypes binding layer (`datoviz/_ctypes.py`),
