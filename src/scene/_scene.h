@@ -185,6 +185,8 @@ struct DvzVisual
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
     DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
+    DvzScale*     scale;           /* first slice: image colormap scale */
+    char          scale_slot[32];  /* semantic binding slot name */
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;

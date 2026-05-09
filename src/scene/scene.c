@@ -1326,6 +1326,45 @@ int dvz_visual_set_texture(
 }
 
 
+/**
+ * Bind a scene-owned scale to a named visual slot.
+ *
+ * First retained slice: image visuals accept the `"colormap"` slot. Other
+ * visual families and slot names are rejected until their retained scale
+ * wiring is implemented.
+ *
+ * @param visual the visual
+ * @param slot_name the semantic slot name
+ * @param scale the scale, or NULL to clear the binding
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
+{
+    ANN(visual);
+    ANN(slot_name);
+    if (scale != NULL && scale->scene != visual->scene)
+    {
+        log_error("cannot bind a scale from a different scene");
+        return -1;
+    }
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    {
+        log_error("dvz_visual_set_scale is only supported for image visuals in the first slice");
+        return -1;
+    }
+    if (strcmp(slot_name, "colormap") != 0)
+    {
+        log_error("unsupported image scale slot '%s' (expected 'colormap')", slot_name);
+        return -1;
+    }
+    visual->scale = scale;
+    dvz_memset(visual->scale_slot, sizeof(visual->scale_slot), 0, sizeof(visual->scale_slot));
+    if (scale != NULL)
+        dvz_strlcpy(visual->scale_slot, slot_name, sizeof(visual->scale_slot));
+    return 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scene JSON serialization                                                                     */
@@ -1424,7 +1463,34 @@ char* dvz_scene_json(const DvzScene* scene)
                         _json_append(&b, "null");
                     _json_append(&b, "}");
                 }
-                _json_append(&b, "]}"); /* close attrs + visual */
+                _json_append(&b, "],\"scale\":");
+                if (vis->scale != NULL && vis->scene != NULL)
+                {
+                    int64_t scale_idx = -1;
+                    for (uint32_t si = 0; si < vis->scene->scale_count; si++)
+                    {
+                        if (&vis->scene->scales[si] == vis->scale)
+                        {
+                            scale_idx = (int64_t)si;
+                            break;
+                        }
+                    }
+                    if (scale_idx >= 0)
+                    {
+                        _json_append(&b, "{\"id\":\"s%" PRId64 "\",\"slot\":", scale_idx);
+                        _json_append_escaped_string(&b, vis->scale_slot);
+                        _json_append(&b, "}");
+                    }
+                    else
+                    {
+                        _json_append(&b, "null");
+                    }
+                }
+                else
+                {
+                    _json_append(&b, "null");
+                }
+                _json_append(&b, "}"); /* close visual */
             }
             _json_append(&b, "]}"); /* close visuals + panel */
         }

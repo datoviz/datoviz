@@ -167,4 +167,24 @@ DVZ_EXPORT void dvz_colorbar_set_format(
     DvzColorbar* colorbar, const DvzFormatDesc* format);
 
 
+
+/*************************************************************************************************/
+/*  Visual scale bindings                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Bind a scene-owned scale to a named visual slot.
+ *
+ * First retained slice: image visuals accept the `"colormap"` slot. Other
+ * visual families and slot names are rejected until their retained scale
+ * wiring is implemented.
+ *
+ * @param visual the visual
+ * @param slot_name the semantic slot name
+ * @param scale the scale, or NULL to clear the binding
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale);
+
+
 EXTERN_C_OFF

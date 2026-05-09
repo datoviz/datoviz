@@ -2786,6 +2786,95 @@ int test_scene_colorbar_rejects_cross_scene_scale(TstSuite* suite, TstItem* item
 
 
 
+int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "Intensity",
+                   .unit = "a.u.",
+               });
+    ANN(scale);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+
+    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(image->scale == scale);
+    AT(strcmp(image->scale_slot, "colormap") == 0);
+
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    float positions[4 * 3] = {
+        -1.0f, +1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        +1.0f, +1.0f, 0.0f,
+        +1.0f, -1.0f, 0.0f,
+    };
+    float texcoords[4 * 2] = {
+        0.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+    };
+    static const uint8_t pixels[4 * 4 * 4] = {0};
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    dvz_drp2_stream_destroy(stream);
+
+    char* json = dvz_scene_json(scene);
+    ANN(json);
+    AT(strstr(json, "\"scale\":{\"id\":\"s0\",\"slot\":\"colormap\"}") != NULL);
+    dvz_scene_json_destroy(json);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzScale* foreign_scale = dvz_scale(scene1, NULL);
+    ANN(foreign_scale);
+    DvzVisual* image = dvz_image(scene0, 0);
+    ANN(image);
+
+    AT(dvz_visual_set_scale(image, "colormap", foreign_scale) != 0);
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -5080,6 +5169,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_background_color_creates_fixed_quad);
     TEST_SIMPLE(test_scene_scale_colormap_colorbar_core);
     TEST_SIMPLE(test_scene_colorbar_rejects_cross_scene_scale);
+    TEST_SIMPLE(test_scene_image_visual_binds_colormap_scale);
+    TEST_SIMPLE(test_scene_visual_scale_rejects_cross_scene_scale);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
