@@ -1,0 +1,25 @@
+# Scene Pipeline Specs
+
+This directory contains resource, transform, invalidation, frame-plan, and lifecycle contracts.
+
+Use these files when changing scene-side resource ownership, update granularity, data normalization,
+frame planning, or runtime handoff.
+
+
+## Files
+
+1. [RESOURCE_MODEL.md](RESOURCE_MODEL.md): logical resources, ownership, and data ingestion policy.
+2. [ATTRIBUTE_SOURCES.md](ATTRIBUTE_SOURCES.md): per-attribute data granularity and mutability hints.
+3. [TRANSFORM_PIPELINE.md](TRANSFORM_PIPELINE.md): normalization, panel transforms, and CPU precision.
+4. [INVALIDATION_AND_CACHING.md](INVALIDATION_AND_CACHING.md): dirty scopes, reuse, redraw, and uploads.
+5. [FRAME_PLAN.md](FRAME_PLAN.md): canonical producer-side frame artifact.
+6. [FRAME_PLAN_SERIALIZATION.md](FRAME_PLAN_SERIALIZATION.md): debug and fixture shape for frame plans.
+7. [FRAME_LIFECYCLE.md](FRAME_LIFECYCLE.md): update, build, emit, and runtime handoff flow.
+
+
+## Active Proposal Inputs
+
+1. [../proposals/ASSET_BOUNDARY_DESIGN.md](../proposals/ASSET_BOUNDARY_DESIGN.md)
+2. [../proposals/RESOURCE_UPDATE_DESIGN.md](../proposals/RESOURCE_UPDATE_DESIGN.md)
+3. [../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+4. [../proposals/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/TRANSFORM_CONTROLLER_DESIGN.md)

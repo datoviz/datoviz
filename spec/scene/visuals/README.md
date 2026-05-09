@@ -40,3 +40,11 @@ detail to implement or validate each family.
 Read `../pipeline/ATTRIBUTE_SOURCES.md` in the parent directory before reading any family spec.
 The granularity vocabulary (`CONSTANT`, `PER_ITEM`, `PER_SPAN`, `PER_GROUP`) and mutability hints
 (`static`, `dynamic`, `streaming`) are used throughout.
+
+
+## Active Proposal Inputs
+
+1. [../proposals/MESH_API_DESIGN.md](../proposals/MESH_API_DESIGN.md)
+2. [../proposals/MESH_SHADING_DESIGN.md](../proposals/MESH_SHADING_DESIGN.md)
+3. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
+4. [../proposals/VOLUME_DESIGN.md](../proposals/VOLUME_DESIGN.md)

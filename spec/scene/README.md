@@ -31,8 +31,8 @@ The scene spec is split by kind of authority:
 1. [core](core/README.md): foundational ownership, object model, runtime boundary, and use cases.
 2. [api](api/README.md): public API profile, public header surface, and implementation bridge.
 3. [semantics](semantics/README.md): user-visible scene semantics and cross-family behavior.
-4. [pipeline](pipeline/): resource, transform, invalidation, frame-plan, and lifecycle contracts.
-5. [interaction](interaction/): controllers, picking, selection, callbacks, and animation.
+4. [pipeline](pipeline/README.md): resource, transform, invalidation, frame-plan, and lifecycle contracts.
+5. [interaction](interaction/README.md): controllers, picking, selection, callbacks, and animation.
 6. [visuals](visuals/README.md): per-family data contracts.
 7. [validation](validation/README.md): validation, adaptation, diagnostics, and deferred items.
 8. [integration](integration/README.md): host UI, threading, high-DPI, and custom visuals.

@@ -19,3 +19,11 @@ scene concepts into C and language bindings.
 1. [../headers](../headers): implementation-facing draft header sketches.
 2. [../proposals](../proposals): active design addenda that feed future API drafts.
 3. [../examples](../examples): API pressure sketches and worked examples.
+
+
+## Active Proposal Inputs
+
+1. [../proposals/INTERACTION_API_DESIGN.md](../proposals/INTERACTION_API_DESIGN.md)
+2. [../proposals/ANNOTATION_TEXT_SCALE_API.md](../proposals/ANNOTATION_TEXT_SCALE_API.md)
+3. [../proposals/MESH_API_DESIGN.md](../proposals/MESH_API_DESIGN.md)
+4. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)

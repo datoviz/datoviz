@@ -13,3 +13,8 @@ threads, high-DPI windows, or custom user-provided visual families.
 2. [THREAD_SAFETY.md](THREAD_SAFETY.md): threading model and async data handoff.
 3. [HIGH_DPI.md](HIGH_DPI.md): logical pixels, device pixel ratio, and DPI changes.
 4. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md): registration and integration of user-defined visuals.
+
+
+## Active Proposal Inputs
+
+1. [../proposals/UI_BACKEND_INTEGRATION.md](../proposals/UI_BACKEND_INTEGRATION.md)

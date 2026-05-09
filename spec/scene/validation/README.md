@@ -12,3 +12,8 @@ promotion/deferment.
 2. [ADAPTATION.md](ADAPTATION.md): explicit capability fallback and simplification policy.
 3. [DIAGNOSTICS.md](DIAGNOSTICS.md): shared diagnostic record shape.
 4. [DEFERRED_TRACKER.md](DEFERRED_TRACKER.md): deferred items by milestone.
+
+
+## Active Proposal Inputs
+
+1. [../proposals/CAPABILITY_FALLBACK_DESIGN.md](../proposals/CAPABILITY_FALLBACK_DESIGN.md)

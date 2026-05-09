@@ -20,3 +20,16 @@ transparency, clipping, transforms, or geometry utilities.
 10. [CLIPPING.md](CLIPPING.md): clip modes and data-area clipping.
 11. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): non-linear coordinate transforms.
 12. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer.
+
+
+## Active Proposal Inputs
+
+1. [../proposals/ANNOTATION_MEASUREMENT_DESIGN.md](../proposals/ANNOTATION_MEASUREMENT_DESIGN.md)
+2. [../proposals/AXES_DOMAIN_DESIGN.md](../proposals/AXES_DOMAIN_DESIGN.md)
+3. [../proposals/COLORBAR_COLORMAP_DESIGN.md](../proposals/COLORBAR_COLORMAP_DESIGN.md)
+4. [../proposals/GEOM_DESIGN.md](../proposals/GEOM_DESIGN.md)
+5. [../proposals/MESH_SHADING_DESIGN.md](../proposals/MESH_SHADING_DESIGN.md)
+6. [../proposals/RAY_TRACING_FORWARD_COMPAT.md](../proposals/RAY_TRACING_FORWARD_COMPAT.md)
+7. [../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md](../proposals/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+8. [../proposals/TEXT_DESIGN.md](../proposals/TEXT_DESIGN.md)
+9. [../proposals/TRANSPARENCY_WBOIT_DESIGN.md](../proposals/TRANSPARENCY_WBOIT_DESIGN.md)
