@@ -146,7 +146,9 @@ Recommended behavior:
 
 1. scale units appear on colorbar labels,
 2. ticks derive from the scale’s semantic domain and formatting policy,
-3. range/view changes update tick generation and label formatting consistently.
+3. range/view changes update tick generation and label formatting consistently,
+4. local formatting overrides may exist, but they should layer on top of the shared scale/domain
+   formatting machinery rather than replacing it wholesale.
 
 This is one reason the axes/domain and measurement notes matter here.
 

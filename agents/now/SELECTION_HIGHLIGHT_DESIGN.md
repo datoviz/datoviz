@@ -122,7 +122,9 @@ Recommended direction:
 3. linked selection may therefore map one semantic entity onto object-level, face-level, or
    item-level manifestations in different visuals,
 4. one user action can therefore highlight a point cloud, a mesh region, and a label together when
-   they reference the same semantic entity.
+   they reference the same semantic entity,
+5. linked selection should remain opt-in per visual rather than being forced on every attached
+   visual by default.
 
 This is important for scientific exploration workflows and for external UI inspectors.
 

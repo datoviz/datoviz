@@ -179,6 +179,12 @@ Recommended state split:
 5. when available, a pinned readout should retain both the raw originating hit and the resolved
    semantic payload that was stored from it.
 
+Recommended interaction behavior:
+
+1. pinned readouts should behave as passive views by default,
+2. policy may optionally let clicking or focusing a pinned readout reselect or reprobe its target,
+3. do not hard-wire pinned readouts into the active selection path.
+
 
 ## Request Model
 

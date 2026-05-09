@@ -100,6 +100,13 @@ Recommended slice pick result:
 This is stronger than ordinary 2D image picking because the slice is embedded in a 3D scene and must
 still report semantic coordinates.
 
+Recommended interaction rule:
+
+1. slice samples should support both probe-only interaction and optional persistent sample
+   selection,
+2. when possible, slice readout and selection should reuse the common image-like probe/readout
+   structure instead of inventing a separate volume-only query shape.
+
 
 ## Mixed Mesh And Volume Picking
 

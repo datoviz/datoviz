@@ -233,6 +233,12 @@ Recommended behavior:
 2. text size defined in pixels or screen-relative units,
 3. unaffected by model-space arcball unless explicitly requested.
 
+Recommended DPI rule:
+
+1. text sizing and placement should remain expressed in logical units at the scene boundary,
+2. runtime DPI scaling should realize those logical units without changing the semantic text API,
+3. glyph atlas rebuild or patch behavior remains an internal/runtime consequence of DPI changes.
+
 
 ## World-Space 3D Text
 
@@ -249,6 +255,29 @@ Recommended behavior:
    - test/write modes as needed for labels and annotations.
 
 This should not be treated as a hack layered on top of screen-space glyphs.
+
+
+## Picking Scope
+
+The first text slice should keep picking intentionally coarse.
+
+Recommended first behavior:
+
+1. text picking resolves at the string or text-object level,
+2. sub-string or glyph-level picking is deferred,
+3. text selection/highlight should still integrate with the shared scene interaction model.
+
+
+## Resource Boundary
+
+Text resources should stay semantically separated from glyph-atlas runtime details.
+
+Recommended rule:
+
+1. text content, style, and placement are semantic scene concepts,
+2. atlas pages, UVs, and glyph packing remain runtime-resource details,
+3. export, selection, and readout should refer back to semantic text objects rather than atlas
+   internals.
 
 
 ## Orientation Modes

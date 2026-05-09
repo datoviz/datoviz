@@ -137,7 +137,9 @@ Recommended rule:
 1. picking and probing should be able to report original scientific coordinates,
 2. normalized/render-space coordinates may exist internally but are not the primary scientific
    answer,
-3. mixed scenes should round-trip from rendered hit back to semantic source coordinates consistently.
+3. mixed scenes should round-trip from rendered hit back to semantic source coordinates consistently,
+4. probe/readout APIs should recover semantic coordinates by default rather than exposing
+   normalization-space coordinates as the primary user-facing answer.
 
 For slice picking this means:
 
@@ -198,6 +200,12 @@ This should remain true for:
 2. point/scatter positions,
 3. volume bounds and slice placement,
 4. derived annotation anchors.
+
+Implementation caution:
+
+1. avoid per-visual hidden normalization conventions,
+2. related visuals should declare or inherit shared semantic framing explicitly when they belong to
+   one scientific scene.
 
 
 ## What Still Needs A Sharper API
