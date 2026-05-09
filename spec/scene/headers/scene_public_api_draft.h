@@ -18,6 +18,7 @@
 
 #include "datoviz/scene/annotation.h"
 #include "datoviz/scene/interaction.h"
+#include "datoviz/scene/scale.h"
 #include "datoviz/scene/text.h"
 
 
@@ -49,5 +50,7 @@
  * - DvzAnnotationDesc / DvzLabelDesc
  *
  * Public result structs may reference opaque scene-owned handles where that
- * preserves semantic identity, for example DvzProbeResult.scale.
+ * preserves semantic identity, for example DvzProbeResult.scale. Inline text
+ * payload such as DvzProbeResult.label and DvzProbeResult.unit is caller-owned
+ * storage within the public result value itself.
  */

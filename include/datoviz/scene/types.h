@@ -171,8 +171,12 @@ struct DvzPickResult
     bool hit;
     uint64_t panel_id;
     uint64_t visual_id;
+    DvzSceneTargetKind raw_parent_target;
+    uint64_t raw_parent_id;
     DvzSceneTargetKind raw_target;
     uint64_t raw_id;
+    DvzSceneTargetKind resolved_parent_target;
+    uint64_t resolved_parent_id;
     DvzSceneTargetKind resolved_target;
     uint64_t resolved_id;
     uint64_t instance_id;
@@ -206,8 +210,8 @@ struct DvzProbeResult
     double scalar;
     double vector[4];
     uint64_t category_id;
-    const char* label;
-    const char* unit;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    char unit[32];
     DvzScale* scale;
     uint64_t source_request_id;
 };
@@ -276,7 +280,7 @@ struct DvzTextStyle
     DvzFont* font;
     float size_pts;
     uint8_t color[4];
-    DvzSceneAnchor anchor;
+    uint32_t flags;
     bool bold;
     bool italic;
     bool underline;

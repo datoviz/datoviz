@@ -62,6 +62,6 @@ This flow requires:
 
 1. a probe request separate from persistent selection,
 2. a public `DvzProbeResult` that carries coordinate, scalar value, and scale reference,
-3. pinned readouts as retained scene-owned objects,
+3. fixed inline label/unit storage or another explicit lifetime contract,
 4. shared formatting between probe labels and scale/colorbar labels,
 5. image probes that do not expose texture handles or backend readback details.

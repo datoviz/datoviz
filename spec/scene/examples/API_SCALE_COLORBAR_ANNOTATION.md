@@ -62,7 +62,7 @@ dvz_annotation_set_format(label, &(DvzFormatDesc){
 This flow requires:
 
 1. scales and colormaps as scene-owned semantic objects,
-2. colorbars as panel-attached explanatory objects,
+2. colorbars as panel-attached explanatory objects rather than annotation-owned helpers,
 3. annotations as retained scene-owned handles,
 4. one shared formatting descriptor usable by colorbars and labels,
 5. annotation placement that can be data-anchored without depending on runtime details.

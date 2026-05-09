@@ -60,7 +60,7 @@ This flow requires:
 
 1. opaque handles for retained scene objects,
 2. public descriptors for mesh resource creation, selection, and pick request,
-3. a fixed `DvzPickResult` carrying raw face identity and resolved link target,
+3. a fixed `DvzPickResult` carrying raw and resolved parent/child identities,
 4. a public 64-bit link-key representation,
 5. selection state independent from visual ownership,
 6. linked highlight behavior across panels without global mutable state.

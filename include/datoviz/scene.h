@@ -23,6 +23,7 @@
 #include "scene/frame_plan.h"
 #include "scene/interaction.h"
 #include "scene/panzoom.h"
+#include "scene/scale.h"
 #include "scene/text.h"
 #include "scene/types.h"
 
