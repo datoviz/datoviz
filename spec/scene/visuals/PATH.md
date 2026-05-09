@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `path` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `semantics/VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -192,7 +192,7 @@ Sub-item (vertex) identity is not returned.
 ## Streaming And Partial Updates
 
 Partial path updates (e.g., streaming new vertices into an existing path without re-uploading
-the full buffer) use the standard byte-range upload mechanism from `THREAD_SAFETY.md`. No
+the full buffer) use the standard byte-range upload mechanism from `integration/THREAD_SAFETY.md`. No
 dedicated streaming API is needed.
 
 

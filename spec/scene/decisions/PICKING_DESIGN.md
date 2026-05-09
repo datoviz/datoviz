@@ -32,7 +32,7 @@ There is already meaningful picking-related material in the repo:
 2. active frame-plan tests in
    [src/scene/tests/test_scene.c](/home/cyrille/GIT/Viz/datoviz/src/scene/tests/test_scene.c)
 3. broader scene-spec material such as:
-   - [spec/scene/VISUAL_CONTRACT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/VISUAL_CONTRACT.md)
+   - [spec/scene/semantics/VISUAL_CONTRACT.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/VISUAL_CONTRACT.md)
    - [spec/scene/interaction/SELECTION.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/interaction/SELECTION.md)
    - [spec/scene/pipeline/RESOURCE_MODEL.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/pipeline/RESOURCE_MODEL.md)
 4. visual-family hints, for example mesh face picking in

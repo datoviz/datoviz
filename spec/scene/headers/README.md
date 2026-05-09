@@ -27,7 +27,7 @@ These files are not:
 4. independent sources of scene semantics.
 
 Public API policy now lives in
-[../API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/API_SURFACE.md). Keep
+[../api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md). Keep
 `scene_api.h` aligned with that document when drafting interaction, scale, colorbar, text, and
 annotation handles.
 
@@ -45,8 +45,8 @@ Runtime-facing capability, submission, completion, and diagnostic sketches curre
 
 These sketches are derived from:
 
-1. `../API_DESIGN.md`
-2. `../API_SURFACE.md`
-3. `../RUNTIME_BOUNDARY.md`
-4. `../DIAGNOSTICS.md`
-5. `../IMPLEMENTATION_NOTES.md`
+1. `../api/API_DESIGN.md`
+2. `../api/API_SURFACE.md`
+3. `../core/RUNTIME_BOUNDARY.md`
+4. `../validation/DIAGNOSTICS.md`
+5. `../api/IMPLEMENTATION_NOTES.md`

@@ -35,7 +35,7 @@ adjacent panels — for example a background color rect or a watermark.
 
 `DVZ_CLIP_NONE` is the default for annotations (labels, guides, probes, callouts) which
 are intentionally allowed to overflow into margins or across panel boundaries.
-See `ANNOTATIONS.md`.
+See `semantics/ANNOTATIONS.md`.
 
 
 ## How Clipping Is Applied
@@ -61,7 +61,7 @@ data_area.width  = panel.width  - margin_left - margin_right
 data_area.height = panel.height - margin_top  - margin_bottom
 ```
 
-Margins are owned by the axes layer (see `AXES.md`).
+Margins are owned by the axes layer (see `semantics/AXES.md`).
 If no axes are attached, margins are zero and `DVZ_CLIP_DATA_AREA` equals
 `DVZ_CLIP_PANEL`.
 
@@ -81,8 +81,8 @@ z-layers do not produce unexpected visual results by overlapping adjacent panels
 
 | Document | Relationship |
 |---|---|
-| `AXES.md` | axes margins define the data area boundary |
-| `ANNOTATIONS.md` | annotations default to `DVZ_CLIP_NONE` |
-| `PANEL_LAYOUT.md` | panel and data area rects derived from layout |
-| `TRANSPARENCY.md` | clipping is orthogonal to alpha mode and OIT |
-| `HIGH_DPI.md` | clip rects are computed in physical pixels after dpi_scale |
+| `semantics/AXES.md` | axes margins define the data area boundary |
+| `semantics/ANNOTATIONS.md` | annotations default to `DVZ_CLIP_NONE` |
+| `core/PANEL_LAYOUT.md` | panel and data area rects derived from layout |
+| `semantics/TRANSPARENCY.md` | clipping is orthogonal to alpha mode and OIT |
+| `integration/HIGH_DPI.md` | clip rects are computed in physical pixels after dpi_scale |

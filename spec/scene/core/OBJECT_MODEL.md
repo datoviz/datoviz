@@ -70,7 +70,7 @@ Panels may be onscreen, offscreen, or virtual for composition.
 A visual is a high-level scientific renderable.
 
 The broad concept should stay consistent with the local `v0.3` scene stack, but the current v0.4
-direction should follow `VISUAL_FAMILIES.md`.
+direction should follow `semantics/VISUAL_FAMILIES.md`.
 
 The current preferred first-class families are:
 
@@ -233,4 +233,4 @@ The DRP2 runtime handles the mapping to backend objects.
 
 The scene does not own the canvas, window, stream, or sinks.
 Those remain application-level and canvas-level concerns.
-See `RUNTIME_BOUNDARY.md` for the full ownership model.
+See `core/RUNTIME_BOUNDARY.md` for the full ownership model.

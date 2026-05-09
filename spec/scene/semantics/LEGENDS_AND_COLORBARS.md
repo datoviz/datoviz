@@ -40,7 +40,7 @@ The intended flow is:
 `DvzLegend` and `DvzColorbar` are distinct types at the API level. They share placement and
 invalidation rules but have different content models and are not subtypes of a common base.
 
-Legends and colorbars hold a reference to a `DvzScale*` handle (see `SCALES.md`). The scale is
+Legends and colorbars hold a reference to a `DvzScale*` handle (see `semantics/SCALES.md`). The scale is
 a first-class scene object with a stable identity; legends and colorbars do not own the scale.
 
 
@@ -95,7 +95,7 @@ That makes them different from ordinary visuals because:
 ## Relationship To Annotations
 
 Legends and colorbars are annotation classes as defined in
-[ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/ANNOTATIONS.md).
+[semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md).
 
 They should inherit the same broad rules:
 
@@ -583,10 +583,10 @@ This document should be read alongside:
 
 1. [ANNOTATIONS.md](ANNOTATIONS.md),
 2. [AXES.md](AXES.md),
-3. [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md),
+3. [../pipeline/RESOURCE_MODEL.md](../pipeline/RESOURCE_MODEL.md),
 4. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md),
-5. [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md),
-6. [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md).
+5. [../pipeline/TRANSFORM_PIPELINE.md](../pipeline/TRANSFORM_PIPELINE.md),
+6. [../pipeline/INVALIDATION_AND_CACHING.md](../pipeline/INVALIDATION_AND_CACHING.md).
 
 
 ## What This Document Intentionally Leaves Open
@@ -600,5 +600,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-`VALIDATION.md` covers legend/colorbar validation and cross-object semantic checks that
+`validation/VALIDATION.md` covers legend/colorbar validation and cross-object semantic checks that
 build on this document.

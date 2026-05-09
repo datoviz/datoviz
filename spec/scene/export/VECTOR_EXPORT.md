@@ -64,7 +64,7 @@ This includes all other visual families: markers, pixels, points, glyphs, images
 volumes, meshes, etc. `path` and `segment` are excepted (see above).
 
 The raster resolution for the embed is controlled by the render scale
-(see `IMAGE_EXPORT.md`): a higher render scale produces a sharper embed at the cost
+(see `export/IMAGE_EXPORT.md`): a higher render scale produces a sharper embed at the cost
 of a larger SVG file.
 
 
@@ -114,8 +114,8 @@ The logical panel size in the scene maps to the SVG `viewBox`.
 
 | Document | Relationship |
 |---|---|
-| `IMAGE_EXPORT.md` | render scale for the raster embed; offline frame driving |
-| `AXES.md` | axes emit vector SVG elements |
-| `ANNOTATIONS.md` | text annotations emit vector SVG elements |
-| `LEGENDS_AND_COLORBARS.md` | colorbar emits gradient and tick SVG elements |
-| `HIGH_DPI.md` | DPI scale affects raster embed resolution |
+| `export/IMAGE_EXPORT.md` | render scale for the raster embed; offline frame driving |
+| `semantics/AXES.md` | axes emit vector SVG elements |
+| `semantics/ANNOTATIONS.md` | text annotations emit vector SVG elements |
+| `semantics/LEGENDS_AND_COLORBARS.md` | colorbar emits gradient and tick SVG elements |
+| `integration/HIGH_DPI.md` | DPI scale affects raster embed resolution |

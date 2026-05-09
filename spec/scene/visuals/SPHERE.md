@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `sphere` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `semantics/VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -174,4 +174,4 @@ The v0.4 shading model for sphere impostors uses Blinn-Phong.
 The visual parameter block reserves `metallic` and `roughness` fields (zero-initialized, ignored in v0.4)
 for future PBR support, following the same pattern as `mesh`.
 A future `normal_map` texture slot is also reserved.
-See `LIGHTING.md` for the full upgrade path.
+See `semantics/LIGHTING.md` for the full upgrade path.

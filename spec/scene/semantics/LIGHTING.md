@@ -178,7 +178,7 @@ The scene layer is already forward-compatible because:
    requested and available. See `pipeline/FRAME_PLAN.md`.
 
 3. **Capability adaptation governs the switch** — ray tracing capability is detected at
-   runtime. `ADAPTATION.md` governs whether a visual falls back to rasterization
+   runtime. `validation/ADAPTATION.md` governs whether a visual falls back to rasterization
    or requires ray tracing. The user policy is declarative; the scene does not hard-code
    rendering paths.
 

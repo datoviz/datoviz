@@ -309,7 +309,7 @@ Two visuals that happen to use the same palette but reference different scale ob
 semantically distinct mappings.
 A colorbar should not aggregate them without explicit instruction.
 
-This rule preserves the aggregation guarantee stated in `LEGENDS_AND_COLORBARS.md`:
+This rule preserves the aggregation guarantee stated in `semantics/LEGENDS_AND_COLORBARS.md`:
 shared explanatory objects should only combine semantically identical mappings.
 
 
@@ -433,7 +433,7 @@ This fallback is transparent to the user except for the diagnostic and the highe
 | Document | Relationship |
 |---|---|
 | `visuals/PIXEL.md` | first family to reference this scale model via `color_mode = scalar` |
-| `LEGENDS_AND_COLORBARS.md` | colorbars attach to scale identity defined here |
+| `semantics/LEGENDS_AND_COLORBARS.md` | colorbars attach to scale identity defined here |
 | `pipeline/ATTRIBUTE_SOURCES.md` | scalar attribute source feeds the scale mapping |
 | `pipeline/INVALIDATION_AND_CACHING.md` | scale-dirty propagation rules |
-| `ADAPTATION.md` | GPU vs CPU palette lookup fallback |
+| `validation/ADAPTATION.md` | GPU vs CPU palette lookup fallback |

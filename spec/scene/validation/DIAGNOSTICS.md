@@ -230,10 +230,10 @@ A report should contain:
 
 This schema should be used by:
 
-1. `VALIDATION.md`
-2. `ADAPTATION.md`
+1. `validation/VALIDATION.md`
+2. `validation/ADAPTATION.md`
 3. `pipeline/FRAME_PLAN.md`
-4. `RUNTIME_BOUNDARY.md`
+4. `core/RUNTIME_BOUNDARY.md`
 
 Those documents may define additional phase-specific rules, but they should reuse this common
 diagnostic shape.

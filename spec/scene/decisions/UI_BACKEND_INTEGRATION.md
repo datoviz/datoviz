@@ -26,7 +26,7 @@ system, including:
 Useful existing context:
 
 1. external UI design:
-   [spec/scene/EXTERNAL_UI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/EXTERNAL_UI.md)
+   [spec/scene/integration/EXTERNAL_UI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/integration/EXTERNAL_UI.md)
 2. current window/backend hook:
    [include/datoviz/window/backend.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/window/backend.h)
 
@@ -65,7 +65,7 @@ Recommended implications for scene design:
 4. texture display inside ImGui should use logical handles, not backend-native image views in scene
    code.
 
-This matches the current direction of `EXTERNAL_UI.md`.
+This matches the current direction of `integration/EXTERNAL_UI.md`.
 
 
 ## Docking And Movable Panels

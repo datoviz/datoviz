@@ -26,7 +26,7 @@ It sits:
 ## Terminology Baseline
 
 The future scene spec should keep the broad `v0.3` idea of a visual while following the preferred
-v0.4 family direction in `VISUAL_FAMILIES.md`.
+v0.4 family direction in `semantics/VISUAL_FAMILIES.md`.
 
 The current preferred first-class family set is:
 
@@ -96,7 +96,7 @@ execution model.
 How each backend prepares data for its own rendering pipeline is an implementation concern, not a
 scene contract.
 
-Implementors building on rasterization pipelines should consult `IMPLEMENTATION_NOTES.md` for
+Implementors building on rasterization pipelines should consult `api/IMPLEMENTATION_NOTES.md` for
 guidance on family-specific data preparation steps.
 
 
@@ -150,7 +150,7 @@ FramePlan; they are not user-visible.
 
 Each visual must declare its semantic family.
 
-The family vocabulary should follow `VISUAL_FAMILIES.md`.
+The family vocabulary should follow `semantics/VISUAL_FAMILIES.md`.
 
 The important separation is:
 

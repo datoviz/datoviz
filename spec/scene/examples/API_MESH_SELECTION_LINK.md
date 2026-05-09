@@ -8,7 +8,7 @@ highlighting.
 
 Read this against:
 
-1. `../API_SURFACE.md`
+1. `../api/API_SURFACE.md`
 2. `../interaction/PICKING.md`
 3. `../interaction/SELECTION.md`
 4. `../decisions/MESH_API_DESIGN.md`

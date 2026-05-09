@@ -82,7 +82,7 @@ The application is notified via a scene-level diagnostic or callback if it needs
 
 ## Interaction With Render Scale
 
-Render scale (`dvz_figure_set_render_scale`, see `IMAGE_EXPORT.md`) and `dpi_scale` are
+Render scale (`dvz_figure_set_render_scale`, see `export/IMAGE_EXPORT.md`) and `dpi_scale` are
 independent and stack multiplicatively.
 
 The runtime allocates render targets at:
@@ -109,7 +109,7 @@ It emits `FramePlan` nodes in logical coordinates throughout.
 
 | Document | Relationship |
 |---|---|
-| `IMAGE_EXPORT.md` | render scale stacks with `dpi_scale` |
-| `GEOMETRY_UTILITIES.md` | `DvzFont` rasterizes at physical resolution |
+| `export/IMAGE_EXPORT.md` | render scale stacks with `dpi_scale` |
+| `semantics/GEOMETRY_UTILITIES.md` | `DvzFont` rasterizes at physical resolution |
 | `pipeline/FRAME_LIFECYCLE.md` | DPI-change event triggers redraw and dirty propagation |
 | `pipeline/INVALIDATION_AND_CACHING.md` | pixel-unit dirty scope on DPI change |

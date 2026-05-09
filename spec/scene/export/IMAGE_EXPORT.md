@@ -52,7 +52,7 @@ dvz_figure_set_render_scale(figure, scale)
 
 **Interaction with high-DPI:**
 
-Render scale stacks with device pixel ratio (see `HIGH_DPI.md`).
+Render scale stacks with device pixel ratio (see `integration/HIGH_DPI.md`).
 The effective physical resolution is `dpi_scale × render_scale × logical_size`.
 Both scale factors are applied by the runtime, not the scene.
 
@@ -139,7 +139,7 @@ The user does not need to specify it explicitly.
 
 ### Relationship To `dvz_gui_image`
 
-`dvz_gui_image(tex, w, h)` already accepts a logical texture handle (see `EXTERNAL_UI.md`).
+`dvz_gui_image(tex, w, h)` already accepts a logical texture handle (see `integration/EXTERNAL_UI.md`).
 An offscreen panel texture obtained from `dvz_panel_set_offscreen` is a valid input:
 
 ```text
@@ -155,7 +155,7 @@ This is the scene-native path for embedding a rendered panel inside an ImGui win
 | Document | Relationship |
 |---|---|
 | `interaction/ANIMATION.md` | video export workflow using offline clock mode |
-| `HIGH_DPI.md` | render scale stacks with device pixel ratio |
+| `integration/HIGH_DPI.md` | render scale stacks with device pixel ratio |
 | `pipeline/FRAME_PLAN.md` | offscreen panel ordering in FramePlan |
-| `EXTERNAL_UI.md` | `dvz_gui_image` accepts offscreen panel textures |
+| `integration/EXTERNAL_UI.md` | `dvz_gui_image` accepts offscreen panel textures |
 | `pipeline/RESOURCE_MODEL.md` | offscreen texture is a scene-owned `TextureResource` |

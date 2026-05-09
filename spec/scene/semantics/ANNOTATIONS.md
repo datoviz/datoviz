@@ -66,7 +66,7 @@ Shared behaviour — attachment, placement, invalidation, z-order — is covered
 this spec and matching fields in each subtype, not by a common C base type.
 
 Legends and colorbars are dedicated scene objects (`DvzLegend`, `DvzColorbar`) defined in
-`LEGENDS_AND_COLORBARS.md`. They are not annotation subtypes.
+`semantics/LEGENDS_AND_COLORBARS.md`. They are not annotation subtypes.
 
 
 ## Non-Goals
@@ -518,7 +518,7 @@ backend-specific escape hatches.
 
 This document should be read alongside:
 
-1. `AXES.md` for axis-derived labels and related semantic guides,
+1. `semantics/AXES.md` for axis-derived labels and related semantic guides,
 2. `interaction/PICKING.md` for interaction-driven probes and pickable annotation identity,
 3. `interaction/CONTROLLERS.md` for controller-driven transient overlays,
 4. `pipeline/TRANSFORM_PIPELINE.md` for anchor and placement transform stages,
@@ -537,5 +537,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-`LEGENDS_AND_COLORBARS.md` and `VALIDATION.md` are the natural follow-ons from this
+`semantics/LEGENDS_AND_COLORBARS.md` and `validation/VALIDATION.md` are the natural follow-ons from this
 document; annotation-heavy and multi-panel worked examples further pressure-test it.

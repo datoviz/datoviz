@@ -2,7 +2,7 @@
 
 This document selects the current preferred scene-facing API defaults for Datoviz v0.4.
 
-`API_SURFACE.md` is the current bridge from scene semantics to the next public header draft.
+`api/API_SURFACE.md` is the current bridge from scene semantics to the next public header draft.
 `spec/scene/headers/scene_api.h` remains the implementation-facing draft C spelling. This document
 remains normative for broader design rationale and the Python binding architecture.
 
@@ -11,9 +11,9 @@ remains normative for broader design rationale and the Python binding architectu
 
 This document sits:
 
-1. above `OBJECT_MODEL.md`,
-2. above `VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
-3. beside `API_SURFACE.md`, which owns the next header-drafting policy,
+1. above `core/OBJECT_MODEL.md`,
+2. above `semantics/VISUAL_CONTRACT.md` and `pipeline/RESOURCE_MODEL.md`,
+3. beside `api/API_SURFACE.md`, which owns the next header-drafting policy,
 4. below `headers/scene_api.h` only for exact draft C spelling once the header sketch is updated.
 
 
@@ -48,7 +48,7 @@ A thin Python sugar layer sits above the generated binding and adds ergonomics (
 keyword arguments, context managers, inline scale shortcuts).
 All scene logic lives in C; the Python layers add no logic of their own.
 
-See `IMPLEMENTATION_NOTES.md` for the full three-tier binding architecture and v0.3 pipeline
+See `api/IMPLEMENTATION_NOTES.md` for the full three-tier binding architecture and v0.3 pipeline
 details.
 
 
@@ -181,7 +181,7 @@ dvz_scale_set_colormap(scale, "plasma");
 
 The explicit scale handle preserves sharing identity — multiple visuals or a colorbar can
 reference the same `DvzScale*`. An inline anonymous shortcut is available at the Python sugar
-layer for single-visual cases. See `SCALES.md` for the full model.
+layer for single-visual cases. See `semantics/SCALES.md` for the full model.
 
 
 ## Preferred Validation And Adaptation Surface
@@ -245,7 +245,7 @@ dvz_frame_plan_destroy(fp);
 The public API may wrap conversion and submission in `dvz_runtime_submit_frame_plan()`, but the
 primary runtime boundary is the DRP2 command stream.
 
-**Terminology note**: `canvas` (from `RUNTIME_BOUNDARY.md`) is the application-owned window +
+**Terminology note**: `canvas` (from `core/RUNTIME_BOUNDARY.md`) is the application-owned window +
 swapchain object. The scene never holds a canvas reference. A `DvzRenderTarget` is the
 scene-facing logical output handle resolved by the runtime — not a canvas.
 
@@ -301,7 +301,7 @@ only. Not a first-class public user-facing API.
 **Inline vs explicit mapping construction** — both are supported. Explicit handles are the
   preferred default and support sharing across visuals and attachment to colorbars. An inline
   shortcut (anonymous mapping, no shareable identity) is available at the Python sugar layer for
-  single-visual cases. See `SCALES.md` for the full model.
+  single-visual cases. See `semantics/SCALES.md` for the full model.
 
 
 ## Relationship To Other Scene Docs
@@ -309,8 +309,8 @@ only. Not a first-class public user-facing API.
 This document should be read together with:
 
 1. `headers/scene_api.h` for the authoritative C API spelling,
-2. `VISUAL_CONTRACT.md` and `VISUAL_FAMILY_RULES.md` for family contract details,
+2. `semantics/VISUAL_CONTRACT.md` and `semantics/VISUAL_FAMILY_RULES.md` for family contract details,
 3. `pipeline/RESOURCE_MODEL.md` for logical resource classes,
-4. `VALIDATION.md` and `ADAPTATION.md` for stage ordering and failure semantics,
-5. `RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
-6. `IMPLEMENTATION_NOTES.md` for one tentative implementation-facing translation of this profile.
+4. `validation/VALIDATION.md` and `validation/ADAPTATION.md` for stage ordering and failure semantics,
+5. `core/RUNTIME_BOUNDARY.md` for the lower execution boundary and service model,
+6. `api/IMPLEMENTATION_NOTES.md` for one tentative implementation-facing translation of this profile.

@@ -26,7 +26,7 @@ Support scientific annotations that are actually useful in interactive and expor
 There is already useful broader spec context:
 
 1. annotation semantics in
-   [spec/scene/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/ANNOTATIONS.md)
+   [spec/scene/semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md)
 2. text direction in
    [spec/scene/decisions/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/TEXT_DESIGN.md)
 3. transform/controller direction in

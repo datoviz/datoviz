@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `mesh` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `semantics/VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -115,7 +115,7 @@ Can be replaced at any time; the visual resizes as needed.
 
 | Property | Value |
 |---|---|
-| Type | `Scale` reference (kind = color) — see `SCALES.md` |
+| Type | `Scale` reference (kind = color) — see `semantics/SCALES.md` |
 | Mutability | `dynamic` |
 | Applies to | `color_mode = scalar` only |
 
@@ -327,4 +327,4 @@ dvz_visual_set_texture(mesh, 1, normal_map_tex) // slot 1: normal map (optional)
 
 When PBR rendering is activated in a future version, the `metallic` and `roughness` fields
 drive the Cook-Torrance BRDF without any change to the public API surface.
-See `LIGHTING.md` for the full PBR and ray tracing upgrade path.
+See `semantics/LIGHTING.md` for the full PBR and ray tracing upgrade path.

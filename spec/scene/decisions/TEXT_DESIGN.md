@@ -402,7 +402,7 @@ High-DPI behavior should be explicit in the text design rather than left to impl
 
 Relevant broader context:
 
-1. [spec/scene/HIGH_DPI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/HIGH_DPI.md)
+1. [spec/scene/integration/HIGH_DPI.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/integration/HIGH_DPI.md)
 
 Recommended policy:
 

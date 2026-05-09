@@ -28,7 +28,7 @@ If resuming work on the branch:
 2. Read [../spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md) before
    changing scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries.
-3. Read [../spec/scene/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/API_SURFACE.md)
+3. Read [../spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
    before changing `include/datoviz/scene.h`, adding public scene subheaders, or drafting
    interaction / annotation / scale object types.
 4. Read [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)

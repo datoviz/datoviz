@@ -172,5 +172,5 @@ coordination.
 | `SELECTION.md` | `DVZ_EVENT_SELECTION_CHANGED` fires after selection state update |
 | `ANIMATION.md` | `DVZ_EVENT_ANIM_STEP` and `DVZ_EVENT_ANIM_COMPLETE` fire during animation update |
 | `FRAME_LIFECYCLE.md` | each event notes which lifecycle stage it fires in |
-| `THREAD_SAFETY.md` | background threads react via transfer callbacks, not direct registration |
-| `HIGH_DPI.md` | `DVZ_EVENT_DPI_CHANGED` fires on pixel ratio change |
+| `integration/THREAD_SAFETY.md` | background threads react via transfer callbacks, not direct registration |
+| `integration/HIGH_DPI.md` | `DVZ_EVENT_DPI_CHANGED` fires on pixel ratio change |

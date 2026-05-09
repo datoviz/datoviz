@@ -44,7 +44,7 @@ visual.
 There is already useful grounding material in the tree:
 
 1. scene-level transparency spec in
-   [spec/scene/TRANSPARENCY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/TRANSPARENCY.md)
+   [spec/scene/semantics/TRANSPARENCY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/TRANSPARENCY.md)
 2. DRP2 capability notes in
    [spec/drp2/CAPABILITIES.md](/home/cyrille/GIT/Viz/datoviz/spec/drp2/CAPABILITIES.md)
 3. low-level WBOIT technique coverage in

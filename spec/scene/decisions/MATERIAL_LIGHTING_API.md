@@ -29,7 +29,7 @@ Relevant context already exists here:
 2. mesh visual ownership split:
    [spec/scene/decisions/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/MESH_API_DESIGN.md)
 3. older broad lighting note:
-   [spec/scene/LIGHTING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/LIGHTING.md)
+   [spec/scene/semantics/LIGHTING.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/LIGHTING.md)
 4. v0.3 shader reference:
    [v0.3/include/datoviz/scene/glsl/lighting.glsl](/home/cyrille/GIT/Viz/datoviz/v0.3/include/datoviz/scene/glsl/lighting.glsl)
 
@@ -269,7 +269,7 @@ Recommendation:
 3. do not overbuild full PBR machinery before the current 3D slice and WBOIT path are working.
 
 
-## Relationship To Existing `spec/scene/LIGHTING.md`
+## Relationship To Existing `spec/scene/semantics/LIGHTING.md`
 
 The broad lighting note is still useful, but I would tighten one design point for active work:
 

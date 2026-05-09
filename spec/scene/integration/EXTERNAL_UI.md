@@ -12,10 +12,10 @@ This document is normative for the boundary between scene semantics and external
 
 It should be read together with:
 
-1. `API_DESIGN.md` for the scene-owned state surface,
+1. `api/API_DESIGN.md` for the scene-owned state surface,
 2. `interaction/CONTROLLERS.md` for scene-native interaction behavior,
 3. `pipeline/FRAME_LIFECYCLE.md` for per-frame ordering,
-4. `RUNTIME_BOUNDARY.md` for what must remain below the scene semantic layer.
+4. `core/RUNTIME_BOUNDARY.md` for what must remain below the scene semantic layer.
 
 
 ## Core Rule
@@ -249,7 +249,7 @@ dvz_panel_gui(panel, "Window Title", flags)
 ```
 
 Each frame the scene reads the ImGui window's current rect and updates the panel viewport.
-See `PANEL_LAYOUT.md` for the ImGui-driven layout mode.
+See `core/PANEL_LAYOUT.md` for the ImGui-driven layout mode.
 
 **Serialization**: ImGui persists window positions and sizes to `imgui.ini` automatically.
 Datoviz does not need its own layout serialization for ImGui-driven panels.

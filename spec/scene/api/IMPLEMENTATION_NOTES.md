@@ -15,7 +15,7 @@ This document is informative.
 Its role is to pressure-test the spec against implementation reality and propose one coherent
 translation path from the scene docs into C-facing types.
 
-The normative sources remain `API_DESIGN.md`, `RUNTIME_BOUNDARY.md`, and the
+The normative sources remain `api/API_DESIGN.md`, `core/RUNTIME_BOUNDARY.md`, and the
 specialized contract docs.
 
 
@@ -37,8 +37,8 @@ The current spec most naturally maps onto implementation-facing scene objects su
 
 **Public API vs implementation names**: the `DvzScene*`-prefixed names above are tentative
 implementation-internal names. The public API types use shorter handles without the `Scene`
-infix: `DvzVisual*`, `DvzPanel*`, `DvzController*`, etc. (see `API_DESIGN.md` and
-`VISUAL_CONTRACT.md`). Implementation code may use `DvzScenePanel` internally; users and Python
+infix: `DvzVisual*`, `DvzPanel*`, `DvzController*`, etc. (see `api/API_DESIGN.md` and
+`semantics/VISUAL_CONTRACT.md`). Implementation code may use `DvzScenePanel` internally; users and Python
 bindings see only `DvzPanel*`.
 
 
@@ -79,7 +79,7 @@ Semantic resource roles map onto an implementation enum:
 7. `DVZ_SCENE_ROLE_READBACK`
 8. `DVZ_SCENE_ROLE_DERIVED`
 
-See `pipeline/RESOURCE_MODEL.md` and `VISUAL_CONTRACT.md` for the normative resource role definitions.
+See `pipeline/RESOURCE_MODEL.md` and `semantics/VISUAL_CONTRACT.md` for the normative resource role definitions.
 
 
 ## Family And Variant Mapping
@@ -133,7 +133,7 @@ target  = dvz_render_target_offscreen(runtime, width, height, format)
 scene   = dvz_scene_create(runtime, target, ...)
 ```
 
-The scene API never takes a `DvzCanvas*` argument directly. See `RUNTIME_BOUNDARY.md` for the
+The scene API never takes a `DvzCanvas*` argument directly. See `core/RUNTIME_BOUNDARY.md` for the
 normative ownership rules.
 
 
@@ -152,7 +152,7 @@ The implementation may fuse these operationally, but the semantic stages should 
 ## Diagnostics
 
 All four layers — validation, capability adaptation, frame planning, and runtime execution —
-share a single diagnostic record type. See `DIAGNOSTICS.md`.
+share a single diagnostic record type. See `validation/DIAGNOSTICS.md`.
 
 
 ## Likely Module Boundaries
@@ -234,13 +234,13 @@ Pure Python, imports `_ctypes`, adds:
 2. NumPy dtype coercion and shape checks before passing arrays to ctypes,
 3. context managers for scene and resource lifecycle,
 4. `__repr__` and inspection helpers,
-5. inline colormap and scale shortcuts (see `SCALES.md`),
+5. inline colormap and scale shortcuts (see `semantics/SCALES.md`),
 6. Pythonic property setters instead of explicit setter calls.
 
 The sugar layer must not contain scene logic. Any new semantic capability must be added to the C
 API first, then surfaced through the sugar layer.
 
-The inline scale shortcut in `SCALES.md` maps to a sugar-layer convenience; it does not require
+The inline scale shortcut in `semantics/SCALES.md` maps to a sugar-layer convenience; it does not require
 a special code path in the C API.
 
 

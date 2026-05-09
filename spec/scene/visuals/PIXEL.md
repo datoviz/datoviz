@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `pixel` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `semantics/VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -94,7 +94,7 @@ Set at visual creation time by passing flags to `dvz_pixel(scene, flags)`:
 ## Depth And Transparency
 
 `z` participates in depth sorting when fragment alpha < 1.0. No explicit flag is needed;
-use `alpha_mode` on the visual to control the transparency path (see `TRANSPARENCY.md`).
+use `alpha_mode` on the visual to control the transparency path (see `semantics/TRANSPARENCY.md`).
 
 
 ## Transform Model, Stage Participation, Picking

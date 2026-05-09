@@ -173,7 +173,7 @@ ImGui-driven panels and grid/free-placement panels may coexist in the same figur
 The grid allocates space for grid panels; ImGui-driven panels float freely over the figure
 surface in their own ImGui windows.
 
-See `EXTERNAL_UI.md` for the full ImGui rendering architecture and input routing details.
+See `integration/EXTERNAL_UI.md` for the full ImGui rendering architecture and input routing details.
 
 
 ## Panel Margins

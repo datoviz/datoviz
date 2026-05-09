@@ -290,7 +290,7 @@ Typical failures:
 ## Transform Validation
 
 The scene should validate transform prerequisites from
-[pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md).
+[../pipeline/TRANSFORM_PIPELINE.md](../pipeline/TRANSFORM_PIPELINE.md).
 
 Checks should include:
 
@@ -309,7 +309,7 @@ Typical failures:
 ## Picking Validation
 
 The scene should validate picking contracts from
-[interaction/PICKING.md](interaction/PICKING.md).
+[../interaction/PICKING.md](../interaction/PICKING.md).
 
 Checks should include:
 
@@ -330,7 +330,7 @@ Typical failures:
 ## Annotation Validation
 
 The scene should validate annotation contracts from
-[ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/ANNOTATIONS.md).
+[semantics/ANNOTATIONS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/ANNOTATIONS.md).
 
 Checks should include:
 
@@ -352,7 +352,7 @@ Typical failures:
 ## Legend And Colorbar Validation
 
 The scene should validate contracts from
-[LEGENDS_AND_COLORBARS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/LEGENDS_AND_COLORBARS.md).
+[semantics/LEGENDS_AND_COLORBARS.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/semantics/LEGENDS_AND_COLORBARS.md).
 
 Checks should include:
 
@@ -488,7 +488,7 @@ The key rules should be:
 ## Relationship To Frame Lifecycle
 
 Validation should fit the frame stages in
-[pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md).
+[../pipeline/FRAME_LIFECYCLE.md](../pipeline/FRAME_LIFECYCLE.md).
 
 The preferred ordering is:
 
@@ -504,7 +504,7 @@ The scene should not rely on runtime submission to discover ordinary scene-contr
 ## Relationship To Runtime Boundary
 
 Validation must respect the runtime boundary in
-[RUNTIME_BOUNDARY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/RUNTIME_BOUNDARY.md).
+[core/RUNTIME_BOUNDARY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/core/RUNTIME_BOUNDARY.md).
 
 That means scene validation may talk about:
 
@@ -534,5 +534,5 @@ This document intentionally does not freeze:
 
 ## Immediate Follow-Up
 
-`ADAPTATION.md` is the natural follow-on: it defines what happens when validation
+`validation/ADAPTATION.md` is the natural follow-on: it defines what happens when validation
 passes but the runtime contract is insufficient for the preferred configuration.

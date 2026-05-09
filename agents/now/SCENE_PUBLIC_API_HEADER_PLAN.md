@@ -25,7 +25,7 @@ in public headers and one implementation-facing scratch companion.
 
 Normative starting points:
 
-1. [spec/scene/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/API_SURFACE.md)
+1. [spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
 2. [spec/scene/decisions/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/decisions/README.md)
 3. [spec/scene/headers/scene_api.h](/home/cyrille/GIT/Viz/datoviz/spec/scene/headers/scene_api.h)
 
@@ -124,7 +124,7 @@ Before implementation starts, the next agent should verify:
 2. public structs are small, stable, and do not leak runtime ownership,
 3. the examples do not require hidden callbacks or undocumented global state,
 4. the new surface still matches the spec and decision records:
-   `spec/scene/API_SURFACE.md`,
+   `spec/scene/api/API_SURFACE.md`,
    `spec/scene/decisions/INTERACTION_API_DESIGN.md`,
    `spec/scene/decisions/ANNOTATION_TEXT_SCALE_API.md`,
    `spec/scene/decisions/PICKING_DESIGN.md`,

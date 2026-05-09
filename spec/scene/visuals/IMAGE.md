@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `image` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `semantics/VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -138,7 +138,7 @@ All items in the visual sample from the same texture.
 
 | Property | Value |
 |---|---|
-| Type | `Scale` reference (kind = color) — see `SCALES.md` |
+| Type | `Scale` reference (kind = color) — see `semantics/SCALES.md` |
 | Mutability | `dynamic` |
 | Applies to | `texture_mode = scalar` only |
 

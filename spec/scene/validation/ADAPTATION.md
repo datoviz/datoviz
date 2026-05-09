@@ -295,7 +295,7 @@ The distinction should remain clear:
 ## Relationship To Runtime Boundary
 
 Capability adaptation must respect the runtime boundary in
-[RUNTIME_BOUNDARY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/RUNTIME_BOUNDARY.md).
+[core/RUNTIME_BOUNDARY.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/core/RUNTIME_BOUNDARY.md).
 
 This means the scene may adapt based on:
 
@@ -340,7 +340,7 @@ The fallback policy follows the standard adaptation model:
 3. if ray tracing is declared **off** (default), rasterization is always used.
 
 The scene API and light source model are identical in both paths.
-See `LIGHTING.md` for the full forward-compatibility design.
+See `semantics/LIGHTING.md` for the full forward-compatibility design.
 
 
 ## Compute Availability
@@ -515,7 +515,7 @@ A useful conceptual diagnostic should report:
 4. semantic impact,
 5. whether the result is a warning, deactivation, or hard failure.
 
-In terms of `DIAGNOSTICS.md`:
+In terms of `validation/DIAGNOSTICS.md`:
 
 - **phase**: `CapabilityAdaptation`
 - **category**: `Capability`
@@ -540,7 +540,7 @@ Examples:
 4. selecting a reduced precision path may invalidate derived resources.
 
 Adaptation policy should therefore integrate with
-[pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md).
+[../pipeline/INVALIDATION_AND_CACHING.md](../pipeline/INVALIDATION_AND_CACHING.md).
 
 
 ## Worked Adaptation Examples

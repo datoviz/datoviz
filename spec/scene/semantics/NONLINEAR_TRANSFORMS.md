@@ -138,7 +138,7 @@ and writes to the derived position buffer.
 The scene inserts it into the `FramePlan` using the same mechanism as built-in projections.
 
 This uses the same compute shader registration infrastructure as custom visual families
-(see `CUSTOM_VISUALS.md`).
+(see `integration/CUSTOM_VISUALS.md`).
 
 
 ### Interaction With Picking
@@ -166,5 +166,5 @@ The interaction between non-linear projections and axes is deferred to the axes 
 | `pipeline/FRAME_PLAN.md` | projection ComputeNode in FramePlan |
 | `pipeline/RESOURCE_MODEL.md` | derived position buffer as persistent compute-derived resource |
 | `pipeline/INVALIDATION_AND_CACHING.md` | projection dirty scope: source positions or parameters |
-| `CUSTOM_VISUALS.md` | custom compute shader registration |
-| `AXES.md` | tick projection for non-linear panels |
+| `integration/CUSTOM_VISUALS.md` | custom compute shader registration |
+| `semantics/AXES.md` | tick projection for non-linear panels |
