@@ -12,6 +12,8 @@ Active execution surface:
 3. [now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
 4. [now/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/GEOM_DESIGN.md)
 5. [now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md)
+6. [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
+7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
 
 Current status:
 
@@ -31,6 +33,10 @@ Current status:
    procedural-shape scope, and triangulation split for v0.4.
 7. The active cross-cutting spec note records current decisions around resource updates,
    model-space arcball, picking precision, WBOIT, text, and measurement annotations.
+8. The active mesh API note records how `DvzGeometry`, scene mesh resources, mesh visuals,
+   materials, picking, and partial updates should fit together.
+9. The active text note records the intended font/atlas/shaping/render split, world-space text
+   requirements, and equation-backend direction.
 
 
 ## Start Here
@@ -47,16 +53,20 @@ If resuming work on the branch:
 5. Read [now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md)
    before locking scene resource updates, controller behavior, picking, transparency, or text
    direction.
-6. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+6. Read [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
+   before implementing the scene-facing `mesh` resource/visual API.
+7. Read [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md) before
+   implementing the text visual family, world-space labels, or equation/text-resource direction.
+8. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the completed first vertical slice.
-7. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+9. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-8. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+10. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
    when touching panel transforms, per-panel UBOs, or controller input flow.
-9. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+11. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-10. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+12. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -72,6 +82,8 @@ Files in this directory are actionable today and should stay short enough to dri
 3. [now/MESH_SHADING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_SHADING_DESIGN.md)
 4. [now/GEOM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/GEOM_DESIGN.md)
 5. [now/HIGH_PRIORITY_SPEC_DECISIONS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/HIGH_PRIORITY_SPEC_DECISIONS.md)
+6. [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
+7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
 
 ### `done/`
 
