@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `ACTIVE SPEC / FIXTURE CONTRACT`
+> - **Status:** `ACTIVE DRP2 EXECUTION NOTE`
 > - **Updated on:** `2026-05-08`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
 >   proceeds.
@@ -9,7 +9,8 @@
 
 # DRP2 Spec Phase
 
-This document describes the active DRP2 spec/fixture phase for higher-level Datoviz work.
+This document describes the active DRP2 spec/fixture work queue for higher-level Datoviz work.
+Normative DRP2 protocol rules live under `spec/drp2/`.
 
 
 ## Objective

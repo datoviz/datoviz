@@ -9,7 +9,7 @@ have independent Y controllers.
 
 This example should be read against:
 
-1. `AXES.md` for axis derivation, regeneration policy, domain source, pull model, and panel linking,
+1. `../semantics/AXES.md` for axis derivation, regeneration policy, domain source, pull model, and panel linking,
 2. `../interaction/CONTROLLERS.md` for first-class controller handles, per-dimension binding, and shared-handle
    linking,
 3. `../pipeline/TRANSFORM_PIPELINE.md` for the DataSpace / VisualSpace split,

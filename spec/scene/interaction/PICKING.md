@@ -243,7 +243,7 @@ Expected hit identity:
 
 1. visual id
 2. group id for the logical label or text object
-3. optional glyph index when needed
+3. optional glyph index only for explicitly low-level glyph workflows
 
 
 ### `image`
@@ -315,13 +315,17 @@ Expected hit identity:
 1. visual id
 2. optional family-defined auxiliary payload
 
+The first normative volume payload is slice probe/readout picking, defined in
+[../visuals/VOLUME.md](../visuals/VOLUME.md). Richer ray-cast picking for DVR/MIP remains deferred.
+
 The exact semantics may differ between:
 
 1. nearest-hit style interaction,
 2. sampled-value readout,
 3. probe-like interaction.
 
-This can stay partially deferred until the volume family contract is refined further.
+Only DVR/MIP ray-cast identity can stay partially deferred until the volume family contract is
+refined further.
 
 
 ## Pick Request Types

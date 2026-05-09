@@ -1,6 +1,6 @@
 /*
  * Draft header sketch derived from spec/scene/.
- * This file is the authoritative draft C spelling for the current scene API direction.
+ * This file is the authoritative draft C spelling for the scene API groups it covers.
  * It is not part of the installed public API yet.
  */
 

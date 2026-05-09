@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `point` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -152,4 +152,4 @@ Each point occupies a quad (two triangles); the fragment shader discards corners
 circle. This is the same approach used by `marker` without the shape or rotation machinery.
 
 Depth sorting of semi-transparent points uses the scene's transparency path
-(see `TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.
+(see `semantics/TRANSPARENCY.md`). `point` declares `alpha_mode` like any other visual.

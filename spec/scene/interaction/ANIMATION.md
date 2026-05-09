@@ -389,5 +389,5 @@ produced by animations are included in the current frame's dirty scope.
 | `FRAME_LIFECYCLE.md` | animation update is step 3 of the frame flow |
 | `INVALIDATION_AND_CACHING.md` | animation changes feed the dirty-scope resolution |
 | `CONTROLLERS.md` | controllers and animations are distinct but both mark scene dirty |
-| `REQUIREMENTS.md` | animation and scheduling listed as scene-owned responsibilities |
-| `RUNTIME_BOUNDARY.md` | runtime provides wall-clock timestamp; scene clock consumes it |
+| `core/REQUIREMENTS.md` | animation and scheduling listed as scene-owned responsibilities |
+| `core/RUNTIME_BOUNDARY.md` | runtime provides wall-clock timestamp; scene clock consumes it |

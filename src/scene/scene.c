@@ -45,6 +45,17 @@ static bool _scene_has_live_streams(const DvzScene* scene);
 
 static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
+static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
+
+static void _scene_mark_scale_dirty(DvzScale* scale);
+
+static void _scene_mark_colormap_dirty(DvzColormap* colormap);
+
+static bool _scene_color_from_colormap(
+    const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
+
+static bool _scene_prepare_image_texture(DvzVisual* visual);
+
 
 
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
@@ -223,6 +234,159 @@ static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* ac
 }
 
 
+static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src)
+{
+    ANN(dst);
+    dvz_memset(dst, sizeof(DvzSceneFormatState), 0, sizeof(DvzSceneFormatState));
+    if (src == NULL)
+        return;
+    dst->precision = src->precision;
+    dst->scientific = src->scientific;
+    dst->trim_trailing_zeros = src->trim_trailing_zeros;
+    dst->show_unit = src->show_unit;
+    if (src->unit != NULL)
+        dvz_strlcpy(dst->unit, src->unit, sizeof(dst->unit));
+    if (src->prefix != NULL)
+        dvz_strlcpy(dst->prefix, src->prefix, sizeof(dst->prefix));
+    if (src->suffix != NULL)
+        dvz_strlcpy(dst->suffix, src->suffix, sizeof(dst->suffix));
+}
+
+
+static void _scene_mark_scale_dirty(DvzScale* scale)
+{
+    if (scale == NULL || scale->scene == NULL)
+        return;
+    DvzScene* scene = scale->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene != scene || visual->scale != scale)
+            continue;
+        if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
+            visual->texture.format == DVZ_SCENE_TEXTURE_SCALAR_F32)
+            visual->texture.dirty = true;
+    }
+}
+
+
+static void _scene_mark_colormap_dirty(DvzColormap* colormap)
+{
+    if (colormap == NULL || colormap->scene == NULL)
+        return;
+    DvzScene* scene = colormap->scene;
+    for (uint32_t i = 0; i < scene->scale_count; i++)
+    {
+        DvzScale* scale = &scene->scales[i];
+        if (scale->scene == scene && scale->colormap == colormap)
+            _scene_mark_scale_dirty(scale);
+    }
+}
+
+
+static bool _scene_color_from_colormap(
+    const DvzColormap* colormap, double t, uint8_t out_rgba[4])
+{
+    ANN(out_rgba);
+    if (t < 0.0)
+        t = 0.0;
+    if (t > 1.0)
+        t = 1.0;
+
+    if (colormap != NULL && colormap->stop_count >= 2)
+    {
+        const DvzColormapStop* lo = &colormap->stops[0];
+        const DvzColormapStop* hi = &colormap->stops[colormap->stop_count - 1];
+        for (uint32_t i = 1; i < colormap->stop_count; i++)
+        {
+            if (t <= colormap->stops[i].position)
+            {
+                lo = &colormap->stops[i - 1];
+                hi = &colormap->stops[i];
+                break;
+            }
+        }
+        double span = hi->position - lo->position;
+        double u = span > 0.0 ? (t - lo->position) / span : 0.0;
+        if (u < 0.0)
+            u = 0.0;
+        if (u > 1.0)
+            u = 1.0;
+        for (uint32_t c = 0; c < 4; c++)
+        {
+            double value = (1.0 - u) * lo->rgba[c] + u * hi->rgba[c];
+            out_rgba[c] = (uint8_t)(value + 0.5);
+        }
+        return true;
+    }
+
+    uint8_t gray = (uint8_t)(255.0 * t + 0.5);
+    out_rgba[0] = gray;
+    out_rgba[1] = gray;
+    out_rgba[2] = gray;
+    out_rgba[3] = 255;
+    return true;
+}
+
+
+static bool _scene_prepare_image_texture(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+        return false;
+    if (visual->texture.format != DVZ_SCENE_TEXTURE_SCALAR_F32)
+        return true;
+    if (visual->scale == NULL || visual->scale->colormap == NULL)
+    {
+        log_error("scalar image texture requires a bound scale with a colormap");
+        return false;
+    }
+    if (visual->texture.data == NULL || visual->texture.width == 0 || visual->texture.height == 0)
+        return false;
+
+    uint64_t pixel_count = (uint64_t)visual->texture.width * (uint64_t)visual->texture.height;
+    uint64_t rgba_size = pixel_count * 4ull;
+    if (visual->texture.rgba == NULL || visual->texture.rgba_size != rgba_size)
+    {
+        if (visual->texture.rgba != NULL)
+            dvz_free(visual->texture.rgba);
+        visual->texture.rgba = dvz_malloc(rgba_size);
+        if (visual->texture.rgba == NULL)
+        {
+            visual->texture.rgba_size = 0;
+            log_error("scalar image texture RGBA staging allocation failed");
+            return false;
+        }
+        visual->texture.rgba_size = rgba_size;
+    }
+
+    const float* values = (const float*)visual->texture.data;
+    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    double domain_min = 0.0;
+    double domain_max = 1.0;
+    if (visual->scale->has_view_range)
+    {
+        domain_min = visual->scale->view_min;
+        domain_max = visual->scale->view_max;
+    }
+    else if (visual->scale->has_domain)
+    {
+        domain_min = visual->scale->domain_min;
+        domain_max = visual->scale->domain_max;
+    }
+    double denom = domain_max - domain_min;
+    if (denom == 0.0)
+        denom = 1.0;
+
+    for (uint64_t i = 0; i < pixel_count; i++)
+    {
+        double t = ((double)values[i] - domain_min) / denom;
+        _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
+    }
+    return true;
+}
+
+
 
 /*************************************************************************************************/
 /*  Scene                                                                                        */
@@ -269,6 +433,12 @@ void dvz_scene_destroy(DvzScene* scene)
                 dvz_free(v->attrs[j].data);
                 v->attrs[j].data = NULL;
             }
+        }
+        if (v->texture.rgba != NULL)
+        {
+            dvz_free(v->texture.rgba);
+            v->texture.rgba = NULL;
+            v->texture.rgba_size = 0;
         }
     }
     if (scene->emitter != NULL)
@@ -375,12 +545,16 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 visual->texture.data != NULL && visual->texture.width > 0 &&
                 visual->texture.height > 0)
             {
+                if (!_scene_prepare_image_texture(visual))
+                    continue;
                 char tex_resource_id[128];
                 dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
                 uint64_t bytes = (uint64_t)visual->texture.width *
                                  (uint64_t)visual->texture.height * 4ull;
                 dvz_frame_plan_upload_bytes(
-                    plan, tex_resource_id, 0, bytes, "texture", visual->texture.data);
+                    plan, tex_resource_id, 0, bytes, "texture",
+                    visual->texture.format == DVZ_SCENE_TEXTURE_SCALAR_F32 ? visual->texture.rgba
+                                                                           : visual->texture.data);
                 dvz_frame_plan_upload_set_texture_extent(
                     plan, visual->texture.width, visual->texture.height);
             }
@@ -582,6 +756,7 @@ void dvz_panel_destroy(DvzPanel* panel)
     }
     panel->figure       = NULL;
     panel->visual_count = 0;
+    panel->colorbar_count = 0;
 }
 
 
@@ -703,6 +878,320 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
 
 
 /*************************************************************************************************/
+/*  Scale / colormap / colorbar                                                                  */
+/*************************************************************************************************/
+
+/**
+ * Create a scene-owned scale object.
+ *
+ * @param scene the scene
+ * @param desc the scale descriptor, or NULL for defaults
+ * @return the scale, or NULL on allocation failure
+ */
+DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
+{
+    ANN(scene);
+    if (scene->scale_count >= DVZ_SCENE_MAX_SCALES)
+    {
+        log_error("maximum scale count reached");
+        return NULL;
+    }
+    DvzScale* scale = &scene->scales[scene->scale_count++];
+    dvz_memset(scale, sizeof(DvzScale), 0, sizeof(DvzScale));
+    scale->scene = scene;
+    scale->kind = desc != NULL ? desc->kind : DVZ_SCALE_CONTINUOUS;
+    if (desc != NULL)
+    {
+        if (desc->label != NULL)
+            dvz_strlcpy(scale->label, desc->label, sizeof(scale->label));
+        if (desc->unit != NULL)
+            dvz_strlcpy(scale->unit, desc->unit, sizeof(scale->unit));
+        _format_state_copy(&scale->format, &desc->format);
+    }
+    return scale;
+}
+
+
+/**
+ * Destroy a scale object.
+ *
+ * @param scale the scale
+ */
+void dvz_scale_destroy(DvzScale* scale)
+{
+    if (scale == NULL)
+        return;
+    scale->scene = NULL;
+    scale->colormap = NULL;
+    scale->has_domain = false;
+    scale->has_view_range = false;
+}
+
+
+/**
+ * Set the semantic domain on a scale.
+ *
+ * @param scale the scale
+ * @param min the domain minimum
+ * @param max the domain maximum
+ */
+void dvz_scale_set_domain(DvzScale* scale, double min, double max)
+{
+    ANN(scale);
+    scale->domain_min = min;
+    scale->domain_max = max;
+    scale->has_domain = true;
+    _scene_mark_scale_dirty(scale);
+}
+
+
+/**
+ * Set the current visible range on a scale.
+ *
+ * @param scale the scale
+ * @param min the view-range minimum
+ * @param max the view-range maximum
+ */
+void dvz_scale_set_view_range(DvzScale* scale, double min, double max)
+{
+    ANN(scale);
+    scale->view_min = min;
+    scale->view_max = max;
+    scale->has_view_range = true;
+    _scene_mark_scale_dirty(scale);
+}
+
+
+/**
+ * Bind a colormap to a scale.
+ *
+ * @param scale the scale
+ * @param colormap the colormap
+ */
+void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
+{
+    ANN(scale);
+    if (colormap != NULL && colormap->scene != scale->scene)
+    {
+        log_error("cannot bind a colormap from a different scene");
+        return;
+    }
+    scale->colormap = colormap;
+    _scene_mark_scale_dirty(scale);
+}
+
+
+/**
+ * Override shared formatting policy on a scale.
+ *
+ * @param scale the scale
+ * @param format the format descriptor, or NULL to clear the override
+ */
+void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
+{
+    ANN(scale);
+    _format_state_copy(&scale->format, format);
+    _scene_mark_scale_dirty(scale);
+}
+
+
+/**
+ * Create a scene-owned colormap object.
+ *
+ * @param scene the scene
+ * @param desc the colormap descriptor, or NULL for defaults
+ * @return the colormap, or NULL on allocation failure
+ */
+DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
+{
+    ANN(scene);
+    if (scene->colormap_count >= DVZ_SCENE_MAX_COLORMAPS)
+    {
+        log_error("maximum colormap count reached");
+        return NULL;
+    }
+    DvzColormap* colormap = &scene->colormaps[scene->colormap_count++];
+    dvz_memset(colormap, sizeof(DvzColormap), 0, sizeof(DvzColormap));
+    colormap->scene = scene;
+    colormap->kind = desc != NULL ? desc->kind : DVZ_COLORMAP_CONTINUOUS;
+    colormap->builtin = desc != NULL ? desc->builtin : DVZ_BUILTIN_COLORMAP_NONE;
+    if (desc != NULL)
+    {
+        colormap->center = desc->center;
+        colormap->has_center = desc->center != 0.0;
+        if (desc->label != NULL)
+            dvz_strlcpy(colormap->label, desc->label, sizeof(colormap->label));
+    }
+    return colormap;
+}
+
+
+/**
+ * Create a scene-owned built-in colormap object.
+ *
+ * @param scene the scene
+ * @param builtin the built-in colormap selector
+ * @return the colormap, or NULL on allocation failure
+ */
+DvzColormap* dvz_colormap_builtin(DvzScene* scene, DvzBuiltinColormap builtin)
+{
+    DvzColormapDesc desc = {
+        .kind = DVZ_COLORMAP_CONTINUOUS,
+        .builtin = builtin,
+    };
+    return dvz_colormap(scene, &desc);
+}
+
+
+/**
+ * Destroy a colormap object.
+ *
+ * @param colormap the colormap
+ */
+void dvz_colormap_destroy(DvzColormap* colormap)
+{
+    if (colormap == NULL)
+        return;
+    colormap->scene = NULL;
+    colormap->stop_count = 0;
+    colormap->has_center = false;
+}
+
+
+/**
+ * Set custom color stops on a colormap.
+ *
+ * @param colormap the colormap
+ * @param stops the color stops
+ * @param count the number of stops
+ */
+void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count)
+{
+    ANN(colormap);
+    if (count > DVZ_SCENE_MAX_COLOR_STOPS)
+    {
+        log_error("too many color stops: %u > %u", count, DVZ_SCENE_MAX_COLOR_STOPS);
+        return;
+    }
+    if (count > 0)
+        ANN(stops);
+    colormap->stop_count = count;
+    if (count > 0)
+        dvz_memcpy(colormap->stops, sizeof(colormap->stops), stops, count * sizeof(DvzColormapStop));
+    _scene_mark_colormap_dirty(colormap);
+}
+
+
+/**
+ * Set the diverging center on a colormap.
+ *
+ * @param colormap the colormap
+ * @param center the semantic center value
+ */
+void dvz_colormap_set_center(DvzColormap* colormap, double center)
+{
+    ANN(colormap);
+    colormap->center = center;
+    colormap->has_center = true;
+    _scene_mark_colormap_dirty(colormap);
+}
+
+
+/**
+ * Create a panel-attached colorbar bound to a scale.
+ *
+ * @param panel the panel
+ * @param scale the scale
+ * @param desc the colorbar descriptor, or NULL for defaults
+ * @return the colorbar, or NULL on allocation failure
+ */
+DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDesc* desc)
+{
+    ANN(panel);
+    ANN(scale);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+    {
+        log_error("cannot create a colorbar on a detached panel");
+        return NULL;
+    }
+    DvzScene* scene = panel->figure->scene;
+    if (scale->scene != scene)
+    {
+        log_error("cannot attach a scale from a different scene to a panel colorbar");
+        return NULL;
+    }
+    if (scene->colorbar_count >= DVZ_SCENE_MAX_COLORBARS)
+    {
+        log_error("maximum colorbar count reached");
+        return NULL;
+    }
+    if (panel->colorbar_count >= DVZ_SCENE_MAX_PANEL_COLORBARS)
+    {
+        log_error("maximum panel colorbar count reached");
+        return NULL;
+    }
+    DvzColorbar* colorbar = &scene->colorbars[scene->colorbar_count++];
+    dvz_memset(colorbar, sizeof(DvzColorbar), 0, sizeof(DvzColorbar));
+    colorbar->scene = scene;
+    colorbar->panel = panel;
+    colorbar->scale = scale;
+    colorbar->orientation =
+        desc != NULL ? desc->orientation : DVZ_COLORBAR_ORIENTATION_VERTICAL;
+    colorbar->anchor = desc != NULL ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+    colorbar->flags = desc != NULL ? desc->flags : 0;
+    if (desc != NULL && desc->title != NULL)
+        dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
+    panel->colorbars[panel->colorbar_count++] = colorbar;
+    return colorbar;
+}
+
+
+/**
+ * Destroy a colorbar.
+ *
+ * @param colorbar the colorbar
+ */
+void dvz_colorbar_destroy(DvzColorbar* colorbar)
+{
+    if (colorbar == NULL)
+        return;
+    if (colorbar->panel != NULL)
+    {
+        DvzPanel* panel = colorbar->panel;
+        for (uint32_t i = 0; i < panel->colorbar_count; i++)
+        {
+            if (panel->colorbars[i] != colorbar)
+                continue;
+            for (uint32_t j = i + 1; j < panel->colorbar_count; j++)
+                panel->colorbars[j - 1] = panel->colorbars[j];
+            panel->colorbars[panel->colorbar_count - 1] = NULL;
+            panel->colorbar_count--;
+            break;
+        }
+    }
+    colorbar->scene = NULL;
+    colorbar->panel = NULL;
+    colorbar->scale = NULL;
+    colorbar->has_format = false;
+}
+
+
+/**
+ * Override formatting policy on a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param format the format descriptor, or NULL to clear the override
+ */
+void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
+{
+    ANN(colorbar);
+    colorbar->has_format = format != NULL;
+    _format_state_copy(&colorbar->format, format);
+}
+
+
+
+/*************************************************************************************************/
 /*  Visual — lifecycle and data                                                                  */
 /*************************************************************************************************/
 
@@ -719,6 +1208,12 @@ void dvz_visual_destroy(DvzVisual* visual)
             dvz_free(visual->attrs[i].data);
             visual->attrs[i].data = NULL;
         }
+    }
+    if (visual->texture.rgba != NULL)
+    {
+        dvz_free(visual->texture.rgba);
+        visual->texture.rgba = NULL;
+        visual->texture.rgba_size = 0;
     }
     visual->attr_count = 0;
     visual->scene      = NULL;
@@ -991,7 +1486,85 @@ int dvz_visual_set_texture(
     visual->texture.data   = rgba;
     visual->texture.width  = width;
     visual->texture.height = height;
+    visual->texture.format = DVZ_SCENE_TEXTURE_RGBA8;
     visual->texture.dirty  = true;
+    return 0;
+}
+
+
+/**
+ * Attach a 2D scalar F32 texture to an image visual.
+ *
+ * The scalar data must remain valid until emit time. The bound scale and
+ * colormap are applied on the CPU during emit to produce the RGBA texture used
+ * by the current first-slice image runtime path.
+ *
+ * @param visual the visual (must be of type IMAGE)
+ * @param values scalar F32 pixel data, tightly packed, row-major
+ * @param width the texture width in pixels
+ * @param height the texture height in pixels
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_texture_f32(
+    DvzVisual* visual, const float* values, uint32_t width, uint32_t height)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    {
+        log_error("dvz_visual_set_texture_f32 is only supported for image visuals");
+        return -1;
+    }
+    if (values == NULL || width == 0 || height == 0)
+    {
+        log_error("dvz_visual_set_texture_f32: NULL data or zero extent (%ux%u)", width, height);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set scalar image texture"))
+        return -1;
+    visual->texture.data = values;
+    visual->texture.width = width;
+    visual->texture.height = height;
+    visual->texture.format = DVZ_SCENE_TEXTURE_SCALAR_F32;
+    visual->texture.dirty = true;
+    return 0;
+}
+
+
+/**
+ * Bind a scene-owned scale to a named visual slot.
+ *
+ * First retained slice: image visuals accept the `"colormap"` slot. Other
+ * visual families and slot names are rejected until their retained scale
+ * wiring is implemented.
+ *
+ * @param visual the visual
+ * @param slot_name the semantic slot name
+ * @param scale the scale, or NULL to clear the binding
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* scale)
+{
+    ANN(visual);
+    ANN(slot_name);
+    if (scale != NULL && scale->scene != visual->scene)
+    {
+        log_error("cannot bind a scale from a different scene");
+        return -1;
+    }
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    {
+        log_error("dvz_visual_set_scale is only supported for image visuals in the first slice");
+        return -1;
+    }
+    if (strcmp(slot_name, "colormap") != 0)
+    {
+        log_error("unsupported image scale slot '%s' (expected 'colormap')", slot_name);
+        return -1;
+    }
+    visual->scale = scale;
+    dvz_memset(visual->scale_slot, sizeof(visual->scale_slot), 0, sizeof(visual->scale_slot));
+    if (scale != NULL)
+        dvz_strlcpy(visual->scale_slot, slot_name, sizeof(visual->scale_slot));
     return 0;
 }
 
@@ -1094,7 +1667,34 @@ char* dvz_scene_json(const DvzScene* scene)
                         _json_append(&b, "null");
                     _json_append(&b, "}");
                 }
-                _json_append(&b, "]}"); /* close attrs + visual */
+                _json_append(&b, "],\"scale\":");
+                if (vis->scale != NULL && vis->scene != NULL)
+                {
+                    int64_t scale_idx = -1;
+                    for (uint32_t si = 0; si < vis->scene->scale_count; si++)
+                    {
+                        if (&vis->scene->scales[si] == vis->scale)
+                        {
+                            scale_idx = (int64_t)si;
+                            break;
+                        }
+                    }
+                    if (scale_idx >= 0)
+                    {
+                        _json_append(&b, "{\"id\":\"s%" PRId64 "\",\"slot\":", scale_idx);
+                        _json_append_escaped_string(&b, vis->scale_slot);
+                        _json_append(&b, "}");
+                    }
+                    else
+                    {
+                        _json_append(&b, "null");
+                    }
+                }
+                else
+                {
+                    _json_append(&b, "null");
+                }
+                _json_append(&b, "}"); /* close visual */
             }
             _json_append(&b, "]}"); /* close visuals + panel */
         }

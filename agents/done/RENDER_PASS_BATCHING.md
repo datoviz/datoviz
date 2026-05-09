@@ -249,7 +249,7 @@ What this requires:
   does — perfect), or `vkCmdClearAttachments` with `pRects` if we ever want
   fragment-skip-clear. Quads remain the recommended path.
 - Multi-pass things that *do* need separate passes — e.g. transparent-OIT accumulate
-  + resolve from `spec/scene/TRANSPARENCY.md` — must be done before this phase 3
+  + resolve from `spec/scene/semantics/TRANSPARENCY.md` — must be done before this phase 3
   collapse, because OIT's resolve pass naturally requires its own pass anyway.
 
 Status on `2026-05-08`:
@@ -327,7 +327,7 @@ Concrete sequencing for the next session:
   (see §6 below).
 - **Not re-batching at the DRP2 layer.** DRP2 is intentionally one-command-per-call;
   batching is a scene/converter concern.
-- **Not addressing transparency / OIT.** That's `spec/scene/TRANSPARENCY.md` and is
+- **Not addressing transparency / OIT.** That's `spec/scene/semantics/TRANSPARENCY.md` and is
   orthogonal — it adds *more* passes (accum + resolve). Phase 3's "one pass per
   figure" needs to be revisited once OIT lands.
 

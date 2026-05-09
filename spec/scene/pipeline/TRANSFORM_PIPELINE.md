@@ -731,7 +731,7 @@ All geometry utility operations (triangulation, curve tessellation, line simplif
 computation, boolean polygon operations) also operate in F64 throughout.
 Their output is F64 vertex data that enters the normal upload path and is downcast at
 `UploadNode` time.
-See `GEOMETRY_UTILITIES.md` for the full geometry utility specification.
+See `semantics/GEOMETRY_UTILITIES.md` for the full geometry utility specification.
 
 
 ## Rules

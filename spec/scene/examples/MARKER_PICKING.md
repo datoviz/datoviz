@@ -7,7 +7,7 @@ This example instantiates a richer point-like family with a picking path.
 
 This example should be read against:
 
-1. `../VISUAL_FAMILY_RULES.md` for the `marker` family contract,
+1. `../semantics/VISUAL_FAMILY_RULES.md` for the `marker` family contract,
 2. `../interaction/PICKING.md` for request/result identity and freshness semantics,
 3. `../pipeline/RESOURCE_MODEL.md` for item and readback resources,
 4. `../pipeline/FRAME_PLAN.md` for picking pass and readback-node structure.

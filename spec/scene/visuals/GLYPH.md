@@ -3,8 +3,8 @@
 This document defines the per-item data contract, parameter schema, and behavioral rules for the
 `glyph` visual family.
 
-It refines `VISUAL_FAMILIES.md`, `../VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
-`VISUAL_CONTRACT.md`.
+It refines `../semantics/VISUAL_FAMILIES.md`, `../semantics/VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
+`../semantics/VISUAL_CONTRACT.md`.
 
 Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
@@ -18,6 +18,10 @@ per-character geometry internally. Users do not interact with glyph-level atlas 
 
 Typical uses: axis tick labels, data point annotations, legend entries, categorical labels,
 per-character color coding.
+
+Higher-level retained text objects are defined in [../semantics/TEXT.md](../semantics/TEXT.md).
+Those objects may lower to this `glyph` visual contract, but the public text API should remain
+semantic and should not expose glyph atlas internals.
 
 
 ## Item and Group Model
@@ -276,7 +280,7 @@ Picking returns the string index as item identity. Sub-character picking is not 
 | `dvz_glyph_shift` (per-char) | `shift` per-string; char-level shifts are internal layout |
 | `dvz_glyph_anchor` (per-char) | `anchor` visual-wide |
 | `dvz_glyph_group_size` (per-group) | implicit in font layout — not user-facing |
-| `dvz_glyph_axis` (vec3 per-char) | replaced by `angle` per-string; 3D text deferred |
+| `dvz_glyph_axis` (vec3 per-char) | replaced by text orientation modes and `angle`; no public per-character axis |
 | `dvz_glyph_scale` (per-char) | subsumed by `font_size` per-string |
 | `dvz_glyph_bgcolor` | `bgcolor` visual-wide |
 | `dvz_glyph_texture` | hidden — scene layer concern |

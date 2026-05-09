@@ -330,7 +330,7 @@ Reasoning:
 
 1. scientific users need a figure-level layout concept,
 2. the scene should still avoid canvas/window/swapchain ownership,
-3. this reconciles the useful draft header shape with `RUNTIME_BOUNDARY.md`.
+3. this reconciles the useful draft header shape with `core/RUNTIME_BOUNDARY.md`.
 
 Spec edits if accepted:
 
@@ -390,9 +390,9 @@ Reasoning:
 
 Spec edits if accepted:
 
-1. update `VISUAL_CONTRACT.md`,
+1. update `semantics/VISUAL_CONTRACT.md`,
 2. replace or rename `examples/IMAGE_SLICE.md`,
-3. update `interaction/PICKING.md`, `USE_CASES.md`, `pipeline/RESOURCE_MODEL.md`, and transform notes that mention
+3. update `interaction/PICKING.md`, `core/USE_CASES.md`, `pipeline/RESOURCE_MODEL.md`, and transform notes that mention
    image-family slice-like modes.
 
 Owner decision:
@@ -1027,7 +1027,7 @@ Reasoning:
 
 1. scene users need semantic diagnostics,
 2. DRP2 codes are useful for developers and fixture debugging,
-3. this matches the current `DIAGNOSTICS.md` direction.
+3. this matches the current `validation/DIAGNOSTICS.md` direction.
 
 Owner decision:
 
@@ -1240,7 +1240,7 @@ Use this order:
 
 Reasoning:
 
-The current scene docs conflict because `API_DESIGN.md` calls the header definitive while
+The current scene docs conflict because `api/API_DESIGN.md` calls the header definitive while
 `headers/README.md` calls it informative. Implementation needs one C spelling, but examples should
 not become hidden normative contracts.
 
@@ -1249,7 +1249,7 @@ Spec edits if accepted:
 1. update `spec/scene/README.md`,
 2. update `spec/scene/headers/README.md`,
 3. update the header preamble in `spec/scene/headers/scene_api.h`,
-4. add a short authority note to `API_DESIGN.md`.
+4. add a short authority note to `api/API_DESIGN.md`.
 
 Owner decision:
 
@@ -1286,7 +1286,7 @@ becoming a second scene planner.
 
 Spec edits if accepted:
 
-1. update `RUNTIME_BOUNDARY.md`,
+1. update `core/RUNTIME_BOUNDARY.md`,
 2. update `FRAME_PLAN.md`,
 3. update `FRAME_PLAN_SERIALIZATION.md`,
 4. update `scene_api.h` runtime function sketches.

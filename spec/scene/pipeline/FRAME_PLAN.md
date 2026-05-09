@@ -190,7 +190,7 @@ It would replace `RenderNode` for ray-traced visuals when the capability is avai
 requested.
 The scene layer emits it identically to other node types; the DRP2 runtime handles BVH
 construction and ray tracing command recording.
-See `LIGHTING.md` for the forward-compatibility design.
+See `semantics/LIGHTING.md` for the forward-compatibility design.
 
 
 ## UploadNode

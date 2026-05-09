@@ -3,7 +3,7 @@
 This document defines how individual visual attributes declare their data multiplicity and update
 frequency.
 
-It refines `RESOURCE_MODEL.md` and `VISUAL_CONTRACT.md` at a finer granularity: individual fields
+It refines `RESOURCE_MODEL.md` and `../semantics/VISUAL_CONTRACT.md` at a finer granularity: individual fields
 within a visual's data rather than whole resources.
 
 

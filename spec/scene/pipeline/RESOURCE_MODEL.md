@@ -118,7 +118,7 @@ Every scene resource needs a stable logical identity within the owning scene.
 
 That identity should support:
 
-1. visual declarations in `VISUAL_CONTRACT.md`,
+1. visual declarations in `../semantics/VISUAL_CONTRACT.md`,
 2. dependency tracking in `FRAME_PLAN.md`,
 3. scene diagnostics,
 4. picking and readback result routing when applicable,

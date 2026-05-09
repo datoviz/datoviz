@@ -1,27 +1,22 @@
 # Agents Index
 
-This directory is organized by lifecycle state rather than by topic.
+This directory contains execution guidance for automation agents.
+
+Stable scene semantics belong in [../spec/scene](/home/cyrille/GIT/Viz/datoviz/spec/scene).
+Completed implementation records belong in `agents/done/`. Long-horizon backlog belongs in
+`agents/later/`.
 
 
 ## Current Priority
 
-Active execution surface:
+Active execution notes:
 
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
-Current status:
-
-1. The low-level graphics stack cleanup has moved from active plan to completed context. The useful
-   phase records live under `agents/done/`.
-2. `drp2` and `scene` are active default-build modules. The first scene -> DRP2 -> vklite/canvas
-   vertical slice exists, with focused tests and basic C examples.
-3. The active execution plan is now a phased scene roadmap: native 3D baseline first (`mesh`,
-   depth, viewport UBO, arcball validation), then early browser/WebGPU feasibility work, then
-   transparency, axes/text, and picking.
-4. The DRP2 spec/fixture lane remains active and should stay aligned with implementation changes,
-   especially around depth state, dynamic viewport/scissor, multi-pass sequencing, and backend
-   parity pressure from browser experiments.
+The scene design addenda that used to live in `agents/now/` now live under
+[../spec/scene/proposals](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals).
 
 
 ## Start Here
@@ -29,35 +24,38 @@ Current status:
 If resuming work on the branch:
 
 1. Read [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. Read [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) if touching
+   for the current practical task list.
+2. Read [../spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md) before
+   changing scene semantics, public scene API shape, frame planning, visual families, interaction,
+   annotations, scales, or runtime boundaries.
+3. Read [../spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
+   before changing `include/datoviz/scene.h`, adding public scene subheaders, or drafting
+   interaction / annotation / scale object types.
+4. Read [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+   for the immediate public-header drafting sequence.
+5. Read [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) if touching
    `spec/drp2/`, `src/drp2/`, or DRP2-emitting scene code.
-3. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
-   for the completed first vertical slice.
-4. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
-   before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-5. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
-   when touching panel transforms, per-panel UBOs, or controller input flow.
-6. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
-   [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
-   only when a task touches low-level ownership or naming contracts.
+6. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+   and [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+   when touching the completed first scene -> DRP2 -> runtime slice.
 7. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
-   and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
-   next-task list.
+   and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog.
 
 
 ## Directory Layout
 
 ### `now/`
 
-Files in this directory are actionable today and should stay short enough to drive real execution.
+Short practical next-step notes. These files should answer what to do next and where to read the
+normative spec. They should not be the long-term home for scene semantics.
 
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 
 ### `done/`
 
-Files in this directory are completed phase records. They are useful context, but they are not
-current execution plans.
+Completed phase records. These are useful context, but they are not current execution plans.
 
 1. [done/EXTERNAL.md](/home/cyrille/GIT/Viz/datoviz/agents/done/EXTERNAL.md)
 2. [done/BOOTSTRAP_GPU_CTX_MIGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/BOOTSTRAP_GPU_CTX_MIGRATION.md)
@@ -75,7 +73,7 @@ current execution plans.
 
 ### `later/`
 
-Files in this directory are backlog, strategic direction, or secondary cleanup tracks.
+Backlog, strategic direction, or secondary cleanup tracks.
 
 1. [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md)
 2. [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
@@ -83,10 +81,10 @@ Files in this directory are backlog, strategic direction, or secondary cleanup t
 
 ## Maintenance Rules
 
-1. If a document is not actionable this week, it should not live under `now/`.
-2. Completed plans should move to `done/` once the code and tests agree they are complete.
-3. Long-horizon architecture and speculative work should live under `later/`.
-4. Keep the number of active docs under `now/` small; one primary active plan is ideal.
-5. On the `v0.4` branch, backward compatibility with earlier `v0.4` code or with `v0.3` is not a priority.
-6. Prefer changes that improve architecture, correctness, and long-term maintainability, even when they
-   require API or ABI breakage.
+1. Keep `agents/now/` small and practical.
+2. Move stable scene semantics to specialized files under `spec/scene/`.
+3. Keep active not-yet-promoted design addenda in `spec/scene/proposals/`.
+4. Move completed implementation records to `agents/done/`.
+5. Move speculative or long-horizon execution ideas to `agents/later/`.
+6. On the `v0.4` branch, prefer architecture, correctness, and maintainability over API or ABI
+   compatibility with earlier work.

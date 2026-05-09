@@ -2,7 +2,10 @@
 
 This directory contains worked examples that pressure-test the current scene specification.
 
-These examples are not API proposals.
+Most examples are not API proposals.
+
+Files prefixed with `API_` are deliberate API-shape sketches. They are still informative, but they
+are allowed to use forward-looking function names to pressure-test the next public header draft.
 
 They are also not independent normative sources.
 
@@ -28,6 +31,9 @@ Their role is narrower:
 8. `MOUSE_BRAIN_ATLAS_EXPLORER.md`
 9. `LINKED_PANELS_AXES_PANZOOM.md`
 10. `ANIMATION_VIDEO_EXPORT.md`
+11. `API_MESH_SELECTION_LINK.md`
+12. `API_IMAGE_PROBE_PINNED_READOUT.md`
+13. `API_SCALE_COLORBAR_ANNOTATION.md`
 
 
 ## Common Structure

@@ -13,14 +13,34 @@ The scene layer should remain pure high-level logic:
 ## Status
 
 - Status: active specification with a first implementation slice in `src/scene`
-- Implementation priority: harden the point-only scene path, then add minimal mesh/triangle and
-  image/texture visuals with tests and examples
+- Implementation priority: draft the next public scene API surface, then implement interaction,
+  scale/colormap/colorbar, and text/annotation retained objects in narrow slices
 - Primary constraint: do not let scene design leak backend details into its public API
 
 Current source implementation is intentionally smaller than this spec. It includes scene/figure/panel
-objects, point visuals, capability snapshots, diagnostic reports, frame plans, DRP2 emission, and an
-early scene/app/offscreen path. Treat broader sections of this spec as design pressure and direction,
-not as a claim that all families and interactions are already implemented.
+objects, `point` / `primitive` / `image` visuals, capability snapshots, diagnostic reports, frame
+plans, DRP2 emission, panel controllers, and an early scene/app/offscreen path. Treat broader
+sections of this spec as design pressure and direction, not as a claim that all families and
+interactions are already implemented.
+
+
+## Directory Layout
+
+The scene spec is split by kind of authority:
+
+1. [core](core/README.md): foundational ownership, object model, runtime boundary, and use cases.
+2. [api](api/README.md): public API profile, public header surface, and implementation bridge.
+3. [semantics](semantics/README.md): user-visible scene semantics and cross-family behavior.
+4. [pipeline](pipeline/README.md): resource, transform, invalidation, frame-plan, and lifecycle contracts.
+5. [interaction](interaction/README.md): controllers, picking, selection, callbacks, and animation.
+6. [visuals](visuals/README.md): per-family data contracts.
+7. [validation](validation/README.md): validation, adaptation, diagnostics, and deferred items.
+8. [integration](integration/README.md): host UI, threading, high-DPI, and custom visuals.
+9. [export](export/README.md): image and vector export semantics.
+10. [headers](headers/README.md): implementation-facing draft C header sketches.
+11. [proposals](proposals/README.md): active design addenda awaiting promotion into specialized specs.
+12. [decisions](decisions/README.md): historical ADR-style decision records.
+13. [examples](examples/README.md): worked examples and API-shape pressure tests.
 
 
 ## Relationship To The DRP2 Spec
@@ -38,8 +58,8 @@ requirements into each other:
 3. open questions in the scene spec that depend on DRP2 details should be left explicitly open
    until the relevant DRP2 decision is made.
 
-This parallel design constraint applies especially to `RUNTIME_BOUNDARY.md`,
-`pipeline/FRAME_PLAN.md`, and `ADAPTATION.md`.
+This parallel design constraint applies especially to `core/RUNTIME_BOUNDARY.md`,
+`pipeline/FRAME_PLAN.md`, and `validation/ADAPTATION.md`.
 
 
 ## Normative Invariants
@@ -78,16 +98,39 @@ Unless a document says otherwise, this directory should be read with the followi
    normative behavior,
 4. when two documents overlap, the more specialized contract document should win over a broader
    orientation document,
-5. `headers/scene_api.h` is the authoritative draft C spelling for the current scene API direction,
-   while the surrounding scene documents remain authoritative for semantics.
+5. `proposals/` records are active design addenda used to clarify or extend the normative documents
+   until those rules are promoted into specialized spec files,
+6. `decisions/` records are historical ADR-style records and should explain rationale, not hold
+   current implementation-facing rules on their own,
+7. `api/API_SURFACE.md` is the normative bridge from scene semantics to the next public C header draft,
+8. `headers/scene_api.h` is authoritative for draft C spelling it already covers, while
+   `api/API_SURFACE.md` owns next API groups not yet spelled there and the surrounding scene
+   documents remain authoritative for semantics.
+
+## Status Vocabulary
+
+Scene spec files should use one of these statuses, either explicitly in a `Normative Status` section
+or by inheriting the directory role from the nearest `README.md`:
+
+1. `Normative`: implementation-facing rules for the current v0.4 planning baseline.
+2. `Proposal`: active design addendum that may contain planning rules not yet absorbed into a
+   specialized normative spec.
+3. `Informative`: examples, rationale, implementation notes, or trackers that do not override
+   normative specs.
+4. `Historical Decision`: ADR-style rationale for older choices; not a current standalone source
+   of implementation rules.
+
 
 For cross-tree overlap, use this source-of-truth order:
 
 1. DRP2 command, lifetime, and error prose for protocol semantics,
 2. DRP2 active JSON schemas for machine-checkable command shape,
 3. scene normative documents for scene semantics,
-4. `spec/scene/headers/scene_api.h` for draft C names and signatures,
-5. examples and deferred trackers as informative material.
+4. scene proposals for rules not yet promoted into specialized spec files,
+5. historical scene decision records for rationale behind older choices,
+6. `spec/scene/api/API_SURFACE.md` for public API shape policy,
+7. `spec/scene/headers/scene_api.h` for draft C names and signatures it already covers,
+8. examples and deferred trackers as informative material.
 
 
 ## Recommended Reading Order
@@ -96,105 +139,120 @@ Read the scene spec in this order during review.
 
 ### 1. Orientation and high-level constraints
 
-1. [REQUIREMENTS.md](REQUIREMENTS.md) — scene goals, scope, and required runtime/DRP2 support
-2. [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md) — what scene may and may not depend on
-3. [USE_CASES.md](USE_CASES.md) — pressure-test scenarios to keep in mind while reviewing
+1. [core/REQUIREMENTS.md](core/REQUIREMENTS.md) — scene goals, scope, and required runtime/DRP2 support
+2. [core/RUNTIME_BOUNDARY.md](core/RUNTIME_BOUNDARY.md) — what scene may and may not depend on
+3. [core/USE_CASES.md](core/USE_CASES.md) — pressure-test scenarios to keep in mind while reviewing
 
 ### 2. Core scene concepts and public shape
 
-4. [OBJECT_MODEL.md](OBJECT_MODEL.md) — stable scene concepts and ownership model
-5. [PANEL_LAYOUT.md](PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
-6. [API_DESIGN.md](API_DESIGN.md) — current preferred scene-facing defaults and resolved API decisions
-7. [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
-8. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
+1. [core/OBJECT_MODEL.md](core/OBJECT_MODEL.md) — stable scene concepts and ownership model
+2. [core/PANEL_LAYOUT.md](core/PANEL_LAYOUT.md) — grid layout, free placement, fixed columns/rows, span, tight layout
+3. [api/API_DESIGN.md](api/API_DESIGN.md) — current preferred scene-facing defaults and resolved API decisions
+4. [api/API_SURFACE.md](api/API_SURFACE.md) — public header drafting policy for interaction, scales, text, and annotations
+5. [api/API_IMPLEMENTATION_READINESS.md](api/API_IMPLEMENTATION_READINESS.md) — checklist for the next public API pass
+6. [headers/README.md](headers/README.md) — draft header index for pressure-testing the surface
+7. [proposals/README.md](proposals/README.md) — active scene proposals awaiting promotion
+8. [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md) — C-facing mapping, Python binding architecture
 
 ### 3. Visual semantics
 
-9. [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md) — family taxonomy
-10. [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md) — shared producer contract across visuals
-11. [VISUAL_FAMILY_RULES.md](VISUAL_FAMILY_RULES.md) — family-level mini-contracts
-12. [visuals/README.md](visuals/README.md) — per-family data contracts (attribute schemas, parameters, variants)
-13. [SCALES.md](SCALES.md) — color, size, and opacity scale objects and colormap model
-14. [LIGHTING.md](LIGHTING.md) — scene-level lighting model; PBR and ray tracing upgrade path
-15. [AXES.md](AXES.md) — axes and tick semantics
-16. [ANNOTATIONS.md](ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
-17. [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
+1. [semantics/VISUAL_FAMILIES.md](semantics/VISUAL_FAMILIES.md) — family taxonomy
+2. [semantics/VISUAL_CONTRACT.md](semantics/VISUAL_CONTRACT.md) — shared producer contract across visuals
+3. [semantics/VISUAL_FAMILY_RULES.md](semantics/VISUAL_FAMILY_RULES.md) — family-level mini-contracts
+4. [visuals/README.md](visuals/README.md) — per-family data contracts (attribute schemas, parameters, variants)
+5. [semantics/SCALES.md](semantics/SCALES.md) — color, size, and opacity scale objects and colormap model
+6. [semantics/LIGHTING.md](semantics/LIGHTING.md) — scene-level lighting model; PBR and ray tracing upgrade path
+7. [semantics/AXES.md](semantics/AXES.md) — axes and tick semantics
+8. [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md) — labels, guides, probes, overlays, and callouts
+9. [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md) — explanatory mapping semantics
+10. [semantics/TEXT.md](semantics/TEXT.md) — text content, placement, resources, and DPI behavior
 
 ### 4. Data, transforms, planning, and runtime handoff
 
-16. [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md) — logical resource model and F64 data ingestion policy
-17. [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
-18. [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md) — normalization, panel-transform pipeline, and CPU precision policy (F64 throughout, F32 at upload)
-18b. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md) — triangulation, curve tessellation, simplification, hull, boolean ops, SDF/MSDF pipeline
-19. [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md) — canonical producer-side frame artifact
-20. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md) — update/build/emit flow
+1. [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md) — logical resource model and F64 data ingestion policy
+2. [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md) — per-attribute data granularity and mutability hints
+3. [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md) — normalization, panel-transform pipeline, and CPU precision policy
+4. [semantics/GEOMETRY_UTILITIES.md](semantics/GEOMETRY_UTILITIES.md) — triangulation, curve tessellation, simplification, hull, boolean ops, SDF/MSDF pipeline
+5. [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md) — canonical producer-side frame artifact
+6. [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md) — update/build/emit flow
 
 ### 5. Validation, adaptation, interaction, and diagnostics
 
-22. [VALIDATION.md](VALIDATION.md) — validation rules and error classes
-23. [ADAPTATION.md](ADAPTATION.md) — explicit fallback and simplification policy
-24. [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
-25. [interaction/PICKING.md](interaction/PICKING.md) — picking identity and readback behavior
-26. [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md) — event routing and interaction ownership
-27. [interaction/ANIMATION.md](interaction/ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
-28. [EXTERNAL_UI.md](EXTERNAL_UI.md) — boundary with app-owned UI frameworks
-29. [interaction/SELECTION.md](interaction/SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
-30. [IMAGE_EXPORT.md](IMAGE_EXPORT.md) — still image capture, render scale (supersampling), panel-as-texture
-31. [HIGH_DPI.md](HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
-32. [TRANSPARENCY.md](TRANSPARENCY.md) — alpha modes, weighted blended OIT, per-pixel linked list OIT, render pass structure
-33. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md) — geographic projections, polar coordinates, GPU compute pre-pass
-34. [VECTOR_EXPORT.md](VECTOR_EXPORT.md) — structural SVG export: vector axes/annotations + raster visual embed
-35. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md) — user-defined visual families, descriptor registration, shader injection
-36. [THREAD_SAFETY.md](THREAD_SAFETY.md) — threading model, transfer queue, async data upload, background computation handoff
-37. [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md) — scene event observer system: selection, pick, hover, animation, resize, DPI
-38. [CLIPPING.md](CLIPPING.md) — per-visual clip modes: data area (default), panel, none
-39. [DIAGNOSTICS.md](DIAGNOSTICS.md) — shared diagnostic shape across the stack
+1. [validation/VALIDATION.md](validation/VALIDATION.md) — validation rules and error classes
+2. [validation/ADAPTATION.md](validation/ADAPTATION.md) — explicit fallback and simplification policy
+3. [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md) — dirty scopes and reuse rules
+4. [interaction/PICKING.md](interaction/PICKING.md) — picking identity and readback behavior
+5. [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md) — event routing and interaction ownership
+6. [interaction/ANIMATION.md](interaction/ANIMATION.md) — scene clock, animation objects, easing, camera keyframes, video export
+7. [integration/EXTERNAL_UI.md](integration/EXTERNAL_UI.md) — boundary with app-owned UI frameworks
+8. [interaction/SELECTION.md](interaction/SELECTION.md) — scene-level selection state, highlight rendering, cross-visual linking, and lasso
+9. [export/IMAGE_EXPORT.md](export/IMAGE_EXPORT.md) — still image capture, render scale, panel-as-texture
+10. [integration/HIGH_DPI.md](integration/HIGH_DPI.md) — device pixel ratio, logical vs physical pixels, DPI change handling
+11. [semantics/TRANSPARENCY.md](semantics/TRANSPARENCY.md) — alpha modes and render pass structure
+12. [semantics/NONLINEAR_TRANSFORMS.md](semantics/NONLINEAR_TRANSFORMS.md) — non-linear coordinate transforms
+13. [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md) — structural SVG export
+14. [integration/CUSTOM_VISUALS.md](integration/CUSTOM_VISUALS.md) — user-defined visual families
+15. [integration/THREAD_SAFETY.md](integration/THREAD_SAFETY.md) — threading model and async data handoff
+16. [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md) — scene event observer system
+17. [semantics/CLIPPING.md](semantics/CLIPPING.md) — per-visual clip modes
+18. [validation/DIAGNOSTICS.md](validation/DIAGNOSTICS.md) — shared diagnostic shape across the stack
 
 ### 6. Worked examples
 
-29. [examples/README.md](examples/README.md) — entry point for worked examples
-30. [examples/POINT_2D.md](examples/POINT_2D.md)
-31. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
-32. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
-33. [examples/VOLUME_SLICE.md](examples/VOLUME_SLICE.md)
-34. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
-35. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
-36. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
-37. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
-38. [examples/LINKED_PANELS_AXES_PANZOOM.md](examples/LINKED_PANELS_AXES_PANZOOM.md)
-39. [examples/ANIMATION_VIDEO_EXPORT.md](examples/ANIMATION_VIDEO_EXPORT.md)
+1. [examples/README.md](examples/README.md) — entry point for worked examples
+2. [examples/POINT_2D.md](examples/POINT_2D.md)
+3. [examples/MARKER_PICKING.md](examples/MARKER_PICKING.md)
+4. [examples/PATH_AXES_2D.md](examples/PATH_AXES_2D.md)
+5. [examples/VOLUME_SLICE.md](examples/VOLUME_SLICE.md)
+6. [examples/SPHERE_IMPOSTOR.md](examples/SPHERE_IMPOSTOR.md)
+7. [examples/VOLUME_OFFSCREEN.md](examples/VOLUME_OFFSCREEN.md)
+8. [examples/LINKED_PANELS_PROBE_COLORBAR.md](examples/LINKED_PANELS_PROBE_COLORBAR.md)
+9. [examples/MOUSE_BRAIN_ATLAS_EXPLORER.md](examples/MOUSE_BRAIN_ATLAS_EXPLORER.md)
+10. [examples/LINKED_PANELS_AXES_PANZOOM.md](examples/LINKED_PANELS_AXES_PANZOOM.md)
+11. [examples/ANIMATION_VIDEO_EXPORT.md](examples/ANIMATION_VIDEO_EXPORT.md)
+12. [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md)
+13. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md)
+14. [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md)
 
 
 ## Document Index
 
-- [REQUIREMENTS.md](REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
+- [core/REQUIREMENTS.md](core/REQUIREMENTS.md): what the scene layer needs from DRP2 and the runtime
 - [pipeline/ATTRIBUTE_SOURCES.md](pipeline/ATTRIBUTE_SOURCES.md): per-attribute data granularity
   (CONSTANT / PER_ITEM / PER_SPAN / PER_GROUP) and optional mutability hints
 - [visuals/README.md](visuals/README.md): per-family data contracts with attribute schemas,
   parameters, variant axes, and v0.3 correspondence
-- [SCALES.md](SCALES.md): color, size, and opacity scale objects; colormap palette model; domain
+- [semantics/SCALES.md](semantics/SCALES.md): color, size, and opacity scale objects; colormap palette model; domain
   and scale identity for visual attributes and colorbars
-- [OBJECT_MODEL.md](OBJECT_MODEL.md): minimum stable concepts
-- [API_DESIGN.md](API_DESIGN.md): design rationale and resolved API decisions
+- [core/OBJECT_MODEL.md](core/OBJECT_MODEL.md): minimum stable concepts
+- [api/API_DESIGN.md](api/API_DESIGN.md): design rationale and resolved API decisions
   behind `headers/scene_api.h`
-- [IMPLEMENTATION_NOTES.md](IMPLEMENTATION_NOTES.md): C object mapping, Python binding
+- [api/API_SURFACE.md](api/API_SURFACE.md): next public-header shape for retained interaction, scales,
+  colorbars, text, and annotation objects
+- [api/API_IMPLEMENTATION_READINESS.md](api/API_IMPLEMENTATION_READINESS.md): implementation-readiness
+  checklist for the next public scene API pass
+- [api/IMPLEMENTATION_NOTES.md](api/IMPLEMENTATION_NOTES.md): C object mapping, Python binding
   architecture, and per-family GPU data preparation notes
 - [headers/README.md](headers/README.md): draft header index for the current scene, runtime, and
-  diagnostics surfaces; `scene_api.h` is the authoritative draft C spelling
-- [AXES.md](AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
-- [LIGHTING.md](LIGHTING.md): scene-level lighting model, PBR shading parameters, and hardware
+  diagnostics surfaces; `scene_api.h` is authoritative for the API groups it covers
+- [proposals/README.md](proposals/README.md): active design addenda with promotion targets for
+  implementation-ready spec work
+- [decisions/README.md](decisions/README.md): historical ADR-style records and authority policy
+- [semantics/AXES.md](semantics/AXES.md): scene-side semantic model for axes, ticks, labels, and related annotations
+- [semantics/LIGHTING.md](semantics/LIGHTING.md): scene-level lighting model, PBR shading parameters, and hardware
   ray tracing forward-compatibility path
-- [ANNOTATIONS.md](ANNOTATIONS.md): semantic model for labels, guides, probes, overlays, legends,
+- [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md): semantic model for labels, guides, probes, overlays, legends,
   and callouts
-- [LEGENDS_AND_COLORBARS.md](LEGENDS_AND_COLORBARS.md): semantic model for discrete legends,
+- [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md): semantic model for discrete legends,
   continuous colorbars, and shared explanatory mappings
-- [DIAGNOSTICS.md](DIAGNOSTICS.md): shared conceptual diagnostic shape across
+- [semantics/TEXT.md](semantics/TEXT.md): text content, placement, font/atlas resources, and DPI behavior
+- [validation/DIAGNOSTICS.md](validation/DIAGNOSTICS.md): shared conceptual diagnostic shape across
   validation, adaptation, planning, and runtime execution
-- [VALIDATION.md](VALIDATION.md): scene-level pre-emission validation rules, error
+- [validation/VALIDATION.md](validation/VALIDATION.md): scene-level pre-emission validation rules, error
   classes, and capability-gated checks
-- [ADAPTATION.md](ADAPTATION.md): explicit fallback, simplification, and
+- [validation/ADAPTATION.md](validation/ADAPTATION.md): explicit fallback, simplification, and
   deactivation policy driven by runtime capabilities
-- [EXTERNAL_UI.md](EXTERNAL_UI.md): boundary between scene-owned semantics and app-owned UI
+- [integration/EXTERNAL_UI.md](integration/EXTERNAL_UI.md): boundary between scene-owned semantics and app-owned UI
   frameworks such as ImGui
 - [pipeline/INVALIDATION_AND_CACHING.md](pipeline/INVALIDATION_AND_CACHING.md): rules for dirty scopes, reuse,
   redraw, uploads, and plan rebuilds
@@ -204,37 +262,37 @@ Read the scene spec in this order during review.
   per-attribute animation, and video export scheduling
 - [interaction/CONTROLLERS.md](interaction/CONTROLLERS.md): event routing, panel-owned navigation, picking-driven
   interaction, and redraw
-- [VISUAL_FAMILIES.md](VISUAL_FAMILIES.md): preferred v0.4 visual-family taxonomy grounded in
+- [semantics/VISUAL_FAMILIES.md](semantics/VISUAL_FAMILIES.md): preferred v0.4 visual-family taxonomy grounded in
   local `v0.3` terminology
-- [VISUAL_CONTRACT.md](VISUAL_CONTRACT.md): producer-side contract every future visual type must
+- [semantics/VISUAL_CONTRACT.md](semantics/VISUAL_CONTRACT.md): producer-side contract every future visual type must
   satisfy
-- [VISUAL_FAMILY_RULES.md](VISUAL_FAMILY_RULES.md): cross-family boundary rules, fallback
+- [semantics/VISUAL_FAMILY_RULES.md](semantics/VISUAL_FAMILY_RULES.md): cross-family boundary rules, fallback
   constraints, and anti-patterns (the shared template; per-family detail is in `visuals/`)
-- [PANEL_LAYOUT.md](PANEL_LAYOUT.md): grid layout, free placement, fixed-size columns/rows,
+- [core/PANEL_LAYOUT.md](core/PANEL_LAYOUT.md): grid layout, free placement, fixed-size columns/rows,
   row/column span, colorbar slots, fixed aspect ratio, shared-width constraint, tight layout
 - [interaction/SELECTION.md](interaction/SELECTION.md): scene-level selection state, selection modes, parametrizable
   input mapping, highlight descriptor, lasso via GPU ComputeNode, cross-visual linking
-- [IMAGE_EXPORT.md](IMAGE_EXPORT.md): still image capture boundary, render scale (supersampling),
+- [export/IMAGE_EXPORT.md](export/IMAGE_EXPORT.md): still image capture boundary, render scale (supersampling),
   panel-as-texture with FramePlan ordering and cycle detection
-- [HIGH_DPI.md](HIGH_DPI.md): logical pixel coordinate model, device pixel ratio, pixel-unit
+- [integration/HIGH_DPI.md](integration/HIGH_DPI.md): logical pixel coordinate model, device pixel ratio, pixel-unit
   quantity scaling, font rasterization at physical resolution, DPI change handling
-- [TRANSPARENCY.md](TRANSPARENCY.md): alpha modes (opaque/blended/exact/mask), weighted blended OIT
+- [semantics/TRANSPARENCY.md](semantics/TRANSPARENCY.md): alpha modes (opaque/blended/exact/mask), weighted blended OIT
   default, per-pixel linked list OIT opt-in, render pass split, CPU depth sort fallback
-- [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): CPU-side projection (v0.4), GPU compute
+- [semantics/NONLINEAR_TRANSFORMS.md](semantics/NONLINEAR_TRANSFORMS.md): CPU-side projection (v0.4), GPU compute
   pre-pass for persistent derived position buffer (v0.4+), built-in and custom projections
-- [VECTOR_EXPORT.md](VECTOR_EXPORT.md): structural SVG — axes/annotations/colorbars as vector,
+- [export/VECTOR_EXPORT.md](export/VECTOR_EXPORT.md): structural SVG — axes/annotations/colorbars as vector,
   GPU visual output as embedded raster; render scale for embed resolution
-- [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md): DvzVisualDesc registration, attribute schema, shader
+- [integration/CUSTOM_VISUALS.md](integration/CUSTOM_VISUALS.md): DvzVisualDesc registration, attribute schema, shader
   injection points, picking/selection/capability integration for user-defined visual families
-- [THREAD_SAFETY.md](THREAD_SAFETY.md): single-threaded render path, DvzTransferQueue for
+- [integration/THREAD_SAFETY.md](integration/THREAD_SAFETY.md): single-threaded render path, DvzTransferQueue for
   background threads, data/uniform/callback transfer types, async upload and completion hooks
 - [interaction/EVENT_CALLBACKS.md](interaction/EVENT_CALLBACKS.md): dvz_scene_on observer registration, event types
   (selection changed, pick result, hover, anim step/complete, resize, DPI), lifecycle fire points
-- [CLIPPING.md](CLIPPING.md): DVZ_CLIP_DATA_AREA (default), DVZ_CLIP_PANEL, DVZ_CLIP_NONE;
+- [semantics/CLIPPING.md](semantics/CLIPPING.md): DVZ_CLIP_DATA_AREA (default), DVZ_CLIP_PANEL, DVZ_CLIP_NONE;
   data area derived from axes margins; scissor grouping in render pass
 - [pipeline/RESOURCE_MODEL.md](pipeline/RESOURCE_MODEL.md): scene-owned logical data model for visuals, planning,
   upload, readback, and F64 source data ingestion policy
-- [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
+- [semantics/GEOMETRY_UTILITIES.md](semantics/GEOMETRY_UTILITIES.md): CPU-side geometry utility layer — triangulation
   (earcut + Triangle/PSLG), curve tessellation (Bézier, Catmull-Rom, B-spline), Douglas-Peucker
   simplification, 2D convex hull, boolean polygon ops (Clipper2), and SDF/MSDF pipeline
 - [pipeline/TRANSFORM_PIPELINE.md](pipeline/TRANSFORM_PIPELINE.md): explicit data-normalization and panel-transform
@@ -242,14 +300,18 @@ Read the scene spec in this order during review.
 - [pipeline/FRAME_PLAN.md](pipeline/FRAME_PLAN.md): producer-side intermediate representation for one planned
   frame
 - [pipeline/FRAME_LIFECYCLE.md](pipeline/FRAME_LIFECYCLE.md): update/build/emit flow
-- [RUNTIME_BOUNDARY.md](RUNTIME_BOUNDARY.md): allowed and forbidden runtime dependencies,
+- [core/RUNTIME_BOUNDARY.md](core/RUNTIME_BOUNDARY.md): allowed and forbidden runtime dependencies,
   service object model, submission/completion/diagnostics contracts, canvas and render-target
   ownership
-- [USE_CASES.md](USE_CASES.md): pressure-test scenarios (UC1–UC7)
-- [DEFERRED_TRACKER.md](DEFERRED_TRACKER.md): consolidated index of all explicitly deferred items
+- [core/USE_CASES.md](core/USE_CASES.md): pressure-test scenarios (UC1–UC7)
+- [validation/DEFERRED_TRACKER.md](validation/DEFERRED_TRACKER.md): consolidated index of all explicitly deferred items
   by milestone (DRP2 2.1, v0.4+, no target)
 - [examples/README.md](examples/README.md): worked scene-spec examples that instantiate families,
   transforms, and `FramePlan` shapes
+- [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md),
+  [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md), and
+  [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md): tiny
+  public API-shape pressure tests for the next header draft
 
 
 ## Guiding Principles
@@ -258,4 +320,4 @@ Read the scene spec in this order during review.
 2. Avoid freezing backend-shaped details too early.
 3. Let DRP2 and runtime work continue underneath without leaking upward.
 
-Deferred items by milestone are tracked in `DEFERRED_TRACKER.md`.
+Deferred items by milestone are tracked in `validation/DEFERRED_TRACKER.md`.

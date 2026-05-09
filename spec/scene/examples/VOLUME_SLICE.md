@@ -7,8 +7,8 @@ This example instantiates `volume.render_mode = slice`.
 
 This example should be read against:
 
-1. `VISUAL_FAMILIES.md` for the `volume` family,
-2. `../VISUAL_FAMILY_RULES.md` for the `volume` family contract,
+1. `../semantics/VISUAL_FAMILIES.md` for the `volume` family,
+2. `../semantics/VISUAL_FAMILY_RULES.md` for the `volume` family contract,
 3. `../pipeline/RESOURCE_MODEL.md` for sampled and derived field handling,
 4. `../pipeline/TRANSFORM_PIPELINE.md` for slice placement versus panel transform staging.
 

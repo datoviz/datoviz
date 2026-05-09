@@ -7,8 +7,8 @@ This example combines grouped path data with axis regeneration under panzoom.
 
 This example should be read against:
 
-1. `../VISUAL_FAMILY_RULES.md` for the `path` family contract,
-2. `../AXES.md` for axis derivation and regeneration policy,
+1. `../semantics/VISUAL_FAMILY_RULES.md` for the `path` family contract,
+2. `../semantics/AXES.md` for axis derivation and regeneration policy,
 3. `../pipeline/TRANSFORM_PIPELINE.md` for normalization versus panel-local navigation,
 4. `../pipeline/FRAME_PLAN.md` for the scene-level `FramePlan` contribution shape.
 

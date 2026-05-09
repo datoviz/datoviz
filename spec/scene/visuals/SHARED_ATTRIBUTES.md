@@ -25,7 +25,7 @@ Right when color is pre-computed externally or when colors are heterogeneous and
 to a continuous scale.
 
 **`scalar` mode**: the user supplies a single `float32`.
-The scene maps it through an associated `Scale` object (see `SCALES.md`).
+The scene maps it through an associated `Scale` object (see `semantics/SCALES.md`).
 Enables dynamic colormap changes without re-uploading item data, and memory-efficient encoding
 when color encodes a single continuous quantity.
 
@@ -53,7 +53,7 @@ application at upload time and emits a capability adaptation diagnostic.
 
 **`direct` mode** (default): `float32` value in the unit defined by `size_space`.
 
-**`scalar` mode**: `float32` scalar mapped through a size `Scale` object (see `SCALES.md`,
+**`scalar` mode**: `float32` scalar mapped through a size `Scale` object (see `semantics/SCALES.md`,
 `kind = size`). The size scale supports `sqrt` interpolation so that perceived area scales
 linearly with data value — useful for bubble charts.
 
