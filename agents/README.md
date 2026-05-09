@@ -22,6 +22,7 @@ Active execution surface:
 13. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
 14. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
 15. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+16. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
 
 Current status:
 
@@ -61,6 +62,8 @@ Current status:
     measurement overlays, and the split between 2D axes and early 3D orientation aids.
 17. The active volume note records the intended mixed volume/mesh/slice design, including semantic
     slice picking and shared scientific framing with 3D meshes.
+18. The active colorbar/colormap note records the intended shared-scale model, panel-attached
+    colorbars, and interactive range-control direction.
 
 
 ## Start Here
@@ -99,16 +102,18 @@ If resuming work on the branch:
    before implementing panel-owned domains, unit-aware axes, or scale-bar/axis shared formatting.
 15. Read [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
    before implementing active volume work, slice-plane interaction, or mixed mesh/volume picking.
-16. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+16. Read [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
+   before implementing shared scales, panel colorbars, or interactive colormap/range editing.
+17. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the completed first vertical slice.
-17. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+18. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-18. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+19. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
    when touching panel transforms, per-panel UBOs, or controller input flow.
-19. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+20. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-20. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+21. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -134,6 +139,7 @@ Files in this directory are actionable today and should stay short enough to dri
 13. [now/MATERIAL_LIGHTING_API.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MATERIAL_LIGHTING_API.md)
 14. [now/AXES_DOMAIN_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/AXES_DOMAIN_DESIGN.md)
 15. [now/VOLUME_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/VOLUME_DESIGN.md)
+16. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
 
 ### `done/`
 
