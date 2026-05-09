@@ -2664,6 +2664,128 @@ int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* ite
 
 
 
+int test_scene_scale_colormap_colorbar_core(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "Depth",
+                   .unit = "um",
+                   .format =
+                       (DvzFormatDesc){
+                           .precision = 2,
+                           .show_unit = true,
+                           .unit = "um",
+                           .suffix = " depth",
+                       },
+               });
+    ANN(scale);
+    AT(scene->scale_count == 1);
+    AT(scale->scene == scene);
+    AT(scale->kind == DVZ_SCALE_CONTINUOUS);
+    AT(strcmp(scale->label, "Depth") == 0);
+    AT(strcmp(scale->unit, "um") == 0);
+    AT(scale->format.precision == 2);
+    AT(strcmp(scale->format.unit, "um") == 0);
+    AT(strcmp(scale->format.suffix, " depth") == 0);
+
+    dvz_scale_set_domain(scale, -600.0, 0.0);
+    dvz_scale_set_view_range(scale, -300.0, -50.0);
+    AT(scale->has_domain);
+    AT(scale->domain_min == -600.0);
+    AT(scale->domain_max == 0.0);
+    AT(scale->has_view_range);
+    AT(scale->view_min == -300.0);
+    AT(scale->view_max == -50.0);
+
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_MAGMA);
+    ANN(colormap);
+    AT(scene->colormap_count == 1);
+    AT(colormap->builtin == DVZ_BUILTIN_COLORMAP_MAGMA);
+
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 0, 255}},
+        {.position = 1.0, .rgba = {255, 255, 255, 255}},
+    };
+    dvz_colormap_set_center(colormap, 0.5);
+    dvz_colormap_set_stops(colormap, stops, 2);
+    AT(colormap->has_center);
+    AT(colormap->center == 0.5);
+    AT(colormap->stop_count == 2);
+    AT(colormap->stops[1].rgba[0] == 255);
+
+    dvz_scale_set_colormap(scale, colormap);
+    AT(scale->colormap == colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale, &(DvzColorbarDesc){
+                          .orientation = DVZ_COLORBAR_ORIENTATION_HORIZONTAL,
+                          .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM,
+                          .title = "Depth map",
+                      });
+    ANN(colorbar);
+    AT(scene->colorbar_count == 1);
+    AT(panel->colorbar_count == 1);
+    AT(panel->colorbars[0] == colorbar);
+    AT(colorbar->scene == scene);
+    AT(colorbar->panel == panel);
+    AT(colorbar->scale == scale);
+    AT(colorbar->orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
+    AT(colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM);
+    AT(strcmp(colorbar->title, "Depth map") == 0);
+
+    dvz_colorbar_set_format(
+        colorbar, &(DvzFormatDesc){
+                       .precision = 0,
+                       .unit = "um",
+                   });
+    AT(colorbar->has_format);
+    AT(colorbar->format.precision == 0);
+    AT(strcmp(colorbar->format.unit, "um") == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_colorbar_rejects_cross_scene_scale(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzFigure* figure = dvz_figure(scene0, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzScale* foreign_scale = dvz_scale(scene1, NULL);
+    ANN(foreign_scale);
+
+    DvzColorbar* colorbar = dvz_colorbar(panel, foreign_scale, NULL);
+    AT(colorbar == NULL);
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -4956,6 +5078,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state);
     TEST_SIMPLE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);
     TEST_SIMPLE(test_scene_background_color_creates_fixed_quad);
+    TEST_SIMPLE(test_scene_scale_colormap_colorbar_core);
+    TEST_SIMPLE(test_scene_colorbar_rejects_cross_scene_scale);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);

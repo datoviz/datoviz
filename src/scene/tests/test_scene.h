@@ -138,6 +138,10 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* i
 
 int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* item);
 
+int test_scene_scale_colormap_colorbar_core(TstSuite* suite, TstItem* item);
+
+int test_scene_colorbar_rejects_cross_scene_scale(TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);

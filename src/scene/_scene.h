@@ -30,6 +30,11 @@
 #define DVZ_SCENE_MAX_FIGURES    16
 #define DVZ_SCENE_MAX_PANELS     64
 #define DVZ_SCENE_MAX_VISUALS    256
+#define DVZ_SCENE_MAX_SCALES     64
+#define DVZ_SCENE_MAX_COLORMAPS  64
+#define DVZ_SCENE_MAX_COLORBARS  64
+#define DVZ_SCENE_MAX_PANEL_COLORBARS 16
+#define DVZ_SCENE_MAX_COLOR_STOPS 32
 #define DVZ_SCENE_MAX_ITEM_ATTRS 8
 
 
@@ -74,6 +79,77 @@ typedef struct DvzScene   DvzScene;
 typedef struct DvzFigure  DvzFigure;
 typedef struct DvzPanel   DvzPanel;
 typedef struct DvzVisual  DvzVisual;
+typedef struct DvzScale   DvzScale;
+typedef struct DvzColormap DvzColormap;
+typedef struct DvzColorbar DvzColorbar;
+
+
+
+/*************************************************************************************************/
+/*  Shared retained-object state                                                                 */
+/*************************************************************************************************/
+
+typedef struct DvzSceneFormatState DvzSceneFormatState;
+
+struct DvzSceneFormatState
+{
+    int32_t precision;
+    bool scientific;
+    bool trim_trailing_zeros;
+    bool show_unit;
+    char unit[32];
+    char prefix[DVZ_SCENE_LABEL_SIZE];
+    char suffix[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+
+/*************************************************************************************************/
+/*  Scale / colormap / colorbar                                                                  */
+/*************************************************************************************************/
+
+struct DvzScale
+{
+    DvzScene* scene;
+    DvzScaleKind kind;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    char unit[32];
+    DvzSceneFormatState format;
+    double domain_min;
+    double domain_max;
+    double view_min;
+    double view_max;
+    bool has_domain;
+    bool has_view_range;
+    DvzColormap* colormap;
+};
+
+
+struct DvzColormap
+{
+    DvzScene* scene;
+    DvzColormapKind kind;
+    DvzBuiltinColormap builtin;
+    double center;
+    bool has_center;
+    char label[DVZ_SCENE_LABEL_SIZE];
+    uint32_t stop_count;
+    DvzColormapStop stops[DVZ_SCENE_MAX_COLOR_STOPS];
+};
+
+
+struct DvzColorbar
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzScale* scale;
+    DvzColorbarOrientation orientation;
+    DvzSceneAnchor anchor;
+    char title[DVZ_SCENE_LABEL_SIZE];
+    uint32_t flags;
+    bool has_format;
+    DvzSceneFormatState format;
+};
 
 
 
@@ -148,6 +224,9 @@ struct DvzPanel
      * lives in scene->visuals[] (weak ref); this pointer lets repeat calls update the
      * existing visual instead of stacking new ones. */
     DvzVisual* background_visual;
+
+    uint32_t colorbar_count;
+    DvzColorbar* colorbars[DVZ_SCENE_MAX_PANEL_COLORBARS];
 };
 
 
@@ -186,4 +265,13 @@ struct DvzScene
 
     uint32_t  visual_count;
     DvzVisual visuals[DVZ_SCENE_MAX_VISUALS]; /* owner of all visual objects */
+
+    uint32_t scale_count;
+    DvzScale scales[DVZ_SCENE_MAX_SCALES];
+
+    uint32_t colormap_count;
+    DvzColormap colormaps[DVZ_SCENE_MAX_COLORMAPS];
+
+    uint32_t colorbar_count;
+    DvzColorbar colorbars[DVZ_SCENE_MAX_COLORBARS];
 };

@@ -45,6 +45,8 @@ static bool _scene_has_live_streams(const DvzScene* scene);
 
 static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
+static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
+
 
 
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
@@ -220,6 +222,25 @@ static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* ac
     log_error(
         "cannot %s while an emitted stream is still live; destroy the stream first", action);
     return false;
+}
+
+
+static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src)
+{
+    ANN(dst);
+    dvz_memset(dst, sizeof(DvzSceneFormatState), 0, sizeof(DvzSceneFormatState));
+    if (src == NULL)
+        return;
+    dst->precision = src->precision;
+    dst->scientific = src->scientific;
+    dst->trim_trailing_zeros = src->trim_trailing_zeros;
+    dst->show_unit = src->show_unit;
+    if (src->unit != NULL)
+        dvz_strlcpy(dst->unit, src->unit, sizeof(dst->unit));
+    if (src->prefix != NULL)
+        dvz_strlcpy(dst->prefix, src->prefix, sizeof(dst->prefix));
+    if (src->suffix != NULL)
+        dvz_strlcpy(dst->suffix, src->suffix, sizeof(dst->suffix));
 }
 
 
@@ -582,6 +603,7 @@ void dvz_panel_destroy(DvzPanel* panel)
     }
     panel->figure       = NULL;
     panel->visual_count = 0;
+    panel->colorbar_count = 0;
 }
 
 
@@ -698,6 +720,314 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
         /* Existing background — just update its color. Position is already correct. */
         dvz_visual_set_data(panel->background_visual, "color", colors, 4);
     }
+}
+
+
+
+/*************************************************************************************************/
+/*  Scale / colormap / colorbar                                                                  */
+/*************************************************************************************************/
+
+/**
+ * Create a scene-owned scale object.
+ *
+ * @param scene the scene
+ * @param desc the scale descriptor, or NULL for defaults
+ * @return the scale, or NULL on allocation failure
+ */
+DvzScale* dvz_scale(DvzScene* scene, const DvzScaleDesc* desc)
+{
+    ANN(scene);
+    if (scene->scale_count >= DVZ_SCENE_MAX_SCALES)
+    {
+        log_error("maximum scale count reached");
+        return NULL;
+    }
+    DvzScale* scale = &scene->scales[scene->scale_count++];
+    dvz_memset(scale, sizeof(DvzScale), 0, sizeof(DvzScale));
+    scale->scene = scene;
+    scale->kind = desc != NULL ? desc->kind : DVZ_SCALE_CONTINUOUS;
+    if (desc != NULL)
+    {
+        if (desc->label != NULL)
+            dvz_strlcpy(scale->label, desc->label, sizeof(scale->label));
+        if (desc->unit != NULL)
+            dvz_strlcpy(scale->unit, desc->unit, sizeof(scale->unit));
+        _format_state_copy(&scale->format, &desc->format);
+    }
+    return scale;
+}
+
+
+/**
+ * Destroy a scale object.
+ *
+ * @param scale the scale
+ */
+void dvz_scale_destroy(DvzScale* scale)
+{
+    if (scale == NULL)
+        return;
+    scale->scene = NULL;
+    scale->colormap = NULL;
+    scale->has_domain = false;
+    scale->has_view_range = false;
+}
+
+
+/**
+ * Set the semantic domain on a scale.
+ *
+ * @param scale the scale
+ * @param min the domain minimum
+ * @param max the domain maximum
+ */
+void dvz_scale_set_domain(DvzScale* scale, double min, double max)
+{
+    ANN(scale);
+    scale->domain_min = min;
+    scale->domain_max = max;
+    scale->has_domain = true;
+}
+
+
+/**
+ * Set the current visible range on a scale.
+ *
+ * @param scale the scale
+ * @param min the view-range minimum
+ * @param max the view-range maximum
+ */
+void dvz_scale_set_view_range(DvzScale* scale, double min, double max)
+{
+    ANN(scale);
+    scale->view_min = min;
+    scale->view_max = max;
+    scale->has_view_range = true;
+}
+
+
+/**
+ * Bind a colormap to a scale.
+ *
+ * @param scale the scale
+ * @param colormap the colormap
+ */
+void dvz_scale_set_colormap(DvzScale* scale, DvzColormap* colormap)
+{
+    ANN(scale);
+    if (colormap != NULL && colormap->scene != scale->scene)
+    {
+        log_error("cannot bind a colormap from a different scene");
+        return;
+    }
+    scale->colormap = colormap;
+}
+
+
+/**
+ * Override shared formatting policy on a scale.
+ *
+ * @param scale the scale
+ * @param format the format descriptor, or NULL to clear the override
+ */
+void dvz_scale_set_format(DvzScale* scale, const DvzFormatDesc* format)
+{
+    ANN(scale);
+    _format_state_copy(&scale->format, format);
+}
+
+
+/**
+ * Create a scene-owned colormap object.
+ *
+ * @param scene the scene
+ * @param desc the colormap descriptor, or NULL for defaults
+ * @return the colormap, or NULL on allocation failure
+ */
+DvzColormap* dvz_colormap(DvzScene* scene, const DvzColormapDesc* desc)
+{
+    ANN(scene);
+    if (scene->colormap_count >= DVZ_SCENE_MAX_COLORMAPS)
+    {
+        log_error("maximum colormap count reached");
+        return NULL;
+    }
+    DvzColormap* colormap = &scene->colormaps[scene->colormap_count++];
+    dvz_memset(colormap, sizeof(DvzColormap), 0, sizeof(DvzColormap));
+    colormap->scene = scene;
+    colormap->kind = desc != NULL ? desc->kind : DVZ_COLORMAP_CONTINUOUS;
+    colormap->builtin = desc != NULL ? desc->builtin : DVZ_BUILTIN_COLORMAP_NONE;
+    if (desc != NULL)
+    {
+        colormap->center = desc->center;
+        colormap->has_center = desc->center != 0.0;
+        if (desc->label != NULL)
+            dvz_strlcpy(colormap->label, desc->label, sizeof(colormap->label));
+    }
+    return colormap;
+}
+
+
+/**
+ * Create a scene-owned built-in colormap object.
+ *
+ * @param scene the scene
+ * @param builtin the built-in colormap selector
+ * @return the colormap, or NULL on allocation failure
+ */
+DvzColormap* dvz_colormap_builtin(DvzScene* scene, DvzBuiltinColormap builtin)
+{
+    DvzColormapDesc desc = {
+        .kind = DVZ_COLORMAP_CONTINUOUS,
+        .builtin = builtin,
+    };
+    return dvz_colormap(scene, &desc);
+}
+
+
+/**
+ * Destroy a colormap object.
+ *
+ * @param colormap the colormap
+ */
+void dvz_colormap_destroy(DvzColormap* colormap)
+{
+    if (colormap == NULL)
+        return;
+    colormap->scene = NULL;
+    colormap->stop_count = 0;
+    colormap->has_center = false;
+}
+
+
+/**
+ * Set custom color stops on a colormap.
+ *
+ * @param colormap the colormap
+ * @param stops the color stops
+ * @param count the number of stops
+ */
+void dvz_colormap_set_stops(DvzColormap* colormap, const DvzColormapStop* stops, uint32_t count)
+{
+    ANN(colormap);
+    if (count > DVZ_SCENE_MAX_COLOR_STOPS)
+    {
+        log_error("too many color stops: %u > %u", count, DVZ_SCENE_MAX_COLOR_STOPS);
+        return;
+    }
+    if (count > 0)
+        ANN(stops);
+    colormap->stop_count = count;
+    if (count > 0)
+        dvz_memcpy(colormap->stops, sizeof(colormap->stops), stops, count * sizeof(DvzColormapStop));
+}
+
+
+/**
+ * Set the diverging center on a colormap.
+ *
+ * @param colormap the colormap
+ * @param center the semantic center value
+ */
+void dvz_colormap_set_center(DvzColormap* colormap, double center)
+{
+    ANN(colormap);
+    colormap->center = center;
+    colormap->has_center = true;
+}
+
+
+/**
+ * Create a panel-attached colorbar bound to a scale.
+ *
+ * @param panel the panel
+ * @param scale the scale
+ * @param desc the colorbar descriptor, or NULL for defaults
+ * @return the colorbar, or NULL on allocation failure
+ */
+DvzColorbar* dvz_colorbar(DvzPanel* panel, DvzScale* scale, const DvzColorbarDesc* desc)
+{
+    ANN(panel);
+    ANN(scale);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+    {
+        log_error("cannot create a colorbar on a detached panel");
+        return NULL;
+    }
+    DvzScene* scene = panel->figure->scene;
+    if (scale->scene != scene)
+    {
+        log_error("cannot attach a scale from a different scene to a panel colorbar");
+        return NULL;
+    }
+    if (scene->colorbar_count >= DVZ_SCENE_MAX_COLORBARS)
+    {
+        log_error("maximum colorbar count reached");
+        return NULL;
+    }
+    if (panel->colorbar_count >= DVZ_SCENE_MAX_PANEL_COLORBARS)
+    {
+        log_error("maximum panel colorbar count reached");
+        return NULL;
+    }
+    DvzColorbar* colorbar = &scene->colorbars[scene->colorbar_count++];
+    dvz_memset(colorbar, sizeof(DvzColorbar), 0, sizeof(DvzColorbar));
+    colorbar->scene = scene;
+    colorbar->panel = panel;
+    colorbar->scale = scale;
+    colorbar->orientation =
+        desc != NULL ? desc->orientation : DVZ_COLORBAR_ORIENTATION_VERTICAL;
+    colorbar->anchor = desc != NULL ? desc->anchor : DVZ_SCENE_ANCHOR_PANEL_RIGHT;
+    colorbar->flags = desc != NULL ? desc->flags : 0;
+    if (desc != NULL && desc->title != NULL)
+        dvz_strlcpy(colorbar->title, desc->title, sizeof(colorbar->title));
+    panel->colorbars[panel->colorbar_count++] = colorbar;
+    return colorbar;
+}
+
+
+/**
+ * Destroy a colorbar.
+ *
+ * @param colorbar the colorbar
+ */
+void dvz_colorbar_destroy(DvzColorbar* colorbar)
+{
+    if (colorbar == NULL)
+        return;
+    if (colorbar->panel != NULL)
+    {
+        DvzPanel* panel = colorbar->panel;
+        for (uint32_t i = 0; i < panel->colorbar_count; i++)
+        {
+            if (panel->colorbars[i] != colorbar)
+                continue;
+            for (uint32_t j = i + 1; j < panel->colorbar_count; j++)
+                panel->colorbars[j - 1] = panel->colorbars[j];
+            panel->colorbars[panel->colorbar_count - 1] = NULL;
+            panel->colorbar_count--;
+            break;
+        }
+    }
+    colorbar->scene = NULL;
+    colorbar->panel = NULL;
+    colorbar->scale = NULL;
+    colorbar->has_format = false;
+}
+
+
+/**
+ * Override formatting policy on a colorbar.
+ *
+ * @param colorbar the colorbar
+ * @param format the format descriptor, or NULL to clear the override
+ */
+void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
+{
+    ANN(colorbar);
+    colorbar->has_format = format != NULL;
+    _format_state_copy(&colorbar->format, format);
 }
 
 
