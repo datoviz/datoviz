@@ -127,8 +127,23 @@ Recommended properties of the link-key model:
 
 1. keys are scene-owned and backend-agnostic,
 2. keys are stable across retained updates unless the semantic object is explicitly replaced,
-3. visuals may attach no key, one key, or one key per local identity depending on family needs,
-4. applications may author the key tables directly when the data model is domain-specific.
+3. in the first slice, each local identity may have zero or one link key per active channel,
+4. many local identities across one or more visuals may share the same link key,
+5. this supports one-to-many, many-to-one, and many-to-many linked selection through shared keys
+   without requiring one local identity to belong to several keys at once,
+6. applications may author the key tables directly when the data model is domain-specific.
+
+Recommended future extension:
+
+1. if several semantic grouping dimensions are needed, add multiple named link channels,
+2. each channel still keeps the simpler rule of zero or one link key per local identity,
+3. do not start with an unstructured many-keys-per-item model.
+
+Recommended first-slice interaction rule:
+
+1. linked selection operates on one active link channel at a time,
+2. applications may switch the active channel through explicit policy or UI,
+3. do not combine several active link channels in one linked-selection action initially.
 
 This should be a first-class scene concept because otherwise linked selection becomes duplicated
 application policy instead of shared visualization semantics.
