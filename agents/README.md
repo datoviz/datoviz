@@ -25,6 +25,7 @@ Active execution surface:
 16. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
 17. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
 18. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
+19. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
 
 Current status:
 
@@ -70,6 +71,8 @@ Current status:
     need for shared 3D framing across related mesh/volume scenes.
 20. The active ray-tracing note records which current scene-level decisions should remain semantic so
     a future ray path can land without a public-API rewrite.
+21. The active UI/backend note records the scene-boundary implications of Dear ImGui, Qt/PyQt-style
+    embedding, host-driven layout, and external retained mutation.
 
 
 ## Start Here
@@ -114,16 +117,19 @@ If resuming work on the branch:
    before changing F64 normalization policy, mixed 3D framing, or semantic coordinate readback.
 18. Read [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
    before freezing raster-only assumptions into mesh, volume, transparency, or picking APIs.
-19. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+19. Read [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
+   before tightening external UI mutation paths, host embedding, or texture-handle presentation
+   assumptions.
+20. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the completed first vertical slice.
-20. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+21. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-21. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+22. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
    when touching panel transforms, per-panel UBOs, or controller input flow.
-22. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+23. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-23. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+24. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -152,6 +158,7 @@ Files in this directory are actionable today and should stay short enough to dri
 16. [now/COLORBAR_COLORMAP_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/COLORBAR_COLORMAP_DESIGN.md)
 17. [now/SCIENTIFIC_COORDINATE_NORMALIZATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCIENTIFIC_COORDINATE_NORMALIZATION.md)
 18. [now/RAY_TRACING_FORWARD_COMPAT.md](/home/cyrille/GIT/Viz/datoviz/agents/now/RAY_TRACING_FORWARD_COMPAT.md)
+19. [now/UI_BACKEND_INTEGRATION.md](/home/cyrille/GIT/Viz/datoviz/agents/now/UI_BACKEND_INTEGRATION.md)
 
 ### `done/`
 
