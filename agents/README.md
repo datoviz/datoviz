@@ -15,6 +15,7 @@ Active execution surface:
 6. [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
 7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
 8. [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
+9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
 
 Current status:
 
@@ -40,6 +41,8 @@ Current status:
    requirements, and equation-backend direction.
 10. The active transparency note records how WBOIT should appear at the visual, frame-plan, DRP2,
     runtime, and capability levels.
+11. The active picking note records per-family picking precision, scene-owned identity routing, and
+    the intended request/readback contract.
 
 
 ## Start Here
@@ -62,16 +65,18 @@ If resuming work on the branch:
    implementing the text visual family, world-space labels, or equation/text-resource direction.
 8. Read [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
    before implementing transparent visual modes or WBOIT-related frame-plan/runtime work.
-9. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+9. Read [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
+   before implementing object/face/item picking paths or result-routing APIs.
+10. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the completed first vertical slice.
-10. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
+11. Read [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
    before changing runtime/frame-target lifetime, borrowed canvas frames, object tables, or failure paths.
-11. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+12. Read [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
    when touching panel transforms, per-panel UBOs, or controller input flow.
-12. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
+13. Read [done/VK_REFACTOR.md](/home/cyrille/GIT/Viz/datoviz/agents/done/VK_REFACTOR.md) and
    [done/LOW_LEVEL_CONSISTENCY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/LOW_LEVEL_CONSISTENCY.md)
    only when a task touches low-level ownership or naming contracts.
-13. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
+14. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog, not the default
    next-task list.
 
@@ -90,6 +95,7 @@ Files in this directory are actionable today and should stay short enough to dri
 6. [now/MESH_API_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/MESH_API_DESIGN.md)
 7. [now/TEXT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TEXT_DESIGN.md)
 8. [now/TRANSPARENCY_WBOIT_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/TRANSPARENCY_WBOIT_DESIGN.md)
+9. [now/PICKING_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/PICKING_DESIGN.md)
 
 ### `done/`
 
