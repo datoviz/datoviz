@@ -386,6 +386,14 @@ Recommended behavior:
    as retained per-item data,
 8. this should work with large retained datasets and incremental updates.
 
+Recommended interaction implication:
+
+1. grouped primitive families should preserve the exact sub-primitive raw hit,
+2. interaction policy may still resolve that raw hit to the parent strip/group for hover or
+   selection behavior,
+3. this follows the general raw-hit versus resolved-target split used elsewhere in the interaction
+   model.
+
 Why this is important:
 
 1. scientific visualization often relies on probing one exact sample,

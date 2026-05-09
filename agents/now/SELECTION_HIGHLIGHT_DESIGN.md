@@ -107,6 +107,9 @@ Example:
 3. the raw hover hit remains the face identity,
 4. the resolved hover target is the mesh object identity used for highlight.
 
+The same rule applies to grouped primitives: the raw hover hit may remain the exact segment or
+triangle within a strip while the resolved hover target is the parent strip/group.
+
 
 ## Linked Selection
 
@@ -203,6 +206,9 @@ Example:
 4. the selection stores the mesh object identity rather than the face identity.
 
 If face-selection mode is active instead, the same hit stores the face identity.
+The same rule applies to grouped primitives such as `line_strip` or `triangle_strip`: the raw hit
+may be one segment or one triangle, while the stored selection target may resolve to the parent
+strip when group-selection mode is active.
 
 
 ## Selection Policy And Input Mapping
