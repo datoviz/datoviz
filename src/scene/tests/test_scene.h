@@ -158,6 +158,8 @@ int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
 
 int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_buffer_rejects_cross_scene_buffer(TstSuite* suite, TstItem* item);
+
 int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* item);
 
 int test_scene_image_r16_float_field_uses_bound_scale(TstSuite* suite, TstItem* item);
@@ -201,6 +203,8 @@ int test_scene_rejects_mismatched_point_attribute_counts(TstSuite* suite, TstIte
 int test_scene_rejects_range_update_without_full_allocation(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
+
+int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
 

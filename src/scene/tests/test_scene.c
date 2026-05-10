@@ -3248,6 +3248,32 @@ int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* 
 
 
 
+int test_scene_visual_buffer_rejects_cross_scene_buffer(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzSceneBuffer* foreign_buffer = dvz_scene_buffer(
+        scene1, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(uint16_t)});
+    ANN(foreign_buffer);
+    DvzVisual* visual = dvz_primitive(scene0, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    AT(!dvz_visual_set_buffer(visual, "index", foreign_buffer));
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+
 int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -4604,6 +4630,66 @@ int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, Ts
     AT(scene->outstanding_emitted_streams == 0);
     AT(dvz_visual_set_data(visual, "position", update, 2) == 0);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    DvzScale* scale = dvz_scale(scene, NULL);
+    ANN(scale);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4] = {0};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_sampled_field_set_data(
+           field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    AT(stream != NULL);
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_scale(image, "colormap", scale) == -1);
+    AT(_captured_log_contains(suite, "destroy the stream first"));
+
+    dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -6645,6 +6731,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_colorbar_rejects_cross_scene_scale);
     TEST_SIMPLE(test_scene_image_visual_binds_colormap_scale);
     TEST_SIMPLE(test_scene_visual_scale_rejects_cross_scene_scale);
+    TEST_SIMPLE(test_scene_visual_buffer_rejects_cross_scene_buffer);
     TEST_SIMPLE(test_scene_image_scalar_texture_uses_bound_scale);
     TEST_SIMPLE(test_scene_image_r16_float_field_uses_bound_scale);
     TEST_SIMPLE(test_scene_image_r16_snorm_field_uses_bound_scale);
@@ -6666,6 +6753,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_rejects_mismatched_point_attribute_counts);
     TEST_SIMPLE(test_scene_rejects_range_update_without_full_allocation);
     TEST_SIMPLE(test_scene_rejects_mutation_while_emitted_stream_is_live);
+    TEST_SIMPLE(test_scene_rejects_scale_binding_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_rejects_range_mutation_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_rejects_destroy_while_emitted_stream_is_live);
     TEST_SIMPLE(test_scene_rejects_visual_destroy_while_emitted_stream_is_live);
