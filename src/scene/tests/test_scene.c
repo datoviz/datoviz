@@ -2000,7 +2000,7 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, Ts
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
-            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint16") == 0;
+            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint32") == 0;
         if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
             found_draw_indexed = cmd->u.draw_indexed.index_count == 6;
     }
@@ -2076,7 +2076,7 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* it
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
-            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint16") == 0;
+            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint32") == 0;
         if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
             found_draw_indexed = cmd->u.draw_indexed.index_count == 6;
     }
