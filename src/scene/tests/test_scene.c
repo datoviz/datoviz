@@ -16,6 +16,7 @@
 
 #include <inttypes.h>
 #include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -63,6 +64,27 @@ static bool _captured_log_contains(const TstSuite* suite, const char* needle)
             return true;
     }
     return false;
+}
+
+
+
+/**
+ * Return the RGBA pixel pointer at integer coordinates.
+ *
+ * @param rgba the captured RGBA buffer
+ * @param width the image width in pixels
+ * @param height the image height in pixels
+ * @param x the x pixel coordinate
+ * @param y the y pixel coordinate
+ * @return the pointer to the first RGBA byte
+ */
+static const uint8_t* _pixel_at(
+    const uint8_t* rgba, uint32_t width, uint32_t height, uint32_t x, uint32_t y)
+{
+    ANN(rgba);
+    ASSERT(x < width);
+    ASSERT(y < height);
+    return &rgba[4 * ((uint64_t)y * width + x)];
 }
 
 
@@ -5013,6 +5035,287 @@ int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item)
 
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_image_field_partial_update_changes_region(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float positions[4][3] = {
+        {-0.95f, -0.95f, 0.0f}, {-0.95f, 0.95f, 0.0f},
+        {0.95f, -0.95f, 0.0f},  {0.95f, 0.95f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = values,
+                   .bytes_per_row = 4 * sizeof(float),
+                   .rows_per_image = 4,
+               }));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_image_field_partial_update_changes_region skipped: GPU context "
+            "creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width0 = 0, height0 = 0;
+    uint8_t* rgba0 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width0, &height0, &rgba0) == 0);
+    ANN(rgba0);
+    AT(width0 == 64);
+    AT(height0 == 64);
+
+    float patch[8];
+    for (uint32_t i = 0; i < 8; i++)
+        patch[i] = 1.0f;
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch,
+            .bytes_per_row = 2 * sizeof(float),
+            .rows_per_image = 4,
+        }));
+
+    dvz_app_run(app, 1);
+
+    uint32_t width1 = 0, height1 = 0;
+    uint8_t* rgba1 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width1, &height1, &rgba1) == 0);
+    ANN(rgba1);
+    AT(width1 == 64);
+    AT(height1 == 64);
+
+    const uint8_t* left0 = _pixel_at(rgba0, width0, height0, 16, 32);
+    const uint8_t* right0 = _pixel_at(rgba0, width0, height0, 48, 32);
+    const uint8_t* left1 = _pixel_at(rgba1, width1, height1, 16, 32);
+    const uint8_t* right1 = _pixel_at(rgba1, width1, height1, 48, 32);
+
+    AT(left0[2] > 180);
+    AT(right0[2] > 180);
+    AT((int)left1[0] - (int)left0[0] < 40);
+    AT(abs((int)left1[2] - (int)left0[2]) < 40);
+    AT(right1[0] > 180);
+    AT(right1[2] < 80);
+
+    dvz_free(rgba1);
+    dvz_free(rgba0);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_app_offscreen_shared_field_mixed_runtime_updates(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale0);
+    ANN(scale1);
+    dvz_scale_set_domain(scale0, 0.0, 1.0);
+    dvz_scale_set_domain(scale1, 0.0, 1.0);
+
+    DvzColormap* colormap0 = dvz_colormap(scene, NULL);
+    DvzColormap* colormap1 = dvz_colormap(scene, NULL);
+    ANN(colormap0);
+    ANN(colormap1);
+    DvzColormapStop base_stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap0, base_stops, 2);
+    dvz_colormap_set_stops(colormap1, base_stops, 2);
+    dvz_scale_set_colormap(scale0, colormap0);
+    dvz_scale_set_colormap(scale1, colormap1);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){
+                   .data = values,
+                   .bytes_per_row = 4 * sizeof(float),
+                   .rows_per_image = 4,
+               }));
+
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    float left_positions[4][3] = {
+        {-1.0f, -0.95f, 0.0f}, {-1.0f, 0.95f, 0.0f},
+        {0.0f, -0.95f, 0.0f},  {0.0f, 0.95f, 0.0f},
+    };
+    float right_positions[4][3] = {
+        {0.0f, -0.95f, 0.0f}, {0.0f, 0.95f, 0.0f},
+        {1.0f, -0.95f, 0.0f}, {1.0f, 0.95f, 0.0f},
+    };
+
+    DvzVisual* image0 = dvz_image(scene, 0);
+    DvzVisual* image1 = dvz_image(scene, 0);
+    ANN(image0);
+    ANN(image1);
+    AT(dvz_visual_set_data(image0, "position", left_positions, 4) == 0);
+    AT(dvz_visual_set_data(image0, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image0, "colormap", scale0) == 0);
+    AT(dvz_visual_set_field(image0, "field", field));
+    AT(dvz_panel_add_visual(panel, image0, NULL) == 0);
+
+    AT(dvz_visual_set_data(image1, "position", right_positions, 4) == 0);
+    AT(dvz_visual_set_data(image1, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image1, "colormap", scale1) == 0);
+    AT(dvz_visual_set_field(image1, "field", field));
+    AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_shared_field_mixed_runtime_updates skipped: GPU context "
+            "creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 96, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width0 = 0, height0 = 0;
+    uint8_t* rgba0 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width0, &height0, &rgba0) == 0);
+    ANN(rgba0);
+
+    DvzColormapStop updated_stops[2] = {
+        {.position = 0.0, .rgba = {0, 255, 0, 255}},
+        {.position = 1.0, .rgba = {255, 255, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap0, updated_stops, 2);
+
+    float patch[8];
+    for (uint32_t i = 0; i < 8; i++)
+        patch[i] = 1.0f;
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch,
+            .bytes_per_row = 2 * sizeof(float),
+            .rows_per_image = 4,
+        }));
+
+    dvz_app_run(app, 1);
+
+    uint32_t width1 = 0, height1 = 0;
+    uint8_t* rgba1 = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width1, &height1, &rgba1) == 0);
+    ANN(rgba1);
+
+    const uint8_t* left_left0 = _pixel_at(rgba0, width0, height0, 24, 32);
+    const uint8_t* left_left1 = _pixel_at(rgba1, width1, height1, 24, 32);
+    const uint8_t* right_left0 = _pixel_at(rgba0, width0, height0, 60, 32);
+    const uint8_t* right_left1 = _pixel_at(rgba1, width1, height1, 60, 32);
+    const uint8_t* right_right1 = _pixel_at(rgba1, width1, height1, 84, 32);
+
+    AT(left_left0[2] > 180);
+    AT((int)left_left1[1] > (int)left_left0[1] + 40);
+    AT((int)left_left1[2] + 40 < (int)left_left0[2]);
+
+    AT(right_left0[2] > 180);
+    AT(abs((int)right_left1[0] - (int)right_left0[0]) < 40);
+    AT(abs((int)right_left1[1] - (int)right_left0[1]) < 40);
+    AT(abs((int)right_left1[2] - (int)right_left0[2]) < 40);
+
+    AT(right_right1[0] > 180);
+    AT(right_right1[2] < 120);
+
+    dvz_free(rgba1);
+    dvz_free(rgba0);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -6018,6 +6321,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
+    TEST_SIMPLE(test_app_offscreen_shared_field_mixed_runtime_updates);
     TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);

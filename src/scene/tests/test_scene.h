@@ -225,6 +225,12 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_image_has_nonblank_pixels(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_image_field_partial_update_changes_region(
+    TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_shared_field_mixed_runtime_updates(
+    TstSuite* suite, TstItem* item);
+
 int test_app_offscreen_image_retained_render_second_frame(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_retained_render_second_frame(TstSuite* suite, TstItem* item);
