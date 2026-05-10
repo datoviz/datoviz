@@ -1271,8 +1271,12 @@ static bool _emitter_emit_upload(
         *out_id = id;
         if (node->u.upload.data == NULL)
             return false;
-        return dvz_drp2_stream_write_texture_2d_bytes(
-            stream, id, 0, w, h, bpr, h, node->u.upload.data);
+        if (node->u.upload.texture_origin_x == 0 && node->u.upload.texture_origin_y == 0)
+            return dvz_drp2_stream_write_texture_2d_bytes(
+                stream, id, 0, w, h, bpr, h, node->u.upload.data);
+        return dvz_drp2_stream_write_texture_2d_region_bytes(
+            stream, id, 0, node->u.upload.texture_origin_x, node->u.upload.texture_origin_y, w, h,
+            bpr, h, node->u.upload.data);
     }
 
     uint64_t buffer_size = 0;

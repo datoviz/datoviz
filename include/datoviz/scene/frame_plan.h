@@ -209,6 +209,21 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_extent(
     DvzFramePlan* plan, uint32_t width, uint32_t height);
 
 
+/**
+ * Tag the most recently appended texture upload node with a 2D sub-region origin.
+ *
+ * Use after `dvz_frame_plan_upload_set_texture_extent()`. The extent still names the upload
+ * size, while this call sets the destination origin within the texture.
+ *
+ * @param plan the FramePlan
+ * @param origin_x destination x offset in texels
+ * @param origin_y destination y offset in texels
+ * @return whether the origin was applied
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_region(
+    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y);
+
+
 
 /**
  * Append a compute node.

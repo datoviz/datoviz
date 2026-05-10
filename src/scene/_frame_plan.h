@@ -52,6 +52,8 @@ struct DvzFramePlanNode
              * (RGBA8). Default 0 = vertex-buffer upload. */
             uint32_t texture_width;
             uint32_t texture_height;
+            uint32_t texture_origin_x;
+            uint32_t texture_origin_y;
         } upload;
         struct
         {

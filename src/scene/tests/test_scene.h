@@ -163,6 +163,9 @@ int test_scene_sampled_field_destroy_clears_visual_binding(TstSuite* suite, TstI
 
 int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstItem* item);
 
+int test_scene_image_field_partial_update_emits_texture_subregion(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);

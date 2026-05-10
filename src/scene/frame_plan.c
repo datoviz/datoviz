@@ -471,6 +471,20 @@ bool dvz_frame_plan_upload_set_texture_extent(
 }
 
 
+bool dvz_frame_plan_upload_set_texture_region(
+    DvzFramePlan* plan, uint32_t origin_x, uint32_t origin_y)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_origin_x = origin_x;
+    node->u.upload.texture_origin_y = origin_y;
+    return true;
+}
+
+
 
 /**
  * Append a compute node.

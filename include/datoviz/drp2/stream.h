@@ -589,6 +589,29 @@ DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_bytes(
 
 
 /**
+ * Append a WriteTexture command for a 2D sub-region using raw bytes.
+ *
+ * Mirrors `dvz_drp2_stream_write_texture_2d_bytes` for the in-process runtime path.
+ *
+ * @param stream the command stream
+ * @param texture_id the destination texture id
+ * @param mip_level the destination mip level
+ * @param origin_x x offset in texels
+ * @param origin_y y offset in texels
+ * @param width the written width
+ * @param height the written height
+ * @param bytes_per_row the source bytes per row
+ * @param rows_per_image the source rows per image
+ * @param data raw pixel bytes (must remain valid until the stream executes)
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_write_texture_2d_region_bytes(
+    DvzDrp2CommandStream* stream, uint64_t texture_id, uint32_t mip_level, uint32_t origin_x,
+    uint32_t origin_y, uint32_t width, uint32_t height, uint32_t bytes_per_row,
+    uint32_t rows_per_image, const void* data);
+
+
+/**
  * Append a WriteTexture command for a 2D sub-region with explicit origin.
  *
  * @param stream the command stream

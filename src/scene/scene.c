@@ -71,16 +71,29 @@ static uint64_t _field_default_bytes_per_row(const DvzSampledFieldDesc* desc);
 
 static uint64_t _field_default_rows_per_image(const DvzSampledFieldDesc* desc);
 
+static DvzFieldRegion _field_full_region(const DvzSampledFieldDesc* desc);
+
+static bool _field_regions_union(
+    const DvzFieldRegion* a, const DvzFieldRegion* b, DvzFieldRegion* out);
+
+static bool _field_region_byte_size(
+    DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
+
 static bool _field_data_view_valid(
     const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, const DvzFieldRegion* region);
 
 static bool _field_read_scalar(
     const DvzSampledField* field, uint64_t sample_index, double* out_value);
 
+static void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
+
+static bool _visual_texture_ensure_upload(DvzVisualTexture* texture, uint64_t byte_size);
+
 static bool _scene_color_from_colormap(
     const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
 
-static bool _scene_prepare_image_texture(DvzVisual* visual);
+static bool _scene_prepare_image_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
 
 
 
@@ -313,7 +326,21 @@ static void _scene_mark_field_dirty(DvzSampledField* field)
 {
     if (field == NULL || field->scene == NULL)
         return;
+    DvzFieldRegion region = _field_full_region(&field->desc);
+    if (!field->dirty)
+    {
+        field->dirty_region = region;
+    }
+    else if (field->dirty_full)
+    {
+        field->dirty_region = region;
+    }
+    else if (!_field_regions_union(&field->dirty_region, &region, &field->dirty_region))
+    {
+        field->dirty_region = region;
+    }
     field->dirty = true;
+    field->dirty_full = true;
     DvzScene* scene = field->scene;
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
@@ -334,6 +361,12 @@ static void _scene_release_visual_field(DvzVisual* visual)
     visual->field_owned = false;
     dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0, sizeof(visual->field_slot));
     visual->texture.dirty = false;
+    if (visual->texture.upload != NULL)
+    {
+        dvz_free(visual->texture.upload);
+        visual->texture.upload = NULL;
+        visual->texture.upload_size = 0;
+    }
     if (owned && field != NULL)
         dvz_sampled_field_destroy(field);
 }
@@ -455,6 +488,68 @@ static uint64_t _field_default_rows_per_image(const DvzSampledFieldDesc* desc)
 }
 
 
+static DvzFieldRegion _field_full_region(const DvzSampledFieldDesc* desc)
+{
+    ANN(desc);
+    return (DvzFieldRegion){
+        .x = 0,
+        .y = 0,
+        .z = 0,
+        .width = desc->width,
+        .height = desc->height,
+        .depth = desc->depth,
+    };
+}
+
+
+static bool _field_regions_union(
+    const DvzFieldRegion* a, const DvzFieldRegion* b, DvzFieldRegion* out)
+{
+    ANN(a);
+    ANN(b);
+    ANN(out);
+    uint64_t ax1 = 0, ay1 = 0, az1 = 0;
+    uint64_t bx1 = 0, by1 = 0, bz1 = 0;
+    if (_dvz_add_u64_overflows(a->x, a->width, &ax1) ||
+        _dvz_add_u64_overflows(a->y, a->height, &ay1) ||
+        _dvz_add_u64_overflows(a->z, a->depth, &az1) ||
+        _dvz_add_u64_overflows(b->x, b->width, &bx1) ||
+        _dvz_add_u64_overflows(b->y, b->height, &by1) ||
+        _dvz_add_u64_overflows(b->z, b->depth, &bz1))
+        return false;
+
+    uint64_t x0 = a->x < b->x ? a->x : b->x;
+    uint64_t y0 = a->y < b->y ? a->y : b->y;
+    uint64_t z0 = a->z < b->z ? a->z : b->z;
+    uint64_t x1 = ax1 > bx1 ? ax1 : bx1;
+    uint64_t y1 = ay1 > by1 ? ay1 : by1;
+    uint64_t z1 = az1 > bz1 ? az1 : bz1;
+    out->x = (uint32_t)x0;
+    out->y = (uint32_t)y0;
+    out->z = (uint32_t)z0;
+    out->width = (uint32_t)(x1 - x0);
+    out->height = (uint32_t)(y1 - y0);
+    out->depth = (uint32_t)(z1 - z0);
+    return true;
+}
+
+
+static bool _field_region_byte_size(
+    DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size)
+{
+    ANN(region);
+    ANN(out_size);
+    uint32_t bytes_per_texel = 0;
+    if (!_field_format_bytes_per_texel(format, &bytes_per_texel))
+        return false;
+    uint64_t sample_count = 0;
+    if (_dvz_mul_u64_overflows(region->width, region->height, &sample_count) ||
+        _dvz_mul_u64_overflows(sample_count, region->depth, &sample_count))
+        return false;
+    return !_dvz_mul_u64_overflows(sample_count, bytes_per_texel, out_size);
+}
+
+
 static bool _field_data_view_valid(
     const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, const DvzFieldRegion* region)
 {
@@ -548,6 +643,41 @@ static bool _field_read_scalar(
 }
 
 
+static void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field)
+{
+    if (scene == NULL || field == NULL || field->scene != scene)
+        return;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        const DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene == scene && visual->field == field && visual->texture.dirty)
+            return;
+    }
+    field->dirty = false;
+    field->dirty_full = false;
+    dvz_memset(&field->dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+}
+
+
+static bool _visual_texture_ensure_upload(DvzVisualTexture* texture, uint64_t byte_size)
+{
+    ANN(texture);
+    if (texture->upload != NULL && texture->upload_size == byte_size)
+        return true;
+    if (texture->upload != NULL)
+    {
+        dvz_free(texture->upload);
+        texture->upload = NULL;
+        texture->upload_size = 0;
+    }
+    texture->upload = dvz_calloc(byte_size, 1);
+    if (texture->upload == NULL)
+        return false;
+    texture->upload_size = byte_size;
+    return true;
+}
+
+
 static void _scene_mark_colormap_dirty(DvzColormap* colormap)
 {
     if (colormap == NULL || colormap->scene == NULL)
@@ -607,9 +737,12 @@ static bool _scene_color_from_colormap(
 }
 
 
-static bool _scene_prepare_image_texture(DvzVisual* visual)
+static bool _scene_prepare_image_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data)
 {
     ANN(visual);
+    ANN(out_region);
+    ANN(out_data);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
         return false;
     if (visual->field == NULL)
@@ -636,9 +769,46 @@ static bool _scene_prepare_image_texture(DvzVisual* visual)
 
     visual->texture.width = field->desc.width;
     visual->texture.height = field->desc.height;
+    *out_region = (visual->texture.dirty || !field->dirty) ? _field_full_region(&field->desc)
+                                                           : field->dirty_region;
+    if (field->dirty)
+    {
+        if (visual->texture.dirty || field->dirty_full)
+            *out_region = _field_full_region(&field->desc);
+        else
+            *out_region = field->dirty_region;
+    }
 
     if (_field_format_is_rgba8(field->desc.format))
+    {
+        if (out_region->x == 0 && out_region->y == 0 && out_region->width == field->desc.width &&
+            out_region->height == field->desc.height)
+        {
+            *out_data = field->data;
+            return true;
+        }
+
+        uint64_t upload_size = 0;
+        if (!_field_region_byte_size(field->desc.format, out_region, &upload_size) ||
+            !_visual_texture_ensure_upload(&visual->texture, upload_size))
+        {
+            log_error("RGBA image field upload scratch allocation failed");
+            return false;
+        }
+        uint8_t* dst = (uint8_t*)visual->texture.upload;
+        const uint8_t* src = (const uint8_t*)field->data;
+        uint64_t src_bpr = _field_default_bytes_per_row(&field->desc);
+        uint64_t row_bytes = (uint64_t)out_region->width * 4ull;
+        for (uint32_t y = 0; y < out_region->height; y++)
+        {
+            uint64_t src_offset =
+                (uint64_t)(out_region->y + y) * src_bpr + (uint64_t)out_region->x * 4ull;
+            uint64_t dst_offset = (uint64_t)y * row_bytes;
+            dvz_memcpy(dst + dst_offset, row_bytes, src + src_offset, row_bytes);
+        }
+        *out_data = visual->texture.upload;
         return true;
+    }
     if (!_field_format_is_scalar(field->desc.format))
     {
         log_error("image visual does not support sampled field format %d", (int)field->desc.format);
@@ -689,18 +859,47 @@ static bool _scene_prepare_image_texture(DvzVisual* visual)
     if (denom == 0.0)
         denom = 1.0;
 
-    for (uint64_t i = 0; i < pixel_count; i++)
+    for (uint32_t y = out_region->y; y < out_region->y + out_region->height; y++)
     {
-        double value = 0.0;
-        if (!_field_read_scalar(field, i, &value))
+        for (uint32_t x = out_region->x; x < out_region->x + out_region->width; x++)
         {
-            log_error("failed to sample scalar field format %d", (int)field->desc.format);
-            return false;
+            uint64_t i = (uint64_t)y * field->desc.width + x;
+            double value = 0.0;
+            if (!_field_read_scalar(field, i, &value))
+            {
+                log_error("failed to sample scalar field format %d", (int)field->desc.format);
+                return false;
+            }
+            double t = (value - domain_min) / denom;
+            _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
         }
-        double t = (value - domain_min) / denom;
-        _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
     }
 
+    if (out_region->x == 0 && out_region->y == 0 && out_region->width == field->desc.width &&
+        out_region->height == field->desc.height)
+    {
+        *out_data = visual->texture.rgba;
+        return true;
+    }
+
+    uint64_t upload_size = 0;
+    if (!_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, out_region, &upload_size) ||
+        !_visual_texture_ensure_upload(&visual->texture, upload_size))
+    {
+        log_error("scalar image field upload scratch allocation failed");
+        return false;
+    }
+    uint8_t* dst = (uint8_t*)visual->texture.upload;
+    uint64_t src_bpr = field->desc.width * 4ull;
+    uint64_t row_bytes = (uint64_t)out_region->width * 4ull;
+    for (uint32_t y = 0; y < out_region->height; y++)
+    {
+        uint64_t src_offset =
+            (uint64_t)(out_region->y + y) * src_bpr + (uint64_t)out_region->x * 4ull;
+        uint64_t dst_offset = (uint64_t)y * row_bytes;
+        dvz_memcpy(dst + dst_offset, row_bytes, rgba + src_offset, row_bytes);
+    }
+    *out_data = visual->texture.upload;
     return true;
 }
 
@@ -757,6 +956,12 @@ void dvz_scene_destroy(DvzScene* scene)
             dvz_free(v->texture.rgba);
             v->texture.rgba = NULL;
             v->texture.rgba_size = 0;
+        }
+        if (v->texture.upload != NULL)
+        {
+            dvz_free(v->texture.upload);
+            v->texture.upload = NULL;
+            v->texture.upload_size = 0;
         }
         v->field = NULL;
         v->field_owned = false;
@@ -871,26 +1076,29 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
                 }
             }
-            if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->texture.dirty &&
-                visual->field != NULL)
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
+                (visual->texture.dirty || visual->field->dirty))
             {
-                if (!_scene_prepare_image_texture(visual))
+                DvzFieldRegion upload_region = {0};
+                const void* upload_data = NULL;
+                if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data))
                     continue;
                 char tex_resource_id[128];
                 dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
                 uint64_t bytes = 0;
-                if (_dvz_mul_u64_overflows(visual->texture.width, visual->texture.height, &bytes) ||
-                    _dvz_mul_u64_overflows(bytes, 4, &bytes))
+                if (_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, &upload_region, &bytes))
+                {
+                    dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, bytes, "texture", upload_data);
+                    dvz_frame_plan_upload_set_texture_extent(
+                        plan, upload_region.width, upload_region.height);
+                    dvz_frame_plan_upload_set_texture_region(
+                        plan, upload_region.x, upload_region.y);
+                }
+                else
                 {
                     log_error("image visual texture upload size overflow");
                     continue;
                 }
-                dvz_frame_plan_upload_bytes(
-                    plan, tex_resource_id, 0, bytes, "texture",
-                    _field_format_is_rgba8(visual->field->desc.format) ? visual->field->data
-                                                                        : visual->texture.rgba);
-                dvz_frame_plan_upload_set_texture_extent(
-                    plan, visual->texture.width, visual->texture.height);
             }
         }
     }
@@ -1040,11 +1248,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
                 {
                     visual->texture.dirty = false;
-                    if (visual->field != NULL)
-                        visual->field->dirty = false;
                 }
             }
         }
+        for (uint32_t i = 0; i < figure->scene->field_count; i++)
+            _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
     }
 
     dvz_frame_plan_destroy(plan);
@@ -1586,6 +1794,8 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
         field->geometry.spacing[0] = 1.0;
         field->geometry.spacing[1] = 1.0;
         field->geometry.spacing[2] = 1.0;
+        field->dirty = false;
+        field->dirty_full = false;
         if (i + 1 > scene->field_count)
             scene->field_count = i + 1;
         return field;
@@ -1621,6 +1831,12 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
                 dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0,
                            sizeof(visual->field_slot));
                 visual->texture.dirty = false;
+                if (visual->texture.upload != NULL)
+                {
+                    dvz_free(visual->texture.upload);
+                    visual->texture.upload = NULL;
+                    visual->texture.upload_size = 0;
+                }
             }
         }
     }
@@ -1648,14 +1864,7 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
     if (!_scene_visual_mutation_allowed(field->scene, "replace sampled field data"))
         return false;
 
-    DvzFieldRegion full = {
-        .x = 0,
-        .y = 0,
-        .z = 0,
-        .width = field->desc.width,
-        .height = field->desc.height,
-        .depth = field->desc.depth,
-    };
+    DvzFieldRegion full = _field_full_region(&field->desc);
     if (!_field_data_view_valid(&field->desc, view, &full))
         return false;
 
@@ -1684,7 +1893,16 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
             dvz_memcpy(dst + dst_offset, copy_bytes_per_row, src + src_offset, copy_bytes_per_row);
         }
     }
-    _scene_mark_field_dirty(field);
+    field->dirty = true;
+    field->dirty_full = true;
+    field->dirty_region = full;
+    DvzScene* scene = field->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene == scene && visual->field == field)
+            visual->texture.dirty = true;
+    }
     return true;
 }
 
@@ -1746,7 +1964,33 @@ bool dvz_sampled_field_update_region(
             dvz_memcpy(dst + dst_offset, copy_bytes, src + src_offset, copy_bytes);
         }
     }
-    _scene_mark_field_dirty(field);
+    if (!field->dirty)
+    {
+        field->dirty_region = region;
+    }
+    else if (field->dirty_full)
+    {
+        /* keep prior full dirty state */
+    }
+    else
+    {
+        DvzFieldRegion merged = {0};
+        if (_field_regions_union(&field->dirty_region, &region, &merged))
+            field->dirty_region = merged;
+        else
+        {
+            field->dirty_region = _field_full_region(&field->desc);
+            field->dirty_full = true;
+        }
+    }
+    field->dirty = true;
+    DvzScene* scene = field->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene == scene && visual->field == field)
+            visual->texture.dirty = true;
+    }
     return true;
 }
 

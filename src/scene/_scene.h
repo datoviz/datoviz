@@ -66,6 +66,8 @@ struct DvzVisualTexture
 {
     void* rgba;                 /* owned RGBA8 staging for scalar textures */
     uint64_t rgba_size;         /* bytes */
+    void* upload;               /* owned tightly-packed upload scratch for partial texture writes */
+    uint64_t upload_size;       /* bytes */
     uint32_t width;             /* pixels */
     uint32_t height;            /* pixels */
     bool dirty;                 /* needs upload on next emit */
@@ -168,6 +170,8 @@ struct DvzSampledField
     void* data;
     uint64_t data_size;
     bool dirty;
+    bool dirty_full;
+    DvzFieldRegion dirty_region;
 };
 
 
