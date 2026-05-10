@@ -38,6 +38,8 @@ These boundaries are now explicit enough to start public API drafting:
    the only public meaning.
 6. Scales and colormaps are scene-owned semantic objects. Colorbars are explanatory objects bound to
    scales; they do not own the scale or colormap.
+7. `SampledField` is the intended shared scene-owned regular-grid resource for image, volume, and
+   future probe/readout consumers.
 
 
 ## Header Work Still Needed
@@ -53,7 +55,8 @@ The next public-header pass should spell:
 5. `DvzMeshResource` or equivalent mesh geometry resource handle, including full replace and
    vertex/index subrange update entry points,
 6. volume slice probe result fields that can carry slice-local coordinates, scene-domain
-   coordinates, and sampled values.
+   coordinates, and sampled values,
+7. `DvzSampledField`, its descriptor/update structs, and semantic visual binding entry points.
 
 
 ## Non-Blocking Follow-Up
@@ -65,4 +68,6 @@ These items should not block the first header pass, but they should stay visible
 3. per-character glyph orientation is deferred,
 4. volume DVR/MIP ray-cast picking is deferred,
 5. PBR material expansion beyond reserved mesh/sphere fields is deferred,
-6. multi-scene resource sharing and advanced custom-visual dirty tracking are deferred.
+6. multi-scene resource sharing and advanced custom-visual dirty tracking are deferred,
+7. complete multi-format sampled-field runtime support may lag the first public descriptor set as
+   long as unsupported formats fail validation explicitly.

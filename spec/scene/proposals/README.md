@@ -42,10 +42,12 @@ Use this map when turning proposals into implementation-ready spec changes.
    `../semantics/VISUAL_CONTRACT.md`, and `../core/RUNTIME_BOUNDARY.md`.
 4. `RESOURCE_UPDATE_DESIGN.md`, `SCIENTIFIC_COORDINATE_NORMALIZATION.md`,
    `ASSET_BOUNDARY_DESIGN.md`, `CAPABILITY_FALLBACK_DESIGN.md`,
+   `SAMPLED_FIELD_API_DESIGN.md`,
    `TRANSFORM_CONTROLLER_DESIGN.md`, and `UI_BACKEND_INTEGRATION.md` promote into
    `../pipeline/RESOURCE_MODEL.md`, `../pipeline/INVALIDATION_AND_CACHING.md`,
    `../pipeline/TRANSFORM_PIPELINE.md`, `../validation/ADAPTATION.md`,
-   `../validation/VALIDATION.md`, and `../integration/EXTERNAL_UI.md`.
+   `../validation/VALIDATION.md`, `../visuals/IMAGE.md`, `../visuals/VOLUME.md`,
+   `../api/API_SURFACE.md`, and `../integration/EXTERNAL_UI.md`.
 5. `GEOM_DESIGN.md` promotes into `../semantics/GEOMETRY_UTILITIES.md` and any future public
    `geom` module header plan.
 6. `HIGH_PRIORITY_SPEC_DECISIONS.md` is a consolidation checkpoint. Do not use it as the final
@@ -85,8 +87,9 @@ Resources, transforms, geometry, validation, and integration:
 2. [CAPABILITY_FALLBACK_DESIGN.md](CAPABILITY_FALLBACK_DESIGN.md)
 3. [GEOM_DESIGN.md](GEOM_DESIGN.md)
 4. [RESOURCE_UPDATE_DESIGN.md](RESOURCE_UPDATE_DESIGN.md)
-5. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md)
-6. [UI_BACKEND_INTEGRATION.md](UI_BACKEND_INTEGRATION.md)
+5. [SAMPLED_FIELD_API_DESIGN.md](SAMPLED_FIELD_API_DESIGN.md)
+6. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md)
+7. [UI_BACKEND_INTEGRATION.md](UI_BACKEND_INTEGRATION.md)
 
 Cross-cutting checkpoint:
 

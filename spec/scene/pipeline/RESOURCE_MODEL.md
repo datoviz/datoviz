@@ -338,15 +338,43 @@ GPU mask buffer (selection). There is no generic user-facing readback resource c
 
 `SampledField` is the scene-level class for sampled scalar, vector, color, or volumetric fields.
 
+It is the authoritative scene-owned resource for regular sampled-grid data.
+
 It should cover:
 
 1. `image`
 2. `volume`
 3. glyph atlas-like resources
 4. volume slice render modes sourced from volumetric data
+5. probe/readout sample metadata
+6. future vector-field and label-field consumers
 
 The important semantic point is that this class describes sampled data content, not backend texture
 dimensionality alone.
+
+Core rules:
+
+1. a `SampledField` describes one regular `2D` or `3D` grid,
+2. it carries one concrete sample format, including channel count and scalar component type,
+3. it may carry optional semantic hints such as scalar, vector, color, or label,
+4. it may carry optional physical metadata such as origin, spacing, extent, and units,
+5. it is scene-owned retained state rather than a visual-private upload blob,
+6. visuals, probes, and future tools borrow the field by reference and layer interpretation on top,
+7. runtime textures, CPU fallback colorized caches, and derived slice resources are execution
+   artifacts, not the authoritative source of truth.
+
+The active implementation-direction proposal is:
+
+1. one opaque public `DvzSampledField` handle,
+2. one creation descriptor with dimension, format, resolution, axis metadata, and optional
+   physical metadata,
+3. full replace and subregion update entry points,
+4. semantic visual binding through a field slot such as `"texture"`,
+5. existing image texture convenience calls treated as transitional wrappers rather than the long-term
+   center of the API.
+
+See [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md) for the
+current implementation-grade API and validation direction.
 
 
 ## `ParameterBlockResource`

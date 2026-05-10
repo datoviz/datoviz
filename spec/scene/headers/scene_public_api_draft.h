@@ -33,6 +33,7 @@
  * - DvzSelection
  * - DvzLinkChannel
  * - DvzPinnedReadout
+ * - DvzSampledField
  * - DvzScale
  * - DvzColormap
  * - DvzColorbar
@@ -44,6 +45,7 @@
  * - DvzPickRequest / DvzPickResult
  * - DvzProbeRequest / DvzProbeResult
  * - DvzSelectionDesc / DvzSelectionItem
+ * - DvzSampledFieldDesc / DvzFieldRegion / DvzFieldDataView
  * - DvzFormatDesc
  * - DvzScaleDesc / DvzColormapDesc / DvzColorbarDesc / DvzColormapStop
  * - DvzFontDesc / DvzTextStyle / DvzTextPlacement / DvzTextDesc

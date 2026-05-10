@@ -213,6 +213,7 @@ Read the scene spec in this order during review.
 12. [examples/API_MESH_SELECTION_LINK.md](examples/API_MESH_SELECTION_LINK.md)
 13. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](examples/API_IMAGE_PROBE_PINNED_READOUT.md)
 14. [examples/API_SCALE_COLORBAR_ANNOTATION.md](examples/API_SCALE_COLORBAR_ANNOTATION.md)
+15. [examples/API_SAMPLED_FIELD.md](examples/API_SAMPLED_FIELD.md)
 
 
 ## Document Index

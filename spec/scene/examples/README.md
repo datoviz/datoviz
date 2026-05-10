@@ -34,6 +34,7 @@ Their role is narrower:
 11. `API_MESH_SELECTION_LINK.md`
 12. `API_IMAGE_PROBE_PINNED_READOUT.md`
 13. `API_SCALE_COLORBAR_ANNOTATION.md`
+14. `API_SAMPLED_FIELD.md`
 
 
 ## Common Structure

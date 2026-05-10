@@ -29,3 +29,4 @@ scene concepts into C and language bindings.
 2. [../proposals/ANNOTATION_TEXT_SCALE_API.md](../proposals/ANNOTATION_TEXT_SCALE_API.md)
 3. [../proposals/MESH_API_DESIGN.md](../proposals/MESH_API_DESIGN.md)
 4. [../proposals/MATERIAL_LIGHTING_API.md](../proposals/MATERIAL_LIGHTING_API.md)
+5. [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md)

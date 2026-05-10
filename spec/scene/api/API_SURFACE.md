@@ -39,12 +39,13 @@ Use opaque handles for retained scene-owned objects:
 2. `DvzSelection`
 3. `DvzLinkChannel`
 4. `DvzPinnedReadout`
-5. `DvzScale`
-6. `DvzColormap`
-7. `DvzColorbar`
-8. `DvzFont`
-9. `DvzText`
-10. `DvzAnnotation`
+5. `DvzSampledField`
+6. `DvzScale`
+7. `DvzColormap`
+8. `DvzColorbar`
+9. `DvzFont`
+10. `DvzText`
+11. `DvzAnnotation`
 
 Use public structs for value-like data:
 
@@ -53,7 +54,8 @@ Use public structs for value-like data:
 3. request descriptors,
 4. pick, hover, selection, and probe result payloads,
 5. color stops and categorical entries,
-6. text style and placement descriptors.
+6. text style and placement descriptors,
+7. sampled-field creation and update descriptors.
 
 Public structs must not expose backend handles, atlas pages, command buffers, runtime object ids, or
 Vulkan/DRP2 execution details.
@@ -70,6 +72,28 @@ panel.
 
 Result structs are caller-owned values. Any pointer inside a result must either be valid only until
 the next poll/read call and documented as borrowed, or replaced by fixed-size storage / ids.
+
+
+## SampledField Surface
+
+The next public scene API should introduce `DvzSampledField` as the shared regular-grid data object.
+
+The first surface should expose:
+
+1. a dedicated public subheader, likely `include/datoviz/scene/field.h`,
+2. one creation descriptor with dimension, format, resolution, and optional physical metadata,
+3. one scene-owned opaque handle,
+4. full payload replace,
+5. rectangular or box subregion update,
+6. semantic visual binding through field slots such as `"texture"`,
+7. descriptor readback for tooling and probes.
+
+`DvzSampledField` should cover both direct color textures and scalar/vector fields. It should not
+be limited to one current image implementation detail such as `f32` CPU fallback uploads.
+
+The public API should describe field semantics, not backend texture execution strategy. GPU-native
+sampled-texture realization and CPU-side derived RGBA fallback should both remain internal
+execution choices behind the same field object.
 
 
 ## Interaction Surface
@@ -206,7 +230,8 @@ Before implementation starts, keep tiny usage examples for:
 
 1. [examples/API_MESH_SELECTION_LINK.md](../examples/API_MESH_SELECTION_LINK.md),
 2. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](../examples/API_IMAGE_PROBE_PINNED_READOUT.md),
-3. [examples/API_SCALE_COLORBAR_ANNOTATION.md](../examples/API_SCALE_COLORBAR_ANNOTATION.md).
+3. [examples/API_SCALE_COLORBAR_ANNOTATION.md](../examples/API_SCALE_COLORBAR_ANNOTATION.md),
+4. [examples/API_SAMPLED_FIELD.md](../examples/API_SAMPLED_FIELD.md).
 
 These examples are API pressure tests. They do not need to compile until the corresponding header
 draft exists, but awkward examples should block implementation.
