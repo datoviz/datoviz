@@ -259,6 +259,7 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
  * First-slice visual families currently accept:
  * point: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float)
  * primitive/path: `"position"` (vec3f), `"color"` (RGBA8)
+ * mesh: `"position"` (vec3f), optional `"color"` (RGBA8), optional `"normal"` (vec3f)
  * primitive only: `"normal"` (vec3f)
  * image: `"position"` (vec3f), `"texcoords"` (vec2f)
  *
@@ -342,8 +343,8 @@ DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer*
 /**
  * Bind a scene-owned buffer to a named visual slot.
  *
- * First retained slice: primitive visuals accept the `"index"` slot. The bound scene buffer
- * must advertise `DVZ_SCENE_BUFFER_USAGE_INDEX`.
+ * First retained slice: primitive and mesh visuals accept the `"index"` slot. The bound scene
+ * buffer must advertise `DVZ_SCENE_BUFFER_USAGE_INDEX`.
  *
  * @param visual the visual
  * @param slot_name the semantic slot name
@@ -357,8 +358,8 @@ dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* 
 /**
  * Override primitive shading parameters.
  *
- * The current primitive slice uses these parameters only when a primitive visual also has a
- * bound `normal` attribute. The default light direction is `(0, 0, 1)` with ambient `0.2`
+ * The current primitive/mesh slice uses these parameters only when a visual also has a bound
+ * `normal` attribute. The default light direction is `(0, 0, 1)` with ambient `0.2`
  * and diffuse `0.8`.
  *
  * @param visual the visual
@@ -398,6 +399,20 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  */
 DVZ_EXPORT DvzVisual* dvz_primitive(
     DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags);
+
+
+/**
+ * Create a mesh visual.
+ *
+ * First retained slice: meshes use a triangle-list topology with `position` (vec3), optional
+ * `color` (RGBA8, defaulting to opaque white when omitted), optional `normal` (vec3), and
+ * optional `"index"` buffer bindings for indexed draws.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
 
 
 /**

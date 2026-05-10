@@ -76,6 +76,8 @@ static void _scene_release_visual_scale(DvzVisual* visual);
 
 static void _primitive_shading_default(DvzPrimitiveShadingState* shading);
 
+static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
+
 static bool _field_format_supported(DvzFieldFormat format);
 
 static bool _field_format_is_scalar(DvzFieldFormat format);
@@ -129,6 +131,7 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "size") == 0)     return sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
+    case DVZ_VISUAL_TYPE_MESH:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "normal") == 0)   return 3 * sizeof(float);
@@ -159,6 +162,8 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
 
     const char* expected = "position, color, size";
     if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
+        expected = "position, color, normal";
+    else if (type == DVZ_VISUAL_TYPE_MESH)
         expected = "position, color, normal";
     else if (type == DVZ_VISUAL_TYPE_PATH)
         expected = "position, color";
@@ -213,6 +218,11 @@ static bool _visual_attr_count_consistent(
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
+        if (visual->type == DVZ_VISUAL_TYPE_MESH && visual->mesh_default_color &&
+            strcmp(attr_name, "position") == 0 && strcmp(attr->name, "color") == 0)
+        {
+            continue;
+        }
         if (strcmp(attr->name, attr_name) == 0 || attr->item_count == 0 || attr->data == NULL)
             continue;
         if (attr->item_count == item_count)
@@ -584,6 +594,38 @@ static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
     shading->light_direction[2] = 1.0f;
     shading->params[0] = 0.2f;
     shading->params[1] = 0.8f;
+}
+
+
+static bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_MESH || item_count == 0)
+        return true;
+
+    DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
+    if (color == NULL)
+        return false;
+    if (color->data != NULL && color->item_count == item_count)
+        return true;
+    if (color->data != NULL)
+    {
+        dvz_free(color->data);
+        color->data = NULL;
+    }
+
+    uint64_t byte_size = 0;
+    if (_dvz_mul_u64_overflows(item_count, color->item_size, &byte_size))
+        return false;
+    color->data = dvz_malloc(byte_size);
+    if (color->data == NULL)
+        return false;
+    dvz_memset(color->data, byte_size, 255, byte_size);
+    color->item_count = item_count;
+    color->dirty_first_item = 0;
+    color->dirty_item_count = item_count;
+    visual->mesh_default_color = true;
+    return true;
 }
 
 
@@ -1366,13 +1408,15 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 dvz_frame_plan_upload_bytes(
                     plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
                 if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                     visual->type == DVZ_VISUAL_TYPE_MESH ||
                      visual->type == DVZ_VISUAL_TYPE_PATH) &&
                     strcmp(attr->name, "position") == 0)
                 {
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
                 }
             }
-            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE)
+            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                visual->type == DVZ_VISUAL_TYPE_MESH)
             {
                 int normal_idx = _attr_index(visual, "normal");
                 bool has_normals =
@@ -1583,7 +1627,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     continue;
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                     visual->attrs[ai].dirty_item_count = 0;
-                if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE)
+                if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                    visual->type == DVZ_VISUAL_TYPE_MESH)
                 {
                     int normal_idx = _attr_index(visual, "normal");
                     bool has_normals =
@@ -2551,26 +2596,26 @@ bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuf
         log_error("cannot bind a buffer from a different scene");
         return false;
     }
-    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE)
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
     {
-        log_error("dvz_visual_set_buffer is only supported for primitive visuals in the first slice");
+        log_error("dvz_visual_set_buffer is only supported for primitive and mesh visuals in the first slice");
         return false;
     }
     if (strcmp(slot_name, "index") != 0)
     {
-        log_error("unsupported primitive buffer slot '%s' (expected 'index')", slot_name);
+        log_error("unsupported indexed buffer slot '%s' (expected 'index')", slot_name);
         return false;
     }
     if (buffer != NULL)
     {
         if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX) == 0)
         {
-            log_error("primitive index slot requires a buffer with INDEX usage");
+            log_error("indexed draw slot requires a buffer with INDEX usage");
             return false;
         }
         if (buffer->desc.stride != sizeof(uint16_t) && buffer->desc.stride != sizeof(uint32_t))
         {
-            log_error("primitive index buffers require stride 2 or 4 bytes");
+            log_error("indexed draw buffers require stride 2 or 4 bytes");
             return false;
         }
     }
@@ -2596,9 +2641,9 @@ int dvz_visual_set_primitive_shading(
     DvzVisual* visual, const DvzPrimitiveShadingDesc* desc)
 {
     ANN(visual);
-    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE)
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE && visual->type != DVZ_VISUAL_TYPE_MESH)
     {
-        log_error("primitive shading is only supported for primitive visuals");
+        log_error("primitive shading is only supported for primitive and mesh visuals");
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "update primitive shading"))
@@ -2718,6 +2763,24 @@ int dvz_visual_set_data(
     attr->item_count       = item_count;
     attr->dirty_first_item = 0;
     attr->dirty_item_count = item_count; /* whole buffer dirty */
+    if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "position") == 0)
+    {
+        DvzVisualAttr* color = _attr_get_or_create(visual, "color", 4 * sizeof(uint8_t));
+        if (color == NULL)
+            return -1;
+        if (color->data == NULL || visual->mesh_default_color)
+        {
+            if (!_mesh_ensure_default_color(visual, item_count))
+            {
+                log_error("mesh default color allocation failed");
+                return -1;
+            }
+        }
+    }
+    else if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
+    {
+        visual->mesh_default_color = false;
+    }
     return 0;
 }
 
@@ -2813,6 +2876,8 @@ int dvz_visual_set_data_range(
         attr->dirty_first_item = merged_first;
         attr->dirty_item_count = merged_end - merged_first;
     }
+    if (visual->type == DVZ_VISUAL_TYPE_MESH && strcmp(attr_name, "color") == 0)
+        visual->mesh_default_color = false;
     return 0;
 }
 
@@ -2853,6 +2918,35 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     visual->visible  = true;
     visual->z_layer  = 0;
     visual->topology = topology;
+    _primitive_shading_default(&visual->primitive_shading);
+    visual->primitive_shading_dirty = true;
+    return visual;
+}
+
+
+
+/**
+ * Create a mesh visual.
+ *
+ * First-slice mesh visuals reuse the indexed primitive triangle-list execution path.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+        return NULL;
+    DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
+    visual->scene    = scene;
+    visual->type     = DVZ_VISUAL_TYPE_MESH;
+    visual->flags    = flags;
+    visual->visible  = true;
+    visual->z_layer  = 0;
+    visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     _primitive_shading_default(&visual->primitive_shading);
     visual->primitive_shading_dirty = true;
     return visual;

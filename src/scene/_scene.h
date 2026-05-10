@@ -260,6 +260,7 @@ struct DvzVisual
     char          scale_slot[32];  /* semantic binding slot name */
     DvzPrimitiveShadingState primitive_shading;
     bool                     primitive_shading_dirty;
+    bool                     mesh_default_color;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-09`
+> - **Updated on:** `2026-05-10`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -23,71 +23,68 @@ The active higher layer exists:
    native vklite runtime.
 2. `scene` owns early scene graph objects, capability snapshots, diagnostic reports, frame plans,
    DRP2 emission, and a minimal app/offscreen path.
-3. Built-in visual families currently implemented are `point`, `primitive`, and `image`.
+3. Built-in visual families currently implemented are `point`, `primitive`, `mesh`, and `image`.
 4. Panel controllers are live: panzoom and arcball feed per-panel transforms.
 5. Per-panel viewport/scissor and offscreen multi-panel preservation work through the emitted DRP2
    path.
+6. Retained sampled fields, scales, and scene buffers now share one internal visual-binding model.
 
-Focused validation recorded on `2026-05-06`:
+Focused validation recorded on `2026-05-10`:
 
-1. `just spec-check`: `119/119` DRP2 fixtures passed; `52` fixture-runner tests passed.
-2. `just test drp2`: `73/73` tests passed.
-3. `just test scene`: `52/52` tests passed.
-4. `git diff --check`: passed for the last documentation-only refresh.
+1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
+   tests passed.
+2. `just test drp2`: last recorded pass remained `73/73`.
+3. `just test scene`: `109/109` tests passed after retained field/buffer binding cleanup and the
+   first mesh slice.
+4. `git diff --check`: passed on the latest scene slices.
 
 
 ## Immediate Task
 
-The next work should draft concrete public scene headers rather than add more narrative design
-notes.
+The next work should stay implementation-focused and build on the current retained scene/runtime
+path.
 
 Read in this order:
 
-1. [../../spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md)
-2. [../../spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
-3. [../../spec/scene/proposals/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/README.md)
-4. [SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+1. this file for current ordering,
+2. [../../spec/scene/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/README.md) for scene
+   semantics,
+3. [../done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
+   for the active vertical-slice history,
+4. the current `scene` and `drp2` tests before broadening any API.
 
-Deliver the next public API draft in this order:
+Deliver the next implementation slices in this order:
 
-1. Draft interaction objects and selection/link/probe result types.
-2. Draft scale, colormap, and colorbar handles/descriptors.
-3. Draft text, font, annotation, and pinned readout handles/descriptors.
-4. Add one implementation-facing scratch header or update
-   [../../spec/scene/headers/scene_api.h](/home/cyrille/GIT/Viz/datoviz/spec/scene/headers/scene_api.h).
-5. Write three tiny API-shape examples before implementation:
-   mesh face/object selection with a link channel, image probe with pinned readout, and scale +
-   colormap + colorbar + annotation label.
+1. Scene-owned uniform/material-style resource family for mesh/primitive shading parameters.
+2. Runtime coverage for shared non-texture retained resources across multiple frames and rebinds.
+3. Depth attachment wiring and validation for mesh scenes, especially under arcball-driven views.
+4. One or two more mesh examples that exercise explicit vertex colors and shared retained buffers.
 
 
 ## Scope Guardrails
 
-For the immediate API pass:
+For the immediate implementation pass:
 
-1. Do not implement runtime behavior yet.
-2. Do not broaden visual-family work beyond what the header examples need.
-3. Keep retained scene objects opaque.
-4. Keep request descriptors and result payloads public and value-like.
-5. Keep scene semantics in `spec/scene/`, not in new `agents/now/` design notes.
+1. Do not add a generic public binding API yet; keep public setters typed.
+2. Do not invent a second mesh renderer path; reuse the current scene -> DRP2 -> runtime flow.
+3. Prefer scene-owned reusable resources over visual-private upload helpers.
+4. Keep examples and focused tests in lockstep with each retained slice.
+5. Leave text/annotation/picking work for a later phase unless the user explicitly redirects.
 
 
-## Roadmap After The Header Pass
+## Roadmap After The Immediate Pass
 
-After the public API surface has one review pass, proceed in this order unless the user redirects:
+After the next retained-resource/runtime passes, proceed in this order unless the user redirects:
 
 1. Interaction core: pick requests, hover state, selection objects, link channels, probe result
    plumbing, and pinned readout state.
-2. Scale/colormap/colorbar core: scene-owned scale and colormap objects, panel-attached colorbars,
-   formatting descriptors, and tests.
-3. Text/annotation retained objects: font handles, text style/placement descriptors, labels,
+2. Text/annotation retained objects: font handles, text style/placement descriptors, labels,
    scale bars, dimensions, and pinned readouts.
-4. Native 3D baseline: minimal mesh visual, depth attachment wiring, viewport UBO use, arcball
-   validation, and mesh examples.
-5. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
+3. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
    mesh/depth scenes.
-6. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
+4. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
    capability fallback.
-7. Broader figure features: axes, lines/segments, richer annotations, picking refinements, and
+5. Broader figure features: axes, lines/segments, richer annotations, picking refinements, and
    additional visual families.
 
 
