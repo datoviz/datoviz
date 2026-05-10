@@ -143,10 +143,11 @@ anim = dvz_anim_transition(scene, &(DvzAnimTransitionDesc){
 
 // Camera path: animates a panel's camera through an ordered list of keyframes
 anim = dvz_anim_camera_path(scene, panel, &(DvzAnimCameraPathDesc){
-    .keyframes    = keyframes,
-    .n_keyframes  = n_keyframes,
-    .loop         = DVZ_LOOP_ONCE,
-    .repeat_count = 0,
+    .keyframes        = keyframes,
+    .n_keyframes      = n_keyframes,
+    .position_interp  = DVZ_CAMERA_PATH_SMOOTH,
+    .loop             = DVZ_LOOP_ONCE,
+    .repeat_count     = 0,
 })
 ```
 
@@ -283,16 +284,40 @@ A camera path is defined as an ordered list of keyframes:
 | `target` | look-at target or orientation, `vec3` or quaternion |
 | `up` | up vector, `vec3`, default `(0, 1, 0)` |
 
-The scene interpolates between adjacent keyframes:
+The scene interpolates between adjacent keyframes using camera-friendly defaults:
 
-1. **position**: linear interpolation (`lerp`),
+1. **position**: smooth cubic interpolation through the authored keyframe positions; the default
+   policy should be a centripetal Catmull-Rom-style spline so the camera passes through every
+   keyframe while avoiding the harsh corners of piecewise linear motion,
 2. **orientation**: spherical linear interpolation (`slerp`) when expressed as a quaternion,
 3. **easing**: an optional per-segment easing function may be applied to the normalized segment
-   time.
+   time,
+4. **up / orientation constraint**: when a path is authored as `position + target + up`, the
+   implementation should preserve a stable up direction by default and avoid introducing roll
+   unless the authored data requests it.
+
+Linear position interpolation should remain available as an explicit option for simple or fully
+controlled cases, but it is not the preferred default for multi-keyframe camera paths.
 
 Camera path keyframes are the primary authoring primitive for scripted fly-throughs in video
 export.
 They are more ergonomic than writing a parametric camera function for complex 3D paths.
+
+For the initial scene spec, camera-path descriptors should therefore expose at least a position
+interpolation mode with a smooth default and a linear override, for example:
+
+```text
+typedef enum DvzCameraPathPositionInterp
+{
+    DVZ_CAMERA_PATH_SMOOTH = 0,
+    DVZ_CAMERA_PATH_LINEAR,
+} DvzCameraPathPositionInterp;
+```
+
+Where:
+
+- default: `DVZ_CAMERA_PATH_SMOOTH` (centripetal Catmull-Rom or equivalent pass-through cubic),
+- optional: `DVZ_CAMERA_PATH_LINEAR`.
 
 General multi-track keyframe animation (animating arbitrary scene properties with per-keyframe
 curve handles) is explicitly out of scope.
