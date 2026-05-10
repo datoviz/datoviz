@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -88,6 +89,8 @@ static bool _field_read_scalar(
 static void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
 
 static bool _visual_texture_ensure_upload(DvzVisualTexture* texture, uint64_t byte_size);
+
+static double _half_to_double(uint16_t bits);
 
 static bool _scene_color_from_colormap(
     const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
@@ -377,11 +380,14 @@ static bool _field_format_supported(DvzFieldFormat format)
     switch (format)
     {
     case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_SNORM:
     case DVZ_FIELD_FORMAT_R8_UINT:
     case DVZ_FIELD_FORMAT_R8_SINT:
     case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_SNORM:
     case DVZ_FIELD_FORMAT_R16_UINT:
     case DVZ_FIELD_FORMAT_R16_SINT:
+    case DVZ_FIELD_FORMAT_R16_FLOAT:
     case DVZ_FIELD_FORMAT_R32_UINT:
     case DVZ_FIELD_FORMAT_R32_SINT:
     case DVZ_FIELD_FORMAT_R32_FLOAT:
@@ -398,11 +404,14 @@ static bool _field_format_is_scalar(DvzFieldFormat format)
     switch (format)
     {
     case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_SNORM:
     case DVZ_FIELD_FORMAT_R8_UINT:
     case DVZ_FIELD_FORMAT_R8_SINT:
     case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_SNORM:
     case DVZ_FIELD_FORMAT_R16_UINT:
     case DVZ_FIELD_FORMAT_R16_SINT:
+    case DVZ_FIELD_FORMAT_R16_FLOAT:
     case DVZ_FIELD_FORMAT_R32_UINT:
     case DVZ_FIELD_FORMAT_R32_SINT:
     case DVZ_FIELD_FORMAT_R32_FLOAT:
@@ -425,13 +434,16 @@ static bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_b
     switch (format)
     {
     case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_SNORM:
     case DVZ_FIELD_FORMAT_R8_UINT:
     case DVZ_FIELD_FORMAT_R8_SINT:
         *out_bytes = 1;
         return true;
     case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_SNORM:
     case DVZ_FIELD_FORMAT_R16_UINT:
     case DVZ_FIELD_FORMAT_R16_SINT:
+    case DVZ_FIELD_FORMAT_R16_FLOAT:
         *out_bytes = 2;
         return true;
     case DVZ_FIELD_FORMAT_R32_UINT:
@@ -613,6 +625,12 @@ static bool _field_read_scalar(
     case DVZ_FIELD_FORMAT_R8_UNORM:
         *out_value = (double)bytes[sample_index] / 255.0;
         return true;
+    case DVZ_FIELD_FORMAT_R8_SNORM:
+    {
+        int8_t v = ((const int8_t*)field->data)[sample_index];
+        *out_value = v == INT8_MIN ? -1.0 : (double)v / 127.0;
+        return true;
+    }
     case DVZ_FIELD_FORMAT_R8_UINT:
         *out_value = (double)((const uint8_t*)field->data)[sample_index];
         return true;
@@ -622,11 +640,20 @@ static bool _field_read_scalar(
     case DVZ_FIELD_FORMAT_R16_UNORM:
         *out_value = (double)((const uint16_t*)field->data)[sample_index] / 65535.0;
         return true;
+    case DVZ_FIELD_FORMAT_R16_SNORM:
+    {
+        int16_t v = ((const int16_t*)field->data)[sample_index];
+        *out_value = v == INT16_MIN ? -1.0 : (double)v / 32767.0;
+        return true;
+    }
     case DVZ_FIELD_FORMAT_R16_UINT:
         *out_value = (double)((const uint16_t*)field->data)[sample_index];
         return true;
     case DVZ_FIELD_FORMAT_R16_SINT:
         *out_value = (double)((const int16_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R16_FLOAT:
+        *out_value = _half_to_double(((const uint16_t*)field->data)[sample_index]);
         return true;
     case DVZ_FIELD_FORMAT_R32_UINT:
         *out_value = (double)((const uint32_t*)field->data)[sample_index];
@@ -640,6 +667,31 @@ static bool _field_read_scalar(
     default:
         return false;
     }
+}
+
+
+static double _half_to_double(uint16_t bits)
+{
+    uint32_t sign = (bits >> 15) & 0x1u;
+    uint32_t exp = (bits >> 10) & 0x1fu;
+    uint32_t frac = bits & 0x3ffu;
+
+    if (exp == 0)
+    {
+        if (frac == 0)
+            return sign ? -0.0 : 0.0;
+        double value = ldexp((double)frac / 1024.0, -14);
+        return sign ? -value : value;
+    }
+    if (exp == 31)
+    {
+        if (frac == 0)
+            return sign ? -INFINITY : INFINITY;
+        return NAN;
+    }
+
+    double value = ldexp(1.0 + (double)frac / 1024.0, (int32_t)exp - 15);
+    return sign ? -value : value;
 }
 
 
@@ -769,15 +821,11 @@ static bool _scene_prepare_image_texture(
 
     visual->texture.width = field->desc.width;
     visual->texture.height = field->desc.height;
-    *out_region = (visual->texture.dirty || !field->dirty) ? _field_full_region(&field->desc)
-                                                           : field->dirty_region;
+    *out_region = _field_full_region(&field->desc);
     if (field->dirty)
-    {
-        if (visual->texture.dirty || field->dirty_full)
-            *out_region = _field_full_region(&field->desc);
-        else
-            *out_region = field->dirty_region;
-    }
+        *out_region = field->dirty_full ? _field_full_region(&field->desc) : field->dirty_region;
+    else if (visual->texture.dirty)
+        *out_region = _field_full_region(&field->desc);
 
     if (_field_format_is_rgba8(field->desc.format))
     {
@@ -1967,6 +2015,7 @@ bool dvz_sampled_field_update_region(
     if (!field->dirty)
     {
         field->dirty_region = region;
+        field->dirty_full = false;
     }
     else if (field->dirty_full)
     {
@@ -1976,7 +2025,10 @@ bool dvz_sampled_field_update_region(
     {
         DvzFieldRegion merged = {0};
         if (_field_regions_union(&field->dirty_region, &region, &merged))
+        {
             field->dirty_region = merged;
+            field->dirty_full = false;
+        }
         else
         {
             field->dirty_region = _field_full_region(&field->desc);
