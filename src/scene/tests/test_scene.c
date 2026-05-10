@@ -3059,8 +3059,8 @@ int test_scene_json_includes_buffer_binding_metadata(TstSuite* suite, TstItem* i
     AT(strstr(json, "\"buffers\":[") != NULL);
     AT(strstr(json, "\"id\":\"b0\"") != NULL);
     AT(strstr(json, "\"usage\":2") != NULL);
-    AT(strstr(json, "\"stride\":2") != NULL);
-    AT(strstr(json, "\"byte_size\":6") != NULL);
+    AT(strstr(json, "\"stride\":4") != NULL);
+    AT(strstr(json, "\"byte_size\":12") != NULL);
     AT(strstr(json, "\"dirty\":{\"pending\":true}") != NULL);
     AT(strstr(json, "\"buffer\":{\"id\":\"b0\",\"slot\":\"index\"}") != NULL);
     dvz_scene_json_destroy(json);
