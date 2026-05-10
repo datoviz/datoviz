@@ -50,6 +50,16 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_SCENE_BUFFER_USAGE_NONE = 0x00u,
+    DVZ_SCENE_BUFFER_USAGE_VERTEX = 0x01u,
+    DVZ_SCENE_BUFFER_USAGE_INDEX = 0x02u,
+    DVZ_SCENE_BUFFER_USAGE_UNIFORM = 0x04u,
+} DvzSceneBufferUsage;
+
+
+
 /* Whether a visual is affected by its panel's controller (panzoom/arcball). */
 typedef enum
 {
@@ -195,4 +205,3 @@ typedef enum
     DVZ_PICK_CAPABILITY_SAMPLE = 0x20u,
     DVZ_PICK_CAPABILITY_GROUP = 0x40u,
 } DvzPickCapabilityFlag;
-

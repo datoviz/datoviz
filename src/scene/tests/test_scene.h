@@ -91,6 +91,10 @@ int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* i
 
 int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* item);
+
+int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstItem* item);
+
 int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);

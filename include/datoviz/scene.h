@@ -259,6 +259,7 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
  * First-slice visual families currently accept:
  * point: `"position"` (vec3f), `"color"` (RGBA8), `"size"` (float)
  * primitive/path: `"position"` (vec3f), `"color"` (RGBA8)
+ * primitive only: `"normal"` (vec3f)
  * image: `"position"` (vec3f), `"texcoords"` (vec2f)
  *
  * All configured attributes on one visual must use the same item_count. This
@@ -294,6 +295,80 @@ DVZ_EXPORT int dvz_visual_set_data_range(
     uint32_t first_item, uint32_t item_count);
 
 
+/**
+ * Create a reusable scene-owned buffer resource.
+ *
+ * First retained slice: visuals bind these buffers through `dvz_visual_set_buffer()`.
+ * The initial supported slot is primitive `"index"` buffers. `stride` is the byte stride
+ * of one item in the uploaded payload (for example `sizeof(uint16_t)` or `sizeof(uint32_t)`
+ * for index buffers).
+ *
+ * @param scene the scene
+ * @param desc the buffer descriptor
+ * @return the buffer, or NULL on error
+ */
+DVZ_EXPORT DvzSceneBuffer* dvz_scene_buffer(DvzScene* scene, const DvzSceneBufferDesc* desc);
+
+
+/**
+ * Destroy a scene-owned buffer resource.
+ *
+ * @param buffer the buffer
+ */
+DVZ_EXPORT void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer);
+
+
+/**
+ * Replace the full payload of a scene-owned buffer resource.
+ *
+ * @param buffer the buffer
+ * @param data the packed byte payload
+ * @param byte_size the payload size in bytes
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool
+dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size);
+
+
+/**
+ * Return the immutable buffer descriptor.
+ *
+ * @param buffer the buffer
+ * @return the descriptor, or NULL on error
+ */
+DVZ_EXPORT const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer);
+
+
+/**
+ * Bind a scene-owned buffer to a named visual slot.
+ *
+ * First retained slice: primitive visuals accept the `"index"` slot. The bound scene buffer
+ * must advertise `DVZ_SCENE_BUFFER_USAGE_INDEX`.
+ *
+ * @param visual the visual
+ * @param slot_name the semantic slot name
+ * @param buffer the buffer, or NULL to clear the binding
+ * @return true on success, false on error
+ */
+DVZ_EXPORT bool
+dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* buffer);
+
+
+/**
+ * Override primitive shading parameters.
+ *
+ * The current primitive slice uses these parameters only when a primitive visual also has a
+ * bound `normal` attribute. The default light direction is `(0, 0, 1)` with ambient `0.2`
+ * and diffuse `0.8`.
+ *
+ * @param visual the visual
+ * @param desc the shading descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int
+dvz_visual_set_primitive_shading(DvzVisual* visual, const DvzPrimitiveShadingDesc* desc);
+
+
 
 /*************************************************************************************************/
 /*  Visual family constructors                                                                   */
@@ -313,7 +388,8 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
  * Create a primitive visual.
  *
  * Renders raw GPU primitives (point lists, line lists/strips, triangle lists/strips) with
- * built-in pass-through shaders. Accepts `position` (vec3) and `color` (RGBA8) attributes.
+ * built-in shaders. Accepts `position` (vec3) and `color` (RGBA8), plus optional `normal`
+ * (vec3) and optional `"index"` buffer bindings for indexed draws.
  *
  * @param scene the scene
  * @param topology primitive topology, fixed at construction time

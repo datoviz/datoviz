@@ -128,6 +128,25 @@
     "layout(location=0)in vec4 fragColor;\n"                                                    \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=fragColor;}\n"
+#define DRP2_PRIMITIVE_LIT_VERTEX_GLSL                                                          \
+    "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(location=0)in vec3 inPos;\n"                                                        \
+    "layout(location=1)in vec4 inColor;\n"                                                      \
+    "layout(location=2)in vec3 inNormal;\n"                                                     \
+    "layout(location=0)out vec4 fragColor;\n"                                                   \
+    "layout(location=1)out vec3 fragNormal;\n"                                                  \
+    "void main(){gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                     \
+    "fragColor=inColor;fragNormal=mat3(mvp.model)*inNormal;}\n"
+#define DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL                                                        \
+    "#version 450\n"                                                                            \
+    "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
+    "layout(location=0)in vec4 fragColor;\n"                                                    \
+    "layout(location=1)in vec3 fragNormal;\n"                                                   \
+    "layout(location=0)out vec4 outColor;\n"                                                    \
+    "void main(){vec3 n=normalize(fragNormal);vec3 l=normalize(shading.lightDir.xyz);"         \
+    "float lambert=max(dot(n,l),0.0);float shade=shading.params.x+shading.params.y*lambert;"   \
+    "outColor=vec4(fragColor.rgb*shade,fragColor.a);}\n"
 
 /* Image visual: position (vec3) + texcoords (vec2); samples a 2D RGBA8 texture. */
 #define DRP2_IMAGE_VERTEX_GLSL                                                                  \
@@ -159,6 +178,8 @@ struct ResourceId
     uint64_t id;
     char data_tag[DVZ_SCENE_LABEL_SIZE]; /* attribute name, e.g. "position", "color", "size" */
     uint64_t byte_size;                  /* total bytes uploaded to this buffer               */
+    uint32_t usage;                      /* DRP2 buffer usage flags                           */
+    uint32_t item_stride;                /* optional element stride (index buffers)          */
     uint32_t topology;                   /* primitive topology hint (UINT32_MAX = unset)      */
 };
 
@@ -410,6 +431,22 @@ static uint64_t _resource_byte_size(const ConverterState* state, uint64_t id)
     return 0;
 }
 
+static uint32_t _resource_usage(const ConverterState* state, uint64_t id)
+{
+    for (uint32_t i = 0; i < state->count; i++)
+        if (state->resources[i].id == id)
+            return state->resources[i].usage;
+    return 0;
+}
+
+static uint32_t _resource_item_stride(const ConverterState* state, uint64_t id)
+{
+    for (uint32_t i = 0; i < state->count; i++)
+        if (state->resources[i].id == id)
+            return state->resources[i].item_stride;
+    return 0;
+}
+
 static uint32_t _resource_topology(const ConverterState* state, uint64_t id)
 {
     for (uint32_t i = 0; i < state->count; i++)
@@ -439,15 +476,15 @@ static bool _is_point_visual(
 }
 
 /*
- * Return true when ids carry exactly "position" + "color" with a topology hint on the
- * position resource, identifying a DvzPrimitive visual.
+ * Return true when ids carry "position" + "color" with an optional "normal" attribute and
+ * a topology hint on the position resource, identifying a DvzPrimitive visual.
  */
 static bool _is_primitive_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n)
 {
-    if (n != 2)
+    if (n < 2 || n > 3)
         return false;
-    bool has_pos = false, has_col = false, has_topo = false;
+    bool has_pos = false, has_col = false, has_topo = false, has_normal = false;
     for (uint32_t i = 0; i < n; i++)
     {
         const char* tag = _resource_data_tag(state, ids[i]);
@@ -459,8 +496,10 @@ static bool _is_primitive_visual(
         }
         if (strcmp(tag, "color") == 0)
             has_col = true;
+        if (strcmp(tag, "normal") == 0)
+            has_normal = true;
     }
-    return has_pos && has_col && has_topo;
+    return has_pos && has_col && has_topo && (n == 2 || has_normal);
 }
 
 /*
@@ -1292,10 +1331,14 @@ static bool _emitter_emit_upload(
         return false;
 
     dvz_strlcpy(resource->data_tag, node->u.upload.data_tag, sizeof(resource->data_tag));
+    resource->usage = node->u.upload.buffer_usage;
+    resource->item_stride = node->u.upload.item_stride;
     if (node->u.upload.topology != UINT32_MAX)
         resource->topology = node->u.upload.topology;
     uint64_t id = resource->id;
-    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
+    uint32_t usage = node->u.upload.buffer_usage != 0
+                         ? node->u.upload.buffer_usage
+                         : (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX);
     if (is_new && !dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage))
         return false;
     if (emitter->resources.first_vertex_buffer_id == 0)
@@ -1613,8 +1656,12 @@ static bool _emitter_emit_render_multi_in_pass(
     struct {
         uint64_t pipeline_id;
         uint64_t bg_set0;  /* MVP bg (point/prim) or texture bg (image); 0 = none */
+        uint64_t bg_set1;  /* primitive shading bg; 0 = none */
         uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];
         uint32_t vbuf_count;
+        uint64_t index_buffer_id;
+        uint32_t index_count;
+        const char* index_format;
         uint32_t vertex_count;
     } draws[DVZ_SCENE_MAX_RENDER_VISUALS];
     uint32_t draw_count = 0;
@@ -1626,6 +1673,8 @@ static bool _emitter_emit_render_multi_in_pass(
         /* Resolve vertex buffers for this visual. */
         uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
         uint32_t vbuf_count = 0;
+        uint64_t index_buf = 0;
+        uint64_t shading_buf = 0;
 
         char pos_key[DVZ_SCENE_LABEL_SIZE];
         dvz_snprintf(pos_key, sizeof(pos_key), "%s_position", visual_id);
@@ -1634,13 +1683,26 @@ static bool _emitter_emit_render_multi_in_pass(
             continue;
         vbuf_ids[vbuf_count++] = pos_buf;
 
-        const char* optionals[] = {"color", "size", "texcoords", "texture"};
-        for (uint32_t ai = 0; ai < 4; ai++)
+        const char* optionals[] = {
+            "color", "size", "texcoords", "texture", "normal", "index", "primitive_shading"};
+        for (uint32_t ai = 0; ai < 7; ai++)
         {
             char rid[DVZ_SCENE_LABEL_SIZE];
             dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optionals[ai]);
             uint64_t rid_id = _resource_lookup_id(&emitter->resources, rid);
-            if (rid_id == 0 || vbuf_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+            if (rid_id == 0)
+                continue;
+            if (strcmp(optionals[ai], "index") == 0)
+            {
+                index_buf = rid_id;
+                continue;
+            }
+            if (strcmp(optionals[ai], "primitive_shading") == 0)
+            {
+                shading_buf = rid_id;
+                continue;
+            }
+            if (vbuf_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
                 continue;
             vbuf_ids[vbuf_count++] = rid_id;
         }
@@ -1660,6 +1722,11 @@ static bool _emitter_emit_render_multi_in_pass(
         /* Vertex count from position buffer. */
         uint64_t pos_sz = _resource_byte_size(&emitter->resources, pos_buf);
         uint32_t vertex_count = (pos_sz > 0) ? (uint32_t)(pos_sz / (3 * sizeof(float))) : 3;
+
+        bool has_normal = false;
+        for (uint32_t j = 0; j < vbuf_count; j++)
+            has_normal = has_normal ||
+                         strcmp(_resource_data_tag(&emitter->resources, vbuf_ids[j]), "normal") == 0;
 
         /* Topology. */
         uint32_t topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
@@ -1686,12 +1753,22 @@ static bool _emitter_emit_render_multi_in_pass(
         }
         else if (vis_is_prim)
         {
-            dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
-            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
-            vs_glsl      = DRP2_PRIMITIVE_VERTEX_GLSL;
-            fs_glsl      = DRP2_PRIMITIVE_FRAGMENT_GLSL;
-            vs_spirv_key = "primitive_vert";
-            fs_spirv_key = "primitive_frag";
+            if (has_normal)
+            {
+                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim_lit%s", fmt);
+                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim_lit%s", fmt);
+                vs_glsl = DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
+                fs_glsl = DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL;
+            }
+            else
+            {
+                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
+                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
+                vs_glsl      = DRP2_PRIMITIVE_VERTEX_GLSL;
+                fs_glsl      = DRP2_PRIMITIVE_FRAGMENT_GLSL;
+                vs_spirv_key = "primitive_vert";
+                fs_spirv_key = "primitive_frag";
+            }
         }
         else /* vis_is_image */
         {
@@ -1707,18 +1784,30 @@ static bool _emitter_emit_render_multi_in_pass(
         uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
         if (vs_id == 0) { ok = false; break; }
         if (is_new)
-            ok = ok && _emit_shader_spirv(stream, vs_id, "VERTEX", vs_spirv_key, vs_glsl, cfg);
+        {
+            if (vs_spirv_key != NULL)
+                ok = ok && _emit_shader_spirv(stream, vs_id, "VERTEX", vs_spirv_key, vs_glsl, cfg);
+            else
+                ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, vs_glsl, cfg);
+        }
 
         uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
         if (fs_id == 0) { ok = false; break; }
         if (ok && is_new)
-            ok = ok && _emit_shader_spirv(stream, fs_id, "FRAGMENT", fs_spirv_key, fs_glsl, cfg);
+        {
+            if (fs_spirv_key != NULL)
+                ok = ok && _emit_shader_spirv(stream, fs_id, "FRAGMENT", fs_spirv_key, fs_glsl, cfg);
+            else
+                ok = ok && _emit_shader(stream, fs_id, "FRAGMENT", NULL, fs_glsl, cfg);
+        }
 
         /* Pipeline (cached by family + topology). */
         if (vis_is_point)
             dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
         else if (vis_is_prim)
-            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
+            dvz_snprintf(
+                pipe_key, sizeof(pipe_key), has_normal ? "_pipe_prim_lit_t%u%s" : "_pipe_prim_t%u%s",
+                topology, fmt);
         else
             dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
 
@@ -1742,16 +1831,32 @@ static bool _emitter_emit_render_multi_in_pass(
             }
             else if (vis_is_prim)
             {
-                uint32_t strides[2]   = {3 * sizeof(float), 4 * sizeof(uint8_t)};
-                uint32_t bindings[2]  = {0, 1};
-                uint32_t locations[2] = {0, 1};
-                uint32_t formats[2]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM};
-                uint32_t offsets[2]   = {0, 0};
+                uint32_t strides[3]   = {3 * sizeof(float), 4 * sizeof(uint8_t), 3 * sizeof(float)};
+                uint32_t bindings[3]  = {0, 1, 2};
+                uint32_t locations[3] = {0, 1, 2};
+                uint32_t formats[3]   = {
+                    VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
+                    VK_FORMAT_R32G32B32_SFLOAT};
+                uint32_t offsets[3]   = {0, 0, 0};
+                uint32_t attr_count = has_normal ? 3 : 2;
+                uint64_t shading_bgl_id = 0;
+                bool shading_bgl_new = false;
+                if (has_normal)
+                {
+                    shading_bgl_id = _obj_id(emitter, "_bgl_prim_shading", &shading_bgl_new);
+                    if (shading_bgl_id == 0) { ok = false; break; }
+                    if (shading_bgl_new)
+                        ok = ok &&
+                             dvz_drp2_stream_create_uniform_bind_group_layout(stream, shading_bgl_id);
+                }
                 ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
-                               stream, pipe_id, vs_id, fs_id, 2, topology,
-                               2, strides, 2, bindings, locations, formats, offsets);
+                               stream, pipe_id, vs_id, fs_id, attr_count, topology,
+                               attr_count, strides, attr_count, bindings, locations, formats, offsets);
                 if (ok && mvp_bgl_id != 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+                if (ok && has_normal)
+                    if (ok)
+                        ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
             }
             else /* vis_is_image */
             {
@@ -1782,11 +1887,29 @@ static bool _emitter_emit_render_multi_in_pass(
 
         /* Bind group at set 0. */
         uint64_t vis_bg_set0 = 0;
+        uint64_t vis_bg_set1 = 0;
         if (vis_is_point || vis_is_prim)
         {
             vis_bg_set0 = (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
                               ? fixed_bg_id
                               : apply_bg_id;
+            if (vis_is_prim && has_normal && shading_buf != 0)
+            {
+                bool shading_bgl_new = false;
+                uint64_t shading_bgl_id = _obj_id(emitter, "_bgl_prim_shading", &shading_bgl_new);
+                if (shading_bgl_id == 0) { ok = false; break; }
+                if (shading_bgl_new)
+                    ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, shading_bgl_id);
+                char shading_bg_key[64];
+                dvz_snprintf(shading_bg_key, sizeof(shading_bg_key), "_bg_prim_shading_%" PRIu64, shading_buf);
+                uint64_t shading_bg_id = _obj_id(emitter, shading_bg_key, &is_new);
+                if (shading_bg_id == 0) { ok = false; break; }
+                if (ok && is_new)
+                    ok = ok && dvz_drp2_stream_create_uniform_bind_group(
+                                   stream, shading_bg_id, shading_bgl_id, shading_buf, 0,
+                                   sizeof(DvzPrimitiveShadingState));
+                vis_bg_set1 = shading_bg_id;
+            }
         }
         else /* vis_is_image */
         {
@@ -1826,8 +1949,18 @@ static bool _emitter_emit_render_multi_in_pass(
 
         draws[draw_count].pipeline_id = pipe_id;
         draws[draw_count].bg_set0     = vis_bg_set0;
+        draws[draw_count].bg_set1     = vis_bg_set1;
         draws[draw_count].vertex_count = vertex_count;
         draws[draw_count].vbuf_count  = vbuf_count;
+        draws[draw_count].index_buffer_id = index_buf;
+        draws[draw_count].index_count =
+            (index_buf != 0 && _resource_item_stride(&emitter->resources, index_buf) != 0)
+                ? (uint32_t)(_resource_byte_size(&emitter->resources, index_buf) /
+                             _resource_item_stride(&emitter->resources, index_buf))
+                : 0;
+        draws[draw_count].index_format =
+            _resource_item_stride(&emitter->resources, index_buf) == sizeof(uint16_t) ? "uint16"
+                                                                                       : "uint32";
         for (uint32_t j = 0; j < vbuf_count; j++)
             draws[draw_count].vbuf_ids[j] = vbuf_ids[j];
         draw_count++;
@@ -1848,6 +1981,7 @@ static bool _emitter_emit_render_multi_in_pass(
 
     uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
+    uint64_t last_bg_set1 = 0;
     for (uint32_t d = 0; ok && d < draw_count; d++)
     {
         if (draws[d].pipeline_id != last_pipeline)
@@ -1862,10 +1996,28 @@ static bool _emitter_emit_render_multi_in_pass(
                  dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, draws[d].bg_set0);
             last_bg_set0 = draws[d].bg_set0;
         }
+        if (draws[d].bg_set1 != 0 && draws[d].bg_set1 != last_bg_set1)
+        {
+            ok = ok &&
+                 dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, draws[d].bg_set1);
+            last_bg_set1 = draws[d].bg_set1;
+        }
         for (uint32_t j = 0; ok && j < draws[d].vbuf_count; j++)
             ok = ok && dvz_drp2_stream_set_vertex_buffer(
                            stream, render_pass_id, j, draws[d].vbuf_ids[j], 0);
-        ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, draws[d].vertex_count, 1, 0, 0);
+        if (ok && draws[d].index_buffer_id != 0)
+        {
+            ok = ok &&
+                 dvz_drp2_stream_set_index_buffer(
+                     stream, render_pass_id, draws[d].index_buffer_id, draws[d].index_format, 0) &&
+                 dvz_drp2_stream_draw_indexed(
+                     stream, render_pass_id, draws[d].index_count, 1, 0, 0, 0);
+        }
+        else
+        {
+            ok = ok &&
+                 dvz_drp2_stream_draw(stream, render_pass_id, draws[d].vertex_count, 1, 0, 0);
+        }
     }
 
     if (cache != NULL)

@@ -52,6 +52,7 @@ typedef struct DvzFigure            DvzFigure;
 typedef struct DvzPanel             DvzPanel;
 typedef struct DvzVisual            DvzVisual;
 typedef struct DvzSampledField      DvzSampledField;
+typedef struct DvzSceneBuffer       DvzSceneBuffer;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection         DvzSelection;
 typedef struct DvzLinkChannel       DvzLinkChannel;
@@ -105,6 +106,24 @@ struct DvzPanelDesc
     float width, height;  /* extent in normalized figure coords */
 };
 typedef struct DvzPanelDesc DvzPanelDesc;
+
+
+struct DvzSceneBufferDesc
+{
+    uint32_t usage;
+    uint32_t stride;
+    uint64_t byte_size;
+};
+typedef struct DvzSceneBufferDesc DvzSceneBufferDesc;
+
+
+struct DvzPrimitiveShadingDesc
+{
+    float light_direction[3];
+    float ambient;
+    float diffuse;
+};
+typedef struct DvzPrimitiveShadingDesc DvzPrimitiveShadingDesc;
 
 
 

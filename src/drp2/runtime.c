@@ -31,6 +31,7 @@
 #include "_overflow.h"
 #include "_stream.h"
 #include "datoviz/stream/frame_stream.h"
+#include "datoviz/vklite/descriptors.h"
 #include "datoviz/vk/gpu_ctx.h"
 
 #if DVZ_DRP2_HAS_VKLITE
@@ -204,6 +205,7 @@ struct Drp2VkliteObject
     float scissor_y;
     float scissor_width;
     float scissor_height;
+    uint64_t current_pipeline_id;
     VkPipelineLayout combined_pipeline_layout; /* owned combined layout for two-set pipelines */
     VkDevice         combined_layout_device;   /* VkDevice needed to destroy combined_pipeline_layout */
     bool borrowed_slots;
@@ -3722,12 +3724,14 @@ static DvzDrp2ValidationResult _vklite_set_pipeline(
             scissor_height,
             DVZ_GRAPHICS_FLAGS_DYNAMIC);
         dvz_cmd_bind_graphics(pass->commands, pipeline->graphics);
+        pass->current_pipeline_id = command->u.set_pipeline.pipeline_id;
         return _ok();
     }
     if (pass->kind == DRP2_OBJECT_COMPUTE_PASS && pipeline->kind == DRP2_OBJECT_COMPUTE_PIPELINE &&
         pipeline->compute != NULL)
     {
         dvz_cmd_bind_compute(pass->commands, pipeline->compute);
+        pass->current_pipeline_id = command->u.set_pipeline.pipeline_id;
         return _ok();
     }
     return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -3851,6 +3855,9 @@ static DvzDrp2ValidationResult _vklite_set_bind_group(
     if (pass == NULL || pass->commands == NULL || bind_group == NULL ||
         bind_group->descriptors == NULL)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2VkliteObject* pipeline = _vklite_find(state, pass->current_pipeline_id);
+    if (pipeline == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     VkPipelineBindPoint bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
     if (pass->kind == DRP2_OBJECT_COMPUTE_PASS)
@@ -3858,9 +3865,19 @@ static DvzDrp2ValidationResult _vklite_set_bind_group(
     else if (pass->kind != DRP2_OBJECT_RENDER_PASS)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    dvz_cmd_bind_descriptors(
-        pass->commands, bind_point, bind_group->descriptors, command->u.set_bind_group.slot, 1, 0,
-        NULL);
+    if (pipeline->combined_pipeline_layout != VK_NULL_HANDLE)
+    {
+        VkDescriptorSet descriptor_set = dvz_descriptors_handle(bind_group->descriptors, 0);
+        vkCmdBindDescriptorSets(
+            dvz_commands_handle(pass->commands), bind_point, pipeline->combined_pipeline_layout,
+            command->u.set_bind_group.slot, 1, &descriptor_set, 0, NULL);
+    }
+    else
+    {
+        dvz_cmd_bind_descriptors(
+            pass->commands, bind_point, bind_group->descriptors, command->u.set_bind_group.slot, 1,
+            0, NULL);
+    }
     return _ok();
 }
 

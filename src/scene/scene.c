@@ -60,6 +60,10 @@ static void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegio
 
 static void _scene_release_visual_field(DvzVisual* visual);
 
+static void _scene_release_visual_buffer(DvzVisual* visual);
+
+static void _primitive_shading_default(DvzPrimitiveShadingState* shading);
+
 static bool _field_format_supported(DvzFieldFormat format);
 
 static bool _field_format_is_scalar(DvzFieldFormat format);
@@ -102,6 +106,7 @@ static bool _scene_prepare_image_texture(
 
 
 
+
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
 {
     switch (type)
@@ -112,6 +117,10 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "size") == 0)     return sizeof(float);
         break;
     case DVZ_VISUAL_TYPE_PRIMITIVE:
+        if (strcmp(name, "position") == 0) return 3 * sizeof(float);
+        if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
+        if (strcmp(name, "normal") == 0)   return 3 * sizeof(float);
+        break;
     case DVZ_VISUAL_TYPE_PATH:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
@@ -137,7 +146,9 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
         return true;
 
     const char* expected = "position, color, size";
-    if (type == DVZ_VISUAL_TYPE_PRIMITIVE || type == DVZ_VISUAL_TYPE_PATH)
+    if (type == DVZ_VISUAL_TYPE_PRIMITIVE)
+        expected = "position, color, normal";
+    else if (type == DVZ_VISUAL_TYPE_PATH)
         expected = "position, color";
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, texcoords";
@@ -429,6 +440,25 @@ static void _scene_release_visual_field(DvzVisual* visual)
     }
     if (owned && field != NULL)
         dvz_sampled_field_destroy(field);
+}
+
+
+static void _scene_release_visual_buffer(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return;
+    visual->buffer = NULL;
+    dvz_memset(visual->buffer_slot, sizeof(visual->buffer_slot), 0, sizeof(visual->buffer_slot));
+}
+
+
+static void _primitive_shading_default(DvzPrimitiveShadingState* shading)
+{
+    ANN(shading);
+    dvz_memset(shading, sizeof(DvzPrimitiveShadingState), 0, sizeof(DvzPrimitiveShadingState));
+    shading->light_direction[2] = 1.0f;
+    shading->params[0] = 0.2f;
+    shading->params[1] = 0.8f;
 }
 
 
@@ -1031,7 +1061,6 @@ static bool _scene_prepare_image_texture(
 }
 
 
-
 /*************************************************************************************************/
 /*  Scene                                                                                        */
 /*************************************************************************************************/
@@ -1070,8 +1099,8 @@ void dvz_scene_destroy(DvzScene* scene)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* v = &scene->visuals[i];
-        for (uint32_t j = 0; j < v->attr_count; j++)
-        {
+    for (uint32_t j = 0; j < v->attr_count; j++)
+    {
             if (v->attrs[j].data != NULL)
             {
                 dvz_free(v->attrs[j].data);
@@ -1092,6 +1121,7 @@ void dvz_scene_destroy(DvzScene* scene)
         }
         v->field = NULL;
         v->field_owned = false;
+        v->buffer = NULL;
     }
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
     {
@@ -1102,6 +1132,16 @@ void dvz_scene_destroy(DvzScene* scene)
             field->data = NULL;
         }
         field->scene = NULL;
+    }
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
+    {
+        DvzSceneBuffer* buffer = &scene->buffers[i];
+        if (buffer->data != NULL)
+        {
+            dvz_free(buffer->data);
+            buffer->data = NULL;
+        }
+        buffer->scene = NULL;
     }
     if (scene->emitter != NULL)
     {
@@ -1201,6 +1241,42 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     strcmp(attr->name, "position") == 0)
                 {
                     dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+                }
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE)
+            {
+                int normal_idx = _attr_index(visual, "normal");
+                bool has_normals =
+                    normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
+                    visual->attrs[normal_idx].item_count > 0;
+                if (has_normals && visual->primitive_shading_dirty)
+                {
+                    char shading_resource_id[128];
+                    dvz_snprintf(
+                        shading_resource_id, sizeof(shading_resource_id),
+                        "v%u_primitive_shading", vidx);
+                    dvz_frame_plan_upload_bytes(
+                        plan, shading_resource_id, 0, sizeof(DvzPrimitiveShadingState),
+                        "primitive_shading", &visual->primitive_shading);
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+                }
+            }
+            if (visual->buffer != NULL && visual->buffer->data != NULL)
+            {
+                if (visual->buffer->dirty)
+                {
+                    char buffer_resource_id[128];
+                    dvz_snprintf(buffer_resource_id, sizeof(buffer_resource_id), "v%u_index", vidx);
+                    dvz_frame_plan_upload_bytes(
+                        plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
+                        visual->buffer->data);
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage =
+                        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
+                    node->u.upload.item_stride = visual->buffer->desc.stride;
                 }
             }
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
@@ -1372,6 +1448,15 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     continue;
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                     visual->attrs[ai].dirty_item_count = 0;
+                if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE)
+                {
+                    int normal_idx = _attr_index(visual, "normal");
+                    bool has_normals =
+                        normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
+                        visual->attrs[normal_idx].item_count > 0;
+                    if (has_normals)
+                        visual->primitive_shading_dirty = false;
+                }
                 if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
                 {
                     visual->texture.dirty = false;
@@ -1385,6 +1470,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         }
         for (uint32_t i = 0; i < figure->scene->field_count; i++)
             _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
+        for (uint32_t i = 0; i < figure->scene->buffer_count; i++)
+            figure->scene->buffers[i].dirty = false;
     }
 
     dvz_frame_plan_destroy(plan);
@@ -2180,6 +2267,220 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
 }
 
 
+/**
+ * Create a scene-owned buffer resource.
+ *
+ * @param scene the scene
+ * @param desc the buffer descriptor
+ * @return the buffer, or NULL on error
+ */
+DvzSceneBuffer* dvz_scene_buffer(DvzScene* scene, const DvzSceneBufferDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    if (desc->usage == 0)
+    {
+        log_error("scene buffer usage must be non-zero");
+        return NULL;
+    }
+    if (desc->stride == 0)
+    {
+        log_error("scene buffer stride must be non-zero");
+        return NULL;
+    }
+    if (scene->buffer_count >= DVZ_SCENE_MAX_BUFFERS)
+    {
+        log_error("maximum scene buffer count reached");
+        return NULL;
+    }
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
+    {
+        DvzSceneBuffer* buffer = &scene->buffers[i];
+        if (buffer->scene != NULL)
+            continue;
+        dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
+        buffer->scene = scene;
+        buffer->desc = *desc;
+        if (i + 1 > scene->buffer_count)
+            scene->buffer_count = i + 1;
+        return buffer;
+    }
+    log_error("maximum scene buffer count reached");
+    return NULL;
+}
+
+
+/**
+ * Destroy a scene-owned buffer resource.
+ *
+ * @param buffer the buffer
+ */
+void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
+{
+    if (buffer == NULL)
+        return;
+    if (!_scene_visual_mutation_allowed(buffer->scene, "destroy scene buffer"))
+        return;
+    DvzScene* scene = buffer->scene;
+    if (scene != NULL)
+    {
+        for (uint32_t i = 0; i < scene->visual_count; i++)
+        {
+            DvzVisual* visual = &scene->visuals[i];
+            if (visual->buffer == buffer)
+                _scene_release_visual_buffer(visual);
+        }
+    }
+    if (buffer->data != NULL)
+    {
+        dvz_free(buffer->data);
+        buffer->data = NULL;
+    }
+    dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
+}
+
+
+/**
+ * Replace the full payload of a scene-owned buffer resource.
+ *
+ * @param buffer the buffer
+ * @param data the packed payload
+ * @param byte_size the payload size
+ * @return true on success, false on error
+ */
+bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size)
+{
+    ANN(buffer);
+    ANN(data);
+    if (!_scene_visual_mutation_allowed(buffer->scene, "replace scene buffer data"))
+        return false;
+    if (byte_size == 0)
+    {
+        log_error("scene buffer payload size must be non-zero");
+        return false;
+    }
+    if (byte_size % buffer->desc.stride != 0)
+    {
+        log_error(
+            "scene buffer payload size %" PRIu64 " is not aligned to stride %u", byte_size,
+            buffer->desc.stride);
+        return false;
+    }
+    if (buffer->data != NULL && buffer->desc.byte_size != byte_size)
+    {
+        dvz_free(buffer->data);
+        buffer->data = NULL;
+    }
+    if (buffer->data == NULL)
+    {
+        buffer->data = dvz_malloc(byte_size);
+        if (buffer->data == NULL)
+        {
+            log_error("scene buffer allocation failed for %" PRIu64 " bytes", byte_size);
+            return false;
+        }
+    }
+    dvz_memcpy(buffer->data, byte_size, data, byte_size);
+    buffer->desc.byte_size = byte_size;
+    buffer->dirty = true;
+    return true;
+}
+
+
+/**
+ * Return the immutable buffer descriptor.
+ *
+ * @param buffer the buffer
+ * @return the descriptor, or NULL on error
+ */
+const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer)
+{
+    return buffer != NULL ? &buffer->desc : NULL;
+}
+
+
+/**
+ * Bind a scene-owned buffer to a named visual slot.
+ *
+ * @param visual the visual
+ * @param slot_name the slot name
+ * @param buffer the buffer, or NULL to clear the binding
+ * @return true on success, false on error
+ */
+bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuffer* buffer)
+{
+    ANN(visual);
+    ANN(slot_name);
+    if (buffer != NULL && buffer->scene != visual->scene)
+    {
+        log_error("cannot bind a buffer from a different scene");
+        return false;
+    }
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE)
+    {
+        log_error("dvz_visual_set_buffer is only supported for primitive visuals in the first slice");
+        return false;
+    }
+    if (strcmp(slot_name, "index") != 0)
+    {
+        log_error("unsupported primitive buffer slot '%s' (expected 'index')", slot_name);
+        return false;
+    }
+    if (buffer != NULL)
+    {
+        if ((buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_INDEX) == 0)
+        {
+            log_error("primitive index slot requires a buffer with INDEX usage");
+            return false;
+        }
+        if (buffer->desc.stride != sizeof(uint16_t) && buffer->desc.stride != sizeof(uint32_t))
+        {
+            log_error("primitive index buffers require stride 2 or 4 bytes");
+            return false;
+        }
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "bind scene buffer"))
+        return false;
+    _scene_release_visual_buffer(visual);
+    visual->buffer = buffer;
+    if (buffer != NULL)
+        dvz_strlcpy(visual->buffer_slot, slot_name, sizeof(visual->buffer_slot));
+    return true;
+}
+
+
+/**
+ * Override primitive shading parameters.
+ *
+ * @param visual the visual
+ * @param desc the shading descriptor, or NULL to restore defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_primitive_shading(
+    DvzVisual* visual, const DvzPrimitiveShadingDesc* desc)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_PRIMITIVE)
+    {
+        log_error("primitive shading is only supported for primitive visuals");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update primitive shading"))
+        return -1;
+    _primitive_shading_default(&visual->primitive_shading);
+    if (desc != NULL)
+    {
+        visual->primitive_shading.light_direction[0] = desc->light_direction[0];
+        visual->primitive_shading.light_direction[1] = desc->light_direction[1];
+        visual->primitive_shading.light_direction[2] = desc->light_direction[2];
+        visual->primitive_shading.params[0] = desc->ambient;
+        visual->primitive_shading.params[1] = desc->diffuse;
+    }
+    visual->primitive_shading_dirty = true;
+    return 0;
+}
+
+
 
 /*************************************************************************************************/
 /*  Visual — lifecycle and data                                                                  */
@@ -2200,6 +2501,7 @@ void dvz_visual_destroy(DvzVisual* visual)
         }
     }
     _scene_release_visual_field(visual);
+    _scene_release_visual_buffer(visual);
     if (visual->texture.rgba != NULL)
     {
         dvz_free(visual->texture.rgba);
@@ -2395,6 +2697,7 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
     visual->flags   = flags;
     visual->visible = true;
     visual->z_layer = 0;
+    _primitive_shading_default(&visual->primitive_shading);
     return visual;
 }
 
@@ -2413,6 +2716,8 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     visual->visible  = true;
     visual->z_layer  = 0;
     visual->topology = topology;
+    _primitive_shading_default(&visual->primitive_shading);
+    visual->primitive_shading_dirty = true;
     return visual;
 }
 
@@ -2440,6 +2745,7 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
     visual->visible  = true;
     visual->z_layer  = 0;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+    _primitive_shading_default(&visual->primitive_shading);
     return visual;
 }
 
@@ -2457,6 +2763,7 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
     visual->flags   = flags;
     visual->visible = true;
     visual->z_layer = 0;
+    _primitive_shading_default(&visual->primitive_shading);
     return visual;
 }
 

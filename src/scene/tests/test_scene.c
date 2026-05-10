@@ -1815,6 +1815,82 @@ int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item
 
 
 
+int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    float positions[4][3] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(uint16_t),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    if (stream == NULL && dvz_diagnostic_report_count(&report) > 0)
+        log_error("%s", dvz_diagnostic_report_get(&report, 0));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_set_index = false;
+    bool found_draw_indexed = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+            found_set_index = strcmp(cmd->u.set_index_buffer.index_format, "uint16") == 0;
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            found_draw_indexed = cmd->u.draw_indexed.index_count == 6;
+    }
+    AT(found_set_index);
+    AT(found_draw_indexed);
+    AT(_stream_set_vertex_buffer_count(stream) == 3);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -5161,6 +5237,132 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstSuite* suite
 
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    float positions[4][3] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(uint16_t),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+    AT(dvz_visual_set_primitive_shading(
+           visual,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 0.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    DvzDrp2Runtime* runtime = NULL;
+    if (ctx != NULL)
+    {
+        DvzDrp2RuntimeConfig runtime_cfg =
+            dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+        runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+        ANN(runtime);
+    }
+
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream0);
+    AT(_stream_set_vertex_buffer_count(stream0) == 3);
+    AT(_stream_write_buffer_range_count(stream0, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+    if (runtime != NULL)
+    {
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
+        AT(result.ok);
+        AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    }
+    dvz_drp2_stream_destroy(stream0);
+    stream0 = NULL;
+
+    AT(dvz_visual_set_primitive_shading(
+           visual,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 1.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream1);
+    AT(_stream_set_vertex_buffer_count(stream1) == 3);
+    AT(_stream_write_buffer_range_count(stream1, 0, sizeof(DvzPrimitiveShadingState)) == 1);
+
+    if (runtime != NULL)
+    {
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream1);
+        AT(result.ok);
+        AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    }
+
+    if (runtime != NULL)
+    {
+        dvz_drp2_runtime_destroy(runtime);
+        runtime = NULL;
+    }
+    if (ctx != NULL)
+    {
+        dvz_gpu_ctx_destroy(ctx);
+        ctx = NULL;
+    }
+
+    dvz_drp2_stream_destroy(stream1);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_shared_field_mixed_runtime_updates(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -6304,6 +6506,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_repeated_partial_updates_across_frames);
     TEST_SIMPLE(test_scene_partial_update_merges_ranges_before_emit);
     TEST_SIMPLE(test_scene_multiple_panels_multiple_point_visuals_emit);
+    TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);
@@ -6322,6 +6525,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
+    TEST_SIMPLE(test_scene_indexed_primitive_shading_updates_runtime);
     TEST_SIMPLE(test_app_offscreen_shared_field_mixed_runtime_updates);
     TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_retained_render_second_frame);

@@ -31,6 +31,7 @@
 #define DVZ_SCENE_MAX_PANELS     64
 #define DVZ_SCENE_MAX_VISUALS    256
 #define DVZ_SCENE_MAX_FIELDS     128
+#define DVZ_SCENE_MAX_BUFFERS    128
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
@@ -87,6 +88,7 @@ typedef struct DvzFigure  DvzFigure;
 typedef struct DvzPanel   DvzPanel;
 typedef struct DvzVisual  DvzVisual;
 typedef struct DvzSampledField DvzSampledField;
+typedef struct DvzSceneBuffer DvzSceneBuffer;
 typedef struct DvzScale   DvzScale;
 typedef struct DvzColormap DvzColormap;
 typedef struct DvzColorbar DvzColorbar;
@@ -178,6 +180,24 @@ struct DvzSampledField
 };
 
 
+struct DvzSceneBuffer
+{
+    DvzScene* scene;
+    DvzSceneBufferDesc desc;
+    void* data;
+    bool dirty;
+};
+
+
+typedef struct DvzPrimitiveShadingState DvzPrimitiveShadingState;
+
+struct DvzPrimitiveShadingState
+{
+    float light_direction[4];
+    float params[4];
+};
+
+
 
 /*************************************************************************************************/
 /*  Visual attribute slot                                                                        */
@@ -213,9 +233,13 @@ struct DvzVisual
     DvzSampledField* field;        /* used by DVZ_VISUAL_TYPE_IMAGE */
     char             field_slot[32];
     bool             field_owned;  /* true for legacy wrapper-created fields */
+    DvzSceneBuffer*  buffer;       /* current slice: primitive index buffer binding */
+    char             buffer_slot[32];
     DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
     DvzScale*     scale;           /* first slice: image colormap scale */
     char          scale_slot[32];  /* semantic binding slot name */
+    DvzPrimitiveShadingState primitive_shading;
+    bool                     primitive_shading_dirty;
 
     /* Attribute slots — indexed by attr index (type-specific) */
     uint32_t      attr_count;
@@ -299,6 +323,9 @@ struct DvzScene
 
     uint32_t field_count;
     DvzSampledField fields[DVZ_SCENE_MAX_FIELDS];
+
+    uint32_t buffer_count;
+    DvzSceneBuffer buffers[DVZ_SCENE_MAX_BUFFERS];
 
     uint32_t scale_count;
     DvzScale scales[DVZ_SCENE_MAX_SCALES];
