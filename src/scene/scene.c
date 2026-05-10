@@ -46,6 +46,16 @@ static bool _scene_has_live_streams(const DvzScene* scene);
 
 static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
+static DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind);
+
+static const DvzVisualBinding* _visual_binding_const(
+    const DvzVisual* visual, DvzVisualBindingKind kind);
+
+static void _visual_binding_assign(
+    DvzVisual* visual, DvzVisualBindingKind kind, const char* slot_name, void* resource, bool owned);
+
+static void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind);
+
 static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
 
 static void _scene_mark_scale_dirty(DvzScale* scale);
@@ -61,6 +71,8 @@ static void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegio
 static void _scene_release_visual_field(DvzVisual* visual);
 
 static void _scene_release_visual_buffer(DvzVisual* visual);
+
+static void _scene_release_visual_scale(DvzVisual* visual);
 
 static void _primitive_shading_default(DvzPrimitiveShadingState* shading);
 
@@ -303,6 +315,99 @@ static bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* ac
 }
 
 
+static DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind)
+{
+    ANN(visual);
+    uint32_t idx = UINT32_MAX;
+    switch (kind)
+    {
+    case DVZ_VISUAL_BINDING_FIELD:
+        idx = 0;
+        break;
+    case DVZ_VISUAL_BINDING_BUFFER:
+        idx = 1;
+        break;
+    case DVZ_VISUAL_BINDING_SCALE:
+        idx = 2;
+        break;
+    default:
+        return NULL;
+    }
+    ASSERT(idx < DVZ_SCENE_MAX_VISUAL_BINDINGS);
+    visual->bindings[idx].kind = kind;
+    return &visual->bindings[idx];
+}
+
+
+static const DvzVisualBinding* _visual_binding_const(
+    const DvzVisual* visual, DvzVisualBindingKind kind)
+{
+    ANN(visual);
+    uint32_t idx = UINT32_MAX;
+    switch (kind)
+    {
+    case DVZ_VISUAL_BINDING_FIELD:
+        idx = 0;
+        break;
+    case DVZ_VISUAL_BINDING_BUFFER:
+        idx = 1;
+        break;
+    case DVZ_VISUAL_BINDING_SCALE:
+        idx = 2;
+        break;
+    default:
+        return NULL;
+    }
+    ASSERT(idx < DVZ_SCENE_MAX_VISUAL_BINDINGS);
+    return &visual->bindings[idx];
+}
+
+
+static void _visual_binding_assign(
+    DvzVisual* visual, DvzVisualBindingKind kind, const char* slot_name, void* resource, bool owned)
+{
+    ANN(visual);
+    DvzVisualBinding* binding = _visual_binding(visual, kind);
+    ANN(binding);
+    binding->resource = resource;
+    binding->owned = owned;
+    dvz_memset(binding->slot, sizeof(binding->slot), 0, sizeof(binding->slot));
+    if (slot_name != NULL && resource != NULL)
+        dvz_strlcpy(binding->slot, slot_name, sizeof(binding->slot));
+
+    switch (kind)
+    {
+    case DVZ_VISUAL_BINDING_FIELD:
+        visual->field = (DvzSampledField*)resource;
+        visual->field_owned = owned;
+        dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0, sizeof(visual->field_slot));
+        if (slot_name != NULL && resource != NULL)
+            dvz_strlcpy(visual->field_slot, slot_name, sizeof(visual->field_slot));
+        break;
+    case DVZ_VISUAL_BINDING_BUFFER:
+        visual->buffer = (DvzSceneBuffer*)resource;
+        dvz_memset(visual->buffer_slot, sizeof(visual->buffer_slot), 0, sizeof(visual->buffer_slot));
+        if (slot_name != NULL && resource != NULL)
+            dvz_strlcpy(visual->buffer_slot, slot_name, sizeof(visual->buffer_slot));
+        break;
+    case DVZ_VISUAL_BINDING_SCALE:
+        visual->scale = (DvzScale*)resource;
+        dvz_memset(visual->scale_slot, sizeof(visual->scale_slot), 0, sizeof(visual->scale_slot));
+        if (slot_name != NULL && resource != NULL)
+            dvz_strlcpy(visual->scale_slot, slot_name, sizeof(visual->scale_slot));
+        break;
+    default:
+        break;
+    }
+}
+
+
+static void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind)
+{
+    _visual_binding_assign(visual, kind, NULL, NULL, false);
+}
+
+
 static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src)
 {
     ANN(dst);
@@ -438,10 +543,9 @@ static void _scene_release_visual_field(DvzVisual* visual)
     if (visual == NULL)
         return;
     DvzSampledField* field = visual->field;
-    bool owned = visual->field_owned;
-    visual->field = NULL;
-    visual->field_owned = false;
-    dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0, sizeof(visual->field_slot));
+    const DvzVisualBinding* binding = _visual_binding_const(visual, DVZ_VISUAL_BINDING_FIELD);
+    bool owned = binding != NULL ? binding->owned : visual->field_owned;
+    _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     visual->texture.dirty = false;
     visual->texture.field_dirty = false;
     visual->texture.field_dirty_full = false;
@@ -461,8 +565,15 @@ static void _scene_release_visual_buffer(DvzVisual* visual)
 {
     if (visual == NULL)
         return;
-    visual->buffer = NULL;
-    dvz_memset(visual->buffer_slot, sizeof(visual->buffer_slot), 0, sizeof(visual->buffer_slot));
+    _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
+}
+
+
+static void _scene_release_visual_scale(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return;
+    _visual_binding_clear(visual, DVZ_VISUAL_BINDING_SCALE);
 }
 
 
@@ -1136,6 +1247,9 @@ void dvz_scene_destroy(DvzScene* scene)
         v->field = NULL;
         v->field_owned = false;
         v->buffer = NULL;
+        v->scale = NULL;
+        for (uint32_t j = 0; j < DVZ_SCENE_MAX_VISUAL_BINDINGS; j++)
+            dvz_memset(&v->bindings[j], sizeof(DvzVisualBinding), 0, sizeof(DvzVisualBinding));
     }
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
     {
@@ -2066,10 +2180,7 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
             DvzVisual* visual = &scene->visuals[i];
             if (visual->field == field)
             {
-                visual->field = NULL;
-                visual->field_owned = false;
-                dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0,
-                           sizeof(visual->field_slot));
+                _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
                 visual->texture.dirty = false;
                 visual->texture.field_dirty = false;
                 visual->texture.field_dirty_full = false;
@@ -2273,16 +2384,19 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
 
     if (visual->field != field)
         _scene_release_visual_field(visual);
-    visual->field = field;
     if (field != NULL)
     {
-        dvz_strlcpy(visual->field_slot, slot_name, sizeof(visual->field_slot));
+        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, field, false);
         visual->texture.dirty = true;
         visual->texture.field_dirty = false;
         visual->texture.field_dirty_full = false;
         dvz_memset(
             &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
             sizeof(DvzFieldRegion));
+    }
+    else
+    {
+        _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
     }
     return true;
 }
@@ -2463,9 +2577,10 @@ bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuf
     if (!_scene_visual_mutation_allowed(visual->scene, "bind scene buffer"))
         return false;
     _scene_release_visual_buffer(visual);
-    visual->buffer = buffer;
     if (buffer != NULL)
-        dvz_strlcpy(visual->buffer_slot, slot_name, sizeof(visual->buffer_slot));
+        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_BUFFER, slot_name, buffer, false);
+    else
+        _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
     return true;
 }
 
@@ -2523,6 +2638,7 @@ void dvz_visual_destroy(DvzVisual* visual)
     }
     _scene_release_visual_field(visual);
     _scene_release_visual_buffer(visual);
+    _scene_release_visual_scale(visual);
     if (visual->texture.rgba != NULL)
     {
         dvz_free(visual->texture.rgba);
@@ -2833,7 +2949,7 @@ int dvz_visual_set_texture(
         return -1;
     if (!dvz_visual_set_field(visual, "field", field))
         return -1;
-    visual->field_owned = true;
+    _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, "field", field, true);
     return 0;
 }
 
@@ -2894,7 +3010,7 @@ int dvz_visual_set_texture_f32(
         return -1;
     if (!dvz_visual_set_field(visual, "field", field))
         return -1;
-    visual->field_owned = true;
+    _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, "field", field, true);
     return 0;
 }
 
@@ -2930,10 +3046,20 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         log_error("unsupported image scale slot '%s' (expected 'colormap')", slot_name);
         return -1;
     }
-    visual->scale = scale;
-    dvz_memset(visual->scale_slot, sizeof(visual->scale_slot), 0, sizeof(visual->scale_slot));
+    if (!_scene_visual_mutation_allowed(visual->scene, "bind scale"))
+        return -1;
+    _scene_release_visual_scale(visual);
     if (scale != NULL)
-        dvz_strlcpy(visual->scale_slot, slot_name, sizeof(visual->scale_slot));
+        _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
+    if (visual->field != NULL && _field_format_is_scalar(visual->field->desc.format))
+    {
+        visual->texture.dirty = true;
+        visual->texture.field_dirty = false;
+        visual->texture.field_dirty_full = false;
+        dvz_memset(
+            &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
+            sizeof(DvzFieldRegion));
+    }
     return 0;
 }
 
@@ -2977,6 +3103,68 @@ static uint32_t _visual_index(const DvzScene* scene, const DvzVisual* visual)
         if (&scene->visuals[i] == visual)
             return i;
     return UINT32_MAX;
+}
+
+
+static void _json_append_visual_binding(
+    JsonBuilder* b, const DvzVisual* visual, DvzVisualBindingKind kind)
+{
+    ANN(b);
+    if (visual == NULL || visual->scene == NULL)
+    {
+        _json_append(b, "null");
+        return;
+    }
+
+    const DvzVisualBinding* binding = _visual_binding_const(visual, kind);
+    if (binding == NULL || binding->resource == NULL)
+    {
+        _json_append(b, "null");
+        return;
+    }
+
+    switch (kind)
+    {
+    case DVZ_VISUAL_BINDING_SCALE:
+        for (uint32_t si = 0; si < visual->scene->scale_count; si++)
+        {
+            if (&visual->scene->scales[si] != (DvzScale*)binding->resource)
+                continue;
+            _json_append(b, "{\"id\":\"s%u\",\"slot\":", si);
+            _json_append_escaped_string(b, binding->slot);
+            _json_append(b, "}");
+            return;
+        }
+        break;
+    case DVZ_VISUAL_BINDING_FIELD:
+    {
+        uint32_t field_idx = _scene_field_index(visual->scene, (DvzSampledField*)binding->resource);
+        if (field_idx != UINT32_MAX)
+        {
+            _json_append(b, "{\"id\":\"f%u\",\"slot\":", field_idx);
+            _json_append_escaped_string(b, binding->slot);
+            _json_append(b, "}");
+            return;
+        }
+        break;
+    }
+    case DVZ_VISUAL_BINDING_BUFFER:
+    {
+        uint32_t buffer_idx = _scene_buffer_index(visual->scene, (DvzSceneBuffer*)binding->resource);
+        if (buffer_idx != UINT32_MAX)
+        {
+            _json_append(b, "{\"id\":\"b%u\",\"slot\":", buffer_idx);
+            _json_append_escaped_string(b, binding->slot);
+            _json_append(b, "}");
+            return;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+
+    _json_append(b, "null");
 }
 
 char* dvz_scene_json(const DvzScene* scene)
@@ -3095,70 +3283,11 @@ char* dvz_scene_json(const DvzScene* scene)
                     _json_append(&b, "}");
                 }
                 _json_append(&b, "],\"scale\":");
-                if (vis->scale != NULL && vis->scene != NULL)
-                {
-                    int64_t scale_idx = -1;
-                    for (uint32_t si = 0; si < vis->scene->scale_count; si++)
-                    {
-                        if (&vis->scene->scales[si] == vis->scale)
-                        {
-                            scale_idx = (int64_t)si;
-                            break;
-                        }
-                    }
-                    if (scale_idx >= 0)
-                    {
-                        _json_append(&b, "{\"id\":\"s%" PRId64 "\",\"slot\":", scale_idx);
-                        _json_append_escaped_string(&b, vis->scale_slot);
-                        _json_append(&b, "}");
-                    }
-                    else
-                    {
-                        _json_append(&b, "null");
-                    }
-                }
-                else
-                {
-                    _json_append(&b, "null");
-                }
+                _json_append_visual_binding(&b, vis, DVZ_VISUAL_BINDING_SCALE);
                 _json_append(&b, ",\"field\":");
-                if (vis->field != NULL && vis->scene != NULL)
-                {
-                    uint32_t field_idx = _scene_field_index(vis->scene, vis->field);
-                    if (field_idx != UINT32_MAX)
-                    {
-                        _json_append(&b, "{\"id\":\"f%u\",\"slot\":", field_idx);
-                        _json_append_escaped_string(&b, vis->field_slot);
-                        _json_append(&b, "}");
-                    }
-                    else
-                    {
-                        _json_append(&b, "null");
-                    }
-                }
-                else
-                {
-                    _json_append(&b, "null");
-                }
+                _json_append_visual_binding(&b, vis, DVZ_VISUAL_BINDING_FIELD);
                 _json_append(&b, ",\"buffer\":");
-                if (vis->buffer != NULL && vis->scene != NULL)
-                {
-                    uint32_t buffer_idx = _scene_buffer_index(vis->scene, vis->buffer);
-                    if (buffer_idx != UINT32_MAX)
-                    {
-                        _json_append(&b, "{\"id\":\"b%u\",\"slot\":", buffer_idx);
-                        _json_append_escaped_string(&b, vis->buffer_slot);
-                        _json_append(&b, "}");
-                    }
-                    else
-                    {
-                        _json_append(&b, "null");
-                    }
-                }
-                else
-                {
-                    _json_append(&b, "null");
-                }
+                _json_append_visual_binding(&b, vis, DVZ_VISUAL_BINDING_BUFFER);
                 _json_append(&b, ",\"field_state\":");
                 if (vis->field != NULL)
                 {

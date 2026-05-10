@@ -38,6 +38,7 @@
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
 #define DVZ_SCENE_MAX_COLOR_STOPS 32
 #define DVZ_SCENE_MAX_ITEM_ATTRS 8
+#define DVZ_SCENE_MAX_VISUAL_BINDINGS 3
 
 
 
@@ -204,6 +205,15 @@ struct DvzPrimitiveShadingState
 /*************************************************************************************************/
 
 typedef struct DvzVisualAttr DvzVisualAttr;
+typedef struct DvzVisualBinding DvzVisualBinding;
+
+typedef enum
+{
+    DVZ_VISUAL_BINDING_NONE,
+    DVZ_VISUAL_BINDING_FIELD,
+    DVZ_VISUAL_BINDING_BUFFER,
+    DVZ_VISUAL_BINDING_SCALE,
+} DvzVisualBindingKind;
 
 struct DvzVisualAttr
 {
@@ -213,6 +223,15 @@ struct DvzVisualAttr
     uint32_t item_size;         /* bytes per item */
     uint64_t dirty_first_item;  /* first dirty item index */
     uint64_t dirty_item_count;  /* number of dirty items (0 = not dirty) */
+};
+
+
+struct DvzVisualBinding
+{
+    DvzVisualBindingKind kind;
+    void* resource;
+    char slot[32];
+    bool owned;
 };
 
 
@@ -230,6 +249,7 @@ struct DvzVisual
     int32_t      z_layer;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
+    DvzVisualBinding bindings[DVZ_SCENE_MAX_VISUAL_BINDINGS];
     DvzSampledField* field;        /* used by DVZ_VISUAL_TYPE_IMAGE */
     char             field_slot[32];
     bool             field_owned;  /* true for legacy wrapper-created fields */
