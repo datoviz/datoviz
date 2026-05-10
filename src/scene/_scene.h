@@ -30,6 +30,7 @@
 #define DVZ_SCENE_MAX_FIGURES    16
 #define DVZ_SCENE_MAX_PANELS     64
 #define DVZ_SCENE_MAX_VISUALS    256
+#define DVZ_SCENE_MAX_FIELDS     128
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
@@ -59,25 +60,14 @@ typedef enum
 
 
 
-typedef enum
-{
-    DVZ_SCENE_TEXTURE_NONE = 0,
-    DVZ_SCENE_TEXTURE_RGBA8,
-    DVZ_SCENE_TEXTURE_SCALAR_F32,
-} DvzSceneTextureFormat;
-
-
-
-/* Image texture payload (first-slice: RGBA8 or scalar F32 lowered to RGBA8). */
+/* Image texture payload cache (field -> runtime texture realization). */
 typedef struct DvzVisualTexture DvzVisualTexture;
 struct DvzVisualTexture
 {
-    const void* data;           /* borrowed source data */
     void* rgba;                 /* owned RGBA8 staging for scalar textures */
     uint64_t rgba_size;         /* bytes */
     uint32_t width;             /* pixels */
     uint32_t height;            /* pixels */
-    DvzSceneTextureFormat format;
     bool dirty;                 /* needs upload on next emit */
 };
 
@@ -91,6 +81,7 @@ typedef struct DvzScene   DvzScene;
 typedef struct DvzFigure  DvzFigure;
 typedef struct DvzPanel   DvzPanel;
 typedef struct DvzVisual  DvzVisual;
+typedef struct DvzSampledField DvzSampledField;
 typedef struct DvzScale   DvzScale;
 typedef struct DvzColormap DvzColormap;
 typedef struct DvzColorbar DvzColorbar;
@@ -166,6 +157,22 @@ struct DvzColorbar
 
 
 /*************************************************************************************************/
+/*  Sampled fields                                                                               */
+/*************************************************************************************************/
+
+struct DvzSampledField
+{
+    DvzScene* scene;
+    DvzSampledFieldDesc desc;
+    DvzFieldGeometry geometry;
+    void* data;
+    uint64_t data_size;
+    bool dirty;
+};
+
+
+
+/*************************************************************************************************/
 /*  Visual attribute slot                                                                        */
 /*************************************************************************************************/
 
@@ -196,6 +203,9 @@ struct DvzVisual
     int32_t      z_layer;
 
     DvzPrimitiveTopology topology; /* used by DVZ_VISUAL_TYPE_PRIMITIVE */
+    DvzSampledField* field;        /* used by DVZ_VISUAL_TYPE_IMAGE */
+    char             field_slot[32];
+    bool             field_owned;  /* true for legacy wrapper-created fields */
     DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
     DvzScale*     scale;           /* first slice: image colormap scale */
     char          scale_slot[32];  /* semantic binding slot name */
@@ -279,6 +289,9 @@ struct DvzScene
 
     uint32_t  visual_count;
     DvzVisual visuals[DVZ_SCENE_MAX_VISUALS]; /* owner of all visual objects */
+
+    uint32_t field_count;
+    DvzSampledField fields[DVZ_SCENE_MAX_FIELDS];
 
     uint32_t scale_count;
     DvzScale scales[DVZ_SCENE_MAX_SCALES];

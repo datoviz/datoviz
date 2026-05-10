@@ -148,6 +148,10 @@ int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* 
 
 int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* item);
 
+int test_scene_visual_field_rejects_cross_scene_field(TstSuite* suite, TstItem* item);
+
+int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);

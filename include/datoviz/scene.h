@@ -20,6 +20,7 @@
 #include "scene/annotation.h"
 #include "scene/arcball.h"
 #include "scene/enums.h"
+#include "scene/field.h"
 #include "scene/frame_plan.h"
 #include "scene/interaction.h"
 #include "scene/panzoom.h"
@@ -342,8 +343,9 @@ DVZ_EXPORT DvzVisual* dvz_path(DvzScene* scene, uint32_t flags);
  *
  * First-slice scope: one textured quad per visual. Accepts `position` (vec3, 4 corner
  * vertices in TRIANGLE_STRIP order: TL, BL, TR, BR) and `texcoords` (vec2, matching UVs).
- * Attach the texture bytes via `dvz_visual_set_texture`. Per-item rectangles, anchors,
- * sizes, and color tinting from `spec/scene/visuals/IMAGE.md` are deferred.
+ * Bind a sampled field via `dvz_visual_set_field()`. The legacy texture convenience wrappers
+ * remain available and lower to scene-owned sampled fields internally. Per-item rectangles,
+ * anchors, sizes, and color tinting from `spec/scene/visuals/IMAGE.md` are deferred.
  *
  * @param scene the scene
  * @param flags variant flags

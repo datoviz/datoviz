@@ -2828,9 +2828,21 @@ int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
         1.0f, 1.0f,
     };
     static const uint8_t pixels[4 * 4 * 4] = {0};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
-    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_sampled_field_set_data(
+           field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
@@ -2843,6 +2855,8 @@ int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
     char* json = dvz_scene_json(scene);
     ANN(json);
     AT(strstr(json, "\"scale\":{\"id\":\"s0\",\"slot\":\"colormap\"}") != NULL);
+    AT(strstr(json, "\"field\":{\"id\":\"f0\",\"slot\":\"field\"}") != NULL);
+    AT(strstr(json, "\"fields\":[{\"id\":\"f0\"") != NULL);
     dvz_scene_json_destroy(json);
 
     dvz_scene_destroy(scene);
@@ -2935,6 +2949,80 @@ int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* i
     AT(rgba[3] == 255);
 
     dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_visual_field_rejects_cross_scene_field(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzVisual* image = dvz_image(scene0, 0);
+    ANN(image);
+    DvzSampledField* field = dvz_sampled_field(
+        scene1, &(DvzSampledFieldDesc){
+                    .dim = DVZ_FIELD_DIM_2D,
+                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                    .width = 2,
+                    .height = 2,
+                    .depth = 1,
+                });
+    ANN(field);
+
+    AT(!dvz_visual_set_field(image, "field", field));
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+
+int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R8_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    uint8_t base[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+
+    uint8_t patch[4] = {1, 2, 3, 4};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 1, .z = 0, .width = 2, .height = 2, .depth = 1},
+        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    uint8_t* data = (uint8_t*)field->data;
+    AT(data[5] == 1);
+    AT(data[6] == 2);
+    AT(data[9] == 3);
+    AT(data[10] == 4);
+    AT(field->dirty);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -5238,6 +5326,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_image_visual_binds_colormap_scale);
     TEST_SIMPLE(test_scene_visual_scale_rejects_cross_scene_scale);
     TEST_SIMPLE(test_scene_image_scalar_texture_uses_bound_scale);
+    TEST_SIMPLE(test_scene_visual_field_rejects_cross_scene_field);
+    TEST_SIMPLE(test_scene_sampled_field_update_region);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);

@@ -51,6 +51,7 @@ typedef struct DvzScene             DvzScene;
 typedef struct DvzFigure            DvzFigure;
 typedef struct DvzPanel             DvzPanel;
 typedef struct DvzVisual            DvzVisual;
+typedef struct DvzSampledField      DvzSampledField;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection         DvzSelection;
 typedef struct DvzLinkChannel       DvzLinkChannel;

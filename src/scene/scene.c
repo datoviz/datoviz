@@ -51,6 +51,32 @@ static void _scene_mark_scale_dirty(DvzScale* scale);
 
 static void _scene_mark_colormap_dirty(DvzColormap* colormap);
 
+static uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
+
+static void _scene_mark_field_dirty(DvzSampledField* field);
+
+static void _scene_release_visual_field(DvzVisual* visual);
+
+static bool _field_format_supported(DvzFieldFormat format);
+
+static bool _field_format_is_scalar(DvzFieldFormat format);
+
+static bool _field_format_is_rgba8(DvzFieldFormat format);
+
+static bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes);
+
+static bool _field_expected_data_size(const DvzSampledFieldDesc* desc, uint64_t* out_size);
+
+static uint64_t _field_default_bytes_per_row(const DvzSampledFieldDesc* desc);
+
+static uint64_t _field_default_rows_per_image(const DvzSampledFieldDesc* desc);
+
+static bool _field_data_view_valid(
+    const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, const DvzFieldRegion* region);
+
+static bool _field_read_scalar(
+    const DvzSampledField* field, uint64_t sample_index, double* out_value);
+
 static bool _scene_color_from_colormap(
     const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
 
@@ -263,9 +289,261 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         DvzVisual* visual = &scene->visuals[i];
         if (visual->scene != scene || visual->scale != scale)
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_IMAGE &&
-            visual->texture.format == DVZ_SCENE_TEXTURE_SCALAR_F32)
+        if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
+            _field_format_is_scalar(visual->field->desc.format))
             visual->texture.dirty = true;
+    }
+}
+
+
+static uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field)
+{
+    if (scene == NULL || field == NULL)
+        return UINT32_MAX;
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
+    {
+        if (&scene->fields[i] == field && field->scene == scene)
+            return i;
+    }
+    return UINT32_MAX;
+}
+
+
+static void _scene_mark_field_dirty(DvzSampledField* field)
+{
+    if (field == NULL || field->scene == NULL)
+        return;
+    field->dirty = true;
+    DvzScene* scene = field->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        DvzVisual* visual = &scene->visuals[i];
+        if (visual->scene == scene && visual->field == field)
+            visual->texture.dirty = true;
+    }
+}
+
+
+static void _scene_release_visual_field(DvzVisual* visual)
+{
+    if (visual == NULL)
+        return;
+    DvzSampledField* field = visual->field;
+    bool owned = visual->field_owned;
+    visual->field = NULL;
+    visual->field_owned = false;
+    dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0, sizeof(visual->field_slot));
+    visual->texture.dirty = false;
+    if (owned && field != NULL)
+        dvz_sampled_field_destroy(field);
+}
+
+
+static bool _field_format_supported(DvzFieldFormat format)
+{
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_UINT:
+    case DVZ_FIELD_FORMAT_R8_SINT:
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_UINT:
+    case DVZ_FIELD_FORMAT_R16_SINT:
+    case DVZ_FIELD_FORMAT_R32_UINT:
+    case DVZ_FIELD_FORMAT_R32_SINT:
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+    case DVZ_FIELD_FORMAT_RGBA8_UNORM:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+static bool _field_format_is_scalar(DvzFieldFormat format)
+{
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_UINT:
+    case DVZ_FIELD_FORMAT_R8_SINT:
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_UINT:
+    case DVZ_FIELD_FORMAT_R16_SINT:
+    case DVZ_FIELD_FORMAT_R32_UINT:
+    case DVZ_FIELD_FORMAT_R32_SINT:
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+static bool _field_format_is_rgba8(DvzFieldFormat format)
+{
+    return format == DVZ_FIELD_FORMAT_RGBA8_UNORM;
+}
+
+
+static bool _field_format_bytes_per_texel(DvzFieldFormat format, uint32_t* out_bytes)
+{
+    ANN(out_bytes);
+    switch (format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+    case DVZ_FIELD_FORMAT_R8_UINT:
+    case DVZ_FIELD_FORMAT_R8_SINT:
+        *out_bytes = 1;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+    case DVZ_FIELD_FORMAT_R16_UINT:
+    case DVZ_FIELD_FORMAT_R16_SINT:
+        *out_bytes = 2;
+        return true;
+    case DVZ_FIELD_FORMAT_R32_UINT:
+    case DVZ_FIELD_FORMAT_R32_SINT:
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+        *out_bytes = 4;
+        return true;
+    case DVZ_FIELD_FORMAT_RGBA8_UNORM:
+        *out_bytes = 4;
+        return true;
+    default:
+        *out_bytes = 0;
+        return false;
+    }
+}
+
+
+static bool _field_expected_data_size(const DvzSampledFieldDesc* desc, uint64_t* out_size)
+{
+    ANN(desc);
+    ANN(out_size);
+    uint32_t bytes_per_texel = 0;
+    if (!_field_format_bytes_per_texel(desc->format, &bytes_per_texel))
+        return false;
+    uint64_t sample_count = 0;
+    if (_dvz_mul_u64_overflows(desc->width, desc->height, &sample_count))
+        return false;
+    if (desc->dim == DVZ_FIELD_DIM_3D)
+    {
+        if (_dvz_mul_u64_overflows(sample_count, desc->depth, &sample_count))
+            return false;
+    }
+    return !_dvz_mul_u64_overflows(sample_count, bytes_per_texel, out_size);
+}
+
+
+static uint64_t _field_default_bytes_per_row(const DvzSampledFieldDesc* desc)
+{
+    ANN(desc);
+    uint32_t bytes_per_texel = 0;
+    if (!_field_format_bytes_per_texel(desc->format, &bytes_per_texel))
+        return 0;
+    uint64_t bytes_per_row = 0;
+    if (_dvz_mul_u64_overflows(desc->width, bytes_per_texel, &bytes_per_row))
+        return 0;
+    return bytes_per_row;
+}
+
+
+static uint64_t _field_default_rows_per_image(const DvzSampledFieldDesc* desc)
+{
+    ANN(desc);
+    return desc->height;
+}
+
+
+static bool _field_data_view_valid(
+    const DvzSampledFieldDesc* desc, const DvzFieldDataView* view, const DvzFieldRegion* region)
+{
+    ANN(desc);
+    ANN(view);
+    ANN(view->data);
+    ANN(region);
+    if (region->width == 0 || region->height == 0 || region->depth == 0)
+    {
+        log_error("sampled field data view requires non-zero update extent");
+        return false;
+    }
+    uint64_t full_bytes_per_row = _field_default_bytes_per_row(desc);
+    uint64_t full_rows_per_image = _field_default_rows_per_image(desc);
+    if (full_bytes_per_row == 0 || full_rows_per_image == 0)
+    {
+        log_error("sampled field descriptor produced zero row/image stride");
+        return false;
+    }
+
+    uint32_t bytes_per_texel = 0;
+    if (!_field_format_bytes_per_texel(desc->format, &bytes_per_texel))
+    {
+        log_error("unsupported sampled field format %d", (int)desc->format);
+        return false;
+    }
+
+    uint64_t region_bytes_per_row = 0;
+    if (_dvz_mul_u64_overflows(region->width, bytes_per_texel, &region_bytes_per_row))
+    {
+        log_error("sampled field row-byte size overflow");
+        return false;
+    }
+    uint64_t bytes_per_row =
+        view->bytes_per_row != 0 ? view->bytes_per_row : region_bytes_per_row;
+    uint64_t rows_per_image =
+        view->rows_per_image != 0 ? view->rows_per_image : region->height;
+    if (bytes_per_row < region_bytes_per_row)
+    {
+        log_error("sampled field bytes_per_row is too small for the update width");
+        return false;
+    }
+    if (rows_per_image < region->height)
+    {
+        log_error("sampled field rows_per_image is too small for the update height");
+        return false;
+    }
+    return true;
+}
+
+
+static bool _field_read_scalar(
+    const DvzSampledField* field, uint64_t sample_index, double* out_value)
+{
+    ANN(field);
+    ANN(out_value);
+    ANN(field->data);
+    const uint8_t* bytes = (const uint8_t*)field->data;
+    switch (field->desc.format)
+    {
+    case DVZ_FIELD_FORMAT_R8_UNORM:
+        *out_value = (double)bytes[sample_index] / 255.0;
+        return true;
+    case DVZ_FIELD_FORMAT_R8_UINT:
+        *out_value = (double)((const uint8_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R8_SINT:
+        *out_value = (double)((const int8_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UNORM:
+        *out_value = (double)((const uint16_t*)field->data)[sample_index] / 65535.0;
+        return true;
+    case DVZ_FIELD_FORMAT_R16_UINT:
+        *out_value = (double)((const uint16_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R16_SINT:
+        *out_value = (double)((const int16_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R32_UINT:
+        *out_value = (double)((const uint32_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R32_SINT:
+        *out_value = (double)((const int32_t*)field->data)[sample_index];
+        return true;
+    case DVZ_FIELD_FORMAT_R32_FLOAT:
+        *out_value = (double)((const float*)field->data)[sample_index];
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -334,33 +612,66 @@ static bool _scene_prepare_image_texture(DvzVisual* visual)
     ANN(visual);
     if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
         return false;
-    if (visual->texture.format != DVZ_SCENE_TEXTURE_SCALAR_F32)
-        return true;
-    if (visual->scale == NULL || visual->scale->colormap == NULL)
+    if (visual->field == NULL)
     {
-        log_error("scalar image texture requires a bound scale with a colormap");
+        log_error("image visual requires a bound sampled field");
         return false;
     }
-    if (visual->texture.data == NULL || visual->texture.width == 0 || visual->texture.height == 0)
+    const DvzSampledField* field = visual->field;
+    if (field->scene != visual->scene)
+    {
+        log_error("image visual field belongs to a different scene");
         return false;
+    }
+    if (field->desc.dim != DVZ_FIELD_DIM_2D)
+    {
+        log_error("image visuals require a 2D sampled field");
+        return false;
+    }
+    if (field->data == NULL || field->desc.width == 0 || field->desc.height == 0)
+    {
+        log_error("image visual sampled field has no uploaded data");
+        return false;
+    }
 
-    uint64_t pixel_count = (uint64_t)visual->texture.width * (uint64_t)visual->texture.height;
-    uint64_t rgba_size = pixel_count * 4ull;
+    visual->texture.width = field->desc.width;
+    visual->texture.height = field->desc.height;
+
+    if (_field_format_is_rgba8(field->desc.format))
+        return true;
+    if (!_field_format_is_scalar(field->desc.format))
+    {
+        log_error("image visual does not support sampled field format %d", (int)field->desc.format);
+        return false;
+    }
+    if (visual->scale == NULL || visual->scale->colormap == NULL)
+    {
+        log_error("scalar image field requires a bound scale with a colormap");
+        return false;
+    }
+
+    uint64_t pixel_count = 0;
+    uint64_t rgba_size = 0;
+    if (_dvz_mul_u64_overflows(field->desc.width, field->desc.height, &pixel_count) ||
+        _dvz_mul_u64_overflows(pixel_count, 4, &rgba_size))
+    {
+        log_error("scalar image field RGBA staging size overflow");
+        return false;
+    }
     if (visual->texture.rgba == NULL || visual->texture.rgba_size != rgba_size)
     {
         if (visual->texture.rgba != NULL)
             dvz_free(visual->texture.rgba);
-        visual->texture.rgba = dvz_malloc(rgba_size);
+        visual->texture.rgba = dvz_calloc(rgba_size, 1);
         if (visual->texture.rgba == NULL)
         {
             visual->texture.rgba_size = 0;
-            log_error("scalar image texture RGBA staging allocation failed");
+            log_error("scalar image field RGBA staging allocation failed");
             return false;
         }
         visual->texture.rgba_size = rgba_size;
     }
 
-    const float* values = (const float*)visual->texture.data;
     uint8_t* rgba = (uint8_t*)visual->texture.rgba;
     double domain_min = 0.0;
     double domain_max = 1.0;
@@ -380,9 +691,16 @@ static bool _scene_prepare_image_texture(DvzVisual* visual)
 
     for (uint64_t i = 0; i < pixel_count; i++)
     {
-        double t = ((double)values[i] - domain_min) / denom;
+        double value = 0.0;
+        if (!_field_read_scalar(field, i, &value))
+        {
+            log_error("failed to sample scalar field format %d", (int)field->desc.format);
+            return false;
+        }
+        double t = (value - domain_min) / denom;
         _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
     }
+
     return true;
 }
 
@@ -440,6 +758,18 @@ void dvz_scene_destroy(DvzScene* scene)
             v->texture.rgba = NULL;
             v->texture.rgba_size = 0;
         }
+        v->field = NULL;
+        v->field_owned = false;
+    }
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
+    {
+        DvzSampledField* field = &scene->fields[i];
+        if (field->data != NULL)
+        {
+            dvz_free(field->data);
+            field->data = NULL;
+        }
+        field->scene = NULL;
     }
     if (scene->emitter != NULL)
     {
@@ -542,19 +872,23 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 }
             }
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->texture.dirty &&
-                visual->texture.data != NULL && visual->texture.width > 0 &&
-                visual->texture.height > 0)
+                visual->field != NULL)
             {
                 if (!_scene_prepare_image_texture(visual))
                     continue;
                 char tex_resource_id[128];
                 dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
-                uint64_t bytes = (uint64_t)visual->texture.width *
-                                 (uint64_t)visual->texture.height * 4ull;
+                uint64_t bytes = 0;
+                if (_dvz_mul_u64_overflows(visual->texture.width, visual->texture.height, &bytes) ||
+                    _dvz_mul_u64_overflows(bytes, 4, &bytes))
+                {
+                    log_error("image visual texture upload size overflow");
+                    continue;
+                }
                 dvz_frame_plan_upload_bytes(
                     plan, tex_resource_id, 0, bytes, "texture",
-                    visual->texture.format == DVZ_SCENE_TEXTURE_SCALAR_F32 ? visual->texture.rgba
-                                                                           : visual->texture.data);
+                    _field_format_is_rgba8(visual->field->desc.format) ? visual->field->data
+                                                                        : visual->texture.rgba);
                 dvz_frame_plan_upload_set_texture_extent(
                     plan, visual->texture.width, visual->texture.height);
             }
@@ -704,7 +1038,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                 for (uint32_t ai = 0; ai < visual->attr_count; ai++)
                     visual->attrs[ai].dirty_item_count = 0;
                 if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
+                {
                     visual->texture.dirty = false;
+                    if (visual->field != NULL)
+                        visual->field->dirty = false;
+                }
             }
         }
     }
@@ -1192,6 +1530,307 @@ void dvz_colorbar_set_format(DvzColorbar* colorbar, const DvzFormatDesc* format)
 
 
 /*************************************************************************************************/
+/*  Sampled fields                                                                               */
+/*************************************************************************************************/
+
+/**
+ * Create a scene-owned sampled field.
+ *
+ * @param scene the scene
+ * @param desc the field descriptor
+ * @return the sampled field, or NULL on error
+ */
+DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* desc)
+{
+    ANN(scene);
+    ANN(desc);
+    if (!_field_format_supported(desc->format))
+    {
+        log_error("unsupported sampled field format %d", (int)desc->format);
+        return NULL;
+    }
+    if (desc->dim != DVZ_FIELD_DIM_2D && desc->dim != DVZ_FIELD_DIM_3D)
+    {
+        log_error("unsupported sampled field dimensionality %d", (int)desc->dim);
+        return NULL;
+    }
+    if (desc->width == 0 || desc->height == 0 || desc->depth == 0)
+    {
+        log_error("sampled field dimensions must be non-zero");
+        return NULL;
+    }
+    if (desc->dim == DVZ_FIELD_DIM_2D && desc->depth != 1)
+    {
+        log_error("2D sampled fields must use depth=1");
+        return NULL;
+    }
+    uint64_t data_size = 0;
+    if (!_field_expected_data_size(desc, &data_size))
+    {
+        log_error("sampled field size overflow");
+        return NULL;
+    }
+
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
+    {
+        DvzSampledField* field = &scene->fields[i];
+        if (field->scene != NULL)
+            continue;
+        dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
+        field->scene = scene;
+        field->desc = *desc;
+        field->data_size = data_size;
+        field->geometry.axis_order[0] = 0;
+        field->geometry.axis_order[1] = 1;
+        field->geometry.axis_order[2] = 2;
+        field->geometry.spacing[0] = 1.0;
+        field->geometry.spacing[1] = 1.0;
+        field->geometry.spacing[2] = 1.0;
+        if (i + 1 > scene->field_count)
+            scene->field_count = i + 1;
+        return field;
+    }
+
+    log_error("maximum sampled field count reached");
+    return NULL;
+}
+
+
+/**
+ * Destroy a sampled field.
+ *
+ * @param field the sampled field
+ * @return true on success, false on error
+ */
+bool dvz_sampled_field_destroy(DvzSampledField* field)
+{
+    if (field == NULL)
+        return false;
+    if (!_scene_visual_mutation_allowed(field->scene, "destroy sampled field"))
+        return false;
+    DvzScene* scene = field->scene;
+    if (scene != NULL)
+    {
+        for (uint32_t i = 0; i < scene->visual_count; i++)
+        {
+            DvzVisual* visual = &scene->visuals[i];
+            if (visual->field == field)
+            {
+                visual->field = NULL;
+                visual->field_owned = false;
+                dvz_memset(visual->field_slot, sizeof(visual->field_slot), 0,
+                           sizeof(visual->field_slot));
+                visual->texture.dirty = false;
+            }
+        }
+    }
+    if (field->data != NULL)
+    {
+        dvz_free(field->data);
+        field->data = NULL;
+    }
+    dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
+    return true;
+}
+
+
+/**
+ * Replace the entire field payload.
+ *
+ * @param field the sampled field
+ * @param view the uploaded data view
+ * @return true on success, false on error
+ */
+bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* view)
+{
+    ANN(field);
+    ANN(view);
+    if (!_scene_visual_mutation_allowed(field->scene, "replace sampled field data"))
+        return false;
+
+    DvzFieldRegion full = {
+        .x = 0,
+        .y = 0,
+        .z = 0,
+        .width = field->desc.width,
+        .height = field->desc.height,
+        .depth = field->desc.depth,
+    };
+    if (!_field_data_view_valid(&field->desc, view, &full))
+        return false;
+
+    if (field->data == NULL)
+    {
+        field->data = dvz_calloc(field->data_size, 1);
+        if (field->data == NULL)
+        {
+            log_error("sampled field allocation failed for %" PRIu64 " bytes", field->data_size);
+            return false;
+        }
+    }
+
+    uint64_t bytes_per_row = view->bytes_per_row != 0 ? view->bytes_per_row
+                                                      : _field_default_bytes_per_row(&field->desc);
+    uint64_t rows_per_image = view->rows_per_image != 0 ? view->rows_per_image : field->desc.height;
+    uint64_t copy_bytes_per_row = _field_default_bytes_per_row(&field->desc);
+    const uint8_t* src = (const uint8_t*)view->data;
+    uint8_t* dst = (uint8_t*)field->data;
+    for (uint32_t z = 0; z < field->desc.depth; z++)
+    {
+        for (uint32_t y = 0; y < field->desc.height; y++)
+        {
+            uint64_t src_offset = ((uint64_t)z * rows_per_image + y) * bytes_per_row;
+            uint64_t dst_offset = ((uint64_t)z * field->desc.height + y) * copy_bytes_per_row;
+            dvz_memcpy(dst + dst_offset, copy_bytes_per_row, src + src_offset, copy_bytes_per_row);
+        }
+    }
+    _scene_mark_field_dirty(field);
+    return true;
+}
+
+
+/**
+ * Update a field subregion in sample coordinates.
+ *
+ * @param field the sampled field
+ * @param region the updated region
+ * @param view the uploaded data view
+ * @return true on success, false on error
+ */
+bool dvz_sampled_field_update_region(
+    DvzSampledField* field, DvzFieldRegion region, const DvzFieldDataView* view)
+{
+    ANN(field);
+    ANN(view);
+    if (!_scene_visual_mutation_allowed(field->scene, "update sampled field data"))
+        return false;
+    if (field->data == NULL)
+    {
+        log_error("sampled field range update requires prior full allocation");
+        return false;
+    }
+    if (region.width == 0 || region.height == 0 || region.depth == 0)
+    {
+        log_error("sampled field update region requires non-zero extent");
+        return false;
+    }
+    if (region.x + region.width > field->desc.width || region.y + region.height > field->desc.height ||
+        region.z + region.depth > field->desc.depth)
+    {
+        log_error("sampled field update region exceeds field dimensions");
+        return false;
+    }
+    if (!_field_data_view_valid(&field->desc, view, &region))
+        return false;
+
+    uint32_t bytes_per_texel = 0;
+    if (!_field_format_bytes_per_texel(field->desc.format, &bytes_per_texel))
+        return false;
+    uint64_t src_bytes_per_row =
+        view->bytes_per_row != 0 ? view->bytes_per_row
+                                 : (uint64_t)region.width * (uint64_t)bytes_per_texel;
+    uint64_t src_rows_per_image =
+        view->rows_per_image != 0 ? view->rows_per_image : region.height;
+    uint64_t dst_bytes_per_row = _field_default_bytes_per_row(&field->desc);
+    uint64_t copy_bytes = (uint64_t)region.width * (uint64_t)bytes_per_texel;
+    const uint8_t* src = (const uint8_t*)view->data;
+    uint8_t* dst = (uint8_t*)field->data;
+    for (uint32_t z = 0; z < region.depth; z++)
+    {
+        for (uint32_t y = 0; y < region.height; y++)
+        {
+            uint64_t src_offset = ((uint64_t)z * src_rows_per_image + y) * src_bytes_per_row;
+            uint64_t dst_offset =
+                ((uint64_t)(region.z + z) * field->desc.height + (region.y + y)) * dst_bytes_per_row +
+                (uint64_t)region.x * (uint64_t)bytes_per_texel;
+            dvz_memcpy(dst + dst_offset, copy_bytes, src + src_offset, copy_bytes);
+        }
+    }
+    _scene_mark_field_dirty(field);
+    return true;
+}
+
+
+/**
+ * Update the field geometry metadata.
+ *
+ * @param field the sampled field
+ * @param geometry the geometry descriptor
+ * @return true on success, false on error
+ */
+bool dvz_sampled_field_set_geometry(
+    DvzSampledField* field, const DvzFieldGeometry* geometry)
+{
+    ANN(field);
+    ANN(geometry);
+    if (!_scene_visual_mutation_allowed(field->scene, "update sampled field geometry"))
+        return false;
+    field->geometry = *geometry;
+    return true;
+}
+
+
+/**
+ * Return the immutable field descriptor.
+ *
+ * @param field the sampled field
+ * @return the descriptor, or NULL on error
+ */
+const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledField* field)
+{
+    return field != NULL ? &field->desc : NULL;
+}
+
+
+/**
+ * Bind a scene-owned sampled field to a named visual slot.
+ *
+ * @param visual the visual
+ * @param slot_name the slot name
+ * @param field the field, or NULL to clear the binding
+ * @return true on success, false on error
+ */
+bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledField* field)
+{
+    ANN(visual);
+    ANN(slot_name);
+    if (field != NULL && field->scene != visual->scene)
+    {
+        log_error("cannot bind a sampled field from a different scene");
+        return false;
+    }
+    if (visual->type != DVZ_VISUAL_TYPE_IMAGE)
+    {
+        log_error("dvz_visual_set_field is only supported for image visuals in the first slice");
+        return false;
+    }
+    if (strcmp(slot_name, "field") != 0)
+    {
+        log_error("unsupported image field slot '%s' (expected 'field')", slot_name);
+        return false;
+    }
+    if (field != NULL && field->desc.dim != DVZ_FIELD_DIM_2D)
+    {
+        log_error("image visuals require a 2D sampled field");
+        return false;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))
+        return false;
+
+    if (visual->field != field)
+        _scene_release_visual_field(visual);
+    visual->field = field;
+    if (field != NULL)
+    {
+        dvz_strlcpy(visual->field_slot, slot_name, sizeof(visual->field_slot));
+        visual->texture.dirty = true;
+    }
+    return true;
+}
+
+
+
+/*************************************************************************************************/
 /*  Visual — lifecycle and data                                                                  */
 /*************************************************************************************************/
 
@@ -1209,6 +1848,7 @@ void dvz_visual_destroy(DvzVisual* visual)
             visual->attrs[i].data = NULL;
         }
     }
+    _scene_release_visual_field(visual);
     if (visual->texture.rgba != NULL)
     {
         dvz_free(visual->texture.rgba);
@@ -1398,6 +2038,7 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
     if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return NULL;
     DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
     visual->scene   = scene;
     visual->type    = DVZ_VISUAL_TYPE_POINT;
     visual->flags   = flags;
@@ -1414,6 +2055,7 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
     if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return NULL;
     DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
     visual->scene    = scene;
     visual->type     = DVZ_VISUAL_TYPE_PRIMITIVE;
     visual->flags    = flags;
@@ -1440,6 +2082,7 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
     if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return NULL;
     DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
     visual->scene    = scene;
     visual->type     = DVZ_VISUAL_TYPE_PATH;
     visual->flags    = flags;
@@ -1457,6 +2100,7 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
     if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
         return NULL;
     DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
     visual->scene   = scene;
     visual->type    = DVZ_VISUAL_TYPE_IMAGE;
     visual->flags   = flags;
@@ -1483,11 +2127,34 @@ int dvz_visual_set_texture(
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set image texture"))
         return -1;
-    visual->texture.data   = rgba;
-    visual->texture.width  = width;
-    visual->texture.height = height;
-    visual->texture.format = DVZ_SCENE_TEXTURE_RGBA8;
-    visual->texture.dirty  = true;
+    DvzSampledField* field = visual->field_owned ? visual->field : NULL;
+    if (field == NULL || field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+        field->desc.width != width || field->desc.height != height || field->desc.depth != 1)
+    {
+        if (field != NULL)
+            dvz_sampled_field_destroy(field);
+        field = dvz_sampled_field(
+            visual->scene, &(DvzSampledFieldDesc){
+                               .dim = DVZ_FIELD_DIM_2D,
+                               .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                               .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                               .width = width,
+                               .height = height,
+                               .depth = 1,
+                           });
+        if (field == NULL)
+            return -1;
+    }
+    if (!dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){
+                       .data = rgba,
+                       .bytes_per_row = (uint64_t)width * 4u,
+                       .rows_per_image = height,
+                   }))
+        return -1;
+    if (!dvz_visual_set_field(visual, "field", field))
+        return -1;
+    visual->field_owned = true;
     return 0;
 }
 
@@ -1521,11 +2188,34 @@ int dvz_visual_set_texture_f32(
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set scalar image texture"))
         return -1;
-    visual->texture.data = values;
-    visual->texture.width = width;
-    visual->texture.height = height;
-    visual->texture.format = DVZ_SCENE_TEXTURE_SCALAR_F32;
-    visual->texture.dirty = true;
+    DvzSampledField* field = visual->field_owned ? visual->field : NULL;
+    if (field == NULL || field->desc.format != DVZ_FIELD_FORMAT_R32_FLOAT ||
+        field->desc.width != width || field->desc.height != height || field->desc.depth != 1)
+    {
+        if (field != NULL)
+            dvz_sampled_field_destroy(field);
+        field = dvz_sampled_field(
+            visual->scene, &(DvzSampledFieldDesc){
+                               .dim = DVZ_FIELD_DIM_2D,
+                               .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                               .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                               .width = width,
+                               .height = height,
+                               .depth = 1,
+                           });
+        if (field == NULL)
+            return -1;
+    }
+    if (!dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){
+                       .data = values,
+                       .bytes_per_row = (uint64_t)width * sizeof(float),
+                       .rows_per_image = height,
+                   }))
+        return -1;
+    if (!dvz_visual_set_field(visual, "field", field))
+        return -1;
+    visual->field_owned = true;
     return 0;
 }
 
@@ -1618,7 +2308,39 @@ char* dvz_scene_json(const DvzScene* scene)
     if (!_json_init(&b))
         return NULL;
 
-    _json_append(&b, "{\"figures\":[");
+    _json_append(&b, "{\"fields\":[");
+    bool first_field = true;
+    for (uint32_t i = 0; i < scene->field_count; i++)
+    {
+        const DvzSampledField* field = &scene->fields[i];
+        if (field->scene != scene)
+            continue;
+        _json_append(
+            &b,
+            "%s{\"id\":\"f%u\",\"dim\":%u,\"format\":%u,\"semantic\":%u,"
+            "\"width\":%u,\"height\":%u,\"depth\":%u,\"data\":",
+            first_field ? "" : ",", i, (uint32_t)field->desc.dim, (uint32_t)field->desc.format,
+            (uint32_t)field->desc.semantic, field->desc.width, field->desc.height, field->desc.depth);
+        if (field->data != NULL && field->data_size > 0)
+            _json_append_base64(&b, (const uint8_t*)field->data, field->data_size);
+        else
+            _json_append(&b, "null");
+        _json_append(
+            &b,
+            ",\"geometry\":{\"axis_order\":[%u,%u,%u],\"axis_flip\":[%s,%s,%s],"
+            "\"origin\":[%.6g,%.6g,%.6g],\"spacing\":[%.6g,%.6g,%.6g],\"unit\":",
+            field->geometry.axis_order[0], field->geometry.axis_order[1],
+            field->geometry.axis_order[2], field->geometry.axis_flip[0] ? "true" : "false",
+            field->geometry.axis_flip[1] ? "true" : "false",
+            field->geometry.axis_flip[2] ? "true" : "false", field->geometry.origin[0],
+            field->geometry.origin[1], field->geometry.origin[2], field->geometry.spacing[0],
+            field->geometry.spacing[1], field->geometry.spacing[2]);
+        _json_append_escaped_string(&b, field->geometry.unit);
+        _json_append(&b, "}}");
+        first_field = false;
+    }
+
+    _json_append(&b, "],\"figures\":[");
     for (uint32_t fi = 0; fi < scene->figure_count; fi++)
     {
         const DvzFigure* fig = &scene->figures[fi];
@@ -1683,6 +2405,25 @@ char* dvz_scene_json(const DvzScene* scene)
                     {
                         _json_append(&b, "{\"id\":\"s%" PRId64 "\",\"slot\":", scale_idx);
                         _json_append_escaped_string(&b, vis->scale_slot);
+                        _json_append(&b, "}");
+                    }
+                    else
+                    {
+                        _json_append(&b, "null");
+                    }
+                }
+                else
+                {
+                    _json_append(&b, "null");
+                }
+                _json_append(&b, ",\"field\":");
+                if (vis->field != NULL && vis->scene != NULL)
+                {
+                    uint32_t field_idx = _scene_field_index(vis->scene, vis->field);
+                    if (field_idx != UINT32_MAX)
+                    {
+                        _json_append(&b, "{\"id\":\"f%u\",\"slot\":", field_idx);
+                        _json_append_escaped_string(&b, vis->field_slot);
                         _json_append(&b, "}");
                     }
                     else
