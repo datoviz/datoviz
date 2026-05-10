@@ -45,7 +45,7 @@
  * - DvzPickRequest / DvzPickResult
  * - DvzProbeRequest / DvzProbeResult
  * - DvzSelectionDesc / DvzSelectionItem
- * - DvzSampledFieldDesc / DvzFieldRegion / DvzFieldDataView
+ * - DvzSampledFieldDesc / DvzFieldGeometry / DvzFieldRegion / DvzFieldDataView
  * - DvzFormatDesc
  * - DvzScaleDesc / DvzColormapDesc / DvzColorbarDesc / DvzColormapStop
  * - DvzFontDesc / DvzTextStyle / DvzTextPlacement / DvzTextDesc

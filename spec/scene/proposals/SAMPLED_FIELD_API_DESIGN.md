@@ -66,7 +66,7 @@ The first `SampledField` design should cover:
 4. unsigned integer and floating-point component formats,
 5. scene-owned full replacement and subregion updates,
 6. optional axis order and flip metadata,
-7. optional origin, spacing, and extent metadata,
+7. optional origin, spacing, and unit metadata,
 8. image and volume visual binding,
 9. probe/readout metadata access.
 
@@ -144,8 +144,7 @@ Optional physical metadata:
 
 1. origin,
 2. spacing,
-3. bounds or extent,
-4. unit strings.
+3. unit strings.
 
 `SampledField` should not require physical metadata for every use case, but when present it should
 be stable and readable by probe/readout, annotation, and volume-slice code.
@@ -169,22 +168,46 @@ Recommended baseline formats:
 
 1. `R8_UNORM`
 2. `R8_UINT`
-3. `R16_UNORM`
-4. `R16_UINT`
-5. `R16_FLOAT`
-6. `R32_FLOAT`
-7. `RG8_UNORM`
-8. `RG16_FLOAT`
-9. `RG32_FLOAT`
-10. `RGB8_UNORM`
-11. `RGB16_FLOAT`
-12. `RGB32_FLOAT`
-13. `RGBA8_UNORM`
-14. `RGBA16_FLOAT`
-15. `RGBA32_FLOAT`
+3. `R8_SINT`
+4. `R8_SNORM`
+5. `R16_UNORM`
+6. `R16_UINT`
+7. `R16_SNORM`
+8. `R16_SINT`
+9. `R16_FLOAT`
+10. `R32_UINT`
+11. `R32_SINT`
+12. `R32_FLOAT`
+13. `RG8_UNORM`
+14. `RG8_UINT`
+15. `RG8_SINT`
+16. `RG16_UNORM`
+17. `RG16_UINT`
+18. `RG16_SINT`
+19. `RG16_FLOAT`
+20. `RG32_UINT`
+21. `RG32_SINT`
+22. `RG32_FLOAT`
+23. `RGBA8_UNORM`
+24. `RGBA8_UINT`
+25. `RGBA8_SINT`
+26. `RGBA16_UNORM`
+27. `RGBA16_UINT`
+28. `RGBA16_SINT`
+29. `RGBA16_FLOAT`
+30. `RGBA32_UINT`
+31. `RGBA32_SINT`
+32. `RGBA32_FLOAT`
 
 The implementation may support a strict subset initially. Unsupported formats should fail
 validation explicitly rather than silently adapting to an unrelated format.
+
+The first runtime-ready subset should prioritize:
+
+1. scalar formats that can be sampled and mapped to float for colormap-driven rendering,
+2. integer scalar formats suitable for masks and labels,
+3. `RGBA*` formats for direct color payloads,
+4. no `RGB*` formats in the first public API; callers should use `RGBA*` instead.
 
 
 ## Sample Meaning Metadata
@@ -232,7 +255,7 @@ The first public API should support:
 
 1. full payload replace,
 2. rectangular or box subregion updates,
-3. metadata updates that do not replace the payload.
+3. geometry metadata updates that do not replace the payload.
 
 Subregion updates should be specified in sample coordinates, not byte offsets.
 
@@ -242,7 +265,7 @@ Recommended rule:
 2. field format never changes after creation,
 3. dimensionality never changes after creation,
 4. subregion updates preserve the existing field descriptor,
-5. physical metadata updates may be allowed independently.
+5. geometry metadata updates may be allowed independently.
 
 
 ## CPU Versus GPU Execution
@@ -267,7 +290,7 @@ At minimum:
 
 1. replacing field payload dirties every bound visual that consumes the field,
 2. subregion updates dirty the same dependents, with region-granular planning allowed later,
-3. changing origin/spacing/extent dirties probes, annotations, and any visual relying on those
+3. changing origin/spacing or axis metadata dirties probes, annotations, and any visual relying on those
    coordinates,
 4. changing only scale or colormap does **not** dirty the field itself.
 
@@ -306,9 +329,10 @@ The first public API should use:
 
 1. one opaque handle: `DvzSampledField`,
 2. one creation descriptor: `DvzSampledFieldDesc`,
-3. one update descriptor for rectangular/box writes: `DvzFieldRegion`,
-4. one payload-view descriptor for data upload: `DvzFieldDataView`,
-5. one visual binding entry point that binds a field semantically, not a backend texture.
+3. one geometry descriptor: `DvzFieldGeometry`,
+4. one update descriptor for rectangular/box writes: `DvzFieldRegion`,
+5. one payload-view descriptor for data upload: `DvzFieldDataView`,
+6. one visual binding entry point that binds a field semantically, not a backend texture.
 
 The public header split should likely become:
 
@@ -337,18 +361,35 @@ typedef enum
 {
     DVZ_FIELD_FORMAT_R8_UNORM = 0,
     DVZ_FIELD_FORMAT_R8_UINT,
+    DVZ_FIELD_FORMAT_R8_SINT,
+    DVZ_FIELD_FORMAT_R8_SNORM,
     DVZ_FIELD_FORMAT_R16_UNORM,
     DVZ_FIELD_FORMAT_R16_UINT,
+    DVZ_FIELD_FORMAT_R16_SNORM,
+    DVZ_FIELD_FORMAT_R16_SINT,
     DVZ_FIELD_FORMAT_R16_FLOAT,
+    DVZ_FIELD_FORMAT_R32_UINT,
+    DVZ_FIELD_FORMAT_R32_SINT,
     DVZ_FIELD_FORMAT_R32_FLOAT,
     DVZ_FIELD_FORMAT_RG8_UNORM,
+    DVZ_FIELD_FORMAT_RG8_UINT,
+    DVZ_FIELD_FORMAT_RG8_SINT,
+    DVZ_FIELD_FORMAT_RG16_UNORM,
+    DVZ_FIELD_FORMAT_RG16_UINT,
+    DVZ_FIELD_FORMAT_RG16_SINT,
     DVZ_FIELD_FORMAT_RG16_FLOAT,
+    DVZ_FIELD_FORMAT_RG32_UINT,
+    DVZ_FIELD_FORMAT_RG32_SINT,
     DVZ_FIELD_FORMAT_RG32_FLOAT,
-    DVZ_FIELD_FORMAT_RGB8_UNORM,
-    DVZ_FIELD_FORMAT_RGB16_FLOAT,
-    DVZ_FIELD_FORMAT_RGB32_FLOAT,
     DVZ_FIELD_FORMAT_RGBA8_UNORM,
+    DVZ_FIELD_FORMAT_RGBA8_UINT,
+    DVZ_FIELD_FORMAT_RGBA8_SINT,
+    DVZ_FIELD_FORMAT_RGBA16_UNORM,
+    DVZ_FIELD_FORMAT_RGBA16_UINT,
+    DVZ_FIELD_FORMAT_RGBA16_SINT,
     DVZ_FIELD_FORMAT_RGBA16_FLOAT,
+    DVZ_FIELD_FORMAT_RGBA32_UINT,
+    DVZ_FIELD_FORMAT_RGBA32_SINT,
     DVZ_FIELD_FORMAT_RGBA32_FLOAT,
 } DvzFieldFormat;
 
@@ -375,15 +416,17 @@ typedef struct
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+    uint32_t flags;
+} DvzSampledFieldDesc;
+
+typedef struct
+{
     uint32_t axis_order[3];
     bool axis_flip[3];
     double origin[3];
     double spacing[3];
-    double extent_min[3];
-    double extent_max[3];
     char unit[32];
-    uint32_t flags;
-} DvzSampledFieldDesc;
+} DvzFieldGeometry;
 
 typedef struct
 {
@@ -405,10 +448,16 @@ typedef struct
 
 Notes:
 
-1. `extent_min` / `extent_max` are redundant with `origin` and `spacing` in some cases, but they
-   let authored physical bounds stay explicit when spacing is irregularly derived upstream.
-2. The first implementation may restrict valid combinations and normalize them internally.
-3. String fields use fixed storage here to keep the first public value types simple.
+1. `DvzSampledFieldDesc` carries immutable storage properties; `DvzFieldGeometry` carries mutable
+   axis and physical metadata.
+2. `origin` gives the physical position of sample `(0, 0, 0)`.
+3. `spacing` gives the physical distance between neighboring samples along each logical axis.
+4. `axis_order` maps stored array dimensions to logical field axes so callers do not have to
+   reorder upstream data just to visualize it.
+5. `axis_flip` indicates whether a logical axis runs in the opposite direction from the stored
+   index progression.
+6. `unit` names the physical unit used by `origin` and `spacing`, for example `"mm"` or `"a.u."`.
+7. String fields use fixed storage here to keep the first public value types simple.
 
 
 ## Public Functions
@@ -425,8 +474,8 @@ bool dvz_sampled_field_set_data(
 bool dvz_sampled_field_update_region(
     DvzSampledField* field, DvzFieldRegion region, const DvzFieldDataView* view);
 
-bool dvz_sampled_field_set_metadata(
-    DvzSampledField* field, const DvzSampledFieldDesc* desc);
+bool dvz_sampled_field_set_geometry(
+    DvzSampledField* field, const DvzFieldGeometry* geometry);
 
 const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledField* field);
 ```
@@ -439,8 +488,8 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot, DvzSampledField* 
 
 Recommended immediate consumer slot names:
 
-1. `image`: `"texture"`
-2. `volume`: `"texture"`
+1. `image`: `"field"`
+2. `volume`: `"field"`
 3. future probe-only helpers may reference the field directly rather than via a visual slot
 
 
@@ -469,7 +518,7 @@ Probe/readout consumers may need:
 1. field id,
 2. integer sample coordinate,
 3. normalized coordinate,
-4. physical/data coordinate derived from origin/spacing/extent,
+4. physical/data coordinate derived from origin, spacing, axis order, and axis direction,
 5. raw sampled value,
 6. scale-mapped interpretation when relevant.
 
@@ -492,13 +541,20 @@ DvzSampledFieldDesc field_desc = {
 };
 
 DvzSampledField* field = dvz_sampled_field(scene, &field_desc);
+dvz_sampled_field_set_geometry(field, &(DvzFieldGeometry){
+    .axis_order = {0, 1, 2},
+    .axis_flip = {false, false, false},
+    .origin = {0.0, 0.0, 0.0},
+    .spacing = {1.0, 1.0, 1.0},
+    .unit = "px",
+});
 dvz_sampled_field_set_data(field, &(DvzFieldDataView){
     .data = values,
     .bytes_per_row = width * sizeof(float),
 });
 
 DvzVisual* image = dvz_image(scene, 0);
-dvz_visual_set_field(image, "texture", field);
+dvz_visual_set_field(image, "field", field);
 dvz_visual_set_scale(image, "colormap", scale);
 ```
 
@@ -520,7 +576,7 @@ Expected usage shape for a 3D vector field:
 ```c
 DvzSampledFieldDesc vec_desc = {
     .dim = DVZ_FIELD_DIM_3D,
-    .format = DVZ_FIELD_FORMAT_RGB32_FLOAT,
+    .format = DVZ_FIELD_FORMAT_RGBA32_FLOAT,
     .semantic = DVZ_FIELD_SEMANTIC_VECTOR_3,
     .width = nx,
     .height = ny,
@@ -543,6 +599,8 @@ The first implementation should proceed in this order:
    - subregion update,
    - shared field used by two visuals,
    - scalar image + scale path,
+   - scalar signed/unsigned integer image + colormap path,
+   - label or mask field path,
    - direct RGBA image path,
    - validation failure on incompatible field dimension.
 
@@ -573,8 +631,6 @@ These choices should be resolved during implementation, but they do not block th
 
 1. whether `dvz_sampled_field_destroy()` is needed immediately or whether scene-destroy-only
    lifetime is enough for the first pass,
-2. whether `extent_min` / `extent_max` should stay in the public descriptor or be derived from
-   origin/spacing and resolution,
-3. whether per-channel semantic labels belong in the first public descriptor,
-4. whether `bytes_per_row` / `rows_per_image` should be zero-meaning-tight-pack or always explicit,
-5. whether probe results should expose a direct field handle or only stable ids.
+2. whether per-channel semantic labels belong in the first public descriptor,
+3. whether `bytes_per_row` / `rows_per_image` should be zero-meaning-tight-pack or always explicit,
+4. whether probe results should expose a direct field handle or only stable ids.

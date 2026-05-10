@@ -357,7 +357,7 @@ Core rules:
 1. a `SampledField` describes one regular `2D` or `3D` grid,
 2. it carries one concrete sample format, including channel count and scalar component type,
 3. it may carry optional semantic hints such as scalar, vector, color, or label,
-4. it may carry optional physical metadata such as origin, spacing, extent, and units,
+4. it may carry optional physical metadata such as origin, spacing, axis metadata, and units,
 5. it is scene-owned retained state rather than a visual-private upload blob,
 6. visuals, probes, and future tools borrow the field by reference and layer interpretation on top,
 7. runtime textures, CPU fallback colorized caches, and derived slice resources are execution
@@ -366,11 +366,11 @@ Core rules:
 The active implementation-direction proposal is:
 
 1. one opaque public `DvzSampledField` handle,
-2. one creation descriptor with dimension, format, resolution, axis metadata, and optional
-   physical metadata,
-3. full replace and subregion update entry points,
-4. semantic visual binding through a field slot such as `"texture"`,
-5. existing image texture convenience calls treated as transitional wrappers rather than the long-term
+2. one creation descriptor with dimension, format, resolution, and semantic hints,
+3. one geometry descriptor with axis metadata and optional physical metadata,
+4. full replace and subregion update entry points,
+5. semantic visual binding through a field slot such as `"field"`,
+6. existing image texture convenience calls treated as transitional wrappers rather than the long-term
    center of the API.
 
 See [../proposals/SAMPLED_FIELD_API_DESIGN.md](../proposals/SAMPLED_FIELD_API_DESIGN.md) for the

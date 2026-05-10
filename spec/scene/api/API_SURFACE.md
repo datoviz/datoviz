@@ -81,12 +81,13 @@ The next public scene API should introduce `DvzSampledField` as the shared regul
 The first surface should expose:
 
 1. a dedicated public subheader, likely `include/datoviz/scene/field.h`,
-2. one creation descriptor with dimension, format, resolution, and optional physical metadata,
-3. one scene-owned opaque handle,
-4. full payload replace,
-5. rectangular or box subregion update,
-6. semantic visual binding through field slots such as `"texture"`,
-7. descriptor readback for tooling and probes.
+2. one creation descriptor with dimension, format, resolution, and semantic hints,
+3. one geometry descriptor with optional axis and physical metadata,
+4. one scene-owned opaque handle,
+5. full payload replace,
+6. rectangular or box subregion update,
+7. semantic visual binding through field slots such as `"field"`,
+8. descriptor readback for tooling and probes.
 
 `DvzSampledField` should cover both direct color textures and scalar/vector fields. It should not
 be limited to one current image implementation detail such as `f32` CPU fallback uploads.
