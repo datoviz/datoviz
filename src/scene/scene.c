@@ -2687,7 +2687,13 @@ char* dvz_scene_json(const DvzScene* scene)
             field->geometry.origin[1], field->geometry.origin[2], field->geometry.spacing[0],
             field->geometry.spacing[1], field->geometry.spacing[2]);
         _json_append_escaped_string(&b, field->geometry.unit);
-        _json_append(&b, "}}");
+        _json_append(
+            &b,
+            "},\"dirty\":{\"pending\":%s,\"full\":%s,\"region\":{\"x\":%u,\"y\":%u,\"z\":%u,"
+            "\"width\":%u,\"height\":%u,\"depth\":%u}}}",
+            field->dirty ? "true" : "false", field->dirty_full ? "true" : "false",
+            field->dirty_region.x, field->dirty_region.y, field->dirty_region.z,
+            field->dirty_region.width, field->dirty_region.height, field->dirty_region.depth);
         first_field = false;
     }
 
@@ -2781,6 +2787,24 @@ char* dvz_scene_json(const DvzScene* scene)
                     {
                         _json_append(&b, "null");
                     }
+                }
+                else
+                {
+                    _json_append(&b, "null");
+                }
+                _json_append(&b, ",\"field_state\":");
+                if (vis->field != NULL)
+                {
+                    _json_append(
+                        &b,
+                        "{\"pending\":%s,\"full\":%s,\"region\":{\"x\":%u,\"y\":%u,\"z\":%u,"
+                        "\"width\":%u,\"height\":%u,\"depth\":%u}}",
+                        vis->texture.field_dirty ? "true" : "false",
+                        vis->texture.field_dirty_full ? "true" : "false",
+                        vis->texture.field_dirty_region.x, vis->texture.field_dirty_region.y,
+                        vis->texture.field_dirty_region.z, vis->texture.field_dirty_region.width,
+                        vis->texture.field_dirty_region.height,
+                        vis->texture.field_dirty_region.depth);
                 }
                 else
                 {

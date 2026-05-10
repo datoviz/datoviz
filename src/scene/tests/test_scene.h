@@ -54,6 +54,8 @@ int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_texture_upload_json_includes_region(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_readbacks(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_emit_drp2_static_render(TstSuite* suite, TstItem* item);
@@ -119,6 +121,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 
 
 int test_scene_json(TstSuite* suite, TstItem* item);
+
+int test_scene_json_includes_field_dirty_metadata(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 

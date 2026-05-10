@@ -738,6 +738,29 @@ int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item)
 
 
 
+int test_frame_plan_texture_upload_json_includes_region(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.texture", 11);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 8, "image.rgba.patch"));
+    AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 1));
+    AT(dvz_frame_plan_upload_set_texture_region(plan, 1, 2));
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"texture\": { \"origin_x\": 1, \"origin_y\": 2, \"width\": 2, \"height\": 1 }") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 int test_frame_plan_readbacks(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2545,6 +2568,71 @@ int test_scene_json(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"data\":\"") != NULL); /* base64 data present */
 
     dvz_scene_json_destroy(json);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_json_includes_field_dirty_metadata(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R8_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    uint8_t base[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    dvz_drp2_stream_destroy(stream);
+
+    uint8_t patch[2] = {1, 2};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
+        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 1}));
+
+    char* json = dvz_scene_json(scene);
+    ANN(json);
+    AT(strstr(json, "\"dirty\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
+    AT(strstr(json, "\"field_state\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
+    dvz_scene_json_destroy(json);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -5859,12 +5947,14 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_growth_json);
     TEST_SIMPLE(test_frame_plan_json_escapes_labels);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
+    TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
     TEST_SIMPLE(test_frame_plan_readbacks);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render);
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
     TEST_SIMPLE(test_scene_json);
+    TEST_SIMPLE(test_scene_json_includes_field_dirty_metadata);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_z_layer_orders_emit);
     TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);

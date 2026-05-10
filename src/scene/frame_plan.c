@@ -162,6 +162,15 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
             builder, ", \"byte_offset\": %" PRIu64 ", \"byte_size\": %" PRIu64 ", \"data_tag\": ",
             node->u.upload.byte_offset, node->u.upload.byte_size);
         _json_append_escaped_string(builder, node->u.upload.data_tag);
+        if (node->u.upload.texture_width > 0 && node->u.upload.texture_height > 0)
+        {
+            _json_append(
+                builder,
+                ", \"texture\": { \"origin_x\": %" PRIu32 ", \"origin_y\": %" PRIu32
+                ", \"width\": %" PRIu32 ", \"height\": %" PRIu32 " }",
+                node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
+                node->u.upload.texture_width, node->u.upload.texture_height);
+        }
         _json_append(builder, " }");
         break;
     case DVZ_FRAME_PLAN_NODE_COMPUTE:
