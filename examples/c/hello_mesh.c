@@ -52,12 +52,12 @@ int main(int argc, char** argv)
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
-    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(uint16_t),
+                   .stride = sizeof(DvzIndex),
                });
     if (!index_buffer) { fprintf(stderr, "dvz_scene_buffer() failed\n"); dvz_scene_destroy(scene); return 1; }
     if (!dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)))

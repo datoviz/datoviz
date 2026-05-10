@@ -301,8 +301,8 @@ DVZ_EXPORT int dvz_visual_set_data_range(
  *
  * First retained slice: visuals bind these buffers through `dvz_visual_set_buffer()`.
  * The initial supported slot is primitive `"index"` buffers. `stride` is the byte stride
- * of one item in the uploaded payload (for example `sizeof(uint16_t)` or `sizeof(uint32_t)`
- * for index buffers).
+ * of one item in the uploaded payload (for example `sizeof(DvzIndex)` for 32-bit index buffers,
+ * or `sizeof(uint16_t)` for 16-bit).
  *
  * @param scene the scene
  * @param desc the buffer descriptor

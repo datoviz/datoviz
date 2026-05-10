@@ -1878,12 +1878,12 @@ static int _scene_mesh_emit_executes(void)
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
-    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(uint16_t),
+                   .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
@@ -1963,12 +1963,12 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, Ts
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
-    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(uint16_t),
+                   .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
@@ -2041,12 +2041,12 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* it
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
-    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(uint16_t),
+                   .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
@@ -2122,12 +2122,12 @@ int test_scene_shared_index_buffer_emits_one_upload(TstSuite* suite, TstItem* it
     DvzColor colors1[4] = {
         {0, 0, 255, 255}, {0, 0, 255, 255}, {0, 0, 255, 255}, {0, 0, 255, 255},
     };
-    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(uint16_t),
+                   .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
@@ -3043,10 +3043,10 @@ int test_scene_json_includes_buffer_binding_metadata(TstSuite* suite, TstItem* i
         {0, 255, 0, 255},
         {0, 0, 255, 255},
     };
-    uint16_t indices[3] = {0, 1, 2};
+    DvzIndex indices[3] = {0, 1, 2};
 
     DvzSceneBuffer* buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(uint16_t)});
+        scene, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(buffer);
     AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)));
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
@@ -3420,7 +3420,7 @@ int test_scene_visual_buffer_rejects_cross_scene_buffer(TstSuite* suite, TstItem
     ANN(scene1);
 
     DvzSceneBuffer* foreign_buffer = dvz_scene_buffer(
-        scene1, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(uint16_t)});
+        scene1, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(foreign_buffer);
     DvzVisual* visual = dvz_primitive(scene0, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
@@ -5685,12 +5685,12 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstIte
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
     };
-    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
         scene, &(DvzSceneBufferDesc){
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(uint16_t),
+                   .stride = sizeof(DvzIndex),
                });
     ANN(index_buffer);
     AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
