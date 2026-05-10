@@ -71,6 +71,9 @@ struct DvzVisualTexture
     uint32_t width;             /* pixels */
     uint32_t height;            /* pixels */
     bool dirty;                 /* needs upload on next emit */
+    bool field_dirty;
+    bool field_dirty_full;
+    DvzFieldRegion field_dirty_region;
 };
 
 

@@ -3456,6 +3456,130 @@ int test_scene_image_field_partial_update_emits_texture_subregion(TstSuite* suit
 
 
 
+int test_scene_shared_field_mixed_full_and_partial_uploads(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale0);
+    ANN(scale1);
+    dvz_scale_set_domain(scale0, 0.0, 1.0);
+    dvz_scale_set_domain(scale1, 0.0, 1.0);
+
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale0, colormap);
+    dvz_scale_set_colormap(scale1, colormap);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
+
+    float positions0[4][3] = {
+        {-1.0f, -1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f},
+        { 0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f},
+    };
+    float positions1[4][3] = {
+        {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+
+    DvzVisual* image0 = dvz_image(scene, 0);
+    DvzVisual* image1 = dvz_image(scene, 0);
+    ANN(image0);
+    ANN(image1);
+    AT(dvz_visual_set_data(image0, "position", positions0, 4) == 0);
+    AT(dvz_visual_set_data(image0, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image0, "colormap", scale0) == 0);
+    AT(dvz_visual_set_field(image0, "field", field));
+    AT(dvz_panel_add_visual(panel, image0, NULL) == 0);
+
+    AT(dvz_visual_set_data(image1, "position", positions1, 4) == 0);
+    AT(dvz_visual_set_data(image1, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image1, "colormap", scale1) == 0);
+    AT(dvz_visual_set_field(image1, "field", field));
+    AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream0);
+    dvz_drp2_stream_destroy(stream0);
+
+    float patch[2] = {1.0f, 1.0f};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch,
+            .bytes_per_row = 2 * sizeof(float),
+            .rows_per_image = 1,
+        }));
+    dvz_scale_set_view_range(scale0, 0.0, 1.0);
+
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream1);
+
+    uint32_t write_texture_count = 0;
+    bool found_full = false;
+    bool found_partial = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type != DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            continue;
+        write_texture_count++;
+        if (cmd->u.write_texture.origin_x == 0 && cmd->u.write_texture.origin_y == 0 &&
+            cmd->u.write_texture.width == 4 && cmd->u.write_texture.height == 4)
+        {
+            found_full = true;
+        }
+        if (cmd->u.write_texture.origin_x == 1 && cmd->u.write_texture.origin_y == 2 &&
+            cmd->u.write_texture.width == 2 && cmd->u.write_texture.height == 1)
+        {
+            found_partial = true;
+        }
+    }
+    AT(write_texture_count == 2);
+    AT(found_full);
+    AT(found_partial);
+
+    dvz_drp2_stream_destroy(stream1);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -5763,6 +5887,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);
     TEST_SIMPLE(test_scene_shared_field_update_marks_two_visuals_dirty);
     TEST_SIMPLE(test_scene_image_field_partial_update_emits_texture_subregion);
+    TEST_SIMPLE(test_scene_shared_field_mixed_full_and_partial_uploads);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
