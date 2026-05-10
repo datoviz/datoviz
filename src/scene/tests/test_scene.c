@@ -3029,6 +3029,180 @@ int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item)
 
 
 
+int test_scene_sampled_field_rejects_unsupported_format(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RG32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_VECTOR_2,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    AT(field == NULL);
+    AT(_captured_log_contains(suite, "unsupported sampled field format"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 4,
+               });
+    ANN(field);
+
+    AT(!dvz_visual_set_field(image, "field", field));
+    AT(_captured_log_contains(suite, "require a 2D sampled field"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_sampled_field_update_region_rejects_out_of_bounds(
+    TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R8_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    uint8_t base[16] = {0};
+    uint8_t patch[4] = {1, 2, 3, 4};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+    AT(!dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 3, .y = 3, .z = 0, .width = 2, .height = 2, .depth = 1},
+        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+    AT(_captured_log_contains(suite, "update region exceeds field dimensions"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_sampled_field_destroy_clears_visual_binding(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    uint8_t rgba[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = rgba, .bytes_per_row = 8, .rows_per_image = 2}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(image->field == field);
+    AT(strcmp(image->field_slot, "field") == 0);
+
+    AT(dvz_sampled_field_destroy(field));
+    AT(image->field == NULL);
+    AT(image->field_slot[0] == '\0');
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* image0 = dvz_image(scene, 0);
+    DvzVisual* image1 = dvz_image(scene, 0);
+    ANN(image0);
+    ANN(image1);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2 * sizeof(float), .rows_per_image = 2}));
+    AT(dvz_visual_set_field(image0, "field", field));
+    AT(dvz_visual_set_field(image1, "field", field));
+
+    image0->texture.dirty = false;
+    image1->texture.dirty = false;
+    field->dirty = false;
+
+    float patch[1] = {1.0f};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 1, .z = 0, .width = 1, .height = 1, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch, .bytes_per_row = sizeof(float), .rows_per_image = 1}));
+    AT(field->dirty);
+    AT(image0->texture.dirty);
+    AT(image1->texture.dirty);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -5328,6 +5502,11 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_image_scalar_texture_uses_bound_scale);
     TEST_SIMPLE(test_scene_visual_field_rejects_cross_scene_field);
     TEST_SIMPLE(test_scene_sampled_field_update_region);
+    TEST_SIMPLE(test_scene_sampled_field_rejects_unsupported_format);
+    TEST_SIMPLE(test_scene_image_visual_rejects_3d_field);
+    TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
+    TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);
+    TEST_SIMPLE(test_scene_shared_field_update_marks_two_visuals_dirty);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);

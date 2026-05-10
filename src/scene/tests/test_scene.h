@@ -152,6 +152,17 @@ int test_scene_visual_field_rejects_cross_scene_field(TstSuite* suite, TstItem* 
 
 int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item);
 
+int test_scene_sampled_field_rejects_unsupported_format(TstSuite* suite, TstItem* item);
+
+int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item);
+
+int test_scene_sampled_field_update_region_rejects_out_of_bounds(
+    TstSuite* suite, TstItem* item);
+
+int test_scene_sampled_field_destroy_clears_visual_binding(TstSuite* suite, TstItem* item);
+
+int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* item);
 
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item);
