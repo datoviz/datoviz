@@ -351,6 +351,55 @@ static uint32_t _stream_set_vertex_buffer_count(const DvzDrp2CommandStream* stre
 
 
 
+static uint32_t _stream_set_index_buffer_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+            count++;
+    }
+    return count;
+}
+
+
+
+static uint32_t _stream_draw_indexed_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+            count++;
+    }
+    return count;
+}
+
+
+
+static uint32_t _stream_create_buffer_size_count(
+    const DvzDrp2CommandStream* stream, uint64_t size)
+{
+    ANN(stream);
+
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BUFFER && cmd->u.create_buffer.size == size)
+            count++;
+    }
+    return count;
+}
+
+
+
 /*************************************************************************************************/
 /*  Panzoom tests                                                                                */
 /*************************************************************************************************/
@@ -1891,6 +1940,78 @@ int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* it
 
 
 
+int test_scene_shared_index_buffer_emits_one_upload(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual0 = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* visual1 = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual0);
+    ANN(visual1);
+
+    float positions0[4][3] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.0f, 0.0f},
+        {-0.2f, -0.8f, 0.0f}, {-0.2f, 0.0f, 0.0f},
+    };
+    float positions1[4][3] = {
+        {0.2f, 0.0f, 0.0f}, {0.2f, 0.8f, 0.0f},
+        {0.8f, 0.0f, 0.0f}, {0.8f, 0.8f, 0.0f},
+    };
+    DvzColor colors0[4] = {
+        {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255},
+    };
+    DvzColor colors1[4] = {
+        {0, 0, 255, 255}, {0, 0, 255, 255}, {0, 0, 255, 255}, {0, 0, 255, 255},
+    };
+    uint16_t indices[6] = {0, 1, 2, 2, 1, 3};
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(uint16_t),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(visual0, "position", positions0, 4) == 0);
+    AT(dvz_visual_set_data(visual0, "color", colors0, 4) == 0);
+    AT(dvz_visual_set_data(visual1, "position", positions1, 4) == 0);
+    AT(dvz_visual_set_data(visual1, "color", colors1, 4) == 0);
+    AT(dvz_visual_set_buffer(visual0, "index", index_buffer));
+    AT(dvz_visual_set_buffer(visual1, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, visual0, NULL) == 0);
+    AT(dvz_panel_add_visual(panel, visual1, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    AT(_stream_create_buffer_size_count(stream, sizeof(indices)) == 1);
+    AT(_stream_write_buffer_range_count(stream, 0, sizeof(indices)) == 1);
+    AT(_stream_set_index_buffer_count(stream) == 2);
+    AT(_stream_draw_indexed_count(stream) == 2);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2729,6 +2850,58 @@ int test_scene_json_includes_field_dirty_metadata(TstSuite* suite, TstItem* item
     ANN(json);
     AT(strstr(json, "\"dirty\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
     AT(strstr(json, "\"field_state\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
+    dvz_scene_json_destroy(json);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_json_includes_buffer_binding_metadata(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    float positions[3][3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.0f, 0.5f, 0.0f},
+    };
+    DvzColor colors[3] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+    };
+    uint16_t indices[3] = {0, 1, 2};
+
+    DvzSceneBuffer* buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(uint16_t)});
+    ANN(buffer);
+    AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)));
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", buffer));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    char* json = dvz_scene_json(scene);
+    ANN(json);
+    AT(strstr(json, "\"buffers\":[") != NULL);
+    AT(strstr(json, "\"id\":\"b0\"") != NULL);
+    AT(strstr(json, "\"usage\":2") != NULL);
+    AT(strstr(json, "\"stride\":2") != NULL);
+    AT(strstr(json, "\"byte_size\":6") != NULL);
+    AT(strstr(json, "\"dirty\":{\"pending\":true}") != NULL);
+    AT(strstr(json, "\"buffer\":{\"id\":\"b0\",\"slot\":\"index\"}") != NULL);
     dvz_scene_json_destroy(json);
 
     dvz_scene_destroy(scene);
@@ -6460,6 +6633,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_json_includes_field_dirty_metadata);
+    TEST_SIMPLE(test_scene_json_includes_buffer_binding_metadata);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_z_layer_orders_emit);
     TEST_SIMPLE(test_scene_controller_mode_fixed_emits_separate_mvp);
@@ -6507,6 +6681,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_partial_update_merges_ranges_before_emit);
     TEST_SIMPLE(test_scene_multiple_panels_multiple_point_visuals_emit);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
+    TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl_executes);
     TEST_SIMPLE(test_frame_plan_emit_drp2_readback_glsl_executes);

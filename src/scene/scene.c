@@ -238,6 +238,20 @@ static bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visua
 
 
 
+static uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer)
+{
+    if (scene == NULL || buffer == NULL)
+        return UINT32_MAX;
+    for (uint32_t i = 0; i < scene->buffer_count; i++)
+    {
+        if (&scene->buffers[i] == buffer && buffer->scene == scene)
+            return i;
+    }
+    return UINT32_MAX;
+}
+
+
+
 static void _scene_stream_release(void* owner)
 {
     DvzScene* scene = (DvzScene*)owner;
@@ -1210,6 +1224,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         return NULL;
 
     /* --- Upload nodes: one per dirty visual attribute --- */
+    bool emitted_buffers[DVZ_SCENE_MAX_BUFFERS] = {0};
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
         DvzPanel* panel = &figure->panels[pi];
@@ -1266,10 +1281,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             }
             if (visual->buffer != NULL && visual->buffer->data != NULL)
             {
-                if (visual->buffer->dirty)
+                uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+                if (visual->buffer->dirty && buffer_idx != UINT32_MAX && !emitted_buffers[buffer_idx])
                 {
                     char buffer_resource_id[128];
-                    dvz_snprintf(buffer_resource_id, sizeof(buffer_resource_id), "v%u_index", vidx);
+                    dvz_snprintf(buffer_resource_id, sizeof(buffer_resource_id), "b%u", buffer_idx);
                     dvz_frame_plan_upload_bytes(
                         plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
                         visual->buffer->data);
@@ -1277,6 +1293,7 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
                     node->u.upload.buffer_usage =
                         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
                     node->u.upload.item_stride = visual->buffer->desc.stride;
+                    emitted_buffers[buffer_idx] = true;
                 }
             }
             if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
@@ -1402,7 +1419,11 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
             }
 
             char visual_id[64];
-            dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
+            uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+            if (buffer_idx != UINT32_MAX)
+                dvz_snprintf(visual_id, sizeof(visual_id), "v%u#index=b%u", vidx, buffer_idx);
+            else
+                dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
             dvz_frame_plan_render_visual(plan, visual_id);
             if (node != NULL)
                 node->u.render.controller_modes[node->u.render.visual_count - 1] =
@@ -3004,6 +3025,26 @@ char* dvz_scene_json(const DvzScene* scene)
         first_field = false;
     }
 
+    _json_append(&b, "],\"buffers\":[");
+    bool first_buffer = true;
+    for (uint32_t i = 0; i < scene->buffer_count; i++)
+    {
+        const DvzSceneBuffer* buffer = &scene->buffers[i];
+        if (buffer->scene != scene)
+            continue;
+        _json_append(
+            &b,
+            "%s{\"id\":\"b%u\",\"usage\":%u,\"stride\":%u,\"byte_size\":%" PRIu64 ",\"data\":",
+            first_buffer ? "" : ",", i, buffer->desc.usage, buffer->desc.stride,
+            buffer->desc.byte_size);
+        if (buffer->data != NULL && buffer->desc.byte_size > 0)
+            _json_append_base64(&b, (const uint8_t*)buffer->data, buffer->desc.byte_size);
+        else
+            _json_append(&b, "null");
+        _json_append(&b, ",\"dirty\":{\"pending\":%s}}", buffer->dirty ? "true" : "false");
+        first_buffer = false;
+    }
+
     _json_append(&b, "],\"figures\":[");
     for (uint32_t fi = 0; fi < scene->figure_count; fi++)
     {
@@ -3088,6 +3129,25 @@ char* dvz_scene_json(const DvzScene* scene)
                     {
                         _json_append(&b, "{\"id\":\"f%u\",\"slot\":", field_idx);
                         _json_append_escaped_string(&b, vis->field_slot);
+                        _json_append(&b, "}");
+                    }
+                    else
+                    {
+                        _json_append(&b, "null");
+                    }
+                }
+                else
+                {
+                    _json_append(&b, "null");
+                }
+                _json_append(&b, ",\"buffer\":");
+                if (vis->buffer != NULL && vis->scene != NULL)
+                {
+                    uint32_t buffer_idx = _scene_buffer_index(vis->scene, vis->buffer);
+                    if (buffer_idx != UINT32_MAX)
+                    {
+                        _json_append(&b, "{\"id\":\"b%u\",\"slot\":", buffer_idx);
+                        _json_append_escaped_string(&b, vis->buffer_slot);
                         _json_append(&b, "}");
                     }
                     else

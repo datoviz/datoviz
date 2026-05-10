@@ -668,6 +668,36 @@ static const DvzFramePlanNode* _first_node_of_type(
  * @param node the render node
  * @return true when one visual id names an image or texture visual
  */
+static void _parse_visual_id(
+    const char* encoded, char* visual_id, size_t visual_id_size, char* index_id, size_t index_id_size)
+{
+    ANN(visual_id);
+    ANN(index_id);
+    if (visual_id_size == 0 || index_id_size == 0)
+        return;
+    visual_id[0] = '\0';
+    index_id[0] = '\0';
+    if (encoded == NULL)
+        return;
+
+    const char* marker = strstr(encoded, "#index=");
+    if (marker == NULL)
+    {
+        dvz_strlcpy(visual_id, encoded, visual_id_size);
+        return;
+    }
+
+    size_t visual_len = (size_t)(marker - encoded);
+    if (visual_len >= visual_id_size)
+        visual_len = visual_id_size - 1;
+    if (visual_len > 0)
+        dvz_memcpy(visual_id, visual_id_size, encoded, visual_len);
+    visual_id[visual_len] = '\0';
+    dvz_strlcpy(index_id, marker + strlen("#index="), index_id_size);
+}
+
+
+
 static bool _render_uses_texture(const DvzFramePlanNode* node)
 {
     ANN(node);
@@ -1510,7 +1540,11 @@ static bool _emitter_resolve_render_vertex_buffers(
     *out_count = 0;
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
-        const char* visual_id = render->u.render.visuals[i];
+        char visual_id[DVZ_SCENE_LABEL_SIZE];
+        char shared_index_id[DVZ_SCENE_LABEL_SIZE];
+        _parse_visual_id(
+            render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
+            sizeof(shared_index_id));
         /* "position" is always required. Other attrs are family-dependent and optional. */
         char pos_id[DVZ_SCENE_LABEL_SIZE];
         dvz_snprintf(pos_id, sizeof(pos_id), "%s_position", visual_id);
@@ -1668,7 +1702,11 @@ static bool _emitter_emit_render_multi_in_pass(
 
     for (uint32_t i = 0; ok && i < render->u.render.visual_count; i++)
     {
-        const char* visual_id = render->u.render.visuals[i];
+        char visual_id[DVZ_SCENE_LABEL_SIZE];
+        char shared_index_id[DVZ_SCENE_LABEL_SIZE];
+        _parse_visual_id(
+            render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
+            sizeof(shared_index_id));
 
         /* Resolve vertex buffers for this visual. */
         uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES] = {0};
@@ -1689,7 +1727,11 @@ static bool _emitter_emit_render_multi_in_pass(
         {
             char rid[DVZ_SCENE_LABEL_SIZE];
             dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optionals[ai]);
-            uint64_t rid_id = _resource_lookup_id(&emitter->resources, rid);
+            uint64_t rid_id = 0;
+            if (strcmp(optionals[ai], "index") == 0 && shared_index_id[0] != '\0')
+                rid_id = _resource_lookup_id(&emitter->resources, shared_index_id);
+            else
+                rid_id = _resource_lookup_id(&emitter->resources, rid);
             if (rid_id == 0)
                 continue;
             if (strcmp(optionals[ai], "index") == 0)
@@ -2669,8 +2711,13 @@ static bool _emitter_emit_plain_renders(
         if (render->u.render.visual_count > 0 &&
             cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
+            char visual_id[DVZ_SCENE_LABEL_SIZE];
+            char shared_index_id[DVZ_SCENE_LABEL_SIZE];
             char probe[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(probe, sizeof(probe), "%s_position", render->u.render.visuals[0]);
+            _parse_visual_id(
+                render->u.render.visuals[0], visual_id, sizeof(visual_id), shared_index_id,
+                sizeof(shared_index_id));
+            dvz_snprintf(probe, sizeof(probe), "%s_position", visual_id);
             if (_resource_lookup_id(&emitter->resources, probe) != 0)
                 scene_render_node_count++;
         }
@@ -2696,8 +2743,13 @@ static bool _emitter_emit_plain_renders(
         if (render->u.render.visual_count > 0 &&
             cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
+            char visual_id[DVZ_SCENE_LABEL_SIZE];
+            char shared_index_id[DVZ_SCENE_LABEL_SIZE];
             char probe[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(probe, sizeof(probe), "%s_position", render->u.render.visuals[0]);
+            _parse_visual_id(
+                render->u.render.visuals[0], visual_id, sizeof(visual_id), shared_index_id,
+                sizeof(shared_index_id));
+            dvz_snprintf(probe, sizeof(probe), "%s_position", visual_id);
             is_scene_node = _resource_lookup_id(&emitter->resources, probe) != 0;
         }
 

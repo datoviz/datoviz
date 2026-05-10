@@ -93,6 +93,8 @@ int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item
 
 int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* item);
 
+int test_scene_shared_index_buffer_emits_one_upload(TstSuite* suite, TstItem* item);
+
 int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstItem* item);
 
 int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item);
@@ -127,6 +129,8 @@ int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem*
 int test_scene_json(TstSuite* suite, TstItem* item);
 
 int test_scene_json_includes_field_dirty_metadata(TstSuite* suite, TstItem* item);
+
+int test_scene_json_includes_buffer_binding_metadata(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_cross_scene_visual(TstSuite* suite, TstItem* item);
 
