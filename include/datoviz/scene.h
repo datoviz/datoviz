@@ -357,8 +357,9 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
 /**
  * Attach a 2D RGBA8 texture to an image visual.
  *
- * The pixel data must remain valid until emit time (borrowed pointer, scene-side ownership
- * matches `dvz_visual_set_data`). One texture per visual; calling again replaces it.
+ * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
+ * binds it to the image visual's `"field"` slot. Prefer `dvz_sampled_field()` plus
+ * `dvz_visual_set_field()` in new code.
  *
  * @param visual the visual (must be of type IMAGE)
  * @param rgba RGBA8 pixel data, tightly packed, row-major (`width * height * 4` bytes)
@@ -373,9 +374,10 @@ DVZ_EXPORT int dvz_visual_set_texture(
 /**
  * Attach a 2D scalar F32 texture to an image visual.
  *
- * The scalar data must remain valid until emit time. The bound scale and
- * colormap are applied on the CPU during emit to produce the RGBA texture used
- * by the current first-slice image runtime path.
+ * Transitional convenience wrapper: this creates or updates a scene-owned sampled field and
+ * binds it to the image visual's `"field"` slot. The bound scale and colormap are applied
+ * on the CPU during emit to produce the RGBA texture used by the current first-slice image
+ * runtime path. Prefer `dvz_sampled_field()` plus `dvz_visual_set_field()` in new code.
  *
  * @param visual the visual (must be of type IMAGE)
  * @param values scalar F32 pixel data, tightly packed, row-major

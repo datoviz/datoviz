@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* hello_texture — single textured quad via dvz_image + scene/app.
+/* hello_texture — single textured quad via dvz_image + retained sampled field.
  *
  * Builds a 16x16 procedural RGBA image and renders it on a quad covering most of the
- * panel. Demonstrates `dvz_image` with `position`, `texcoords`, and a sampled texture.
+ * panel. Demonstrates `dvz_image` with `position`, `texcoords`, and a direct
+ * `DvzSampledField` binding.
  *
  * Build:  just example-c hello_texture
  * Run:    ./build/examples/c/hello_texture
@@ -75,9 +76,36 @@ int main(int argc, char** argv)
         }
     }
 
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = IMG,
+                   .height = IMG,
+                   .depth = 1,
+               });
+    if (!field)
+    {
+        fprintf(stderr, "dvz_sampled_field() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    if (!dvz_sampled_field_set_data(
+            field, &(DvzFieldDataView){
+                       .data = pixels,
+                       .bytes_per_row = IMG * 4,
+                       .rows_per_image = IMG,
+                   }))
+    {
+        fprintf(stderr, "dvz_sampled_field_set_data() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
     dvz_visual_set_data(visual, "position", positions, 4);
     dvz_visual_set_data(visual, "texcoords", texcoords, 4);
-    dvz_visual_set_texture(visual, pixels, IMG, IMG);
+    dvz_visual_set_field(visual, "field", field);
     dvz_panel_add_visual(panel, visual, NULL);
 
     DvzApp* app = dvz_app(scene);
