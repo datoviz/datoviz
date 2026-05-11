@@ -60,6 +60,8 @@ datoviz/*.c
 *~
 *~.*
 _old*
+_old/
+_*
 .direnv
 .DS_Store
 .env*
@@ -71,6 +73,15 @@ _old*
 *.npz
 *.out.txt
 *.zst
+cert.pem
+index.html
+key.pem
+package-lock.json
+server.crt
+server.key
+video_*.mp4
+wasm_functions.txt
+wasm_sources.txt
 */*/benchmarks/*.json
 */*/benchmarks/*.png
 api_*.md
