@@ -123,6 +123,24 @@ static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelection
 
 static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelectionItem* item);
 
+static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
+
+static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
+
+static void _scene_visual_texture_mark_clean(DvzVisual* visual);
+
+static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
+
+static void _scene_emit_panel_render(
+    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id);
+
+static void _scene_emit_defaults(
+    const DvzCapabilitySnapshot** caps, DvzCapabilitySnapshot* default_caps,
+    DvzDiagnosticReport** report, DvzDiagnosticReport* local_report,
+    const DvzFramePlanEmitConfig** cfg, DvzFramePlanEmitConfig* default_cfg);
+
+static void _scene_commit_emit_success(DvzFigure* figure);
+
 static uint32_t _attr_item_size(DvzVisualType type, const char* name)
 {
     switch (type)
@@ -325,6 +343,73 @@ static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelec
 }
 
 
+/**
+ * Resolve the stable emitted figure identifier for one scene figure.
+ *
+ * @param figure the figure
+ * @param out the destination string buffer
+ * @param size the destination buffer size in bytes
+ */
+static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size)
+{
+    ANN(figure);
+    ANN(out);
+    ASSERT(size > 0);
+    dvz_strlcpy(out, "fig0", size);
+    if (figure->scene == NULL)
+        return;
+    for (uint32_t i = 0; i < figure->scene->figure_count; i++)
+    {
+        if (&figure->scene->figures[i] == figure)
+        {
+            dvz_snprintf(out, size, "fig%u", i);
+            return;
+        }
+    }
+}
+
+
+
+/**
+ * Build the per-panel apply MVP from the active controller state.
+ *
+ * @param panel the panel
+ * @param out the destination MVP
+ */
+static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
+{
+    ANN(panel);
+    ANN(out);
+    glm_mat4_identity(out->model);
+    glm_mat4_identity(out->view);
+    glm_mat4_identity(out->proj);
+    out->time  = 0.0f;
+    out->flags = 0;
+    if (panel->panzoom != NULL)
+        dvz_panzoom_mvp(panel->panzoom, out);
+    if (panel->arcball != NULL)
+        dvz_arcball_mvp(panel->arcball, out);
+}
+
+
+
+/**
+ * Mark one visual texture upload state as clean after a successful emit.
+ *
+ * @param visual the visual
+ */
+static void _scene_visual_texture_mark_clean(DvzVisual* visual)
+{
+    ANN(visual);
+    visual->texture.dirty = false;
+    visual->texture.field_dirty = false;
+    visual->texture.field_dirty_full = false;
+    dvz_memset(
+        &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+}
+
+
+
 uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual)
 {
     ANN(scene);
@@ -363,6 +448,288 @@ void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order)
         order[j] = cur;
     }
 }
+
+
+/**
+ * Emit dirty uploads for all panel-visible visuals in one figure.
+ *
+ * @param figure the figure
+ * @param plan the destination frame plan
+ */
+static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(plan);
+    bool emitted_buffers[DVZ_SCENE_MAX_BUFFERS] = {0};
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    {
+        DvzPanel* panel = &figure->panels[pi];
+        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        {
+            DvzVisual* visual = panel->visuals[vi].visual;
+            if (visual == NULL || !visual->visible)
+                continue;
+            uint32_t vidx = 0;
+            if (!_figure_visual_index(figure, visual, &vidx))
+                continue;
+            for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+            {
+                DvzVisualAttr* attr = &visual->attrs[ai];
+                if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
+                    continue;
+                char resource_id[128];
+                dvz_snprintf(resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
+                uint64_t byte_offset = (uint64_t)attr->dirty_first_item * attr->item_size;
+                uint64_t byte_size = (uint64_t)attr->dirty_item_count * attr->item_size;
+                const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
+                dvz_frame_plan_upload_bytes(
+                    plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
+                if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                     visual->type == DVZ_VISUAL_TYPE_MESH ||
+                     visual->type == DVZ_VISUAL_TYPE_PATH) &&
+                    strcmp(attr->name, "position") == 0)
+                {
+                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
+                }
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                visual->type == DVZ_VISUAL_TYPE_MESH)
+            {
+                int normal_idx = _attr_index(visual, "normal");
+                bool has_normals =
+                    normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
+                    visual->attrs[normal_idx].item_count > 0;
+                if (has_normals && visual->primitive_shading_dirty)
+                {
+                    char shading_resource_id[128];
+                    dvz_snprintf(
+                        shading_resource_id, sizeof(shading_resource_id),
+                        "v%u_primitive_shading", vidx);
+                    dvz_frame_plan_upload_bytes(
+                        plan, shading_resource_id, 0, sizeof(DvzPrimitiveShadingState),
+                        "primitive_shading", &visual->primitive_shading);
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
+                                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+                }
+            }
+            if (visual->buffer != NULL && visual->buffer->data != NULL)
+            {
+                uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+                if (visual->buffer->dirty && buffer_idx != UINT32_MAX && !emitted_buffers[buffer_idx])
+                {
+                    char buffer_resource_id[128];
+                    dvz_snprintf(buffer_resource_id, sizeof(buffer_resource_id), "b%u", buffer_idx);
+                    dvz_frame_plan_upload_bytes(
+                        plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
+                        visual->buffer->data);
+                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+                    node->u.upload.buffer_usage =
+                        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
+                    node->u.upload.item_stride = visual->buffer->desc.stride;
+                    emitted_buffers[buffer_idx] = true;
+                }
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
+                (visual->texture.dirty || visual->field->dirty))
+            {
+                DvzFieldRegion upload_region = {0};
+                const void* upload_data = NULL;
+                if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data))
+                    continue;
+                char tex_resource_id[128];
+                dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
+                uint64_t bytes = 0;
+                if (_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, &upload_region, &bytes))
+                {
+                    dvz_frame_plan_upload_bytes(
+                        plan, tex_resource_id, 0, bytes, "texture", upload_data);
+                    dvz_frame_plan_upload_set_texture_extent(
+                        plan, upload_region.width, upload_region.height);
+                    dvz_frame_plan_upload_set_texture_region(
+                        plan, upload_region.x, upload_region.y);
+                }
+                else
+                {
+                    log_error("image visual texture upload size overflow");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+
+
+/**
+ * Emit one panel render node into a frame plan.
+ *
+ * @param figure the parent figure
+ * @param panel_index the panel index within the figure
+ * @param plan the destination frame plan
+ * @param figure_id the stable figure identifier
+ */
+static void _scene_emit_panel_render(
+    DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(figure_id);
+    ASSERT(panel_index < figure->panel_count);
+    DvzPanel* panel = &figure->panels[panel_index];
+
+    char panel_id[64];
+    dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, panel_index);
+    uint32_t drawable_count = 0;
+    for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+    {
+        DvzVisual* visual = panel->visuals[vi].visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        uint32_t vidx = 0;
+        if (!_figure_visual_index(figure, visual, &vidx))
+            continue;
+        int pos_idx = _attr_index(visual, "position");
+        if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
+            drawable_count++;
+        else
+            log_warn(
+                "%s visual (index %u) has no 'position' data — it will render nothing",
+                _visual_type_name(visual->type), vidx);
+    }
+
+    if (drawable_count == 0)
+    {
+        dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc);
+        return;
+    }
+
+    uint32_t order[DVZ_SCENE_MAX_VISUALS];
+    _scene_panel_visual_order(panel, order);
+
+    DvzMVP panel_apply_mvp;
+    _scene_panel_apply_mvp(panel, &panel_apply_mvp);
+
+    DvzFramePlanNode* node = NULL;
+    for (uint32_t k = 0; k < panel->visual_count; k++)
+    {
+        uint32_t vi = order[k];
+        DvzPanelAttach* attach = &panel->visuals[vi];
+        DvzVisual* visual = attach->visual;
+        if (visual == NULL || !visual->visible)
+            continue;
+        uint32_t vidx = 0;
+        if (!_figure_visual_index(figure, visual, &vidx))
+            continue;
+        int pos_idx = _attr_index(visual, "position");
+        if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
+            continue;
+
+        if (node == NULL)
+        {
+            dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
+            node = dvz_frame_plan_last_render_node(plan);
+            if (node != NULL)
+            {
+                node->u.render.has_mvp = true;
+                node->u.render.apply_mvp = panel_apply_mvp;
+            }
+        }
+
+        char visual_id[64];
+        uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
+        if (buffer_idx != UINT32_MAX)
+            dvz_snprintf(visual_id, sizeof(visual_id), "v%u#index=b%u", vidx, buffer_idx);
+        else
+            dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
+        dvz_frame_plan_render_visual(plan, visual_id);
+        if (node != NULL)
+            node->u.render.controller_modes[node->u.render.visual_count - 1] =
+                attach->controller_mode;
+    }
+}
+
+
+
+/**
+ * Normalize optional emit inputs to concrete stack-backed defaults.
+ *
+ * @param caps the optional capabilities pointer to normalize
+ * @param default_caps the stack storage for default capabilities
+ * @param report the optional diagnostic report pointer to normalize
+ * @param local_report the stack storage for a local report
+ * @param cfg the optional emit config pointer to normalize
+ * @param default_cfg the stack storage for the default emit config
+ */
+static void _scene_emit_defaults(
+    const DvzCapabilitySnapshot** caps, DvzCapabilitySnapshot* default_caps,
+    DvzDiagnosticReport** report, DvzDiagnosticReport* local_report,
+    const DvzFramePlanEmitConfig** cfg, DvzFramePlanEmitConfig* default_cfg)
+{
+    ANN(caps);
+    ANN(default_caps);
+    ANN(report);
+    ANN(local_report);
+    ANN(cfg);
+    ANN(default_cfg);
+    if (*caps == NULL)
+    {
+        dvz_capability_snapshot_default(default_caps);
+        *caps = default_caps;
+    }
+    *default_cfg = dvz_frame_plan_emit_config();
+    if (*cfg == NULL)
+        *cfg = default_cfg;
+    if (*report == NULL)
+    {
+        dvz_diagnostic_report_init(local_report);
+        *report = local_report;
+    }
+}
+
+
+
+/**
+ * Clear dirty scene state after one successful figure emit.
+ *
+ * @param figure the emitted figure
+ */
+static void _scene_commit_emit_success(DvzFigure* figure)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    {
+        DvzPanel* panel = &figure->panels[pi];
+        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
+        {
+            DvzVisual* visual = panel->visuals[vi].visual;
+            if (visual == NULL)
+                continue;
+            for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+                visual->attrs[ai].dirty_item_count = 0;
+            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
+                visual->type == DVZ_VISUAL_TYPE_MESH)
+            {
+                int normal_idx = _attr_index(visual, "normal");
+                bool has_normals =
+                    normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
+                    visual->attrs[normal_idx].item_count > 0;
+                if (has_normals)
+                    visual->primitive_shading_dirty = false;
+            }
+            if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
+                _scene_visual_texture_mark_clean(visual);
+        }
+    }
+    for (uint32_t i = 0; i < figure->scene->field_count; i++)
+        _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
+    for (uint32_t i = 0; i < figure->scene->buffer_count; i++)
+        figure->scene->buffers[i].dirty = false;
+}
+
 
 
 static void _scene_stream_release(void* owner)
@@ -1465,252 +1832,22 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
     ANN(figure->scene->emitter);
     DvzFramePlanEmitter* emitter = figure->scene->emitter;
 
-    /* Use a stable figure_id from its position in the scene array */
     char figure_id[64];
-    dvz_strlcpy(figure_id, "fig0", sizeof(figure_id));
-    if (figure->scene != NULL)
-    {
-        for (uint32_t i = 0; i < figure->scene->figure_count; i++)
-        {
-            if (&figure->scene->figures[i] == figure)
-            {
-                dvz_snprintf(figure_id, sizeof(figure_id), "fig%u", i);
-                break;
-            }
-        }
-    }
+    _scene_figure_id(figure, figure_id, sizeof(figure_id));
 
-    /* Build a fresh FramePlan */
     DvzFramePlan* plan = dvz_frame_plan(figure_id, 0);
     if (plan == NULL)
         return NULL;
 
-    /* --- Upload nodes: one per dirty visual attribute --- */
-    bool emitted_buffers[DVZ_SCENE_MAX_BUFFERS] = {0};
+    _scene_emit_visual_uploads(figure, plan);
+
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-    {
-        DvzPanel* panel = &figure->panels[pi];
-        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
-        {
-            DvzVisual* visual = panel->visuals[vi].visual;
-            if (visual == NULL || !visual->visible)
-                continue;
-            /* Resolve visual membership by identity, avoiding cross-array pointer arithmetic. */
-            uint32_t vidx = 0;
-            if (!_figure_visual_index(figure, visual, &vidx))
-                continue; /* not from this scene */
-            for (uint32_t ai = 0; ai < visual->attr_count; ai++)
-            {
-                DvzVisualAttr* attr = &visual->attrs[ai];
-                if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
-                    continue;
-                char resource_id[128];
-                dvz_snprintf(resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
-                uint64_t byte_offset =
-                    (uint64_t)attr->dirty_first_item * attr->item_size;
-                uint64_t byte_size =
-                    (uint64_t)attr->dirty_item_count * attr->item_size;
-                const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
-                dvz_frame_plan_upload_bytes(
-                    plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
-                if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                     visual->type == DVZ_VISUAL_TYPE_MESH ||
-                     visual->type == DVZ_VISUAL_TYPE_PATH) &&
-                    strcmp(attr->name, "position") == 0)
-                {
-                    dvz_frame_plan_upload_set_topology(plan, (uint32_t)visual->topology);
-                }
-            }
-            if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                visual->type == DVZ_VISUAL_TYPE_MESH)
-            {
-                int normal_idx = _attr_index(visual, "normal");
-                bool has_normals =
-                    normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
-                    visual->attrs[normal_idx].item_count > 0;
-                if (has_normals && visual->primitive_shading_dirty)
-                {
-                    char shading_resource_id[128];
-                    dvz_snprintf(
-                        shading_resource_id, sizeof(shading_resource_id),
-                        "v%u_primitive_shading", vidx);
-                    dvz_frame_plan_upload_bytes(
-                        plan, shading_resource_id, 0, sizeof(DvzPrimitiveShadingState),
-                        "primitive_shading", &visual->primitive_shading);
-                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
-                    node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
-                                                  DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
-                                                  DVZ_DRP2_BUFFER_USAGE_COPY_DST;
-                }
-            }
-            if (visual->buffer != NULL && visual->buffer->data != NULL)
-            {
-                uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
-                if (visual->buffer->dirty && buffer_idx != UINT32_MAX && !emitted_buffers[buffer_idx])
-                {
-                    char buffer_resource_id[128];
-                    dvz_snprintf(buffer_resource_id, sizeof(buffer_resource_id), "b%u", buffer_idx);
-                    dvz_frame_plan_upload_bytes(
-                        plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
-                        visual->buffer->data);
-                    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
-                    node->u.upload.buffer_usage =
-                        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
-                    node->u.upload.item_stride = visual->buffer->desc.stride;
-                    emitted_buffers[buffer_idx] = true;
-                }
-            }
-            if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
-                (visual->texture.dirty || visual->field->dirty))
-            {
-                DvzFieldRegion upload_region = {0};
-                const void* upload_data = NULL;
-                if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data))
-                    continue;
-                char tex_resource_id[128];
-                dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
-                uint64_t bytes = 0;
-                if (_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, &upload_region, &bytes))
-                {
-                    dvz_frame_plan_upload_bytes(plan, tex_resource_id, 0, bytes, "texture", upload_data);
-                    dvz_frame_plan_upload_set_texture_extent(
-                        plan, upload_region.width, upload_region.height);
-                    dvz_frame_plan_upload_set_texture_region(
-                        plan, upload_region.x, upload_region.y);
-                }
-                else
-                {
-                    log_error("image visual texture upload size overflow");
-                    continue;
-                }
-            }
-        }
-    }
+        _scene_emit_panel_render(figure, pi, plan, figure_id);
 
-    /* --- Render nodes: one per panel --- */
-    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-    {
-        DvzPanel* panel = &figure->panels[pi];
-
-        char panel_id[64];
-        dvz_snprintf(panel_id, sizeof(panel_id), "%s_p%u", figure_id, pi);
-        /* Count drawable visuals — those with position data set. */
-        uint32_t drawable_count = 0;
-        for (uint32_t vi = 0; vi < panel->visual_count; vi++)
-        {
-            DvzVisual* visual = panel->visuals[vi].visual;
-            if (visual == NULL || !visual->visible)
-                continue;
-            uint32_t vidx = 0;
-            if (!_figure_visual_index(figure, visual, &vidx))
-                continue;
-            int pos_idx = _attr_index(visual, "position");
-            if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
-                drawable_count++;
-            else
-                log_warn(
-                    "%s visual (index %u) has no 'position' data — it will render nothing",
-                    _visual_type_name(visual->type), vidx);
-        }
-
-        if (drawable_count == 0)
-        {
-            dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc);
-            continue;
-        }
-
-        /* Build a stable z-layer-sorted index list (insertion sort: stable, small N). */
-        uint32_t order[DVZ_SCENE_MAX_VISUALS];
-        for (uint32_t k = 0; k < panel->visual_count; k++)
-            order[k] = k;
-        for (uint32_t k = 1; k < panel->visual_count; k++)
-        {
-            uint32_t cur = order[k];
-            int32_t cur_z = panel->visuals[cur].z_layer;
-            uint32_t cur_ins = panel->visuals[cur].insertion_index;
-            uint32_t j = k;
-            while (j > 0)
-            {
-                uint32_t prev = order[j - 1];
-                int32_t prev_z = panel->visuals[prev].z_layer;
-                uint32_t prev_ins = panel->visuals[prev].insertion_index;
-                if (prev_z < cur_z || (prev_z == cur_z && prev_ins <= cur_ins))
-                    break;
-                order[j] = order[j - 1];
-                j--;
-            }
-            order[j] = cur;
-        }
-
-        /* Pre-compute the panel's APPLY MVP (panzoom/arcball). Identity MVP for FIXED
-         * visuals is computed by the converter from controller_modes[]. */
-        DvzMVP panel_apply_mvp;
-        glm_mat4_identity(panel_apply_mvp.model);
-        glm_mat4_identity(panel_apply_mvp.view);
-        glm_mat4_identity(panel_apply_mvp.proj);
-        panel_apply_mvp.time  = 0.0f;
-        panel_apply_mvp.flags = 0;
-        if (panel->panzoom != NULL)
-            dvz_panzoom_mvp(panel->panzoom, &panel_apply_mvp);
-        if (panel->arcball != NULL)
-            dvz_arcball_mvp(panel->arcball, &panel_apply_mvp);
-
-        /* One render node per panel; populate visuals[] and controller_modes[] in z order. */
-        DvzFramePlanNode* node = NULL;
-        for (uint32_t k = 0; k < panel->visual_count; k++)
-        {
-            uint32_t vi = order[k];
-            DvzPanelAttach* attach = &panel->visuals[vi];
-            DvzVisual* visual = attach->visual;
-            if (visual == NULL || !visual->visible)
-                continue;
-            uint32_t vidx = 0;
-            if (!_figure_visual_index(figure, visual, &vidx))
-                continue;
-            int pos_idx = _attr_index(visual, "position");
-            if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
-                continue;
-
-            if (node == NULL)
-            {
-                dvz_frame_plan_render_panel(plan, panel_id, "rt", false, panel->desc);
-                node = dvz_frame_plan_last_render_node(plan);
-                if (node != NULL)
-                {
-                    node->u.render.has_mvp = true;
-                    node->u.render.apply_mvp = panel_apply_mvp;
-                }
-            }
-
-            char visual_id[64];
-            uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
-            if (buffer_idx != UINT32_MAX)
-                dvz_snprintf(visual_id, sizeof(visual_id), "v%u#index=b%u", vidx, buffer_idx);
-            else
-                dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
-            dvz_frame_plan_render_visual(plan, visual_id);
-            if (node != NULL)
-                node->u.render.controller_modes[node->u.render.visual_count - 1] =
-                    attach->controller_mode;
-        }
-    }
-
-    /* Resolve nullable args */
     DvzCapabilitySnapshot default_caps;
-    if (caps == NULL)
-    {
-        dvz_capability_snapshot_default(&default_caps);
-        caps = &default_caps;
-    }
-    DvzFramePlanEmitConfig default_cfg = dvz_frame_plan_emit_config();
-    if (cfg == NULL)
-        cfg = &default_cfg;
     DvzDiagnosticReport local_report;
-    if (report == NULL)
-    {
-        dvz_diagnostic_report_init(&local_report);
-        report = &local_report;
-    }
+    DvzFramePlanEmitConfig default_cfg;
+    _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
 
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, report, cfg);
@@ -1720,45 +1857,8 @@ DvzDrp2CommandStream* dvz_figure_emit_ex(
         stream = NULL;
     }
 
-    /* Clear dirty flags after successful emit */
     if (stream != NULL)
-    {
-        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-        {
-            DvzPanel* panel = &figure->panels[pi];
-            for (uint32_t vi = 0; vi < panel->visual_count; vi++)
-            {
-                DvzVisual* visual = panel->visuals[vi].visual;
-                if (visual == NULL)
-                    continue;
-                for (uint32_t ai = 0; ai < visual->attr_count; ai++)
-                    visual->attrs[ai].dirty_item_count = 0;
-                if (visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
-                    visual->type == DVZ_VISUAL_TYPE_MESH)
-                {
-                    int normal_idx = _attr_index(visual, "normal");
-                    bool has_normals =
-                        normal_idx >= 0 && visual->attrs[normal_idx].data != NULL &&
-                        visual->attrs[normal_idx].item_count > 0;
-                    if (has_normals)
-                        visual->primitive_shading_dirty = false;
-                }
-                if (visual->type == DVZ_VISUAL_TYPE_IMAGE)
-                {
-                    visual->texture.dirty = false;
-                    visual->texture.field_dirty = false;
-                    visual->texture.field_dirty_full = false;
-                    dvz_memset(
-                        &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
-                        sizeof(DvzFieldRegion));
-                }
-            }
-        }
-        for (uint32_t i = 0; i < figure->scene->field_count; i++)
-            _scene_refresh_field_dirty_state(figure->scene, &figure->scene->fields[i]);
-        for (uint32_t i = 0; i < figure->scene->buffer_count; i++)
-            figure->scene->buffers[i].dirty = false;
-    }
+        _scene_commit_emit_success(figure);
 
     dvz_frame_plan_destroy(plan);
     return stream;
