@@ -87,6 +87,18 @@ DVZ_EXPORT void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime);
 
 
 /**
+ * Reset a DRP2 runtime to an empty semantic and backend state.
+ *
+ * This releases runtime-owned objects while keeping the runtime itself and its
+ * borrowed device/allocator configuration alive for reuse.
+ *
+ * @param runtime the runtime
+ */
+DVZ_EXPORT void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime);
+
+
+
+/**
  * Validate a DRP2 command stream against the backend-agnostic semantic rules.
  *
  * @param stream the command stream

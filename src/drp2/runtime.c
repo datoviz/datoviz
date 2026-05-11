@@ -4232,6 +4232,35 @@ void dvz_drp2_runtime_destroy(DvzDrp2Runtime* runtime)
 }
 
 
+
+/**
+ * Reset a DRP2 runtime to its empty reusable state.
+ *
+ * @param runtime the runtime
+ */
+void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime)
+{
+    if (runtime == NULL)
+        return;
+
+    if (runtime->semantic_state != NULL)
+    {
+        _runtime_state_cleanup(runtime->semantic_state);
+        dvz_free(runtime->semantic_state);
+        runtime->semantic_state = NULL;
+    }
+
+#if DVZ_DRP2_HAS_VKLITE
+    if (runtime->vklite_state != NULL)
+    {
+        _vklite_state_cleanup(runtime->vklite_state);
+        dvz_free(runtime->vklite_state);
+        runtime->vklite_state = NULL;
+    }
+#endif
+}
+
+
 #if DVZ_DRP2_HAS_VKLITE
 /**
  * Download bytes from a live vklite buffer owned by a DRP2 runtime.

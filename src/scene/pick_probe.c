@@ -43,8 +43,8 @@ static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc);
 static bool _scene_decode_pick_id(const uint8_t rgba[4], uint64_t* out_id);
 
 static bool _scene_execute_readback_plan(
-    DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps, DvzFramePlan* plan,
-    DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
+    const DvzScene* scene, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
+    DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
 
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
@@ -250,6 +250,7 @@ uint32_t dvz_figure_process_requests(
 /**
  * Emit, execute, and download one 4-byte readback request.
  *
+ * @param scene the owning scene, used for instance-scoped test controls
  * @param runtime the DRP2 runtime
  * @param caps the capability snapshot
  * @param plan the prepared frame plan
@@ -258,8 +259,8 @@ uint32_t dvz_figure_process_requests(
  * @return true on successful execution and download
  */
 static bool _scene_execute_readback_plan(
-    DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps, DvzFramePlan* plan,
-    DvzFramePlanEmitter* emitter, uint8_t rgba[4])
+    const DvzScene* scene, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
+    DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4])
 {
     ANN(runtime);
     ANN(caps);
@@ -290,16 +291,26 @@ static bool _scene_execute_readback_plan(
     }
     else
     {
+        dvz_drp2_runtime_reset(runtime);
         DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
         if (!result.ok)
         {
-            log_error("scene readback runtime execution failed");
+            log_error(
+                "scene readback runtime execution failed (code=%d command=%u)",
+                (int)result.code, result.command_index);
         }
         else
         {
-            ok = dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba);
-            if (!ok)
-                log_error("scene readback buffer download failed");
+            if (scene != NULL && scene->test.force_readback_download_failure)
+            {
+                log_error("scene readback buffer download forced to fail");
+            }
+            else
+            {
+                ok = dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba);
+                if (!ok)
+                    log_error("scene readback buffer download failed");
+            }
         }
     }
     dvz_drp2_stream_destroy(stream);
@@ -401,8 +412,9 @@ static bool _scene_process_point_pick_request(
 
         uint8_t rgba[4] = {0};
         uint64_t picked_id = 0;
-        bool hit = ok && _scene_execute_readback_plan(runtime, caps, plan, emitter, rgba) &&
-                   _scene_decode_pick_id(rgba, &picked_id);
+        bool hit =
+            ok && _scene_execute_readback_plan(scene, runtime, caps, plan, emitter, rgba) &&
+            _scene_decode_pick_id(rgba, &picked_id);
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
 
@@ -536,9 +548,9 @@ static bool _scene_process_image_probe_request(
         }
 
         uint8_t rgba[4] = {0};
-        bool hit = ok && _scene_execute_readback_plan(runtime, caps, plan, emitter, rgba) &&
-                   rgba[3] > 0;
-        if (ok && rgba[3] == 0)
+        bool readback_ok = ok && _scene_execute_readback_plan(scene, runtime, caps, plan, emitter, rgba);
+        bool hit = readback_ok && rgba[3] > 0;
+        if (readback_ok && rgba[3] == 0)
         {
             log_error(
                 "image probe request %" PRIu64 " returned a transparent GPU pixel",

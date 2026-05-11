@@ -514,6 +514,11 @@ struct DvzScene
     uint32_t probe_result_count;
     uint32_t probe_result_head;
     DvzProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
+
+    struct
+    {
+        bool force_readback_download_failure;
+    } test;
 };
 
 
