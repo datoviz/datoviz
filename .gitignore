@@ -79,6 +79,7 @@ key.pem
 package-lock.json
 server.crt
 server.key
+scripts/local-dev-ca/
 video_*.mp4
 wasm_functions.txt
 wasm_sources.txt
