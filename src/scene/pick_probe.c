@@ -36,9 +36,15 @@ static bool _scene_push_probe_result(DvzScene* scene, const DvzProbeResult* resu
 static bool _scene_pick_request_ndc(
     const DvzFigure* figure, const DvzPanel* panel, double x, double y, vec2 out_ndc);
 
+static uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel);
+
 static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc);
 
 static bool _scene_decode_pick_id(const uint8_t rgba[4], uint64_t* out_id);
+
+static bool _scene_execute_readback_plan(
+    DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps, DvzFramePlan* plan,
+    DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
 
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
@@ -164,6 +170,27 @@ static void _scene_remove_pending_probe_at(DvzScene* scene, uint32_t index)
 
 
 /**
+ * Resolve the stable public panel id within one figure.
+ *
+ * @param figure the figure
+ * @param panel the panel
+ * @return the 1-based public panel id, or 1 when not found
+ */
+static uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel)
+{
+    ANN(figure);
+    ANN(panel);
+    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+    {
+        if (&figure->panels[pi] == panel)
+            return (uint64_t)pi + 1;
+    }
+    return 1;
+}
+
+
+
+/**
  * Execute queued pick/probe requests for one figure through dedicated DRP2 readback streams.
  *
  * @param figure the figure
@@ -220,6 +247,48 @@ uint32_t dvz_figure_process_requests(
 
 
 
+/**
+ * Emit, execute, and download one 4-byte readback request.
+ *
+ * @param runtime the DRP2 runtime
+ * @param caps the capability snapshot
+ * @param plan the prepared frame plan
+ * @param emitter the frame-plan emitter
+ * @param rgba the destination 4-byte readback buffer
+ * @return true on successful execution and download
+ */
+static bool _scene_execute_readback_plan(
+    DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps, DvzFramePlan* plan,
+    DvzFramePlanEmitter* emitter, uint8_t rgba[4])
+{
+    ANN(runtime);
+    ANN(caps);
+    ANN(rgba);
+    if (plan == NULL || emitter == NULL)
+        return false;
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, &report, &cfg);
+    if (stream == NULL)
+        return false;
+
+    uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
+    bool ok = false;
+    if (rb_id != 0)
+    {
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+        ok = result.ok && dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba);
+    }
+    dvz_drp2_stream_destroy(stream);
+    return ok;
+}
+
+
+
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending)
@@ -235,18 +304,9 @@ static bool _scene_process_point_pick_request(
     DvzPickResult miss = {
         .request_id = pending->request.request_id,
         .hit = false,
-        .panel_id = 1,
+        .panel_id = _scene_panel_public_id(figure, panel),
         .panel_position = {pending->x, pending->y},
     };
-
-    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-    {
-        if (&figure->panels[pi] == panel)
-        {
-            miss.panel_id = (uint64_t)pi + 1;
-            break;
-        }
-    }
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
@@ -283,12 +343,6 @@ static bool _scene_process_point_pick_request(
 
         DvzFramePlan* plan = dvz_frame_plan("figure.pick", pending->request.request_id);
         DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
-        if (plan == NULL || emitter == NULL)
-        {
-            dvz_frame_plan_destroy(plan);
-            dvz_frame_plan_emitter_destroy(emitter);
-            break;
-        }
 
         DvzMVP mvp = {0};
         glm_mat4_identity(mvp.model);
@@ -302,7 +356,8 @@ static bool _scene_process_point_pick_request(
         vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
         _scene_center_apply_mvp(&mvp, delta);
 
-        bool ok = dvz_frame_plan_upload_bytes(
+        bool ok = plan != NULL && emitter != NULL &&
+                  dvz_frame_plan_upload_bytes(
                       plan, "pick0_position", 0, pos_attr->item_count * pos_attr->item_size,
                       "position", pos_attr->data) &&
                   dvz_frame_plan_upload_bytes(
@@ -317,7 +372,7 @@ static bool _scene_process_point_pick_request(
                   dvz_frame_plan_render_visual(plan, "pick0") &&
                   dvz_frame_plan_copy(plan, "target.pick", "buf.pick", 4) &&
                   dvz_frame_plan_readback(plan, "buf.pick", "request.pick");
-        DvzFramePlanNode* render = dvz_frame_plan_last_render_node(plan);
+        DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
         if (render != NULL)
         {
             render->u.render.has_mvp = true;
@@ -325,24 +380,10 @@ static bool _scene_process_point_pick_request(
             render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
         }
 
-        DvzDiagnosticReport report = {0};
-        dvz_diagnostic_report_init(&report);
-        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
-        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-        DvzDrp2CommandStream* stream =
-            ok ? dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, &report, &cfg) : NULL;
-        uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
         uint8_t rgba[4] = {0};
         uint64_t picked_id = 0;
-        bool hit = false;
-        if (stream != NULL)
-        {
-            DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
-            hit = result.ok && rb_id != 0 &&
-                  dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba) &&
-                  _scene_decode_pick_id(rgba, &picked_id);
-            dvz_drp2_stream_destroy(stream);
-        }
+        bool hit = ok && _scene_execute_readback_plan(runtime, caps, plan, emitter, rgba) &&
+                   _scene_decode_pick_id(rgba, &picked_id);
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
 
@@ -379,18 +420,9 @@ static bool _scene_process_image_probe_request(
     DvzProbeResult miss = {
         .request_id = pending->request.request_id,
         .hit = false,
-        .panel_id = 1,
+        .panel_id = _scene_panel_public_id(figure, panel),
         .source_request_id = pending->request.request_id,
     };
-
-    for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-    {
-        if (&figure->panels[pi] == panel)
-        {
-            miss.panel_id = (uint64_t)pi + 1;
-            break;
-        }
-    }
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
@@ -478,23 +510,9 @@ static bool _scene_process_image_probe_request(
                   dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
                   dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
 
-        DvzDiagnosticReport report = {0};
-        dvz_diagnostic_report_init(&report);
-        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
-        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-        DvzDrp2CommandStream* stream =
-            ok ? dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, &report, &cfg) : NULL;
-        uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
         uint8_t rgba[4] = {0};
-        bool hit = false;
-        if (stream != NULL)
-        {
-            DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
-            hit = result.ok && rb_id != 0 &&
-                  dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba) &&
-                  rgba[3] > 0;
-            dvz_drp2_stream_destroy(stream);
-        }
+        bool hit = ok && _scene_execute_readback_plan(runtime, caps, plan, emitter, rgba) &&
+                   rgba[3] > 0;
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
         dvz_free(shifted);
