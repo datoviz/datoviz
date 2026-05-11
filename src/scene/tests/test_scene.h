@@ -107,6 +107,8 @@ int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item);
 
+int test_scene_image_probe_transparent_pixel_misses(TstSuite* suite, TstItem* item);
+
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstSuite* suite, TstItem* item);
 #endif

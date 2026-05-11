@@ -265,7 +265,10 @@ static bool _scene_execute_readback_plan(
     ANN(caps);
     ANN(rgba);
     if (plan == NULL || emitter == NULL)
+    {
+        log_error("scene readback requires a prepared frame plan and emitter");
         return false;
+    }
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -274,14 +277,30 @@ static bool _scene_execute_readback_plan(
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(emitter, plan, caps, &report, &cfg);
     if (stream == NULL)
+    {
+        log_error("scene readback DRP2 emission failed");
         return false;
+    }
 
     uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
     bool ok = false;
-    if (rb_id != 0)
+    if (rb_id == 0)
+    {
+        log_error("scene readback plan did not emit the _rb buffer");
+    }
+    else
     {
         DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
-        ok = result.ok && dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba);
+        if (!result.ok)
+        {
+            log_error("scene readback runtime execution failed");
+        }
+        else
+        {
+            ok = dvz_drp2_runtime_download_buffer(runtime, rb_id, 0, 4, rgba);
+            if (!ok)
+                log_error("scene readback buffer download failed");
+        }
     }
     dvz_drp2_stream_destroy(stream);
     return ok;
@@ -509,36 +528,25 @@ static bool _scene_process_image_probe_request(
                   dvz_frame_plan_render_visual(plan, "probe0") &&
                   dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
                   dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
+        if (!ok)
+        {
+            log_error(
+                "image probe request %" PRIu64 " failed to assemble the GPU readback plan",
+                pending->request.request_id);
+        }
 
         uint8_t rgba[4] = {0};
         bool hit = ok && _scene_execute_readback_plan(runtime, caps, plan, emitter, rgba) &&
                    rgba[3] > 0;
+        if (ok && rgba[3] == 0)
+        {
+            log_error(
+                "image probe request %" PRIu64 " returned a transparent GPU pixel",
+                pending->request.request_id);
+        }
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
         dvz_free(shifted);
-
-        if (!hit && texture_data != NULL)
-        {
-            double panel_width = panel->desc.width * (double)figure->width;
-            double panel_height = panel->desc.height * (double)figure->height;
-            if (panel_width > 0.0 && panel_height > 0.0)
-            {
-                double u = pending->x / panel_width;
-                double v = pending->y / panel_height;
-                if (u >= 0.0 && u <= 1.0 && v >= 0.0 && v <= 1.0)
-                {
-                    uint32_t tx = (uint32_t)(u * (texture_width - 1));
-                    uint32_t ty = (uint32_t)(v * (texture_height - 1));
-                    uint64_t idx = 4 * ((uint64_t)ty * texture_width + tx);
-                    const uint8_t* texels = (const uint8_t*)texture_data;
-                    rgba[0] = texels[idx + 0];
-                    rgba[1] = texels[idx + 1];
-                    rgba[2] = texels[idx + 2];
-                    rgba[3] = texels[idx + 3];
-                    hit = rgba[3] > 0;
-                }
-            }
-        }
 
         if (!hit)
             continue;
