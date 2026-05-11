@@ -114,6 +114,22 @@
     "layout(location=0)in vec4 fragColor;\n"                                                    \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=fragColor;}\n"
+#define DRP2_POINT_PICK_VERTEX_GLSL                                                             \
+    "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(location=0)in vec3 inPos;\n"                                                        \
+    "layout(location=2)in float inSize;\n"                                                      \
+    "layout(location=0)flat out uint fragId;\n"                                                 \
+    "void main(){"                                                                               \
+    "gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                                 \
+    "gl_PointSize=inSize;"                                                                       \
+    "fragId=uint(gl_VertexIndex)+1u;}\n"
+#define DRP2_POINT_PICK_FRAGMENT_GLSL                                                           \
+    "#version 450\n"                                                                            \
+    "layout(location=0)flat in uint fragId;\n"                                                  \
+    "layout(location=0)out vec4 outColor;\n"                                                    \
+    "void main(){outColor=vec4(float(fragId&255u)/255.0,float((fragId>>8u)&255u)/255.0,"       \
+    "float((fragId>>16u)&255u)/255.0,float((fragId>>24u)&255u)/255.0);}\n"
 
 /* Primitive visual: position (vec3) + color (u8 RGBA→vec4); topology selected per visual. */
 #define DRP2_PRIMITIVE_VERTEX_GLSL                                                              \
@@ -1786,12 +1802,22 @@ static bool _emitter_emit_render_multi_in_pass(
 
         if (vis_is_point)
         {
-            dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
-            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
-            vs_glsl      = DRP2_POINT_VERTEX_GLSL;
-            fs_glsl      = DRP2_POINT_FRAGMENT_GLSL;
-            vs_spirv_key = "point_vert";
-            fs_spirv_key = "point_frag";
+            if (render->u.render.picking)
+            {
+                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point_pick%s", fmt);
+                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point_pick%s", fmt);
+                vs_glsl = DRP2_POINT_PICK_VERTEX_GLSL;
+                fs_glsl = DRP2_POINT_PICK_FRAGMENT_GLSL;
+            }
+            else
+            {
+                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
+                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
+                vs_glsl      = DRP2_POINT_VERTEX_GLSL;
+                fs_glsl      = DRP2_POINT_FRAGMENT_GLSL;
+                vs_spirv_key = "point_vert";
+                fs_spirv_key = "point_frag";
+            }
         }
         else if (vis_is_prim)
         {
@@ -1845,7 +1871,11 @@ static bool _emitter_emit_render_multi_in_pass(
 
         /* Pipeline (cached by family + topology). */
         if (vis_is_point)
-            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
+        {
+            dvz_snprintf(
+                pipe_key, sizeof(pipe_key), render->u.render.picking ? "_pipe_point_pick%s" : "_pipe_point%s",
+                fmt);
+        }
         else if (vis_is_prim)
             dvz_snprintf(
                 pipe_key, sizeof(pipe_key), has_normal ? "_pipe_prim_lit_t%u%s" : "_pipe_prim_t%u%s",
@@ -1863,11 +1893,20 @@ static bool _emitter_emit_render_multi_in_pass(
                 uint32_t bindings[3]  = {0, 1, 2};
                 uint32_t locations[3] = {0, 1, 2};
                 uint32_t formats[3]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
-                                       VK_FORMAT_R32_SFLOAT};
+                                         VK_FORMAT_R32_SFLOAT};
                 uint32_t offsets[3]   = {0, 0, 0};
+                uint32_t binding_count = 3;
+                uint32_t attr_count = render->u.render.picking ? 2 : 3;
+                if (render->u.render.picking)
+                {
+                    bindings[1] = 2;
+                    locations[1] = 2;
+                    formats[1] = VK_FORMAT_R32_SFLOAT;
+                }
                 ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
                                stream, pipe_id, vs_id, fs_id, 3, topology,
-                               3, strides, 3, bindings, locations, formats, offsets);
+                               binding_count, strides, attr_count, bindings, locations, formats,
+                               offsets);
                 if (ok && mvp_bgl_id != 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
             }

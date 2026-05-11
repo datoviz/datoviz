@@ -131,6 +131,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
     if (!result.ok)
         log_error("_app_draw runtime execution failed at command %" PRIu32, result.command_index);
+    else
+        (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
     dvz_drp2_stream_destroy(stream);
 }
 

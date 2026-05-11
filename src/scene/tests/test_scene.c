@@ -6848,6 +6848,110 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* it
 }
 
 
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("scene pick/probe processing test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* points = dvz_point(scene, 0);
+    ANN(points);
+    dvz_visual_set_pick_capabilities(points, DVZ_PICK_CAPABILITY_ITEM);
+    float point_pos[1][3] = {{0.0f, 0.0f, 0.0f}};
+    uint8_t point_color[1][4] = {{255, 255, 0, 255}};
+    float point_size[1] = {24.0f};
+    AT(dvz_visual_set_data(points, "position", point_pos, 1) == 0);
+    AT(dvz_visual_set_data(points, "color", point_color, 1) == 0);
+    AT(dvz_visual_set_data(points, "size", point_size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float image_pos[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        pixels[4 * i + 0] = 255;
+        pixels[4 * i + 1] = 0;
+        pixels[4 * i + 2] = 0;
+        pixels[4 * i + 3] = 255;
+    }
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){.z_layer = -1}) == 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzCapabilitySnapshot caps = {0};
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 11}) == 0);
+    AT(dvz_panel_probe(panel, 32.0, 32.0, &(DvzProbeRequest){.request_id = 12}) == 0);
+    AT(dvz_figure_process_requests(figure, runtime, &caps) == 2);
+
+    DvzPickResult pick = {0};
+    DvzProbeResult probe = {0};
+    AT(dvz_scene_poll_pick(scene, &pick));
+    AT(dvz_scene_poll_probe(scene, &probe));
+    AT(pick.hit);
+    AT(pick.request_id == 11);
+    AT(pick.resolved_target == DVZ_SCENE_TARGET_ITEM);
+    AT(pick.resolved_id == 0);
+    AT(probe.hit);
+    AT(probe.request_id == 12);
+    AT(probe.value_kind == DVZ_PROBE_VALUE_VEC4);
+    AT(probe.vector[0] > 0.9);
+    AT(probe.vector[1] < 0.1);
+    AT(probe.vector[2] < 0.1);
+    AT(probe.vector[3] > 0.9);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
 int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -7165,6 +7269,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_mesh_glsl_executes);
     TEST_SIMPLE(test_scene_path_glsl_executes);
     TEST_SIMPLE(test_scene_image_glsl_executes);
+    TEST_SIMPLE(test_scene_process_pick_probe_requests);
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
