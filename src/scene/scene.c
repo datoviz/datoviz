@@ -145,6 +145,12 @@ static DvzSampledField* _scene_ensure_owned_image_field(
     DvzVisual* visual, DvzFieldFormat format, DvzFieldSemantic semantic, uint32_t width,
     uint32_t height);
 
+static void _scene_field_reset(DvzSampledField* field);
+
+static void _scene_buffer_reset(DvzSceneBuffer* buffer);
+
+static void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources);
+
 static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
 
 static void _scene_emit_panel_render(
@@ -589,6 +595,97 @@ static DvzSampledField* _scene_ensure_owned_image_field(
                            .depth = 1,
                        });
     return field;
+}
+
+
+
+/**
+ * Reset one sampled-field slot to its empty state.
+ *
+ * @param field the field slot
+ */
+static void _scene_field_reset(DvzSampledField* field)
+{
+    if (field == NULL)
+        return;
+    if (field->data != NULL)
+    {
+        dvz_free(field->data);
+        field->data = NULL;
+    }
+    dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
+}
+
+
+
+/**
+ * Reset one scene-buffer slot to its empty state.
+ *
+ * @param buffer the buffer slot
+ */
+static void _scene_buffer_reset(DvzSceneBuffer* buffer)
+{
+    if (buffer == NULL)
+        return;
+    if (buffer->data != NULL)
+    {
+        dvz_free(buffer->data);
+        buffer->data = NULL;
+    }
+    dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
+}
+
+
+
+/**
+ * Reset one visual slot and optionally release owned subordinate resources.
+ *
+ * @param visual the visual slot
+ * @param release_owned_resources whether owned bindings should be destroyed
+ */
+static void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
+{
+    if (visual == NULL)
+        return;
+    for (uint32_t i = 0; i < visual->attr_count; i++)
+    {
+        if (visual->attrs[i].data != NULL)
+        {
+            dvz_free(visual->attrs[i].data);
+            visual->attrs[i].data = NULL;
+        }
+    }
+    if (release_owned_resources)
+    {
+        _scene_release_visual_field(visual);
+        _scene_release_visual_buffer(visual);
+        _scene_release_visual_scale(visual);
+    }
+    else
+    {
+        _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
+        _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
+        _visual_binding_clear(visual, DVZ_VISUAL_BINDING_SCALE);
+        if (visual->texture.upload != NULL)
+        {
+            dvz_free(visual->texture.upload);
+            visual->texture.upload = NULL;
+            visual->texture.upload_size = 0;
+        }
+        _scene_visual_texture_mark_clean(visual);
+    }
+    if (visual->link_keys != NULL)
+    {
+        dvz_free(visual->link_keys);
+        visual->link_keys = NULL;
+    }
+    if (visual->texture.rgba != NULL)
+    {
+        dvz_free(visual->texture.rgba);
+        visual->texture.rgba = NULL;
+        visual->texture.rgba_size = 0;
+    }
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
 }
 
 
@@ -1878,64 +1975,12 @@ void dvz_scene_destroy(DvzScene* scene)
         return;
     if (!_scene_visual_mutation_allowed(scene, "destroy scene-owned visual data"))
         return;
-    /* Destroy all visuals first (free attribute data) */
     for (uint32_t i = 0; i < scene->visual_count; i++)
-    {
-        DvzVisual* v = &scene->visuals[i];
-        for (uint32_t j = 0; j < v->attr_count; j++)
-        {
-            if (v->attrs[j].data != NULL)
-            {
-                dvz_free(v->attrs[j].data);
-                v->attrs[j].data = NULL;
-            }
-        }
-        if (v->texture.rgba != NULL)
-        {
-            dvz_free(v->texture.rgba);
-            v->texture.rgba = NULL;
-            v->texture.rgba_size = 0;
-        }
-        if (v->texture.upload != NULL)
-        {
-            dvz_free(v->texture.upload);
-            v->texture.upload = NULL;
-            v->texture.upload_size = 0;
-        }
-        v->field = NULL;
-        v->field_owned = false;
-        v->buffer = NULL;
-        v->scale = NULL;
-        if (v->link_keys != NULL)
-        {
-            dvz_free(v->link_keys);
-            v->link_keys = NULL;
-        }
-        v->link_channel = NULL;
-        v->link_key_count = 0;
-        for (uint32_t j = 0; j < DVZ_SCENE_MAX_VISUAL_BINDINGS; j++)
-            dvz_memset(&v->bindings[j], sizeof(DvzVisualBinding), 0, sizeof(DvzVisualBinding));
-    }
+        _scene_visual_reset(&scene->visuals[i], true);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
-    {
-        DvzSampledField* field = &scene->fields[i];
-        if (field->data != NULL)
-        {
-            dvz_free(field->data);
-            field->data = NULL;
-        }
-        field->scene = NULL;
-    }
+        _scene_field_reset(&scene->fields[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
-    {
-        DvzSceneBuffer* buffer = &scene->buffers[i];
-        if (buffer->data != NULL)
-        {
-            dvz_free(buffer->data);
-            buffer->data = NULL;
-        }
-        buffer->scene = NULL;
-    }
+        _scene_buffer_reset(&scene->buffers[i]);
     for (uint32_t i = 0; i < scene->selection_count; i++)
         scene->selections[i].scene = NULL;
     for (uint32_t i = 0; i < scene->interaction_count; i++)
@@ -3434,12 +3479,7 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
             }
         }
     }
-    if (field->data != NULL)
-    {
-        dvz_free(field->data);
-        field->data = NULL;
-    }
-    dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
+    _scene_field_reset(field);
     return true;
 }
 
@@ -3701,12 +3741,7 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
                 _scene_release_visual_buffer(visual);
         }
     }
-    if (buffer->data != NULL)
-    {
-        dvz_free(buffer->data);
-        buffer->data = NULL;
-    }
-    dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
+    _scene_buffer_reset(buffer);
 }
 
 
@@ -3867,32 +3902,7 @@ void dvz_visual_destroy(DvzVisual* visual)
         return;
     if (!_scene_visual_mutation_allowed(visual->scene, "destroy scene-owned visual data"))
         return;
-    for (uint32_t i = 0; i < visual->attr_count; i++)
-    {
-        if (visual->attrs[i].data != NULL)
-        {
-            dvz_free(visual->attrs[i].data);
-            visual->attrs[i].data = NULL;
-        }
-    }
-    _scene_release_visual_field(visual);
-    _scene_release_visual_buffer(visual);
-    _scene_release_visual_scale(visual);
-    if (visual->link_keys != NULL)
-    {
-        dvz_free(visual->link_keys);
-        visual->link_keys = NULL;
-    }
-    visual->link_channel = NULL;
-    visual->link_key_count = 0;
-    if (visual->texture.rgba != NULL)
-    {
-        dvz_free(visual->texture.rgba);
-        visual->texture.rgba = NULL;
-        visual->texture.rgba_size = 0;
-    }
-    visual->attr_count = 0;
-    visual->scene      = NULL;
+    _scene_visual_reset(visual, true);
 }
 
 
