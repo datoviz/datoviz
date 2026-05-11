@@ -118,6 +118,17 @@ static bool _scene_color_from_colormap(
 static bool _scene_prepare_image_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
 
+static bool _selection_matches_pick(
+    const DvzSelection* selection, const DvzPickResult* pick, DvzSelectionItem* out_item);
+
+static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelectionItem* b);
+
+static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelectionItem* item);
+
+static bool _scene_push_pick_result(DvzScene* scene, const DvzPickResult* result);
+
+static bool _scene_push_probe_result(DvzScene* scene, const DvzProbeResult* result);
+
 
 
 
@@ -270,6 +281,89 @@ static uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer*
             return i;
     }
     return UINT32_MAX;
+}
+
+
+static bool _selection_matches_pick(
+    const DvzSelection* selection, const DvzPickResult* pick, DvzSelectionItem* out_item)
+{
+    ANN(selection);
+    ANN(pick);
+    ANN(out_item);
+    if (!pick->hit)
+        return false;
+    if (pick->resolved_target == DVZ_SCENE_TARGET_NONE || pick->resolved_id == 0)
+        return false;
+    if (selection->desc.target != DVZ_SCENE_TARGET_NONE &&
+        selection->desc.target != pick->resolved_target)
+        return false;
+    out_item->visual_id = pick->visual_id;
+    out_item->target = pick->resolved_target;
+    out_item->target_id = pick->resolved_id;
+    out_item->link_key = 0;
+    return true;
+}
+
+
+static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelectionItem* b)
+{
+    ANN(a);
+    ANN(b);
+    return a->visual_id == b->visual_id && a->target == b->target && a->target_id == b->target_id &&
+           a->link_key == b->link_key;
+}
+
+
+static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelectionItem* item)
+{
+    ANN(selection);
+    ANN(item);
+    for (uint32_t i = 0; i < selection->item_count; i++)
+    {
+        if (!_selection_item_equals(&selection->items[i], item))
+            continue;
+        for (uint32_t j = i + 1; j < selection->item_count; j++)
+            selection->items[j - 1] = selection->items[j];
+        selection->item_count--;
+        dvz_memset(
+            &selection->items[selection->item_count], sizeof(DvzSelectionItem), 0,
+            sizeof(DvzSelectionItem));
+        return true;
+    }
+    return false;
+}
+
+
+static bool _scene_push_pick_result(DvzScene* scene, const DvzPickResult* result)
+{
+    ANN(scene);
+    ANN(result);
+    if (scene->pick_result_count >= DVZ_SCENE_MAX_PICK_RESULTS)
+    {
+        log_error("pick result queue is full");
+        return false;
+    }
+    uint32_t index = (scene->pick_result_head + scene->pick_result_count) % DVZ_SCENE_MAX_PICK_RESULTS;
+    scene->pick_results[index] = *result;
+    scene->pick_result_count++;
+    return true;
+}
+
+
+static bool _scene_push_probe_result(DvzScene* scene, const DvzProbeResult* result)
+{
+    ANN(scene);
+    ANN(result);
+    if (scene->probe_result_count >= DVZ_SCENE_MAX_PROBE_RESULTS)
+    {
+        log_error("probe result queue is full");
+        return false;
+    }
+    uint32_t index =
+        (scene->probe_result_head + scene->probe_result_count) % DVZ_SCENE_MAX_PROBE_RESULTS;
+    scene->probe_results[index] = *result;
+    scene->probe_result_count++;
+    return true;
 }
 
 
@@ -1266,8 +1360,8 @@ void dvz_scene_destroy(DvzScene* scene)
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         DvzVisual* v = &scene->visuals[i];
-    for (uint32_t j = 0; j < v->attr_count; j++)
-    {
+        for (uint32_t j = 0; j < v->attr_count; j++)
+        {
             if (v->attrs[j].data != NULL)
             {
                 dvz_free(v->attrs[j].data);
@@ -1290,6 +1384,13 @@ void dvz_scene_destroy(DvzScene* scene)
         v->field_owned = false;
         v->buffer = NULL;
         v->scale = NULL;
+        if (v->link_keys != NULL)
+        {
+            dvz_free(v->link_keys);
+            v->link_keys = NULL;
+        }
+        v->link_channel = NULL;
+        v->link_key_count = 0;
         for (uint32_t j = 0; j < DVZ_SCENE_MAX_VISUAL_BINDINGS; j++)
             dvz_memset(&v->bindings[j], sizeof(DvzVisualBinding), 0, sizeof(DvzVisualBinding));
     }
@@ -1313,6 +1414,14 @@ void dvz_scene_destroy(DvzScene* scene)
         }
         buffer->scene = NULL;
     }
+    for (uint32_t i = 0; i < scene->selection_count; i++)
+        scene->selections[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->interaction_count; i++)
+        scene->interactions[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->link_channel_count; i++)
+        scene->link_channels[i].scene = NULL;
+    for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
+        scene->pinned_readouts[i].scene = NULL;
     if (scene->emitter != NULL)
     {
         dvz_frame_plan_emitter_destroy(scene->emitter);
@@ -1702,6 +1811,9 @@ void dvz_panel_destroy(DvzPanel* panel)
     panel->figure       = NULL;
     panel->visual_count = 0;
     panel->colorbar_count = 0;
+    panel->interaction = NULL;
+    panel->pinned_readout_count = 0;
+    dvz_memset(&panel->hover, sizeof(DvzHoverState), 0, sizeof(DvzHoverState));
 }
 
 
@@ -1818,6 +1930,640 @@ void dvz_panel_set_background_color(DvzPanel* panel, float r, float g, float b, 
         /* Existing background — just update its color. Position is already correct. */
         dvz_visual_set_data(panel->background_visual, "color", colors, 4);
     }
+}
+
+
+
+/*************************************************************************************************/
+/*  Interaction / selection / readout                                                           */
+/*************************************************************************************************/
+
+/**
+ * Create a scene-owned interaction policy object.
+ *
+ * @param scene the scene
+ * @return the interaction policy, or NULL on allocation failure
+ */
+DvzInteractionPolicy* dvz_interaction(DvzScene* scene)
+{
+    ANN(scene);
+    if (scene->interaction_count >= DVZ_SCENE_MAX_INTERACTIONS)
+    {
+        log_error("maximum interaction policy count reached");
+        return NULL;
+    }
+    DvzInteractionPolicy* interaction = &scene->interactions[scene->interaction_count++];
+    dvz_memset(interaction, sizeof(DvzInteractionPolicy), 0, sizeof(DvzInteractionPolicy));
+    interaction->scene = scene;
+    interaction->pick_hit_policy = DVZ_PICK_HIT_FRONTMOST;
+    return interaction;
+}
+
+
+/**
+ * Destroy a scene-owned interaction policy object.
+ *
+ * @param interaction the interaction policy
+ */
+void dvz_interaction_destroy(DvzInteractionPolicy* interaction)
+{
+    if (interaction == NULL)
+        return;
+    if (interaction->panel != NULL && interaction->panel->interaction == interaction)
+        interaction->panel->interaction = NULL;
+    interaction->scene = NULL;
+    interaction->panel = NULL;
+    interaction->selection = NULL;
+    interaction->link_channel = NULL;
+    interaction->auto_pin_readout = false;
+}
+
+
+/**
+ * Bind an interaction policy to a panel.
+ *
+ * @param interaction the interaction policy
+ * @param panel the panel
+ */
+void dvz_interaction_bind_panel(DvzInteractionPolicy* interaction, DvzPanel* panel)
+{
+    ANN(interaction);
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL || interaction->scene != panel->figure->scene)
+    {
+        log_error("cannot bind an interaction policy across scenes");
+        return;
+    }
+    if (interaction->panel != NULL && interaction->panel->interaction == interaction)
+        interaction->panel->interaction = NULL;
+    panel->interaction = interaction;
+    interaction->panel = panel;
+}
+
+
+/**
+ * Attach a retained selection object to an interaction policy.
+ *
+ * @param interaction the interaction policy
+ * @param selection the selection
+ */
+void dvz_interaction_set_selection(DvzInteractionPolicy* interaction, DvzSelection* selection)
+{
+    ANN(interaction);
+    if (selection != NULL && selection->scene != interaction->scene)
+    {
+        log_error("cannot bind a selection from a different scene");
+        return;
+    }
+    interaction->selection = selection;
+}
+
+
+/**
+ * Set the active link channel used by an interaction policy.
+ *
+ * @param interaction the interaction policy
+ * @param channel the link channel
+ */
+void dvz_interaction_set_link_channel(
+    DvzInteractionPolicy* interaction, DvzLinkChannel* channel)
+{
+    ANN(interaction);
+    if (channel != NULL && channel->scene != interaction->scene)
+    {
+        log_error("cannot bind a link channel from a different scene");
+        return;
+    }
+    interaction->link_channel = channel;
+}
+
+
+/**
+ * Set the hit-selection policy used for picking.
+ *
+ * @param interaction the interaction policy
+ * @param policy the hit-selection policy
+ */
+void dvz_interaction_set_pick_hit_policy(
+    DvzInteractionPolicy* interaction, DvzPickHitPolicy policy)
+{
+    ANN(interaction);
+    interaction->pick_hit_policy = policy;
+}
+
+
+/**
+ * Enable or disable automatic probe pinning.
+ *
+ * @param interaction the interaction policy
+ * @param enabled whether auto pinning is enabled
+ */
+void dvz_interaction_set_auto_pin_readout(DvzInteractionPolicy* interaction, bool enabled)
+{
+    ANN(interaction);
+    interaction->auto_pin_readout = enabled;
+}
+
+
+/**
+ * Set the picking capabilities exposed by a visual.
+ *
+ * @param visual the visual
+ * @param capabilities the capability bitmask
+ */
+void dvz_visual_set_pick_capabilities(DvzVisual* visual, uint32_t capabilities)
+{
+    ANN(visual);
+    visual->pick_capabilities = capabilities;
+}
+
+
+/**
+ * Bind link keys for one visual on one scene link channel.
+ *
+ * @param visual the visual
+ * @param channel the link channel
+ * @param link_keys the per-item link keys
+ * @param item_count the number of keys
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_link_keys(
+    DvzVisual* visual, DvzLinkChannel* channel, const uint64_t* link_keys, uint32_t item_count)
+{
+    ANN(visual);
+    if (channel == NULL || channel->scene != visual->scene)
+    {
+        log_error("cannot bind link keys with a channel from a different scene");
+        return -1;
+    }
+    if (item_count > 0 && link_keys == NULL)
+    {
+        log_error("link key array is NULL");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "bind link keys"))
+        return -1;
+    if (visual->link_keys != NULL)
+    {
+        dvz_free(visual->link_keys);
+        visual->link_keys = NULL;
+    }
+    visual->link_channel = channel;
+    visual->link_key_count = item_count;
+    if (item_count == 0)
+        return 0;
+    visual->link_keys = (uint64_t*)dvz_calloc(item_count, sizeof(uint64_t));
+    if (visual->link_keys == NULL)
+    {
+        visual->link_key_count = 0;
+        return -1;
+    }
+    dvz_memcpy(visual->link_keys, item_count * sizeof(uint64_t), link_keys, item_count * sizeof(uint64_t));
+    return 0;
+}
+
+
+/**
+ * Create a scene-owned link channel.
+ *
+ * @param scene the scene
+ * @param name the stable channel name, or NULL
+ * @return the link channel, or NULL on allocation failure
+ */
+DvzLinkChannel* dvz_link_channel(DvzScene* scene, const char* name)
+{
+    ANN(scene);
+    if (scene->link_channel_count >= DVZ_SCENE_MAX_LINK_CHANNELS)
+    {
+        log_error("maximum link channel count reached");
+        return NULL;
+    }
+    DvzLinkChannel* channel = &scene->link_channels[scene->link_channel_count++];
+    dvz_memset(channel, sizeof(DvzLinkChannel), 0, sizeof(DvzLinkChannel));
+    channel->scene = scene;
+    if (name != NULL)
+        dvz_strlcpy(channel->name, name, sizeof(channel->name));
+    return channel;
+}
+
+
+/**
+ * Destroy a scene-owned link channel.
+ *
+ * @param channel the link channel
+ */
+void dvz_link_channel_destroy(DvzLinkChannel* channel)
+{
+    if (channel == NULL)
+        return;
+    if (channel->scene != NULL)
+    {
+        DvzScene* scene = channel->scene;
+        for (uint32_t i = 0; i < scene->visual_count; i++)
+        {
+            if (scene->visuals[i].link_channel == channel)
+            {
+                scene->visuals[i].link_channel = NULL;
+                if (scene->visuals[i].link_keys != NULL)
+                {
+                    dvz_free(scene->visuals[i].link_keys);
+                    scene->visuals[i].link_keys = NULL;
+                }
+                scene->visuals[i].link_key_count = 0;
+            }
+        }
+        for (uint32_t i = 0; i < scene->interaction_count; i++)
+        {
+            if (scene->interactions[i].link_channel == channel)
+                scene->interactions[i].link_channel = NULL;
+        }
+        for (uint32_t i = 0; i < scene->figure_count; i++)
+        {
+            DvzFigure* figure = &scene->figures[i];
+            for (uint32_t j = 0; j < figure->panel_count; j++)
+            {
+                DvzPanel* panel = &figure->panels[j];
+                if (panel->hover.link_channel == channel)
+                    panel->hover.link_channel = NULL;
+            }
+        }
+    }
+    channel->scene = NULL;
+}
+
+
+/**
+ * Create a retained scene-owned selection object.
+ *
+ * @param scene the scene
+ * @param desc the selection descriptor, or NULL for defaults
+ * @return the selection, or NULL on allocation failure
+ */
+DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc)
+{
+    ANN(scene);
+    if (scene->selection_count >= DVZ_SCENE_MAX_SELECTIONS)
+    {
+        log_error("maximum selection count reached");
+        return NULL;
+    }
+    DvzSelection* selection = &scene->selections[scene->selection_count++];
+    dvz_memset(selection, sizeof(DvzSelection), 0, sizeof(DvzSelection));
+    selection->scene = scene;
+    if (desc != NULL)
+        selection->desc = *desc;
+    else
+        selection->desc.mode = DVZ_SELECT_REPLACE;
+    return selection;
+}
+
+
+/**
+ * Destroy a retained selection object.
+ *
+ * @param selection the selection
+ */
+void dvz_selection_destroy(DvzSelection* selection)
+{
+    if (selection == NULL)
+        return;
+    if (selection->scene != NULL)
+    {
+        DvzScene* scene = selection->scene;
+        for (uint32_t i = 0; i < scene->interaction_count; i++)
+        {
+            if (scene->interactions[i].selection == selection)
+                scene->interactions[i].selection = NULL;
+        }
+    }
+    selection->scene = NULL;
+    selection->item_count = 0;
+}
+
+
+/**
+ * Clear the contents of a selection object.
+ *
+ * @param selection the selection
+ */
+void dvz_selection_clear(DvzSelection* selection)
+{
+    ANN(selection);
+    selection->item_count = 0;
+    dvz_memset(selection->items, sizeof(selection->items), 0, sizeof(selection->items));
+}
+
+
+/**
+ * Apply one resolved pick result to a selection.
+ *
+ * @param selection the selection
+ * @param pick the pick result
+ * @return 0 on success, -1 on error
+ */
+int dvz_selection_apply_pick(DvzSelection* selection, const DvzPickResult* pick)
+{
+    ANN(selection);
+    ANN(pick);
+    DvzSelectionItem item = {0};
+    if (!_selection_matches_pick(selection, pick, &item))
+        return -1;
+    bool present = false;
+    for (uint32_t i = 0; i < selection->item_count; i++)
+    {
+        if (_selection_item_equals(&selection->items[i], &item))
+        {
+            present = true;
+            break;
+        }
+    }
+    switch (selection->desc.mode)
+    {
+    case DVZ_SELECT_REPLACE:
+        dvz_selection_clear(selection);
+        selection->items[0] = item;
+        selection->item_count = 1;
+        return 0;
+    case DVZ_SELECT_ADDITIVE:
+        if (present)
+            return 0;
+        break;
+    case DVZ_SELECT_SUBTRACT:
+        if (present)
+            _scene_remove_selection_item(selection, &item);
+        return 0;
+    case DVZ_SELECT_TOGGLE:
+        if (present)
+        {
+            _scene_remove_selection_item(selection, &item);
+            return 0;
+        }
+        break;
+    default:
+        break;
+    }
+    if (selection->item_count >= DVZ_SCENE_MAX_SELECTION_ITEMS)
+    {
+        log_error("selection item capacity reached");
+        return -1;
+    }
+    selection->items[selection->item_count++] = item;
+    return 0;
+}
+
+
+/**
+ * Return the number of stored selection items.
+ *
+ * @param selection the selection
+ * @return the item count
+ */
+uint32_t dvz_selection_count(const DvzSelection* selection)
+{
+    ANN(selection);
+    return selection->item_count;
+}
+
+
+/**
+ * Copy selection contents into caller-owned storage.
+ *
+ * @param selection the selection
+ * @param items the destination item array
+ * @param max_items the maximum number of items to write
+ */
+void dvz_selection_copy(
+    const DvzSelection* selection, DvzSelectionItem* items, uint32_t max_items)
+{
+    ANN(selection);
+    if (items == NULL || max_items == 0)
+        return;
+    uint32_t count = selection->item_count < max_items ? selection->item_count : max_items;
+    dvz_memcpy(items, max_items * sizeof(DvzSelectionItem), selection->items, count * sizeof(DvzSelectionItem));
+}
+
+
+/**
+ * Queue one explicit pick request on a panel.
+ *
+ * @param panel the panel
+ * @param x the logical panel x coordinate
+ * @param y the logical panel y coordinate
+ * @param request the request descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_panel_pick(DvzPanel* panel, double x, double y, const DvzPickRequest* request)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return -1;
+    DvzScene* scene = panel->figure->scene;
+    if (scene->pending_pick_count >= DVZ_SCENE_MAX_PENDING_REQUESTS)
+    {
+        log_error("pick request queue is full");
+        return -1;
+    }
+    DvzPendingPickRequest* pending = &scene->pending_picks[scene->pending_pick_count++];
+    dvz_memset(pending, sizeof(DvzPendingPickRequest), 0, sizeof(DvzPendingPickRequest));
+    pending->panel = panel;
+    pending->x = x;
+    pending->y = y;
+    if (request != NULL)
+        pending->request = *request;
+    else if (panel->interaction != NULL)
+        pending->request.hit_policy = panel->interaction->pick_hit_policy;
+    return 0;
+}
+
+
+/**
+ * Queue one explicit probe request on a panel.
+ *
+ * @param panel the panel
+ * @param x the logical panel x coordinate
+ * @param y the logical panel y coordinate
+ * @param request the request descriptor, or NULL for defaults
+ * @return 0 on success, -1 on error
+ */
+int dvz_panel_probe(DvzPanel* panel, double x, double y, const DvzProbeRequest* request)
+{
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return -1;
+    DvzScene* scene = panel->figure->scene;
+    if (scene->pending_probe_count >= DVZ_SCENE_MAX_PENDING_REQUESTS)
+    {
+        log_error("probe request queue is full");
+        return -1;
+    }
+    DvzPendingProbeRequest* pending = &scene->pending_probes[scene->pending_probe_count++];
+    dvz_memset(pending, sizeof(DvzPendingProbeRequest), 0, sizeof(DvzPendingProbeRequest));
+    pending->panel = panel;
+    pending->x = x;
+    pending->y = y;
+    if (request != NULL)
+        pending->request = *request;
+    return 0;
+}
+
+
+/**
+ * Poll one resolved pick result from the scene queue.
+ *
+ * @param scene the scene
+ * @param out_result the destination result
+ * @return true when a result was written
+ */
+bool dvz_scene_poll_pick(DvzScene* scene, DvzPickResult* out_result)
+{
+    ANN(scene);
+    ANN(out_result);
+    if (scene->pick_result_count == 0)
+        return false;
+    *out_result = scene->pick_results[scene->pick_result_head];
+    scene->pick_result_head = (scene->pick_result_head + 1) % DVZ_SCENE_MAX_PICK_RESULTS;
+    scene->pick_result_count--;
+    return true;
+}
+
+
+/**
+ * Poll one resolved probe result from the scene queue.
+ *
+ * @param scene the scene
+ * @param out_result the destination result
+ * @return true when a result was written
+ */
+bool dvz_scene_poll_probe(DvzScene* scene, DvzProbeResult* out_result)
+{
+    ANN(scene);
+    ANN(out_result);
+    if (scene->probe_result_count == 0)
+        return false;
+    *out_result = scene->probe_results[scene->probe_result_head];
+    scene->probe_result_head = (scene->probe_result_head + 1) % DVZ_SCENE_MAX_PROBE_RESULTS;
+    scene->probe_result_count--;
+    return true;
+}
+
+
+/**
+ * Return the retained hover state for one panel.
+ *
+ * @param scene the scene
+ * @param panel the panel
+ * @return the hover state, or NULL when the panel is foreign
+ */
+const DvzHoverState* dvz_scene_hover(const DvzScene* scene, const DvzPanel* panel)
+{
+    ANN(scene);
+    ANN(panel);
+    if (panel->figure == NULL || panel->figure->scene != scene)
+        return NULL;
+    return &panel->hover;
+}
+
+
+/**
+ * Create a pinned readout from a resolved probe result.
+ *
+ * @param panel the panel
+ * @param probe the probe result
+ * @return the pinned readout, or NULL on allocation failure
+ */
+DvzPinnedReadout* dvz_pinned_readout(DvzPanel* panel, const DvzProbeResult* probe)
+{
+    ANN(panel);
+    ANN(probe);
+    if (panel->figure == NULL || panel->figure->scene == NULL)
+        return NULL;
+    DvzScene* scene = panel->figure->scene;
+    if (scene->pinned_readout_count >= DVZ_SCENE_MAX_PINNED_READOUTS)
+    {
+        log_error("maximum pinned readout count reached");
+        return NULL;
+    }
+    if (panel->pinned_readout_count >= DVZ_SCENE_MAX_PINNED_READOUTS)
+    {
+        log_error("maximum panel pinned readout count reached");
+        return NULL;
+    }
+    DvzPinnedReadout* readout = &scene->pinned_readouts[scene->pinned_readout_count++];
+    dvz_memset(readout, sizeof(DvzPinnedReadout), 0, sizeof(DvzPinnedReadout));
+    readout->scene = scene;
+    readout->panel = panel;
+    readout->probe = *probe;
+    panel->pinned_readouts[panel->pinned_readout_count++] = readout;
+    return readout;
+}
+
+
+/**
+ * Destroy a pinned readout object.
+ *
+ * @param readout the pinned readout
+ */
+void dvz_pinned_readout_destroy(DvzPinnedReadout* readout)
+{
+    if (readout == NULL)
+        return;
+    if (readout->panel != NULL)
+    {
+        DvzPanel* panel = readout->panel;
+        for (uint32_t i = 0; i < panel->pinned_readout_count; i++)
+        {
+            if (panel->pinned_readouts[i] != readout)
+                continue;
+            for (uint32_t j = i + 1; j < panel->pinned_readout_count; j++)
+                panel->pinned_readouts[j - 1] = panel->pinned_readouts[j];
+            panel->pinned_readouts[panel->pinned_readout_count - 1] = NULL;
+            panel->pinned_readout_count--;
+            break;
+        }
+    }
+    readout->scene = NULL;
+    readout->panel = NULL;
+    readout->has_format = false;
+}
+
+
+/**
+ * Override formatting on a pinned readout.
+ *
+ * @param readout the pinned readout
+ * @param format the format descriptor, or NULL to clear the override
+ */
+void dvz_pinned_readout_set_format(DvzPinnedReadout* readout, const DvzFormatDesc* format)
+{
+    ANN(readout);
+    readout->has_format = format != NULL;
+    _format_state_copy(&readout->format, format);
+}
+
+
+/**
+ * Push one resolved pick result into the internal scene queue.
+ *
+ * @param scene the scene
+ * @param result the resolved result
+ * @return true on success
+ */
+bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result)
+{
+    return _scene_push_pick_result(scene, result);
+}
+
+
+/**
+ * Push one resolved probe result into the internal scene queue.
+ *
+ * @param scene the scene
+ * @param result the resolved result
+ * @return true on success
+ */
+bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result)
+{
+    return _scene_push_probe_result(scene, result);
 }
 
 
@@ -2684,6 +3430,13 @@ void dvz_visual_destroy(DvzVisual* visual)
     _scene_release_visual_field(visual);
     _scene_release_visual_buffer(visual);
     _scene_release_visual_scale(visual);
+    if (visual->link_keys != NULL)
+    {
+        dvz_free(visual->link_keys);
+        visual->link_keys = NULL;
+    }
+    visual->link_channel = NULL;
+    visual->link_key_count = 0;
     if (visual->texture.rgba != NULL)
     {
         dvz_free(visual->texture.rgba);

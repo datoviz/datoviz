@@ -35,10 +35,18 @@
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
 #define DVZ_SCENE_MAX_COLORBARS  64
+#define DVZ_SCENE_MAX_INTERACTIONS 64
+#define DVZ_SCENE_MAX_SELECTIONS 64
+#define DVZ_SCENE_MAX_LINK_CHANNELS 64
+#define DVZ_SCENE_MAX_PINNED_READOUTS 128
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
 #define DVZ_SCENE_MAX_COLOR_STOPS 32
 #define DVZ_SCENE_MAX_ITEM_ATTRS 8
 #define DVZ_SCENE_MAX_VISUAL_BINDINGS 3
+#define DVZ_SCENE_MAX_SELECTION_ITEMS 1024
+#define DVZ_SCENE_MAX_PICK_RESULTS 128
+#define DVZ_SCENE_MAX_PROBE_RESULTS 128
+#define DVZ_SCENE_MAX_PENDING_REQUESTS 128
 
 
 
@@ -93,6 +101,10 @@ typedef struct DvzSceneBuffer DvzSceneBuffer;
 typedef struct DvzScale   DvzScale;
 typedef struct DvzColormap DvzColormap;
 typedef struct DvzColorbar DvzColorbar;
+typedef struct DvzInteractionPolicy DvzInteractionPolicy;
+typedef struct DvzSelection DvzSelection;
+typedef struct DvzLinkChannel DvzLinkChannel;
+typedef struct DvzPinnedReadout DvzPinnedReadout;
 
 
 
@@ -160,6 +172,69 @@ struct DvzColorbar
     uint32_t flags;
     bool has_format;
     DvzSceneFormatState format;
+};
+
+
+
+/*************************************************************************************************/
+/*  Interaction / selection / readout                                                           */
+/*************************************************************************************************/
+
+struct DvzLinkChannel
+{
+    DvzScene* scene;
+    char name[DVZ_SCENE_LABEL_SIZE];
+};
+
+
+struct DvzSelection
+{
+    DvzScene* scene;
+    DvzSelectionDesc desc;
+    uint32_t item_count;
+    DvzSelectionItem items[DVZ_SCENE_MAX_SELECTION_ITEMS];
+};
+
+
+struct DvzInteractionPolicy
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzSelection* selection;
+    DvzLinkChannel* link_channel;
+    DvzPickHitPolicy pick_hit_policy;
+    bool auto_pin_readout;
+};
+
+
+struct DvzPinnedReadout
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzProbeResult probe;
+    bool has_format;
+    DvzSceneFormatState format;
+};
+
+
+typedef struct DvzPendingPickRequest DvzPendingPickRequest;
+typedef struct DvzPendingProbeRequest DvzPendingProbeRequest;
+
+struct DvzPendingPickRequest
+{
+    DvzPanel* panel;
+    double x;
+    double y;
+    DvzPickRequest request;
+};
+
+
+struct DvzPendingProbeRequest
+{
+    DvzPanel* panel;
+    double x;
+    double y;
+    DvzProbeRequest request;
 };
 
 
@@ -258,6 +333,10 @@ struct DvzVisual
     DvzVisualTexture texture;      /* used by DVZ_VISUAL_TYPE_IMAGE */
     DvzScale*     scale;           /* first slice: image colormap scale */
     char          scale_slot[32];  /* semantic binding slot name */
+    uint32_t      pick_capabilities;
+    DvzLinkChannel* link_channel;
+    uint64_t*       link_keys;
+    uint32_t        link_key_count;
     DvzPrimitiveShadingState primitive_shading;
     bool                     primitive_shading_dirty;
     bool                     mesh_default_color;
@@ -295,6 +374,8 @@ struct DvzPanel
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */
+    DvzInteractionPolicy* interaction;
+    DvzHoverState hover;
 
     /* Optional background visual created by dvz_panel_set_background_*. The visual itself
      * lives in scene->visuals[] (weak ref); this pointer lets repeat calls update the
@@ -303,6 +384,8 @@ struct DvzPanel
 
     uint32_t colorbar_count;
     DvzColorbar* colorbars[DVZ_SCENE_MAX_PANEL_COLORBARS];
+    uint32_t pinned_readout_count;
+    DvzPinnedReadout* pinned_readouts[DVZ_SCENE_MAX_PINNED_READOUTS];
 };
 
 
@@ -356,4 +439,39 @@ struct DvzScene
 
     uint32_t colorbar_count;
     DvzColorbar colorbars[DVZ_SCENE_MAX_COLORBARS];
+
+    uint32_t interaction_count;
+    DvzInteractionPolicy interactions[DVZ_SCENE_MAX_INTERACTIONS];
+
+    uint32_t selection_count;
+    DvzSelection selections[DVZ_SCENE_MAX_SELECTIONS];
+
+    uint32_t link_channel_count;
+    DvzLinkChannel link_channels[DVZ_SCENE_MAX_LINK_CHANNELS];
+
+    uint32_t pinned_readout_count;
+    DvzPinnedReadout pinned_readouts[DVZ_SCENE_MAX_PINNED_READOUTS];
+
+    uint32_t pending_pick_count;
+    DvzPendingPickRequest pending_picks[DVZ_SCENE_MAX_PENDING_REQUESTS];
+
+    uint32_t pending_probe_count;
+    DvzPendingProbeRequest pending_probes[DVZ_SCENE_MAX_PENDING_REQUESTS];
+
+    uint32_t pick_result_count;
+    uint32_t pick_result_head;
+    DvzPickResult pick_results[DVZ_SCENE_MAX_PICK_RESULTS];
+
+    uint32_t probe_result_count;
+    uint32_t probe_result_head;
+    DvzProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
 };
+
+
+
+/*************************************************************************************************/
+/*  Internal interaction helpers                                                                */
+/*************************************************************************************************/
+
+bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result);
+bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result);

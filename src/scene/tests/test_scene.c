@@ -6692,6 +6692,162 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstI
 }
 
 
+int test_scene_interaction_core(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzInteractionPolicy* interaction = dvz_interaction(scene);
+    DvzSelection* selection =
+        dvz_selection(scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_ADDITIVE});
+    DvzLinkChannel* channel = dvz_link_channel(scene, "cells");
+    ANN(interaction);
+    ANN(selection);
+    ANN(channel);
+
+    dvz_interaction_bind_panel(interaction, panel);
+    dvz_interaction_set_selection(interaction, selection);
+    dvz_interaction_set_link_channel(interaction, channel);
+    dvz_interaction_set_pick_hit_policy(interaction, DVZ_PICK_HIT_OPAQUE_PREFERRED);
+    dvz_interaction_set_auto_pin_readout(interaction, true);
+
+    AT(panel->interaction == interaction);
+    AT(interaction->panel == panel);
+    AT(interaction->selection == selection);
+    AT(interaction->link_channel == channel);
+    AT(interaction->pick_hit_policy == DVZ_PICK_HIT_OPAQUE_PREFERRED);
+    AT(interaction->auto_pin_readout);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_selection_apply_pick_and_link_keys(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "items");
+    DvzSelection* selection = dvz_selection(
+        scene, &(DvzSelectionDesc){.mode = DVZ_SELECT_TOGGLE, .target = DVZ_SCENE_TARGET_ITEM});
+    DvzVisual* visual = dvz_point(scene, 0);
+    uint64_t keys[] = {10, 11, 12};
+    ANN(channel);
+    ANN(selection);
+    ANN(visual);
+
+    dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
+    AT(visual->pick_capabilities == DVZ_PICK_CAPABILITY_ITEM);
+    AT(dvz_visual_set_link_keys(visual, channel, keys, 3) == 0);
+    AT(visual->link_channel == channel);
+    AT(visual->link_key_count == 3);
+    AT(visual->link_keys[1] == 11);
+
+    DvzPickResult pick = {
+        .request_id = 1,
+        .hit = true,
+        .visual_id = 7,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 42,
+    };
+    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_count(selection) == 1);
+    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_count(selection) == 0);
+
+    pick.resolved_id = 43;
+    selection->desc.mode = DVZ_SELECT_ADDITIVE;
+    AT(dvz_selection_apply_pick(selection, &pick) == 0);
+    AT(dvz_selection_count(selection) == 1);
+
+    DvzSelectionItem items[2] = {0};
+    dvz_selection_copy(selection, items, 2);
+    AT(items[0].target == DVZ_SCENE_TARGET_ITEM);
+    AT(items[0].target_id == 43);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_pick(panel, 12.0, 34.0, &(DvzPickRequest){.request_id = 5}) == 0);
+    AT(dvz_panel_probe(panel, 9.0, 8.0, &(DvzProbeRequest){.request_id = 6}) == 0);
+    AT(scene->pending_pick_count == 1);
+    AT(scene->pending_probe_count == 1);
+    AT(scene->pending_picks[0].request.request_id == 5);
+    AT(scene->pending_probes[0].request.request_id == 6);
+
+    DvzPickResult pick = {
+        .request_id = 5,
+        .hit = true,
+        .panel_id = 1,
+        .visual_id = 2,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 99,
+    };
+    DvzProbeResult probe = {
+        .request_id = 6,
+        .hit = true,
+        .panel_id = 1,
+        .visual_id = 3,
+        .target = DVZ_SCENE_TARGET_SAMPLE,
+        .target_id = 17,
+        .value_kind = DVZ_PROBE_VALUE_SCALAR,
+        .scalar = 3.5,
+    };
+    dvz_strlcpy(probe.label, "density", sizeof(probe.label));
+
+    AT(_dvz_scene_enqueue_pick_result(scene, &pick));
+    AT(_dvz_scene_enqueue_probe_result(scene, &probe));
+
+    DvzPickResult out_pick = {0};
+    DvzProbeResult out_probe = {0};
+    AT(dvz_scene_poll_pick(scene, &out_pick));
+    AT(dvz_scene_poll_probe(scene, &out_probe));
+    AT(out_pick.resolved_id == 99);
+    AT(out_probe.scalar == 3.5);
+    AT(!dvz_scene_poll_pick(scene, &out_pick));
+
+    panel->hover.active = true;
+    panel->hover.pick = out_pick;
+    const DvzHoverState* hover = dvz_scene_hover(scene, panel);
+    ANN(hover);
+    AT(hover->active);
+    AT(hover->pick.resolved_id == 99);
+
+    DvzPinnedReadout* readout = dvz_pinned_readout(panel, &out_probe);
+    ANN(readout);
+    AT(panel->pinned_readout_count == 1);
+    AT(readout->probe.scalar == 3.5);
+    dvz_pinned_readout_set_format(
+        readout, &(DvzFormatDesc){.precision = 2, .suffix = " u"});
+    AT(readout->has_format);
+    AT(strcmp(readout->format.suffix, " u") == 0);
+    dvz_pinned_readout_destroy(readout);
+    AT(panel->pinned_readout_count == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
@@ -6929,6 +7085,9 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_repeated_partial_updates_across_frames);
     TEST_SIMPLE(test_scene_partial_update_merges_ranges_before_emit);
     TEST_SIMPLE(test_scene_multiple_panels_multiple_point_visuals_emit);
+    TEST_SIMPLE(test_scene_interaction_core);
+    TEST_SIMPLE(test_scene_selection_apply_pick_and_link_keys);
+    TEST_SIMPLE(test_scene_pick_probe_queues_and_pinned_readout);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
     TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);
