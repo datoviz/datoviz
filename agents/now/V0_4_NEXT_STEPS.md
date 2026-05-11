@@ -56,7 +56,9 @@ Read in this order:
    semantics,
 3. [../done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the active vertical-slice history,
-4. the current `scene` and `drp2` tests before broadening any API.
+4. [SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
+   before the pick/probe execution slice,
+5. the current `scene` and `drp2` tests before broadening any API.
 
 Deliver the next implementation slices in this order:
 
