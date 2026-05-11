@@ -1,7 +1,8 @@
 /*
  * Draft header sketch derived from spec/scene/.
- * This file is the authoritative draft C spelling for the scene API groups it covers.
- * It is not part of the installed public API yet.
+ * Installed headers under include/datoviz/scene*.h are authoritative for public names that
+ * already exist. This file is auxiliary scratch material for older/broader API ideas not yet
+ * promoted to installed public headers.
  */
 
 /*************************************************************************************************/

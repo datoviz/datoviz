@@ -2,10 +2,10 @@
 
 This document selects the current preferred scene-facing API defaults for Datoviz v0.4.
 
-`api/API_SURFACE.md` is the current bridge from scene semantics to the next public header draft.
-`spec/scene/headers/scene_api.h` remains the implementation-facing draft C spelling for the API
-groups it already covers. This document remains normative for broader design rationale and the
-Python binding architecture.
+`api/API_SURFACE.md` is the current bridge from scene semantics to public API shape policy.
+Installed headers under `include/datoviz/scene*.h` are authoritative for public names that already
+exist. This document remains normative for broader design rationale and the Python binding
+architecture.
 
 
 ## Position
@@ -14,8 +14,8 @@ This document sits:
 
 1. above `core/OBJECT_MODEL.md`,
 2. above `../semantics/VISUAL_CONTRACT.md` and `../pipeline/RESOURCE_MODEL.md`,
-3. beside `api/API_SURFACE.md`, which owns the next header-drafting policy,
-4. below `headers/scene_api.h` only for exact draft C spelling once the header sketch is updated.
+3. beside `api/API_SURFACE.md`, which owns public API shape policy,
+4. below installed public headers for exact names and signatures that already exist.
 
 
 ## Normative Status
@@ -24,7 +24,7 @@ This document is normative for the current preferred API direction.
 
 It should be read as:
 
-1. recording the design rationale behind `headers/scene_api.h`,
+1. recording the design rationale behind the public scene API profile,
 2. constraining implementation-oriented exploration to one coherent profile,
 3. leaving only a small set of explicitly deferred questions open.
 

@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `ACTIVE DRP2 EXECUTION NOTE`
-> - **Updated on:** `2026-05-08`
+> - **Updated on:** `2026-05-11`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
 >   proceeds.
 > - **Current branch priority:** DRP2 is now both an executable spec lane and an active C
@@ -20,11 +20,11 @@ browser runtime, without coupling the contract to Vulkan internals.
 
 The current implementation plan now specifically pressures DRP2 with:
 
-1. one minimal indexed 3D visual (`mesh`) on the native runtime,
-2. per-panel depth attachments and depth/stencil state,
-3. viewport/scissor and panel-relative UBO usage,
-4. an early browser/WebGPU feasibility replay,
-5. later transparency and picking paths.
+1. the now-active indexed `mesh` visual on the native runtime,
+2. scene-owned uniform-buffer style bindings for primitive/mesh shading,
+3. retained sampled-field texture updates and colormap scale binding,
+4. pending per-panel depth attachments and depth/stencil state,
+5. pending picking/probe readbacks and early browser/WebGPU replay.
 
 
 ## Current Status
@@ -74,11 +74,11 @@ What remains intentionally deferred:
 
 Pressure areas expected next:
 
-1. richer render-pipeline fixed-function state validation for the native 3D slice,
+1. readback and identity-routing pressure from scene picking/probe flows,
 2. fixture coverage that combines viewport/scissor, depth state, and draw sequencing,
-3. browser-oriented replay checks for the currently active command subset,
-4. multi-pass sequencing pressure from transparency work,
-5. readback and identity-routing pressure from scene picking flows.
+3. richer render-pipeline fixed-function state validation for the native 3D slice,
+4. browser-oriented replay checks for the currently active command subset,
+5. multi-pass sequencing pressure from transparency work.
 
 
 ## Validation Snapshot
@@ -154,11 +154,12 @@ Spec maintenance rules:
 
 Near-term spec work should concentrate on:
 
-1. depth-attachment and depth-state fixtures required by the first `mesh` slice,
-2. viewport/scissor and panel-region sequencing fixtures where scene emission now relies on them,
-3. browser-portability review of shader/module and pipeline assumptions,
-4. keeping transparency and picking requirements explicit but deferred until their first executable
-   fixture slice is ready.
+1. readback/picking/probe fixtures once the scene result queues start emitting real requests,
+2. depth-attachment and depth-state fixtures required by the mesh slice,
+3. viewport/scissor and panel-region sequencing fixtures where scene emission now relies on them,
+4. browser-portability review of shader/module and pipeline assumptions,
+5. keeping transparency requirements explicit but deferred until their first executable fixture slice
+   is ready.
 
 
 ## Guardrails

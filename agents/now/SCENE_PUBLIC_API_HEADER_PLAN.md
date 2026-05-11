@@ -1,143 +1,87 @@
 # Scene Public API Header Plan
 
 > **Execution Status**
-> - **Status:** `IMMEDIATE NEXT AGENT TASK`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** map the current interaction/text/scale/annotation notes onto concrete public
->   header drafting work.
-
-# Objective
-
-Stop expanding prose and draft the next scene-facing public header surface.
-
-The next agent should turn the spec-side API surface and active proposals into concrete API spelling
-in public headers and one implementation-facing scratch companion.
+> - **Status:** `HEADER DRAFT LANDED; IMPLEMENTATION FOLLOW-UP`
+> - **Updated on:** `2026-05-11`
+> - **Purpose:** record the current public scene header split and identify which declared API groups
+>   still need implementation.
 
 
-## Primary Deliverables
+## Current State
 
-1. Draft the first public API skeleton in [include/datoviz/scene.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene.h)
-   or in a small adjacent header split under `include/datoviz/scene/`.
-2. Add one implementation-facing companion note or scratch header for concrete typedefs, enums,
-   result structs, and ownership notes.
-3. Write `2-3` tiny end-to-end usage examples in docs before implementation starts.
-4. Only after the header surface feels coherent, begin the narrow first implementation slice.
+The first public scene header split now exists:
 
-Spec starting points:
+1. `include/datoviz/scene.h` remains the umbrella header and contains scene, figure, panel, visual,
+   buffer, primitive, mesh, image, and texture convenience APIs.
+2. `include/datoviz/scene/types.h` and `include/datoviz/scene/enums.h` contain shared public value
+   types and enums.
+3. Focused public subheaders now exist for:
+   - `field.h` — sampled-field descriptors, updates, and visual field binding,
+   - `scale.h` — scale, colormap, colorbar, and visual scale binding,
+   - `interaction.h` — interaction/picking/selection/link/readout draft API,
+   - `text.h` — font/text draft API,
+   - `annotation.h` — annotation draft API,
+   - `panzoom.h` / `arcball.h` — active panel controller APIs,
+   - `frame_plan.h` — active frame-plan and DRP2 emitter APIs.
+4. API-shape examples are present under `spec/scene/examples/` for mesh selection, image probe,
+   scale/colorbar/annotation, and sampled fields.
 
-1. [spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
-2. [spec/scene/proposals/README.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals/README.md)
-3. [spec/scene/headers/scene_api.h](/home/cyrille/GIT/Viz/datoviz/spec/scene/headers/scene_api.h)
-
-
-## Header-Drafting Scope
-
-The first public draft should focus on four groups:
-
-1. interaction objects,
-2. selection / link / probe result types,
-3. scale / colormap / colorbar types,
-4. text / annotation handles.
-
-Recommended public-header landing zone:
-
-1. keep [include/datoviz/scene.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene.h) as the
-   umbrella include,
-2. if the file starts growing too fast, split into focused headers such as:
-   `include/datoviz/scene/interaction.h` and `include/datoviz/scene/annotation.h`,
-3. keep small public result/descriptor structs in
-   [include/datoviz/scene/types.h](/home/cyrille/GIT/Viz/datoviz/include/datoviz/scene/types.h)
-   if they need to be visible.
-
-Recommended scratch/companion location:
-
-1. update [spec/scene/headers/scene_api.h](/home/cyrille/GIT/Viz/datoviz/spec/scene/headers/scene_api.h)
-   if one authoritative draft header is still the clearest place,
-2. or add one narrowly scoped header sketch under `spec/scene/headers/` if that keeps the split
-   clearer.
+This means the old “draft headers before implementation” task is complete. Future work should not
+create another broad header sketch unless a concrete implementation slice exposes a gap.
 
 
-## Decisions To Force In Code Form
+## Implemented Versus Drafted
 
-The next agent should settle these in the draft header, not in another narrative note:
+Implemented and covered by focused scene tests:
 
-1. opaque handle style:
-   decide which scene-facing objects stay opaque handles and which payloads are exposed as public
-   structs,
-2. header split:
-   decide whether the first draft stays in `scene.h` or moves into a small focused split,
-3. lifetime/update conventions:
-   decide where explicit create/destroy is required and where panel-owned convenience constructors
-   are acceptable,
-4. result struct shape:
-   decide whether `DvzPickResult` / `DvzProbeResult` are fixed-layout public structs or use a
-   tagged/extensible payload pattern,
-5. formatting objects:
-   decide whether one shared base formatting descriptor is reused across scales, axes, annotations,
-   and probes,
-6. link key representation:
-   decide the public key type and whether channels are named by string, id, or handle.
+1. scene / figure / panel ownership,
+2. frame plans and DRP2 emission,
+3. point, primitive, mesh, path-as-line/strip, and image visuals,
+4. retained visual data and partial updates,
+5. scene-owned index/uniform-capable buffers for primitive/mesh slices,
+6. sampled fields and image field binding, including partial texture-region updates,
+7. scale/colormap core and image colormap scale binding,
+8. colorbar retained object bookkeeping,
+9. panzoom and arcball controllers,
+10. panel backgrounds, z-layer ordering, and fixed-vs-controller-applied visual attachments.
 
-Suggested bias:
+Drafted in public headers but not yet implemented in `src/scene`:
 
-1. scene-owned retained objects use opaque handles,
-2. request descriptors and result payloads are public structs,
-3. prefer one shared base formatting descriptor with small per-domain extensions,
-4. prefer a small header split if `scene.h` becomes difficult to scan.
+1. interaction policy objects,
+2. pick/probe request execution and polling,
+3. retained hover state,
+4. selection objects and link channels,
+5. pinned readouts,
+6. font/text retained objects,
+7. annotation retained objects.
 
+Partially implemented / semantic bookkeeping only:
 
-## Usage Examples To Write Before Coding
-
-The next agent should write tiny docs examples first, because awkward examples are the fastest sign
-that the API spelling is wrong.
-
-Required example themes:
-
-1. mesh face or object selection with one link channel,
-2. image probe with one pinned readout,
-3. scale + colormap + colorbar + annotation label.
-
-The examples can live in:
-
-1. `docs/guide/`,
-2. `docs/tasks/<date>-scene-public-api/`,
-3. or another short docs location that is easy for later agents to find.
-
-Keep them minimal. They are API-shape probes, not tutorials.
+1. colorbars are retained scene objects but do not yet render ticks/labels,
+2. scale/colormap state is consumed by image shader paths, but broader mapped attributes are not yet
+   wired,
+3. primitive/mesh shading has a small uniform-buffer path, not a general material system.
 
 
-## Narrow Implementation Order After Review
+## Next Header Rules
 
-Once the header draft has one review pass, implementation should proceed in this order:
-
-1. interaction core,
-2. scale / colormap / colorbar core,
-3. text / annotation retained objects,
-4. runtime realization details only after the public object model is stable enough.
-
-
-## Minimum Review Checklist
-
-Before implementation starts, the next agent should verify:
-
-1. the draft names fit existing `Dvz*` naming and module boundaries,
-2. public structs are small, stable, and do not leak runtime ownership,
-3. the examples do not require hidden callbacks or undocumented global state,
-4. the new surface still matches the spec and active proposals:
-   `spec/scene/api/API_SURFACE.md`,
-   `spec/scene/proposals/INTERACTION_API_DESIGN.md`,
-   `spec/scene/proposals/ANNOTATION_TEXT_SCALE_API.md`,
-   `spec/scene/proposals/PICKING_DESIGN.md`,
-   `spec/scene/proposals/PROBE_READOUT_DESIGN.md`,
-   `spec/scene/proposals/COLORBAR_COLORMAP_DESIGN.md`,
-   `spec/scene/proposals/AXES_DOMAIN_DESIGN.md`.
+1. Keep `scene.h` as the umbrella include; add to focused `include/datoviz/scene/*.h` subheaders
+   instead of growing the umbrella directly.
+2. Do not add generic public binding APIs yet; keep typed setters for each retained object family.
+3. Treat `interaction.h`, `text.h`, and `annotation.h` as draft contracts until their first source
+   implementations and tests land.
+4. When a declared API is implemented, add focused tests in `src/scene/tests/test_scene.c` before
+   broadening the surface.
+5. Keep `spec/scene/api/API_SURFACE.md` as policy, but make installed headers the source of truth
+   for names that already exist.
 
 
-## Handoff Summary
+## Recommended Implementation Order
 
-If a next agent only has time for one concrete step, it should:
-
-1. draft `INTERACTION_API_TYPES`,
-2. draft `ANNOTATION_TEXT_SCALE_TYPES`,
-3. add minimal function prototypes,
-4. request one review pass on the proposed header surface before implementation.
+1. Interaction core without GPU picking first: object allocation/lifetime, panel binding, selection,
+   link keys, and result queues that tests can populate deterministically.
+2. Pick/probe plumbing through the scene -> DRP2 readback path for points/images, with request ids and
+   stale-result rejection.
+3. Text/annotation retained-object bookkeeping, still without glyph rendering if necessary.
+4. Rendered colorbar/text/annotation realization once the retained object model has tests.
+5. Expand scale binding beyond images only after the first interaction/probe path needs it.

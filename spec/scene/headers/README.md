@@ -13,11 +13,9 @@ They are intended to pressure-test:
 
 ## Normative Status
 
-`scene_api.h` is the authoritative draft C spelling for the scene concepts it already covers.
-It is still a draft: it is not installed or compiled, and it may change during the v0.4 refactor.
-
-For API groups not yet spelled in `scene_api.h`, [../api/API_SURFACE.md](../api/API_SURFACE.md)
-is the normative source until the header sketch is updated.
+Installed headers under `include/datoviz/scene*.h` are now authoritative for public names and
+signatures that already exist. `scene_api.h` is an auxiliary draft for older or broader API ideas
+not yet promoted to installed headers; do not treat it as overriding installed headers.
 
 `diagnostics.h` and any runtime-service sketches are informative unless a later document explicitly
 promotes them.
@@ -30,15 +28,15 @@ These files are not:
 4. independent sources of scene semantics.
 
 Public API policy now lives in
-[../api/API_SURFACE.md](../api/API_SURFACE.md). Keep
-`scene_api.h` aligned with that document when drafting interaction, scale, colorbar, text, and
-annotation handles.
+[../api/API_SURFACE.md](../api/API_SURFACE.md). Keep these sketches aligned with installed headers
+when preserving them for design history; prefer editing installed headers plus tests for active work.
 
 
 ## Files
 
-1. `scene_api.h`: authoritative draft C spelling for the handles, descriptors, enums, and entry points it covers
-2. `scene_public_api_draft.h`: focused companion draft for interaction, scales, colorbars, text, and annotations
+1. `scene_api.h`: broad auxiliary draft C spelling for older scene API ideas not yet promoted
+2. `scene_public_api_draft.h`: compact companion note for the installed interaction, scales,
+   colorbars, text, and annotations header split
 3. `diagnostics.h`: draft shared diagnostic enums and record/report types
 
 Runtime-facing capability, submission, completion, and diagnostic sketches currently live in

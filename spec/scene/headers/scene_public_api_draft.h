@@ -1,7 +1,7 @@
 /*
- * Draft public scene API companion for the next interaction/annotation pass.
- * This file records the intended ownership boundaries while the installed
- * headers are being drafted.
+ * Companion note for the installed public scene header split.
+ * This file records ownership boundaries for interaction, scale/colorbar, text, and annotation
+ * APIs while their source implementations catch up.
  */
 
 /*************************************************************************************************/

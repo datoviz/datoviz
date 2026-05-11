@@ -4,8 +4,8 @@ This directory contains worked examples that pressure-test the current scene spe
 
 Most examples are not API proposals.
 
-Files prefixed with `API_` are deliberate API-shape sketches. They are still informative, but they
-are allowed to use forward-looking function names to pressure-test the next public header draft.
+Files prefixed with `API_` are deliberate API-shape sketches. They are still informative, and may
+use installed-but-not-yet-implemented function names to pressure-test the public API shape.
 
 They are also not independent normative sources.
 

@@ -10,8 +10,8 @@ in the specialized spec documents and active proposals.
 
 ## Normative Status
 
-This document is normative for public API shape until `include/datoviz/scene.h`,
-`include/datoviz/scene/*.h`, and `spec/scene/headers/scene_api.h` are updated.
+This document is normative for public API shape policy. Installed headers under
+`include/datoviz/scene*.h` are now the source of truth for names and signatures that already exist.
 
 If this document conflicts with a specialized semantic spec, the specialized spec owns behavior and
 this document should be corrected to match it.
@@ -27,8 +27,30 @@ The public scene API should use this split:
    make `scene.h` hard to scan.
 3. Shared public descriptors, enums, and result structs belong in `include/datoviz/scene/types.h`
    or focused sibling subheaders.
-4. `spec/scene/headers/scene_api.h` remains the implementation-facing draft spelling until the
-   installed public headers catch up.
+4. `spec/scene/headers/scene_api.h` remains auxiliary implementation-facing scratch material for
+   ideas not yet promoted into installed public headers.
+
+
+## Current Header And Implementation Boundary
+
+The first public header split has landed. Treat these groups as implemented APIs with source tests:
+
+1. scene / figure / panel lifecycle,
+2. frame plans and DRP2 emitters,
+3. point, primitive, mesh, path-as-line/strip, and image visuals,
+4. retained visual attributes and scene buffers,
+5. sampled fields and image field binding,
+6. scale/colormap core and image colormap binding,
+7. panzoom and arcball controllers.
+
+Treat these installed declarations as draft contracts until implemented in `src/scene`:
+
+1. interaction policies, pick/probe request execution, and result polling,
+2. retained hover state, selections, link channels, and pinned readouts,
+3. font/text retained objects,
+4. annotation retained objects.
+
+Colorbars are currently retained semantic objects, but rendered ticks/labels remain future work.
 
 
 ## Opaque Handles Versus Public Structs
@@ -227,12 +249,12 @@ drift.
 
 ## Required API-Shape Examples
 
-Before implementation starts, keep tiny usage examples for:
+Keep tiny usage examples for:
 
 1. [examples/API_MESH_SELECTION_LINK.md](../examples/API_MESH_SELECTION_LINK.md),
 2. [examples/API_IMAGE_PROBE_PINNED_READOUT.md](../examples/API_IMAGE_PROBE_PINNED_READOUT.md),
 3. [examples/API_SCALE_COLORBAR_ANNOTATION.md](../examples/API_SCALE_COLORBAR_ANNOTATION.md),
 4. [examples/API_SAMPLED_FIELD.md](../examples/API_SAMPLED_FIELD.md).
 
-These examples are API pressure tests. They do not need to compile until the corresponding header
-draft exists, but awkward examples should block implementation.
+These examples are API pressure tests. They may reference drafted APIs that are not fully implemented
+yet, but awkward examples should still block broadening the public surface.

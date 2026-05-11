@@ -12,8 +12,8 @@ Completed implementation records belong in `agents/done/`. Long-horizon backlog 
 Active execution notes:
 
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
-3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 
 The scene design addenda that used to live in `agents/now/` now live under
 [../spec/scene/proposals](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals).
@@ -29,10 +29,9 @@ If resuming work on the branch:
    changing scene semantics, public scene API shape, frame planning, visual families, interaction,
    annotations, scales, or runtime boundaries.
 3. Read [../spec/scene/api/API_SURFACE.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/api/API_SURFACE.md)
-   before changing `include/datoviz/scene.h`, adding public scene subheaders, or drafting
-   interaction / annotation / scale object types.
+   before changing public scene API shape or adding new scene object families.
 4. Read [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
-   for the immediate public-header drafting sequence.
+   to distinguish implemented public scene APIs from drafted-but-not-yet-implemented APIs.
 5. Read [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md) if touching
    `spec/drp2/`, `src/drp2/`, or DRP2-emitting scene code.
 6. Read [done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
@@ -47,11 +46,12 @@ If resuming work on the branch:
 ### `now/`
 
 Short practical next-step notes. These files should answer what to do next and where to read the
-normative spec. They should not be the long-term home for scene semantics.
+normative spec. They should not be the long-term home for scene semantics. `SCENE_PUBLIC_API_HEADER_PLAN.md` is now a
+header-state note, not an instruction to draft another broad API surface.
 
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
-2. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
-3. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
+3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 
 ### `done/`
 

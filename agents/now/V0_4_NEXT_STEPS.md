@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-10`
+> - **Updated on:** `2026-05-11`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -23,19 +23,24 @@ The active higher layer exists:
    native vklite runtime.
 2. `scene` owns early scene graph objects, capability snapshots, diagnostic reports, frame plans,
    DRP2 emission, and a minimal app/offscreen path.
-3. Built-in visual families currently implemented are `point`, `primitive`, `mesh`, and `image`.
+3. Built-in visual families currently implemented are `point`, `primitive`, `mesh`, path-as-line/strip,
+   and `image`.
 4. Panel controllers are live: panzoom and arcball feed per-panel transforms.
 5. Per-panel viewport/scissor and offscreen multi-panel preservation work through the emitted DRP2
    path.
-6. Retained sampled fields, scales, and scene buffers now share one internal visual-binding model.
+6. Retained sampled fields, scales, scene buffers, and primitive/mesh shading uniforms now share the
+   scene -> frame-plan -> DRP2 binding path.
+7. Public headers now include first-draft interaction/text/annotation APIs, but those groups are not
+   implemented in `src/scene` yet.
 
 Focused validation recorded on `2026-05-10`:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
    tests passed.
 2. `just test drp2`: last recorded pass remained `73/73`.
-3. `just test scene`: `109/109` tests passed after retained field/buffer binding cleanup and the
-   first mesh slice.
+3. `just test scene`: last recorded pass was `109/109` after retained field/buffer binding cleanup
+   and the first mesh slice. The current source registers `111` scene test entries, plus
+   configuration-gated Vulkan/app tests.
 4. `git diff --check`: passed on the latest scene slices.
 
 
@@ -55,10 +60,14 @@ Read in this order:
 
 Deliver the next implementation slices in this order:
 
-1. Scene-owned uniform/material-style resource family for mesh/primitive shading parameters.
-2. Runtime coverage for shared non-texture retained resources across multiple frames and rebinds.
-3. Depth attachment wiring and validation for mesh scenes, especially under arcball-driven views.
-4. One or two more mesh examples that exercise explicit vertex colors and shared retained buffers.
+1. Interaction object core: implement the already-declared `interaction.h` handles for policy,
+   selection, link channels, hover state, and deterministic result queues before GPU picking.
+2. Pick/probe execution plumbing through existing DRP2 readback where possible, starting with point
+   and image scenes and explicit request-id freshness rules.
+3. Text and annotation retained-object bookkeeping for the already-declared `text.h` and
+   `annotation.h` APIs, initially without glyph rendering if necessary.
+4. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path.
+5. Depth attachment wiring and validation for mesh scenes, especially under arcball-driven views.
 
 
 ## Scope Guardrails
@@ -69,22 +78,20 @@ For the immediate implementation pass:
 2. Do not invent a second mesh renderer path; reuse the current scene -> DRP2 -> runtime flow.
 3. Prefer scene-owned reusable resources over visual-private upload helpers.
 4. Keep examples and focused tests in lockstep with each retained slice.
-5. Leave text/annotation/picking work for a later phase unless the user explicitly redirects.
+5. Treat declared-but-unimplemented public functions as a priority: either implement them narrowly
+   or mark/document the gap before depending on them.
 
 
 ## Roadmap After The Immediate Pass
 
-After the next retained-resource/runtime passes, proceed in this order unless the user redirects:
+After the immediate interaction/text/annotation passes, proceed in this order unless the user redirects:
 
-1. Interaction core: pick requests, hover state, selection objects, link channels, probe result
-   plumbing, and pinned readout state.
-2. Text/annotation retained objects: font handles, text style/placement descriptors, labels,
-   scale bars, dimensions, and pinned readouts.
-3. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
+1. Depth/depth-state mesh runtime work and fixture pressure.
+2. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
    mesh/depth scenes.
-4. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
+3. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
    capability fallback.
-5. Broader figure features: axes, lines/segments, richer annotations, picking refinements, and
+4. Broader figure features: axes, lines/segments, richer annotations, picking refinements, and
    additional visual families.
 
 

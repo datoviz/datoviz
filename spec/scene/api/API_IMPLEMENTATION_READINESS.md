@@ -1,12 +1,11 @@
 # Scene API Implementation Readiness
 
-This document summarizes the remaining spec-side checks before implementing the next public scene
-API surface.
+This document summarizes the current spec-to-implementation boundary for the public scene API surface.
 
 
 ## Status
 
-Status: informative implementation checklist.
+Status: informative implementation checklist, updated after the first installed header split landed.
 
 The normative sources remain:
 
@@ -38,25 +37,24 @@ These boundaries are now explicit enough to start public API drafting:
    the only public meaning.
 6. Scales and colormaps are scene-owned semantic objects. Colorbars are explanatory objects bound to
    scales; they do not own the scale or colormap.
-7. `SampledField` is the intended shared scene-owned regular-grid resource for image, volume, and
-   future probe/readout consumers.
+7. `SampledField` is the active shared scene-owned regular-grid resource for image paths and future
+   volume/probe/readout consumers.
 
 
-## Header Work Still Needed
+## Implementation Work Still Needed
 
-The next public-header pass should spell:
+The installed headers now spell the first versions of interaction, scale/colorbar, text/annotation,
+and sampled-field APIs. Remaining implementation work should focus on:
 
-1. `DvzInteractionPolicy`, `DvzPickRequest`, `DvzPickResult`, `DvzProbeResult`, and request/freshness
-   tokens,
-2. `DvzSelection`, `DvzLinkChannel`, and stable link-key/result structs,
-3. `DvzScale`, `DvzColormap`, `DvzColorbar`, and shared formatting descriptors,
-4. `DvzFont`, `DvzText`, text style descriptors, text placement descriptors, and annotation
-   descriptors,
-5. `DvzMeshResource` or equivalent mesh geometry resource handle, including full replace and
-   vertex/index subrange update entry points,
-6. volume slice probe result fields that can carry slice-local coordinates, scene-domain
-   coordinates, and sampled values,
-7. `DvzSampledField`, its descriptor/update structs, and semantic visual binding entry points.
+1. implementing `DvzInteractionPolicy`, request/freshness handling, deterministic pick/probe result
+   queues, and panel binding,
+2. implementing `DvzSelection`, `DvzLinkChannel`, stable link-key storage, and selection mutation
+   rules,
+3. wiring pick/probe execution to DRP2 readback for the first point/image paths,
+4. implementing `DvzFont`, `DvzText`, and `DvzAnnotation` retained-object lifecycle and invalidation,
+5. rendering colorbar ticks/labels and text/annotation geometry after retained bookkeeping exists,
+6. deciding whether mesh needs a separate public geometry resource beyond current scene buffers,
+7. extending volume/sampled-field probe results when volume slices become active.
 
 
 ## Non-Blocking Follow-Up

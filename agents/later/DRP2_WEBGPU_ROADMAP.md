@@ -1,6 +1,6 @@
 > **Implementation Status**
 > - **Status:** `STRATEGIC BACKLOG`
-> - **Verified on:** `2026-05-08`
+> - **Verified on:** `2026-05-11`
 > - **Role:** long-horizon direction for DRP2, WebGPU runtime work, and eventual scene bring-up
 > - **Current branch status:** not the immediate execution plan; active priority is the native
 >   scene -> DRP2 -> vklite/canvas slice
@@ -60,11 +60,12 @@ Reach a point where Datoviz has:
    undergone a substantial February 2026 refactor and is currently the stable runtime foundation.
 2. `drp2` and `scene` are now active default-build modules with a working first vertical slice:
    scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream execution.
-3. Built-in scene visuals currently implemented are `point`, `primitive`, and `image`.
-4. Per-panel runtime viewport/scissor and controller-driven panel transforms are already live on the
-   native path.
-5. The next native pressure target is a minimal `mesh` + depth slice before broader browser parity
-   or long-tail visual expansion.
+3. Built-in scene visuals currently implemented are `point`, `primitive`, `mesh`, path-as-line/strip,
+   and `image`.
+4. Per-panel runtime viewport/scissor, retained sampled fields, image colormap scale binding, shared
+   scene buffers, and controller-driven panel transforms are already live on the native path.
+5. The next native pressure targets are interaction/pick/probe plumbing and mesh depth/depth-state
+   validation before broader browser parity or long-tail visual expansion.
 
 
 ## Target Architecture

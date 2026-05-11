@@ -1,8 +1,8 @@
 > **Execution Status**
-> - **Status:** `SCENE SPEC PROPOSAL`
-> - **Updated on:** `2026-05-09`
-> - **Purpose:** define the intended v0.4 scene-facing `mesh` API, resource ownership model, and
->   mutation/update contract before the first implementation lands.
+> - **Status:** `PARTIALLY IMPLEMENTED SCENE SPEC PROPOSAL`
+> - **Updated on:** `2026-05-11`
+> - **Purpose:** track remaining mesh API/resource ownership decisions after the first indexed mesh
+>   implementation landed.
 
 # Mesh API Design
 
@@ -17,9 +17,9 @@ This note defines how the future scene `mesh` visual family should sit between:
 
 ## Objective
 
-Land a first `mesh` visual family that is narrow enough for the active 3D slice, but structured so
-future texturing, instancing, picking, transparency, and richer material work do not force a
-redesign.
+Continue evolving the active `mesh` visual family. The first indexed mesh slice has landed; the
+remaining design pressure is reusable geometry resources, depth/depth-state behavior, picking,
+texturing, instancing, transparency, and richer material work.
 
 
 ## Current Scene Surface
@@ -31,10 +31,12 @@ The active scene surface already provides:
 3. retained attribute data on visuals via `dvz_visual_set_data()`
 4. retained attribute subrange updates via `dvz_visual_set_data_range()`
 5. panel panzoom / arcball controller attachment
-6. active visual families `point`, `primitive`, `path`, and `image`
+6. active visual families `point`, `primitive`, `mesh`, path-as-line/strip, and `image`,
+7. scene-owned buffers that can be bound as the `index` slot for primitive/mesh visuals,
+8. a small primitive/mesh shading uniform path.
 
-The `mesh` family should fit this retained scene model rather than reintroducing a v0.3-style
-batch/request layer.
+The `mesh` family already fits this retained scene model. Future work should refine it rather than
+reintroducing a v0.3-style batch/request layer.
 
 
 ## Recommended Ownership Split
