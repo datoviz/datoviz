@@ -38,9 +38,9 @@ Focused validation recorded on `2026-05-11`:
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
    tests passed.
 2. `just test drp2`: last recorded pass remained `73/73`.
-3. `just test scene`: passed `116/116` after the first pick/probe request-resolution slice. Point
-   pick now resolves through auxiliary DRP2/readback execution; image probe request plumbing is
-   live but still carries a scene-side fallback when the probe render path does not hit.
+3. `just test scene`: passed `118/118` after hardening the first pick/probe request-resolution
+   slice. Point pick and image probe now resolve through GPU-backed auxiliary DRP2/readback
+   execution only; the old scene-side image probe fallback is gone.
 4. `git diff --check`: passed on the latest scene slices.
 
 
@@ -65,9 +65,10 @@ Read in this order:
 Deliver the next implementation slices in this order:
 
 1. Harden the just-added request-resolution slice:
-   - replace the current image probe fallback with a fully GPU-resolved path,
    - add explicit request freshness/supersession rules,
-   - decide whether compatible requests should batch into one auxiliary request stream.
+   - decide whether compatible requests should batch into one auxiliary request stream,
+   - remove the remaining ad-hoc image probe geometry work once the intended GPU-space mapping is
+     made explicit.
 2. Text and annotation retained-object bookkeeping for the already-declared `text.h` and
    `annotation.h` APIs, initially without glyph rendering if necessary.
 3. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path.
@@ -115,6 +116,29 @@ For scene/DRP2 code changes:
 2. run the narrowest relevant `just test <filter>`,
 3. use Vulkan validation smoke tests for changes touching `vk`, `vklite`, `canvas`, `scene`,
    `drp2`, command buffers, frame lifetimes, render targets, swapchains, or synchronization.
+
+
+## Request Slice Status
+
+The first end-to-end request path is now in better shape than the original plan snapshot:
+
+1. image probe no longer falls back to CPU-side texture sampling; misses now stay misses,
+2. auxiliary readback execution now resets DRP2 runtime state before each synthetic request stream,
+   which avoids `HELLO/REPLY` semantic-state collisions across multiple requests on one runtime,
+3. focused scene coverage now includes:
+   - successful combined pick+probe resolution,
+   - transparent GPU probe miss,
+   - forced GPU readback failure miss.
+
+The next concrete request-side work should therefore be behavioral rather than structural:
+
+1. define request freshness and supersession for repeated `request_id` values,
+2. decide whether hover-style request traffic should keep only the newest unresolved request per
+   panel/kind,
+3. batch compatible pick/probe requests when that reduces auxiliary runtime churn without weakening
+   result determinism,
+4. revisit the current image-probe position-shift path and either remove the dead work or align it
+   with an explicit recentering rule.
 
 
 ## Completed Context
