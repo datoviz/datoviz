@@ -135,6 +135,16 @@ static void _scene_visual_texture_mark_full_dirty(
 static void _scene_visual_texture_mark_region_dirty(
     DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region);
 
+static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene);
+
+static DvzSceneBuffer* _scene_alloc_buffer_slot(DvzScene* scene);
+
+static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags);
+
+static DvzSampledField* _scene_ensure_owned_image_field(
+    DvzVisual* visual, DvzFieldFormat format, DvzFieldSemantic semantic, uint32_t width,
+    uint32_t height);
+
 static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
 
 static void _scene_emit_panel_render(
@@ -466,6 +476,119 @@ static void _scene_visual_texture_mark_region_dirty(
         visual->texture.field_dirty_full = true;
         visual->texture.field_dirty_region = _field_full_region(desc);
     }
+}
+
+
+
+/**
+ * Allocate one free sampled-field slot from a scene.
+ *
+ * @param scene the scene
+ * @return the zero-initialized slot, or NULL when full
+ */
+static DvzSampledField* _scene_alloc_field_slot(DvzScene* scene)
+{
+    ANN(scene);
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
+    {
+        DvzSampledField* field = &scene->fields[i];
+        if (field->scene != NULL)
+            continue;
+        dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
+        field->scene = scene;
+        if (i + 1 > scene->field_count)
+            scene->field_count = i + 1;
+        return field;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Allocate one free scene-buffer slot from a scene.
+ *
+ * @param scene the scene
+ * @return the zero-initialized slot, or NULL when full
+ */
+static DvzSceneBuffer* _scene_alloc_buffer_slot(DvzScene* scene)
+{
+    ANN(scene);
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
+    {
+        DvzSceneBuffer* buffer = &scene->buffers[i];
+        if (buffer->scene != NULL)
+            continue;
+        dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
+        buffer->scene = scene;
+        if (i + 1 > scene->buffer_count)
+            scene->buffer_count = i + 1;
+        return buffer;
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Allocate and initialize one scene-owned visual.
+ *
+ * @param scene the scene
+ * @param type the visual type
+ * @param flags the visual flags
+ * @return the visual, or NULL when the scene is full
+ */
+static DvzVisual* _scene_alloc_visual(DvzScene* scene, DvzVisualType type, uint32_t flags)
+{
+    ANN(scene);
+    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+        return NULL;
+    DvzVisual* visual = &scene->visuals[scene->visual_count++];
+    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
+    visual->scene = scene;
+    visual->type = type;
+    visual->flags = flags;
+    visual->visible = true;
+    visual->z_layer = 0;
+    _primitive_shading_default(&visual->primitive_shading);
+    return visual;
+}
+
+
+
+/**
+ * Ensure one image visual owns a compatible sampled field.
+ *
+ * @param visual the image visual
+ * @param format the field format
+ * @param semantic the field semantic
+ * @param width the field width
+ * @param height the field height
+ * @return the owned field, or NULL on error
+ */
+static DvzSampledField* _scene_ensure_owned_image_field(
+    DvzVisual* visual, DvzFieldFormat format, DvzFieldSemantic semantic, uint32_t width,
+    uint32_t height)
+{
+    ANN(visual);
+    DvzSampledField* field = visual->field_owned ? visual->field : NULL;
+    if (field != NULL && field->desc.format == format && field->desc.width == width &&
+        field->desc.height == height && field->desc.depth == 1)
+    {
+        return field;
+    }
+    if (field != NULL)
+        dvz_sampled_field_destroy(field);
+    field = dvz_sampled_field(
+        visual->scene, &(DvzSampledFieldDesc){
+                           .dim = DVZ_FIELD_DIM_2D,
+                           .format = format,
+                           .semantic = semantic,
+                           .width = width,
+                           .height = height,
+                           .depth = 1,
+                       });
+    return field;
 }
 
 
@@ -3259,30 +3382,24 @@ DvzSampledField* dvz_sampled_field(DvzScene* scene, const DvzSampledFieldDesc* d
         return NULL;
     }
 
-    for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
+    DvzSampledField* field = _scene_alloc_field_slot(scene);
+    if (field == NULL)
     {
-        DvzSampledField* field = &scene->fields[i];
-        if (field->scene != NULL)
-            continue;
-        dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
-        field->scene = scene;
-        field->desc = *desc;
-        field->data_size = data_size;
-        field->geometry.axis_order[0] = 0;
-        field->geometry.axis_order[1] = 1;
-        field->geometry.axis_order[2] = 2;
-        field->geometry.spacing[0] = 1.0;
-        field->geometry.spacing[1] = 1.0;
-        field->geometry.spacing[2] = 1.0;
-        field->dirty = false;
-        field->dirty_full = false;
-        if (i + 1 > scene->field_count)
-            scene->field_count = i + 1;
-        return field;
+        log_error("maximum sampled field count reached");
+        return NULL;
     }
+    field->desc = *desc;
+    field->data_size = data_size;
+    field->geometry.axis_order[0] = 0;
+    field->geometry.axis_order[1] = 1;
+    field->geometry.axis_order[2] = 2;
+    field->geometry.spacing[0] = 1.0;
+    field->geometry.spacing[1] = 1.0;
+    field->geometry.spacing[2] = 1.0;
+    field->dirty = false;
+    field->dirty_full = false;
+    return field;
 
-    log_error("maximum sampled field count reached");
-    return NULL;
 }
 
 
@@ -3325,6 +3442,7 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
     dvz_memset(field, sizeof(DvzSampledField), 0, sizeof(DvzSampledField));
     return true;
 }
+
 
 
 /**
@@ -3373,6 +3491,7 @@ bool dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataView* 
     _scene_mark_field_region_dirty(field, full, true);
     return true;
 }
+
 
 
 /**
@@ -3437,6 +3556,7 @@ bool dvz_sampled_field_update_region(
 }
 
 
+
 /**
  * Update the field geometry metadata.
  *
@@ -3456,6 +3576,7 @@ bool dvz_sampled_field_set_geometry(
 }
 
 
+
 /**
  * Return the immutable field descriptor.
  *
@@ -3466,6 +3587,7 @@ const DvzSampledFieldDesc* dvz_sampled_field_desc(const DvzSampledField* field)
 {
     return field != NULL ? &field->desc : NULL;
 }
+
 
 
 /**
@@ -3519,6 +3641,7 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
 }
 
 
+
 /**
  * Create a scene-owned buffer resource.
  *
@@ -3545,21 +3668,16 @@ DvzSceneBuffer* dvz_scene_buffer(DvzScene* scene, const DvzSceneBufferDesc* desc
         log_error("maximum scene buffer count reached");
         return NULL;
     }
-    for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
+    DvzSceneBuffer* buffer = _scene_alloc_buffer_slot(scene);
+    if (buffer == NULL)
     {
-        DvzSceneBuffer* buffer = &scene->buffers[i];
-        if (buffer->scene != NULL)
-            continue;
-        dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
-        buffer->scene = scene;
-        buffer->desc = *desc;
-        if (i + 1 > scene->buffer_count)
-            scene->buffer_count = i + 1;
-        return buffer;
+        log_error("maximum scene buffer count reached");
+        return NULL;
     }
-    log_error("maximum scene buffer count reached");
-    return NULL;
+    buffer->desc = *desc;
+    return buffer;
 }
+
 
 
 /**
@@ -3590,6 +3708,7 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
     }
     dvz_memset(buffer, sizeof(DvzSceneBuffer), 0, sizeof(DvzSceneBuffer));
 }
+
 
 
 /**
@@ -3639,6 +3758,7 @@ bool dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_
 }
 
 
+
 /**
  * Return the immutable buffer descriptor.
  *
@@ -3649,6 +3769,7 @@ const DvzSceneBufferDesc* dvz_scene_buffer_desc(const DvzSceneBuffer* buffer)
 {
     return buffer != NULL ? &buffer->desc : NULL;
 }
+
 
 
 /**
@@ -3700,6 +3821,7 @@ bool dvz_visual_set_buffer(DvzVisual* visual, const char* slot_name, DvzSceneBuf
         _visual_binding_clear(visual, DVZ_VISUAL_BINDING_BUFFER);
     return true;
 }
+
 
 
 /**
@@ -3969,16 +4091,9 @@ int dvz_visual_set_data_range(
 DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
-    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_POINT, flags);
+    if (visual == NULL)
         return NULL;
-    DvzVisual* visual = &scene->visuals[scene->visual_count++];
-    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
-    visual->scene   = scene;
-    visual->type    = DVZ_VISUAL_TYPE_POINT;
-    visual->flags   = flags;
-    visual->visible = true;
-    visual->z_layer = 0;
-    _primitive_shading_default(&visual->primitive_shading);
     return visual;
 }
 
@@ -3987,17 +4102,10 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
 DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_t flags)
 {
     ANN(scene);
-    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PRIMITIVE, flags);
+    if (visual == NULL)
         return NULL;
-    DvzVisual* visual = &scene->visuals[scene->visual_count++];
-    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
-    visual->scene    = scene;
-    visual->type     = DVZ_VISUAL_TYPE_PRIMITIVE;
-    visual->flags    = flags;
-    visual->visible  = true;
-    visual->z_layer  = 0;
     visual->topology = topology;
-    _primitive_shading_default(&visual->primitive_shading);
     visual->primitive_shading_dirty = true;
     return visual;
 }
@@ -4016,17 +4124,10 @@ DvzVisual* dvz_primitive(DvzScene* scene, DvzPrimitiveTopology topology, uint32_
 DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
-    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_MESH, flags);
+    if (visual == NULL)
         return NULL;
-    DvzVisual* visual = &scene->visuals[scene->visual_count++];
-    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
-    visual->scene    = scene;
-    visual->type     = DVZ_VISUAL_TYPE_MESH;
-    visual->flags    = flags;
-    visual->visible  = true;
-    visual->z_layer  = 0;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    _primitive_shading_default(&visual->primitive_shading);
     visual->primitive_shading_dirty = true;
     return visual;
 }
@@ -4045,17 +4146,10 @@ DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags)
 DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
-    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PATH, flags);
+    if (visual == NULL)
         return NULL;
-    DvzVisual* visual = &scene->visuals[scene->visual_count++];
-    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
-    visual->scene    = scene;
-    visual->type     = DVZ_VISUAL_TYPE_PATH;
-    visual->flags    = flags;
-    visual->visible  = true;
-    visual->z_layer  = 0;
     visual->topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-    _primitive_shading_default(&visual->primitive_shading);
     return visual;
 }
 
@@ -4064,17 +4158,7 @@ DvzVisual* dvz_path(DvzScene* scene, uint32_t flags)
 DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
-    if (scene->visual_count >= DVZ_SCENE_MAX_VISUALS)
-        return NULL;
-    DvzVisual* visual = &scene->visuals[scene->visual_count++];
-    dvz_memset(visual, sizeof(DvzVisual), 0, sizeof(DvzVisual));
-    visual->scene   = scene;
-    visual->type    = DVZ_VISUAL_TYPE_IMAGE;
-    visual->flags   = flags;
-    visual->visible = true;
-    visual->z_layer = 0;
-    _primitive_shading_default(&visual->primitive_shading);
-    return visual;
+    return _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_IMAGE, flags);
 }
 
 
@@ -4095,24 +4179,10 @@ int dvz_visual_set_texture(
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set image texture"))
         return -1;
-    DvzSampledField* field = visual->field_owned ? visual->field : NULL;
-    if (field == NULL || field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
-        field->desc.width != width || field->desc.height != height || field->desc.depth != 1)
-    {
-        if (field != NULL)
-            dvz_sampled_field_destroy(field);
-        field = dvz_sampled_field(
-            visual->scene, &(DvzSampledFieldDesc){
-                               .dim = DVZ_FIELD_DIM_2D,
-                               .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
-                               .semantic = DVZ_FIELD_SEMANTIC_COLOR,
-                               .width = width,
-                               .height = height,
-                               .depth = 1,
-                           });
-        if (field == NULL)
-            return -1;
-    }
+    DvzSampledField* field = _scene_ensure_owned_image_field(
+        visual, DVZ_FIELD_FORMAT_RGBA8_UNORM, DVZ_FIELD_SEMANTIC_COLOR, width, height);
+    if (field == NULL)
+        return -1;
     if (!dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        .data = rgba,
@@ -4156,24 +4226,10 @@ int dvz_visual_set_texture_f32(
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "set scalar image texture"))
         return -1;
-    DvzSampledField* field = visual->field_owned ? visual->field : NULL;
-    if (field == NULL || field->desc.format != DVZ_FIELD_FORMAT_R32_FLOAT ||
-        field->desc.width != width || field->desc.height != height || field->desc.depth != 1)
-    {
-        if (field != NULL)
-            dvz_sampled_field_destroy(field);
-        field = dvz_sampled_field(
-            visual->scene, &(DvzSampledFieldDesc){
-                               .dim = DVZ_FIELD_DIM_2D,
-                               .format = DVZ_FIELD_FORMAT_R32_FLOAT,
-                               .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
-                               .width = width,
-                               .height = height,
-                               .depth = 1,
-                           });
-        if (field == NULL)
-            return -1;
-    }
+    DvzSampledField* field = _scene_ensure_owned_image_field(
+        visual, DVZ_FIELD_FORMAT_R32_FLOAT, DVZ_FIELD_SEMANTIC_SCALAR, width, height);
+    if (field == NULL)
+        return -1;
     if (!dvz_sampled_field_set_data(
             field, &(DvzFieldDataView){
                        .data = values,
