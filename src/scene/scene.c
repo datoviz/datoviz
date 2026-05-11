@@ -129,6 +129,12 @@ static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 
 static void _scene_visual_texture_mark_clean(DvzVisual* visual);
 
+static void _scene_visual_texture_mark_full_dirty(
+    DvzVisual* visual, const DvzSampledFieldDesc* desc);
+
+static void _scene_visual_texture_mark_region_dirty(
+    DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region);
+
 static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
 
 static void _scene_emit_panel_render(
@@ -406,6 +412,60 @@ static void _scene_visual_texture_mark_clean(DvzVisual* visual)
     visual->texture.field_dirty_full = false;
     dvz_memset(
         &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+}
+
+
+
+/**
+ * Mark one visual texture state as requiring a full field upload.
+ *
+ * @param visual the visual
+ * @param desc the sampled field descriptor
+ */
+static void _scene_visual_texture_mark_full_dirty(
+    DvzVisual* visual, const DvzSampledFieldDesc* desc)
+{
+    ANN(visual);
+    ANN(desc);
+    visual->texture.dirty = true;
+    visual->texture.field_dirty = true;
+    visual->texture.field_dirty_full = true;
+    visual->texture.field_dirty_region = _field_full_region(desc);
+}
+
+
+
+/**
+ * Mark one visual texture state as dirty for one field subregion.
+ *
+ * @param visual the visual
+ * @param desc the sampled field descriptor
+ * @param region the dirty field region
+ */
+static void _scene_visual_texture_mark_region_dirty(
+    DvzVisual* visual, const DvzSampledFieldDesc* desc, DvzFieldRegion region)
+{
+    ANN(visual);
+    ANN(desc);
+    visual->texture.dirty = true;
+    if (!visual->texture.field_dirty)
+    {
+        visual->texture.field_dirty = true;
+        visual->texture.field_dirty_full = false;
+        visual->texture.field_dirty_region = region;
+        return;
+    }
+    if (visual->texture.field_dirty_full)
+    {
+        visual->texture.field_dirty_region = _field_full_region(desc);
+        return;
+    }
+    if (!_field_regions_union(
+            &visual->texture.field_dirty_region, &region, &visual->texture.field_dirty_region))
+    {
+        visual->texture.field_dirty_full = true;
+        visual->texture.field_dirty_region = _field_full_region(desc);
+    }
 }
 
 
@@ -908,12 +968,8 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
             _field_format_is_scalar(visual->field->desc.format))
         {
+            _scene_visual_texture_mark_clean(visual);
             visual->texture.dirty = true;
-            visual->texture.field_dirty = false;
-            visual->texture.field_dirty_full = false;
-            dvz_memset(
-                &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
-                sizeof(DvzFieldRegion));
         }
     }
 }
@@ -977,30 +1033,12 @@ static void _scene_mark_field_region_dirty(DvzSampledField* field, DvzFieldRegio
         DvzVisual* visual = &scene->visuals[i];
         if (visual->scene == scene && visual->field == field)
         {
-            visual->texture.dirty = true;
             if (full)
             {
-                visual->texture.field_dirty = true;
-                visual->texture.field_dirty_full = true;
-                visual->texture.field_dirty_region = _field_full_region(&field->desc);
+                _scene_visual_texture_mark_full_dirty(visual, &field->desc);
             }
-            else if (!visual->texture.field_dirty)
-            {
-                visual->texture.field_dirty = true;
-                visual->texture.field_dirty_full = false;
-                visual->texture.field_dirty_region = region;
-            }
-            else if (visual->texture.field_dirty_full)
-            {
-                visual->texture.field_dirty_region = _field_full_region(&field->desc);
-            }
-            else if (!_field_regions_union(
-                         &visual->texture.field_dirty_region, &region,
-                         &visual->texture.field_dirty_region))
-            {
-                visual->texture.field_dirty_full = true;
-                visual->texture.field_dirty_region = _field_full_region(&field->desc);
-            }
+            else
+                _scene_visual_texture_mark_region_dirty(visual, &field->desc, region);
         }
     }
 }
@@ -1014,10 +1052,7 @@ static void _scene_release_visual_field(DvzVisual* visual)
     const DvzVisualBinding* binding = _visual_binding_const(visual, DVZ_VISUAL_BINDING_FIELD);
     bool owned = binding != NULL ? binding->owned : visual->field_owned;
     _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
-    visual->texture.dirty = false;
-    visual->texture.field_dirty = false;
-    visual->texture.field_dirty_full = false;
-    dvz_memset(&visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0, sizeof(DvzFieldRegion));
+    _scene_visual_texture_mark_clean(visual);
     if (visual->texture.upload != NULL)
     {
         dvz_free(visual->texture.upload);
@@ -3272,12 +3307,7 @@ bool dvz_sampled_field_destroy(DvzSampledField* field)
             if (visual->field == field)
             {
                 _visual_binding_clear(visual, DVZ_VISUAL_BINDING_FIELD);
-                visual->texture.dirty = false;
-                visual->texture.field_dirty = false;
-                visual->texture.field_dirty_full = false;
-                dvz_memset(
-                    &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
-                    sizeof(DvzFieldRegion));
+                _scene_visual_texture_mark_clean(visual);
                 if (visual->texture.upload != NULL)
                 {
                     dvz_free(visual->texture.upload);
@@ -3478,12 +3508,8 @@ bool dvz_visual_set_field(DvzVisual* visual, const char* slot_name, DvzSampledFi
     if (field != NULL)
     {
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_FIELD, slot_name, field, false);
+        _scene_visual_texture_mark_clean(visual);
         visual->texture.dirty = true;
-        visual->texture.field_dirty = false;
-        visual->texture.field_dirty_full = false;
-        dvz_memset(
-            &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
-            sizeof(DvzFieldRegion));
     }
     else
     {
@@ -4200,12 +4226,8 @@ int dvz_visual_set_scale(DvzVisual* visual, const char* slot_name, DvzScale* sca
         _visual_binding_assign(visual, DVZ_VISUAL_BINDING_SCALE, slot_name, scale, false);
     if (visual->field != NULL && _field_format_is_scalar(visual->field->desc.format))
     {
+        _scene_visual_texture_mark_clean(visual);
         visual->texture.dirty = true;
-        visual->texture.field_dirty = false;
-        visual->texture.field_dirty_full = false;
-        dvz_memset(
-            &visual->texture.field_dirty_region, sizeof(DvzFieldRegion), 0,
-            sizeof(DvzFieldRegion));
     }
     return 0;
 }
