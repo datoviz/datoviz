@@ -6848,6 +6848,65 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* it
 }
 
 
+int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzFont* font = dvz_font(scene, &(DvzFontDesc){.path = "Demo.ttf", .size_pts = 14.0f});
+    ANN(font);
+    AT(strcmp(font->path, "Demo.ttf") == 0);
+
+    DvzText* text = dvz_text(
+        panel,
+        &(DvzTextDesc){
+            .string = "hello",
+            .style = {.font = font, .size_pts = 14.0f},
+            .placement = {.mode = DVZ_TEXT_PLACEMENT_SCREEN, .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT},
+        });
+    ANN(text);
+    AT(text->style.font == font);
+    AT(strcmp(text->string, "hello") == 0);
+
+    dvz_text_set_string(text, "world");
+    dvz_text_set_style(text, &(DvzTextStyle){.font = font, .size_pts = 18.0f});
+    dvz_text_set_placement(
+        text, &(DvzTextPlacement){.mode = DVZ_TEXT_PLACEMENT_DATA, .anchor = DVZ_SCENE_ANCHOR_DATA});
+    AT(strcmp(text->string, "world") == 0);
+    AT(text->style.size_pts == 18.0f);
+    AT(text->placement.mode == DVZ_TEXT_PLACEMENT_DATA);
+
+    DvzAnnotation* annotation = dvz_annotation_label(
+        panel,
+        &(DvzLabelDesc){
+            .text = "peak",
+            .style = {.font = font, .size_pts = 12.0f},
+            .placement = {.mode = DVZ_TEXT_PLACEMENT_SCREEN, .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT},
+        });
+    ANN(annotation);
+    AT(annotation->kind == DVZ_ANNOTATION_LABEL);
+    AT(strcmp(annotation->text, "peak") == 0);
+
+    dvz_annotation_set_format(annotation, &(DvzFormatDesc){.precision = 3, .suffix = " ms"});
+    AT(annotation->has_format);
+    AT(strcmp(annotation->format.suffix, " ms") == 0);
+
+    dvz_annotation_destroy(annotation);
+    dvz_text_destroy(text);
+    dvz_font_destroy(font);
+    AT(annotation->scene == NULL);
+    AT(text->scene == NULL);
+    AT(font->scene == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item)
@@ -7088,6 +7147,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_interaction_core);
     TEST_SIMPLE(test_scene_selection_apply_pick_and_link_keys);
     TEST_SIMPLE(test_scene_pick_probe_queues_and_pinned_readout);
+    TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
     TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);

@@ -39,6 +39,9 @@
 #define DVZ_SCENE_MAX_SELECTIONS 64
 #define DVZ_SCENE_MAX_LINK_CHANNELS 64
 #define DVZ_SCENE_MAX_PINNED_READOUTS 128
+#define DVZ_SCENE_MAX_FONTS 64
+#define DVZ_SCENE_MAX_TEXTS 128
+#define DVZ_SCENE_MAX_ANNOTATIONS 128
 #define DVZ_SCENE_MAX_PANEL_COLORBARS 16
 #define DVZ_SCENE_MAX_COLOR_STOPS 32
 #define DVZ_SCENE_MAX_ITEM_ATTRS 8
@@ -105,6 +108,9 @@ typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection DvzSelection;
 typedef struct DvzLinkChannel DvzLinkChannel;
 typedef struct DvzPinnedReadout DvzPinnedReadout;
+typedef struct DvzFont DvzFont;
+typedef struct DvzText DvzText;
+typedef struct DvzAnnotation DvzAnnotation;
 
 
 
@@ -212,6 +218,40 @@ struct DvzPinnedReadout
     DvzScene* scene;
     DvzPanel* panel;
     DvzProbeResult probe;
+    bool has_format;
+    DvzSceneFormatState format;
+};
+
+
+struct DvzFont
+{
+    DvzScene* scene;
+    char path[512];
+    float size_pts;
+    uint32_t flags;
+};
+
+
+struct DvzText
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    char string[DVZ_SCENE_LABEL_SIZE];
+    DvzTextStyle style;
+    DvzTextPlacement placement;
+    uint32_t flags;
+};
+
+
+struct DvzAnnotation
+{
+    DvzScene* scene;
+    DvzPanel* panel;
+    DvzAnnotationKind kind;
+    char text[DVZ_SCENE_LABEL_SIZE];
+    DvzTextStyle style;
+    DvzTextPlacement placement;
+    uint32_t flags;
     bool has_format;
     DvzSceneFormatState format;
 };
@@ -451,6 +491,15 @@ struct DvzScene
 
     uint32_t pinned_readout_count;
     DvzPinnedReadout pinned_readouts[DVZ_SCENE_MAX_PINNED_READOUTS];
+
+    uint32_t font_count;
+    DvzFont fonts[DVZ_SCENE_MAX_FONTS];
+
+    uint32_t text_count;
+    DvzText texts[DVZ_SCENE_MAX_TEXTS];
+
+    uint32_t annotation_count;
+    DvzAnnotation annotations[DVZ_SCENE_MAX_ANNOTATIONS];
 
     uint32_t pending_pick_count;
     DvzPendingPickRequest pending_picks[DVZ_SCENE_MAX_PENDING_REQUESTS];
