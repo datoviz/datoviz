@@ -524,3 +524,15 @@ struct DvzScene
 
 bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result);
 bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result);
+
+
+
+/*************************************************************************************************/
+/*  Internal shared scene helpers                                                               */
+/*************************************************************************************************/
+
+int _attr_index(const DvzVisual* visual, const char* name);
+bool _scene_prepare_image_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
+uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
+void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
