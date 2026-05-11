@@ -33,14 +33,14 @@ The active higher layer exists:
 7. Public headers now include first-draft interaction/text/annotation APIs, but those groups are not
    implemented in `src/scene` yet.
 
-Focused validation recorded on `2026-05-10`:
+Focused validation recorded on `2026-05-11`:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
    tests passed.
 2. `just test drp2`: last recorded pass remained `73/73`.
-3. `just test scene`: last recorded pass was `109/109` after retained field/buffer binding cleanup
-   and the first mesh slice. The current source registers `111` scene test entries, plus
-   configuration-gated Vulkan/app tests.
+3. `just test scene`: passed `116/116` after the first pick/probe request-resolution slice. Point
+   pick now resolves through auxiliary DRP2/readback execution; image probe request plumbing is
+   live but still carries a scene-side fallback when the probe render path does not hit.
 4. `git diff --check`: passed on the latest scene slices.
 
 
@@ -56,20 +56,24 @@ Read in this order:
    semantics,
 3. [../done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
    for the active vertical-slice history,
-4. [SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
-   before the pick/probe execution slice,
-5. the current `scene` and `drp2` tests before broadening any API.
+4. [../done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
+   for the current shipped request-resolution behavior and caveats,
+5. [SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
+   for the original planned shape,
+6. the current `scene` and `drp2` tests before broadening any API.
 
 Deliver the next implementation slices in this order:
 
-1. Interaction object core: implement the already-declared `interaction.h` handles for policy,
-   selection, link channels, hover state, and deterministic result queues before GPU picking.
-2. Pick/probe execution plumbing through existing DRP2 readback where possible, starting with point
-   and image scenes and explicit request-id freshness rules.
-3. Text and annotation retained-object bookkeeping for the already-declared `text.h` and
+1. Harden the just-added request-resolution slice:
+   - replace the current image probe fallback with a fully GPU-resolved path,
+   - add explicit request freshness/supersession rules,
+   - decide whether compatible requests should batch into one auxiliary request stream.
+2. Text and annotation retained-object bookkeeping for the already-declared `text.h` and
    `annotation.h` APIs, initially without glyph rendering if necessary.
-4. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path.
-5. Depth attachment wiring and validation for mesh scenes, especially under arcball-driven views.
+3. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path.
+4. Depth attachment wiring and validation for mesh scenes, especially under arcball-driven views.
+5. Picking payload widening after the first hardened slice: richer ids, mesh targets, and less
+   ad-hoc payload encoding.
 
 
 ## Scope Guardrails
@@ -120,6 +124,7 @@ Completed implementation records:
 1. [../done/SCENE_DRP2_IMPLEMENTATION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_DRP2_IMPLEMENTATION.md)
 2. [../done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 3. [../done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+4. [../done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
 
 Backlog context:
 
