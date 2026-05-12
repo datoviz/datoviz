@@ -221,6 +221,12 @@ int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, Ts
 int test_scene_pick_request_distinct_ids_keep_independent_pending_and_results(
     TstSuite* suite, TstItem* item);
 
+int test_scene_pick_request_same_id_rejects_late_result_after_newer_poll(
+    TstSuite* suite, TstItem* item);
+
+int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_process_requests_coalesces_pending_picks_before_execution(
     TstSuite* suite, TstItem* item);
 

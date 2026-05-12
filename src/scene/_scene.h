@@ -50,6 +50,7 @@
 #define DVZ_SCENE_MAX_PICK_RESULTS 128
 #define DVZ_SCENE_MAX_PROBE_RESULTS 128
 #define DVZ_SCENE_MAX_PENDING_REQUESTS 128
+#define DVZ_SCENE_MAX_REQUEST_SCOPES 256
 
 
 
@@ -261,6 +262,7 @@ typedef struct DvzPendingPickRequest DvzPendingPickRequest;
 typedef struct DvzPendingProbeRequest DvzPendingProbeRequest;
 typedef struct DvzQueuedPickResult DvzQueuedPickResult;
 typedef struct DvzQueuedProbeResult DvzQueuedProbeResult;
+typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
 
 struct DvzPendingPickRequest
 {
@@ -295,6 +297,15 @@ struct DvzQueuedProbeResult
     DvzPanel* panel;
     uint64_t freshness_serial;
     DvzProbeResult result;
+};
+
+
+struct DvzRequestFreshnessScope
+{
+    DvzPanel* panel;
+    uint64_t request_id;
+    uint64_t freshness_serial;
+    uint64_t touched_serial;
 };
 
 
@@ -535,6 +546,10 @@ struct DvzScene
     uint32_t probe_result_head;
     DvzQueuedProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
     uint64_t next_request_serial;
+    uint32_t pick_scope_count;
+    DvzRequestFreshnessScope pick_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
+    uint32_t probe_scope_count;
+    DvzRequestFreshnessScope probe_scopes[DVZ_SCENE_MAX_REQUEST_SCOPES];
 
     struct
     {
@@ -550,7 +565,15 @@ struct DvzScene
 
 bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result);
 bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result);
+bool _dvz_scene_enqueue_pick_result_scoped(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzPickResult* result);
+bool _dvz_scene_enqueue_probe_result_scoped(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzProbeResult* result);
 uint64_t _scene_next_request_serial(DvzScene* scene);
+void _scene_track_pick_request_serial(
+    DvzScene* scene, DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
+void _scene_track_probe_request_serial(
+    DvzScene* scene, DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
 bool _scene_pick_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
 bool _scene_probe_request_is_current(

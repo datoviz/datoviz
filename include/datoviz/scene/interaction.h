@@ -214,8 +214,10 @@ DVZ_EXPORT void dvz_selection_copy(
  * Queue an explicit pick request on a panel.
  *
  * Freshness rules for the current v0.4 slice:
- * non-zero `request_id` values supersede older unresolved pick work on the same panel with the
- * same id, while zero-id requests use latest-request-wins semantics within the panel pick stream.
+ * non-zero `request_id` values supersede older pick work on the same panel with the same id,
+ * while zero-id requests use one latest-request-wins scope within the panel pick stream. Once a
+ * newer request claims that scope, late older results are discarded even if the newer result was
+ * already polled.
  *
  * @param panel the panel
  * @param x the logical panel x coordinate
@@ -231,9 +233,10 @@ DVZ_EXPORT int dvz_panel_pick(
  * Queue an explicit probe request on a panel.
  *
  * Freshness rules for the current v0.4 slice:
- * non-zero `request_id` values supersede older unresolved probe work on the same panel with the
- * same id, while zero-id requests use latest-request-wins semantics within the panel probe
- * stream.
+ * non-zero `request_id` values supersede older probe work on the same panel with the same id,
+ * while zero-id requests use one latest-request-wins scope within the panel probe stream. Once a
+ * newer request claims that scope, late older results are discarded even if the newer result was
+ * already polled.
  *
  * @param panel the panel
  * @param x the logical panel x coordinate

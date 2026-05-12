@@ -7286,6 +7286,74 @@ int test_scene_pick_request_distinct_ids_keep_independent_pending_and_results(
 
 
 
+int test_scene_pick_request_same_id_rejects_late_result_after_newer_poll(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_pick(panel, 10.0, 20.0, &(DvzPickRequest){.request_id = 77}) == 0);
+    uint64_t stale_serial = scene->pending_picks[0].freshness_serial;
+    AT(dvz_panel_pick(panel, 30.0, 40.0, &(DvzPickRequest){.request_id = 77}) == 0);
+    AT(scene->pending_pick_count == 1);
+    uint64_t fresh_serial = scene->pending_picks[0].freshness_serial;
+    AT(fresh_serial > stale_serial);
+
+    DvzPickResult fresh = {.request_id = 77, .hit = true, .resolved_id = 2};
+    DvzPickResult stale = {.request_id = 77, .hit = true, .resolved_id = 1};
+    AT(_dvz_scene_enqueue_pick_result_scoped(scene, panel, fresh_serial, &fresh));
+    DvzPickResult out = {0};
+    AT(dvz_scene_poll_pick(scene, &out));
+    AT(out.resolved_id == 2);
+    AT(_dvz_scene_enqueue_pick_result_scoped(scene, panel, stale_serial, &stale));
+    AT(!dvz_scene_poll_pick(scene, &out));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_probe(panel, 1.0, 2.0, NULL) == 0);
+    uint64_t stale_serial = scene->pending_probes[0].freshness_serial;
+    AT(dvz_panel_probe(panel, 3.0, 4.0, NULL) == 0);
+    AT(scene->pending_probe_count == 1);
+    uint64_t fresh_serial = scene->pending_probes[0].freshness_serial;
+    AT(fresh_serial > stale_serial);
+
+    DvzProbeResult fresh = {.request_id = 0, .hit = true, .scalar = 2.0};
+    DvzProbeResult stale = {.request_id = 0, .hit = true, .scalar = 1.0};
+    AT(_dvz_scene_enqueue_probe_result_scoped(scene, panel, fresh_serial, &fresh));
+    DvzProbeResult out = {0};
+    AT(dvz_scene_poll_probe(scene, &out));
+    AC(out.scalar, 2.0, 1e-12);
+    AT(_dvz_scene_enqueue_probe_result_scoped(scene, panel, stale_serial, &stale));
+    AT(!dvz_scene_poll_probe(scene, &out));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 /**
  * Ensure image probes miss when the GPU-resolved pixel is fully transparent.
@@ -7872,6 +7940,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_pick_request_same_id_supersedes_older_unresolved);
     TEST_SIMPLE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
     TEST_SIMPLE(test_scene_pick_request_distinct_ids_keep_independent_pending_and_results);
+    TEST_SIMPLE(test_scene_pick_request_same_id_rejects_late_result_after_newer_poll);
+    TEST_SIMPLE(test_scene_probe_request_zero_id_rejects_late_result_after_newer_poll);
     TEST_SIMPLE(test_scene_process_requests_coalesces_pending_picks_before_execution);
     TEST_SIMPLE(test_scene_process_requests_coalesces_pending_probes_before_execution);
     TEST_SIMPLE(test_scene_text_annotation_bookkeeping);

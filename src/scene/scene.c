@@ -147,6 +147,14 @@ static void _scene_drop_superseded_probe_results(
 
 static bool _scene_request_ids_share_freshness_scope(uint64_t lhs_request_id, uint64_t rhs_request_id);
 
+static DvzRequestFreshnessScope* _scene_touch_request_scope(
+    DvzRequestFreshnessScope* scopes, uint32_t* scope_count, DvzPanel* panel, uint64_t request_id,
+    uint64_t freshness_serial);
+
+static uint64_t _scene_latest_request_scope_serial(
+    const DvzRequestFreshnessScope* scopes, uint32_t scope_count, const DvzPanel* panel,
+    uint64_t request_id);
+
 static void _scene_visual_texture_mark_clean(DvzVisual* visual);
 
 static void _scene_visual_texture_mark_full_dirty(
@@ -475,6 +483,99 @@ static bool _scene_request_ids_share_freshness_scope(uint64_t lhs_request_id, ui
 
 
 /**
+ * Find or allocate one panel-local request freshness scope entry.
+ *
+ * When the scope table is full, the least-recently touched entry is recycled. Freshness serials are
+ * monotonically increasing, so `touched_serial` also provides a stable eviction order.
+ *
+ * @param scopes the scope table
+ * @param scope_count the number of initialized entries
+ * @param panel the owning panel
+ * @param request_id the panel-local request id
+ * @param freshness_serial the serial touching the scope
+ * @return the updated scope entry
+ */
+static DvzRequestFreshnessScope* _scene_touch_request_scope(
+    DvzRequestFreshnessScope* scopes, uint32_t* scope_count, DvzPanel* panel, uint64_t request_id,
+    uint64_t freshness_serial)
+{
+    ANN(scopes);
+    ANN(scope_count);
+    ANN(panel);
+    ASSERT(freshness_serial != 0);
+
+    for (uint32_t i = 0; i < *scope_count; i++)
+    {
+        if (scopes[i].panel != panel)
+            continue;
+        if (!_scene_request_ids_share_freshness_scope(scopes[i].request_id, request_id))
+            continue;
+        scopes[i].request_id = request_id;
+        scopes[i].freshness_serial = freshness_serial;
+        scopes[i].touched_serial = freshness_serial;
+        return &scopes[i];
+    }
+
+    if (*scope_count < DVZ_SCENE_MAX_REQUEST_SCOPES)
+    {
+        DvzRequestFreshnessScope* scope = &scopes[*scope_count];
+        (*scope_count)++;
+        scope->panel = panel;
+        scope->request_id = request_id;
+        scope->freshness_serial = freshness_serial;
+        scope->touched_serial = freshness_serial;
+        return scope;
+    }
+
+    uint32_t oldest_index = 0;
+    uint64_t oldest_touch = scopes[0].touched_serial;
+    for (uint32_t i = 1; i < DVZ_SCENE_MAX_REQUEST_SCOPES; i++)
+    {
+        if (scopes[i].touched_serial >= oldest_touch)
+            continue;
+        oldest_index = i;
+        oldest_touch = scopes[i].touched_serial;
+    }
+
+    DvzRequestFreshnessScope* scope = &scopes[oldest_index];
+    scope->panel = panel;
+    scope->request_id = request_id;
+    scope->freshness_serial = freshness_serial;
+    scope->touched_serial = freshness_serial;
+    return scope;
+}
+
+
+
+/**
+ * Return the newest known freshness serial for one panel-local request scope.
+ *
+ * @param scopes the scope table
+ * @param scope_count the number of initialized entries
+ * @param panel the owning panel
+ * @param request_id the panel-local request id
+ * @return the newest known serial, or 0 when the scope is unknown
+ */
+static uint64_t _scene_latest_request_scope_serial(
+    const DvzRequestFreshnessScope* scopes, uint32_t scope_count, const DvzPanel* panel,
+    uint64_t request_id)
+{
+    ANN(scopes);
+    ANN(panel);
+    for (uint32_t i = 0; i < scope_count; i++)
+    {
+        if (scopes[i].panel != panel)
+            continue;
+        if (!_scene_request_ids_share_freshness_scope(scopes[i].request_id, request_id))
+            continue;
+        return scopes[i].freshness_serial;
+    }
+    return 0;
+}
+
+
+
+/**
  * Return whether one queued pick request is superseded by a newer request.
  *
  * @param pending the queued request
@@ -669,13 +770,55 @@ uint64_t _scene_next_request_serial(DvzScene* scene)
 
 
 /**
+ * Record the newest pick freshness serial for one panel-local request scope.
+ *
+ * @param scene the owning scene
+ * @param panel the panel
+ * @param request_id the panel-local request id
+ * @param freshness_serial the newest request serial
+ */
+void _scene_track_pick_request_serial(
+    DvzScene* scene, DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
+{
+    ANN(scene);
+    ANN(panel);
+    if (freshness_serial == 0)
+        return;
+    (void)_scene_touch_request_scope(
+        scene->pick_scopes, &scene->pick_scope_count, panel, request_id, freshness_serial);
+}
+
+
+
+/**
+ * Record the newest probe freshness serial for one panel-local request scope.
+ *
+ * @param scene the owning scene
+ * @param panel the panel
+ * @param request_id the panel-local request id
+ * @param freshness_serial the newest request serial
+ */
+void _scene_track_probe_request_serial(
+    DvzScene* scene, DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
+{
+    ANN(scene);
+    ANN(panel);
+    if (freshness_serial == 0)
+        return;
+    (void)_scene_touch_request_scope(
+        scene->probe_scopes, &scene->probe_scope_count, panel, request_id, freshness_serial);
+}
+
+
+
+/**
  * Return whether one pick request/result scope is still current.
  *
  * @param scene the scene
  * @param panel the panel
  * @param request_id the request id
  * @param freshness_serial the request freshness serial
- * @return true when no newer matching request/result exists
+ * @return true when the serial still matches the newest known panel-local request scope
  */
 bool _scene_pick_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
@@ -684,31 +827,9 @@ bool _scene_pick_request_is_current(
     ANN(panel);
     if (freshness_serial == 0)
         return true;
-
-    for (uint32_t i = 0; i < scene->pending_pick_count; i++)
-    {
-        const DvzPendingPickRequest* pending = &scene->pending_picks[i];
-        if (pending->panel != panel)
-            continue;
-        if (!_scene_request_ids_share_freshness_scope(pending->request.request_id, request_id))
-            continue;
-        if (pending->freshness_serial > freshness_serial)
-            return false;
-    }
-
-    for (uint32_t i = 0; i < scene->pick_result_count; i++)
-    {
-        uint32_t index = (scene->pick_result_head + i) % DVZ_SCENE_MAX_PICK_RESULTS;
-        const DvzQueuedPickResult* queued = &scene->pick_results[index];
-        if (queued->panel != panel)
-            continue;
-        if (!_scene_request_ids_share_freshness_scope(queued->result.request_id, request_id))
-            continue;
-        if (queued->freshness_serial > freshness_serial)
-            return false;
-    }
-
-    return true;
+    uint64_t latest_serial = _scene_latest_request_scope_serial(
+        scene->pick_scopes, scene->pick_scope_count, panel, request_id);
+    return latest_serial == 0 || latest_serial == freshness_serial;
 }
 
 
@@ -720,7 +841,7 @@ bool _scene_pick_request_is_current(
  * @param panel the panel
  * @param request_id the request id
  * @param freshness_serial the request freshness serial
- * @return true when no newer matching request/result exists
+ * @return true when the serial still matches the newest known panel-local request scope
  */
 bool _scene_probe_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial)
@@ -729,31 +850,9 @@ bool _scene_probe_request_is_current(
     ANN(panel);
     if (freshness_serial == 0)
         return true;
-
-    for (uint32_t i = 0; i < scene->pending_probe_count; i++)
-    {
-        const DvzPendingProbeRequest* pending = &scene->pending_probes[i];
-        if (pending->panel != panel)
-            continue;
-        if (!_scene_request_ids_share_freshness_scope(pending->request.request_id, request_id))
-            continue;
-        if (pending->freshness_serial > freshness_serial)
-            return false;
-    }
-
-    for (uint32_t i = 0; i < scene->probe_result_count; i++)
-    {
-        uint32_t index = (scene->probe_result_head + i) % DVZ_SCENE_MAX_PROBE_RESULTS;
-        const DvzQueuedProbeResult* queued = &scene->probe_results[index];
-        if (queued->panel != panel)
-            continue;
-        if (!_scene_request_ids_share_freshness_scope(queued->result.request_id, request_id))
-            continue;
-        if (queued->freshness_serial > freshness_serial)
-            return false;
-    }
-
-    return true;
+    uint64_t latest_serial = _scene_latest_request_scope_serial(
+        scene->probe_scopes, scene->probe_scope_count, panel, request_id);
+    return latest_serial == 0 || latest_serial == freshness_serial;
 }
 
 
@@ -3014,6 +3113,8 @@ int dvz_panel_pick(DvzPanel* panel, double x, double y, const DvzPickRequest* re
     pending->x = x;
     pending->y = y;
     pending->freshness_serial = _scene_next_request_serial(scene);
+    _scene_track_pick_request_serial(
+        scene, panel, request_id, pending->freshness_serial);
     if (request != NULL)
         pending->request = *request;
     else if (panel->interaction != NULL)
@@ -3051,6 +3152,8 @@ int dvz_panel_probe(DvzPanel* panel, double x, double y, const DvzProbeRequest* 
     pending->x = x;
     pending->y = y;
     pending->freshness_serial = _scene_next_request_serial(scene);
+    _scene_track_probe_request_serial(
+        scene, panel, request_id, pending->freshness_serial);
     if (request != NULL)
         pending->request = *request;
     return 0;

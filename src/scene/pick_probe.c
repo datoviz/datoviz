@@ -766,6 +766,23 @@ bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result
 
 
 /**
+ * Push one scoped pick result into the internal scene queue.
+ *
+ * @param scene the scene
+ * @param panel the owning panel
+ * @param freshness_serial the originating request freshness serial
+ * @param result the resolved result
+ * @return true on success
+ */
+bool _dvz_scene_enqueue_pick_result_scoped(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzPickResult* result)
+{
+    return _scene_push_pick_result(scene, panel, freshness_serial, result);
+}
+
+
+
+/**
  * Push one resolved probe result into the internal scene queue.
  *
  * @param scene the scene
@@ -775,4 +792,21 @@ bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result
 bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result)
 {
     return _scene_push_probe_result(scene, NULL, 0, result);
+}
+
+
+
+/**
+ * Push one scoped probe result into the internal scene queue.
+ *
+ * @param scene the scene
+ * @param panel the owning panel
+ * @param freshness_serial the originating request freshness serial
+ * @param result the resolved result
+ * @return true on success
+ */
+bool _dvz_scene_enqueue_probe_result_scoped(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzProbeResult* result)
+{
+    return _scene_push_probe_result(scene, panel, freshness_serial, result);
 }
