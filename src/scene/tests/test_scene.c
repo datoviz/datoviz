@@ -6848,6 +6848,82 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* it
 }
 
 
+int test_scene_pick_request_same_id_supersedes_older_unresolved(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_pick(panel, 10.0, 20.0, &(DvzPickRequest){.request_id = 77}) == 0);
+    AT(dvz_panel_pick(panel, 30.0, 40.0, &(DvzPickRequest){.request_id = 77}) == 0);
+    AT(scene->pending_pick_count == 1);
+    AT(scene->pending_picks[0].request.request_id == 77);
+    AC(scene->pending_picks[0].x, 30.0, 1e-12);
+    AC(scene->pending_picks[0].y, 40.0, 1e-12);
+
+    DvzPickResult stale = {.request_id = 77, .hit = true, .resolved_id = 1};
+    DvzPickResult fresh = {.request_id = 77, .hit = true, .resolved_id = 2};
+    AT(_dvz_scene_enqueue_pick_result(scene, &stale));
+    scene->pick_results[0].panel = panel;
+    AT(dvz_panel_pick(panel, 50.0, 60.0, &(DvzPickRequest){.request_id = 77}) == 0);
+    AT(scene->pick_result_count == 0);
+    AT(_dvz_scene_enqueue_pick_result(scene, &fresh));
+    scene->pick_results[0].panel = panel;
+
+    DvzPickResult out = {0};
+    AT(dvz_scene_poll_pick(scene, &out));
+    AT(out.resolved_id == 2);
+    AT(!dvz_scene_poll_pick(scene, &out));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_probe_request_zero_id_keeps_newest_unresolved(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_probe(panel, 1.0, 2.0, NULL) == 0);
+    AT(dvz_panel_probe(panel, 3.0, 4.0, NULL) == 0);
+    AT(scene->pending_probe_count == 1);
+    AT(scene->pending_probes[0].request.request_id == 0);
+    AC(scene->pending_probes[0].x, 3.0, 1e-12);
+    AC(scene->pending_probes[0].y, 4.0, 1e-12);
+
+    DvzProbeResult stale = {.request_id = 0, .hit = true, .scalar = 1.0};
+    DvzProbeResult fresh = {.request_id = 0, .hit = true, .scalar = 2.0};
+    AT(_dvz_scene_enqueue_probe_result(scene, &stale));
+    scene->probe_results[0].panel = panel;
+    AT(dvz_panel_probe(panel, 5.0, 6.0, NULL) == 0);
+    AT(scene->probe_result_count == 0);
+    AT(_dvz_scene_enqueue_probe_result(scene, &fresh));
+    scene->probe_results[0].panel = panel;
+
+    DvzProbeResult out = {0};
+    AT(dvz_scene_poll_probe(scene, &out));
+    AC(out.scalar, 2.0, 1e-12);
+    AT(!dvz_scene_poll_probe(scene, &out));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 /**
  * Ensure image probes miss when the GPU-resolved pixel is fully transparent.
@@ -7431,6 +7507,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_interaction_core);
     TEST_SIMPLE(test_scene_selection_apply_pick_and_link_keys);
     TEST_SIMPLE(test_scene_pick_probe_queues_and_pinned_readout);
+    TEST_SIMPLE(test_scene_pick_request_same_id_supersedes_older_unresolved);
+    TEST_SIMPLE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
     TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);

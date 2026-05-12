@@ -127,6 +127,24 @@ static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
 
 static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 
+static bool _scene_pick_request_supersedes(
+    const DvzPendingPickRequest* pending, const DvzPanel* panel, uint64_t request_id);
+
+static bool _scene_probe_request_supersedes(
+    const DvzPendingProbeRequest* pending, const DvzPanel* panel, uint64_t request_id);
+
+static void _scene_drop_superseded_pick_requests(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id);
+
+static void _scene_drop_superseded_probe_requests(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id);
+
+static void _scene_drop_superseded_pick_results(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id);
+
+static void _scene_drop_superseded_probe_results(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id);
+
 static void _scene_visual_texture_mark_clean(DvzVisual* visual);
 
 static void _scene_visual_texture_mark_full_dirty(
@@ -430,6 +448,187 @@ static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
         dvz_panzoom_mvp(panel->panzoom, out);
     if (panel->arcball != NULL)
         dvz_arcball_mvp(panel->arcball, out);
+}
+
+
+
+/**
+ * Return whether one queued pick request is superseded by a newer request.
+ *
+ * @param pending the queued request
+ * @param panel the panel receiving the new request
+ * @param request_id the new request id
+ * @return true when the old request should be dropped
+ */
+static bool _scene_pick_request_supersedes(
+    const DvzPendingPickRequest* pending, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(pending);
+    if (pending->panel != panel)
+        return false;
+    if (request_id != 0)
+        return pending->request.request_id == request_id;
+    return pending->request.request_id == 0;
+}
+
+
+
+/**
+ * Return whether one queued probe request is superseded by a newer request.
+ *
+ * @param pending the queued request
+ * @param panel the panel receiving the new request
+ * @param request_id the new request id
+ * @return true when the old request should be dropped
+ */
+static bool _scene_probe_request_supersedes(
+    const DvzPendingProbeRequest* pending, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(pending);
+    if (pending->panel != panel)
+        return false;
+    if (request_id != 0)
+        return pending->request.request_id == request_id;
+    return pending->request.request_id == 0;
+}
+
+
+
+/**
+ * Drop unresolved pick requests superseded by a newer panel request.
+ *
+ * @param scene the scene
+ * @param panel the panel receiving the new request
+ * @param request_id the new request id
+ */
+static void _scene_drop_superseded_pick_requests(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    uint32_t old_count = scene->pending_pick_count;
+    uint32_t write = 0;
+    for (uint32_t read = 0; read < scene->pending_pick_count; read++)
+    {
+        DvzPendingPickRequest pending = scene->pending_picks[read];
+        if (_scene_pick_request_supersedes(&pending, panel, request_id))
+            continue;
+        if (write != read)
+            scene->pending_picks[write] = pending;
+        write++;
+    }
+    for (uint32_t i = write; i < old_count; i++)
+    {
+        dvz_memset(
+            &scene->pending_picks[i], sizeof(DvzPendingPickRequest), 0,
+            sizeof(DvzPendingPickRequest));
+    }
+    scene->pending_pick_count = write;
+}
+
+
+
+/**
+ * Drop unresolved probe requests superseded by a newer panel request.
+ *
+ * @param scene the scene
+ * @param panel the panel receiving the new request
+ * @param request_id the new request id
+ */
+static void _scene_drop_superseded_probe_requests(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    uint32_t old_count = scene->pending_probe_count;
+    uint32_t write = 0;
+    for (uint32_t read = 0; read < scene->pending_probe_count; read++)
+    {
+        DvzPendingProbeRequest pending = scene->pending_probes[read];
+        if (_scene_probe_request_supersedes(&pending, panel, request_id))
+            continue;
+        if (write != read)
+            scene->pending_probes[write] = pending;
+        write++;
+    }
+    for (uint32_t i = write; i < old_count; i++)
+    {
+        dvz_memset(
+            &scene->pending_probes[i], sizeof(DvzPendingProbeRequest), 0,
+            sizeof(DvzPendingProbeRequest));
+    }
+    scene->pending_probe_count = write;
+}
+
+
+
+/**
+ * Drop queued pick results superseded by a newer panel request.
+ *
+ * @param scene the scene
+ * @param panel the panel receiving the new request
+ * @param request_id the new request id
+ */
+static void _scene_drop_superseded_pick_results(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    DvzQueuedPickResult kept[DVZ_SCENE_MAX_PICK_RESULTS] = {0};
+    uint32_t kept_count = 0;
+    for (uint32_t i = 0; i < scene->pick_result_count; i++)
+    {
+        uint32_t index = (scene->pick_result_head + i) % DVZ_SCENE_MAX_PICK_RESULTS;
+        DvzQueuedPickResult queued = scene->pick_results[index];
+        if (queued.panel == panel &&
+            ((request_id != 0 && queued.result.request_id == request_id) ||
+             (request_id == 0 && queued.result.request_id == 0)))
+        {
+            continue;
+        }
+        kept[kept_count++] = queued;
+    }
+    dvz_memset(scene->pick_results, sizeof(scene->pick_results), 0, sizeof(scene->pick_results));
+    for (uint32_t i = 0; i < kept_count; i++)
+        scene->pick_results[i] = kept[i];
+    scene->pick_result_head = 0;
+    scene->pick_result_count = kept_count;
+}
+
+
+
+/**
+ * Drop queued probe results superseded by a newer panel request.
+ *
+ * @param scene the scene
+ * @param panel the panel receiving the new request
+ * @param request_id the new request id
+ */
+static void _scene_drop_superseded_probe_results(
+    DvzScene* scene, const DvzPanel* panel, uint64_t request_id)
+{
+    ANN(scene);
+    ANN(panel);
+    DvzQueuedProbeResult kept[DVZ_SCENE_MAX_PROBE_RESULTS] = {0};
+    uint32_t kept_count = 0;
+    for (uint32_t i = 0; i < scene->probe_result_count; i++)
+    {
+        uint32_t index = (scene->probe_result_head + i) % DVZ_SCENE_MAX_PROBE_RESULTS;
+        DvzQueuedProbeResult queued = scene->probe_results[index];
+        if (queued.panel == panel &&
+            ((request_id != 0 && queued.result.request_id == request_id) ||
+             (request_id == 0 && queued.result.request_id == 0)))
+        {
+            continue;
+        }
+        kept[kept_count++] = queued;
+    }
+    dvz_memset(
+        scene->probe_results, sizeof(scene->probe_results), 0, sizeof(scene->probe_results));
+    for (uint32_t i = 0; i < kept_count; i++)
+        scene->probe_results[i] = kept[i];
+    scene->probe_result_head = 0;
+    scene->probe_result_count = kept_count;
 }
 
 
@@ -2676,6 +2875,9 @@ int dvz_panel_pick(DvzPanel* panel, double x, double y, const DvzPickRequest* re
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return -1;
     DvzScene* scene = panel->figure->scene;
+    uint64_t request_id = request != NULL ? request->request_id : 0;
+    _scene_drop_superseded_pick_requests(scene, panel, request_id);
+    _scene_drop_superseded_pick_results(scene, panel, request_id);
     if (scene->pending_pick_count >= DVZ_SCENE_MAX_PENDING_REQUESTS)
     {
         log_error("pick request queue is full");
@@ -2709,6 +2911,9 @@ int dvz_panel_probe(DvzPanel* panel, double x, double y, const DvzProbeRequest* 
     if (panel->figure == NULL || panel->figure->scene == NULL)
         return -1;
     DvzScene* scene = panel->figure->scene;
+    uint64_t request_id = request != NULL ? request->request_id : 0;
+    _scene_drop_superseded_probe_requests(scene, panel, request_id);
+    _scene_drop_superseded_probe_results(scene, panel, request_id);
     if (scene->pending_probe_count >= DVZ_SCENE_MAX_PENDING_REQUESTS)
     {
         log_error("probe request queue is full");
@@ -2738,7 +2943,7 @@ bool dvz_scene_poll_pick(DvzScene* scene, DvzPickResult* out_result)
     ANN(out_result);
     if (scene->pick_result_count == 0)
         return false;
-    *out_result = scene->pick_results[scene->pick_result_head];
+    *out_result = scene->pick_results[scene->pick_result_head].result;
     scene->pick_result_head = (scene->pick_result_head + 1) % DVZ_SCENE_MAX_PICK_RESULTS;
     scene->pick_result_count--;
     return true;
@@ -2758,7 +2963,7 @@ bool dvz_scene_poll_probe(DvzScene* scene, DvzProbeResult* out_result)
     ANN(out_result);
     if (scene->probe_result_count == 0)
         return false;
-    *out_result = scene->probe_results[scene->probe_result_head];
+    *out_result = scene->probe_results[scene->probe_result_head].result;
     scene->probe_result_head = (scene->probe_result_head + 1) % DVZ_SCENE_MAX_PROBE_RESULTS;
     scene->probe_result_count--;
     return true;

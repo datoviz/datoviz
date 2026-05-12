@@ -259,6 +259,8 @@ struct DvzAnnotation
 
 typedef struct DvzPendingPickRequest DvzPendingPickRequest;
 typedef struct DvzPendingProbeRequest DvzPendingProbeRequest;
+typedef struct DvzQueuedPickResult DvzQueuedPickResult;
+typedef struct DvzQueuedProbeResult DvzQueuedProbeResult;
 
 struct DvzPendingPickRequest
 {
@@ -275,6 +277,20 @@ struct DvzPendingProbeRequest
     double x;
     double y;
     DvzProbeRequest request;
+};
+
+
+struct DvzQueuedPickResult
+{
+    DvzPanel* panel;
+    DvzPickResult result;
+};
+
+
+struct DvzQueuedProbeResult
+{
+    DvzPanel* panel;
+    DvzProbeResult result;
 };
 
 
@@ -509,11 +525,11 @@ struct DvzScene
 
     uint32_t pick_result_count;
     uint32_t pick_result_head;
-    DvzPickResult pick_results[DVZ_SCENE_MAX_PICK_RESULTS];
+    DvzQueuedPickResult pick_results[DVZ_SCENE_MAX_PICK_RESULTS];
 
     uint32_t probe_result_count;
     uint32_t probe_result_head;
-    DvzProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
+    DvzQueuedProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
 
     struct
     {

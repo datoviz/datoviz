@@ -248,6 +248,12 @@ int test_scene_selection_apply_pick_and_link_keys(TstSuite* suite, TstItem* item
 
 int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* item);
 
+int test_scene_pick_request_same_id_supersedes_older_unresolved(
+    TstSuite* suite, TstItem* item);
+
+int test_scene_probe_request_zero_id_keeps_newest_unresolved(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP

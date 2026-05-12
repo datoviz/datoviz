@@ -29,9 +29,11 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static bool _scene_push_pick_result(DvzScene* scene, const DvzPickResult* result);
+static bool _scene_push_pick_result(
+    DvzScene* scene, DvzPanel* panel, const DvzPickResult* result);
 
-static bool _scene_push_probe_result(DvzScene* scene, const DvzProbeResult* result);
+static bool _scene_push_probe_result(
+    DvzScene* scene, DvzPanel* panel, const DvzProbeResult* result);
 
 static bool _scene_pick_request_ndc(
     const DvzFigure* figure, const DvzPanel* panel, double x, double y, vec2 out_ndc);
@@ -60,7 +62,16 @@ static void _scene_remove_pending_probe_at(DvzScene* scene, uint32_t index);
 
 
 
-static bool _scene_push_pick_result(DvzScene* scene, const DvzPickResult* result)
+/**
+ * Append one resolved pick result to the scene queue.
+ *
+ * @param scene the scene
+ * @param panel the owning panel, or NULL for synthetic test injection
+ * @param result the result payload
+ * @return true on success, false when the queue is full
+ */
+static bool _scene_push_pick_result(
+    DvzScene* scene, DvzPanel* panel, const DvzPickResult* result)
 {
     ANN(scene);
     ANN(result);
@@ -70,14 +81,24 @@ static bool _scene_push_pick_result(DvzScene* scene, const DvzPickResult* result
         return false;
     }
     uint32_t index = (scene->pick_result_head + scene->pick_result_count) % DVZ_SCENE_MAX_PICK_RESULTS;
-    scene->pick_results[index] = *result;
+    scene->pick_results[index].panel = panel;
+    scene->pick_results[index].result = *result;
     scene->pick_result_count++;
     return true;
 }
 
 
 
-static bool _scene_push_probe_result(DvzScene* scene, const DvzProbeResult* result)
+/**
+ * Append one resolved probe result to the scene queue.
+ *
+ * @param scene the scene
+ * @param panel the owning panel, or NULL for synthetic test injection
+ * @param result the result payload
+ * @return true on success, false when the queue is full
+ */
+static bool _scene_push_probe_result(
+    DvzScene* scene, DvzPanel* panel, const DvzProbeResult* result)
 {
     ANN(scene);
     ANN(result);
@@ -88,7 +109,8 @@ static bool _scene_push_probe_result(DvzScene* scene, const DvzProbeResult* resu
     }
     uint32_t index =
         (scene->probe_result_head + scene->probe_result_count) % DVZ_SCENE_MAX_PROBE_RESULTS;
-    scene->probe_results[index] = *result;
+    scene->probe_results[index].panel = panel;
+    scene->probe_results[index].result = *result;
     scene->probe_result_count++;
     return true;
 }
@@ -340,7 +362,7 @@ static bool _scene_process_point_pick_request(
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
-        return _scene_push_pick_result(scene, &miss);
+        return _scene_push_pick_result(scene, panel, &miss);
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
@@ -428,10 +450,10 @@ static bool _scene_process_point_pick_request(
         resolved.resolved_target = DVZ_SCENE_TARGET_ITEM;
         resolved.raw_id = picked_id - 1;
         resolved.resolved_id = picked_id - 1;
-        return _scene_push_pick_result(scene, &resolved);
+        return _scene_push_pick_result(scene, panel, &resolved);
     }
 
-    return _scene_push_pick_result(scene, &miss);
+    return _scene_push_pick_result(scene, panel, &miss);
 }
 
 
@@ -457,7 +479,7 @@ static bool _scene_process_image_probe_request(
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
-        return _scene_push_probe_result(scene, &miss);
+        return _scene_push_probe_result(scene, panel, &miss);
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
@@ -573,10 +595,10 @@ static bool _scene_process_image_probe_request(
         resolved.vector[2] = rgba[2] / 255.0;
         resolved.vector[3] = rgba[3] / 255.0;
         dvz_strlcpy(resolved.label, "rgba", sizeof(resolved.label));
-        return _scene_push_probe_result(scene, &resolved);
+        return _scene_push_probe_result(scene, panel, &resolved);
     }
 
-    return _scene_push_probe_result(scene, &miss);
+    return _scene_push_probe_result(scene, panel, &miss);
 }
 
 
@@ -590,7 +612,7 @@ static bool _scene_process_image_probe_request(
  */
 bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result)
 {
-    return _scene_push_pick_result(scene, result);
+    return _scene_push_pick_result(scene, NULL, result);
 }
 
 
@@ -604,5 +626,5 @@ bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result
  */
 bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result)
 {
-    return _scene_push_probe_result(scene, result);
+    return _scene_push_probe_result(scene, NULL, result);
 }
