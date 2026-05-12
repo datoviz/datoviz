@@ -578,6 +578,7 @@ bool _scene_pick_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
 bool _scene_probe_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
+void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 
 
 

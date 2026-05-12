@@ -42,6 +42,8 @@ static uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* 
 
 static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc);
 
+static void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out);
+
 static bool _scene_decode_pick_id(const uint8_t rgba[4], uint64_t* out_id);
 
 static bool _scene_request_ids_share_scope(uint64_t lhs_request_id, uint64_t rhs_request_id);
@@ -166,6 +168,30 @@ static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc)
     ANN(mvp);
     mvp->proj[3][0] -= ndc[0];
     mvp->proj[3][1] -= ndc[1];
+}
+
+
+
+/**
+ * Build an apply MVP that recenters one panel-local request onto the readback pixel.
+ *
+ * Both point picking and image probing currently read back one fixed pixel from a synthetic
+ * full-target render. The request coordinate is therefore shifted onto a shared synthetic target
+ * NDC so both request paths use the same explicit GPU-space mapping rule.
+ *
+ * @param panel the panel
+ * @param request_ndc the requested panel-local NDC coordinate
+ * @param out the destination MVP
+ */
+static void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out)
+{
+    ANN(panel);
+    ANN(request_ndc);
+    ANN(out);
+    _scene_panel_apply_mvp(panel, out);
+    vec2 target_ndc = {-0.75f, -0.75f};
+    vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
+    _scene_center_apply_mvp(out, delta);
 }
 
 
@@ -558,16 +584,7 @@ static bool _scene_process_point_pick_request(
         DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
 
         DvzMVP mvp = {0};
-        glm_mat4_identity(mvp.model);
-        glm_mat4_identity(mvp.view);
-        glm_mat4_identity(mvp.proj);
-        if (panel->panzoom != NULL)
-            dvz_panzoom_mvp(panel->panzoom, &mvp);
-        if (panel->arcball != NULL)
-            dvz_arcball_mvp(panel->arcball, &mvp);
-        vec2 target_ndc = {-0.75f, -0.75f};
-        vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
-        _scene_center_apply_mvp(&mvp, delta);
+        _scene_request_apply_mvp(panel, request_ndc, &mvp);
 
         bool ok = plan != NULL && emitter != NULL &&
                   dvz_frame_plan_upload_bytes(
@@ -711,6 +728,15 @@ static bool _scene_process_image_probe_request(
                   dvz_frame_plan_render_visual(plan, "probe0") &&
                   dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
                   dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
+        DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
+        if (render != NULL)
+        {
+            DvzMVP mvp = {0};
+            _scene_request_apply_mvp(panel, request_ndc, &mvp);
+            render->u.render.has_mvp = true;
+            render->u.render.apply_mvp = mvp;
+            render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
+        }
         if (!ok)
         {
             log_error(

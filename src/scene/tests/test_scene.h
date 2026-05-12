@@ -109,6 +109,8 @@ int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item);
 
+int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstItem* item);
+
 int test_scene_image_probe_transparent_pixel_misses(TstSuite* suite, TstItem* item);
 
 int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem* item);

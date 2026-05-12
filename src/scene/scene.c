@@ -125,8 +125,6 @@ static bool _scene_remove_selection_item(DvzSelection* selection, const DvzSelec
 
 static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
 
-static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
-
 static bool _scene_pick_request_supersedes(
     const DvzPendingPickRequest* pending, const DvzPanel* panel, uint64_t request_id);
 
@@ -445,7 +443,7 @@ static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size)
  * @param panel the panel
  * @param out the destination MVP
  */
-static void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
+void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
 {
     ANN(panel);
     ANN(out);
