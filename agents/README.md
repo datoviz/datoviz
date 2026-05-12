@@ -15,6 +15,13 @@ Active execution notes:
 2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 
+Historical request-slice planning notes:
+
+1. [now/SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
+   is now a pre-implementation snapshot; use
+   [done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
+   plus `V0_4_NEXT_STEPS.md` for the current shipped behavior and next work.
+
 The scene design addenda that used to live in `agents/now/` now live under
 [../spec/scene/proposals](/home/cyrille/GIT/Viz/datoviz/spec/scene/proposals).
 

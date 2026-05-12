@@ -1,10 +1,17 @@
 # Scene Pick/Probe Execution Plan
 
 > **Status**
+> - **State:** `HISTORICAL PLAN SNAPSHOT`
 > - **Scope:** wire real pick/probe resolution through the existing scene -> frame-plan -> DRP2 ->
 >   runtime readback path
 > - **Written on:** `2026-05-11`
 > - **Target:** first end-to-end GPU-backed pick/probe slice for active `scene` + `drp2`
+
+This file is now historical context rather than the current execution guide.
+For the shipped behavior and remaining caveats, read
+[../done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
+and then
+[V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md).
 
 
 ## Objective
@@ -20,6 +27,9 @@ Turn the current retained request/result queues into a real execution path:
 
 
 ## Current Gap
+
+The section below reflects the original pre-implementation plan. Several listed gaps are now closed
+in code.
 
 The current codebase already has the pieces below, but they are not connected:
 

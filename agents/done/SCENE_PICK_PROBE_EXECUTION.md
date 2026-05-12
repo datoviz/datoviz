@@ -1,7 +1,7 @@
 # Scene Pick/Probe Execution
 
 > **Status:** `FIRST REQUEST-RESOLUTION SLICE COMPLETE`
-> - **Completed on:** `2026-05-11`
+> - **Completed on:** `2026-05-12`
 > - **Scope:** wire real scene pick/probe requests into the existing DRP2/runtime readback path
 
 
@@ -24,9 +24,12 @@ Implemented pieces:
    - enqueues a `DvzPickResult`.
 4. First image probe resolution:
    - consumes queued `dvz_panel_probe()` requests,
-   - attempts a dedicated auxiliary DRP2/readback path,
+   - emits a dedicated auxiliary DRP2/readback path,
    - enqueues a `DvzProbeResult`.
-5. Focused scene test coverage for the end-to-end request path.
+5. Persistent freshness tracking per panel/request-kind scope so late stale results are discarded
+   even after newer results were already polled.
+6. Explicit request recentering for image probes, matching the point-pick synthetic readback rule.
+7. Focused scene test coverage for the end-to-end request path.
 
 
 ## Point Pick Path
@@ -55,19 +58,22 @@ because it uses a dedicated auxiliary stream per request instead of integrating 
 the main figure stream or a batched request pass.
 
 
-## Probe Caveat
+## Probe Status
 
-The first image probe slice is intentionally less complete than point pick.
+The first image probe slice is now fully GPU-resolved within the current narrow architecture.
 
 Current behavior:
 
-1. it goes through the same request queue consumption and auxiliary request execution flow,
-2. it attempts a DRP2/render/readback probe path first,
-3. if that path does not produce a hit, it currently falls back to scene-side texture sampling to
-   produce the probe result.
+1. it goes through the same request queue consumption and auxiliary request execution flow as point
+   picking,
+2. it renders, copies, and reads back one RGBA pixel through DRP2/runtime only,
+3. transparent pixels remain misses,
+4. there is no scene-side texture-sampling fallback anymore,
+5. probe positioning now follows the same explicit synthetic-target recentering rule as point
+   picking.
 
-So the request/result plumbing is live, but probe positioning and fully GPU-resolved probe semantics
-are not finished yet.
+The remaining limitations are therefore architectural rather than fallback-related: one auxiliary
+stream per request, simple RGBA payload decoding, and no richer coordinate/value metadata yet.
 
 
 ## Why The Slice Is Structured This Way
@@ -89,16 +95,17 @@ Validation run for this slice:
 
 1. `just build`
 2. `./build/testing/dvztest_scene test_scene_process_pick_probe_requests`
-3. `just test scene`
-4. `git diff --check`
+3. `./build/testing/dvztest_scene test_scene_image_probe_respects_panel_request_position`
+4. `just test scene`
+5. `git diff --check`
 
 
 ## Follow-Up
 
 The next picking/probing work should proceed in this order:
 
-1. replace the probe fallback with a fully GPU-resolved probe path,
-2. formalize request freshness/supersession rules for repeated hover-style requests,
-3. move point picking from RGBA8 payload encoding toward a more explicit payload abstraction,
-4. batch compatible pick/probe requests instead of emitting one auxiliary stream per request,
-5. widen beyond point/image to mesh/object/face/instance semantics.
+1. move point picking from RGBA8 payload encoding toward a more explicit payload abstraction,
+2. decide later whether batching is worth the complexity once real multi-panel/request-heavy traffic
+   or profiling justifies it,
+3. widen beyond point/image to mesh/object/face/instance semantics,
+4. enrich probe coordinate/value reporting beyond the current narrow RGBA pixel result.
