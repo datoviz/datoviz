@@ -330,6 +330,18 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
     DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id2);
 
 
+/**
+ * Attach depth state to the most recently appended CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param depth_write_enabled whether depth writes are enabled
+ * @param depth_compare_op VkCompareOp value used for depth testing
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_depth_state(
+    DvzDrp2CommandStream* stream, bool depth_write_enabled, uint32_t depth_compare_op);
+
+
 
 /**
  * Append a DestroyRenderPipeline command.
@@ -727,6 +739,18 @@ DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_clear(
 DVZ_EXPORT bool dvz_drp2_stream_begin_render_pass_region_clear(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t encoder_id, uint64_t texture_id,
     float r, float g, float b, float a, float x, float y, float width, float height, bool clear);
+
+
+/**
+ * Attach a transient depth attachment request to the most recently appended BeginRenderPass
+ * command.
+ *
+ * @param stream the command stream
+ * @param clear_depth the depth clear value used when the pass clears attachments
+ * @return whether the most recent command was a BeginRenderPass and was updated
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, float clear_depth);
 
 
 

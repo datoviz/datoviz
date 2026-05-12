@@ -2016,6 +2016,87 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, Ts
 
 
 
+/**
+ * Ensure lit mesh scene renders request depth attachments and depth-enabled pipelines.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    float positions[4][3] = {
+        {-0.8f, -0.8f, 0.1f}, {-0.8f, 0.8f, 0.1f},
+        {0.8f, -0.8f, 0.1f},  {0.8f, 0.8f, 0.1f},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_depth_pass = false;
+    bool found_depth_pipeline = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+            found_depth_pass = found_depth_pass || cmd->u.begin_render_pass.has_depth_attachment;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            found_depth_pipeline =
+                found_depth_pipeline ||
+                (cmd->u.create_render_pipeline.has_depth_attachment &&
+                 cmd->u.create_render_pipeline.depth_write_enabled &&
+                 cmd->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL);
+        }
+    }
+    AT(found_depth_pass);
+    AT(found_depth_pipeline);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -5783,6 +5864,120 @@ int test_scene_indexed_primitive_shading_updates_runtime(TstSuite* suite, TstIte
 
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+/**
+ * Ensure overlapping lit primitives render in depth order instead of draw order.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* near_visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* far_visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(near_visual);
+    ANN(far_visual);
+
+    float near_positions[6][3] = {
+        {-0.9f, -0.9f, 0.1f}, {-0.9f, 0.9f, 0.1f},  {0.9f, -0.9f, 0.1f},
+        {0.9f, -0.9f, 0.1f},  {-0.9f, 0.9f, 0.1f},  {0.9f, 0.9f, 0.1f},
+    };
+    float far_positions[6][3] = {
+        {-0.9f, -0.9f, 0.8f}, {-0.9f, 0.9f, 0.8f},  {0.9f, -0.9f, 0.8f},
+        {0.9f, -0.9f, 0.8f},  {-0.9f, 0.9f, 0.8f},  {0.9f, 0.9f, 0.8f},
+    };
+    float normals[6][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    DvzColor near_colors[6];
+    DvzColor far_colors[6];
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        near_colors[i][0] = 32;
+        near_colors[i][1] = 64;
+        near_colors[i][2] = 255;
+        near_colors[i][3] = 255;
+        far_colors[i][0] = 255;
+        far_colors[i][1] = 32;
+        far_colors[i][2] = 32;
+        far_colors[i][3] = 255;
+    }
+
+    AT(dvz_visual_set_data(near_visual, "position", near_positions, 6) == 0);
+    AT(dvz_visual_set_data(near_visual, "color", near_colors, 6) == 0);
+    AT(dvz_visual_set_data(near_visual, "normal", normals, 6) == 0);
+    AT(dvz_panel_add_visual(panel, near_visual, NULL) == 0);
+    AT(dvz_visual_set_primitive_shading(
+           near_visual,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 1.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+
+    AT(dvz_visual_set_data(far_visual, "position", far_positions, 6) == 0);
+    AT(dvz_visual_set_data(far_visual, "color", far_colors, 6) == 0);
+    AT(dvz_visual_set_data(far_visual, "normal", normals, 6) == 0);
+    AT(dvz_panel_add_visual(panel, far_visual, NULL) == 0);
+    AT(dvz_visual_set_primitive_shading(
+           far_visual,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 1.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_lit_primitive_depth_orders_overlap skipped: GPU context "
+            "creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(center[2] > 180);
+    AT(center[2] > center[0] + 40);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+#endif
+
+
+
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_shared_field_mixed_runtime_updates(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -7511,6 +7706,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
     TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
+    TEST_SIMPLE(test_scene_mesh_emits_depth_attachment);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);
     TEST_SIMPLE(test_scene_shared_index_buffer_emits_one_upload);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -7532,6 +7728,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_image_probe_gpu_readback_failure_misses);
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
+    TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);

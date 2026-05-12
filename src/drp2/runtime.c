@@ -153,6 +153,9 @@ struct Drp2Object
     uint32_t render_bound_bind_group_mask;
     bool storage_buffers;
     bool uniform_buffer;
+    bool has_depth_attachment;
+    bool depth_write_enabled;
+    uint32_t depth_compare_op;
     float viewport_x;
     float viewport_y;
     float viewport_width;
@@ -190,6 +193,8 @@ struct Drp2VkliteObject
     DvzSampler* sampler;
     DvzCommands* commands;
     DvzRendering* rendering;
+    DvzImages* depth_images;
+    DvzImageViews* depth_views;
     VkCommandBuffer command_buffer;
     VkImageView image_view;
     VkImageLayout image_layout;
@@ -800,6 +805,9 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
     object->fragment_shader_module_id = command->u.create_render_pipeline.fragment_shader_module_id;
     object->bind_group_layout_id  = command->u.create_render_pipeline.bind_group_layout_id;
     object->bind_group_layout_id2 = command->u.create_render_pipeline.bind_group_layout_id2;
+    object->has_depth_attachment = command->u.create_render_pipeline.has_depth_attachment;
+    object->depth_write_enabled = command->u.create_render_pipeline.depth_write_enabled;
+    object->depth_compare_op = command->u.create_render_pipeline.depth_compare_op;
     return _ok();
 }
 
@@ -1128,6 +1136,7 @@ static DvzDrp2ValidationResult _validate_begin_render_pass(
     _mark_referenced(state, command->u.begin_render_pass.texture_id);
     pass->open = true;
     pass->encoder_id = command->u.begin_render_pass.encoder_id;
+    pass->has_depth_attachment = command->u.begin_render_pass.has_depth_attachment;
     pass->viewport_x = command->u.begin_render_pass.viewport[0];
     pass->viewport_y = command->u.begin_render_pass.viewport[1];
     pass->viewport_width = command->u.begin_render_pass.viewport[2];
@@ -2106,6 +2115,18 @@ static void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_rendering_free(object->rendering);
         object->rendering = NULL;
     }
+    if (object->depth_views != NULL)
+    {
+        dvz_image_views_destroy(object->depth_views);
+        dvz_image_views_free(object->depth_views);
+        object->depth_views = NULL;
+    }
+    if (object->depth_images != NULL)
+    {
+        dvz_images_destroy(object->depth_images);
+        dvz_images_free(object->depth_images);
+        object->depth_images = NULL;
+    }
     if (object->views != NULL)
     {
         dvz_image_views_destroy(object->views);
@@ -2356,6 +2377,18 @@ static bool _vklite_attach_frame_target(
     object->image_layout = frame->image_layout;
     object->command_buffer = frame->command_buffer;
     object->image_view = frame->image_view;
+    if (object->depth_views != NULL)
+    {
+        dvz_image_views_destroy(object->depth_views);
+        dvz_image_views_free(object->depth_views);
+        object->depth_views = NULL;
+    }
+    if (object->depth_images != NULL)
+    {
+        dvz_images_destroy(object->depth_images);
+        dvz_images_free(object->depth_images);
+        object->depth_images = NULL;
+    }
     object->width = frame->extent.width;
     object->height = frame->extent.height;
     object->borrowed_frame_target = true;
@@ -2935,6 +2968,14 @@ static DvzDrp2ValidationResult _vklite_create_render_pipeline(
         graphics, 0,
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT);
+    if (command->u.create_render_pipeline.has_depth_attachment)
+    {
+        dvz_graphics_attachment_depth(graphics, VK_FORMAT_D32_SFLOAT);
+        dvz_graphics_depth(
+            graphics, false, command->u.create_render_pipeline.depth_write_enabled,
+            (VkCompareOp)command->u.create_render_pipeline.depth_compare_op,
+            DVZ_GRAPHICS_FLAGS_FIXED);
+    }
 
     /* binding_count==0 means old-style call (no vertex layout); use TRIANGLE_LIST as default.
        Otherwise respect the topology set via create_render_pipeline_ex. */
@@ -3613,6 +3654,51 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
         VK_ATTACHMENT_STORE_OP_STORE);
     if (command->u.begin_render_pass.clear)
         dvz_attachment_clear(catt, clear);
+    if (command->u.begin_render_pass.has_depth_attachment)
+    {
+        Drp2VkliteObject* depth_owner = target->borrowed_frame_target ? target : pass;
+        DvzImages* depth_images = dvz_images_create_wrapper();
+        DvzImageViews* depth_views = dvz_image_views_create_wrapper();
+        if (depth_images == NULL || depth_views == NULL)
+        {
+            if (depth_views != NULL)
+                dvz_image_views_free(depth_views);
+            if (depth_images != NULL)
+                dvz_images_free(depth_images);
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        depth_owner->depth_images = depth_images;
+        depth_owner->depth_views = depth_views;
+        dvz_images(state->runtime->device, state->runtime->allocator, VK_IMAGE_TYPE_2D, 1, depth_images);
+        dvz_images_format(depth_images, VK_FORMAT_D32_SFLOAT);
+        dvz_images_size(depth_images, target->width, target->height, 1);
+        dvz_images_mip(depth_images, 1);
+        dvz_images_layers(depth_images, 1);
+        dvz_images_samples(depth_images, VK_SAMPLE_COUNT_1_BIT);
+        dvz_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        if (dvz_images_create(depth_images) != 0)
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        dvz_image_views(depth_images, depth_views);
+        dvz_image_views_aspect(depth_views, VK_IMAGE_ASPECT_DEPTH_BIT);
+        dvz_image_views_create(depth_views);
+        VkImageView depth_view = dvz_image_views_handle(depth_views, 0);
+        if (depth_view == VK_NULL_HANDLE)
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        DvzAttachment* datt = dvz_rendering_depth(rendering);
+        dvz_attachment_image(datt, depth_view, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        dvz_attachment_ops(
+            datt, command->u.begin_render_pass.clear ? VK_ATTACHMENT_LOAD_OP_CLEAR :
+                                                       VK_ATTACHMENT_LOAD_OP_LOAD,
+            VK_ATTACHMENT_STORE_OP_STORE);
+        if (command->u.begin_render_pass.clear)
+        {
+            dvz_attachment_clear(
+                datt, (VkClearValue){.depthStencil = {command->u.begin_render_pass.clear_depth, 0}});
+        }
+    }
 
     if (!target->borrowed_frame_target && dvz_cmd_begin_result(cmds) != 0)
         return _vklite_fail_destroy_object(
@@ -3634,6 +3720,45 @@ static DvzDrp2ValidationResult _vklite_begin_render_pass(
             cmds, target, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+    }
+    if (pass->depth_images != NULL)
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(pass->depth_images, 0));
+        ANN(bimg);
+        dvz_barrier_image_stage(
+            bimg, VK_PIPELINE_STAGE_2_NONE,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
+        dvz_barrier_image_access(
+            bimg, 0,
+            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
+        dvz_cmd_barriers(cmds, &barriers);
+    }
+    else if (target->borrowed_frame_target && target->depth_images != NULL)
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierImage* bimg =
+            dvz_barriers_image(&barriers, dvz_image_handle(target->depth_images, 0));
+        ANN(bimg);
+        dvz_barrier_image_stage(
+            bimg, VK_PIPELINE_STAGE_2_NONE,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
+        dvz_barrier_image_access(
+            bimg, 0,
+            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_layout(
+            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
+        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
+        dvz_cmd_barriers(cmds, &barriers);
     }
     dvz_cmd_rendering_begin(cmds, rendering);
     return _ok();

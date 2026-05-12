@@ -1594,6 +1594,58 @@ static bool _emitter_resolve_render_vertex_buffers(
 
 
 
+/**
+ * Return whether a scene render node needs a depth attachment.
+ *
+ * @param emitter the persistent emitter
+ * @param render the render node
+ * @return whether the render node contains depth-tested geometry
+ */
+static bool _scene_render_needs_depth(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render)
+{
+    ANN(emitter);
+    ANN(render);
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
+        return false;
+
+    for (uint32_t i = 0; i < render->u.render.visual_count; i++)
+    {
+        char visual_id[DVZ_SCENE_LABEL_SIZE];
+        char shared_index_id[DVZ_SCENE_LABEL_SIZE];
+        _parse_visual_id(
+            render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
+            sizeof(shared_index_id));
+
+        char pos_key[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(pos_key, sizeof(pos_key), "%s_position", visual_id);
+        uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
+        if (pos_buf == 0)
+            continue;
+
+        bool has_color = false;
+        bool has_topology = _resource_topology(&emitter->resources, pos_buf) != UINT32_MAX;
+        bool has_normal = false;
+        for (uint32_t ai = 0; ai < 2; ai++)
+        {
+            const char* tag = ai == 0 ? "color" : "normal";
+            char rid[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, tag);
+            uint64_t attr_id = _resource_lookup_id(&emitter->resources, rid);
+            if (attr_id == 0)
+                continue;
+            has_color = has_color || strcmp(tag, "color") == 0;
+            has_normal = has_normal || strcmp(tag, "normal") == 0;
+        }
+        if (has_color && has_topology && has_normal)
+            return true;
+    }
+
+    return false;
+}
+
+
+
 /* Scene render path: one panel's draws emitted inside an already-open render pass. */
 static bool _emitter_emit_render_multi_in_pass(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
@@ -1606,6 +1658,7 @@ static bool _emitter_emit_render_multi_in_pass(
     bool ok = true;
     bool is_new = false;
     const char* fmt = _shader_format_tag(cfg);
+    bool pass_needs_depth = _scene_render_needs_depth(emitter, render);
 
     /* --- MVP UBO infrastructure (one BGL shared across all panels) --- */
     uint64_t mvp_bgl_id = _obj_id(emitter, "_bgl_mvp", &is_new);
@@ -1909,6 +1962,9 @@ static bool _emitter_emit_render_multi_in_pass(
                                offsets);
                 if (ok && mvp_bgl_id != 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+                if (ok && pass_needs_depth)
+                    ok = dvz_drp2_stream_pipeline_set_depth_state(
+                        stream, false, VK_COMPARE_OP_ALWAYS);
             }
             else if (vis_is_prim)
             {
@@ -1938,6 +1994,10 @@ static bool _emitter_emit_render_multi_in_pass(
                 if (ok && has_normal)
                     if (ok)
                         ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
+                if (ok && pass_needs_depth)
+                    ok = dvz_drp2_stream_pipeline_set_depth_state(
+                        stream, has_normal,
+                        has_normal ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
             }
             else /* vis_is_image */
             {
@@ -1963,6 +2023,9 @@ static bool _emitter_emit_render_multi_in_pass(
                                2, strides, 2, bindings, locations, formats, offsets);
                 if (ok && img_bgl_id != 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, img_bgl_id);
+                if (ok && pass_needs_depth)
+                    ok = dvz_drp2_stream_pipeline_set_depth_state(
+                        stream, false, VK_COMPARE_OP_ALWAYS);
             }
         }
 
@@ -2169,11 +2232,15 @@ static bool _emitter_emit_render_multi(
     float cg = cfg ? cfg->clear_color[1] : 0.0f;
     float cb = cfg ? cfg->clear_color[2] : 0.0f;
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
+    bool needs_depth = _scene_render_needs_depth(emitter, render);
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
-             1.0f, clear) &&
+             1.0f, clear);
+    if (ok && needs_depth)
+        ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
+    ok = ok &&
          _emitter_emit_render_multi_in_pass(
              emitter, stream, render, render_pass_id, cfg, cache) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
@@ -2741,6 +2808,7 @@ static bool _emitter_emit_plain_renders(
 
     uint32_t render_node_count = 0;
     uint32_t scene_render_node_count = 0;
+    bool any_scene_render_needs_depth = false;
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
@@ -2758,10 +2826,15 @@ static bool _emitter_emit_plain_renders(
                 sizeof(shared_index_id));
             dvz_snprintf(probe, sizeof(probe), "%s_position", visual_id);
             if (_resource_lookup_id(&emitter->resources, probe) != 0)
+            {
                 scene_render_node_count++;
+                any_scene_render_needs_depth =
+                    any_scene_render_needs_depth || _scene_render_needs_depth(emitter, render);
+            }
         }
     }
-    if (render_node_count > 0 && render_node_count == scene_render_node_count)
+    if (render_node_count > 0 && render_node_count == scene_render_node_count &&
+        !any_scene_render_needs_depth)
         return _emitter_emit_scene_figure_renders(emitter, stream, plan, readback, cfg);
 
     bool ok = true;

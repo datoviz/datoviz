@@ -89,6 +89,9 @@ struct DvzDrp2Command
             uint32_t vertex_buffer_slots;
             uint64_t bind_group_layout_id;
             uint64_t bind_group_layout_id2; /* optional second descriptor set; 0 = unused */
+            bool has_depth_attachment;
+            bool depth_write_enabled;
+            uint32_t depth_compare_op;      /* VkCompareOp */
             /* Vertex input layout (binding_count==0 → no vertex attributes). */
             uint32_t topology;        /* VkPrimitiveTopology; 0 = TRIANGLE_LIST           */
             uint32_t binding_count;
@@ -174,6 +177,8 @@ struct DvzDrp2Command
             uint64_t id;
             uint64_t encoder_id;
             uint64_t texture_id;
+            bool has_depth_attachment;
+            float clear_depth;
             float clear_color[4]; /* RGBA clear values; {0,0,0,0} = transparent black */
             float viewport[4];    /* normalized x, y, width, height in [0,1] target space */
             bool clear;

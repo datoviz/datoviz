@@ -13,7 +13,7 @@
     { "cmd": "CreateRenderPipeline", "id": 10, "vertex_buffer_slots": 1, "vertex_shader_module_id": 9000, "fragment_shader_module_id": 9001 },
     { "cmd": "CreateTexture", "id": 1, "dimension": "2d", "width": 4, "height": 4, "depth": 1, "format": "rgba8unorm", "usage": ["COPY_SRC", "COPY_DST", "RENDER_ATTACHMENT"], "mip_level_count": 1, "sample_count": 1 },
     { "cmd": "BeginCommandEncoder", "id": 2 },
-    { "cmd": "BeginRenderPass", "id": 3, "encoder_id": 2, "color_attachments": [ { "texture_id": 1, "load_op": "clear", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ] },
+    { "cmd": "BeginRenderPass", "id": 3, "encoder_id": 2, "color_attachments": [ { "texture_id": 1, "load_op": "load", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ] },
     { "cmd": "SetPipeline", "pass_id": 3, "pipeline_id": 10 },
     { "cmd": "SetVertexBuffer", "pass_id": 3, "slot": 0, "buffer_id": 20, "offset": 0 },
     { "cmd": "Draw", "pass_id": 3, "vertex_count": 3, "instance_count": 1, "first_vertex": 0, "first_instance": 0 },

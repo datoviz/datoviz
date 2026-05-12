@@ -19,6 +19,8 @@
 #include <inttypes.h>
 #include <stdint.h>
 
+#include <vulkan/vulkan_core.h>
+
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_base64.h"
@@ -403,6 +405,38 @@ static void _json_append_texture_usage(JsonBuilder* builder, uint32_t usage)
 
 
 
+/**
+ * Return the JSON token used for one Vulkan depth compare operation.
+ *
+ * @param compare_op the VkCompareOp value
+ * @return the JSON token string
+ */
+static const char* _depth_compare_name(uint32_t compare_op)
+{
+    switch ((VkCompareOp)compare_op)
+    {
+    case VK_COMPARE_OP_NEVER:
+        return "never";
+    case VK_COMPARE_OP_LESS:
+        return "less";
+    case VK_COMPARE_OP_EQUAL:
+        return "equal";
+    case VK_COMPARE_OP_LESS_OR_EQUAL:
+        return "less-or-equal";
+    case VK_COMPARE_OP_GREATER:
+        return "greater";
+    case VK_COMPARE_OP_NOT_EQUAL:
+        return "not-equal";
+    case VK_COMPARE_OP_GREATER_OR_EQUAL:
+        return "greater-or-equal";
+    case VK_COMPARE_OP_ALWAYS:
+    default:
+        return "always";
+    }
+}
+
+
+
 static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* command)
 {
     ANN(builder);
@@ -487,6 +521,15 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(
                 builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
                 command->u.create_render_pipeline.bind_group_layout_id);
+        }
+        if (command->u.create_render_pipeline.has_depth_attachment)
+        {
+            _json_append(
+                builder,
+                ", \"depth_stencil\": { \"format\": \"depth32float\", "
+                "\"depth_write_enabled\": %s, \"depth_compare\": \"%s\" }",
+                command->u.create_render_pipeline.depth_write_enabled ? "true" : "false",
+                _depth_compare_name(command->u.create_render_pipeline.depth_compare_op));
         }
         _json_append(builder, " }");
         break;
@@ -655,14 +698,26 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             builder,
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"encoder_id\": %" PRIu64
             ", \"color_attachments\": [ { \"texture_id\": %" PRIu64
-            ", \"load_op\": \"clear\", \"store_op\": \"store\", "
-            "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } } ] }",
+            ", \"load_op\": \"%s\", \"store_op\": \"store\", "
+            "\"clear_value\": { \"r\": %g, \"g\": %g, \"b\": %g, \"a\": %g } } ]",
             _command_name(command->type), command->u.begin_render_pass.id,
             command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id,
+            command->u.begin_render_pass.clear ? "clear" : "load",
             (double)command->u.begin_render_pass.clear_color[0],
             (double)command->u.begin_render_pass.clear_color[1],
             (double)command->u.begin_render_pass.clear_color[2],
             (double)command->u.begin_render_pass.clear_color[3]);
+        if (command->u.begin_render_pass.has_depth_attachment)
+        {
+            _json_append(
+                builder,
+                ", \"depth_stencil_attachment\": { \"format\": \"depth32float\", "
+                "\"load_op\": \"%s\", \"store_op\": \"store\", "
+                "\"clear_value\": { \"depth\": %g } }",
+                command->u.begin_render_pass.clear ? "clear" : "load",
+                (double)command->u.begin_render_pass.clear_depth);
+        }
+        _json_append(builder, " }");
         break;
     case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
         _json_append(
@@ -1308,6 +1363,31 @@ bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
 }
 
 
+
+/**
+ * Attach depth state to the most recent CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param depth_write_enabled whether depth writes are enabled
+ * @param depth_compare_op the VkCompareOp depth compare operator
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_pipeline_set_depth_state(
+    DvzDrp2CommandStream* stream, bool depth_write_enabled, uint32_t depth_compare_op)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.has_depth_attachment = true;
+    command->u.create_render_pipeline.depth_write_enabled = depth_write_enabled;
+    command->u.create_render_pipeline.depth_compare_op = depth_compare_op;
+    return true;
+}
+
+
 bool dvz_drp2_stream_create_render_pipeline_ex(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t vertex_shader_module_id,
     uint64_t fragment_shader_module_id, uint32_t vertex_buffer_slots,
@@ -1324,6 +1404,10 @@ bool dvz_drp2_stream_create_render_pipeline_ex(
     command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
     command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
     command->u.create_render_pipeline.bind_group_layout_id = 0;
+    command->u.create_render_pipeline.bind_group_layout_id2 = 0;
+    command->u.create_render_pipeline.has_depth_attachment = false;
+    command->u.create_render_pipeline.depth_write_enabled = false;
+    command->u.create_render_pipeline.depth_compare_op = VK_COMPARE_OP_ALWAYS;
     command->u.create_render_pipeline.topology = topology;
     uint32_t nb = binding_count < 16 ? binding_count : 16;
     command->u.create_render_pipeline.binding_count = nb;
@@ -1854,6 +1938,8 @@ bool dvz_drp2_stream_begin_render_pass_region_clear(
     command->u.begin_render_pass.id = id;
     command->u.begin_render_pass.encoder_id = encoder_id;
     command->u.begin_render_pass.texture_id = texture_id;
+    command->u.begin_render_pass.has_depth_attachment = false;
+    command->u.begin_render_pass.clear_depth = 1.0f;
     command->u.begin_render_pass.clear_color[0] = r;
     command->u.begin_render_pass.clear_color[1] = g;
     command->u.begin_render_pass.clear_color[2] = b;
@@ -1863,6 +1949,28 @@ bool dvz_drp2_stream_begin_render_pass_region_clear(
     command->u.begin_render_pass.viewport[2] = width;
     command->u.begin_render_pass.viewport[3] = height;
     command->u.begin_render_pass.clear = clear;
+    return true;
+}
+
+
+
+/**
+ * Attach a transient depth attachment request to the most recent BeginRenderPass command.
+ *
+ * @param stream the command stream
+ * @param clear_depth the depth clear value
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_begin_render_pass_set_depth(DvzDrp2CommandStream* stream, float clear_depth)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        return false;
+    command->u.begin_render_pass.has_depth_attachment = true;
+    command->u.begin_render_pass.clear_depth = clear_depth;
     return true;
 }
 

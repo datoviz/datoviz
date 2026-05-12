@@ -93,6 +93,8 @@ int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item
 
 int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, TstItem* item);
 
+int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item);
+
 int test_scene_mesh_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_indexed_primitive_emits_draw_indexed(TstSuite* suite, TstItem* item);
@@ -113,6 +115,8 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem*
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstItem* item);
 #endif
 #endif
 
