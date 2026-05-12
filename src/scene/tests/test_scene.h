@@ -221,6 +221,12 @@ int test_scene_rejects_mutation_while_emitted_stream_is_live(TstSuite* suite, Ts
 int test_scene_pick_request_distinct_ids_keep_independent_pending_and_results(
     TstSuite* suite, TstItem* item);
 
+int test_scene_process_requests_coalesces_pending_picks_before_execution(
+    TstSuite* suite, TstItem* item);
+
+int test_scene_process_requests_coalesces_pending_probes_before_execution(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_rejects_scale_binding_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);
 
 int test_scene_rejects_range_mutation_while_emitted_stream_is_live(TstSuite* suite, TstItem* item);

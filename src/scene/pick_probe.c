@@ -44,6 +44,12 @@ static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc);
 
 static bool _scene_decode_pick_id(const uint8_t rgba[4], uint64_t* out_id);
 
+static bool _scene_request_ids_share_scope(uint64_t lhs_request_id, uint64_t rhs_request_id);
+
+static void _scene_coalesce_pending_pick_requests(DvzScene* scene, const DvzFigure* figure);
+
+static void _scene_coalesce_pending_probe_requests(DvzScene* scene, const DvzFigure* figure);
+
 static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
     DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
@@ -175,6 +181,147 @@ static bool _scene_decode_pick_id(const uint8_t rgba[4], uint64_t* out_id)
 
 
 
+/**
+ * Return whether two request ids belong to the same coalescing scope.
+ *
+ * Anonymous zero-id requests use one latest-wins scope per panel/kind. Explicit non-zero request
+ * ids only coalesce with matching ids on the same panel/kind.
+ *
+ * @param lhs_request_id the first request id
+ * @param rhs_request_id the second request id
+ * @return true when the ids belong to the same coalescing scope
+ */
+static bool _scene_request_ids_share_scope(uint64_t lhs_request_id, uint64_t rhs_request_id)
+{
+    if (lhs_request_id == 0 || rhs_request_id == 0)
+        return lhs_request_id == 0 && rhs_request_id == 0;
+    return lhs_request_id == rhs_request_id;
+}
+
+
+
+/**
+ * Coalesce pending pick requests for one figure before execution.
+ *
+ * For the current v0.4 slice, anonymous zero-id requests keep only the newest request per panel,
+ * while explicit non-zero ids keep only the newest request for that same panel/id pair.
+ *
+ * @param scene the scene
+ * @param figure the figure being processed
+ */
+static void _scene_coalesce_pending_pick_requests(DvzScene* scene, const DvzFigure* figure)
+{
+    ANN(scene);
+    ANN(figure);
+    bool keep[DVZ_SCENE_MAX_PENDING_REQUESTS] = {0};
+    uint32_t write = 0;
+    uint32_t old_count = scene->pending_pick_count;
+
+    for (int32_t i = (int32_t)scene->pending_pick_count - 1; i >= 0; i--)
+    {
+        const DvzPendingPickRequest* pending = &scene->pending_picks[i];
+        bool keep_pending = true;
+        if (pending->panel != NULL && pending->panel->figure == figure)
+        {
+            for (uint32_t j = (uint32_t)i + 1; j < scene->pending_pick_count; j++)
+            {
+                const DvzPendingPickRequest* newer = &scene->pending_picks[j];
+                if (!keep[j])
+                    continue;
+                if (newer->panel != pending->panel)
+                    continue;
+                if (!_scene_request_ids_share_scope(
+                        newer->request.request_id, pending->request.request_id))
+                {
+                    continue;
+                }
+                keep_pending = false;
+                break;
+            }
+        }
+        keep[i] = keep_pending;
+    }
+
+    for (uint32_t read = 0; read < old_count; read++)
+    {
+        if (!keep[read])
+            continue;
+        if (write != read)
+            scene->pending_picks[write] = scene->pending_picks[read];
+        write++;
+    }
+    for (uint32_t i = write; i < old_count; i++)
+    {
+        dvz_memset(
+            &scene->pending_picks[i], sizeof(DvzPendingPickRequest), 0,
+            sizeof(DvzPendingPickRequest));
+    }
+    scene->pending_pick_count = write;
+}
+
+
+
+/**
+ * Coalesce pending probe requests for one figure before execution.
+ *
+ * For the current v0.4 slice, anonymous zero-id requests keep only the newest request per panel,
+ * while explicit non-zero ids keep only the newest request for that same panel/id pair.
+ *
+ * @param scene the scene
+ * @param figure the figure being processed
+ */
+static void _scene_coalesce_pending_probe_requests(DvzScene* scene, const DvzFigure* figure)
+{
+    ANN(scene);
+    ANN(figure);
+    bool keep[DVZ_SCENE_MAX_PENDING_REQUESTS] = {0};
+    uint32_t write = 0;
+    uint32_t old_count = scene->pending_probe_count;
+
+    for (int32_t i = (int32_t)scene->pending_probe_count - 1; i >= 0; i--)
+    {
+        const DvzPendingProbeRequest* pending = &scene->pending_probes[i];
+        bool keep_pending = true;
+        if (pending->panel != NULL && pending->panel->figure == figure)
+        {
+            for (uint32_t j = (uint32_t)i + 1; j < scene->pending_probe_count; j++)
+            {
+                const DvzPendingProbeRequest* newer = &scene->pending_probes[j];
+                if (!keep[j])
+                    continue;
+                if (newer->panel != pending->panel)
+                    continue;
+                if (!_scene_request_ids_share_scope(
+                        newer->request.request_id, pending->request.request_id))
+                {
+                    continue;
+                }
+                keep_pending = false;
+                break;
+            }
+        }
+        keep[i] = keep_pending;
+    }
+
+    for (uint32_t read = 0; read < old_count; read++)
+    {
+        if (!keep[read])
+            continue;
+        if (write != read)
+            scene->pending_probes[write] = scene->pending_probes[read];
+        write++;
+    }
+    for (uint32_t i = write; i < old_count; i++)
+    {
+        dvz_memset(
+            &scene->pending_probes[i], sizeof(DvzPendingProbeRequest), 0,
+            sizeof(DvzPendingProbeRequest));
+    }
+    scene->pending_probe_count = write;
+}
+
+
+
 static void _scene_remove_pending_pick_at(DvzScene* scene, uint32_t index)
 {
     ANN(scene);
@@ -249,6 +396,8 @@ uint32_t dvz_figure_process_requests(
 
     DvzScene* scene = figure->scene;
     uint32_t processed = 0;
+    _scene_coalesce_pending_pick_requests(scene, figure);
+    _scene_coalesce_pending_probe_requests(scene, figure);
 
     for (uint32_t i = 0; i < scene->pending_pick_count;)
     {

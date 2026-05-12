@@ -33,6 +33,126 @@
 #include "test_scene.h"
 #include "testing.h"
 
+/**
+ * Ensure request processing coalesces stale pending picks before execution.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_process_requests_coalesces_pending_picks_before_execution(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzFigure* other_figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* other_panel = dvz_panel(
+        other_figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+    ANN(other_panel);
+
+    scene->pending_pick_count = 6;
+    scene->pending_picks[0] =
+        (DvzPendingPickRequest){.panel = panel, .x = 1.0, .y = 2.0, .freshness_serial = 1};
+    scene->pending_picks[1] = (DvzPendingPickRequest){
+        .panel = other_panel, .x = 100.0, .y = 200.0, .freshness_serial = 99};
+    scene->pending_picks[2] =
+        (DvzPendingPickRequest){.panel = panel, .x = 3.0, .y = 4.0, .freshness_serial = 2};
+    scene->pending_picks[3] = (DvzPendingPickRequest){
+        .panel = panel, .x = 5.0, .y = 6.0, .freshness_serial = 3, .request = {.request_id = 42}};
+    scene->pending_picks[4] = (DvzPendingPickRequest){
+        .panel = panel, .x = 7.0, .y = 8.0, .freshness_serial = 4, .request = {.request_id = 42}};
+    scene->pending_picks[5] = (DvzPendingPickRequest){
+        .panel = panel, .x = 9.0, .y = 10.0, .freshness_serial = 5, .request = {.request_id = 43}};
+
+    DvzDrp2Runtime* runtime = (DvzDrp2Runtime*)scene;
+    AT(dvz_figure_process_requests(figure, runtime, NULL) == 3);
+    AT(scene->pending_pick_count == 1);
+    AT(scene->pending_picks[0].panel == other_panel);
+    AT(scene->pick_result_count == 3);
+
+    DvzPickResult out = {0};
+    AT(dvz_scene_poll_pick(scene, &out));
+    AT(out.request_id == 0);
+    AC(out.panel_position[0], 3.0, 1e-12);
+    AC(out.panel_position[1], 4.0, 1e-12);
+    AT(dvz_scene_poll_pick(scene, &out));
+    AT(out.request_id == 42);
+    AC(out.panel_position[0], 7.0, 1e-12);
+    AC(out.panel_position[1], 8.0, 1e-12);
+    AT(dvz_scene_poll_pick(scene, &out));
+    AT(out.request_id == 43);
+    AC(out.panel_position[0], 9.0, 1e-12);
+    AC(out.panel_position[1], 10.0, 1e-12);
+    AT(!dvz_scene_poll_pick(scene, &out));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Ensure request processing coalesces stale pending probes before execution.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_process_requests_coalesces_pending_probes_before_execution(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzFigure* other_figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* other_panel = dvz_panel(
+        other_figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+    ANN(other_panel);
+
+    scene->pending_probe_count = 5;
+    scene->pending_probes[0] =
+        (DvzPendingProbeRequest){.panel = panel, .x = 1.0, .y = 2.0, .freshness_serial = 1};
+    scene->pending_probes[1] = (DvzPendingProbeRequest){
+        .panel = other_panel, .x = 100.0, .y = 200.0, .freshness_serial = 99};
+    scene->pending_probes[2] =
+        (DvzPendingProbeRequest){.panel = panel, .x = 3.0, .y = 4.0, .freshness_serial = 2};
+    scene->pending_probes[3] = (DvzPendingProbeRequest){
+        .panel = panel, .x = 5.0, .y = 6.0, .freshness_serial = 3, .request = {.request_id = 7}};
+    scene->pending_probes[4] = (DvzPendingProbeRequest){
+        .panel = panel, .x = 7.0, .y = 8.0, .freshness_serial = 4, .request = {.request_id = 7}};
+
+    DvzDrp2Runtime* runtime = (DvzDrp2Runtime*)scene;
+    AT(dvz_figure_process_requests(figure, runtime, NULL) == 2);
+    AT(scene->pending_probe_count == 1);
+    AT(scene->pending_probes[0].panel == other_panel);
+    AT(scene->probe_result_count == 2);
+
+    DvzProbeResult out = {0};
+    AT(dvz_scene_poll_probe(scene, &out));
+    AT(out.request_id == 0);
+    AT(out.source_request_id == 0);
+    AT(dvz_scene_poll_probe(scene, &out));
+    AT(out.request_id == 7);
+    AT(out.source_request_id == 7);
+    AT(!dvz_scene_poll_probe(scene, &out));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
 #include "datoviz/canvas.h"
@@ -7752,6 +7872,8 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_pick_request_same_id_supersedes_older_unresolved);
     TEST_SIMPLE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
     TEST_SIMPLE(test_scene_pick_request_distinct_ids_keep_independent_pending_and_results);
+    TEST_SIMPLE(test_scene_process_requests_coalesces_pending_picks_before_execution);
+    TEST_SIMPLE(test_scene_process_requests_coalesces_pending_probes_before_execution);
     TEST_SIMPLE(test_scene_text_annotation_bookkeeping);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TEST_SIMPLE(test_scene_mesh_emits_depth_attachment);
