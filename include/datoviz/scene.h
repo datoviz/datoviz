@@ -149,7 +149,8 @@ DVZ_EXPORT DvzDrp2CommandStream* dvz_figure_emit_ex(
  *
  * This helper is intended for live/offscreen scene runtimes after the figure's main draw has
  * already realized the current scene resources in the runtime. Supported first-slice resolution
- * currently focuses on point picking and basic image probing.
+ * currently focuses on point picking and basic image probing. Late results are discarded when a
+ * newer unresolved request has already superseded the same panel-local request scope.
  *
  * @param figure the figure
  * @param runtime the DRP2 runtime

@@ -267,6 +267,7 @@ struct DvzPendingPickRequest
     DvzPanel* panel;
     double x;
     double y;
+    uint64_t freshness_serial;
     DvzPickRequest request;
 };
 
@@ -276,6 +277,7 @@ struct DvzPendingProbeRequest
     DvzPanel* panel;
     double x;
     double y;
+    uint64_t freshness_serial;
     DvzProbeRequest request;
 };
 
@@ -283,6 +285,7 @@ struct DvzPendingProbeRequest
 struct DvzQueuedPickResult
 {
     DvzPanel* panel;
+    uint64_t freshness_serial;
     DvzPickResult result;
 };
 
@@ -290,6 +293,7 @@ struct DvzQueuedPickResult
 struct DvzQueuedProbeResult
 {
     DvzPanel* panel;
+    uint64_t freshness_serial;
     DvzProbeResult result;
 };
 
@@ -530,6 +534,7 @@ struct DvzScene
     uint32_t probe_result_count;
     uint32_t probe_result_head;
     DvzQueuedProbeResult probe_results[DVZ_SCENE_MAX_PROBE_RESULTS];
+    uint64_t next_request_serial;
 
     struct
     {
@@ -545,6 +550,11 @@ struct DvzScene
 
 bool _dvz_scene_enqueue_pick_result(DvzScene* scene, const DvzPickResult* result);
 bool _dvz_scene_enqueue_probe_result(DvzScene* scene, const DvzProbeResult* result);
+uint64_t _scene_next_request_serial(DvzScene* scene);
+bool _scene_pick_request_is_current(
+    const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
+bool _scene_probe_request_is_current(
+    const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
 
 
 
