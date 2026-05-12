@@ -531,24 +531,12 @@ static bool _scene_process_image_probe_request(
         }
 
         uint64_t position_bytes = pos_attr->item_count * pos_attr->item_size;
-        vec3* shifted = (vec3*)dvz_calloc(pos_attr->item_count, sizeof(vec3));
-        if (shifted == NULL)
-            continue;
-        dvz_memcpy(shifted, position_bytes, pos_attr->data, position_bytes);
-        vec2 target_ndc = {request_ndc[0], request_ndc[1]};
-        vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
-        for (uint64_t i = 0; i < pos_attr->item_count; i++)
-        {
-            shifted[i][0] -= delta[0];
-            shifted[i][1] -= delta[1];
-        }
-
         uint64_t texture_bytes = (uint64_t)texture_width * texture_height * 4;
         DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
         DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
         bool ok = plan != NULL && emitter != NULL &&
                   dvz_frame_plan_upload_bytes(
-                      plan, "probe0_position", 0, position_bytes, "position", shifted) &&
+                      plan, "probe0_position", 0, position_bytes, "position", pos_attr->data) &&
                   dvz_frame_plan_upload_bytes(
                       plan, "probe0_texcoords", 0, uv_attr->item_count * uv_attr->item_size,
                       "texcoords", uv_attr->data) &&
@@ -580,7 +568,6 @@ static bool _scene_process_image_probe_request(
         }
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
-        dvz_free(shifted);
 
         if (!hit)
             continue;
