@@ -26,11 +26,9 @@ behavior or data-model improvements.
 The converter file is gone, but the runtime emitter still has important follow-ups before larger
 scene/DRP2 splits:
 
-1. finish moving visual bind-group descriptor construction from `frame_plan_runtime.c` into
-   `visual_pipeline.c`,
-2. harden persistent emitter state in `frame_plan_runtime_state.c` before widening behavior,
-3. centralize current resource-key formatting/parsing before replacing stringly metadata,
-4. then add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
+1. harden persistent emitter state in `frame_plan_runtime_state.c` before widening behavior,
+2. centralize current resource-key formatting/parsing before replacing stringly metadata,
+3. then add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
    from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
 
 The first visual descriptor extraction slice landed in `3d4bd920`: `visual_pipeline.c` now owns
@@ -38,7 +36,10 @@ per-visual resource resolution, family classification, vertex/index counts, and 
 narrowing for the multi-visual scene render path. The shader descriptor slice landed in
 `bc65010f`: visual shader keys, shader source selection, SPIR-V keys, and pipeline cache keys now
 live in `visual_pipeline.c`. The pipeline descriptor slice landed in `45ae792a`: vertex layout and
-depth-state selection for the multi-visual scene render path now live in `visual_pipeline.c`.
+depth-state selection for the multi-visual scene render path now live in `visual_pipeline.c`. The
+bind descriptor slice landed in `0f29f4f1`: MVP/image/shading bind-role selection now lives in
+`visual_pipeline.c`, while `frame_plan_runtime.c` still creates the concrete DRP2 bind-group
+objects.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -173,17 +174,16 @@ registration helpers.
 
 ## Suggested Order
 
-1. Complete post-converter bind-group descriptor extraction into `visual_pipeline.c`.
-2. Harden emitter resource/object state and diagnostics in `frame_plan_runtime_state.c`.
-3. Centralize scene resource-key formatting/parsing without changing behavior.
-4. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
-5. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
-6. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
-7. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
-8. Split `pick_probe.c` once the request path has one more validation pass.
-9. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-10. Move JSON builder support to `src/common` and split serializers.
-11. Split scene tests in parallel with the implementation files they cover.
+1. Harden emitter resource/object state and diagnostics in `frame_plan_runtime_state.c`.
+2. Centralize scene resource-key formatting/parsing without changing behavior.
+3. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
+4. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
+5. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
+6. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
+7. Split `pick_probe.c` once the request path has one more validation pass.
+8. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+9. Move JSON builder support to `src/common` and split serializers.
+10. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance

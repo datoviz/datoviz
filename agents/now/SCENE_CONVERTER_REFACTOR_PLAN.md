@@ -27,8 +27,10 @@ counts, image draw-buffer narrowing, and index-format selection for the multi-vi
 path. Follow-up commit `bc65010f` added `DvzSceneVisualShaderDesc`, moving visual shader keys,
 shader source selection, SPIR-V keys, and pipeline cache-key selection into `visual_pipeline.c`.
 Follow-up commit `45ae792a` added `DvzSceneVisualPipelineDesc`, moving vertex layout and depth-state
-selection into `visual_pipeline.c`. `frame_plan_runtime.c` still owns bind-group creation and draw
-submission for that path.
+selection into `visual_pipeline.c`. Follow-up commit `0f29f4f1` added
+`DvzSceneVisualBindDesc`, moving bind-role selection into `visual_pipeline.c`.
+`frame_plan_runtime.c` still owns concrete DRP2 bind-group object creation and draw submission for
+that path.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -51,10 +53,8 @@ FramePlan -> DRP2 -> vklite/canvas behavior.
 
 The remaining cleanup is more targeted:
 
-1. finish extracting bind-group descriptor construction from `frame_plan_runtime.c` into
-   `visual_pipeline.c`,
-2. harden the persistent emitter resource/object state before broadening runtime behavior,
-3. replace stringly visual/resource metadata with typed FramePlan metadata in a later
+1. harden the persistent emitter resource/object state before broadening runtime behavior,
+2. replace stringly visual/resource metadata with typed FramePlan metadata in a later
    behavior-changing pass.
 
 This is a structural cleanup plan, not an API compatibility constraint. The v0.4 branch can still
@@ -258,7 +258,8 @@ Validation:
 Status: **partially implemented**. `visual_pipeline.c` owns visual-family detection and the first
 `DvzSceneVisualDesc` / `DvzSceneVisualShaderDesc` resolvers for the multi-visual scene render path.
 `visual_pipeline.c` also owns first-slice `DvzSceneVisualPipelineDesc` vertex-layout/depth-state
-selection. `frame_plan_runtime.c` still builds bind-group state inline.
+selection and `DvzSceneVisualBindDesc` bind-role selection. `frame_plan_runtime.c` still creates
+concrete DRP2 bind-group objects.
 
 Continue using `visual_pipeline.c` and `_visual_pipeline.h`.
 
