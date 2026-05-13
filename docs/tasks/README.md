@@ -112,6 +112,8 @@ Current tracked task records in this directory:
 - `2026-05-10-fix-scene-mesh-indexed-default-color-emits-draw-indexed` — completed
 - `2026-05-13-drp2-trace-logging` — completed implementation, follow-up validation still useful
 - `2026-05-13-doc-state-refresh` — completed
+- `2026-05-13-next-implementation-priorities` — completed planning record
+- `2026-05-13-visual-attribute-sources` — completed planning record
 
 Update this index opportunistically when adding or superseding tasks; it does not need to be perfectly exhaustive
 for older history, but it should stay accurate for current and recent work.

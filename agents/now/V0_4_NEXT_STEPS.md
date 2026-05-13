@@ -92,6 +92,9 @@ Deliver the next implementation slices in this order unless the user redirects:
 6. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
 
+Implementation-level checklists for these six lanes are recorded in
+[../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).
+
 Sidecar design slice recorded on 2026-05-13:
 
 1. Visual attribute sources and constant-value optimization are specified in
