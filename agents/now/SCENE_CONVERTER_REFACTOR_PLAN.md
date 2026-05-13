@@ -1,15 +1,33 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `PLANNED`
+> - **Status:** `MECHANICAL SPLIT LANDED; FOLLOW-UP CLEANUPS ACTIVE`
 > - **Updated on:** `2026-05-13`
-> - **Scope:** split `src/scene/converter.c` into clearer scene -> DRP2 emission units without
->   changing behavior first.
+> - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
+>   behavior-preserving `src/scene/converter.c` split.
+
+
+## Current State
+
+The initial converter split has landed. `src/scene/converter.c` is gone, and the current emission
+code is distributed across:
+
+1. `frame_plan_emit.c` - public/shared emission helpers and validation.
+2. `frame_plan_fixture.c` - deterministic fixture-mode FramePlan -> DRP2 emission.
+3. `frame_plan_runtime.c` - runtime-mode scene emission and per-frame orchestration.
+4. `frame_plan_runtime_state.c` - persistent emitter state and resource/object id allocation.
+5. `frame_plan_runtime_upload.c` - runtime buffer, texture, and compute-buffer upload helpers.
+6. `shader_registry.c` - built-in shader selection and SPIR-V/GLSL lookup.
+7. `visual_pipeline.c` - first visual-family detection helpers.
+8. `render_pass.c` - color-target, readback-buffer, transient id, copy/submit helpers.
+
+The rest of this document is now a follow-up tracker. Sections describing already-created files are
+historical context unless they call out remaining work explicitly.
 
 
 ## Goal
 
-`src/scene/converter.c` currently mixes several concerns:
+The old `src/scene/converter.c` mixed several concerns:
 
 1. fixture-only FramePlan -> DRP2 command stream generation,
 2. persistent runtime emitter state and object-id allocation,
@@ -19,8 +37,16 @@
 6. pipeline and bind-group creation,
 7. render-pass/readback/submit orchestration.
 
-The refactor should make those responsibilities explicit while preserving the current scene ->
+The first refactor made those responsibilities more explicit while preserving the current scene ->
 FramePlan -> DRP2 -> vklite/canvas behavior.
+
+The remaining cleanup is more targeted:
+
+1. finish extracting visual draw and pipeline descriptor construction from `frame_plan_runtime.c`
+   into `visual_pipeline.c`,
+2. harden the persistent emitter resource/object state before broadening runtime behavior,
+3. replace stringly visual/resource metadata with typed FramePlan metadata in a later
+   behavior-changing pass.
 
 This is a structural cleanup plan, not an API compatibility constraint. The v0.4 branch can still
 change internal APIs aggressively when that improves correctness and maintainability.
@@ -80,6 +106,9 @@ retained runtime scene path should be a file-backed shader with a registry entry
 
 
 ## Step-By-Step Plan
+
+Steps 2 through 5 and 7 through 8 are implemented in the current tree. Keep them here as historical
+context for reviewers, but do not restart them unless a regression requires it.
 
 ### Step 1 - Freeze Behavior With Focused Tests
 
@@ -215,9 +244,13 @@ Validation:
 4. `git diff --check`
 
 
-### Step 6 - Extract Visual Pipeline Lowering
+### Step 6 - Complete Visual Pipeline Lowering
 
-Create `visual_pipeline.c` and `_visual_pipeline.h`.
+Status: **partially implemented**. `visual_pipeline.c` currently owns visual-family detection and
+some resource lookup helpers, but `frame_plan_runtime.c` still builds most draw descriptors,
+shader/pipeline cache keys, bind-group state, vertex/index counts, and pipeline layouts inline.
+
+Continue using `visual_pipeline.c` and `_visual_pipeline.h`.
 
 Move logic that turns frame-plan visual/resource metadata into draw/pipeline descriptors:
 
@@ -315,7 +348,9 @@ Validation:
 4. `git diff --check`
 
 
-### Step 9 - Improve Data Structures After The Split
+### Step 9 - Improve Emitter Data Structures After The Split
+
+Status: **active next cleanup after descriptor extraction**.
 
 Only after behavior-preserving extraction is complete, replace fixture-era fixed tables where they
 hurt runtime behavior.
@@ -338,6 +373,8 @@ Validation:
 
 
 ### Step 10 - Replace Stringly Visual Metadata
+
+Status: **deferred until Step 6 and Step 9 are stable**.
 
 This is the first intentionally behavior-shaping cleanup.
 
