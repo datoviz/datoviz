@@ -33,6 +33,7 @@
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/input/pointer.h"
+#include "datoviz/input/router.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
@@ -753,6 +754,40 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 
+/**
+ * Synchronize the figure size with the current output before emitting a frame.
+ *
+ * @param win app window being drawn
+ * @param frame canvas frame attached to the DRP2 runtime
+ */
+static void _app_sync_figure_size(DvzAppWindow* win, const DvzStreamFrame* frame)
+{
+    ANN(win);
+    ANN(win->figure);
+    ANN(frame);
+
+    uint32_t width = frame->extent.width;
+    uint32_t height = frame->extent.height;
+
+    if (win->is_interactive && win->canvas != NULL)
+    {
+        DvzInputRouter* router = dvz_canvas_input(win->canvas);
+        DvzInputResizeEvent resize = {0};
+        if (router != NULL && dvz_input_router_last_resize(router, &resize) &&
+            resize.window_width > 0 && resize.window_height > 0)
+        {
+            width = resize.window_width;
+            height = resize.window_height;
+        }
+    }
+
+    if (width > 0 && height > 0)
+        dvz_figure_resize(win->figure, width, height);
+}
+
+
+
+
 static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
     (void)canvas;
@@ -761,6 +796,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     ANN(win);
     DvzApp* app = win->app;
     ANN(app);
+
+    _app_sync_figure_size(win, frame);
 
     /* Attach the canvas frame to the reserved DRP2 texture ID. */
     if (!dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame))

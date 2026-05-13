@@ -103,6 +103,16 @@ DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t heigh
 
 
 /**
+ * Update a figure logical size.
+ *
+ * @param figure the figure
+ * @param width width in logical pixels
+ * @param height height in logical pixels
+ */
+DVZ_EXPORT void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height);
+
+
+/**
  * Destroy a figure.
  *
  * @param figure the figure
