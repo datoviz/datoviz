@@ -814,10 +814,12 @@ static bool _emitter_emit_render_multi(
 
     bool ok = true;
 
-    uint64_t encoder_id = _emitter_next_transient_id(emitter);
-    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
-    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
-    uint64_t submission_id = _emitter_next_transient_id(emitter);
+    uint64_t encoder_id = 0;
+    uint64_t render_pass_id = 0;
+    uint64_t command_buffer_id = 0;
+    uint64_t submission_id = 0;
+    _render_pass_next_ids(
+        emitter, &encoder_id, &render_pass_id, &command_buffer_id, &submission_id);
 
     float cr = cfg ? cfg->clear_color[0] : 0.0f;
     float cg = cfg ? cfg->clear_color[1] : 0.0f;
@@ -871,10 +873,12 @@ static bool _emitter_emit_scene_figure_renders(
 
     bool ok = true;
 
-    uint64_t encoder_id = _emitter_next_transient_id(emitter);
-    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
-    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
-    uint64_t submission_id = _emitter_next_transient_id(emitter);
+    uint64_t encoder_id = 0;
+    uint64_t render_pass_id = 0;
+    uint64_t command_buffer_id = 0;
+    uint64_t submission_id = 0;
+    _render_pass_next_ids(
+        emitter, &encoder_id, &render_pass_id, &command_buffer_id, &submission_id);
 
     float cr = cfg ? cfg->clear_color[0] : 0.0f;
     float cg = cfg ? cfg->clear_color[1] : 0.0f;
@@ -1265,10 +1269,12 @@ static bool _emitter_emit_render(
     if (!ok)
         return false;
 
-    uint64_t encoder_id = _emitter_next_transient_id(emitter);
-    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
-    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
-    uint64_t submission_id = _emitter_next_transient_id(emitter);
+    uint64_t encoder_id = 0;
+    uint64_t render_pass_id = 0;
+    uint64_t command_buffer_id = 0;
+    uint64_t submission_id = 0;
+    _render_pass_next_ids(
+        emitter, &encoder_id, &render_pass_id, &command_buffer_id, &submission_id);
 
     float cr = cfg ? cfg->clear_color[0] : 0.0f;
     float cg = cfg ? cfg->clear_color[1] : 0.0f;
@@ -1432,10 +1438,12 @@ static bool _emitter_emit_clear_only(
 
     bool ok = true;
 
-    uint64_t encoder_id = _emitter_next_transient_id(emitter);
-    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
-    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
-    uint64_t submission_id = _emitter_next_transient_id(emitter);
+    uint64_t encoder_id = 0;
+    uint64_t render_pass_id = 0;
+    uint64_t command_buffer_id = 0;
+    uint64_t submission_id = 0;
+    _render_pass_next_ids(
+        emitter, &encoder_id, &render_pass_id, &command_buffer_id, &submission_id);
 
     float cr = cfg ? cfg->clear_color[0] : 0.0f;
     float cg = cfg ? cfg->clear_color[1] : 0.0f;
@@ -1536,10 +1544,12 @@ static bool _emitter_emit_texture_render(
     if (!ok)
         return false;
 
-    uint64_t encoder_id = _emitter_next_transient_id(emitter);
-    uint64_t render_pass_id = _emitter_next_transient_id(emitter);
-    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
-    uint64_t submission_id = _emitter_next_transient_id(emitter);
+    uint64_t encoder_id = 0;
+    uint64_t render_pass_id = 0;
+    uint64_t command_buffer_id = 0;
+    uint64_t submission_id = 0;
+    _render_pass_next_ids(
+        emitter, &encoder_id, &render_pass_id, &command_buffer_id, &submission_id);
 
     float cr2 = cfg ? cfg->clear_color[0] : 0.0f;
     float cg2 = cfg ? cfg->clear_color[1] : 0.0f;

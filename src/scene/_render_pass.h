@@ -38,6 +38,10 @@ bool _render_pass_resolve_readback_buffer(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* copy,
     uint64_t* out_id);
 
+void _render_pass_next_ids(
+    DvzFramePlanEmitter* emitter, uint64_t* encoder_id, uint64_t* render_pass_id,
+    uint64_t* command_buffer_id, uint64_t* submission_id);
+
 bool _render_pass_copy_finish_submit(
     DvzDrp2CommandStream* stream, uint64_t encoder_id, uint64_t command_buffer_id,
     uint64_t submission_id, uint64_t color_id, uint64_t readback_buffer_id,

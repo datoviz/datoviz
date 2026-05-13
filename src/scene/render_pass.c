@@ -108,6 +108,33 @@ bool _render_pass_resolve_readback_buffer(
 
 
 /**
+ * Allocate transient command ids for one runtime render pass submission.
+ *
+ * @param emitter the persistent emitter
+ * @param encoder_id the command encoder id
+ * @param render_pass_id the render pass id
+ * @param command_buffer_id the command buffer id
+ * @param submission_id the queue submission id
+ */
+void _render_pass_next_ids(
+    DvzFramePlanEmitter* emitter, uint64_t* encoder_id, uint64_t* render_pass_id,
+    uint64_t* command_buffer_id, uint64_t* submission_id)
+{
+    ANN(emitter);
+    ANN(encoder_id);
+    ANN(render_pass_id);
+    ANN(command_buffer_id);
+    ANN(submission_id);
+
+    *encoder_id = _emitter_next_transient_id(emitter);
+    *render_pass_id = _emitter_next_transient_id(emitter);
+    *command_buffer_id = _emitter_next_transient_id(emitter);
+    *submission_id = _emitter_next_transient_id(emitter);
+}
+
+
+
+/**
  * Finish a render encoder and submit it, optionally with a readback copy.
  *
  * @param stream the DRP2 command stream
