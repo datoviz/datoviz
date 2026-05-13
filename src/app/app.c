@@ -68,6 +68,8 @@ struct DvzAppWindow
     uint64_t frame_index;
     DvzAppFrameCallback frame_callback;
     void* frame_user_data;
+    char* last_trace_json;
+    bool trace_status_line_open;
 };
 
 
@@ -91,37 +93,226 @@ struct DvzApp
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 
+typedef enum
+{
+    DVZ_APP_TRACE_NONE,
+    DVZ_APP_TRACE_NORMAL,
+    DVZ_APP_TRACE_FULL,
+} DvzAppTraceMode;
+
 /**
- * Return whether a boolean-like environment variable is enabled.
+ * Return the configured live DRP2 trace mode.
  *
  * @param value environment variable value, or NULL
- * @return true when the value is present and not one of the usual false spellings
+ * @return the parsed trace mode
  */
-static bool _env_flag_enabled(const char* value)
+static DvzAppTraceMode _trace_mode_from_env(const char* value)
 {
     if (value == NULL)
-        return false;
-    return strcmp(value, "0") != 0 && strcmp(value, "false") != 0 &&
-           strcmp(value, "FALSE") != 0 && strcmp(value, "off") != 0 &&
-           strcmp(value, "OFF") != 0;
+        return DVZ_APP_TRACE_NONE;
+    if (strcmp(value, "0") == 0 || strcmp(value, "false") == 0 ||
+        strcmp(value, "FALSE") == 0 || strcmp(value, "off") == 0 || strcmp(value, "OFF") == 0)
+    {
+        return DVZ_APP_TRACE_NONE;
+    }
+    if (strcmp(value, "full") == 0 || strcmp(value, "FULL") == 0)
+        return DVZ_APP_TRACE_FULL;
+    return DVZ_APP_TRACE_NORMAL;
 }
 
 
 /**
- * Optionally dump one emitted DRP2 stream to stderr.
+ * Return a readable label for one DRP2 command type.
  *
- * @param stream the emitted command stream
- * @param frame_index the 0-based frame index for the owning window
+ * @param type command type enum value
+ * @return static command label
  */
-static void _app_trace_stream(const DvzDrp2CommandStream* stream, uint64_t frame_index)
+static const char* _trace_command_name(DvzDrp2CommandType type)
+{
+    switch (type)
+    {
+    case DVZ_DRP2_COMMAND_HELLO_RENDERER:
+        return "HelloRenderer";
+    case DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY:
+        return "RendererHelloReply";
+    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+        return "CreateBuffer";
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+        return "DestroyBuffer";
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+        return "CreateTexture";
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+        return "DestroyTexture";
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        return "CreateShaderModule";
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+        return "DestroyShaderModule";
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+        return "CreateRenderPipeline";
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+        return "DestroyRenderPipeline";
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+        return "CreateComputePipeline";
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+        return "DestroyComputePipeline";
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+        return "CreateSampler";
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+        return "CreateBindGroupLayout";
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return "CreateBindGroup";
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+        return "DestroyBindGroupLayout";
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return "DestroyBindGroup";
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+        return "WriteBuffer";
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        return "WriteTexture";
+    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
+        return "BeginCommandEncoder";
+    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+        return "BeginRenderPass";
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+        return "BeginComputePass";
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+        return "SetViewport";
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+        return "SetScissor";
+    case DVZ_DRP2_COMMAND_SET_PIPELINE:
+        return "SetPipeline";
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+        return "SetBindGroup";
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+        return "SetVertexBuffer";
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        return "SetIndexBuffer";
+    case DVZ_DRP2_COMMAND_DRAW:
+        return "Draw";
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        return "DrawIndexed";
+    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+        return "EndRenderPass";
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+        return "DispatchWorkgroups";
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+        return "EndComputePass";
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+        return "CopyBufferToBuffer";
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+        return "CopyBufferToTexture";
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        return "CopyTextureToBuffer";
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return "CopyTextureToTexture";
+    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
+        return "FinishCommandEncoder";
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
+        return "QueueSubmit";
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
+        return "QueueSubmitReply";
+    case DVZ_DRP2_COMMAND_NONE:
+    default:
+        return "None";
+    }
+}
+
+
+/**
+ * Return the display prefix used for one DRP2 command type in human trace mode.
+ *
+ * @param type command type enum value
+ * @return one-character semantic prefix
+ */
+static char _trace_command_prefix(DvzDrp2CommandType type)
+{
+    switch (type)
+    {
+    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return '+';
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return '-';
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return '~';
+    default:
+        return '=';
+    }
+}
+
+
+/**
+ * Print a concise human-readable summary for one changed DRP2 stream.
+ *
+ * @param stream emitted command stream
+ * @param frame_index 0-based frame index for the owning window
+ */
+static void _app_trace_stream_normal(
+    const DvzDrp2CommandStream* stream, uint64_t frame_index)
 {
     ANN(stream);
+    uint32_t command_count = dvz_drp2_stream_count(stream);
+    uint32_t counts[DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY + 1] = {0};
+    for (uint32_t i = 0; i < command_count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command == NULL)
+            continue;
+        DvzDrp2CommandType type = dvz_drp2_command_type(command);
+        if ((uint32_t)type <= DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY)
+            counts[type]++;
+    }
+
+    dvz_fprintf(stderr, "frame %08" PRIu64 " | changed | %u cmds\n", frame_index, command_count);
+    for (uint32_t type = 1; type <= DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY; type++)
+    {
+        if (counts[type] == 0)
+            continue;
+        dvz_fprintf(
+            stderr, "  %c %s x%u\n", _trace_command_prefix((DvzDrp2CommandType)type),
+            _trace_command_name((DvzDrp2CommandType)type), counts[type]);
+    }
+}
+
+
+/**
+ * Print or refresh the live DRP2 trace for one emitted stream.
+ *
+ * In normal mode, changed frames print a compact stacked block while unchanged frames rewrite
+ * one in-place status line without scrolling. In full mode, every frame prints the full JSON
+ * stream.
+ *
+ * @param win app-window owning the trace state
+ * @param stream the emitted command stream
+ */
+static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* stream)
+{
+    ANN(win);
+    ANN(stream);
     const char* trace_env = getenv("DVZ_DRP2_TRACE");
-    if (!_env_flag_enabled(trace_env))
+    DvzAppTraceMode mode = _trace_mode_from_env(trace_env);
+    if (mode == DVZ_APP_TRACE_NONE)
         return;
 
     char trace_name[64] = {0};
-    snprintf(trace_name, sizeof(trace_name), "live_frame_%" PRIu64, frame_index);
+    snprintf(trace_name, sizeof(trace_name), "live_frame_%" PRIu64, win->frame_index);
     char* json = dvz_drp2_stream_json(stream, trace_name);
     if (json == NULL)
     {
@@ -129,8 +320,43 @@ static void _app_trace_stream(const DvzDrp2CommandStream* stream, uint64_t frame
         return;
     }
 
-    dvz_fprintf(stderr, "\n=== DRP2 frame %" PRIu64 " ===\n%s\n", frame_index, json);
-    dvz_drp2_stream_json_destroy(json);
+    if (mode == DVZ_APP_TRACE_FULL)
+    {
+        if (win->trace_status_line_open)
+        {
+            dvz_fprintf(stderr, "\n");
+            win->trace_status_line_open = false;
+        }
+        dvz_fprintf(stderr, "\n=== DRP2 frame %08" PRIu64 " ===\n%s\n", win->frame_index, json);
+    }
+    else
+    {
+        bool changed = true;
+        if (win->last_trace_json != NULL && strcmp(win->last_trace_json, json) == 0)
+            changed = false;
+
+        if (changed)
+        {
+            if (win->trace_status_line_open)
+            {
+                dvz_fprintf(stderr, "\n");
+                win->trace_status_line_open = false;
+            }
+            _app_trace_stream_normal(stream, win->frame_index);
+        }
+        else
+        {
+            dvz_fprintf(
+                stderr, "\rframe %08" PRIu64 " | unchanged | %u cmds",
+                win->frame_index, dvz_drp2_stream_count(stream));
+            fflush(stderr);
+            win->trace_status_line_open = true;
+        }
+    }
+
+    if (win->last_trace_json != NULL)
+        dvz_drp2_stream_json_destroy(win->last_trace_json);
+    win->last_trace_json = json;
 }
 
 #endif
@@ -184,7 +410,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
-    _app_trace_stream(stream, win->frame_index);
+    _app_trace_stream(win, stream);
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
     if (!result.ok)
@@ -303,6 +529,16 @@ void dvz_app_destroy(DvzApp* app)
         {
             dvz_window_destroy(win->window);
             win->window = NULL;
+        }
+        if (win->trace_status_line_open)
+        {
+            dvz_fprintf(stderr, "\n");
+            win->trace_status_line_open = false;
+        }
+        if (win->last_trace_json != NULL)
+        {
+            dvz_drp2_stream_json_destroy(win->last_trace_json);
+            win->last_trace_json = NULL;
         }
     }
     if (app->window_host != NULL)
