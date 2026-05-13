@@ -598,7 +598,19 @@ bool _scene_probe_request_is_current(
 /*************************************************************************************************/
 
 int _attr_index(const DvzVisual* visual, const char* name);
+
+const char* _visual_type_name(DvzVisualType type);
+
+bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index);
+
+uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer);
+
+bool _field_region_byte_size(
+    DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
+
 bool _scene_prepare_image_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
+
 uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
+
 void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
