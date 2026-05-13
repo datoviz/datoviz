@@ -473,6 +473,49 @@ bool _scene_visual_pipeline_desc(
 
 
 /**
+ * Resolve bind-group role metadata for one visual descriptor.
+ *
+ * @param visual the visual descriptor
+ * @param controller_mode the visual's panel controller attachment mode
+ * @param out the output bind descriptor
+ * @return whether a bind descriptor was resolved
+ */
+bool _scene_visual_bind_desc(
+    const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
+    DvzSceneVisualBindDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualBindDesc), 0, sizeof(DvzSceneVisualBindDesc));
+
+    switch (visual->kind)
+    {
+    case DVZ_SCENE_VISUAL_DESC_POINT:
+        out->uses_mvp_set0 = true;
+        out->uses_fixed_mvp = controller_mode == DVZ_CONTROLLER_FIXED;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        out->uses_mvp_set0 = true;
+        out->uses_fixed_mvp = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_shading_set1 = visual->has_normal && visual->shading_buffer_id != 0;
+        out->shading_buffer_id = visual->shading_buffer_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        out->uses_image_set0 = true;
+        out->image_texture_id = visual->image_texture_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_NONE:
+    default:
+        return false;
+    }
+}
+
+
+
+/**
  * Return whether a scene render node needs a depth attachment.
  *
  * @param emitter the persistent emitter
