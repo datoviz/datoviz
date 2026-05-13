@@ -50,6 +50,34 @@ static uint64_t _resource_lookup_label(const ConverterState* state, const char* 
 
 
 /**
+ * Append a resolved resource key to a small id list.
+ *
+ * @param state the resource state
+ * @param key the resource key
+ * @param out_ids the output id list
+ * @param out_count the output id count
+ * @param required whether absence is an error
+ * @return whether the append or optional skip succeeded
+ */
+static bool _append_resource_key(
+    const ConverterState* state, const char* key, uint64_t* out_ids, uint32_t* out_count,
+    bool required)
+{
+    ANN(state);
+    ANN(out_ids);
+    ANN(out_count);
+    uint64_t id = _resource_lookup_label(state, key);
+    if (id == 0)
+        return !required;
+    if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+        return false;
+    out_ids[(*out_count)++] = id;
+    return true;
+}
+
+
+
+/**
  * Return whether a retained visual type uses the primitive pipeline family.
  *
  * @param visual_type the retained visual type
@@ -361,6 +389,27 @@ bool _emitter_resolve_render_vertex_buffers(
     *out_count = 0;
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
+        const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
+        if (meta->has_metadata)
+        {
+            if (!_append_resource_key(
+                    &emitter->resources, meta->position_id, out_ids, out_count, true))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->color_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->size_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->texcoords_id, out_ids, out_count, false))
+                return false;
+            if (!_append_resource_key(
+                    &emitter->resources, meta->texture_id, out_ids, out_count, false))
+                return false;
+            continue;
+        }
+
         char visual_id[DVZ_SCENE_LABEL_SIZE];
         char shared_index_id[DVZ_SCENE_LABEL_SIZE];
         _scene_resource_key_split_visual(
