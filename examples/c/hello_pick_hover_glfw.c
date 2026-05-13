@@ -13,15 +13,11 @@
  *
  * Build:  just build
  * Run:    ./build/examples/c/hello_pick_hover_glfw
- * Trace:  DVZ_DRP2_TRACE=1 DVZ_FPS=0 ./build/examples/c/hello_pick_hover_glfw
  */
 
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "datoviz/app.h"
 #include "datoviz/input/router.h"
@@ -40,7 +36,6 @@
 #define POINT_COUNT (GRID_COLS * GRID_ROWS)
 #define BASE_SIZE   40.0f
 #define HOVER_SIZE  60.0f
-#define TRACE_PATH  "hello_pick_hover_glfw_pick.log"
 
 
 
@@ -60,12 +55,6 @@ struct HoverPickState
     bool cursor_valid;
     double cursor_x;
     double cursor_y;
-    bool has_resize;
-    DvzInputResizeEvent resize;
-    uint64_t frame_index;
-    uint64_t pointer_event_count;
-    uint64_t pick_request_count;
-    uint64_t pick_result_count;
 };
 
 
@@ -73,67 +62,6 @@ struct HoverPickState
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Return the active pick trace path.
- *
- * @return trace path, or NULL when tracing is disabled
- */
-static const char* _pick_trace_path(void)
-{
-    const char* path = getenv("DVZ_PICK_TRACE");
-    if (path == NULL)
-        path = TRACE_PATH;
-    if (path[0] == '\0' || strcmp(path, "0") == 0)
-        return NULL;
-    return path;
-}
-
-
-
-/**
- * Append one formatted line to the pick trace.
- *
- * @param format printf-compatible format string
- */
-static void _pick_trace(const char* format, ...)
-{
-    const char* path = _pick_trace_path();
-    if (path == NULL)
-        return;
-
-    FILE* fp = fopen(path, "a");
-    if (fp == NULL)
-        return;
-
-    va_list args;
-    va_start(args, format);
-    vfprintf(fp, format, args);
-    va_end(args);
-    fclose(fp);
-}
-
-
-
-/**
- * Reset the pick trace file at startup.
- */
-static void _pick_trace_reset(void)
-{
-    const char* path = _pick_trace_path();
-    if (path == NULL)
-        return;
-
-    FILE* fp = fopen(path, "w");
-    if (fp == NULL)
-        return;
-
-    fprintf(fp, "# hello_pick_hover_glfw pick trace\n");
-    fprintf(fp, "# override with DVZ_PICK_TRACE=/path/file.log, disable with DVZ_PICK_TRACE=0\n");
-    fclose(fp);
-}
-
-
 
 /**
  * Update one retained point size through a partial visual upload.
@@ -153,33 +81,6 @@ static void _set_point_size(HoverPickState* state, uint32_t index, float size)
     if (dvz_visual_set_data_range(state->visual, "size", &state->sizes[index], index, 1) != 0)
         fprintf(stderr, "dvz_visual_set_data_range(size, %u) failed\n", index);
 }
-
-
-
-/**
- * Record the latest window and framebuffer dimensions.
- *
- * @param router input router emitting the event
- * @param event resize event payload
- * @param user_data hover-pick example state
- */
-static void
-_hover_pick_resize(DvzInputRouter* router, const DvzInputResizeEvent* event, void* user_data)
-{
-    (void)router;
-    HoverPickState* state = (HoverPickState*)user_data;
-    if (state == NULL || event == NULL)
-        return;
-
-    state->has_resize = true;
-    state->resize = *event;
-    _pick_trace(
-        "resize frame=%llu framebuffer=%ux%u window=%ux%u scale=%.3f,%.3f\n",
-        (unsigned long long)state->frame_index, event->framebuffer_width,
-        event->framebuffer_height, event->window_width, event->window_height,
-        event->content_scale_x, event->content_scale_y);
-}
-
 
 
 /*************************************************************************************************/
@@ -206,14 +107,6 @@ _hover_pick_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* 
     state->cursor_valid = true;
     state->cursor_x = event->pos[0];
     state->cursor_y = event->pos[1];
-    state->pointer_event_count++;
-    _pick_trace(
-        "pointer frame=%llu event=%llu pos=%.3f,%.3f scale=%.3f resize=%d "
-        "framebuffer=%ux%u window=%ux%u\n",
-        (unsigned long long)state->frame_index, (unsigned long long)state->pointer_event_count,
-        (double)event->pos[0], (double)event->pos[1], (double)event->content_scale,
-        state->has_resize ? 1 : 0, state->resize.framebuffer_width,
-        state->resize.framebuffer_height, state->resize.window_width, state->resize.window_height);
 }
 
 
@@ -236,14 +129,6 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
     while (dvz_scene_poll_pick(state->scene, &pick))
     {
         saw_pick = true;
-        state->pick_result_count++;
-        _pick_trace(
-            "result frame=%llu result=%llu request=%llu hit=%d raw=%llu resolved=%llu "
-            "target=%d panel_pos=%.3f,%.3f hovered_before=%u\n",
-            (unsigned long long)state->frame_index, (unsigned long long)state->pick_result_count,
-            (unsigned long long)pick.request_id, pick.hit ? 1 : 0, (unsigned long long)pick.raw_id,
-            (unsigned long long)pick.resolved_id, (int)pick.resolved_target,
-            pick.panel_position[0], pick.panel_position[1], state->hovered_index);
         if (pick.hit && pick.resolved_target == DVZ_SCENE_TARGET_ITEM &&
             pick.resolved_id < POINT_COUNT)
         {
@@ -257,23 +142,11 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
             _set_point_size(state, state->hovered_index, BASE_SIZE);
         if (next_hovered < POINT_COUNT)
             _set_point_size(state, next_hovered, HOVER_SIZE);
-        _pick_trace(
-            "hover frame=%llu previous=%u next=%u saw_pick=%d\n",
-            (unsigned long long)state->frame_index, state->hovered_index, next_hovered,
-            saw_pick ? 1 : 0);
         state->hovered_index = next_hovered;
     }
 
     if (state->cursor_valid)
     {
-        state->pick_request_count++;
-        _pick_trace(
-            "request frame=%llu request_count=%llu request_id=1 cursor=%.3f,%.3f "
-            "hovered=%u resize=%d framebuffer=%ux%u window=%ux%u\n",
-            (unsigned long long)state->frame_index, (unsigned long long)state->pick_request_count,
-            state->cursor_x, state->cursor_y, state->hovered_index, state->has_resize ? 1 : 0,
-            state->resize.framebuffer_width, state->resize.framebuffer_height,
-            state->resize.window_width, state->resize.window_height);
         if (dvz_panel_pick(
                 state->panel, state->cursor_x, state->cursor_y,
                 &(DvzPickRequest){
@@ -285,7 +158,6 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
             fprintf(stderr, "dvz_panel_pick() failed\n");
         }
     }
-    state->frame_index++;
 }
 
 
@@ -296,11 +168,6 @@ static void _hover_pick_frame(DvzAppWindow* win, void* user_data)
 
 int main(void)
 {
-    if (getenv("DVZ_PICK_TRACE") == NULL)
-        setenv("DVZ_PICK_TRACE", TRACE_PATH, 0);
-    _pick_trace_reset();
-    _pick_trace("startup default_trace_path=%s\n", TRACE_PATH);
-
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
     {
@@ -404,19 +271,7 @@ int main(void)
         return 1;
     }
 
-    DvzInputResizeEvent resize = {0};
-    if (dvz_input_router_last_resize(router, &resize))
-    {
-        state.has_resize = true;
-        state.resize = resize;
-        _pick_trace(
-            "initial_resize framebuffer=%ux%u window=%ux%u scale=%.3f,%.3f\n",
-            resize.framebuffer_width, resize.framebuffer_height, resize.window_width,
-            resize.window_height, resize.content_scale_x, resize.content_scale_y);
-    }
-
     dvz_panel_set_panzoom(panel, router, 0);
-    dvz_input_subscribe_resize(router, _hover_pick_resize, &state);
     dvz_input_subscribe_pointer(router, _hover_pick_pointer, &state);
     dvz_app_window_set_frame_callback(win, _hover_pick_frame, &state);
 
