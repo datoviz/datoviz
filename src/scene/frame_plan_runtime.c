@@ -118,96 +118,45 @@ static bool _emitter_emit_render_multi_in_pass(
         if (pipe_id == 0) { ok = false; break; }
         if (ok && is_new)
         {
-            if (vis_is_point)
+            DvzSceneVisualPipelineDesc pipeline = {0};
+            if (!_scene_visual_pipeline_desc(
+                    &desc, render->u.render.picking, pass_needs_depth, &pipeline))
             {
-                uint32_t strides[3]   = {3 * sizeof(float), 4 * sizeof(uint8_t), sizeof(float)};
-                uint32_t bindings[3]  = {0, 1, 2};
-                uint32_t locations[3] = {0, 1, 2};
-                uint32_t formats[3]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
-                                         VK_FORMAT_R32_SFLOAT};
-                uint32_t offsets[3]   = {0, 0, 0};
-                uint32_t binding_count = 3;
-                uint32_t attr_count = render->u.render.picking ? 2 : 3;
-                if (render->u.render.picking)
-                {
-                    bindings[1] = 2;
-                    locations[1] = 2;
-                    formats[1] = VK_FORMAT_R32_SFLOAT;
-                }
-                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
-                               stream, pipe_id, vs_id, fs_id, 3, desc.topology,
-                               binding_count, strides, attr_count, bindings, locations, formats,
-                               offsets);
-                if (ok && mvp_bgl_id != 0)
-                    ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
-                if (ok && pass_needs_depth)
-                    ok = dvz_drp2_stream_pipeline_set_depth_state(
-                        stream, false, VK_COMPARE_OP_ALWAYS);
+                ok = false;
+                break;
             }
-            else if (vis_is_prim)
+            uint64_t shading_bgl_id = 0;
+            if (pipeline.needs_shading_layout)
             {
-                uint32_t strides[3]   = {3 * sizeof(float), 4 * sizeof(uint8_t), 3 * sizeof(float)};
-                uint32_t bindings[3]  = {0, 1, 2};
-                uint32_t locations[3] = {0, 1, 2};
-                uint32_t formats[3]   = {
-                    VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM,
-                    VK_FORMAT_R32G32B32_SFLOAT};
-                uint32_t offsets[3]   = {0, 0, 0};
-                uint32_t attr_count = desc.has_normal ? 3 : 2;
-                uint64_t shading_bgl_id = 0;
                 bool shading_bgl_new = false;
-                if (desc.has_normal)
-                {
-                    shading_bgl_id = _obj_id(emitter, "_bgl_prim_shading", &shading_bgl_new);
-                    if (shading_bgl_id == 0) { ok = false; break; }
-                    if (shading_bgl_new)
-                        ok = ok &&
-                             dvz_drp2_stream_create_uniform_bind_group_layout(
-                                 stream, shading_bgl_id);
-                }
-                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
-                               stream, pipe_id, vs_id, fs_id, attr_count, desc.topology,
-                               attr_count, strides, attr_count, bindings, locations, formats,
-                               offsets);
-                if (ok && mvp_bgl_id != 0)
-                    ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
-                if (ok && desc.has_normal)
-                    if (ok)
-                        ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(
-                            stream, shading_bgl_id);
-                if (ok && pass_needs_depth)
-                    ok = dvz_drp2_stream_pipeline_set_depth_state(
-                        stream, desc.has_normal,
-                        desc.has_normal ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS);
+                shading_bgl_id = _obj_id(emitter, "_bgl_prim_shading", &shading_bgl_new);
+                if (shading_bgl_id == 0) { ok = false; break; }
+                if (shading_bgl_new)
+                    ok = ok &&
+                         dvz_drp2_stream_create_uniform_bind_group_layout(stream, shading_bgl_id);
             }
-            else /* vis_is_image */
+            if (pipeline.needs_image_layout && img_bgl_id == 0)
             {
-                uint32_t strides[2]   = {3 * sizeof(float), 2 * sizeof(float)};
-                uint32_t bindings[2]  = {0, 1};
-                uint32_t locations[2] = {0, 1};
-                uint32_t formats[2]   = {VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32_SFLOAT};
-                uint32_t offsets[2]   = {0, 0};
-
-                /* Image BGL (lazy). */
-                if (img_bgl_id == 0)
-                {
-                    img_bgl_id = _obj_id(emitter, "_bgl_img", &is_new);
-                    if (img_bgl_id == 0) { ok = false; break; }
-                    if (is_new)
-                        ok = ok &&
-                             dvz_drp2_stream_create_texture_sampler_bind_group_layout(
-                                 stream, img_bgl_id);
-                }
-                ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
-                               stream, pipe_id, vs_id, fs_id, 2,
-                               VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
-                               2, strides, 2, bindings, locations, formats, offsets);
-                if (ok && img_bgl_id != 0)
-                    ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, img_bgl_id);
-                if (ok && pass_needs_depth)
-                    ok = dvz_drp2_stream_pipeline_set_depth_state(
-                        stream, false, VK_COMPARE_OP_ALWAYS);
+                img_bgl_id = _obj_id(emitter, "_bgl_img", &is_new);
+                if (img_bgl_id == 0) { ok = false; break; }
+                if (is_new)
+                    ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
+                                   stream, img_bgl_id);
             }
+            ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
+                           stream, pipe_id, vs_id, fs_id, pipeline.vertex_buffer_count,
+                           pipeline.topology, pipeline.binding_count, pipeline.strides,
+                           pipeline.attr_count, pipeline.bindings, pipeline.locations,
+                           pipeline.formats, pipeline.offsets);
+            if (ok && pipeline.needs_mvp_layout && mvp_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            if (ok && pipeline.needs_image_layout && img_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, img_bgl_id);
+            if (ok && pipeline.needs_shading_layout)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
+            if (ok && pipeline.has_depth_state)
+                ok = dvz_drp2_stream_pipeline_set_depth_state(
+                    stream, pipeline.depth_write_enabled, pipeline.depth_compare_op);
         }
 
         /* Bind group at set 0. */

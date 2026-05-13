@@ -67,6 +67,27 @@ typedef struct DvzSceneVisualShaderDesc
 
 
 
+typedef struct DvzSceneVisualPipelineDesc
+{
+    uint32_t vertex_buffer_count;
+    uint32_t topology;
+    uint32_t binding_count;
+    uint32_t attr_count;
+    uint32_t strides[3];
+    uint32_t bindings[3];
+    uint32_t locations[3];
+    uint32_t formats[3];
+    uint32_t offsets[3];
+    bool needs_mvp_layout;
+    bool needs_image_layout;
+    bool needs_shading_layout;
+    bool has_depth_state;
+    bool depth_write_enabled;
+    uint32_t depth_compare_op;
+} DvzSceneVisualPipelineDesc;
+
+
+
 bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
 
 bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
@@ -85,5 +106,9 @@ bool _scene_visual_desc_from_render(
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,
     DvzSceneVisualShaderDesc* out);
+
+bool _scene_visual_pipeline_desc(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    DvzSceneVisualPipelineDesc* out);
 
 bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render);

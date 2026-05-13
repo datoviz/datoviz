@@ -378,6 +378,101 @@ bool _scene_visual_shader_desc(
 
 
 /**
+ * Resolve vertex-layout and depth-state metadata for one visual descriptor.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param pass_needs_depth whether the containing render pass has a depth attachment
+ * @param out the output pipeline descriptor
+ * @return whether a pipeline descriptor was resolved
+ */
+bool _scene_visual_pipeline_desc(
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
+    DvzSceneVisualPipelineDesc* out)
+{
+    ANN(visual);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualPipelineDesc), 0, sizeof(DvzSceneVisualPipelineDesc));
+
+    out->topology = visual->topology;
+    out->has_depth_state = pass_needs_depth;
+    if (pass_needs_depth)
+    {
+        out->depth_write_enabled = false;
+        out->depth_compare_op = VK_COMPARE_OP_ALWAYS;
+    }
+
+    switch (visual->kind)
+    {
+    case DVZ_SCENE_VISUAL_DESC_POINT:
+        out->vertex_buffer_count = 3;
+        out->binding_count = 3;
+        out->attr_count = picking ? 2 : 3;
+        out->strides[0] = 3 * sizeof(float);
+        out->strides[1] = 4 * sizeof(uint8_t);
+        out->strides[2] = sizeof(float);
+        out->bindings[0] = 0;
+        out->bindings[1] = picking ? 2 : 1;
+        out->bindings[2] = 2;
+        out->locations[0] = 0;
+        out->locations[1] = picking ? 2 : 1;
+        out->locations[2] = 2;
+        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
+        out->formats[2] = VK_FORMAT_R32_SFLOAT;
+        out->needs_mvp_layout = true;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        out->vertex_buffer_count = visual->has_normal ? 3 : 2;
+        out->binding_count = out->vertex_buffer_count;
+        out->attr_count = out->vertex_buffer_count;
+        out->strides[0] = 3 * sizeof(float);
+        out->strides[1] = 4 * sizeof(uint8_t);
+        out->strides[2] = 3 * sizeof(float);
+        out->bindings[0] = 0;
+        out->bindings[1] = 1;
+        out->bindings[2] = 2;
+        out->locations[0] = 0;
+        out->locations[1] = 1;
+        out->locations[2] = 2;
+        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->formats[1] = VK_FORMAT_R8G8B8A8_UNORM;
+        out->formats[2] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->needs_mvp_layout = true;
+        out->needs_shading_layout = visual->has_normal;
+        if (pass_needs_depth)
+        {
+            out->depth_write_enabled = visual->has_normal;
+            out->depth_compare_op =
+                visual->has_normal ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_ALWAYS;
+        }
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        out->vertex_buffer_count = 2;
+        out->binding_count = 2;
+        out->attr_count = 2;
+        out->strides[0] = 3 * sizeof(float);
+        out->strides[1] = 2 * sizeof(float);
+        out->bindings[0] = 0;
+        out->bindings[1] = 1;
+        out->locations[0] = 0;
+        out->locations[1] = 1;
+        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->formats[1] = VK_FORMAT_R32G32_SFLOAT;
+        out->needs_image_layout = true;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_NONE:
+    default:
+        return false;
+    }
+}
+
+
+
+/**
  * Return whether a scene render node needs a depth attachment.
  *
  * @param emitter the persistent emitter
