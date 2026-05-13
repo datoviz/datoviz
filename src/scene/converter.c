@@ -27,9 +27,9 @@
 #include "_frame_plan_emit.h"
 #include "_frame_plan.h"
 #include "_overflow.h"
+#include "_shader_registry.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
-#include "datoviz/fileio/fileio.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
 #include "datoviz/scene/panzoom.h"
@@ -38,151 +38,8 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DRP2_VERTEX_WGSL                                                                        \
-    "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0, 0.0, 0.0, 1.0); }"
-#define DRP2_FULLSCREEN_VERTEX_WGSL                                                             \
-    "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = " \
-    "array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return "          \
-    "vec4f(pos[idx], 0.0, 1.0); }"
-#define DRP2_FRAGMENT_WGSL                                                                      \
-    "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0, 1.0, 1.0, 1.0); }"
-#define DRP2_TEXTURE_VERTEX_WGSL                                                                \
-    "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = " \
-    "array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return "          \
-    "vec4f(pos[idx], 0.0, 1.0); }"
-#define DRP2_TEXTURE_FRAGMENT_WGSL                                                              \
-    "@group(0) @binding(0) var source: texture_2d<f32>; @group(0) @binding(1) var samp: "      \
-    "sampler; @fragment fn main(@builtin(position) pos: vec4f) -> @location(0) vec4f { "       \
-    "return textureSample(source, samp, vec2f(0.5, 0.5)); }"
-#define DRP2_COMPUTE_WGSL                                                                       \
-    "@group(0) @binding(0) var<storage, read> input: array<f32>; @group(0) @binding(1) "        \
-    "var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main("        \
-    "@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }"
-
-#define DRP2_VERTEX_GLSL                                                                        \
-    "#version 450\nvoid main(){gl_Position=vec4(0.0,0.0,0.0,1.0);}"
-#define DRP2_FULLSCREEN_VERTEX_GLSL                                                             \
-    "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"                       \
-    "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"
-#define DRP2_FRAGMENT_GLSL                                                                      \
-    "#version 450\nlayout(location=0)out vec4 color;void main(){color=vec4(1.0);}"
-#define DRP2_TEXTURE_VERTEX_GLSL                                                                \
-    "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"                       \
-    "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}"
-#define DRP2_TEXTURE_FRAGMENT_GLSL                                                              \
-    "#version 450\nlayout(set=0,binding=0)uniform sampler2D t;"                                \
-    "layout(location=0)out vec4 c;void main(){c=texture(t,vec2(.5));}"
-#define DRP2_COMPUTE_GLSL                                                                       \
-    "#version 450\nlayout(local_size_x=1)in;void main(){}"
-
-/* Point visual: separate vertex buffers for position (vec3), color (u8 RGBA→vec4), size (float). */
-#define DRP2_POINT_VERTEX_GLSL                                                                  \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec4 inColor;\n"                                                      \
-    "layout(location=2)in float inSize;\n"                                                      \
-    "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "void main(){"                                                                               \
-    "gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                                 \
-    "gl_PointSize=inSize;"                                                                       \
-    "fragColor=inColor;}\n"
-#define DRP2_POINT_FRAGMENT_GLSL                                                                \
-    "#version 450\n"                                                                            \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=fragColor;}\n"
-#define DRP2_POINT_PICK_VERTEX_GLSL                                                             \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=2)in float inSize;\n"                                                      \
-    "layout(location=0)flat out uint fragId;\n"                                                 \
-    "void main(){"                                                                               \
-    "gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                                 \
-    "gl_PointSize=inSize;"                                                                       \
-    "fragId=uint(gl_VertexIndex)+1u;}\n"
-#define DRP2_POINT_PICK_FRAGMENT_GLSL                                                           \
-    "#version 450\n"                                                                            \
-    "layout(location=0)flat in uint fragId;\n"                                                  \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=vec4(float(fragId&255u)/255.0,float((fragId>>8u)&255u)/255.0,"       \
-    "float((fragId>>16u)&255u)/255.0,float((fragId>>24u)&255u)/255.0);}\n"
-
-/* Primitive visual: position (vec3) + color (u8 RGBA→vec4); topology selected per visual. */
-#define DRP2_PRIMITIVE_VERTEX_GLSL                                                              \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec4 inColor;\n"                                                      \
-    "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "void main(){gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);fragColor=inColor;}\n"
-#define DRP2_PRIMITIVE_FRAGMENT_GLSL                                                            \
-    "#version 450\n"                                                                            \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=fragColor;}\n"
-#define DRP2_PRIMITIVE_LIT_VERTEX_GLSL                                                          \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec4 inColor;\n"                                                      \
-    "layout(location=2)in vec3 inNormal;\n"                                                     \
-    "layout(location=0)out vec4 fragColor;\n"                                                   \
-    "layout(location=1)out vec3 fragNormal;\n"                                                  \
-    "layout(location=2)out vec3 fragWorldPos;\n"                                                \
-    "layout(location=3)out vec3 fragCameraPos;\n"                                               \
-    "vec4 transform(vec3 pos){vec4 tr=mvp.proj*mvp.view*mvp.model*vec4(pos,1.0);"              \
-    "tr.y=-tr.y;tr.z=0.5*(tr.z+tr.w);return tr;}\n"                                            \
-    "void main(){vec4 world=mvp.model*vec4(inPos,1.0);gl_Position=transform(inPos);"           \
-    "fragColor=inColor;fragWorldPos=world.xyz;"                                                \
-    "fragCameraPos=(inverse(mvp.view)*vec4(0,0,0,1)).xyz;"                                     \
-    "fragNormal=transpose(inverse(mat3(mvp.model)))*inNormal;}\n"
-#define DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL                                                        \
-    "#version 450\n"                                                                            \
-    "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
-    "layout(location=0)in vec4 fragColor;\n"                                                    \
-    "layout(location=1)in vec3 fragNormal;\n"                                                   \
-    "layout(location=2)in vec3 fragWorldPos;\n"                                                 \
-    "layout(location=3)in vec3 fragCameraPos;\n"                                                \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){vec3 n=normalize(fragNormal);vec3 l=normalize(shading.lightDir.xyz);"         \
-    "vec3 v=normalize(fragCameraPos-fragWorldPos);vec3 h=normalize(l+v);"                      \
-    "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
-    "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
-    "outColor=vec4(clamp(rgb,0.0,1.0),fragColor.a);}\n"
-
-/* Image visual: position (vec3) + texcoords (vec2); samples a 2D RGBA8 texture. */
-#define DRP2_IMAGE_VERTEX_GLSL                                                                  \
-    "#version 450\n"                                                                            \
-    "layout(location=0)in vec3 inPos;\n"                                                        \
-    "layout(location=1)in vec2 inUV;\n"                                                         \
-    "layout(location=0)out vec2 fragUV;\n"                                                      \
-    "void main(){gl_Position=vec4(inPos,1.0);fragUV=inUV;}\n"
-#define DRP2_IMAGE_FRAGMENT_GLSL                                                                \
-    "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform sampler2D tex;\n"                                           \
-    "layout(location=0)in vec2 fragUV;\n"                                                       \
-    "layout(location=0)out vec4 outColor;\n"                                                    \
-    "void main(){outColor=texture(tex,fragUV);}\n"
-
-
-
-/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-static const char* _shader_format_tag(const DvzFramePlanEmitConfig* cfg)
-{
-    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
-        return "g";
-    return "w";
-}
-
-
 
 /*
  * Return true when vertex_buffer_ids[0..n-1] carry data_tags "position", "color", "size"
@@ -537,38 +394,6 @@ static bool _validate_capabilities(
 
 
 /**
- * Return the DRP2 shader-format token for a scene fixture emission config.
- *
- * @param cfg the emission config
- * @return the shader-format token
- */
-static const char* _shader_format_token(const DvzFramePlanEmitConfig* cfg)
-{
-    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
-        return "glsl";
-    return "wgsl";
-}
-
-
-
-/**
- * Select shader source for a scene fixture emission config.
- *
- * @param cfg the emission config
- * @param wgsl the WGSL source
- * @param glsl the GLSL source
- * @return the selected shader source
- */
-static const char*
-_shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* glsl)
-{
-    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
-        return glsl;
-    return wgsl;
-}
-
-
-/**
  * Return the configured DRP2 color target id.
  *
  * @param cfg the emission config
@@ -580,73 +405,6 @@ static uint64_t _color_target_id(const DvzFramePlanEmitConfig* cfg)
         return cfg->color_target_id;
     return DRP2_ID_COLOR_TARGET;
 }
-
-
-/**
- * Return the vertex shader source used for simple render emissions.
- *
- * @param cfg the emission config
- * @param wgsl output WGSL shader source
- * @param glsl output GLSL shader source
- */
-static void _render_vertex_shader_source(
-    const DvzFramePlanEmitConfig* cfg, const char** wgsl, const char** glsl)
-{
-    ANN(wgsl);
-    ANN(glsl);
-    if (cfg != NULL && cfg->fullscreen_triangle)
-    {
-        *wgsl = DRP2_FULLSCREEN_VERTEX_WGSL;
-        *glsl = DRP2_FULLSCREEN_VERTEX_GLSL;
-    }
-    else
-    {
-        *wgsl = DRP2_VERTEX_WGSL;
-        *glsl = DRP2_VERTEX_GLSL;
-    }
-}
-
-
-
-/**
- * Emit a shader module command with the configured source format.
- *
- * @param stream the DRP2 command stream
- * @param id the shader id
- * @param stage the shader stage
- * @param wgsl the WGSL source
- * @param glsl the GLSL source
- * @param cfg the emission config
- * @return whether the command was emitted
- */
-static bool _emit_shader(
-    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* wgsl,
-    const char* glsl, const DvzFramePlanEmitConfig* cfg)
-{
-    ANN(stream);
-    ANN(stage);
-    return dvz_drp2_stream_create_shader_module_format(
-        stream, id, stage, _shader_format_token(cfg), _shader_source(cfg, wgsl, glsl));
-}
-
-
-
-/* Emit a shader using precompiled SPIR-V when available; fall back to runtime GLSL. */
-static bool _emit_shader_spirv(
-    DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
-    const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg)
-{
-    ANN(stream);
-    ANN(stage);
-    unsigned long spv_size = 0;
-    const unsigned char* spv = dvz_resource_shader(spirv_key, &spv_size);
-    if (spv != NULL && spv_size > 0)
-        return dvz_drp2_stream_create_shader_module_spirv(
-            stream, id, stage, spv, (uint64_t)spv_size);
-    /* Fallback: runtime GLSL compilation. */
-    return dvz_drp2_stream_create_shader_module_format(stream, id, stage, "glsl", glsl);
-}
-
 
 
 /**
@@ -815,7 +573,7 @@ static bool _emit_compute_assisted_render(
 
     return dvz_drp2_stream_create_storage_bind_group_layout(stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
            _emit_shader(
-               stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", DRP2_COMPUTE_WGSL, DRP2_COMPUTE_GLSL,
+               stream, DRP2_ID_COMPUTE_SHADER, "COMPUTE", _compute_copy_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_COMPUTE_COPY, false),
                cfg) &&
            dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
                stream, DRP2_ID_COMPUTE_PIPELINE, DRP2_ID_COMPUTE_SHADER,
@@ -825,11 +583,11 @@ static bool _emit_compute_assisted_render(
                state->first_compute_input_id, state->first_compute_output_id,
                state->compute_buffer_size) &&
            _emit_shader(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL, DRP2_VERTEX_GLSL,
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _fixture_vertex_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, false),
                cfg) &&
            _emit_shader(
-               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
-               DRP2_FRAGMENT_GLSL, cfg) &&
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", _fixture_fragment_wgsl(),
+               _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, true), cfg) &&
            dvz_drp2_stream_create_render_pipeline(
                stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
@@ -877,11 +635,11 @@ _emit_texture_render(
            dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                stream, DRP2_ID_BIND_GROUP_LAYOUT) &&
            _emit_shader(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL,
-               DRP2_TEXTURE_VERTEX_GLSL, cfg) &&
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _texture_vertex_wgsl(),
+               _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_TEXTURE, false), cfg) &&
            _emit_shader(
-               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL,
-               DRP2_TEXTURE_FRAGMENT_GLSL, cfg) &&
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", _texture_fragment_wgsl(),
+               _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_TEXTURE, true), cfg) &&
            dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
                stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 0,
                DRP2_ID_BIND_GROUP_LAYOUT) &&
@@ -919,11 +677,11 @@ _emit_render(
         return false;
 
     return _emit_shader(
-               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", DRP2_VERTEX_WGSL, DRP2_VERTEX_GLSL,
+               stream, DRP2_ID_VERTEX_SHADER, "VERTEX", _fixture_vertex_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, false),
                cfg) &&
            _emit_shader(
-               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", DRP2_FRAGMENT_WGSL,
-               DRP2_FRAGMENT_GLSL, cfg) &&
+               stream, DRP2_ID_FRAGMENT_SHADER, "FRAGMENT", _fixture_fragment_wgsl(),
+               _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, true), cfg) &&
            dvz_drp2_stream_create_render_pipeline(
                stream, DRP2_ID_PIPELINE, DRP2_ID_VERTEX_SHADER, DRP2_ID_FRAGMENT_SHADER, 1) &&
            dvz_drp2_stream_create_texture_2d(stream, DRP2_ID_COLOR_TARGET, 4, 4) &&
@@ -1533,15 +1291,15 @@ static bool _emitter_emit_render_multi_in_pass(
             {
                 dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point_pick%s", fmt);
                 dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point_pick%s", fmt);
-                vs_glsl = DRP2_POINT_PICK_VERTEX_GLSL;
-                fs_glsl = DRP2_POINT_PICK_FRAGMENT_GLSL;
+                vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, false);
+                fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, true);
             }
             else
             {
                 dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
                 dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
-                vs_glsl      = DRP2_POINT_VERTEX_GLSL;
-                fs_glsl      = DRP2_POINT_FRAGMENT_GLSL;
+                vs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
+                fs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
                 vs_spirv_key = "point_vert";
                 fs_spirv_key = "point_frag";
             }
@@ -1552,15 +1310,15 @@ static bool _emitter_emit_render_multi_in_pass(
             {
                 dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim_lit%s", fmt);
                 dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim_lit%s", fmt);
-                vs_glsl = DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
-                fs_glsl = DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL;
+                vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, false);
+                fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, true);
             }
             else
             {
                 dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
                 dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
-                vs_glsl      = DRP2_PRIMITIVE_VERTEX_GLSL;
-                fs_glsl      = DRP2_PRIMITIVE_FRAGMENT_GLSL;
+                vs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
+                fs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
                 vs_spirv_key = "primitive_vert";
                 fs_spirv_key = "primitive_frag";
             }
@@ -1569,8 +1327,8 @@ static bool _emitter_emit_render_multi_in_pass(
         {
             dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
             dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
-            vs_glsl      = DRP2_IMAGE_VERTEX_GLSL;
-            fs_glsl      = DRP2_IMAGE_FRAGMENT_GLSL;
+            vs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
+            fs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
             vs_spirv_key = "image_vert";
             fs_spirv_key = "image_frag";
         }
@@ -2108,8 +1866,8 @@ static bool _emitter_emit_render(
         /* Point visual: use type-specific shaders and POINT_LIST topology. */
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
-        vs_glsl = DRP2_POINT_VERTEX_GLSL;
-        fs_glsl = DRP2_POINT_FRAGMENT_GLSL;
+        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
+        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
         topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
         /* Infer vertex count from position buffer byte_size / sizeof(vec3). */
@@ -2142,8 +1900,8 @@ static bool _emitter_emit_render(
         }
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
-        vs_glsl = DRP2_PRIMITIVE_VERTEX_GLSL;
-        fs_glsl = DRP2_PRIMITIVE_FRAGMENT_GLSL;
+        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
+        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
     }
     else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
     {
@@ -2154,8 +1912,8 @@ static bool _emitter_emit_render(
         topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
-        vs_glsl = DRP2_IMAGE_VERTEX_GLSL;
-        fs_glsl = DRP2_IMAGE_FRAGMENT_GLSL;
+        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
+        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
 
         /* Sampler + texture-sampler bind-group layout + bind-group, all persistent. */
         bool bgl_new = false;
@@ -2306,7 +2064,7 @@ static bool _emitter_emit_render(
         else
         {
             ok = ok && _emit_shader(
-                           stream, fs_id, "FRAGMENT", DRP2_FRAGMENT_WGSL, DRP2_FRAGMENT_GLSL, cfg);
+                           stream, fs_id, "FRAGMENT", _fixture_fragment_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, true), cfg);
         }
     }
 
@@ -2699,8 +2457,8 @@ static bool _emitter_emit_texture_render(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, vs_id, "VERTEX", DRP2_TEXTURE_VERTEX_WGSL,
-                       DRP2_TEXTURE_VERTEX_GLSL, cfg);
+                       stream, vs_id, "VERTEX", _texture_vertex_wgsl(),
+                       _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_TEXTURE, false), cfg);
 
     char fs_key[16];
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs_tex%s", fmt);
@@ -2709,8 +2467,8 @@ static bool _emitter_emit_texture_render(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, fs_id, "FRAGMENT", DRP2_TEXTURE_FRAGMENT_WGSL,
-                       DRP2_TEXTURE_FRAGMENT_GLSL, cfg);
+                       stream, fs_id, "FRAGMENT", _texture_fragment_wgsl(),
+                       _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_TEXTURE, true), cfg);
 
     char pipe_key[32];
     dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_tex%s_%" PRIu64, fmt, bgl_id);
@@ -2841,7 +2599,7 @@ static bool _emitter_emit_compute_assisted_render(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, cs_id, "COMPUTE", DRP2_COMPUTE_WGSL, DRP2_COMPUTE_GLSL, cfg);
+                       stream, cs_id, "COMPUTE", _compute_copy_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_COMPUTE_COPY, false), cfg);
 
     char cpipe_key[32];
     dvz_snprintf(cpipe_key, sizeof(cpipe_key), "_cpipe%s_%" PRIu64, fmt, bgl_stor_id);
@@ -2874,7 +2632,7 @@ static bool _emitter_emit_compute_assisted_render(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, vs_id, "VERTEX", DRP2_VERTEX_WGSL, DRP2_VERTEX_GLSL, cfg);
+                       stream, vs_id, "VERTEX", _fixture_vertex_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, false), cfg);
 
     char fs_key[16];
     dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
@@ -2883,7 +2641,7 @@ static bool _emitter_emit_compute_assisted_render(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, fs_id, "FRAGMENT", DRP2_FRAGMENT_WGSL, DRP2_FRAGMENT_GLSL, cfg);
+                       stream, fs_id, "FRAGMENT", _fixture_fragment_wgsl(), _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_FIXTURE, true), cfg);
 
     char pipe_key[32];
     dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe1%s", fmt);
