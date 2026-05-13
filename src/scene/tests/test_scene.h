@@ -123,6 +123,8 @@ int test_scene_image_probe_gpu_readback_failure_misses(TstSuite* suite, TstItem*
 int test_app_offscreen(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_mesh_renders_nonblank(TstSuite* suite, TstItem* item);
 #endif
 #endif
 

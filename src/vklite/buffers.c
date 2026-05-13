@@ -495,7 +495,8 @@ void dvz_cmd_bind_vertex_buffers(
 
 
 
-void dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize offset)
+void
+dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize offset, VkIndexType index_type)
 {
     ANN(cmds);
     ANN(buffer);
@@ -503,5 +504,5 @@ void dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize off
     VkCommandBuffer cmd = dvz_commands_handle(cmds);
     ANNVK(cmd);
 
-    vkCmdBindIndexBuffer(cmd, dvz_buffer_handle(buffer), offset, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cmd, dvz_buffer_handle(buffer), offset, index_type);
 }

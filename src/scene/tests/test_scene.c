@@ -6093,6 +6093,99 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstIt
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+/**
+ * Ensure an indexed mesh contributes visible pixels through the app offscreen path.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_mesh_renders_nonblank(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+
+    float positions[4][3] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
+    };
+    DvzColor colors[4] = {
+        {255, 64, 64, 255},
+        {64, 255, 64, 255},
+        {64, 64, 255, 255},
+        {255, 224, 64, 255},
+    };
+    float normals[4][3] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 4) == 0);
+    AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
+    AT(dvz_visual_set_buffer(visual, "index", index_buffer));
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+    AT(dvz_visual_set_primitive_shading(
+           visual,
+           &(DvzPrimitiveShadingDesc){
+               .light_direction = {0.0f, 0.0f, 1.0f},
+               .ambient = 1.0f,
+               .diffuse = 0.0f,
+           }) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_mesh_renders_nonblank skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 64);
+
+    const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+    AT(!(center[0] == 13 && center[1] == 13 && center[2] == 20));
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
 #endif
 
 
@@ -8286,6 +8379,7 @@ int test_scene(TstSuite* suite)
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
     TEST_SIMPLE(test_app_offscreen);
     TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_orders_overlap);
+    TEST_SIMPLE(test_app_offscreen_mesh_renders_nonblank);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);

@@ -6,9 +6,8 @@
 
 /* hello_mesh — minimal indexed quad mesh via dvz_mesh + scene/app.
  *
- * Creates one triangle-list mesh with positions, normals, and a shared scene index buffer.
- * The mesh intentionally omits vertex colours so the retained mesh path exercises its default
- * opaque-white colour generation.
+ * Creates one triangle-list mesh with positions, normals, explicit vertex colours, and a shared
+ * scene index buffer.
  *
  * Build:  just example-c hello_mesh
  * Run:    ./build/examples/c/hello_mesh
@@ -48,6 +47,12 @@ int main(int argc, char** argv)
         {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
     };
+    DvzColor colors[4] = {
+        {255, 64, 64, 255},
+        {64, 255, 64, 255},
+        {64, 64, 255, 255},
+        {255, 224, 64, 255},
+    };
     float normals[4][3] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
@@ -68,9 +73,18 @@ int main(int argc, char** argv)
     }
 
     dvz_visual_set_data(visual, "position", positions, 4);
+    dvz_visual_set_data(visual, "color", colors, 4);
     dvz_visual_set_data(visual, "normal", normals, 4);
     dvz_visual_set_buffer(visual, "index", index_buffer);
+    dvz_visual_set_primitive_shading(
+        visual,
+        &(DvzPrimitiveShadingDesc){
+            .light_direction = {0.0f, 0.0f, 1.0f},
+            .ambient = 1.0f,
+            .diffuse = 0.0f,
+        });
     dvz_panel_add_visual(panel, visual, NULL);
+    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
     DvzApp* app = dvz_app(scene);
     if (!app) { fprintf(stderr, "dvz_app() failed (no GPU?)\n"); dvz_scene_destroy(scene); return 1; }

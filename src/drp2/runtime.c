@@ -4022,6 +4022,39 @@ static DvzDrp2ValidationResult _vklite_set_vertex_buffer(
 
 
 /**
+ * Bind an index buffer within a vklite render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 SetIndexBuffer command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_set_index_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.set_index_buffer.pass_id);
+    Drp2VkliteObject* buffer = _vklite_find(state, command->u.set_index_buffer.buffer_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL ||
+        buffer == NULL || buffer->buffer == NULL)
+    {
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
+    VkIndexType index_type = VK_INDEX_TYPE_UINT32;
+    if (strcmp(command->u.set_index_buffer.index_format, "uint16") == 0)
+        index_type = VK_INDEX_TYPE_UINT16;
+    else if (strcmp(command->u.set_index_buffer.index_format, "uint32") != 0)
+        return _fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+
+    dvz_cmd_bind_index_buffer(
+        pass->commands, buffer->buffer, command->u.set_index_buffer.offset, index_type);
+    return _ok();
+}
+
+
+/**
  * Set a dynamic viewport within a vklite render pass.
  *
  * @param state vklite runtime state
@@ -4159,6 +4192,31 @@ static DvzDrp2ValidationResult _vklite_draw(
     dvz_cmd_draw(
         pass->commands, command->u.draw.first_vertex, command->u.draw.vertex_count,
         command->u.draw.first_instance, command->u.draw.instance_count);
+    return _ok();
+}
+
+
+/**
+ * Record an indexed draw within a vklite render pass.
+ *
+ * @param state vklite runtime state
+ * @param command DRP2 DrawIndexed command
+ * @param command_index command index used for validation reporting
+ * @return DRP2 validation result
+ */
+static DvzDrp2ValidationResult _vklite_draw_indexed(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
+{
+    ANN(state);
+    ANN(command);
+    Drp2VkliteObject* pass = _vklite_find(state, command->u.draw_indexed.pass_id);
+    if (pass == NULL || pass->kind != DRP2_OBJECT_RENDER_PASS || pass->commands == NULL)
+        return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    dvz_cmd_draw_indexed(
+        pass->commands, command->u.draw_indexed.first_index, command->u.draw_indexed.base_vertex,
+        command->u.draw_indexed.index_count, command->u.draw_indexed.first_instance,
+        command->u.draw_indexed.instance_count);
     return _ok();
 }
 
@@ -4398,11 +4456,17 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
         case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
             result = _vklite_set_vertex_buffer(state, command, i);
             break;
+        case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+            result = _vklite_set_index_buffer(state, command, i);
+            break;
         case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
             result = _vklite_set_bind_group(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_DRAW:
             result = _vklite_draw(state, command, i);
+            break;
+        case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+            result = _vklite_draw_indexed(state, command, i);
             break;
         case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
             result = _vklite_dispatch_workgroups(state, command, i);

@@ -331,8 +331,10 @@ DVZ_EXPORT void dvz_cmd_bind_vertex_buffers(
  * @param cmds the command buffers
  * @param buffer the index buffer
  * @param offset the offset within the index buffer
+ * @param index_type the Vulkan index type
  */
-DVZ_EXPORT void dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize offset);
+DVZ_EXPORT void
+dvz_cmd_bind_index_buffer(DvzCommands* cmds, DvzBuffer* buffer, DvzSize offset, VkIndexType index_type);
 
 
 
