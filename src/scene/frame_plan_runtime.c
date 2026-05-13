@@ -84,99 +84,37 @@ static bool _emitter_emit_render_multi_in_pass(
         bool vis_is_prim = desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
         bool vis_is_image = desc.kind == DVZ_SCENE_VISUAL_DESC_IMAGE;
 
-        /* Shader keys. */
-        char vs_key[32], fs_key[16], pipe_key[48];
-        const char* vs_glsl      = NULL;
-        const char* fs_glsl      = NULL;
-        const char* vs_spirv_key = NULL;
-        const char* fs_spirv_key = NULL;
-
-        if (vis_is_point)
-        {
-            if (render->u.render.picking)
-            {
-                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point_pick%s", fmt);
-                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point_pick%s", fmt);
-                vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, false);
-                fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, true);
-            }
-            else
-            {
-                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
-                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
-                vs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
-                fs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
-                vs_spirv_key = "point_vert";
-                fs_spirv_key = "point_frag";
-            }
-        }
-        else if (vis_is_prim)
-        {
-            if (desc.has_normal)
-            {
-                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim_lit%s", fmt);
-                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim_lit%s", fmt);
-                vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, false);
-                fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, true);
-            }
-            else
-            {
-                dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
-                dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
-                vs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
-                fs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
-                vs_spirv_key = "primitive_vert";
-                fs_spirv_key = "primitive_frag";
-            }
-        }
-        else /* vis_is_image */
-        {
-            dvz_snprintf(vs_key, sizeof(vs_key), "_vs_img%s", fmt);
-            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
-            vs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
-            fs_glsl      = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
-            vs_spirv_key = "image_vert";
-            fs_spirv_key = "image_frag";
-        }
+        DvzSceneVisualShaderDesc shader = {0};
+        if (!_scene_visual_shader_desc(&desc, render->u.render.picking, fmt, &shader))
+            continue;
 
         /* Shaders (cached). */
-        uint64_t vs_id = _obj_id(emitter, vs_key, &is_new);
+        uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);
         if (vs_id == 0) { ok = false; break; }
         if (is_new)
         {
-            if (vs_spirv_key != NULL)
-                ok = ok && _emit_shader_spirv(stream, vs_id, "VERTEX", vs_spirv_key, vs_glsl, cfg);
+            if (shader.vertex_spirv_key != NULL)
+                ok = ok && _emit_shader_spirv(
+                               stream, vs_id, "VERTEX", shader.vertex_spirv_key,
+                               shader.vertex_glsl, cfg);
             else
-                ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, vs_glsl, cfg);
+                ok = ok && _emit_shader(stream, vs_id, "VERTEX", NULL, shader.vertex_glsl, cfg);
         }
 
-        uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
+        uint64_t fs_id = _obj_id(emitter, shader.fragment_key, &is_new);
         if (fs_id == 0) { ok = false; break; }
         if (ok && is_new)
         {
-            if (fs_spirv_key != NULL)
+            if (shader.fragment_spirv_key != NULL)
                 ok = ok && _emit_shader_spirv(
-                               stream, fs_id, "FRAGMENT", fs_spirv_key, fs_glsl, cfg);
+                               stream, fs_id, "FRAGMENT", shader.fragment_spirv_key,
+                               shader.fragment_glsl, cfg);
             else
-                ok = ok && _emit_shader(stream, fs_id, "FRAGMENT", NULL, fs_glsl, cfg);
+                ok = ok &&
+                     _emit_shader(stream, fs_id, "FRAGMENT", NULL, shader.fragment_glsl, cfg);
         }
 
-        /* Pipeline (cached by family + topology). */
-        if (vis_is_point)
-        {
-            dvz_snprintf(
-                pipe_key, sizeof(pipe_key),
-                render->u.render.picking ? "_pipe_point_pick%s" : "_pipe_point%s", fmt);
-        }
-        else if (vis_is_prim)
-            dvz_snprintf(
-                pipe_key, sizeof(pipe_key),
-                desc.has_normal ? "_pipe_prim_lit_t%u%s" : "_pipe_prim_t%u%s", desc.topology,
-                fmt);
-        else
-            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
-
-        uint64_t pipe_id = _obj_id(emitter, pipe_key, &is_new);
+        uint64_t pipe_id = _obj_id(emitter, shader.pipeline_key, &is_new);
         if (pipe_id == 0) { ok = false; break; }
         if (ok && is_new)
         {

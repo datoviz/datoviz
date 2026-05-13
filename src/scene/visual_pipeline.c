@@ -22,6 +22,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_shader_registry.h"
 #include "_visual_pipeline.h"
 
 
@@ -281,6 +282,97 @@ bool _scene_visual_desc_from_render(
             : "uint32";
 
     return true;
+}
+
+
+
+/**
+ * Resolve shader and pipeline cache-key metadata for one visual descriptor.
+ *
+ * @param visual the visual descriptor
+ * @param picking whether the render pass is a picking pass
+ * @param format_tag the shader-format cache-key suffix
+ * @param out the output shader descriptor
+ * @return whether a shader descriptor was resolved
+ */
+bool _scene_visual_shader_desc(
+    const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,
+    DvzSceneVisualShaderDesc* out)
+{
+    ANN(visual);
+    ANN(format_tag);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
+
+    switch (visual->kind)
+    {
+    case DVZ_SCENE_VISUAL_DESC_POINT:
+        if (picking)
+        {
+            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_point_pick%s", format_tag);
+            dvz_snprintf(
+                out->fragment_key, sizeof(out->fragment_key), "_fs_point_pick%s", format_tag);
+            dvz_snprintf(
+                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point_pick%s", format_tag);
+            out->vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, false);
+            out->fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT_PICK, true);
+        }
+        else
+        {
+            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_point%s", format_tag);
+            dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_point%s", format_tag);
+            dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_point%s", format_tag);
+            out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
+            out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
+            out->vertex_spirv_key = "point_vert";
+            out->fragment_spirv_key = "point_frag";
+        }
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
+        if (visual->has_normal)
+        {
+            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim_lit%s", format_tag);
+            dvz_snprintf(
+                out->fragment_key, sizeof(out->fragment_key), "_fs_prim_lit%s", format_tag);
+            dvz_snprintf(
+                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_lit_t%u%s",
+                visual->topology, format_tag);
+            out->vertex_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, false);
+            out->fragment_glsl =
+                _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT, true);
+        }
+        else
+        {
+            dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_prim%s", format_tag);
+            dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_prim%s", format_tag);
+            dvz_snprintf(
+                out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_t%u%s",
+                visual->topology, format_tag);
+            out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
+            out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
+            out->vertex_spirv_key = "primitive_vert";
+            out->fragment_spirv_key = "primitive_frag";
+        }
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_IMAGE:
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_img%s", format_tag);
+        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_img%s", format_tag);
+        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_img%s", format_tag);
+        out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
+        out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
+        out->vertex_spirv_key = "image_vert";
+        out->fragment_spirv_key = "image_frag";
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_NONE:
+    default:
+        return false;
+    }
 }
 
 

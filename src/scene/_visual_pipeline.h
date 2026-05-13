@@ -54,6 +54,19 @@ typedef struct DvzSceneVisualDesc
 
 
 
+typedef struct DvzSceneVisualShaderDesc
+{
+    char vertex_key[32];
+    char fragment_key[32];
+    char pipeline_key[48];
+    const char* vertex_glsl;
+    const char* fragment_glsl;
+    const char* vertex_spirv_key;
+    const char* fragment_spirv_key;
+} DvzSceneVisualShaderDesc;
+
+
+
 bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
 
 bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint32_t n);
@@ -68,5 +81,9 @@ bool _emitter_resolve_render_vertex_buffers(
 
 bool _scene_visual_desc_from_render(
     DvzFramePlanEmitter* emitter, const char* encoded_visual_id, DvzSceneVisualDesc* out);
+
+bool _scene_visual_shader_desc(
+    const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,
+    DvzSceneVisualShaderDesc* out);
 
 bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render);
