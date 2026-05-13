@@ -293,11 +293,35 @@ static void _app_trace_stream_normal(
 
 
 /**
+ * Print an expanded human-readable dump for one DRP2 stream.
+ *
+ * @param stream emitted command stream
+ * @param frame_index 0-based frame index for the owning window
+ */
+static void _app_trace_stream_full(
+    const DvzDrp2CommandStream* stream, uint64_t frame_index)
+{
+    ANN(stream);
+    uint32_t command_count = dvz_drp2_stream_count(stream);
+    dvz_fprintf(stderr, "\nframe %08" PRIu64 " | full | %u cmds\n", frame_index, command_count);
+    for (uint32_t i = 0; i < command_count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command == NULL)
+            continue;
+        DvzDrp2CommandType type = dvz_drp2_command_type(command);
+        dvz_fprintf(
+            stderr, "  %03u %c %s\n", i, _trace_command_prefix(type), _trace_command_name(type));
+    }
+}
+
+
+/**
  * Print or refresh the live DRP2 trace for one emitted stream.
  *
  * In normal mode, changed frames print a compact stacked block while unchanged frames rewrite
- * one in-place status line without scrolling. In full mode, every frame prints the full JSON
- * stream.
+ * one in-place status line without scrolling. In full mode, every frame prints an expanded
+ * human-readable command list.
  *
  * @param win app-window owning the trace state
  * @param stream the emitted command stream
@@ -327,7 +351,7 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
             dvz_fprintf(stderr, "\n");
             win->trace_status_line_open = false;
         }
-        dvz_fprintf(stderr, "\n=== DRP2 frame %08" PRIu64 " ===\n%s\n", win->frame_index, json);
+        _app_trace_stream_full(stream, win->frame_index);
     }
     else
     {
