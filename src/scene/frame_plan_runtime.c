@@ -32,9 +32,7 @@
 #include "_visual_pipeline.h"
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
-#include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
-#include "datoviz/scene/panzoom.h"
 #include "_scene.h"
 
 
@@ -655,7 +653,6 @@ static bool _emitter_emit_render(
 
     /* MVP UBO bind group IDs — used for GLSL point/primitive path. */
     uint64_t mvp_bgl_id = 0;
-    uint64_t mvp_buf_id = 0;
     uint64_t mvp_bg_id  = 0;
     bool uses_mvp =
         (is_point || is_primitive) &&
@@ -769,55 +766,10 @@ static bool _emitter_emit_render(
     /* MVP UBO infrastructure (GLSL point/primitive path only). */
     if (uses_mvp)
     {
-        bool mvp_bgl_new = false;
-        mvp_bgl_id = _obj_id(emitter, "_bgl_mvp", &mvp_bgl_new);
-        if (mvp_bgl_id == 0)
+        ok = ok && _mvp_bindings_resolve_single_set(
+                       emitter, stream, render, &mvp_bgl_id, &mvp_bg_id);
+        if (!ok)
             return false;
-        if (mvp_bgl_new)
-            ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, mvp_bgl_id);
-
-        const char* mode_tag = (render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED)
-                                   ? "fixed"
-                                   : "apply";
-        char mvp_buf_key[128], mvp_bg_key[128];
-        dvz_snprintf(
-            mvp_buf_key, sizeof(mvp_buf_key), "_mvp_buf_%s_%s", render->u.render.panel_id,
-            mode_tag);
-        dvz_snprintf(
-            mvp_bg_key, sizeof(mvp_bg_key), "_mvp_bg_%s_%s", render->u.render.panel_id, mode_tag);
-
-        bool mvp_buf_new = false;
-        mvp_buf_id = _obj_id(emitter, mvp_buf_key, &mvp_buf_new);
-        if (mvp_buf_id == 0)
-            return false;
-        if (mvp_buf_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_BUFFER_USAGE_UNIFORM |
-                DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
-                DVZ_DRP2_BUFFER_USAGE_COPY_DST;
-            ok = ok && dvz_drp2_stream_create_buffer(stream, mvp_buf_id, sizeof(DvzMVP), usage);
-        }
-
-        bool mvp_bg_new = false;
-        mvp_bg_id = _obj_id(emitter, mvp_bg_key, &mvp_bg_new);
-        if (mvp_bg_id == 0)
-            return false;
-        if (mvp_bg_new)
-            ok = ok && dvz_drp2_stream_create_uniform_bind_group(
-                           stream, mvp_bg_id, mvp_bgl_id, mvp_buf_id, 0, sizeof(DvzMVP));
-
-        /* Copy MVP into the emitter's per-(panel, controller_mode) cache (persists past
-         * frame plan destruction so write_buffer_bytes' borrowed pointer stays valid). */
-        char mvp_slot_key[128];
-        dvz_snprintf(
-            mvp_slot_key, sizeof(mvp_slot_key), "%s_%s", render->u.render.panel_id, mode_tag);
-        DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
-        if (mvp_slot != NULL)
-            *mvp_slot = render->u.render.apply_mvp;
-        ok = ok && dvz_drp2_stream_write_buffer_bytes(
-                       stream, mvp_buf_id, 0, sizeof(DvzMVP),
-                       mvp_slot ? mvp_slot : &render->u.render.apply_mvp);
     }
 
     /* SPIR-V resource names (stem of .vert.spv / .frag.spv after embed_resources key mangling). */

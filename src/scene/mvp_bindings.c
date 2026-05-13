@@ -160,3 +160,82 @@ bool _mvp_bindings_resolve_panel_sets(
     *out_fixed_bg_id = fixed_bg_id;
     return true;
 }
+
+
+
+/**
+ * Resolve the MVP bind group used by a single-draw GLSL render path.
+ *
+ * @param emitter the persistent emitter
+ * @param stream the DRP2 command stream
+ * @param render the render node
+ * @param out_bgl_id the shared MVP bind group layout id
+ * @param out_bg_id the resolved MVP bind group id
+ * @return whether the MVP binding was resolved
+ */
+bool _mvp_bindings_resolve_single_set(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
+    uint64_t* out_bgl_id, uint64_t* out_bg_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(render);
+    ANN(out_bgl_id);
+    ANN(out_bg_id);
+
+    *out_bgl_id = 0;
+    *out_bg_id = 0;
+
+    bool ok = true;
+    bool mvp_bgl_new = false;
+    uint64_t mvp_bgl_id = _obj_id(emitter, "_bgl_mvp", &mvp_bgl_new);
+    if (mvp_bgl_id == 0)
+        return false;
+    if (mvp_bgl_new)
+        ok = ok && dvz_drp2_stream_create_uniform_bind_group_layout(stream, mvp_bgl_id);
+
+    const char* mode_tag =
+        (render->u.render.controller_modes[0] == DVZ_CONTROLLER_FIXED) ? "fixed" : "apply";
+    char mvp_buf_key[128], mvp_bg_key[128];
+    dvz_snprintf(
+        mvp_buf_key, sizeof(mvp_buf_key), "_mvp_buf_%s_%s", render->u.render.panel_id,
+        mode_tag);
+    dvz_snprintf(
+        mvp_bg_key, sizeof(mvp_bg_key), "_mvp_bg_%s_%s", render->u.render.panel_id, mode_tag);
+
+    bool mvp_buf_new = false;
+    uint64_t mvp_buf_id = _obj_id(emitter, mvp_buf_key, &mvp_buf_new);
+    if (mvp_buf_id == 0)
+        return false;
+    if (mvp_buf_new)
+    {
+        uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                         DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+        ok = ok && dvz_drp2_stream_create_buffer(stream, mvp_buf_id, sizeof(DvzMVP), usage);
+    }
+
+    bool mvp_bg_new = false;
+    uint64_t mvp_bg_id = _obj_id(emitter, mvp_bg_key, &mvp_bg_new);
+    if (mvp_bg_id == 0)
+        return false;
+    if (mvp_bg_new)
+        ok = ok && dvz_drp2_stream_create_uniform_bind_group(
+                       stream, mvp_bg_id, mvp_bgl_id, mvp_buf_id, 0, sizeof(DvzMVP));
+
+    /* Copy MVP into the emitter's per-(panel, controller_mode) cache (persists past
+     * frame plan destruction so write_buffer_bytes' borrowed pointer stays valid). */
+    char mvp_slot_key[128];
+    dvz_snprintf(mvp_slot_key, sizeof(mvp_slot_key), "%s_%s", render->u.render.panel_id, mode_tag);
+    DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
+    if (mvp_slot != NULL)
+        *mvp_slot = render->u.render.apply_mvp;
+    ok = ok && dvz_drp2_stream_write_buffer_bytes(
+                   stream, mvp_buf_id, 0, sizeof(DvzMVP),
+                   mvp_slot ? mvp_slot : &render->u.render.apply_mvp);
+
+    if (!ok)
+        return false;
+    *out_bgl_id = mvp_bgl_id;
+    *out_bg_id = mvp_bg_id;
+    return true;
+}
