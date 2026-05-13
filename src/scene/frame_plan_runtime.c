@@ -27,6 +27,7 @@
 #include "_frame_plan_emit.h"
 #include "_frame_plan.h"
 #include "_overflow.h"
+#include "_render_pass.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
 #include "datoviz/drp2.h"
@@ -803,43 +804,15 @@ static bool _emitter_emit_render_multi(
     ANN(stream);
     ANN(render);
 
-    bool ok = true;
-    bool is_new = false;
-
-    /* Color target. */
     uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
+    if (!_render_pass_resolve_color_target(emitter, stream, cfg, &color_id))
+        return false;
 
     uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
-    if (!ok)
+    if (!_render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id))
         return false;
+
+    bool ok = true;
 
     uint64_t encoder_id = _emitter_next_transient_id(emitter);
     uint64_t render_pass_id = _emitter_next_transient_id(emitter);
@@ -862,16 +835,9 @@ static bool _emitter_emit_render_multi(
          _emitter_emit_render_multi_in_pass(
              emitter, stream, render, render_pass_id, cfg, cache) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    if (ok && readback != NULL)
-        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
-    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
-    if (readback != NULL)
-        ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, rb_id, 0,
-                       readback->u.copy.byte_size);
-    else
-        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    ok = ok && _render_pass_copy_finish_submit(
+                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
+                   readback);
     return ok;
 }
 
@@ -895,42 +861,15 @@ static bool _emitter_emit_scene_figure_renders(
     ANN(stream);
     ANN(plan);
 
-    bool ok = true;
-    bool is_new = false;
-
     uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
+    if (!_render_pass_resolve_color_target(emitter, stream, cfg, &color_id))
+        return false;
 
     uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
-    if (!ok)
+    if (!_render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id))
         return false;
+
+    bool ok = true;
 
     uint64_t encoder_id = _emitter_next_transient_id(emitter);
     uint64_t render_pass_id = _emitter_next_transient_id(emitter);
@@ -958,16 +897,9 @@ static bool _emitter_emit_scene_figure_renders(
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    if (ok && readback != NULL)
-        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
-    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
-    if (readback != NULL)
-        ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, rb_id, 0,
-                       readback->u.copy.byte_size);
-    else
-        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
+    ok = ok && _render_pass_copy_finish_submit(
+                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
+                   readback);
     return ok;
 }
 
@@ -1325,36 +1257,10 @@ static bool _emitter_emit_render(
     }
 
     uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
+    ok = ok && _render_pass_resolve_color_target(emitter, stream, cfg, &color_id);
 
     uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
+    ok = ok && _render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id);
 
     if (!ok)
         return false;
@@ -1382,22 +1288,9 @@ static bool _emitter_emit_render(
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, vertex_count, 1, 0, 0) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    if (ok && readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
-    }
-    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
-    if (readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, rb_id, 0,
-                       readback->u.copy.byte_size);
-    }
-    else
-    {
-        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
-    }
+    ok = ok && _render_pass_copy_finish_submit(
+                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
+                   readback);
     return ok;
 }
 
@@ -1529,42 +1422,15 @@ static bool _emitter_emit_clear_only(
     ANN(stream);
     ANN(clear_node);
 
-    bool ok = true;
-    bool is_new = false;
-
     uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
+    if (!_render_pass_resolve_color_target(emitter, stream, cfg, &color_id))
+        return false;
 
     uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
-    if (!ok)
+    if (!_render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id))
         return false;
+
+    bool ok = true;
 
     uint64_t encoder_id = _emitter_next_transient_id(emitter);
     uint64_t render_pass_id = _emitter_next_transient_id(emitter);
@@ -1581,22 +1447,9 @@ static bool _emitter_emit_clear_only(
              clear_node->u.clear.desc.x, clear_node->u.clear.desc.y, clear_node->u.clear.desc.width,
              clear_node->u.clear.desc.height, clear) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    if (ok && readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
-    }
-    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
-    if (readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, rb_id, 0,
-                       readback->u.copy.byte_size);
-    }
-    else
-    {
-        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
-    }
+    ok = ok && _render_pass_copy_finish_submit(
+                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
+                   readback);
     return ok;
 }
 
@@ -1675,36 +1528,10 @@ static bool _emitter_emit_texture_render(
                        stream, bg_id, bgl_id, texture_id, sampler_id);
 
     uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
+    ok = ok && _render_pass_resolve_color_target(emitter, stream, cfg, &color_id);
 
     uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
+    ok = ok && _render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id);
 
     if (!ok)
         return false;
@@ -1725,22 +1552,9 @@ static bool _emitter_emit_texture_render(
          dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, bg_id) &&
          dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    if (ok && readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
-    }
-    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
-    if (readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, rb_id, 0,
-                       readback->u.copy.byte_size);
-    }
-    else
-    {
-        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
-    }
+    ok = ok && _render_pass_copy_finish_submit(
+                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
+                   readback);
     return ok;
 }
 
@@ -1838,36 +1652,10 @@ static bool _emitter_emit_compute_assisted_render(
         ok = ok && dvz_drp2_stream_create_render_pipeline(stream, pipe_id, vs_id, fs_id, 1);
 
     uint64_t color_id = 0;
-    if (cfg != NULL && cfg->external_color_target)
-    {
-        color_id = _color_target_id(cfg);
-    }
-    else
-    {
-        color_id = _obj_id(emitter, "_ct", &is_new);
-        if (color_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage =
-                DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
-            ok = ok && dvz_drp2_stream_create_texture_2d_usage(stream, color_id, 4, 4, usage);
-        }
-    }
+    ok = ok && _render_pass_resolve_color_target(emitter, stream, cfg, &color_id);
 
     uint64_t rb_id = 0;
-    if (readback != NULL)
-    {
-        rb_id = _obj_buffer_id(emitter, "_rb", readback->u.copy.byte_size, &is_new);
-        if (rb_id == 0)
-            return false;
-        if (ok && is_new)
-        {
-            uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
-            ok = ok &&
-                 dvz_drp2_stream_create_buffer(stream, rb_id, readback->u.copy.byte_size, usage);
-        }
-    }
+    ok = ok && _render_pass_resolve_readback_buffer(emitter, stream, readback, &rb_id);
 
     if (!ok)
         return false;
@@ -1893,24 +1681,11 @@ static bool _emitter_emit_compute_assisted_render(
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id) &&
          dvz_drp2_stream_set_vertex_buffer(
              stream, render_pass_id, 0, emitter->resources.first_compute_output_id, 0) &&
-         dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
-         dvz_drp2_stream_end_render_pass(stream, render_pass_id);
-    if (ok && readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_copy_texture_to_buffer(
-                       stream, encoder_id, color_id, rb_id, 0, 1, 1, 4, 1);
-    }
-    ok = ok && dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id);
-    if (readback != NULL)
-    {
-        ok = ok && dvz_drp2_stream_queue_submit_readback(
-                       stream, command_buffer_id, submission_id, rb_id, 0,
-                       readback->u.copy.byte_size);
-    }
-    else
-    {
-        ok = ok && dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
-    }
+        dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0) &&
+        dvz_drp2_stream_end_render_pass(stream, render_pass_id);
+    ok = ok && _render_pass_copy_finish_submit(
+                   stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
+                   readback);
     return ok;
 }
 
