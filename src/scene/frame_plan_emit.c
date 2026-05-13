@@ -147,46 +147,6 @@ const DvzFramePlanNode* _first_node_of_type(
 
 
 /**
- * Split a visual id with an optional shared index-buffer suffix.
- *
- * @param encoded the encoded visual id
- * @param visual_id output visual id
- * @param visual_id_size output visual id capacity
- * @param index_id output shared index id
- * @param index_id_size output shared index id capacity
- */
-void _parse_visual_id(
-    const char* encoded, char* visual_id, size_t visual_id_size, char* index_id,
-    size_t index_id_size)
-{
-    ANN(visual_id);
-    ANN(index_id);
-    if (visual_id_size == 0 || index_id_size == 0)
-        return;
-    visual_id[0] = '\0';
-    index_id[0] = '\0';
-    if (encoded == NULL)
-        return;
-
-    const char* marker = strstr(encoded, "#index=");
-    if (marker == NULL)
-    {
-        dvz_strlcpy(visual_id, encoded, visual_id_size);
-        return;
-    }
-
-    size_t visual_len = (size_t)(marker - encoded);
-    if (visual_len >= visual_id_size)
-        visual_len = visual_id_size - 1;
-    if (visual_len > 0)
-        dvz_memcpy(visual_id, visual_id_size, encoded, visual_len);
-    visual_id[visual_len] = '\0';
-    dvz_strlcpy(index_id, marker + strlen("#index="), index_id_size);
-}
-
-
-
-/**
  * Return whether a render node targets the fixture texture-sampling path.
  *
  * @param node the render node

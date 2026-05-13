@@ -22,6 +22,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_scene_resource_key.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
 
@@ -131,12 +132,13 @@ bool _emitter_resolve_render_vertex_buffers(
     {
         char visual_id[DVZ_SCENE_LABEL_SIZE];
         char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-        _parse_visual_id(
+        _scene_resource_key_split_visual(
             render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
             sizeof(shared_index_id));
         /* "position" is always required. Other attrs are family-dependent and optional. */
         char pos_id[DVZ_SCENE_LABEL_SIZE];
-        dvz_snprintf(pos_id, sizeof(pos_id), "%s_position", visual_id);
+        if (!_scene_resource_key_visual_data(visual_id, "position", pos_id, sizeof(pos_id)))
+            return false;
         uint64_t pos = _resource_lookup_id(&emitter->resources, pos_id);
         if (pos == 0)
             return false;
@@ -152,7 +154,8 @@ bool _emitter_resolve_render_vertex_buffers(
         for (uint32_t ai = 0; ai < 4; ai++)
         {
             char rid[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optional[ai]);
+            if (!_scene_resource_key_visual_data(visual_id, optional[ai], rid, sizeof(rid)))
+                return false;
             uint64_t id = _resource_lookup_id(&emitter->resources, rid);
             if (id == 0)
                 continue;
@@ -183,12 +186,13 @@ bool _scene_visual_desc_from_render(
 
     char visual_id[DVZ_SCENE_LABEL_SIZE];
     char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-    _parse_visual_id(
+    _scene_resource_key_split_visual(
         encoded_visual_id, visual_id, sizeof(visual_id), shared_index_id,
         sizeof(shared_index_id));
 
     char pos_key[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(pos_key, sizeof(pos_key), "%s_position", visual_id);
+    if (!_scene_resource_key_visual_data(visual_id, "position", pos_key, sizeof(pos_key)))
+        return false;
     uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
     if (pos_buf == 0)
         return false;
@@ -199,7 +203,8 @@ bool _scene_visual_desc_from_render(
     for (uint32_t ai = 0; ai < 7; ai++)
     {
         char rid[DVZ_SCENE_LABEL_SIZE];
-        dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optionals[ai]);
+        if (!_scene_resource_key_visual_data(visual_id, optionals[ai], rid, sizeof(rid)))
+            return false;
         uint64_t rid_id = 0;
         if (strcmp(optionals[ai], "index") == 0 && shared_index_id[0] != '\0')
             rid_id = _resource_lookup_id(&emitter->resources, shared_index_id);
@@ -533,12 +538,13 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
     {
         char visual_id[DVZ_SCENE_LABEL_SIZE];
         char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-        _parse_visual_id(
+        _scene_resource_key_split_visual(
             render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
             sizeof(shared_index_id));
 
         char pos_key[DVZ_SCENE_LABEL_SIZE];
-        dvz_snprintf(pos_key, sizeof(pos_key), "%s_position", visual_id);
+        if (!_scene_resource_key_visual_data(visual_id, "position", pos_key, sizeof(pos_key)))
+            continue;
         uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
         if (pos_buf == 0)
             continue;
@@ -550,7 +556,8 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         {
             const char* tag = ai == 0 ? "color" : "normal";
             char rid[DVZ_SCENE_LABEL_SIZE];
-            dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, tag);
+            if (!_scene_resource_key_visual_data(visual_id, tag, rid, sizeof(rid)))
+                continue;
             uint64_t attr_id = _resource_lookup_id(&emitter->resources, rid);
             if (attr_id == 0)
                 continue;

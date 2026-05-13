@@ -28,6 +28,7 @@
 #include "_frame_plan_runtime_upload.h"
 #include "_mvp_bindings.h"
 #include "_render_pass.h"
+#include "_scene_resource_key.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
 #include "datoviz/drp2.h"
@@ -796,10 +797,11 @@ static bool _emitter_emit_plain_renders(
             char visual_id[DVZ_SCENE_LABEL_SIZE];
             char shared_index_id[DVZ_SCENE_LABEL_SIZE];
             char probe[DVZ_SCENE_LABEL_SIZE];
-            _parse_visual_id(
+            _scene_resource_key_split_visual(
                 render->u.render.visuals[0], visual_id, sizeof(visual_id), shared_index_id,
                 sizeof(shared_index_id));
-            dvz_snprintf(probe, sizeof(probe), "%s_position", visual_id);
+            if (!_scene_resource_key_visual_data(visual_id, "position", probe, sizeof(probe)))
+                continue;
             if (_resource_lookup_id(&emitter->resources, probe) != 0)
             {
                 scene_render_node_count++;
@@ -833,10 +835,11 @@ static bool _emitter_emit_plain_renders(
             char visual_id[DVZ_SCENE_LABEL_SIZE];
             char shared_index_id[DVZ_SCENE_LABEL_SIZE];
             char probe[DVZ_SCENE_LABEL_SIZE];
-            _parse_visual_id(
+            _scene_resource_key_split_visual(
                 render->u.render.visuals[0], visual_id, sizeof(visual_id), shared_index_id,
                 sizeof(shared_index_id));
-            dvz_snprintf(probe, sizeof(probe), "%s_position", visual_id);
+            if (!_scene_resource_key_visual_data(visual_id, "position", probe, sizeof(probe)))
+                continue;
             is_scene_node = _resource_lookup_id(&emitter->resources, probe) != 0;
         }
 

@@ -26,6 +26,7 @@
 #include "_json.h"
 #include "_log.h"
 #include "_overflow.h"
+#include "_scene_resource_key.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"
 #include "../drp2/_stream.h"
@@ -1229,7 +1230,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 if (attr->dirty_item_count == 0 || attr->data == NULL || attr->item_count == 0)
                     continue;
                 char resource_id[128];
-                dvz_snprintf(resource_id, sizeof(resource_id), "v%u_%s", vidx, attr->name);
+                if (!_scene_resource_key_visual_attr(
+                        vidx, attr->name, resource_id, sizeof(resource_id)))
+                    continue;
                 uint64_t byte_offset = (uint64_t)attr->dirty_first_item * attr->item_size;
                 uint64_t byte_size = (uint64_t)attr->dirty_item_count * attr->item_size;
                 const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
@@ -1253,9 +1256,10 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 if (has_normals && visual->primitive_shading_dirty)
                 {
                     char shading_resource_id[128];
-                    dvz_snprintf(
-                        shading_resource_id, sizeof(shading_resource_id),
-                        "v%u_primitive_shading", vidx);
+                    if (!_scene_resource_key_visual_attr(
+                            vidx, "primitive_shading", shading_resource_id,
+                            sizeof(shading_resource_id)))
+                        continue;
                     dvz_frame_plan_upload_bytes(
                         plan, shading_resource_id, 0, sizeof(DvzPrimitiveShadingState),
                         "primitive_shading", &visual->primitive_shading);
@@ -1271,7 +1275,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 if (visual->buffer->dirty && buffer_idx != UINT32_MAX && !emitted_buffers[buffer_idx])
                 {
                     char buffer_resource_id[128];
-                    dvz_snprintf(buffer_resource_id, sizeof(buffer_resource_id), "b%u", buffer_idx);
+                    if (!_scene_resource_key_buffer(
+                            buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
+                        continue;
                     dvz_frame_plan_upload_bytes(
                         plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
                         visual->buffer->data);
@@ -1290,7 +1296,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data))
                     continue;
                 char tex_resource_id[128];
-                dvz_snprintf(tex_resource_id, sizeof(tex_resource_id), "v%u_texture", vidx);
+                if (!_scene_resource_key_visual_texture(
+                        vidx, tex_resource_id, sizeof(tex_resource_id)))
+                    continue;
                 uint64_t bytes = 0;
                 if (_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, &upload_region, &bytes))
                 {
@@ -1391,9 +1399,15 @@ static void _scene_emit_panel_render(
         char visual_id[64];
         uint32_t buffer_idx = _scene_buffer_index(figure->scene, visual->buffer);
         if (buffer_idx != UINT32_MAX)
-            dvz_snprintf(visual_id, sizeof(visual_id), "v%u#index=b%u", vidx, buffer_idx);
+        {
+            if (!_scene_resource_key_visual_indexed(vidx, buffer_idx, visual_id, sizeof(visual_id)))
+                continue;
+        }
         else
-            dvz_snprintf(visual_id, sizeof(visual_id), "v%u", vidx);
+        {
+            if (!_scene_resource_key_visual(vidx, visual_id, sizeof(visual_id)))
+                continue;
+        }
         dvz_frame_plan_render_visual(plan, visual_id);
         if (node != NULL)
             node->u.render.controller_modes[node->u.render.visual_count - 1] =

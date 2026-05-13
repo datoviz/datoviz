@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Scene resource key helpers                                                                   */
+/*************************************************************************************************/
+
+#pragma once
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+bool _scene_resource_key_visual(uint32_t visual_index, char* out, size_t out_size);
+
+bool _scene_resource_key_buffer(uint32_t buffer_index, char* out, size_t out_size);
+
+bool _scene_resource_key_visual_data(
+    const char* visual_id, const char* data_tag, char* out, size_t out_size);
+
+bool _scene_resource_key_visual_attr(
+    uint32_t visual_index, const char* attr_name, char* out, size_t out_size);
+
+bool _scene_resource_key_visual_texture(uint32_t visual_index, char* out, size_t out_size);
+
+bool _scene_resource_key_visual_indexed(
+    uint32_t visual_index, uint32_t buffer_index, char* out, size_t out_size);
+
+void _scene_resource_key_split_visual(
+    const char* encoded, char* visual_id, size_t visual_id_size, char* index_id,
+    size_t index_id_size);

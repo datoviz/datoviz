@@ -24,6 +24,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "../_frame_plan_emit.h"
+#include "../_scene_resource_key.h"
 #include "../_scene.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
@@ -948,6 +949,44 @@ int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item)
 
     dvz_frame_plan_json_destroy(json);
     dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+/**
+ * Ensure scene resource key helpers preserve the current string conventions.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_resource_keys(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    char key[DVZ_SCENE_LABEL_SIZE] = {0};
+    AT(_scene_resource_key_visual(3, key, sizeof(key)));
+    AT(strcmp(key, "v3") == 0);
+    AT(_scene_resource_key_buffer(7, key, sizeof(key)));
+    AT(strcmp(key, "b7") == 0);
+    AT(_scene_resource_key_visual_attr(3, "position", key, sizeof(key)));
+    AT(strcmp(key, "v3_position") == 0);
+    AT(_scene_resource_key_visual_texture(3, key, sizeof(key)));
+    AT(strcmp(key, "v3_texture") == 0);
+    AT(_scene_resource_key_visual_indexed(3, 7, key, sizeof(key)));
+    AT(strcmp(key, "v3#index=b7") == 0);
+
+    char visual_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    char index_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    _scene_resource_key_split_visual(key, visual_id, sizeof(visual_id), index_id, sizeof(index_id));
+    AT(strcmp(visual_id, "v3") == 0);
+    AT(strcmp(index_id, "b7") == 0);
+
+    char tiny[4] = {0};
+    AT(!_scene_resource_key_visual_indexed(123, 456, tiny, sizeof(tiny)));
+    AT(tiny[0] == '\0');
     return 0;
 }
 
@@ -8734,6 +8773,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_clear);
     TEST_SIMPLE(test_frame_plan_growth_json);
     TEST_SIMPLE(test_frame_plan_json_escapes_labels);
+    TEST_SIMPLE(test_scene_resource_keys);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
     TEST_SIMPLE(test_frame_plan_readbacks);
