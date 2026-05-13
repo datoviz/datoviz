@@ -1,7 +1,7 @@
 # Scene / DRP2 Refactor Opportunities
 
 > **Execution Status**
-> - **Status:** `ACTIVE FOLLOW-UP TRACKER`
+> - **Status:** `ACTIVE FOLLOW-UP TRACKER; SCENE.C DOMAIN SPLIT IN PROGRESS`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** identify high-payoff cleanup and architecture work outside the active
 >   scene -> DRP2 emitter split.
@@ -29,9 +29,12 @@ scene/DRP2 splits:
 1. broaden typed FramePlan visual/resource metadata so runtime emission can finish dropping
    semantic inference from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
 2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
-3. then split scene -> FramePlan lowering from retained-object mutation.
+3. done for the first slice: `scene_emit.c` now owns retained scene -> FramePlan lowering.
+4. in progress for the next slice: `field.c` owns sampled fields, scene buffers, field bindings,
+   scalar/image texture staging, and field dirty-state helpers.
 
-The first visual descriptor extraction slice landed in `3d4bd920`: `visual_pipeline.c` now owns
+Historical post-converter slices are now landed. The first visual descriptor extraction slice
+landed in `3d4bd920`: `visual_pipeline.c` now owns
 per-visual resource resolution, family classification, vertex/index counts, and image draw-buffer
 narrowing for the multi-visual scene render path. The shader descriptor slice landed in
 `bc65010f`: visual shader keys, shader source selection, SPIR-V keys, and pipeline cache keys now
@@ -51,13 +54,14 @@ FramePlans still fall back to the old strings, but that parsing is now centraliz
 `_render_visual_resource_id()` in `visual_pipeline.c`. Commit `2c90c912` adds focused diagnostics
 for malformed typed visual metadata, covering the first item in the suggested order.
 
-This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
-DRP2 boundary.
+This lane is now mostly in maintenance mode: add diagnostics/typed metadata only when new
+retained paths expose a concrete gap. The next higher-payoff lane is the `scene.c` domain split.
 
 
 ### 1. Split `src/scene/scene.c`
 
-`scene.c` is now the largest active scene implementation file and owns too many domains:
+`scene.c` remains the largest active scene implementation file and owns too many domains
+(~5k lines after the first `scene_emit.c` extraction):
 
 1. `DvzScene`, `DvzFigure`, and `DvzPanel` lifecycle.
 2. Visual family constructors, visual attributes, bindings, dirty ranges, and background visuals.
@@ -65,7 +69,7 @@ DRP2 boundary.
 4. Scale, colormap, and colorbar bookkeeping.
 5. Interaction policies, selections, link channels, hover state, and pinned readouts.
 6. Text and annotation retained-object bookkeeping.
-7. Scene -> FramePlan construction.
+7. Done for first slice: scene -> FramePlan upload/render lowering now lives in `scene_emit.c`.
 8. Scene JSON serialization.
 
 Recommended split:
@@ -76,11 +80,13 @@ Recommended split:
 4. `scale.c` - scale, colormap, and colorbar retained objects.
 5. `interaction.c` - interaction policy, selection, link channels, hover/readout bookkeeping.
 6. `text_annotation.c` - font, text, annotation, and label retained objects.
-7. `scene_emit.c` - scene -> `DvzFramePlan` lowering only.
+7. Done: `scene_emit.c` - scene -> `DvzFramePlan` lowering only.
 8. `scene_json.c` - `dvz_scene_json()` and scene serialization helpers.
 
-Do this mechanically at first. Keep `_scene.h` as the private shared state header until the split
-settles, then consider smaller private headers by ownership domain.
+Do this mechanically at first. The field slice has started; the next best slice is `visual.c`,
+because visual constructors, attributes, bindings, dirty ranges, and reset helpers are still mixed
+into `scene.c`. Keep `_scene.h` as the private shared state header until the split settles, then
+consider smaller private headers by ownership domain.
 
 
 ### 2. Make Scene Resource Keys Explicit
@@ -102,7 +108,8 @@ Recommended three-step path:
 The helper extraction was behavior-preserving. The first typed metadata slices have landed with
 focused FramePlan/runtime-emitter coverage, malformed typed metadata now has focused diagnostics,
 and `scene_emit.c` now isolates the first scene -> FramePlan lowering slice. Next work should
-continue emitter failure-path hardening or extract the retained visual/field domains.
+extract the retained visual/field domains, with emitter failure-path hardening as a sidecar when
+concrete gaps appear.
 
 
 ### 3. Split `src/scene/pick_probe.c`
@@ -186,13 +193,17 @@ registration helpers.
 
 ## Suggested Order
 
-1. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
-2. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
-3. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
-4. Split `pick_probe.c` once the request path has one more validation pass.
-5. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-6. Move JSON builder support to `src/common` and split serializers.
-7. Split scene tests in parallel with the implementation files they cover.
+1. Done for the current slice: extract `field.c` for sampled fields, retained scene buffers,
+   regions, scalar conversion, image texture staging, and field dirty-state helpers.
+2. Extract `visual.c` from `scene.c` mechanically: visual constructors, attributes, bindings, dirty
+   ranges, background visual helpers, and visual reset/destruction helpers.
+3. Add emitter diagnostics/overflow/downcast guards only where the extraction or tests expose a
+   concrete failure path.
+4. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
+5. Split `pick_probe.c` after one more focused request-path validation pass.
+6. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+7. Move JSON builder support to `src/common` and split serializers.
+8. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance

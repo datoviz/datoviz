@@ -603,13 +603,41 @@ const char* _visual_type_name(DvzVisualType type);
 
 bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint32_t* out_index);
 
+bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
+
+const DvzVisualBinding* _visual_binding_const(
+    const DvzVisual* visual, DvzVisualBindingKind kind);
+
+void _visual_binding_assign(
+    DvzVisual* visual, DvzVisualBindingKind kind, const char* slot_name, void* resource, bool owned);
+
+void _visual_binding_clear(DvzVisual* visual, DvzVisualBindingKind kind);
+
 uint32_t _scene_buffer_index(const DvzScene* scene, const DvzSceneBuffer* buffer);
+
+uint32_t _scene_field_index(const DvzScene* scene, const DvzSampledField* field);
+
+bool _field_format_is_scalar(DvzFieldFormat format);
 
 bool _field_region_byte_size(
     DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
 
 bool _scene_prepare_image_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
+
+bool _scene_color_from_colormap(const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
+
+void _scene_visual_texture_mark_clean(DvzVisual* visual);
+
+void _scene_refresh_field_dirty_state(DvzScene* scene, DvzSampledField* field);
+
+void _scene_release_visual_field(DvzVisual* visual);
+
+void _scene_release_visual_buffer(DvzVisual* visual);
+
+void _scene_field_reset(DvzSampledField* field);
+
+void _scene_buffer_reset(DvzSceneBuffer* buffer);
 
 uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
 

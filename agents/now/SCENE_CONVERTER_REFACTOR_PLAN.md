@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; SCENE EMIT LOWERING EXTRACTED`
+> - **Status:** `POST-SPLIT FOLLOW-UP; SCENE.C DOMAIN SPLIT CONTINUES`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -35,20 +35,17 @@ resource/object tables now grow dynamically, fixture converter state is cleaned 
 the runtime compute-buffer path reacquires resource entries after possible table growth. Follow-up
 commit `cb0576a1` added `scene_resource_key.c` / `_scene_resource_key.h`, moving the current
 `v%u`, `b%u`, `v%u_%s`, `v%u_texture`, and `v%u#index=b%u` conventions plus split parsing behind
-one internal helper API. The current working slice adds `DvzFramePlanVisualMeta` on render nodes,
-populates it from retained scene visuals, and makes the GLSL retained render path prefer those
-typed resource ids over parsing the render visual debug label. The existing strings remain as
-debug/cache labels and as fallback for hand-authored fixture FramePlans. A follow-up slice adds
-`DvzFramePlanUploadMeta`, records typed upload resource kind/role in the persistent emitter
-resource table, and lets visual-family detection prefer those roles over `data_tag` strings.
-Subsequent cleanup commits added `_scene_visual_resource_by_role()` and centralized all remaining
-legacy render-label parsing in `_render_visual_resource_id()`, so string parsing is now isolated as
-manual/fixture fallback instead of being spread through the runtime render path. Follow-up commit
-`2c90c912` adds focused diagnostics for malformed typed visual metadata so retained
-FramePlan failures report the missing typed resource before the generic runtime emission failure.
-Follow-up commit `9da9d0d6` adds `scene_emit.c` / `_scene_emit.h`, moving the retained scene ->
-FramePlan upload/render lowering helpers out of `scene.c` while leaving retained-object mutation and
-post-emit dirty-state commits in `scene.c`.
+one internal helper API. Typed metadata follow-ups added `DvzFramePlanVisualMeta` on render
+nodes and `DvzFramePlanUploadMeta` on uploads. The runtime path now prefers typed visual ids and
+upload roles for resource resolution, descriptor construction, depth decisions, and visual-family
+detection. The old resource-name conventions remain as debug/cache labels and centralized
+fixture/manual fallbacks only. Follow-up commit `2c90c912` adds focused diagnostics for malformed
+typed visual metadata so retained FramePlan failures report the missing typed resource before the
+generic runtime emission failure. Follow-up commit `9da9d0d6` adds `scene_emit.c` /
+`_scene_emit.h`, moving the retained scene -> FramePlan upload/render lowering helpers out of
+`scene.c` while leaving retained-object mutation and post-emit dirty-state commits in `scene.c`.
+The next mechanical split has started with `field.c`, which now owns sampled fields, retained
+scene buffers, image field binding, scalar/image texture staging, and field dirty-state helpers.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -73,8 +70,8 @@ The remaining cleanup is more targeted:
 
 1. broaden typed FramePlan visual/resource metadata until string parsing is fixture/debug fallback only,
 2. continue hardening emitter/resource failure paths and diagnostics as they are exposed,
-3. split scene -> FramePlan lowering out of retained-object mutation now that typed metadata
-   fallbacks and diagnostics are in place.
+3. continue splitting `scene.c` by retained-object domain now that scene -> FramePlan lowering is
+   isolated in `scene_emit.c`.
 
 This is a structural cleanup plan, not an API compatibility constraint. The v0.4 branch can still
 change internal APIs aggressively when that improves correctness and maintainability.
@@ -274,7 +271,8 @@ Validation:
 
 ### Step 6 - Complete Visual Pipeline Lowering
 
-Status: **partially implemented**. `visual_pipeline.c` owns visual-family detection and the first
+Status: **mostly implemented for the active retained runtime path**. `visual_pipeline.c`
+owns visual-family detection and the first
 `DvzSceneVisualDesc` / `DvzSceneVisualShaderDesc` resolvers for the multi-visual scene render path.
 `visual_pipeline.c` also owns first-slice `DvzSceneVisualPipelineDesc` vertex-layout/depth-state
 selection and `DvzSceneVisualBindDesc` bind-role selection. `frame_plan_runtime.c` still creates
@@ -282,7 +280,8 @@ concrete DRP2 bind-group objects.
 
 Continue using `visual_pipeline.c` and `_visual_pipeline.h`.
 
-Move logic that turns frame-plan visual/resource metadata into draw/pipeline descriptors:
+Historical extraction list for logic that turns frame-plan visual/resource metadata into
+draw/pipeline descriptors:
 
 1. `_parse_visual_id`
 2. `_is_point_visual`
@@ -296,18 +295,18 @@ Move logic that turns frame-plan visual/resource metadata into draw/pipeline des
 10. pipeline cache-key construction,
 11. bind-group layout requirements.
 
-The output should be a compact internal descriptor that runtime emission can consume:
+Most of this now lives in `visual_pipeline.c`; keep future descriptor growth there rather than
+adding new visual-family branches to `frame_plan_runtime.c`. The output should remain compact
+internal descriptors that runtime emission can consume:
 
 ```c
 typedef struct DvzSceneDrawDesc DvzSceneDrawDesc;
 typedef struct DvzScenePipelineDesc DvzScenePipelineDesc;
 ```
 
-Do this in two passes:
-
-1. first extract existing code with minimal reshaping,
-2. then replace stringly visual detection with explicit typed frame-plan metadata in a later
-   behavior-changing pass.
+Do future changes in small passes: first preserve behavior, then add focused typed metadata or
+diagnostic improvements when needed. Do not restart the completed mechanical extraction unless a
+regression requires it.
 
 Validation:
 
@@ -385,15 +384,15 @@ with growable state for runtime resources and persistent object ids, added clean
 fixture converter state, guarded texture row-pitch multiplication, and added a regression test that
 exceeds the old `DRP2_MAX_FIXTURE_RESOURCES` object-id ceiling.
 
-Continue this pass by replacing fixture-era assumptions where they still hurt runtime behavior.
+Continue this pass only where fixture-era assumptions still hurt runtime behavior.
 
-Candidate changes:
+Remaining candidate changes:
 
 1. split fixture resource state from persistent runtime resource/object state,
 2. report capacity/growth failures with specific diagnostics,
 3. guard remaining texture byte-size arithmetic,
 4. guard `uint64_t` -> `uint32_t` vertex/index count downcasts,
-5. add explicit resource kind to entries instead of inferring buffer/texture role from tags.
+5. continue replacing any remaining tag-based inference with explicit typed resource metadata.
 
 Validation:
 
@@ -405,7 +404,7 @@ Validation:
 
 ### Step 10 - Replace Stringly Visual Metadata
 
-Status: **typed render/upload metadata landed; legacy fallback centralized**. Commit `cb0576a1`
+Status: **typed render/upload metadata landed; legacy fallback centralized; continue opportunistically**. Commit `cb0576a1`
 centralized the current resource-key strings and parsing in `scene_resource_key.c`. Follow-up
 metadata slices added `DvzFramePlanVisualMeta` and `DvzFramePlanUploadMeta`, fill them during
 retained scene -> FramePlan lowering, store upload kind/role in runtime resources, and make
@@ -420,8 +419,9 @@ Continue moving visual identity out of resource-name conventions and `data_tag` 
 1. done: add typed visual family metadata to FramePlan render nodes,
 2. done: add typed upload/resource roles for position/color/size/normal/texcoords/texture/index/shading,
 3. mostly done: make topology and controller mode explicit per draw,
-4. continue: keep resource names as debug labels and stable DRP2 cache keys, not semantic truth,
-5. continue: preserve string parsing only as centralized fixture/manual fallback.
+4. mostly done: keep resource names as debug labels and stable DRP2 cache keys, not semantic truth,
+5. continue: preserve string parsing only as centralized fixture/manual fallback,
+6. continue: add typed fields only when a new visual/request path would otherwise need new parsing.
 
 Validation:
 
@@ -431,9 +431,9 @@ Validation:
 4. focused runtime scene smoke tests.
 
 
-## Suggested End State
+## Current/Suggested Emission File Shape
 
-The active scene emission files should read approximately like this:
+The active scene emission files now read approximately like this:
 
 ```text
 src/scene/
@@ -444,6 +444,8 @@ src/scene/
   render_pass.c
   shader_registry.c
   visual_pipeline.c
+  scene_emit.c
+  scene_resource_key.c
   glsl/
     common.glsl
     point.vert
@@ -458,7 +460,8 @@ src/scene/
     image.frag
 ```
 
-`frame_plan_emit.c` should be thin. Most detailed decisions should live in the file that owns the
+`frame_plan_emit.c` is expected to stay thin. Most detailed decisions should live in the file
+that owns the
 concept:
 
 1. shader registry owns shader source and SPIR-V keys,
