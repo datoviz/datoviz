@@ -643,6 +643,61 @@ int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item)
 
 
 /*************************************************************************************************/
+/*  Camera tests                                                                                 */
+/*************************************************************************************************/
+
+/**
+ * Ensure panel camera and arcball compose into view/projection and model matrices.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_scene_camera_arcball_mvp_composition(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzCameraDesc desc = dvz_camera_desc();
+    desc.eye[0] = 0.0f;
+    desc.eye[1] = 0.0f;
+    desc.eye[2] = 3.0f;
+    desc.target[0] = 0.0f;
+    desc.target[1] = 0.0f;
+    desc.target[2] = 0.0f;
+    desc.fov_y = GLM_PI_4f;
+    desc.near = 0.1f;
+    desc.far = 100.0f;
+    DvzCamera* camera = dvz_panel_set_camera(panel, &desc);
+    ANN(camera);
+    AT(dvz_panel_camera(panel) == camera);
+
+    dvz_panel_set_arcball(panel, NULL, 0);
+    ANN(panel->arcball);
+    dvz_arcball_initial(panel->arcball, (vec3){0.4f, -0.8f, 1.2f});
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+
+    AT(fabsf(mvp.view[3][2] - (-3.0f)) < 1e-4f);
+    AT(mvp.proj[0][0] > 1.0f);
+    AT(mvp.proj[1][1] > mvp.proj[0][0]);
+    AT(fabsf(mvp.model[0][0] - 1.0f) > 1e-3f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
 /*  Arcball tests                                                                                */
 /*************************************************************************************************/
 
@@ -8479,6 +8534,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emit_drp2_static_render_glsl);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TEST_SIMPLE(test_frame_plan_emit_drp2_rejects_small_caps);
+    TEST_SIMPLE(test_scene_camera_arcball_mvp_composition);
     TEST_SIMPLE(test_scene_json);
     TEST_SIMPLE(test_scene_json_includes_field_dirty_metadata);
     TEST_SIMPLE(test_scene_json_includes_buffer_binding_metadata);

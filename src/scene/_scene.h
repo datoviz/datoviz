@@ -16,6 +16,7 @@
 #include "_frame_plan.h"
 #include "datoviz/drp2/types.h"
 #include "datoviz/scene/arcball.h"
+#include "datoviz/scene/camera.h"
 #include "datoviz/scene/enums.h"
 #include "datoviz/scene/frame_plan.h"
 #include "datoviz/scene/panzoom.h"
@@ -131,6 +132,16 @@ struct DvzSceneFormatState
     char prefix[DVZ_SCENE_LABEL_SIZE];
     char suffix[DVZ_SCENE_LABEL_SIZE];
 };
+
+
+
+/*************************************************************************************************/
+/*  Camera                                                                                       */
+/*************************************************************************************************/
+
+DvzCamera* _dvz_camera(const DvzCameraDesc* desc);
+
+void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 
 
 
@@ -445,6 +456,7 @@ struct DvzPanel
 
     DvzPanzoom* panzoom; /* optional pan/zoom controller (owned) */
     DvzArcball* arcball; /* optional arcball controller (owned) */
+    DvzCamera* camera;   /* optional camera (owned) */
     DvzInteractionPolicy* interaction;
     DvzHoverState hover;
 
@@ -578,7 +590,6 @@ bool _scene_pick_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
 bool _scene_probe_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
-void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out);
 
 
 

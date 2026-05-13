@@ -67,6 +67,8 @@ int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(
 
 int test_frame_plan_emit_drp2_rejects_small_caps(TstSuite* suite, TstItem* item);
 
+int test_scene_camera_arcball_mvp_composition(TstSuite* suite, TstItem* item);
+
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 int test_frame_plan_emit_drp2_static_render_glsl_executes(TstSuite* suite, TstItem* item);
 
