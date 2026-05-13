@@ -26,10 +26,10 @@ behavior or data-model improvements.
 The converter file is gone, but the runtime emitter still has important follow-ups before larger
 scene/DRP2 splits:
 
-1. centralize current resource-key formatting/parsing before replacing stringly metadata,
-2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
-3. then add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
+1. add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
    from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
+2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
+3. then split scene -> FramePlan lowering from retained-object mutation.
 
 The first visual descriptor extraction slice landed in `3d4bd920`: `visual_pipeline.c` now owns
 per-visual resource resolution, family classification, vertex/index counts, and image draw-buffer
@@ -42,7 +42,8 @@ bind descriptor slice landed in `0f29f4f1`: MVP/image/shading bind-role selectio
 objects. The first emitter state hardening slice landed in `586d3fa0`: runtime resource/object
 state now grows dynamically, fixture temporary state is destroyed explicitly, texture row-pitch
 overflow is guarded, and the compute-buffer emitter reacquires entries after possible resource-map
-growth.
+growth. The resource-key helper slice landed in `cb0576a1`: `scene_resource_key.c` now owns the
+current visual, buffer, texture, indexed-visual, and split-visual string conventions.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -85,15 +86,15 @@ constant attributes, and WebGPU replay broaden.
 
 Recommended three-step path:
 
-1. Add a small internal helper such as `scene_resource_key.c` / `_scene_resource_key.h` that owns all
-   key formatting and parsing while preserving the existing strings.
-2. Route both scene -> FramePlan lowering and runtime emission through that helper so every
-   remaining string convention has one owner.
-3. Later replace stringly visual/resource detection with typed `DvzFramePlan` metadata for visual
+1. Done in `cb0576a1`: `scene_resource_key.c` / `_scene_resource_key.h` owns the current key
+   formatting and split parsing while preserving the existing strings.
+2. Continue routing any remaining debug/JSON-only uses through that helper when they become part of
+   the scene -> DRP2 contract.
+3. Replace stringly visual/resource detection with typed `DvzFramePlan` metadata for visual
    type, attribute role, topology, index buffer, texture role, panel attachment, and controller mode.
 
-The first two steps should be behavior-preserving. The third step is a deliberate data-model change
-and should happen after the post-converter emitter cleanup has stabilized.
+The helper extraction was behavior-preserving. The typed metadata step is a deliberate data-model
+change and should happen with focused FramePlan and runtime-emitter coverage.
 
 
 ### 3. Split `src/scene/pick_probe.c`
@@ -177,16 +178,15 @@ registration helpers.
 
 ## Suggested Order
 
-1. Centralize scene resource-key formatting/parsing without changing behavior.
-2. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
-3. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
-4. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
-5. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
-6. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
-7. Split `pick_probe.c` once the request path has one more validation pass.
-8. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-9. Move JSON builder support to `src/common` and split serializers.
-10. Split scene tests in parallel with the implementation files they cover.
+1. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
+2. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
+3. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
+4. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
+5. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
+6. Split `pick_probe.c` once the request path has one more validation pass.
+7. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+8. Move JSON builder support to `src/common` and split serializers.
+9. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance

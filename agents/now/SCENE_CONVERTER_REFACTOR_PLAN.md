@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; EMITTER STATE HARDENING STARTED`
+> - **Status:** `MECHANICAL SPLIT LANDED; RESOURCE KEYS CENTRALIZED`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -32,7 +32,10 @@ selection into `visual_pipeline.c`. Follow-up commit `0f29f4f1` added
 `frame_plan_runtime.c` still owns concrete DRP2 bind-group object creation and draw submission for
 that path. Follow-up commit `586d3fa0` started the emitter state hardening pass: persistent runtime
 resource/object tables now grow dynamically, fixture converter state is cleaned up explicitly, and
-the runtime compute-buffer path reacquires resource entries after possible table growth.
+the runtime compute-buffer path reacquires resource entries after possible table growth. Follow-up
+commit `cb0576a1` added `scene_resource_key.c` / `_scene_resource_key.h`, moving the current
+`v%u`, `b%u`, `v%u_%s`, `v%u_texture`, and `v%u#index=b%u` conventions plus split parsing behind
+one internal helper API.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -55,10 +58,9 @@ FramePlan -> DRP2 -> vklite/canvas behavior.
 
 The remaining cleanup is more targeted:
 
-1. centralize current resource-key formatting/parsing before replacing stringly metadata,
+1. add typed FramePlan visual/resource metadata and stop recovering visual semantics from strings,
 2. continue hardening emitter/resource failure paths and diagnostics as they are exposed,
-3. replace stringly visual/resource metadata with typed FramePlan metadata in a later
-   behavior-changing pass.
+3. split scene -> FramePlan lowering out of retained-object mutation once typed metadata settles.
 
 This is a structural cleanup plan, not an API compatibility constraint. The v0.4 branch can still
 change internal APIs aggressively when that improves correctness and maintainability.
@@ -389,7 +391,10 @@ Validation:
 
 ### Step 10 - Replace Stringly Visual Metadata
 
-Status: **deferred until Step 6 and Step 9 are stable**.
+Status: **ready for design after key-helper extraction**. Commit `cb0576a1` centralized the current
+resource-key strings and parsing in `scene_resource_key.c`, so the next pass can add typed metadata
+without chasing formatting conventions across `scene.c`, `visual_pipeline.c`, and
+`frame_plan_runtime.c`.
 
 This is the first intentionally behavior-shaping cleanup.
 
