@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; TYPED METADATA FALLBACKS CENTRALIZED`
+> - **Status:** `MECHANICAL SPLIT LANDED; TYPED METADATA DIAGNOSTICS ADDED`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -43,7 +43,9 @@ debug/cache labels and as fallback for hand-authored fixture FramePlans. A follo
 resource table, and lets visual-family detection prefer those roles over `data_tag` strings.
 Subsequent cleanup commits added `_scene_visual_resource_by_role()` and centralized all remaining
 legacy render-label parsing in `_render_visual_resource_id()`, so string parsing is now isolated as
-manual/fixture fallback instead of being spread through the runtime render path.
+manual/fixture fallback instead of being spread through the runtime render path. Follow-up commit
+`2c90c912` adds focused diagnostics for malformed typed visual metadata so retained
+FramePlan failures report the missing typed resource before the generic runtime emission failure.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -68,7 +70,8 @@ The remaining cleanup is more targeted:
 
 1. broaden typed FramePlan visual/resource metadata until string parsing is fixture/debug fallback only,
 2. continue hardening emitter/resource failure paths and diagnostics as they are exposed,
-3. split scene -> FramePlan lowering out of retained-object mutation once typed metadata settles.
+3. split scene -> FramePlan lowering out of retained-object mutation now that typed metadata
+   fallbacks and diagnostics are in place.
 
 This is a structural cleanup plan, not an API compatibility constraint. The v0.4 branch can still
 change internal APIs aggressively when that improves correctness and maintainability.

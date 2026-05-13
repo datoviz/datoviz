@@ -48,7 +48,8 @@ metadata slices add `DvzFramePlanVisualMeta` and `DvzFramePlanUploadMeta`, popul
 retained scene visuals/uploads, store resource kind/role on persisted runtime resources, and make
 runtime visual-family/descriptor/depth resolution prefer typed ids and roles. Fixture/manual
 FramePlans still fall back to the old strings, but that parsing is now centralized behind
-`_render_visual_resource_id()` in `visual_pipeline.c`.
+`_render_visual_resource_id()` in `visual_pipeline.c`. Commit `2c90c912` adds focused diagnostics
+for malformed typed visual metadata, covering the first item in the suggested order.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -99,8 +100,8 @@ Recommended three-step path:
    type, attribute role, topology, index buffer, texture role, panel attachment, and controller mode.
 
 The helper extraction was behavior-preserving. The first typed metadata slices have landed with
-focused FramePlan/runtime-emitter coverage. Next work should add diagnostics for malformed typed
-metadata, then start isolating scene -> FramePlan lowering.
+focused FramePlan/runtime-emitter coverage, and malformed typed metadata now has focused
+diagnostics. Next work should start isolating scene -> FramePlan lowering.
 
 
 ### 3. Split `src/scene/pick_probe.c`
@@ -184,15 +185,14 @@ registration helpers.
 
 ## Suggested Order
 
-1. Add diagnostics for typed metadata failure paths and remaining malformed FramePlan cases.
+1. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
 2. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
-3. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
-4. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
-5. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
-6. Split `pick_probe.c` once the request path has one more validation pass.
-7. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-8. Move JSON builder support to `src/common` and split serializers.
-9. Split scene tests in parallel with the implementation files they cover.
+3. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
+4. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
+5. Split `pick_probe.c` once the request path has one more validation pass.
+6. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+7. Move JSON builder support to `src/common` and split serializers.
+8. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance
