@@ -14,6 +14,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/math/_cglm.h"
 #include "../drp2/_stream.h"
@@ -40,9 +45,15 @@ static bool _scene_pick_request_ndc(
 
 static uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel);
 
+static void _scene_pick_trace(const char* format, ...);
+
 static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc);
 
 static void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out);
+
+static bool _scene_point_pick_cpu(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzVisual* visual, double x, double y,
+    uint64_t* out_item_id);
 
 static bool _scene_decode_pick_id(const uint8_t rgba[4], uint64_t* out_id);
 
@@ -67,6 +78,44 @@ static bool _scene_process_image_probe_request(
 static void _scene_remove_pending_pick_at(DvzScene* scene, uint32_t index);
 
 static void _scene_remove_pending_probe_at(DvzScene* scene, uint32_t index);
+
+
+/**
+ * Return the active pick trace path.
+ *
+ * @return trace path, or NULL when tracing is disabled
+ */
+static const char* _scene_pick_trace_path(void)
+{
+    const char* path = getenv("DVZ_PICK_TRACE");
+    if (path == NULL || path[0] == '\0' || strcmp(path, "0") == 0)
+        return NULL;
+    return path;
+}
+
+
+
+/**
+ * Append one formatted line to the pick trace.
+ *
+ * @param format printf-compatible format string
+ */
+static void _scene_pick_trace(const char* format, ...)
+{
+    const char* path = _scene_pick_trace_path();
+    if (path == NULL)
+        return;
+
+    FILE* fp = fopen(path, "a");
+    if (fp == NULL)
+        return;
+
+    va_list args;
+    va_start(args, format);
+    dvz_vfprintf(fp, format, args);
+    va_end(args);
+    fclose(fp);
+}
 
 
 
@@ -175,9 +224,8 @@ static void _scene_center_apply_mvp(DvzMVP* mvp, const vec2 ndc)
 /**
  * Build an apply MVP that recenters one panel-local request onto the readback pixel.
  *
- * Both point picking and image probing currently read back one fixed pixel from a synthetic
- * full-target render. The request coordinate is therefore shifted onto a shared synthetic target
- * NDC so both request paths use the same explicit GPU-space mapping rule.
+ * Image probing currently reads back one fixed pixel from a synthetic full-target render. The
+ * request coordinate is therefore shifted onto the shared synthetic target NDC.
  *
  * @param panel the panel
  * @param request_ndc the requested panel-local NDC coordinate
@@ -192,6 +240,150 @@ static void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_n
     vec2 target_ndc = {-0.75f, -0.75f};
     vec2 delta = {request_ndc[0] - target_ndc[0], request_ndc[1] - target_ndc[1]};
     _scene_center_apply_mvp(out, delta);
+}
+
+
+/**
+ * Resolve one point-visual hit directly in panel pixel space.
+ *
+ * @param figure the figure
+ * @param panel the panel
+ * @param visual the point visual
+ * @param x the panel-local request x coordinate
+ * @param y the panel-local request y coordinate
+ * @param out_item_id the resolved item id
+ * @return true when the request falls inside a point sprite
+ */
+static bool _scene_point_pick_cpu(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzVisual* visual, double x, double y,
+    uint64_t* out_item_id)
+{
+    enum
+    {
+        TRACE_NEAREST_COUNT = 8,
+    };
+
+    ANN(figure);
+    ANN(panel);
+    ANN(visual);
+    ANN(out_item_id);
+
+    double panel_width = panel->desc.width * (double)figure->width;
+    double panel_height = panel->desc.height * (double)figure->height;
+    if (panel_width <= 0.0 || panel_height <= 0.0)
+        return false;
+
+    int pos_idx = _attr_index(visual, "position");
+    int size_idx = _attr_index(visual, "size");
+    if (pos_idx < 0 || size_idx < 0)
+        return false;
+    const DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
+    const DvzVisualAttr* size_attr = &visual->attrs[size_idx];
+    if (pos_attr->data == NULL || size_attr->data == NULL || pos_attr->item_count == 0 ||
+        size_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3) ||
+        size_attr->item_size != sizeof(float))
+    {
+        _scene_pick_trace(
+            "picker_point invalid_attrs visual=%p pos_idx=%d size_idx=%d pos_data=%p "
+            "size_data=%p pos_count=%llu size_count=%llu pos_size=%u size_size=%u\n",
+            (const void*)visual, pos_idx, size_idx, pos_attr->data, size_attr->data,
+            (unsigned long long)pos_attr->item_count,
+            (unsigned long long)size_attr->item_count, pos_attr->item_size, size_attr->item_size);
+        return false;
+    }
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+    const vec3* positions = (const vec3*)pos_attr->data;
+    const float* sizes = (const float*)size_attr->data;
+    double nearest_metric[TRACE_NEAREST_COUNT] = {0};
+    uint64_t nearest_id[TRACE_NEAREST_COUNT] = {0};
+    double nearest_px[TRACE_NEAREST_COUNT] = {0};
+    double nearest_py[TRACE_NEAREST_COUNT] = {0};
+    double nearest_dx[TRACE_NEAREST_COUNT] = {0};
+    double nearest_dy[TRACE_NEAREST_COUNT] = {0};
+    double nearest_half[TRACE_NEAREST_COUNT] = {0};
+    int nearest_hit[TRACE_NEAREST_COUNT] = {0};
+    uint32_t nearest_count = 0;
+    bool found = false;
+    uint64_t selected = 0;
+
+    for (uint64_t k = pos_attr->item_count; k > 0; k--)
+    {
+        uint64_t i = k - 1;
+        vec4 p = {positions[i][0], positions[i][1], positions[i][2], 1.0f};
+        vec4 tmp0 = {0};
+        vec4 tmp1 = {0};
+        vec4 clip = {0};
+        glm_mat4_mulv(mvp.model, p, tmp0);
+        glm_mat4_mulv(mvp.view, tmp0, tmp1);
+        glm_mat4_mulv(mvp.proj, tmp1, clip);
+        if (clip[3] == 0.0f)
+            continue;
+
+        double ndc_x = (double)(clip[0] / clip[3]);
+        double ndc_y = (double)(clip[1] / clip[3]);
+        double px = 0.5 * (ndc_x + 1.0) * panel_width;
+        double py = 0.5 * (1.0 - ndc_y) * panel_height;
+        double half_size = 0.5 * (double)sizes[i];
+        double dx = px - x;
+        double dy = py - y;
+        double metric = fabs(dx) + fabs(dy);
+        bool hit = fabs(dx) <= half_size && fabs(dy) <= half_size;
+
+        uint32_t slot = nearest_count;
+        if (nearest_count < TRACE_NEAREST_COUNT)
+        {
+            nearest_count++;
+        }
+        else
+        {
+            slot = 0;
+            for (uint32_t j = 1; j < TRACE_NEAREST_COUNT; j++)
+            {
+                if (nearest_metric[j] > nearest_metric[slot])
+                    slot = j;
+            }
+            if (metric >= nearest_metric[slot])
+                slot = TRACE_NEAREST_COUNT;
+        }
+        if (slot < TRACE_NEAREST_COUNT)
+        {
+            nearest_metric[slot] = metric;
+            nearest_id[slot] = i;
+            nearest_px[slot] = px;
+            nearest_py[slot] = py;
+            nearest_dx[slot] = dx;
+            nearest_dy[slot] = dy;
+            nearest_half[slot] = half_size;
+            nearest_hit[slot] = hit ? 1 : 0;
+        }
+
+        if (hit && !found)
+        {
+            found = true;
+            selected = i;
+        }
+    }
+
+    _scene_pick_trace(
+        "picker_point request=%.3f,%.3f panel=%.3fx%.3f visual=%p count=%llu "
+        "selected=%s%llu\n",
+        x, y, panel_width, panel_height, (const void*)visual,
+        (unsigned long long)pos_attr->item_count, found ? "" : "none/",
+        (unsigned long long)selected);
+    for (uint32_t j = 0; j < nearest_count; j++)
+    {
+        _scene_pick_trace(
+            "picker_point_nearest rank_slot=%u id=%llu px=%.3f py=%.3f dx=%.3f dy=%.3f "
+            "half=%.3f metric=%.3f hit=%d\n",
+            j, (unsigned long long)nearest_id[j], nearest_px[j], nearest_py[j], nearest_dx[j],
+            nearest_dy[j], nearest_half[j], nearest_metric[j], nearest_hit[j]);
+    }
+
+    if (found)
+        *out_item_id = selected;
+    return found;
 }
 
 
@@ -561,7 +753,20 @@ static bool _scene_process_point_pick_request(
 
     vec2 request_ndc = {0};
     if (!_scene_pick_request_ndc(figure, panel, pending->x, pending->y, request_ndc))
+    {
+        _scene_pick_trace(
+            "picker_request request=%llu x=%.3f y=%.3f panel=%p figure=%ux%u outside_panel=1\n",
+            (unsigned long long)pending->request.request_id, pending->x, pending->y,
+            (void*)panel, figure->width, figure->height);
         return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
+    }
+
+    _scene_pick_trace(
+        "picker_request request=%llu x=%.3f y=%.3f ndc=%.6f,%.6f panel=%p "
+        "figure=%ux%u panel_desc=%.3f,%.3f,%.3f,%.3f visual_count=%u\n",
+        (unsigned long long)pending->request.request_id, pending->x, pending->y, request_ndc[0],
+        request_ndc[1], (void*)panel, figure->width, figure->height, panel->desc.x,
+        panel->desc.y, panel->desc.width, panel->desc.height, panel->visual_count);
 
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(panel, order);
@@ -577,72 +782,32 @@ static bool _scene_process_point_pick_request(
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
 
-        int pos_idx = _attr_index(visual, "position");
-        int color_idx = _attr_index(visual, "color");
-        int size_idx = _attr_index(visual, "size");
-        if (pos_idx < 0 || color_idx < 0 || size_idx < 0)
-            continue;
-        DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
-        DvzVisualAttr* color_attr = &visual->attrs[color_idx];
-        DvzVisualAttr* size_attr = &visual->attrs[size_idx];
-        if (pos_attr->data == NULL || color_attr->data == NULL || size_attr->data == NULL ||
-            pos_attr->item_count == 0 || color_attr->item_count != pos_attr->item_count ||
-            size_attr->item_count != pos_attr->item_count)
-        {
-            continue;
-        }
-
-        DvzFramePlan* plan = dvz_frame_plan("figure.pick", pending->request.request_id);
-        DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
-
-        DvzMVP mvp = {0};
-        _scene_request_apply_mvp(panel, request_ndc, &mvp);
-
-        bool ok = plan != NULL && emitter != NULL &&
-                  dvz_frame_plan_upload_bytes(
-                      plan, "pick0_position", 0, pos_attr->item_count * pos_attr->item_size,
-                      "position", pos_attr->data) &&
-                  dvz_frame_plan_upload_bytes(
-                      plan, "pick0_color", 0, color_attr->item_count * color_attr->item_size,
-                      "color", color_attr->data) &&
-                  dvz_frame_plan_upload_bytes(
-                      plan, "pick0_size", 0, size_attr->item_count * size_attr->item_size, "size",
-                      size_attr->data) &&
-                  dvz_frame_plan_render_panel(
-                      plan, "panel.pick", "target.pick", true,
-                      (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
-                  dvz_frame_plan_render_visual(plan, "pick0") &&
-                  dvz_frame_plan_copy(plan, "target.pick", "buf.pick", 4) &&
-                  dvz_frame_plan_readback(plan, "buf.pick", "request.pick");
-        DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
-        if (render != NULL)
-        {
-            render->u.render.has_mvp = true;
-            render->u.render.apply_mvp = mvp;
-            render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
-        }
-
-        uint8_t rgba[4] = {0};
         uint64_t picked_id = 0;
-        bool hit =
-            ok && _scene_execute_readback_plan(scene, runtime, caps, plan, emitter, rgba) &&
-            _scene_decode_pick_id(rgba, &picked_id);
-        dvz_frame_plan_destroy(plan);
-        dvz_frame_plan_emitter_destroy(emitter);
-
-        if (!hit)
+        if (!_scene_point_pick_cpu(figure, panel, visual, pending->x, pending->y, &picked_id))
+        {
+            _scene_pick_trace(
+                "picker_visual_miss request=%llu visual=%p order_index=%d attach_slot=%u\n",
+                (unsigned long long)pending->request.request_id, (void*)visual, oi, order[oi]);
             continue;
+        }
 
         DvzPickResult resolved = miss;
         resolved.hit = true;
         resolved.visual_id = _scene_visual_public_id(scene, visual);
         resolved.raw_target = DVZ_SCENE_TARGET_ITEM;
         resolved.resolved_target = DVZ_SCENE_TARGET_ITEM;
-        resolved.raw_id = picked_id - 1;
-        resolved.resolved_id = picked_id - 1;
+        resolved.raw_id = picked_id;
+        resolved.resolved_id = picked_id;
+        _scene_pick_trace(
+            "picker_resolved request=%llu visual=%p visual_id=%llu item=%llu\n",
+            (unsigned long long)pending->request.request_id, (void*)visual,
+            (unsigned long long)resolved.visual_id, (unsigned long long)picked_id);
         return _scene_push_pick_result(scene, panel, pending->freshness_serial, &resolved);
     }
 
+    _scene_pick_trace(
+        "picker_request_miss request=%llu x=%.3f y=%.3f\n",
+        (unsigned long long)pending->request.request_id, pending->x, pending->y);
     return _scene_push_pick_result(scene, panel, pending->freshness_serial, &miss);
 }
 
