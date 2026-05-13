@@ -126,6 +126,62 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
 
 
 /**
+ * Resolve the legacy resource key for one encoded render visual and role.
+ *
+ * @param encoded_visual_id the render-node visual debug id
+ * @param role the typed resource role
+ * @param out_key the output resource key
+ * @param out_size the output key buffer size
+ * @return whether the key was resolved
+ */
+static bool _render_visual_resource_key(
+    const char* encoded_visual_id, DvzFramePlanResourceRole role, char* out_key, uint64_t out_size)
+{
+    ANN(encoded_visual_id);
+    ANN(out_key);
+    out_key[0] = '\0';
+
+    char visual_id[DVZ_SCENE_LABEL_SIZE];
+    char shared_index_id[DVZ_SCENE_LABEL_SIZE];
+    _scene_resource_key_split_visual(
+        encoded_visual_id, visual_id, sizeof(visual_id), shared_index_id,
+        sizeof(shared_index_id));
+    if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX && shared_index_id[0] != '\0')
+    {
+        dvz_strlcpy(out_key, shared_index_id, (size_t)out_size);
+        return out_key[0] != '\0';
+    }
+
+    const char* tag = _resource_role_tag(role);
+    if (tag == NULL)
+        return false;
+    return _scene_resource_key_visual_data(visual_id, tag, out_key, out_size);
+}
+
+
+
+/**
+ * Resolve one legacy render-visual resource id by role.
+ *
+ * @param emitter the persistent emitter
+ * @param encoded_visual_id the render-node visual debug id
+ * @param role the typed resource role
+ * @return the resource id, or zero when absent
+ */
+static uint64_t _render_visual_resource_id(
+    const DvzFramePlanEmitter* emitter, const char* encoded_visual_id,
+    DvzFramePlanResourceRole role)
+{
+    ANN(emitter);
+    char key[DVZ_SCENE_LABEL_SIZE];
+    if (!_render_visual_resource_key(encoded_visual_id, role, key, sizeof(key)))
+        return 0;
+    return _resource_lookup_id(&emitter->resources, key);
+}
+
+
+
+/**
  * Resolve draw-relevant state from typed FramePlan visual metadata.
  *
  * @param emitter the persistent emitter
@@ -410,16 +466,9 @@ bool _emitter_resolve_render_vertex_buffers(
             continue;
         }
 
-        char visual_id[DVZ_SCENE_LABEL_SIZE];
-        char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-        _scene_resource_key_split_visual(
-            render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
-            sizeof(shared_index_id));
         /* "position" is always required. Other attrs are family-dependent and optional. */
-        char pos_id[DVZ_SCENE_LABEL_SIZE];
-        if (!_scene_resource_key_visual_data(visual_id, "position", pos_id, sizeof(pos_id)))
-            return false;
-        uint64_t pos = _resource_lookup_id(&emitter->resources, pos_id);
+        uint64_t pos = _render_visual_resource_id(
+            emitter, render->u.render.visuals[i], DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
         if (pos == 0)
             return false;
         if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
@@ -430,13 +479,13 @@ bool _emitter_resolve_render_vertex_buffers(
          * POINT      = position, color, size
          * PRIMITIVE  = position, color
          * IMAGE      = position, texcoords (+ texture, registered alongside). */
-        const char* optional[] = {"color", "size", "texcoords", "texture"};
+        const DvzFramePlanResourceRole optional[] = {
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE};
         for (uint32_t ai = 0; ai < 4; ai++)
         {
-            char rid[DVZ_SCENE_LABEL_SIZE];
-            if (!_scene_resource_key_visual_data(visual_id, optional[ai], rid, sizeof(rid)))
-                return false;
-            uint64_t id = _resource_lookup_id(&emitter->resources, rid);
+            uint64_t id =
+                _render_visual_resource_id(emitter, render->u.render.visuals[i], optional[ai]);
             if (id == 0)
                 continue;
             if (*out_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
@@ -469,15 +518,9 @@ bool _scene_render_visual_has_position_resource(
     if (meta->has_metadata)
         return _resource_lookup_label(&emitter->resources, meta->position_id) != 0;
 
-    char visual_id[DVZ_SCENE_LABEL_SIZE];
-    char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-    char probe[DVZ_SCENE_LABEL_SIZE];
-    _scene_resource_key_split_visual(
-        render->u.render.visuals[visual_index], visual_id, sizeof(visual_id), shared_index_id,
-        sizeof(shared_index_id));
-    if (!_scene_resource_key_visual_data(visual_id, "position", probe, sizeof(probe)))
-        return false;
-    return _resource_lookup_id(&emitter->resources, probe) != 0;
+    return _render_visual_resource_id(
+               emitter, render->u.render.visuals[visual_index],
+               DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION) != 0;
 }
 
 
@@ -506,40 +549,29 @@ bool _scene_visual_desc_from_render(
     if (meta->has_metadata)
         return _scene_visual_desc_from_metadata(emitter, meta, out);
 
-    char visual_id[DVZ_SCENE_LABEL_SIZE];
-    char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-    _scene_resource_key_split_visual(
-        render->u.render.visuals[visual_index], visual_id, sizeof(visual_id), shared_index_id,
-        sizeof(shared_index_id));
-
-    char pos_key[DVZ_SCENE_LABEL_SIZE];
-    if (!_scene_resource_key_visual_data(visual_id, "position", pos_key, sizeof(pos_key)))
-        return false;
-    uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
+    uint64_t pos_buf = _render_visual_resource_id(
+        emitter, render->u.render.visuals[visual_index], DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
     if (pos_buf == 0)
         return false;
     out->vbuf_ids[out->vbuf_count++] = pos_buf;
 
-    const char* optionals[] = {
-        "color", "size", "texcoords", "texture", "normal", "index", "primitive_shading"};
+    const DvzFramePlanResourceRole optionals[] = {
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
+        DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING};
     for (uint32_t ai = 0; ai < 7; ai++)
     {
-        char rid[DVZ_SCENE_LABEL_SIZE];
-        if (!_scene_resource_key_visual_data(visual_id, optionals[ai], rid, sizeof(rid)))
-            return false;
-        uint64_t rid_id = 0;
-        if (strcmp(optionals[ai], "index") == 0 && shared_index_id[0] != '\0')
-            rid_id = _resource_lookup_id(&emitter->resources, shared_index_id);
-        else
-            rid_id = _resource_lookup_id(&emitter->resources, rid);
+        uint64_t rid_id = _render_visual_resource_id(
+            emitter, render->u.render.visuals[visual_index], optionals[ai]);
         if (rid_id == 0)
             continue;
-        if (strcmp(optionals[ai], "index") == 0)
+        if (optionals[ai] == DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX)
         {
             out->index_buffer_id = rid_id;
             continue;
         }
-        if (strcmp(optionals[ai], "primitive_shading") == 0)
+        if (optionals[ai] == DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING)
         {
             out->shading_buffer_id = rid_id;
             continue;
@@ -877,34 +909,18 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
             continue;
         }
 
-        char visual_id[DVZ_SCENE_LABEL_SIZE];
-        char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-        _scene_resource_key_split_visual(
-            render->u.render.visuals[i], visual_id, sizeof(visual_id), shared_index_id,
-            sizeof(shared_index_id));
-
-        char pos_key[DVZ_SCENE_LABEL_SIZE];
-        if (!_scene_resource_key_visual_data(visual_id, "position", pos_key, sizeof(pos_key)))
-            continue;
-        uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
+        uint64_t pos_buf = _render_visual_resource_id(
+            emitter, render->u.render.visuals[i], DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
         if (pos_buf == 0)
             continue;
 
-        bool has_color = false;
         bool has_topology = _resource_topology(&emitter->resources, pos_buf) != UINT32_MAX;
-        bool has_normal = false;
-        for (uint32_t ai = 0; ai < 2; ai++)
-        {
-            const char* tag = ai == 0 ? "color" : "normal";
-            char rid[DVZ_SCENE_LABEL_SIZE];
-            if (!_scene_resource_key_visual_data(visual_id, tag, rid, sizeof(rid)))
-                continue;
-            uint64_t attr_id = _resource_lookup_id(&emitter->resources, rid);
-            if (attr_id == 0)
-                continue;
-            has_color = has_color || strcmp(tag, "color") == 0;
-            has_normal = has_normal || strcmp(tag, "normal") == 0;
-        }
+        bool has_color =
+            _render_visual_resource_id(
+                emitter, render->u.render.visuals[i], DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR) != 0;
+        bool has_normal =
+            _render_visual_resource_id(
+                emitter, render->u.render.visuals[i], DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL) != 0;
         if (has_color && has_topology && has_normal)
             return true;
     }
