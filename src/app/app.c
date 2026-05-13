@@ -25,6 +25,7 @@
 #include "_trace.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
+#include "../drp2/_stream.h"
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "datoviz/canvas.h"
@@ -69,7 +70,8 @@ struct DvzAppWindow
     uint64_t frame_index;
     DvzAppFrameCallback frame_callback;
     void* frame_user_data;
-    char* last_trace_json;
+    uint64_t last_trace_fingerprint;
+    bool has_last_trace_fingerprint;
     bool trace_status_line_open;
 };
 
@@ -232,6 +234,96 @@ static char _trace_command_prefix(DvzDrp2CommandType type)
 
 
 /**
+ * Print one detailed command line when the command carries useful trace payload.
+ *
+ * @param command command to print
+ * @param index command index
+ * @return true if a line was printed
+ */
+static bool _app_trace_print_command_detail(const DvzDrp2Command* command, uint32_t index)
+{
+    ANN(command);
+    DvzDrp2CommandType type = command->type;
+    switch (type)
+    {
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+        dvz_fprintf(
+            stderr, "  %03u ~ WriteBuffer buffer=%" PRIu64 " offset=%" PRIu64
+                    " size=%" PRIu64 "\n",
+            index, command->u.write_buffer.buffer_id, command->u.write_buffer.offset,
+            command->u.write_buffer.size);
+        return true;
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        dvz_fprintf(
+            stderr, "  %03u ~ WriteTexture texture=%" PRIu64 " origin=(%" PRIu32
+                    ",%" PRIu32 ",%" PRIu32 ") size=(%" PRIu32 ",%" PRIu32 ",%" PRIu32
+                    ") bytes_per_row=%" PRIu32 "\n",
+            index, command->u.write_texture.texture_id, command->u.write_texture.origin_x,
+            command->u.write_texture.origin_y, command->u.write_texture.origin_z,
+            command->u.write_texture.width, command->u.write_texture.height,
+            command->u.write_texture.depth, command->u.write_texture.bytes_per_row);
+        return true;
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+        dvz_fprintf(
+            stderr, "  %03u ~ CopyBufferToBuffer src=%" PRIu64 ":%" PRIu64
+                    " dst=%" PRIu64 ":%" PRIu64 " size=%" PRIu64 "\n",
+            index, command->u.copy_buffer_to_buffer.src_buffer_id,
+            command->u.copy_buffer_to_buffer.src_offset,
+            command->u.copy_buffer_to_buffer.dst_buffer_id,
+            command->u.copy_buffer_to_buffer.dst_offset,
+            command->u.copy_buffer_to_buffer.size);
+        return true;
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+        dvz_fprintf(
+            stderr, "  %03u ~ CopyTextureToBuffer texture=%" PRIu64 " buffer=%" PRIu64
+                    " size=(%" PRIu32 ",%" PRIu32 ") bytes_per_row=%" PRIu32 "\n",
+            index, command->u.copy_texture_to_buffer.src_texture_id,
+            command->u.copy_texture_to_buffer.dst_buffer_id,
+            command->u.copy_texture_to_buffer.width, command->u.copy_texture_to_buffer.height,
+            command->u.copy_texture_to_buffer.bytes_per_row);
+        return true;
+    case DVZ_DRP2_COMMAND_SET_PIPELINE:
+        dvz_fprintf(
+            stderr, "  %03u = SetPipeline pass=%" PRIu64 " pipeline=%" PRIu64 "\n",
+            index, command->u.set_pipeline.pass_id, command->u.set_pipeline.pipeline_id);
+        return true;
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+        dvz_fprintf(
+            stderr, "  %03u = SetVertexBuffer pass=%" PRIu64 " slot=%" PRIu32
+                    " buffer=%" PRIu64 " offset=%" PRIu64 "\n",
+            index, command->u.set_vertex_buffer.pass_id, command->u.set_vertex_buffer.slot,
+            command->u.set_vertex_buffer.buffer_id, command->u.set_vertex_buffer.offset);
+        return true;
+    case DVZ_DRP2_COMMAND_DRAW:
+        dvz_fprintf(
+            stderr, "  %03u = Draw pass=%" PRIu64 " vertices=%" PRIu32
+                    " first=%" PRIu32 " instances=%" PRIu32 "\n",
+            index, command->u.draw.pass_id, command->u.draw.vertex_count,
+            command->u.draw.first_vertex, command->u.draw.instance_count);
+        return true;
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        dvz_fprintf(
+            stderr, "  %03u = DrawIndexed pass=%" PRIu64 " indices=%" PRIu32
+                    " first=%" PRIu32 " base=%" PRId32 "\n",
+            index, command->u.draw_indexed.pass_id, command->u.draw_indexed.index_count,
+            command->u.draw_indexed.first_index, command->u.draw_indexed.base_vertex);
+        return true;
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
+        dvz_fprintf(
+            stderr, "  %03u = QueueSubmit readback=%s buffer=%" PRIu64
+                    " offset=%" PRIu64 " size=%" PRIu64 "\n",
+            index, command->u.queue_submit.has_readback ? "yes" : "no",
+            command->u.queue_submit.buffer_id, command->u.queue_submit.offset,
+            command->u.queue_submit.size);
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
+
+/**
  * Print a concise human-readable summary for one changed DRP2 stream.
  *
  * @param stream emitted command stream
@@ -258,9 +350,24 @@ static void _app_trace_stream_normal(
     {
         if (counts[type] == 0)
             continue;
+        if (type == DVZ_DRP2_COMMAND_WRITE_BUFFER || type == DVZ_DRP2_COMMAND_WRITE_TEXTURE ||
+            type == DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER ||
+            type == DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER ||
+            type == DVZ_DRP2_COMMAND_SET_PIPELINE ||
+            type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER || type == DVZ_DRP2_COMMAND_DRAW ||
+            type == DVZ_DRP2_COMMAND_DRAW_INDEXED || type == DVZ_DRP2_COMMAND_QUEUE_SUBMIT)
+        {
+            continue;
+        }
         dvz_fprintf(
             stderr, "  %c %s x%u\n", _trace_command_prefix((DvzDrp2CommandType)type),
             _trace_command_name((DvzDrp2CommandType)type), counts[type]);
+    }
+    for (uint32_t i = 0; i < command_count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command != NULL)
+            (void)_app_trace_print_command_detail(command, i);
     }
 }
 
@@ -283,8 +390,12 @@ static void _app_trace_stream_full(
         if (command == NULL)
             continue;
         DvzDrp2CommandType type = dvz_drp2_command_type(command);
-        dvz_fprintf(
-            stderr, "  %03u %c %s\n", i, _trace_command_prefix(type), _trace_command_name(type));
+        if (!_app_trace_print_command_detail(command, i))
+        {
+            dvz_fprintf(
+                stderr, "  %03u %c %s\n", i, _trace_command_prefix(type),
+                _trace_command_name(type));
+        }
     }
 }
 
@@ -308,19 +419,15 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
     if (mode == DVZ_APP_TRACE_NONE)
         return;
 
-    char trace_name[64] = {0};
-    bool name_ok = _dvz_app_trace_fingerprint_name(trace_name, sizeof(trace_name));
-    ASSERT(name_ok);
-    char* json = dvz_drp2_stream_json(stream, trace_name);
-    if (json == NULL)
+    uint64_t fingerprint = 0;
+    if (!_dvz_app_trace_fingerprint(stream, &fingerprint))
     {
-        log_error("failed to serialize emitted DRP2 stream for tracing");
+        log_error("failed to fingerprint emitted DRP2 stream for tracing");
         return;
     }
 
-    bool changed = true;
-    if (win->last_trace_json != NULL && strcmp(win->last_trace_json, json) == 0)
-        changed = false;
+    bool changed = !win->has_last_trace_fingerprint ||
+                   win->last_trace_fingerprint != fingerprint;
     DvzAppTracePlan plan =
         _dvz_app_trace_plan(mode, win->trace_status_line_open, changed);
 
@@ -351,10 +458,8 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
         }
     }
     win->trace_status_line_open = plan.status_line_open_after;
-
-    if (win->last_trace_json != NULL)
-        dvz_drp2_stream_json_destroy(win->last_trace_json);
-    win->last_trace_json = json;
+    win->last_trace_fingerprint = fingerprint;
+    win->has_last_trace_fingerprint = true;
 }
 
 #endif
@@ -533,11 +638,8 @@ void dvz_app_destroy(DvzApp* app)
             dvz_fprintf(stderr, "\n");
             win->trace_status_line_open = false;
         }
-        if (win->last_trace_json != NULL)
-        {
-            dvz_drp2_stream_json_destroy(win->last_trace_json);
-            win->last_trace_json = NULL;
-        }
+        win->has_last_trace_fingerprint = false;
+        win->last_trace_fingerprint = 0;
     }
     if (app->window_host != NULL)
     {

@@ -18,8 +18,120 @@
 
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../drp2/_stream.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_APP_TRACE_FNV_OFFSET 1469598103934665603ULL
+#define DVZ_APP_TRACE_FNV_PRIME  1099511628211ULL
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Extend one FNV-1a hash with a byte span.
+ *
+ * @param hash current hash
+ * @param data byte span pointer
+ * @param size byte span size
+ * @return updated hash
+ */
+static uint64_t _trace_hash_bytes(uint64_t hash, const void* data, uint64_t size)
+{
+    ANN(data);
+    const uint8_t* bytes = (const uint8_t*)data;
+    for (uint64_t i = 0; i < size; i++)
+    {
+        hash ^= (uint64_t)bytes[i];
+        hash *= DVZ_APP_TRACE_FNV_PRIME;
+    }
+    return hash;
+}
+
+
+/**
+ * Extend one FNV-1a hash with an unsigned 64-bit value.
+ *
+ * @param hash current hash
+ * @param value value to hash
+ * @return updated hash
+ */
+static uint64_t _trace_hash_u64(uint64_t hash, uint64_t value)
+{
+    return _trace_hash_bytes(hash, &value, sizeof(value));
+}
+
+
+/**
+ * Extend one FNV-1a hash with an unsigned 32-bit value.
+ *
+ * @param hash current hash
+ * @param value value to hash
+ * @return updated hash
+ */
+static uint64_t _trace_hash_u32(uint64_t hash, uint32_t value)
+{
+    return _trace_hash_bytes(hash, &value, sizeof(value));
+}
+
+
+/**
+ * Return a sanitized command copy suitable for stable trace fingerprinting.
+ *
+ * @param command source command
+ * @return sanitized command value
+ */
+static DvzDrp2Command _trace_stable_command(const DvzDrp2Command* command)
+{
+    ANN(command);
+    DvzDrp2Command stable = *command;
+
+    switch (stable.type)
+    {
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        stable.u.create_shader_module.code = NULL;
+        stable.u.create_shader_module.spirv = NULL;
+        stable.u.create_shader_module.spirv_size = 0;
+        break;
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+        stable.u.write_buffer.data_raw = NULL;
+        stable.u.write_buffer.data_base64 = NULL;
+        break;
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+        stable.u.write_texture.data_raw = NULL;
+        stable.u.write_texture.data_base64 = NULL;
+        break;
+    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
+        stable.u.finish_command_encoder.command_buffer_id = 0;
+        break;
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
+        stable.u.queue_submit.command_buffer_id = 0;
+        stable.u.queue_submit.submission_id = 0;
+        dvz_memset(
+            stable.u.queue_submit.data_base64, sizeof(stable.u.queue_submit.data_base64), 0,
+            sizeof(stable.u.queue_submit.data_base64));
+        break;
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
+        stable.u.queue_submit.submission_id = 0;
+        dvz_memset(
+            stable.u.queue_submit.data_base64, sizeof(stable.u.queue_submit.data_base64), 0,
+            sizeof(stable.u.queue_submit.data_base64));
+        break;
+    default:
+        break;
+    }
+    return stable;
+}
 
 
 
@@ -121,4 +233,35 @@ bool _dvz_app_trace_fingerprint_name(char* out, uint32_t size)
     ASSERT(size > 0);
     int written = dvz_snprintf(out, size, "live_frame");
     return written >= 0 && (uint32_t)written < size;
+}
+
+
+
+/**
+ * Compute a stable semantic fingerprint for one emitted DRP2 stream.
+ *
+ * @param stream the emitted command stream
+ * @param out destination fingerprint
+ * @return true on success, false on error
+ */
+bool _dvz_app_trace_fingerprint(const DvzDrp2CommandStream* stream, uint64_t* out)
+{
+    ANN(stream);
+    ANN(out);
+
+    uint64_t hash = DVZ_APP_TRACE_FNV_OFFSET;
+    hash = _trace_hash_u32(hash, dvz_drp2_stream_count(stream));
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command == NULL)
+            return false;
+
+        DvzDrp2Command stable = _trace_stable_command(command);
+        hash = _trace_hash_u64(hash, (uint64_t)i);
+        hash = _trace_hash_bytes(hash, &stable, sizeof(stable));
+    }
+
+    *out = hash;
+    return true;
 }

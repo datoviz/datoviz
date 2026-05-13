@@ -18,6 +18,7 @@
 
 #include "_assertions.h"
 #include "../_trace.h"
+#include "datoviz/drp2/stream.h"
 #include "test_app.h"
 
 
@@ -100,6 +101,62 @@ static int test_app_trace_fingerprint_name_is_frame_stable(TstSuite* suite, TstI
 }
 
 
+static int test_app_trace_fingerprint_ignores_frame_handles_and_payloads(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_write_buffer(a, 42, 8, 4, "AAAA"));
+    AT(dvz_drp2_stream_finish_command_encoder(a, 7, 100));
+    AT(dvz_drp2_stream_queue_submit(a, 100, 200));
+
+    AT(dvz_drp2_stream_write_buffer(b, 42, 8, 4, "BBBB"));
+    AT(dvz_drp2_stream_finish_command_encoder(b, 7, 101));
+    AT(dvz_drp2_stream_queue_submit(b, 101, 201));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa == fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+static int test_app_trace_fingerprint_keeps_write_ranges(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_write_buffer(a, 42, 8, 4, "AAAA"));
+    AT(dvz_drp2_stream_write_buffer(b, 42, 12, 4, "AAAA"));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa != fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
 
 int test_app(TstSuite* suite)
 {
@@ -110,5 +167,7 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
     TEST_SIMPLE(test_app_trace_status_line_uses_carriage_return_and_clear);
     TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
+    TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
+    TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);
     return 0;
 }

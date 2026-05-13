@@ -19,6 +19,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/drp2/types.h"
+
 
 
 /*************************************************************************************************/
@@ -107,3 +109,17 @@ bool _dvz_app_trace_status_line(
  * @return true on success, false on error or truncation
  */
 bool _dvz_app_trace_fingerprint_name(char* out, uint32_t size);
+
+
+/**
+ * Compute a stable semantic fingerprint for one emitted DRP2 stream.
+ *
+ * The fingerprint ignores volatile per-frame mechanics such as borrowed command-buffer handles,
+ * submission ids, payload bytes, and borrowed data pointers. It keeps command order and stable
+ * routing fields such as resource ids, offsets, sizes, pass ids, draw counts, and pipeline ids.
+ *
+ * @param stream the emitted command stream
+ * @param out destination fingerprint
+ * @return true on success, false on error
+ */
+bool _dvz_app_trace_fingerprint(const DvzDrp2CommandStream* stream, uint64_t* out);
