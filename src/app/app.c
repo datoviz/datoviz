@@ -637,17 +637,14 @@ static bool _app_trace_print_command_detail(
 
 
 /**
- * Print the semantic diff for one changed DRP2 stream.
+ * Print the full normalized snapshot for one changed DRP2 stream.
  *
  * @param snapshot current normalized snapshot
- * @param previous previous normalized snapshot
- * @param has_previous whether a previous snapshot is available
  * @param command_count emitted command count
  * @param frame_index 0-based frame index for the owning window
  */
 static void _app_trace_stream_normal(
-    const DvzAppTraceSnapshot* snapshot, const DvzAppTraceSnapshot* previous,
-    bool has_previous, uint32_t command_count, uint64_t frame_index)
+    const DvzAppTraceSnapshot* snapshot, uint32_t command_count, uint64_t frame_index)
 {
     ANN(snapshot);
     dvz_fprintf(
@@ -655,39 +652,7 @@ static void _app_trace_stream_normal(
         frame_index, command_count, snapshot->count);
 
     for (uint32_t i = 0; i < snapshot->count; i++)
-    {
-        uint32_t seen = 0;
-        for (uint32_t j = 0; j <= i; j++)
-        {
-            if (strcmp(snapshot->lines[j].text, snapshot->lines[i].text) == 0)
-                seen++;
-        }
-        uint32_t previous_count = has_previous
-                                      ? _dvz_app_trace_snapshot_line_count(
-                                            previous, snapshot->lines[i].text)
-                                      : 0;
-        if (seen <= previous_count)
-            continue;
         dvz_fprintf(stderr, "  + %s\n", snapshot->lines[i].text);
-    }
-
-    if (!has_previous)
-        return;
-
-    for (uint32_t i = 0; i < previous->count; i++)
-    {
-        uint32_t seen = 0;
-        for (uint32_t j = 0; j <= i; j++)
-        {
-            if (strcmp(previous->lines[j].text, previous->lines[i].text) == 0)
-                seen++;
-        }
-        uint32_t current_count =
-            _dvz_app_trace_snapshot_line_count(snapshot, previous->lines[i].text);
-        if (seen <= current_count)
-            continue;
-        dvz_fprintf(stderr, "  - %s\n", previous->lines[i].text);
-    }
 }
 
 
@@ -767,9 +732,7 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
     {
         if (plan.event_kind == DVZ_APP_TRACE_EVENT_CHANGED)
         {
-            _app_trace_stream_normal(
-                &snapshot, &win->last_trace_snapshot, win->has_last_trace_snapshot,
-                command_count, win->frame_index);
+            _app_trace_stream_normal(&snapshot, command_count, win->frame_index);
         }
         _dvz_app_status_trace(
             &win->app->status, win->frame_index, command_count, snapshot.count, changed);
