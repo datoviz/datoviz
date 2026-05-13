@@ -100,8 +100,9 @@ Recommended three-step path:
    type, attribute role, topology, index buffer, texture role, panel attachment, and controller mode.
 
 The helper extraction was behavior-preserving. The first typed metadata slices have landed with
-focused FramePlan/runtime-emitter coverage, and malformed typed metadata now has focused
-diagnostics. Next work should start isolating scene -> FramePlan lowering.
+focused FramePlan/runtime-emitter coverage, malformed typed metadata now has focused diagnostics,
+and `scene_emit.c` now isolates the first scene -> FramePlan lowering slice. Next work should
+continue emitter failure-path hardening or extract the retained visual/field domains.
 
 
 ### 3. Split `src/scene/pick_probe.c`
@@ -185,14 +186,13 @@ registration helpers.
 
 ## Suggested Order
 
-1. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
-2. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
-3. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
-4. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
-5. Split `pick_probe.c` once the request path has one more validation pass.
-6. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-7. Move JSON builder support to `src/common` and split serializers.
-8. Split scene tests in parallel with the implementation files they cover.
+1. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
+2. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
+3. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
+4. Split `pick_probe.c` once the request path has one more validation pass.
+5. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+6. Move JSON builder support to `src/common` and split serializers.
+7. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance

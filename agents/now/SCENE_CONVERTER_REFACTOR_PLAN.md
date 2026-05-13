@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; TYPED METADATA DIAGNOSTICS ADDED`
+> - **Status:** `MECHANICAL SPLIT LANDED; SCENE EMIT LOWERING EXTRACTED`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -46,6 +46,9 @@ legacy render-label parsing in `_render_visual_resource_id()`, so string parsing
 manual/fixture fallback instead of being spread through the runtime render path. Follow-up commit
 `2c90c912` adds focused diagnostics for malformed typed visual metadata so retained
 FramePlan failures report the missing typed resource before the generic runtime emission failure.
+Follow-up commit `9da9d0d6` adds `scene_emit.c` / `_scene_emit.h`, moving the retained scene ->
+FramePlan upload/render lowering helpers out of `scene.c` while leaving retained-object mutation and
+post-emit dirty-state commits in `scene.c`.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
