@@ -26,8 +26,9 @@ Follow-up commit `3d4bd920` added the first `DvzSceneVisualDesc` extraction so
 counts, image draw-buffer narrowing, and index-format selection for the multi-visual scene render
 path. Follow-up commit `bc65010f` added `DvzSceneVisualShaderDesc`, moving visual shader keys,
 shader source selection, SPIR-V keys, and pipeline cache-key selection into `visual_pipeline.c`.
-`frame_plan_runtime.c` still owns pipeline creation, bind-group creation, and draw submission for
-that path.
+Follow-up commit `45ae792a` added `DvzSceneVisualPipelineDesc`, moving vertex layout and depth-state
+selection into `visual_pipeline.c`. `frame_plan_runtime.c` still owns bind-group creation and draw
+submission for that path.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -50,8 +51,8 @@ FramePlan -> DRP2 -> vklite/canvas behavior.
 
 The remaining cleanup is more targeted:
 
-1. finish extracting pipeline layout and bind-group descriptor construction from
-   `frame_plan_runtime.c` into `visual_pipeline.c`,
+1. finish extracting bind-group descriptor construction from `frame_plan_runtime.c` into
+   `visual_pipeline.c`,
 2. harden the persistent emitter resource/object state before broadening runtime behavior,
 3. replace stringly visual/resource metadata with typed FramePlan metadata in a later
    behavior-changing pass.
@@ -256,7 +257,8 @@ Validation:
 
 Status: **partially implemented**. `visual_pipeline.c` owns visual-family detection and the first
 `DvzSceneVisualDesc` / `DvzSceneVisualShaderDesc` resolvers for the multi-visual scene render path.
-`frame_plan_runtime.c` still builds bind-group state and pipeline layouts inline.
+`visual_pipeline.c` also owns first-slice `DvzSceneVisualPipelineDesc` vertex-layout/depth-state
+selection. `frame_plan_runtime.c` still builds bind-group state inline.
 
 Continue using `visual_pipeline.c` and `_visual_pipeline.h`.
 
