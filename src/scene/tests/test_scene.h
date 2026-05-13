@@ -129,6 +129,8 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstSuite* suite, TstIt
 int test_app_offscreen_mesh_renders_nonblank(TstSuite* suite, TstItem* item);
 
 int test_app_offscreen_rotated_mesh_depth_orders_faces(TstSuite* suite, TstItem* item);
+
+int test_app_offscreen_camera_arcball_mesh_renders_cube(TstSuite* suite, TstItem* item);
 #endif
 #endif
 
