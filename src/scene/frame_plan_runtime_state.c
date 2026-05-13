@@ -21,6 +21,54 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_frame_plan_emit.h"
+#include "_overflow.h"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Ensure the converter resource map can store at least the requested number of entries.
+ *
+ * @param state the converter state
+ * @param min_capacity the minimum required capacity
+ * @return whether the resource map has enough capacity
+ */
+static bool _state_ensure_capacity(ConverterState* state, uint32_t min_capacity)
+{
+    ANN(state);
+    if (state->capacity >= min_capacity)
+        return true;
+
+    uint32_t capacity = state->capacity != 0 ? state->capacity : DRP2_MAX_FIXTURE_RESOURCES;
+    while (capacity < min_capacity)
+    {
+        if (capacity > UINT32_MAX / 2)
+            return false;
+        capacity *= 2;
+    }
+
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(ResourceId), &bytes))
+        return false;
+
+    uint64_t old_bytes = 0;
+    if (_dvz_mul_u64_overflows(state->capacity, sizeof(ResourceId), &old_bytes))
+        return false;
+
+    ResourceId* resources = (ResourceId*)dvz_realloc(state->resources, bytes);
+    if (resources == NULL)
+        return false;
+
+    uint64_t added_bytes = bytes - old_bytes;
+    dvz_memset(
+        (uint8_t*)resources + old_bytes, (size_t)added_bytes, 0, (size_t)added_bytes);
+    state->resources = resources;
+    state->capacity = capacity;
+    return true;
+}
 
 
 
@@ -38,6 +86,21 @@ void _state_init(ConverterState* state)
     ANN(state);
     dvz_memset(state, sizeof(ConverterState), 0, sizeof(ConverterState));
     state->next_id = DRP2_ID_RESOURCE_BASE;
+}
+
+
+
+/**
+ * Destroy converter state.
+ *
+ * @param state the converter state
+ */
+void _state_destroy(ConverterState* state)
+{
+    if (state == NULL)
+        return;
+    dvz_free(state->resources);
+    dvz_memset(state, sizeof(ConverterState), 0, sizeof(ConverterState));
 }
 
 
@@ -86,7 +149,7 @@ DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key)
  *
  * @param state the converter state
  * @param key the scene resource key
- * @return the DRP2 id, or 0 when the map is full
+ * @return the DRP2 id, or 0 when the map cannot grow
  */
 uint64_t _resource_id(ConverterState* state, const char* key)
 {
@@ -97,12 +160,18 @@ uint64_t _resource_id(ConverterState* state, const char* key)
         if (strcmp(state->resources[i].key, key) == 0)
             return state->resources[i].id;
     }
-    if (state->count >= DRP2_MAX_FIXTURE_RESOURCES)
+    if (state->next_id == UINT64_MAX)
+        return 0;
+    if (state->count == UINT32_MAX)
+        return 0;
+    if (!_state_ensure_capacity(state, state->count + 1))
         return 0;
 
     ResourceId* resource = &state->resources[state->count++];
+    dvz_memset(resource, sizeof(ResourceId), 0, sizeof(ResourceId));
     dvz_strlcpy(resource->key, key, sizeof(resource->key));
     resource->id = state->next_id++;
+    resource->topology = UINT32_MAX;
     return resource->id;
 }
 
@@ -156,21 +225,25 @@ ResourceId* _resource_find(ConverterState* state, const char* key)
  * @param state the converter state
  * @param key the scene resource key
  * @param is_new whether a new entry was created
- * @return the resource entry, or NULL when the map is full
+ * @return the resource entry, or NULL when the map cannot grow
  */
 ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new)
 {
     ANN(state);
     ANN(key);
     ANN(is_new);
+    *is_new = false;
 
     ResourceId* resource = _resource_find(state, key);
     if (resource != NULL)
     {
-        *is_new = false;
         return resource;
     }
-    if (state->count >= DRP2_MAX_FIXTURE_RESOURCES)
+    if (state->next_id == UINT64_MAX)
+        return NULL;
+    if (state->count == UINT32_MAX)
+        return NULL;
+    if (!_state_ensure_capacity(state, state->count + 1))
         return NULL;
 
     resource = &state->resources[state->count++];
@@ -380,6 +453,8 @@ void dvz_frame_plan_emitter_destroy(DvzFramePlanEmitter* emitter)
 {
     if (emitter == NULL)
         return;
+    _state_destroy(&emitter->resources);
+    _state_destroy(&emitter->objects);
     dvz_free(emitter);
 }
 

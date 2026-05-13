@@ -64,6 +64,8 @@ bool _emitter_emit_upload(
         uint64_t id = resource->id;
         uint32_t w  = node->u.upload.texture_width;
         uint32_t h  = node->u.upload.texture_height;
+        if (w > UINT32_MAX / 4)
+            return false;
         uint32_t bpr = w * 4;
         if (is_new)
         {
@@ -217,6 +219,10 @@ bool _emitter_emit_compute_buffers(
         _resource_entry(&emitter->resources, upload->u.upload.resource_id, &input_create);
     ResourceId* output =
         _resource_entry(&emitter->resources, compute->u.compute.writes[0], &output_create);
+    if (input == NULL || output == NULL)
+        return false;
+    input = _resource_find(&emitter->resources, upload->u.upload.resource_id);
+    output = _resource_find(&emitter->resources, compute->u.compute.writes[0]);
     if (input == NULL || output == NULL)
         return false;
     if (!_resource_ensure_byte_size(&emitter->resources, input, input_size, &input_create))

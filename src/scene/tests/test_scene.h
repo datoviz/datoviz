@@ -148,6 +148,8 @@ int test_frame_plan_emitter_runtime_dynamic_two_frames(TstSuite* suite, TstItem*
 
 int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_emitter_runtime_object_map_grows(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_emitter_runtime_texture_two_frames(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_emitter_runtime_compute_two_frames(TstSuite* suite, TstItem* item);

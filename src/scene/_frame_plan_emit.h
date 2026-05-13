@@ -74,13 +74,14 @@ struct ResourceId
 struct ConverterState
 {
     uint32_t count;
+    uint32_t capacity;
     uint64_t next_id;
     uint64_t first_vertex_buffer_id;
     uint64_t first_texture_id;
     uint64_t first_compute_input_id;
     uint64_t first_compute_output_id;
     uint64_t compute_buffer_size;
-    ResourceId resources[DRP2_MAX_FIXTURE_RESOURCES];
+    ResourceId* resources;
 };
 
 
@@ -113,6 +114,8 @@ struct DvzFramePlanEmitter
 /*************************************************************************************************/
 
 void _state_init(ConverterState* state);
+
+void _state_destroy(ConverterState* state);
 
 uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter);
 

@@ -23,6 +23,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../_frame_plan_emit.h"
 #include "../_scene.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/drp2.h"
@@ -3003,6 +3004,46 @@ int test_frame_plan_emitter_runtime_dynamic_grow_buffer(TstSuite* suite, TstItem
     dvz_drp2_stream_destroy(stream0);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
+
+/**
+ * Ensure persistent emitter object ids can grow beyond the initial resource-map capacity.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_emitter_runtime_object_map_grows(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    uint32_t count = DRP2_MAX_FIXTURE_RESOURCES + 17;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        char key[DVZ_SCENE_LABEL_SIZE] = {0};
+        dvz_snprintf(key, sizeof(key), "grow.object.%u", i);
+
+        bool is_new = false;
+        uint64_t id = _obj_id(emitter, key, &is_new);
+        AT(id != 0);
+        AT(is_new);
+        AT(dvz_frame_plan_emitter_object_id(emitter, key) == id);
+    }
+
+    bool is_new = true;
+    uint64_t id = _obj_id(emitter, "grow.object.3", &is_new);
+    AT(id != 0);
+    AT(!is_new);
+    AT(dvz_frame_plan_emitter_object_id(emitter, "grow.object.3") == id);
+
     dvz_frame_plan_emitter_destroy(emitter);
     return 0;
 }
@@ -8815,6 +8856,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_emitter_runtime_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_dynamic_grow_buffer);
+    TEST_SIMPLE(test_frame_plan_emitter_runtime_object_map_grows);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_texture_two_frames);
     TEST_SIMPLE(test_frame_plan_emitter_runtime_compute_two_frames);
 

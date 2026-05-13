@@ -491,8 +491,10 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     if (!ok)
     {
         _diagnostic(report, "failed to emit DRP2 fixture stream");
+        _state_destroy(&state);
         dvz_drp2_stream_destroy(stream);
         return NULL;
     }
+    _state_destroy(&state);
     return stream;
 }
