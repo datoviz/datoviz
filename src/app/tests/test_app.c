@@ -86,6 +86,20 @@ static int test_app_trace_status_line_uses_carriage_return_and_clear(
 }
 
 
+static int test_app_trace_fingerprint_name_is_frame_stable(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    char name[32] = {0};
+    AT(_dvz_app_trace_fingerprint_name(name, sizeof(name)));
+    AT(strcmp(name, "live_frame") == 0);
+    AT(strstr(name, "000") == NULL);
+    AT(strstr(name, "frame_") == NULL);
+    return 0;
+}
+
+
 
 int test_app(TstSuite* suite)
 {
@@ -95,5 +109,6 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_plan_normal_changed_after_open_line);
     TEST_SIMPLE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
     TEST_SIMPLE(test_app_trace_status_line_uses_carriage_return_and_clear);
+    TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
     return 0;
 }

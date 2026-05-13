@@ -105,3 +105,20 @@ bool _dvz_app_trace_status_line(
         (unsigned long long)frame_index, command_count);
     return written >= 0 && (uint32_t)written < size;
 }
+
+
+
+/**
+ * Format the stable serializer name used for duplicate detection.
+ *
+ * @param out destination character buffer
+ * @param size destination buffer size in bytes
+ * @return true on success, false on error or truncation
+ */
+bool _dvz_app_trace_fingerprint_name(char* out, uint32_t size)
+{
+    ANN(out);
+    ASSERT(size > 0);
+    int written = dvz_snprintf(out, size, "live_frame");
+    return written >= 0 && (uint32_t)written < size;
+}

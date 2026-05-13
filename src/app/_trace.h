@@ -97,3 +97,13 @@ _dvz_app_trace_plan(DvzAppTraceMode mode, bool status_line_open, bool changed);
  */
 bool _dvz_app_trace_status_line(
     uint64_t frame_index, uint32_t command_count, char* out, uint32_t size);
+
+
+/**
+ * Format the stable serializer name used for duplicate detection.
+ *
+ * @param out destination character buffer
+ * @param size destination buffer size in bytes
+ * @return true on success, false on error or truncation
+ */
+bool _dvz_app_trace_fingerprint_name(char* out, uint32_t size);

@@ -309,7 +309,8 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
         return;
 
     char trace_name[64] = {0};
-    snprintf(trace_name, sizeof(trace_name), "live_frame_%" PRIu64, win->frame_index);
+    bool name_ok = _dvz_app_trace_fingerprint_name(trace_name, sizeof(trace_name));
+    ASSERT(name_ok);
     char* json = dvz_drp2_stream_json(stream, trace_name);
     if (json == NULL)
     {
