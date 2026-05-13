@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "../_status.h"
 #include "../_trace.h"
 #include "datoviz/drp2/stream.h"
 #include "test_app.h"
@@ -74,15 +75,21 @@ static int test_app_trace_plan_normal_unchanged_rewrites_in_place(TstSuite* suit
 
 
 
-static int test_app_trace_status_line_uses_carriage_return_and_clear(
-    TstSuite* suite, TstItem* item)
+static int test_app_status_line_combines_trace_and_fps(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
     ANN(item);
 
-    char line[96] = {0};
-    AT(_dvz_app_trace_status_line(149, 27, line, sizeof(line)));
-    AT(strncmp(line, "\r\x1b[2Kframe 00000149 | unchanged | 27 cmds", 42) == 0);
+    DvzAppStatus status;
+    _dvz_app_status_init(&status);
+    _dvz_app_status_trace(&status, 149, 27, 12, false);
+    _dvz_app_status_fps(&status, 123.4, 124, 1.005);
+
+    char line[192] = {0};
+    AT(_dvz_app_status_line(&status, line, sizeof(line)));
+    AT(strstr(line, "frame 00000149 | unchanged | 27 cmds | 12 semantic") != NULL);
+    AT(strstr(line, "FPS  123.4") != NULL);
+    AT(strstr(line, "124 frames in 1.005 s") != NULL);
     return 0;
 }
 
@@ -286,7 +293,7 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_mode_parsing);
     TEST_SIMPLE(test_app_trace_plan_normal_changed_after_open_line);
     TEST_SIMPLE(test_app_trace_plan_normal_unchanged_rewrites_in_place);
-    TEST_SIMPLE(test_app_trace_status_line_uses_carriage_return_and_clear);
+    TEST_SIMPLE(test_app_status_line_combines_trace_and_fps);
     TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
     TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);

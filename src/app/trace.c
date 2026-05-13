@@ -797,28 +797,6 @@ _dvz_app_trace_plan(DvzAppTraceMode mode, bool status_line_open, bool changed)
 
 
 /**
- * Format one in-place unchanged status line.
- *
- * @param frame_index 0-based frame index
- * @param command_count emitted command count
- * @param out destination character buffer
- * @param size destination buffer size in bytes
- * @return true on success, false on error or truncation
- */
-bool _dvz_app_trace_status_line(
-    uint64_t frame_index, uint32_t command_count, char* out, uint32_t size)
-{
-    ANN(out);
-    ASSERT(size > 0);
-    int written = dvz_snprintf(
-        out, size, "\r\x1b[2Kframe %08llu | unchanged | %u cmds",
-        (unsigned long long)frame_index, command_count);
-    return written >= 0 && (uint32_t)written < size;
-}
-
-
-
-/**
  * Format the stable serializer name used for duplicate detection.
  *
  * @param out destination character buffer

@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_status.h"
 #include "_trace.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
@@ -72,7 +73,6 @@ struct DvzAppWindow
     void* frame_user_data;
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
-    bool trace_status_line_open;
 };
 
 
@@ -86,6 +86,7 @@ struct DvzApp
 #endif
     uint32_t     window_count;
     DvzAppWindow windows[DVZ_APP_MAX_WINDOWS];
+    DvzAppStatus status;
 };
 
 
@@ -750,17 +751,17 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
     bool changed = !win->has_last_trace_snapshot ||
                    !_dvz_app_trace_snapshot_equal(&win->last_trace_snapshot, &snapshot);
     DvzAppTracePlan plan =
-        _dvz_app_trace_plan(mode, win->trace_status_line_open, changed);
+        _dvz_app_trace_plan(mode, win->app->status.line_open, changed);
 
     if (plan.prepend_newline)
-    {
-        dvz_fprintf(stderr, "\n");
-        win->trace_status_line_open = false;
-    }
+        _dvz_app_status_break_line(&win->app->status);
 
     if (mode == DVZ_APP_TRACE_FULL)
     {
         _app_trace_stream_full(stream, win->frame_index);
+        _dvz_app_status_trace(
+            &win->app->status, win->frame_index, command_count, snapshot.count, true);
+        _dvz_app_status_render(&win->app->status);
     }
     else
     {
@@ -770,17 +771,10 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
                 &snapshot, &win->last_trace_snapshot, win->has_last_trace_snapshot,
                 command_count, win->frame_index);
         }
-        else if (plan.event_kind == DVZ_APP_TRACE_EVENT_UNCHANGED)
-        {
-            char line[96] = {0};
-            bool ok = _dvz_app_trace_status_line(
-                win->frame_index, command_count, line, sizeof(line));
-            ASSERT(ok);
-            dvz_fprintf(stderr, "%s", line);
-            fflush(stderr);
-        }
+        _dvz_app_status_trace(
+            &win->app->status, win->frame_index, command_count, snapshot.count, changed);
+        _dvz_app_status_render(&win->app->status);
     }
-    win->trace_status_line_open = plan.status_line_open_after;
     _dvz_app_trace_snapshot_destroy(&win->last_trace_snapshot);
     win->last_trace_snapshot = snapshot;
     win->has_last_trace_snapshot = true;
@@ -868,6 +862,7 @@ DvzApp* dvz_app(DvzScene* scene)
     if (app == NULL)
         return NULL;
     app->scene = scene;
+    _dvz_app_status_init(&app->status);
 
     /* Window host first — needed to query GLFW surface extensions before building the instance. */
     app->window_host = dvz_window_host();
@@ -944,6 +939,7 @@ void dvz_app_destroy(DvzApp* app)
         return;
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    _dvz_app_status_finish(&app->status);
     for (uint32_t i = 0; i < app->window_count; i++)
     {
         DvzAppWindow* win = &app->windows[i];
@@ -956,11 +952,6 @@ void dvz_app_destroy(DvzApp* app)
         {
             dvz_window_destroy(win->window);
             win->window = NULL;
-        }
-        if (win->trace_status_line_open)
-        {
-            dvz_fprintf(stderr, "\n");
-            win->trace_status_line_open = false;
         }
         _dvz_app_trace_snapshot_destroy(&win->last_trace_snapshot);
         win->has_last_trace_snapshot = false;
@@ -1206,8 +1197,9 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
                 if (elapsed_ns >= 1000000000ULL)
                 {
                     double fps = (double)fps_window_frames * 1e9 / (double)elapsed_ns;
-                    fprintf(stderr, "FPS: %6.1f  (%u frames in %.3f s)\n",
-                            fps, fps_window_frames, (double)elapsed_ns / 1e9);
+                    _dvz_app_status_fps(
+                        &app->status, fps, fps_window_frames, (double)elapsed_ns / 1e9);
+                    _dvz_app_status_render(&app->status);
                     fps_window_start = now;
                     fps_window_frames = 0;
                 }
@@ -1228,6 +1220,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             }
         }
     }
+    _dvz_app_status_finish(&app->status);
 #else
     (void)frame_count;
 #endif
