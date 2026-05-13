@@ -6672,7 +6672,8 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstSuite* suite, TstItem
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.eye[2] = 3.0f;
     camera_desc.fov_y = GLM_PI_4f;
-    ANN(dvz_panel_set_camera(panel, &camera_desc));
+    DvzCamera* camera = dvz_panel_set_camera(panel, &camera_desc);
+    ANN(camera);
     dvz_panel_set_arcball(panel, NULL, 0);
     DvzArcball* arcball = dvz_panel_arcball(panel);
     ANN(arcball);
