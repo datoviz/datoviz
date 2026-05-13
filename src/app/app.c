@@ -22,6 +22,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_trace.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
 
@@ -92,34 +93,6 @@ struct DvzApp
 /*************************************************************************************************/
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-
-typedef enum
-{
-    DVZ_APP_TRACE_NONE,
-    DVZ_APP_TRACE_NORMAL,
-    DVZ_APP_TRACE_FULL,
-} DvzAppTraceMode;
-
-/**
- * Return the configured live DRP2 trace mode.
- *
- * @param value environment variable value, or NULL
- * @return the parsed trace mode
- */
-static DvzAppTraceMode _trace_mode_from_env(const char* value)
-{
-    if (value == NULL)
-        return DVZ_APP_TRACE_NONE;
-    if (strcmp(value, "0") == 0 || strcmp(value, "false") == 0 ||
-        strcmp(value, "FALSE") == 0 || strcmp(value, "off") == 0 || strcmp(value, "OFF") == 0)
-    {
-        return DVZ_APP_TRACE_NONE;
-    }
-    if (strcmp(value, "full") == 0 || strcmp(value, "FULL") == 0)
-        return DVZ_APP_TRACE_FULL;
-    return DVZ_APP_TRACE_NORMAL;
-}
-
 
 /**
  * Return a readable label for one DRP2 command type.
@@ -331,7 +304,7 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
     ANN(win);
     ANN(stream);
     const char* trace_env = getenv("DVZ_DRP2_TRACE");
-    DvzAppTraceMode mode = _trace_mode_from_env(trace_env);
+    DvzAppTraceMode mode = _dvz_app_trace_mode_from_env(trace_env);
     if (mode == DVZ_APP_TRACE_NONE)
         return;
 
@@ -344,39 +317,39 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
         return;
     }
 
+    bool changed = true;
+    if (win->last_trace_json != NULL && strcmp(win->last_trace_json, json) == 0)
+        changed = false;
+    DvzAppTracePlan plan =
+        _dvz_app_trace_plan(mode, win->trace_status_line_open, changed);
+
+    if (plan.prepend_newline)
+    {
+        dvz_fprintf(stderr, "\n");
+        win->trace_status_line_open = false;
+    }
+
     if (mode == DVZ_APP_TRACE_FULL)
     {
-        if (win->trace_status_line_open)
-        {
-            dvz_fprintf(stderr, "\n");
-            win->trace_status_line_open = false;
-        }
         _app_trace_stream_full(stream, win->frame_index);
     }
     else
     {
-        bool changed = true;
-        if (win->last_trace_json != NULL && strcmp(win->last_trace_json, json) == 0)
-            changed = false;
-
-        if (changed)
+        if (plan.event_kind == DVZ_APP_TRACE_EVENT_CHANGED)
         {
-            if (win->trace_status_line_open)
-            {
-                dvz_fprintf(stderr, "\n");
-                win->trace_status_line_open = false;
-            }
             _app_trace_stream_normal(stream, win->frame_index);
         }
-        else
+        else if (plan.event_kind == DVZ_APP_TRACE_EVENT_UNCHANGED)
         {
-            dvz_fprintf(
-                stderr, "\rframe %08" PRIu64 " | unchanged | %u cmds",
-                win->frame_index, dvz_drp2_stream_count(stream));
+            char line[96] = {0};
+            bool ok = _dvz_app_trace_status_line(
+                win->frame_index, dvz_drp2_stream_count(stream), line, sizeof(line));
+            ASSERT(ok);
+            dvz_fprintf(stderr, "%s", line);
             fflush(stderr);
-            win->trace_status_line_open = true;
         }
     }
+    win->trace_status_line_open = plan.status_line_open_after;
 
     if (win->last_trace_json != NULL)
         dvz_drp2_stream_json_destroy(win->last_trace_json);

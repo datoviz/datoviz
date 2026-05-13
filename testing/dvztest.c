@@ -17,6 +17,9 @@
 #include <stddef.h>
 
 #include "_log.h"
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+#include "../src/app/tests/test_app.h"
+#endif
 #include "../src/canvas/tests/test_canvas.h"
 #include "../src/common/tests/test_common.h"
 #include "../src/ds/tests/test_ds.h"
@@ -51,6 +54,9 @@ int main(int argc, char** argv)
 
     TstSuite suite = tst_suite();
 
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+    test_app(&suite);
+#endif
     test_common(&suite);
     test_ds(&suite);
 #if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
