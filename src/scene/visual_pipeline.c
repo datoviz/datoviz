@@ -17,6 +17,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <vulkan/vulkan_core.h>
+
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_visual_pipeline.h"
@@ -158,6 +161,126 @@ bool _emitter_resolve_render_vertex_buffers(
         }
     }
     return *out_count > 0;
+}
+
+
+
+/**
+ * Resolve draw-relevant state for one encoded render visual id.
+ *
+ * @param emitter the persistent emitter
+ * @param encoded_visual_id the render-node visual id
+ * @param out the output visual descriptor
+ * @return whether a supported visual descriptor was resolved
+ */
+bool _scene_visual_desc_from_render(
+    DvzFramePlanEmitter* emitter, const char* encoded_visual_id, DvzSceneVisualDesc* out)
+{
+    ANN(emitter);
+    ANN(out);
+    dvz_memset(out, sizeof(DvzSceneVisualDesc), 0, sizeof(DvzSceneVisualDesc));
+
+    char visual_id[DVZ_SCENE_LABEL_SIZE];
+    char shared_index_id[DVZ_SCENE_LABEL_SIZE];
+    _parse_visual_id(
+        encoded_visual_id, visual_id, sizeof(visual_id), shared_index_id,
+        sizeof(shared_index_id));
+
+    char pos_key[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(pos_key, sizeof(pos_key), "%s_position", visual_id);
+    uint64_t pos_buf = _resource_lookup_id(&emitter->resources, pos_key);
+    if (pos_buf == 0)
+        return false;
+    out->vbuf_ids[out->vbuf_count++] = pos_buf;
+
+    const char* optionals[] = {
+        "color", "size", "texcoords", "texture", "normal", "index", "primitive_shading"};
+    for (uint32_t ai = 0; ai < 7; ai++)
+    {
+        char rid[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(rid, sizeof(rid), "%s_%s", visual_id, optionals[ai]);
+        uint64_t rid_id = 0;
+        if (strcmp(optionals[ai], "index") == 0 && shared_index_id[0] != '\0')
+            rid_id = _resource_lookup_id(&emitter->resources, shared_index_id);
+        else
+            rid_id = _resource_lookup_id(&emitter->resources, rid);
+        if (rid_id == 0)
+            continue;
+        if (strcmp(optionals[ai], "index") == 0)
+        {
+            out->index_buffer_id = rid_id;
+            continue;
+        }
+        if (strcmp(optionals[ai], "primitive_shading") == 0)
+        {
+            out->shading_buffer_id = rid_id;
+            continue;
+        }
+        if (out->vbuf_count >= DVZ_SCENE_MAX_NODE_RESOURCES)
+            return false;
+        out->vbuf_ids[out->vbuf_count++] = rid_id;
+    }
+
+    bool is_point = _is_point_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
+    bool is_primitive =
+        !is_point && _is_primitive_visual(&emitter->resources, out->vbuf_ids, out->vbuf_count);
+    uint64_t img_pos = 0, img_uv = 0, img_tex = 0;
+    bool is_image =
+        !is_point && !is_primitive &&
+        _is_image_visual(
+            &emitter->resources, out->vbuf_ids, out->vbuf_count, &img_pos, &img_uv, &img_tex);
+
+    if (!is_point && !is_primitive && !is_image)
+        return false;
+
+    uint64_t pos_size = _resource_byte_size(&emitter->resources, pos_buf);
+    uint64_t vertex_count = (pos_size > 0) ? pos_size / (3 * sizeof(float)) : 3;
+    if (vertex_count > UINT32_MAX)
+        return false;
+    out->vertex_count = (uint32_t)vertex_count;
+
+    for (uint32_t j = 0; j < out->vbuf_count; j++)
+    {
+        out->has_normal =
+            out->has_normal ||
+            strcmp(_resource_data_tag(&emitter->resources, out->vbuf_ids[j]), "normal") == 0;
+    }
+
+    out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+    if (is_primitive)
+        out->topology = _resource_topology(&emitter->resources, pos_buf);
+    else if (is_image)
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+    if (is_point)
+        out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
+    else if (is_primitive)
+        out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+    else
+    {
+        out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+        out->image_texture_id = img_tex;
+        out->vbuf_ids[0] = img_pos;
+        out->vbuf_ids[1] = img_uv;
+        out->vbuf_count = 2;
+    }
+
+    if (out->index_buffer_id != 0 &&
+        _resource_item_stride(&emitter->resources, out->index_buffer_id) != 0)
+    {
+        uint64_t index_count =
+            _resource_byte_size(&emitter->resources, out->index_buffer_id) /
+            _resource_item_stride(&emitter->resources, out->index_buffer_id);
+        if (index_count > UINT32_MAX)
+            return false;
+        out->index_count = (uint32_t)index_count;
+    }
+    out->index_format =
+        _resource_item_stride(&emitter->resources, out->index_buffer_id) == sizeof(uint16_t)
+            ? "uint16"
+            : "uint32";
+
+    return true;
 }
 
 
