@@ -80,8 +80,9 @@ VTK is a powerful, heavyweight toolkit for 3D visualization, simulation, and sci
 The active development branch is the v0.4 refactor. It is rebuilding the C core around modular
 targets, the Vulkan/vklite/canvas runtime stack, and a new scene -> DRP2 -> runtime path. That v0.4
 API is still experimental and may change aggressively before release. The active branch now includes
-focused `drp2`/`scene` validation, a minimal app/offscreen path, and tested point-based scene
-rendering across repeated updates and multi-panel figures.
+focused `drp2`/`scene`/`app` validation, offscreen and GLFW app paths, retained point/primitive/mesh
+and image scene rendering, sampled-field texture updates, panel controllers, depth-enabled render
+passes, and first GPU-backed point-pick / image-probe request handling.
 
 
 
@@ -93,14 +94,15 @@ backend-agnostic rendering path. Current development priorities are:
 * 🧱 Modular C library architecture with focused build/test targets
 * 🎛️ Hardened Vulkan/vklite/canvas/stream runtime boundaries
 * 🔁 DRP2 command streams as the backend-agnostic rendering contract
-* 🧩 Active point-based scene-to-DRP2 implementation path with C examples
-* 🧪 Executable DRP2 fixtures and focused `drp2`/`scene` tests, including multi-panel runtime checks
+* 🧩 Active retained scene-to-DRP2 path with point, primitive, mesh, path, and image C examples
+* 🧪 Executable DRP2 fixtures and focused `drp2`/`scene`/`app` tests, including multi-panel runtime
+  checks, depth checks, readback checks, and request coalescing/freshness checks
 
 These foundations are intended to support the following later features:
 
 * 🧊 Correct transparency in 3D mesh and volume rendering
 * ✨ Multisample anti-aliasing (MSAA)
-* 🎯 Object picking
+* 🎯 Richer object picking beyond the current point/image request slice
 * 📈 Nonlinear coordinate transforms
 * ⚡ CUDA interoperability
 * 🧮 Vulkan compute shaders (similar to CUDA kernels)
@@ -109,7 +111,7 @@ These foundations are intended to support the following later features:
 * 🔗 GPU memory sharing across visuals
 * 🐍 IPython integration
 * 🖥️ Qt backend support
-* 🌐 WebGPU backend
+* 🌐 WebGPU backend, starting from a narrow DRP2 replay feasibility lane
 
 
 

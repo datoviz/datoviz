@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-12`
+> - **Updated on:** `2026-05-13`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -22,7 +22,8 @@ The active higher layer exists:
 1. `drp2` owns backend-agnostic command streams, JSON/debug serialization, validation, and the
    native vklite runtime.
 2. `scene` owns early scene graph objects, capability snapshots, diagnostic reports, frame plans,
-   DRP2 emission, and a minimal app/offscreen path.
+   DRP2 emission, and request/result state; `app` owns the small presentation loop over scene,
+   canvas, and the DRP2 runtime.
 3. Built-in visual families currently implemented are `point`, `primitive`, `mesh`, path-as-line/strip,
    and `image`.
 4. Panel controllers are live: panzoom and arcball feed per-panel transforms.
@@ -30,10 +31,17 @@ The active higher layer exists:
    path.
 6. Retained sampled fields, scales, scene buffers, and primitive/mesh shading uniforms now share the
    scene -> frame-plan -> DRP2 binding path.
-7. Public headers now include first-draft interaction/text/annotation APIs, but those groups are not
-   implemented in `src/scene` yet.
+7. Interaction bookkeeping, queued pick/probe requests, result polling, selection/link objects,
+   pinned readouts, and text/annotation retained objects now have first source implementations and
+   focused bookkeeping tests.
+8. GPU-backed request execution is narrow but real: point picking and image probing execute through
+   auxiliary DRP2 streams and runtime readbacks after the main figure frame has populated runtime
+   resources.
+9. `app` is an active presentation module. Recent work added frame callbacks, compact/full DRP2
+   trace output, combined FPS/status reporting, and figure-size synchronization before frame
+   emission.
 
-Focused validation recorded on `2026-05-12`:
+Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
    tests passed.
@@ -43,6 +51,10 @@ Focused validation recorded on `2026-05-12`:
    execution only; request freshness is explicit and persistent per panel/request-kind scope, and
    image probes now use the same explicit recentering rule as point picking.
 4. `git diff --check`: passed on the latest scene slices.
+
+Recent unreflected code commits after that validation include app trace/status cleanup, request
+runtime reset hardening, figure-size synchronization, and point-picking panel coordinate fixes.
+Re-run the relevant focused tests before treating the snapshot as fully current.
 
 
 ## Immediate Task
@@ -63,14 +75,22 @@ Read in this order:
    for the original planned shape,
 6. the current `scene` and `drp2` tests before broadening any API.
 
-Deliver the next implementation slices in this order:
+Deliver the next implementation slices in this order unless the user redirects:
 
-1. Text and annotation retained-object bookkeeping for the already-declared `text.h` and
-   `annotation.h` APIs, initially without glyph rendering if necessary.
-2. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path.
-3. Depth attachment wiring and validation for mesh scenes, especially under arcball-driven views.
-4. Picking payload widening after the first hardened slice: richer ids, mesh targets, and less
-   ad-hoc payload encoding.
+1. Native 3D pressure example: one small interactive mesh/primitive scene using arcball, depth,
+   resizing, frame callback, and capture/readback. This is the best next correctness probe for the
+   scene -> DRP2 -> app boundary.
+2. Manual interactive smoke set: point hover picking, image probe, panzoom, arcball, partial texture
+   update, and multi-panel examples with clear run commands and expected behavior.
+3. Hygiene/safety pass over the hot scene/DRP2/app files that changed most recently: bounds,
+   ownership, stale-result handling, transient runtime object cleanup, and warning/static-analysis
+   readiness.
+4. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
+   then depth. Keep it contract-pressure only; do not fork scene semantics.
+5. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
+   native 3D and manual-smoke gaps are clearer.
+6. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
+   payload encoding.
 
 
 ## Scope Guardrails
@@ -87,15 +107,15 @@ For the immediate implementation pass:
 
 ## Roadmap After The Immediate Pass
 
-After the immediate interaction/text/annotation passes, proceed in this order unless the user redirects:
+After the immediate native 3D/manual-smoke/safety passes, proceed in this order unless the user redirects:
 
-1. Depth/depth-state mesh runtime work and fixture pressure.
-2. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
+1. Browser/WebGPU feasibility: replay a narrow DRP2 subset for point, primitive, image, and minimal
    mesh/depth scenes.
-3. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
+2. Transparency architecture: explicit WBOIT-style scene mode through frame plan, DRP2, runtime, and
    capability fallback.
-4. Broader figure features: axes, lines/segments, richer annotations, picking refinements, and
-   additional visual families.
+3. Broader figure features: axes, lines/segments, rendered text/labels, colorbars, richer
+   annotations, picking refinements, and additional visual families.
+4. Larger code organization cleanup once the active API seams stabilize enough to avoid churn.
 
 
 ## Validation Defaults

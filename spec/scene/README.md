@@ -13,17 +13,20 @@ The scene layer should remain pure high-level logic:
 ## Status
 
 - Status: active specification with multiple implementation slices in `src/scene`
-- Implementation priority: implement the already-drafted interaction/text/annotation public APIs in
-  narrow tested slices, then add picking/probe runtime plumbing and rendered annotation/colorbar work
+- Implementation priority: pressure-test the active retained scene path with native 3D/depth/manual
+  app examples, then decide between early WebGPU feasibility, rendered annotation/colorbar work, and
+  wider visual/picking payloads
 - Primary constraint: do not let scene design leak backend details into its public API
 
 Current source implementation is intentionally smaller than this spec. It includes scene/figure/panel
 objects, `point` / `primitive` / `mesh` / path-as-line/strip / `image` visuals, capability
 snapshots, diagnostic reports, frame plans, DRP2 emission, panel controllers, retained sampled
-fields, scene buffers, scale/colormap state for images, and an early scene/app/offscreen path.
-Public headers also declare interaction, text, and annotation APIs that are draft contracts until
-implemented in `src/scene`. Treat broader sections of this spec as design pressure and direction,
-not as a claim that all families and interactions are already implemented.
+fields, scene buffers, scale/colormap state for images, interaction bookkeeping, queued point/image
+pick/probe requests, retained text/annotation bookkeeping, and an app/offscreen/GLFW path in
+`src/app`. Public headers also declare broader interaction, text, annotation, colorbar, and
+selection behavior that is not fully rendered or semantically complete yet. Treat broader sections of
+this spec as design pressure and direction, not as a claim that all families and interactions are
+already implemented.
 
 
 ## Directory Layout
@@ -75,14 +78,16 @@ The current scene spec should be read with the following invariants in mind:
    side path,
 4. picking must return scene identity rather than backend identity,
 5. hover picking follows latest-request-wins semantics and stale results must be discardable,
-6. data normalization and panel-local navigation are separate stages,
-7. panel navigation should usually not force normalization rebuild or bulk data reupload,
-8. compute-derived resources are frame-local by default unless persistence is declared explicitly,
-9. legends and colorbars may aggregate only semantically identical mappings unless sharing is
+6. request processing may coalesce unresolved panel-local pick/probe requests, but accepted results
+   must still obey the public freshness rules,
+7. data normalization and panel-local navigation are separate stages,
+8. panel navigation should usually not force normalization rebuild or bulk data reupload,
+9. compute-derived resources are frame-local by default unless persistence is declared explicitly,
+10. legends and colorbars may aggregate only semantically identical mappings unless sharing is
    configured explicitly,
-10. capability adaptation must be explicit and deterministic rather than implicit or backend-shaped,
-11. validation runs after dirty-scope resolution and before planning,
-12. capability adaptation runs after validation and before planning.
+11. capability adaptation must be explicit and deterministic rather than implicit or backend-shaped,
+12. validation runs after dirty-scope resolution and before planning,
+13. capability adaptation runs after validation and before planning.
 
 
 ## Reading Conventions

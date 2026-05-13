@@ -41,16 +41,23 @@ The first public header split has landed. Treat these groups as implemented APIs
 4. retained visual attributes and scene buffers,
 5. sampled fields and image field binding,
 6. scale/colormap core and image colormap binding,
-7. panzoom and arcball controllers.
+7. panzoom and arcball controllers,
+8. interaction policy, selection, link-channel, pick/probe queue, hover-state, and pinned-readout
+   bookkeeping,
+9. first point-pick and image-probe execution through the DRP2 runtime request processor,
+10. font/text and annotation retained-object bookkeeping.
 
 Treat these installed declarations as draft contracts until implemented in `src/scene`:
 
-1. interaction policies, pick/probe request execution, and result polling,
-2. retained hover state, selections, link channels, and pinned readouts,
-3. font/text retained objects,
-4. annotation retained objects.
+1. rendered text/glyph output,
+2. rendered annotations and callouts,
+3. rendered colorbar ticks/labels,
+4. selection highlight rendering and broader link-driven state propagation,
+5. mesh/object picking and richer probe payloads,
+6. broad mapped attributes beyond the current image colormap path.
 
-Colorbars are currently retained semantic objects, but rendered ticks/labels remain future work.
+Colorbars, text, and annotations are currently retained semantic objects, but rendered
+ticks/labels/glyphs remain future work.
 
 
 ## Opaque Handles Versus Public Structs

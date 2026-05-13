@@ -1,8 +1,8 @@
 # Scene Public API Header Plan
 
 > **Execution Status**
-> - **Status:** `HEADER DRAFT LANDED; IMPLEMENTATION FOLLOW-UP`
-> - **Updated on:** `2026-05-11`
+> - **Status:** `HEADER SPLIT LANDED; NARROW IMPLEMENTATIONS ACTIVE`
+> - **Updated on:** `2026-05-13`
 > - **Purpose:** record the current public scene header split and identify which declared API groups
 >   still need implementation.
 
@@ -43,24 +43,31 @@ Implemented and covered by focused scene tests:
 7. scale/colormap core and image colormap scale binding,
 8. colorbar retained object bookkeeping,
 9. panzoom and arcball controllers,
-10. panel backgrounds, z-layer ordering, and fixed-vs-controller-applied visual attachments.
+10. panel backgrounds, z-layer ordering, and fixed-vs-controller-applied visual attachments,
+11. interaction policy, selection, link-channel, pick/probe queue, hover-state, and pinned-readout
+    bookkeeping,
+12. first GPU-backed request execution for point picking and image probing through
+    `dvz_figure_process_requests()`,
+13. font/text and annotation retained-object bookkeeping.
 
 Drafted in public headers but not yet implemented in `src/scene`:
 
-1. interaction policy objects,
-2. pick/probe request execution and polling,
-3. retained hover state,
-4. selection objects and link channels,
-5. pinned readouts,
-6. font/text retained objects,
-7. annotation retained objects.
+1. rendered glyph/text output,
+2. rendered annotation contributions,
+3. rendered colorbar ticks/labels,
+4. broad mapped attributes beyond the current image scale/colormap path,
+5. selection highlight rendering and richer link-driven visual updates,
+6. mesh/object picking and richer probe payloads.
 
 Partially implemented / semantic bookkeeping only:
 
 1. colorbars are retained scene objects but do not yet render ticks/labels,
 2. scale/colormap state is consumed by image shader paths, but broader mapped attributes are not yet
    wired,
-3. primitive/mesh shading has a small uniform-buffer path, not a general material system.
+3. primitive/mesh shading has a small uniform-buffer path, not a general material system,
+4. text and annotations are retained scene objects but do not yet emit glyph/overlay rendering work,
+5. pick/probe execution is real but narrow: point and image only, auxiliary streams, RGBA-style
+   payload/readback, and limited coordinate/value metadata.
 
 
 ## Next Header Rules
@@ -68,8 +75,8 @@ Partially implemented / semantic bookkeeping only:
 1. Keep `scene.h` as the umbrella include; add to focused `include/datoviz/scene/*.h` subheaders
    instead of growing the umbrella directly.
 2. Do not add generic public binding APIs yet; keep typed setters for each retained object family.
-3. Treat `interaction.h`, `text.h`, and `annotation.h` as draft contracts until their first source
-   implementations and tests land.
+3. Treat `interaction.h`, `text.h`, and `annotation.h` as first-slice contracts: object lifetime and
+   queues are implemented, but rendered output and richer semantics still need tests before use.
 4. When a declared API is implemented, add focused tests in `src/scene/tests/test_scene.c` before
    broadening the surface.
 5. Keep `spec/scene/api/API_SURFACE.md` as policy, but make installed headers the source of truth
@@ -78,10 +85,10 @@ Partially implemented / semantic bookkeeping only:
 
 ## Recommended Implementation Order
 
-1. Interaction core without GPU picking first: object allocation/lifetime, panel binding, selection,
-   link keys, and result queues that tests can populate deterministically.
-2. Pick/probe plumbing through the scene -> DRP2 readback path for points/images, with request ids and
-   stale-result rejection.
-3. Text/annotation retained-object bookkeeping, still without glyph rendering if necessary.
-4. Rendered colorbar/text/annotation realization once the retained object model has tests.
-5. Expand scale binding beyond images only after the first interaction/probe path needs it.
+1. Native 3D/depth/arcball pressure before adding more API surface.
+2. Manual interactive examples for the implemented point/image pick-probe path.
+3. Safety/hygiene review of scene request queues, retained object lifetimes, and app trace/status code.
+4. Rendered colorbar/text/annotation realization once the native runtime pressure is stable.
+5. Expand scale binding beyond images only when a concrete visual or interaction path needs it.
+6. Widen pick/probe payloads and mesh targets after the current narrow request architecture has been
+   validated interactively.

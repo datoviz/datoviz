@@ -16,9 +16,11 @@ indexes.
 
 Current branch status:
 
-1. scene is now an active default-build module with a first implementation slice,
-2. the current implementation covers scene/figure/panel/point visual basics, capability snapshots,
-   diagnostics, frame plans, DRP2 emission, and an app/offscreen path,
+1. scene and app are active default-build modules with several retained implementation slices,
+2. the current implementation covers scene/figure/panel lifecycle, point/primitive/mesh/path/image
+   visuals, sampled fields, scale/image colormap binding, capability snapshots, diagnostics, frame
+   plans, DRP2 emission, interaction bookkeeping, point/image request readbacks, and offscreen/GLFW
+   app paths,
 3. implementation should continue to follow the DRP2/runtime boundary rather than the low-level
    Vulkan stack directly.
 
@@ -76,26 +78,26 @@ policy.
 In source, the current implementation is intentionally much smaller than the full spec. It includes:
 
 1. `include/datoviz/scene.h` and `include/datoviz/scene/*` public draft headers,
-2. `src/scene/scene.c` for scene graph lifecycle and the point visual,
+2. `src/scene/scene.c` for scene graph lifecycle, retained objects, and visual families,
 3. `src/scene/frame_plan.c` for frame-plan construction and JSON/debug serialization,
 4. `src/scene/converter.c` for frame-plan to DRP2 emission,
-5. `src/scene/app.c` for the early scene/app/offscreen convenience path,
-6. focused tests in `src/scene/tests/test_scene.c`,
-7. C examples `hello_point.c` and `hello_scatter.c`.
+5. `src/scene/pick_probe.c` for the first point-pick/image-probe request execution path,
+6. `src/app/app.c`, `src/app/status.c`, and `src/app/trace.c` for the small presentation layer,
+7. focused tests in `src/scene/tests/test_scene.c` and `src/app/tests/test_app.c`,
+8. C examples `hello_point.c`, `hello_scatter.c`, `hello_triangle.c`, `hello_mesh.c`,
+   `hello_path.c`, `hello_texture.c`, `hello_field.c`, and `hello_pick_hover_glfw.c`.
 
 
 ## Sequencing
 
 The correct near-term order is:
 
-1. harden the existing point-only scene path across repeated updates, multiple panels, multiple visuals,
-   diagnostics, and offscreen capture,
+1. harden the active retained scene path with manual app examples covering point/image request
+   handling, multi-panel rendering, depth, resizing, and controller state,
 2. keep the DRP2 contract and runtime boundary as the source of truth for scene dependencies,
-3. ✅ the `primitive` visual family (topology-parametric, built-in pass-through shaders) has landed
-   in `src/scene/scene.c` / `src/scene/converter.c` with tests and `examples/c/hello_triangle.c` —
-   see `spec/scene/visuals/PRIMITIVE.md` for the contract,
-4. add a minimal image/texture visual after `primitive` to pressure-test texture upload, samplers,
-   views, and bind groups,
+3. use one native 3D example to pressure mesh/depth/arcball before adding broad scene features,
+4. run a narrow WebGPU feasibility spike against the existing DRP2 subset before the visual surface
+   becomes much larger,
 5. continue refining scene semantics in `spec/scene/` as implementation reveals concrete needs.
 
 Avoid broad scene API growth before each new visual family has tests, an example, and a clear DRP2

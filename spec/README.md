@@ -9,8 +9,10 @@ Do not use it for execution planning or broad architecture essays.
 
 ## Layout
 
-- `drp2/`: backend-agnostic rendering protocol contract, schemas, and fixtures
-- `scene/`: scene-layer requirements and consumer-side object model
+- `drp2/`: backend-agnostic rendering protocol contract, schemas, fixtures, and native-runtime
+  pressure rules
+- `scene/`: scene-layer requirements, consumer-side object model, retained object semantics, and
+  implementation boundary notes
 
 
 ## Rules
@@ -33,3 +35,5 @@ just spec-check
 ```
 
 At the moment this validates the DRP2 fixture corpus and the DRP2 fixture-runner tests.
+Scene spec changes that alter implemented behavior should also run the narrowest relevant
+`just test scene` filter, because the scene spec now has multiple active source slices.

@@ -14,9 +14,14 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 | `hello_scatter.c`   | `dvz_point` (exists)  | None — richer use of existing | Done    |
 | `hello_triangle.c`  | `dvz_primitive`       | New topology-parametric family | Done    |
 | `hello_texture.c`   | `dvz_image`           | New visual constructor        | Done    |
+| `hello_mesh.c`      | `dvz_mesh`            | Existing mesh visual          | Done    |
+| `hello_path.c`      | path-as-line/strip    | Existing path helper          | Done    |
+| `hello_field.c`     | sampled field + image | Existing field/image path     | Done    |
+| `hello_pick_hover_glfw.c` | point picking + app | Existing request/app path | Done    |
 
-`hello_scatter.c` now exists under `examples/c/`. The next example work should add one new visual
-family at a time, with tests before broadening the scene API.
+The first scene example wave now exists under `examples/c/`. The next example work should focus less
+on adding another visual constructor and more on native pressure tests: an interactive 3D mesh/depth
+scene, clearer manual request/probe smoke tests, and resize/capture/status behavior.
 
 ---
 
@@ -192,14 +197,16 @@ creation, texture upload emission) lives in `src/scene/converter.c`.
 - `src/scene/tests/test_scene.c` — shows attribute names, data shapes, and the full
   scene→figure→panel→visual→app flow used in tests
 - `src/scene/scene.c` and `src/scene/converter.c` — existing point visual implementation/emission path
-- `src/scene/app.c` — `dvz_app()` internals
+- `src/app/app.c` — `dvz_app()` internals
+- `src/app/status.c` and `src/app/trace.c` — live FPS/status and DRP2 tracing
 
 ---
 
 ## Guide updates needed
 
-Once examples are written, add sections to `docs/guide/c.md`:
+Follow-up guide updates should add or refresh sections in `docs/guide/c.md`:
 
 - Add `just example-c hello_scatter` etc. to the build snippet
-- Add Example 4 / 5 / 6 sections with `--8<--` source includes (same style as existing examples)
-- Extend the *Key public APIs* table with any new functions introduced
+- Add sections for the current scene examples with `--8<--` source includes.
+- Extend the *Key public APIs* table with scene/app request, field, mesh, and controller functions.
+- Add one manual-interactive subsection for GLFW examples so expected mouse/hover behavior is clear.

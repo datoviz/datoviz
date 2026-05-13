@@ -456,7 +456,7 @@ dvz_add_example(raw_triangle_drp2)
 - `src/scene/tests/test_scene.c` — `test_frame_plan_emit_drp2_static_render_glsl_executes`
   and `test_frame_plan_emit_drp2_readback_glsl_executes` show the full GPU setup + execute +
   download pattern
-- `src/scene/app.c` — `dvz_app()` for the exact Vulkan 1.2/1.3 feature request pattern needed
+- `src/app/app.c` — `dvz_app()` for the exact Vulkan 1.2/1.3 feature request pattern needed
   by both examples
 - `src/drp2/tests/test_drp2.c` — exhaustive DRP2 stream construction examples
 

@@ -18,7 +18,8 @@ The goal is to freeze a small, backend-agnostic renderer contract that can suppo
 - Build integration: fixture validation available through the Python runner; focused C tests available
   through `just test drp2`
 - Implementation priority: harden the active scene -> DRP2 -> runtime slice and keep fixtures aligned
-  with implementation behavior
+  with implementation behavior; use a narrow WebGPU feasibility lane to pressure the contract before
+  the visual surface grows too large
 
 
 ## Recommended Reading Order
@@ -118,6 +119,8 @@ The first stable contract should cover only the minimum needed for a practical r
 
 Scene concerns, browser transport, profiling, native interop, and advanced memory policy are all
 important, but they should pressure-test the contract rather than bloat the first contract freeze.
+The currently active pressure points are native depth-enabled 3D scenes, point/image readbacks for
+pick/probe requests, and browser/WebGPU portability of the existing resource/pipeline/pass subset.
 
 
 ## `2.0` Decisions Already Taken

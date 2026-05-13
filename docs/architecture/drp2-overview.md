@@ -56,16 +56,19 @@ The current source tree now includes:
 5. a C command-stream implementation in `src/drp2`,
 6. semantic validation and a native vklite-backed runtime,
 7. tests that exercise resource commands, render passes, texture copies, sampling, readback, and
-   object-table growth.
+   object-table growth,
+8. depth/stencil pipeline and render-pass attachment support used by the scene mesh/primitive path,
+9. queue readbacks used by the current point-pick and image-probe request slice.
 
 That makes DRP2 an active contract-definition surface rather than a vague future interface.
 
 
 ## Relationship To Current Work
 
-The current branch priority is hardening the active scene -> DRP2 -> vklite/canvas vertical slice.
-DRP2 should remain narrow and executable: implementation changes that alter contract semantics should
-update prose, schemas, fixtures, and focused tests together.
+The current branch priority is hardening the active scene -> DRP2 -> vklite/canvas/app vertical
+slice while beginning a narrow WebGPU feasibility lane. DRP2 should remain narrow and executable:
+implementation changes that alter contract semantics should update prose, schemas, fixtures, and
+focused tests together.
 
 
 ## Relationship To Scene

@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `ACTIVE DRP2 EXECUTION NOTE`
-> - **Updated on:** `2026-05-11`
+> - **Updated on:** `2026-05-13`
 > - **Purpose:** Keep the DRP2 `2.0` contract executable and disciplined while implementation work
 >   proceeds.
 > - **Current branch priority:** DRP2 is now both an executable spec lane and an active C
@@ -23,8 +23,9 @@ The current implementation plan now specifically pressures DRP2 with:
 1. the now-active indexed `mesh` visual on the native runtime,
 2. scene-owned uniform-buffer style bindings for primitive/mesh shading,
 3. retained sampled-field texture updates and colormap scale binding,
-4. pending per-panel depth attachments and depth/stencil state,
-5. pending picking/probe readbacks and early browser/WebGPU replay.
+4. active per-panel depth attachments and depth/stencil state,
+5. active picking/probe readbacks for the first point/image scene request slice,
+6. early browser/WebGPU replay pressure that should stay narrow and contract-oriented.
 
 
 ## Current Status
@@ -63,6 +64,9 @@ Active DRP2 `2.0` surface now includes:
 14. conservative submitted-work lifetime coverage for all resource types
 15. explicit bounded-range requirement for buffer-backed bind-group entries
 16. pipeline-rebind validation for later bind-group and draw commands
+17. fixed-function render-pipeline state for topology, culling, blend targets, and depth/stencil
+18. render-pass depth/stencil attachments
+19. queue readbacks used by the scene point-pick and image-probe request path
 
 What remains intentionally deferred:
 
@@ -74,11 +78,11 @@ What remains intentionally deferred:
 
 Pressure areas expected next:
 
-1. readback and identity-routing pressure from scene picking/probe flows,
-2. fixture coverage that combines viewport/scissor, depth state, and draw sequencing,
-3. richer render-pipeline fixed-function state validation for the native 3D slice,
-4. browser-oriented replay checks for the currently active command subset,
-5. multi-pass sequencing pressure from transparency work.
+1. browser-oriented replay checks for the currently active command subset,
+2. richer output/runtime validation around depth-enabled native 3D scenes,
+3. identity-routing pressure from wider mesh picking/probe flows,
+4. multi-pass sequencing pressure from transparency work,
+5. fixture coverage for any contract gaps exposed by manual interactive examples.
 
 
 ## Validation Snapshot
@@ -154,10 +158,12 @@ Spec maintenance rules:
 
 Near-term spec work should concentrate on:
 
-1. readback/picking/probe fixtures once the scene result queues start emitting real requests,
-2. depth-attachment and depth-state fixtures required by the mesh slice,
-3. viewport/scissor and panel-region sequencing fixtures where scene emission now relies on them,
-4. browser-portability review of shader/module and pipeline assumptions,
+1. browser-portability review of shader/module, bind-group, texture, and pipeline assumptions,
+2. output-oriented native 3D/depth fixture pressure where the current structural fixtures are not
+   enough,
+3. viewport/scissor and panel-region sequencing fixtures where scene emission relies on them,
+4. richer request/readback fixtures only when mesh/object picking or probe payload widening exposes a
+   concrete contract gap,
 5. keeping transparency requirements explicit but deferred until their first executable fixture slice
    is ready.
 

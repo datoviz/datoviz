@@ -15,6 +15,11 @@ Active execution notes:
 2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
 
+Current branch emphasis as of `2026-05-13`: native scene -> DRP2 -> app is active for retained
+2D/early-3D rendering, pick/probe request handling, and app trace/status diagnostics. Treat broad
+new scene API growth, WebGPU runtime work, and hygiene/static-analysis sweeps as separate prioritized
+lanes rather than mixing them into one implementation pass.
+
 Historical request-slice planning notes:
 
 1. [now/SCENE_PICK_PROBE_EXECUTION_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PICK_PROBE_EXECUTION_PLAN.md)
@@ -77,6 +82,7 @@ Completed phase records. These are useful context, but they are not current exec
 11. [done/DRP2_SCENE_SAFETY.md](/home/cyrille/GIT/Viz/datoviz/agents/done/DRP2_SCENE_SAFETY.md)
 12. [done/RENDER_PASS_BATCHING.md](/home/cyrille/GIT/Viz/datoviz/agents/done/RENDER_PASS_BATCHING.md)
 13. [done/CONTROLLER_TRANSFORM_DESIGN.md](/home/cyrille/GIT/Viz/datoviz/agents/done/CONTROLLER_TRANSFORM_DESIGN.md)
+14. [done/SCENE_PICK_PROBE_EXECUTION.md](/home/cyrille/GIT/Viz/datoviz/agents/done/SCENE_PICK_PROBE_EXECUTION.md)
 
 ### `later/`
 

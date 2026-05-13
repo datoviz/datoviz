@@ -1,9 +1,10 @@
 > **Implementation Status**
 > - **Status:** `STRATEGIC BACKLOG`
-> - **Verified on:** `2026-05-11`
+> - **Verified on:** `2026-05-13`
 > - **Role:** long-horizon direction for DRP2, WebGPU runtime work, and eventual scene bring-up
-> - **Current branch status:** not the immediate execution plan; active priority is the native
->   scene -> DRP2 -> vklite/canvas slice
+> - **Current branch status:** not the immediate coding checklist, but now worth a narrow feasibility
+>   spike after the native 3D/manual-smoke pass because visuals are still early enough that browser
+>   constraints can influence DRP2 without major rewrites
 > - **Execution note:** the actionable spec-phase entry point is `agents/now/DRP2_SPEC.md`
 > - **Implementation note:** the active repo-local implementation guide is
 >   `agents/now/V0_4_NEXT_STEPS.md`
@@ -64,8 +65,10 @@ Reach a point where Datoviz has:
    and `image`.
 4. Per-panel runtime viewport/scissor, retained sampled fields, image colormap scale binding, shared
    scene buffers, and controller-driven panel transforms are already live on the native path.
-5. The next native pressure targets are interaction/pick/probe plumbing and mesh depth/depth-state
-   validation before broader browser parity or long-tail visual expansion.
+5. First point-pick and image-probe request execution is active through DRP2 readbacks. Mesh depth
+   attachments and depth-enabled pipelines are structurally emitted and tested; a stronger manual
+   native 3D example should pressure them before broader browser parity or long-tail visual
+   expansion.
 
 
 ## Target Architecture
@@ -92,8 +95,8 @@ Reach a point where Datoviz has:
 
 This document remains backlog-oriented, but the recommended ordering has changed:
 
-1. native 3D baseline first,
-2. early WebGPU feasibility second,
+1. native 3D baseline and manual app smoke first,
+2. early WebGPU feasibility second, while the visual set is still small,
 3. broader browser/runtime parity later,
 4. long-tail scene growth after the contract survives both native 3D and browser pressure.
 

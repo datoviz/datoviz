@@ -23,30 +23,39 @@ maintainability.
 When refactoring, do NOT delete existing comments, keep them and update them if needed, but do not delete them.
 
 
-### Current branch snapshot (2026-05-06)
+### Current branch snapshot (2026-05-13)
 
 * The low-level graphics stack (`vk`, `vklite`, `canvas`, `stream`, `video`, `window`) has completed
   its main ownership/boundary cleanup pass and remains the runtime foundation for v0.4.
-* `drp2` and `scene` are now active v0.4 modules, not future scaffolding. The first vertical slice
-  exists: scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream frame
-  execution, with focused tests and basic C examples.
-* Current focused validation on `2026-05-06`: `just spec-check` passed with `119/119` DRP2 fixtures
-  and `52` fixture-runner tests; `just test drp2` passed `73/73`; `just test scene` passed `52/52`.
-  The most recent recorded full-suite validation was on `2026-04-30` with `244/244` tests passing.
+* `drp2`, `scene`, and `app` are active v0.4 modules, not future scaffolding. The current vertical
+  slice exists: scene/frame-plan emission -> DRP2 command stream -> vklite runtime -> canvas/stream
+  frame execution, plus a small app presentation layer for offscreen and GLFW windows.
+* Built-in scene visuals now include point, primitive, mesh, path-as-line/strip, and image. Scene
+  support also covers retained sampled fields, image colormap scale binding, colorbar bookkeeping,
+  panzoom/arcball controllers, narrow text/annotation bookkeeping, and a first GPU-backed point
+  pick / image probe request path.
+* Recent commits on `2026-05-13` hardened the app trace/status output, request-runtime reuse,
+  figure-size synchronization before app frame emission, and panel-coordinate mapping for hover
+  picking.
+* Current recorded focused validation: `just spec-check` last passed with `119/119` DRP2 fixtures
+  and `52` fixture-runner tests; `just test drp2` last passed with `73/73`; `just test scene` last
+  recorded `127/127` before the latest pick-hover and app trace follow-up commits. Re-run the
+  narrow target before relying on those newer slices.
 * For the current execution summary and next-step guidance, start with
   `agents/now/V0_4_NEXT_STEPS.md`, then use `agents/README.md` to find completed phase records.
 
 ### 🏗️ Current refactor status (v0.4-dev)
 
-* ✅ Active modules currently linked into `libdatoviz` are: `common`, `ds`, `fileio`, `math`, `thread`,
-  `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, and `scene`.
+* ✅ Active modules currently linked into `libdatoviz` by default are: `common`, `ds`, `fileio`,
+  `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`,
+  `scene`, and `app`.
 * ✅ The active low-level graphics stack is the stable foundation; use it rather than creating a
   parallel presentation, frame-stream, or Vulkan wrapper path.
 * 🚧 The highest-value remaining work has moved up a layer: harden the scene -> DRP2 -> runtime path,
-  expand the minimal point-based scene surface, and keep examples/tests in lockstep with that path.
-* ✅ The active point slice now covers retained point-buffer rendering, repeated partial updates,
-  multi-panel figures, and per-panel runtime viewport/scissor handling through the scene -> DRP2 ->
-  vklite/canvas path.
+  pressure the native 2D/3D retained scene path, and keep examples/tests in lockstep with that path.
+* ✅ The active scene slice now covers retained visual rendering, repeated partial updates,
+  multi-panel figures, per-panel runtime viewport/scissor handling, depth-enabled mesh/primitive
+  passes, and first pick/probe readback requests through the scene -> DRP2 -> vklite/canvas path.
 * ⏭️ Several other directories/headers remain scaffolding (for example `color`, `wasm`, text/gui,
   and richer renderer/client layers); keep them untouched unless explicitly requested.
 
@@ -89,7 +98,8 @@ datoviz/
 │   ├── vk/                     # Vulkan backend (core Vulkan helpers)
 │   ├── vklite/                 # Higher-level Vulkan convenience layer
 │   ├── drp2/                   # Backend-agnostic rendering protocol stream + runtime
-│   ├── scene/                  # Early scene graph, frame-plan, app, and DRP2 emitter
+│   ├── scene/                  # Scene graph, frame-plan, retained objects, and DRP2 emitter
+│   ├── app/                    # Small presentation layer over scene + canvas/runtime
 │   ├── empty.c                 # Keeps the shared library non-empty
 │   └── CMakeLists.txt          # Collects object modules into libdatoviz
 │       (additional module folders exist; some are placeholders)
@@ -106,16 +116,17 @@ datoviz/
 
 Modules currently compiled into `libdatoviz` when the default build options are on: **`common`, `ds`,
 `fileio`, `math`, `thread`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`,
-and `scene`**. Modules such as `color`/`wasm` remain inactive scaffolding and should stay untouched
-unless explicitly requested.
+`scene`, and `app`**. Modules such as `color`/`wasm` remain inactive scaffolding and should stay
+untouched unless explicitly requested.
 
 ### ⏩ Planned activation order
 
-1. Harden the first active scene/DRP2 vertical slice: point visuals, frame-plan emission, borrowed
-   canvas frame targets, runtime execution, readback/capture, and failure paths.
-2. Expand the minimal scene visual surface deliberately: next likely targets are a simple triangle/mesh
-   visual and an image/texture visual, each with tests and examples before broader API growth.
-3. Keep non-activated modules as scaffolding unless a task explicitly brings one online.
+1. Harden the active scene/DRP2/app vertical slice: retained resources, borrowed canvas frame
+   targets, runtime execution, readback/capture, request processing, and failure paths.
+2. Pressure-test native 3D with mesh/depth/arcball examples before broad visual-family expansion.
+3. Start a narrow WebGPU feasibility lane against the already-active DRP2 subset, without forking
+   scene semantics or creating a parallel renderer contract.
+4. Keep non-activated modules as scaffolding unless a task explicitly brings one online.
 
 ---
 
@@ -162,6 +173,7 @@ unless explicitly requested.
   add_subdirectory(vklite)
   add_subdirectory(drp2)
   add_subdirectory(scene)
+  add_subdirectory(app)
 
   target_link_libraries(datoviz
       PRIVATE
@@ -179,6 +191,7 @@ unless explicitly requested.
           datoviz_vklite
           datoviz_drp2
           datoviz_scene
+          datoviz_app
           datoviz_volk
   )
 
@@ -191,6 +204,9 @@ unless explicitly requested.
 `DVZ_COMPILE_DEFINITIONS` is assembled in `src/CMakeLists.txt` (OS/compiler switches, `LOG_USE_COLOR`,
 `ENABLE_VALIDATION_LAYERS`, `DEBUG`, `VK_NO_PROTOTYPES`, feature flags), exported through a global property,
 and then applied to registered targets in the top-level `CMakeLists.txt` (`src` modules and testing targets).
+The current root build exposes layered feature options (`DVZ_BUILD_CORE`, `DVZ_BUILD_VK`,
+`DVZ_BUILD_CANVAS`, `DVZ_BUILD_DRP2`, `DVZ_BUILD_SCENE`, `DVZ_BUILD_APP`, and currently-off
+`DVZ_BUILD_WEBGPU`) and links only the enabled object modules into `libdatoviz`.
 Some existing module `CMakeLists.txt` files still reference `${COMPILE_DEFINITIONS}` as legacy wiring;
 do not copy that pattern in new code—use `${DVZ_COMPILE_DEFINITIONS}` instead.
 
@@ -299,18 +315,25 @@ int test_common(TstSuite* suite)
 
 ```c
 // testing/dvztest.c
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+#include "../src/app/tests/test_app.h"
+#endif
 #include "../src/common/tests/test_common.h"
 #include "../src/ds/tests/test_ds.h"
+#if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
 #include "../src/drp2/tests/test_drp2.h"
+#endif
 #include "../src/fileio/tests/test_fileio.h"
 #include "../src/math/tests/test_math.h"
+#if defined(DVZ_HAS_SCENE) && DVZ_HAS_SCENE
 #include "../src/scene/tests/test_scene.h"
+#endif
 #include "../src/stream/tests/test_stream.h"
 #include "../src/thread/tests/test_thread.h"
 #include "../src/input/tests/test_input.h"
 #include "../src/window/tests/test_window.h"
 #include "../src/canvas/tests/test_canvas.h"
-#if DVZ_HAS_CUDA
+#if (defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA) || (defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ)
 #include "../src/video/tests/test_video.h"
 #endif
 #include "../src/vk/tests/test_vk.h"
@@ -321,18 +344,25 @@ int main(int argc, char** argv)
 {
     TstSuite suite = tst_suite();
 
+#if defined(DVZ_HAS_APP) && DVZ_HAS_APP
+    test_app(&suite);
+#endif
     test_common(&suite);
     test_ds(&suite);
+#if defined(DVZ_HAS_DRP2) && DVZ_HAS_DRP2
     test_drp2(&suite);
+#endif
     test_fileio(&suite);
     test_math(&suite);
+#if defined(DVZ_HAS_SCENE) && DVZ_HAS_SCENE
     test_scene(&suite);
+#endif
     test_stream(&suite);
     test_thread(&suite);
     test_input(&suite);
     test_window(&suite);
     test_canvas(&suite);
-#if DVZ_HAS_CUDA
+#if (defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA) || (defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ)
     test_video(&suite);
 #endif
     test_vk(&suite);
@@ -360,6 +390,7 @@ file(GLOB TEST_SOURCES
 
 add_executable(dvztest ${TEST_SOURCES})
 target_link_libraries(dvztest PRIVATE
+    datoviz_app
     datoviz_common
     datoviz_ds
     datoviz_fileio

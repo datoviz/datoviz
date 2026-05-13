@@ -104,6 +104,14 @@ Current tracked task records in this directory:
 - `2026-05-06-scene-point-and-runtime-hardening` — completed
 - `2026-05-06-task-docs-policy` — completed
 - `2026-05-06-visual-destroy-live-stream-regression` — completed
+- `2026-05-07-fix-scene-background-color-macos-build` — completed
+- `2026-05-07-investigate-panzoom-zoom-wheel` — completed
+- `2026-05-07-normalize-wheel-sign-backend` — completed
+- `2026-05-08-fix-scene-converter-spirv-alignment-warning` — completed
+- `2026-05-10-fix-scene-json-buffer-binding-metadata` — completed
+- `2026-05-10-fix-scene-mesh-indexed-default-color-emits-draw-indexed` — completed
+- `2026-05-13-drp2-trace-logging` — completed implementation, follow-up validation still useful
+- `2026-05-13-doc-state-refresh` — completed
 
 Update this index opportunistically when adding or superseding tasks; it does not need to be perfectly exhaustive
 for older history, but it should stay accurate for current and recent work.

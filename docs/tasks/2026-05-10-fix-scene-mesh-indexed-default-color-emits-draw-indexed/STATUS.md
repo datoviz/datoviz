@@ -2,7 +2,7 @@
 
 - Task: fix `test_scene_mesh_indexed_default_color_emits_draw_indexed` in `src/scene/tests/test_scene.c`.
 - Started: 2026-05-10
-- State: in progress
+- State: completed
 
 ## Plan
 
