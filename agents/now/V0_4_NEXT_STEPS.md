@@ -92,6 +92,15 @@ Deliver the next implementation slices in this order unless the user redirects:
 6. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
 
+Sidecar design slice recorded on 2026-05-13:
+
+1. Visual attribute sources and constant-value optimization are specified in
+   [../../spec/scene/pipeline/ATTRIBUTE_SOURCES.md](/home/cyrille/GIT/Viz/datoviz/spec/scene/pipeline/ATTRIBUTE_SOURCES.md).
+2. The implementation pickup note is
+   [../../docs/tasks/2026-05-13-visual-attribute-sources/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-visual-attribute-sources/NEXT_STEPS.md).
+3. This is not yet active code. The first recommended slice is constant point `size` via
+   `dvz_visual_set_value(point, "size", &size)` while retaining the current dense per-item fallback.
+
 
 ## Scope Guardrails
 

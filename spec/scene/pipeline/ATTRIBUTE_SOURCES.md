@@ -198,18 +198,176 @@ When a family spec does not list a source for an attribute, the default is `PER_
 
 ## Source Selection In The Public API
 
-Attribute source is encoded implicitly in the item count `n` passed to
-`dvz_visual_set_data(visual, attr_name, data, n)`:
+### Active first-slice API status
 
-| `n` value | Source |
-|---|---|
-| `1` | `CONSTANT` — one value for all items |
-| `item_count` | `PER_ITEM` — one value per item |
-| `span_count` | `PER_SPAN` — one value per structural span (GroupedItemTable visuals only) |
-| `group_count` | `PER_GROUP` — one value per semantic group |
+The active v0.4 first-slice C API does not yet implement the full source model described in this
+document.
 
-The scene validates that `n` matches an accepted source for the attribute as declared in the
-per-family spec. An `n` value that does not match any accepted source is a validation error.
+Today, builtin scene visuals expose retained dense attribute arrays through:
+
+```c
+dvz_visual_set_data(visual, attr_name, data, item_count)
+dvz_visual_set_data_range(visual, attr_name, data, first_item, item_count)
+```
+
+The API exposes item counts and, for range updates, an item index (`first_item`).
+It does not expose a byte offset, a binding offset, or a source-layout descriptor.
+
+For the active point visual, `position`, `color`, and `size` are all per-item attributes and must use
+the same `item_count`.
+The scene stores `item_count * item_size` bytes for each attribute, emits one buffer upload per dirty
+attribute range, and the GLSL point shader reads `size` from a vertex input.
+
+There is currently no active public API for declaring that a builtin visual attribute is:
+
+1. one constant value shared by the whole visual,
+2. one value per semantic group,
+3. one value per structural span.
+
+The source model below is the intended API direction, not the current implementation contract.
+
+### Intended source-specific range API
+
+Attribute source should be explicit in the public API.
+It should not be inferred from a count value because `1` is ambiguous: it may mean one item, one
+span, one group, or one constant value.
+
+The intended API shape is:
+
+```c
+int dvz_visual_set_item_data(
+    DvzVisual* visual, const char* attr_name, const void* data,
+    uint32_t first_item, uint32_t item_count);
+
+int dvz_visual_set_span_data(
+    DvzVisual* visual, const char* attr_name, const void* data,
+    uint32_t first_span, uint32_t span_count);
+
+int dvz_visual_set_group_data(
+    DvzVisual* visual, const char* attr_name, const void* data,
+    uint32_t first_group, uint32_t group_count);
+
+int dvz_visual_set_value(
+    DvzVisual* visual, const char* attr_name, const void* value);
+```
+
+For ranged sources, the offset is always expressed in the source's semantic coordinate system:
+
+| Function | Source | Offset unit |
+|---|---|---|
+| `dvz_visual_set_item_data` | `PER_ITEM` | item index |
+| `dvz_visual_set_span_data` | `PER_SPAN` | span index |
+| `dvz_visual_set_group_data` | `PER_GROUP` | group index |
+| `dvz_visual_set_value` | `CONSTANT` | none; exactly one value |
+
+Full replacement is represented by `first_* = 0` and `*_count` equal to the current source count.
+Separate no-offset convenience wrappers may exist, but the range form should be the canonical API so
+partial updates are available uniformly.
+
+Group membership is separate from group-valued attributes because several attributes may share the
+same group topology:
+
+```c
+int dvz_visual_set_group_ids(
+    DvzVisual* visual, const uint32_t* group_ids,
+    uint32_t first_item, uint32_t item_count);
+
+int dvz_visual_set_span_group_ids(
+    DvzVisual* visual, const uint32_t* group_ids,
+    uint32_t first_span, uint32_t span_count);
+```
+
+Flat `ItemTable` visuals use per-item group ids.
+Span-structured `GroupedItemTable` visuals use per-span group ids when semantic groups are shared by
+several spans.
+
+The scene validates that the selected source is accepted by the visual family and attribute.
+For example, `position` generally accepts only `PER_ITEM`, while style attributes such as `color`,
+`size`, and `linewidth` may accept `CONSTANT`, `PER_ITEM`, `PER_SPAN`, or `PER_GROUP` depending on
+the visual family.
+
+
+## Implementation Avenue: Optimizing `CONSTANT` Sources
+
+`CONSTANT` sources are important because they let the scene avoid expanding one value to every item.
+For example, a point visual with one shared point size should not allocate and upload an
+`N * sizeof(float)` size buffer solely because the shader can currently read only a vertex attribute.
+
+The preferred implementation direction is:
+
+1. keep the public API semantic (`size` is a visual attribute whose source is `CONSTANT`),
+2. lower that source to a visual parameter block, push constant, or uniform buffer when practical,
+3. emit a shader/pipeline layout that reads the value from that constant source,
+4. fall back to dense per-item expansion only when the runtime or visual family cannot support the
+   optimized path.
+
+This means the optimization belongs in the scene-to-DRP2 lowering layer, not in user code.
+Users should declare the data multiplicity; the renderer should choose the storage and shader access
+strategy.
+
+### Shader interface options
+
+Vulkan shader interfaces are mostly fixed at pipeline creation time.
+Switching an attribute between vertex input, uniform, and group lookup therefore cannot be a purely
+draw-time decision unless the selected pipeline already declares all required inputs.
+
+Valid implementation strategies are:
+
+1. **Generic fallback shader**: declare all supported sources, use a small mode field, and bind dummy
+   resources for unused paths. This avoids shader permutation growth but keeps extra interface
+   declarations and may leave runtime branches or indirect loads.
+2. **Accessor-template variants**: keep visual logic in one shared shader body and generate only the
+   source-specific accessor and layout declarations, for example `get_size()` reading either
+   `inSize` or `params.size`. This avoids hand-written shader duplication while allowing unused
+   inputs to disappear from the pipeline layout.
+3. **Specialization constants**: specialize source modes at pipeline creation so branches can be
+   constant-folded. This is useful for reducing branch cost, but still creates pipeline variants and
+   should not be treated as a draw-time switch.
+4. **Dense expansion fallback**: expand one constant into a per-item buffer when the optimized path is
+   unavailable. This preserves correctness but loses the memory/upload advantage.
+
+Dynamic SPIR-V editing is technically possible but should not be the first implementation path.
+Changing shader interfaces directly in SPIR-V turns this into a compiler-backend problem and is harder
+to validate and debug than generated GLSL accessors or bounded pipeline variants.
+
+### Avoiding combinatorial shader variants
+
+The scene layer should not create one shader for every combination of attribute sources.
+For a visual with many attributes, `attribute|constant|group` choices quickly become a combinatorial
+space.
+
+The intended approach is a bounded hybrid:
+
+1. provide one generic fallback path for correctness and uncommon combinations,
+2. define a feature-layout key from source modes, for example
+   `position=PER_ITEM,color=CONSTANT,size=CONSTANT`,
+3. cache only the pipeline variants that are actually requested,
+4. add hand-picked optimized variants for common hot layouts,
+5. share the shader body and generate only small source accessor blocks.
+
+For point visuals, a useful first optimized key would be:
+
+```text
+position=PER_ITEM
+color=PER_ITEM
+size=CONSTANT
+```
+
+The optimized vertex shader would still read position and color as vertex inputs, but would read size
+from a small parameter block instead of binding a size vertex buffer.
+
+### `PER_GROUP` lowering
+
+`PER_GROUP` sources have two main GPU realizations:
+
+1. **draw-per-group or draw-per-span**: sort or batch items by group and bind one constant parameter
+   block per draw. This avoids per-item group lookup but increases draw count.
+2. **group indirection**: store a per-item or per-span `group_id` plus a compact group-value table,
+   then look up `group_values[group_id]` in the shader. This preserves one draw for interleaved groups
+   but adds an index buffer/load.
+
+The scene should choose between these strategies from item count, group count, update frequency,
+whether data is already grouped contiguously, and runtime capability.
 
 
 ## Mutability Hint
