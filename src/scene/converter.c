@@ -152,7 +152,9 @@
     "layout(location=2)in vec3 inNormal;\n"                                                     \
     "layout(location=0)out vec4 fragColor;\n"                                                   \
     "layout(location=1)out vec3 fragNormal;\n"                                                  \
-    "void main(){gl_Position=mvp.proj*mvp.view*mvp.model*vec4(inPos,1.0);"                     \
+    "vec4 transform(vec3 pos){vec4 tr=mvp.proj*mvp.view*mvp.model*vec4(pos,1.0);"              \
+    "tr.y=-tr.y;tr.z=0.5*(tr.z+tr.w);return tr;}\n"                                            \
+    "void main(){gl_Position=transform(inPos);"                                                \
     "fragColor=inColor;fragNormal=mat3(mvp.model)*inNormal;}\n"
 #define DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL                                                        \
     "#version 450\n"                                                                            \
