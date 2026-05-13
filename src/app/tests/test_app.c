@@ -157,6 +157,38 @@ static int test_app_trace_fingerprint_keeps_write_ranges(TstSuite* suite, TstIte
 }
 
 
+static int test_app_trace_fingerprint_ignores_transient_pass_ids(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_begin_render_pass(a, 100, 7, 5000));
+    AT(dvz_drp2_stream_set_pipeline(a, 100, 42));
+    AT(dvz_drp2_stream_draw(a, 100, 300, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(a, 100));
+
+    AT(dvz_drp2_stream_begin_render_pass(b, 104, 8, 5000));
+    AT(dvz_drp2_stream_set_pipeline(b, 104, 42));
+    AT(dvz_drp2_stream_draw(b, 104, 300, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(b, 104));
+
+    uint64_t fa = 0;
+    uint64_t fb = 0;
+    AT(_dvz_app_trace_fingerprint(a, &fa));
+    AT(_dvz_app_trace_fingerprint(b, &fb));
+    AT(fa == fb);
+
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
 
 int test_app(TstSuite* suite)
 {
@@ -169,5 +201,6 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_fingerprint_name_is_frame_stable);
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
     TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);
+    TEST_SIMPLE(test_app_trace_fingerprint_ignores_transient_pass_ids);
     return 0;
 }
