@@ -108,6 +108,10 @@ bool _is_image_visual(
     const ConverterState* state, const uint64_t* ids, uint32_t n,
     uint64_t* out_pos, uint64_t* out_uv, uint64_t* out_tex);
 
+uint64_t _scene_visual_resource_by_role(
+    const ConverterState* state, const uint64_t* ids, uint32_t n,
+    DvzFramePlanResourceRole role);
+
 bool _emitter_resolve_render_vertex_buffers(
     DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint64_t* out_ids,
     uint32_t* out_count);

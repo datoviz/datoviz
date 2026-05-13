@@ -17,7 +17,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 
 #include <vulkan/vulkan_core.h>
 
@@ -28,7 +27,6 @@
 #include "_frame_plan_runtime_upload.h"
 #include "_mvp_bindings.h"
 #include "_render_pass.h"
-#include "_scene_resource_key.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
 #include "datoviz/drp2.h"
@@ -496,34 +494,29 @@ static bool _emitter_emit_render(
         fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
         topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
-        /* Infer vertex count from position buffer byte_size / sizeof(vec3). */
-        for (uint32_t i = 0; i < vertex_buffer_count; i++)
+        uint64_t pos_id = _scene_visual_resource_by_role(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+        if (pos_id != 0)
         {
-            if (strcmp(_resource_data_tag(&emitter->resources, vertex_buffer_ids[i]),
-                       "position") == 0)
-            {
-                uint64_t sz = _resource_byte_size(&emitter->resources, vertex_buffer_ids[i]);
-                if (sz > 0)
-                    vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
-                break;
-            }
+            uint64_t sz = _resource_byte_size(&emitter->resources, pos_id);
+            if (sz > 0)
+                vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
         }
     }
     else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
     {
-        /* Primitive visual: pass-through shaders with visual-selected topology. */
-        for (uint32_t i = 0; i < vertex_buffer_count; i++)
+        uint64_t pos_id = _scene_visual_resource_by_role(
+            &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
+        if (pos_id != 0)
         {
-            if (strcmp(_resource_data_tag(&emitter->resources, vertex_buffer_ids[i]),
-                       "position") == 0)
-            {
-                uint64_t sz = _resource_byte_size(&emitter->resources, vertex_buffer_ids[i]);
-                if (sz > 0)
-                    vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
-                topology = _resource_topology(&emitter->resources, vertex_buffer_ids[i]);
-                break;
-            }
+            uint64_t sz = _resource_byte_size(&emitter->resources, pos_id);
+            if (sz > 0)
+                vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
+            topology = _resource_topology(&emitter->resources, pos_id);
         }
+        /* Primitive visual: pass-through shaders with visual-selected topology. */
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_prim%s", fmt);
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
         vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);

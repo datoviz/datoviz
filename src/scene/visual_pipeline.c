@@ -64,6 +64,40 @@ static bool _visual_meta_is_primitive(uint32_t visual_type)
 
 
 /**
+ * Return the legacy data tag for a typed resource role.
+ *
+ * @param role the typed resource role
+ * @return the legacy data tag, or NULL when the role has no tag fallback
+ */
+static const char* _resource_role_tag(DvzFramePlanResourceRole role)
+{
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION:
+        return "position";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR:
+        return "color";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE:
+        return "size";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS:
+        return "texcoords";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE:
+        return "texture";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL:
+        return "normal";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX:
+        return "index";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING:
+        return "primitive_shading";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE:
+    default:
+        return NULL;
+    }
+}
+
+
+
+/**
  * Resolve draw-relevant state from typed FramePlan visual metadata.
  *
  * @param emitter the persistent emitter
@@ -270,6 +304,43 @@ bool _is_image_visual(
 
 
 /**
+ * Find the first visual resource with a typed role, falling back to legacy tags.
+ *
+ * @param state the resource state
+ * @param ids the resource ids
+ * @param n the resource id count
+ * @param role the typed role to find
+ * @return the resource id, or zero when absent
+ */
+uint64_t _scene_visual_resource_by_role(
+    const ConverterState* state, const uint64_t* ids, uint32_t n,
+    DvzFramePlanResourceRole role)
+{
+    ANN(state);
+    ANN(ids);
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        if (_resource_role(state, ids[i]) == role)
+            return ids[i];
+    }
+
+    const char* tag = _resource_role_tag(role);
+    if (tag == NULL)
+        return 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        if (_resource_role(state, ids[i]) != DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE)
+            continue;
+        if (strcmp(_resource_data_tag(state, ids[i]), tag) == 0)
+            return ids[i];
+    }
+    return 0;
+}
+
+
+
+/**
  * Resolve persistent vertex-buffer ids for a render node with no new uploads.
  *
  * @param emitter the persistent emitter
@@ -451,7 +522,9 @@ bool _scene_visual_desc_from_render(
     {
         out->has_normal =
             out->has_normal ||
-            strcmp(_resource_data_tag(&emitter->resources, out->vbuf_ids[j]), "normal") == 0;
+            _scene_visual_resource_by_role(
+                &emitter->resources, &out->vbuf_ids[j], 1,
+                DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL) != 0;
     }
 
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
