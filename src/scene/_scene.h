@@ -639,6 +639,8 @@ void _scene_field_reset(DvzSampledField* field);
 
 void _scene_buffer_reset(DvzSceneBuffer* buffer);
 
+void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources);
+
 uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
 
 void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
