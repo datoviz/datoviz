@@ -263,6 +263,15 @@ DVZ_EXPORT void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, i
 DVZ_EXPORT void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags);
 
 
+/**
+ * Return the arcball controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned arcball, or NULL
+ */
+DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
+
+
 
 /*************************************************************************************************/
 /*  Visuals                                                                                      */

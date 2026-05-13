@@ -7,15 +7,13 @@
 /* hello_mesh — lit indexed cube mesh via dvz_mesh + scene/app.
  *
  * Creates one triangle-list cube mesh with explicit face normals, per-face colours, and a shared
- * scene index buffer. The cube vertices are rotated on the CPU so the default captured screenshot
- * already shows depth ordering and directional lighting.
+ * scene index buffer. A perspective camera and arcball model transform provide the default 3D view.
  *
  * Build:  just example-c hello_mesh
  * Run:    ./build/examples/c/hello_mesh
  */
 
 #include <stdint.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -27,24 +25,6 @@ static void _outpath(const char* exe, const char* name, char* buf, size_t n)
     const char* slash = strrchr(exe, '/');
     if (slash) snprintf(buf, n, "%.*s/%s", (int)(slash - exe), exe, name);
     else snprintf(buf, n, "%s", name);
-}
-
-
-static void _rotate_point(float x, float y, float z, float* out)
-{
-    const float ax = -0.65f;
-    const float ay = +0.75f;
-    const float cx = cosf(ax), sx = sinf(ax);
-    const float cy = cosf(ay), sy = sinf(ay);
-
-    const float y1 = cx * y - sx * z;
-    const float z1 = sx * y + cx * z;
-    const float x2 = cy * x + sy * z1;
-    const float z2 = -sy * x + cy * z1;
-
-    out[0] = x2;
-    out[1] = y1;
-    out[2] = z2;
 }
 
 
@@ -79,20 +59,16 @@ static void _build_cube(
 
     for (uint32_t face = 0; face < 6; face++)
     {
-        float rotated_normal[3] = {0};
-        _rotate_point(
-            face_normals[face][0], face_normals[face][1], face_normals[face][2], rotated_normal);
-
         for (uint32_t corner = 0; corner < 4; corner++)
         {
             const uint32_t vertex = 4 * face + corner;
-            _rotate_point(
-                face_positions[face][corner][0], face_positions[face][corner][1],
-                face_positions[face][corner][2], positions[vertex]);
+            positions[vertex][0] = face_positions[face][corner][0];
+            positions[vertex][1] = face_positions[face][corner][1];
+            positions[vertex][2] = face_positions[face][corner][2];
             memcpy(colors[vertex], face_colors[face], sizeof(DvzColor));
-            normals[vertex][0] = rotated_normal[0];
-            normals[vertex][1] = rotated_normal[1];
-            normals[vertex][2] = rotated_normal[2];
+            normals[vertex][0] = face_normals[face][0];
+            normals[vertex][1] = face_normals[face][1];
+            normals[vertex][2] = face_normals[face][2];
         }
 
         const uint32_t base = 4 * face;
@@ -117,6 +93,31 @@ int main(int argc, char** argv)
 
     DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     if (!panel) { fprintf(stderr, "dvz_panel() failed\n"); dvz_scene_destroy(scene); return 1; }
+
+    DvzCameraDesc camera_desc = dvz_camera_desc();
+    camera_desc.eye[0] = 0.0f;
+    camera_desc.eye[1] = 0.0f;
+    camera_desc.eye[2] = 3.0f;
+    camera_desc.target[0] = 0.0f;
+    camera_desc.target[1] = 0.0f;
+    camera_desc.target[2] = 0.0f;
+    camera_desc.up[0] = 0.0f;
+    camera_desc.up[1] = 1.0f;
+    camera_desc.up[2] = 0.0f;
+    camera_desc.fov_y = 0.78539816339f;
+    camera_desc.near = 0.1f;
+    camera_desc.far = 100.0f;
+    if (!dvz_panel_set_camera(panel, &camera_desc))
+    {
+        fprintf(stderr, "dvz_panel_set_camera() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+
+    dvz_panel_set_arcball(panel, NULL, 0);
+    DvzArcball* arcball = dvz_panel_arcball(panel);
+    if (!arcball) { fprintf(stderr, "dvz_panel_set_arcball() failed\n"); dvz_scene_destroy(scene); return 1; }
+    dvz_arcball_initial(arcball, (vec3){+0.6f, -1.2f, +3.0f});
 
     DvzVisual* visual = dvz_mesh(scene, 0);
     if (!visual) { fprintf(stderr, "dvz_mesh() failed\n"); dvz_scene_destroy(scene); return 1; }

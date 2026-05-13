@@ -2652,6 +2652,19 @@ void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags)
 
 
 /**
+ * Return the arcball controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned arcball, or NULL
+ */
+DvzArcball* dvz_panel_arcball(DvzPanel* panel)
+{
+    ANN(panel);
+    return panel->arcball;
+}
+
+
+/**
  * Set or replace the camera attached to a panel.
  *
  * @param panel the panel
