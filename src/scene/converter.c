@@ -152,19 +152,27 @@
     "layout(location=2)in vec3 inNormal;\n"                                                     \
     "layout(location=0)out vec4 fragColor;\n"                                                   \
     "layout(location=1)out vec3 fragNormal;\n"                                                  \
+    "layout(location=2)out vec3 fragWorldPos;\n"                                                \
+    "layout(location=3)out vec3 fragCameraPos;\n"                                               \
     "vec4 transform(vec3 pos){vec4 tr=mvp.proj*mvp.view*mvp.model*vec4(pos,1.0);"              \
     "tr.y=-tr.y;tr.z=0.5*(tr.z+tr.w);return tr;}\n"                                            \
-    "void main(){gl_Position=transform(inPos);"                                                \
-    "fragColor=inColor;fragNormal=mat3(mvp.model)*inNormal;}\n"
+    "void main(){vec4 world=mvp.model*vec4(inPos,1.0);gl_Position=transform(inPos);"           \
+    "fragColor=inColor;fragWorldPos=world.xyz;"                                                \
+    "fragCameraPos=(inverse(mvp.view)*vec4(0,0,0,1)).xyz;"                                     \
+    "fragNormal=transpose(inverse(mat3(mvp.model)))*inNormal;}\n"
 #define DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL                                                        \
     "#version 450\n"                                                                            \
     "layout(set=1,binding=0)uniform PrimitiveShading{vec4 lightDir;vec4 params;}shading;\n"    \
     "layout(location=0)in vec4 fragColor;\n"                                                    \
     "layout(location=1)in vec3 fragNormal;\n"                                                   \
+    "layout(location=2)in vec3 fragWorldPos;\n"                                                 \
+    "layout(location=3)in vec3 fragCameraPos;\n"                                                \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){vec3 n=normalize(fragNormal);vec3 l=normalize(shading.lightDir.xyz);"         \
-    "float lambert=max(dot(n,l),0.0);float shade=shading.params.x+shading.params.y*lambert;"   \
-    "outColor=vec4(fragColor.rgb*shade,fragColor.a);}\n"
+    "vec3 v=normalize(fragCameraPos-fragWorldPos);vec3 h=normalize(l+v);"                      \
+    "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
+    "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
+    "outColor=vec4(clamp(rgb,0.0,1.0),fragColor.a);}\n"
 
 /* Image visual: position (vec3) + texcoords (vec2); samples a 2D RGBA8 texture. */
 #define DRP2_IMAGE_VERTEX_GLSL                                                                  \
