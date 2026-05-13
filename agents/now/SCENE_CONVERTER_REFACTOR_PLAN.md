@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; DESCRIPTOR EXTRACTION STARTED`
+> - **Status:** `MECHANICAL SPLIT LANDED; EMITTER STATE HARDENING STARTED`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -30,7 +30,9 @@ Follow-up commit `45ae792a` added `DvzSceneVisualPipelineDesc`, moving vertex la
 selection into `visual_pipeline.c`. Follow-up commit `0f29f4f1` added
 `DvzSceneVisualBindDesc`, moving bind-role selection into `visual_pipeline.c`.
 `frame_plan_runtime.c` still owns concrete DRP2 bind-group object creation and draw submission for
-that path.
+that path. Follow-up commit `586d3fa0` started the emitter state hardening pass: persistent runtime
+resource/object tables now grow dynamically, fixture converter state is cleaned up explicitly, and
+the runtime compute-buffer path reacquires resource entries after possible table growth.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -53,8 +55,9 @@ FramePlan -> DRP2 -> vklite/canvas behavior.
 
 The remaining cleanup is more targeted:
 
-1. harden the persistent emitter resource/object state before broadening runtime behavior,
-2. replace stringly visual/resource metadata with typed FramePlan metadata in a later
+1. centralize current resource-key formatting/parsing before replacing stringly metadata,
+2. continue hardening emitter/resource failure paths and diagnostics as they are exposed,
+3. replace stringly visual/resource metadata with typed FramePlan metadata in a later
    behavior-changing pass.
 
 This is a structural cleanup plan, not an API compatibility constraint. The v0.4 branch can still
@@ -361,19 +364,20 @@ Validation:
 
 ### Step 9 - Improve Emitter Data Structures After The Split
 
-Status: **active next cleanup after descriptor extraction**.
+Status: **partially implemented**. Commit `586d3fa0` replaced the fixture-era fixed resource table
+with growable state for runtime resources and persistent object ids, added cleanup for temporary
+fixture converter state, guarded texture row-pitch multiplication, and added a regression test that
+exceeds the old `DRP2_MAX_FIXTURE_RESOURCES` object-id ceiling.
 
-Only after behavior-preserving extraction is complete, replace fixture-era fixed tables where they
-hurt runtime behavior.
+Continue this pass by replacing fixture-era assumptions where they still hurt runtime behavior.
 
 Candidate changes:
 
 1. split fixture resource state from persistent runtime resource/object state,
-2. replace `DRP2_MAX_FIXTURE_RESOURCES` for runtime with a growable map/list,
-3. report capacity failures with specific diagnostics,
-4. guard texture pitch/byte-size arithmetic,
-5. guard `uint64_t` -> `uint32_t` vertex/index count downcasts,
-6. add explicit resource kind to entries instead of inferring buffer/texture role from tags.
+2. report capacity/growth failures with specific diagnostics,
+3. guard remaining texture byte-size arithmetic,
+4. guard `uint64_t` -> `uint32_t` vertex/index count downcasts,
+5. add explicit resource kind to entries instead of inferring buffer/texture role from tags.
 
 Validation:
 

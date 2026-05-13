@@ -26,8 +26,8 @@ behavior or data-model improvements.
 The converter file is gone, but the runtime emitter still has important follow-ups before larger
 scene/DRP2 splits:
 
-1. harden persistent emitter state in `frame_plan_runtime_state.c` before widening behavior,
-2. centralize current resource-key formatting/parsing before replacing stringly metadata,
+1. centralize current resource-key formatting/parsing before replacing stringly metadata,
+2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
 3. then add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
    from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
 
@@ -39,7 +39,10 @@ live in `visual_pipeline.c`. The pipeline descriptor slice landed in `45ae792a`:
 depth-state selection for the multi-visual scene render path now live in `visual_pipeline.c`. The
 bind descriptor slice landed in `0f29f4f1`: MVP/image/shading bind-role selection now lives in
 `visual_pipeline.c`, while `frame_plan_runtime.c` still creates the concrete DRP2 bind-group
-objects.
+objects. The first emitter state hardening slice landed in `586d3fa0`: runtime resource/object
+state now grows dynamically, fixture temporary state is destroyed explicitly, texture row-pitch
+overflow is guarded, and the compute-buffer emitter reacquires entries after possible resource-map
+growth.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -174,9 +177,9 @@ registration helpers.
 
 ## Suggested Order
 
-1. Harden emitter resource/object state and diagnostics in `frame_plan_runtime_state.c`.
-2. Centralize scene resource-key formatting/parsing without changing behavior.
-3. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
+1. Centralize scene resource-key formatting/parsing without changing behavior.
+2. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
+3. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
 4. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
 5. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
 6. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
