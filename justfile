@@ -1508,6 +1508,13 @@ analyze:
 example-c name: build
     #!/usr/bin/env bash
     set -euo pipefail
+    if [[ "$(uname)" == "Darwin" ]]; then
+        vk_lib="${VULKAN_SDK:-}/lib"
+        if [[ -d "${vk_lib}" ]]; then
+            fallback_path="${vk_lib}${DYLD_FALLBACK_LIBRARY_PATH:+:${DYLD_FALLBACK_LIBRARY_PATH}}"
+            export DYLD_FALLBACK_LIBRARY_PATH="${fallback_path}"
+        fi
+    fi
     ./build/examples/c/{{name}}
 #
 
