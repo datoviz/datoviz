@@ -496,6 +496,27 @@ bool dvz_frame_plan_upload_set_texture_region(
 
 
 /**
+ * Attach typed metadata to the most recently appended upload node.
+ *
+ * @param plan the FramePlan
+ * @param metadata the upload metadata
+ * @return whether the metadata was attached
+ */
+bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata)
+{
+    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_UPLOAD);
+    if (node == NULL || metadata == NULL)
+        return false;
+    dvz_memcpy(
+        &node->u.upload.metadata, sizeof(DvzFramePlanUploadMeta), metadata,
+        sizeof(DvzFramePlanUploadMeta));
+    node->u.upload.metadata.has_metadata = true;
+    return true;
+}
+
+
+
+/**
  * Append a compute node.
  *
  * @param plan the FramePlan

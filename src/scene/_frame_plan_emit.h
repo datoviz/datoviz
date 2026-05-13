@@ -67,6 +67,8 @@ struct ResourceId
     uint32_t usage;                      /* DRP2 buffer usage flags                           */
     uint32_t item_stride;                /* optional element stride (index buffers)          */
     uint32_t topology;                   /* primitive topology hint (UINT32_MAX = unset)      */
+    DvzFramePlanResourceKind kind;        /* typed resource kind, when supplied by FramePlan   */
+    DvzFramePlanResourceRole role;        /* typed resource role, when supplied by FramePlan   */
 };
 
 
@@ -133,6 +135,8 @@ bool _resource_ensure_byte_size(
     ConverterState* state, ResourceId* resource, uint64_t required_size, bool* needs_create);
 
 const char* _resource_data_tag(const ConverterState* state, uint64_t id);
+
+DvzFramePlanResourceRole _resource_role(const ConverterState* state, uint64_t id);
 
 uint64_t _resource_byte_size(const ConverterState* state, uint64_t id);
 

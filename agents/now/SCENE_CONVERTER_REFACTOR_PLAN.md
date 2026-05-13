@@ -38,7 +38,9 @@ commit `cb0576a1` added `scene_resource_key.c` / `_scene_resource_key.h`, moving
 one internal helper API. The current working slice adds `DvzFramePlanVisualMeta` on render nodes,
 populates it from retained scene visuals, and makes the GLSL retained render path prefer those
 typed resource ids over parsing the render visual debug label. The existing strings remain as
-debug/cache labels and as fallback for hand-authored fixture FramePlans.
+debug/cache labels and as fallback for hand-authored fixture FramePlans. A follow-up slice adds
+`DvzFramePlanUploadMeta`, records typed upload resource kind/role in the persistent emitter
+resource table, and lets legacy visual-family detection prefer those roles over `data_tag` strings.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -394,10 +396,12 @@ Validation:
 
 ### Step 10 - Replace Stringly Visual Metadata
 
-Status: **first retained render slice landed**. Commit `cb0576a1` centralized the current
+Status: **first retained render and upload metadata slices landed**. Commit `cb0576a1` centralized the current
 resource-key strings and parsing in `scene_resource_key.c`; the follow-up typed metadata slice adds
 `DvzFramePlanVisualMeta`, fills it during retained scene -> FramePlan lowering, and routes
-`visual_pipeline.c` descriptor/depth detection through the typed ids when present.
+`visual_pipeline.c` descriptor/depth detection through the typed ids when present. The next slice
+adds `DvzFramePlanUploadMeta` so upload resource kind/role metadata is stored alongside runtime
+resources and can replace `data_tag` checks in fallback visual-family detection.
 
 This is the first intentionally behavior-shaping cleanup.
 

@@ -32,6 +32,42 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE = 0,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
+    DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING,
+} DvzFramePlanResourceRole;
+
+
+
+typedef enum
+{
+    DVZ_FRAME_PLAN_RESOURCE_KIND_NONE = 0,
+    DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+    DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D,
+} DvzFramePlanResourceKind;
+
+
+
+typedef struct DvzFramePlanUploadMeta
+{
+    bool has_metadata;
+    DvzFramePlanResourceKind kind;
+    DvzFramePlanResourceRole role;
+    uint32_t visual_type;
+    uint32_t visual_index;
+    uint32_t buffer_index;
+} DvzFramePlanUploadMeta;
+
+
+
 typedef struct DvzFramePlanVisualMeta
 {
     bool has_metadata;
@@ -75,6 +111,7 @@ struct DvzFramePlanNode
             uint32_t texture_height;
             uint32_t texture_origin_x;
             uint32_t texture_origin_y;
+            DvzFramePlanUploadMeta metadata;
         } upload;
         struct
         {
@@ -146,3 +183,5 @@ DvzFramePlanNode* dvz_frame_plan_last_render_node(DvzFramePlan* plan);
 
 bool dvz_frame_plan_render_visual_metadata(
     DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata);
+
+bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata);

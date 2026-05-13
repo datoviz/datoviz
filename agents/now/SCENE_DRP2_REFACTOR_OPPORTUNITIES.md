@@ -46,7 +46,9 @@ growth. The resource-key helper slice landed in `cb0576a1`: `scene_resource_key.
 current visual, buffer, texture, indexed-visual, and split-visual string conventions. The first
 typed metadata slice adds `DvzFramePlanVisualMeta` to render nodes, populates it from retained scene
 visuals, and makes the retained GLSL render path prefer metadata resource ids over parsing render
-visual labels; fixture/manual FramePlans still fall back to the old strings.
+visual labels; fixture/manual FramePlans still fall back to the old strings. The next upload
+metadata slice adds `DvzFramePlanUploadMeta`, records typed resource kind/role on persisted runtime
+resources, and makes fallback visual-family detection prefer roles over `data_tag` strings.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.

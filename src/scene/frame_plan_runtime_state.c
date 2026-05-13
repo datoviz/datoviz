@@ -310,6 +310,23 @@ const char* _resource_data_tag(const ConverterState* state, uint64_t id)
 
 
 /**
+ * Look up the typed role for a resource id.
+ *
+ * @param state the converter state
+ * @param id the DRP2 resource id
+ * @return the typed role, or NONE when the id is unknown or untyped
+ */
+DvzFramePlanResourceRole _resource_role(const ConverterState* state, uint64_t id)
+{
+    for (uint32_t i = 0; i < state->count; i++)
+        if (state->resources[i].id == id)
+            return state->resources[i].role;
+    return DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE;
+}
+
+
+
+/**
  * Look up the byte size for a resource id.
  *
  * @param state the converter state

@@ -1007,9 +1007,21 @@ int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
     DvzFramePlan* plan = dvz_frame_plan("figure.metadata", 1);
     ANN(plan);
 
-    AT(dvz_frame_plan_upload(plan, "v0_position", 0, 3 * 3 * sizeof(float), "position"));
-    AT(dvz_frame_plan_upload(plan, "v0_color", 0, 3 * sizeof(DvzColor), "color"));
-    AT(dvz_frame_plan_upload(plan, "v0_size", 0, 3 * sizeof(float), "size"));
+    DvzFramePlanUploadMeta upload_meta = {0};
+    upload_meta.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER;
+    upload_meta.visual_type = DVZ_VISUAL_TYPE_POINT;
+    upload_meta.visual_index = 0;
+    upload_meta.buffer_index = UINT32_MAX;
+
+    AT(dvz_frame_plan_upload(plan, "opaque-position", 0, 3 * 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "opaque-color", 0, 3 * sizeof(DvzColor), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
+    AT(dvz_frame_plan_upload(plan, "opaque-size", 0, 3 * sizeof(float), ""));
+    upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
     AT(dvz_frame_plan_render_visual(plan, "opaque-debug-id"));
 
@@ -1018,9 +1030,9 @@ int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
     metadata.visual_index = 0;
     metadata.buffer_index = UINT32_MAX;
     metadata.topology = UINT32_MAX;
-    dvz_strlcpy(metadata.position_id, "v0_position", sizeof(metadata.position_id));
-    dvz_strlcpy(metadata.color_id, "v0_color", sizeof(metadata.color_id));
-    dvz_strlcpy(metadata.size_id, "v0_size", sizeof(metadata.size_id));
+    dvz_strlcpy(metadata.position_id, "opaque-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "opaque-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "opaque-size", sizeof(metadata.size_id));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
 
     DvzCapabilitySnapshot caps = {0};
@@ -1037,6 +1049,9 @@ int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
     ANN(stream);
     AT(dvz_diagnostic_report_count(&report) == 0);
     AT(dvz_drp2_stream_count(stream) > 0);
+    uint64_t pos_id = _resource_lookup_id(&emitter->resources, "opaque-position");
+    AT(pos_id != 0);
+    AT(_resource_role(&emitter->resources, pos_id) == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);
 
     dvz_drp2_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);

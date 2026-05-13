@@ -60,6 +60,11 @@ bool _emitter_emit_upload(
         if (resource == NULL)
             return false;
         dvz_strlcpy(resource->data_tag, node->u.upload.data_tag, sizeof(resource->data_tag));
+        if (node->u.upload.metadata.has_metadata)
+        {
+            resource->kind = node->u.upload.metadata.kind;
+            resource->role = node->u.upload.metadata.role;
+        }
         resource->byte_size = node->u.upload.byte_size;
         uint64_t id = resource->id;
         uint32_t w  = node->u.upload.texture_width;
@@ -100,6 +105,11 @@ bool _emitter_emit_upload(
         return false;
 
     dvz_strlcpy(resource->data_tag, node->u.upload.data_tag, sizeof(resource->data_tag));
+    if (node->u.upload.metadata.has_metadata)
+    {
+        resource->kind = node->u.upload.metadata.kind;
+        resource->role = node->u.upload.metadata.role;
+    }
     resource->usage = node->u.upload.buffer_usage;
     resource->item_stride = node->u.upload.item_stride;
     if (node->u.upload.topology != UINT32_MAX)

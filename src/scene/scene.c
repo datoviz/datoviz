@@ -201,6 +201,12 @@ static void _json_append_figure(
 
 static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
 
+static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name);
+
+static bool _scene_attach_upload_metadata(
+    DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanResourceRole role, DvzFramePlanResourceKind kind, uint32_t buffer_index);
+
 static bool _scene_visual_frame_plan_metadata(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
     DvzFramePlanVisualMeta* metadata);
@@ -1205,6 +1211,60 @@ void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order)
 }
 
 
+
+/**
+ * Return the typed FramePlan role for a visual attribute name.
+ *
+ * @param attr_name the visual attribute name
+ * @return the typed resource role
+ */
+static DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name)
+{
+    if (attr_name == NULL)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE;
+    if (strcmp(attr_name, "position") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
+    if (strcmp(attr_name, "color") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
+    if (strcmp(attr_name, "size") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE;
+    if (strcmp(attr_name, "texcoords") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS;
+    if (strcmp(attr_name, "normal") == 0)
+        return DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL;
+    return DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE;
+}
+
+
+
+/**
+ * Attach typed metadata to the most recently emitted upload node.
+ *
+ * @param plan the destination frame plan
+ * @param visual the retained visual
+ * @param visual_index the visual index within the figure
+ * @param role the typed resource role
+ * @param kind the typed resource kind
+ * @param buffer_index the optional scene-buffer index, or UINT32_MAX
+ * @return whether metadata was attached
+ */
+static bool _scene_attach_upload_metadata(
+    DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanResourceRole role, DvzFramePlanResourceKind kind, uint32_t buffer_index)
+{
+    ANN(plan);
+    ANN(visual);
+    DvzFramePlanUploadMeta metadata = {0};
+    metadata.kind = kind;
+    metadata.role = role;
+    metadata.visual_type = (uint32_t)visual->type;
+    metadata.visual_index = visual_index;
+    metadata.buffer_index = buffer_index;
+    return dvz_frame_plan_upload_metadata(plan, &metadata);
+}
+
+
+
 /**
  * Emit dirty uploads for all panel-visible visuals in one figure.
  *
@@ -1242,6 +1302,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 const void* data_ptr = (const uint8_t*)attr->data + byte_offset;
                 dvz_frame_plan_upload_bytes(
                     plan, resource_id, byte_offset, byte_size, attr->name, data_ptr);
+                _scene_attach_upload_metadata(
+                    plan, visual, vidx, _scene_attr_frame_plan_role(attr->name),
+                    DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
                 if ((visual->type == DVZ_VISUAL_TYPE_PRIMITIVE ||
                      visual->type == DVZ_VISUAL_TYPE_MESH ||
                      visual->type == DVZ_VISUAL_TYPE_PATH) &&
@@ -1267,6 +1330,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     dvz_frame_plan_upload_bytes(
                         plan, shading_resource_id, 0, sizeof(DvzPrimitiveShadingState),
                         "primitive_shading", &visual->primitive_shading);
+                    _scene_attach_upload_metadata(
+                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING,
+                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX);
                     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
                     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM |
                                                   DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
@@ -1285,6 +1351,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                     dvz_frame_plan_upload_bytes(
                         plan, buffer_resource_id, 0, visual->buffer->desc.byte_size, "index",
                         visual->buffer->data);
+                    _scene_attach_upload_metadata(
+                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
+                        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx);
                     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
                     node->u.upload.buffer_usage =
                         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;
@@ -1308,6 +1377,9 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 {
                     dvz_frame_plan_upload_bytes(
                         plan, tex_resource_id, 0, bytes, "texture", upload_data);
+                    _scene_attach_upload_metadata(
+                        plan, visual, vidx, DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                        DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D, UINT32_MAX);
                     dvz_frame_plan_upload_set_texture_extent(
                         plan, upload_region.width, upload_region.height);
                     dvz_frame_plan_upload_set_texture_region(

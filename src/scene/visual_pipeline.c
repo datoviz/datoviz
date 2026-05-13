@@ -168,6 +168,13 @@ bool _is_point_visual(const ConverterState* state, const uint64_t* ids, uint32_t
     bool has_pos = false, has_col = false, has_sz = false;
     for (uint32_t i = 0; i < n; i++)
     {
+        DvzFramePlanResourceRole role = _resource_role(state, ids[i]);
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION) has_pos = true;
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR)    has_col = true;
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE)     has_sz  = true;
+        if (role != DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE)
+            continue;
+
         const char* tag = _resource_data_tag(state, ids[i]);
         if (strcmp(tag, "position") == 0) has_pos = true;
         if (strcmp(tag, "color") == 0)    has_col = true;
@@ -189,6 +196,27 @@ bool _is_primitive_visual(const ConverterState* state, const uint64_t* ids, uint
     bool has_pos = false, has_col = false, has_topo = false, has_normal = false;
     for (uint32_t i = 0; i < n; i++)
     {
+        DvzFramePlanResourceRole role = _resource_role(state, ids[i]);
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION)
+        {
+            has_pos = true;
+            if (_resource_topology(state, ids[i]) != UINT32_MAX)
+                has_topo = true;
+            continue;
+        }
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR)
+        {
+            has_col = true;
+            continue;
+        }
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL)
+        {
+            has_normal = true;
+            continue;
+        }
+        if (role != DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE)
+            continue;
+
         const char* tag = _resource_data_tag(state, ids[i]);
         if (strcmp(tag, "position") == 0)
         {
@@ -219,6 +247,13 @@ bool _is_image_visual(
     uint64_t pos = 0, uv = 0, tex = 0;
     for (uint32_t i = 0; i < n; i++)
     {
+        DvzFramePlanResourceRole role = _resource_role(state, ids[i]);
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION) { pos = ids[i]; continue; }
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXCOORDS) { uv = ids[i]; continue; }
+        if (role == DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE) { tex = ids[i]; continue; }
+        if (role != DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE)
+            continue;
+
         const char* tag = _resource_data_tag(state, ids[i]);
         if (strcmp(tag, "position") == 0)  pos = ids[i];
         else if (strcmp(tag, "texcoords") == 0) uv = ids[i];
