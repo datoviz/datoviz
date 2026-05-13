@@ -26,12 +26,16 @@ behavior or data-model improvements.
 The converter file is gone, but the runtime emitter still has important follow-ups before larger
 scene/DRP2 splits:
 
-1. move visual draw/pipeline descriptor construction from `frame_plan_runtime.c` into
-   `visual_pipeline.c`,
+1. finish moving visual shader/pipeline/bind-group descriptor construction from
+   `frame_plan_runtime.c` into `visual_pipeline.c`,
 2. harden persistent emitter state in `frame_plan_runtime_state.c` before widening behavior,
 3. centralize current resource-key formatting/parsing before replacing stringly metadata,
 4. then add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
    from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
+
+The first visual descriptor extraction slice landed in `3d4bd920`: `visual_pipeline.c` now owns
+per-visual resource resolution, family classification, vertex/index counts, and image draw-buffer
+narrowing for the multi-visual scene render path.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -166,7 +170,8 @@ registration helpers.
 
 ## Suggested Order
 
-1. Complete post-converter visual descriptor extraction into `visual_pipeline.c`.
+1. Complete post-converter shader/pipeline/bind-group descriptor extraction into
+   `visual_pipeline.c`.
 2. Harden emitter resource/object state and diagnostics in `frame_plan_runtime_state.c`.
 3. Centralize scene resource-key formatting/parsing without changing behavior.
 4. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.

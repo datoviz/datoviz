@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; FOLLOW-UP CLEANUPS ACTIVE`
+> - **Status:** `MECHANICAL SPLIT LANDED; DESCRIPTOR EXTRACTION STARTED`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -20,6 +20,12 @@ code is distributed across:
 6. `shader_registry.c` - built-in shader selection and SPIR-V/GLSL lookup.
 7. `visual_pipeline.c` - first visual-family detection helpers.
 8. `render_pass.c` - color-target, readback-buffer, transient id, copy/submit helpers.
+
+Follow-up commit `3d4bd920` added the first `DvzSceneVisualDesc` extraction so
+`visual_pipeline.c` now owns per-visual resource resolution, family classification, vertex/index
+counts, image draw-buffer narrowing, and index-format selection for the multi-visual scene render
+path. `frame_plan_runtime.c` still owns shader selection, pipeline creation, bind-group creation,
+and draw submission for that path.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -42,8 +48,8 @@ FramePlan -> DRP2 -> vklite/canvas behavior.
 
 The remaining cleanup is more targeted:
 
-1. finish extracting visual draw and pipeline descriptor construction from `frame_plan_runtime.c`
-   into `visual_pipeline.c`,
+1. finish extracting shader, pipeline, and bind-group descriptor construction from
+   `frame_plan_runtime.c` into `visual_pipeline.c`,
 2. harden the persistent emitter resource/object state before broadening runtime behavior,
 3. replace stringly visual/resource metadata with typed FramePlan metadata in a later
    behavior-changing pass.
@@ -246,9 +252,9 @@ Validation:
 
 ### Step 6 - Complete Visual Pipeline Lowering
 
-Status: **partially implemented**. `visual_pipeline.c` currently owns visual-family detection and
-some resource lookup helpers, but `frame_plan_runtime.c` still builds most draw descriptors,
-shader/pipeline cache keys, bind-group state, vertex/index counts, and pipeline layouts inline.
+Status: **partially implemented**. `visual_pipeline.c` owns visual-family detection and the first
+`DvzSceneVisualDesc` resolver for the multi-visual scene render path. `frame_plan_runtime.c` still
+builds shader/pipeline cache keys, bind-group state, and pipeline layouts inline.
 
 Continue using `visual_pipeline.c` and `_visual_pipeline.h`.
 
