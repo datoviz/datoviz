@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; FIRST TYPED VISUAL METADATA SLICE`
+> - **Status:** `MECHANICAL SPLIT LANDED; TYPED METADATA FALLBACKS CENTRALIZED`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -40,7 +40,10 @@ populates it from retained scene visuals, and makes the GLSL retained render pat
 typed resource ids over parsing the render visual debug label. The existing strings remain as
 debug/cache labels and as fallback for hand-authored fixture FramePlans. A follow-up slice adds
 `DvzFramePlanUploadMeta`, records typed upload resource kind/role in the persistent emitter
-resource table, and lets legacy visual-family detection prefer those roles over `data_tag` strings.
+resource table, and lets visual-family detection prefer those roles over `data_tag` strings.
+Subsequent cleanup commits added `_scene_visual_resource_by_role()` and centralized all remaining
+legacy render-label parsing in `_render_visual_resource_id()`, so string parsing is now isolated as
+manual/fixture fallback instead of being spread through the runtime render path.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -396,22 +399,23 @@ Validation:
 
 ### Step 10 - Replace Stringly Visual Metadata
 
-Status: **first retained render and upload metadata slices landed**. Commit `cb0576a1` centralized the current
-resource-key strings and parsing in `scene_resource_key.c`; the follow-up typed metadata slice adds
-`DvzFramePlanVisualMeta`, fills it during retained scene -> FramePlan lowering, and routes
-`visual_pipeline.c` descriptor/depth detection through the typed ids when present. The next slice
-adds `DvzFramePlanUploadMeta` so upload resource kind/role metadata is stored alongside runtime
-resources and can replace `data_tag` checks in fallback visual-family detection.
+Status: **typed render/upload metadata landed; legacy fallback centralized**. Commit `cb0576a1`
+centralized the current resource-key strings and parsing in `scene_resource_key.c`. Follow-up
+metadata slices added `DvzFramePlanVisualMeta` and `DvzFramePlanUploadMeta`, fill them during
+retained scene -> FramePlan lowering, store upload kind/role in runtime resources, and make
+`visual_pipeline.c` prefer typed resource ids/roles for descriptor, depth, and generic runtime
+visual-family detection. Remaining string parsing for hand-authored fixture/manual FramePlans is
+centralized behind `_render_visual_resource_id()` instead of being open-coded across the render path.
 
 This is the first intentionally behavior-shaping cleanup.
 
 Continue moving visual identity out of resource-name conventions and `data_tag` string inference:
 
-1. add typed visual family metadata to FramePlan render nodes,
-2. add typed attribute descriptors for position/color/size/normal/texcoords/texture/index/shading,
-3. make topology and controller mode explicit per draw,
-4. keep resource names as debug labels and stable DRP2 cache keys, not semantic truth,
-5. remove substring routing such as checking whether a visual id contains `"image"` or `"texture"`.
+1. done: add typed visual family metadata to FramePlan render nodes,
+2. done: add typed upload/resource roles for position/color/size/normal/texcoords/texture/index/shading,
+3. mostly done: make topology and controller mode explicit per draw,
+4. continue: keep resource names as debug labels and stable DRP2 cache keys, not semantic truth,
+5. continue: preserve string parsing only as centralized fixture/manual fallback.
 
 Validation:
 

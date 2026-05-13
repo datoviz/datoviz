@@ -43,12 +43,12 @@ objects. The first emitter state hardening slice landed in `586d3fa0`: runtime r
 state now grows dynamically, fixture temporary state is destroyed explicitly, texture row-pitch
 overflow is guarded, and the compute-buffer emitter reacquires entries after possible resource-map
 growth. The resource-key helper slice landed in `cb0576a1`: `scene_resource_key.c` now owns the
-current visual, buffer, texture, indexed-visual, and split-visual string conventions. The first
-typed metadata slice adds `DvzFramePlanVisualMeta` to render nodes, populates it from retained scene
-visuals, and makes the retained GLSL render path prefer metadata resource ids over parsing render
-visual labels; fixture/manual FramePlans still fall back to the old strings. The next upload
-metadata slice adds `DvzFramePlanUploadMeta`, records typed resource kind/role on persisted runtime
-resources, and makes fallback visual-family detection prefer roles over `data_tag` strings.
+current visual, buffer, texture, indexed-visual, and split-visual string conventions. The typed
+metadata slices add `DvzFramePlanVisualMeta` and `DvzFramePlanUploadMeta`, populate them from
+retained scene visuals/uploads, store resource kind/role on persisted runtime resources, and make
+runtime visual-family/descriptor/depth resolution prefer typed ids and roles. Fixture/manual
+FramePlans still fall back to the old strings, but that parsing is now centralized behind
+`_render_visual_resource_id()` in `visual_pipeline.c`.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -98,8 +98,9 @@ Recommended three-step path:
 3. Replace stringly visual/resource detection with typed `DvzFramePlan` metadata for visual
    type, attribute role, topology, index buffer, texture role, panel attachment, and controller mode.
 
-The helper extraction was behavior-preserving. The typed metadata step is a deliberate data-model
-change and should happen with focused FramePlan and runtime-emitter coverage.
+The helper extraction was behavior-preserving. The first typed metadata slices have landed with
+focused FramePlan/runtime-emitter coverage. Next work should add diagnostics for malformed typed
+metadata, then start isolating scene -> FramePlan lowering.
 
 
 ### 3. Split `src/scene/pick_probe.c`
@@ -183,7 +184,7 @@ registration helpers.
 
 ## Suggested Order
 
-1. Finish typed FramePlan visual/resource metadata coverage and make string parsing a fallback only.
+1. Add diagnostics for typed metadata failure paths and remaining malformed FramePlan cases.
 2. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
 3. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
 4. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.
