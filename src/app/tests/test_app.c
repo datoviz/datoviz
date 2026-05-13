@@ -190,6 +190,95 @@ static int test_app_trace_fingerprint_ignores_transient_pass_ids(TstSuite* suite
 
 
 
+static int test_app_trace_snapshot_ignores_transient_pass_ids(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_begin_command_encoder(a, 7));
+    AT(dvz_drp2_stream_begin_render_pass(a, 100, 7, 5000));
+    AT(dvz_drp2_stream_set_pipeline(a, 100, 42));
+    AT(dvz_drp2_stream_set_vertex_buffer(a, 100, 0, 77, 0));
+    AT(dvz_drp2_stream_draw(a, 100, 300, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(a, 100));
+    AT(dvz_drp2_stream_finish_command_encoder(a, 7, 900));
+    AT(dvz_drp2_stream_queue_submit(a, 900, 901));
+
+    AT(dvz_drp2_stream_begin_command_encoder(b, 8));
+    AT(dvz_drp2_stream_begin_render_pass(b, 104, 8, 5000));
+    AT(dvz_drp2_stream_set_pipeline(b, 104, 42));
+    AT(dvz_drp2_stream_set_vertex_buffer(b, 104, 0, 77, 0));
+    AT(dvz_drp2_stream_draw(b, 104, 300, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(b, 104));
+    AT(dvz_drp2_stream_finish_command_encoder(b, 8, 902));
+    AT(dvz_drp2_stream_queue_submit(b, 902, 903));
+
+    DvzAppTraceSnapshot sa;
+    DvzAppTraceSnapshot sb;
+    _dvz_app_trace_snapshot_init(&sa);
+    _dvz_app_trace_snapshot_init(&sb);
+    AT(_dvz_app_trace_snapshot_build(&sa, a));
+    AT(_dvz_app_trace_snapshot_build(&sb, b));
+
+    AT(_dvz_app_trace_snapshot_equal(&sa, &sb));
+    AT(_dvz_app_trace_snapshot_line_count(
+           &sa, "render#0 target=5000 clear=load depth=no area=(0,0 1x1)") == 1);
+    AT(_dvz_app_trace_snapshot_line_count(&sa, "pass#0 pipeline=42") == 1);
+    AT(_dvz_app_trace_snapshot_line_count(
+           &sa, "render#0 draw vertices=300 first=0 instances=1") == 1);
+
+    _dvz_app_trace_snapshot_destroy(&sa);
+    _dvz_app_trace_snapshot_destroy(&sb);
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+
+static int test_app_trace_snapshot_keeps_draw_payload(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* a = dvz_drp2_stream();
+    DvzDrp2CommandStream* b = dvz_drp2_stream();
+    ANN(a);
+    ANN(b);
+
+    AT(dvz_drp2_stream_begin_render_pass(a, 100, 7, 5000));
+    AT(dvz_drp2_stream_draw(a, 100, 300, 1, 0, 0));
+
+    AT(dvz_drp2_stream_begin_render_pass(b, 100, 7, 5000));
+    AT(dvz_drp2_stream_draw(b, 100, 301, 1, 0, 0));
+
+    DvzAppTraceSnapshot sa;
+    DvzAppTraceSnapshot sb;
+    _dvz_app_trace_snapshot_init(&sa);
+    _dvz_app_trace_snapshot_init(&sb);
+    AT(_dvz_app_trace_snapshot_build(&sa, a));
+    AT(_dvz_app_trace_snapshot_build(&sb, b));
+
+    AT(!_dvz_app_trace_snapshot_equal(&sa, &sb));
+    AT(_dvz_app_trace_snapshot_line_count(
+           &sa, "render#0 draw vertices=300 first=0 instances=1") == 1);
+    AT(_dvz_app_trace_snapshot_line_count(
+           &sb, "render#0 draw vertices=301 first=0 instances=1") == 1);
+
+    _dvz_app_trace_snapshot_destroy(&sa);
+    _dvz_app_trace_snapshot_destroy(&sb);
+    dvz_drp2_stream_destroy(a);
+    dvz_drp2_stream_destroy(b);
+    return 0;
+}
+
+
+
 int test_app(TstSuite* suite)
 {
     ANN(suite);
@@ -202,5 +291,7 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_frame_handles_and_payloads);
     TEST_SIMPLE(test_app_trace_fingerprint_keeps_write_ranges);
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_transient_pass_ids);
+    TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_pass_ids);
+    TEST_SIMPLE(test_app_trace_snapshot_keeps_draw_payload);
     return 0;
 }

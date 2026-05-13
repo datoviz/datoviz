@@ -49,6 +49,15 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzAppTracePlan DvzAppTracePlan;
+typedef struct DvzAppTraceLine DvzAppTraceLine;
+typedef struct DvzAppTraceSnapshot DvzAppTraceSnapshot;
+
+
+struct DvzAppTraceLine
+{
+    char text[192];
+};
+
 
 struct DvzAppTracePlan
 {
@@ -56,6 +65,14 @@ struct DvzAppTracePlan
     bool prepend_newline;
     bool rewrite_in_place;
     bool status_line_open_after;
+};
+
+
+struct DvzAppTraceSnapshot
+{
+    uint32_t count;
+    uint32_t capacity;
+    DvzAppTraceLine* lines;
 };
 
 
@@ -116,10 +133,60 @@ bool _dvz_app_trace_fingerprint_name(char* out, uint32_t size);
  *
  * The fingerprint ignores volatile per-frame mechanics such as borrowed command-buffer handles,
  * submission ids, payload bytes, and borrowed data pointers. It keeps command order and stable
- * routing fields such as resource ids, offsets, sizes, pass ids, draw counts, and pipeline ids.
+ * fields such as resource ids, offsets, sizes, draw counts, render targets, and pipeline ids.
+ * Transient encoder, pass, command-buffer, and submission ids are deliberately ignored.
  *
  * @param stream the emitted command stream
  * @param out destination fingerprint
  * @return true on success, false on error
  */
 bool _dvz_app_trace_fingerprint(const DvzDrp2CommandStream* stream, uint64_t* out);
+
+
+/**
+ * Initialize an empty normalized trace snapshot.
+ *
+ * @param snapshot the snapshot to initialize
+ */
+void _dvz_app_trace_snapshot_init(DvzAppTraceSnapshot* snapshot);
+
+
+/**
+ * Destroy a normalized trace snapshot.
+ *
+ * @param snapshot the snapshot to destroy
+ */
+void _dvz_app_trace_snapshot_destroy(DvzAppTraceSnapshot* snapshot);
+
+
+/**
+ * Build a compact normalized trace snapshot from one emitted DRP2 stream.
+ *
+ * @param snapshot destination snapshot
+ * @param stream source DRP2 stream
+ * @return true on success, false on allocation or stream error
+ */
+bool _dvz_app_trace_snapshot_build(
+    DvzAppTraceSnapshot* snapshot, const DvzDrp2CommandStream* stream);
+
+
+/**
+ * Return whether two normalized trace snapshots contain identical lines in identical order.
+ *
+ * @param a first snapshot
+ * @param b second snapshot
+ * @return true if both snapshots are equal
+ */
+bool _dvz_app_trace_snapshot_equal(
+    const DvzAppTraceSnapshot* a, const DvzAppTraceSnapshot* b);
+
+
+/**
+ * Count the occurrences of one normalized line in a snapshot.
+ *
+ * @param snapshot the snapshot
+ * @param text line text
+ * @return occurrence count
+ */
+uint32_t _dvz_app_trace_snapshot_line_count(
+    const DvzAppTraceSnapshot* snapshot, const char* text);
