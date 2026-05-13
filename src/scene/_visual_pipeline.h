@@ -121,7 +121,7 @@ bool _scene_render_visual_has_position_resource(
 
 bool _scene_visual_desc_from_render(
     DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index,
-    DvzSceneVisualDesc* out);
+    DvzSceneVisualDesc* out, const char** error);
 
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,

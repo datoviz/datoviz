@@ -190,21 +190,33 @@ static uint64_t _render_visual_resource_id(
  * @return whether a supported visual descriptor was resolved
  */
 static bool _scene_visual_desc_from_metadata(
-    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out)
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
+    const char** error)
 {
     ANN(emitter);
     ANN(meta);
     ANN(out);
 
+    if (error != NULL)
+        *error = NULL;
+
     uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
     if (pos_buf == 0)
+    {
+        if (error != NULL)
+            *error = "typed visual metadata missing position resource";
         return false;
+    }
     out->vbuf_ids[out->vbuf_count++] = pos_buf;
 
     uint64_t pos_size = _resource_byte_size(&emitter->resources, pos_buf);
     uint64_t vertex_count = (pos_size > 0) ? pos_size / (3 * sizeof(float)) : 3;
     if (vertex_count > UINT32_MAX)
+    {
+        if (error != NULL)
+            *error = "typed visual metadata vertex count exceeds uint32";
         return false;
+    }
     out->vertex_count = (uint32_t)vertex_count;
 
     if (meta->visual_type == DVZ_VISUAL_TYPE_POINT)
@@ -212,7 +224,11 @@ static bool _scene_visual_desc_from_metadata(
         uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
         uint64_t size_id = _resource_lookup_label(&emitter->resources, meta->size_id);
         if (color_id == 0 || size_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed point metadata missing color/size resource";
             return false;
+        }
         out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = size_id;
@@ -224,7 +240,11 @@ static bool _scene_visual_desc_from_metadata(
     {
         uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
         if (color_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed primitive metadata missing color resource";
             return false;
+        }
         out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         uint64_t normal_id = _resource_lookup_label(&emitter->resources, meta->normal_id);
@@ -236,6 +256,12 @@ static bool _scene_visual_desc_from_metadata(
         out->topology = _resource_topology(&emitter->resources, pos_buf);
         if (out->topology == UINT32_MAX)
             out->topology = meta->topology;
+        if (out->topology == UINT32_MAX)
+        {
+            if (error != NULL)
+                *error = "typed primitive metadata missing topology resource";
+            return false;
+        }
         out->index_buffer_id = _resource_lookup_label(&emitter->resources, meta->index_id);
         out->shading_buffer_id = _resource_lookup_label(&emitter->resources, meta->shading_id);
     }
@@ -244,7 +270,11 @@ static bool _scene_visual_desc_from_metadata(
         uint64_t uv_id = _resource_lookup_label(&emitter->resources, meta->texcoords_id);
         uint64_t tex_id = _resource_lookup_label(&emitter->resources, meta->texture_id);
         if (uv_id == 0 || tex_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed image metadata missing texcoords/texture resource";
             return false;
+        }
         out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
         out->vbuf_ids[out->vbuf_count++] = uv_id;
         out->image_texture_id = tex_id;
@@ -252,6 +282,8 @@ static bool _scene_visual_desc_from_metadata(
     }
     else
     {
+        if (error != NULL)
+            *error = "unsupported typed visual metadata";
         return false;
     }
 
@@ -262,7 +294,11 @@ static bool _scene_visual_desc_from_metadata(
             _resource_byte_size(&emitter->resources, out->index_buffer_id) /
             _resource_item_stride(&emitter->resources, out->index_buffer_id);
         if (index_count > UINT32_MAX)
+        {
+            if (error != NULL)
+                *error = "typed index metadata count exceeds uint32";
             return false;
+        }
         out->index_count = (uint32_t)index_count;
     }
     out->index_format =
@@ -536,18 +572,20 @@ bool _scene_render_visual_has_position_resource(
  */
 bool _scene_visual_desc_from_render(
     DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index,
-    DvzSceneVisualDesc* out)
+    DvzSceneVisualDesc* out, const char** error)
 {
     ANN(emitter);
     ANN(render);
     ANN(out);
+    if (error != NULL)
+        *error = NULL;
     dvz_memset(out, sizeof(DvzSceneVisualDesc), 0, sizeof(DvzSceneVisualDesc));
     if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || visual_index >= render->u.render.visual_count)
         return false;
 
     const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
     if (meta->has_metadata)
-        return _scene_visual_desc_from_metadata(emitter, meta, out);
+        return _scene_visual_desc_from_metadata(emitter, meta, out, error);
 
     uint64_t pos_buf = _render_visual_resource_id(
         emitter, render->u.render.visuals[visual_index], DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION);

@@ -43,7 +43,8 @@
 /* Scene render path: one panel's draws emitted inside an already-open render pass. */
 static bool _emitter_emit_render_multi_in_pass(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t render_pass_id, const DvzFramePlanEmitConfig* cfg, SceneRenderStateCache* cache)
+    uint64_t render_pass_id, const DvzFramePlanEmitConfig* cfg, SceneRenderStateCache* cache,
+    DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
@@ -76,8 +77,19 @@ static bool _emitter_emit_render_multi_in_pass(
     for (uint32_t i = 0; ok && i < render->u.render.visual_count; i++)
     {
         DvzSceneVisualDesc desc = {0};
-        if (!_scene_visual_desc_from_render(emitter, render, i, &desc))
+        const char* visual_error = NULL;
+        if (!_scene_visual_desc_from_render(emitter, render, i, &desc, &visual_error))
+        {
+            if (render->u.render.visual_metadata[i].has_metadata)
+            {
+                _diagnostic(
+                    report, visual_error != NULL ? visual_error :
+                                                  "invalid typed visual metadata");
+                ok = false;
+                break;
+            }
             continue;
+        }
 
         bool vis_is_point = desc.kind == DVZ_SCENE_VISUAL_DESC_POINT;
         bool vis_is_prim = desc.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
@@ -301,7 +313,7 @@ static bool _emitter_emit_render_multi_in_pass(
 static bool _emitter_emit_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
-    SceneRenderStateCache* cache)
+    SceneRenderStateCache* cache, DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
@@ -338,7 +350,7 @@ static bool _emitter_emit_render_multi(
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
     ok = ok &&
          _emitter_emit_render_multi_in_pass(
-             emitter, stream, render, render_pass_id, cfg, cache) &&
+             emitter, stream, render, render_pass_id, cfg, cache, report) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     ok = ok && _render_pass_copy_finish_submit(
                    stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
@@ -360,7 +372,8 @@ static bool _emitter_emit_render_multi(
  */
 static bool _emitter_emit_scene_figure_renders(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg,
+    DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
@@ -400,7 +413,7 @@ static bool _emitter_emit_scene_figure_renders(
         if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
             continue;
         ok = _emitter_emit_render_multi_in_pass(
-            emitter, stream, render, render_pass_id, cfg, &scene_cache);
+            emitter, stream, render, render_pass_id, cfg, &scene_cache, report);
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
@@ -427,7 +440,7 @@ static bool _emitter_emit_render(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const uint64_t* vertex_buffer_ids, uint32_t vertex_buffer_count,
     const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
-    SceneRenderStateCache* cache)
+    SceneRenderStateCache* cache, DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
@@ -436,7 +449,8 @@ static bool _emitter_emit_render(
     /* Scene render node: per-visual multi-draw in a single pass. */
     if (vertex_buffer_count == 0 && render->u.render.visual_count > 0 &&
         cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
-        return _emitter_emit_render_multi(emitter, stream, render, readback, clear, cfg, cache);
+        return _emitter_emit_render_multi(
+            emitter, stream, render, readback, clear, cfg, cache, report);
 
     /* Generic single-draw path (non-scene nodes, WGSL, or fallback). */
     ANN(vertex_buffer_ids);
@@ -769,7 +783,8 @@ static bool _emitter_emit_render(
 static bool _emitter_emit_plain_renders(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const uint64_t* fallback_vertex_buffer_ids, uint32_t fallback_vertex_buffer_count,
-    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg)
+    const DvzFramePlanNode* readback, const DvzFramePlanEmitConfig* cfg,
+    DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
@@ -797,7 +812,7 @@ static bool _emitter_emit_plain_renders(
     }
     if (render_node_count > 0 && render_node_count == scene_render_node_count &&
         !any_scene_render_needs_depth)
-        return _emitter_emit_scene_figure_renders(emitter, stream, plan, readback, cfg);
+        return _emitter_emit_scene_figure_renders(emitter, stream, plan, readback, cfg, report);
 
     bool ok = true;
     uint32_t render_count = 0;
@@ -840,7 +855,7 @@ static bool _emitter_emit_plain_renders(
             ok = _emitter_emit_render(
                 emitter, stream, render, vertex_buffer_ids, vertex_buffer_count,
                 render_count == 0 ? readback : NULL, render_count == 0, cfg,
-                is_scene_node ? &scene_cache : NULL);
+                is_scene_node ? &scene_cache : NULL, report);
         }
         render_count++;
     }
@@ -1237,7 +1252,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
                     ? _emitter_emit_texture_render(emitter, stream, texture_id, copy, cfg)
                     : _emitter_emit_plain_renders(
                           emitter, stream, plan, fallback_vertex_buffer_ids,
-                          fallback_vertex_buffer_count, copy, cfg));
+                          fallback_vertex_buffer_count, copy, cfg, report));
     if (!ok)
     {
         _diagnostic(report, "failed to emit runtime DRP2 stream");
