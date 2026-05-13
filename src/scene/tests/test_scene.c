@@ -7639,6 +7639,73 @@ int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Ensure pick/probe readbacks do not reset the caller-owned DRP2 runtime.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_process_requests_preserves_caller_runtime(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 900, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(setup);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel =
+        dvz_panel(figure, (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    float position[3] = {0};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 8.0f;
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+    dvz_visual_set_pick_capabilities(visual, DVZ_PICK_CAPABILITY_ITEM);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    AT(dvz_panel_pick(panel, 32.0, 32.0, &(DvzPickRequest){.request_id = 7}) == 0);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_figure_process_requests(figure, runtime, &caps) == 1);
+
+    DvzDrp2CommandStream* cleanup = dvz_drp2_stream();
+    ANN(cleanup);
+    AT(dvz_drp2_stream_destroy_buffer(cleanup, 900));
+    result = dvz_drp2_runtime_execute(runtime, cleanup);
+    AT(result.ok);
+
+    dvz_drp2_stream_destroy(cleanup);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Ensure image probes sample the requested panel position, not a fixed image pixel.
  *
  * @param suite the active test suite
@@ -8106,6 +8173,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_scene_path_glsl_executes);
     TEST_SIMPLE(test_scene_image_glsl_executes);
     TEST_SIMPLE(test_scene_process_pick_probe_requests);
+    TEST_SIMPLE(test_scene_process_requests_preserves_caller_runtime);
     TEST_SIMPLE(test_scene_image_probe_respects_panel_request_position);
     TEST_SIMPLE(test_scene_image_probe_transparent_pixel_misses);
     TEST_SIMPLE(test_scene_image_probe_gpu_readback_failure_misses);

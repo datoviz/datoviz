@@ -220,12 +220,27 @@ struct Drp2VkliteObject
 };
 
 
+
+typedef struct Drp2DeferredDestroy Drp2DeferredDestroy;
+
+struct Drp2DeferredDestroy
+{
+    VkCommandBuffer command_buffer;
+    Drp2VkliteObject object;
+};
+
+
+
 struct Drp2VkliteState
 {
     DvzDrp2Runtime* runtime;
     uint32_t capacity;
     uint32_t count;
     Drp2VkliteObject* objects;
+    uint32_t deferred_capacity;
+    uint32_t deferred_count;
+    Drp2DeferredDestroy* deferred;
+    VkCommandBuffer active_borrowed_command_buffer;
 };
 #endif
 
@@ -2227,6 +2242,13 @@ static void _vklite_state_cleanup(Drp2VkliteState* state)
 {
     if (state == NULL)
         return;
+    for (uint32_t i = state->deferred_count; i > 0; i--)
+        _vklite_destroy_object(&state->deferred[i - 1].object);
+    dvz_free(state->deferred);
+    state->deferred = NULL;
+    state->deferred_capacity = 0;
+    state->deferred_count = 0;
+    state->active_borrowed_command_buffer = VK_NULL_HANDLE;
     for (uint32_t i = state->count; i > 0; i--)
     {
         _vklite_destroy_object(&state->objects[i - 1]);
@@ -2237,6 +2259,114 @@ static void _vklite_state_cleanup(Drp2VkliteState* state)
     state->count = 0;
     state->runtime = NULL;
 }
+
+
+
+/**
+ * Ensure deferred-destruction storage can append one more retired backend object.
+ *
+ * @param state vklite runtime state
+ * @return whether append capacity is available
+ */
+static bool _vklite_deferred_ensure_capacity(Drp2VkliteState* state)
+{
+    ANN(state);
+    if (state->deferred == NULL || state->deferred_capacity == 0)
+    {
+        state->deferred_capacity = 8;
+        state->deferred =
+            (Drp2DeferredDestroy*)dvz_calloc(state->deferred_capacity, sizeof(Drp2DeferredDestroy));
+        return state->deferred != NULL;
+    }
+    if (state->deferred_count < state->deferred_capacity)
+        return true;
+    if (state->deferred_capacity > UINT32_MAX / 2)
+        return false;
+
+    uint32_t capacity = 2 * state->deferred_capacity;
+    Drp2DeferredDestroy* deferred = (Drp2DeferredDestroy*)dvz_realloc(
+        state->deferred, (uint64_t)capacity * sizeof(Drp2DeferredDestroy));
+    if (deferred == NULL)
+        return false;
+
+    dvz_memset(
+        deferred + state->deferred_capacity,
+        (uint64_t)(capacity - state->deferred_capacity) * sizeof(Drp2DeferredDestroy), 0,
+        (uint64_t)(capacity - state->deferred_capacity) * sizeof(Drp2DeferredDestroy));
+    state->deferred = deferred;
+    state->deferred_capacity = capacity;
+    return true;
+}
+
+
+
+/**
+ * Move one backend object into deferred destruction until a borrowed frame command buffer is
+ * reacquired.
+ *
+ * @param state vklite runtime state
+ * @param object backend object to retire later
+ * @param command_buffer borrowed frame command buffer that must finish first
+ * @return whether the object was queued successfully
+ */
+static bool _vklite_defer_destroy_object(
+    Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer command_buffer)
+{
+    ANN(state);
+    ANN(object);
+    if (command_buffer == VK_NULL_HANDLE)
+        return false;
+    if (!_vklite_deferred_ensure_capacity(state))
+        return false;
+
+    Drp2DeferredDestroy* deferred = &state->deferred[state->deferred_count++];
+    deferred->command_buffer = command_buffer;
+    deferred->object = *object;
+    dvz_memset(object, sizeof(Drp2VkliteObject), 0, sizeof(Drp2VkliteObject));
+    object->destroyed = true;
+    return true;
+}
+
+
+
+/**
+ * Destroy backend objects deferred for a borrowed frame command buffer once that command buffer has
+ * been reacquired after its fence wait.
+ *
+ * @param state vklite runtime state
+ * @param command_buffer reacquired borrowed frame command buffer
+ */
+static void _vklite_flush_deferred_for_command_buffer(
+    Drp2VkliteState* state, VkCommandBuffer command_buffer)
+{
+    ANN(state);
+    if (command_buffer == VK_NULL_HANDLE || state->deferred_count == 0)
+        return;
+
+    uint32_t write_idx = 0;
+    for (uint32_t i = 0; i < state->deferred_count; i++)
+    {
+        Drp2DeferredDestroy* deferred = &state->deferred[i];
+        if (deferred->command_buffer == command_buffer)
+        {
+            _vklite_destroy_object(&deferred->object);
+            dvz_memset(
+                deferred, sizeof(Drp2DeferredDestroy), 0, sizeof(Drp2DeferredDestroy));
+            continue;
+        }
+        if (write_idx != i)
+            state->deferred[write_idx] = state->deferred[i];
+        write_idx++;
+    }
+    for (uint32_t i = write_idx; i < state->deferred_count; i++)
+    {
+        dvz_memset(
+            &state->deferred[i], sizeof(Drp2DeferredDestroy), 0,
+            sizeof(Drp2DeferredDestroy));
+    }
+    state->deferred_count = write_idx;
+}
+
 
 
 static DvzDrp2ValidationResult _vklite_create_buffer(
@@ -2342,6 +2472,8 @@ static bool _vklite_attach_frame_target(
             return false;
         runtime->vklite_state->runtime = runtime;
     }
+    _vklite_flush_deferred_for_command_buffer(runtime->vklite_state, frame->command_buffer);
+    runtime->vklite_state->active_borrowed_command_buffer = frame->command_buffer;
 
     DvzImages* images = dvz_images_create_wrapper();
     if (images == NULL)
@@ -4120,6 +4252,9 @@ static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     Drp2VkliteObject* object = _vklite_find(state, id);
     if (object == NULL || object->kind != kind)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
+        _vklite_defer_destroy_object(state, object, state->active_borrowed_command_buffer))
+        return _ok();
     _vklite_destroy_object(object);
     return _ok();
 }
@@ -4144,6 +4279,9 @@ static DvzDrp2ValidationResult _vklite_destroy_shader_module(
         object->kind != DRP2_OBJECT_SHADER_FRAGMENT &&
         object->kind != DRP2_OBJECT_SHADER_COMPUTE)
         return _fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
+        _vklite_defer_destroy_object(state, object, state->active_borrowed_command_buffer))
+        return _ok();
     _vklite_destroy_object(object);
     return _ok();
 }
@@ -4284,6 +4422,7 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
     }
 
+    state->active_borrowed_command_buffer = VK_NULL_HANDLE;
     return result;
 }
 #endif
@@ -4334,6 +4473,25 @@ DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
     runtime->allocator = cfg->allocator;
     runtime->semantic_only = cfg->semantic_only;
     return runtime;
+}
+
+
+
+/**
+ * Return the borrowed configuration that was used to create a DRP2 runtime.
+ *
+ * @param runtime the runtime
+ * @return the runtime configuration, or zero-initialized fields when runtime is NULL
+ */
+DvzDrp2RuntimeConfig dvz_drp2_runtime_config(const DvzDrp2Runtime* runtime)
+{
+    DvzDrp2RuntimeConfig cfg = {0};
+    if (runtime == NULL)
+        return cfg;
+    cfg.device = runtime->device;
+    cfg.allocator = runtime->allocator;
+    cfg.semantic_only = runtime->semantic_only;
+    return cfg;
 }
 
 

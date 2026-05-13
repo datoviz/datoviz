@@ -425,6 +425,17 @@ uint32_t dvz_figure_process_requests(
     _scene_coalesce_pending_pick_requests(scene, figure);
     _scene_coalesce_pending_probe_requests(scene, figure);
 
+    if (scene->pending_pick_count == 0 && scene->pending_probe_count == 0)
+        return 0;
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_config(runtime);
+    DvzDrp2Runtime* request_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    if (request_runtime == NULL)
+    {
+        log_error("scene request runtime creation failed");
+        return 0;
+    }
+
     for (uint32_t i = 0; i < scene->pending_pick_count;)
     {
         const DvzPendingPickRequest pending = scene->pending_picks[i];
@@ -433,7 +444,7 @@ uint32_t dvz_figure_process_requests(
             i++;
             continue;
         }
-        (void)_scene_process_point_pick_request(figure, runtime, caps, &pending);
+        (void)_scene_process_point_pick_request(figure, request_runtime, caps, &pending);
         _scene_remove_pending_pick_at(scene, i);
         processed++;
     }
@@ -446,11 +457,12 @@ uint32_t dvz_figure_process_requests(
             i++;
             continue;
         }
-        (void)_scene_process_image_probe_request(figure, runtime, caps, &pending);
+        (void)_scene_process_image_probe_request(figure, request_runtime, caps, &pending);
         _scene_remove_pending_probe_at(scene, i);
         processed++;
     }
 
+    dvz_drp2_runtime_destroy(request_runtime);
     return processed;
 }
 
@@ -676,7 +688,7 @@ static bool _scene_process_image_probe_request(
         DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
         DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
         if (pos_attr->data == NULL || uv_attr->data == NULL || pos_attr->item_count == 0 ||
-            uv_attr->item_count != pos_attr->item_count)
+            uv_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3))
         {
             continue;
         }
@@ -708,13 +720,39 @@ static bool _scene_process_image_probe_request(
             texture_height = visual->texture.height;
         }
 
-        uint64_t position_bytes = pos_attr->item_count * pos_attr->item_size;
+        if (pos_attr->item_count > UINT64_MAX / sizeof(vec3))
+        {
+            log_error("image probe request position buffer is too large");
+            continue;
+        }
+
+        uint64_t position_bytes = pos_attr->item_count * sizeof(vec3);
+        vec3* probe_positions = (vec3*)dvz_calloc(pos_attr->item_count, sizeof(vec3));
+        if (probe_positions == NULL)
+        {
+            log_error("image probe request position buffer allocation failed");
+            continue;
+        }
+
+        vec2 target_ndc = {-0.75f, -0.75f};
+        /* Image shaders write positions directly, without the shared Vulkan-NDC Y flip. */
+        vec2 image_request_ndc = {request_ndc[0], -request_ndc[1]};
+        vec2 delta = {
+            image_request_ndc[0] - target_ndc[0], image_request_ndc[1] - target_ndc[1]};
+        const vec3* source_positions = (const vec3*)pos_attr->data;
+        for (uint64_t j = 0; j < pos_attr->item_count; j++)
+        {
+            probe_positions[j][0] = source_positions[j][0] - delta[0];
+            probe_positions[j][1] = source_positions[j][1] - delta[1];
+            probe_positions[j][2] = source_positions[j][2];
+        }
+
         uint64_t texture_bytes = (uint64_t)texture_width * texture_height * 4;
         DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
         DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
         bool ok = plan != NULL && emitter != NULL &&
                   dvz_frame_plan_upload_bytes(
-                      plan, "probe0_position", 0, position_bytes, "position", pos_attr->data) &&
+                      plan, "probe0_position", 0, position_bytes, "position", probe_positions) &&
                   dvz_frame_plan_upload_bytes(
                       plan, "probe0_texcoords", 0, uv_attr->item_count * uv_attr->item_size,
                       "texcoords", uv_attr->data) &&
@@ -755,6 +793,7 @@ static bool _scene_process_image_probe_request(
         }
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
+        dvz_free(probe_positions);
 
         if (!hit)
             continue;

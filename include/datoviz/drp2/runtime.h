@@ -78,6 +78,16 @@ DVZ_EXPORT DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* c
 
 
 /**
+ * Return the borrowed configuration that was used to create a DRP2 runtime.
+ *
+ * @param runtime the runtime
+ * @return the runtime configuration, or zero-initialized fields when runtime is NULL
+ */
+DVZ_EXPORT DvzDrp2RuntimeConfig dvz_drp2_runtime_config(const DvzDrp2Runtime* runtime);
+
+
+
+/**
  * Destroy a DRP2 runtime.
  *
  * @param runtime the runtime
