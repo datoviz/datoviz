@@ -30,6 +30,8 @@
 typedef struct DvzApp       DvzApp;
 typedef struct DvzAppWindow DvzAppWindow;
 
+typedef void (*DvzAppFrameCallback)(DvzAppWindow* win, void* user_data);
+
 
 
 EXTERN_C_ON
@@ -133,6 +135,22 @@ DVZ_EXPORT struct DvzInputRouter* dvz_app_window_input(DvzAppWindow* win);
  * @return 0 on success, negative on error
  */
 DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
+
+
+/**
+ * Register a callback invoked after each successful frame for one app-window.
+ *
+ * The callback runs after the scene stream has been emitted, executed, request processing has
+ * completed, and the emitted stream has been destroyed. Scene mutations from the callback are
+ * therefore allowed and become visible on the next frame.
+ *
+ * @param win the app-window
+ * @param callback callback pointer, or NULL to clear it
+ * @param user_data opaque pointer forwarded to the callback
+ */
+DVZ_EXPORT void
+dvz_app_window_set_frame_callback(
+    DvzAppWindow* win, DvzAppFrameCallback callback, void* user_data);
 
 
 

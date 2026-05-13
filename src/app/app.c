@@ -20,6 +20,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "datoviz/app.h"
 #include "datoviz/scene.h"
@@ -62,8 +63,11 @@ struct DvzAppWindow
     DvzWindow* window;
     DvzCanvas* canvas;
 #endif
-    uint64_t   target_id;
-    bool       is_interactive;
+    uint64_t target_id;
+    bool is_interactive;
+    uint64_t frame_index;
+    DvzAppFrameCallback frame_callback;
+    void* frame_user_data;
 };
 
 
@@ -78,6 +82,58 @@ struct DvzApp
     uint32_t     window_count;
     DvzAppWindow windows[DVZ_APP_MAX_WINDOWS];
 };
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+
+/**
+ * Return whether a boolean-like environment variable is enabled.
+ *
+ * @param value environment variable value, or NULL
+ * @return true when the value is present and not one of the usual false spellings
+ */
+static bool _env_flag_enabled(const char* value)
+{
+    if (value == NULL)
+        return false;
+    return strcmp(value, "0") != 0 && strcmp(value, "false") != 0 &&
+           strcmp(value, "FALSE") != 0 && strcmp(value, "off") != 0 &&
+           strcmp(value, "OFF") != 0;
+}
+
+
+/**
+ * Optionally dump one emitted DRP2 stream to stderr.
+ *
+ * @param stream the emitted command stream
+ * @param frame_index the 0-based frame index for the owning window
+ */
+static void _app_trace_stream(const DvzDrp2CommandStream* stream, uint64_t frame_index)
+{
+    ANN(stream);
+    const char* trace_env = getenv("DVZ_DRP2_TRACE");
+    if (!_env_flag_enabled(trace_env))
+        return;
+
+    char trace_name[64] = {0};
+    snprintf(trace_name, sizeof(trace_name), "live_frame_%" PRIu64, frame_index);
+    char* json = dvz_drp2_stream_json(stream, trace_name);
+    if (json == NULL)
+    {
+        log_error("failed to serialize emitted DRP2 stream for tracing");
+        return;
+    }
+
+    dvz_fprintf(stderr, "\n=== DRP2 frame %" PRIu64 " ===\n%s\n", frame_index, json);
+    dvz_drp2_stream_json_destroy(json);
+}
+
+#endif
 
 
 
@@ -128,12 +184,18 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
+    _app_trace_stream(stream, win->frame_index);
+
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
     if (!result.ok)
         log_error("_app_draw runtime execution failed at command %" PRIu32, result.command_index);
     else
         (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
     dvz_drp2_stream_destroy(stream);
+
+    if (win->frame_callback != NULL)
+        win->frame_callback(win, win->frame_user_data);
+    win->frame_index++;
 }
 
 #endif
@@ -425,6 +487,15 @@ int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
 #else
     return -1;
 #endif
+}
+
+
+void dvz_app_window_set_frame_callback(
+    DvzAppWindow* win, DvzAppFrameCallback callback, void* user_data)
+{
+    ANN(win);
+    win->frame_callback = callback;
+    win->frame_user_data = user_data;
 }
 
 
