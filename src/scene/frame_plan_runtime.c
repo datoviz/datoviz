@@ -78,7 +78,7 @@ static bool _emitter_emit_render_multi_in_pass(
     for (uint32_t i = 0; ok && i < render->u.render.visual_count; i++)
     {
         DvzSceneVisualDesc desc = {0};
-        if (!_scene_visual_desc_from_render(emitter, render->u.render.visuals[i], &desc))
+        if (!_scene_visual_desc_from_render(emitter, render, i, &desc))
             continue;
 
         bool vis_is_point = desc.kind == DVZ_SCENE_VISUAL_DESC_POINT;
@@ -794,15 +794,7 @@ static bool _emitter_emit_plain_renders(
         if (render->u.render.visual_count > 0 &&
             cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
-            char visual_id[DVZ_SCENE_LABEL_SIZE];
-            char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-            char probe[DVZ_SCENE_LABEL_SIZE];
-            _scene_resource_key_split_visual(
-                render->u.render.visuals[0], visual_id, sizeof(visual_id), shared_index_id,
-                sizeof(shared_index_id));
-            if (!_scene_resource_key_visual_data(visual_id, "position", probe, sizeof(probe)))
-                continue;
-            if (_resource_lookup_id(&emitter->resources, probe) != 0)
+            if (_scene_render_visual_has_position_resource(emitter, render, 0))
             {
                 scene_render_node_count++;
                 any_scene_render_needs_depth =
@@ -832,15 +824,7 @@ static bool _emitter_emit_plain_renders(
         if (render->u.render.visual_count > 0 &&
             cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
-            char visual_id[DVZ_SCENE_LABEL_SIZE];
-            char shared_index_id[DVZ_SCENE_LABEL_SIZE];
-            char probe[DVZ_SCENE_LABEL_SIZE];
-            _scene_resource_key_split_visual(
-                render->u.render.visuals[0], visual_id, sizeof(visual_id), shared_index_id,
-                sizeof(shared_index_id));
-            if (!_scene_resource_key_visual_data(visual_id, "position", probe, sizeof(probe)))
-                continue;
-            is_scene_node = _resource_lookup_id(&emitter->resources, probe) != 0;
+            is_scene_node = _scene_render_visual_has_position_resource(emitter, render, 0);
         }
 
         if (!is_scene_node)

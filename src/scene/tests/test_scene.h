@@ -54,6 +54,8 @@ int test_frame_plan_json_escapes_labels(TstSuite* suite, TstItem* item);
 
 int test_scene_resource_keys(TstSuite* suite, TstItem* item);
 
+int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item);
+
 int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item);
 
 int test_frame_plan_texture_upload_json_includes_region(TstSuite* suite, TstItem* item);

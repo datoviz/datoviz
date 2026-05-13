@@ -659,6 +659,29 @@ bool dvz_frame_plan_render_visual(DvzFramePlan* plan, const char* visual_id)
 
 
 /**
+ * Attach typed metadata to the most recently appended render visual.
+ *
+ * @param plan the FramePlan
+ * @param metadata the visual metadata
+ * @return whether the metadata was attached
+ */
+bool dvz_frame_plan_render_visual_metadata(
+    DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata)
+{
+    DvzFramePlanNode* node = _last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
+    if (node == NULL || metadata == NULL || node->u.render.visual_count == 0)
+        return false;
+    uint32_t index = node->u.render.visual_count - 1;
+    dvz_memcpy(
+        &node->u.render.visual_metadata[index], sizeof(DvzFramePlanVisualMeta), metadata,
+        sizeof(DvzFramePlanVisualMeta));
+    node->u.render.visual_metadata[index].has_metadata = true;
+    return true;
+}
+
+
+
+/**
  * Append a copy node.
  *
  * @param plan the FramePlan

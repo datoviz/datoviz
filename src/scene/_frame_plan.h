@@ -32,6 +32,25 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+typedef struct DvzFramePlanVisualMeta
+{
+    bool has_metadata;
+    uint32_t visual_type;
+    uint32_t visual_index;
+    uint32_t buffer_index;
+    uint32_t topology;
+    char position_id[DVZ_SCENE_LABEL_SIZE];
+    char color_id[DVZ_SCENE_LABEL_SIZE];
+    char size_id[DVZ_SCENE_LABEL_SIZE];
+    char texcoords_id[DVZ_SCENE_LABEL_SIZE];
+    char texture_id[DVZ_SCENE_LABEL_SIZE];
+    char normal_id[DVZ_SCENE_LABEL_SIZE];
+    char index_id[DVZ_SCENE_LABEL_SIZE];
+    char shading_id[DVZ_SCENE_LABEL_SIZE];
+} DvzFramePlanVisualMeta;
+
+
+
 struct DvzFramePlanNode
 {
     DvzFramePlanNodeType type;
@@ -72,6 +91,7 @@ struct DvzFramePlanNode
             char render_target_id[DVZ_SCENE_LABEL_SIZE];
             uint32_t visual_count;
             char visuals[DVZ_SCENE_MAX_RENDER_VISUALS][DVZ_SCENE_LABEL_SIZE];
+            DvzFramePlanVisualMeta visual_metadata[DVZ_SCENE_MAX_RENDER_VISUALS];
             bool picking;
             DvzPanelDesc desc;
             bool has_mvp;
@@ -123,3 +143,6 @@ bool dvz_frame_plan_clear_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc);
 
 DvzFramePlanNode* dvz_frame_plan_last_render_node(DvzFramePlan* plan);
+
+bool dvz_frame_plan_render_visual_metadata(
+    DvzFramePlan* plan, const DvzFramePlanVisualMeta* metadata);

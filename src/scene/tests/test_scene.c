@@ -992,6 +992,60 @@ int test_scene_resource_keys(TstSuite* suite, TstItem* item)
 
 
 
+/**
+ * Ensure typed FramePlan metadata, not visual-id parsing, drives retained visual emission.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_frame_plan_render_visual_metadata(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.metadata", 1);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "v0_position", 0, 3 * 3 * sizeof(float), "position"));
+    AT(dvz_frame_plan_upload(plan, "v0_color", 0, 3 * sizeof(DvzColor), "color"));
+    AT(dvz_frame_plan_upload(plan, "v0_size", 0, 3 * sizeof(float), "size"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "opaque-debug-id"));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.visual_index = 0;
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "v0_position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "v0_color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "v0_size", sizeof(metadata.size_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzCapabilitySnapshot caps = {0};
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    dvz_capability_snapshot_default(&caps);
+    dvz_diagnostic_report_init(&report);
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_stream_count(stream) > 0);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 int test_frame_plan_dynamic_update(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -8774,6 +8828,7 @@ int test_scene(TstSuite* suite)
     TEST_SIMPLE(test_frame_plan_growth_json);
     TEST_SIMPLE(test_frame_plan_json_escapes_labels);
     TEST_SIMPLE(test_scene_resource_keys);
+    TEST_SIMPLE(test_frame_plan_render_visual_metadata);
     TEST_SIMPLE(test_frame_plan_dynamic_update);
     TEST_SIMPLE(test_frame_plan_texture_upload_json_includes_region);
     TEST_SIMPLE(test_frame_plan_readbacks);

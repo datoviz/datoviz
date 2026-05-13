@@ -1,7 +1,7 @@
 # Scene Converter Refactor Plan
 
 > **Execution Status**
-> - **Status:** `MECHANICAL SPLIT LANDED; RESOURCE KEYS CENTRALIZED`
+> - **Status:** `MECHANICAL SPLIT LANDED; FIRST TYPED VISUAL METADATA SLICE`
 > - **Updated on:** `2026-05-13`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
@@ -35,7 +35,10 @@ resource/object tables now grow dynamically, fixture converter state is cleaned 
 the runtime compute-buffer path reacquires resource entries after possible table growth. Follow-up
 commit `cb0576a1` added `scene_resource_key.c` / `_scene_resource_key.h`, moving the current
 `v%u`, `b%u`, `v%u_%s`, `v%u_texture`, and `v%u#index=b%u` conventions plus split parsing behind
-one internal helper API.
+one internal helper API. The current working slice adds `DvzFramePlanVisualMeta` on render nodes,
+populates it from retained scene visuals, and makes the GLSL retained render path prefer those
+typed resource ids over parsing the render visual debug label. The existing strings remain as
+debug/cache labels and as fallback for hand-authored fixture FramePlans.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
@@ -58,7 +61,7 @@ FramePlan -> DRP2 -> vklite/canvas behavior.
 
 The remaining cleanup is more targeted:
 
-1. add typed FramePlan visual/resource metadata and stop recovering visual semantics from strings,
+1. broaden typed FramePlan visual/resource metadata until string parsing is fixture/debug fallback only,
 2. continue hardening emitter/resource failure paths and diagnostics as they are exposed,
 3. split scene -> FramePlan lowering out of retained-object mutation once typed metadata settles.
 
@@ -391,14 +394,14 @@ Validation:
 
 ### Step 10 - Replace Stringly Visual Metadata
 
-Status: **ready for design after key-helper extraction**. Commit `cb0576a1` centralized the current
-resource-key strings and parsing in `scene_resource_key.c`, so the next pass can add typed metadata
-without chasing formatting conventions across `scene.c`, `visual_pipeline.c`, and
-`frame_plan_runtime.c`.
+Status: **first retained render slice landed**. Commit `cb0576a1` centralized the current
+resource-key strings and parsing in `scene_resource_key.c`; the follow-up typed metadata slice adds
+`DvzFramePlanVisualMeta`, fills it during retained scene -> FramePlan lowering, and routes
+`visual_pipeline.c` descriptor/depth detection through the typed ids when present.
 
 This is the first intentionally behavior-shaping cleanup.
 
-Move visual identity out of resource-name conventions and `data_tag` string inference:
+Continue moving visual identity out of resource-name conventions and `data_tag` string inference:
 
 1. add typed visual family metadata to FramePlan render nodes,
 2. add typed attribute descriptors for position/color/size/normal/texcoords/texture/index/shading,

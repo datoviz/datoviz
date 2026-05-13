@@ -201,6 +201,10 @@ static void _json_append_figure(
 
 static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan);
 
+static bool _scene_visual_frame_plan_metadata(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanVisualMeta* metadata);
+
 static void _scene_emit_panel_render(
     DvzFigure* figure, uint32_t panel_index, DvzFramePlan* plan, const char* figure_id);
 
@@ -1322,6 +1326,66 @@ static void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
 
 
 /**
+ * Build typed FramePlan metadata for one retained visual.
+ *
+ * @param figure the parent figure
+ * @param visual the retained visual
+ * @param visual_index the visual index within the figure
+ * @param metadata the output metadata
+ * @return whether metadata was built
+ */
+static bool _scene_visual_frame_plan_metadata(
+    const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
+    DvzFramePlanVisualMeta* metadata)
+{
+    ANN(figure);
+    ANN(figure->scene);
+    ANN(visual);
+    ANN(metadata);
+
+    dvz_memset(metadata, sizeof(DvzFramePlanVisualMeta), 0, sizeof(DvzFramePlanVisualMeta));
+    metadata->has_metadata = true;
+    metadata->visual_type = (uint32_t)visual->type;
+    metadata->visual_index = visual_index;
+    metadata->buffer_index = UINT32_MAX;
+    metadata->topology = (uint32_t)visual->topology;
+
+    if (!_scene_resource_key_visual_attr(
+            visual_index, "position", metadata->position_id, sizeof(metadata->position_id)))
+        return false;
+    if (!_scene_resource_key_visual_attr(
+            visual_index, "color", metadata->color_id, sizeof(metadata->color_id)))
+        return false;
+    if (!_scene_resource_key_visual_attr(
+            visual_index, "size", metadata->size_id, sizeof(metadata->size_id)))
+        return false;
+    if (!_scene_resource_key_visual_attr(
+            visual_index, "texcoords", metadata->texcoords_id, sizeof(metadata->texcoords_id)))
+        return false;
+    if (!_scene_resource_key_visual_texture(
+            visual_index, metadata->texture_id, sizeof(metadata->texture_id)))
+        return false;
+    if (!_scene_resource_key_visual_attr(
+            visual_index, "normal", metadata->normal_id, sizeof(metadata->normal_id)))
+        return false;
+    if (!_scene_resource_key_visual_attr(
+            visual_index, "primitive_shading", metadata->shading_id, sizeof(metadata->shading_id)))
+        return false;
+
+    uint32_t buffer_index = _scene_buffer_index(figure->scene, visual->buffer);
+    if (buffer_index != UINT32_MAX)
+    {
+        metadata->buffer_index = buffer_index;
+        if (!_scene_resource_key_buffer(
+                buffer_index, metadata->index_id, sizeof(metadata->index_id)))
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
  * Emit one panel render node into a frame plan.
  *
  * @param figure the parent figure
@@ -1408,10 +1472,16 @@ static void _scene_emit_panel_render(
             if (!_scene_resource_key_visual(vidx, visual_id, sizeof(visual_id)))
                 continue;
         }
-        dvz_frame_plan_render_visual(plan, visual_id);
+        if (!dvz_frame_plan_render_visual(plan, visual_id))
+            continue;
         if (node != NULL)
+        {
+            DvzFramePlanVisualMeta metadata = {0};
+            if (_scene_visual_frame_plan_metadata(figure, visual, vidx, &metadata))
+                dvz_frame_plan_render_visual_metadata(plan, &metadata);
             node->u.render.controller_modes[node->u.render.visual_count - 1] =
                 attach->controller_mode;
+        }
     }
 }
 

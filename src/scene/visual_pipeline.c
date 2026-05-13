@@ -32,6 +32,131 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Resolve a resource id from a non-empty FramePlan resource key.
+ *
+ * @param state the resource state
+ * @param key the resource key
+ * @return the resource id, or zero when absent
+ */
+static uint64_t _resource_lookup_label(const ConverterState* state, const char* key)
+{
+    ANN(state);
+    if (key == NULL || key[0] == '\0')
+        return 0;
+    return _resource_lookup_id(state, key);
+}
+
+
+
+/**
+ * Return whether a retained visual type uses the primitive pipeline family.
+ *
+ * @param visual_type the retained visual type
+ * @return whether the visual type is primitive-like
+ */
+static bool _visual_meta_is_primitive(uint32_t visual_type)
+{
+    return visual_type == DVZ_VISUAL_TYPE_PRIMITIVE || visual_type == DVZ_VISUAL_TYPE_MESH ||
+           visual_type == DVZ_VISUAL_TYPE_PATH;
+}
+
+
+
+/**
+ * Resolve draw-relevant state from typed FramePlan visual metadata.
+ *
+ * @param emitter the persistent emitter
+ * @param meta the typed visual metadata
+ * @param out the output visual descriptor
+ * @return whether a supported visual descriptor was resolved
+ */
+static bool _scene_visual_desc_from_metadata(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out)
+{
+    ANN(emitter);
+    ANN(meta);
+    ANN(out);
+
+    uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
+    if (pos_buf == 0)
+        return false;
+    out->vbuf_ids[out->vbuf_count++] = pos_buf;
+
+    uint64_t pos_size = _resource_byte_size(&emitter->resources, pos_buf);
+    uint64_t vertex_count = (pos_size > 0) ? pos_size / (3 * sizeof(float)) : 3;
+    if (vertex_count > UINT32_MAX)
+        return false;
+    out->vertex_count = (uint32_t)vertex_count;
+
+    if (meta->visual_type == DVZ_VISUAL_TYPE_POINT)
+    {
+        uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
+        uint64_t size_id = _resource_lookup_label(&emitter->resources, meta->size_id);
+        if (color_id == 0 || size_id == 0)
+            return false;
+        out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
+        out->vbuf_ids[out->vbuf_count++] = color_id;
+        out->vbuf_ids[out->vbuf_count++] = size_id;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+        return true;
+    }
+
+    if (_visual_meta_is_primitive(meta->visual_type))
+    {
+        uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
+        if (color_id == 0)
+            return false;
+        out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+        out->vbuf_ids[out->vbuf_count++] = color_id;
+        uint64_t normal_id = _resource_lookup_label(&emitter->resources, meta->normal_id);
+        if (normal_id != 0)
+        {
+            out->vbuf_ids[out->vbuf_count++] = normal_id;
+            out->has_normal = true;
+        }
+        out->topology = _resource_topology(&emitter->resources, pos_buf);
+        if (out->topology == UINT32_MAX)
+            out->topology = meta->topology;
+        out->index_buffer_id = _resource_lookup_label(&emitter->resources, meta->index_id);
+        out->shading_buffer_id = _resource_lookup_label(&emitter->resources, meta->shading_id);
+    }
+    else if (meta->visual_type == DVZ_VISUAL_TYPE_IMAGE)
+    {
+        uint64_t uv_id = _resource_lookup_label(&emitter->resources, meta->texcoords_id);
+        uint64_t tex_id = _resource_lookup_label(&emitter->resources, meta->texture_id);
+        if (uv_id == 0 || tex_id == 0)
+            return false;
+        out->kind = DVZ_SCENE_VISUAL_DESC_IMAGE;
+        out->vbuf_ids[out->vbuf_count++] = uv_id;
+        out->image_texture_id = tex_id;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    }
+    else
+    {
+        return false;
+    }
+
+    if (out->index_buffer_id != 0 &&
+        _resource_item_stride(&emitter->resources, out->index_buffer_id) != 0)
+    {
+        uint64_t index_count =
+            _resource_byte_size(&emitter->resources, out->index_buffer_id) /
+            _resource_item_stride(&emitter->resources, out->index_buffer_id);
+        if (index_count > UINT32_MAX)
+            return false;
+        out->index_count = (uint32_t)index_count;
+    }
+    out->index_format =
+        _resource_item_stride(&emitter->resources, out->index_buffer_id) == sizeof(uint16_t)
+            ? "uint16"
+            : "uint32";
+
+    return true;
+}
+
+
+
 /*
  * Return true when vertex_buffer_ids[0..n-1] carry data_tags "position", "color", "size"
  * (in any order), which identifies a DvzPoint visual.
@@ -170,24 +295,66 @@ bool _emitter_resolve_render_vertex_buffers(
 
 
 /**
+ * Return whether one render visual has a registered position resource.
+ *
+ * @param emitter the persistent emitter
+ * @param render the render node
+ * @param visual_index the visual index within the render node
+ * @return whether the visual's position resource exists
+ */
+bool _scene_render_visual_has_position_resource(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index)
+{
+    ANN(emitter);
+    ANN(render);
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || visual_index >= render->u.render.visual_count)
+        return false;
+
+    const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
+    if (meta->has_metadata)
+        return _resource_lookup_label(&emitter->resources, meta->position_id) != 0;
+
+    char visual_id[DVZ_SCENE_LABEL_SIZE];
+    char shared_index_id[DVZ_SCENE_LABEL_SIZE];
+    char probe[DVZ_SCENE_LABEL_SIZE];
+    _scene_resource_key_split_visual(
+        render->u.render.visuals[visual_index], visual_id, sizeof(visual_id), shared_index_id,
+        sizeof(shared_index_id));
+    if (!_scene_resource_key_visual_data(visual_id, "position", probe, sizeof(probe)))
+        return false;
+    return _resource_lookup_id(&emitter->resources, probe) != 0;
+}
+
+
+
+/**
  * Resolve draw-relevant state for one encoded render visual id.
  *
  * @param emitter the persistent emitter
- * @param encoded_visual_id the render-node visual id
+ * @param render the render node
+ * @param visual_index the visual index within the render node
  * @param out the output visual descriptor
  * @return whether a supported visual descriptor was resolved
  */
 bool _scene_visual_desc_from_render(
-    DvzFramePlanEmitter* emitter, const char* encoded_visual_id, DvzSceneVisualDesc* out)
+    DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index,
+    DvzSceneVisualDesc* out)
 {
     ANN(emitter);
+    ANN(render);
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualDesc), 0, sizeof(DvzSceneVisualDesc));
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || visual_index >= render->u.render.visual_count)
+        return false;
+
+    const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[visual_index];
+    if (meta->has_metadata)
+        return _scene_visual_desc_from_metadata(emitter, meta, out);
 
     char visual_id[DVZ_SCENE_LABEL_SIZE];
     char shared_index_id[DVZ_SCENE_LABEL_SIZE];
     _scene_resource_key_split_visual(
-        encoded_visual_id, visual_id, sizeof(visual_id), shared_index_id,
+        render->u.render.visuals[visual_index], visual_id, sizeof(visual_id), shared_index_id,
         sizeof(shared_index_id));
 
     char pos_key[DVZ_SCENE_LABEL_SIZE];
@@ -536,6 +703,23 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
 
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
+        const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
+        if (meta->has_metadata)
+        {
+            if (!_visual_meta_is_primitive(meta->visual_type))
+                continue;
+            uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);
+            if (pos_buf == 0)
+                continue;
+            bool has_topology = _resource_topology(&emitter->resources, pos_buf) != UINT32_MAX ||
+                                meta->topology != UINT32_MAX;
+            bool has_color = _resource_lookup_label(&emitter->resources, meta->color_id) != 0;
+            bool has_normal = _resource_lookup_label(&emitter->resources, meta->normal_id) != 0;
+            if (has_color && has_topology && has_normal)
+                return true;
+            continue;
+        }
+
         char visual_id[DVZ_SCENE_LABEL_SIZE];
         char shared_index_id[DVZ_SCENE_LABEL_SIZE];
         _scene_resource_key_split_visual(

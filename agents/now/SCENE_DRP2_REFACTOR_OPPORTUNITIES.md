@@ -26,8 +26,8 @@ behavior or data-model improvements.
 The converter file is gone, but the runtime emitter still has important follow-ups before larger
 scene/DRP2 splits:
 
-1. add typed FramePlan visual/resource metadata so runtime emission stops inferring semantics
-   from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
+1. broaden typed FramePlan visual/resource metadata so runtime emission can finish dropping
+   semantic inference from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
 2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
 3. then split scene -> FramePlan lowering from retained-object mutation.
 
@@ -43,7 +43,10 @@ objects. The first emitter state hardening slice landed in `586d3fa0`: runtime r
 state now grows dynamically, fixture temporary state is destroyed explicitly, texture row-pitch
 overflow is guarded, and the compute-buffer emitter reacquires entries after possible resource-map
 growth. The resource-key helper slice landed in `cb0576a1`: `scene_resource_key.c` now owns the
-current visual, buffer, texture, indexed-visual, and split-visual string conventions.
+current visual, buffer, texture, indexed-visual, and split-visual string conventions. The first
+typed metadata slice adds `DvzFramePlanVisualMeta` to render nodes, populates it from retained scene
+visuals, and makes the retained GLSL render path prefer metadata resource ids over parsing render
+visual labels; fixture/manual FramePlans still fall back to the old strings.
 
 This remains the first active refactor lane because it directly narrows the scene -> FramePlan ->
 DRP2 boundary.
@@ -178,7 +181,7 @@ registration helpers.
 
 ## Suggested Order
 
-1. Add typed FramePlan visual/resource metadata and stop recovering semantics from strings.
+1. Finish typed FramePlan visual/resource metadata coverage and make string parsing a fallback only.
 2. Continue emitter failure-path diagnostics and remaining overflow/downcast guards.
 3. Extract `scene_emit.c` so scene -> FramePlan lowering is isolated from retained-object mutation.
 4. Extract `visual.c` and `field.c`; these are the hottest retained-resource paths.

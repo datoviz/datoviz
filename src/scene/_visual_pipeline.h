@@ -112,8 +112,12 @@ bool _emitter_resolve_render_vertex_buffers(
     DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint64_t* out_ids,
     uint32_t* out_count);
 
+bool _scene_render_visual_has_position_resource(
+    DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index);
+
 bool _scene_visual_desc_from_render(
-    DvzFramePlanEmitter* emitter, const char* encoded_visual_id, DvzSceneVisualDesc* out);
+    DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint32_t visual_index,
+    DvzSceneVisualDesc* out);
 
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, const char* format_tag,
