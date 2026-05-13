@@ -143,3 +143,30 @@ uint64_t _obj_id(DvzFramePlanEmitter* emitter, const char* key, bool* is_new);
 
 uint64_t
 _obj_buffer_id(DvzFramePlanEmitter* emitter, const char* key, uint64_t byte_size, bool* is_new);
+
+
+
+/*************************************************************************************************/
+/*  Shared emit helpers                                                                          */
+/*************************************************************************************************/
+
+bool _zero_base64(uint64_t byte_size, char* out, uint64_t out_size);
+
+char* _zero_base64_alloc(uint64_t byte_size);
+
+const DvzFramePlanNode* _first_node_of_type(
+    const DvzFramePlan* plan, DvzFramePlanNodeType type);
+
+void _parse_visual_id(
+    const char* encoded, char* visual_id, size_t visual_id_size, char* index_id,
+    size_t index_id_size);
+
+bool _render_uses_texture(const DvzFramePlanNode* node);
+
+void _diagnostic(DvzDiagnosticReport* report, const char* message);
+
+bool _validate_capabilities(
+    const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps, const DvzFramePlanEmitConfig* cfg,
+    DvzDiagnosticReport* report);
+
+uint64_t _color_target_id(const DvzFramePlanEmitConfig* cfg);
