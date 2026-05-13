@@ -105,3 +105,41 @@ struct DvzFramePlanEmitter
     DvzMVP mvp_cache[DVZ_SCENE_MAX_PANELS];
     uint32_t mvp_panel_count;
 };
+
+
+
+/*************************************************************************************************/
+/*  Runtime emitter state                                                                        */
+/*************************************************************************************************/
+
+void _state_init(ConverterState* state);
+
+uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter);
+
+DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key);
+
+uint64_t _resource_id(ConverterState* state, const char* key);
+
+uint64_t _resource_lookup_id(const ConverterState* state, const char* key);
+
+ResourceId* _resource_find(ConverterState* state, const char* key);
+
+ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new);
+
+bool _resource_ensure_byte_size(
+    ConverterState* state, ResourceId* resource, uint64_t required_size, bool* needs_create);
+
+const char* _resource_data_tag(const ConverterState* state, uint64_t id);
+
+uint64_t _resource_byte_size(const ConverterState* state, uint64_t id);
+
+uint32_t _resource_usage(const ConverterState* state, uint64_t id);
+
+uint32_t _resource_item_stride(const ConverterState* state, uint64_t id);
+
+uint32_t _resource_topology(const ConverterState* state, uint64_t id);
+
+uint64_t _obj_id(DvzFramePlanEmitter* emitter, const char* key, bool* is_new);
+
+uint64_t
+_obj_buffer_id(DvzFramePlanEmitter* emitter, const char* key, uint64_t byte_size, bool* is_new);
