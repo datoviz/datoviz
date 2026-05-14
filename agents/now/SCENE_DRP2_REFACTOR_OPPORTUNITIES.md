@@ -1,8 +1,8 @@
 # Scene / DRP2 Refactor Opportunities
 
 > **Execution Status**
-> - **Status:** `ACTIVE FOLLOW-UP TRACKER; SCENE.C DOMAIN SPLIT IN PROGRESS`
-> - **Updated on:** `2026-05-13`
+> - **Status:** `ACTIVE FOLLOW-UP TRACKER; STRUCTURAL SPLITS COMPLETE FOR CURRENT SLICE`
+> - **Updated on:** `2026-05-14`
 > - **Scope:** identify high-payoff cleanup and architecture work outside the active
 >   scene -> DRP2 emitter split.
 
@@ -177,12 +177,11 @@ FramePlan, and DRP2 stream serializers now share one internal helper.
 
 ### 6. Split `src/scene/tests/test_scene.c`
 
-`test_scene.c` now spans panzoom, arcball, camera, FramePlan, converter emission, retained scene,
-fields, scales, interaction, pick/probe, app/offscreen, capture, and mesh/depth rendering. It is
-valuable coverage, but it is too broad for focused refactor loops.
+Status: **done**. `test_scene.c` is now an aggregator only, while the domain files under
+`src/scene/tests/` own the focused test registrations. The split preserves the existing test
+function names and keeps `test_scene(TstSuite*)` as the single module entry point.
 
-Recommended split under `src/scene/tests/`. The directory and unchanged test function names already
-carry the scene/test context, so use short domain filenames:
+Current files:
 
 1. `panzoom_arcball.c`
 2. `frame_plan.c`
@@ -193,10 +192,8 @@ carry the scene/test context, so use short domain filenames:
 7. `pick_probe.c`
 8. `app.c`
 
-Keep `test_scene(TstSuite* suite)` as the single module entry point and have it delegate to smaller
-registration helpers. Keep `test_scene.c` as an aggregator only, and keep `test_scene.h` as the
-shared declaration header. Do not rename existing test functions during the mechanical file split;
-the current prefixes are useful for filtering and historical continuity.
+`helpers.c` and `helpers.h` hold shared scene-test fixtures and runtime helpers used by multiple
+domain files.
 
 
 ## Suggested Order
@@ -216,8 +213,10 @@ the current prefixes are useful for filtering and historical continuity.
 8. Done: extract `scene_json.c` for scene JSON serialization.
 9. Done: split `drp2/runtime.c` into facade, semantic, and vklite backend ownership files.
 10. Done: move JSON builder support to `src/common` and split DRP2 stream serialization.
-11. Next: split scene tests into short domain-named files while preserving existing test function
+11. Done: split scene tests into short domain-named files while preserving existing test function
     names and `test_scene(TstSuite*)` as the single module entry point.
+12. Next: move to the native 3D pressure example and manual smoke coverage described in
+    `agents/now/V0_4_NEXT_STEPS.md`.
 
 
 ## Validation Guidance

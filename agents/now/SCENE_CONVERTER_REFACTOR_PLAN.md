@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `POST-SPLIT FOLLOW-UP; SCENE.C DOMAIN SPLIT CONTINUES`
-> - **Updated on:** `2026-05-13`
+> - **Updated on:** `2026-05-14`
 > - **Scope:** track the remaining scene -> DRP2 emission cleanups after the first
 >   behavior-preserving `src/scene/converter.c` split.
 
@@ -53,12 +53,14 @@ readouts; `text_annotation.c` owns retained font, text, annotation, and label bo
 `request_queue.c` owns pending request/result queues and freshness filtering; `hit_test.c` owns
 panel coordinate mapping and CPU point picking; `probe_plan.c` owns synthetic image-probe FramePlan
 construction; `request_execute.c` owns request runtime execution and readback handling; and
-`scene_json.c` owns scene JSON serialization. The first DRP2 follow-up split is also complete:
+`scene_json.c` owns scene JSON serialization. The scene-test decomposition is complete as well:
+`test_scene.c` is now an aggregator, with focused domain files under `src/scene/tests/`. The first
+DRP2 follow-up split is also complete:
 shared runtime structs moved to `src/drp2/_runtime.h`, semantic validation moved to
 `runtime_semantic.c`, the vklite backend is split across object-registry, pipeline, transfer, pass,
 and dispatch files, DRP2 stream JSON serialization lives in `serialization.c`, and the shared JSON
-builder moved to `src/common/_json.h`. The remaining high-payoff structural cleanup is focused
-scene-test decomposition.
+builder moved to `src/common/_json.h`. The remaining high-payoff work is now implementation
+pressure on the active scene -> DRP2 -> app path rather than mechanical decomposition.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.

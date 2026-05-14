@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-13`
+> - **Updated on:** `2026-05-14`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -77,13 +77,13 @@ Read in this order:
 
 Deliver the next implementation slices in this order unless the user redirects:
 
-1. Focused scene-test decomposition: split `src/scene/tests/test_scene.c` into short domain-named
-   files under `src/scene/tests/` while preserving the current test function names and
-   `test_scene(TstSuite*)` as the single module entry point. Keep `test_scene.c` as an aggregator
-   only, keep `test_scene.h` as the shared declaration header, and use filenames such as
+1. Done: focused scene-test decomposition split `src/scene/tests/test_scene.c` into short
+   domain-named files under `src/scene/tests/` while preserving the current test function names and
+   `test_scene(TstSuite*)` as the single module entry point. `test_scene.c` is now the aggregator
+   only, `test_scene.h` remains the shared declaration header, and the split files are
    `panzoom_arcball.c`, `frame_plan.c`, `frame_plan_emit.c`, `scene_graph.c`, `fields.c`,
    `interaction.c`, `pick_probe.c`, and `app.c`.
-2. Native 3D pressure example: one small interactive mesh/primitive scene using arcball, depth,
+2. Next: native 3D pressure example: one small interactive mesh/primitive scene using arcball, depth,
    resizing, frame callback, and capture/readback. This is the best next correctness probe for the
    scene -> DRP2 -> app boundary.
 3. Manual interactive smoke set: point hover picking, image probe, panzoom, arcball, partial texture
