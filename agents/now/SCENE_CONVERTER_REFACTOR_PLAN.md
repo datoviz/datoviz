@@ -49,9 +49,11 @@ image field binding, scalar/image texture staging, and field dirty-state helpers
 visual constructors, attributes, bindings, dirty ranges, background visuals, and reset helpers;
 `scale.c` owns scale, colormap, colorbar, and retained colormap color resolution;
 `interaction.c` owns interaction policies, selections, link channels, hover state, and pinned
-readouts; and `text_annotation.c` owns retained font, text, annotation, and label bookkeeping. The
-next mechanical split targets are request-path decomposition (`pick_probe.c`) and JSON
-serialization.
+readouts; `text_annotation.c` owns retained font, text, annotation, and label bookkeeping;
+`request_queue.c` owns pending request/result queues and freshness filtering; `hit_test.c` owns
+panel coordinate mapping and CPU point picking; `probe_plan.c` owns synthetic image-probe FramePlan
+construction; and `request_execute.c` owns request runtime execution and readback handling. The next
+mechanical split target is JSON serialization.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.

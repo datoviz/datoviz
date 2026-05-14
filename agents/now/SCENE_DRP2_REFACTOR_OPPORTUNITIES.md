@@ -87,11 +87,10 @@ Recommended split:
 7. Done: `scene_emit.c` - scene -> `DvzFramePlan` lowering only.
 8. `scene_json.c` - `dvz_scene_json()` and scene serialization helpers.
 
-Do this mechanically at first. The field, visual, scale, interaction, and text/annotation slices
-are now split out. The next best implementation split is request-path decomposition in
-`pick_probe.c`; the next remaining `scene.c` split is JSON serialization. Keep `_scene.h` as the
-private shared state header until the split settles, then consider smaller private headers by
-ownership domain.
+Do this mechanically at first. The field, visual, scale, interaction, text/annotation, and request
+path slices are now split out. The next remaining `scene.c` split is JSON serialization. Keep
+`_scene.h` as the private shared state header until the split settles, then consider smaller private
+headers by ownership domain.
 
 
 ### 2. Make Scene Resource Keys Explicit
@@ -117,19 +116,9 @@ extract the retained visual/field domains, with emitter failure-path hardening a
 concrete gaps appear.
 
 
-### 3. Split `src/scene/pick_probe.c`
+### 3. Split the scene request path
 
-`pick_probe.c` is already a useful extraction from `scene.c`, but it still mixes separate concerns:
-
-1. Pending pick/probe request queues.
-2. Freshness scopes and stale-result rejection.
-3. Result ring buffers.
-4. Panel coordinate and request-NDC mapping.
-5. CPU point hit testing.
-6. Synthetic image-probe frame-plan construction.
-7. Auxiliary DRP2 runtime/readback execution.
-
-Recommended split:
+Status: **done**. The old `pick_probe.c` responsibilities are now split by request-path domain:
 
 1. `request_queue.c` - pending request coalescing, freshness scopes, result queues, poll helpers.
 2. `hit_test.c` - panel coordinate helpers and CPU point hit testing.
@@ -208,7 +197,8 @@ registration helpers.
 5. Add emitter diagnostics/overflow/downcast guards only where the extraction or tests expose a
    concrete failure path.
 6. Done: extract `text_annotation.c`.
-7. Split `pick_probe.c` after one more focused request-path validation pass.
+7. Done: split the scene request path into request queue, hit-test, probe-plan, and request-execute
+   modules.
 8. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
 9. Move JSON builder support to `src/common` and split serializers.
 10. Split scene tests in parallel with the implementation files they cover.
