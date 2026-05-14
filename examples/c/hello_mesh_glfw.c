@@ -27,6 +27,7 @@
 
 #include "_alloc.h"
 #include "datoviz/app.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"
 
 
@@ -37,6 +38,8 @@
 
 #define WIDTH  800
 #define HEIGHT 600
+
+#define ROTATION_SPEED_RAD_PER_SEC 0.9f
 
 
 
@@ -50,6 +53,7 @@ struct MeshGlfwState
 {
     DvzArcball* arcball;
     float angle;
+    uint64_t last_timestamp_ns;
 };
 
 
@@ -161,7 +165,17 @@ static void _mesh_glfw_frame(DvzAppWindow* win, void* user_data)
     if (state == NULL || state->arcball == NULL)
         return;
 
-    state->angle += 0.015f;
+    uint64_t now = dvz_input_timestamp_ns();
+    if (state->last_timestamp_ns == 0)
+        state->last_timestamp_ns = now;
+
+    uint64_t elapsed_ns = now - state->last_timestamp_ns;
+    state->last_timestamp_ns = now;
+    float elapsed = (float)((double)elapsed_ns / 1000000000.0);
+    if (elapsed > 0.1f)
+        elapsed = 0.1f;
+
+    state->angle += ROTATION_SPEED_RAD_PER_SEC * elapsed;
     dvz_arcball_set(state->arcball, (vec3){+0.65f, state->angle, +0.35f});
 }
 
