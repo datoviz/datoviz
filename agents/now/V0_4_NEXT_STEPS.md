@@ -88,8 +88,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    arcball, depth, resize-through-app synchronization, and a frame callback through the scene ->
    DRP2 -> app boundary. The remaining gap is to make capture/readback part of the documented
    smoke path instead of adding a duplicate 3D example.
-3. Manual interactive smoke set: point hover picking, image probe, panzoom, arcball, partial texture
-   update, and multi-panel examples with clear run commands and expected behavior.
+3. Current docs slice: manual interactive smoke set is recorded in
+   [../../docs/architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md).
+   The remaining implementation gaps are live image-probe, multi-panel, and partial texture-update
+   examples if those become worth adding after the hygiene pass.
 4. Hygiene/safety pass over the hot scene/DRP2/app files that changed most recently: bounds,
    ownership, stale-result handling, transient runtime object cleanup, and warning/static-analysis
    readiness.

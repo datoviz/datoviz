@@ -87,6 +87,7 @@ In source, the current implementation is intentionally much smaller than the ful
 8. C examples `hello_point.c`, `hello_scatter.c`, `hello_triangle.c`, `hello_mesh.c`,
    `hello_mesh_glfw.c`, `hello_path.c`, `hello_texture.c`, `hello_field.c`, and
    `hello_pick_hover_glfw.c`.
+9. [manual_scene_smoke.md](manual_scene_smoke.md) for the current manual scene/app smoke matrix.
 
 
 ## Sequencing

@@ -148,11 +148,13 @@ Exit criteria:
 
 Goal: turn current interactive behavior into repeatable manual checks before adding many new features.
 
-First deliverable:
+Current status:
 
-1. create a small manual smoke matrix in a task record or `docs/architecture/`,
-2. list the command, expected behavior, and known caveats for each existing example,
-3. keep screenshots or captures optional unless they reveal a regression.
+1. the manual smoke matrix now lives in
+   [../../architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md),
+2. it lists the command, expected behavior, automated coverage, and known gaps for the current
+   examples and focused test-only paths,
+3. screenshots or captures remain optional unless they reveal a regression.
 
 Smoke cases:
 
