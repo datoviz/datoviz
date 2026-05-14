@@ -226,6 +226,8 @@ struct Drp2VkliteState
 
 DvzDrp2ValidationResult _drp2_ok(void);
 DvzDrp2ValidationResult _drp2_fail(DvzDrp2ValidationCode code, uint32_t command_index);
+uint64_t _drp2_texture_layout_size(
+    uint32_t depth, uint32_t bytes_per_row, uint32_t rows_per_image);
 
 bool _vklite_ensure_capacity(Drp2VkliteState* state);
 Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id);
@@ -240,8 +242,14 @@ bool _vklite_defer_destroy_object(
     Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer command_buffer);
 void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
+DvzCommands* _vklite_owned_commands_create(DvzDevice* device);
 void _vklite_owned_commands_destroy(DvzCommands* cmds);
 void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
+DvzDrp2ValidationResult _vklite_owned_commands_end_submit(
+    DvzCommands* cmds, uint32_t command_index);
+void _vklite_transition_image(
+    DvzCommands* cmds, Drp2VkliteObject* object, VkImageLayout layout,
+    VkPipelineStageFlags2 dst_stage, VkAccessFlags2 dst_access);
 bool _vklite_compile_glsl(
     const char* stage, const char* code, uint32_t** spv, uint64_t* spv_size);
 DvzDrp2ValidationResult _vklite_create_shader_module(
@@ -255,5 +263,17 @@ DvzDrp2ValidationResult _vklite_create_bind_group(
 DvzDrp2ValidationResult _vklite_create_render_pipeline(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_create_compute_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_write_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_write_texture(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_copy_buffer_to_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 #endif
