@@ -424,8 +424,9 @@ DVZ_EXPORT void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence);
  * Wait on the GPU until a fence is signaled.
  *
  * @param fence the fence
+ * @return whether the fence was signaled successfully
  */
-DVZ_EXPORT void dvz_fence_wait(DvzFence* fence);
+DVZ_EXPORT bool dvz_fence_wait(DvzFence* fence);
 
 
 

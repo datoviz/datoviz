@@ -458,18 +458,25 @@ void dvz_fence(DvzDevice* device, bool signaled, DvzFence* fence)
 
 
 
-void dvz_fence_wait(DvzFence* fence)
+bool dvz_fence_wait(DvzFence* fence)
 {
     ANN(fence);
     VkDevice vkd = dvz_device_handle(fence->device);
     ANNVK(vkd);
     if (fence->vk_fence != VK_NULL_HANDLE)
     {
-        vkWaitForFences(vkd, 1, &fence->vk_fence, VK_TRUE, MAX_WAIT);
+        VkResult res = vkWaitForFences(vkd, 1, &fence->vk_fence, VK_TRUE, UINT64_MAX);
+        if (res != VK_SUCCESS)
+        {
+            log_error("failed to wait for fence (%d)", res);
+            return false;
+        }
+        return true;
     }
     else
     {
-        log_trace("skip wait for fence %u", fence->vk_fence);
+        log_trace("skip wait for null fence");
+        return false;
     }
 }
 

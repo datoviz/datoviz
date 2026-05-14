@@ -880,6 +880,12 @@ static void canvas_destroy_slot(
     {
         return;
     }
+    if (slot->command_buffer != VK_NULL_HANDLE)
+    {
+        dvz_command_buffer_free(device, queue_family, slot->command_buffer);
+        slot->command_buffer = VK_NULL_HANDLE;
+        slot->commands_recording = false;
+    }
     if (slot->offscreen_views != NULL)
     {
         dvz_image_views_destroy(slot->offscreen_views);
@@ -924,11 +930,6 @@ static void canvas_destroy_slot(
     slot->commands_recording = false;
     slot->handles_dirty = false;
     slot->offscreen_extent = (VkExtent2D){0, 0};
-    if (slot->command_buffer != VK_NULL_HANDLE)
-    {
-        dvz_command_buffer_free(device, queue_family, slot->command_buffer);
-        slot->command_buffer = VK_NULL_HANDLE;
-    }
 }
 
 
@@ -1382,8 +1383,9 @@ static void canvas_swapchain_sync_surface_changes(DvzCanvas* canvas, DvzCanvasSw
  * @param state canvas swapchain state
  * @param[out] slot_idx_out selected slot index
  * @param[out] slot_out selected slot pointer
+ * @return 0 on success or -1 when the selected slot is not reusable
  */
-static void canvas_select_acquire_slot(
+static int canvas_select_acquire_slot(
     DvzCanvasSwapchain* state, uint32_t* slot_idx_out, DvzCanvasSwapchainSlot** slot_out)
 {
     ANN(state);
@@ -1392,11 +1394,16 @@ static void canvas_select_acquire_slot(
 
     uint32_t slot_idx = state->frame_index % state->image_count;
     DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
-    dvz_fence_wait(slot->in_flight);
+    if (!dvz_fence_wait(slot->in_flight))
+    {
+        log_error("failed to wait for canvas swapchain slot %u", slot_idx);
+        return -1;
+    }
     dvz_fence_reset(slot->in_flight);
 
     *slot_idx_out = slot_idx;
     *slot_out = slot;
+    return 0;
 }
 
 
@@ -2014,7 +2021,10 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
 
     uint32_t slot_idx = 0;
     DvzCanvasSwapchainSlot* slot = NULL;
-    canvas_select_acquire_slot(state, &slot_idx, &slot);
+    if (canvas_select_acquire_slot(state, &slot_idx, &slot) != 0)
+    {
+        return -1;
+    }
 
     uint32_t image_index = 0;
     int acquire_status_rc = canvas_acquire_image_for_slot(canvas, state, slot, slot_idx, &image_index);

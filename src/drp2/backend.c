@@ -180,6 +180,47 @@ static DvzDrp2ValidationResult _vklite_create_texture(
 }
 
 
+
+/**
+ * Retire a borrowed frame target's previous depth attachment after its command buffer completes.
+ *
+ * @param state vklite runtime state
+ * @param object borrowed frame target object that owns the depth attachment pointers
+ * @param current_command_buffer command buffer being attached for the new frame
+ * @return whether the previous depth attachment was retired
+ */
+static bool _vklite_retire_frame_target_depth(
+    Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer current_command_buffer)
+{
+    ANN(state);
+    ANN(object);
+    if (object->depth_images == NULL && object->depth_views == NULL)
+        return true;
+
+    Drp2VkliteObject retired = {0};
+    retired.kind = DRP2_OBJECT_TEXTURE;
+    retired.depth_images = object->depth_images;
+    retired.depth_views = object->depth_views;
+    object->depth_images = NULL;
+    object->depth_views = NULL;
+
+    VkCommandBuffer previous_command_buffer = object->command_buffer;
+    if (previous_command_buffer != VK_NULL_HANDLE &&
+        previous_command_buffer != current_command_buffer)
+    {
+        if (_vklite_defer_destroy_object(state, &retired, previous_command_buffer))
+            return true;
+        object->depth_images = retired.depth_images;
+        object->depth_views = retired.depth_views;
+        return false;
+    }
+
+    _vklite_destroy_object(&retired);
+    return true;
+}
+
+
+
 /**
  * Attach a borrowed frame image as a vklite texture object.
  *
@@ -221,6 +262,13 @@ bool _vklite_attach_frame_target(
         return false;
     }
 
+    if (!_vklite_retire_frame_target_depth(
+            runtime->vklite_state, object, frame->command_buffer))
+    {
+        dvz_images_free(images);
+        return false;
+    }
+
     if (object->views != NULL)
     {
         dvz_image_views_destroy(object->views);
@@ -239,18 +287,6 @@ bool _vklite_attach_frame_target(
     object->image_layout = frame->image_layout;
     object->command_buffer = frame->command_buffer;
     object->image_view = frame->image_view;
-    if (object->depth_views != NULL)
-    {
-        dvz_image_views_destroy(object->depth_views);
-        dvz_image_views_free(object->depth_views);
-        object->depth_views = NULL;
-    }
-    if (object->depth_images != NULL)
-    {
-        dvz_images_destroy(object->depth_images);
-        dvz_images_free(object->depth_images);
-        object->depth_images = NULL;
-    }
     object->width = frame->extent.width;
     object->height = frame->extent.height;
     object->borrowed_frame_target = true;
