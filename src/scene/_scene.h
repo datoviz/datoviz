@@ -15,6 +15,7 @@
 
 #include "_frame_plan.h"
 #include "datoviz/drp2/types.h"
+#include "datoviz/math/_cglm.h"
 #include "datoviz/scene/arcball.h"
 #include "datoviz/scene/camera.h"
 #include "datoviz/scene/enums.h"
@@ -598,6 +599,14 @@ void _scene_coalesce_pending_pick_requests(DvzScene* scene, const DvzFigure* fig
 void _scene_coalesce_pending_probe_requests(DvzScene* scene, const DvzFigure* figure);
 void _scene_remove_pending_pick_at(DvzScene* scene, uint32_t index);
 void _scene_remove_pending_probe_at(DvzScene* scene, uint32_t index);
+bool _scene_pick_request_ndc(
+    const DvzFigure* figure, const DvzPanel* panel, double x, double y, vec2 out_ndc);
+uint64_t _scene_panel_public_id(const DvzFigure* figure, const DvzPanel* panel);
+void _scene_request_apply_mvp(const DvzPanel* panel, const vec2 request_ndc, DvzMVP* out);
+bool _scene_point_pick_cpu(
+    const DvzFigure* figure, const DvzPanel* panel, const DvzVisual* visual, double x, double y,
+    uint64_t* out_item_id);
+void _scene_pick_trace(const char* format, ...);
 
 
 
