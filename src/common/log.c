@@ -69,10 +69,27 @@ static struct
 
 static const char* level_names[] = {"T", "D", "I", "W", "E", "F"};
 
-#ifdef LOG_USE_COLOR
 static const char* level_colors[] = {"\x1b[94m", "\x1b[36m", "\x1b[32m",
                                      "\x1b[33m", "\x1b[31m", "\x1b[35m"};
-#endif
+
+static bool _log_color_enabled(void)
+{
+    const char* env = getenv("DVZ_LOG_COLOR");
+    if (env != NULL)
+    {
+        if (strcmp(env, "0") == 0 || strcmp(env, "false") == 0 || strcmp(env, "FALSE") == 0 ||
+            strcmp(env, "off") == 0 || strcmp(env, "OFF") == 0)
+            return false;
+        if (strcmp(env, "1") == 0 || strcmp(env, "true") == 0 || strcmp(env, "TRUE") == 0 ||
+            strcmp(env, "on") == 0 || strcmp(env, "ON") == 0)
+            return true;
+    }
+
+    if (getenv("NO_COLOR") != NULL)
+        return false;
+
+    return true;
+}
 
 static void lock(void)
 {
@@ -174,17 +191,20 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
         // HH:MM:SS.MMS(thread_id)
         dvz_snprintf(&buf[9], 12, "%03d T%01u", (int)uptime, tid);
 
-#ifdef LOG_USE_COLOR
-        dvz_fprintf(
-            stderr, "%s %s%-1s\x1b[0m \x1b[90m%18s:%04d:\x1b[0m %s", buf, level_colors[level],
-            level_names[level], file, line, level_colors[level]);
-#else
-        dvz_fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
-#endif
+        bool use_color = _log_color_enabled();
+        if (use_color)
+        {
+            dvz_fprintf(
+                stderr, "%s %s%-1s\x1b[0m \x1b[90m%18s:%04d:\x1b[0m %s", buf,
+                level_colors[level], level_names[level], file, line, level_colors[level]);
+        }
+        else
+        {
+            dvz_fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
+        }
         dvz_fprintf(stderr, "%s", msg);
-#ifdef LOG_USE_COLOR
-        dvz_fprintf(stderr, "\x1b[0m");
-#endif
+        if (use_color)
+            dvz_fprintf(stderr, "\x1b[0m");
         dvz_fprintf(stderr, "\n");
         fflush(stderr);
     }

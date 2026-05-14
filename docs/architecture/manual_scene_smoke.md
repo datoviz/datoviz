@@ -87,6 +87,7 @@ DVZ_DRP2_TRACE=normal ./build/examples/c/hello_mesh_glfw 120
 Expected behavior: changed frames print a full command stream, unchanged repeated frames stay to a
 compact status line, and the live example still renders and exits after the bounded frame count.
 Trace colors are enabled by default; use `NO_COLOR=1` or `DVZ_DRP2_TRACE_COLOR=0` to disable them.
+The general Datoviz logger follows the same policy with `DVZ_LOG_COLOR=0`.
 
 Automated coverage: `test_app_trace_*`, `test_app_status_line_combines_trace_and_fps`.
 

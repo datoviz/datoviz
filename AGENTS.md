@@ -201,7 +201,7 @@ untouched unless explicitly requested.
   )
   ```
 
-`DVZ_COMPILE_DEFINITIONS` is assembled in `src/CMakeLists.txt` (OS/compiler switches, `LOG_USE_COLOR`,
+`DVZ_COMPILE_DEFINITIONS` is assembled in `src/CMakeLists.txt` (OS/compiler switches,
 `ENABLE_VALIDATION_LAYERS`, `DEBUG`, `VK_NO_PROTOTYPES`, feature flags), exported through a global property,
 and then applied to registered targets in the top-level `CMakeLists.txt` (`src` modules and testing targets).
 The current root build exposes layered feature options (`DVZ_BUILD_CORE`, `DVZ_BUILD_VK`,
