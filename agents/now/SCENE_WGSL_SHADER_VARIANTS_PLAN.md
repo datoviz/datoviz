@@ -120,6 +120,83 @@ Do not block the first implementation slice on a complete automated translator. 
 manual WGSL variant and add the generator after the scene registry contract is proven.
 
 
+## Discovered Portability Constraints
+
+These constraints come from actual GLSL -> SPIR-V -> Naga -> WGSL conversion and WebGPU contract
+work. Treat them as system-level constraints, not as isolated shader-generator quirks.
+
+### Point Visual Lowering
+
+`point.vert` writes `gl_PointSize`. Naga rejects the resulting SPIR-V with:
+
+```text
+Unsupported builtin value: PointSize
+```
+
+This is a real WebGPU portability constraint. WebGPU/WGSL does not expose programmable point size in
+the Vulkan GLSL sense, so a retained scene point visual cannot rely on native point primitives for
+all backends.
+
+Scene API rule:
+
+1. Keep `dvz_point()` semantic and user-transparent. The user should provide point `position`,
+   `color`, and `size` once and should not need to choose a Vulkan or WebGPU implementation path for
+   ordinary usage.
+2. Lower the semantic point visual according to backend capability during scene -> DRP2 emission.
+3. Prefer native point-list lowering for Vulkan when the backend supports the requested point-size
+   behavior.
+4. Prefer instanced quad or expanded billboard lowering for WebGPU.
+5. Reserve an explicit advanced override only if needed later, for example an internal or public
+   `AUTO` / `NATIVE_POINTS` / `QUADS` point-rendering mode.
+
+Do not force all backends to quads by default yet. Quads are more portable and enable higher-quality
+marker rendering, but they multiply vertex work for large point clouds. A native point path remains
+valuable for high-throughput Vulkan rendering, while WebGPU needs a quad/billboard fallback for
+correctness.
+
+The DRP2 and visual descriptor layer therefore needs to distinguish the semantic visual
+(`point`) from the concrete pipeline family selected for the target backend (`point-list` versus
+`point-quad`). Pipeline keys, topology, vertex-buffer layouts, and picking shaders must be keyed by
+the concrete lowering, while the public scene visual remains `point`.
+
+### Texture And Sampler Bindings
+
+`image.frag` originally used Vulkan GLSL combined sampler syntax:
+
+```glsl
+layout(set = 1, binding = 0) uniform sampler2D tex;
+```
+
+The SPIR-V -> Naga -> WGSL path failed with:
+
+```text
+invalid id %14
+```
+
+Rewriting the GLSL to separate texture and sampler bindings converts cleanly:
+
+```glsl
+layout(set = 1, binding = 0) uniform texture2D tex;
+layout(set = 1, binding = 1) uniform sampler samp;
+
+void main() {
+    outColor = texture(sampler2D(tex, samp), fragUV);
+}
+```
+
+Naga then emits the expected WGSL shape:
+
+```wgsl
+@group(1) @binding(0) var tex: texture_2d<f32>;
+@group(1) @binding(1) var samp: sampler;
+```
+
+System rule: scene-owned GLSL intended to round-trip to WGSL should avoid combined
+`sampler2D` bindings and use separate texture/sampler declarations. The scene/DRP2 image binding
+contract should move toward separate texture view and sampler resources, because that matches WebGPU
+directly and avoids backend-specific shader substitution.
+
+
 ## Maintenance Tool Contract
 
 Add a desktop maintenance tool after the first manual WGSL slice proves the registry path. Its
