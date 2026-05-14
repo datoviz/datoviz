@@ -66,6 +66,29 @@ function mapDepthCompare(compare) {
 
 
 
+function mapFilterMode(filter) {
+  if (filter === undefined || filter === "nearest" || filter === "linear") {
+    return filter ?? "nearest";
+  }
+  throw new Error(`unsupported sampler filter: ${filter}`);
+}
+
+
+
+function mapAddressMode(mode) {
+  if (
+    mode === undefined ||
+    mode === "clamp-to-edge" ||
+    mode === "repeat" ||
+    mode === "mirror-repeat"
+  ) {
+    return mode ?? "clamp-to-edge";
+  }
+  throw new Error(`unsupported sampler address mode: ${mode}`);
+}
+
+
+
 function mapBufferUsage(usage) {
   const items = usage ?? [];
   let flags = 0;
@@ -262,6 +285,49 @@ function makeDepthStencil(command) {
 
 
 
+function makeBindGroupLayoutEntry(entry) {
+  const binding = required(entry.binding, "bind-group layout entry needs binding");
+  switch (entry.binding_type) {
+    case "sampled_texture":
+      return {
+        binding,
+        visibility: GPUShaderStage.FRAGMENT,
+        texture: { sampleType: "float" },
+      };
+    case "sampler":
+      return {
+        binding,
+        visibility: GPUShaderStage.FRAGMENT,
+        sampler: { type: "filtering" },
+      };
+    default:
+      throw new Error(`unsupported bind-group layout binding_type: ${entry.binding_type}`);
+  }
+}
+
+
+
+function makeBindGroupEntry(entry, textures, samplers) {
+  const binding = required(entry.binding, "bind-group entry needs binding");
+  switch (entry.resource_kind) {
+    case "texture":
+      return {
+        binding,
+        resource: required(textures.get(entry.resource_id), `unknown texture ${entry.resource_id}`)
+          .createView(),
+      };
+    case "sampler":
+      return {
+        binding,
+        resource: required(samplers.get(entry.resource_id), `unknown sampler ${entry.resource_id}`),
+      };
+    default:
+      throw new Error(`unsupported bind-group resource_kind: ${entry.resource_kind}`);
+  }
+}
+
+
+
 function clearValue(value) {
   if (value === undefined) {
     return { r: 0, g: 0, b: 0, a: 1 };
@@ -337,7 +403,7 @@ async function initWebGPU() {
 
 
 
-function makePipeline(device, canvasFormat, shaders, command) {
+function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) {
   const vertexShader = required(
     shaders.get(command.vertex_shader_module_id),
     `unknown vertex shader module ${command.vertex_shader_module_id}`,
@@ -354,10 +420,18 @@ function makePipeline(device, canvasFormat, shaders, command) {
 
   const streamFormat = colorTargets[0].format;
   const targetFormat = streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
+  const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
+  const layout = bindGroupLayoutIds.length > 0
+    ? device.createPipelineLayout({
+        bindGroupLayouts: bindGroupLayoutIds.map((id) =>
+          required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
+        ),
+      })
+    : "auto";
 
   return device.createRenderPipeline({
     label: command.label,
-    layout: "auto",
+    layout,
     vertex: {
       module: vertexShader.module,
       entryPoint: vertexShader.entryPoint,
@@ -434,6 +508,9 @@ function beginRenderPass(context, textures, encoders, command) {
 async function executeDrp2Stream(device, context, canvasFormat, stream) {
   const buffers = new Map();
   const textures = new Map();
+  const samplers = new Map();
+  const bindGroupLayouts = new Map();
+  const bindGroups = new Map();
   const shaders = new Map();
   const pipelines = new Map();
   const encoders = new Map();
@@ -491,6 +568,82 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
         );
         break;
 
+      case "WriteTexture": {
+        const texture = required(
+          textures.get(command.texture_id),
+          `unknown texture ${command.texture_id}`,
+        );
+        const bytes = decodeBase64(required(command.data, "WriteTexture needs data"));
+        const size = required(command.size, "WriteTexture needs size");
+        const origin = command.origin ?? { x: 0, y: 0, z: 0 };
+        device.queue.writeTexture(
+          {
+            texture,
+            mipLevel: command.mip_level ?? 0,
+            origin: {
+              x: origin.x ?? 0,
+              y: origin.y ?? 0,
+              z: origin.z ?? 0,
+            },
+          },
+          bytes,
+          {
+            offset: 0,
+            bytesPerRow: required(command.bytes_per_row, "WriteTexture needs bytes_per_row"),
+            rowsPerImage: command.rows_per_image ?? size.height,
+          },
+          {
+            width: required(size.width, "WriteTexture size needs width"),
+            height: required(size.height, "WriteTexture size needs height"),
+            depthOrArrayLayers: size.depth ?? 1,
+          },
+        );
+        break;
+      }
+
+      case "CreateSampler":
+        samplers.set(
+          command.id,
+          device.createSampler({
+            label: command.label,
+            magFilter: mapFilterMode(command.mag_filter),
+            minFilter: mapFilterMode(command.min_filter),
+            mipmapFilter: mapFilterMode(command.mipmap_filter),
+            addressModeU: mapAddressMode(command.address_mode_u),
+            addressModeV: mapAddressMode(command.address_mode_v),
+            addressModeW: mapAddressMode(command.address_mode_w),
+          }),
+        );
+        break;
+
+      case "CreateBindGroupLayout":
+        bindGroupLayouts.set(
+          command.id,
+          device.createBindGroupLayout({
+            label: command.label,
+            entries: required(command.entries, "CreateBindGroupLayout needs entries").map((entry) =>
+              makeBindGroupLayoutEntry(entry),
+            ),
+          }),
+        );
+        break;
+
+      case "CreateBindGroup":
+        bindGroups.set(
+          command.id,
+          device.createBindGroup({
+            label: command.label,
+            layout: required(
+              bindGroupLayouts.get(command.bind_group_layout_id),
+              `unknown bind-group layout ${command.bind_group_layout_id}`,
+            ),
+            entries: required(command.entries, "CreateBindGroup needs entries").map((entry) =>
+              makeBindGroupEntry(entry, textures, samplers),
+            ),
+          }),
+        );
+        break;
+
       case "CreateShaderModule": {
         if (command.format !== "wgsl") {
           throw new Error(`unsupported shader format: ${command.format}`);
@@ -513,7 +666,10 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
       }
 
       case "CreateRenderPipeline":
-        pipelines.set(command.id, makePipeline(device, canvasFormat, shaders, command));
+        pipelines.set(
+          command.id,
+          makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command),
+        );
         break;
 
       case "BeginCommandEncoder":
@@ -541,6 +697,16 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
           `unknown buffer ${command.buffer_id}`,
         );
         pass.setVertexBuffer(command.slot ?? 0, buffer, command.offset ?? 0);
+        break;
+      }
+
+      case "SetBindGroup": {
+        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const bindGroup = required(
+          bindGroups.get(command.bind_group_id),
+          `unknown bind group ${command.bind_group_id}`,
+        );
+        pass.setBindGroup(command.slot ?? 0, bindGroup, command.dynamic_offsets ?? []);
         break;
       }
 
@@ -659,7 +825,7 @@ async function main() {
   try {
     const { device, context, format } = await initWebGPU();
     const params = new URLSearchParams(window.location.search);
-    const streamName = params.get("stream") ?? "depth_overlap_wgsl";
+    const streamName = params.get("stream") ?? "texture_sampling_wgsl";
     const streamPath = `./streams/${streamName}.json`;
     streamNameEl.textContent = streamPath.slice(2);
     const response = await fetch(streamPath, { cache: "no-cache" });

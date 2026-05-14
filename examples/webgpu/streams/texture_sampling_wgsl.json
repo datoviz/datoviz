@@ -1,0 +1,162 @@
+{
+  "name": "texture_sampling_wgsl",
+  "description": "DRP2 WebGPU stream that uploads a 2x2 texture, binds it with a sampler, and samples it on a fullscreen triangle.",
+  "version": { "major": 2, "minor": 0 },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "drp2-webgpu-poc"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "webgpu-poc"
+    },
+    {
+      "cmd": "CreateSampler",
+      "id": 1,
+      "label": "nearest_sampler",
+      "mag_filter": "nearest",
+      "min_filter": "nearest",
+      "mipmap_filter": "nearest",
+      "address_mode_u": "clamp-to-edge",
+      "address_mode_v": "clamp-to-edge"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 2,
+      "label": "texture_sampler_layout",
+      "entries": [
+        { "binding": 0, "binding_type": "sampled_texture" },
+        { "binding": 1, "binding_type": "sampler" }
+      ]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 3,
+      "label": "source_checker",
+      "dimension": "2d",
+      "width": 2,
+      "height": 2,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["TEXTURE_BINDING", "COPY_DST"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "WriteTexture",
+      "texture_id": 3,
+      "mip_level": 0,
+      "origin": { "x": 0, "y": 0, "z": 0 },
+      "size": { "width": 2, "height": 2, "depth": 1 },
+      "bytes_per_row": 8,
+      "rows_per_image": 2,
+      "data": "/wAA/wD/AP8AAP////8A/w=="
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "vs_main",
+      "code": "struct VsOut {\n    @builtin(position) pos: vec4f,\n    @location(0) uv: vec2f,\n};\n\n@vertex\nfn vs_main(@builtin(vertex_index) vertex_index: u32) -> VsOut {\n    var positions = array<vec2f, 3>(\n        vec2f(-1.0, -1.0),\n        vec2f(3.0, -1.0),\n        vec2f(-1.0, 3.0)\n    );\n    var uvs = array<vec2f, 3>(\n        vec2f(0.0, 1.0),\n        vec2f(2.0, 1.0),\n        vec2f(0.0, -1.0)\n    );\n\n    var out: VsOut;\n    out.pos = vec4f(positions[vertex_index], 0.0, 1.0);\n    out.uv = uvs[vertex_index];\n    return out;\n}"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "fs_main",
+      "code": "@group(0) @binding(0) var source: texture_2d<f32>;\n@group(0) @binding(1) var samp: sampler;\n\nstruct FsIn {\n    @location(0) uv: vec2f,\n};\n\n@fragment\nfn fs_main(in: FsIn) -> @location(0) vec4f {\n    return textureSample(source, samp, in.uv);\n}"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "label": "texture_sampling_pipeline",
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 0,
+      "bind_group_layout_ids": [2],
+      "topology": "triangle-list",
+      "color_targets": [
+        { "format": "canvas" }
+      ]
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 30,
+      "label": "texture_sampler_bind_group",
+      "bind_group_layout_id": 2,
+      "entries": [
+        {
+          "binding": 0,
+          "binding_type": "sampled_texture",
+          "resource_kind": "texture",
+          "resource_id": 3
+        },
+        {
+          "binding": 1,
+          "binding_type": "sampler",
+          "resource_kind": "sampler",
+          "resource_id": 1
+        }
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 40
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 41,
+      "encoder_id": 40,
+      "color_attachments": [
+        {
+          "texture_id": 0,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.02, "g": 0.03, "b": 0.05, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 41,
+      "pipeline_id": 20
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 41,
+      "slot": 0,
+      "bind_group_id": 30,
+      "dynamic_offsets": []
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 41,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 41
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 40,
+      "command_buffer_id": 42
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [42]
+    }
+  ],
+  "expected": {
+    "outcome": "visible_2x2_color_texture"
+  }
+}
