@@ -217,4 +217,24 @@ struct Drp2VkliteState
     Drp2DeferredDestroy* deferred;
     VkCommandBuffer active_borrowed_command_buffer;
 };
+
+
+
+/*************************************************************************************************/
+/*  Function prototypes                                                                          */
+/*************************************************************************************************/
+
+bool _vklite_ensure_capacity(Drp2VkliteState* state);
+Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id);
+Drp2VkliteObject* _vklite_add(
+    Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind);
+void _vklite_destroy_object(Drp2VkliteObject* object);
+VkImageView _vklite_object_image_view(const Drp2VkliteObject* object);
+void _vklite_state_cleanup(Drp2VkliteState* state);
+bool _vklite_defer_destroy_object(
+    Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer command_buffer);
+void _vklite_flush_deferred_for_command_buffer(
+    Drp2VkliteState* state, VkCommandBuffer command_buffer);
+void _vklite_owned_commands_destroy(DvzCommands* cmds);
+void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
 #endif

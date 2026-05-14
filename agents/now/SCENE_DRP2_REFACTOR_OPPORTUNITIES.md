@@ -61,7 +61,9 @@ for malformed typed visual metadata, covering the first item in the suggested or
 
 This lane is now mostly in maintenance mode: add diagnostics/typed metadata only when new
 retained paths expose a concrete gap. The `scene.c` domain split is complete for the currently
-identified slices; the next higher-payoff lane is DRP2 runtime decomposition.
+identified slices; DRP2 runtime decomposition is now active. The first slices moved shared runtime
+types to `_runtime.h` and vklite object-table/deferred-cleanup helpers to
+`runtime_vklite_objects.c`.
 
 
 ### 1. Split `src/scene/scene.c`
@@ -136,12 +138,19 @@ the outward surface.
 `runtime.c` currently combines backend-agnostic semantic validation with the vklite backend
 implementation. That makes ownership and failure-path review harder than it needs to be.
 
+Status: **in progress**. The shared runtime types now live in `src/drp2/_runtime.h`, and
+`src/drp2/runtime_vklite_objects.c` owns the vklite object table, object destruction, image-view
+lookup, state cleanup, and deferred destruction queue. The remaining runtime file still owns
+semantic validation, vklite command creation/execution, frame-target attachment,
+transfer/readback commands, shader/pipeline creation, and public facade entry points.
+
 Recommended split:
 
 1. `runtime.c` - public facade and runtime configuration/lifecycle.
 2. `runtime_semantic.c` - semantic object state, validation, state clone/commit, and command rules.
-3. `runtime_vklite_objects.c` - vklite object registry, destruction, borrowed objects, and deferred
-   destruction.
+3. Done: `runtime_vklite_objects.c` - vklite object registry, destruction, image-view lookup,
+   state cleanup, and deferred destruction. Borrowed frame-target attachment remains in
+   `runtime.c` until the pass/command-buffer slice moves.
 4. `runtime_vklite_pipeline.c` - shaderc loading, shader modules, bind group layouts, bind groups,
    render pipelines, and compute pipelines.
 5. `runtime_vklite_transfer.c` - buffer/texture writes, staging, copies, and buffer download.
