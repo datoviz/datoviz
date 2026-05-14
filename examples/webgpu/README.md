@@ -50,6 +50,7 @@ Supported commands in this first slice:
 - `CreateBuffer`
 - `WriteBuffer`
 - `CreateTexture`
+- `CreateTextureView`
 - `WriteTexture`
 - `CreateSampler`
 - `CreateBindGroupLayout`
@@ -65,10 +66,12 @@ Supported commands in this first slice:
 - `Draw`
 - `DrawIndexed`
 - `EndRenderPass`
+- `CopyBufferToTexture`
 - `CopyTextureToBuffer`
+- `CopyTextureToTexture`
 - `FinishCommandEncoder`
 - `QueueSubmit`
-- `QueueSubmitReply` is accepted as a no-op fixture/reply marker.
+- `QueueSubmitReply`, `Error`, and destroy commands are accepted as no-op fixture markers.
 
 Manual checks:
 
@@ -80,5 +83,4 @@ Manual checks:
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 
-The next useful slice is indexed drawing: `SetIndexBuffer`, `DrawIndexed`, and a small indexed quad
-or cube-face stream.
+The next useful slice is uniform-buffer support in bind groups.

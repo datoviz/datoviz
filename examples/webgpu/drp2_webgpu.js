@@ -326,7 +326,7 @@ function makeBindGroupLayoutEntry(entry) {
 
 
 
-function makeBindGroupEntry(entry, textures, samplers) {
+function makeBindGroupEntry(entry, textures, textureViews, samplers) {
   const binding = required(entry.binding, "bind-group entry needs binding");
   switch (entry.resource_kind) {
     case "texture":
@@ -334,6 +334,14 @@ function makeBindGroupEntry(entry, textures, samplers) {
         binding,
         resource: required(textures.get(entry.resource_id), `unknown texture ${entry.resource_id}`)
           .createView(),
+      };
+    case "texture_view":
+      return {
+        binding,
+        resource: required(
+          textureViews.get(entry.resource_id),
+          `unknown texture view ${entry.resource_id}`,
+        ),
       };
     case "sampler":
       return {
@@ -343,6 +351,21 @@ function makeBindGroupEntry(entry, textures, samplers) {
     default:
       throw new Error(`unsupported bind-group resource_kind: ${entry.resource_kind}`);
   }
+}
+
+
+
+function makeTextureViewDescriptor(command) {
+  return {
+    label: command.label,
+    format: command.format === undefined ? undefined : mapTextureFormat(command.format),
+    dimension: command.dimension,
+    aspect: command.aspect ?? "all",
+    baseMipLevel: command.mip_range?.base ?? 0,
+    mipLevelCount: command.mip_range?.count,
+    baseArrayLayer: command.layer_range?.base ?? 0,
+    arrayLayerCount: command.layer_range?.count,
+  };
 }
 
 
@@ -527,6 +550,7 @@ function beginRenderPass(context, textures, encoders, command) {
 export async function executeDrp2Stream(device, context, canvasFormat, stream) {
   const buffers = new Map();
   const textures = new Map();
+  const textureViews = new Map();
   const samplers = new Map();
   const bindGroupLayouts = new Map();
   const bindGroups = new Map();
@@ -586,6 +610,15 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
           }),
         );
         break;
+
+      case "CreateTextureView": {
+        const texture = required(
+          textures.get(command.texture_id),
+          `unknown texture ${command.texture_id}`,
+        );
+        textureViews.set(command.id, texture.createView(makeTextureViewDescriptor(command)));
+        break;
+      }
 
       case "WriteTexture": {
         const texture = required(
@@ -657,7 +690,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
               `unknown bind-group layout ${command.bind_group_layout_id}`,
             ),
             entries: required(command.entries, "CreateBindGroup needs entries").map((entry) =>
-              makeBindGroupEntry(entry, textures, samplers),
+              makeBindGroupEntry(entry, textures, textureViews, samplers),
             ),
           }),
         );
@@ -809,6 +842,90 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
         break;
       }
 
+      case "CopyBufferToTexture": {
+        const encoder = required(
+          encoders.get(command.encoder_id),
+          `unknown command encoder ${command.encoder_id}`,
+        );
+        const buffer = required(
+          buffers.get(command.src_buffer_id),
+          `unknown source buffer ${command.src_buffer_id}`,
+        );
+        const texture = required(
+          textures.get(command.dst_texture_id),
+          `unknown destination texture ${command.dst_texture_id}`,
+        );
+        const origin = command.dst_origin ?? { x: 0, y: 0, z: 0 };
+        const size = required(command.size, "CopyBufferToTexture needs size");
+        encoder.copyBufferToTexture(
+          {
+            buffer,
+            offset: command.src_offset ?? 0,
+            bytesPerRow: required(command.bytes_per_row, "CopyBufferToTexture needs bytes_per_row"),
+            rowsPerImage: command.rows_per_image ?? size.height,
+          },
+          {
+            texture,
+            mipLevel: command.dst_mip_level ?? 0,
+            origin: {
+              x: origin.x ?? 0,
+              y: origin.y ?? 0,
+              z: origin.z ?? 0,
+            },
+          },
+          {
+            width: required(size.width, "CopyBufferToTexture size needs width"),
+            height: required(size.height, "CopyBufferToTexture size needs height"),
+            depthOrArrayLayers: size.depth ?? 1,
+          },
+        );
+        break;
+      }
+
+      case "CopyTextureToTexture": {
+        const encoder = required(
+          encoders.get(command.encoder_id),
+          `unknown command encoder ${command.encoder_id}`,
+        );
+        const srcTexture = required(
+          textures.get(command.src_texture_id),
+          `unknown source texture ${command.src_texture_id}`,
+        );
+        const dstTexture = required(
+          textures.get(command.dst_texture_id),
+          `unknown destination texture ${command.dst_texture_id}`,
+        );
+        const srcOrigin = command.src_origin ?? { x: 0, y: 0, z: 0 };
+        const dstOrigin = command.dst_origin ?? { x: 0, y: 0, z: 0 };
+        const size = required(command.size, "CopyTextureToTexture needs size");
+        encoder.copyTextureToTexture(
+          {
+            texture: srcTexture,
+            mipLevel: command.src_mip_level ?? 0,
+            origin: {
+              x: srcOrigin.x ?? 0,
+              y: srcOrigin.y ?? 0,
+              z: srcOrigin.z ?? 0,
+            },
+          },
+          {
+            texture: dstTexture,
+            mipLevel: command.dst_mip_level ?? 0,
+            origin: {
+              x: dstOrigin.x ?? 0,
+              y: dstOrigin.y ?? 0,
+              z: dstOrigin.z ?? 0,
+            },
+          },
+          {
+            width: required(size.width, "CopyTextureToTexture size needs width"),
+            height: required(size.height, "CopyTextureToTexture size needs height"),
+            depthOrArrayLayers: size.depth ?? 1,
+          },
+        );
+        break;
+      }
+
       case "FinishCommandEncoder": {
         const encoder = required(
           encoders.get(command.encoder_id),
@@ -851,6 +968,14 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
 
       case "QueueSubmitReply":
       case "Error":
+      case "DestroyBuffer":
+      case "DestroyTexture":
+      case "DestroyTextureView":
+      case "DestroySampler":
+      case "DestroyBindGroupLayout":
+      case "DestroyBindGroup":
+      case "DestroyShaderModule":
+      case "DestroyRenderPipeline":
         break;
 
       default:
