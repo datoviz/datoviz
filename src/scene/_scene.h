@@ -590,6 +590,14 @@ bool _scene_pick_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
 bool _scene_probe_request_is_current(
     const DvzScene* scene, const DvzPanel* panel, uint64_t request_id, uint64_t freshness_serial);
+bool _scene_push_pick_result(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzPickResult* result);
+bool _scene_push_probe_result(
+    DvzScene* scene, DvzPanel* panel, uint64_t freshness_serial, const DvzProbeResult* result);
+void _scene_coalesce_pending_pick_requests(DvzScene* scene, const DvzFigure* figure);
+void _scene_coalesce_pending_probe_requests(DvzScene* scene, const DvzFigure* figure);
+void _scene_remove_pending_pick_at(DvzScene* scene, uint32_t index);
+void _scene_remove_pending_probe_at(DvzScene* scene, uint32_t index);
 
 
 
