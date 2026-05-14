@@ -45,6 +45,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if OS_WINDOWS
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 
 
 /*************************************************************************************************/
@@ -55,6 +61,16 @@
 
 /* Keep borrowed canvas targets out of the scene emitter's low transient id range. */
 #define DVZ_APP_CANVAS_TARGET_BASE UINT64_C(0xF000000000000000)
+
+#define DVZ_TRACE_COLOR_RESET "\x1b[0m"
+#define DVZ_TRACE_COLOR_DIM   "\x1b[90m"
+#define DVZ_TRACE_COLOR_GREEN "\x1b[32m"
+#define DVZ_TRACE_COLOR_YELLOW "\x1b[33m"
+#define DVZ_TRACE_COLOR_CYAN  "\x1b[36m"
+#define DVZ_TRACE_COLOR_BLUE  "\x1b[34m"
+#define DVZ_TRACE_COLOR_MAGENTA "\x1b[35m"
+#define DVZ_TRACE_COLOR_RED   "\x1b[31m"
+#define DVZ_TRACE_COLOR_BOLD  "\x1b[1m"
 
 
 
@@ -234,6 +250,95 @@ static char _trace_command_prefix(DvzDrp2CommandType type)
         return '~';
     default:
         return '=';
+    }
+}
+
+
+/**
+ * Return whether DRP2 trace color should be emitted on stderr.
+ *
+ * @return whether ANSI color should be used
+ */
+static bool _trace_color_enabled(void)
+{
+    const char* env = getenv("DVZ_DRP2_TRACE_COLOR");
+    if (env != NULL)
+    {
+        if (strcmp(env, "0") == 0 || strcmp(env, "false") == 0 || strcmp(env, "FALSE") == 0 ||
+            strcmp(env, "off") == 0 || strcmp(env, "OFF") == 0)
+            return false;
+        if (strcmp(env, "1") == 0 || strcmp(env, "true") == 0 || strcmp(env, "TRUE") == 0 ||
+            strcmp(env, "on") == 0 || strcmp(env, "ON") == 0)
+            return true;
+    }
+
+    if (getenv("NO_COLOR") != NULL)
+        return false;
+
+#if OS_WINDOWS
+    return _isatty(_fileno(stderr)) != 0;
+#else
+    return isatty(fileno(stderr)) != 0;
+#endif
+}
+
+
+/**
+ * Return the ANSI color for one command category.
+ *
+ * @param type command type enum value
+ * @return static ANSI color string
+ */
+static const char* _trace_command_color(DvzDrp2CommandType type)
+{
+    switch (type)
+    {
+    case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+    case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+    case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+    case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+        return DVZ_TRACE_COLOR_GREEN;
+    case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+    case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+    case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+    case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+    case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
+    case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+        return DVZ_TRACE_COLOR_RED;
+    case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+    case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
+    case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE:
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_BUFFER:
+    case DVZ_DRP2_COMMAND_COPY_TEXTURE_TO_TEXTURE:
+        return DVZ_TRACE_COLOR_YELLOW;
+    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
+    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+    case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
+    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+    case DVZ_DRP2_COMMAND_END_COMPUTE_PASS:
+    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT_REPLY:
+        return DVZ_TRACE_COLOR_CYAN;
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+    case DVZ_DRP2_COMMAND_SET_PIPELINE:
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+    case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+        return DVZ_TRACE_COLOR_BLUE;
+    case DVZ_DRP2_COMMAND_DRAW:
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+    case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
+        return DVZ_TRACE_COLOR_MAGENTA;
+    default:
+        return DVZ_TRACE_COLOR_DIM;
     }
 }
 
@@ -653,14 +758,19 @@ static void _app_trace_stream_full(
     ANN(stream);
     ANN(label);
     uint32_t command_count = dvz_drp2_stream_count(stream);
+    bool use_color = _trace_color_enabled();
     dvz_fprintf(
-        stderr, "\nframe %08" PRIu64 " | %s | %u cmds\n", frame_index, label, command_count);
+        stderr, "\n%sframe %08" PRIu64 " | %s | %u cmds%s\n",
+        use_color ? DVZ_TRACE_COLOR_BOLD : "", frame_index, label, command_count,
+        use_color ? DVZ_TRACE_COLOR_RESET : "");
     for (uint32_t i = 0; i < command_count; i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
         if (command == NULL)
             continue;
         DvzDrp2CommandType type = dvz_drp2_command_type(command);
+        if (use_color)
+            dvz_fprintf(stderr, "%s", _trace_command_color(type));
         if (!_app_trace_print_command_detail(command, i, true))
         {
             dvz_fprintf(
@@ -668,6 +778,8 @@ static void _app_trace_stream_full(
                 _trace_command_name(type));
         }
     }
+    if (use_color)
+        dvz_fprintf(stderr, "%s", DVZ_TRACE_COLOR_RESET);
 }
 
 
