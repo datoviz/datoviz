@@ -268,6 +268,12 @@ function readbackSummary(bytes) {
 
 
 
+function alignedBytesPerRow(bytesPerRow) {
+  return Math.ceil(bytesPerRow / 256) * 256;
+}
+
+
+
 function makeVertexBuffers(command) {
   const vertexBuffers = command.vertex_buffers ?? [];
   if (vertexBuffers.length === 0) {
@@ -559,6 +565,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
   const encoders = new Map();
   const passes = new Map();
   const commandBuffers = new Map();
+  const pendingTightTextureCopies = [];
   const readbackReplies = [];
 
   for (const command of stream.commands) {
@@ -817,6 +824,33 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
         );
         const origin = command.src_origin ?? { x: 0, y: 0, z: 0 };
         const size = required(command.size, "CopyTextureToBuffer needs size");
+        const bytesPerRow = required(
+          command.bytes_per_row,
+          "CopyTextureToBuffer needs bytes_per_row",
+        );
+        const rowsPerImage = command.rows_per_image ?? size.height;
+        let dstBuffer = buffer;
+        let dstOffset = command.dst_offset ?? 0;
+        let copyBytesPerRow = bytesPerRow;
+
+        if (bytesPerRow % 256 !== 0) {
+          copyBytesPerRow = alignedBytesPerRow(bytesPerRow);
+          dstOffset = 0;
+          dstBuffer = device.createBuffer({
+            label: `${command.dst_buffer_id}:aligned_texture_readback`,
+            size: copyBytesPerRow * rowsPerImage,
+            usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+          });
+          pendingTightTextureCopies.push({
+            srcBuffer: dstBuffer,
+            dstBuffer: buffer,
+            dstOffset: command.dst_offset ?? 0,
+            bytesPerRow,
+            copyBytesPerRow,
+            rows: rowsPerImage,
+          });
+        }
+
         encoder.copyTextureToBuffer(
           {
             texture,
@@ -828,10 +862,10 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
             },
           },
           {
-            buffer,
-            offset: command.dst_offset ?? 0,
-            bytesPerRow: required(command.bytes_per_row, "CopyTextureToBuffer needs bytes_per_row"),
-            rowsPerImage: command.rows_per_image ?? size.height,
+            buffer: dstBuffer,
+            offset: dstOffset,
+            bytesPerRow: copyBytesPerRow,
+            rowsPerImage,
           },
           {
             width: required(size.width, "CopyTextureToBuffer size needs width"),
@@ -839,6 +873,17 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
             depthOrArrayLayers: size.depth ?? 1,
           },
         );
+        for (const copy of pendingTightTextureCopies.splice(0)) {
+          for (let row = 0; row < copy.rows; row++) {
+            encoder.copyBufferToBuffer(
+              copy.srcBuffer,
+              row * copy.copyBytesPerRow,
+              copy.dstBuffer,
+              copy.dstOffset + row * copy.bytesPerRow,
+              copy.bytesPerRow,
+            );
+          }
+        }
         break;
       }
 
