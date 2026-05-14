@@ -61,9 +61,11 @@ for malformed typed visual metadata, covering the first item in the suggested or
 
 This lane is now mostly in maintenance mode: add diagnostics/typed metadata only when new
 retained paths expose a concrete gap. The `scene.c` domain split is complete for the currently
-identified slices; DRP2 runtime decomposition is now active. The first slices moved shared runtime
-types to `_runtime.h` and vklite object-table/deferred-cleanup helpers to
-`runtime_vklite_objects.c`.
+identified slices. The first DRP2 runtime decomposition pass is now complete: shared runtime types
+moved to `_runtime.h`, semantic validation moved to `runtime_semantic.c`, and the vklite backend is
+split across object-registry, pipeline, transfer, pass, and dispatch files. DRP2 stream JSON
+serialization now lives in `serialization.c`, and the generic JSON builder is shared from
+`src/common/_json.h`.
 
 
 ### 1. Split `src/scene/scene.c`
@@ -138,40 +140,39 @@ the outward surface.
 `runtime.c` currently combines backend-agnostic semantic validation with the vklite backend
 implementation. That makes ownership and failure-path review harder than it needs to be.
 
-Status: **in progress**. The shared runtime types now live in `src/drp2/_runtime.h`, and
-`src/drp2/runtime_vklite_objects.c` owns the vklite object table, object destruction, image-view
-lookup, state cleanup, and deferred destruction queue. The remaining runtime file still owns
-semantic validation, vklite command creation/execution, frame-target attachment,
-transfer/readback commands, shader/pipeline creation, and public facade entry points.
+Status: **done for the first decomposition pass**. The shared runtime types now live in
+`src/drp2/_runtime.h`; semantic validation lives in `runtime_semantic.c`; and the vklite backend is
+split across object-registry, pipeline, transfer, pass, and dispatch files. `runtime.c` is now the
+public facade and runtime lifecycle/configuration owner.
 
-Recommended split:
+Current ownership:
 
 1. `runtime.c` - public facade and runtime configuration/lifecycle.
 2. `runtime_semantic.c` - semantic object state, validation, state clone/commit, and command rules.
-3. Done: `runtime_vklite_objects.c` - vklite object registry, destruction, image-view lookup,
-   state cleanup, and deferred destruction. Borrowed frame-target attachment remains in
-   `runtime.c` until the pass/command-buffer slice moves.
+3. `runtime_vklite_objects.c` - vklite object registry, destruction, image-view lookup,
+   state cleanup, and deferred destruction.
 4. `runtime_vklite_pipeline.c` - shaderc loading, shader modules, bind group layouts, bind groups,
    render pipelines, and compute pipelines.
 5. `runtime_vklite_transfer.c` - buffer/texture writes, staging, copies, and buffer download.
 6. `runtime_vklite_pass.c` - command buffers, render passes, compute passes, viewport/scissor,
    draw/dispatch, and submit handling.
+7. `runtime_vklite.c` - vklite runtime dispatch and backend command routing.
 
-This should happen after the scene/converter boundary is calmer, because the runtime API is a key
-stability point for app, request execution, and future WebGPU contract pressure.
+Further runtime work should now be safety- or behavior-driven rather than mechanical: tighten
+failure paths, transient cleanup, borrowed-frame ownership, and diagnostics only where tests or
+review expose concrete gaps.
 
 
 ### 5. Split DRP2 Stream Construction From JSON
 
-`src/drp2/stream.c` is large but mostly coherent. The first useful split is to separate command
-appenders from JSON/debug serialization:
+Status: **done**. Stream lifecycle and command appenders remain in `stream.c`; JSON/debug
+serialization now lives in `serialization.c`.
 
 1. `stream.c` - stream lifecycle and command appending.
-2. `stream_json.c` - `dvz_drp2_stream_json()` and command serialization helpers.
+2. `serialization.c` - `dvz_drp2_stream_json()` and command serialization helpers.
 
-There is already a scene-local JSON helper in `src/scene/_json.h`, while `drp2/stream.c` carries a
-second JSON builder. Move the generic builder to `src/common/_json.h` first, then let scene,
-FramePlan, and DRP2 stream serializers share it.
+The generic JSON builder has moved from `src/scene/_json.h` to `src/common/_json.h`, so scene,
+FramePlan, and DRP2 stream serializers now share one internal helper.
 
 
 ### 6. Split `src/scene/tests/test_scene.c`
@@ -180,19 +181,22 @@ FramePlan, and DRP2 stream serializers share it.
 fields, scales, interaction, pick/probe, app/offscreen, capture, and mesh/depth rendering. It is
 valuable coverage, but it is too broad for focused refactor loops.
 
-Recommended split under `src/scene/tests/`:
+Recommended split under `src/scene/tests/`. The directory and unchanged test function names already
+carry the scene/test context, so use short domain filenames:
 
-1. `test_panzoom_arcball.c`
-2. `test_frame_plan.c`
-3. `test_frame_plan_emit.c`
-4. `test_scene_graph.c`
-5. `test_scene_fields.c`
-6. `test_scene_interaction.c`
-7. `test_scene_pick_probe.c`
-8. `test_scene_app.c`
+1. `panzoom_arcball.c`
+2. `frame_plan.c`
+3. `frame_plan_emit.c`
+4. `scene_graph.c`
+5. `fields.c`
+6. `interaction.c`
+7. `pick_probe.c`
+8. `app.c`
 
 Keep `test_scene(TstSuite* suite)` as the single module entry point and have it delegate to smaller
-registration helpers.
+registration helpers. Keep `test_scene.c` as an aggregator only, and keep `test_scene.h` as the
+shared declaration header. Do not rename existing test functions during the mechanical file split;
+the current prefixes are useful for filtering and historical continuity.
 
 
 ## Suggested Order
@@ -210,9 +214,10 @@ registration helpers.
 7. Done: split the scene request path into request queue, hit-test, probe-plan, and request-execute
    modules.
 8. Done: extract `scene_json.c` for scene JSON serialization.
-9. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-10. Move JSON builder support to `src/common` and split serializers.
-11. Split scene tests in parallel with the implementation files they cover.
+9. Done: split `drp2/runtime.c` into facade, semantic, and vklite backend ownership files.
+10. Done: move JSON builder support to `src/common` and split DRP2 stream serialization.
+11. Next: split scene tests into short domain-named files while preserving existing test function
+    names and `test_scene(TstSuite*)` as the single module entry point.
 
 
 ## Validation Guidance

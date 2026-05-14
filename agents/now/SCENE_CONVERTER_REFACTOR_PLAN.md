@@ -53,10 +53,12 @@ readouts; `text_annotation.c` owns retained font, text, annotation, and label bo
 `request_queue.c` owns pending request/result queues and freshness filtering; `hit_test.c` owns
 panel coordinate mapping and CPU point picking; `probe_plan.c` owns synthetic image-probe FramePlan
 construction; `request_execute.c` owns request runtime execution and readback handling; and
-`scene_json.c` owns scene JSON serialization. The remaining high-payoff splits now move outside
-`scene.c`: DRP2 runtime, DRP2 stream JSON, and focused scene-test decomposition. DRP2 runtime
-decomposition has started: shared runtime structs moved to `src/drp2/_runtime.h`, and the vklite
-object table/deferred cleanup helpers now live in `src/drp2/runtime_vklite_objects.c`.
+`scene_json.c` owns scene JSON serialization. The first DRP2 follow-up split is also complete:
+shared runtime structs moved to `src/drp2/_runtime.h`, semantic validation moved to
+`runtime_semantic.c`, the vklite backend is split across object-registry, pipeline, transfer, pass,
+and dispatch files, DRP2 stream JSON serialization lives in `serialization.c`, and the shared JSON
+builder moved to `src/common/_json.h`. The remaining high-payoff structural cleanup is focused
+scene-test decomposition.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.

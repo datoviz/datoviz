@@ -77,22 +77,28 @@ Read in this order:
 
 Deliver the next implementation slices in this order unless the user redirects:
 
-1. Native 3D pressure example: one small interactive mesh/primitive scene using arcball, depth,
+1. Focused scene-test decomposition: split `src/scene/tests/test_scene.c` into short domain-named
+   files under `src/scene/tests/` while preserving the current test function names and
+   `test_scene(TstSuite*)` as the single module entry point. Keep `test_scene.c` as an aggregator
+   only, keep `test_scene.h` as the shared declaration header, and use filenames such as
+   `panzoom_arcball.c`, `frame_plan.c`, `frame_plan_emit.c`, `scene_graph.c`, `fields.c`,
+   `interaction.c`, `pick_probe.c`, and `app.c`.
+2. Native 3D pressure example: one small interactive mesh/primitive scene using arcball, depth,
    resizing, frame callback, and capture/readback. This is the best next correctness probe for the
    scene -> DRP2 -> app boundary.
-2. Manual interactive smoke set: point hover picking, image probe, panzoom, arcball, partial texture
+3. Manual interactive smoke set: point hover picking, image probe, panzoom, arcball, partial texture
    update, and multi-panel examples with clear run commands and expected behavior.
-3. Hygiene/safety pass over the hot scene/DRP2/app files that changed most recently: bounds,
+4. Hygiene/safety pass over the hot scene/DRP2/app files that changed most recently: bounds,
    ownership, stale-result handling, transient runtime object cleanup, and warning/static-analysis
    readiness.
-4. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
+5. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
-5. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
+6. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
    native 3D and manual-smoke gaps are clearer.
-6. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
+7. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
 
-Implementation-level checklists for these six lanes are recorded in
+Implementation-level checklists for these lanes are recorded in
 [../../docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/docs/tasks/2026-05-13-next-implementation-priorities/NEXT_STEPS.md).
 
 Sidecar design slice recorded on 2026-05-13:
