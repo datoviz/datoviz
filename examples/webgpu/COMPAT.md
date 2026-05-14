@@ -23,9 +23,8 @@ The committed manifest currently covers the `32` positive DRP2 fixtures under
 Current status as of this note:
 
 - positive fixture count: `32`
-- expected dashboard shape after the latest compatibility fixes: pass/unsupported only
-- remaining unsupported group: compute commands
-- last manual count: update from the dashboard after running `Run all`
+- last manual dashboard run: `32 pass, 0 unsupported, 0 fail`
+- remaining unsupported positive fixture group: none in the committed positive fixture manifest
 
 
 ## Supported Commands
@@ -72,18 +71,10 @@ The PoC currently executes these DRP2 commands:
 
 ## Unsupported Commands
 
-Compute remains the main unsupported group:
+All commands used by the committed positive fixture manifest are currently supported.
 
-- `CreateComputePipeline`
-- `DestroyComputePipeline`
-- `BeginComputePass`
-- `EndComputePass`
-- `DispatchWorkgroups`
-- compute-pass `SetPipeline`
-- compute-pass `SetBindGroup`
-
-Indirect draw/dispatch commands and explicit pipeline-layout/resource-barrier commands are not active in the
-current DRP2 command surface and are not implemented in the PoC.
+Indirect draw/dispatch commands and explicit pipeline-layout/resource-barrier commands are not active in
+the current DRP2 command surface and are not implemented in the PoC.
 
 
 ## Supported Fields And Narrow Mappings
@@ -92,6 +83,7 @@ The PoC supports the fixture subset of:
 
 - WGSL shader modules only
 - `rgba8unorm`, `bgra8unorm`, and `depth32float` textures
+- `r32uint` integer render targets for picking-style readback fixtures
 - one color attachment per render pass
 - `triangle-list` topology
 - `uint16` and `uint32` index buffers
@@ -100,6 +92,7 @@ The PoC supports the fixture subset of:
 - uniform buffer bindings
 - storage buffer bindings
 - dynamic buffer offsets by materializing adjusted bind groups at `SetBindGroup` time
+- compute pipelines, compute passes, and direct workgroup dispatch for the positive fixture subset
 
 
 ## PoC-Local Adaptations
