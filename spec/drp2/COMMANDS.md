@@ -143,8 +143,10 @@ General rules:
 1. ids are chosen by the client and must be unique within the live namespace of their object kind,
 2. referencing an unknown or already-destroyed id is a validation error,
 3. creation commands define object state but do not themselves submit GPU work,
-4. encoder and pass commands are ordered and stateful,
-5. omitted optional fields do not imply support for backend-specific defaults unless the command says so.
+4. resource, bind-group, shader, pipeline, upload, and copy commands must not be recorded inside a
+   render or compute pass scope,
+5. encoder and pass commands are ordered and stateful,
+6. omitted optional fields do not imply support for backend-specific defaults unless the command says so.
 
 
 ## Session And Diagnostics

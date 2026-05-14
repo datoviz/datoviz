@@ -38,8 +38,10 @@ The active higher layer exists:
    auxiliary DRP2 streams and runtime readbacks after the main figure frame has populated runtime
    resources.
 9. `app` is an active presentation module. Recent work added frame callbacks, compact/full DRP2
-   trace output, combined FPS/status reporting, and figure-size synchronization before frame
-   emission.
+   trace output, default-on trace/logger colors with `NO_COLOR` support, combined FPS/status
+   reporting, and figure-size synchronization before frame emission.
+10. Scene runtime DRP2 emission now prepares resources before opening command encoders/render
+    passes. Render-pass scopes should contain only pass-local state and draw commands.
 
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
@@ -52,9 +54,9 @@ Focused validation recorded before the latest `2026-05-13` follow-up commits:
    image probes now use the same explicit recentering rule as point picking.
 4. `git diff --check`: passed on the latest scene slices.
 
-Recent unreflected code commits after that validation include app trace/status cleanup, request
-runtime reset hardening, figure-size synchronization, and point-picking panel coordinate fixes.
-Re-run the relevant focused tests before treating the snapshot as fully current.
+Recent revalidation after the trace and render-pass ordering follow-up includes `just test app`
+(`28/28`) and `just test scene` (`141/141`). The latest smoke checks also covered
+`hello_mesh_glfw` normal trace mode with colors enabled and disabled.
 
 
 ## Immediate Task
@@ -86,8 +88,10 @@ Deliver the next implementation slices in this order unless the user redirects:
 2. Current next: finish and validate the native 3D pressure smoke around the existing
    `examples/c/hello_mesh_glfw.c`. That example already exercises an interactive mesh scene with
    arcball, depth, resize-through-app synchronization, and a frame callback through the scene ->
-   DRP2 -> app boundary. The remaining gap is to make capture/readback part of the documented
-   smoke path instead of adding a duplicate 3D example.
+   DRP2 -> app boundary. Normal trace smoke now verifies changed-frame output, default colors,
+   `NO_COLOR` / `DVZ_DRP2_TRACE_COLOR=0`, and resource setup before render-pass scopes. The
+   remaining gap is to make capture/readback part of the documented smoke path instead of adding a
+   duplicate 3D example.
 3. Current docs slice: manual interactive smoke set is recorded in
    [../../docs/architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md).
    The remaining implementation gaps are live image-probe, multi-panel, and partial texture-update

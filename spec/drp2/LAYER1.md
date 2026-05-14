@@ -137,10 +137,12 @@ Render and compute passes are explicit encoder scopes.
 
 Rules:
 
-1. draw commands are valid only inside a render pass,
-2. dispatch commands are valid only inside a compute pass,
-3. attachments, load/store operations, and pipeline state must be validated before execution,
-4. pass compatibility is a contract-level concern, not only a backend detail.
+1. resource, bind-group, shader, and pipeline creation/upload commands are valid outside pass
+   scopes only,
+2. draw commands are valid only inside a render pass,
+3. dispatch commands are valid only inside a compute pass,
+4. attachments, load/store operations, and pipeline state must be validated before execution,
+5. pass compatibility is a contract-level concern, not only a backend detail.
 
 
 ## Validation
