@@ -20,6 +20,7 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_frame_plan_emit.h"
@@ -37,18 +38,56 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct SceneRenderDraw SceneRenderDraw;
+typedef struct SceneRenderBatch SceneRenderBatch;
+
+struct SceneRenderDraw
+{
+    uint64_t pipeline_id;
+    uint64_t bg_set0;  /* MVP bg (point/prim) or texture bg (image); 0 = none */
+    uint64_t bg_set1;  /* primitive shading bg; 0 = none */
+    DvzSceneVisualDesc visual;
+};
+
+
+struct SceneRenderBatch
+{
+    const DvzFramePlanNode* render;
+    SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS];
+    uint32_t draw_count;
+};
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-/* Scene render path: one panel's draws emitted inside an already-open render pass. */
-static bool _emitter_emit_render_multi_in_pass(
+/**
+ * Prepare resources for one panel's draws before opening the render pass.
+ *
+ * @param emitter frame-plan emitter carrying scene/runtime state.
+ * @param stream destination DRP2 command stream.
+ * @param render render node to prepare.
+ * @param cfg optional frame-plan emit configuration.
+ * @param report diagnostic report receiving recoverable emission errors.
+ * @param draws output draw descriptors filled from prepared visuals.
+ * @param draw_count_out output number of prepared draw descriptors.
+ * @return true when the render node has drawable prepared visuals, false otherwise.
+ */
+static bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint64_t render_pass_id, const DvzFramePlanEmitConfig* cfg, SceneRenderStateCache* cache,
-    DvzDiagnosticReport* report)
+    const DvzFramePlanEmitConfig* cfg, DvzDiagnosticReport* report, SceneRenderDraw* draws,
+    uint32_t* draw_count_out)
 {
     ANN(emitter);
     ANN(stream);
     ANN(render);
+    ANN(draws);
+    ANN(draw_count_out);
 
     bool ok = true;
     bool is_new = false;
@@ -65,13 +104,6 @@ static bool _emitter_emit_render_multi_in_pass(
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_id = 0;
 
-    /* Per-visual draw descriptors. */
-    struct {
-        uint64_t pipeline_id;
-        uint64_t bg_set0;  /* MVP bg (point/prim) or texture bg (image); 0 = none */
-        uint64_t bg_set1;  /* primitive shading bg; 0 = none */
-        DvzSceneVisualDesc visual;
-    } draws[DVZ_SCENE_MAX_RENDER_VISUALS];
     uint32_t draw_count = 0;
 
     for (uint32_t i = 0; ok && i < render->u.render.visual_count; i++)
@@ -245,15 +277,37 @@ static bool _emitter_emit_render_multi_in_pass(
     if (!ok || draw_count == 0)
         return false;
 
-    if (!ok)
-        return false;
+    *draw_count_out = draw_count;
+    return true;
+}
 
-    ok = ok && dvz_drp2_stream_set_viewport(
-                   stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
-                   render->u.render.desc.width, render->u.render.desc.height) &&
-         dvz_drp2_stream_set_scissor(
-             stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
-             render->u.render.desc.width, render->u.render.desc.height);
+
+
+/**
+ * Emit one panel's already-prepared draws inside an open render pass.
+ *
+ * @param stream destination DRP2 command stream.
+ * @param render render node whose viewport/scissor and visuals are emitted.
+ * @param render_pass_id active render-pass id.
+ * @param draws prepared draw descriptors.
+ * @param draw_count number of prepared draw descriptors.
+ * @param cache optional state cache shared across panels in the same render pass.
+ * @return true when all draw commands were emitted successfully, false otherwise.
+ */
+static bool _emitter_emit_render_multi_draws(
+    DvzDrp2CommandStream* stream, const DvzFramePlanNode* render, uint64_t render_pass_id,
+    const SceneRenderDraw* draws, uint32_t draw_count, SceneRenderStateCache* cache)
+{
+    ANN(stream);
+    ANN(render);
+    ANN(draws);
+
+    bool ok = dvz_drp2_stream_set_viewport(
+                  stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
+                  render->u.render.desc.width, render->u.render.desc.height) &&
+              dvz_drp2_stream_set_scissor(
+                  stream, render_pass_id, render->u.render.desc.x, render->u.render.desc.y,
+                  render->u.render.desc.width, render->u.render.desc.height);
 
     uint64_t last_pipeline = (cache != NULL) ? cache->pipeline_id : 0;
     uint64_t last_bg_set0 = (cache != NULL) ? cache->bg_set0 : 0;
@@ -342,6 +396,13 @@ static bool _emitter_emit_render_multi(
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
     bool needs_depth = _scene_render_needs_depth(emitter, render);
 
+    SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
+    uint32_t draw_count = 0;
+    ok = _emitter_prepare_render_multi(
+        emitter, stream, render, cfg, report, draws, &draw_count);
+    if (!ok)
+        return false;
+
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
@@ -349,8 +410,8 @@ static bool _emitter_emit_render_multi(
     if (ok && needs_depth)
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
     ok = ok &&
-         _emitter_emit_render_multi_in_pass(
-             emitter, stream, render, render_pass_id, cfg, cache, report) &&
+         _emitter_emit_render_multi_draws(
+             stream, render, render_pass_id, draws, draw_count, cache) &&
          dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     ok = ok && _render_pass_copy_finish_submit(
                    stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
@@ -401,25 +462,47 @@ static bool _emitter_emit_scene_figure_renders(
     float cb = cfg ? cfg->clear_color[2] : 0.0f;
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
 
+    SceneRenderBatch* batches =
+        (SceneRenderBatch*)dvz_calloc(plan->count, sizeof(SceneRenderBatch));
+    if (batches == NULL)
+        return false;
+    uint32_t batch_count = 0;
+    for (uint32_t i = 0; ok && i < plan->count; i++)
+    {
+        const DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
+            continue;
+        SceneRenderBatch* batch = &batches[batch_count];
+        batch->render = render;
+        ok = _emitter_prepare_render_multi(
+            emitter, stream, render, cfg, report, batch->draws, &batch->draw_count);
+        if (ok)
+            batch_count++;
+    }
+    if (!ok || batch_count == 0)
+    {
+        dvz_free(batches);
+        return false;
+    }
+
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
              1.0f, true);
 
     SceneRenderStateCache scene_cache = {0};
-    for (uint32_t i = 0; ok && i < plan->count; i++)
+    for (uint32_t i = 0; ok && i < batch_count; i++)
     {
-        const DvzFramePlanNode* render = &plan->nodes[i];
-        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || render->u.render.visual_count == 0)
-            continue;
-        ok = _emitter_emit_render_multi_in_pass(
-            emitter, stream, render, render_pass_id, cfg, &scene_cache, report);
+        ok = _emitter_emit_render_multi_draws(
+            stream, batches[i].render, render_pass_id, batches[i].draws, batches[i].draw_count,
+            &scene_cache);
     }
 
     ok = ok && dvz_drp2_stream_end_render_pass(stream, render_pass_id);
     ok = ok && _render_pass_copy_finish_submit(
                    stream, encoder_id, command_buffer_id, submission_id, color_id, rb_id,
                    readback);
+    dvz_free(batches);
     return ok;
 }
 
