@@ -14,8 +14,8 @@ Then open:
 http://localhost:8765/examples/webgpu/
 ```
 
-The default stream is `streams/texture_sampling_wgsl.json`. It uploads a 2x2 texture, binds it with
-a sampler, and samples it over the canvas.
+The default stream is `streams/indexed_quad_wgsl.json`. It renders a four-vertex quad through
+`SetIndexBuffer` and `DrawIndexed`. Use the page menu to switch streams.
 
 The earlier smoke streams remain available:
 
@@ -24,6 +24,8 @@ http://localhost:8765/examples/webgpu/?stream=hello_triangle_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_offscreen_readback_wgsl
 http://localhost:8765/examples/webgpu/?stream=depth_overlap_wgsl
+http://localhost:8765/examples/webgpu/?stream=texture_sampling_wgsl
+http://localhost:8765/examples/webgpu/?stream=indexed_quad_wgsl
 ```
 
 All streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.
@@ -45,8 +47,10 @@ Supported commands in this first slice:
 - `BeginRenderPass`
 - `SetPipeline`
 - `SetVertexBuffer`
+- `SetIndexBuffer`
 - `SetBindGroup`
 - `Draw`
+- `DrawIndexed`
 - `EndRenderPass`
 - `CopyTextureToBuffer`
 - `FinishCommandEncoder`
@@ -55,7 +59,9 @@ Supported commands in this first slice:
 
 Manual checks:
 
-- Default stream: the canvas should show four large color regions from the uploaded 2x2 texture.
+- Default stream: the canvas should show a single indexed quad with smoothly interpolated corner
+  colors.
+- Texture stream: the canvas should show four large color regions from the uploaded 2x2 texture.
 - Depth stream: the smaller green triangle must appear in front of the larger red triangle where
   they overlap.
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.

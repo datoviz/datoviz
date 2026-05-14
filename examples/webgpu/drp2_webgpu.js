@@ -1,6 +1,16 @@
 const statusEl = document.querySelector("#status");
 const canvas = document.querySelector("#viewport");
 const streamNameEl = document.querySelector("#stream-name");
+const streamSelectEl = document.querySelector("#stream-select");
+
+const STREAMS = [
+  { name: "indexed_quad_wgsl", label: "Indexed quad" },
+  { name: "texture_sampling_wgsl", label: "Texture sampling" },
+  { name: "depth_overlap_wgsl", label: "Depth overlap" },
+  { name: "triangle_offscreen_readback_wgsl", label: "Offscreen readback" },
+  { name: "triangle_vertex_buffer_wgsl", label: "Vertex-buffer triangle" },
+  { name: "hello_triangle_wgsl", label: "No-buffer triangle" },
+];
 
 
 
@@ -62,6 +72,15 @@ function mapDepthCompare(compare) {
     return compare ?? "less";
   }
   throw new Error(`unsupported depth compare: ${compare}`);
+}
+
+
+
+function mapIndexFormat(format) {
+  if (format === undefined || format === "uint16" || format === "uint32") {
+    return format ?? "uint32";
+  }
+  throw new Error(`unsupported index format: ${format}`);
 }
 
 
@@ -700,6 +719,16 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
         break;
       }
 
+      case "SetIndexBuffer": {
+        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const buffer = required(
+          buffers.get(command.buffer_id),
+          `unknown buffer ${command.buffer_id}`,
+        );
+        pass.setIndexBuffer(buffer, mapIndexFormat(command.index_format), command.offset ?? 0);
+        break;
+      }
+
       case "SetBindGroup": {
         const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
         const bindGroup = required(
@@ -716,6 +745,18 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
           command.vertex_count,
           command.instance_count ?? 1,
           command.first_vertex ?? 0,
+          command.first_instance ?? 0,
+        );
+        break;
+      }
+
+      case "DrawIndexed": {
+        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        pass.drawIndexed(
+          command.index_count,
+          command.instance_count ?? 1,
+          command.first_index ?? 0,
+          command.base_vertex ?? 0,
           command.first_instance ?? 0,
         );
         break;
@@ -825,14 +866,30 @@ async function main() {
   try {
     const { device, context, format } = await initWebGPU();
     const params = new URLSearchParams(window.location.search);
-    const streamName = params.get("stream") ?? "texture_sampling_wgsl";
-    const streamPath = `./streams/${streamName}.json`;
-    streamNameEl.textContent = streamPath.slice(2);
-    const response = await fetch(streamPath, { cache: "no-cache" });
-    if (!response.ok) {
-      throw new Error(`failed to load stream: ${response.status} ${response.statusText}`);
+    let streamName = params.get("stream") ?? "indexed_quad_wgsl";
+    let stream = null;
+
+    for (const item of STREAMS) {
+      const option = document.createElement("option");
+      option.value = item.name;
+      option.textContent = item.label;
+      streamSelectEl.appendChild(option);
     }
-    const stream = await response.json();
+    streamSelectEl.value = streamName;
+
+    const loadStream = async (name) => {
+      const streamPath = `./streams/${name}.json`;
+      streamNameEl.textContent = streamPath.slice(2);
+      const response = await fetch(streamPath, { cache: "no-cache" });
+      if (!response.ok) {
+        throw new Error(`failed to load stream: ${response.status} ${response.statusText}`);
+      }
+      streamName = name;
+      stream = await response.json();
+      const url = new URL(window.location.href);
+      url.searchParams.set("stream", streamName);
+      window.history.replaceState(null, "", url);
+    };
 
     let rendering = false;
     let rerenderRequested = false;
@@ -848,6 +905,9 @@ async function main() {
         do {
           rerenderRequested = false;
           resizeCanvasToDisplaySize(device, context, format);
+          if (stream === null) {
+            await loadStream(streamName);
+          }
           const result = await executeDrp2Stream(device, context, format, stream);
           if (result.readbacks.length > 0) {
             const readback = result.readbacks[0];
@@ -863,6 +923,13 @@ async function main() {
       }
     };
 
+    streamSelectEl.addEventListener("change", () => {
+      loadStream(streamSelectEl.value)
+        .then(render)
+        .catch((error) => setStatus(error.message, true));
+    });
+
+    await loadStream(streamName);
     await render();
     new ResizeObserver(() => {
       render().catch((error) => setStatus(error.message, true));

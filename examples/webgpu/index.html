@@ -39,6 +39,26 @@
       font-size: 13px;
     }
 
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    select {
+      min-width: 220px;
+      max-width: 36vw;
+      height: 30px;
+      border: 1px solid #3a4252;
+      border-radius: 4px;
+      background: #171b23;
+      color: #f1f3f7;
+      font: inherit;
+      padding: 0 8px;
+    }
+
     header {
       border-bottom: 1px solid #2a2f3a;
     }
@@ -81,7 +101,10 @@
 <body>
   <header>
     <strong>DRP2 WebGPU</strong>
-    <code id="stream-name">streams/texture_sampling_wgsl.json</code>
+    <div class="toolbar">
+      <select id="stream-select" aria-label="DRP2 stream"></select>
+      <code id="stream-name">streams/indexed_quad_wgsl.json</code>
+    </div>
   </header>
   <main>
     <canvas id="viewport" aria-label="DRP2 WebGPU output"></canvas>
