@@ -18,10 +18,11 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 | `hello_path.c`      | path-as-line/strip    | Existing path helper          | Done    |
 | `hello_field.c`     | sampled field + image | Existing field/image path     | Done    |
 | `hello_pick_hover_glfw.c` | point picking + app | Existing request/app path | Done    |
+| `hello_image_probe_glfw.c` | image probe + app | Existing request/app path | Done    |
 
 The first scene example wave now exists under `examples/c/`. The next example work should focus less
 on adding another visual constructor and more on native pressure tests: an interactive 3D mesh/depth
-scene, clearer manual request/probe smoke tests, and resize/capture/status behavior.
+scene, clearer manual request smoke tests, and resize/capture/status behavior.
 
 ---
 

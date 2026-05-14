@@ -95,6 +95,7 @@ if(TARGET datoviz_app)
         dvz_add_example(hello_mesh_glfw)
         dvz_add_example(hello_point_glfw)
         dvz_add_example(hello_pick_hover_glfw)
+        dvz_add_example(hello_image_probe_glfw)
     endif()
 endif()
 

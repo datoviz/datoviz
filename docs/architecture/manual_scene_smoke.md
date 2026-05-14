@@ -135,7 +135,7 @@ Expected behavior: saves `hello_texture.png`; procedural image is visible on a q
 Automated coverage: `test_app_offscreen_image_has_nonblank_pixels`,
 `test_app_offscreen_image_retained_render_second_frame`.
 
-Current gap: no interactive image probe example yet.
+Current gap: no manual partial-field-update example yet.
 
 
 ### Sampled field capture
@@ -214,18 +214,20 @@ Current gap: no manual partial-texture-update example yet.
 Command:
 
 ```bash
-just test test_scene_image_probe_respects_panel_request_position
+./build/examples/c/hello_image_probe_glfw 300
 ```
 
-Expected behavior: probe results follow panel-local request coordinates and reject transparent or
-failed readback cases.
+Expected behavior: a non-uniform image renders. Moving the cursor across quadrants prints changing
+RGBA probe values from the live app frame loop. Moving outside the image prints misses when the
+request resolves outside the textured quad.
 
 Automated coverage: `test_scene_image_probe_respects_panel_request_position`,
 `test_scene_image_probe_transparent_pixel_misses`,
 `test_scene_image_probe_gpu_readback_failure_misses`,
 `test_scene_process_requests_coalesces_pending_probes_before_execution`.
 
-Current gap: no manual image-probe GLFW example yet.
+Current gap: manual pointer movement is still needed to confirm visible live coordinates and
+terminal output together.
 
 
 ## Recommended Manual Pass

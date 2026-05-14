@@ -125,8 +125,9 @@ Deliver the next implementation slices in this order unless the user redirects:
    3D example.
 3. Current docs slice: manual interactive smoke set is recorded in
    [../../docs/architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md).
-   The remaining implementation gaps are live image-probe, multi-panel, and partial texture-update
-   examples if those become worth adding after the hygiene pass.
+   The live image-probe smoke now has `examples/c/hello_image_probe_glfw.c`; the remaining example
+   gaps are multi-panel and partial texture-update examples if those become worth adding after the
+   hygiene pass.
 4. Current next: the hot-path hygiene pass has covered bounds checks, borrowed-depth ownership,
    stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
