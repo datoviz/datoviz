@@ -398,6 +398,9 @@ int test_scene_primitive_triangle_list_emit_wgsl(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"format\": \"glsl\"") == NULL);
     AT(strstr(json, "@vertex") != NULL);
     AT(strstr(json, "@fragment") != NULL);
+    AT(strstr(json, "\"vertex_buffers\": [") != NULL);
+    AT(strstr(json, "\"binding_type\": \"uniform_buffer\"") != NULL);
+    AT(strstr(json, "VertexIn") != NULL);
 
     dvz_drp2_stream_json_destroy(json);
     dvz_drp2_stream_destroy(stream);

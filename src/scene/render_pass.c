@@ -49,8 +49,8 @@ bool _render_pass_resolve_color_target(
     *out_id = 0;
     if (cfg != NULL && cfg->external_color_target)
     {
-        *out_id = _color_target_id(cfg);
-        return *out_id != 0;
+        *out_id = cfg->color_target_id;
+        return true;
     }
 
     bool is_new = false;

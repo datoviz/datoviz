@@ -1,0 +1,30 @@
+{
+  "name": "scene_primitive_wgsl",
+  "version": { "major": 2, "minor": 0 },
+  "commands": [
+    { "cmd": "HelloRenderer", "version": { "major": 2, "minor": 0 }, "client_name": "scene-runtime" },
+    { "cmd": "RendererHelloReply", "version": { "major": 2, "minor": 0 }, "status": "ok", "renderer_name": "datoviz-drp2-runtime" },
+    { "cmd": "CreateBuffer", "id": 20, "size": 36, "usage": ["COPY_DST", "VERTEX"] },
+    { "cmd": "WriteBuffer", "buffer_id": 20, "offset": 0, "size": 36, "data": "Urgev3E9Cr8AAAAAUrgeP3E9Cr8AAAAAAAAAAFK4Hj8AAAAA" },
+    { "cmd": "CreateBuffer", "id": 21, "size": 12, "usage": ["COPY_DST", "VERTEX"] },
+    { "cmd": "WriteBuffer", "buffer_id": 21, "offset": 0, "size": 12, "data": "60hI/zazfv9GhP//" },
+    { "cmd": "CreateBindGroupLayout", "id": 5000, "entries": [ { "binding": 0, "binding_type": "uniform_buffer", "visibility": ["VERTEX", "FRAGMENT"] } ] },
+    { "cmd": "CreateBuffer", "id": 5001, "size": 208, "usage": ["COPY_DST", "MAP_WRITE", "UNIFORM"] },
+    { "cmd": "CreateBindGroup", "id": 5002, "bind_group_layout_id": 5000, "entries": [ { "binding": 0, "binding_type": "uniform_buffer", "resource_kind": "buffer", "resource_id": 5001, "offset": 0, "size": 208 } ] },
+    { "cmd": "WriteBuffer", "buffer_id": 5001, "offset": 0, "size": 208, "data": "AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAA==" },
+    { "cmd": "CreateShaderModule", "id": 5003, "stage": "VERTEX", "format": "wgsl", "entry_point": "main", "code": "struct MVP {\n    model: mat4x4f,\n    view: mat4x4f,\n    proj: mat4x4f,\n    time: f32,\n    flags: u32,\n};\n\nstruct VertexIn {\n    @location(0) position: vec3f,\n    @location(1) color: vec4f,\n};\n\nstruct VertexOut {\n    @builtin(position) position: vec4f,\n    @location(0) color: vec4f,\n};\n\n@group(0) @binding(0) var<uniform> mvp: MVP;\n\nfn transform(position: vec3f) -> vec4f {\n    return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);\n}\n\n@vertex\nfn main(input: VertexIn) -> VertexOut {\n    var output: VertexOut;\n    output.position = transform(input.position);\n    output.color = input.color;\n    return output;\n}\n" },
+    { "cmd": "CreateShaderModule", "id": 5004, "stage": "FRAGMENT", "format": "wgsl", "entry_point": "main", "code": "struct FragmentIn {\n    @location(0) color: vec4f,\n};\n\n@fragment\nfn main(input: FragmentIn) -> @location(0) vec4f {\n    return input.color;\n}\n" },
+    { "cmd": "CreateRenderPipeline", "id": 5005, "vertex_buffer_slots": 2, "vertex_shader_module_id": 5003, "fragment_shader_module_id": 5004, "bind_group_layout_ids": [5000], "topology": "triangle-list", "vertex_buffers": [{ "array_stride": 12, "step_mode": "vertex", "attributes": [{ "shader_location": 0, "offset": 0, "format": "float32x3" }] }, { "array_stride": 4, "step_mode": "vertex", "attributes": [{ "shader_location": 1, "offset": 0, "format": "unorm8x4" }] }] },
+    { "cmd": "BeginCommandEncoder", "id": 10000 },
+    { "cmd": "BeginRenderPass", "id": 10001, "encoder_id": 10000, "color_attachments": [ { "texture_id": 0, "load_op": "clear", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ] },
+    { "cmd": "SetPipeline", "pass_id": 10001, "pipeline_id": 5005 },
+    { "cmd": "SetBindGroup", "pass_id": 10001, "slot": 0, "bind_group_id": 5002 },
+    { "cmd": "SetVertexBuffer", "pass_id": 10001, "slot": 0, "buffer_id": 20, "offset": 0 },
+    { "cmd": "SetVertexBuffer", "pass_id": 10001, "slot": 1, "buffer_id": 21, "offset": 0 },
+    { "cmd": "Draw", "pass_id": 10001, "vertex_count": 3, "instance_count": 1, "first_vertex": 0, "first_instance": 0 },
+    { "cmd": "EndRenderPass", "pass_id": 10001 },
+    { "cmd": "FinishCommandEncoder", "encoder_id": 10000, "command_buffer_id": 10002 },
+    { "cmd": "QueueSubmit", "command_buffer_ids": [10002], "submission_id": 10003 }
+  ],
+  "expected": { "outcome": "success" }
+}

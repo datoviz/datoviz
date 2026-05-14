@@ -578,6 +578,8 @@ static bool _emitter_emit_render(
 
     const char* vs_glsl = NULL;
     const char* fs_glsl = NULL;
+    const char* vs_wgsl = NULL;
+    const char* fs_wgsl = NULL;
     uint32_t topology = 0;
     uint32_t vertex_count = 3; /* default for stub / non-point path */
     uint64_t bgl_id = 0;
@@ -588,7 +590,9 @@ static bool _emitter_emit_render(
     uint64_t mvp_bg_id  = 0;
     bool uses_mvp =
         (is_point || is_primitive || is_image) &&
-        cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL;
+        cfg != NULL &&
+        (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL ||
+         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL && is_primitive));
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
      * is bound through a bind group, not as a vertex buffer. */
@@ -624,7 +628,7 @@ static bool _emitter_emit_render(
                 vertex_count = (uint32_t)(sz / (3 * sizeof(float)));
         }
     }
-    else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    else if (is_primitive)
     {
         uint64_t pos_id = _scene_visual_resource_by_role(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
@@ -641,6 +645,8 @@ static bool _emitter_emit_render(
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_prim%s", fmt);
         vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
         fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
+        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
+        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
     }
     else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
     {
@@ -723,7 +729,11 @@ static bool _emitter_emit_render(
         return false;
     if (is_new)
     {
-        if (vs_glsl != NULL && vs_spirv_key != NULL &&
+        if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL && vs_wgsl != NULL)
+        {
+            ok = ok && _emit_shader(stream, vs_id, "VERTEX", vs_wgsl, vs_glsl, cfg);
+        }
+        else if (vs_glsl != NULL && vs_spirv_key != NULL &&
             cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
             ok = ok && _emit_shader_spirv(stream, vs_id, "VERTEX", vs_spirv_key, vs_glsl, cfg);
@@ -746,7 +756,11 @@ static bool _emitter_emit_render(
         return false;
     if (ok && is_new)
     {
-        if (fs_glsl != NULL && fs_spirv_key != NULL &&
+        if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL && fs_wgsl != NULL)
+        {
+            ok = ok && _emit_shader(stream, fs_id, "FRAGMENT", fs_wgsl, fs_glsl, cfg);
+        }
+        else if (fs_glsl != NULL && fs_spirv_key != NULL &&
             cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
             ok = ok && _emit_shader_spirv(stream, fs_id, "FRAGMENT", fs_spirv_key, fs_glsl, cfg);
@@ -764,7 +778,7 @@ static bool _emitter_emit_render(
 
     if (is_point && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
-    else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
     else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
@@ -794,7 +808,7 @@ static bool _emitter_emit_render(
             if (ok && uses_mvp && mvp_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
         }
-        else if (is_primitive && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        else if (is_primitive)
         {
             /* binding0=position(vec3), binding1=color(u8vec4) */
             uint32_t strides[2]   = {3*sizeof(float), 4*sizeof(uint8_t)};

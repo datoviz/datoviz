@@ -4,6 +4,7 @@ const streamNameEl = document.querySelector("#stream-name");
 const streamSelectEl = document.querySelector("#stream-select");
 
 export const STREAMS = [
+  { name: "scene_primitive_wgsl", label: "Scene primitive (WGSL)" },
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
   { name: "texture_sampling_wgsl", label: "Texture sampling" },
   { name: "depth_overlap_wgsl", label: "Depth overlap" },
@@ -135,7 +136,9 @@ function mapBufferUsage(usage) {
         flags |= GPUBufferUsage.MAP_READ;
         break;
       case "MAP_WRITE":
-        flags |= GPUBufferUsage.MAP_WRITE;
+        if (items.length === 1 || (items.length === 2 && items.includes("COPY_SRC"))) {
+          flags |= GPUBufferUsage.MAP_WRITE;
+        }
         break;
       default:
         throw new Error(`unsupported buffer usage: ${item}`);
