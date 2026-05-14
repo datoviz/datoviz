@@ -99,6 +99,48 @@ int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item)
 }
 
 
+int test_panzoom_viewport_filters_pointer_events(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzPanzoom* left = dvz_panzoom(400.0f, 400.0f, 0);
+    DvzPanzoom* right = dvz_panzoom(400.0f, 400.0f, 0);
+    ANN(left);
+    ANN(right);
+    dvz_panzoom_viewport(left, 0.0f, 0.0f, 400.0f, 400.0f);
+    dvz_panzoom_viewport(right, 400.0f, 0.0f, 400.0f, 400.0f);
+
+    DvzPointerEvent wheel = {
+        .type = DVZ_POINTER_EVENT_WHEEL,
+        .content.w.dir = {0.0f, 1.0f},
+        .pos = {600.0f, 200.0f},
+    };
+    AT(!dvz_panzoom_pointer(left, &wheel));
+    AT(dvz_panzoom_pointer(right, &wheel));
+    AT(left->zoom[0] == 1.0f);
+    AT(right->zoom[0] > 1.0f);
+
+    DvzPointerEvent drag = {
+        .type = DVZ_POINTER_EVENT_DRAG,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+        .content.d.press_pos = {600.0f, 200.0f},
+        .content.d.last_pos = {700.0f, 200.0f},
+        .content.d.shift = {100.0f, 0.0f},
+        .content.d.is_press_valid = true,
+        .pos = {700.0f, 200.0f},
+    };
+    AT(!dvz_panzoom_pointer(left, &drag));
+    AT(dvz_panzoom_pointer(right, &drag));
+    AT(fabsf(left->pan[0]) < 1e-5f);
+    AT(fabsf(right->pan[0]) > 1e-5f);
+
+    dvz_panzoom_destroy(left);
+    dvz_panzoom_destroy(right);
+    return 0;
+}
+
+
 int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item)
 {
     (void)suite;
@@ -377,6 +419,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TEST_SIMPLE(test_panzoom_create_reset);
     TEST_SIMPLE(test_panzoom_pan_shift);
     TEST_SIMPLE(test_panzoom_zoom_wheel);
+    TEST_SIMPLE(test_panzoom_viewport_filters_pointer_events);
     TEST_SIMPLE(test_panzoom_double_click_resets);
     TEST_SIMPLE(test_panzoom_mvp_identity);
 

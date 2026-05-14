@@ -48,6 +48,8 @@ int test_panzoom_pan_shift(TstSuite* suite, TstItem* item);
 
 int test_panzoom_zoom_wheel(TstSuite* suite, TstItem* item);
 
+int test_panzoom_viewport_filters_pointer_events(TstSuite* suite, TstItem* item);
+
 int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item);
 
 int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item);

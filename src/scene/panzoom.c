@@ -63,6 +63,68 @@ static inline void _normalize_pos(DvzPanzoom* pz, vec2 in, vec2 out)
 
 
 
+static inline bool _contains_pos(DvzPanzoom* pz, const vec2 pos)
+{
+    float x = pz->viewport_origin[0];
+    float y = pz->viewport_origin[1];
+    float w = pz->viewport_size[0];
+    float h = pz->viewport_size[1];
+    return pos[0] >= x && pos[0] < x + w && pos[1] >= y && pos[1] < y + h;
+}
+
+
+
+static inline void _local_pos(DvzPanzoom* pz, const vec2 in, vec2 out)
+{
+    out[0] = in[0] - pz->viewport_origin[0];
+    out[1] = in[1] - pz->viewport_origin[1];
+}
+
+
+
+static bool _event_in_viewport(DvzPanzoom* pz, const DvzPointerEvent* ev)
+{
+    ANN(pz);
+    ANN(ev);
+    if (!pz->has_viewport)
+        return true;
+
+    switch (ev->type)
+    {
+    case DVZ_POINTER_EVENT_DRAG:
+        if (ev->content.d.is_press_valid)
+            return _contains_pos(pz, ev->content.d.press_pos);
+        return _contains_pos(pz, ev->pos);
+
+    case DVZ_POINTER_EVENT_DRAG_STOP:
+        return pz->interacting;
+
+    default:
+        return _contains_pos(pz, ev->pos);
+    }
+}
+
+
+
+static void _local_event(DvzPanzoom* pz, const DvzPointerEvent* ev, DvzPointerEvent* out)
+{
+    ANN(pz);
+    ANN(ev);
+    ANN(out);
+    *out = *ev;
+    if (!pz->has_viewport)
+        return;
+
+    _local_pos(pz, ev->pos, out->pos);
+    if (ev->type == DVZ_POINTER_EVENT_DRAG || ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
+    {
+        _local_pos(pz, ev->content.d.press_pos, out->content.d.press_pos);
+        _local_pos(pz, ev->content.d.last_pos, out->content.d.last_pos);
+    }
+}
+
+
+
 static inline void _normalize_shift(DvzPanzoom* pz, vec2 in, vec2 out)
 {
     float w = pz->viewport_size[0];
@@ -198,7 +260,7 @@ static void _panzoom_input_callback(
         /* Track the actual window size so cursor-pixel shifts convert to NDC at
          * the correct rate (window_width is the cursor coordinate space). */
         const DvzInputResizeEvent* r = &ev->content.resize;
-        if (r->window_width > 0 && r->window_height > 0)
+        if (!pz->has_viewport && r->window_width > 0 && r->window_height > 0)
             dvz_panzoom_resize(pz, (float)r->window_width, (float)r->window_height);
     }
 }
@@ -242,6 +304,27 @@ void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height)
     ANN(pz);
     pz->viewport_size[0] = width;
     pz->viewport_size[1] = height;
+}
+
+
+
+/**
+ * Update the viewport rectangle used for input filtering and coordinate normalization.
+ *
+ * @param pz the panzoom controller
+ * @param x viewport x origin in window pixels
+ * @param y viewport y origin in window pixels
+ * @param width viewport width in window pixels
+ * @param height viewport height in window pixels
+ */
+void dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height)
+{
+    ANN(pz);
+    pz->viewport_origin[0] = x;
+    pz->viewport_origin[1] = y;
+    pz->viewport_size[0] = width;
+    pz->viewport_size[1] = height;
+    pz->has_viewport = true;
 }
 
 
@@ -372,6 +455,12 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
 {
     ANN(pz);
     ANN(ev);
+    if (!_event_in_viewport(pz, ev))
+        return false;
+
+    DvzPointerEvent local = {0};
+    _local_event(pz, ev, &local);
+    ev = &local;
 
     switch (ev->type)
     {
@@ -389,10 +478,12 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
                 shift[1] = -shift[0];
             dvz_panzoom_zoom_shift(pz, shift, press);
         }
+        pz->interacting = true;
         break;
 
     case DVZ_POINTER_EVENT_DRAG_STOP:
         dvz_panzoom_end(pz);
+        pz->interacting = false;
         break;
 
     case DVZ_POINTER_EVENT_WHEEL:
@@ -405,6 +496,7 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
         dvz_panzoom_reset(pz);
+        pz->interacting = false;
         break;
 
     default:
@@ -424,8 +516,11 @@ void dvz_panzoom_connect(DvzPanzoom* pz, DvzInputRouter* router)
      * (the typical case: the GLFW backend emits a resize at window creation,
      * before the controller is connected). */
     DvzInputResizeEvent r;
-    if (dvz_input_router_last_resize(router, &r) && r.window_width > 0 && r.window_height > 0)
+    if (!pz->has_viewport && dvz_input_router_last_resize(router, &r) && r.window_width > 0 &&
+        r.window_height > 0)
+    {
         dvz_panzoom_resize(pz, (float)r.window_width, (float)r.window_height);
+    }
     dvz_input_subscribe_event(router, _panzoom_input_callback, pz);
 }
 

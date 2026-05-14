@@ -67,8 +67,11 @@ struct DvzMVP
 
 struct DvzPanzoom
 {
+    vec2 viewport_origin;
     vec2 viewport_size;
     int  flags;
+    bool has_viewport;
+    bool interacting;
 
     vec2 pan;
     vec2 pan_center;
@@ -111,6 +114,13 @@ DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
  * Update the viewport size (call on window resize).
  */
 DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
+
+
+/**
+ * Update the viewport rectangle in window coordinates.
+ */
+DVZ_EXPORT void
+dvz_panzoom_viewport(DvzPanzoom* pz, float x, float y, float width, float height);
 
 
 

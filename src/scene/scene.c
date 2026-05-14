@@ -45,6 +45,9 @@ static void _scene_figure_id(const DvzFigure* figure, char* out, uint32_t size);
 
 static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out_height);
 
+static void _scene_panel_pixel_rect(
+    const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height);
+
 static bool _scene_pick_request_supersedes(
     const DvzPendingPickRequest* pending, const DvzPanel* panel, uint64_t request_id);
 
@@ -154,6 +157,36 @@ static void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, flo
     float height = panel->desc.height * figure_height;
     *out_width = width > 0.0f ? width : 800.0f;
     *out_height = height > 0.0f ? height : 600.0f;
+}
+
+
+
+/**
+ * Return a panel's pixel rectangle, falling back to a conventional viewport size.
+ *
+ * @param panel the panel
+ * @param out_x output x origin in pixels
+ * @param out_y output y origin in pixels
+ * @param out_width output width in pixels
+ * @param out_height output height in pixels
+ */
+static void _scene_panel_pixel_rect(
+    const DvzPanel* panel, float* out_x, float* out_y, float* out_width, float* out_height)
+{
+    ANN(panel);
+    ANN(out_x);
+    ANN(out_y);
+    ANN(out_width);
+    ANN(out_height);
+    float figure_width = panel->figure != NULL && panel->figure->width > 0 ?
+                             (float)panel->figure->width :
+                             800.0f;
+    float figure_height = panel->figure != NULL && panel->figure->height > 0 ?
+                              (float)panel->figure->height :
+                              600.0f;
+    *out_x = panel->desc.x * figure_width;
+    *out_y = panel->desc.y * figure_height;
+    _scene_panel_pixel_size(panel, out_width, out_height);
 }
 
 
@@ -803,9 +836,11 @@ void dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
         DvzPanel* panel = &figure->panels[i];
         float panel_width = 0.0f;
         float panel_height = 0.0f;
-        _scene_panel_pixel_size(panel, &panel_width, &panel_height);
+        float panel_x = 0.0f;
+        float panel_y = 0.0f;
+        _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
         if (panel->panzoom != NULL)
-            dvz_panzoom_resize(panel->panzoom, panel_width, panel_height);
+            dvz_panzoom_viewport(panel->panzoom, panel_x, panel_y, panel_width, panel_height);
         if (panel->arcball != NULL)
             dvz_arcball_resize(panel->arcball, panel_width, panel_height);
         if (panel->camera != NULL)
@@ -927,8 +962,11 @@ void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags)
         dvz_panzoom_destroy(panel->panzoom);
     float w = 0.0f;
     float h = 0.0f;
-    _scene_panel_pixel_size(panel, &w, &h);
+    float x = 0.0f;
+    float y = 0.0f;
+    _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
     panel->panzoom = dvz_panzoom(w, h, flags);
+    dvz_panzoom_viewport(panel->panzoom, x, y, w, h);
     if (router != NULL)
         dvz_panzoom_connect(panel->panzoom, router);
 }
