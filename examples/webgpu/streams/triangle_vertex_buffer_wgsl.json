@@ -1,0 +1,122 @@
+{
+  "name": "triangle_vertex_buffer_wgsl",
+  "description": "DRP2 WebGPU triangle stream using CreateBuffer, WriteBuffer, vertex layout, and SetVertexBuffer.",
+  "version": { "major": 2, "minor": 0 },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "drp2-webgpu-poc"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "webgpu-poc"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "label": "triangle_vertices",
+      "size": 60,
+      "usage": ["VERTEX", "COPY_DST"]
+    },
+    {
+      "cmd": "WriteBuffer",
+      "buffer_id": 1,
+      "offset": 0,
+      "size": 60,
+      "data": "AAAAAJqZGT8AAIA/zcxMPs3MTD6amRm/mpkZv83MTD4AAIA/zcxMPpqZGT+amRm/zcxMPs3MTD4AAIA/"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "vs_main",
+      "code": "struct VsIn {\n    @location(0) pos: vec2f,\n    @location(1) color: vec3f,\n};\n\nstruct VsOut {\n    @builtin(position) pos: vec4f,\n    @location(0) color: vec3f,\n};\n\n@vertex\nfn vs_main(in: VsIn) -> VsOut {\n    var out: VsOut;\n    out.pos = vec4f(in.pos, 0.0, 1.0);\n    out.color = in.color;\n    return out;\n}"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "fs_main",
+      "code": "struct FsIn {\n    @location(0) color: vec3f,\n};\n\n@fragment\nfn fs_main(in: FsIn) -> @location(0) vec4f {\n    return vec4f(in.color, 1.0);\n}"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 1,
+      "vertex_buffers": [
+        {
+          "array_stride": 20,
+          "step_mode": "vertex",
+          "attributes": [
+            { "format": "float32x2", "offset": 0, "shader_location": 0 },
+            { "format": "float32x3", "offset": 8, "shader_location": 1 }
+          ]
+        }
+      ],
+      "topology": "triangle-list",
+      "color_targets": [
+        { "format": "canvas" }
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 30
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 31,
+      "encoder_id": 30,
+      "color_attachments": [
+        {
+          "texture_id": 0,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.02, "g": 0.03, "b": 0.05, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 31,
+      "pipeline_id": 20
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 31,
+      "slot": 0,
+      "buffer_id": 1,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 31,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 31
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 30,
+      "command_buffer_id": 32
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [32]
+    }
+  ],
+  "expected": {
+    "outcome": "visible_triangle"
+  }
+}

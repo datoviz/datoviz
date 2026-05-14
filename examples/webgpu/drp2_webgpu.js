@@ -1,5 +1,6 @@
 const statusEl = document.querySelector("#status");
 const canvas = document.querySelector("#viewport");
+const streamNameEl = document.querySelector("#stream-name");
 
 
 
@@ -42,6 +43,117 @@ function mapTopology(topology) {
     return "triangle-list";
   }
   throw new Error(`unsupported topology: ${topology}`);
+}
+
+
+
+function mapBufferUsage(usage) {
+  const items = usage ?? [];
+  let flags = 0;
+  for (const item of items) {
+    switch (item) {
+      case "COPY_SRC":
+        flags |= GPUBufferUsage.COPY_SRC;
+        break;
+      case "COPY_DST":
+        flags |= GPUBufferUsage.COPY_DST;
+        break;
+      case "VERTEX":
+        flags |= GPUBufferUsage.VERTEX;
+        break;
+      case "INDEX":
+        flags |= GPUBufferUsage.INDEX;
+        break;
+      case "UNIFORM":
+        flags |= GPUBufferUsage.UNIFORM;
+        break;
+      case "STORAGE":
+        flags |= GPUBufferUsage.STORAGE;
+        break;
+      case "MAP_READ":
+        flags |= GPUBufferUsage.MAP_READ;
+        break;
+      case "MAP_WRITE":
+        flags |= GPUBufferUsage.MAP_WRITE;
+        break;
+      default:
+        throw new Error(`unsupported buffer usage: ${item}`);
+    }
+  }
+  if (flags === 0) {
+    throw new Error("CreateBuffer needs at least one usage flag");
+  }
+  return flags;
+}
+
+
+
+function mapVertexFormat(format) {
+  switch (format) {
+    case "float32":
+    case "float32x2":
+    case "float32x3":
+    case "float32x4":
+    case "uint32":
+    case "uint32x2":
+    case "uint32x3":
+    case "uint32x4":
+    case "sint32":
+    case "sint32x2":
+    case "sint32x3":
+    case "sint32x4":
+    case "unorm8x4":
+    case "snorm8x4":
+    case "unorm16x2":
+    case "unorm16x4":
+    case "snorm16x2":
+    case "snorm16x4":
+      return format;
+    default:
+      throw new Error(`unsupported vertex format: ${format}`);
+  }
+}
+
+
+
+function mapStepMode(stepMode) {
+  if (stepMode === undefined || stepMode === "vertex" || stepMode === "instance") {
+    return stepMode ?? "vertex";
+  }
+  throw new Error(`unsupported vertex step_mode: ${stepMode}`);
+}
+
+
+
+function decodeBase64(data) {
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+
+
+function makeVertexBuffers(command) {
+  const vertexBuffers = command.vertex_buffers ?? [];
+  if (vertexBuffers.length === 0) {
+    return [];
+  }
+  if (command.vertex_buffer_slots !== undefined && command.vertex_buffer_slots !== vertexBuffers.length) {
+    throw new Error("vertex_buffer_slots does not match vertex_buffers length");
+  }
+
+  return vertexBuffers.map((buffer) => ({
+    arrayStride: required(buffer.array_stride, "vertex buffer needs array_stride"),
+    stepMode: mapStepMode(buffer.step_mode),
+    attributes: required(buffer.attributes, "vertex buffer needs attributes").map((attribute) => ({
+      shaderLocation: required(attribute.shader_location, "vertex attribute needs shader_location"),
+      offset: required(attribute.offset, "vertex attribute needs offset"),
+      format: mapVertexFormat(required(attribute.format, "vertex attribute needs format")),
+    })),
+  }));
 }
 
 
@@ -132,6 +244,7 @@ function makePipeline(device, canvasFormat, shaders, command) {
     vertex: {
       module: vertexShader.module,
       entryPoint: vertexShader.entryPoint,
+      buffers: makeVertexBuffers(command),
     },
     fragment: {
       module: fragmentShader.module,
@@ -178,6 +291,7 @@ function beginRenderPass(context, encoders, command) {
 
 
 async function executeDrp2Stream(device, context, canvasFormat, stream) {
+  const buffers = new Map();
   const shaders = new Map();
   const pipelines = new Map();
   const encoders = new Map();
@@ -189,6 +303,31 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
       case "HelloRenderer":
       case "RendererHelloReply":
         break;
+
+      case "CreateBuffer":
+        buffers.set(
+          command.id,
+          device.createBuffer({
+            label: command.label,
+            size: required(command.size, "CreateBuffer needs size"),
+            usage: mapBufferUsage(command.usage),
+          }),
+        );
+        break;
+
+      case "WriteBuffer": {
+        const buffer = required(
+          buffers.get(command.buffer_id),
+          `unknown buffer ${command.buffer_id}`,
+        );
+        const bytes = decodeBase64(required(command.data, "WriteBuffer needs data"));
+        const size = command.size ?? bytes.byteLength;
+        if (size !== bytes.byteLength) {
+          throw new Error(`WriteBuffer size ${size} does not match payload size ${bytes.byteLength}`);
+        }
+        device.queue.writeBuffer(buffer, command.offset ?? 0, bytes, 0, bytes.byteLength);
+        break;
+      }
 
       case "CreateShaderModule": {
         if (command.format !== "wgsl") {
@@ -230,6 +369,16 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
           `unknown pipeline ${command.pipeline_id}`,
         );
         pass.setPipeline(pipeline);
+        break;
+      }
+
+      case "SetVertexBuffer": {
+        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const buffer = required(
+          buffers.get(command.buffer_id),
+          `unknown buffer ${command.buffer_id}`,
+        );
+        pass.setVertexBuffer(command.slot ?? 0, buffer, command.offset ?? 0);
         break;
       }
 
@@ -282,7 +431,11 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
 async function main() {
   try {
     const { device, context, format } = await initWebGPU();
-    const response = await fetch("./streams/hello_triangle_wgsl.json", { cache: "no-cache" });
+    const params = new URLSearchParams(window.location.search);
+    const streamName = params.get("stream") ?? "triangle_vertex_buffer_wgsl";
+    const streamPath = `./streams/${streamName}.json`;
+    streamNameEl.textContent = streamPath.slice(2);
+    const response = await fetch(streamPath, { cache: "no-cache" });
     if (!response.ok) {
       throw new Error(`failed to load stream: ${response.status} ${response.statusText}`);
     }
