@@ -124,6 +124,94 @@ static const char* _command_name(DvzDrp2CommandType type)
 }
 
 
+static const char* _vertex_format_name(uint32_t format)
+{
+    switch (format)
+    {
+    case VK_FORMAT_R32_SFLOAT:
+        return "float32";
+    case VK_FORMAT_R32G32_SFLOAT:
+        return "float32x2";
+    case VK_FORMAT_R32G32B32_SFLOAT:
+        return "float32x3";
+    case VK_FORMAT_R32G32B32A32_SFLOAT:
+        return "float32x4";
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return "unorm8x4";
+    default:
+        return NULL;
+    }
+}
+
+
+
+static const char* _topology_name(uint32_t topology)
+{
+    switch (topology)
+    {
+    case VK_PRIMITIVE_TOPOLOGY_POINT_LIST:
+        return "point-list";
+    case VK_PRIMITIVE_TOPOLOGY_LINE_LIST:
+        return "line-list";
+    case VK_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+        return "line-strip";
+    case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+        return "triangle-list";
+    case VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+        return "triangle-strip";
+    default:
+        return "triangle-list";
+    }
+}
+
+
+
+static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Command* command)
+{
+    ANN(builder);
+    ANN(command);
+
+    if (command->u.create_render_pipeline.binding_count == 0)
+        return;
+
+    _json_append(
+        builder, ", \"topology\": \"%s\"",
+        _topology_name(command->u.create_render_pipeline.topology));
+    _json_append(builder, ", \"vertex_buffers\": [");
+    for (uint32_t b = 0; b < command->u.create_render_pipeline.binding_count; b++)
+    {
+        if (b > 0)
+            _json_append(builder, ", ");
+        _json_append(
+            builder,
+            "{ \"array_stride\": %" PRIu32 ", \"step_mode\": \"vertex\", \"attributes\": [",
+            command->u.create_render_pipeline.binding_strides[b]);
+
+        bool first_attr = true;
+        for (uint32_t a = 0; a < command->u.create_render_pipeline.attr_count; a++)
+        {
+            if (command->u.create_render_pipeline.attr_bindings[a] != b)
+                continue;
+            const char* format =
+                _vertex_format_name(command->u.create_render_pipeline.attr_formats[a]);
+            if (format == NULL)
+                continue;
+            if (!first_attr)
+                _json_append(builder, ", ");
+            first_attr = false;
+            _json_append(
+                builder,
+                "{ \"shader_location\": %" PRIu32 ", \"offset\": %" PRIu32
+                ", \"format\": \"%s\" }",
+                command->u.create_render_pipeline.attr_locations[a],
+                command->u.create_render_pipeline.attr_offsets[a], format);
+        }
+        _json_append(builder, "] }");
+    }
+    _json_append(builder, "]");
+}
+
+
 
 static void _json_append_usage(JsonBuilder* builder, uint32_t usage)
 {
@@ -295,10 +383,17 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_render_pipeline.fragment_shader_module_id);
         if (command->u.create_render_pipeline.bind_group_layout_id != 0)
         {
-            _json_append(
-                builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
-                command->u.create_render_pipeline.bind_group_layout_id);
+            if (command->u.create_render_pipeline.bind_group_layout_id2 != 0)
+                _json_append(
+                    builder, ", \"bind_group_layout_ids\": [%" PRIu64 ", %" PRIu64 "]",
+                    command->u.create_render_pipeline.bind_group_layout_id,
+                    command->u.create_render_pipeline.bind_group_layout_id2);
+            else
+                _json_append(
+                    builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
+                    command->u.create_render_pipeline.bind_group_layout_id);
         }
+        _json_append_vertex_buffers(builder, command);
         if (command->u.create_render_pipeline.has_depth_attachment)
         {
             _json_append(
@@ -355,6 +450,15 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
                 "{ \"binding\": 1, \"binding_type\": \"storage_buffer\" } ] }",
                 _command_name(command->type), command->u.create_bind_group_layout.id);
         }
+        else if (command->u.create_bind_group_layout.uniform_buffer)
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"id\": %" PRIu64
+                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"uniform_buffer\", "
+                "\"visibility\": [\"VERTEX\", \"FRAGMENT\"] } ] }",
+                _command_name(command->type), command->u.create_bind_group_layout.id);
+        }
         else
         {
             _json_append(
@@ -366,8 +470,23 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         }
         break;
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
-        if (command->u.create_bind_group.buffer0_id != 0 ||
-            command->u.create_bind_group.buffer1_id != 0)
+        if (command->u.create_bind_group.buffer0_id != 0 &&
+            command->u.create_bind_group.buffer1_id == 0)
+        {
+            _json_append(
+                builder,
+                "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
+                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"uniform_buffer\", "
+                "\"resource_kind\": \"buffer\", \"resource_id\": %" PRIu64
+                ", \"offset\": %" PRIu64 ", \"size\": %" PRIu64 " } ] }",
+                _command_name(command->type), command->u.create_bind_group.id,
+                command->u.create_bind_group.bind_group_layout_id,
+                command->u.create_bind_group.buffer0_id,
+                command->u.create_bind_group.buffer0_offset,
+                command->u.create_bind_group.buffer_size);
+        }
+        else if (command->u.create_bind_group.buffer0_id != 0 ||
+                 command->u.create_bind_group.buffer1_id != 0)
         {
             _json_append(
                 builder,
@@ -767,4 +886,3 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
  * @param json the JSON string
  */
 void dvz_drp2_stream_json_destroy(char* json) { dvz_free(json); }
-
