@@ -304,109 +304,13 @@ static bool _scene_process_image_probe_request(
         if (visual == NULL || !visual->visible || visual->type != DVZ_VISUAL_TYPE_IMAGE)
             continue;
 
-        int pos_idx = _attr_index(visual, "position");
-        int uv_idx = _attr_index(visual, "texcoords");
-        if (pos_idx < 0 || uv_idx < 0)
+        DvzSceneProbePlan probe_plan = {0};
+        if (!_scene_image_probe_plan(panel, visual, pending, request_ndc, &probe_plan))
             continue;
-        DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
-        DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
-        if (pos_attr->data == NULL || uv_attr->data == NULL || pos_attr->item_count == 0 ||
-            uv_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3))
-        {
-            continue;
-        }
-
-        const void* texture_data = NULL;
-        uint32_t texture_width = 0;
-        uint32_t texture_height = 0;
-        if (visual->field != NULL && visual->field->data != NULL &&
-            visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
-        {
-            texture_data = visual->field->data;
-            texture_width = visual->field->desc.width;
-            texture_height = visual->field->desc.height;
-        }
-        else
-        {
-            DvzFieldRegion upload_region = {0};
-            const void* upload_data = NULL;
-            if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data) ||
-                visual->texture.rgba == NULL || visual->texture.width == 0 ||
-                visual->texture.height == 0)
-            {
-                continue;
-            }
-            (void)upload_region;
-            (void)upload_data;
-            texture_data = visual->texture.rgba;
-            texture_width = visual->texture.width;
-            texture_height = visual->texture.height;
-        }
-
-        if (pos_attr->item_count > UINT64_MAX / sizeof(vec3))
-        {
-            log_error("image probe request position buffer is too large");
-            continue;
-        }
-
-        uint64_t position_bytes = pos_attr->item_count * sizeof(vec3);
-        vec3* probe_positions = (vec3*)dvz_calloc(pos_attr->item_count, sizeof(vec3));
-        if (probe_positions == NULL)
-        {
-            log_error("image probe request position buffer allocation failed");
-            continue;
-        }
-
-        vec2 target_ndc = {-0.75f, -0.75f};
-        /* Image shaders write positions directly, without the shared Vulkan-NDC Y flip. */
-        vec2 image_request_ndc = {request_ndc[0], -request_ndc[1]};
-        vec2 delta = {
-            image_request_ndc[0] - target_ndc[0], image_request_ndc[1] - target_ndc[1]};
-        const vec3* source_positions = (const vec3*)pos_attr->data;
-        for (uint64_t j = 0; j < pos_attr->item_count; j++)
-        {
-            probe_positions[j][0] = source_positions[j][0] - delta[0];
-            probe_positions[j][1] = source_positions[j][1] - delta[1];
-            probe_positions[j][2] = source_positions[j][2];
-        }
-
-        uint64_t texture_bytes = (uint64_t)texture_width * texture_height * 4;
-        DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
-        DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
-        bool ok = plan != NULL && emitter != NULL &&
-                  dvz_frame_plan_upload_bytes(
-                      plan, "probe0_position", 0, position_bytes, "position", probe_positions) &&
-                  dvz_frame_plan_upload_bytes(
-                      plan, "probe0_texcoords", 0, uv_attr->item_count * uv_attr->item_size,
-                      "texcoords", uv_attr->data) &&
-                  dvz_frame_plan_upload_bytes(
-                      plan, "probe0_texture", 0, texture_bytes, "texture", texture_data) &&
-                  dvz_frame_plan_upload_set_texture_extent(
-                      plan, texture_width, texture_height) &&
-                  dvz_frame_plan_render_panel(
-                      plan, "panel.probe", "target.probe", false,
-                      (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&
-                  dvz_frame_plan_render_visual(plan, "probe0") &&
-                  dvz_frame_plan_copy(plan, "target.probe", "buf.probe", 4) &&
-                  dvz_frame_plan_readback(plan, "buf.probe", "request.probe");
-        DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
-        if (render != NULL)
-        {
-            DvzMVP mvp = {0};
-            _scene_request_apply_mvp(panel, request_ndc, &mvp);
-            render->u.render.has_mvp = true;
-            render->u.render.apply_mvp = mvp;
-            render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
-        }
-        if (!ok)
-        {
-            log_error(
-                "image probe request %" PRIu64 " failed to assemble the GPU readback plan",
-                pending->request.request_id);
-        }
 
         uint8_t rgba[4] = {0};
-        bool readback_ok = ok && _scene_execute_readback_plan(scene, runtime, caps, plan, emitter, rgba);
+        bool readback_ok = _scene_execute_readback_plan(
+            scene, runtime, caps, probe_plan.plan, probe_plan.emitter, rgba);
         bool hit = readback_ok && rgba[3] > 0;
         if (readback_ok && rgba[3] == 0)
         {
@@ -414,9 +318,7 @@ static bool _scene_process_image_probe_request(
                 "image probe request %" PRIu64 " returned a transparent GPU pixel",
                 pending->request.request_id);
         }
-        dvz_frame_plan_destroy(plan);
-        dvz_frame_plan_emitter_destroy(emitter);
-        dvz_free(probe_positions);
+        _scene_probe_plan_destroy(&probe_plan);
 
         if (!hit)
             continue;

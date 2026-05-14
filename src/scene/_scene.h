@@ -275,6 +275,7 @@ typedef struct DvzPendingProbeRequest DvzPendingProbeRequest;
 typedef struct DvzQueuedPickResult DvzQueuedPickResult;
 typedef struct DvzQueuedProbeResult DvzQueuedProbeResult;
 typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
+typedef struct DvzSceneProbePlan DvzSceneProbePlan;
 
 struct DvzPendingPickRequest
 {
@@ -318,6 +319,14 @@ struct DvzRequestFreshnessScope
     uint64_t request_id;
     uint64_t freshness_serial;
     uint64_t touched_serial;
+};
+
+
+struct DvzSceneProbePlan
+{
+    DvzFramePlan* plan;
+    DvzFramePlanEmitter* emitter;
+    vec3* probe_positions;
 };
 
 
@@ -607,6 +616,10 @@ bool _scene_point_pick_cpu(
     const DvzFigure* figure, const DvzPanel* panel, const DvzVisual* visual, double x, double y,
     uint64_t* out_item_id);
 void _scene_pick_trace(const char* format, ...);
+bool _scene_image_probe_plan(
+    const DvzPanel* panel, DvzVisual* visual, const DvzPendingProbeRequest* pending,
+    const vec2 request_ndc, DvzSceneProbePlan* out_plan);
+void _scene_probe_plan_destroy(DvzSceneProbePlan* plan);
 
 
 
