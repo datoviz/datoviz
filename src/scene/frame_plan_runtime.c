@@ -47,8 +47,8 @@ typedef struct SceneRenderBatch SceneRenderBatch;
 struct SceneRenderDraw
 {
     uint64_t pipeline_id;
-    uint64_t bg_set0;  /* MVP bg (point/prim) or texture bg (image); 0 = none */
-    uint64_t bg_set1;  /* primitive shading bg; 0 = none */
+    uint64_t bg_set0;  /* MVP bg; 0 = none */
+    uint64_t bg_set1;  /* image texture or primitive shading bg; 0 = none */
     DvzSceneVisualDesc visual;
 };
 
@@ -212,8 +212,12 @@ static bool _emitter_prepare_render_multi(
                            pipeline.formats, pipeline.offsets);
             if (ok && pipeline.needs_mvp_layout && mvp_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
-            if (ok && pipeline.needs_image_layout && img_bgl_id != 0)
+            if (ok && pipeline.needs_image_layout && img_bgl_id != 0 &&
+                !pipeline.needs_mvp_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, img_bgl_id);
+            if (ok && pipeline.needs_image_layout && img_bgl_id != 0 &&
+                pipeline.needs_mvp_layout)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, img_bgl_id);
             if (ok && pipeline.needs_shading_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
             if (ok && pipeline.has_depth_state)
@@ -253,7 +257,7 @@ static bool _emitter_prepare_render_multi(
                                sizeof(DvzPrimitiveShadingState));
             vis_bg_set1 = shading_bg_id;
         }
-        if (bind.uses_image_set0)
+        if (bind.uses_image_set1)
         {
             /* Image BGL + sampler (lazy). */
             if (img_bgl_id == 0)
@@ -280,7 +284,7 @@ static bool _emitter_prepare_render_multi(
                 ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group(
                                stream, img_bg_id, img_bgl_id, bind.image_texture_id,
                                img_sampler_id);
-            vis_bg_set0 = img_bg_id;
+            vis_bg_set1 = img_bg_id;
         }
 
         if (!ok)
@@ -579,11 +583,11 @@ static bool _emitter_emit_render(
     uint64_t bgl_id = 0;
     uint64_t bg_id  = 0;
 
-    /* MVP UBO bind group IDs — used for GLSL point/primitive path. */
+    /* MVP UBO bind group IDs — used for GLSL point/primitive/image paths. */
     uint64_t mvp_bgl_id = 0;
     uint64_t mvp_bg_id  = 0;
     bool uses_mvp =
-        (is_point || is_primitive) &&
+        (is_point || is_primitive || is_image) &&
         cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL;
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
@@ -808,7 +812,7 @@ static bool _emitter_emit_render(
         }
         else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         {
-            /* binding0=position(vec3), binding1=texcoords(vec2); bgl=img */
+            /* binding0=position(vec3), binding1=texcoords(vec2); set0=MVP, set1=image */
             uint32_t strides[2]   = {3*sizeof(float), 2*sizeof(float)};
             uint32_t bindings[2]  = {0, 1};
             uint32_t locations[2] = {0, 1};
@@ -819,7 +823,10 @@ static bool _emitter_emit_render(
                            topology,
                            2, strides,
                            2, bindings, locations, formats, offsets);
-            ok = ok && dvz_drp2_stream_pipeline_set_bind_group_layout(stream, bgl_id);
+            if (ok && uses_mvp && mvp_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            if (ok && bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, bgl_id);
         }
         else
         {
@@ -854,10 +861,10 @@ static bool _emitter_emit_render(
              render->u.render.desc.y, render->u.render.desc.width, render->u.render.desc.height,
              clear) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
-    if (ok && is_image && bg_id != 0)
-        ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, bg_id);
     if (ok && uses_mvp && mvp_bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, mvp_bg_id);
+    if (ok && is_image && bg_id != 0)
+        ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, bg_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     ok = ok && dvz_drp2_stream_draw(stream, render_pass_id, vertex_count, 1, 0, 0) &&

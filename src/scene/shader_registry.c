@@ -155,13 +155,16 @@
 /* Image visual: position (vec3) + texcoords (vec2); samples a 2D RGBA8 texture. */
 #define DRP2_IMAGE_VERTEX_GLSL                                                                  \
     "#version 450\n"                                                                            \
+    "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec2 inUV;\n"                                                         \
     "layout(location=0)out vec2 fragUV;\n"                                                      \
-    "void main(){gl_Position=vec4(inPos,1.0);fragUV=inUV;}\n"
+    "vec4 transform(vec3 pos){vec4 tr=mvp.proj*mvp.view*mvp.model*vec4(pos,1.0);"              \
+    "tr.y=-tr.y;tr.z=0.5*(tr.z+tr.w);return tr;}\n"                                            \
+    "void main(){gl_Position=transform(inPos);fragUV=inUV;}\n"
 #define DRP2_IMAGE_FRAGMENT_GLSL                                                                \
     "#version 450\n"                                                                            \
-    "layout(set=0,binding=0)uniform sampler2D tex;\n"                                           \
+    "layout(set=1,binding=0)uniform sampler2D tex;\n"                                           \
     "layout(location=0)in vec2 fragUV;\n"                                                       \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=texture(tex,fragUV);}\n"

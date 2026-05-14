@@ -94,7 +94,7 @@ typedef struct DvzSceneVisualBindDesc
 {
     bool uses_mvp_set0;
     bool uses_fixed_mvp;
-    bool uses_image_set0;
+    bool uses_image_set1;
     uint64_t image_texture_id;
     bool uses_shading_set1;
     uint64_t shading_buffer_id;

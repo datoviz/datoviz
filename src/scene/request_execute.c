@@ -37,6 +37,9 @@ static bool _scene_execute_readback_plan(
     const DvzScene* scene, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
     DvzFramePlan* plan, DvzFramePlanEmitter* emitter, uint8_t rgba[4]);
 
+static bool _scene_image_probe_sample_cpu(
+    DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4]);
+
 static bool _scene_process_point_pick_request(
     DvzFigure* figure, DvzDrp2Runtime* runtime, const DvzCapabilitySnapshot* caps,
     const DvzPendingPickRequest* pending);
@@ -153,7 +156,6 @@ static bool _scene_execute_readback_plan(
         log_error("scene readback DRP2 emission failed");
         return false;
     }
-
     uint64_t rb_id = dvz_frame_plan_emitter_object_id(emitter, "_rb");
     bool ok = false;
     if (rb_id == 0)
@@ -186,6 +188,74 @@ static bool _scene_execute_readback_plan(
     }
     dvz_drp2_stream_destroy(stream);
     return ok;
+}
+
+
+/**
+ * Sample the retained image texture at one panel-local request coordinate.
+ *
+ * @param visual the image visual
+ * @param request_ndc the request coordinate in panel-local NDC
+ * @param rgba the output RGBA8 value
+ * @return true when a retained texture value was sampled
+ */
+static bool _scene_image_probe_sample_cpu(
+    DvzVisual* visual, const vec2 request_ndc, uint8_t rgba[4])
+{
+    ANN(visual);
+    ANN(request_ndc);
+    ANN(rgba);
+
+    const uint8_t* data = NULL;
+    uint32_t width = 0;
+    uint32_t height = 0;
+    if (visual->field != NULL && visual->field->data != NULL &&
+        visual->field->desc.format == DVZ_FIELD_FORMAT_RGBA8_UNORM)
+    {
+        data = (const uint8_t*)visual->field->data;
+        width = visual->field->desc.width;
+        height = visual->field->desc.height;
+    }
+    else
+    {
+        DvzFieldRegion upload_region = {0};
+        const void* upload_data = NULL;
+        if (!_scene_prepare_image_texture(visual, &upload_region, &upload_data) ||
+            visual->texture.rgba == NULL)
+            return false;
+        (void)upload_region;
+        (void)upload_data;
+        data = (const uint8_t*)visual->texture.rgba;
+        width = visual->texture.width;
+        height = visual->texture.height;
+    }
+    if (data == NULL || width == 0 || height == 0)
+        return false;
+
+    double u = 0.5 * ((double)request_ndc[0] + 1.0);
+    double v = 0.5 * (1.0 - (double)request_ndc[1]);
+    if (u < 0.0)
+        u = 0.0;
+    if (v < 0.0)
+        v = 0.0;
+    if (u >= 1.0)
+        u = 1.0 - 1e-12;
+    if (v >= 1.0)
+        v = 1.0 - 1e-12;
+
+    uint32_t x = (uint32_t)(u * (double)width);
+    uint32_t y = (uint32_t)(v * (double)height);
+    if (x >= width)
+        x = width - 1;
+    if (y >= height)
+        y = height - 1;
+
+    uint64_t index = 4 * ((uint64_t)y * width + x);
+    rgba[0] = data[index + 0];
+    rgba[1] = data[index + 1];
+    rgba[2] = data[index + 2];
+    rgba[3] = data[index + 3];
+    return true;
 }
 
 
@@ -311,6 +381,8 @@ static bool _scene_process_image_probe_request(
         uint8_t rgba[4] = {0};
         bool readback_ok = _scene_execute_readback_plan(
             scene, runtime, caps, probe_plan.plan, probe_plan.emitter, rgba);
+        if (readback_ok)
+            (void)_scene_image_probe_sample_cpu(visual, request_ndc, rgba);
         bool hit = readback_ok && rgba[3] > 0;
         if (readback_ok && rgba[3] == 0)
         {

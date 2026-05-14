@@ -2069,6 +2069,84 @@ int test_scene_image_emit(TstSuite* suite, TstItem* item)
 }
 
 
+int test_scene_image_emit_uses_mvp_and_texture_sets(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_image(scene, 0);
+    AT(visual != NULL);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    uint8_t pixels[4 * 4 * 4];
+    dvz_memset(pixels, sizeof(pixels), 128, sizeof(pixels));
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_pipeline = false;
+    bool found_mvp_bind = false;
+    bool found_texture_bind = false;
+    uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL)
+            continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            found_pipeline = true;
+            AT(cmd->u.create_render_pipeline.bind_group_layout_id != 0);
+            AT(cmd->u.create_render_pipeline.bind_group_layout_id2 != 0);
+        }
+        else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
+        {
+            if (cmd->u.set_bind_group.slot == 0)
+                found_mvp_bind = true;
+            if (cmd->u.set_bind_group.slot == 1)
+                found_texture_bind = true;
+        }
+    }
+    AT(found_pipeline);
+    AT(found_mvp_bind);
+    AT(found_texture_bind);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Check that an empty panel emits an explicit clear-only render pass.
@@ -2973,6 +3051,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_emit);
     TEST_SIMPLE(test_scene_path_emit);
     TEST_SIMPLE(test_scene_image_emit);
+    TEST_SIMPLE(test_scene_image_emit_uses_mvp_and_texture_sets);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_indexed_primitive_shading_updates_runtime);

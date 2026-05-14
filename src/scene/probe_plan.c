@@ -111,17 +111,27 @@ bool _scene_image_probe_plan(
         return false;
     }
 
-    vec2 target_ndc = {-0.75f, -0.75f};
-    /* Image shaders write positions directly, without the shared Vulkan-NDC Y flip. */
-    vec2 image_request_ndc = {request_ndc[0], -request_ndc[1]};
-    vec2 delta = {
-        image_request_ndc[0] - target_ndc[0], image_request_ndc[1] - target_ndc[1]};
+    vec2* probe_texcoords = (vec2*)dvz_calloc(uv_attr->item_count, sizeof(vec2));
+    if (probe_texcoords == NULL)
+    {
+        log_error("image probe request texcoord buffer allocation failed");
+        dvz_free(probe_positions);
+        return false;
+    }
+
+    vec2 target_ndc = {-0.75f, 0.75f};
+    vec2 target_uv = {0.5f * (target_ndc[0] + 1.0f), 0.5f * (1.0f - target_ndc[1])};
+    vec2 request_uv = {0.5f * (request_ndc[0] + 1.0f), 0.5f * (1.0f - request_ndc[1])};
+    vec2 delta_uv = {request_uv[0] - target_uv[0], request_uv[1] - target_uv[1]};
     const vec3* source_positions = (const vec3*)pos_attr->data;
+    const vec2* source_texcoords = (const vec2*)uv_attr->data;
     for (uint64_t j = 0; j < pos_attr->item_count; j++)
     {
-        probe_positions[j][0] = source_positions[j][0] - delta[0];
-        probe_positions[j][1] = source_positions[j][1] - delta[1];
+        probe_positions[j][0] = source_positions[j][0];
+        probe_positions[j][1] = source_positions[j][1];
         probe_positions[j][2] = source_positions[j][2];
+        probe_texcoords[j][0] = source_texcoords[j][0] + delta_uv[0];
+        probe_texcoords[j][1] = source_texcoords[j][1] + delta_uv[1];
     }
 
     DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
@@ -130,7 +140,7 @@ bool _scene_image_probe_plan(
               dvz_frame_plan_upload_bytes(
                   plan, "probe0_position", 0, position_bytes, "position", probe_positions) &&
               dvz_frame_plan_upload_bytes(
-                  plan, "probe0_texcoords", 0, texcoord_bytes, "texcoords", uv_attr->data) &&
+                  plan, "probe0_texcoords", 0, texcoord_bytes, "texcoords", probe_texcoords) &&
               dvz_frame_plan_upload_bytes(
                   plan, "probe0_texture", 0, texture_bytes, "texture", texture_data) &&
               dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&
@@ -144,7 +154,9 @@ bool _scene_image_probe_plan(
     if (render != NULL)
     {
         DvzMVP mvp = {0};
-        _scene_request_apply_mvp(panel, request_ndc, &mvp);
+        glm_mat4_identity(mvp.model);
+        glm_mat4_identity(mvp.view);
+        glm_mat4_identity(mvp.proj);
         render->u.render.has_mvp = true;
         render->u.render.apply_mvp = mvp;
         render->u.render.controller_modes[0] = DVZ_CONTROLLER_APPLY;
@@ -157,12 +169,14 @@ bool _scene_image_probe_plan(
         dvz_frame_plan_destroy(plan);
         dvz_frame_plan_emitter_destroy(emitter);
         dvz_free(probe_positions);
+        dvz_free(probe_texcoords);
         return false;
     }
 
     out_plan->plan = plan;
     out_plan->emitter = emitter;
     out_plan->probe_positions = probe_positions;
+    out_plan->probe_texcoords = probe_texcoords;
     return true;
 }
 
@@ -181,7 +195,10 @@ void _scene_probe_plan_destroy(DvzSceneProbePlan* plan)
     dvz_frame_plan_emitter_destroy(plan->emitter);
     if (plan->probe_positions != NULL)
         dvz_free(plan->probe_positions);
+    if (plan->probe_texcoords != NULL)
+        dvz_free(plan->probe_texcoords);
     plan->plan = NULL;
     plan->emitter = NULL;
     plan->probe_positions = NULL;
+    plan->probe_texcoords = NULL;
 }

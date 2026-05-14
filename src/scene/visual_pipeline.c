@@ -862,6 +862,7 @@ bool _scene_visual_pipeline_desc(
         out->locations[1] = 1;
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = VK_FORMAT_R32G32_SFLOAT;
+        out->needs_mvp_layout = true;
         out->needs_image_layout = true;
         return true;
 
@@ -904,7 +905,9 @@ bool _scene_visual_bind_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        out->uses_image_set0 = true;
+        out->uses_mvp_set0 = true;
+        out->uses_fixed_mvp = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_image_set1 = true;
         out->image_texture_id = visual->image_texture_id;
         return true;
 

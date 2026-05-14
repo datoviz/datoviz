@@ -327,6 +327,7 @@ struct DvzSceneProbePlan
     DvzFramePlan* plan;
     DvzFramePlanEmitter* emitter;
     vec3* probe_positions;
+    vec2* probe_texcoords;
 };
 
 
