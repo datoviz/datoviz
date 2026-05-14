@@ -14,15 +14,16 @@ Then open:
 http://localhost:8765/examples/webgpu/
 ```
 
-The default stream is `streams/triangle_offscreen_readback_wgsl.json`. It renders a triangle to an
-offscreen texture, copies the texture to a readback buffer, then renders the same triangle to the
-visible canvas.
+The default stream is `streams/depth_overlap_wgsl.json`. It draws two overlapping triangles with a
+depth attachment. The smaller green triangle is nearer and should appear in front of the larger red
+triangle.
 
 The earlier smoke streams remain available:
 
 ```text
 http://localhost:8765/examples/webgpu/?stream=hello_triangle_wgsl
 http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
+http://localhost:8765/examples/webgpu/?stream=triangle_offscreen_readback_wgsl
 ```
 
 All streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.
@@ -47,5 +48,12 @@ Supported commands in this first slice:
 - `QueueSubmit`
 - `QueueSubmitReply` is accepted as a no-op fixture/reply marker.
 
-The next useful slice is depth support: a depth texture attachment, `depth_stencil` pipeline state,
-and a small two-triangle or cube-style ordering smoke.
+Manual checks:
+
+- Default stream: the smaller green triangle must appear in front of the larger red triangle where
+  they overlap.
+- Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
+- No-buffer and vertex-buffer streams should still render a single RGB triangle.
+
+The next useful slice is indexed drawing: `SetIndexBuffer`, `DrawIndexed`, and a small indexed quad
+or cube-face stream.

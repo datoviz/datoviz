@@ -47,6 +47,25 @@ function mapTopology(topology) {
 
 
 
+function mapDepthCompare(compare) {
+  if (
+    compare === undefined ||
+    compare === "never" ||
+    compare === "less" ||
+    compare === "equal" ||
+    compare === "less-equal" ||
+    compare === "greater" ||
+    compare === "not-equal" ||
+    compare === "greater-equal" ||
+    compare === "always"
+  ) {
+    return compare ?? "less";
+  }
+  throw new Error(`unsupported depth compare: ${compare}`);
+}
+
+
+
 function mapBufferUsage(usage) {
   const items = usage ?? [];
   let flags = 0;
@@ -229,6 +248,20 @@ function makeVertexBuffers(command) {
 
 
 
+function makeDepthStencil(command) {
+  const state = command.depth_stencil;
+  if (state === undefined) {
+    return undefined;
+  }
+  return {
+    format: mapTextureFormat(required(state.format, "depth_stencil needs format")),
+    depthWriteEnabled: state.depth_write_enabled ?? false,
+    depthCompare: mapDepthCompare(state.depth_compare),
+  };
+}
+
+
+
 function clearValue(value) {
   if (value === undefined) {
     return { r: 0, g: 0, b: 0, a: 1 };
@@ -239,6 +272,24 @@ function clearValue(value) {
     b: value.b ?? 0,
     a: value.a ?? 1,
   };
+}
+
+
+
+function canvasExtent() {
+  return {
+    width: Math.max(1, canvas.width),
+    height: Math.max(1, canvas.height),
+  };
+}
+
+
+
+function resolveTextureExtentValue(value, axis) {
+  if (value === "canvas") {
+    return canvasExtent()[axis];
+  }
+  return required(value, `CreateTexture needs ${axis}`);
 }
 
 
@@ -320,7 +371,26 @@ function makePipeline(device, canvasFormat, shaders, command) {
     primitive: {
       topology: mapTopology(command.topology),
     },
+    depthStencil: makeDepthStencil(command),
   });
+}
+
+
+
+function makeDepthStencilAttachment(textures, attachment) {
+  if (attachment === undefined) {
+    return undefined;
+  }
+  const texture = required(
+    textures.get(attachment.texture_id),
+    `unknown depth texture ${attachment.texture_id}`,
+  );
+  return {
+    view: texture.createView(),
+    depthLoadOp: mapLoadOp(attachment.depth_load_op),
+    depthStoreOp: mapStoreOp(attachment.depth_store_op),
+    depthClearValue: attachment.depth_clear_value ?? 1,
+  };
 }
 
 
@@ -352,6 +422,10 @@ function beginRenderPass(context, textures, encoders, command) {
         clearValue: clearValue(attachment.clear_value),
       },
     ],
+    depthStencilAttachment: makeDepthStencilAttachment(
+      textures,
+      command.depth_stencil_attachment,
+    ),
   });
 }
 
@@ -404,8 +478,8 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
           device.createTexture({
             label: command.label,
             size: {
-              width: required(command.width, "CreateTexture needs width"),
-              height: required(command.height, "CreateTexture needs height"),
+              width: resolveTextureExtentValue(command.width, "width"),
+              height: resolveTextureExtentValue(command.height, "height"),
               depthOrArrayLayers: command.depth ?? 1,
             },
             mipLevelCount: command.mip_level_count ?? 1,
@@ -585,7 +659,7 @@ async function main() {
   try {
     const { device, context, format } = await initWebGPU();
     const params = new URLSearchParams(window.location.search);
-    const streamName = params.get("stream") ?? "triangle_offscreen_readback_wgsl";
+    const streamName = params.get("stream") ?? "depth_overlap_wgsl";
     const streamPath = `./streams/${streamName}.json`;
     streamNameEl.textContent = streamPath.slice(2);
     const response = await fetch(streamPath, { cache: "no-cache" });
@@ -594,16 +668,32 @@ async function main() {
     }
     const stream = await response.json();
 
+    let rendering = false;
+    let rerenderRequested = false;
+
     const render = async () => {
-      resizeCanvasToDisplaySize(device, context, format);
-      const result = await executeDrp2Stream(device, context, format, stream);
-      if (result.readbacks.length > 0) {
-        const readback = result.readbacks[0];
-        setStatus(
-          `Rendered ${stream.name}; readback nonzero=${readback.summary.nonzero}`,
-        );
-      } else {
-        setStatus(`Rendered ${stream.name}`);
+      if (rendering) {
+        rerenderRequested = true;
+        return;
+      }
+
+      rendering = true;
+      try {
+        do {
+          rerenderRequested = false;
+          resizeCanvasToDisplaySize(device, context, format);
+          const result = await executeDrp2Stream(device, context, format, stream);
+          if (result.readbacks.length > 0) {
+            const readback = result.readbacks[0];
+            setStatus(
+              `Rendered ${stream.name}; readback nonzero=${readback.summary.nonzero}`,
+            );
+          } else {
+            setStatus(`Rendered ${stream.name}; readbacks=0`);
+          }
+        } while (rerenderRequested);
+      } finally {
+        rendering = false;
       }
     };
 
