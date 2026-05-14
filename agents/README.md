@@ -14,6 +14,7 @@ Active execution notes:
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
 2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+4. [now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
 
 Current branch emphasis as of `2026-05-13`: native scene -> DRP2 -> app is active for retained
 2D/early-3D rendering, pick/probe request handling, and app trace/status diagnostics. Treat broad
@@ -51,6 +52,8 @@ If resuming work on the branch:
    when touching the completed first scene -> DRP2 -> runtime slice.
 7. Treat [later/DRP2_WEBGPU_ROADMAP.md](/home/cyrille/GIT/Viz/datoviz/agents/later/DRP2_WEBGPU_ROADMAP.md)
    and [later/SPLIT.md](/home/cyrille/GIT/Viz/datoviz/agents/later/SPLIT.md) as backlog.
+8. Read [now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
+   before moving scene-owned built-in shaders toward WebGPU/WGSL emission.
 
 
 ## Directory Layout
@@ -64,6 +67,7 @@ header-state note, not an instruction to draft another broad API surface.
 1. [now/V0_4_NEXT_STEPS.md](/home/cyrille/GIT/Viz/datoviz/agents/now/V0_4_NEXT_STEPS.md)
 2. [now/DRP2_SPEC.md](/home/cyrille/GIT/Viz/datoviz/agents/now/DRP2_SPEC.md)
 3. [now/SCENE_PUBLIC_API_HEADER_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_PUBLIC_API_HEADER_PLAN.md)
+4. [now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/SCENE_WGSL_SHADER_VARIANTS_PLAN.md)
 
 ### `done/`
 
