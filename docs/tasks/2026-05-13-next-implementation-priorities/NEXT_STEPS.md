@@ -6,33 +6,36 @@ implementation briefs.
 
 ## 1. Native 3D / Manual Smoke Slice
 
-Goal: create one strong native 3D example that pressures mesh or lit primitive rendering through the
-current scene -> DRP2 -> app path.
+Goal: keep one strong native 3D smoke example that pressures mesh or lit primitive rendering through
+the current scene -> DRP2 -> app path.
 
-First deliverable:
+Current status:
 
-1. add a GLFW example such as `examples/c/hello_3d_arcball_depth_glfw.c`,
-2. use an existing scene visual first, preferably `dvz_mesh()` or indexed/lit `dvz_primitive()`,
-3. attach `dvz_panel_set_arcball()` through `dvz_app_window_input()`,
-4. include overlapping geometry that visibly requires depth testing,
-5. exercise window resize by relying on app figure-size synchronization,
-6. register `dvz_app_window_set_frame_callback()` for a small per-frame mutation or status hook,
-7. support capture after at least one rendered frame through `dvz_app_window_capture_png()`.
+1. `examples/c/hello_mesh_glfw.c` already covers the intended native 3D example shape:
+   `dvz_mesh()`, indexed cube geometry, per-face normals/colours, depth testing, perspective camera,
+   `dvz_panel_set_arcball()` through `dvz_app_window_input()`, app resize synchronization, and
+   `dvz_app_window_set_frame_callback()` for continuous motion.
+2. Do not add a near-duplicate `hello_3d_arcball_depth_glfw.c` unless the example surface is being
+   deliberately reorganized.
+3. The remaining deliverable is to make capture/readback part of the smoke path, either by extending
+   `hello_mesh_glfw` with a small bounded-frame capture option or by documenting a paired capture
+   command that proves the same rendered path produces nonblank pixels.
 
 Files to inspect first:
 
 1. `examples/c/hello_mesh.c`,
-2. `examples/c/hello_point_glfw.c`,
-3. `examples/c/hello_pick_hover_glfw.c`,
-4. `src/scene/tests/test_scene.c` depth and app offscreen tests,
-5. `src/app/app.c`.
+2. `examples/c/hello_mesh_glfw.c`,
+3. `examples/c/hello_point_glfw.c`,
+4. `examples/c/hello_pick_hover_glfw.c`,
+5. `src/scene/tests/app.c` depth and app offscreen tests,
+6. `src/app/app.c`.
 
 Validation:
 
 1. `just build`,
 2. a focused scene/app test that already covers depth, for example
    `just test test_app_offscreen_lit_primitive_depth_orders_overlap`,
-3. manual run of the new GLFW example,
+3. manual run of `./build/examples/c/hello_mesh_glfw`,
 4. manual resize, arcball drag, and capture check,
 5. `git diff --check`.
 
@@ -42,7 +45,7 @@ Exit criteria:
 2. depth ordering is visibly correct,
 3. resize does not desynchronize panel coordinates or picking coordinates,
 4. capture produces a nonblank image,
-5. the example is small enough to remain a smoke test, not a demo framework.
+5. the example remains small enough to be a smoke test, not a demo framework.
 
 
 ## 2. Narrow WebGPU / DRP2 Feasibility Spike

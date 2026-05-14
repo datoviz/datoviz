@@ -83,9 +83,10 @@ In source, the current implementation is intentionally much smaller than the ful
 4. `src/scene/converter.c` for frame-plan to DRP2 emission,
 5. `src/scene/pick_probe.c` for the first point-pick/image-probe request execution path,
 6. `src/app/app.c`, `src/app/status.c`, and `src/app/trace.c` for the small presentation layer,
-7. focused tests in `src/scene/tests/test_scene.c` and `src/app/tests/test_app.c`,
+7. focused tests in `src/scene/tests/` and `src/app/tests/test_app.c`,
 8. C examples `hello_point.c`, `hello_scatter.c`, `hello_triangle.c`, `hello_mesh.c`,
-   `hello_path.c`, `hello_texture.c`, `hello_field.c`, and `hello_pick_hover_glfw.c`.
+   `hello_mesh_glfw.c`, `hello_path.c`, `hello_texture.c`, `hello_field.c`, and
+   `hello_pick_hover_glfw.c`.
 
 
 ## Sequencing
@@ -95,7 +96,8 @@ The correct near-term order is:
 1. harden the active retained scene path with manual app examples covering point/image request
    handling, multi-panel rendering, depth, resizing, and controller state,
 2. keep the DRP2 contract and runtime boundary as the source of truth for scene dependencies,
-3. use one native 3D example to pressure mesh/depth/arcball before adding broad scene features,
+3. use `hello_mesh_glfw.c` as the native 3D pressure example for mesh/depth/arcball before adding
+   broad scene features,
 4. run a narrow WebGPU feasibility spike against the existing DRP2 subset before the visual surface
    becomes much larger,
 5. continue refining scene semantics in `spec/scene/` as implementation reveals concrete needs.

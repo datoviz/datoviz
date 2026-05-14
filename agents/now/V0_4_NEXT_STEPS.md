@@ -83,9 +83,11 @@ Deliver the next implementation slices in this order unless the user redirects:
    only, `test_scene.h` remains the shared declaration header, and the split files are
    `panzoom_arcball.c`, `frame_plan.c`, `frame_plan_emit.c`, `scene_graph.c`, `fields.c`,
    `interaction.c`, `pick_probe.c`, and `app.c`.
-2. Next: native 3D pressure example: one small interactive mesh/primitive scene using arcball, depth,
-   resizing, frame callback, and capture/readback. This is the best next correctness probe for the
-   scene -> DRP2 -> app boundary.
+2. Current next: finish and validate the native 3D pressure smoke around the existing
+   `examples/c/hello_mesh_glfw.c`. That example already exercises an interactive mesh scene with
+   arcball, depth, resize-through-app synchronization, and a frame callback through the scene ->
+   DRP2 -> app boundary. The remaining gap is to make capture/readback part of the documented
+   smoke path instead of adding a duplicate 3D example.
 3. Manual interactive smoke set: point hover picking, image probe, panzoom, arcball, partial texture
    update, and multi-panel examples with clear run commands and expected behavior.
 4. Hygiene/safety pass over the hot scene/DRP2/app files that changed most recently: bounds,
