@@ -30,10 +30,13 @@ scene/DRP2 splits:
    semantic inference from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
 2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
 3. done for the first slice: `scene_emit.c` now owns retained scene -> FramePlan lowering.
-4. done for the retained field/visual/scale slices: `field.c` owns sampled fields, scene buffers,
-   field bindings, scalar/image texture staging, and field dirty-state helpers; `visual.c` owns
-   visual construction, attributes, bindings, dirty ranges, background visuals, and reset helpers;
-   and `scale.c` owns scale, colormap, colorbar, and retained colormap color resolution.
+4. done for the retained field/visual/scale/interaction/text slices: `field.c` owns sampled
+   fields, scene buffers, field bindings, scalar/image texture staging, and field dirty-state
+   helpers; `visual.c` owns visual construction, attributes, bindings, dirty ranges, background
+   visuals, and reset helpers; `scale.c` owns scale, colormap, colorbar, and retained colormap
+   color resolution; `interaction.c` owns interaction policies, selections, link channels, hover
+   state, and pinned readouts; and `text_annotation.c` owns font, text, annotation, and label
+   bookkeeping.
 
 Historical post-converter slices are now landed. The first visual descriptor extraction slice
 landed in `3d4bd920`: `visual_pipeline.c` now owns
@@ -62,15 +65,14 @@ retained paths expose a concrete gap. The next higher-payoff lane is the `scene.
 
 ### 1. Split `src/scene/scene.c`
 
-`scene.c` remains the largest active scene implementation file and owns too many domains
-(~5k lines after the first `scene_emit.c` extraction):
+`scene.c` remains the largest active scene implementation file and owns too many domains:
 
 1. `DvzScene`, `DvzFigure`, and `DvzPanel` lifecycle.
 2. Visual family constructors, visual attributes, bindings, dirty ranges, and background visuals.
 3. Sampled field storage, region validation, scalar field conversion, and image texture staging.
 4. Scale, colormap, and colorbar bookkeeping.
-5. Interaction policies, selections, link channels, hover state, and pinned readouts.
-6. Text and annotation retained-object bookkeeping.
+5. Done: interaction policies, selections, link channels, hover state, and pinned readouts.
+6. Done: text and annotation retained-object bookkeeping.
 7. Done for first slice: scene -> FramePlan upload/render lowering now lives in `scene_emit.c`.
 8. Scene JSON serialization.
 
@@ -80,16 +82,16 @@ Recommended split:
 2. `visual.c` - visual families, attributes, bindings, dirty ranges, and visual reset helpers.
 3. `field.c` - sampled fields, field regions, field geometry, scalar reads, and texture staging.
 4. `scale.c` - scale, colormap, and colorbar retained objects.
-5. `interaction.c` - interaction policy, selection, link channels, hover/readout bookkeeping.
-6. `text_annotation.c` - font, text, annotation, and label retained objects.
+5. Done: `interaction.c` - interaction policy, selection, link channels, hover/readout bookkeeping.
+6. Done: `text_annotation.c` - font, text, annotation, and label retained objects.
 7. Done: `scene_emit.c` - scene -> `DvzFramePlan` lowering only.
 8. `scene_json.c` - `dvz_scene_json()` and scene serialization helpers.
 
-Do this mechanically at first. The field, visual, and scale slices are now split out. The next best
-slice is `interaction.c`, because interaction policies, selections, link channels, hover state, and
-pinned readouts are still mixed into `scene.c` and are already isolated from the FramePlan emitter.
-Keep `_scene.h` as the private shared state header until the split settles, then consider smaller
-private headers by ownership domain.
+Do this mechanically at first. The field, visual, scale, interaction, and text/annotation slices
+are now split out. The next best implementation split is request-path decomposition in
+`pick_probe.c`; the next remaining `scene.c` split is JSON serialization. Keep `_scene.h` as the
+private shared state header until the split settles, then consider smaller private headers by
+ownership domain.
 
 
 ### 2. Make Scene Resource Keys Explicit
@@ -201,11 +203,11 @@ registration helpers.
 2. Done: extract `visual.c` from `scene.c` mechanically for visual constructors, attributes,
    bindings, dirty ranges, background visual helpers, and visual reset/destruction helpers.
 3. Done: extract `scale.c` for scale, colormap, colorbar, and retained colormap color resolution.
-4. Extract `interaction.c` for interaction policies, selections, link channels, hover state, and
-   pinned readouts.
+4. Done: extract `interaction.c` for interaction policies, selections, link channels, hover state,
+   and pinned readouts.
 5. Add emitter diagnostics/overflow/downcast guards only where the extraction or tests expose a
    concrete failure path.
-6. Extract `text_annotation.c`.
+6. Done: extract `text_annotation.c`.
 7. Split `pick_probe.c` after one more focused request-path validation pass.
 8. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
 9. Move JSON builder support to `src/common` and split serializers.

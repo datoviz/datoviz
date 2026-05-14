@@ -46,10 +46,12 @@ generic runtime emission failure. Follow-up commit `9da9d0d6` adds `scene_emit.c
 `scene.c` while leaving retained-object mutation and post-emit dirty-state commits in `scene.c`.
 The retained domain split has continued: `field.c` owns sampled fields, retained scene buffers,
 image field binding, scalar/image texture staging, and field dirty-state helpers; `visual.c` owns
-visual constructors, attributes, bindings, dirty ranges, background visuals, and reset helpers; and
-`scale.c` owns scale, colormap, colorbar, and retained colormap color resolution. The next
-mechanical split target is interaction/request-adjacent retained bookkeeping, followed by
-text/annotation and JSON serialization.
+visual constructors, attributes, bindings, dirty ranges, background visuals, and reset helpers;
+`scale.c` owns scale, colormap, colorbar, and retained colormap color resolution;
+`interaction.c` owns interaction policies, selections, link channels, hover state, and pinned
+readouts; and `text_annotation.c` owns retained font, text, annotation, and label bookkeeping. The
+next mechanical split targets are request-path decomposition (`pick_probe.c`) and JSON
+serialization.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
