@@ -1990,7 +1990,7 @@ int test_scene_image_emit(TstSuite* suite, TstItem* item)
         {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
-    memset(pixels, 128, sizeof(pixels));
+    dvz_memset(pixels, sizeof(pixels), 128, sizeof(pixels));
 
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);

@@ -304,6 +304,8 @@ int test_scene_partial_update_merges_ranges_before_emit(TstSuite* suite, TstItem
 
 int test_scene_multiple_panels_multiple_point_visuals_emit(TstSuite* suite, TstItem* item);
 
+int test_scene_render_pass_scope_excludes_resource_commands(TstSuite* suite, TstItem* item);
+
 int test_scene_interaction_core(TstSuite* suite, TstItem* item);
 
 int test_scene_selection_apply_pick_and_link_keys(TstSuite* suite, TstItem* item);
