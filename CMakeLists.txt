@@ -291,6 +291,38 @@ else()
     set(DVZ_SHADERS_C "")
 endif()
 
+# -------------------------------------------------------------------------------------------------
+# WGSL embedding — browser/WebGPU-ready scene shader variants.
+# -------------------------------------------------------------------------------------------------
+
+set(WGSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/wgsl")
+if(EXISTS "${WGSL_SOURCE_DIR}")
+    file(GLOB WGSL_SOURCES "${WGSL_SOURCE_DIR}/*.wgsl")
+else()
+    set(WGSL_SOURCES "")
+endif()
+
+if(WGSL_SOURCES)
+    set(WGSL_SHADERS_C "${CMAKE_BINARY_DIR}/_wgsl_shaders.c")
+    string(REPLACE ";" "\\;" _wgsl_list_escaped "${WGSL_SOURCES}")
+    add_custom_command(
+        OUTPUT  "${WGSL_SHADERS_C}"
+        COMMAND "${CMAKE_COMMAND}"
+            "-DFILES=${_wgsl_list_escaped}"
+            "-DPREFIX=wgsl"
+            "-DOUTPUT=${WGSL_SHADERS_C}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake"
+        DEPENDS ${WGSL_SOURCES}
+        COMMENT "Embedding WGSL shaders into _wgsl_shaders.c"
+    )
+    add_custom_target(datoviz_wgsl_shaders DEPENDS "${WGSL_SHADERS_C}")
+    set(DVZ_HAS_WGSL_SHADERS 1)
+    set(DVZ_WGSL_SHADERS_C "${WGSL_SHADERS_C}")
+else()
+    set(DVZ_HAS_WGSL_SHADERS 0)
+    set(DVZ_WGSL_SHADERS_C "")
+endif()
+
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(testing)
