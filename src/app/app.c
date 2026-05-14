@@ -51,8 +51,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_APP_MAX_WINDOWS        16
-#define DVZ_APP_CANVAS_TARGET_BASE 0xF000ULL
+#define DVZ_APP_MAX_WINDOWS 16
+
+/* Keep borrowed canvas targets out of the scene emitter's low transient id range. */
+#define DVZ_APP_CANVAS_TARGET_BASE UINT64_C(0xF000000000000000)
 
 
 
