@@ -400,7 +400,7 @@ static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     if (state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
         _vklite_defer_destroy_object(state, object, state->active_borrowed_command_buffer))
         return _drp2_ok();
-    _vklite_destroy_object(object);
+    _vklite_destroy_object_slot(state, object);
     return _drp2_ok();
 }
 
@@ -427,7 +427,7 @@ static DvzDrp2ValidationResult _vklite_destroy_shader_module(
     if (state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
         _vklite_defer_destroy_object(state, object, state->active_borrowed_command_buffer))
         return _drp2_ok();
-    _vklite_destroy_object(object);
+    _vklite_destroy_object_slot(state, object);
     return _drp2_ok();
 }
 

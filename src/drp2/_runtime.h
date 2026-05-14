@@ -245,6 +245,7 @@ Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id);
 Drp2VkliteObject* _vklite_add(
     Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind);
 void _vklite_destroy_object(Drp2VkliteObject* object);
+void _vklite_destroy_object_slot(Drp2VkliteState* state, Drp2VkliteObject* object);
 DvzDrp2ValidationResult _vklite_fail_destroy_object(
     Drp2VkliteObject* object, DvzDrp2ValidationCode code, uint32_t command_index);
 bool _vklite_attach_frame_target(

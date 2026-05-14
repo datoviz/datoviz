@@ -1682,6 +1682,51 @@ int test_drp2_runtime_vklite_deferred_destroy_flush(TstSuite* suite, TstItem* it
     _vklite_state_cleanup(&state);
     return 0;
 }
+
+
+int test_drp2_runtime_vklite_trims_destroyed_tail_slots(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    Drp2VkliteState state = {0};
+    Drp2VkliteObject* persistent = _vklite_add(&state, 1, DRP2_OBJECT_BUFFER);
+    ANN(persistent);
+    Drp2VkliteObject* transient = _vklite_add(&state, 2, DRP2_OBJECT_RENDER_PASS);
+    ANN(transient);
+    AT(state.count == 2);
+
+    _vklite_destroy_object_slot(&state, transient);
+    AT(state.count == 1);
+    AT(state.objects[0].id == 1);
+    AT(state.objects[1].id == 0);
+
+    Drp2VkliteObject* inner = _vklite_add(&state, 3, DRP2_OBJECT_TEXTURE);
+    ANN(inner);
+    Drp2VkliteObject* tail = _vklite_add(&state, 4, DRP2_OBJECT_SHADER_VERTEX);
+    ANN(tail);
+    AT(state.count == 3);
+    _vklite_destroy_object_slot(&state, inner);
+    AT(state.count == 3);
+    AT(state.objects[1].destroyed);
+    _vklite_destroy_object_slot(&state, tail);
+    AT(state.count == 1);
+
+    Drp2VkliteObject* deferred = _vklite_add(&state, 5, DRP2_OBJECT_TEXTURE);
+    ANN(deferred);
+    VkCommandBuffer command_buffer = (VkCommandBuffer)(uintptr_t)0x123;
+    AT(state.count == 2);
+    AT(_vklite_defer_destroy_object(&state, deferred, command_buffer));
+    AT(state.count == 1);
+    AT(state.deferred_count == 1);
+    AT(state.deferred[0].object.id == 5);
+
+    _vklite_flush_deferred_for_command_buffer(&state, command_buffer);
+    AT(state.deferred_count == 0);
+
+    _vklite_state_cleanup(&state);
+    return 0;
+}
 #endif
 
 
@@ -2932,6 +2977,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_frame_lifecycle_edge_cases);
 #if DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_drp2_runtime_vklite_deferred_destroy_flush);
+    TEST_SIMPLE(test_drp2_runtime_vklite_trims_destroyed_tail_slots);
 #endif
     TEST_SIMPLE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE

@@ -66,6 +66,24 @@ static bool _vklite_deferred_ensure_capacity(Drp2VkliteState* state)
 }
 
 
+/**
+ * Remove destroyed objects from the end of a vklite object table.
+ *
+ * @param state vklite runtime state
+ */
+static void _vklite_trim_destroyed_tail(Drp2VkliteState* state)
+{
+    ANN(state);
+    while (state->count > 0 && state->objects[state->count - 1].destroyed)
+    {
+        state->count--;
+        dvz_memset(
+            &state->objects[state->count], sizeof(Drp2VkliteObject), 0,
+            sizeof(Drp2VkliteObject));
+    }
+}
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -263,6 +281,20 @@ void _vklite_destroy_object(Drp2VkliteObject* object)
 }
 
 
+/**
+ * Destroy resources owned by one vklite object table slot and trim trailing destroyed slots.
+ *
+ * @param state vklite runtime state
+ * @param object vklite object slot to destroy
+ */
+void _vklite_destroy_object_slot(Drp2VkliteState* state, Drp2VkliteObject* object)
+{
+    ANN(state);
+    _vklite_destroy_object(object);
+    _vklite_trim_destroyed_tail(state);
+}
+
+
 
 /**
  * Return the image view associated with a vklite texture object.
@@ -336,6 +368,7 @@ bool _vklite_defer_destroy_object(
     deferred->object = *object;
     dvz_memset(object, sizeof(Drp2VkliteObject), 0, sizeof(Drp2VkliteObject));
     object->destroyed = true;
+    _vklite_trim_destroyed_tail(state);
     return true;
 }
 

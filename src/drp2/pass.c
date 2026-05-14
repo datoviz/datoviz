@@ -688,11 +688,11 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
             _vklite_owned_commands_end_submit(pass->commands, command_index);
         if (!result.ok)
         {
-            _vklite_destroy_object(pass);
+            _vklite_destroy_object_slot(state, pass);
             return result;
         }
     }
-    _vklite_destroy_object(pass);
+    _vklite_destroy_object_slot(state, pass);
     return _drp2_ok();
 }
 
@@ -716,10 +716,10 @@ _vklite_end_compute_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comm
     DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(pass->commands, command_index);
     if (!result.ok)
     {
-        _vklite_destroy_object(pass);
+        _vklite_destroy_object_slot(state, pass);
         return result;
     }
-    _vklite_destroy_object(pass);
+    _vklite_destroy_object_slot(state, pass);
     return _drp2_ok();
 }
 
