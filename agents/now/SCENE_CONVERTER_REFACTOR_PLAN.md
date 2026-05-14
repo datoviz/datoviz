@@ -44,8 +44,12 @@ typed visual metadata so retained FramePlan failures report the missing typed re
 generic runtime emission failure. Follow-up commit `9da9d0d6` adds `scene_emit.c` /
 `_scene_emit.h`, moving the retained scene -> FramePlan upload/render lowering helpers out of
 `scene.c` while leaving retained-object mutation and post-emit dirty-state commits in `scene.c`.
-The next mechanical split has started with `field.c`, which now owns sampled fields, retained
-scene buffers, image field binding, scalar/image texture staging, and field dirty-state helpers.
+The retained domain split has continued: `field.c` owns sampled fields, retained scene buffers,
+image field binding, scalar/image texture staging, and field dirty-state helpers; `visual.c` owns
+visual constructors, attributes, bindings, dirty ranges, background visuals, and reset helpers; and
+`scale.c` owns scale, colormap, colorbar, and retained colormap color resolution. The next
+mechanical split target is interaction/request-adjacent retained bookkeeping, followed by
+text/annotation and JSON serialization.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.

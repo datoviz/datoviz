@@ -30,8 +30,10 @@ scene/DRP2 splits:
    semantic inference from keys such as `v%u_%s`, `b%u`, `v%u_texture`, and `v%u#index=b%u`.
 2. continue hardening persistent emitter/resource diagnostics as new failure paths are exposed,
 3. done for the first slice: `scene_emit.c` now owns retained scene -> FramePlan lowering.
-4. in progress for the next slice: `field.c` owns sampled fields, scene buffers, field bindings,
-   scalar/image texture staging, and field dirty-state helpers.
+4. done for the retained field/visual/scale slices: `field.c` owns sampled fields, scene buffers,
+   field bindings, scalar/image texture staging, and field dirty-state helpers; `visual.c` owns
+   visual construction, attributes, bindings, dirty ranges, background visuals, and reset helpers;
+   and `scale.c` owns scale, colormap, colorbar, and retained colormap color resolution.
 
 Historical post-converter slices are now landed. The first visual descriptor extraction slice
 landed in `3d4bd920`: `visual_pipeline.c` now owns
@@ -83,10 +85,11 @@ Recommended split:
 7. Done: `scene_emit.c` - scene -> `DvzFramePlan` lowering only.
 8. `scene_json.c` - `dvz_scene_json()` and scene serialization helpers.
 
-Do this mechanically at first. The field slice has started; the next best slice is `visual.c`,
-because visual constructors, attributes, bindings, dirty ranges, and reset helpers are still mixed
-into `scene.c`. Keep `_scene.h` as the private shared state header until the split settles, then
-consider smaller private headers by ownership domain.
+Do this mechanically at first. The field, visual, and scale slices are now split out. The next best
+slice is `interaction.c`, because interaction policies, selections, link channels, hover state, and
+pinned readouts are still mixed into `scene.c` and are already isolated from the FramePlan emitter.
+Keep `_scene.h` as the private shared state header until the split settles, then consider smaller
+private headers by ownership domain.
 
 
 ### 2. Make Scene Resource Keys Explicit
@@ -193,17 +196,20 @@ registration helpers.
 
 ## Suggested Order
 
-1. Done for the current slice: extract `field.c` for sampled fields, retained scene buffers,
-   regions, scalar conversion, image texture staging, and field dirty-state helpers.
-2. Extract `visual.c` from `scene.c` mechanically: visual constructors, attributes, bindings, dirty
-   ranges, background visual helpers, and visual reset/destruction helpers.
-3. Add emitter diagnostics/overflow/downcast guards only where the extraction or tests expose a
+1. Done: extract `field.c` for sampled fields, retained scene buffers, regions, scalar conversion,
+   image texture staging, and field dirty-state helpers.
+2. Done: extract `visual.c` from `scene.c` mechanically for visual constructors, attributes,
+   bindings, dirty ranges, background visual helpers, and visual reset/destruction helpers.
+3. Done: extract `scale.c` for scale, colormap, colorbar, and retained colormap color resolution.
+4. Extract `interaction.c` for interaction policies, selections, link channels, hover state, and
+   pinned readouts.
+5. Add emitter diagnostics/overflow/downcast guards only where the extraction or tests expose a
    concrete failure path.
-4. Extract `scale.c`, `interaction.c`, and `text_annotation.c`.
-5. Split `pick_probe.c` after one more focused request-path validation pass.
-6. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-7. Move JSON builder support to `src/common` and split serializers.
-8. Split scene tests in parallel with the implementation files they cover.
+6. Extract `text_annotation.c`.
+7. Split `pick_probe.c` after one more focused request-path validation pass.
+8. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+9. Move JSON builder support to `src/common` and split serializers.
+10. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance
