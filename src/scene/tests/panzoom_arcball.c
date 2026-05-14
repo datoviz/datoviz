@@ -261,6 +261,80 @@ int test_arcball_end_commits_rotation(TstSuite* suite, TstItem* item)
 }
 
 
+int test_arcball_rotate_axis_is_incremental(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 800.0f, 0);
+
+    dvz_arcball_set(arc, (vec3){0.4f, 0.0f, 0.2f});
+    mat4 model_before = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model_before);
+
+    dvz_arcball_rotate_axis(arc, 0.25f, (vec3){0.0f, 1.0f, 0.0f});
+
+    mat4 model_after = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model_after);
+    AT(memcmp(model_before, model_after, sizeof(mat4)) != 0);
+
+    dvz_arcball_rotate(arc, (vec2){0.35f, 0.15f}, (vec2){-0.15f, -0.10f});
+    dvz_arcball_end(arc);
+    mat4 model_dragged = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model_dragged);
+
+    dvz_arcball_rotate_axis(arc, 0.25f, (vec3){0.0f, 1.0f, 0.0f});
+
+    mat4 model_resumed = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(arc, model_resumed);
+    AT(memcmp(model_dragged, model_resumed, sizeof(mat4)) != 0);
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+int test_arcball_interaction_state(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzArcball* arc = dvz_arcball(800.0f, 600.0f, 0);
+    ANN(arc);
+
+    AT(!dvz_arcball_is_interacting(NULL));
+    AT(!dvz_arcball_is_interacting(arc));
+
+    DvzPointerEvent press = {.type = DVZ_POINTER_EVENT_PRESS, .button = DVZ_POINTER_BUTTON_LEFT};
+    AT(dvz_arcball_pointer(arc, &press));
+    AT(dvz_arcball_is_interacting(arc));
+
+    DvzPointerEvent release = {
+        .type = DVZ_POINTER_EVENT_RELEASE,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+    };
+    AT(dvz_arcball_pointer(arc, &release));
+    AT(!dvz_arcball_is_interacting(arc));
+
+    DvzPointerEvent drag_start = {
+        .type = DVZ_POINTER_EVENT_DRAG_START,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+    };
+    AT(dvz_arcball_pointer(arc, &drag_start));
+    AT(dvz_arcball_is_interacting(arc));
+
+    DvzPointerEvent drag_stop = {
+        .type = DVZ_POINTER_EVENT_DRAG_STOP,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+    };
+    AT(dvz_arcball_pointer(arc, &drag_stop));
+    AT(!dvz_arcball_is_interacting(arc));
+
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
 /*************************************************************************************************/
 /*  Camera tests                                                                                 */
 int test_arcball_double_click_resets(TstSuite* suite, TstItem* item)
@@ -309,6 +383,8 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TEST_SIMPLE(test_arcball_create_reset);
     TEST_SIMPLE(test_arcball_rotate_produces_nonidentity_model);
     TEST_SIMPLE(test_arcball_end_commits_rotation);
+    TEST_SIMPLE(test_arcball_rotate_axis_is_incremental);
+    TEST_SIMPLE(test_arcball_interaction_state);
     TEST_SIMPLE(test_arcball_double_click_resets);
 
     TEST_SIMPLE(test_scene_camera_arcball_mvp_composition);

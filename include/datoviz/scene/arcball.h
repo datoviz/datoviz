@@ -64,6 +64,7 @@ struct DvzArcball
     vec3 init;       /* initial Euler angles (used by reset) */
     vec4 rotation;   /* in-flight quaternion (while dragging); same layout as cglm versor */
     vec3 constrain;  /* constrain axis; null if no constraint */
+    bool interacting; /* true while the pointer is controlling the arcball */
 };
 
 
@@ -103,6 +104,12 @@ DVZ_EXPORT void dvz_arcball_reset(DvzArcball* arcball);
  * Set the orientation directly from Euler angles.
  */
 DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
+
+
+/**
+ * Apply an incremental rotation around an axis to the accumulated orientation.
+ */
+DVZ_EXPORT void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis);
 
 
 
@@ -153,6 +160,14 @@ DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
  * View and proj matrices are left untouched.
  */
 DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
+
+
+/**
+ * Return whether the pointer is currently interacting with the arcball.
+ *
+ * @returns true while the user is pressing or dragging the arcball
+ */
+DVZ_EXPORT bool dvz_arcball_is_interacting(DvzArcball* arcball);
 
 
 

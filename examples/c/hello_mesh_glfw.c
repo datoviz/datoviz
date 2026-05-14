@@ -7,8 +7,9 @@
 /* hello_mesh_glfw — live rotating lit cube mesh via dvz_mesh + scene/app.
  *
  * Opens a GLFW window showing one indexed cube mesh with explicit face normals, per-face colours,
- * depth testing, and a perspective camera. The frame callback advances the panel arcball so the
- * retained 3D scene exercises the live scene -> DRP2 -> vklite/canvas path continuously.
+ * depth testing, and a perspective camera. The frame callback advances the panel arcball while the
+ * user is idle so the retained 3D scene exercises the live scene -> DRP2 -> vklite/canvas path
+ * continuously without fighting interactive arcball gestures.
  *
  * Build:  just example-c hello_mesh_glfw
  * Run:    ./build/examples/c/hello_mesh_glfw
@@ -52,7 +53,6 @@ typedef struct MeshGlfwState MeshGlfwState;
 struct MeshGlfwState
 {
     DvzArcball* arcball;
-    float angle;
     uint64_t last_timestamp_ns;
 };
 
@@ -175,8 +175,11 @@ static void _mesh_glfw_frame(DvzAppWindow* win, void* user_data)
     if (elapsed > 0.1f)
         elapsed = 0.1f;
 
-    state->angle += ROTATION_SPEED_RAD_PER_SEC * elapsed;
-    dvz_arcball_set(state->arcball, (vec3){+0.65f, state->angle, +0.35f});
+    if (!dvz_arcball_is_interacting(state->arcball))
+    {
+        dvz_arcball_rotate_axis(
+            state->arcball, ROTATION_SPEED_RAD_PER_SEC * elapsed, (vec3){0.0f, 1.0f, 0.0f});
+    }
 }
 
 

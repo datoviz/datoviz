@@ -102,7 +102,7 @@ DvzArcball* dvz_arcball(float width, float height, int flags)
     ASSERT(width > 0);
     ASSERT(height > 0);
 
-    DvzArcball* arcball = (DvzArcball*)calloc(1, sizeof(DvzArcball));
+    DvzArcball* arcball = (DvzArcball*)dvz_calloc(1, sizeof(DvzArcball));
     arcball->flags = flags;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
@@ -126,6 +126,7 @@ void dvz_arcball_reset(DvzArcball* arcball)
     ANN(arcball);
     dvz_arcball_set(arcball, arcball->init);
     glm_quat_identity(arcball->rotation);
+    arcball->interacting = false;
 }
 
 
@@ -134,6 +135,32 @@ void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
 {
     ANN(arcball);
     glm_euler(angles, arcball->mat);
+    glm_quat_identity(arcball->rotation);
+}
+
+
+
+/**
+ * Apply an incremental rotation around an axis to the accumulated orientation.
+ *
+ * @param arcball arcball controller
+ * @param angle rotation angle in radians
+ * @param axis rotation axis
+ */
+void dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis)
+{
+    ANN(arcball);
+    if (angle == 0.0f)
+        return;
+    if (glm_vec3_norm(axis) == 0.0f)
+    {
+        log_warn("null arcball rotation axis, ignoring");
+        return;
+    }
+
+    mat4 rot = GLM_MAT4_IDENTITY_INIT;
+    glm_rotate_make(rot, angle, axis);
+    glm_mat4_mul(rot, arcball->mat, arcball->mat);
 }
 
 
@@ -220,6 +247,21 @@ void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp)
 
 
 
+/**
+ * Return whether the pointer is currently interacting with the arcball.
+ *
+ * @param arcball arcball controller
+ * @return true while the user is pressing or dragging the arcball
+ */
+bool dvz_arcball_is_interacting(DvzArcball* arcball)
+{
+    if (arcball == NULL)
+        return false;
+    return arcball->interacting;
+}
+
+
+
 bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
 {
     ANN(arcball);
@@ -230,9 +272,25 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
 
     switch (ev->type)
     {
+    case DVZ_POINTER_EVENT_PRESS:
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+            arcball->interacting = true;
+        break;
+
+    case DVZ_POINTER_EVENT_RELEASE:
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+            arcball->interacting = false;
+        break;
+
+    case DVZ_POINTER_EVENT_DRAG_START:
+        if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+            arcball->interacting = true;
+        break;
+
     case DVZ_POINTER_EVENT_DRAG:
         if (ev->button == DVZ_POINTER_BUTTON_LEFT)
         {
+            arcball->interacting = true;
             vec2 cur_pos = {
                 -1.0f + 2.0f * ev->pos[0] / width,
                 +1.0f - 2.0f * ev->pos[1] / height,
@@ -247,6 +305,7 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
 
     case DVZ_POINTER_EVENT_DRAG_STOP:
         dvz_arcball_end(arcball);
+        arcball->interacting = false;
         break;
 
     case DVZ_POINTER_EVENT_DOUBLE_CLICK:
