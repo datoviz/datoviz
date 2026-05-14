@@ -641,37 +641,20 @@ static bool _app_trace_print_command_detail(
 
 
 /**
- * Print the full normalized snapshot for one changed DRP2 stream.
- *
- * @param snapshot current normalized snapshot
- * @param command_count emitted command count
- * @param frame_index 0-based frame index for the owning window
- */
-static void _app_trace_stream_normal(
-    const DvzAppTraceSnapshot* snapshot, uint32_t command_count, uint64_t frame_index)
-{
-    ANN(snapshot);
-    dvz_fprintf(
-        stderr, "frame %08" PRIu64 " | changed | %u cmds | %u semantic lines\n",
-        frame_index, command_count, snapshot->count);
-
-    for (uint32_t i = 0; i < snapshot->count; i++)
-        dvz_fprintf(stderr, "  + %s\n", snapshot->lines[i].text);
-}
-
-
-/**
  * Print an expanded human-readable dump for one DRP2 stream.
  *
  * @param stream emitted command stream
  * @param frame_index 0-based frame index for the owning window
+ * @param label short trace label for the frame header
  */
 static void _app_trace_stream_full(
-    const DvzDrp2CommandStream* stream, uint64_t frame_index)
+    const DvzDrp2CommandStream* stream, uint64_t frame_index, const char* label)
 {
     ANN(stream);
+    ANN(label);
     uint32_t command_count = dvz_drp2_stream_count(stream);
-    dvz_fprintf(stderr, "\nframe %08" PRIu64 " | full | %u cmds\n", frame_index, command_count);
+    dvz_fprintf(
+        stderr, "\nframe %08" PRIu64 " | %s | %u cmds\n", frame_index, label, command_count);
     for (uint32_t i = 0; i < command_count; i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
@@ -691,9 +674,9 @@ static void _app_trace_stream_full(
 /**
  * Print or refresh the live DRP2 trace for one emitted stream.
  *
- * In normal mode, changed frames print semantic additions/removals while unchanged frames rewrite
- * one in-place status line without scrolling. In full mode, every frame prints an expanded
- * human-readable command list.
+ * In normal mode, changed frames print one expanded human-readable command list while unchanged
+ * frames rewrite one in-place status line without scrolling. In full mode, every frame prints an
+ * expanded command list.
  *
  * @param win app-window owning the trace state
  * @param stream the emitted command stream
@@ -727,7 +710,7 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
 
     if (mode == DVZ_APP_TRACE_FULL)
     {
-        _app_trace_stream_full(stream, win->frame_index);
+        _app_trace_stream_full(stream, win->frame_index, "full");
         _dvz_app_status_trace(
             &win->app->status, win->frame_index, command_count, snapshot.count, true);
         _dvz_app_status_render(&win->app->status);
@@ -736,7 +719,7 @@ static void _app_trace_stream(DvzAppWindow* win, const DvzDrp2CommandStream* str
     {
         if (plan.event_kind == DVZ_APP_TRACE_EVENT_CHANGED)
         {
-            _app_trace_stream_normal(&snapshot, command_count, win->frame_index);
+            _app_trace_stream_full(stream, win->frame_index, "changed");
         }
         _dvz_app_status_trace(
             &win->app->status, win->frame_index, command_count, snapshot.count, changed);

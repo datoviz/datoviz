@@ -84,8 +84,8 @@ Command:
 DVZ_DRP2_TRACE=normal ./build/examples/c/hello_mesh_glfw 120
 ```
 
-Expected behavior: trace/status output is visible, unchanged repeated frames stay compact, and the
-live example still renders and exits after the bounded frame count.
+Expected behavior: changed frames print a full command stream, unchanged repeated frames stay to a
+compact status line, and the live example still renders and exits after the bounded frame count.
 
 Automated coverage: `test_app_trace_*`, `test_app_status_line_combines_trace_and_fps`.
 

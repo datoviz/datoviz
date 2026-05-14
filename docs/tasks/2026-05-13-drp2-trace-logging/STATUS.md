@@ -10,7 +10,7 @@ Recent commits implemented the plan in `PLAN.md`:
 
 1. fixed the trace test build issue,
 2. added semantic trace fingerprints and snapshots that ignore transient frame/pass ids,
-3. made normal trace output compact and changed/unchanged aware,
+3. made normal trace output changed/unchanged aware,
 4. expanded full trace output into a human-readable command dump,
 5. combined DRP2 trace status with FPS/status output in the app,
 6. removed temporary pick-hover example tracing after debugging was complete.
@@ -40,4 +40,5 @@ git diff --check
 
 The app trace lane is no longer just a plan. It is implemented and should be treated as active app
 infrastructure. Future work should keep trace fingerprints semantic rather than raw-struct based, and
-normal live output should stay compact enough for interactive debugging.
+normal live output prints full command streams for changed frames only; unchanged repeated frames
+should stay compact enough for interactive debugging.
