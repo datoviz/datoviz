@@ -88,7 +88,8 @@ In source, the current implementation is intentionally much smaller than the ful
    `hello_mesh_glfw.c`, `hello_path.c`, `hello_texture.c`, `hello_field.c`, and
    `hello_pick_hover_glfw.c`, plus `hello_image_probe_glfw.c` for live image probes and
    `hello_texture_update_glfw.c` for live sampled-field subregion updates, and
-   `hello_multi_panel_glfw.c` for live multi-panel controller/routing smoke.
+   `hello_multi_panel_glfw.c` and `hello_linked_panels_glfw.c` for live multi-panel
+   controller/routing and linked-panzoom smoke.
 9. [manual_scene_smoke.md](manual_scene_smoke.md) for the current manual scene/app smoke matrix.
 
 

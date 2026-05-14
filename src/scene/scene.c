@@ -972,6 +972,13 @@ void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, int flags)
 }
 
 
+DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
+{
+    ANN(panel);
+    return panel->panzoom;
+}
+
+
 void dvz_panel_set_arcball(DvzPanel* panel, DvzInputRouter* router, int flags)
 {
     ANN(panel);

@@ -192,6 +192,25 @@ Automated coverage: `test_app_offscreen_two_panel_points_light_both_halves`,
 Current gap: manual gesture inspection is still needed for live per-panel controller routing.
 
 
+### Linked panel panzoom
+
+Command:
+
+```bash
+./build/examples/c/hello_linked_panels_glfw 300
+```
+
+Expected behavior: the two top panels render different point grids but share pan/zoom state.
+Pan or wheel-zoom either top panel and the other top panel follows; the bottom panel remains
+independent. The terminal prints whether a linked or independent panel changed.
+
+Automated coverage: `test_panel_panzoom_getter`,
+`test_panzoom_viewport_filters_pointer_events`,
+`test_scene_multi_panel_glsl_emits_viewport_scissor_commands`.
+
+Current gap: manual gesture inspection is still needed to confirm live linked-panel propagation.
+
+
 ### Partial texture update
 
 Command:

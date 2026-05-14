@@ -98,6 +98,7 @@ if(TARGET datoviz_app)
         dvz_add_example(hello_image_probe_glfw)
         dvz_add_example(hello_texture_update_glfw)
         dvz_add_example(hello_multi_panel_glfw)
+        dvz_add_example(hello_linked_panels_glfw)
     endif()
 endif()
 

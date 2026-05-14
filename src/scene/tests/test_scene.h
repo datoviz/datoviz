@@ -54,6 +54,8 @@ int test_panzoom_double_click_resets(TstSuite* suite, TstItem* item);
 
 int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item);
 
+int test_panel_panzoom_getter(TstSuite* suite, TstItem* item);
+
 int test_arcball_create_reset(TstSuite* suite, TstItem* item);
 
 int test_arcball_rotate_produces_nonidentity_model(TstSuite* suite, TstItem* item);

@@ -186,6 +186,29 @@ int test_panzoom_mvp_identity(TstSuite* suite, TstItem* item)
 }
 
 
+int test_panel_panzoom_getter(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    AT(dvz_panel_panzoom(panel) == NULL);
+    dvz_panel_set_panzoom(panel, NULL, 0);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    ANN(pz);
+    AT(pz == panel->panzoom);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure panel camera and arcball compose into view/projection and model matrices.
  *
@@ -422,6 +445,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TEST_SIMPLE(test_panzoom_viewport_filters_pointer_events);
     TEST_SIMPLE(test_panzoom_double_click_resets);
     TEST_SIMPLE(test_panzoom_mvp_identity);
+    TEST_SIMPLE(test_panel_panzoom_getter);
 
     TEST_SIMPLE(test_arcball_create_reset);
     TEST_SIMPLE(test_arcball_rotate_produces_nonidentity_model);

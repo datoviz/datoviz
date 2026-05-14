@@ -252,6 +252,15 @@ DVZ_EXPORT void dvz_panel_set_panzoom(DvzPanel* panel, DvzInputRouter* router, i
 
 
 /**
+ * Return the panzoom controller attached to a panel.
+ *
+ * @param panel the panel
+ * @return the panel-owned panzoom, or NULL
+ */
+DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
+
+
+/**
  * Attach an arcball controller to a panel and connect it to an input router.
  *
  * Rotate: left-drag. Double-click: reset.

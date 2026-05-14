@@ -21,6 +21,7 @@ This note tracks the next scene examples after the first point/scatter slice. Al
 | `hello_image_probe_glfw.c` | image probe + app | Existing request/app path | Done    |
 | `hello_texture_update_glfw.c` | sampled-field update + app | Existing field update path | Done |
 | `hello_multi_panel_glfw.c` | multi-panel + app | Existing panel/controller path | Done |
+| `hello_linked_panels_glfw.c` | linked panzoom panels + app | Existing panel/controller path | Done |
 
 The first scene example wave now exists under `examples/c/`. The next example work should focus less
 on adding another visual constructor and more on native pressure tests: an interactive 3D mesh/depth
