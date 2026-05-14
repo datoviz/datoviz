@@ -147,6 +147,108 @@ file. A manually edited WGSL file can then be reported as "modified since genera
 replaced. Keep the registry dependent only on the WGSL files themselves, not on the manifest.
 
 
+## Maintenance Tool Implementation Plan
+
+Add a repository tool, not a build step at first:
+
+```text
+tools/generate_missing_scene_wgsl.py
+```
+
+The first version should:
+
+1. scan `src/scene/glsl/*.vert` and `src/scene/glsl/*.frag`,
+2. map each source to the expected sibling `src/scene/wgsl/<name>.vert.wgsl` or
+   `src/scene/wgsl/<name>.frag.wgsl`,
+3. generate only missing WGSL files by default,
+4. skip existing WGSL files and report them as `skipped`,
+5. fail without writing if required external tools are missing,
+6. support `--check` to fail if any WGSL sibling is missing,
+7. support `--dry-run` to print planned actions without writing,
+8. support explicit overwrite only through `--force` or `--update-existing`.
+
+The tool should use temporary files and write the final WGSL file atomically only after every
+conversion step succeeds. It must not leave partial files on failed conversion.
+
+Preferred conversion chain:
+
+```text
+glslc or glslangValidator
+  src/scene/glsl/<name>.<stage>
+  -> temporary SPIR-V
+
+naga
+  temporary SPIR-V
+  -> src/scene/wgsl/<name>.<stage>.wgsl
+```
+
+Use `naga` as the first SPIR-V to WGSL backend because it is small enough to install as a developer
+tool through Cargo. Treat Tint as a later optional backend because building a Tint binary with the
+SPIR-V reader enabled is heavier and closer to vendoring a compiler toolchain.
+
+The tool should have explicit path overrides:
+
+```text
+--glslc /path/to/glslc
+--glslang-validator /path/to/glslangValidator
+--naga /path/to/naga
+--tint /path/to/tint
+```
+
+Tool discovery order:
+
+1. explicit CLI path,
+2. environment variables such as `GLSLC`, `GLSLANG_VALIDATOR`, `NAGA`, `TINT`,
+3. `PATH`.
+
+Do not wire this into normal `just build` or CMake initially. Generation is a maintenance action,
+not part of the ordinary C build. After the tool is proven, add a lightweight `just wgsl-check`
+recipe or CI check that runs `--check`.
+
+
+## External Tool Installation Guidance
+
+Current local status on `2026-05-14`:
+
+1. `glslc` is available from the local Vulkan SDK,
+2. `glslangValidator` is available from the local Vulkan SDK,
+3. `spirv-cross` is available from the local Vulkan SDK,
+4. `naga` is not currently on `PATH`,
+5. `tint` is not currently on `PATH`.
+
+Recommended setup:
+
+1. Keep `glslc` / `glslangValidator` as developer prerequisites discovered from the Vulkan SDK.
+2. Install `naga` manually as a developer tool, preferably through Cargo.
+3. Do not add Naga or Tint as a git submodule now.
+4. Do not make CMake download or build Naga/Tint now.
+
+Rationale:
+
+1. shader translation is a maintenance task, not needed for normal users building Datoviz,
+2. vendoring Naga/Tint would add a large Rust/C++ compiler dependency to a C visualization repo,
+3. CMake auto-downloads make builds less predictable and harder to package,
+4. committed WGSL files keep the browser/WebGPU path reproducible without requiring every build to
+   have the translator installed.
+
+Possible local install commands:
+
+```bash
+# Vulkan side, already present locally in the Vulkan SDK:
+which glslc
+which glslangValidator
+
+# Rust/Naga side:
+rustup --version
+cargo install naga-cli --git https://github.com/gfx-rs/wgpu.git
+which naga
+```
+
+If Cargo is not installed, install Rust with `rustup` first. On Linux, this is usually the simplest
+developer-only path. Tint can remain optional until Naga proves insufficient for the scene shader
+set.
+
+
 ## First Implementation Slice
 
 Start with one simple retained visual and prove the format selection path end to end.
