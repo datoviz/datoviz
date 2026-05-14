@@ -228,6 +228,7 @@ DvzDrp2ValidationResult _drp2_ok(void);
 DvzDrp2ValidationResult _drp2_fail(DvzDrp2ValidationCode code, uint32_t command_index);
 uint64_t _drp2_texture_layout_size(
     uint32_t depth, uint32_t bytes_per_row, uint32_t rows_per_image);
+bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame);
 
 bool _vklite_ensure_capacity(Drp2VkliteState* state);
 Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id);
@@ -236,6 +237,10 @@ Drp2VkliteObject* _vklite_add(
 void _vklite_destroy_object(Drp2VkliteObject* object);
 DvzDrp2ValidationResult _vklite_fail_destroy_object(
     Drp2VkliteObject* object, DvzDrp2ValidationCode code, uint32_t command_index);
+bool _vklite_attach_frame_target(
+    DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame);
+DvzDrp2ValidationResult _vklite_execute(
+    DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream);
 VkImageView _vklite_object_image_view(const Drp2VkliteObject* object);
 void _vklite_state_cleanup(Drp2VkliteState* state);
 bool _vklite_defer_destroy_object(
