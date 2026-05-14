@@ -60,7 +60,8 @@ FramePlans still fall back to the old strings, but that parsing is now centraliz
 for malformed typed visual metadata, covering the first item in the suggested order.
 
 This lane is now mostly in maintenance mode: add diagnostics/typed metadata only when new
-retained paths expose a concrete gap. The next higher-payoff lane is the `scene.c` domain split.
+retained paths expose a concrete gap. The `scene.c` domain split is complete for the currently
+identified slices; the next higher-payoff lane is DRP2 runtime decomposition.
 
 
 ### 1. Split `src/scene/scene.c`
@@ -74,7 +75,7 @@ retained paths expose a concrete gap. The next higher-payoff lane is the `scene.
 5. Done: interaction policies, selections, link channels, hover state, and pinned readouts.
 6. Done: text and annotation retained-object bookkeeping.
 7. Done for first slice: scene -> FramePlan upload/render lowering now lives in `scene_emit.c`.
-8. Scene JSON serialization.
+8. Done: Scene JSON serialization.
 
 Recommended split:
 
@@ -85,12 +86,12 @@ Recommended split:
 5. Done: `interaction.c` - interaction policy, selection, link channels, hover/readout bookkeeping.
 6. Done: `text_annotation.c` - font, text, annotation, and label retained objects.
 7. Done: `scene_emit.c` - scene -> `DvzFramePlan` lowering only.
-8. `scene_json.c` - `dvz_scene_json()` and scene serialization helpers.
+8. Done: `scene_json.c` - `dvz_scene_json()` and scene serialization helpers.
 
 Do this mechanically at first. The field, visual, scale, interaction, text/annotation, and request
-path slices are now split out. The next remaining `scene.c` split is JSON serialization. Keep
-`_scene.h` as the private shared state header until the split settles, then consider smaller private
-headers by ownership domain.
+path slices are now split out, and `scene_json.c` owns scene serialization. Keep `_scene.h` as the
+private shared state header until the split settles, then consider smaller private headers by
+ownership domain.
 
 
 ### 2. Make Scene Resource Keys Explicit
@@ -199,9 +200,10 @@ registration helpers.
 6. Done: extract `text_annotation.c`.
 7. Done: split the scene request path into request queue, hit-test, probe-plan, and request-execute
    modules.
-8. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
-9. Move JSON builder support to `src/common` and split serializers.
-10. Split scene tests in parallel with the implementation files they cover.
+8. Done: extract `scene_json.c` for scene JSON serialization.
+9. Split `drp2/runtime.c` after the scene/DRP2 contract stops moving quickly.
+10. Move JSON builder support to `src/common` and split serializers.
+11. Split scene tests in parallel with the implementation files they cover.
 
 
 ## Validation Guidance

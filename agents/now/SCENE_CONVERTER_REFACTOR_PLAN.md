@@ -52,8 +52,9 @@ visual constructors, attributes, bindings, dirty ranges, background visuals, and
 readouts; `text_annotation.c` owns retained font, text, annotation, and label bookkeeping;
 `request_queue.c` owns pending request/result queues and freshness filtering; `hit_test.c` owns
 panel coordinate mapping and CPU point picking; `probe_plan.c` owns synthetic image-probe FramePlan
-construction; and `request_execute.c` owns request runtime execution and readback handling. The next
-mechanical split target is JSON serialization.
+construction; `request_execute.c` owns request runtime execution and readback handling; and
+`scene_json.c` owns scene JSON serialization. The remaining high-payoff splits now move outside
+`scene.c`: DRP2 runtime, DRP2 stream JSON, and focused scene-test decomposition.
 
 The rest of this document is now a follow-up tracker. Sections describing already-created files are
 historical context unless they call out remaining work explicitly.
