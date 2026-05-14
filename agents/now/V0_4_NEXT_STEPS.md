@@ -56,7 +56,21 @@ Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 Recent revalidation after the trace and render-pass ordering follow-up includes `just test app`
 (`28/28`) and `just test scene` (`141/141`). The latest smoke checks also covered
-`hello_mesh_glfw` normal trace mode with colors enabled and disabled.
+`hello_mesh_glfw` normal trace mode with colors enabled and disabled. User-reported smoke on
+`2026-05-14` also covered the `hello_*` C examples successfully.
+
+First focused hygiene slice on `2026-05-14`: DRP2 texture-layout validation now rejects overflowing
+3D transfer byte sizes, and image probe plan assembly now checks position, texcoord, and texture
+byte sizes before allocation/upload. Validation: `just build`, `just test drp2` (`81/81`),
+`just test scene` (`142/142`), `just test app` (`28/28`), `git diff --check`, and
+`clang-tidy -p build --quiet` on the touched DRP2/scene files.
+
+Second focused hygiene slice on `2026-05-14`: borrowed frame-target depth attachments are now built
+locally before being assigned to the target object, and previous borrowed depth attachments are
+retired through the deferred-destroy queue keyed by the borrowed command buffer. Validation:
+`just build`, `just test drp2` (`82/82`), `just test scene` (`142/142`), and `just test app`
+(`28/28`), `clang-tidy -p build --quiet` on the touched DRP2 files, and bounded
+`hello_mesh_glfw 60` smoke.
 
 
 ## Immediate Task
@@ -85,20 +99,22 @@ Deliver the next implementation slices in this order unless the user redirects:
    only, `test_scene.h` remains the shared declaration header, and the split files are
    `panzoom_arcball.c`, `frame_plan.c`, `frame_plan_emit.c`, `scene_graph.c`, `fields.c`,
    `interaction.c`, `pick_probe.c`, and `app.c`.
-2. Current next: finish and validate the native 3D pressure smoke around the existing
+2. Done: finish and validate the native 3D pressure smoke around the existing
    `examples/c/hello_mesh_glfw.c`. That example already exercises an interactive mesh scene with
    arcball, depth, resize-through-app synchronization, and a frame callback through the scene ->
    DRP2 -> app boundary. Normal trace smoke now verifies changed-frame output, default colors,
    `NO_COLOR` / `DVZ_DRP2_TRACE_COLOR=0`, and resource setup before render-pass scopes. The
-   remaining gap is to make capture/readback part of the documented smoke path instead of adding a
-   duplicate 3D example.
+   paired offscreen `hello_mesh.c` capture path and the broader `hello_*` C smoke set have run
+   successfully, so this lane is now recorded as validated rather than a reason to add a duplicate
+   3D example.
 3. Current docs slice: manual interactive smoke set is recorded in
    [../../docs/architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md).
    The remaining implementation gaps are live image-probe, multi-panel, and partial texture-update
    examples if those become worth adding after the hygiene pass.
-4. Hygiene/safety pass over the hot scene/DRP2/app files that changed most recently: bounds,
-   ownership, stale-result handling, transient runtime object cleanup, and warning/static-analysis
-   readiness.
+4. Current next: continue the hygiene/safety pass over the hot scene/DRP2/app files that changed
+   most recently. The first bounds-check and borrowed-depth ownership slices are done; remaining
+   review areas are stale-result handling, broader transient runtime object cleanup, and trace/status
+   warning/static-analysis readiness.
 5. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
 6. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the

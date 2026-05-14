@@ -22,6 +22,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_overflow.h"
 #include "_scene.h"
 
 
@@ -57,7 +58,8 @@ bool _scene_image_probe_plan(
     DvzVisualAttr* pos_attr = &visual->attrs[pos_idx];
     DvzVisualAttr* uv_attr = &visual->attrs[uv_idx];
     if (pos_attr->data == NULL || uv_attr->data == NULL || pos_attr->item_count == 0 ||
-        uv_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3))
+        uv_attr->item_count != pos_attr->item_count || pos_attr->item_size != sizeof(vec3) ||
+        uv_attr->item_size != sizeof(vec2))
     {
         return false;
     }
@@ -89,13 +91,19 @@ bool _scene_image_probe_plan(
         texture_height = visual->texture.height;
     }
 
-    if (pos_attr->item_count > UINT64_MAX / sizeof(vec3))
+    uint64_t position_bytes = 0;
+    uint64_t texcoord_bytes = 0;
+    uint64_t texture_pixels = 0;
+    uint64_t texture_bytes = 0;
+    if (_dvz_mul_u64_overflows(pos_attr->item_count, sizeof(vec3), &position_bytes) ||
+        _dvz_mul_u64_overflows(uv_attr->item_count, uv_attr->item_size, &texcoord_bytes) ||
+        _dvz_mul_u64_overflows(texture_width, texture_height, &texture_pixels) ||
+        _dvz_mul_u64_overflows(texture_pixels, 4, &texture_bytes))
     {
-        log_error("image probe request position buffer is too large");
+        log_error("image probe request buffer size overflow");
         return false;
     }
 
-    uint64_t position_bytes = pos_attr->item_count * sizeof(vec3);
     vec3* probe_positions = (vec3*)dvz_calloc(pos_attr->item_count, sizeof(vec3));
     if (probe_positions == NULL)
     {
@@ -116,15 +124,13 @@ bool _scene_image_probe_plan(
         probe_positions[j][2] = source_positions[j][2];
     }
 
-    uint64_t texture_bytes = (uint64_t)texture_width * texture_height * 4;
     DvzFramePlan* plan = dvz_frame_plan("figure.probe", pending->request.request_id);
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
     bool ok = plan != NULL && emitter != NULL &&
               dvz_frame_plan_upload_bytes(
                   plan, "probe0_position", 0, position_bytes, "position", probe_positions) &&
               dvz_frame_plan_upload_bytes(
-                  plan, "probe0_texcoords", 0, uv_attr->item_count * uv_attr->item_size,
-                  "texcoords", uv_attr->data) &&
+                  plan, "probe0_texcoords", 0, texcoord_bytes, "texcoords", uv_attr->data) &&
               dvz_frame_plan_upload_bytes(
                   plan, "probe0_texture", 0, texture_bytes, "texture", texture_data) &&
               dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&

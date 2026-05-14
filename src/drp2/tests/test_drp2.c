@@ -26,6 +26,7 @@
 
 #if DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
+#include "../_runtime.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
 
@@ -1240,6 +1241,31 @@ int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstIte
 }
 
 
+int test_drp2_runtime_rejects_write_texture_layout_size_overflow(
+    TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_3d(stream, 1, 1, 1, UINT32_MAX));
+    AT(dvz_drp2_stream_write_texture_3d(
+        stream, 1, 0, 0, 0, 0, 1, 1, UINT32_MAX, UINT32_MAX, UINT32_MAX, ""));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 3);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstSuite* suite, TstItem* item)
 {
@@ -1620,6 +1646,43 @@ int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item)
     dvz_drp2_runtime_destroy(runtime);
     return 0;
 }
+
+
+#if DVZ_DRP2_HAS_VKLITE
+int test_drp2_runtime_vklite_deferred_destroy_flush(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    Drp2VkliteState state = {0};
+    Drp2VkliteObject object = {
+        .id = 77,
+        .kind = DRP2_OBJECT_TEXTURE,
+        .image_view = (VkImageView)(uintptr_t)0x456,
+        .borrowed_frame_target = true,
+    };
+    VkCommandBuffer command_buffer = (VkCommandBuffer)(uintptr_t)0x123;
+
+    AT(!_vklite_defer_destroy_object(&state, &object, VK_NULL_HANDLE));
+    AT(!object.destroyed);
+    AT(state.deferred_count == 0);
+
+    AT(_vklite_defer_destroy_object(&state, &object, command_buffer));
+    AT(object.destroyed);
+    AT(state.deferred_count == 1);
+    AT(state.deferred[0].command_buffer == command_buffer);
+    AT(state.deferred[0].object.id == 77);
+
+    _vklite_flush_deferred_for_command_buffer(&state, (VkCommandBuffer)(uintptr_t)0x999);
+    AT(state.deferred_count == 1);
+
+    _vklite_flush_deferred_for_command_buffer(&state, command_buffer);
+    AT(state.deferred_count == 0);
+
+    _vklite_state_cleanup(&state);
+    return 0;
+}
+#endif
 
 
 
@@ -2852,6 +2915,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_rejects_destroy_bind_group_referenced_by_work);
     TEST_SIMPLE(test_drp2_runtime_rejects_compute_dispatch_without_bind_group);
     TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_out_of_range);
+    TEST_SIMPLE(test_drp2_runtime_rejects_write_texture_layout_size_overflow);
     TEST_SIMPLE(test_drp2_runtime_rejects_copy_buffer_to_texture_usage);
     TEST_SIMPLE(test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass);
     TEST_SIMPLE(test_drp2_runtime_validate_destroy_unused_buffer);
@@ -2866,6 +2930,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
     TEST_SIMPLE(test_drp2_runtime_frame_target_validation);
     TEST_SIMPLE(test_drp2_runtime_frame_lifecycle_edge_cases);
+#if DVZ_DRP2_HAS_VKLITE
+    TEST_SIMPLE(test_drp2_runtime_vklite_deferred_destroy_flush);
+#endif
     TEST_SIMPLE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_payload_executes);

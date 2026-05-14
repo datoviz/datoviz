@@ -186,11 +186,10 @@ static DvzDrp2ValidationResult _vklite_create_texture(
  *
  * @param state vklite runtime state
  * @param object borrowed frame target object that owns the depth attachment pointers
- * @param current_command_buffer command buffer being attached for the new frame
  * @return whether the previous depth attachment was retired
  */
-static bool _vklite_retire_frame_target_depth(
-    Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer current_command_buffer)
+bool _vklite_retire_frame_target_depth(
+    Drp2VkliteState* state, Drp2VkliteObject* object)
 {
     ANN(state);
     ANN(object);
@@ -205,8 +204,7 @@ static bool _vklite_retire_frame_target_depth(
     object->depth_views = NULL;
 
     VkCommandBuffer previous_command_buffer = object->command_buffer;
-    if (previous_command_buffer != VK_NULL_HANDLE &&
-        previous_command_buffer != current_command_buffer)
+    if (previous_command_buffer != VK_NULL_HANDLE)
     {
         if (_vklite_defer_destroy_object(state, &retired, previous_command_buffer))
             return true;
@@ -262,8 +260,7 @@ bool _vklite_attach_frame_target(
         return false;
     }
 
-    if (!_vklite_retire_frame_target_depth(
-            runtime->vklite_state, object, frame->command_buffer))
+    if (!_vklite_retire_frame_target_depth(runtime->vklite_state, object))
     {
         dvz_images_free(images);
         return false;

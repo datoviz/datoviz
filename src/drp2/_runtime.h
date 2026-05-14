@@ -249,6 +249,8 @@ DvzDrp2ValidationResult _vklite_fail_destroy_object(
     Drp2VkliteObject* object, DvzDrp2ValidationCode code, uint32_t command_index);
 bool _vklite_attach_frame_target(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame);
+bool _vklite_retire_frame_target_depth(
+    Drp2VkliteState* state, Drp2VkliteObject* object);
 DvzDrp2ValidationResult _vklite_execute(
     DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream);
 VkImageView _vklite_object_image_view(const Drp2VkliteObject* object);

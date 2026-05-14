@@ -108,6 +108,9 @@ int test_drp2_runtime_rejects_compute_dispatch_without_bind_group(
 
 int test_drp2_runtime_rejects_write_texture_out_of_range(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_rejects_write_texture_layout_size_overflow(
+    TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_rejects_copy_buffer_to_texture_usage(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_rejects_copy_texture_to_texture_inside_pass(
@@ -139,6 +142,10 @@ int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstSuite* suite, TstI
 int test_drp2_runtime_frame_target_validation(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_frame_lifecycle_edge_cases(TstSuite* suite, TstItem* item);
+
+#if DVZ_DRP2_HAS_VKLITE
+int test_drp2_runtime_vklite_deferred_destroy_flush(TstSuite* suite, TstItem* item);
+#endif
 
 int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstItem* item);
 

@@ -108,6 +108,11 @@ static bool _texture_layout_invalid(
         return true;
     if (rows_per_image < height)
         return true;
+    uint64_t size = 0;
+    if (_dvz_mul_u64_overflows(rows_per_image, bytes_per_row, &size))
+        return true;
+    if (_dvz_mul_u64_overflows(depth, size, &size))
+        return true;
     return false;
 }
 

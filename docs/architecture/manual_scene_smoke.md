@@ -4,6 +4,10 @@ This checklist records the manual validation surface for the active v0.4 scene -
 path. It complements focused tests; it should stay short enough to run before broadening scene,
 request, or app behavior.
 
+Latest recorded smoke note: on `2026-05-14`, the `hello_*` C example smoke set was reported to run
+successfully. OS/GPU/backend details were not recorded; add them here if a later run exposes a
+platform-specific anomaly.
+
 Run from the repository root after a successful build:
 
 ```bash
@@ -232,6 +236,13 @@ For a normal scene/app smoke pass, run:
 just build
 just test test_app_offscreen_lit_primitive_depth_orders_overlap
 just test test_scene_process_pick_probe_requests
+./build/examples/c/hello_point
+./build/examples/c/hello_scatter
+./build/examples/c/hello_triangle
+./build/examples/c/hello_path
+./build/examples/c/hello_texture
+./build/examples/c/hello_field
+./build/examples/c/hello_mesh
 ./build/examples/c/hello_point_glfw
 ./build/examples/c/hello_pick_hover_glfw
 ./build/examples/c/hello_mesh_glfw

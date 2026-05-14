@@ -1004,6 +1004,66 @@ int test_scene_image_probe_respects_panel_request_position(TstSuite* suite, TstI
 }
 
 
+int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float image_pos[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {-1.0f, 1.0f, 0.0f},
+        {1.0f, -1.0f, 0.0f},
+        {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
+    };
+    uint8_t pixels[4] = {255, 0, 0, 255};
+    AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture(image, pixels, 1, 1) == 0);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+    ANN(image->field);
+
+    image->field->desc.width = UINT32_MAX;
+    image->field->desc.height = UINT32_MAX;
+
+    DvzSceneProbePlan plan = {0};
+    DvzPendingProbeRequest pending = {
+        .panel = panel,
+        .x = 32.0,
+        .y = 32.0,
+        .request = {.request_id = 90},
+        .freshness_serial = 1,
+    };
+    vec2 request_ndc = {0.0f, 0.0f};
+
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_image_probe_plan(panel, image, &pending, request_ndc, &plan));
+    AT(_captured_log_contains(suite, "image probe request buffer size overflow"));
+    AT(plan.plan == NULL);
+    AT(plan.emitter == NULL);
+    AT(plan.probe_positions == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Register scene pick and probe tests.
  *
@@ -1029,6 +1089,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_pick_quadrants);
     TEST_SIMPLE(test_scene_process_requests_preserves_caller_runtime);
     TEST_SIMPLE(test_scene_image_probe_respects_panel_request_position);
+    TEST_SIMPLE(test_scene_image_probe_plan_rejects_size_overflow);
 
     return 0;
 }

@@ -314,6 +314,8 @@ int test_scene_pick_request_same_id_supersedes_older_unresolved(
 int test_scene_probe_request_zero_id_keeps_newest_unresolved(
     TstSuite* suite, TstItem* item);
 
+int test_scene_image_probe_plan_rejects_size_overflow(TstSuite* suite, TstItem* item);
+
 int test_scene_text_annotation_bookkeeping(TstSuite* suite, TstItem* item);
 
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP

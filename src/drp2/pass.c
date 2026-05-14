@@ -198,9 +198,9 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             return _vklite_fail_destroy_object(
                 pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         }
-        depth_owner->depth_images = depth_images;
-        depth_owner->depth_views = depth_views;
-        dvz_images(state->runtime->device, state->runtime->allocator, VK_IMAGE_TYPE_2D, 1, depth_images);
+        dvz_images(
+            state->runtime->device, state->runtime->allocator, VK_IMAGE_TYPE_2D, 1,
+            depth_images);
         dvz_images_format(depth_images, VK_FORMAT_D32_SFLOAT);
         dvz_images_size(depth_images, target->width, target->height, 1);
         dvz_images_mip(depth_images, 1);
@@ -208,15 +208,38 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         dvz_images_samples(depth_images, VK_SAMPLE_COUNT_1_BIT);
         dvz_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
         if (dvz_images_create(depth_images) != 0)
+        {
+            dvz_image_views_free(depth_views);
+            dvz_images_free(depth_images);
             return _vklite_fail_destroy_object(
                 pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
         dvz_image_views(depth_images, depth_views);
         dvz_image_views_aspect(depth_views, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_image_views_create(depth_views);
         VkImageView depth_view = dvz_image_views_handle(depth_views, 0);
         if (depth_view == VK_NULL_HANDLE)
+        {
+            dvz_image_views_free(depth_views);
+            dvz_images_destroy(depth_images);
+            dvz_images_free(depth_images);
             return _vklite_fail_destroy_object(
                 pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        if (depth_owner->depth_images != NULL || depth_owner->depth_views != NULL)
+        {
+            if (!_vklite_retire_frame_target_depth(state, depth_owner))
+            {
+                dvz_image_views_destroy(depth_views);
+                dvz_image_views_free(depth_views);
+                dvz_images_destroy(depth_images);
+                dvz_images_free(depth_images);
+                return _vklite_fail_destroy_object(
+                    pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            }
+        }
+        depth_owner->depth_images = depth_images;
+        depth_owner->depth_views = depth_views;
         DvzAttachment* datt = dvz_rendering_depth(rendering);
         dvz_attachment_image(datt, depth_view, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(

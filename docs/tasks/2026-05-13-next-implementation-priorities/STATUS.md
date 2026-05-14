@@ -21,13 +21,18 @@ The next branch work should not treat these as one large mixed refactor. They sh
 lanes with separate validation gates.
 
 The native 3D example is now represented by `examples/c/hello_mesh_glfw.c`, and the manual scene
-smoke matrix is recorded in `docs/architecture/manual_scene_smoke.md`. The next implementation
-work should therefore move to the targeted hygiene/static-analysis pass unless a specific manual
-smoke gap is promoted first.
+smoke matrix is recorded in `docs/architecture/manual_scene_smoke.md`. The `hello_*` C example
+smoke set was reported successful on `2026-05-14`, including the paired offscreen capture examples
+that cover the readback side of the mesh smoke path. The next implementation work should therefore
+move to the targeted hygiene/static-analysis pass unless a specific manual smoke gap is promoted
+first.
 
 Recommended priority:
 
-1. Targeted hygiene/static-analysis pass over the hot scene/DRP2/app paths.
+1. Continue the targeted hygiene/static-analysis pass over the hot scene/DRP2/app paths. The first
+   `2026-05-14` slice hardened DRP2 texture-transfer layout overflow validation and image-probe
+   plan byte-size checks; the second slice hardened borrowed frame-target depth attachment
+   retirement.
 2. Add live image-probe, multi-panel, or partial texture-update examples only if manual validation
    needs them before more API work.
 3. WebGPU feasibility early, while the implemented visual set is still small.
