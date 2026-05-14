@@ -183,6 +183,7 @@ function mapTextureUsage(usage) {
 
 function mapTextureFormat(format) {
   switch (format) {
+    case "r32uint":
     case "rgba8unorm":
     case "bgra8unorm":
     case "depth32float":
@@ -190,6 +191,15 @@ function mapTextureFormat(format) {
     default:
       throw new Error(`unsupported texture format: ${format}`);
   }
+}
+
+
+
+function defaultColorTarget(fragmentShader) {
+  if (fragmentShader.code.includes("-> @location(0) u32")) {
+    return { format: "r32uint" };
+  }
+  return { format: "rgba8unorm" };
 }
 
 
@@ -567,7 +577,7 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) 
     `unknown fragment shader module ${command.fragment_shader_module_id}`,
   );
 
-  const colorTargets = command.color_targets ?? [{ format: "rgba8unorm" }];
+  const colorTargets = command.color_targets ?? [defaultColorTarget(fragmentShader)];
   if (colorTargets.length !== 1) {
     throw new Error("only one color target is supported by this PoC");
   }
