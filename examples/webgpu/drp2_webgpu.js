@@ -88,6 +88,51 @@ function mapBufferUsage(usage) {
 
 
 
+function mapTextureUsage(usage) {
+  const items = usage ?? [];
+  let flags = 0;
+  for (const item of items) {
+    switch (item) {
+      case "COPY_SRC":
+        flags |= GPUTextureUsage.COPY_SRC;
+        break;
+      case "COPY_DST":
+        flags |= GPUTextureUsage.COPY_DST;
+        break;
+      case "TEXTURE_BINDING":
+        flags |= GPUTextureUsage.TEXTURE_BINDING;
+        break;
+      case "STORAGE_BINDING":
+        flags |= GPUTextureUsage.STORAGE_BINDING;
+        break;
+      case "RENDER_ATTACHMENT":
+        flags |= GPUTextureUsage.RENDER_ATTACHMENT;
+        break;
+      default:
+        throw new Error(`unsupported texture usage: ${item}`);
+    }
+  }
+  if (flags === 0) {
+    throw new Error("CreateTexture needs at least one usage flag");
+  }
+  return flags;
+}
+
+
+
+function mapTextureFormat(format) {
+  switch (format) {
+    case "rgba8unorm":
+    case "bgra8unorm":
+    case "depth32float":
+      return format;
+    default:
+      throw new Error(`unsupported texture format: ${format}`);
+  }
+}
+
+
+
 function mapVertexFormat(format) {
   switch (format) {
     case "float32":
@@ -132,6 +177,32 @@ function decodeBase64(data) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
+}
+
+
+
+function encodeBase64(bytes) {
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+}
+
+
+
+function readbackSummary(bytes) {
+  let nonzero = 0;
+  let alpha = 0;
+  for (let i = 0; i < bytes.length; i++) {
+    if (bytes[i] !== 0) {
+      nonzero++;
+    }
+    if ((i & 3) === 3) {
+      alpha += bytes[i];
+    }
+  }
+  return { nonzero, alpha };
 }
 
 
@@ -231,12 +302,7 @@ function makePipeline(device, canvasFormat, shaders, command) {
   }
 
   const streamFormat = colorTargets[0].format;
-  const targetFormat = streamFormat === "canvas" ? canvasFormat : streamFormat;
-  if (targetFormat !== canvasFormat) {
-    throw new Error(
-      `pipeline color target ${targetFormat} does not match canvas format ${canvasFormat}`,
-    );
-  }
+  const targetFormat = streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
 
   return device.createRenderPipeline({
     label: command.label,
@@ -259,7 +325,7 @@ function makePipeline(device, canvasFormat, shaders, command) {
 
 
 
-function beginRenderPass(context, encoders, command) {
+function beginRenderPass(context, textures, encoders, command) {
   const encoder = required(
     encoders.get(command.encoder_id),
     `unknown command encoder ${command.encoder_id}`,
@@ -271,15 +337,16 @@ function beginRenderPass(context, encoders, command) {
   }
 
   const attachment = attachments[0];
-  if (attachment.texture_id !== 0) {
-    throw new Error("this PoC only supports texture_id 0 as the current canvas texture");
-  }
+  const textureView = attachment.texture_id === 0
+    ? context.getCurrentTexture().createView()
+    : required(textures.get(attachment.texture_id), `unknown texture ${attachment.texture_id}`)
+        .createView();
 
   return encoder.beginRenderPass({
     label: command.label,
     colorAttachments: [
       {
-        view: context.getCurrentTexture().createView(),
+        view: textureView,
         loadOp: mapLoadOp(attachment.load_op),
         storeOp: mapStoreOp(attachment.store_op),
         clearValue: clearValue(attachment.clear_value),
@@ -292,11 +359,13 @@ function beginRenderPass(context, encoders, command) {
 
 async function executeDrp2Stream(device, context, canvasFormat, stream) {
   const buffers = new Map();
+  const textures = new Map();
   const shaders = new Map();
   const pipelines = new Map();
   const encoders = new Map();
   const passes = new Map();
   const commandBuffers = new Map();
+  const readbackReplies = [];
 
   for (const command of stream.commands) {
     switch (command.cmd) {
@@ -329,6 +398,25 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
         break;
       }
 
+      case "CreateTexture":
+        textures.set(
+          command.id,
+          device.createTexture({
+            label: command.label,
+            size: {
+              width: required(command.width, "CreateTexture needs width"),
+              height: required(command.height, "CreateTexture needs height"),
+              depthOrArrayLayers: command.depth ?? 1,
+            },
+            mipLevelCount: command.mip_level_count ?? 1,
+            sampleCount: command.sample_count ?? 1,
+            dimension: command.dimension ?? "2d",
+            format: mapTextureFormat(required(command.format, "CreateTexture needs format")),
+            usage: mapTextureUsage(command.usage),
+          }),
+        );
+        break;
+
       case "CreateShaderModule": {
         if (command.format !== "wgsl") {
           throw new Error(`unsupported shader format: ${command.format}`);
@@ -359,7 +447,7 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
         break;
 
       case "BeginRenderPass":
-        passes.set(command.id, beginRenderPass(context, encoders, command));
+        passes.set(command.id, beginRenderPass(context, textures, encoders, command));
         break;
 
       case "SetPipeline": {
@@ -400,6 +488,46 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
         break;
       }
 
+      case "CopyTextureToBuffer": {
+        const encoder = required(
+          encoders.get(command.encoder_id),
+          `unknown command encoder ${command.encoder_id}`,
+        );
+        const texture = required(
+          textures.get(command.src_texture_id),
+          `unknown source texture ${command.src_texture_id}`,
+        );
+        const buffer = required(
+          buffers.get(command.dst_buffer_id),
+          `unknown destination buffer ${command.dst_buffer_id}`,
+        );
+        const origin = command.src_origin ?? { x: 0, y: 0, z: 0 };
+        const size = required(command.size, "CopyTextureToBuffer needs size");
+        encoder.copyTextureToBuffer(
+          {
+            texture,
+            mipLevel: command.src_mip_level ?? 0,
+            origin: {
+              x: origin.x ?? 0,
+              y: origin.y ?? 0,
+              z: origin.z ?? 0,
+            },
+          },
+          {
+            buffer,
+            offset: command.dst_offset ?? 0,
+            bytesPerRow: required(command.bytes_per_row, "CopyTextureToBuffer needs bytes_per_row"),
+            rowsPerImage: command.rows_per_image ?? size.height,
+          },
+          {
+            width: required(size.width, "CopyTextureToBuffer size needs width"),
+            height: required(size.height, "CopyTextureToBuffer size needs height"),
+            depthOrArrayLayers: size.depth ?? 1,
+          },
+        );
+        break;
+      }
+
       case "FinishCommandEncoder": {
         const encoder = required(
           encoders.get(command.encoder_id),
@@ -412,18 +540,43 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
 
       case "QueueSubmit": {
         const ids = command.command_buffer_ids ?? [command.command_buffer_id];
-        const buffers = ids.map((id) =>
+        const submitBuffers = ids.map((id) =>
           required(commandBuffers.get(id), `unknown command buffer ${id}`),
         );
-        device.queue.submit(buffers);
+        device.queue.submit(submitBuffers);
         await device.queue.onSubmittedWorkDone();
+        for (const readback of command.readbacks ?? []) {
+          const buffer = required(
+            buffers.get(readback.buffer_id),
+            `unknown readback buffer ${readback.buffer_id}`,
+          );
+          const offset = readback.offset ?? 0;
+          const size = required(readback.size, "readback needs size");
+          await buffer.mapAsync(GPUMapMode.READ, offset, size);
+          const mapped = buffer.getMappedRange(offset, size);
+          const bytes = new Uint8Array(mapped.slice(0));
+          buffer.unmap();
+          readbackReplies.push({
+            submission_id: command.submission_id,
+            buffer_id: readback.buffer_id,
+            offset,
+            size,
+            data: encodeBase64(bytes),
+            summary: readbackSummary(bytes),
+          });
+        }
         break;
       }
+
+      case "QueueSubmitReply":
+        break;
 
       default:
         throw new Error(`unsupported DRP2 command in WebGPU PoC: ${command.cmd}`);
     }
   }
+
+  return { readbacks: readbackReplies };
 }
 
 
@@ -432,7 +585,7 @@ async function main() {
   try {
     const { device, context, format } = await initWebGPU();
     const params = new URLSearchParams(window.location.search);
-    const streamName = params.get("stream") ?? "triangle_vertex_buffer_wgsl";
+    const streamName = params.get("stream") ?? "triangle_offscreen_readback_wgsl";
     const streamPath = `./streams/${streamName}.json`;
     streamNameEl.textContent = streamPath.slice(2);
     const response = await fetch(streamPath, { cache: "no-cache" });
@@ -443,8 +596,15 @@ async function main() {
 
     const render = async () => {
       resizeCanvasToDisplaySize(device, context, format);
-      await executeDrp2Stream(device, context, format, stream);
-      setStatus(`Rendered ${stream.name}`);
+      const result = await executeDrp2Stream(device, context, format, stream);
+      if (result.readbacks.length > 0) {
+        const readback = result.readbacks[0];
+        setStatus(
+          `Rendered ${stream.name}; readback nonzero=${readback.summary.nonzero}`,
+        );
+      } else {
+        setStatus(`Rendered ${stream.name}`);
+      }
     };
 
     await render();

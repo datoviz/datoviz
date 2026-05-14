@@ -14,16 +14,18 @@ Then open:
 http://localhost:8765/examples/webgpu/
 ```
 
-The default stream is `streams/triangle_vertex_buffer_wgsl.json`. It uses WGSL shader modules,
-`CreateBuffer`, `WriteBuffer`, an explicit vertex layout, and `SetVertexBuffer`.
+The default stream is `streams/triangle_offscreen_readback_wgsl.json`. It renders a triangle to an
+offscreen texture, copies the texture to a readback buffer, then renders the same triangle to the
+visible canvas.
 
-The first no-buffer smoke stream remains available:
+The earlier smoke streams remain available:
 
 ```text
 http://localhost:8765/examples/webgpu/?stream=hello_triangle_wgsl
+http://localhost:8765/examples/webgpu/?stream=triangle_vertex_buffer_wgsl
 ```
 
-Both streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.
+All streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.
 
 Supported commands in this first slice:
 
@@ -31,6 +33,7 @@ Supported commands in this first slice:
 - `RendererHelloReply`
 - `CreateBuffer`
 - `WriteBuffer`
+- `CreateTexture`
 - `CreateShaderModule`
 - `CreateRenderPipeline`
 - `BeginCommandEncoder`
@@ -39,8 +42,10 @@ Supported commands in this first slice:
 - `SetVertexBuffer`
 - `Draw`
 - `EndRenderPass`
+- `CopyTextureToBuffer`
 - `FinishCommandEncoder`
 - `QueueSubmit`
+- `QueueSubmitReply` is accepted as a no-op fixture/reply marker.
 
-The next useful slice is offscreen texture support: `CreateTexture`, render-pass attachments by
-texture id, and `CopyTextureToBuffer` readback.
+The next useful slice is depth support: a depth texture attachment, `depth_stencil` pipeline state,
+and a small two-triangle or cube-style ordering smoke.
