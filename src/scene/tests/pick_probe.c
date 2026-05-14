@@ -220,6 +220,69 @@ int test_scene_pick_probe_queues_and_pinned_readout(TstSuite* suite, TstItem* it
 }
 
 
+/**
+ * Ensure polling resolved pick/probe results clears the consumed queue storage.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_poll_pick_probe_clears_consumed_slots(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, (DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzPickResult pick = {
+        .request_id = 11,
+        .hit = true,
+        .resolved_id = 101,
+    };
+    DvzProbeResult probe = {
+        .request_id = 12,
+        .source_request_id = 12,
+        .hit = true,
+        .scalar = 2.5,
+    };
+
+    AT(_dvz_scene_enqueue_pick_result(scene, &pick));
+    AT(_dvz_scene_enqueue_probe_result(scene, &probe));
+    scene->pick_results[0].panel = panel;
+    scene->pick_results[0].freshness_serial = 21;
+    scene->probe_results[0].panel = panel;
+    scene->probe_results[0].freshness_serial = 22;
+
+    DvzPickResult out_pick = {0};
+    DvzProbeResult out_probe = {0};
+    AT(dvz_scene_poll_pick(scene, &out_pick));
+    AT(dvz_scene_poll_probe(scene, &out_probe));
+    AT(out_pick.resolved_id == 101);
+    AC(out_probe.scalar, 2.5, 1e-12);
+    AT(scene->pick_result_count == 0);
+    AT(scene->probe_result_count == 0);
+    AT(scene->pick_result_head == 1);
+    AT(scene->probe_result_head == 1);
+    AT(scene->pick_results[0].panel == NULL);
+    AT(scene->pick_results[0].freshness_serial == 0);
+    AT(scene->pick_results[0].result.request_id == 0);
+    AT(scene->pick_results[0].result.resolved_id == 0);
+    AT(scene->probe_results[0].panel == NULL);
+    AT(scene->probe_results[0].freshness_serial == 0);
+    AT(scene->probe_results[0].result.request_id == 0);
+    AT(scene->probe_results[0].result.source_request_id == 0);
+    AT(!dvz_scene_poll_pick(scene, &out_pick));
+    AT(!dvz_scene_poll_probe(scene, &out_probe));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_pick_request_same_id_supersedes_older_unresolved(
     TstSuite* suite, TstItem* item)
 {
@@ -1078,6 +1141,7 @@ int test_scene_pick_probe(TstSuite* suite)
     TEST_SIMPLE(test_scene_process_requests_coalesces_pending_picks_before_execution);
     TEST_SIMPLE(test_scene_process_requests_coalesces_pending_probes_before_execution);
     TEST_SIMPLE(test_scene_pick_probe_queues_and_pinned_readout);
+    TEST_SIMPLE(test_scene_poll_pick_probe_clears_consumed_slots);
     TEST_SIMPLE(test_scene_pick_request_same_id_supersedes_older_unresolved);
     TEST_SIMPLE(test_scene_probe_request_zero_id_keeps_newest_unresolved);
     TEST_SIMPLE(test_scene_pick_request_distinct_ids_keep_independent_pending_and_results);

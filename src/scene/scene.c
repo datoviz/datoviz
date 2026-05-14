@@ -1092,8 +1092,12 @@ bool dvz_scene_poll_pick(DvzScene* scene, DvzPickResult* out_result)
     ANN(out_result);
     if (scene->pick_result_count == 0)
         return false;
-    *out_result = scene->pick_results[scene->pick_result_head].result;
-    scene->pick_result_head = (scene->pick_result_head + 1) % DVZ_SCENE_MAX_PICK_RESULTS;
+    uint32_t index = scene->pick_result_head;
+    *out_result = scene->pick_results[index].result;
+    dvz_memset(
+        &scene->pick_results[index], sizeof(DvzQueuedPickResult), 0,
+        sizeof(DvzQueuedPickResult));
+    scene->pick_result_head = (index + 1) % DVZ_SCENE_MAX_PICK_RESULTS;
     scene->pick_result_count--;
     return true;
 }
@@ -1112,8 +1116,12 @@ bool dvz_scene_poll_probe(DvzScene* scene, DvzProbeResult* out_result)
     ANN(out_result);
     if (scene->probe_result_count == 0)
         return false;
-    *out_result = scene->probe_results[scene->probe_result_head].result;
-    scene->probe_result_head = (scene->probe_result_head + 1) % DVZ_SCENE_MAX_PROBE_RESULTS;
+    uint32_t index = scene->probe_result_head;
+    *out_result = scene->probe_results[index].result;
+    dvz_memset(
+        &scene->probe_results[index], sizeof(DvzQueuedProbeResult), 0,
+        sizeof(DvzQueuedProbeResult));
+    scene->probe_result_head = (index + 1) % DVZ_SCENE_MAX_PROBE_RESULTS;
     scene->probe_result_count--;
     return true;
 }

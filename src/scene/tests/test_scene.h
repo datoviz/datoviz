@@ -38,6 +38,8 @@ int test_scene_graph(TstSuite* suite);
 
 int test_scene_pick_probe(TstSuite* suite);
 
+int test_scene_poll_pick_probe_clears_consumed_slots(TstSuite* suite, TstItem* item);
+
 int test_scene_app(TstSuite* suite);
 
 int test_panzoom_create_reset(TstSuite* suite, TstItem* item);
