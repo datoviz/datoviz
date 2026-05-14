@@ -432,7 +432,7 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) 
     `unknown fragment shader module ${command.fragment_shader_module_id}`,
   );
 
-  const colorTargets = required(command.color_targets, "CreateRenderPipeline needs color_targets");
+  const colorTargets = command.color_targets ?? [{ format: "rgba8unorm" }];
   if (colorTargets.length !== 1) {
     throw new Error("only one color target is supported by this PoC");
   }
