@@ -44,19 +44,11 @@ static bool _scene_stream_register(DvzScene* scene, DvzDrp2CommandStream* stream
 
 static bool _scene_has_live_streams(const DvzScene* scene);
 
-bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
-
 static void _format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
 
 static void _scene_mark_scale_dirty(DvzScale* scale);
 
 static void _scene_mark_colormap_dirty(DvzColormap* colormap);
-
-bool _field_region_byte_size(
-    DvzFieldFormat format, const DvzFieldRegion* region, uint64_t* out_size);
-
-bool _scene_color_from_colormap(
-    const DvzColormap* colormap, double t, uint8_t out_rgba[4]);
 
 static bool _selection_matches_pick(
     const DvzSelection* selection, const DvzPickResult* pick, DvzSelectionItem* out_item);
@@ -96,10 +88,6 @@ static DvzRequestFreshnessScope* _scene_touch_request_scope(
 static uint64_t _scene_latest_request_scope_serial(
     const DvzRequestFreshnessScope* scopes, uint32_t scope_count, const DvzPanel* panel,
     uint64_t request_id);
-
-void _scene_field_reset(DvzSampledField* field);
-
-void _scene_buffer_reset(DvzSceneBuffer* buffer);
 
 static void _json_append_field(
     JsonBuilder* b, const DvzScene* scene, uint32_t field_idx, bool* first);
