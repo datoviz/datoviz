@@ -35,6 +35,7 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene/frame_plan.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
@@ -1220,6 +1221,9 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             }
         }
     }
+    DvzDevice* device = dvz_gpu_ctx_device(app->gpu_ctx);
+    if (device != NULL)
+        dvz_device_wait(device);
     _dvz_app_status_finish(&app->status);
 #else
     (void)frame_count;
