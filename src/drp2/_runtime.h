@@ -224,11 +224,16 @@ struct Drp2VkliteState
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
 
+DvzDrp2ValidationResult _drp2_ok(void);
+DvzDrp2ValidationResult _drp2_fail(DvzDrp2ValidationCode code, uint32_t command_index);
+
 bool _vklite_ensure_capacity(Drp2VkliteState* state);
 Drp2VkliteObject* _vklite_find(Drp2VkliteState* state, uint64_t id);
 Drp2VkliteObject* _vklite_add(
     Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind);
 void _vklite_destroy_object(Drp2VkliteObject* object);
+DvzDrp2ValidationResult _vklite_fail_destroy_object(
+    Drp2VkliteObject* object, DvzDrp2ValidationCode code, uint32_t command_index);
 VkImageView _vklite_object_image_view(const Drp2VkliteObject* object);
 void _vklite_state_cleanup(Drp2VkliteState* state);
 bool _vklite_defer_destroy_object(
@@ -237,4 +242,18 @@ void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
 void _vklite_owned_commands_destroy(DvzCommands* cmds);
 void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
+bool _vklite_compile_glsl(
+    const char* stage, const char* code, uint32_t** spv, uint64_t* spv_size);
+DvzDrp2ValidationResult _vklite_create_shader_module(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_create_sampler(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_create_bind_group_layout(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_create_bind_group(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_create_render_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_create_compute_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 #endif
