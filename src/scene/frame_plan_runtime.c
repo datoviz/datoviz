@@ -136,7 +136,16 @@ static bool _emitter_prepare_render_multi(
         if (vs_id == 0) { ok = false; break; }
         if (is_new)
         {
-            if (shader.vertex_spirv_key != NULL)
+            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+            {
+                if (shader.vertex_wgsl == NULL)
+                    ok = false;
+                else
+                    ok = ok && _emit_shader(
+                                     stream, vs_id, "VERTEX", shader.vertex_wgsl,
+                                     shader.vertex_glsl, cfg);
+            }
+            else if (shader.vertex_spirv_key != NULL)
                 ok = ok && _emit_shader_spirv(
                                stream, vs_id, "VERTEX", shader.vertex_spirv_key,
                                shader.vertex_glsl, cfg);
@@ -148,7 +157,17 @@ static bool _emitter_prepare_render_multi(
         if (fs_id == 0) { ok = false; break; }
         if (ok && is_new)
         {
-            if (shader.fragment_spirv_key != NULL)
+            if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+            {
+                if (shader.fragment_wgsl == NULL)
+                    ok = false;
+                else
+                    ok = ok &&
+                         _emit_shader(
+                             stream, fs_id, "FRAGMENT", shader.fragment_wgsl,
+                             shader.fragment_glsl, cfg);
+            }
+            else if (shader.fragment_spirv_key != NULL)
                 ok = ok && _emit_shader_spirv(
                                stream, fs_id, "FRAGMENT", shader.fragment_spirv_key,
                                shader.fragment_glsl, cfg);

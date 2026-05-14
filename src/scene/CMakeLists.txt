@@ -24,6 +24,7 @@ target_include_directories(datoviz_scene
 )
 
 target_compile_definitions(datoviz_scene PUBLIC ${DVZ_COMPILE_DEFINITIONS})
+target_compile_definitions(datoviz_scene PUBLIC DVZ_HAS_WGSL_SHADERS=${DVZ_HAS_WGSL_SHADERS})
 if(TARGET datoviz_vklite)
     target_compile_definitions(datoviz_scene PUBLIC DVZ_DRP2_HAS_VKLITE=1)
 else()

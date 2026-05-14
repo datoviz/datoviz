@@ -61,6 +61,8 @@ typedef struct DvzSceneVisualShaderDesc
     char pipeline_key[48];
     const char* vertex_glsl;
     const char* fragment_glsl;
+    const char* vertex_wgsl;
+    const char* fragment_wgsl;
     const char* vertex_spirv_key;
     const char* fragment_spirv_key;
 } DvzSceneVisualShaderDesc;

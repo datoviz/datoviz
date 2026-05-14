@@ -122,6 +122,8 @@ int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* i
 
 int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_primitive_triangle_list_emit_wgsl(TstSuite* suite, TstItem* item);
+
 int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, TstItem* item);
 
 int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item);

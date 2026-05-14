@@ -753,6 +753,8 @@ bool _scene_visual_shader_desc(
                 visual->topology, format_tag);
             out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
             out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
+            out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
+            out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
             out->vertex_spirv_key = "primitive_vert";
             out->fragment_spirv_key = "primitive_frag";
         }

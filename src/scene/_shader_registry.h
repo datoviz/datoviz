@@ -66,6 +66,8 @@ bool _emit_shader_spirv(
 
 const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment);
 
+const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment);
+
 const char* _fixture_vertex_wgsl(void);
 
 const char* _fullscreen_vertex_wgsl(void);

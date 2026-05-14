@@ -350,6 +350,62 @@ int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item
 }
 
 
+int test_scene_primitive_triangle_list_emit_wgsl(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    AT(visual != NULL);
+
+    float positions[3][3] = {
+        {-0.6f, -0.5f, 0.0f},
+        { 0.6f, -0.5f, 0.0f},
+        { 0.0f,  0.6f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 180, 255, 255}, {255, 255, 255, 255}};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_primitive_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+    AT(strstr(json, "\"format\": \"glsl\"") == NULL);
+    AT(strstr(json, "@vertex") != NULL);
+    AT(strstr(json, "@fragment") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2882,6 +2938,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_triangle_list_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_line_strip_glsl_executes);
+    TEST_SIMPLE(test_scene_primitive_triangle_list_emit_wgsl);
     TEST_SIMPLE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TEST_SIMPLE(test_scene_mesh_emits_depth_attachment);
     TEST_SIMPLE(test_scene_indexed_primitive_emits_draw_indexed);

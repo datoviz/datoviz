@@ -109,6 +109,19 @@
     "layout(location=0)in vec4 fragColor;\n"                                                    \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=fragColor;}\n"
+#define DRP2_PRIMITIVE_VERTEX_WGSL                                                              \
+    "struct MVP { model: mat4x4f, view: mat4x4f, proj: mat4x4f, time: f32, flags: u32, };\n"   \
+    "struct VertexIn { @location(0) position: vec3f, @location(1) color: vec4f, };\n"           \
+    "struct VertexOut { @builtin(position) position: vec4f, @location(0) color: vec4f, };\n"    \
+    "@group(0) @binding(0) var<uniform> mvp: MVP;\n"                                            \
+    "fn transform(position: vec3f) -> vec4f {"                                                   \
+    "return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);}\n"                         \
+    "@vertex fn main(input: VertexIn) -> VertexOut {"                                           \
+    "var output: VertexOut; output.position = transform(input.position);"                       \
+    "output.color = input.color; return output;}\n"
+#define DRP2_PRIMITIVE_FRAGMENT_WGSL                                                            \
+    "struct FragmentIn { @location(0) color: vec4f, };\n"                                      \
+    "@fragment fn main(input: FragmentIn) -> @location(0) vec4f { return input.color; }\n"
 #define DRP2_PRIMITIVE_LIT_VERTEX_GLSL                                                          \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
@@ -305,6 +318,34 @@ const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment)
         return fragment ? DRP2_PRIMITIVE_LIT_FRAGMENT_GLSL : DRP2_PRIMITIVE_LIT_VERTEX_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
         return fragment ? DRP2_IMAGE_FRAGMENT_GLSL : DRP2_IMAGE_VERTEX_GLSL;
+    default:
+        return NULL;
+    }
+}
+
+
+/**
+ * Return the WGSL source for a built-in scene shader.
+ *
+ * @param shader the built-in shader key
+ * @param fragment whether to return the fragment stage variant
+ * @return the WGSL source, or NULL when the key/stage pair has no WGSL variant
+ */
+const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment)
+{
+    switch (shader)
+    {
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
+#if DVZ_HAS_WGSL_SHADERS
+    {
+        unsigned long size = 0;
+        const char* key = fragment ? "primitive_frag" : "primitive_vert";
+        const char* source = dvz_resource_wgsl(key, &size);
+        if (source != NULL && size > 0)
+            return source;
+    }
+#endif
+        return fragment ? DRP2_PRIMITIVE_FRAGMENT_WGSL : DRP2_PRIMITIVE_VERTEX_WGSL;
     default:
         return NULL;
     }
