@@ -178,17 +178,18 @@ Current gap: separate from live GLFW arcball smoke.
 Command:
 
 ```bash
-just test test_app_offscreen_two_panel_points_light_both_halves
+./build/examples/c/hello_multi_panel_glfw 300
 ```
 
-Expected behavior: left and right panel contents render into their own halves with
-viewport/scissor isolation.
+Expected behavior: four panels render in their own quadrants with separate backgrounds and visual
+content. Pan/zoom gestures affect only the panel under the cursor, preserving viewport/scissor
+isolation across the other panels.
 
 Automated coverage: `test_app_offscreen_two_panel_points_light_both_halves`,
 `test_scene_multiple_panels_multiple_point_visuals_emit`,
 `test_scene_multi_panel_glsl_emits_viewport_scissor_commands`.
 
-Current gap: no manual multi-panel GLFW example yet.
+Current gap: manual gesture inspection is still needed for live per-panel controller routing.
 
 
 ### Partial texture update
