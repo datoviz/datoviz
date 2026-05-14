@@ -605,6 +605,8 @@ bool _figure_visual_index(const DvzFigure* figure, const DvzVisual* visual, uint
 
 bool _scene_visual_mutation_allowed(const DvzScene* scene, const char* action);
 
+void _scene_format_state_copy(DvzSceneFormatState* dst, const DvzFormatDesc* src);
+
 const DvzVisualBinding* _visual_binding_const(
     const DvzVisual* visual, DvzVisualBindingKind kind);
 
