@@ -72,6 +72,22 @@ retired through the deferred-destroy queue keyed by the borrowed command buffer.
 (`28/28`), `clang-tidy -p build --quiet` on the touched DRP2 files, and bounded
 `hello_mesh_glfw 60` smoke.
 
+Third focused hygiene slice on `2026-05-14` (`5a6c0608`): consumed pick/probe result slots are
+cleared after polling so queue storage does not retain stale panel pointers or payload data.
+Validation: `git diff --check`, `just build`, `just test scene` (`143/143`), and `clang-tidy -p
+build --quiet` on the touched scene files.
+
+Fourth focused hygiene slice on `2026-05-14` (`142673bb`): scene test warning readiness was
+improved by adding the missing render-pass-scope test prototype and replacing one direct
+`memset()` in scene tests with `dvz_memset()`. Validation: `git diff --check`, `just build`,
+`just test scene` (`143/143`), and `clang-tidy -p build src/scene/tests/scene_graph.c --quiet`.
+
+Fifth focused hygiene slice on `2026-05-14` (`aee41d6b`): DRP2 vklite transient backend object
+tables now trim destroyed tail slots after render/compute pass cleanup, explicit backend destroys,
+and deferred borrowed-frame retirement setup. Validation: `git diff --check`, `just build`,
+`just test drp2` (`83/83`), `just test scene` (`143/143`), and `clang-tidy -p build --quiet` on
+the touched DRP2 files.
+
 
 ## Immediate Task
 
@@ -111,10 +127,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    [../../docs/architecture/manual_scene_smoke.md](/home/cyrille/GIT/Viz/datoviz/docs/architecture/manual_scene_smoke.md).
    The remaining implementation gaps are live image-probe, multi-panel, and partial texture-update
    examples if those become worth adding after the hygiene pass.
-4. Current next: continue the hygiene/safety pass over the hot scene/DRP2/app files that changed
-   most recently. The first bounds-check and borrowed-depth ownership slices are done; remaining
-   review areas are stale-result handling, broader transient runtime object cleanup, and trace/status
-   warning/static-analysis readiness.
+4. Current next: the hot-path hygiene pass has covered bounds checks, borrowed-depth ownership,
+   stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
+   trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
+   bounded live app smoke around request/runtime steady state.
 5. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
 6. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
@@ -192,7 +208,8 @@ The first end-to-end request path is now in better shape than the original plan 
    - per-quadrant image probe position checks against a non-uniform texture,
    - transparent GPU probe miss,
    - forced GPU readback failure miss,
-   - late-result rejection after newer pick/probe results were already polled.
+   - late-result rejection after newer pick/probe results were already polled,
+   - consumed pick/probe result slot cleanup after polling.
 
 Batching was considered after the freshness cleanup and explicitly deferred for now:
 

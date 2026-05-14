@@ -106,6 +106,19 @@ Exit criteria:
 
 Goal: improve safety of the hot path touched by recent scene, request, DRP2 runtime, and app commits.
 
+Current status:
+
+1. DRP2 texture-layout and scene image-probe plan byte-size overflow checks are done.
+2. Borrowed frame-target depth attachments are retired through deferred destruction keyed by the
+   borrowed command buffer.
+3. Consumed scene pick/probe result slots are cleared after polling.
+4. Scene test warning readiness was tightened for the render-pass-scope test and one direct
+   `memset()` use.
+5. DRP2 vklite backend object tables now trim destroyed tail slots after transient pass cleanup,
+   explicit backend destroys, and deferred borrowed-frame retirement setup.
+6. Latest focused validation recorded on `2026-05-14`: `just test drp2` (`83/83`) and
+   `just test scene` (`143/143`).
+
 Scope first:
 
 1. `src/scene/scene.c`,
@@ -119,14 +132,21 @@ Scope first:
 
 Checklist:
 
-1. verify size arithmetic before allocations, byte copies, texture rows, and readback offsets,
-2. verify every partial-initialization failure path frees or marks objects unusable,
-3. ensure borrowed frame targets and command buffers are never destroyed or ended by non-owners,
-4. inspect transient DRP2/vklite runtime objects for per-frame accumulation,
-5. inspect request freshness, coalescing, and stale-result rejection for cross-panel leakage,
-6. check that app frame callbacks cannot mutate scene state while an emitted stream is live,
-7. check trace/status code for raw-struct hashing, padding dependence, and string-buffer bounds,
-8. add focused regression tests before changing semantics.
+1. Done: verify size arithmetic before allocations, byte copies, texture rows, and readback
+   offsets for the recent DRP2 texture and image-probe slices.
+2. Done for the current borrowed-depth slice: verify every partial-initialization failure path frees
+   or marks objects unusable.
+3. Done for current borrowed frame targets: ensure borrowed frame targets and command buffers are
+   never destroyed or ended by non-owners.
+4. Done for vklite object tables: inspect transient DRP2/vklite runtime objects for per-frame
+   accumulation.
+5. Done for request queues/results: inspect request freshness, coalescing, and stale-result rejection
+   for cross-panel leakage.
+6. Remaining: check that app frame callbacks cannot mutate scene state while an emitted stream is
+   live.
+7. Remaining: check trace/status code for raw-struct hashing, padding dependence, and string-buffer
+   bounds.
+8. Continue adding focused regression tests before changing semantics.
 
 Tools to try when available:
 
