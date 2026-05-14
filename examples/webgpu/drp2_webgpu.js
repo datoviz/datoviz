@@ -274,9 +274,18 @@ function alignedBytesPerRow(bytesPerRow) {
 
 
 
-function makeVertexBuffers(command) {
+function makeVertexBuffers(command, vertexShader) {
   const vertexBuffers = command.vertex_buffers ?? [];
   if (vertexBuffers.length === 0) {
+    if ((command.vertex_buffer_slots ?? 0) > 0 && vertexShader.code.includes("@location(0)")) {
+      return [
+        {
+          arrayStride: 12,
+          stepMode: "vertex",
+          attributes: [{ shaderLocation: 0, offset: 0, format: "float32x3" }],
+        },
+      ];
+    }
     return [];
   }
   if (command.vertex_buffer_slots !== undefined && command.vertex_buffer_slots !== vertexBuffers.length) {
@@ -335,7 +344,7 @@ function makeBindGroupLayoutEntry(entry) {
     case "storage_buffer":
       return {
         binding,
-        visibility,
+        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE,
         buffer: { type: "storage" },
       };
     default:
@@ -533,7 +542,7 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) 
     vertex: {
       module: vertexShader.module,
       entryPoint: vertexShader.entryPoint,
-      buffers: makeVertexBuffers(command),
+      buffers: makeVertexBuffers(command, vertexShader),
     },
     fragment: {
       module: fragmentShader.module,
@@ -779,6 +788,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
           module,
           entryPoint: command.entry_point ?? "main",
           stage: command.stage,
+          code: command.code,
         });
         break;
       }
