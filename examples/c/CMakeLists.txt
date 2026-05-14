@@ -96,6 +96,7 @@ if(TARGET datoviz_app)
         dvz_add_example(hello_point_glfw)
         dvz_add_example(hello_pick_hover_glfw)
         dvz_add_example(hello_image_probe_glfw)
+        dvz_add_example(hello_texture_update_glfw)
     endif()
 endif()
 

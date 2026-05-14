@@ -4,9 +4,9 @@ This checklist records the manual validation surface for the active v0.4 scene -
 path. It complements focused tests; it should stay short enough to run before broadening scene,
 request, or app behavior.
 
-Latest recorded smoke note: on `2026-05-14`, the `hello_*` C example smoke set was reported to run
-successfully. OS/GPU/backend details were not recorded; add them here if a later run exposes a
-platform-specific anomaly.
+Latest recorded smoke note: on `2026-05-14`, the `hello_*` C example smoke set and
+`hello_image_probe_glfw 300` were reported to run successfully. OS/GPU/backend details were not
+recorded; add them here if a later run exposes a platform-specific anomaly.
 
 Run from the repository root after a successful build:
 
@@ -196,17 +196,17 @@ Current gap: no manual multi-panel GLFW example yet.
 Command:
 
 ```bash
-just test test_app_offscreen_image_field_partial_update_changes_region
+./build/examples/c/hello_texture_update_glfw 300
 ```
 
-Expected behavior: a field subregion update changes only the expected rendered region on the next
-frame.
+Expected behavior: a scalar sampled field renders as a colormapped image. A bright square patch
+moves around the field, and the terminal prints the updated subregion every few frames.
 
 Automated coverage: `test_app_offscreen_image_field_partial_update_changes_region`,
 `test_scene_image_field_partial_update_emits_texture_subregion`,
 `test_scene_shared_field_mixed_full_and_partial_uploads`.
 
-Current gap: no manual partial-texture-update example yet.
+Current gap: manual inspection is still needed to confirm the visible live patch motion.
 
 
 ### Image probe request
