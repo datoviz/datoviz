@@ -14,7 +14,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdarg.h>
 #include <stdbool.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -24,33 +23,8 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_base64.h"
-#include "_compat.h"
-#include "_overflow.h"
+#include "_json.h"
 #include "_stream.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DVZ_DRP2_JSON_INITIAL_CAPACITY 4096
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct JsonBuilder JsonBuilder;
-
-struct JsonBuilder
-{
-    char* data;
-    uint64_t count;
-    uint64_t capacity;
-    bool failed;
-};
 
 
 
@@ -147,141 +121,6 @@ static const char* _command_name(DvzDrp2CommandType type)
     default:
         return "None";
     }
-}
-
-
-
-static bool _json_init(JsonBuilder* builder)
-{
-    ANN(builder);
-    builder->capacity = DVZ_DRP2_JSON_INITIAL_CAPACITY;
-    builder->count = 0;
-    builder->failed = false;
-    builder->data = (char*)dvz_calloc(builder->capacity, sizeof(char));
-    if (builder->data == NULL)
-    {
-        builder->failed = true;
-        return false;
-    }
-    return true;
-}
-
-
-
-static bool _json_ensure(JsonBuilder* builder, uint64_t count)
-{
-    ANN(builder);
-    if (builder->failed)
-        return false;
-    if (builder->data == NULL)
-    {
-        builder->failed = true;
-        return false;
-    }
-
-    uint64_t required = 0;
-    if (_dvz_add3_u64_overflows(builder->count, count, 1, &required))
-    {
-        builder->failed = true;
-        return false;
-    }
-
-    if (required <= builder->capacity)
-        return true;
-
-    uint64_t capacity = builder->capacity;
-    while (required > capacity)
-    {
-        if (capacity > UINT64_MAX / 2)
-        {
-            builder->failed = true;
-            return false;
-        }
-        capacity *= 2;
-    }
-
-    char* data = (char*)dvz_realloc(builder->data, capacity);
-    if (data == NULL)
-    {
-        builder->failed = true;
-        return false;
-    }
-    builder->capacity = capacity;
-    builder->data = data;
-    return true;
-}
-
-
-
-static void _json_append(JsonBuilder* builder, const char* format, ...)
-{
-    ANN(builder);
-    ANN(format);
-    if (builder->failed)
-        return;
-
-    while (true)
-    {
-        if (builder->data == NULL || builder->count >= builder->capacity)
-        {
-            builder->failed = true;
-            return;
-        }
-
-        uint64_t available = builder->capacity - builder->count;
-        va_list args;
-        va_start(args, format);
-        int written = dvz_vsnprintf(
-            builder->data + builder->count, (size_t)available, format, args);
-        va_end(args);
-
-        if (written < 0)
-        {
-            if (!_json_ensure(builder, builder->capacity))
-                return;
-            continue;
-        }
-
-        uint64_t written_u = (uint64_t)written;
-        if (written_u < available)
-        {
-            builder->count += written_u;
-            return;
-        }
-        if (!_json_ensure(builder, written_u))
-            return;
-    }
-}
-
-
-/**
- * Append a JSON string literal with minimal escaping.
- *
- * @param builder the JSON builder
- * @param string the string to append
- */
-static void _json_append_escaped_string(JsonBuilder* builder, const char* string)
-{
-    ANN(builder);
-    if (string == NULL)
-        string = "";
-
-    _json_append(builder, "\"");
-    for (uint32_t i = 0; string[i] != '\0'; i++)
-    {
-        char c = string[i];
-        if (c == '"' || c == '\\')
-            _json_append(builder, "\\%c", c);
-        else if (c == '\n')
-            _json_append(builder, "\\n");
-        else if (c == '\r')
-            _json_append(builder, "\\r");
-        else if (c == '\t')
-            _json_append(builder, "\\t");
-        else
-            _json_append(builder, "%c", c);
-    }
-    _json_append(builder, "\"");
 }
 
 
@@ -928,5 +767,4 @@ char* dvz_drp2_stream_json(const DvzDrp2CommandStream* stream, const char* name)
  * @param json the JSON string
  */
 void dvz_drp2_stream_json_destroy(char* json) { dvz_free(json); }
-
 
