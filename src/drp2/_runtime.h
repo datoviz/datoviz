@@ -244,6 +244,8 @@ void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
 DvzCommands* _vklite_owned_commands_create(DvzDevice* device);
 void _vklite_owned_commands_destroy(DvzCommands* cmds);
+DvzCommands* _vklite_borrowed_frame_commands_create(
+    DvzDevice* device, VkCommandBuffer command_buffer);
 void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
 DvzDrp2ValidationResult _vklite_owned_commands_end_submit(
     DvzCommands* cmds, uint32_t command_index);
@@ -276,4 +278,30 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
 DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_begin_render_pass(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_begin_compute_pass(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_set_pipeline(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_set_vertex_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_set_index_buffer(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_set_viewport(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_set_scissor(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_set_bind_group(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_draw(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_draw_indexed(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_dispatch_workgroups(
+    Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_end_render_pass(
+    Drp2VkliteState* state, uint64_t pass_id, uint32_t command_index);
+DvzDrp2ValidationResult _vklite_end_compute_pass(
+    Drp2VkliteState* state, uint64_t pass_id, uint32_t command_index);
 #endif
