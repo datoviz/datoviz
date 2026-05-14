@@ -26,6 +26,10 @@
 
 int test_scene_panzoom_arcball(TstSuite* suite);
 
+int test_scene_frame_plan(TstSuite* suite);
+
+int test_scene_frame_plan_emit(TstSuite* suite);
+
 int test_panzoom_create_reset(TstSuite* suite, TstItem* item);
 
 int test_panzoom_pan_shift(TstSuite* suite, TstItem* item);
