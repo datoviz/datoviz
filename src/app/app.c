@@ -791,6 +791,33 @@ static void _app_sync_figure_size(DvzAppWindow* win, const DvzStreamFrame* frame
 
 
 
+/**
+ * Report one failed DRP2 runtime execution.
+ *
+ * @param prefix short failure context
+ * @param stream the emitted command stream
+ * @param result the failed validation result
+ */
+static void _app_log_runtime_failure(
+    const char* prefix, const DvzDrp2CommandStream* stream, DvzDrp2ValidationResult result)
+{
+    ANN(prefix);
+    ANN(stream);
+
+    DvzDrp2CommandType type = DVZ_DRP2_COMMAND_NONE;
+    const DvzDrp2Command* failed = dvz_drp2_stream_get(stream, result.command_index);
+    if (failed != NULL)
+        type = dvz_drp2_command_type(failed);
+    uint64_t id = 0;
+    if (failed != NULL && type == DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER)
+        id = failed->u.begin_command_encoder.id;
+    log_error(
+        "%s: code=%d command=%" PRIu32 " type=%d (%s) id=%" PRIu64, prefix,
+        (int)result.code, result.command_index, (int)type, _trace_command_name(type), id);
+}
+
+
+
 static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
     (void)canvas;
@@ -838,7 +865,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
     if (!result.ok)
-        log_error("_app_draw runtime execution failed at command %" PRIu32, result.command_index);
+        _app_log_runtime_failure("_app_draw runtime execution failed", stream, result);
     else
         (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
     dvz_drp2_stream_destroy(stream);
