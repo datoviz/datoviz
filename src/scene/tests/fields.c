@@ -1,0 +1,991 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
+/*************************************************************************************************/
+/*  Scene field and scale tests                                                                  */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <inttypes.h>
+#include <string.h>
+
+#include "_assertions.h"
+#include "../_scene.h"
+#include "../../drp2/_stream.h"
+#include "datoviz/drp2.h"
+#include "datoviz/scene.h"
+#include "helpers.h"
+#include "test_scene.h"
+#include "testing.h"
+
+
+
+
+/*************************************************************************************************/
+/*  Tests                                                                                        */
+/*************************************************************************************************/
+
+int test_scene_scale_colormap_colorbar_core(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 100, 100, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "Depth",
+                   .unit = "um",
+                   .format =
+                       (DvzFormatDesc){
+                           .precision = 2,
+                           .show_unit = true,
+                           .unit = "um",
+                           .suffix = " depth",
+                       },
+               });
+    ANN(scale);
+    AT(scene->scale_count == 1);
+    AT(scale->scene == scene);
+    AT(scale->kind == DVZ_SCALE_CONTINUOUS);
+    AT(strcmp(scale->label, "Depth") == 0);
+    AT(strcmp(scale->unit, "um") == 0);
+    AT(scale->format.precision == 2);
+    AT(strcmp(scale->format.unit, "um") == 0);
+    AT(strcmp(scale->format.suffix, " depth") == 0);
+
+    dvz_scale_set_domain(scale, -600.0, 0.0);
+    dvz_scale_set_view_range(scale, -300.0, -50.0);
+    AT(scale->has_domain);
+    AT(scale->domain_min == -600.0);
+    AT(scale->domain_max == 0.0);
+    AT(scale->has_view_range);
+    AT(scale->view_min == -300.0);
+    AT(scale->view_max == -50.0);
+
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_MAGMA);
+    ANN(colormap);
+    AT(scene->colormap_count == 1);
+    AT(colormap->builtin == DVZ_BUILTIN_COLORMAP_MAGMA);
+
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 0, 255}},
+        {.position = 1.0, .rgba = {255, 255, 255, 255}},
+    };
+    dvz_colormap_set_center(colormap, 0.5);
+    dvz_colormap_set_stops(colormap, stops, 2);
+    AT(colormap->has_center);
+    AT(colormap->center == 0.5);
+    AT(colormap->stop_count == 2);
+    AT(colormap->stops[1].rgba[0] == 255);
+
+    dvz_scale_set_colormap(scale, colormap);
+    AT(scale->colormap == colormap);
+
+    DvzColorbar* colorbar = dvz_colorbar(
+        panel, scale, &(DvzColorbarDesc){
+                          .orientation = DVZ_COLORBAR_ORIENTATION_HORIZONTAL,
+                          .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM,
+                          .title = "Depth map",
+                      });
+    ANN(colorbar);
+    AT(scene->colorbar_count == 1);
+    AT(panel->colorbar_count == 1);
+    AT(panel->colorbars[0] == colorbar);
+    AT(colorbar->scene == scene);
+    AT(colorbar->panel == panel);
+    AT(colorbar->scale == scale);
+    AT(colorbar->orientation == DVZ_COLORBAR_ORIENTATION_HORIZONTAL);
+    AT(colorbar->anchor == DVZ_SCENE_ANCHOR_PANEL_BOTTOM);
+    AT(strcmp(colorbar->title, "Depth map") == 0);
+
+    dvz_colorbar_set_format(
+        colorbar, &(DvzFormatDesc){
+                       .precision = 0,
+                       .unit = "um",
+                   });
+    AT(colorbar->has_format);
+    AT(colorbar->format.precision == 0);
+    AT(strcmp(colorbar->format.unit, "um") == 0);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_colorbar_rejects_cross_scene_scale(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzFigure* figure = dvz_figure(scene0, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzScale* foreign_scale = dvz_scale(scene1, NULL);
+    ANN(foreign_scale);
+
+    DvzColorbar* colorbar = dvz_colorbar(panel, foreign_scale, NULL);
+    AT(colorbar == NULL);
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+int test_scene_image_visual_binds_colormap_scale(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "Intensity",
+                   .unit = "a.u.",
+               });
+    ANN(scale);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+
+    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+    AT(image->scale == scale);
+    AT(strcmp(image->scale_slot, "colormap") == 0);
+
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    float positions[4 * 3] = {
+        -1.0f, +1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        +1.0f, +1.0f, 0.0f,
+        +1.0f, -1.0f, 0.0f,
+    };
+    float texcoords[4 * 2] = {
+        0.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+    };
+    static const uint8_t pixels[4 * 4 * 4] = {0};
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_sampled_field_set_data(
+           field, &(DvzFieldDataView){.data = pixels, .bytes_per_row = 16, .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    dvz_drp2_stream_destroy(stream);
+
+    char* json = dvz_scene_json(scene);
+    ANN(json);
+    AT(strstr(json, "\"scale\":{\"id\":\"s0\",\"slot\":\"colormap\"}") != NULL);
+    AT(strstr(json, "\"field\":{\"id\":\"f0\",\"slot\":\"field\"}") != NULL);
+    AT(strstr(json, "\"fields\":[{\"id\":\"f0\"") != NULL);
+    dvz_scene_json_destroy(json);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_visual_scale_rejects_cross_scene_scale(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzScale* foreign_scale = dvz_scale(scene1, NULL);
+    ANN(foreign_scale);
+    DvzVisual* image = dvz_image(scene0, 0);
+    ANN(image);
+
+    AT(dvz_visual_set_scale(image, "colormap", foreign_scale) != 0);
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+int test_scene_visual_buffer_rejects_cross_scene_buffer(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzSceneBuffer* foreign_buffer = dvz_scene_buffer(
+        scene1, &(DvzSceneBufferDesc){.usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+    ANN(foreign_buffer);
+    DvzVisual* visual = dvz_primitive(scene0, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    ANN(visual);
+
+    AT(!dvz_visual_set_buffer(visual, "index", foreign_buffer));
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+int test_scene_image_scalar_texture_uses_bound_scale(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* visual = dvz_image(scene, 0);
+    ANN(visual);
+    AT(dvz_visual_set_scale(visual, "colormap", scale) == 0);
+
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    float pixels[4 * 4];
+    for (uint32_t i = 0; i < 16; i++)
+        pixels[i] = 1.0f;
+
+    AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_texture_f32(visual, pixels, 4, 4) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    AT(visual->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    AT(rgba[0] == 255);
+    AT(rgba[1] == 0);
+    AT(rgba[2] == 0);
+    AT(rgba[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_image_r16_float_field_uses_bound_scale(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+
+    uint16_t values[16];
+    for (uint32_t i = 0; i < 16; i++)
+        values[i] = 0x3c00u; /* half-float 1.0 */
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R16_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(uint16_t), .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    AT(image->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)image->texture.rgba;
+    AT(rgba[0] == 255);
+    AT(rgba[1] == 0);
+    AT(rgba[2] == 0);
+    AT(rgba[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_image_r16_snorm_field_uses_bound_scale(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, -1.0, 1.0);
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+
+    int16_t values[16];
+    for (uint32_t i = 0; i < 16; i++)
+        values[i] = 32767; /* SNORM 1.0 */
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R16_SNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(int16_t), .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream);
+    AT(image->texture.rgba != NULL);
+    uint8_t* rgba = (uint8_t*)image->texture.rgba;
+    AT(rgba[0] == 255);
+    AT(rgba[1] == 0);
+    AT(rgba[2] == 0);
+    AT(rgba[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_visual_field_rejects_cross_scene_field(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene0 = dvz_scene();
+    DvzScene* scene1 = dvz_scene();
+    ANN(scene0);
+    ANN(scene1);
+
+    DvzVisual* image = dvz_image(scene0, 0);
+    ANN(image);
+    DvzSampledField* field = dvz_sampled_field(
+        scene1, &(DvzSampledFieldDesc){
+                    .dim = DVZ_FIELD_DIM_2D,
+                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                    .width = 2,
+                    .height = 2,
+                    .depth = 1,
+                });
+    ANN(field);
+
+    AT(!dvz_visual_set_field(image, "field", field));
+    AT(_captured_log_contains(suite, "different scene"));
+
+    dvz_scene_destroy(scene1);
+    dvz_scene_destroy(scene0);
+    return 0;
+}
+
+
+int test_scene_sampled_field_update_region(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R8_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    uint8_t base[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+
+    uint8_t patch[4] = {1, 2, 3, 4};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 1, .z = 0, .width = 2, .height = 2, .depth = 1},
+        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+
+    uint8_t* data = (uint8_t*)field->data;
+    AT(data[5] == 1);
+    AT(data[6] == 2);
+    AT(data[9] == 3);
+    AT(data[10] == 4);
+    AT(field->dirty);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_sampled_field_rejects_unsupported_format(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RG32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_VECTOR_2,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    AT(field == NULL);
+    AT(_captured_log_contains(suite, "unsupported sampled field format"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_image_visual_rejects_3d_field(TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 4,
+               });
+    ANN(field);
+
+    AT(!dvz_visual_set_field(image, "field", field));
+    AT(_captured_log_contains(suite, "require a 2D sampled field"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_sampled_field_update_region_rejects_out_of_bounds(
+    TstSuite* suite, TstItem* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R8_UINT,
+                   .semantic = DVZ_FIELD_SEMANTIC_LABEL,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    uint8_t base[16] = {0};
+    uint8_t patch[4] = {1, 2, 3, 4};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = base, .bytes_per_row = 4, .rows_per_image = 4}));
+    AT(!dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 3, .y = 3, .z = 0, .width = 2, .height = 2, .depth = 1},
+        &(DvzFieldDataView){.data = patch, .bytes_per_row = 2, .rows_per_image = 2}));
+    AT(_captured_log_contains(suite, "update region exceeds field dimensions"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_sampled_field_destroy_clears_visual_binding(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_COLOR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+
+    uint8_t rgba[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = rgba, .bytes_per_row = 8, .rows_per_image = 2}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(image->field == field);
+    AT(strcmp(image->field_slot, "field") == 0);
+
+    AT(dvz_sampled_field_destroy(field));
+    AT(image->field == NULL);
+    AT(image->field_slot[0] == '\0');
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_shared_field_update_marks_two_visuals_dirty(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* image0 = dvz_image(scene, 0);
+    DvzVisual* image1 = dvz_image(scene, 0);
+    ANN(image0);
+    ANN(image1);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 2 * sizeof(float), .rows_per_image = 2}));
+    AT(dvz_visual_set_field(image0, "field", field));
+    AT(dvz_visual_set_field(image1, "field", field));
+
+    image0->texture.dirty = false;
+    image1->texture.dirty = false;
+    field->dirty = false;
+
+    float patch[1] = {1.0f};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 1, .z = 0, .width = 1, .height = 1, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch, .bytes_per_row = sizeof(float), .rows_per_image = 1}));
+    AT(field->dirty);
+    AT(image0->texture.dirty);
+    AT(image1->texture.dirty);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_image_field_partial_update_emits_texture_subregion(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale);
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale, colormap);
+
+    DvzVisual* image = dvz_image(scene, 0);
+    ANN(image);
+    float positions[4][3] = {
+        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
+        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+    AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
+    AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image, "colormap", scale) == 0);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
+    AT(dvz_visual_set_field(image, "field", field));
+    AT(dvz_panel_add_visual(panel, image, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream0);
+    dvz_drp2_stream_destroy(stream0);
+
+    float patch[2] = {1.0f, 1.0f};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch,
+            .bytes_per_row = 2 * sizeof(float),
+            .rows_per_image = 1,
+        }));
+
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream1);
+
+    uint32_t write_texture_count = 0;
+    bool found_region = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type != DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            continue;
+        write_texture_count++;
+        if (cmd->u.write_texture.origin_x == 1 && cmd->u.write_texture.origin_y == 2 &&
+            cmd->u.write_texture.width == 2 && cmd->u.write_texture.height == 1)
+        {
+            found_region = true;
+        }
+    }
+    AT(write_texture_count == 1);
+    AT(found_region);
+    AT(!field->dirty);
+
+    dvz_drp2_stream_destroy(stream1);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_shared_field_mixed_full_and_partial_uploads(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+
+    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    ANN(scale0);
+    ANN(scale1);
+    dvz_scale_set_domain(scale0, 0.0, 1.0);
+    dvz_scale_set_domain(scale1, 0.0, 1.0);
+
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    ANN(colormap);
+    DvzColormapStop stops[2] = {
+        {.position = 0.0, .rgba = {0, 0, 255, 255}},
+        {.position = 1.0, .rgba = {255, 0, 0, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, 2);
+    dvz_scale_set_colormap(scale0, colormap);
+    dvz_scale_set_colormap(scale1, colormap);
+
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_2D,
+                   .format = DVZ_FIELD_FORMAT_R32_FLOAT,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 4,
+                   .height = 4,
+                   .depth = 1,
+               });
+    ANN(field);
+    float values[16] = {0};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = values, .bytes_per_row = 4 * sizeof(float), .rows_per_image = 4}));
+
+    float positions0[4][3] = {
+        {-1.0f, -1.0f, 0.0f}, {-1.0f, 0.0f, 0.0f},
+        { 0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 0.0f},
+    };
+    float positions1[4][3] = {
+        {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
+        {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f},
+    };
+    float texcoords[4][2] = {
+        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+    };
+
+    DvzVisual* image0 = dvz_image(scene, 0);
+    DvzVisual* image1 = dvz_image(scene, 0);
+    ANN(image0);
+    ANN(image1);
+    AT(dvz_visual_set_data(image0, "position", positions0, 4) == 0);
+    AT(dvz_visual_set_data(image0, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image0, "colormap", scale0) == 0);
+    AT(dvz_visual_set_field(image0, "field", field));
+    AT(dvz_panel_add_visual(panel, image0, NULL) == 0);
+
+    AT(dvz_visual_set_data(image1, "position", positions1, 4) == 0);
+    AT(dvz_visual_set_data(image1, "texcoords", texcoords, 4) == 0);
+    AT(dvz_visual_set_scale(image1, "colormap", scale1) == 0);
+    AT(dvz_visual_set_field(image1, "field", field));
+    AT(dvz_panel_add_visual(panel, image1, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+
+    DvzDrp2CommandStream* stream0 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream0);
+    dvz_drp2_stream_destroy(stream0);
+
+    float patch[2] = {1.0f, 1.0f};
+    AT(dvz_sampled_field_update_region(
+        field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
+        &(DvzFieldDataView){
+            .data = patch,
+            .bytes_per_row = 2 * sizeof(float),
+            .rows_per_image = 1,
+        }));
+    dvz_scale_set_view_range(scale0, 0.0, 1.0);
+
+    DvzDrp2CommandStream* stream1 = dvz_figure_emit(figure, &caps, &report);
+    ANN(stream1);
+
+    uint32_t write_texture_count = 0;
+    bool found_full = false;
+    bool found_partial = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream1); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream1, i);
+        if (cmd->type != DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            continue;
+        write_texture_count++;
+        if (cmd->u.write_texture.origin_x == 0 && cmd->u.write_texture.origin_y == 0 &&
+            cmd->u.write_texture.width == 4 && cmd->u.write_texture.height == 4)
+        {
+            found_full = true;
+        }
+        if (cmd->u.write_texture.origin_x == 1 && cmd->u.write_texture.origin_y == 2 &&
+            cmd->u.write_texture.width == 2 && cmd->u.write_texture.height == 1)
+        {
+            found_partial = true;
+        }
+    }
+    AT(write_texture_count == 2);
+    AT(found_full);
+    AT(found_partial);
+
+    dvz_drp2_stream_destroy(stream1);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Register scene field and scale tests.
+ *
+ * @param suite the active test suite
+ * @return 0 on success
+ */
+int test_scene_fields(TstSuite* suite)
+{
+    ANN(suite);
+    const char* tags = "scene";
+
+    TEST_SIMPLE(test_scene_scale_colormap_colorbar_core);
+    TEST_SIMPLE(test_scene_colorbar_rejects_cross_scene_scale);
+    TEST_SIMPLE(test_scene_image_visual_binds_colormap_scale);
+    TEST_SIMPLE(test_scene_visual_scale_rejects_cross_scene_scale);
+    TEST_SIMPLE(test_scene_visual_buffer_rejects_cross_scene_buffer);
+    TEST_SIMPLE(test_scene_image_scalar_texture_uses_bound_scale);
+    TEST_SIMPLE(test_scene_image_r16_float_field_uses_bound_scale);
+    TEST_SIMPLE(test_scene_image_r16_snorm_field_uses_bound_scale);
+    TEST_SIMPLE(test_scene_visual_field_rejects_cross_scene_field);
+    TEST_SIMPLE(test_scene_sampled_field_update_region);
+    TEST_SIMPLE(test_scene_sampled_field_rejects_unsupported_format);
+    TEST_SIMPLE(test_scene_image_visual_rejects_3d_field);
+    TEST_SIMPLE(test_scene_sampled_field_update_region_rejects_out_of_bounds);
+    TEST_SIMPLE(test_scene_sampled_field_destroy_clears_visual_binding);
+    TEST_SIMPLE(test_scene_shared_field_update_marks_two_visuals_dirty);
+    TEST_SIMPLE(test_scene_image_field_partial_update_emits_texture_subregion);
+    TEST_SIMPLE(test_scene_shared_field_mixed_full_and_partial_uploads);
+
+    return 0;
+}
