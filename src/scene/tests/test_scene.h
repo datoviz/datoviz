@@ -34,6 +34,12 @@ int test_scene_fields(TstSuite* suite);
 
 int test_scene_interaction(TstSuite* suite);
 
+int test_scene_graph(TstSuite* suite);
+
+int test_scene_pick_probe(TstSuite* suite);
+
+int test_scene_app(TstSuite* suite);
+
 int test_panzoom_create_reset(TstSuite* suite, TstItem* item);
 
 int test_panzoom_pan_shift(TstSuite* suite, TstItem* item);
