@@ -319,7 +319,7 @@ function makeDepthStencil(command) {
 
 
 
-function makeBindGroupLayoutEntry(entry) {
+function makeBindGroupLayoutEntry(entry, storageAccess = "read_write") {
   const binding = required(entry.binding, "bind-group layout entry needs binding");
   const visibility = GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE;
   switch (entry.binding_type) {
@@ -345,11 +345,36 @@ function makeBindGroupLayoutEntry(entry) {
       return {
         binding,
         visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE,
-        buffer: { type: "storage" },
+        buffer: { type: storageAccess === "read" ? "read-only-storage" : "storage" },
       };
     default:
       throw new Error(`unsupported bind-group layout binding_type: ${entry.binding_type}`);
   }
+}
+
+
+
+function shaderStorageAccess(shader, binding) {
+  const escaped = String(binding).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(
+    `@binding\\(${escaped}\\)[\\s\\S]*?var<storage\\s*,\\s*read\\s*>`,
+  );
+  return pattern.test(shader.code) ? "read" : "read_write";
+}
+
+
+
+function specializeBindGroupLayout(device, layoutRecord, shader) {
+  const entries = layoutRecord.entries.map((entry) => {
+    const access = entry.binding_type === "storage_buffer"
+      ? shaderStorageAccess(shader, entry.binding)
+      : "read_write";
+    return makeBindGroupLayoutEntry(entry, access);
+  });
+  return {
+    entries: layoutRecord.entries,
+    layout: device.createBindGroupLayout({ entries }),
+  };
 }
 
 
@@ -416,6 +441,28 @@ function makeBindGroup(device, bindGroupLayout, command, buffers, textures, text
       );
     }),
   });
+}
+
+
+
+function bindGroupForSet(device, passRecord, slot, bindGroupRecord, command, buffers, textures, textureViews, samplers) {
+  const layout = passRecord.pipeline?.bindGroupLayouts?.[slot];
+  if (layout === undefined && (command.dynamic_offsets ?? []).length === 0) {
+    return bindGroupRecord.bindGroup;
+  }
+  return makeBindGroup(
+    device,
+    required(layout, `missing pipeline bind-group layout at slot ${slot}`),
+    {
+      label: `${command.bind_group_id}:set`,
+      entries: bindGroupRecord.entries,
+      dynamic_offsets: command.dynamic_offsets ?? [],
+    },
+    buffers,
+    textures,
+    textureViews,
+    samplers,
+  );
 }
 
 
@@ -528,32 +575,70 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) 
   const streamFormat = colorTargets[0].format;
   const targetFormat = streamFormat === "canvas" ? canvasFormat : mapTextureFormat(streamFormat);
   const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
-  const layout = bindGroupLayoutIds.length > 0
+  const pipelineBindGroupLayouts = bindGroupLayoutIds.map((id) =>
+    required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
+  );
+  const layout = pipelineBindGroupLayouts.length > 0
     ? device.createPipelineLayout({
-        bindGroupLayouts: bindGroupLayoutIds.map((id) =>
-          required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`).layout,
-        ),
+        bindGroupLayouts: pipelineBindGroupLayouts.map((record) => record.layout),
       })
     : "auto";
 
-  return device.createRenderPipeline({
-    label: command.label,
-    layout,
-    vertex: {
-      module: vertexShader.module,
-      entryPoint: vertexShader.entryPoint,
-      buffers: makeVertexBuffers(command, vertexShader),
-    },
-    fragment: {
-      module: fragmentShader.module,
-      entryPoint: fragmentShader.entryPoint,
-      targets: [{ format: targetFormat }],
-    },
-    primitive: {
-      topology: mapTopology(command.topology),
-    },
-    depthStencil: makeDepthStencil(command),
-  });
+  return {
+    bindGroupLayouts: pipelineBindGroupLayouts,
+    pipeline: device.createRenderPipeline({
+      label: command.label,
+      layout,
+      vertex: {
+        module: vertexShader.module,
+        entryPoint: vertexShader.entryPoint,
+        buffers: makeVertexBuffers(command, vertexShader),
+      },
+      fragment: {
+        module: fragmentShader.module,
+        entryPoint: fragmentShader.entryPoint,
+        targets: [{ format: targetFormat }],
+      },
+      primitive: {
+        topology: mapTopology(command.topology),
+      },
+      depthStencil: makeDepthStencil(command),
+    }),
+  };
+}
+
+
+
+function makeComputePipeline(device, shaders, bindGroupLayouts, command) {
+  const shader = required(
+    shaders.get(command.compute_shader_module_id),
+    `unknown compute shader module ${command.compute_shader_module_id}`,
+  );
+  const bindGroupLayoutIds = command.bind_group_layout_ids ?? [];
+  const pipelineBindGroupLayouts = bindGroupLayoutIds.map((id) =>
+    specializeBindGroupLayout(
+      device,
+      required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
+      shader,
+    ),
+  );
+  const layout = pipelineBindGroupLayouts.length > 0
+    ? device.createPipelineLayout({
+        bindGroupLayouts: pipelineBindGroupLayouts.map((record) => record.layout),
+      })
+    : "auto";
+
+  return {
+    bindGroupLayouts: pipelineBindGroupLayouts,
+    pipeline: device.createComputePipeline({
+      label: command.label,
+      layout,
+      compute: {
+        module: shader.module,
+        entryPoint: shader.entryPoint,
+      },
+    }),
+  };
 }
 
 
@@ -800,78 +885,98 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
         );
         break;
 
+      case "CreateComputePipeline":
+        pipelines.set(command.id, makeComputePipeline(device, shaders, bindGroupLayouts, command));
+        break;
+
       case "BeginCommandEncoder":
         encoders.set(command.id, device.createCommandEncoder({ label: command.label }));
         break;
 
       case "BeginRenderPass":
-        passes.set(command.id, beginRenderPass(context, textures, encoders, command));
+        passes.set(command.id, {
+          kind: "render",
+          pass: beginRenderPass(context, textures, encoders, command),
+        });
         break;
 
+      case "BeginComputePass": {
+        const encoder = required(
+          encoders.get(command.encoder_id),
+          `unknown command encoder ${command.encoder_id}`,
+        );
+        passes.set(command.id, {
+          kind: "compute",
+          pass: encoder.beginComputePass({ label: command.label }),
+        });
+        break;
+      }
+
       case "SetPipeline": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
-        const pipeline = required(
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const pipelineRecord = required(
           pipelines.get(command.pipeline_id),
           `unknown pipeline ${command.pipeline_id}`,
         );
-        pass.setPipeline(pipeline);
+        passRecord.pipeline = pipelineRecord;
+        passRecord.pass.setPipeline(pipelineRecord.pipeline);
         break;
       }
 
       case "SetVertexBuffer": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("SetVertexBuffer requires a render pass");
+        }
         const buffer = required(
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
-        pass.setVertexBuffer(command.slot ?? 0, buffer, command.offset ?? 0);
+        passRecord.pass.setVertexBuffer(command.slot ?? 0, buffer, command.offset ?? 0);
         break;
       }
 
       case "SetIndexBuffer": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("SetIndexBuffer requires a render pass");
+        }
         const buffer = required(
           buffers.get(command.buffer_id),
           `unknown buffer ${command.buffer_id}`,
         );
-        pass.setIndexBuffer(buffer, mapIndexFormat(command.index_format), command.offset ?? 0);
+        passRecord.pass.setIndexBuffer(buffer, mapIndexFormat(command.index_format), command.offset ?? 0);
         break;
       }
 
       case "SetBindGroup": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
         const bindGroupRecord = required(
           bindGroups.get(command.bind_group_id),
           `unknown bind group ${command.bind_group_id}`,
         );
-        if ((command.dynamic_offsets ?? []).length > 0) {
-          const bindGroupLayout = required(
-            bindGroupLayouts.get(bindGroupRecord.layoutId),
-            `unknown bind-group layout ${bindGroupRecord.layoutId}`,
-          );
-          const bindGroup = makeBindGroup(
-            device,
-            bindGroupLayout,
-            {
-              label: `${command.bind_group_id}:dynamic`,
-              entries: bindGroupRecord.entries,
-              dynamic_offsets: command.dynamic_offsets,
-            },
-            buffers,
-            textures,
-            textureViews,
-            samplers,
-          );
-          pass.setBindGroup(command.slot ?? 0, bindGroup, []);
-        } else {
-          pass.setBindGroup(command.slot ?? 0, bindGroupRecord.bindGroup, []);
-        }
+        const slot = command.slot ?? 0;
+        const bindGroup = bindGroupForSet(
+          device,
+          passRecord,
+          slot,
+          bindGroupRecord,
+          command,
+          buffers,
+          textures,
+          textureViews,
+          samplers,
+        );
+        passRecord.pass.setBindGroup(slot, bindGroup, []);
         break;
       }
 
       case "Draw": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
-        pass.draw(
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("Draw requires a render pass");
+        }
+        passRecord.pass.draw(
           command.vertex_count,
           command.instance_count ?? 1,
           command.first_vertex ?? 0,
@@ -881,8 +986,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
       }
 
       case "DrawIndexed": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
-        pass.drawIndexed(
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("DrawIndexed requires a render pass");
+        }
+        passRecord.pass.drawIndexed(
           command.index_count,
           command.instance_count ?? 1,
           command.first_index ?? 0,
@@ -892,9 +1000,31 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
         break;
       }
 
+      case "DispatchWorkgroups": {
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "compute") {
+          throw new Error("DispatchWorkgroups requires a compute pass");
+        }
+        passRecord.pass.dispatchWorkgroups(command.x ?? 1, command.y ?? 1, command.z ?? 1);
+        break;
+      }
+
       case "EndRenderPass": {
-        const pass = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
-        pass.end();
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "render") {
+          throw new Error("EndRenderPass requires a render pass");
+        }
+        passRecord.pass.end();
+        passes.delete(command.pass_id);
+        break;
+      }
+
+      case "EndComputePass": {
+        const passRecord = required(passes.get(command.pass_id), `unknown pass ${command.pass_id}`);
+        if (passRecord.kind !== "compute") {
+          throw new Error("EndComputePass requires a compute pass");
+        }
+        passRecord.pass.end();
         passes.delete(command.pass_id);
         break;
       }
@@ -1111,6 +1241,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
       case "DestroyBindGroup":
       case "DestroyShaderModule":
       case "DestroyRenderPipeline":
+      case "DestroyComputePipeline":
         break;
 
       default:
