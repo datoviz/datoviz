@@ -45,14 +45,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if OS_WINDOWS
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
-
-
-
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
@@ -275,11 +267,7 @@ static bool _trace_color_enabled(void)
     if (getenv("NO_COLOR") != NULL)
         return false;
 
-#if OS_WINDOWS
-    return _isatty(_fileno(stderr)) != 0;
-#else
-    return isatty(fileno(stderr)) != 0;
-#endif
+    return true;
 }
 
 
