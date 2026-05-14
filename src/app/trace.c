@@ -425,6 +425,28 @@ static bool _trace_snapshot_append(DvzAppTraceSnapshot* snapshot, const char* fo
 }
 
 
+/**
+ * Format one compact trace suffix and reject truncation.
+ *
+ * @param out destination character buffer
+ * @param size destination buffer size in bytes
+ * @param format printf-style format
+ * @return whether the full suffix fit in the destination buffer
+ */
+static bool _trace_format_suffix(char* out, uint32_t size, const char* format, ...)
+{
+    ANN(out);
+    ANN(format);
+    ASSERT(size > 0);
+
+    va_list args;
+    va_start(args, format);
+    int written = dvz_vsnprintf(out, size, format, args);
+    va_end(args);
+    return written >= 0 && (uint32_t)written < size;
+}
+
+
 
 /**
  * Return the display ordinal for a transient pass id.
@@ -608,71 +630,80 @@ static bool _trace_snapshot_append_command(
         if (_trace_rect_full(command->u.set_viewport.viewport))
             return true;
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_viewport.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "viewport=(%.3g,%.3g %.3gx%.3g)",
             (double)command->u.set_viewport.viewport[0],
             (double)command->u.set_viewport.viewport[1],
             (double)command->u.set_viewport.viewport[2],
-            (double)command->u.set_viewport.viewport[3]);
+            (double)command->u.set_viewport.viewport[3]))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_SCISSOR:
         if (_trace_rect_full(command->u.set_scissor.scissor))
             return true;
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_scissor.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "scissor=(%.3g,%.3g %.3gx%.3g)",
             (double)command->u.set_scissor.scissor[0],
             (double)command->u.set_scissor.scissor[1],
             (double)command->u.set_scissor.scissor[2],
-            (double)command->u.set_scissor.scissor[3]);
+            (double)command->u.set_scissor.scissor[3]))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_pipeline.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "pipeline=%" PRIu64,
-            command->u.set_pipeline.pipeline_id);
+            command->u.set_pipeline.pipeline_id))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "pass", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_bind_group.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "bind[%" PRIu32 "]=%" PRIu64,
-            command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id);
+            command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "pass", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_vertex_buffer.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "vbuf[%" PRIu32 "]=%" PRIu64 " off=%" PRIu64,
             command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
-            command->u.set_vertex_buffer.offset);
+            command->u.set_vertex_buffer.offset))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_index_buffer.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "ibuf=%" PRIu64 " fmt=%s off=%" PRIu64,
             command->u.set_index_buffer.buffer_id, command->u.set_index_buffer.index_format,
-            command->u.set_index_buffer.offset);
+            command->u.set_index_buffer.offset))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_DRAW:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.draw.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "draw vertices=%" PRIu32 " first=%" PRIu32
                                     " instances=%" PRIu32,
             command->u.draw.vertex_count, command->u.draw.first_vertex,
-            command->u.draw.instance_count);
+            command->u.draw.instance_count))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_DRAW_INDEXED:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.draw_indexed.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "draw-indexed indices=%" PRIu32 " first=%" PRIu32
                                     " base=%" PRId32 " instances=%" PRIu32,
             command->u.draw_indexed.index_count, command->u.draw_indexed.first_index,
-            command->u.draw_indexed.base_vertex, command->u.draw_indexed.instance_count);
+            command->u.draw_indexed.base_vertex, command->u.draw_indexed.instance_count))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "render", ordinal, suffix);
     case DVZ_DRP2_COMMAND_DISPATCH_WORKGROUPS:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.dispatch.pass_id);
-        dvz_snprintf(
+        if (!_trace_format_suffix(
             suffix, sizeof(suffix), "dispatch=(%" PRIu32 ",%" PRIu32 ",%" PRIu32 ")",
-            command->u.dispatch.x, command->u.dispatch.y, command->u.dispatch.z);
+            command->u.dispatch.x, command->u.dispatch.y, command->u.dispatch.z))
+            return false;
         return _trace_snapshot_append_pass_line(snapshot, "compute", ordinal, suffix);
     case DVZ_DRP2_COMMAND_COPY_BUFFER_TO_BUFFER:
         return _trace_snapshot_append(
@@ -916,6 +947,11 @@ bool _dvz_app_trace_snapshot_build(
         ANN(command);
         if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
+            if (passes == NULL || pass_count >= pass_capacity)
+            {
+                dvz_free(passes);
+                return false;
+            }
             passes[pass_count++] = (TracePassMap){
                 .id = command->u.begin_render_pass.id,
                 .ordinal = render_count++,
@@ -923,6 +959,11 @@ bool _dvz_app_trace_snapshot_build(
         }
         else if (command->type == DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS)
         {
+            if (passes == NULL || pass_count >= pass_capacity)
+            {
+                dvz_free(passes);
+                return false;
+            }
             passes[pass_count++] = (TracePassMap){
                 .id = command->u.begin_compute_pass.id,
                 .ordinal = compute_count++,

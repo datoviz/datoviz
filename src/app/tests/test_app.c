@@ -285,6 +285,34 @@ static int test_app_trace_snapshot_keeps_draw_payload(TstSuite* suite, TstItem* 
 }
 
 
+static int test_app_trace_snapshot_rejects_truncated_suffix(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    char long_format[256] = {0};
+    for (uint32_t i = 0; i < sizeof(long_format) - 1; i++)
+        long_format[i] = 'x';
+
+    AT(dvz_drp2_stream_begin_render_pass(stream, 100, 7, 5000));
+    AT(dvz_drp2_stream_set_index_buffer(
+        stream, 100, UINT64_MAX, long_format, UINT64_MAX));
+
+    DvzAppTraceSnapshot snapshot;
+    _dvz_app_trace_snapshot_init(&snapshot);
+    AT(!_dvz_app_trace_snapshot_build(&snapshot, stream));
+    AT(snapshot.count == 0);
+    AT(snapshot.lines == NULL);
+
+    _dvz_app_trace_snapshot_destroy(&snapshot);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 int test_app(TstSuite* suite)
 {
@@ -300,5 +328,6 @@ int test_app(TstSuite* suite)
     TEST_SIMPLE(test_app_trace_fingerprint_ignores_transient_pass_ids);
     TEST_SIMPLE(test_app_trace_snapshot_ignores_transient_pass_ids);
     TEST_SIMPLE(test_app_trace_snapshot_keeps_draw_payload);
+    TEST_SIMPLE(test_app_trace_snapshot_rejects_truncated_suffix);
     return 0;
 }
