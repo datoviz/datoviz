@@ -3,7 +3,7 @@ const canvas = document.querySelector("#viewport");
 const streamNameEl = document.querySelector("#stream-name");
 const streamSelectEl = document.querySelector("#stream-select");
 
-const STREAMS = [
+export const STREAMS = [
   { name: "indexed_quad_wgsl", label: "Indexed quad" },
   { name: "texture_sampling_wgsl", label: "Texture sampling" },
   { name: "depth_overlap_wgsl", label: "Depth overlap" },
@@ -398,7 +398,7 @@ function resizeCanvasToDisplaySize(device, context, format) {
 
 
 
-async function initWebGPU() {
+export async function initWebGPU() {
   if (!navigator.gpu) {
     throw new Error("WebGPU is not available in this browser");
   }
@@ -524,7 +524,7 @@ function beginRenderPass(context, textures, encoders, command) {
 
 
 
-async function executeDrp2Stream(device, context, canvasFormat, stream) {
+export async function executeDrp2Stream(device, context, canvasFormat, stream) {
   const buffers = new Map();
   const textures = new Map();
   const samplers = new Map();
@@ -850,6 +850,7 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
       }
 
       case "QueueSubmitReply":
+      case "Error":
         break;
 
       default:
@@ -858,6 +859,39 @@ async function executeDrp2Stream(device, context, canvasFormat, stream) {
   }
 
   return { readbacks: readbackReplies };
+}
+
+
+
+export async function executeDrp2StreamChecked(device, context, canvasFormat, stream) {
+  const scopes = ["validation", "out-of-memory", "internal"];
+  for (const scope of scopes) {
+    device.pushErrorScope(scope);
+  }
+
+  let result = null;
+  let thrown = null;
+  try {
+    result = await executeDrp2Stream(device, context, canvasFormat, stream);
+  } catch (error) {
+    thrown = error;
+  }
+
+  const errors = [];
+  for (const scope of scopes.slice().reverse()) {
+    const error = await device.popErrorScope();
+    if (error !== null) {
+      errors.push(`${scope}: ${error.message}`);
+    }
+  }
+
+  if (thrown !== null) {
+    throw thrown;
+  }
+  if (errors.length > 0) {
+    throw new Error(errors.join("\n"));
+  }
+  return result;
 }
 
 
@@ -908,7 +942,7 @@ async function main() {
           if (stream === null) {
             await loadStream(streamName);
           }
-          const result = await executeDrp2Stream(device, context, format, stream);
+          const result = await executeDrp2StreamChecked(device, context, format, stream);
           if (result.readbacks.length > 0) {
             const readback = result.readbacks[0];
             setStatus(
@@ -942,4 +976,6 @@ async function main() {
 
 
 
-main();
+if (canvas !== null && statusEl !== null && streamNameEl !== null && streamSelectEl !== null) {
+  main();
+}

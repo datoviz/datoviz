@@ -14,6 +14,19 @@ Then open:
 http://localhost:8765/examples/webgpu/
 ```
 
+The fixture dashboard runs the committed positive DRP2 fixture manifest against the browser WebGPU
+runner:
+
+```text
+http://localhost:8765/examples/webgpu/fixtures.html
+```
+
+Refresh the committed fixture manifest after adding or removing positive fixtures:
+
+```bash
+node examples/webgpu/generate_fixture_manifest.mjs
+```
+
 The default stream is `streams/indexed_quad_wgsl.json`. It renders a four-vertex quad through
 `SetIndexBuffer` and `DrawIndexed`. Use the page menu to switch streams.
 
