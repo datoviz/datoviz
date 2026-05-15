@@ -1240,9 +1240,11 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstI
     DvzFramePlan* frame0 = dvz_frame_plan("figure.runtime.texture.resize", 0);
     DvzFramePlan* frame1 = dvz_frame_plan("figure.runtime.texture.resize", 1);
     DvzFramePlan* frame2 = dvz_frame_plan("figure.runtime.texture.resize", 2);
+    DvzFramePlan* frame3 = dvz_frame_plan("figure.runtime.texture.resize", 3);
     ANN(frame0);
     ANN(frame1);
     ANN(frame2);
+    ANN(frame3);
 
     AT(dvz_frame_plan_upload(frame0, "tex.resize.rgba", 0, 16, "image.rgba.0"));
     AT(dvz_frame_plan_upload_set_texture_extent(frame0, 2, 2));
@@ -1258,6 +1260,13 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstI
     AT(dvz_frame_plan_upload_set_texture_extent(frame2, 4, 4));
     AT(dvz_frame_plan_render(frame2, "panel.0", "target.panel.0.picking", true));
     AT(dvz_frame_plan_render_visual(frame2, "visual.image.resize"));
+
+    AT(dvz_frame_plan_upload(frame3, "tex.partial.rgba", 0, 4, "image.rgba.3"));
+    AT(dvz_frame_plan_upload_set_texture_extent(frame3, 1, 1));
+    AT(dvz_frame_plan_upload_set_texture_allocation_extent(frame3, 4, 4));
+    AT(dvz_frame_plan_upload_set_texture_region(frame3, 3, 3));
+    AT(dvz_frame_plan_render(frame3, "panel.0", "target.panel.0.picking", true));
+    AT(dvz_frame_plan_render_visual(frame3, "visual.image.partial"));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -1359,6 +1368,44 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstI
     AT(wrote_tex2);
     AT(rebound_tex2);
 
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream3 =
+        dvz_frame_plan_emitter_emit_drp2(emitter, frame3, &caps, &report, &emit_cfg);
+    ANN(stream3);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t tex3 = 0;
+    bool created_tex3 = false;
+    bool wrote_tex3_region = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream3); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream3, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+            tex3 = cmd->u.write_texture.texture_id;
+    }
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream3); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream3, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE && cmd->u.create_texture.id == tex3)
+        {
+            created_tex3 = true;
+            AT(cmd->u.create_texture.width == 4);
+            AT(cmd->u.create_texture.height == 4);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == tex3 &&
+            cmd->u.write_texture.width == 1 &&
+            cmd->u.write_texture.height == 1 &&
+            cmd->u.write_texture.origin_x == 3 &&
+            cmd->u.write_texture.origin_y == 3)
+        {
+            wrote_tex3_region = true;
+        }
+    }
+    AT(tex3 != 0);
+    AT(created_tex3);
+    AT(wrote_tex3_region);
+
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
@@ -1370,11 +1417,15 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstSuite* suite, TstI
     AT(result.ok);
     result = dvz_drp2_runtime_execute(runtime, stream2);
     AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, stream3);
+    AT(result.ok);
 
     dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream3);
     dvz_drp2_stream_destroy(stream2);
     dvz_drp2_stream_destroy(stream1);
     dvz_drp2_stream_destroy(stream0);
+    dvz_frame_plan_destroy(frame3);
     dvz_frame_plan_destroy(frame2);
     dvz_frame_plan_destroy(frame1);
     dvz_frame_plan_destroy(frame0);

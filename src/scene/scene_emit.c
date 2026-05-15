@@ -202,6 +202,8 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                         DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_2D, UINT32_MAX);
                     dvz_frame_plan_upload_set_texture_extent(
                         plan, upload_region.width, upload_region.height);
+                    dvz_frame_plan_upload_set_texture_allocation_extent(
+                        plan, visual->texture.width, visual->texture.height);
                     dvz_frame_plan_upload_set_texture_region(
                         plan, upload_region.x, upload_region.y);
                 }
@@ -382,5 +384,4 @@ void _scene_emit_panel_render(
         }
     }
 }
-
 

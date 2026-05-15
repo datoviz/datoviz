@@ -70,34 +70,42 @@ bool _emitter_emit_upload(
         uint32_t h  = node->u.upload.texture_height;
         if (w > UINT32_MAX / 4)
             return false;
-        uint32_t texture_w = w;
-        uint32_t texture_h = h;
+        uint32_t texture_w =
+            node->u.upload.texture_alloc_width > 0 ? node->u.upload.texture_alloc_width : w;
+        uint32_t texture_h =
+            node->u.upload.texture_alloc_height > 0 ? node->u.upload.texture_alloc_height : h;
+        if (texture_w == 0 || texture_h == 0)
+            return false;
         if (node->u.upload.texture_origin_x != 0 || node->u.upload.texture_origin_y != 0)
         {
-            if (resource->texture_width > 0 && resource->texture_height > 0)
+            if (node->u.upload.texture_alloc_width == 0 ||
+                node->u.upload.texture_alloc_height == 0)
             {
-                texture_w = resource->texture_width;
-                texture_h = resource->texture_height;
-                uint64_t end_x = 0;
-                uint64_t end_y = 0;
-                if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, w, &end_x) ||
-                    _dvz_add_u64_overflows(node->u.upload.texture_origin_y, h, &end_y))
-                    return false;
-                if (end_x > texture_w || end_y > texture_h)
-                    return false;
-            }
-            else
-            {
-                uint64_t alloc_w = 0;
-                uint64_t alloc_h = 0;
-                if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, w, &alloc_w) ||
-                    _dvz_add_u64_overflows(node->u.upload.texture_origin_y, h, &alloc_h) ||
-                    alloc_w > UINT32_MAX || alloc_h > UINT32_MAX)
-                    return false;
-                texture_w = (uint32_t)alloc_w;
-                texture_h = (uint32_t)alloc_h;
+                if (resource->texture_width > 0 && resource->texture_height > 0)
+                {
+                    texture_w = resource->texture_width;
+                    texture_h = resource->texture_height;
+                }
+                else
+                {
+                    uint64_t alloc_w = 0;
+                    uint64_t alloc_h = 0;
+                    if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, w, &alloc_w) ||
+                        _dvz_add_u64_overflows(node->u.upload.texture_origin_y, h, &alloc_h) ||
+                        alloc_w > UINT32_MAX || alloc_h > UINT32_MAX)
+                        return false;
+                    texture_w = (uint32_t)alloc_w;
+                    texture_h = (uint32_t)alloc_h;
+                }
             }
         }
+        uint64_t end_x = 0;
+        uint64_t end_y = 0;
+        if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, w, &end_x) ||
+            _dvz_add_u64_overflows(node->u.upload.texture_origin_y, h, &end_y))
+            return false;
+        if (end_x > texture_w || end_y > texture_h)
+            return false;
         if (!_resource_ensure_texture_2d(
                 &emitter->resources, resource, texture_w, texture_h, &is_new))
             return false;
@@ -205,9 +213,24 @@ bool _emitter_emit_texture_upload(
     if (data == NULL)
         return false;
 
-    uint32_t width = node->u.upload.texture_width > 0 ? node->u.upload.texture_width : 2;
-    uint32_t height = node->u.upload.texture_height > 0 ? node->u.upload.texture_height : 2;
-    if (!_resource_ensure_texture_2d(&emitter->resources, resource, width, height, &is_new))
+    uint32_t write_width = node->u.upload.texture_width > 0 ? node->u.upload.texture_width : 2;
+    uint32_t write_height = node->u.upload.texture_height > 0 ? node->u.upload.texture_height : 2;
+    uint32_t alloc_width =
+        node->u.upload.texture_alloc_width > 0 ? node->u.upload.texture_alloc_width : write_width;
+    uint32_t alloc_height = node->u.upload.texture_alloc_height > 0
+                                ? node->u.upload.texture_alloc_height
+                                : write_height;
+    uint64_t end_x = 0;
+    uint64_t end_y = 0;
+    if (_dvz_add_u64_overflows(node->u.upload.texture_origin_x, write_width, &end_x) ||
+        _dvz_add_u64_overflows(node->u.upload.texture_origin_y, write_height, &end_y) ||
+        end_x > alloc_width || end_y > alloc_height)
+    {
+        dvz_free(data);
+        return false;
+    }
+    if (!_resource_ensure_texture_2d(
+            &emitter->resources, resource, alloc_width, alloc_height, &is_new))
     {
         dvz_free(data);
         return false;
@@ -215,7 +238,8 @@ bool _emitter_emit_texture_upload(
     uint64_t id = resource->id;
 
     uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
-    if (is_new && !dvz_drp2_stream_create_texture_2d_usage(stream, id, width, height, usage))
+    if (is_new &&
+        !dvz_drp2_stream_create_texture_2d_usage(stream, id, alloc_width, alloc_height, usage))
     {
         dvz_free(data);
         return false;
@@ -223,8 +247,14 @@ bool _emitter_emit_texture_upload(
     if (emitter->resources.first_texture_id == 0)
         emitter->resources.first_texture_id = id;
     *out_id = id;
-    bool ok = dvz_drp2_stream_write_texture_2d(
-        stream, id, 0, width, height, width * 4, height, data);
+    bool ok = false;
+    if (node->u.upload.texture_origin_x == 0 && node->u.upload.texture_origin_y == 0)
+        ok = dvz_drp2_stream_write_texture_2d(
+            stream, id, 0, write_width, write_height, write_width * 4, write_height, data);
+    else
+        ok = dvz_drp2_stream_write_texture_2d_region(
+            stream, id, 0, node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
+            write_width, write_height, write_width * 4, write_height, data);
     dvz_free(data);
     return ok;
 }

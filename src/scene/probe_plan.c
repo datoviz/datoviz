@@ -144,6 +144,8 @@ bool _scene_image_probe_plan(
               dvz_frame_plan_upload_bytes(
                   plan, "probe0_texture", 0, texture_bytes, "texture", texture_data) &&
               dvz_frame_plan_upload_set_texture_extent(plan, texture_width, texture_height) &&
+              dvz_frame_plan_upload_set_texture_allocation_extent(
+                  plan, texture_width, texture_height) &&
               dvz_frame_plan_render_panel(
                   plan, "panel.probe", "target.probe", false,
                   (DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1}) &&

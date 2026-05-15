@@ -167,9 +167,18 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
             _json_append(
                 builder,
                 ", \"texture\": { \"origin_x\": %" PRIu32 ", \"origin_y\": %" PRIu32
-                ", \"width\": %" PRIu32 ", \"height\": %" PRIu32 " }",
+                ", \"width\": %" PRIu32 ", \"height\": %" PRIu32,
                 node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
                 node->u.upload.texture_width, node->u.upload.texture_height);
+            if (node->u.upload.texture_alloc_width > 0 &&
+                node->u.upload.texture_alloc_height > 0)
+            {
+                _json_append(
+                    builder,
+                    ", \"alloc_width\": %" PRIu32 ", \"alloc_height\": %" PRIu32,
+                    node->u.upload.texture_alloc_width, node->u.upload.texture_alloc_height);
+            }
+            _json_append(builder, " }");
         }
         _json_append(builder, " }");
         break;
@@ -476,6 +485,28 @@ bool dvz_frame_plan_upload_set_texture_extent(
         return false;
     node->u.upload.texture_width  = width;
     node->u.upload.texture_height = height;
+    return true;
+}
+
+
+/**
+ * Set the allocation extent on the most recently appended texture upload.
+ *
+ * @param plan the FramePlan
+ * @param width full texture allocation width in pixels
+ * @param height full texture allocation height in pixels
+ * @return whether the allocation extent was applied
+ */
+bool dvz_frame_plan_upload_set_texture_allocation_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height)
+{
+    if (plan == NULL || plan->count == 0)
+        return false;
+    DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    if (node->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+        return false;
+    node->u.upload.texture_alloc_width  = width;
+    node->u.upload.texture_alloc_height = height;
     return true;
 }
 

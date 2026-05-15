@@ -213,6 +213,7 @@ bool _validate_capabilities(
     bool has_texture_render = false;
     bool has_scene_render = false;  /* scene nodes do per-visual draws, not one composite draw */
     uint64_t max_readback_size = 0;
+    uint32_t max_texture_extent = 0;
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (render != NULL)
     {
@@ -234,6 +235,19 @@ bool _validate_capabilities(
             {
                 _diagnostic(report, "upload buffer exceeds max_buffer_size");
                 return false;
+            }
+            if (node->u.upload.texture_width > 0 && node->u.upload.texture_height > 0)
+            {
+                uint32_t tex_w = node->u.upload.texture_alloc_width > 0
+                                     ? node->u.upload.texture_alloc_width
+                                     : node->u.upload.texture_width;
+                uint32_t tex_h = node->u.upload.texture_alloc_height > 0
+                                     ? node->u.upload.texture_alloc_height
+                                     : node->u.upload.texture_height;
+                if (tex_w > max_texture_extent)
+                    max_texture_extent = tex_w;
+                if (tex_h > max_texture_extent)
+                    max_texture_extent = tex_h;
             }
             break;
         case DVZ_FRAME_PLAN_NODE_COMPUTE:
@@ -266,7 +280,7 @@ bool _validate_capabilities(
         _diagnostic(report, "max_bind_groups is too small for fixture bind groups");
         return false;
     }
-    if (has_texture_render && caps->max_texture_dimension_2d < 2)
+    if (has_texture_render && max_texture_extent > caps->max_texture_dimension_2d)
     {
         _diagnostic(report, "max_texture_dimension_2d is too small for fixture texture upload");
         return false;

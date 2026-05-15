@@ -389,11 +389,15 @@ int test_frame_plan_texture_upload_json_includes_region(TstSuite* suite, TstItem
 
     AT(dvz_frame_plan_upload(plan, "tex.image.rgba", 0, 8, "image.rgba.patch"));
     AT(dvz_frame_plan_upload_set_texture_extent(plan, 2, 1));
+    AT(dvz_frame_plan_upload_set_texture_allocation_extent(plan, 4, 4));
     AT(dvz_frame_plan_upload_set_texture_region(plan, 1, 2));
 
     char* json = dvz_frame_plan_json(plan);
     ANN(json);
-    AT(strstr(json, "\"texture\": { \"origin_x\": 1, \"origin_y\": 2, \"width\": 2, \"height\": 1 }") != NULL);
+    AT(strstr(json, "\"origin_x\": 1") != NULL);
+    AT(strstr(json, "\"width\": 2") != NULL);
+    AT(strstr(json, "\"alloc_width\": 4") != NULL);
+    AT(strstr(json, "\"alloc_height\": 4") != NULL);
 
     dvz_frame_plan_json_destroy(json);
     dvz_frame_plan_destroy(plan);

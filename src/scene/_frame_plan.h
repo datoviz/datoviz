@@ -114,11 +114,14 @@ struct DvzFramePlanNode
             /* Optional primitive topology hint, propagated to the converter resource entry.
              * UINT32_MAX = unspecified (default; used by POINT and other typed families). */
             uint32_t topology;
-            /* Optional 2D texture extent. When `texture_width > 0`, the upload targets a
+            /* Optional 2D texture write extent. When `texture_width > 0`, the upload targets a
              * 2D texture rather than a vertex buffer; `byte_size` is `width * height * 4`
              * (RGBA8). Default 0 = vertex-buffer upload. */
             uint32_t texture_width;
             uint32_t texture_height;
+            /* Optional full texture allocation extent. Defaults to the write extent when unset. */
+            uint32_t texture_alloc_width;
+            uint32_t texture_alloc_height;
             uint32_t texture_origin_x;
             uint32_t texture_origin_y;
             DvzFramePlanUploadMeta metadata;

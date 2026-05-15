@@ -194,18 +194,34 @@ DVZ_EXPORT bool dvz_frame_plan_upload_set_topology(DvzFramePlan* plan, uint32_t 
 
 
 /**
- * Mark the most recently appended upload node as a 2D texture upload of the given extent.
+ * Mark the most recently appended upload node as a 2D texture write of the given extent.
  *
  * `byte_size` on that node should equal `width * height * 4` (RGBA8). When `width` and
  * `height` are non-zero the converter routes the upload to a 2D texture (via
- * CreateTexture + WriteTexture) instead of a vertex buffer.
+ * CreateTexture + WriteTexture) instead of a vertex buffer. Unless an allocation extent is set
+ * separately, this write extent is also used as the texture allocation extent.
  *
  * @param plan the FramePlan
- * @param width texture width in pixels
- * @param height texture height in pixels
+ * @param width written texture-region width in pixels
+ * @param height written texture-region height in pixels
  * @return whether the hint was applied (false if the most recent node is not an upload)
  */
 DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_extent(
+    DvzFramePlan* plan, uint32_t width, uint32_t height);
+
+
+/**
+ * Tag the most recently appended texture upload node with the full allocation extent.
+ *
+ * Use this when the write extent is a sub-region and the converter must know the complete texture
+ * extent without relying on prior cached runtime state.
+ *
+ * @param plan the FramePlan
+ * @param width full texture allocation width in pixels
+ * @param height full texture allocation height in pixels
+ * @return whether the allocation extent was applied
+ */
+DVZ_EXPORT bool dvz_frame_plan_upload_set_texture_allocation_extent(
     DvzFramePlan* plan, uint32_t width, uint32_t height);
 
 
