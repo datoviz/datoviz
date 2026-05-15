@@ -36,6 +36,7 @@
 #include "_log.h"
 #include "_overflow.h"
 #include "_stream.h"
+#include "_time_utils.h"
 #include "datoviz/drp2/recording.h"
 
 
@@ -2912,6 +2913,46 @@ dvz_drp2_recording_execute_all(const DvzDrp2Recording* recording, DvzDrp2Runtime
         return _recording_result(false, DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
     for (uint32_t i = 0; i < recording->frame_count; i++)
     {
+        DvzDrp2ValidationResult result =
+            dvz_drp2_recording_execute_frame(recording, runtime, i);
+        if (!result.ok)
+            return result;
+    }
+    return _recording_result(true, DVZ_DRP2_VALIDATION_OK, UINT32_MAX);
+}
+
+
+
+/**
+ * Play a recording frame by frame, optionally pacing execution by recorded timestamps.
+ *
+ * @param recording loaded recording
+ * @param runtime the runtime
+ * @param paced whether to wait for each frame timestamp before execution
+ * @return the first failing validation result, or OK after playback completes
+ */
+DvzDrp2ValidationResult dvz_drp2_recording_playback(
+    const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime, bool paced)
+{
+    if (recording == NULL || runtime == NULL)
+        return _recording_result(false, DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+
+    DvzClock clock = dvz_clock();
+    for (uint32_t i = 0; i < recording->frame_count; i++)
+    {
+        const DvzDrp2RecordedFrame* frame = &recording->frames[i];
+        if (paced && frame->t_present > 0)
+        {
+            double now = dvz_clock_get(&clock);
+            double delay = frame->t_present - now;
+            if (delay > 0)
+            {
+                double delay_us = delay * 1000000.0;
+                int sleep_us = delay_us > (double)INT32_MAX ? INT32_MAX : (int)delay_us;
+                dvz_sleep_us(sleep_us);
+            }
+        }
+
         DvzDrp2ValidationResult result =
             dvz_drp2_recording_execute_frame(recording, runtime, i);
         if (!result.ok)

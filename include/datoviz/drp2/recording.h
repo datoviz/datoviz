@@ -190,6 +190,18 @@ dvz_drp2_recording_execute_all(const DvzDrp2Recording* recording, DvzDrp2Runtime
 
 
 /**
+ * Play a recording frame by frame, optionally pacing execution by recorded timestamps.
+ *
+ * @param recording loaded recording
+ * @param runtime the runtime
+ * @param paced whether to wait for each frame timestamp before execution
+ * @return the first failing validation result, or OK after playback completes
+ */
+DVZ_EXPORT DvzDrp2ValidationResult dvz_drp2_recording_playback(
+    const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime, bool paced);
+
+
+/**
  * Read a linear DRP2 recording directory.
  *
  * @param path recording directory path
