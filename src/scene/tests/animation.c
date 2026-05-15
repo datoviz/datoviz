@@ -210,6 +210,43 @@ int test_scene_animation_destroy_reuses_slot(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure active-animation query follows timer start/stop/destroy state.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_scene_animation_active_query(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    AT(!dvz_scene_has_active_animations(scene));
+
+    TimerTestState state = {0};
+    DvzAnimation* timer = dvz_anim_timer(scene, 0.0, _timer_test_callback, &state);
+    ANN(timer);
+    AT(!dvz_scene_has_active_animations(scene));
+
+    dvz_anim_start(timer, 0.0);
+    AT(dvz_scene_has_active_animations(scene));
+
+    dvz_anim_stop(timer);
+    AT(!dvz_scene_has_active_animations(scene));
+
+    dvz_anim_start(timer, 0.0);
+    AT(dvz_scene_has_active_animations(scene));
+    dvz_anim_destroy(timer);
+    AT(!dvz_scene_has_active_animations(scene));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 
 /**
  * Register scene animation tests.
@@ -226,6 +263,7 @@ int test_scene_animation(TstSuite* suite)
     TEST_SIMPLE(test_scene_animation_timer_period_and_stop);
     TEST_SIMPLE(test_scene_animation_realtime_delta_clamp);
     TEST_SIMPLE(test_scene_animation_destroy_reuses_slot);
+    TEST_SIMPLE(test_scene_animation_active_query);
 
     return 0;
 }

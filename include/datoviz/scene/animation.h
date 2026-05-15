@@ -89,6 +89,15 @@ DVZ_EXPORT double dvz_scene_clock_time(const DvzScene* scene);
 DVZ_EXPORT double dvz_scene_clock_dt(const DvzScene* scene);
 
 
+/**
+ * Return whether the scene has at least one active animation.
+ *
+ * @param scene target scene
+ * @return true when an animation is active and may need another frame
+ */
+DVZ_EXPORT bool dvz_scene_has_active_animations(const DvzScene* scene);
+
+
 
 /**
  * Create a timer animation driven by the scene clock.

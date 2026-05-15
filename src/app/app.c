@@ -1801,6 +1801,11 @@ int dvz_app_window_render_once(DvzAppWindow* win)
     {
         if (dvz_canvas_submit(win->canvas) != 0)
             return -1;
+        if (win->app != NULL && win->app->scene != NULL &&
+            dvz_scene_has_active_animations(win->app->scene))
+        {
+            dvz_app_window_request_frame(win);
+        }
     }
     return rc;
 #else

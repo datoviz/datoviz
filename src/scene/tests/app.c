@@ -257,8 +257,14 @@ int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* i
     DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
     AT(win != NULL);
 
+    AppRequestFrameProbe request_probe = {0};
+    dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(request_probe.calls == 1);
+    AT(request_probe.last_window == win);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(request_probe.calls == 2);
+    AT(request_probe.last_window == win);
 
     AT(probe.calls == 2);
     AC(probe.last_t, 0.125, EPS);
@@ -266,6 +272,11 @@ int test_app_offscreen_timer_advances_in_render_once(TstSuite* suite, TstItem* i
     AC(probe.total_dt, 0.125, EPS);
     AC(dvz_scene_clock_time(scene), 0.125, EPS);
     AC(dvz_scene_clock_dt(scene), 0.125, EPS);
+
+    dvz_anim_stop(timer);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(request_probe.calls == 2);
+    AT(!dvz_scene_has_active_animations(scene));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

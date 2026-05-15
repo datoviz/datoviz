@@ -184,6 +184,25 @@ double dvz_scene_clock_dt(const DvzScene* scene)
 }
 
 
+/**
+ * Return whether the scene has at least one active animation.
+ *
+ * @param scene target scene
+ * @return true when an animation is active
+ */
+bool dvz_scene_has_active_animations(const DvzScene* scene)
+{
+    ANN(scene);
+    for (uint32_t i = 0; i < scene->animation_count; i++)
+    {
+        const DvzAnimation* animation = &scene->animations[i];
+        if (animation->scene == scene && animation->active)
+            return true;
+    }
+    return false;
+}
+
+
 
 /**
  * Create a timer animation driven by the scene clock.
