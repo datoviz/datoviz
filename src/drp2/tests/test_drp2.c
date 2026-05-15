@@ -30,6 +30,7 @@
 #include "../_runtime.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz/vklite/buffers.h"
 
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data);
@@ -2213,6 +2214,82 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* it
 }
 
 
+int test_drp2_runtime_vklite_uses_external_buffer(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 vklite external-buffer test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzBuffer* external = dvz_buffer_create_wrapper();
+    ANN(external);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), external);
+    dvz_buffer_size(external, 32);
+    dvz_buffer_usage(external, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    dvz_buffer_flags(external, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    AT(dvz_buffer_create(external) == 0);
+
+    uint8_t source[16] = {
+        31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16};
+    dvz_buffer_upload(external, 4, 16, source);
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2ExternalBufferDesc desc = {
+        .buffer = external,
+        .size = 32,
+        .usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_VERTEX,
+    };
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, 1, &desc));
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 2, 32, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 10, 1, 4, 2, 8, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 11));
+    AT(dvz_drp2_stream_queue_submit(stream, 11, 12));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t downloaded[16] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 2, 8, 16, downloaded));
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        AT(downloaded[i] == source[i]);
+    }
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_buffer_destroy(external);
+    dvz_buffer_free(external);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
 
 int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstItem* item)
 {
@@ -3644,6 +3721,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_executes_resource_commands);
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_contents);
+    TEST_SIMPLE(test_drp2_runtime_vklite_uses_external_buffer);
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_texture_contents);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_to_texture);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_texture_to_texture);

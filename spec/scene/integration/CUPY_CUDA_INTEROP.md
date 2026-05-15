@@ -123,6 +123,12 @@ The video/NVENC path also imports Vulkan-owned external image memory into CUDA i
 encoding. That code is useful evidence for image import mechanics, but the CuPy shared-array route
 should still start with buffers because they map directly to CUDA device pointers and CuPy arrays.
 
+DRP2 runtime registration for a pre-existing vklite buffer is covered by
+`test_drp2_runtime_vklite_uses_external_buffer`. It registers a borrowed `DvzBuffer` under a DRP2
+buffer id, copies from it into a runtime-created destination buffer without emitting a source
+`CreateBuffer` or `WriteBuffer`, and downloads the destination for verification. The next integration
+step is to connect that registration path to scene-emitted external attribute sources.
+
 NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) is not used by these paths
 and should remain optional NVIDIA-specific scheduling work. It is not required for Vulkan-owned
 external memory imported into CUDA/CuPy.
@@ -253,12 +259,10 @@ binding contract are stable.
 
 Start with narrow tests before adding Python examples:
 
-1. add runtime registration for a pre-existing shared buffer consumed by DRP2/vklite without a
-   `WRITE_BUFFER` upload,
-2. add a point visual with external `position` and regular scene-owned `color`/`size`,
-3. add double-buffered CUDA write and Vulkan draw coverage with external semaphore waits/signals,
-4. add the Python CuPy wrapper lifetime test,
-5. add a live example that updates positions at a fixed rate without CPU upload.
+1. add a point visual with external `position` and regular scene-owned `color`/`size`,
+2. add double-buffered CUDA write and Vulkan draw coverage with external semaphore waits/signals,
+3. add the Python CuPy wrapper lifetime test,
+4. add a live example that updates positions at a fixed rate without CPU upload.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested
