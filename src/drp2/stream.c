@@ -479,7 +479,11 @@ bool dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
     command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
     command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
     command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
-    command->u.create_render_pipeline.bind_group_layout_id = bind_group_layout_id;
+    if (bind_group_layout_id != 0)
+    {
+        command->u.create_render_pipeline.bind_group_layout_count = 1;
+        command->u.create_render_pipeline.bind_group_layout_ids[0] = bind_group_layout_id;
+    }
     return true;
 }
 
@@ -497,7 +501,8 @@ bool dvz_drp2_stream_pipeline_set_bind_group_layout(
     DvzDrp2Command* command = &stream->commands[stream->count - 1];
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
-    command->u.create_render_pipeline.bind_group_layout_id = bind_group_layout_id;
+    command->u.create_render_pipeline.bind_group_layout_count = bind_group_layout_id == 0 ? 0 : 1;
+    command->u.create_render_pipeline.bind_group_layout_ids[0] = bind_group_layout_id;
     return true;
 }
 
@@ -512,7 +517,45 @@ bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
     DvzDrp2Command* command = &stream->commands[stream->count - 1];
     if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         return false;
-    command->u.create_render_pipeline.bind_group_layout_id2 = bind_group_layout_id2;
+    if (command->u.create_render_pipeline.bind_group_layout_count < 1)
+        command->u.create_render_pipeline.bind_group_layout_count = 1;
+    if (bind_group_layout_id2 != 0)
+    {
+        command->u.create_render_pipeline.bind_group_layout_count = 2;
+        command->u.create_render_pipeline.bind_group_layout_ids[1] = bind_group_layout_id2;
+    }
+    else if (command->u.create_render_pipeline.bind_group_layout_count == 2)
+    {
+        command->u.create_render_pipeline.bind_group_layout_count = 1;
+        command->u.create_render_pipeline.bind_group_layout_ids[1] = 0;
+    }
+    return true;
+}
+
+
+bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
+    DvzDrp2CommandStream* stream, uint32_t count, const uint64_t* bind_group_layout_ids)
+{
+    ANN(stream);
+    if (stream->count == 0 || count > DVZ_DRP2_MAX_BIND_GROUPS)
+        return false;
+    if (count > 0)
+        ANN(bind_group_layout_ids);
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.bind_group_layout_count = count;
+    dvz_memset(
+        command->u.create_render_pipeline.bind_group_layout_ids,
+        sizeof(command->u.create_render_pipeline.bind_group_layout_ids), 0,
+        sizeof(command->u.create_render_pipeline.bind_group_layout_ids));
+    if (count > 0)
+    {
+        dvz_memcpy(
+            command->u.create_render_pipeline.bind_group_layout_ids,
+            sizeof(command->u.create_render_pipeline.bind_group_layout_ids), bind_group_layout_ids,
+            count * sizeof(uint64_t));
+    }
     return true;
 }
 
@@ -574,8 +617,7 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     command->u.create_render_pipeline.vertex_shader_module_id = vertex_shader_module_id;
     command->u.create_render_pipeline.fragment_shader_module_id = fragment_shader_module_id;
     command->u.create_render_pipeline.vertex_buffer_slots = vertex_buffer_slots;
-    command->u.create_render_pipeline.bind_group_layout_id = 0;
-    command->u.create_render_pipeline.bind_group_layout_id2 = 0;
+    command->u.create_render_pipeline.bind_group_layout_count = 0;
     command->u.create_render_pipeline.has_depth_attachment = false;
     command->u.create_render_pipeline.depth_write_enabled = false;
     command->u.create_render_pipeline.depth_compare_op = VK_COMPARE_OP_ALWAYS;
@@ -656,7 +698,11 @@ bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
         return false;
     command->u.create_compute_pipeline.id = id;
     command->u.create_compute_pipeline.compute_shader_module_id = compute_shader_module_id;
-    command->u.create_compute_pipeline.bind_group_layout_id = bind_group_layout_id;
+    if (bind_group_layout_id != 0)
+    {
+        command->u.create_compute_pipeline.bind_group_layout_count = 1;
+        command->u.create_compute_pipeline.bind_group_layout_ids[0] = bind_group_layout_id;
+    }
     return true;
 }
 
@@ -709,11 +755,21 @@ bool dvz_drp2_stream_create_sampler(DvzDrp2CommandStream* stream, uint64_t id)
 bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
     DvzDrp2CommandStream* stream, uint64_t id)
 {
-    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
-    if (command == NULL)
-        return false;
-    command->u.create_bind_group_layout.id = id;
-    return true;
+    DvzDrp2BindGroupLayoutEntry entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 2, entries);
 }
 
 
@@ -727,12 +783,21 @@ bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
  */
 bool dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
 {
-    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
-    if (command == NULL)
-        return false;
-    command->u.create_bind_group_layout.id = id;
-    command->u.create_bind_group_layout.storage_buffers = true;
-    return true;
+    DvzDrp2BindGroupLayoutEntry entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_COMPUTE,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ_WRITE,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_COMPUTE,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ_WRITE,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 2, entries);
 }
 
 
@@ -746,11 +811,32 @@ bool dvz_drp2_stream_create_storage_bind_group_layout(DvzDrp2CommandStream* stre
  */
 bool dvz_drp2_stream_create_uniform_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id)
 {
+    DvzDrp2BindGroupLayoutEntry entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+    };
+    return dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 1, &entry);
+}
+
+
+bool dvz_drp2_stream_create_bind_group_layout_entries(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t entry_count,
+    const DvzDrp2BindGroupLayoutEntry* entries)
+{
+    if (entry_count == 0 || entry_count > DVZ_DRP2_MAX_BINDINGS)
+        return false;
+    ANN(entries);
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT);
     if (command == NULL)
         return false;
     command->u.create_bind_group_layout.id = id;
-    command->u.create_bind_group_layout.uniform_buffer = true;
+    command->u.create_bind_group_layout.entry_count = entry_count;
+    dvz_memcpy(
+        command->u.create_bind_group_layout.entries,
+        sizeof(command->u.create_bind_group_layout.entries), entries,
+        entry_count * sizeof(DvzDrp2BindGroupLayoutEntry));
     return true;
 }
 
@@ -770,14 +856,22 @@ bool dvz_drp2_stream_create_texture_sampler_bind_group(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t texture_id,
     uint64_t sampler_id)
 {
-    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
-    if (command == NULL)
-        return false;
-    command->u.create_bind_group.id = id;
-    command->u.create_bind_group.bind_group_layout_id = bind_group_layout_id;
-    command->u.create_bind_group.texture_id = texture_id;
-    command->u.create_bind_group.sampler_id = sampler_id;
-    return true;
+    DvzDrp2BindGroupEntry entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = texture_id,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = sampler_id,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_entries(
+        stream, id, bind_group_layout_id, 2, entries);
 }
 
 
@@ -797,15 +891,24 @@ bool dvz_drp2_stream_create_storage_bind_group(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer0_id,
     uint64_t buffer1_id, uint64_t buffer_size)
 {
-    DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
-    if (command == NULL)
-        return false;
-    command->u.create_bind_group.id = id;
-    command->u.create_bind_group.bind_group_layout_id = bind_group_layout_id;
-    command->u.create_bind_group.buffer0_id = buffer0_id;
-    command->u.create_bind_group.buffer1_id = buffer1_id;
-    command->u.create_bind_group.buffer_size = buffer_size;
-    return true;
+    DvzDrp2BindGroupEntry entries[2] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+            .resource_id = buffer0_id,
+            .size = buffer_size,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+            .resource_id = buffer1_id,
+            .size = buffer_size,
+        },
+    };
+    return dvz_drp2_stream_create_bind_group_entries(
+        stream, id, bind_group_layout_id, 2, entries);
 }
 
 
@@ -825,14 +928,35 @@ bool dvz_drp2_stream_create_uniform_bind_group(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer_id,
     uint64_t offset, uint64_t size)
 {
+    DvzDrp2BindGroupEntry entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = buffer_id,
+        .offset = offset,
+        .size = size,
+    };
+    return dvz_drp2_stream_create_bind_group_entries(
+        stream, id, bind_group_layout_id, 1, &entry);
+}
+
+
+bool dvz_drp2_stream_create_bind_group_entries(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id,
+    uint32_t entry_count, const DvzDrp2BindGroupEntry* entries)
+{
+    if (entry_count == 0 || entry_count > DVZ_DRP2_MAX_BINDINGS)
+        return false;
+    ANN(entries);
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
     if (command == NULL)
         return false;
-    command->u.create_bind_group.id               = id;
+    command->u.create_bind_group.id = id;
     command->u.create_bind_group.bind_group_layout_id = bind_group_layout_id;
-    command->u.create_bind_group.buffer0_id        = buffer_id;
-    command->u.create_bind_group.buffer0_offset    = offset;
-    command->u.create_bind_group.buffer_size       = size;
+    command->u.create_bind_group.entry_count = entry_count;
+    dvz_memcpy(
+        command->u.create_bind_group.entries, sizeof(command->u.create_bind_group.entries),
+        entries, entry_count * sizeof(DvzDrp2BindGroupEntry));
     return true;
 }
 
@@ -1269,12 +1393,33 @@ bool dvz_drp2_stream_set_pipeline(
 bool dvz_drp2_stream_set_bind_group(
     DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t slot, uint64_t bind_group_id)
 {
+    return dvz_drp2_stream_set_bind_group_dynamic(
+        stream, pass_id, slot, bind_group_id, 0, NULL);
+}
+
+
+bool dvz_drp2_stream_set_bind_group_dynamic(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t slot, uint64_t bind_group_id,
+    uint32_t dynamic_offset_count, const uint64_t* dynamic_offsets)
+{
+    if (dynamic_offset_count > DVZ_DRP2_MAX_BINDINGS)
+        return false;
+    if (dynamic_offset_count > 0)
+        ANN(dynamic_offsets);
     DvzDrp2Command* command = _append_command(stream, DVZ_DRP2_COMMAND_SET_BIND_GROUP);
     if (command == NULL)
         return false;
     command->u.set_bind_group.pass_id = pass_id;
     command->u.set_bind_group.slot = slot;
     command->u.set_bind_group.bind_group_id = bind_group_id;
+    command->u.set_bind_group.dynamic_offset_count = dynamic_offset_count;
+    if (dynamic_offset_count > 0)
+    {
+        dvz_memcpy(
+            command->u.set_bind_group.dynamic_offsets,
+            sizeof(command->u.set_bind_group.dynamic_offsets), dynamic_offsets,
+            dynamic_offset_count * sizeof(uint64_t));
+    }
     return true;
 }
 

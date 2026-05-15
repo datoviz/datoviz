@@ -579,15 +579,22 @@ DvzDrp2ValidationResult _vklite_set_bind_group(
     if (pipeline->combined_pipeline_layout != VK_NULL_HANDLE)
     {
         VkDescriptorSet descriptor_set = dvz_descriptors_handle(bind_group->descriptors, 0);
+        uint32_t dynamic_offsets[DVZ_DRP2_MAX_BINDINGS] = {0};
+        for (uint32_t i = 0; i < command->u.set_bind_group.dynamic_offset_count; i++)
+            dynamic_offsets[i] = (uint32_t)command->u.set_bind_group.dynamic_offsets[i];
         vkCmdBindDescriptorSets(
             dvz_commands_handle(pass->commands), bind_point, pipeline->combined_pipeline_layout,
-            command->u.set_bind_group.slot, 1, &descriptor_set, 0, NULL);
+            command->u.set_bind_group.slot, 1, &descriptor_set,
+            command->u.set_bind_group.dynamic_offset_count, dynamic_offsets);
     }
     else
     {
+        uint32_t dynamic_offsets[DVZ_DRP2_MAX_BINDINGS] = {0};
+        for (uint32_t i = 0; i < command->u.set_bind_group.dynamic_offset_count; i++)
+            dynamic_offsets[i] = (uint32_t)command->u.set_bind_group.dynamic_offsets[i];
         dvz_cmd_bind_descriptors(
             pass->commands, bind_point, bind_group->descriptors, command->u.set_bind_group.slot, 1,
-            0, NULL);
+            command->u.set_bind_group.dynamic_offset_count, dynamic_offsets);
     }
     return _drp2_ok();
 }

@@ -2282,8 +2282,9 @@ int test_scene_image_emit_uses_mvp_and_texture_sets(TstSuite* suite, TstItem* it
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_pipeline = true;
-            AT(cmd->u.create_render_pipeline.bind_group_layout_id != 0);
-            AT(cmd->u.create_render_pipeline.bind_group_layout_id2 != 0);
+            AT(cmd->u.create_render_pipeline.bind_group_layout_count >= 2);
+            AT(cmd->u.create_render_pipeline.bind_group_layout_ids[0] != 0);
+            AT(cmd->u.create_render_pipeline.bind_group_layout_ids[1] != 0);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
         {

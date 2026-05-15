@@ -27,6 +27,7 @@
 #include "_log.h"
 #include "_runtime.h"
 #include "_stream.h"
+#include "_vk_utils.h"
 
 
 
@@ -61,6 +62,63 @@ typedef struct
 static ShadercSyms g_shaderc = {0};
 static bool g_shaderc_loaded = false;
 static bool g_shaderc_available = false;
+
+
+static VkShaderStageFlags _vklite_stage_flags(uint32_t visibility)
+{
+    VkShaderStageFlags out = 0;
+    if ((visibility & DVZ_DRP2_SHADER_STAGE_VERTEX) != 0)
+        out |= VK_SHADER_STAGE_VERTEX_BIT;
+    if ((visibility & DVZ_DRP2_SHADER_STAGE_FRAGMENT) != 0)
+        out |= VK_SHADER_STAGE_FRAGMENT_BIT;
+    if ((visibility & DVZ_DRP2_SHADER_STAGE_COMPUTE) != 0)
+        out |= VK_SHADER_STAGE_COMPUTE_BIT;
+    return out != 0 ? out : VK_SHADER_STAGE_ALL;
+}
+
+
+
+static VkDescriptorType _vklite_descriptor_type(DvzDrp2BindingType type)
+{
+    switch (type)
+    {
+    case DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER:
+        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    case DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER:
+        return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    case DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE:
+        return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    case DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    case DVZ_DRP2_BINDING_TYPE_SAMPLER:
+        return VK_DESCRIPTOR_TYPE_SAMPLER;
+    case DVZ_DRP2_BINDING_TYPE_NONE:
+    default:
+        return VK_DESCRIPTOR_TYPE_MAX_ENUM;
+    }
+}
+
+
+
+static VkPipelineLayout _vklite_combined_pipeline_layout(
+    DvzDevice* device, uint32_t count, VkDescriptorSetLayout* set_layouts)
+{
+    ANN(device);
+    ANN(set_layouts);
+    VkDevice vkd = dvz_device_handle(device);
+    ANNVK(vkd);
+
+    VkPipelineLayoutCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    info.setLayoutCount = count;
+    info.pSetLayouts = set_layouts;
+
+    VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkResult res = vkCreatePipelineLayout(vkd, &info, NULL, &layout);
+    if (vk_result_check(res, __FILE__, __LINE__) != 0)
+        return VK_NULL_HANDLE;
+    return layout;
+}
 
 static bool _shaderc_load(void)
 {
@@ -394,25 +452,16 @@ DvzDrp2ValidationResult _vklite_create_bind_group_layout(
     object->slots = slots;
 
     dvz_slots(state->runtime->device, slots);
-    if (command->u.create_bind_group_layout.storage_buffers)
+    for (uint32_t i = 0; i < command->u.create_bind_group_layout.entry_count; i++)
     {
+        const DvzDrp2BindGroupLayoutEntry* entry =
+            &command->u.create_bind_group_layout.entries[i];
+        VkDescriptorType type = _vklite_descriptor_type(entry->binding_type);
+        if (type == VK_DESCRIPTOR_TYPE_MAX_ENUM)
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         dvz_slots_binding(
-            slots, 0, 0, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-        dvz_slots_binding(
-            slots, 0, 1, 1, VK_SHADER_STAGE_COMPUTE_BIT, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    }
-    else if (command->u.create_bind_group_layout.uniform_buffer)
-    {
-        dvz_slots_binding(
-            slots, 0, 0, 1,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    }
-    else
-    {
-        dvz_slots_binding(
-            slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            slots, 0, entry->binding, 1, _vklite_stage_flags(entry->visibility), type);
     }
     if (dvz_slots_create(slots) != 0)
         return _vklite_fail_destroy_object(
@@ -454,50 +503,70 @@ DvzDrp2ValidationResult _vklite_create_bind_group(
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     object->descriptors = descriptors;
-    object->texture_id = command->u.create_bind_group.texture_id;
-    object->sampler_id = command->u.create_bind_group.sampler_id;
     dvz_descriptors(layout->slots, descriptors);
 
-    if (command->u.create_bind_group.buffer_size != 0 &&
-        command->u.create_bind_group.buffer1_id == 0)
+    for (uint32_t i = 0; i < command->u.create_bind_group.entry_count; i++)
     {
-        /* Uniform buffer: single buffer with a sub-allocation offset. */
-        Drp2VkliteObject* buffer0 = _vklite_find(state, command->u.create_bind_group.buffer0_id);
-        if (buffer0 == NULL || buffer0->buffer == NULL)
-            return _vklite_fail_destroy_object(
-                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        dvz_descriptors_buffer(
-            descriptors, 0, 0, 0, dvz_buffer_handle(buffer0->buffer),
-            command->u.create_bind_group.buffer0_offset,
-            command->u.create_bind_group.buffer_size);
-    }
-    else if (command->u.create_bind_group.buffer_size != 0)
-    {
-        /* Storage buffers: two buffers, no offset. */
-        Drp2VkliteObject* buffer0 = _vklite_find(state, command->u.create_bind_group.buffer0_id);
-        Drp2VkliteObject* buffer1 = _vklite_find(state, command->u.create_bind_group.buffer1_id);
-        if (buffer0 == NULL || buffer0->buffer == NULL || buffer1 == NULL ||
-            buffer1->buffer == NULL)
-            return _vklite_fail_destroy_object(
-                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        dvz_descriptors_buffer(
-            descriptors, 0, 0, 0, dvz_buffer_handle(buffer0->buffer), 0,
-            command->u.create_bind_group.buffer_size);
-        dvz_descriptors_buffer(
-            descriptors, 0, 1, 0, dvz_buffer_handle(buffer1->buffer), 0,
-            command->u.create_bind_group.buffer_size);
-    }
-    else
-    {
-        Drp2VkliteObject* texture = _vklite_find(state, command->u.create_bind_group.texture_id);
-        Drp2VkliteObject* sampler = _vklite_find(state, command->u.create_bind_group.sampler_id);
-        VkImageView texture_view = _vklite_object_image_view(texture);
-        if (texture_view == VK_NULL_HANDLE || sampler == NULL || sampler->sampler == NULL)
-            return _vklite_fail_destroy_object(
-                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        dvz_descriptors_image(
-            descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, texture_view,
-            dvz_sampler_handle(sampler->sampler));
+        const DvzDrp2BindGroupEntry* entry = &command->u.create_bind_group.entries[i];
+        if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER ||
+            entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER)
+        {
+            Drp2VkliteObject* buffer = _vklite_find(state, entry->resource_id);
+            if (buffer == NULL || buffer->buffer == NULL)
+                return _vklite_fail_destroy_object(
+                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            dvz_descriptors_buffer(
+                descriptors, 0, entry->binding, 0, dvz_buffer_handle(buffer->buffer),
+                entry->offset, entry->size);
+        }
+        else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE ||
+                 entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+        {
+            Drp2VkliteObject* texture = _vklite_find(state, entry->resource_id);
+            VkImageView texture_view = _vklite_object_image_view(texture);
+            if (texture_view == VK_NULL_HANDLE)
+                return _vklite_fail_destroy_object(
+                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+            VkSampler sampler_handle = VK_NULL_HANDLE;
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE)
+            {
+                const DvzDrp2BindGroupEntry* sampler_entry = NULL;
+                for (uint32_t j = 0; j < command->u.create_bind_group.entry_count; j++)
+                {
+                    if (command->u.create_bind_group.entries[j].binding_type ==
+                        DVZ_DRP2_BINDING_TYPE_SAMPLER)
+                    {
+                        sampler_entry = &command->u.create_bind_group.entries[j];
+                        break;
+                    }
+                }
+                if (sampler_entry == NULL)
+                    return _vklite_fail_destroy_object(
+                        object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+                Drp2VkliteObject* sampler = _vklite_find(state, sampler_entry->resource_id);
+                if (sampler == NULL || sampler->sampler == NULL)
+                    return _vklite_fail_destroy_object(
+                        object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+                sampler_handle = dvz_sampler_handle(sampler->sampler);
+            }
+            dvz_descriptors_image(
+                descriptors, 0, entry->binding, 0,
+                entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE ?
+                    VK_IMAGE_LAYOUT_GENERAL :
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                texture_view, sampler_handle);
+        }
+        else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER)
+        {
+            Drp2VkliteObject* sampler = _vklite_find(state, entry->resource_id);
+            if (sampler == NULL || sampler->sampler == NULL)
+                return _vklite_fail_destroy_object(
+                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            dvz_descriptors_image(
+                descriptors, 0, entry->binding, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_NULL_HANDLE,
+                dvz_sampler_handle(sampler->sampler));
+        }
     }
     return _drp2_ok();
 }
@@ -541,35 +610,38 @@ DvzDrp2ValidationResult _vklite_create_render_pipeline(
 
     VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 
-    if (command->u.create_render_pipeline.bind_group_layout_id2 != 0)
+    if (command->u.create_render_pipeline.bind_group_layout_count > 1)
     {
-        /* Two-descriptor-set pipeline: build a combined pipeline layout. */
-        Drp2VkliteObject* layout0 =
-            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id);
-        Drp2VkliteObject* layout1 =
-            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id2);
-        if (layout0 == NULL || layout0->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
-            layout0->slots == NULL || layout1 == NULL ||
-            layout1->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT || layout1->slots == NULL)
-            return _vklite_fail_destroy_object(
-                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        pipeline_layout = dvz_slots_combined_pipeline_layout(
-            state->runtime->device,
-            dvz_slots_set_layout(layout0->slots, 0),
-            dvz_slots_set_layout(layout1->slots, 0));
+        VkDescriptorSetLayout set_layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
+        Drp2VkliteObject* layout0 = NULL;
+        for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count; i++)
+        {
+            Drp2VkliteObject* layout =
+                _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_ids[i]);
+            if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
+                layout->slots == NULL)
+                return _vklite_fail_destroy_object(
+                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            if (i == 0)
+                layout0 = layout;
+            set_layouts[i] = dvz_slots_set_layout(layout->slots, 0);
+        }
+        pipeline_layout = _vklite_combined_pipeline_layout(
+            state->runtime->device, command->u.create_render_pipeline.bind_group_layout_count,
+            set_layouts);
         if (pipeline_layout == VK_NULL_HANDLE)
             return _vklite_fail_destroy_object(
                 object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         object->combined_pipeline_layout = pipeline_layout;
         object->combined_layout_device   = dvz_device_handle(state->runtime->device);
         /* Borrow first layout's slots pointer for bookkeeping; layout is driven by combined. */
-        object->slots = layout0->slots;
+        object->slots = layout0 != NULL ? layout0->slots : NULL;
         object->borrowed_slots = true;
     }
-    else if (command->u.create_render_pipeline.bind_group_layout_id != 0)
+    else if (command->u.create_render_pipeline.bind_group_layout_count == 1)
     {
         Drp2VkliteObject* layout =
-            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_id);
+            _vklite_find(state, command->u.create_render_pipeline.bind_group_layout_ids[0]);
         if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
             layout->slots == NULL)
             return _vklite_fail_destroy_object(
@@ -683,16 +755,45 @@ DvzDrp2ValidationResult _vklite_create_compute_pipeline(
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    if (command->u.create_compute_pipeline.bind_group_layout_id != 0)
+    VkPipelineLayout compute_layout = VK_NULL_HANDLE;
+    if (command->u.create_compute_pipeline.bind_group_layout_count > 1)
+    {
+        VkDescriptorSetLayout set_layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
+        Drp2VkliteObject* layout0 = NULL;
+        for (uint32_t i = 0; i < command->u.create_compute_pipeline.bind_group_layout_count; i++)
+        {
+            Drp2VkliteObject* layout =
+                _vklite_find(state, command->u.create_compute_pipeline.bind_group_layout_ids[i]);
+            if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
+                layout->slots == NULL)
+                return _vklite_fail_destroy_object(
+                    object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            if (i == 0)
+                layout0 = layout;
+            set_layouts[i] = dvz_slots_set_layout(layout->slots, 0);
+        }
+        compute_layout = _vklite_combined_pipeline_layout(
+            state->runtime->device, command->u.create_compute_pipeline.bind_group_layout_count,
+            set_layouts);
+        if (compute_layout == VK_NULL_HANDLE)
+            return _vklite_fail_destroy_object(
+                object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        object->combined_pipeline_layout = compute_layout;
+        object->combined_layout_device   = dvz_device_handle(state->runtime->device);
+        object->slots = layout0 != NULL ? layout0->slots : NULL;
+        object->borrowed_slots = true;
+    }
+    else if (command->u.create_compute_pipeline.bind_group_layout_count == 1)
     {
         Drp2VkliteObject* layout =
-            _vklite_find(state, command->u.create_compute_pipeline.bind_group_layout_id);
+            _vklite_find(state, command->u.create_compute_pipeline.bind_group_layout_ids[0]);
         if (layout == NULL || layout->kind != DRP2_OBJECT_BIND_GROUP_LAYOUT ||
             layout->slots == NULL)
             return _vklite_fail_destroy_object(
                 object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         object->slots = layout->slots;
         object->borrowed_slots = true;
+        compute_layout = dvz_slots_handle(object->slots);
     }
     else
     {
@@ -703,6 +804,7 @@ DvzDrp2ValidationResult _vklite_create_compute_pipeline(
             _vklite_destroy_object(object);
             return result;
         }
+        compute_layout = dvz_slots_handle(object->slots);
     }
 
     DvzCompute* compute = dvz_compute_create_wrapper();
@@ -713,7 +815,7 @@ DvzDrp2ValidationResult _vklite_create_compute_pipeline(
 
     dvz_compute(state->runtime->device, compute);
     dvz_compute_shader(compute, dvz_shader_handle(shader->shader));
-    dvz_compute_layout(compute, dvz_slots_handle(object->slots));
+    dvz_compute_layout(compute, compute_layout);
     if (dvz_compute_create(compute) != 0)
         return _vklite_fail_destroy_object(
             object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);

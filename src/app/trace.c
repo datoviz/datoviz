@@ -197,8 +197,11 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
         hash = _trace_hash_u64(hash, command->u.create_render_pipeline.vertex_shader_module_id);
         hash = _trace_hash_u64(hash, command->u.create_render_pipeline.fragment_shader_module_id);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.vertex_buffer_slots);
-        hash = _trace_hash_u64(hash, command->u.create_render_pipeline.bind_group_layout_id);
-        hash = _trace_hash_u64(hash, command->u.create_render_pipeline.bind_group_layout_id2);
+        hash = _trace_hash_u32(hash, command->u.create_render_pipeline.bind_group_layout_count);
+        for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count &&
+                             i < DVZ_DRP2_MAX_BIND_GROUPS;
+             i++)
+            hash = _trace_hash_u64(hash, command->u.create_render_pipeline.bind_group_layout_ids[i]);
         hash = _trace_hash_bool(hash, command->u.create_render_pipeline.has_depth_attachment);
         hash = _trace_hash_bool(hash, command->u.create_render_pipeline.depth_write_enabled);
         hash = _trace_hash_u32(hash, command->u.create_render_pipeline.depth_compare_op);
@@ -220,24 +223,49 @@ static uint64_t _trace_hash_command(uint64_t hash, const DvzDrp2Command* command
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         hash = _trace_hash_u64(hash, command->u.create_compute_pipeline.id);
         hash = _trace_hash_u64(hash, command->u.create_compute_pipeline.compute_shader_module_id);
-        return _trace_hash_u64(hash, command->u.create_compute_pipeline.bind_group_layout_id);
+        hash = _trace_hash_u32(hash, command->u.create_compute_pipeline.bind_group_layout_count);
+        for (uint32_t i = 0; i < command->u.create_compute_pipeline.bind_group_layout_count &&
+                             i < DVZ_DRP2_MAX_BIND_GROUPS;
+             i++)
+            hash = _trace_hash_u64(hash, command->u.create_compute_pipeline.bind_group_layout_ids[i]);
+        return hash;
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         return _trace_hash_u64(hash, command->u.destroy_compute_pipeline.compute_pipeline_id);
     case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
         return _trace_hash_u64(hash, command->u.create_sampler.id);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
         hash = _trace_hash_u64(hash, command->u.create_bind_group_layout.id);
-        hash = _trace_hash_bool(hash, command->u.create_bind_group_layout.storage_buffers);
-        return _trace_hash_bool(hash, command->u.create_bind_group_layout.uniform_buffer);
+        hash = _trace_hash_u32(hash, command->u.create_bind_group_layout.entry_count);
+        for (uint32_t i = 0; i < command->u.create_bind_group_layout.entry_count &&
+                             i < DVZ_DRP2_MAX_BINDINGS;
+             i++)
+        {
+            const DvzDrp2BindGroupLayoutEntry* entry =
+                &command->u.create_bind_group_layout.entries[i];
+            hash = _trace_hash_u32(hash, entry->binding);
+            hash = _trace_hash_u32(hash, entry->binding_type);
+            hash = _trace_hash_u32(hash, entry->visibility);
+            hash = _trace_hash_u32(hash, entry->access);
+            hash = _trace_hash_bool(hash, entry->has_dynamic_offset);
+        }
+        return hash;
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
         hash = _trace_hash_u64(hash, command->u.create_bind_group.id);
         hash = _trace_hash_u64(hash, command->u.create_bind_group.bind_group_layout_id);
-        hash = _trace_hash_u64(hash, command->u.create_bind_group.texture_id);
-        hash = _trace_hash_u64(hash, command->u.create_bind_group.sampler_id);
-        hash = _trace_hash_u64(hash, command->u.create_bind_group.buffer0_id);
-        hash = _trace_hash_u64(hash, command->u.create_bind_group.buffer1_id);
-        hash = _trace_hash_u64(hash, command->u.create_bind_group.buffer_size);
-        return _trace_hash_u64(hash, command->u.create_bind_group.buffer0_offset);
+        hash = _trace_hash_u32(hash, command->u.create_bind_group.entry_count);
+        for (uint32_t i = 0; i < command->u.create_bind_group.entry_count &&
+                             i < DVZ_DRP2_MAX_BINDINGS;
+             i++)
+        {
+            const DvzDrp2BindGroupEntry* entry = &command->u.create_bind_group.entries[i];
+            hash = _trace_hash_u32(hash, entry->binding);
+            hash = _trace_hash_u32(hash, entry->binding_type);
+            hash = _trace_hash_u32(hash, entry->resource_kind);
+            hash = _trace_hash_u64(hash, entry->resource_id);
+            hash = _trace_hash_u64(hash, entry->offset);
+            hash = _trace_hash_u64(hash, entry->size);
+        }
+        return hash;
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         return _trace_hash_u64(hash, command->u.destroy_bind_group_layout.bind_group_layout_id);
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
@@ -589,17 +617,14 @@ static bool _trace_snapshot_append_command(
             snapshot, "+ sampler id=%" PRIu64, command->u.create_sampler.id);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
         return _trace_snapshot_append(
-            snapshot, "+ bind-layout id=%" PRIu64 " storage=%s uniform=%s",
+            snapshot, "+ bind-layout id=%" PRIu64 " entries=%" PRIu32,
             command->u.create_bind_group_layout.id,
-            command->u.create_bind_group_layout.storage_buffers ? "yes" : "no",
-            command->u.create_bind_group_layout.uniform_buffer ? "yes" : "no");
+            command->u.create_bind_group_layout.entry_count);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
         return _trace_snapshot_append(
-            snapshot, "+ bind-group id=%" PRIu64 " layout=%" PRIu64 " tex=%" PRIu64
-                      " buf0=%" PRIu64 " buf1=%" PRIu64,
+            snapshot, "+ bind-group id=%" PRIu64 " layout=%" PRIu64 " entries=%" PRIu32,
             command->u.create_bind_group.id, command->u.create_bind_group.bind_group_layout_id,
-            command->u.create_bind_group.texture_id, command->u.create_bind_group.buffer0_id,
-            command->u.create_bind_group.buffer1_id);
+            command->u.create_bind_group.entry_count);
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         return _trace_snapshot_append(
             snapshot, "- bind-layout id=%" PRIu64,

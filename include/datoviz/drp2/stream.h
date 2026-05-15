@@ -361,6 +361,18 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layout2(
 
 
 /**
+ * Attach an ordered bind-group layout array to the most recent CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param count the number of bind-group layout ids
+ * @param bind_group_layout_ids ordered bind-group layout ids, one per slot
+ * @return whether the most recent command was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
+    DvzDrp2CommandStream* stream, uint32_t count, const uint64_t* bind_group_layout_ids);
+
+
+/**
  * Attach depth state to the most recently appended CreateRenderPipeline command.
  *
  * @param stream the command stream
@@ -471,6 +483,20 @@ DVZ_EXPORT bool
 dvz_drp2_stream_create_uniform_bind_group_layout(DvzDrp2CommandStream* stream, uint64_t id);
 
 
+/**
+ * Append a CreateBindGroupLayout command with explicit entries.
+ *
+ * @param stream the command stream
+ * @param id the bind-group layout id
+ * @param entry_count number of entries
+ * @param entries bind-group layout entries
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_bind_group_layout_entries(
+    DvzDrp2CommandStream* stream, uint64_t id, uint32_t entry_count,
+    const DvzDrp2BindGroupLayoutEntry* entries);
+
+
 
 /**
  * Append a CreateBindGroup command for one sampled texture and one sampler.
@@ -519,6 +545,21 @@ DVZ_EXPORT bool dvz_drp2_stream_create_storage_bind_group(
 DVZ_EXPORT bool dvz_drp2_stream_create_uniform_bind_group(
     DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id, uint64_t buffer_id,
     uint64_t offset, uint64_t size);
+
+
+/**
+ * Append a CreateBindGroup command with explicit resource entries.
+ *
+ * @param stream the command stream
+ * @param id the bind-group id
+ * @param bind_group_layout_id the bind-group layout id
+ * @param entry_count number of entries
+ * @param entries bind-group resource entries
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_create_bind_group_entries(
+    DvzDrp2CommandStream* stream, uint64_t id, uint64_t bind_group_layout_id,
+    uint32_t entry_count, const DvzDrp2BindGroupEntry* entries);
 
 
 
@@ -853,6 +894,22 @@ dvz_drp2_stream_set_pipeline(DvzDrp2CommandStream* stream, uint64_t pass_id, uin
  */
 DVZ_EXPORT bool dvz_drp2_stream_set_bind_group(
     DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t slot, uint64_t bind_group_id);
+
+
+/**
+ * Append a SetBindGroup command with dynamic offsets.
+ *
+ * @param stream the command stream
+ * @param pass_id the pass id
+ * @param slot the bind-group slot
+ * @param bind_group_id the bind-group id
+ * @param dynamic_offset_count number of dynamic offsets
+ * @param dynamic_offsets dynamic offsets consumed in layout-entry order
+ * @return whether the command was appended
+ */
+DVZ_EXPORT bool dvz_drp2_stream_set_bind_group_dynamic(
+    DvzDrp2CommandStream* stream, uint64_t pass_id, uint32_t slot, uint64_t bind_group_id,
+    uint32_t dynamic_offset_count, const uint64_t* dynamic_offsets);
 
 
 

@@ -404,15 +404,14 @@ static bool _app_trace_print_command_detail(
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
         dvz_fprintf(
             stderr, "  %03u + CreateRenderPipeline id=%" PRIu64 " vs=%" PRIu64
-                    " fs=%" PRIu64 " vslots=%" PRIu32 " bgl0=%" PRIu64 " bgl1=%" PRIu64
+                    " fs=%" PRIu64 " vslots=%" PRIu32 " bgls=%" PRIu32
                     " depth=%s write=%s compare=%" PRIu32 " topology=%" PRIu32
                     " bindings=%" PRIu32 " attrs=%" PRIu32 "\n",
             index, command->u.create_render_pipeline.id,
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id,
             command->u.create_render_pipeline.vertex_buffer_slots,
-            command->u.create_render_pipeline.bind_group_layout_id,
-            command->u.create_render_pipeline.bind_group_layout_id2,
+            command->u.create_render_pipeline.bind_group_layout_count,
             command->u.create_render_pipeline.has_depth_attachment ? "yes" : "no",
             command->u.create_render_pipeline.depth_write_enabled ? "yes" : "no",
             command->u.create_render_pipeline.depth_compare_op,
@@ -428,10 +427,10 @@ static bool _app_trace_print_command_detail(
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         dvz_fprintf(
             stderr, "  %03u + CreateComputePipeline id=%" PRIu64 " shader=%" PRIu64
-                    " bgl=%" PRIu64 "\n",
+                    " bgls=%" PRIu32 "\n",
             index, command->u.create_compute_pipeline.id,
             command->u.create_compute_pipeline.compute_shader_module_id,
-            command->u.create_compute_pipeline.bind_group_layout_id);
+            command->u.create_compute_pipeline.bind_group_layout_count);
         return true;
     case DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE:
         dvz_fprintf(
@@ -445,23 +444,17 @@ static bool _app_trace_print_command_detail(
         return true;
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
         dvz_fprintf(
-            stderr, "  %03u + CreateBindGroupLayout id=%" PRIu64
-                    " storage=%s uniform=%s\n",
+            stderr, "  %03u + CreateBindGroupLayout id=%" PRIu64 " entries=%" PRIu32 "\n",
             index, command->u.create_bind_group_layout.id,
-            command->u.create_bind_group_layout.storage_buffers ? "yes" : "no",
-            command->u.create_bind_group_layout.uniform_buffer ? "yes" : "no");
+            command->u.create_bind_group_layout.entry_count);
         return true;
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
         dvz_fprintf(
             stderr, "  %03u + CreateBindGroup id=%" PRIu64 " layout=%" PRIu64
-                    " texture=%" PRIu64 " sampler=%" PRIu64 " buffer0=%" PRIu64
-                    " buffer1=%" PRIu64 " size=%" PRIu64 " offset0=%" PRIu64 "\n",
+                    " entries=%" PRIu32 "\n",
             index, command->u.create_bind_group.id,
             command->u.create_bind_group.bind_group_layout_id,
-            command->u.create_bind_group.texture_id, command->u.create_bind_group.sampler_id,
-            command->u.create_bind_group.buffer0_id, command->u.create_bind_group.buffer1_id,
-            command->u.create_bind_group.buffer_size,
-            command->u.create_bind_group.buffer0_offset);
+            command->u.create_bind_group.entry_count);
         return true;
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         dvz_fprintf(

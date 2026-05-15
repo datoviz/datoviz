@@ -108,13 +108,13 @@ struct Drp2Object
     uint64_t vertex_shader_module_id;
     uint64_t fragment_shader_module_id;
     uint64_t compute_shader_module_id;
+    uint32_t bind_group_layout_count;
+    uint64_t bind_group_layout_ids[DVZ_DRP2_MAX_BIND_GROUPS];
+    uint32_t layout_entry_count;
+    DvzDrp2BindGroupLayoutEntry layout_entries[DVZ_DRP2_MAX_BINDINGS];
     uint64_t bind_group_layout_id;
-    uint64_t bind_group_layout_id2;
-    uint64_t texture_id;
-    uint64_t sampler_id;
-    uint64_t buffer0_id;
-    uint64_t buffer1_id;
-    uint64_t buffer_size;
+    uint32_t bind_group_entry_count;
+    DvzDrp2BindGroupEntry bind_group_entries[DVZ_DRP2_MAX_BINDINGS];
     bool destroyed;
     bool referenced_by_work;
     bool open;
@@ -128,8 +128,6 @@ struct Drp2Object
     uint32_t render_bound_vertex_mask;
     bool render_index_buffer_bound;
     uint32_t render_bound_bind_group_mask;
-    bool storage_buffers;
-    bool uniform_buffer;
     bool has_depth_attachment;
     bool depth_write_enabled;
     uint32_t depth_compare_op;

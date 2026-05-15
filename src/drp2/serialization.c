@@ -179,6 +179,82 @@ static const char* _step_mode_name(uint32_t step_mode)
 }
 
 
+static const char* _binding_type_name(DvzDrp2BindingType type)
+{
+    switch (type)
+    {
+    case DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER:
+        return "uniform_buffer";
+    case DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER:
+        return "storage_buffer";
+    case DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE:
+        return "sampled_texture";
+    case DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE:
+        return "storage_texture";
+    case DVZ_DRP2_BINDING_TYPE_SAMPLER:
+        return "sampler";
+    case DVZ_DRP2_BINDING_TYPE_NONE:
+    default:
+        return "none";
+    }
+}
+
+
+
+static const char* _resource_kind_name(DvzDrp2BindingResourceKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_DRP2_BINDING_RESOURCE_BUFFER:
+        return "buffer";
+    case DVZ_DRP2_BINDING_RESOURCE_TEXTURE:
+        return "texture";
+    case DVZ_DRP2_BINDING_RESOURCE_TEXTURE_VIEW:
+        return "texture_view";
+    case DVZ_DRP2_BINDING_RESOURCE_SAMPLER:
+        return "sampler";
+    case DVZ_DRP2_BINDING_RESOURCE_NONE:
+    default:
+        return "none";
+    }
+}
+
+
+
+static const char* _access_name(DvzDrp2BindingAccess access)
+{
+    switch (access)
+    {
+    case DVZ_DRP2_BINDING_ACCESS_READ:
+        return "read";
+    case DVZ_DRP2_BINDING_ACCESS_READ_WRITE:
+    default:
+        return "read_write";
+    }
+}
+
+
+
+static void _append_visibility(JsonBuilder* builder, uint32_t visibility)
+{
+    bool first = true;
+    _json_append(builder, "\"visibility\": [");
+    if ((visibility & DVZ_DRP2_SHADER_STAGE_VERTEX) != 0)
+    {
+        _json_append(builder, "\"VERTEX\"");
+        first = false;
+    }
+    if ((visibility & DVZ_DRP2_SHADER_STAGE_FRAGMENT) != 0)
+    {
+        _json_append(builder, "%s\"FRAGMENT\"", first ? "" : ", ");
+        first = false;
+    }
+    if ((visibility & DVZ_DRP2_SHADER_STAGE_COMPUTE) != 0)
+        _json_append(builder, "%s\"COMPUTE\"", first ? "" : ", ");
+    _json_append(builder, "]");
+}
+
+
 
 static void _json_append_vertex_buffers(JsonBuilder* builder, const DvzDrp2Command* command)
 {
@@ -396,17 +472,18 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.vertex_shader_module_id,
             command->u.create_render_pipeline.fragment_shader_module_id);
-        if (command->u.create_render_pipeline.bind_group_layout_id != 0)
+        if (command->u.create_render_pipeline.bind_group_layout_count > 0)
         {
-            if (command->u.create_render_pipeline.bind_group_layout_id2 != 0)
+            _json_append(builder, ", \"bind_group_layout_ids\": [");
+            for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count; i++)
+            {
+                if (i > 0)
+                    _json_append(builder, ", ");
                 _json_append(
-                    builder, ", \"bind_group_layout_ids\": [%" PRIu64 ", %" PRIu64 "]",
-                    command->u.create_render_pipeline.bind_group_layout_id,
-                    command->u.create_render_pipeline.bind_group_layout_id2);
-            else
-                _json_append(
-                    builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
-                    command->u.create_render_pipeline.bind_group_layout_id);
+                    builder, "%" PRIu64,
+                    command->u.create_render_pipeline.bind_group_layout_ids[i]);
+            }
+            _json_append(builder, "]");
         }
         _json_append_vertex_buffers(builder, command);
         if (command->u.create_render_pipeline.has_depth_attachment)
@@ -432,11 +509,18 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"compute_shader_module_id\": %" PRIu64,
             _command_name(command->type), command->u.create_compute_pipeline.id,
             command->u.create_compute_pipeline.compute_shader_module_id);
-        if (command->u.create_compute_pipeline.bind_group_layout_id != 0)
+        if (command->u.create_compute_pipeline.bind_group_layout_count > 0)
         {
-            _json_append(
-                builder, ", \"bind_group_layout_ids\": [%" PRIu64 "]",
-                command->u.create_compute_pipeline.bind_group_layout_id);
+            _json_append(builder, ", \"bind_group_layout_ids\": [");
+            for (uint32_t i = 0; i < command->u.create_compute_pipeline.bind_group_layout_count; i++)
+            {
+                if (i > 0)
+                    _json_append(builder, ", ");
+                _json_append(
+                    builder, "%" PRIu64,
+                    command->u.create_compute_pipeline.bind_group_layout_ids[i]);
+            }
+            _json_append(builder, "]");
         }
         _json_append(builder, " }");
         break;
@@ -456,80 +540,61 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _command_name(command->type), command->u.create_sampler.id);
         break;
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
-        if (command->u.create_bind_group_layout.storage_buffers)
+        _json_append(
+            builder, "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"entries\": [",
+            _command_name(command->type), command->u.create_bind_group_layout.id);
+        for (uint32_t i = 0; i < command->u.create_bind_group_layout.entry_count; i++)
         {
+            const DvzDrp2BindGroupLayoutEntry* entry =
+                &command->u.create_bind_group_layout.entries[i];
+            if (i > 0)
+                _json_append(builder, ", ");
             _json_append(
-                builder,
-                "{ \"cmd\": \"%s\", \"id\": %" PRIu64
-                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"storage_buffer\" }, "
-                "{ \"binding\": 1, \"binding_type\": \"storage_buffer\" } ] }",
-                _command_name(command->type), command->u.create_bind_group_layout.id);
+                builder, "{ \"binding\": %" PRIu32 ", \"binding_type\": \"%s\"",
+                entry->binding, _binding_type_name(entry->binding_type));
+            if (entry->visibility != 0)
+            {
+                _json_append(builder, ", ");
+                _append_visibility(builder, entry->visibility);
+            }
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER ||
+                entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+            {
+                _json_append(builder, ", \"access\": \"%s\"", _access_name(entry->access));
+            }
+            if (entry->has_dynamic_offset)
+                _json_append(builder, ", \"has_dynamic_offset\": true");
+            _json_append(builder, " }");
         }
-        else if (command->u.create_bind_group_layout.uniform_buffer)
-        {
-            _json_append(
-                builder,
-                "{ \"cmd\": \"%s\", \"id\": %" PRIu64
-                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"uniform_buffer\", "
-                "\"visibility\": [\"VERTEX\", \"FRAGMENT\"] } ] }",
-                _command_name(command->type), command->u.create_bind_group_layout.id);
-        }
-        else
-        {
-            _json_append(
-                builder,
-                "{ \"cmd\": \"%s\", \"id\": %" PRIu64
-                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"sampled_texture\" }, "
-                "{ \"binding\": 1, \"binding_type\": \"sampler\" } ] }",
-                _command_name(command->type), command->u.create_bind_group_layout.id);
-        }
+        _json_append(builder, "] }");
         break;
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
-        if (command->u.create_bind_group.buffer0_id != 0 &&
-            command->u.create_bind_group.buffer1_id == 0)
+        _json_append(
+            builder,
+            "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
+            ", \"entries\": [",
+            _command_name(command->type), command->u.create_bind_group.id,
+            command->u.create_bind_group.bind_group_layout_id);
+        for (uint32_t i = 0; i < command->u.create_bind_group.entry_count; i++)
         {
+            const DvzDrp2BindGroupEntry* entry = &command->u.create_bind_group.entries[i];
+            if (i > 0)
+                _json_append(builder, ", ");
             _json_append(
                 builder,
-                "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
-                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"uniform_buffer\", "
-                "\"resource_kind\": \"buffer\", \"resource_id\": %" PRIu64
-                ", \"offset\": %" PRIu64 ", \"size\": %" PRIu64 " } ] }",
-                _command_name(command->type), command->u.create_bind_group.id,
-                command->u.create_bind_group.bind_group_layout_id,
-                command->u.create_bind_group.buffer0_id,
-                command->u.create_bind_group.buffer0_offset,
-                command->u.create_bind_group.buffer_size);
+                "{ \"binding\": %" PRIu32 ", \"binding_type\": \"%s\", "
+                "\"resource_kind\": \"%s\", \"resource_id\": %" PRIu64,
+                entry->binding, _binding_type_name(entry->binding_type),
+                _resource_kind_name(entry->resource_kind), entry->resource_id);
+            if (entry->resource_kind == DVZ_DRP2_BINDING_RESOURCE_BUFFER)
+            {
+                _json_append(
+                    builder, ", \"offset\": %" PRIu64 ", \"size\": %" PRIu64,
+                    entry->offset, entry->size);
+            }
+            _json_append(builder, " }");
         }
-        else if (command->u.create_bind_group.buffer0_id != 0 ||
-                 command->u.create_bind_group.buffer1_id != 0)
-        {
-            _json_append(
-                builder,
-                "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
-                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"storage_buffer\", "
-                "\"resource_kind\": \"buffer\", \"resource_id\": %" PRIu64
-                ", \"offset\": 0, \"size\": %" PRIu64
-                " }, { \"binding\": 1, \"binding_type\": \"storage_buffer\", "
-                "\"resource_kind\": \"buffer\", \"resource_id\": %" PRIu64
-                ", \"offset\": 0, \"size\": %" PRIu64 " } ] }",
-                _command_name(command->type), command->u.create_bind_group.id,
-                command->u.create_bind_group.bind_group_layout_id,
-                command->u.create_bind_group.buffer0_id, command->u.create_bind_group.buffer_size,
-                command->u.create_bind_group.buffer1_id, command->u.create_bind_group.buffer_size);
-        }
-        else
-        {
-            _json_append(
-                builder,
-                "{ \"cmd\": \"%s\", \"id\": %" PRIu64 ", \"bind_group_layout_id\": %" PRIu64
-                ", \"entries\": [ { \"binding\": 0, \"binding_type\": \"sampled_texture\", "
-                "\"resource_kind\": \"texture\", \"resource_id\": %" PRIu64
-                " }, { \"binding\": 1, \"binding_type\": \"sampler\", "
-                "\"resource_kind\": \"sampler\", \"resource_id\": %" PRIu64 " } ] }",
-                _command_name(command->type), command->u.create_bind_group.id,
-                command->u.create_bind_group.bind_group_layout_id,
-                command->u.create_bind_group.texture_id, command->u.create_bind_group.sampler_id);
-        }
+        _json_append(builder, "] }");
         break;
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         _json_append(
@@ -669,9 +734,21 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
         _json_append(
             builder,
             "{ \"cmd\": \"%s\", \"pass_id\": %" PRIu64 ", \"slot\": %" PRIu32
-            ", \"bind_group_id\": %" PRIu64 " }",
+            ", \"bind_group_id\": %" PRIu64,
             _command_name(command->type), command->u.set_bind_group.pass_id,
             command->u.set_bind_group.slot, command->u.set_bind_group.bind_group_id);
+        if (command->u.set_bind_group.dynamic_offset_count > 0)
+        {
+            _json_append(builder, ", \"dynamic_offsets\": [");
+            for (uint32_t i = 0; i < command->u.set_bind_group.dynamic_offset_count; i++)
+            {
+                if (i > 0)
+                    _json_append(builder, ", ");
+                _json_append(builder, "%" PRIu64, command->u.set_bind_group.dynamic_offsets[i]);
+            }
+            _json_append(builder, "]");
+        }
+        _json_append(builder, " }");
         break;
     case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
         _json_append(

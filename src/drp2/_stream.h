@@ -87,8 +87,8 @@ struct DvzDrp2Command
             uint64_t vertex_shader_module_id;
             uint64_t fragment_shader_module_id;
             uint32_t vertex_buffer_slots;
-            uint64_t bind_group_layout_id;
-            uint64_t bind_group_layout_id2; /* optional second descriptor set; 0 = unused */
+            uint32_t bind_group_layout_count;
+            uint64_t bind_group_layout_ids[DVZ_DRP2_MAX_BIND_GROUPS];
             bool has_depth_attachment;
             bool depth_write_enabled;
             uint32_t depth_compare_op;      /* VkCompareOp */
@@ -111,7 +111,8 @@ struct DvzDrp2Command
         {
             uint64_t id;
             uint64_t compute_shader_module_id;
-            uint64_t bind_group_layout_id;
+            uint32_t bind_group_layout_count;
+            uint64_t bind_group_layout_ids[DVZ_DRP2_MAX_BIND_GROUPS];
         } create_compute_pipeline;
         struct
         {
@@ -124,19 +125,15 @@ struct DvzDrp2Command
         struct
         {
             uint64_t id;
-            bool storage_buffers;
-            bool uniform_buffer;
+            uint32_t entry_count;
+            DvzDrp2BindGroupLayoutEntry entries[DVZ_DRP2_MAX_BINDINGS];
         } create_bind_group_layout;
         struct
         {
             uint64_t id;
             uint64_t bind_group_layout_id;
-            uint64_t texture_id;
-            uint64_t sampler_id;
-            uint64_t buffer0_id;
-            uint64_t buffer1_id;
-            uint64_t buffer_size;
-            uint64_t buffer0_offset;
+            uint32_t entry_count;
+            DvzDrp2BindGroupEntry entries[DVZ_DRP2_MAX_BINDINGS];
         } create_bind_group;
         struct
         {
@@ -209,6 +206,8 @@ struct DvzDrp2Command
             uint64_t pass_id;
             uint32_t slot;
             uint64_t bind_group_id;
+            uint32_t dynamic_offset_count;
+            uint64_t dynamic_offsets[DVZ_DRP2_MAX_BINDINGS];
         } set_bind_group;
         struct
         {
