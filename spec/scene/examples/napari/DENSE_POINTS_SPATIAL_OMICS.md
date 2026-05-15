@@ -43,7 +43,7 @@ References:
 
 ## Dataset
 
-Primary lightweight dataset: **SpatialData MERFISH mouse brain**.
+Stage 1 primary lightweight dataset: **SpatialData MERFISH mouse brain**.
 
 Reason:
 
@@ -63,6 +63,33 @@ Heavier alternatives:
 - Visium mouse brain, below 100 MB.
 - Visium HD mouse brain, below 200 MB.
 - Xenium and larger Visium datasets are visually compelling but probably too large for a demo unless pre-downloaded.
+
+Stage 2 showcase dataset: **Allen Brain Cell Atlas / Zhuang whole-mouse-brain MERFISH**.
+
+Reason:
+
+- This is visually much stronger than the small SpatialData MERFISH example: it is a 3D registered
+  mouse-brain point cloud with millions of cells, anatomical context, and rich categorical labels.
+- It can show the thing this demo should ultimately sell: dense colored 3D neuroscience points,
+  with color by neurotransmitter identity, class, subclass, or cluster.
+- It is a better fit for a Datoviz renderer stress test than small 2D tissue examples because it
+  exercises depth, arcball interaction, large point buffers, category palettes, and overview-to-detail
+  navigation.
+
+The Stage 1 SpatialData/MIBI datasets should remain as lightweight compatibility datasets. The
+Stage 2 visual target should pivot to ABC/Zhuang MERFISH as the main demo, with SpatialData kept as
+the smaller fallback path.
+
+Reference targets for the Stage 2 look:
+
+- ABC Atlas Zhuang MERFISH tutorial:
+  https://alleninstitute.github.io/abc_atlas_access/notebooks/zhuang_merfish_tutorial.html
+- Neurotransmitter identity screenshot:
+  https://alleninstitute.github.io/abc_atlas_access/_images/ad11a718de488467ebc989f84521b65c7b6b6b81deb3bd41fe802527cd0819e6.png
+- Cell subclass screenshot:
+  https://alleninstitute.github.io/abc_atlas_access/_images/bd501a7a2bc84b9601a136ab00e681aa17214542e5cb89c3b474379fcd8aa064.png
+- Parcellation screenshot:
+  https://alleninstitute.github.io/abc_atlas_access/_images/78eb7d54e767ec71232cb24f443170b8872747d5adcc7c7eea19a8c1b2f9886a.png
 
 ## Download and cache strategy
 
@@ -119,6 +146,27 @@ reader in the C example:
   image_rgba8.bin        # optional W x H x 4 background
 ```
 
+For the Stage 2 ABC/Zhuang dataset, use the same C runtime cache shape but store it under a separate
+dataset name:
+
+```text
+.cache/datoviz-napari-demos/spatial_points/abc_zhuang_merfish/
+  metadata.json
+  positions_f32.bin      # N x 3 float32, registered x/y/z brain coordinates
+  category_u32.bin       # N uint32 class/subclass/neurotransmitter/cluster id
+  value_f32.bin          # N float32 expression, confidence, or optional scalar
+  colors_category_rgba8.bin
+  colors_continuous_rgba8.bin
+  lod_1m_u32.bin
+  lod_5m_u32.bin
+  lod_10m_u32.bin
+  atlas_slice_rgba8.bin  # optional 2D anatomical slice/overview texture
+```
+
+The Python preparation step may depend on `abc_atlas_access` or direct downloaded tables, but the C
+example must remain a binary-cache reader only. Network downloads, Python package imports, and data
+format churn should stay out of the interactive C runtime.
+
 `metadata.json` should include at least:
 
 ```json
@@ -157,6 +205,23 @@ category_big = np.tile(category, repeats)
 ```
 
 This keeps the demo visually biological while reaching stress-test scale.
+
+For ABC/Zhuang MERFISH, add a second preparation path:
+
+1. Load the cell metadata/coordinate table with `abc_atlas_access` or from a downloaded cache.
+2. Extract registered 3D cell coordinates.
+3. Select one categorical annotation as the default color mode:
+   - preferred: neurotransmitter identity, class, or subclass;
+   - fallback: cluster id.
+4. Normalize coordinates to a centered 3D scene box while preserving anatomical aspect ratio.
+5. Export LOD subsets at 1M, 5M, and 10M points if the full table is larger than the target count.
+6. Optionally export one anatomical 2D slice or atlas overview texture for orientation, but do not
+   block the 3D point demo on image availability.
+7. Store enough category names and palette entries in `metadata.json` for GUI labels and diagnostics.
+
+The ABC path should prefer real cells over synthetic duplication. If a local machine cannot hold the
+full dataset comfortably, the preparation script should create deterministic downsampled caches rather
+than expanding synthetic replicates.
 
 ## Datoviz adaptation
 
@@ -235,6 +300,16 @@ Stage 2 point shader:
 - Generate antialiased discs in fragment shader using signed distance to marker center.
 - Use opacity correction for dense zoomed-out views.
 
+Stage 2 ABC/Zhuang rendering target:
+
+- Add a 3D mode with arcball navigation and depth-aware point rendering.
+- Render millions of registered brain cells as colored antialiased discs or small Gaussian splats.
+- Preserve categorical colors in the shader so switching class/subclass/neurotransmitter palettes
+  does not reupload the full position buffer.
+- Offer a 2D coronal/sagittal slice mode as a secondary view only if it helps compare against napari
+  or SpatialData screenshots.
+- Keep the existing Stage 1 2D SpatialData mode as the lightweight fallback and smoke-test path.
+
 ### Stage 2 prerequisites
 
 These items are not required for the Stage 1 MVP but are required before claiming the full demo:
@@ -242,6 +317,7 @@ These items are not required for the Stage 1 MVP but are required before claimin
 - Native GLSL point lowering to instanced quads, matching or superseding the current WGSL fixture
   shape.
 - Antialiased disc/Gaussian point fragment shader.
+- 3D point rendering path validated with arcball interaction and depth.
 - A point style path that can change global size/opacity without reuploading position buffers.
 - Category/value attributes or equivalent style buffers accepted by point visuals.
 - Color-table and colormap texture binding for point visuals.
@@ -262,6 +338,8 @@ Stage 1 controls:
 
 Stage 2 controls:
 
+- Dataset selector: lightweight SpatialData / ABC Zhuang MERFISH.
+- View mode: 3D whole brain / 2D section or projection.
 - Filter by category.
 - Shader-side categorical palette selector.
 - Continuous colormap selector and value-range controls.
@@ -301,13 +379,17 @@ Suggested message:
 
 ### Stage 2
 
-1. Implement native GLSL instanced-quad point lowering.
-2. Add SDF antialiasing for circular/Gaussian markers.
-3. Add point feature/style attributes for category, value, and opacity.
-4. Implement shader-side feature color table and continuous colormap lookup.
-5. Add a stronger density blending mode.
-6. Add deterministic LOD or screen-space density culling.
-7. Update the demo to use the Stage 2 path and keep the Stage 1 fallback if useful.
+1. Add an ABC/Zhuang MERFISH preparation mode that writes the same binary cache format as Stage 1,
+   but with real registered 3D coordinates and meaningful categorical annotations.
+2. Implement native GLSL instanced-quad point lowering.
+3. Add SDF antialiasing for circular/Gaussian markers.
+4. Validate 3D point rendering with arcball interaction, depth, and large retained buffers.
+5. Add point feature/style attributes for category, value, and opacity.
+6. Implement shader-side feature color table and continuous colormap lookup.
+7. Add a stronger density blending mode.
+8. Add deterministic LOD or screen-space density culling.
+9. Update the demo so ABC/Zhuang MERFISH is the primary showcase path and keep the Stage 1
+   SpatialData/synthetic mode as the lightweight fallback.
 
 ## Acceptance criteria
 
@@ -325,6 +407,8 @@ Suggested message:
 ### Stage 2
 
 - Uses instanced antialiased point quads in the native app path.
+- Shows the ABC/Zhuang MERFISH 3D point cloud when its cache is present.
+- Falls back cleanly to the lightweight SpatialData or synthetic cache when ABC data is absent.
 - Supports categorical coloring and opacity updates without position-buffer reupload.
 - Supports continuous colormap lookup without CPU color-buffer regeneration.
 - Includes a density or LOD mode useful at zoomed-out scale.
