@@ -15,6 +15,8 @@ threads, high-DPI windows, or custom user-provided visual families.
 4. [CUSTOM_VISUALS.md](CUSTOM_VISUALS.md): registration and integration of user-defined visuals.
 5. [HOSTED_BACKENDS.md](HOSTED_BACKENDS.md): Qt, Python console, IPython, Jupyter, SDL, Tk,
    and other host-owned event-loop integrations.
+6. [CUPY_CUDA_INTEROP.md](CUPY_CUDA_INTEROP.md): zero-copy CUDA/CuPy memory sharing design for
+   real-time Datoviz visualization.
 
 
 ## Active Proposal Inputs

@@ -32,6 +32,33 @@ The GPU implementation strategy — which buffer type, whether to use multiple d
 encode group lookups — is chosen by the scene layer and is not user-visible.
 
 
+## Attribute Layout Hints
+
+The future API should allow users to provide optional layout hints for attributes whose update
+frequency or producer is known ahead of time.
+
+This is especially important for GPU-external workflows such as CUDA/CuPy interop. Attributes that
+are updated every frame by an external producer, or that are backed by externally shared memory,
+should be able to remain in independent buffers so the runtime can synchronize and bind them without
+repacking unrelated static data. A common example is a point visual where `position` is written by a
+CuPy kernel each frame, while `color` and `size` are static or rarely updated.
+
+Conversely, attributes that are static or updated together may benefit from interleaving in one
+buffer. For example, a static `color + size` payload can be stored as one interleaved binding while
+`position` remains in an independent external buffer:
+
+| Attribute | Producer | Suggested layout |
+|---|---|---|
+| `position` | CUDA/CuPy, frequent update | independent external vertex buffer |
+| `color` | scene-owned, static | interleaved with other static style attributes |
+| `size` | scene-owned, static | interleaved with other static style attributes |
+
+These hints should guide planning and allocation only. They must not force users to describe Vulkan
+binding slots directly in the normal scene API. The scene layer should translate semantic hints such
+as "external", "frequent update", "static", or "prefer interleaved with style attributes" into a
+backend-appropriate vertex/storage-buffer layout.
+
+
 ## Attribute Source
 
 Every visual attribute that accepts data from the user must declare an **attribute source**.
