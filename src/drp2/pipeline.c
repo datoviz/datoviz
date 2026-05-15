@@ -77,6 +77,27 @@ static VkShaderStageFlags _vklite_stage_flags(uint32_t visibility)
 }
 
 
+/**
+ * Return whether a Vulkan format carries a depth aspect.
+ *
+ * @param format backend-native texture format enum value
+ * @return whether the format is a depth format
+ */
+static bool _vklite_pipeline_format_has_depth(uint32_t format)
+{
+    switch ((VkFormat)format)
+    {
+    case VK_FORMAT_D16_UNORM:
+    case VK_FORMAT_D32_SFLOAT:
+    case VK_FORMAT_D24_UNORM_S8_UINT:
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
 
 static VkDescriptorType _vklite_descriptor_type(DvzDrp2BindingType type)
 {
@@ -550,12 +571,13 @@ DvzDrp2ValidationResult _vklite_create_bind_group(
                         object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
                 sampler_handle = dvz_sampler_handle(sampler->sampler);
             }
+            VkImageLayout image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE)
+                image_layout = VK_IMAGE_LAYOUT_GENERAL;
+            else if (_vklite_pipeline_format_has_depth(texture->format))
+                image_layout = VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL;
             dvz_descriptors_image(
-                descriptors, 0, entry->binding, 0,
-                entry->binding_type == DVZ_DRP2_BINDING_TYPE_STORAGE_TEXTURE ?
-                    VK_IMAGE_LAYOUT_GENERAL :
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                texture_view, sampler_handle);
+                descriptors, 0, entry->binding, 0, image_layout, texture_view, sampler_handle);
         }
         else if (entry->binding_type == DVZ_DRP2_BINDING_TYPE_SAMPLER)
         {

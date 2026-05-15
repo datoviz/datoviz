@@ -748,7 +748,8 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream0, i);
-        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE && cmd->u.write_texture.width == 2 &&
+            cmd->u.write_texture.height == 2 && cmd->u.write_texture.depth == 2)
             texture_id = cmd->u.write_texture.texture_id;
     }
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream0); i++)
@@ -780,7 +781,7 @@ int test_scene_volume_field_emit_realizes_3d_texture(TstSuite* suite, TstItem* i
         {
             created_triangle_list_pipeline = true;
             if (cmd->u.create_render_pipeline.has_raster_state &&
-                cmd->u.create_render_pipeline.cull_mode == VK_CULL_MODE_FRONT_BIT &&
+                cmd->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT &&
                 cmd->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE)
             {
                 created_entry_face_pipeline = true;
@@ -1087,7 +1088,8 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstSuite* suite, Tst
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
-        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE && cmd->u.write_texture.width == 2 &&
+            cmd->u.write_texture.height == 2 && cmd->u.write_texture.depth == 2)
             texture_id = cmd->u.write_texture.texture_id;
     }
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)

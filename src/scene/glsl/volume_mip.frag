@@ -9,6 +9,7 @@ layout(set = 0, binding = 0) uniform MVP {
 } mvp;
 
 layout(set = 1, binding = 0) uniform sampler3D tex;
+layout(set = 1, binding = 3) uniform sampler2D depthTex;
 
 layout(set = 1, binding = 2) uniform VolumeParams {
     vec4 clip_min;
@@ -47,6 +48,27 @@ vec3 camera_uvw()
     return 0.5 * camera_obj + vec3(0.5);
 }
 
+float projected_depth(vec3 uvw)
+{
+    vec3 pos = uvw * 2.0 - vec3(1.0);
+    vec4 clip = mvp.proj * mvp.view * mvp.model * vec4(pos, 1.0);
+    if (clip.w <= 0.0) {
+        return 1.0;
+    }
+    return clamp(0.5 * (clip.z / clip.w) + 0.5, 0.0, 1.0);
+}
+
+bool occluded_by_scene_depth(vec3 uvw)
+{
+    vec2 size = vec2(textureSize(depthTex, 0));
+    vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
+    float scene_depth = texture(depthTex, uv).r;
+    if (scene_depth >= 0.999999) {
+        return false;
+    }
+    return projected_depth(uvw) > scene_depth + 0.0005;
+}
+
 void main()
 {
     vec3 ro = camera_uvw();
@@ -82,6 +104,9 @@ void main()
         }
         float t = (float(i) + 0.5) / float(steps);
         vec3 uvw = ro + rd * mix(start_t, end_t, t);
+        if (occluded_by_scene_depth(uvw)) {
+            break;
+        }
         vec4 sample_value = texture(tex, uvw);
         float density = transfer ? sample_value.a : sample_value.r;
         if (density > value) {

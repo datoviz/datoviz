@@ -1041,7 +1041,7 @@ bool _scene_visual_pipeline_desc(
         out->needs_common_layout = true;
         out->needs_volume_layout = true;
         out->has_raster_state = true;
-        out->cull_mode = VK_CULL_MODE_FRONT_BIT;
+        out->cull_mode = VK_CULL_MODE_BACK_BIT;
         out->front_face = VK_FRONT_FACE_CLOCKWISE;
         return true;
 
@@ -1130,6 +1130,8 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
+            if (meta->visual_type == DVZ_VISUAL_TYPE_VOLUME)
+                return true;
             if (!_visual_meta_is_primitive(meta->visual_type))
                 continue;
             uint64_t pos_buf = _resource_lookup_label(&emitter->resources, meta->position_id);

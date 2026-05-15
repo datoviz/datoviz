@@ -524,15 +524,27 @@ static bool _scene_alpha_mode_is_wboit(DvzAlphaMode mode)
 }
 
 
+/**
+ * Return whether an alpha mode belongs in an ordinary transparent blend pass.
+ *
+ * @param mode the visual alpha mode
+ * @return whether the visual should be planned after opaque geometry with source-over blending
+ */
+static bool _scene_alpha_mode_is_blended(DvzAlphaMode mode)
+{
+    return mode == DVZ_ALPHA_BLENDED;
+}
+
+
 
 /**
- * Return whether one retained visual should participate in depth-tested scene passes.
+ * Return whether one retained visual writes scene depth.
  *
  * @param visual the retained visual
  * @param attach the panel attachment
- * @return whether the visual requests scene depth
+ * @return whether the visual writes depth
  */
-static bool _scene_visual_requests_depth(const DvzVisual* visual, const DvzPanelAttach* attach)
+static bool _scene_visual_writes_depth(const DvzVisual* visual, const DvzPanelAttach* attach)
 {
     ANN(visual);
     ANN(attach);
@@ -540,6 +552,40 @@ static bool _scene_visual_requests_depth(const DvzVisual* visual, const DvzPanel
         return false;
     return visual->type == DVZ_VISUAL_TYPE_PRIMITIVE || visual->type == DVZ_VISUAL_TYPE_MESH ||
            visual->type == DVZ_VISUAL_TYPE_PATH;
+}
+
+
+/**
+ * Return whether one retained visual needs to sample scene depth.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @return whether the visual samples depth
+ */
+static bool _scene_visual_samples_depth(const DvzVisual* visual, const DvzPanelAttach* attach)
+{
+    ANN(visual);
+    ANN(attach);
+    if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
+        return false;
+    return visual->type == DVZ_VISUAL_TYPE_VOLUME;
+}
+
+
+/**
+ * Return whether one transparent visual needs access to scene depth.
+ *
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @return whether the transparent visual needs depth
+ */
+static bool _scene_transparent_visual_needs_depth(
+    const DvzVisual* visual, const DvzPanelAttach* attach)
+{
+    ANN(visual);
+    ANN(attach);
+    return _scene_visual_writes_depth(visual, attach) ||
+           _scene_visual_samples_depth(visual, attach);
 }
 
 
@@ -773,6 +819,98 @@ static bool _scene_emit_wboit_frame_graph(
 
 
 /**
+ * Emit graph descriptors for one ordinary blended transparent panel plan.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @param opaque_needs_depth whether the opaque pass writes depth
+ * @param transparent_needs_depth whether the transparent pass reads depth
+ * @return whether graph descriptors were emitted
+ */
+static bool _scene_emit_blended_frame_graph(
+    DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
+    bool transparent_needs_depth)
+{
+    ANN(plan);
+    ANN(panel_id);
+
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
+    char blend_pass_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.depth", panel_id);
+    dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
+    dvz_snprintf(blend_pass_id, sizeof(blend_pass_id), "%s.transparent_blend", panel_id);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    if (!_scene_frame_graph_resource_once(plan, &rt))
+        return false;
+
+    bool shared_depth = opaque_needs_depth && transparent_needs_depth;
+    if (shared_depth)
+    {
+        DvzFrameGraphResource depth = {0};
+        dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
+        depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT |
+                            DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+        depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &depth))
+            return false;
+    }
+
+    DvzFrameGraphAttachment color = {0};
+    DvzFrameGraphAttachment depth = {0};
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, opaque_pass_id, sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
+        return false;
+    if (shared_depth)
+    {
+        _scene_frame_graph_depth_attachment(
+            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+        if (!dvz_frame_graph_pass_depth_attachment(&opaque, &depth))
+            return false;
+    }
+    if (!dvz_frame_plan_graph_pass(plan, &opaque))
+        return false;
+
+    DvzFrameGraphPass blend = {0};
+    dvz_strlcpy(blend.id, blend_pass_id, sizeof(blend.id));
+    dvz_strlcpy(blend.panel_id, panel_id, sizeof(blend.panel_id));
+    dvz_strlcpy(blend.work_label, "transparent_blend", sizeof(blend.work_label));
+    blend.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD, false);
+    if (!dvz_frame_graph_pass_color_attachment(&blend, &color))
+        return false;
+    if (shared_depth)
+    {
+        _scene_frame_graph_depth_attachment(
+            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD,
+            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ);
+        if (!dvz_frame_graph_pass_depth_attachment(&blend, &depth))
+            return false;
+    }
+    return dvz_frame_plan_graph_pass(plan, &blend);
+}
+
+
+
+/**
  * Emit graph descriptors for one ordinary opaque panel render pass.
  *
  * @param plan the frame plan
@@ -991,6 +1129,7 @@ void _scene_emit_panel_render(
 
     DvzFramePlanNode* opaque_node = NULL;
     DvzFramePlanNode* transparent_node = NULL;
+    DvzFramePlanNode* blended_node = NULL;
     bool has_transparent = false;
     bool opaque_needs_depth = false;
     bool transparent_needs_depth = false;
@@ -1008,12 +1147,14 @@ void _scene_emit_panel_render(
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
 
-        bool transparent = _scene_alpha_mode_is_wboit(visual->alpha_mode);
+        bool transparent = _scene_alpha_mode_is_wboit(visual->alpha_mode) ||
+                           (_scene_alpha_mode_is_blended(visual->alpha_mode) &&
+                            visual->type == DVZ_VISUAL_TYPE_VOLUME);
         if (transparent)
         {
             has_transparent = true;
             transparent_needs_depth =
-                transparent_needs_depth || _scene_visual_requests_depth(visual, attach);
+                transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
             continue;
         }
 
@@ -1027,7 +1168,7 @@ void _scene_emit_panel_render(
         }
         (void)_scene_append_visual_to_render_pass(
             figure, plan, opaque_node, visual, attach, vidx);
-        opaque_needs_depth = opaque_needs_depth || _scene_visual_requests_depth(visual, attach);
+        opaque_needs_depth = opaque_needs_depth || _scene_visual_writes_depth(visual, attach);
     }
 
     if (opaque_node == NULL && has_transparent)
@@ -1044,7 +1185,10 @@ void _scene_emit_panel_render(
         DvzVisual* visual = attach->visual;
         if (visual == NULL || !visual->visible)
             continue;
-        if (!_scene_alpha_mode_is_wboit(visual->alpha_mode))
+        bool wboit = _scene_alpha_mode_is_wboit(visual->alpha_mode);
+        bool blended = _scene_alpha_mode_is_blended(visual->alpha_mode) &&
+                       visual->type == DVZ_VISUAL_TYPE_VOLUME;
+        if (!wboit && !blended)
             continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
@@ -1052,6 +1196,24 @@ void _scene_emit_panel_render(
         int pos_idx = _attr_index(visual, "position");
         if (pos_idx < 0 || visual->attrs[pos_idx].item_count == 0)
             continue;
+
+        if (blended)
+        {
+            if (blended_node == NULL)
+            {
+                blended_node = _scene_begin_panel_render_pass(
+                    plan, panel_id, "rt", panel->desc,
+                    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &panel_apply_mvp,
+                    &panel_viewport);
+                if (blended_node == NULL)
+                    continue;
+            }
+            (void)_scene_append_visual_to_render_pass(
+                figure, plan, blended_node, visual, attach, vidx);
+            transparent_needs_depth =
+                transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
+            continue;
+        }
 
         if (transparent_node == NULL)
         {
@@ -1065,7 +1227,7 @@ void _scene_emit_panel_render(
         (void)_scene_append_visual_to_render_pass(
             figure, plan, transparent_node, visual, attach, vidx);
         transparent_needs_depth =
-            transparent_needs_depth || _scene_visual_requests_depth(visual, attach);
+            transparent_needs_depth || _scene_transparent_visual_needs_depth(visual, attach);
     }
 
     if (transparent_node != NULL)
@@ -1076,6 +1238,12 @@ void _scene_emit_panel_render(
         if (!_scene_emit_wboit_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
+    }
+    else if (blended_node != NULL)
+    {
+        if (!_scene_emit_blended_frame_graph(
+                plan, panel_id, opaque_needs_depth, transparent_needs_depth))
+            log_error("failed to emit blended FramePlan graph for panel %s", panel_id);
     }
     else if (opaque_node != NULL && opaque_needs_depth)
     {

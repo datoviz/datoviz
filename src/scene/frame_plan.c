@@ -206,6 +206,8 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "opaque";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
         return "transparent_accumulation";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+        return "transparent_blend";
     case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
         return "wboit_resolve";
     case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:

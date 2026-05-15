@@ -125,6 +125,7 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t image_texture_id;
     bool uses_volume_set1;
     uint64_t volume_texture_id;
+    uint64_t volume_depth_texture_id;
     bool volume_transfer_rgba;
     DvzVolumeState volume_state;
     bool uses_shading_set1;
