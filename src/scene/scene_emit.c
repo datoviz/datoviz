@@ -385,7 +385,38 @@ void _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan)
                 if (!_scene_resource_key_visual_texture(
                         vidx, tex_resource_id, sizeof(tex_resource_id)))
                     continue;
-                if (!_scene_emit_sampled_field_texture_upload(plan, tex_resource_id, visual->field))
+                DvzFieldRegion upload_region = {0};
+                const void* upload_data = NULL;
+                uint32_t texture_format = 0;
+                uint32_t bytes_per_texel = 0;
+                uint64_t bytes = 0;
+                if (!_scene_prepare_volume_texture(
+                        visual, &upload_region, &upload_data, &texture_format,
+                        &bytes_per_texel) ||
+                    !_field_region_byte_size(
+                        texture_format == VK_FORMAT_R8G8B8A8_UNORM ?
+                            DVZ_FIELD_FORMAT_RGBA8_UNORM :
+                            visual->field->desc.format,
+                        &upload_region, &bytes) ||
+                    !dvz_frame_plan_upload_bytes(
+                        plan, tex_resource_id, 0, bytes, "field", upload_data) ||
+                    !dvz_frame_plan_upload_metadata(
+                        plan,
+                        &(DvzFramePlanUploadMeta){
+                            .kind = DVZ_FRAME_PLAN_RESOURCE_KIND_TEXTURE_3D,
+                            .role = DVZ_FRAME_PLAN_RESOURCE_ROLE_TEXTURE,
+                            .visual_index = UINT32_MAX,
+                            .buffer_index = UINT32_MAX,
+                        }) ||
+                    !dvz_frame_plan_upload_set_texture_format(
+                        plan, texture_format, bytes_per_texel) ||
+                    !dvz_frame_plan_upload_set_texture_3d_extent(
+                        plan, upload_region.width, upload_region.height, upload_region.depth) ||
+                    !dvz_frame_plan_upload_set_texture_3d_allocation_extent(
+                        plan, visual->field->desc.width, visual->field->desc.height,
+                        visual->field->desc.depth) ||
+                    !dvz_frame_plan_upload_set_texture_3d_region(
+                        plan, upload_region.x, upload_region.y, upload_region.z))
                 {
                     log_error("volume visual texture upload failed");
                     continue;
@@ -448,6 +479,8 @@ bool _scene_visual_frame_plan_metadata(
     {
         metadata->has_volume = true;
         metadata->volume_state = visual->volume;
+        metadata->volume_transfer_rgba =
+            visual->scale != NULL && visual->scale->colormap != NULL;
         if (visual->field != NULL)
         {
             metadata->field_format = (uint32_t)visual->field->desc.format;

@@ -1612,6 +1612,140 @@ bool _scene_prepare_field_texture(
 }
 
 
+bool _scene_prepare_volume_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,
+    uint32_t* out_format, uint32_t* out_bytes_per_texel)
+{
+    ANN(visual);
+    ANN(out_region);
+    ANN(out_data);
+    ANN(out_format);
+    ANN(out_bytes_per_texel);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME || visual->field == NULL)
+        return false;
+
+    DvzSampledField* field = visual->field;
+    bool transfer = visual->scale != NULL && visual->scale->colormap != NULL &&
+                    _field_format_is_scalar(field->desc.format);
+    if (!transfer)
+    {
+        if (!_scene_prepare_field_texture(field, out_region, out_data) ||
+            !_field_format_texture_format(field->desc.format, out_format) ||
+            !_field_format_bytes_per_texel(field->desc.format, out_bytes_per_texel))
+            return false;
+        return true;
+    }
+
+    *out_region = visual->texture.field_dirty ? visual->texture.field_dirty_region :
+                                                _field_full_region(&field->desc);
+    if (visual->texture.field_dirty_full || visual->texture.dirty)
+        *out_region = _field_full_region(&field->desc);
+    if (out_region->width == 0 || out_region->height == 0 || out_region->depth == 0)
+        *out_region = _field_full_region(&field->desc);
+
+    uint64_t voxel_count = 0;
+    uint64_t rgba_size = 0;
+    if (_dvz_mul_u64_overflows(field->desc.width, field->desc.height, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, field->desc.depth, &voxel_count) ||
+        _dvz_mul_u64_overflows(voxel_count, 4, &rgba_size))
+    {
+        log_error("scalar volume transfer-function staging size overflow");
+        return false;
+    }
+    if (visual->texture.rgba == NULL || visual->texture.rgba_size != rgba_size)
+    {
+        if (visual->texture.rgba != NULL)
+            dvz_free(visual->texture.rgba);
+        visual->texture.rgba = dvz_calloc(rgba_size, 1);
+        if (visual->texture.rgba == NULL)
+        {
+            visual->texture.rgba_size = 0;
+            log_error("scalar volume transfer-function staging allocation failed");
+            return false;
+        }
+        visual->texture.rgba_size = rgba_size;
+    }
+
+    double domain_min = 0.0;
+    double domain_max = 1.0;
+    if (visual->scale->has_view_range)
+    {
+        domain_min = visual->scale->view_min;
+        domain_max = visual->scale->view_max;
+    }
+    else if (visual->scale->has_domain)
+    {
+        domain_min = visual->scale->domain_min;
+        domain_max = visual->scale->domain_max;
+    }
+    double denom = domain_max - domain_min;
+    if (denom == 0.0)
+        denom = 1.0;
+
+    uint8_t* rgba = (uint8_t*)visual->texture.rgba;
+    for (uint32_t z = out_region->z; z < out_region->z + out_region->depth; z++)
+    {
+        for (uint32_t y = out_region->y; y < out_region->y + out_region->height; y++)
+        {
+            for (uint32_t x = out_region->x; x < out_region->x + out_region->width; x++)
+            {
+                uint64_t i =
+                    ((uint64_t)z * field->desc.height + y) * field->desc.width + x;
+                double value = 0.0;
+                if (!_field_read_scalar(field, i, &value))
+                {
+                    log_error("failed to sample scalar volume format %d", (int)field->desc.format);
+                    return false;
+                }
+                double t = (value - domain_min) / denom;
+                _scene_color_from_colormap(visual->scale->colormap, t, &rgba[4 * i]);
+                double alpha_scale = fmax(0.0, fmin(1.0, t));
+                rgba[4 * i + 3] = (uint8_t)((double)rgba[4 * i + 3] * alpha_scale);
+            }
+        }
+    }
+
+    if (out_region->x == 0 && out_region->y == 0 && out_region->z == 0 &&
+        out_region->width == field->desc.width && out_region->height == field->desc.height &&
+        out_region->depth == field->desc.depth)
+    {
+        *out_data = visual->texture.rgba;
+    }
+    else
+    {
+        uint64_t upload_size = 0;
+        if (!_field_region_byte_size(DVZ_FIELD_FORMAT_RGBA8_UNORM, out_region, &upload_size) ||
+            !_visual_texture_ensure_upload(&visual->texture, upload_size))
+        {
+            log_error("scalar volume transfer-function upload scratch allocation failed");
+            return false;
+        }
+        uint8_t* dst = (uint8_t*)visual->texture.upload;
+        uint64_t src_bpr = (uint64_t)field->desc.width * 4ull;
+        uint64_t src_rpi = field->desc.height;
+        uint64_t row_bytes = (uint64_t)out_region->width * 4ull;
+        for (uint32_t z = 0; z < out_region->depth; z++)
+        {
+            for (uint32_t y = 0; y < out_region->height; y++)
+            {
+                uint64_t src_offset =
+                    ((uint64_t)(out_region->z + z) * src_rpi + (out_region->y + y)) *
+                        src_bpr +
+                    (uint64_t)out_region->x * 4ull;
+                uint64_t dst_offset =
+                    ((uint64_t)z * out_region->height + y) * row_bytes;
+                dvz_memcpy(dst + dst_offset, row_bytes, rgba + src_offset, row_bytes);
+            }
+        }
+        *out_data = visual->texture.upload;
+    }
+
+    *out_format = VK_FORMAT_R8G8B8A8_UNORM;
+    *out_bytes_per_texel = 4;
+    return true;
+}
+
+
 
 
 bool _scene_prepare_image_texture(

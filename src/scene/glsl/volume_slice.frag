@@ -89,6 +89,11 @@ void main()
         discard;
     }
 
-    float value = texture(tex, uvw).r;
-    outColor = vec4(value, value, value, value * volume.params.x);
+    vec4 sample_value = texture(tex, uvw);
+    if (volume.clip_min.w > 0.5) {
+        outColor = vec4(sample_value.rgb, sample_value.a * volume.params.x);
+    } else {
+        float value = sample_value.r;
+        outColor = vec4(value, value, value, value * volume.params.x);
+    }
 }

@@ -68,6 +68,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t shading_buffer_id;
     uint64_t image_texture_id;
     uint64_t volume_texture_id;
+    bool volume_transfer_rgba;
     DvzVolumeState volume_state;
     uint32_t vertex_count;
     uint32_t index_count;
@@ -121,6 +122,7 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t image_texture_id;
     bool uses_volume_set1;
     uint64_t volume_texture_id;
+    bool volume_transfer_rgba;
     DvzVolumeState volume_state;
     bool uses_shading_set1;
     uint64_t shading_buffer_id;

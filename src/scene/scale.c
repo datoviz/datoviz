@@ -56,7 +56,8 @@ static void _scene_mark_scale_dirty(DvzScale* scale)
         DvzVisual* visual = &scene->visuals[i];
         if (visual->scene != scene || visual->scale != scale)
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_IMAGE && visual->field != NULL &&
+        if ((visual->type == DVZ_VISUAL_TYPE_IMAGE || visual->type == DVZ_VISUAL_TYPE_VOLUME) &&
+            visual->field != NULL &&
             _field_format_is_scalar(visual->field->desc.format))
         {
             _scene_visual_texture_mark_clean(visual);

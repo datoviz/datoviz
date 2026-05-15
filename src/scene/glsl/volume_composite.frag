@@ -90,6 +90,7 @@ void main()
 
     float ray_length = end_t - start_t;
     float step_len = ray_length / float(steps);
+    bool transfer = volume.clip_min.w > 0.5;
     vec4 accum = vec4(0.0);
     for (int i = 0; i < 1024; i++) {
         if (i >= steps || accum.a > 0.985) {
@@ -97,8 +98,9 @@ void main()
         }
         float t = (float(i) + 0.5) / float(steps);
         vec3 uvw = ro + rd * mix(start_t, end_t, t);
-        float density = clamp(texture(tex, uvw).r, 0.0, 1.0);
-        vec3 color = vec3(density);
+        vec4 sample_value = texture(tex, uvw);
+        float density = clamp(transfer ? sample_value.a : sample_value.r, 0.0, 1.0);
+        vec3 color = transfer ? sample_value.rgb : vec3(sample_value.r);
         float sample_alpha =
             1.0 - exp(-density * volume.params.x * EXTINCTION_SCALE * step_len);
         sample_alpha = clamp(sample_alpha, 0.0, 1.0);

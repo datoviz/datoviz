@@ -132,10 +132,11 @@ static bool _create_volume_bind_group_layout(DvzDrp2CommandStream* stream, uint6
  * Convert retained volume state into the shader uniform payload.
  *
  * @param state retained volume state.
+ * @param transfer_rgba whether the bound volume texture already contains RGBA transfer colors.
  * @param out output uniform payload.
  */
 static void _volume_uniform_from_state(
-    const DvzVolumeState* state, DvzSceneVolumeUniform* out)
+    const DvzVolumeState* state, bool transfer_rgba, DvzSceneVolumeUniform* out)
 {
     ANN(state);
     ANN(out);
@@ -146,6 +147,7 @@ static void _volume_uniform_from_state(
         out->clip_min[i] = state->clipping_enabled ? (float)state->clip_min[i] : 0.0f;
         out->clip_max[i] = state->clipping_enabled ? (float)state->clip_max[i] : 1.0f;
     }
+    out->clip_min[3] = transfer_rgba ? 1.0f : 0.0f;
     out->clip_max[3] = 1.0f;
     out->params[0] = state->opacity;
     out->params[1] = state->clipping_enabled ? 1.0f : 0.0f;
@@ -228,7 +230,7 @@ static bool _resolve_volume_bind_group(
     DvzSceneVolumeUniform* slot = _emitter_volume_slot(emitter, params_slot_key);
     if (slot == NULL)
         return false;
-    _volume_uniform_from_state(&bind->volume_state, slot);
+    _volume_uniform_from_state(&bind->volume_state, bind->volume_transfer_rgba, slot);
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneVolumeUniform), slot))
         return false;

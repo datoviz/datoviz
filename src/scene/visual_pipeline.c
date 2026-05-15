@@ -370,6 +370,7 @@ static bool _scene_visual_desc_from_metadata(
         out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
         out->vbuf_ids[out->vbuf_count++] = uvw_id;
         out->volume_texture_id = tex_id;
+        out->volume_transfer_rgba = meta->volume_transfer_rgba;
         out->volume_state = meta->volume_state;
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     }
@@ -1092,6 +1093,7 @@ bool _scene_visual_bind_desc(
         out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
         out->uses_volume_set1 = true;
         out->volume_texture_id = visual->volume_texture_id;
+        out->volume_transfer_rgba = visual->volume_transfer_rgba;
         out->volume_state = visual->volume_state;
         return true;
 

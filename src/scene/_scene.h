@@ -752,6 +752,10 @@ bool _field_region_byte_size(
 bool _scene_prepare_field_texture(
     DvzSampledField* field, DvzFieldRegion* out_region, const void** out_data);
 
+bool _scene_prepare_volume_texture(
+    DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data,
+    uint32_t* out_format, uint32_t* out_bytes_per_texel);
+
 bool _scene_prepare_image_texture(
     DvzVisual* visual, DvzFieldRegion* out_region, const void** out_data);
 

@@ -307,6 +307,9 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item);
 
 int test_scene_volume_visual_metadata_lowering(TstSuite* suite, TstItem* item);
 
+int test_scene_volume_scalar_transfer_function_uploads_rgba(
+    TstSuite* suite, TstItem* item);
+
 int test_scene_sampled_field_3d_emits_runtime_texture_upload(
     TstSuite* suite, TstItem* item);
 

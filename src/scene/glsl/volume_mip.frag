@@ -88,13 +88,20 @@ void main()
     }
 
     float value = 0.0;
+    vec3 color = vec3(0.0);
+    bool transfer = volume.clip_min.w > 0.5;
     for (int i = 0; i < 1024; i++) {
         if (i >= steps) {
             break;
         }
         float t = (float(i) + 0.5) / float(steps);
         vec3 uvw = ro + rd * mix(start_t, end_t, t);
-        value = max(value, texture(tex, uvw).r);
+        vec4 sample_value = texture(tex, uvw);
+        float density = transfer ? sample_value.a : sample_value.r;
+        if (density > value) {
+            value = density;
+            color = transfer ? sample_value.rgb : vec3(sample_value.r);
+        }
     }
-    outColor = vec4(value, value, value, value * volume.params.x);
+    outColor = vec4(color, value * volume.params.x);
 }
