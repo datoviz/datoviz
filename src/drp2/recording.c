@@ -616,6 +616,211 @@ static bool _recording_json_string_safe(const char* str)
 
 
 /**
+ * Write CreateShaderModule as a portable JSON command record.
+ *
+ * @param root recording root directory
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @param blob_index running blob index
+ * @return whether the command record was written
+ */
+static bool _recording_write_create_shader_module(
+    const char* root, FILE* stream_fp, const DvzDrp2Command* command, uint32_t index,
+    uint32_t* blob_index)
+{
+    ANN(root);
+    ANN(stream_fp);
+    ANN(command);
+    ANN(blob_index);
+    if (!_recording_json_string_safe(command->u.create_shader_module.stage) ||
+        !_recording_json_string_safe(command->u.create_shader_module.format))
+        return false;
+
+    const void* payload = NULL;
+    uint64_t payload_size = 0;
+    const char* payload_kind = "bytes";
+    if (command->u.create_shader_module.spirv != NULL &&
+        command->u.create_shader_module.spirv_size > 0)
+    {
+        payload = command->u.create_shader_module.spirv;
+        payload_size = command->u.create_shader_module.spirv_size;
+    }
+    else if (command->u.create_shader_module.code != NULL)
+    {
+        payload = command->u.create_shader_module.code;
+        payload_size = strlen(command->u.create_shader_module.code) + 1;
+        payload_kind = "shader_code";
+    }
+
+    char payload_rel[128] = {0};
+    if (payload_size > 0 &&
+        !_recording_write_payload_ref(
+            root, blob_index, payload, NULL, payload_size, payload_rel, sizeof(payload_rel)))
+        return false;
+
+    return dvz_fprintf(
+               stream_fp,
+               "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+               "\"op\":\"CreateShaderModule\",\"id\":%" PRIu64 ",\"stage\":\"%s\","
+               "\"format\":\"%s\",\"payload_blob\":\"%s\",\"payload_size\":%" PRIu64
+               ",\"payload_kind\":\"%s\"}\n",
+               index, (int)command->type, command->u.create_shader_module.id,
+               command->u.create_shader_module.stage, command->u.create_shader_module.format,
+               payload_rel, payload_size, payload_kind) > 0;
+}
+
+
+
+/**
+ * Write a CreateRenderPipeline command as indexed scalar JSON fields.
+ *
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @return whether the command record was written
+ */
+static bool _recording_write_create_render_pipeline(
+    FILE* stream_fp, const DvzDrp2Command* command, uint32_t index)
+{
+    ANN(stream_fp);
+    ANN(command);
+    if (dvz_fprintf(
+            stream_fp,
+            "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+            "\"op\":\"CreateRenderPipeline\",\"id\":%" PRIu64
+            ",\"vertex_shader_module_id\":%" PRIu64
+            ",\"fragment_shader_module_id\":%" PRIu64 ",\"vertex_buffer_slots\":%" PRIu32
+            ",\"bind_group_layout_count\":%" PRIu32 ",\"has_depth_attachment\":%u,"
+            "\"depth_write_enabled\":%u,\"depth_compare_op\":%" PRIu32
+            ",\"color_target_count\":%" PRIu32 ",\"topology\":%" PRIu32
+            ",\"binding_count\":%" PRIu32 ",\"attr_count\":%" PRIu32,
+            index, (int)command->type, command->u.create_render_pipeline.id,
+            command->u.create_render_pipeline.vertex_shader_module_id,
+            command->u.create_render_pipeline.fragment_shader_module_id,
+            command->u.create_render_pipeline.vertex_buffer_slots,
+            command->u.create_render_pipeline.bind_group_layout_count,
+            command->u.create_render_pipeline.has_depth_attachment ? 1u : 0u,
+            command->u.create_render_pipeline.depth_write_enabled ? 1u : 0u,
+            command->u.create_render_pipeline.depth_compare_op,
+            command->u.create_render_pipeline.color_target_count,
+            command->u.create_render_pipeline.topology,
+            command->u.create_render_pipeline.binding_count,
+            command->u.create_render_pipeline.attr_count) <= 0)
+        return false;
+
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
+    {
+        if (dvz_fprintf(
+                stream_fp, ",\"bgl%" PRIu32 "_id\":%" PRIu64, i,
+                command->u.create_render_pipeline.bind_group_layout_ids[i]) <= 0)
+            return false;
+    }
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS; i++)
+    {
+        const DvzDrp2ColorTarget* t = &command->u.create_render_pipeline.color_targets[i];
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"ct%" PRIu32 "_format\":%" PRIu32 ",\"ct%" PRIu32 "_blend_enabled\":%u,"
+                "\"ct%" PRIu32 "_src_color_blend_factor\":%" PRIu32
+                ",\"ct%" PRIu32 "_dst_color_blend_factor\":%" PRIu32
+                ",\"ct%" PRIu32 "_color_blend_op\":%" PRIu32
+                ",\"ct%" PRIu32 "_src_alpha_blend_factor\":%" PRIu32
+                ",\"ct%" PRIu32 "_dst_alpha_blend_factor\":%" PRIu32
+                ",\"ct%" PRIu32 "_alpha_blend_op\":%" PRIu32
+                ",\"ct%" PRIu32 "_color_write_mask\":%" PRIu32,
+                i, t->format, i, t->blend_enabled ? 1u : 0u, i, t->src_color_blend_factor, i,
+                t->dst_color_blend_factor, i, t->color_blend_op, i,
+                t->src_alpha_blend_factor, i, t->dst_alpha_blend_factor, i,
+                t->alpha_blend_op, i, t->color_write_mask) <= 0)
+            return false;
+    }
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"binding%" PRIu32 "_stride\":%" PRIu32
+                ",\"binding%" PRIu32 "_step_mode\":%" PRIu32,
+                i, command->u.create_render_pipeline.binding_strides[i], i,
+                command->u.create_render_pipeline.binding_step_modes[i]) <= 0)
+            return false;
+    }
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"attr%" PRIu32 "_binding\":%" PRIu32
+                ",\"attr%" PRIu32 "_location\":%" PRIu32
+                ",\"attr%" PRIu32 "_format\":%" PRIu32
+                ",\"attr%" PRIu32 "_offset\":%" PRIu32,
+                i, command->u.create_render_pipeline.attr_bindings[i], i,
+                command->u.create_render_pipeline.attr_locations[i], i,
+                command->u.create_render_pipeline.attr_formats[i], i,
+                command->u.create_render_pipeline.attr_offsets[i]) <= 0)
+            return false;
+    }
+    return dvz_fprintf(stream_fp, "}\n") > 0;
+}
+
+
+
+/**
+ * Write a BeginRenderPass command as indexed scalar JSON fields.
+ *
+ * @param stream_fp stream JSONL file
+ * @param command command to write
+ * @param index command index
+ * @return whether the command record was written
+ */
+static bool _recording_write_begin_render_pass(
+    FILE* stream_fp, const DvzDrp2Command* command, uint32_t index)
+{
+    ANN(stream_fp);
+    ANN(command);
+    if (dvz_fprintf(
+            stream_fp,
+            "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+            "\"op\":\"BeginRenderPass\",\"id\":%" PRIu64 ",\"encoder_id\":%" PRIu64
+            ",\"texture_id\":%" PRIu64 ",\"color_attachment_count\":%" PRIu32
+            ",\"has_depth_attachment\":%u,\"clear_depth\":%.9g,"
+            "\"clear_color0\":%.9g,\"clear_color1\":%.9g,\"clear_color2\":%.9g,"
+            "\"clear_color3\":%.9g,\"viewport0\":%.9g,\"viewport1\":%.9g,"
+            "\"viewport2\":%.9g,\"viewport3\":%.9g,\"clear\":%u",
+            index, (int)command->type, command->u.begin_render_pass.id,
+            command->u.begin_render_pass.encoder_id, command->u.begin_render_pass.texture_id,
+            command->u.begin_render_pass.color_attachment_count,
+            command->u.begin_render_pass.has_depth_attachment ? 1u : 0u,
+            (double)command->u.begin_render_pass.clear_depth,
+            (double)command->u.begin_render_pass.clear_color[0],
+            (double)command->u.begin_render_pass.clear_color[1],
+            (double)command->u.begin_render_pass.clear_color[2],
+            (double)command->u.begin_render_pass.clear_color[3],
+            (double)command->u.begin_render_pass.viewport[0],
+            (double)command->u.begin_render_pass.viewport[1],
+            (double)command->u.begin_render_pass.viewport[2],
+            (double)command->u.begin_render_pass.viewport[3],
+            command->u.begin_render_pass.clear ? 1u : 0u) <= 0)
+        return false;
+
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS; i++)
+    {
+        const DvzDrp2ColorAttachment* a = &command->u.begin_render_pass.color_attachments[i];
+        if (dvz_fprintf(
+                stream_fp,
+                ",\"ca%" PRIu32 "_texture_id\":%" PRIu64 ",\"ca%" PRIu32 "_clear\":%u,"
+                "\"ca%" PRIu32 "_clear_color0\":%.9g,\"ca%" PRIu32 "_clear_color1\":%.9g,"
+                "\"ca%" PRIu32 "_clear_color2\":%.9g,\"ca%" PRIu32 "_clear_color3\":%.9g",
+                i, a->texture_id, i, a->clear ? 1u : 0u, i, (double)a->clear_color[0], i,
+                (double)a->clear_color[1], i, (double)a->clear_color[2], i,
+                (double)a->clear_color[3]) <= 0)
+            return false;
+    }
+    return dvz_fprintf(stream_fp, "}\n") > 0;
+}
+
+
+
+/**
  * Write one portable JSON command record when the command is in the MVP subset.
  *
  * @param root recording root directory
@@ -680,6 +885,22 @@ static bool _recording_write_portable_command(
                    command->u.create_texture.width, command->u.create_texture.height,
                    command->u.create_texture.depth, command->u.create_texture.format,
                    command->u.create_texture.usage) > 0;
+    case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+        if (!_recording_write_create_shader_module(
+                root, stream_fp, command, index, blob_index))
+        {
+            *out_supported = false;
+            return true;
+        }
+        return true;
+    case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+        return _recording_write_create_render_pipeline(stream_fp, command, index);
+    case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"CreateSampler\",\"id\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.create_sampler.id) > 0;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
     {
         char payload_rel[128] = {0};
@@ -727,6 +948,101 @@ static bool _recording_write_portable_command(
                    command->u.write_texture.depth, command->u.write_texture.bytes_per_row,
                    command->u.write_texture.rows_per_image, payload_rel, payload_size) > 0;
     }
+    case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"BeginCommandEncoder\",\"id\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.begin_command_encoder.id) > 0;
+    case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+        return _recording_write_begin_render_pass(stream_fp, command, index);
+    case DVZ_DRP2_COMMAND_SET_VIEWPORT:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"SetViewport\",\"pass_id\":%" PRIu64
+                   ",\"x\":%.9g,\"y\":%.9g,\"width\":%.9g,\"height\":%.9g}\n",
+                   index, (int)command->type, command->u.set_viewport.pass_id,
+                   (double)command->u.set_viewport.viewport[0],
+                   (double)command->u.set_viewport.viewport[1],
+                   (double)command->u.set_viewport.viewport[2],
+                   (double)command->u.set_viewport.viewport[3]) > 0;
+    case DVZ_DRP2_COMMAND_SET_SCISSOR:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"SetScissor\",\"pass_id\":%" PRIu64
+                   ",\"x\":%.9g,\"y\":%.9g,\"width\":%.9g,\"height\":%.9g}\n",
+                   index, (int)command->type, command->u.set_scissor.pass_id,
+                   (double)command->u.set_scissor.scissor[0],
+                   (double)command->u.set_scissor.scissor[1],
+                   (double)command->u.set_scissor.scissor[2],
+                   (double)command->u.set_scissor.scissor[3]) > 0;
+    case DVZ_DRP2_COMMAND_SET_PIPELINE:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"SetPipeline\",\"pass_id\":%" PRIu64 ",\"pipeline_id\":%" PRIu64
+                   "}\n",
+                   index, (int)command->type, command->u.set_pipeline.pass_id,
+                   command->u.set_pipeline.pipeline_id) > 0;
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"SetVertexBuffer\",\"pass_id\":%" PRIu64 ",\"slot\":%" PRIu32
+                   ",\"buffer_id\":%" PRIu64 ",\"offset\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.set_vertex_buffer.pass_id,
+                   command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
+                   command->u.set_vertex_buffer.offset) > 0;
+    case DVZ_DRP2_COMMAND_DRAW:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"Draw\",\"pass_id\":%" PRIu64 ",\"vertex_count\":%" PRIu32
+                   ",\"instance_count\":%" PRIu32 ",\"first_vertex\":%" PRIu32
+                   ",\"first_instance\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.draw.pass_id,
+                   command->u.draw.vertex_count, command->u.draw.instance_count,
+                   command->u.draw.first_vertex, command->u.draw.first_instance) > 0;
+    case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"DrawIndexed\",\"pass_id\":%" PRIu64 ",\"index_count\":%" PRIu32
+                   ",\"instance_count\":%" PRIu32 ",\"first_index\":%" PRIu32
+                   ",\"base_vertex\":%" PRId32 ",\"first_instance\":%" PRIu32 "}\n",
+                   index, (int)command->type, command->u.draw_indexed.pass_id,
+                   command->u.draw_indexed.index_count, command->u.draw_indexed.instance_count,
+                   command->u.draw_indexed.first_index, command->u.draw_indexed.base_vertex,
+                   command->u.draw_indexed.first_instance) > 0;
+    case DVZ_DRP2_COMMAND_END_RENDER_PASS:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"EndRenderPass\",\"pass_id\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.end_render_pass.pass_id) > 0;
+    case DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"FinishCommandEncoder\",\"encoder_id\":%" PRIu64
+                   ",\"command_buffer_id\":%" PRIu64 "}\n",
+                   index, (int)command->type, command->u.finish_command_encoder.encoder_id,
+                   command->u.finish_command_encoder.command_buffer_id) > 0;
+    case DVZ_DRP2_COMMAND_QUEUE_SUBMIT:
+        return dvz_fprintf(
+                   stream_fp,
+                   "{\"type\":\"command\",\"index\":%" PRIu32 ",\"cmd_type\":%d,"
+                   "\"op\":\"QueueSubmit\",\"command_buffer_id\":%" PRIu64
+                   ",\"submission_id\":%" PRIu64 ",\"has_readback\":%u,"
+                   "\"buffer_id\":%" PRIu64 ",\"offset\":%" PRIu64 ",\"size\":%" PRIu64
+                   "}\n",
+                   index, (int)command->type, command->u.queue_submit.command_buffer_id,
+                   command->u.queue_submit.submission_id,
+                   command->u.queue_submit.has_readback ? 1u : 0u,
+                   command->u.queue_submit.buffer_id, command->u.queue_submit.offset,
+                   command->u.queue_submit.size) > 0;
     default:
         *out_supported = false;
         return true;
@@ -911,6 +1227,174 @@ static bool _recording_line_u32(const char* line, const char* key, uint32_t* out
 
 
 /**
+ * Parse one signed 32-bit integer field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param key field key including surrounding quotes and trailing colon
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_i32(const char* line, const char* key, int32_t* out)
+{
+    ANN(line);
+    ANN(key);
+    ANN(out);
+    const char* p = strstr(line, key);
+    if (p == NULL)
+        return false;
+    p += strlen(key);
+    return sscanf(p, "%" SCNd32, out) == 1;
+}
+
+
+
+/**
+ * Parse one float field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param key field key including surrounding quotes and trailing colon
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_float(const char* line, const char* key, float* out)
+{
+    ANN(line);
+    ANN(key);
+    ANN(out);
+    const char* p = strstr(line, key);
+    if (p == NULL)
+        return false;
+    p += strlen(key);
+    return sscanf(p, "%f", out) == 1;
+}
+
+
+
+/**
+ * Parse one bool field encoded as 0 or 1 from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param key field key including surrounding quotes and trailing colon
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_bool(const char* line, const char* key, bool* out)
+{
+    ANN(line);
+    ANN(key);
+    ANN(out);
+    uint32_t value = 0;
+    if (!_recording_line_u32(line, key, &value) || value > 1)
+        return false;
+    *out = value != 0;
+    return true;
+}
+
+
+
+/**
+ * Build an indexed field name.
+ *
+ * @param out output field buffer
+ * @param out_size output field buffer size
+ * @param prefix field prefix
+ * @param index array index
+ * @param suffix field suffix
+ * @return whether the field name fit in the output buffer
+ */
+static bool _recording_field_name(
+    char* out, uint64_t out_size, const char* prefix, uint32_t index, const char* suffix)
+{
+    ANN(out);
+    ANN(prefix);
+    ANN(suffix);
+    int rc = dvz_snprintf(out, (size_t)out_size, "\"%s%" PRIu32 "_%s\":", prefix, index, suffix);
+    return rc >= 0 && (uint64_t)rc < out_size;
+}
+
+
+
+/**
+ * Parse one indexed unsigned 64-bit field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param prefix field prefix
+ * @param index array index
+ * @param suffix field suffix
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_indexed_u64(
+    const char* line, const char* prefix, uint32_t index, const char* suffix, uint64_t* out)
+{
+    char key[64] = {0};
+    return _recording_field_name(key, sizeof(key), prefix, index, suffix) &&
+           _recording_line_u64(line, key, out);
+}
+
+
+
+/**
+ * Parse one indexed unsigned 32-bit field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param prefix field prefix
+ * @param index array index
+ * @param suffix field suffix
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_indexed_u32(
+    const char* line, const char* prefix, uint32_t index, const char* suffix, uint32_t* out)
+{
+    char key[64] = {0};
+    return _recording_field_name(key, sizeof(key), prefix, index, suffix) &&
+           _recording_line_u32(line, key, out);
+}
+
+
+
+/**
+ * Parse one indexed bool field encoded as 0 or 1 from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param prefix field prefix
+ * @param index array index
+ * @param suffix field suffix
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_indexed_bool(
+    const char* line, const char* prefix, uint32_t index, const char* suffix, bool* out)
+{
+    char key[64] = {0};
+    return _recording_field_name(key, sizeof(key), prefix, index, suffix) &&
+           _recording_line_bool(line, key, out);
+}
+
+
+
+/**
+ * Parse one indexed float field from a JSONL record.
+ *
+ * @param line JSONL record
+ * @param prefix field prefix
+ * @param index array index
+ * @param suffix field suffix
+ * @param out parsed value
+ * @return whether the field was found and parsed
+ */
+static bool _recording_line_indexed_float(
+    const char* line, const char* prefix, uint32_t index, const char* suffix, float* out)
+{
+    char key[64] = {0};
+    return _recording_field_name(key, sizeof(key), prefix, index, suffix) &&
+           _recording_line_float(line, key, out);
+}
+
+
+
+/**
  * Parse one string field from a JSONL record.
  *
  * @param line JSONL record
@@ -1032,6 +1516,159 @@ static bool _recording_read_payload_ref(
 
 
 /**
+ * Decode CreateRenderPipeline indexed fields.
+ *
+ * @param line JSONL command record
+ * @param command command to fill
+ * @return whether the fields were decoded
+ */
+static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Command* command)
+{
+    ANN(line);
+    ANN(command);
+    command->type = DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE;
+    if (!_recording_line_u64(line, "\"id\":", &command->u.create_render_pipeline.id) ||
+        !_recording_line_u64(
+            line, "\"vertex_shader_module_id\":",
+            &command->u.create_render_pipeline.vertex_shader_module_id) ||
+        !_recording_line_u64(
+            line, "\"fragment_shader_module_id\":",
+            &command->u.create_render_pipeline.fragment_shader_module_id) ||
+        !_recording_line_u32(
+            line, "\"vertex_buffer_slots\":",
+            &command->u.create_render_pipeline.vertex_buffer_slots) ||
+        !_recording_line_u32(
+            line, "\"bind_group_layout_count\":",
+            &command->u.create_render_pipeline.bind_group_layout_count) ||
+        !_recording_line_bool(
+            line, "\"has_depth_attachment\":",
+            &command->u.create_render_pipeline.has_depth_attachment) ||
+        !_recording_line_bool(
+            line, "\"depth_write_enabled\":",
+            &command->u.create_render_pipeline.depth_write_enabled) ||
+        !_recording_line_u32(
+            line, "\"depth_compare_op\":",
+            &command->u.create_render_pipeline.depth_compare_op) ||
+        !_recording_line_u32(
+            line, "\"color_target_count\":",
+            &command->u.create_render_pipeline.color_target_count) ||
+        !_recording_line_u32(line, "\"topology\":", &command->u.create_render_pipeline.topology) ||
+        !_recording_line_u32(
+            line, "\"binding_count\":", &command->u.create_render_pipeline.binding_count) ||
+        !_recording_line_u32(line, "\"attr_count\":", &command->u.create_render_pipeline.attr_count))
+        return false;
+
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
+    {
+        if (!_recording_line_indexed_u64(
+                line, "bgl", i, "id",
+                &command->u.create_render_pipeline.bind_group_layout_ids[i]))
+            return false;
+    }
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS; i++)
+    {
+        DvzDrp2ColorTarget* t = &command->u.create_render_pipeline.color_targets[i];
+        if (!_recording_line_indexed_u32(line, "ct", i, "format", &t->format) ||
+            !_recording_line_indexed_bool(line, "ct", i, "blend_enabled", &t->blend_enabled) ||
+            !_recording_line_indexed_u32(
+                line, "ct", i, "src_color_blend_factor", &t->src_color_blend_factor) ||
+            !_recording_line_indexed_u32(
+                line, "ct", i, "dst_color_blend_factor", &t->dst_color_blend_factor) ||
+            !_recording_line_indexed_u32(line, "ct", i, "color_blend_op", &t->color_blend_op) ||
+            !_recording_line_indexed_u32(
+                line, "ct", i, "src_alpha_blend_factor", &t->src_alpha_blend_factor) ||
+            !_recording_line_indexed_u32(
+                line, "ct", i, "dst_alpha_blend_factor", &t->dst_alpha_blend_factor) ||
+            !_recording_line_indexed_u32(line, "ct", i, "alpha_blend_op", &t->alpha_blend_op) ||
+            !_recording_line_indexed_u32(line, "ct", i, "color_write_mask", &t->color_write_mask))
+            return false;
+    }
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        if (!_recording_line_indexed_u32(
+                line, "binding", i, "stride",
+                &command->u.create_render_pipeline.binding_strides[i]) ||
+            !_recording_line_indexed_u32(
+                line, "binding", i, "step_mode",
+                &command->u.create_render_pipeline.binding_step_modes[i]))
+            return false;
+    }
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        if (!_recording_line_indexed_u32(
+                line, "attr", i, "binding",
+                &command->u.create_render_pipeline.attr_bindings[i]) ||
+            !_recording_line_indexed_u32(
+                line, "attr", i, "location",
+                &command->u.create_render_pipeline.attr_locations[i]) ||
+            !_recording_line_indexed_u32(
+                line, "attr", i, "format",
+                &command->u.create_render_pipeline.attr_formats[i]) ||
+            !_recording_line_indexed_u32(
+                line, "attr", i, "offset",
+                &command->u.create_render_pipeline.attr_offsets[i]))
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Decode BeginRenderPass indexed fields.
+ *
+ * @param line JSONL command record
+ * @param command command to fill
+ * @return whether the fields were decoded
+ */
+static bool _recording_read_begin_render_pass(const char* line, DvzDrp2Command* command)
+{
+    ANN(line);
+    ANN(command);
+    command->type = DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS;
+    if (!_recording_line_u64(line, "\"id\":", &command->u.begin_render_pass.id) ||
+        !_recording_line_u64(line, "\"encoder_id\":", &command->u.begin_render_pass.encoder_id) ||
+        !_recording_line_u64(line, "\"texture_id\":", &command->u.begin_render_pass.texture_id) ||
+        !_recording_line_u32(
+            line, "\"color_attachment_count\":",
+            &command->u.begin_render_pass.color_attachment_count) ||
+        !_recording_line_bool(
+            line, "\"has_depth_attachment\":",
+            &command->u.begin_render_pass.has_depth_attachment) ||
+        !_recording_line_float(
+            line, "\"clear_depth\":", &command->u.begin_render_pass.clear_depth) ||
+        !_recording_line_float(
+            line, "\"clear_color0\":", &command->u.begin_render_pass.clear_color[0]) ||
+        !_recording_line_float(
+            line, "\"clear_color1\":", &command->u.begin_render_pass.clear_color[1]) ||
+        !_recording_line_float(
+            line, "\"clear_color2\":", &command->u.begin_render_pass.clear_color[2]) ||
+        !_recording_line_float(
+            line, "\"clear_color3\":", &command->u.begin_render_pass.clear_color[3]) ||
+        !_recording_line_float(line, "\"viewport0\":", &command->u.begin_render_pass.viewport[0]) ||
+        !_recording_line_float(line, "\"viewport1\":", &command->u.begin_render_pass.viewport[1]) ||
+        !_recording_line_float(line, "\"viewport2\":", &command->u.begin_render_pass.viewport[2]) ||
+        !_recording_line_float(line, "\"viewport3\":", &command->u.begin_render_pass.viewport[3]) ||
+        !_recording_line_bool(line, "\"clear\":", &command->u.begin_render_pass.clear))
+        return false;
+
+    for (uint32_t i = 0; i < DVZ_DRP2_MAX_COLOR_ATTACHMENTS; i++)
+    {
+        DvzDrp2ColorAttachment* a = &command->u.begin_render_pass.color_attachments[i];
+        if (!_recording_line_indexed_u64(line, "ca", i, "texture_id", &a->texture_id) ||
+            !_recording_line_indexed_bool(line, "ca", i, "clear", &a->clear) ||
+            !_recording_line_indexed_float(line, "ca", i, "clear_color0", &a->clear_color[0]) ||
+            !_recording_line_indexed_float(line, "ca", i, "clear_color1", &a->clear_color[1]) ||
+            !_recording_line_indexed_float(line, "ca", i, "clear_color2", &a->clear_color[2]) ||
+            !_recording_line_indexed_float(line, "ca", i, "clear_color3", &a->clear_color[3]))
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
  * Decode one portable JSON command record and append it to a stream.
  *
  * @param root recording root directory
@@ -1079,6 +1716,38 @@ static bool _recording_read_portable_command(
             !_recording_line_u32(line, "\"usage\":", &command.u.create_texture.usage))
             return false;
         (void)_recording_line_u32(line, "\"format\":", &command.u.create_texture.format);
+    }
+    else if (strcmp(op, "CreateShaderModule") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE;
+        if (!_recording_line_u64(line, "\"id\":", &command.u.create_shader_module.id) ||
+            !_recording_line_string(
+                line, "\"stage\":\"", command.u.create_shader_module.stage,
+                sizeof(command.u.create_shader_module.stage)) ||
+            !_recording_line_string(
+                line, "\"format\":\"", command.u.create_shader_module.format,
+                sizeof(command.u.create_shader_module.format)))
+            return false;
+
+        char payload_kind[64] = {0};
+        (void)_recording_line_string(line, "\"payload_kind\":\"", payload_kind, sizeof(payload_kind));
+        void* payload = NULL;
+        uint64_t payload_size = 0;
+        if (!_recording_read_payload_ref(root, line, &payload, &payload_size))
+            return false;
+        if (!_recording_attach_payload(owner, &command, payload, payload_size, payload_kind))
+            return false;
+    }
+    else if (strcmp(op, "CreateRenderPipeline") == 0)
+    {
+        if (!_recording_read_create_render_pipeline(line, &command))
+            return false;
+    }
+    else if (strcmp(op, "CreateSampler") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_CREATE_SAMPLER;
+        if (!_recording_line_u64(line, "\"id\":", &command.u.create_sampler.id))
+            return false;
     }
     else if (strcmp(op, "WriteBuffer") == 0)
     {
@@ -1130,6 +1799,104 @@ static bool _recording_read_portable_command(
             return false;
         }
         if (!_recording_attach_payload(owner, &command, payload, payload_size, "bytes"))
+            return false;
+    }
+    else if (strcmp(op, "BeginCommandEncoder") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER;
+        if (!_recording_line_u64(line, "\"id\":", &command.u.begin_command_encoder.id))
+            return false;
+    }
+    else if (strcmp(op, "BeginRenderPass") == 0)
+    {
+        if (!_recording_read_begin_render_pass(line, &command))
+            return false;
+    }
+    else if (strcmp(op, "SetViewport") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_SET_VIEWPORT;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.set_viewport.pass_id) ||
+            !_recording_line_float(line, "\"x\":", &command.u.set_viewport.viewport[0]) ||
+            !_recording_line_float(line, "\"y\":", &command.u.set_viewport.viewport[1]) ||
+            !_recording_line_float(line, "\"width\":", &command.u.set_viewport.viewport[2]) ||
+            !_recording_line_float(line, "\"height\":", &command.u.set_viewport.viewport[3]))
+            return false;
+    }
+    else if (strcmp(op, "SetScissor") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_SET_SCISSOR;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.set_scissor.pass_id) ||
+            !_recording_line_float(line, "\"x\":", &command.u.set_scissor.scissor[0]) ||
+            !_recording_line_float(line, "\"y\":", &command.u.set_scissor.scissor[1]) ||
+            !_recording_line_float(line, "\"width\":", &command.u.set_scissor.scissor[2]) ||
+            !_recording_line_float(line, "\"height\":", &command.u.set_scissor.scissor[3]))
+            return false;
+    }
+    else if (strcmp(op, "SetPipeline") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_SET_PIPELINE;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.set_pipeline.pass_id) ||
+            !_recording_line_u64(line, "\"pipeline_id\":", &command.u.set_pipeline.pipeline_id))
+            return false;
+    }
+    else if (strcmp(op, "SetVertexBuffer") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.set_vertex_buffer.pass_id) ||
+            !_recording_line_u32(line, "\"slot\":", &command.u.set_vertex_buffer.slot) ||
+            !_recording_line_u64(line, "\"buffer_id\":", &command.u.set_vertex_buffer.buffer_id) ||
+            !_recording_line_u64(line, "\"offset\":", &command.u.set_vertex_buffer.offset))
+            return false;
+    }
+    else if (strcmp(op, "Draw") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_DRAW;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.draw.pass_id) ||
+            !_recording_line_u32(line, "\"vertex_count\":", &command.u.draw.vertex_count) ||
+            !_recording_line_u32(line, "\"instance_count\":", &command.u.draw.instance_count) ||
+            !_recording_line_u32(line, "\"first_vertex\":", &command.u.draw.first_vertex) ||
+            !_recording_line_u32(line, "\"first_instance\":", &command.u.draw.first_instance))
+            return false;
+    }
+    else if (strcmp(op, "DrawIndexed") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_DRAW_INDEXED;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.draw_indexed.pass_id) ||
+            !_recording_line_u32(line, "\"index_count\":", &command.u.draw_indexed.index_count) ||
+            !_recording_line_u32(
+                line, "\"instance_count\":", &command.u.draw_indexed.instance_count) ||
+            !_recording_line_u32(line, "\"first_index\":", &command.u.draw_indexed.first_index) ||
+            !_recording_line_i32(line, "\"base_vertex\":", &command.u.draw_indexed.base_vertex) ||
+            !_recording_line_u32(
+                line, "\"first_instance\":", &command.u.draw_indexed.first_instance))
+            return false;
+    }
+    else if (strcmp(op, "EndRenderPass") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_END_RENDER_PASS;
+        if (!_recording_line_u64(line, "\"pass_id\":", &command.u.end_render_pass.pass_id))
+            return false;
+    }
+    else if (strcmp(op, "FinishCommandEncoder") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_FINISH_COMMAND_ENCODER;
+        if (!_recording_line_u64(
+                line, "\"encoder_id\":", &command.u.finish_command_encoder.encoder_id) ||
+            !_recording_line_u64(
+                line, "\"command_buffer_id\":",
+                &command.u.finish_command_encoder.command_buffer_id))
+            return false;
+    }
+    else if (strcmp(op, "QueueSubmit") == 0)
+    {
+        command.type = DVZ_DRP2_COMMAND_QUEUE_SUBMIT;
+        if (!_recording_line_u64(
+                line, "\"command_buffer_id\":", &command.u.queue_submit.command_buffer_id) ||
+            !_recording_line_u64(line, "\"submission_id\":", &command.u.queue_submit.submission_id) ||
+            !_recording_line_bool(line, "\"has_readback\":", &command.u.queue_submit.has_readback) ||
+            !_recording_line_u64(line, "\"buffer_id\":", &command.u.queue_submit.buffer_id) ||
+            !_recording_line_u64(line, "\"offset\":", &command.u.queue_submit.offset) ||
+            !_recording_line_u64(line, "\"size\":", &command.u.queue_submit.size))
             return false;
     }
     else

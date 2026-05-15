@@ -4452,6 +4452,100 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
 
 
 
+int test_drp2_recording_render_jsonl_no_raw_fallback(TstSuite* suite, TstItem* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 1, 8, 8, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 2, "vertex", "wgsl", "vertex-main"));
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 3, "fragment", "wgsl", "fragment-main"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 4, 2, 3, 0));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 5));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 6, 5, 1, 0.25f, 0.5f, 0.75f, 1.0f));
+    AT(dvz_drp2_stream_set_viewport(stream, 6, 0.0f, 0.0f, 0.5f, 0.5f));
+    AT(dvz_drp2_stream_set_scissor(stream, 6, 0.0f, 0.0f, 0.5f, 0.5f));
+    AT(dvz_drp2_stream_set_pipeline(stream, 6, 4));
+    AT(dvz_drp2_stream_draw(stream, 6, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 6));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 5, 7));
+    AT(dvz_drp2_stream_queue_submit(stream, 7, 8));
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    DvzDrp2RecordingInfo info = {
+        .width = 8,
+        .height = 8,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_drp2_recording_render_jsonl.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+
+    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_render_jsonl.dvzr/stream.jsonl", "rb");
+    ANN(stream_file);
+    char stream_jsonl[16384] = {0};
+    size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
+    fclose(stream_file);
+    AT(stream_jsonl_size > 0);
+    AT(strstr(stream_jsonl, ".cmd") == NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"CreateShaderModule\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"CreateRenderPipeline\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"BeginRenderPass\"") != NULL);
+    AT(strstr(stream_jsonl, "\"op\":\"QueueSubmit\"") != NULL);
+
+    DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
+    ANN(replay);
+    AT(dvz_drp2_stream_count(replay) == dvz_drp2_stream_count(stream));
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* a = dvz_drp2_stream_get(stream, i);
+        const DvzDrp2Command* b = dvz_drp2_stream_get(replay, i);
+        ANN(a);
+        ANN(b);
+        AT(a->type == b->type);
+    }
+
+    const DvzDrp2Command* shader = dvz_drp2_stream_get(replay, 3);
+    ANN(shader);
+    AT(shader->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE);
+    AT(shader->u.create_shader_module.code != NULL);
+    AT(strcmp(shader->u.create_shader_module.code, "vertex-main") == 0);
+
+    const DvzDrp2Command* pass = dvz_drp2_stream_get(replay, 7);
+    ANN(pass);
+    AT(pass->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    AC(pass->u.begin_render_pass.clear_color[0], 0.25f, 1e-6f);
+    AC(pass->u.begin_render_pass.clear_color[1], 0.5f, 1e-6f);
+    AC(pass->u.begin_render_pass.clear_color[2], 0.75f, 1e-6f);
+    AT(pass->u.begin_render_pass.clear);
+
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    result = dvz_drp2_runtime_execute(runtime, replay);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_stream_destroy(replay);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -4473,6 +4567,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_render_pipeline_color_targets_json);
     TEST_SIMPLE(test_drp2_wboit_accumulation_resolve_stream);
     TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
+    TEST_SIMPLE(test_drp2_recording_render_jsonl_no_raw_fallback);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);
     TEST_SIMPLE(test_drp2_stream_json_preserves_clear_color);
