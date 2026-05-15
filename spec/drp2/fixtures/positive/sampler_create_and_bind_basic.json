@@ -46,8 +46,8 @@
       "cmd": "CreateBindGroupLayout",
       "id": 4,
       "entries": [
-        { "binding": 0, "binding_type": "sampled_texture" },
-        { "binding": 1, "binding_type": "sampler" }
+        { "binding": 0, "binding_type": "sampled_texture", "visibility": ["FRAGMENT"] },
+        { "binding": 1, "binding_type": "sampler", "visibility": ["FRAGMENT"] }
       ]
     },
     {

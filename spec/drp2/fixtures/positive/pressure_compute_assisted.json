@@ -45,8 +45,18 @@
       "id": 100,
       "label": "compute_buffers",
       "entries": [
-        { "binding": 0, "binding_type": "storage_buffer" },
-        { "binding": 1, "binding_type": "storage_buffer" }
+        {
+          "binding": 0,
+          "binding_type": "storage_buffer",
+          "visibility": ["COMPUTE"],
+          "access": "read"
+        },
+        {
+          "binding": 1,
+          "binding_type": "storage_buffer",
+          "visibility": ["COMPUTE"],
+          "access": "read_write"
+        }
       ]
     },
     {

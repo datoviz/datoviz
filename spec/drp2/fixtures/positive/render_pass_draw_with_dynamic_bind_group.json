@@ -39,11 +39,14 @@
         {
           "binding": 0,
           "binding_type": "uniform_buffer",
+          "visibility": ["VERTEX", "FRAGMENT"],
           "has_dynamic_offset": true
         },
         {
           "binding": 1,
           "binding_type": "storage_buffer",
+          "visibility": ["FRAGMENT"],
+          "access": "read_write",
           "has_dynamic_offset": true
         }
       ]

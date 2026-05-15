@@ -45,7 +45,7 @@
       "id": 100,
       "label": "panel_uniforms",
       "entries": [
-        { "binding": 0, "binding_type": "uniform_buffer" }
+        { "binding": 0, "binding_type": "uniform_buffer", "visibility": ["FRAGMENT"] }
       ]
     },
     {

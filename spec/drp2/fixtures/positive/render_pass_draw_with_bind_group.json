@@ -38,7 +38,8 @@
       "entries": [
         {
           "binding": 0,
-          "binding_type": "uniform_buffer"
+          "binding_type": "uniform_buffer",
+          "visibility": ["VERTEX", "FRAGMENT"]
         }
       ]
     },

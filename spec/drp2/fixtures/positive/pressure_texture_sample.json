@@ -56,8 +56,8 @@
       "id": 100,
       "label": "texture_and_sampler_bindings",
       "entries": [
-        { "binding": 0, "binding_type": "sampled_texture" },
-        { "binding": 1, "binding_type": "sampler" }
+        { "binding": 0, "binding_type": "sampled_texture", "visibility": ["FRAGMENT"] },
+        { "binding": 1, "binding_type": "sampler", "visibility": ["FRAGMENT"] }
       ]
     },
     {
