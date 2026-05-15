@@ -98,23 +98,23 @@ The PoC supports the fixture subset of:
 ## PoC-Local Adaptations
 
 These are compatibility choices in the browser runner for ad hoc demo streams and older command
-forms. The fixture dashboard requires explicit bind-group layout metadata.
+forms. The fixture dashboard requires explicit bind-group layout and render-pipeline metadata.
 
 - `texture_id: 0` means the current browser canvas texture.
 - Pipeline color target format `"canvas"` means `navigator.gpu.getPreferredCanvasFormat()`.
 - Texture dimensions `"canvas"` for width/height mean the current canvas pixel extent.
-- Missing `CreateRenderPipeline.color_targets` follows the DRP2 default: the configured canvas
-  format for canvas targets, otherwise `rgba8unorm` when no attachment format is available.
-- Missing `vertex_buffers` means vertex pulling or builtins in DRP2. The PoC still provides a
-  one-slot compatibility fallback for old smoke streams whose vertex shader declares
-  `@location(0)`.
+- Missing `CreateRenderPipeline.color_targets` follows the DRP2 default for standalone demo streams:
+  the configured canvas format for canvas targets, otherwise `rgba8unorm` when no attachment format
+  is available.
+- Missing `vertex_buffers` means vertex pulling or builtins in DRP2. Standalone demo streams still
+  get a one-slot compatibility fallback when their vertex shader declares `@location(0)`.
 - Tight `CopyTextureToBuffer.bytes_per_row` values are adapted through an aligned temporary buffer
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
 - Buffer binding offsets that are valid in DRP2 but not aligned for WebGPU are bound from offset 0
   in the PoC so fixture command paths can still execute.
-- Bind-group layout `visibility` and storage `access` are required by the fixture dashboard.
-  Standalone demo streams still use DRP2 defaults and shader-source inference as compatibility
-  fallbacks.
+- Bind-group layout `visibility`, storage `access`, render-pipeline `vertex_buffers`, and
+  render-pipeline `color_targets` are required by the fixture dashboard. Standalone demo streams
+  still use DRP2 defaults and shader-source inference as compatibility fallbacks.
 - Destroy commands are accepted as no-op lifecycle markers; the PoC relies on JavaScript object
   lifetime instead of implementing DRP2 object-use lifetime validation.
 
@@ -133,5 +133,4 @@ The first WebGPU pass resolved these DRP2 portability questions in the protocol 
 - dynamic buffer offsets remain DRP2 offsets; backends must validate alignment or adapt by
   materializing an equivalent aligned binding.
 
-The next cleanup is pipeline fixture hygiene: add explicit `vertex_buffers` and `color_targets` to
-committed fixtures so the remaining PoC pipeline compatibility fallbacks become unnecessary.
+The positive fixture dashboard now runs without bind-group or render-pipeline metadata fallbacks.

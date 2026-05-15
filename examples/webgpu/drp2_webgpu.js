@@ -604,6 +604,13 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
     `unknown fragment shader module ${command.fragment_shader_module_id}`,
   );
 
+  if (options.requireExplicitPipelineMetadata && command.vertex_buffers === undefined) {
+    throw new Error(`render pipeline ${command.id} needs explicit vertex_buffers`);
+  }
+  if (options.requireExplicitPipelineMetadata && command.color_targets === undefined) {
+    throw new Error(`render pipeline ${command.id} needs explicit color_targets`);
+  }
+
   const colorTargets = command.color_targets ?? [defaultColorTarget(fragmentShader)];
   if (colorTargets.length !== 1) {
     throw new Error("only one color target is supported by this PoC");
