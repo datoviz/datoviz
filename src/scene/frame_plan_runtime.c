@@ -44,6 +44,7 @@
 
 typedef struct SceneRenderDraw SceneRenderDraw;
 typedef struct SceneRenderBatch SceneRenderBatch;
+typedef struct SceneGraphRuntimeTarget SceneGraphRuntimeTarget;
 typedef struct SceneWboitTargets SceneWboitTargets;
 
 struct SceneRenderDraw
@@ -63,15 +64,21 @@ struct SceneRenderBatch
 };
 
 
+struct SceneGraphRuntimeTarget
+{
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    uint64_t texture_id;
+};
+
+
 struct SceneWboitTargets
 {
     uint64_t color_id;
     uint64_t accum_id;
     uint64_t weight_id;
     uint64_t depth_id;
-    char accum_resource_id[DVZ_SCENE_LABEL_SIZE];
-    char weight_resource_id[DVZ_SCENE_LABEL_SIZE];
-    char depth_resource_id[DVZ_SCENE_LABEL_SIZE];
+    SceneGraphRuntimeTarget graph_targets[DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY];
+    uint32_t graph_target_count;
     uint64_t sampler_id;
     uint64_t resolve_bgl_id;
     uint64_t resolve_bg_id;
@@ -1123,6 +1130,63 @@ static bool _stream_apply_graph_depth(
 
 
 /**
+ * Register one graph resource id to runtime texture id mapping.
+ *
+ * @param targets runtime target map.
+ * @param resource_id graph resource id.
+ * @param texture_id runtime texture id.
+ * @return whether the mapping was registered.
+ */
+static bool _graph_runtime_targets_add(
+    SceneWboitTargets* targets, const char* resource_id, uint64_t texture_id)
+{
+    ANN(targets);
+    ANN(resource_id);
+
+    if (resource_id[0] == '\0' || texture_id == 0)
+        return true;
+    for (uint32_t i = 0; i < targets->graph_target_count; i++)
+    {
+        if (strcmp(targets->graph_targets[i].resource_id, resource_id) == 0)
+        {
+            targets->graph_targets[i].texture_id = texture_id;
+            return true;
+        }
+    }
+    if (targets->graph_target_count >= DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY)
+        return false;
+
+    SceneGraphRuntimeTarget* target = &targets->graph_targets[targets->graph_target_count++];
+    dvz_strlcpy(target->resource_id, resource_id, sizeof(target->resource_id));
+    target->texture_id = texture_id;
+    return true;
+}
+
+
+
+/**
+ * Return one registered runtime texture id by graph resource id.
+ *
+ * @param targets runtime target map.
+ * @param resource_id graph resource id.
+ * @return runtime texture id, or zero when no mapping exists.
+ */
+static uint64_t
+_graph_runtime_targets_get(const SceneWboitTargets* targets, const char* resource_id)
+{
+    if (targets == NULL || resource_id == NULL || resource_id[0] == '\0')
+        return 0;
+    for (uint32_t i = 0; i < targets->graph_target_count; i++)
+    {
+        if (strcmp(targets->graph_targets[i].resource_id, resource_id) == 0)
+            return targets->graph_targets[i].texture_id;
+    }
+    return 0;
+}
+
+
+
+/**
  * Return the runtime texture id for one graph resource id.
  *
  * @param resource_id graph resource id.
@@ -1141,15 +1205,9 @@ static uint64_t _graph_runtime_texture_id_for_resource(
         return final_color_id;
     if (targets != NULL)
     {
-        if (targets->accum_resource_id[0] != '\0' &&
-            strcmp(resource_id, targets->accum_resource_id) == 0)
-            return targets->accum_id;
-        if (targets->weight_resource_id[0] != '\0' &&
-            strcmp(resource_id, targets->weight_resource_id) == 0)
-            return targets->weight_id;
-        if (targets->depth_resource_id[0] != '\0' &&
-            strcmp(resource_id, targets->depth_resource_id) == 0)
-            return targets->depth_id;
+        uint64_t texture_id = _graph_runtime_targets_get(targets, resource_id);
+        if (texture_id != 0)
+            return texture_id;
     }
     return fallback_id;
 }
@@ -1391,12 +1449,17 @@ static bool _emitter_prepare_wboit_targets(
     }
     if (!ok)
         return false;
-    if (accum_resource != NULL)
-        dvz_strlcpy(out->accum_resource_id, accum_resource->id, sizeof(out->accum_resource_id));
-    if (weight_resource != NULL)
-        dvz_strlcpy(out->weight_resource_id, weight_resource->id, sizeof(out->weight_resource_id));
-    if (depth_resource != NULL)
-        dvz_strlcpy(out->depth_resource_id, depth_resource->id, sizeof(out->depth_resource_id));
+    ok = ok &&
+         (accum_resource == NULL ||
+          _graph_runtime_targets_add(out, accum_resource->id, out->accum_id));
+    ok = ok &&
+         (weight_resource == NULL ||
+          _graph_runtime_targets_add(out, weight_resource->id, out->weight_id));
+    ok = ok &&
+         (depth_resource == NULL ||
+          _graph_runtime_targets_add(out, depth_resource->id, out->depth_id));
+    if (!ok)
+        return false;
 
     out->sampler_id = _obj_id(emitter, "_sampler_wboit", &is_new);
     if (out->sampler_id == 0)
