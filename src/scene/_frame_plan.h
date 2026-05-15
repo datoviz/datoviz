@@ -145,6 +145,7 @@ struct DvzFramePlanNode
             char visuals[DVZ_SCENE_MAX_RENDER_VISUALS][DVZ_SCENE_LABEL_SIZE];
             DvzFramePlanVisualMeta visual_metadata[DVZ_SCENE_MAX_RENDER_VISUALS];
             bool picking;
+            DvzFramePlanRenderPassRole pass_role;
             DvzPanelDesc desc;
             bool has_viewport;
             DvzSceneViewportUniform viewport;
@@ -192,6 +193,10 @@ struct DvzFramePlan
 bool dvz_frame_plan_render_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
     DvzPanelDesc desc);
+
+bool dvz_frame_plan_render_panel_role(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
+    DvzPanelDesc desc, DvzFramePlanRenderPassRole pass_role);
 
 bool dvz_frame_plan_clear_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, DvzPanelDesc desc);

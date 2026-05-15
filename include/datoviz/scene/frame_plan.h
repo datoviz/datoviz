@@ -147,6 +147,17 @@ DVZ_EXPORT DvzFramePlanNodeType dvz_frame_plan_node_type(const DvzFramePlanNode*
 
 
 /**
+ * Return a FramePlan render node pass role.
+ *
+ * @param node the FramePlan node
+ * @return the render pass role, or opaque for non-render nodes
+ */
+DVZ_EXPORT DvzFramePlanRenderPassRole
+dvz_frame_plan_render_pass_role(const DvzFramePlanNode* node);
+
+
+
+/**
  * Append an upload node.
  *
  * @param plan the FramePlan

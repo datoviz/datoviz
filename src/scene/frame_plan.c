@@ -132,6 +132,25 @@ static const char* _node_type_name(DvzFramePlanNodeType type)
 
 
 
+static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
+{
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+        return "opaque";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        return "transparent_accumulation";
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+        return "wboit_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
+        return "picking";
+    default:
+        return "opaque";
+    }
+}
+
+
+
 static void _json_append_string_array(
     JsonBuilder* builder, uint32_t count, const char values[][DVZ_SCENE_LABEL_SIZE])
 {
@@ -199,6 +218,8 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append_escaped_string(builder, node->u.render.panel_id);
         _json_append(builder, ", \"render_target_id\": ");
         _json_append_escaped_string(builder, node->u.render.render_target_id);
+        _json_append(builder, ", \"pass_role\": ");
+        _json_append_escaped_string(builder, _render_pass_role_name(node->u.render.pass_role));
         _json_append(builder, ", \"visuals\": ");
         _json_append_string_array(builder, node->u.render.visual_count, node->u.render.visuals);
         _json_append(builder, ", \"picking\": %s }", node->u.render.picking ? "true" : "false");
@@ -431,6 +452,21 @@ DvzFramePlanNodeType dvz_frame_plan_node_type(const DvzFramePlanNode* node)
 
 
 /**
+ * Return a FramePlan render node pass role.
+ *
+ * @param node the FramePlan node
+ * @return the render pass role, or opaque for non-render nodes
+ */
+DvzFramePlanRenderPassRole dvz_frame_plan_render_pass_role(const DvzFramePlanNode* node)
+{
+    if (node == NULL || node->type != DVZ_FRAME_PLAN_NODE_RENDER)
+        return DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
+    return node->u.render.pass_role;
+}
+
+
+
+/**
  * Append an upload node.
  *
  * @param plan the FramePlan
@@ -641,6 +677,17 @@ bool dvz_frame_plan_render_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
     DvzPanelDesc desc)
 {
+    return dvz_frame_plan_render_panel_role(
+        plan, panel_id, render_target_id, picking, desc,
+        picking ? DVZ_FRAME_PLAN_RENDER_PASS_PICKING : DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+}
+
+
+
+bool dvz_frame_plan_render_panel_role(
+    DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
+    DvzPanelDesc desc, DvzFramePlanRenderPassRole pass_role)
+{
     DvzFramePlanNode* node = _append_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (node == NULL)
         return false;
@@ -649,6 +696,7 @@ bool dvz_frame_plan_render_panel(
         node->u.render.render_target_id, DVZ_SCENE_LABEL_SIZE,
         render_target_id ? render_target_id : "");
     node->u.render.picking = picking;
+    node->u.render.pass_role = picking ? DVZ_FRAME_PLAN_RENDER_PASS_PICKING : pass_role;
     node->u.render.desc = desc;
     return true;
 }

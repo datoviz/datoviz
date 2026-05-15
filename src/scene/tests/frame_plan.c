@@ -19,6 +19,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "../_frame_plan.h"
 #include "../_frame_plan_emit.h"
 #include "../_scene_resource_key.h"
 #include "../_scene.h"
@@ -93,6 +94,45 @@ int test_frame_plan_static_render(TstSuite* suite, TstItem* item)
     AT(strstr(json, "\"type\": \"render\"") != NULL);
     AT(strstr(json, "\"visuals\": [\"visual.point.0\"]") != NULL);
     AT(strstr(json, "\"picking\": false") != NULL);
+
+    dvz_frame_plan_json_destroy(json);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+int test_frame_plan_render_pass_roles(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.wboit", 2);
+    ANN(plan);
+
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "panel.0", "target.panel.0.color", false, (DvzPanelDesc){0, 0, 1, 1},
+        DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE));
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "panel.0", "target.panel.0.wboit_accum", false, (DvzPanelDesc){0, 0, 1, 1},
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION));
+    AT(dvz_frame_plan_render_panel_role(
+        plan, "panel.0", "target.panel.0.color", false, (DvzPanelDesc){0, 0, 1, 1},
+        DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE));
+
+    const DvzFramePlanNode* opaque = dvz_frame_plan_node_get(plan, 0);
+    const DvzFramePlanNode* accum = dvz_frame_plan_node_get(plan, 1);
+    const DvzFramePlanNode* resolve = dvz_frame_plan_node_get(plan, 2);
+    AT(dvz_frame_plan_render_pass_role(opaque) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(
+        dvz_frame_plan_render_pass_role(accum) ==
+        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(resolve) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"pass_role\": \"opaque\"") != NULL);
+    AT(strstr(json, "\"pass_role\": \"transparent_accumulation\"") != NULL);
+    AT(strstr(json, "\"pass_role\": \"wboit_resolve\"") != NULL);
 
     dvz_frame_plan_json_destroy(json);
     dvz_frame_plan_destroy(plan);
@@ -452,6 +492,7 @@ int test_scene_frame_plan(TstSuite* suite)
 
     TEST_SIMPLE(test_scene_capabilities_diagnostics);
     TEST_SIMPLE(test_frame_plan_static_render);
+    TEST_SIMPLE(test_frame_plan_render_pass_roles);
     TEST_SIMPLE(test_frame_plan_clear);
     TEST_SIMPLE(test_frame_plan_growth_json);
     TEST_SIMPLE(test_frame_plan_json_escapes_labels);
