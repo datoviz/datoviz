@@ -89,6 +89,44 @@ static bool _glfw_init(void)
 
 
 
+/**
+ * Return the macOS fallback Vulkan instance extension count.
+ *
+ * @return fallback extension count on macOS, otherwise zero
+ */
+static uint32_t _glfw_macos_fallback_required_extension_count(void)
+{
+#if OS_MACOS
+    return 2;
+#else
+    return 0;
+#endif
+}
+
+
+
+/**
+ * Return one macOS fallback Vulkan instance extension name.
+ *
+ * @param index extension index to resolve
+ * @return extension name at index, or NULL when unavailable
+ */
+static const char* _glfw_macos_fallback_required_extension_at(uint32_t index)
+{
+#if OS_MACOS
+    static const char* extensions[] = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        "VK_EXT_metal_surface",
+    };
+    return index < 2 ? extensions[index] : NULL;
+#else
+    (void)index;
+    return NULL;
+#endif
+}
+
+
+
 static void _glfw_shutdown(void)
 {
     if (_glfw_state.window_count == 0 && _glfw_state.initialized)
@@ -290,8 +328,8 @@ static uint32_t _glfw_required_extension_count(DvzWindowBackend* backend, DvzWin
         return 0;
     uint32_t ext_count = 0;
     const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    if (extensions == NULL)
-        return 0;
+    if (extensions == NULL || ext_count == 0)
+        return _glfw_macos_fallback_required_extension_count();
     return ext_count;
 }
 
@@ -314,7 +352,9 @@ _glfw_required_extension_at(DvzWindowBackend* backend, DvzWindowHost* host, uint
         return NULL;
     uint32_t ext_count = 0;
     const char** extensions = glfwGetRequiredInstanceExtensions(&ext_count);
-    if (extensions == NULL || index >= ext_count)
+    if (extensions == NULL || ext_count == 0)
+        return _glfw_macos_fallback_required_extension_at(index);
+    if (index >= ext_count)
         return NULL;
     return extensions[index];
 }
