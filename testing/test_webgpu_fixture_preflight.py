@@ -20,6 +20,14 @@ def _load_fixture(relative_path: str) -> dict:
         return json.load(stream)
 
 
+def _load_strict_stream(relative_path: str) -> dict:
+    fixture = _load_fixture(relative_path)
+    for command in fixture['commands']:
+        if command['cmd'] == 'CreateRenderPipeline':
+            command.setdefault('color_targets', [{'format': 'rgba8unorm'}])
+    return fixture
+
+
 def test_webgpu_preflight_manifest_passes() -> None:
     preflight = WebGPUFixturePreflight(ROOT_DIR)
     fixtures = preflight.discover([])
@@ -63,3 +71,65 @@ def test_webgpu_preflight_rejects_missing_pipeline_metadata() -> None:
         assert 'needs explicit color_targets' in exc.message
     else:
         raise AssertionError('pipeline without color_targets unexpectedly passed WebGPU preflight')
+
+
+def test_webgpu_preflight_scene_wgsl_stream_bindings_pass() -> None:
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    for relative_path in (
+        'examples/webgpu/streams/scene_primitive_wgsl.json',
+        'examples/webgpu/streams/scene_point_wgsl.json',
+        'examples/webgpu/streams/scene_image_wgsl.json',
+    ):
+        preflight.validate_fixture(_load_strict_stream(relative_path))
+
+
+def test_webgpu_preflight_rejects_missing_scene_common_viewport_binding() -> None:
+    broken = _load_strict_stream('examples/webgpu/streams/scene_point_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateBindGroupLayout' and command['id'] == 5000:
+            command['entries'] = [entry for entry in command['entries'] if entry['binding'] != 1]
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'requires group 0 binding 1, missing from layout 5000' in exc.message
+    else:
+        raise AssertionError('scene common layout without viewport unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_wrong_scene_image_resource_binding() -> None:
+    broken = _load_strict_stream('examples/webgpu/streams/scene_image_wgsl.json')
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateBindGroupLayout' and command['id'] == 5000:
+            command['entries'][0]['binding_type'] = 'uniform_buffer'
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'group 1 binding 0 uses sampled_texture, layout 5000 uses uniform_buffer' in exc.message
+    else:
+        raise AssertionError('scene image layout with wrong resource type unexpectedly passed preflight')
+
+
+def test_webgpu_preflight_rejects_storage_access_mismatch() -> None:
+    fixture = _load_fixture('spec/drp2/fixtures/positive/scene_compute_assisted_from_c.json')
+    broken = copy.deepcopy(fixture)
+    for command in broken['commands']:
+        if command['cmd'] == 'CreateBindGroupLayout' and command['id'] == 100:
+            command['entries'][0]['access'] = 'read_write'
+            break
+
+    preflight = WebGPUFixturePreflight(ROOT_DIR)
+    try:
+        preflight.validate_fixture(broken)
+    except WebGPUPreflightFailure as exc:
+        assert exc.command_index is not None
+        assert 'group 0 binding 0 uses read storage access' in exc.message
+    else:
+        raise AssertionError('storage access mismatch unexpectedly passed WebGPU preflight')

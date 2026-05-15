@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
@@ -38,6 +39,25 @@ INDEX_FORMAT_BYTES = {
     'uint16': 2,
     'uint32': 4,
 }
+
+WGSL_BINDING_RE = re.compile(
+    r'@group\(\s*(?P<group>\d+)\s*\)\s*'
+    r'@binding\(\s*(?P<binding>\d+)\s*\)\s*'
+    r'var(?:<(?P<address_space>[^>]*)>)?\s+'
+    r'[A-Za-z_][A-Za-z0-9_]*\s*:\s*'
+    r'(?P<resource_type>[^;]+);'
+)
+
+
+@dataclass(frozen=True)
+class WGSLBindingRequirement:
+    """Store one reflected WGSL resource binding requirement."""
+
+    group: int
+    binding: int
+    binding_type: str
+    stage: str
+    access: Optional[str]
 
 
 @dataclass
@@ -120,7 +140,9 @@ class WebGPUFixturePreflight:
         """Validate a loaded fixture object against WebGPU preflight rules."""
 
         buffers: Dict[int, Dict[str, Any]] = {}
+        bind_group_layouts: Dict[int, Dict[str, Any]] = {}
         pipelines: Dict[int, Dict[str, Any]] = {}
+        shaders: Dict[int, Dict[str, Any]] = {}
         passes: Dict[int, Dict[str, Any]] = {}
 
         for index, command in enumerate(fixture['commands']):
@@ -129,9 +151,14 @@ class WebGPUFixturePreflight:
                 buffers[command['id']] = command
             elif cmd == 'CreateBindGroupLayout':
                 self._check_bind_group_layout(index, command)
+                bind_group_layouts[command['id']] = command
+            elif cmd == 'CreateShaderModule':
+                shaders[command['id']] = command
             elif cmd == 'CreateRenderPipeline':
-                self._check_render_pipeline(index, command)
+                self._check_render_pipeline(index, command, shaders, bind_group_layouts)
                 pipelines[command['id']] = command
+            elif cmd == 'CreateComputePipeline':
+                self._check_compute_pipeline(index, command, shaders, bind_group_layouts)
             elif cmd == 'BeginComputePass':
                 passes[command['id']] = {'kind': 'compute'}
             elif cmd == 'BeginRenderPass':
@@ -187,7 +214,13 @@ class WebGPUFixturePreflight:
                     f'bind-group layout {command["id"]} storage binding {entry["binding"]} needs access',
                 )
 
-    def _check_render_pipeline(self, index: int, command: Dict[str, Any]) -> None:
+    def _check_render_pipeline(
+        self,
+        index: int,
+        command: Dict[str, Any],
+        shaders: Dict[int, Dict[str, Any]],
+        bind_group_layouts: Dict[int, Dict[str, Any]],
+    ) -> None:
         if 'vertex_buffers' not in command:
             raise WebGPUPreflightFailure(
                 index, f'render pipeline {command["id"]} needs explicit vertex_buffers'
@@ -216,6 +249,154 @@ class WebGPUFixturePreflight:
                         index,
                         f'render pipeline {command["id"]} vertex attribute exceeds stride',
                     )
+        self._check_pipeline_shader_bindings(
+            index,
+            f'render pipeline {command["id"]}',
+            command,
+            [
+                ('VERTEX', command.get('vertex_shader_module_id')),
+                ('FRAGMENT', command.get('fragment_shader_module_id')),
+            ],
+            shaders,
+            bind_group_layouts,
+        )
+
+    def _check_compute_pipeline(
+        self,
+        index: int,
+        command: Dict[str, Any],
+        shaders: Dict[int, Dict[str, Any]],
+        bind_group_layouts: Dict[int, Dict[str, Any]],
+    ) -> None:
+        self._check_pipeline_shader_bindings(
+            index,
+            f'compute pipeline {command["id"]}',
+            command,
+            [('COMPUTE', command.get('compute_shader_module_id'))],
+            shaders,
+            bind_group_layouts,
+        )
+
+    def _check_pipeline_shader_bindings(
+        self,
+        index: int,
+        pipeline_label: str,
+        command: Dict[str, Any],
+        shader_refs: Sequence[tuple[str, Optional[int]]],
+        shaders: Dict[int, Dict[str, Any]],
+        bind_group_layouts: Dict[int, Dict[str, Any]],
+    ) -> None:
+        layout_ids = command.get('bind_group_layout_ids', [])
+        for stage, shader_id in shader_refs:
+            if shader_id is None:
+                continue
+            shader = shaders.get(shader_id)
+            if shader is None or shader.get('format') != 'wgsl':
+                continue
+            for requirement in self._wgsl_binding_requirements(shader, stage):
+                if requirement.group >= len(layout_ids):
+                    raise WebGPUPreflightFailure(
+                        index,
+                        f'{pipeline_label} shader {shader_id} requires group '
+                        f'{requirement.group} binding {requirement.binding}',
+                    )
+                layout_id = layout_ids[requirement.group]
+                layout = bind_group_layouts.get(layout_id)
+                if layout is None:
+                    raise WebGPUPreflightFailure(
+                        index,
+                        f'{pipeline_label} references unknown bind-group layout {layout_id}',
+                    )
+                self._check_shader_binding_matches_layout(
+                    index, pipeline_label, shader_id, requirement, layout
+                )
+
+    def _check_shader_binding_matches_layout(
+        self,
+        index: int,
+        pipeline_label: str,
+        shader_id: int,
+        requirement: WGSLBindingRequirement,
+        layout: Dict[str, Any],
+    ) -> None:
+        layout_entry = None
+        for entry in layout.get('entries', []):
+            if entry['binding'] == requirement.binding:
+                layout_entry = entry
+                break
+        if layout_entry is None:
+            raise WebGPUPreflightFailure(
+                index,
+                f'{pipeline_label} shader {shader_id} requires group {requirement.group} '
+                f'binding {requirement.binding}, missing from layout {layout["id"]}',
+            )
+        if layout_entry['binding_type'] != requirement.binding_type:
+            raise WebGPUPreflightFailure(
+                index,
+                f'{pipeline_label} shader {shader_id} group {requirement.group} binding '
+                f'{requirement.binding} uses {requirement.binding_type}, layout {layout["id"]} '
+                f'uses {layout_entry["binding_type"]}',
+            )
+        if requirement.stage not in layout_entry.get('visibility', []):
+            raise WebGPUPreflightFailure(
+                index,
+                f'{pipeline_label} shader {shader_id} group {requirement.group} binding '
+                f'{requirement.binding} needs {requirement.stage} visibility',
+            )
+        if requirement.access is not None and layout_entry.get('access') != requirement.access:
+            raise WebGPUPreflightFailure(
+                index,
+                f'{pipeline_label} shader {shader_id} group {requirement.group} binding '
+                f'{requirement.binding} uses {requirement.access} storage access, layout '
+                f'{layout["id"]} uses {layout_entry.get("access")}',
+            )
+
+    def _wgsl_binding_requirements(
+        self, shader: Dict[str, Any], stage: str
+    ) -> List[WGSLBindingRequirement]:
+        code = shader.get('code')
+        if not isinstance(code, str):
+            return []
+
+        requirements: List[WGSLBindingRequirement] = []
+        for match in WGSL_BINDING_RE.finditer(code):
+            binding_type, access = self._wgsl_binding_type(
+                match.group('address_space'), match.group('resource_type')
+            )
+            if binding_type is None:
+                continue
+            requirements.append(
+                WGSLBindingRequirement(
+                    group=int(match.group('group')),
+                    binding=int(match.group('binding')),
+                    binding_type=binding_type,
+                    stage=stage,
+                    access=access,
+                )
+            )
+        return requirements
+
+    def _wgsl_binding_type(
+        self, address_space: Optional[str], resource_type: str
+    ) -> tuple[Optional[str], Optional[str]]:
+        resource_type = resource_type.strip()
+        address_parts = []
+        if address_space is not None:
+            address_parts = [part.strip() for part in address_space.split(',')]
+        if address_parts and address_parts[0] == 'uniform':
+            return 'uniform_buffer', None
+        if address_parts and address_parts[0] == 'storage':
+            access = 'read_write'
+            if len(address_parts) > 1 and address_parts[1] == 'read':
+                access = 'read'
+            return 'storage_buffer', access
+        if resource_type.startswith('texture_storage_'):
+            return 'storage_texture', None
+        if resource_type.startswith('texture_') or resource_type.startswith('texture_depth'):
+            return 'sampled_texture', None
+        if resource_type.startswith('sampler'):
+            return 'sampler', None
+        return None, None
 
     def _check_draw(
         self,
