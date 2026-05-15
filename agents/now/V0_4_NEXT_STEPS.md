@@ -79,6 +79,17 @@ runtime. Focused validation: `just build`,
 `./build/testing/dvztest_drp2 drp2_recording` (`4/4`), and
 `./build/testing/dvz_drp2_player --fast /tmp/dvz_app_offscreen_recording.dvzr`.
 
+Fourth follow-up DVZR slice on 2026-05-15: `examples/c/record_scene_dvzr.c` now records a visible
+offscreen point scene to `.dvzr`, saves the app-captured frame to
+`record_scene_dvzr_original.png`, replays the recording through the real vklite DRP2 runtime, and
+saves the replay target to `record_scene_dvzr_replay.png`. Synthetic app recording targets now
+include `COPY_SRC` usage so replayed borrowed targets can be read back, and portable recording load
+now restores SPIR-V payload sizes for actual Vulkan replay. Focused validation: `just build`,
+`./build/examples/c/record_scene_dvzr` with byte-identical original/replay PNGs,
+`./build/testing/dvztest_scene test_app_offscreen_records_dvzr_frames`,
+`./build/testing/dvztest_drp2 drp2_recording` (`4/4`), and
+`./build/testing/dvz_drp2_player --fast build/examples/c/record_scene_dvzr.dvzr`.
+
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
@@ -195,9 +206,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
    bounded live app smoke around request/runtime steady state.
 5. Current DVZR next: decide whether `dvz_drp2_player` should stay a developer executable or become
-   an installed CLI/app-level integration point, add a small C example or app smoke that records a
-   visible scene to `.dvzr`, and broaden portable command coverage beyond the
-   point/primitive/mesh/image baseline whenever a real scene/app stream reports raw fallbacks.
+   an installed CLI/app-level integration point, add an image-diff regression around the existing
+   offscreen scene recording/replay example if this becomes a CI lane, and broaden portable command
+   coverage beyond the point/primitive/mesh/image baseline whenever a real scene/app stream reports
+   raw fallbacks.
 6. CUDA/CuPy external-memory interop priority: treat CUDA/CuPy-owned GPU pointer -> Vulkan import as
    unreliable on this branch. Prioritize the opposite direction for any new interop work: create and
    own the allocation in Vulkan, export it through external memory, import it into CUDA/CuPy, and
