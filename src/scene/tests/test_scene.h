@@ -142,6 +142,8 @@ int test_scene_path_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_image_glsl_executes(TstSuite* suite, TstItem* item);
 
+int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item);
+
 int test_scene_image_emit_uses_mvp_and_texture_sets(TstSuite* suite, TstItem* item);
 
 int test_scene_process_pick_probe_requests(TstSuite* suite, TstItem* item);

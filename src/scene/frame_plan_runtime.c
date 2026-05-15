@@ -585,14 +585,14 @@ static bool _emitter_emit_render(
     uint64_t bgl_id = 0;
     uint64_t bg_id  = 0;
 
-    /* MVP UBO bind group IDs — used for GLSL point/primitive/image paths. */
+    /* MVP UBO bind group IDs — used for GLSL point/primitive/image and WGSL primitive/image paths. */
     uint64_t mvp_bgl_id = 0;
     uint64_t mvp_bg_id  = 0;
     bool uses_mvp =
         (is_point || is_primitive || is_image) &&
         cfg != NULL &&
         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL ||
-         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL && is_primitive));
+         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL && (is_primitive || is_image)));
 
     /* When IMAGE: re-narrow vertex_buffer_ids to (position, texcoords) only — the texture
      * is bound through a bind group, not as a vertex buffer. */
@@ -648,7 +648,7 @@ static bool _emitter_emit_render(
         vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, false);
         fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE, true);
     }
-    else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    else if (is_image)
     {
         /* Image visual: textured-quad shaders, TRIANGLE_STRIP topology, 4 vertices. */
         uint64_t pos_size = _resource_byte_size(&emitter->resources, image_pos);
@@ -659,6 +659,8 @@ static bool _emitter_emit_render(
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs_img%s", fmt);
         vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
         fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
+        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, false);
+        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_IMAGE, true);
 
         /* Sampler + texture-sampler bind-group layout + bind-group, all persistent. */
         bool bgl_new = false;
@@ -696,7 +698,7 @@ static bool _emitter_emit_render(
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
     }
 
-    /* MVP UBO infrastructure (GLSL point/primitive path only). */
+    /* MVP UBO infrastructure. */
     if (uses_mvp)
     {
         ok = ok && _mvp_bindings_resolve_single_set(
@@ -780,7 +782,7 @@ static bool _emitter_emit_render(
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
     else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
-    else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+    else if (is_image)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_img%s", fmt);
     else
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe%u%s", vertex_buffer_count, fmt);
@@ -824,7 +826,7 @@ static bool _emitter_emit_render(
             if (ok && uses_mvp && mvp_bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
         }
-        else if (is_image && cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
+        else if (is_image)
         {
             /* binding0=position(vec3), binding1=texcoords(vec2); set0=MVP, set1=image */
             uint32_t strides[2]   = {3*sizeof(float), 2*sizeof(float)};

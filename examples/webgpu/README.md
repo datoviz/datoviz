@@ -39,6 +39,8 @@ http://localhost:8765/examples/webgpu/?stream=triangle_offscreen_readback_wgsl
 http://localhost:8765/examples/webgpu/?stream=depth_overlap_wgsl
 http://localhost:8765/examples/webgpu/?stream=texture_sampling_wgsl
 http://localhost:8765/examples/webgpu/?stream=indexed_quad_wgsl
+http://localhost:8765/examples/webgpu/?stream=scene_primitive_wgsl
+http://localhost:8765/examples/webgpu/?stream=scene_image_wgsl
 ```
 
 All streams use `texture_id: 0` as a PoC-local alias for the current browser canvas texture.

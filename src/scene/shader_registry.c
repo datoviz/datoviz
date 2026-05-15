@@ -338,6 +338,17 @@ const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment)
 {
     switch (shader)
     {
+    case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
+#if DVZ_HAS_WGSL_SHADERS
+    {
+        unsigned long size = 0;
+        const char* key = fragment ? "image_frag" : "image_vert";
+        const char* source = dvz_resource_wgsl(key, &size);
+        if (source != NULL && size > 0)
+            return source;
+    }
+#endif
+        return NULL;
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
 #if DVZ_HAS_WGSL_SHADERS
     {
