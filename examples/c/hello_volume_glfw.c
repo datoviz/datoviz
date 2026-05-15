@@ -165,12 +165,6 @@ static void _fill_volume(uint8_t* data, uint32_t size)
                 value = a > value ? a : value;
                 value = b > value ? b : value;
                 value = c > value ? c : value;
-
-                if (x > size / 5 && x < 4 * size / 5 && y > size / 5 &&
-                    y < 4 * size / 5 && z == size / 2)
-                {
-                    value = value > 96 ? value : 96;
-                }
                 data[(z * size + y) * size + x] = value;
             }
         }
@@ -424,7 +418,7 @@ int main(int argc, char** argv)
         .volume = volume,
         .mip = true,
         .opacity = 1.0f,
-        .step_count = 64.0f,
+        .step_count = 128.0f,
         .clip_min = {0.0f, 0.0f, 0.0f},
         .clip_max = {1.0f, 1.0f, 1.0f},
     };

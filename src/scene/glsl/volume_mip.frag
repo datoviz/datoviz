@@ -19,6 +19,8 @@ layout(set = 1, binding = 2) uniform VolumeParams {
 layout(location = 0) in vec3 fragUVW;
 layout(location = 0) out vec4 outColor;
 
+const float ENTRY_FACE_EPSILON = 0.004;
+
 float safe_inv(float v)
 {
     if (abs(v) < 1e-6) {
@@ -65,7 +67,7 @@ void main()
 
     if (!inside_box(ro, vec3(0.0), vec3(1.0))) {
         vec3 proxy_entry = ro + rd * max(proxy_t0, 0.0);
-        if (distance(proxy_entry, fragUVW) > 0.02) {
+        if (distance(proxy_entry, fragUVW) > ENTRY_FACE_EPSILON) {
             discard;
         }
     }
