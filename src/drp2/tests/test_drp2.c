@@ -932,6 +932,205 @@ int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstIt
 
 
 
+int test_drp2_runtime_validate_generic_bind_group_slots(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    DvzDrp2BindGroupLayoutEntry layout0 = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+    };
+    DvzDrp2BindGroupLayoutEntry layout1 = {
+        .binding = 3,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+    };
+    DvzDrp2BindGroupEntry group0 = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = 50,
+        .size = 16,
+    };
+    DvzDrp2BindGroupEntry group1 = {
+        .binding = 3,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = 51,
+        .offset = 16,
+        .size = 16,
+    };
+    uint64_t layouts[2] = {100, 101};
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 50, 64, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_buffer(stream, 51, 64, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 100, 1, &layout0));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 101, 1, &layout1));
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 110, 100, 1, &group0));
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 111, 101, 1, &group1));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9000, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 9001, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
+    AT(dvz_drp2_stream_pipeline_set_bind_group_layouts(stream, 2, layouts));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 1, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 20));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 21, 20, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 21, 10));
+    AT(dvz_drp2_stream_set_bind_group(stream, 21, 0, 110));
+    AT(dvz_drp2_stream_set_bind_group(stream, 21, 1, 111));
+    AT(dvz_drp2_stream_draw(stream, 21, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 21));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 20, 22));
+    AT(dvz_drp2_stream_queue_submit(stream, 22, 30));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    char* json = dvz_drp2_stream_json(stream, "generic_bind_group_slots_from_c");
+    ANN(json);
+    AT(strstr(json, "\"bind_group_layout_ids\": [100, 101]") != NULL);
+    AT(strstr(json, "\"binding\": 3") != NULL);
+    AT(strstr(json, "\"visibility\": [\"FRAGMENT\"]") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_bind_group_entry_mismatch(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    DvzDrp2BindGroupLayoutEntry layout = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+    };
+    DvzDrp2BindGroupEntry entry = {
+        .binding = 1,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = 2,
+        .size = 16,
+    };
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 2, 16, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 100, 1, &layout));
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 101, 100, 1, &entry));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_ARGUMENT);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_validate_bind_group_dynamic_offsets(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2BindGroupLayoutEntry layout = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+        .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        .has_dynamic_offset = true,
+    };
+    DvzDrp2BindGroupEntry entry = {
+        .binding = 0,
+        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+        .resource_id = 2,
+        .offset = 8,
+        .size = 16,
+    };
+
+    DvzDrp2CommandStream* ok_stream = dvz_drp2_stream();
+    ANN(ok_stream);
+    uint64_t ok_offset = 40;
+
+    AT(dvz_drp2_stream_hello_renderer(ok_stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(ok_stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(ok_stream, 2, 64, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(ok_stream, 100, 1, &layout));
+    AT(dvz_drp2_stream_create_bind_group_entries(ok_stream, 101, 100, 1, &entry));
+    AT(dvz_drp2_stream_create_shader_module(ok_stream, 9000, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(
+        ok_stream, 9001, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        ok_stream, 10, 9000, 9001, 0, 100));
+    AT(dvz_drp2_stream_create_texture_2d(ok_stream, 1, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(ok_stream, 20));
+    AT(dvz_drp2_stream_begin_render_pass(ok_stream, 21, 20, 1));
+    AT(dvz_drp2_stream_set_pipeline(ok_stream, 21, 10));
+    AT(dvz_drp2_stream_set_bind_group_dynamic(ok_stream, 21, 0, 101, 1, &ok_offset));
+    AT(dvz_drp2_stream_draw(ok_stream, 21, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(ok_stream, 21));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(ok_stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    char* json = dvz_drp2_stream_json(ok_stream, "dynamic_bind_group_from_c");
+    ANN(json);
+    AT(strstr(json, "\"has_dynamic_offset\": true") != NULL);
+    AT(strstr(json, "\"dynamic_offsets\": [40]") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(ok_stream);
+
+    DvzDrp2CommandStream* bad_stream = dvz_drp2_stream();
+    ANN(bad_stream);
+    uint64_t bad_offset = 41;
+
+    AT(dvz_drp2_stream_hello_renderer(bad_stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(bad_stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(bad_stream, 2, 64, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(bad_stream, 100, 1, &layout));
+    AT(dvz_drp2_stream_create_bind_group_entries(bad_stream, 101, 100, 1, &entry));
+    AT(dvz_drp2_stream_create_shader_module(bad_stream, 9000, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(
+        bad_stream, 9001, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        bad_stream, 10, 9000, 9001, 0, 100));
+    AT(dvz_drp2_stream_create_texture_2d(bad_stream, 1, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(bad_stream, 20));
+    AT(dvz_drp2_stream_begin_render_pass(bad_stream, 21, 20, 1));
+    AT(dvz_drp2_stream_set_pipeline(bad_stream, 21, 10));
+    AT(dvz_drp2_stream_set_bind_group_dynamic(bad_stream, 21, 0, 101, 1, &bad_offset));
+
+    result = dvz_drp2_validate_stream(bad_stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OUT_OF_RANGE);
+
+    dvz_drp2_stream_destroy(bad_stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -2985,6 +3184,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_validate_copy_buffer_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_copy_texture_to_texture);
     TEST_SIMPLE(test_drp2_runtime_validate_texture_sampler_bind_group);
+    TEST_SIMPLE(test_drp2_runtime_validate_generic_bind_group_slots);
+    TEST_SIMPLE(test_drp2_runtime_rejects_bind_group_entry_mismatch);
+    TEST_SIMPLE(test_drp2_runtime_validate_bind_group_dynamic_offsets);
     TEST_SIMPLE(test_drp2_runtime_validate_bind_group_after_table_growth);
     TEST_SIMPLE(test_drp2_runtime_reuses_submitted_transient_ids);
     TEST_SIMPLE(test_drp2_runtime_validate_compute_storage_bind_group);

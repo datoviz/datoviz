@@ -88,6 +88,12 @@ int test_drp2_runtime_validate_copy_texture_to_texture(TstSuite* suite, TstItem*
 
 int test_drp2_runtime_validate_texture_sampler_bind_group(TstSuite* suite, TstItem* item);
 
+int test_drp2_runtime_validate_generic_bind_group_slots(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_rejects_bind_group_entry_mismatch(TstSuite* suite, TstItem* item);
+
+int test_drp2_runtime_validate_bind_group_dynamic_offsets(TstSuite* suite, TstItem* item);
+
 int test_drp2_runtime_validate_bind_group_after_table_growth(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* item);
