@@ -98,6 +98,32 @@ The exact public C shape is not final. The important point is that external hand
 with a live runtime, not serialized as portable scene data.
 
 
+## Current Low-Level Status
+
+The repository already contains two low-level CUDA/Vulkan memory tests in
+`src/vk/tests/test_memory.c`:
+
+1. `test_memory_cuda_1` is the preferred Vulkan-owned direction. It creates an exportable Vulkan
+   buffer, exports the allocation FD with `dvz_allocator_export()`, imports that FD into CUDA with
+   `cudaImportExternalMemory()`, maps a CUDA pointer with
+   `cudaExternalMemoryGetMappedBuffer()`, launches a tiny CUDA kernel, and verifies the data from
+   the Vulkan allocation. This is the right starting point for the Vulkan -> CUDA/CuPy route, but it
+   is not currently registered in `src/vk/tests/test_vk.c`.
+2. `test_memory_cuda_2` exercises the opposite CUDA-owned allocation -> Vulkan import direction with
+   CUDA Driver virtual-memory APIs, `dvz_allocator_import_buffer()`, and an exported Vulkan timeline
+   semaphore. This test is currently registered when CUDA is enabled, but this direction remains
+   later work because it has proved less reliable as a primary architecture.
+
+The video/NVENC path also imports Vulkan-owned external image memory into CUDA in
+`src/video/encoder_backend_nvenc.c`, mapping it as a CUDA mipmapped array before conversion and
+encoding. That code is useful evidence for image import mechanics, but the CuPy shared-array route
+should still start with buffers because they map directly to CUDA device pointers and CuPy arrays.
+
+NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) is not used by these paths
+and should remain optional NVIDIA-specific scheduling work. It is not required for Vulkan-owned
+external memory imported into CUDA/CuPy.
+
+
 ## Scene Attribute Integration
 
 The scene layer should treat CUDA/CuPy-backed data as an attribute source with external storage.
@@ -223,12 +249,20 @@ binding contract are stable.
 
 Start with narrow tests before adding Python examples:
 
-1. low-level Vulkan-owned buffer exported to CUDA and written by a CUDA kernel,
-2. runtime-registered external vertex buffer consumed by DRP2/vklite draw,
-3. point visual with external `position` and regular `color`/`size`,
-4. double-buffered CUDA write and Vulkan draw loop with external semaphore waits/signals,
-5. Python CuPy wrapper lifetime test,
-6. live example that updates positions at a fixed rate without CPU upload.
+1. harden and register `test_memory_cuda_1` as the canonical Vulkan-owned buffer -> CUDA import
+   smoke, including correct FD ownership after successful CUDA import and no reliance on host-visible
+   memory as the long-term model,
+2. add the same-direction external semaphore coverage: Vulkan-owned buffer exported to CUDA, CUDA
+   writes on a stream, CUDA signals an imported/exported semaphore, and Vulkan waits before copying
+   or drawing,
+3. add a device-local exportable buffer variant with staging/readback verification so the test
+   reflects real vertex/storage-buffer use rather than only host-mappable memory,
+4. add runtime registration for a pre-existing shared buffer consumed by DRP2/vklite without a
+   `WRITE_BUFFER` upload,
+5. add a point visual with external `position` and regular scene-owned `color`/`size`,
+6. add double-buffered CUDA write and Vulkan draw coverage with external semaphore waits/signals,
+7. add the Python CuPy wrapper lifetime test,
+8. add a live example that updates positions at a fixed rate without CPU upload.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested

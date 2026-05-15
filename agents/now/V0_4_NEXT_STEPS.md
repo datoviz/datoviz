@@ -152,7 +152,13 @@ Deliver the next implementation slices in this order unless the user redirects:
    synchronize cross-API access explicitly with external semaphores or timeline-compatible plumbing.
    Do not make NVIDIA CIG (`VK_NV_external_compute_queue` / CUDA-in-Graphics contexts) a dependency
    of this route; it is optional NVIDIA-specific scheduling plumbing, not required for Vulkan-owned
-   external memory imported into CUDA/CuPy.
+   external memory imported into CUDA/CuPy. The current code already has a preferred-direction
+   starting point in `src/vk/tests/test_memory.c:test_memory_cuda_1`, but that test is not currently
+   registered in `src/vk/tests/test_vk.c`; the registered CUDA interop test is
+   `test_memory_cuda_2`, which exercises the later CUDA-owned allocation -> Vulkan import direction.
+   Next implementation step: harden/register `test_memory_cuda_1`, add same-direction external
+   semaphore coverage, then move up to DRP2 runtime registration for an externally shared vertex
+   buffer.
 7. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
 8. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
