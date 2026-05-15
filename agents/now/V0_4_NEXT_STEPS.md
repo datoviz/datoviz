@@ -53,6 +53,14 @@ drp2_recording_linear_roundtrip` passed, and full clean detached `dvztest_drp2 d
 `77/77` after the portable-command, frame-indexing, frame-stream, and runtime replay-helper
 commits.
 
+Follow-up DVZR slice on 2026-05-15: scene-emitted point, primitive, mesh, and image streams now
+share one raw-free portable DVZR regression test, covering semantic replay after recording load.
+The developer executable `build/testing/dvz_drp2_player` now opens a `.dvzr` recording and replays
+it frame-by-frame through the semantic DRP2 runtime in default paced mode or `--fast` mode. Focused
+validation: `just build`, `./build/testing/dvztest_drp2 drp2_recording` (`3/3`),
+`./build/testing/dvztest_scene test_frame_plan_emit_scene_core_visuals_record_portable_dvzr`, and
+`./build/testing/dvz_drp2_player --fast /tmp/dvz_scene_mesh_emit_portable.dvzr`.
+
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
@@ -166,9 +174,10 @@ Deliver the next implementation slices in this order unless the user redirects:
    stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
    bounded live app smoke around request/runtime steady state.
-5. Current DVZR next: broaden portable command coverage beyond the initial resource-write subset so
-   real scene-emitted setup and frame streams can replay without the raw ABI-local fallback; then add
-   a tiny paced/fast playback loop over `dvz_drp2_recording_execute_frame()`.
+5. Current DVZR next: broaden portable command coverage beyond the point/primitive/mesh/image scene
+   baseline whenever new scene-emitted command families appear, add a negative/diagnostic path that
+   reports which command type forced raw fallback, and decide whether `dvz_drp2_player` should stay a
+   developer executable or become an installed CLI/app-level integration point.
 6. CUDA/CuPy external-memory interop priority: treat CUDA/CuPy-owned GPU pointer -> Vulkan import as
    unreliable on this branch. Prioritize the opposite direction for any new interop work: create and
    own the allocation in Vulkan, export it through external memory, import it into CUDA/CuPy, and
