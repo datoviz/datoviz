@@ -1502,6 +1502,34 @@ int dvz_app_window_update_external_surface(
 
 
 /**
+ * Release a hosted external Vulkan surface before the host destroys it.
+ *
+ * @param win hosted app-window
+ * @return DVZ_CANVAS_FRAME_WAIT_SURFACE on clean release, or negative on error
+ */
+int dvz_app_window_release_external_surface(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_WRAP)
+        return -1;
+
+    dvz_app_window_set_request_frame_callback(win, NULL, NULL);
+
+    DvzWindowExternalSurfaceInfo surface = {0};
+    surface.scale_x = 1.0f;
+    surface.scale_y = 1.0f;
+    if (dvz_app_window_update_external_surface(win, &surface) != 0)
+        return -1;
+    return dvz_app_window_render_once(win);
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
  * Emit a hosted resize event for an app-window.
  *
  * @param win app-window receiving the event

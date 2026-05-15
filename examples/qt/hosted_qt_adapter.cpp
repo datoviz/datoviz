@@ -242,13 +242,7 @@ void DvzQtHostedWindow::release_surface()
     if (_app_window == nullptr)
         return;
 
-    dvz_app_window_set_request_frame_callback(_app_window, nullptr, nullptr);
-
-    DvzWindowExternalSurfaceInfo info = {};
-    info.scale_x = 1.0f;
-    info.scale_y = 1.0f;
-    if (dvz_app_window_update_external_surface(_app_window, &info) == 0)
-        (void)dvz_app_window_render_once(_app_window);
+    (void)dvz_app_window_release_external_surface(_app_window);
 
     _app_window = nullptr;
     _app = nullptr;
@@ -536,4 +530,3 @@ bool dvz_qt_instance_extensions(
     return false;
 #endif
 }
-

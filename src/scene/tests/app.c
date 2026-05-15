@@ -121,18 +121,6 @@ static DvzWindowExternalSurfaceInfo _app_glfw_surface_info(
 
 
 
-/**
- * Return a NULL external-surface description for hosted release tests.
- *
- * @return external surface description with no live surface
- */
-static DvzWindowExternalSurfaceInfo _app_null_surface_info(void)
-{
-    DvzWindowExternalSurfaceInfo info = {0};
-    info.scale_x = 1.0f;
-    info.scale_y = 1.0f;
-    return info;
-}
 #endif
 
 
@@ -471,10 +459,7 @@ int test_app_external_surface_release_waits(TstSuite* suite, TstItem* item)
     dvz_app_window_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
 
-    dvz_app_window_set_request_frame_callback(win, NULL, NULL);
-    DvzWindowExternalSurfaceInfo null_info = _app_null_surface_info();
-    AT(dvz_app_window_update_external_surface(win, &null_info) == 0);
-    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
+    AT(dvz_app_window_release_external_surface(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
     AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
     AT(dvz_app_render_once(app) == DVZ_CANVAS_FRAME_WAIT_SURFACE);
 

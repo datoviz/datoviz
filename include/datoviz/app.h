@@ -188,6 +188,19 @@ DVZ_EXPORT int dvz_app_window_update_external_surface(
 
 
 /**
+ * Release a hosted external surface before the host destroys it.
+ *
+ * Clears the request-frame callback, marks the surface temporarily unavailable, and runs one
+ * render-once step so the present swapchain observes the unavailable surface and releases borrowed
+ * surface-dependent objects. The host remains responsible for destroying the VkSurfaceKHR.
+ *
+ * @param win app-window created with dvz_app_window_external_surface()
+ * @return DVZ_CANVAS_FRAME_WAIT_SURFACE on clean release, or a negative error code
+ */
+DVZ_EXPORT int dvz_app_window_release_external_surface(DvzAppWindow* win);
+
+
+/**
  * Emit a hosted resize event for an app-window.
  *
  * External UI adapters call this after host resize notifications so Datoviz controllers and figure
