@@ -441,6 +441,8 @@ struct DvzVisualAttr
     void*    data;
     uint64_t item_count;
     uint32_t item_size;         /* bytes per item */
+    DvzVisualAttrSource source;
+    DvzVisualAttrMutability mutability;
     uint64_t dirty_first_item;  /* first dirty item index */
     uint64_t dirty_item_count;  /* number of dirty items (0 = not dirty) */
 };

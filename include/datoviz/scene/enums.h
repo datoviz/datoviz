@@ -60,6 +60,25 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_VISUAL_ATTR_SOURCE_PER_ITEM = 0,
+    DVZ_VISUAL_ATTR_SOURCE_CONSTANT,
+    DVZ_VISUAL_ATTR_SOURCE_PER_SPAN,
+    DVZ_VISUAL_ATTR_SOURCE_PER_GROUP,
+} DvzVisualAttrSource;
+
+
+
+typedef enum
+{
+    DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC = 0,
+    DVZ_VISUAL_ATTR_MUTABILITY_STATIC,
+    DVZ_VISUAL_ATTR_MUTABILITY_STREAMING,
+} DvzVisualAttrMutability;
+
+
+
 /* Whether a visual is affected by its panel's controller (panzoom/arcball). */
 typedef enum
 {

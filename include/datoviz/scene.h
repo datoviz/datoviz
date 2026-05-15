@@ -305,6 +305,63 @@ DVZ_EXPORT void dvz_visual_set_visible(DvzVisual* visual, bool visible);
 
 
 /**
+ * Declare the semantic source for a visual attribute.
+ *
+ * This metadata is used by scene planning and future external-buffer lowering. The active dense
+ * data path remains `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`; non-per-item sources may be declared only
+ * before dense data is attached to the attribute.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param source the semantic attribute source
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_attr_source(
+    DvzVisual* visual, const char* attr_name, DvzVisualAttrSource source);
+
+
+/**
+ * Return the semantic source for a visual attribute.
+ *
+ * Missing attributes default to `DVZ_VISUAL_ATTR_SOURCE_PER_ITEM`.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @return the semantic attribute source
+ */
+DVZ_EXPORT DvzVisualAttrSource
+dvz_visual_attr_source(const DvzVisual* visual, const char* attr_name);
+
+
+/**
+ * Declare the expected update frequency for a visual attribute.
+ *
+ * The hint is advisory and does not change ownership. It should be set before attaching data when
+ * callers know that an attribute is static or updated every frame.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @param mutability the expected update frequency
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_visual_set_attr_mutability(
+    DvzVisual* visual, const char* attr_name, DvzVisualAttrMutability mutability);
+
+
+/**
+ * Return the expected update frequency for a visual attribute.
+ *
+ * Missing attributes default to `DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC`.
+ *
+ * @param visual the visual
+ * @param attr_name attribute name
+ * @return the mutability hint
+ */
+DVZ_EXPORT DvzVisualAttrMutability
+dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name);
+
+
+/**
  * Write attribute data to a visual.
  *
  * First-slice visual families currently accept:

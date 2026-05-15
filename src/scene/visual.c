@@ -40,6 +40,9 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name);
 
 static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size);
 
+static bool _attr_source_supported(
+    DvzVisualType type, const char* name, DvzVisualAttrSource source);
+
 static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, uint32_t item_size);
 
 static bool _visual_attr_count_consistent(
@@ -132,6 +135,43 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
 
 
 /**
+ * Validate that one semantic source is accepted by a visual attribute.
+ *
+ * @param type the visual type
+ * @param name the attribute name
+ * @param source the semantic source
+ * @return true when the source is accepted
+ */
+static bool _attr_source_supported(
+    DvzVisualType type, const char* name, DvzVisualAttrSource source)
+{
+    ANN(name);
+    uint32_t item_size = 0;
+    if (!_attr_supported(type, name, &item_size))
+        return false;
+
+    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+        return true;
+
+    bool is_color = strcmp(name, "color") == 0;
+    bool is_size = strcmp(name, "size") == 0;
+
+    if (source == DVZ_VISUAL_ATTR_SOURCE_CONSTANT && (is_color || is_size))
+        return true;
+    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_GROUP && (is_color || is_size))
+        return true;
+    if (source == DVZ_VISUAL_ATTR_SOURCE_PER_SPAN && type == DVZ_VISUAL_TYPE_PATH && is_color)
+        return true;
+
+    log_error(
+        "%s visual attribute '%s' does not accept source %d", _visual_type_name(type), name,
+        (int)source);
+    return false;
+}
+
+
+
+/**
  * Find the index of one visual attribute by name.
  *
  * @param visual the visual
@@ -172,6 +212,8 @@ static DvzVisualAttr* _attr_get_or_create(DvzVisual* visual, const char* name, u
     DvzVisualAttr* attr = &visual->attrs[visual->attr_count++];
     dvz_strlcpy(attr->name, name, sizeof(attr->name));
     attr->item_size = item_size;
+    attr->source = DVZ_VISUAL_ATTR_SOURCE_PER_ITEM;
+    attr->mutability = DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC;
     return attr;
 }
 
@@ -811,6 +853,131 @@ void dvz_visual_set_visible(DvzVisual* visual, bool visible)
 
 
 /**
+ * Declare the semantic source for one visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @param source the semantic source
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_attr_source(
+    DvzVisual* visual, const char* attr_name, DvzVisualAttrSource source)
+{
+    ANN(visual);
+    ANN(attr_name);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
+        return -1;
+    if (source < DVZ_VISUAL_ATTR_SOURCE_PER_ITEM || source > DVZ_VISUAL_ATTR_SOURCE_PER_GROUP)
+    {
+        log_error("invalid visual attribute source %d", (int)source);
+        return -1;
+    }
+
+    uint32_t item_size = 0;
+    if (!_attr_supported(visual->type, attr_name, &item_size))
+        return -1;
+    if (!_attr_source_supported(visual->type, attr_name, source))
+        return -1;
+
+    DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
+    if (attr == NULL)
+    {
+        log_error("visual attribute '%s' could not be registered", attr_name);
+        return -1;
+    }
+    if (attr->data != NULL && attr->item_count > 0 && source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+    {
+        log_error(
+            "visual attribute '%s' already has dense per-item data and cannot switch source",
+            attr_name);
+        return -1;
+    }
+
+    attr->source = source;
+    return 0;
+}
+
+
+
+/**
+ * Return the semantic source for one visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @return the semantic source
+ */
+DvzVisualAttrSource dvz_visual_attr_source(const DvzVisual* visual, const char* attr_name)
+{
+    ANN(visual);
+    ANN(attr_name);
+    int idx = _attr_index(visual, attr_name);
+    if (idx < 0)
+        return DVZ_VISUAL_ATTR_SOURCE_PER_ITEM;
+    return visual->attrs[idx].source;
+}
+
+
+
+/**
+ * Declare the expected update frequency for one visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @param mutability the update-frequency hint
+ * @return 0 on success, -1 on error
+ */
+int dvz_visual_set_attr_mutability(
+    DvzVisual* visual, const char* attr_name, DvzVisualAttrMutability mutability)
+{
+    ANN(visual);
+    ANN(attr_name);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
+        return -1;
+    if (mutability < DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC ||
+        mutability > DVZ_VISUAL_ATTR_MUTABILITY_STREAMING)
+    {
+        log_error("invalid visual attribute mutability %d", (int)mutability);
+        return -1;
+    }
+
+    uint32_t item_size = 0;
+    if (!_attr_supported(visual->type, attr_name, &item_size))
+        return -1;
+
+    DvzVisualAttr* attr = _attr_get_or_create(visual, attr_name, item_size);
+    if (attr == NULL)
+    {
+        log_error("visual attribute '%s' could not be registered", attr_name);
+        return -1;
+    }
+
+    attr->mutability = mutability;
+    return 0;
+}
+
+
+
+/**
+ * Return the expected update frequency for one visual attribute.
+ *
+ * @param visual the visual
+ * @param attr_name the attribute name
+ * @return the mutability hint
+ */
+DvzVisualAttrMutability
+dvz_visual_attr_mutability(const DvzVisual* visual, const char* attr_name)
+{
+    ANN(visual);
+    ANN(attr_name);
+    int idx = _attr_index(visual, attr_name);
+    if (idx < 0)
+        return DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC;
+    return visual->attrs[idx].mutability;
+}
+
+
+
+/**
  * Replace one dense visual attribute payload.
  *
  * @param visual the visual
@@ -843,6 +1010,13 @@ int dvz_visual_set_data(
     if (attr == NULL)
     {
         log_error("visual attribute '%s' could not be registered", attr_name);
+        return -1;
+    }
+    if (attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+    {
+        log_error(
+            "visual attribute '%s' dense data requires PER_ITEM source; use source-specific data",
+            attr_name);
         return -1;
     }
 
@@ -936,6 +1110,12 @@ int dvz_visual_set_data_range(
     if (attr == NULL)
     {
         log_error("visual attribute '%s' could not be registered", attr_name);
+        return -1;
+    }
+    if (attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+    {
+        log_error(
+            "visual attribute '%s' dense range update requires PER_ITEM source", attr_name);
         return -1;
     }
 

@@ -1807,6 +1807,45 @@ int test_scene_rejects_unsupported_point_attribute(TstSuite* suite, TstItem* ite
 }
 
 
+int test_scene_visual_attr_source_and_mutability_metadata(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    AT(dvz_visual_attr_source(visual, "position") == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM);
+    AT(dvz_visual_attr_mutability(visual, "position") == DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC);
+
+    AT(dvz_visual_set_attr_mutability(
+           visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) == 0);
+    AT(dvz_visual_attr_mutability(visual, "position") ==
+       DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
+
+    AT(dvz_visual_set_attr_source(visual, "color", DVZ_VISUAL_ATTR_SOURCE_CONSTANT) == 0);
+    AT(dvz_visual_attr_source(visual, "color") == DVZ_VISUAL_ATTR_SOURCE_CONSTANT);
+
+    vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}};
+    AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_visual_set_attr_source(visual, "position", DVZ_VISUAL_ATTR_SOURCE_CONSTANT) == -1);
+    AT(_captured_log_contains(suite, "does not accept source"));
+
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    tst_log_capture_begin(suite);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "color", colors, 2) == -1);
+    AT(_captured_log_contains(suite, "dense data requires PER_ITEM source"));
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_point_rejects_texcoords_attribute(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3712,6 +3751,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);
     TEST_SIMPLE(test_scene_rejects_cross_scene_visual);
     TEST_SIMPLE(test_scene_rejects_unsupported_point_attribute);
+    TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
     TEST_SIMPLE(test_scene_path_rejects_size_attribute);
