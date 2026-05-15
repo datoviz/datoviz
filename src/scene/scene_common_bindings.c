@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_frame_plan_emit.h"
@@ -94,11 +95,33 @@ static void _viewport_uniform_from_render(
 static void _identity_mvp(DvzMVP* out)
 {
     ANN(out);
+    dvz_memset(out, sizeof(DvzMVP), 0, sizeof(DvzMVP));
     glm_mat4_identity(out->model);
     glm_mat4_identity(out->view);
     glm_mat4_identity(out->proj);
     out->time = 0.0f;
     out->flags = 0;
+}
+
+
+
+/**
+ * Copy an MVP into a deterministic uniform payload with zeroed padding.
+ *
+ * @param dst the destination MVP
+ * @param src the source MVP
+ */
+static void _mvp_uniform_copy(DvzMVP* dst, const DvzMVP* src)
+{
+    ANN(dst);
+    ANN(src);
+
+    dvz_memset(dst, sizeof(DvzMVP), 0, sizeof(DvzMVP));
+    dvz_memcpy(dst->model, sizeof(dst->model), src->model, sizeof(src->model));
+    dvz_memcpy(dst->view, sizeof(dst->view), src->view, sizeof(src->view));
+    dvz_memcpy(dst->proj, sizeof(dst->proj), src->proj, sizeof(src->proj));
+    dst->time = src->time;
+    dst->flags = src->flags;
 }
 
 
@@ -195,33 +218,29 @@ static bool _resolve_common_set(
     DvzMVP local_identity = {0};
     const DvzMVP* mvp_src = &render->u.render.apply_mvp;
     DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
+    if (mvp_slot == NULL)
+        return false;
     if (fixed)
     {
         _identity_mvp(&local_identity);
         mvp_src = &local_identity;
     }
-    if (mvp_slot != NULL)
-    {
-        *mvp_slot = *mvp_src;
-        mvp_src = mvp_slot;
-    }
+    _mvp_uniform_copy(mvp_slot, mvp_src);
+    mvp_src = mvp_slot;
 
     DvzSceneViewportUniform local_viewport = {0};
     _viewport_uniform_from_render(render, &local_viewport);
-    const DvzSceneViewportUniform* viewport_src = &local_viewport;
     DvzSceneViewportUniform* viewport_slot =
         _emitter_viewport_slot(emitter, viewport_slot_key);
-    if (viewport_slot != NULL)
-    {
-        *viewport_slot = local_viewport;
-        viewport_src = viewport_slot;
-    }
+    if (viewport_slot == NULL)
+        return false;
+    *viewport_slot = local_viewport;
 
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, mvp_buf_id, 0, sizeof(DvzMVP), mvp_src))
         return false;
     if (!dvz_drp2_stream_write_buffer_bytes(
-            stream, viewport_buf_id, 0, sizeof(DvzSceneViewportUniform), viewport_src))
+            stream, viewport_buf_id, 0, sizeof(DvzSceneViewportUniform), viewport_slot))
         return false;
 
     *out_bg_id = bg_id;
