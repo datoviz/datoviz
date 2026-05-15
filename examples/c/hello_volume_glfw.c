@@ -53,7 +53,9 @@ struct VolumeGlfwState
 {
     DvzArcball* arcball;
     DvzVisual* volume;
-    bool mip;
+    DvzScale* transfer_scale;
+    int render_mode;
+    bool transfer;
     bool clipping;
     float opacity;
     float clip_min[3];
@@ -184,13 +186,19 @@ static void _apply_volume_controls(VolumeGlfwState* state)
     if (state->volume == NULL)
         return;
 
-    (void)dvz_volume_set_render_mode(
-        state->volume, state->mip ? DVZ_VOLUME_RENDER_MIP : DVZ_VOLUME_RENDER_SLICE);
+    DvzVolumeRenderMode mode = DVZ_VOLUME_RENDER_COMPOSITE;
+    if (state->render_mode == DVZ_VOLUME_RENDER_SLICE)
+        mode = DVZ_VOLUME_RENDER_SLICE;
+    else if (state->render_mode == DVZ_VOLUME_RENDER_MIP)
+        mode = DVZ_VOLUME_RENDER_MIP;
+    (void)dvz_volume_set_render_mode(state->volume, mode);
     (void)dvz_volume_set_opacity(state->volume, state->opacity);
     uint32_t step_count = (uint32_t)(state->step_count + 0.5f);
     if (step_count < 1)
         step_count = 1;
     (void)dvz_volume_set_step_count(state->volume, step_count);
+    (void)dvz_visual_set_scale(
+        state->volume, "colormap", state->transfer ? state->transfer_scale : NULL);
 
     if (state->clipping)
     {
@@ -259,9 +267,24 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
     bool changed = false;
     if (dvz_gui_begin(gui, "Volume", NULL, 0))
     {
-        changed |= dvz_gui_checkbox(gui, "MIP", &state->mip);
+        if (dvz_gui_button(gui, "Slice"))
+        {
+            state->render_mode = DVZ_VOLUME_RENDER_SLICE;
+            changed = true;
+        }
+        if (dvz_gui_button(gui, "MIP"))
+        {
+            state->render_mode = DVZ_VOLUME_RENDER_MIP;
+            changed = true;
+        }
+        if (dvz_gui_button(gui, "Composite"))
+        {
+            state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
+            changed = true;
+        }
+        changed |= dvz_gui_checkbox(gui, "Transfer", &state->transfer);
         changed |= dvz_gui_slider_float(gui, "Opacity", &state->opacity, 0.05f, 1.0f);
-        changed |= dvz_gui_slider_float(gui, "Steps", &state->step_count, 4.0f, 192.0f);
+        changed |= dvz_gui_slider_float(gui, "Steps", &state->step_count, 4.0f, 256.0f);
         changed |= dvz_gui_checkbox(gui, "Clip", &state->clipping);
         changed |= dvz_gui_slider_float(gui, "Clip X min", &state->clip_min[0], 0.0f, 0.95f);
         changed |= dvz_gui_slider_float(gui, "Clip X max", &state->clip_max[0], 0.05f, 1.0f);
@@ -271,10 +294,11 @@ static void _volume_glfw_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         changed |= dvz_gui_slider_float(gui, "Clip Z max", &state->clip_max[2], 0.05f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
-            state->mip = true;
+            state->render_mode = DVZ_VOLUME_RENDER_COMPOSITE;
+            state->transfer = true;
             state->clipping = false;
             state->opacity = 1.0f;
-            state->step_count = 64.0f;
+            state->step_count = 128.0f;
             state->clip_min[0] = 0.0f;
             state->clip_min[1] = 0.0f;
             state->clip_min[2] = 0.0f;
@@ -406,6 +430,29 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
+    DvzScale* transfer_scale = dvz_scale(scene, &(DvzScaleDesc){.kind = DVZ_SCALE_CONTINUOUS});
+    if (transfer_scale == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_scale() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    dvz_scale_set_domain(transfer_scale, 0.0, 1.0);
+    DvzColormap* transfer_map = dvz_colormap(scene, NULL);
+    if (transfer_map == NULL)
+    {
+        dvz_fprintf(stderr, "dvz_colormap() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
+    DvzColormapStop transfer_stops[4] = {
+        {.position = 0.00, .rgba = {0, 0, 0, 0}},
+        {.position = 0.25, .rgba = {30, 120, 220, 32}},
+        {.position = 0.65, .rgba = {230, 230, 245, 170}},
+        {.position = 1.00, .rgba = {255, 190, 80, 255}},
+    };
+    dvz_colormap_set_stops(transfer_map, transfer_stops, 4);
+    dvz_scale_set_colormap(transfer_scale, transfer_map);
     if (dvz_panel_add_visual(panel, volume, NULL) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
@@ -416,7 +463,9 @@ int main(int argc, char** argv)
 
     VolumeGlfwState state = {
         .volume = volume,
-        .mip = true,
+        .transfer_scale = transfer_scale,
+        .render_mode = DVZ_VOLUME_RENDER_COMPOSITE,
+        .transfer = true,
         .opacity = 1.0f,
         .step_count = 128.0f,
         .clip_min = {0.0f, 0.0f, 0.0f},
