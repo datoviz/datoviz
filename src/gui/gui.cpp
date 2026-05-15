@@ -45,6 +45,10 @@
 
 #define DVZ_GUI_DEFAULT_FONT_SIZE 16.0f
 #define DVZ_GUI_DEFAULT_MONO_FONT_SIZE 16.0f
+#define DVZ_GUI_PANEL_DEFAULT_MIN_WIDTH 32u
+#define DVZ_GUI_PANEL_DEFAULT_MIN_HEIGHT 32u
+#define DVZ_GUI_PANEL_DEFAULT_RESIZE_STEP 8u
+#define DVZ_GUI_PANEL_DEFAULT_RESIZE_DELAY_FRAMES 2u
 
 
 
@@ -110,6 +114,7 @@ struct DvzGuiPanel
     DvzGui* gui;
     DvzAppWindow* source;
     DvzCanvas* canvas;
+    DvzGuiPanelConfig config;
     VkSampler sampler;
     VkDescriptorSet texture;
     VkImage image;
@@ -117,6 +122,9 @@ struct DvzGuiPanel
     VkExtent2D extent;
     uint32_t requested_width;
     uint32_t requested_height;
+    uint32_t pending_width;
+    uint32_t pending_height;
+    uint32_t pending_stable_frames;
     bool has_frame;
     bool texture_dirty;
     bool input_capturing;
@@ -168,6 +176,30 @@ static void _gui_set_current(DvzGui* gui)
 static float _gui_font_size(float size, float fallback)
 {
     return size > 0 ? size : fallback;
+}
+
+
+
+/**
+ * Return a resize dimension snapped to panel policy.
+ *
+ * @param value requested floating-point size
+ * @param minimum minimum accepted size
+ * @param step resize quantization step
+ * @return snapped non-zero size
+ */
+static uint32_t _gui_panel_dimension(float value, uint32_t minimum, uint32_t step)
+{
+    uint32_t out = value > 0 ? (uint32_t)(value + 0.5f) : minimum;
+    if (out < minimum)
+        out = minimum;
+    if (step > 1)
+    {
+        out = ((out + step / 2) / step) * step;
+        if (out < minimum)
+            out = minimum;
+    }
+    return out;
 }
 
 
@@ -403,6 +435,54 @@ static void _gui_panel_resize_source(DvzGuiPanel* panel, uint32_t width, uint32_
         (void)dvz_canvas_configure_live_image_sink(panel->canvas, false, NULL);
         if (dvz_canvas_configure_live_image_sink(panel->canvas, true, &cfg) != 0)
             log_error("failed to rebuild Datoviz GUI panel live-image sink after resize");
+    }
+}
+
+
+
+/**
+ * Request a source resize after the docked content size has stabilized.
+ *
+ * @param panel GUI panel
+ * @param width new source width
+ * @param height new source height
+ */
+static void _gui_panel_request_resize(DvzGuiPanel* panel, uint32_t width, uint32_t height)
+{
+    ANN(panel);
+    if (panel->requested_width == width && panel->requested_height == height)
+    {
+        panel->pending_width = 0;
+        panel->pending_height = 0;
+        panel->pending_stable_frames = 0;
+        return;
+    }
+
+    if (panel->requested_width == 0 || panel->requested_height == 0 ||
+        panel->config.resize_delay_frames == 0)
+    {
+        _gui_panel_resize_source(panel, width, height);
+        panel->pending_width = 0;
+        panel->pending_height = 0;
+        panel->pending_stable_frames = 0;
+        return;
+    }
+
+    if (panel->pending_width != width || panel->pending_height != height)
+    {
+        panel->pending_width = width;
+        panel->pending_height = height;
+        panel->pending_stable_frames = 0;
+        return;
+    }
+
+    panel->pending_stable_frames++;
+    if (panel->pending_stable_frames >= panel->config.resize_delay_frames)
+    {
+        _gui_panel_resize_source(panel, width, height);
+        panel->pending_width = 0;
+        panel->pending_height = 0;
+        panel->pending_stable_frames = 0;
     }
 }
 
@@ -934,6 +1014,24 @@ DvzGuiConfig dvz_gui_config(void)
 
 
 /**
+ * Return the default dockable Datoviz GUI panel configuration.
+ *
+ * @return default GUI panel configuration
+ */
+DvzGuiPanelConfig dvz_gui_panel_config(void)
+{
+    DvzGuiPanelConfig config = {};
+    config.flags = DVZ_GUI_PANEL_FLAGS_FORWARD_INPUT;
+    config.min_width = DVZ_GUI_PANEL_DEFAULT_MIN_WIDTH;
+    config.min_height = DVZ_GUI_PANEL_DEFAULT_MIN_HEIGHT;
+    config.resize_step = DVZ_GUI_PANEL_DEFAULT_RESIZE_STEP;
+    config.resize_delay_frames = DVZ_GUI_PANEL_DEFAULT_RESIZE_DELAY_FRAMES;
+    return config;
+}
+
+
+
+/**
  * Start an ImGui window.
  *
  * @param gui the GUI overlay
@@ -1087,13 +1185,15 @@ void dvz_gui_demo(DvzGui* gui, bool* open)
 
 
 /**
- * Create a dockable ImGui panel that displays an app window's latest rendered image.
+ * Create a dockable ImGui panel with an explicit configuration.
  *
  * @param gui the GUI overlay
  * @param source app window providing the rendered image
+ * @param config optional panel configuration
  * @return the GUI panel, or NULL on failure
  */
-DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source)
+DvzGuiPanel* dvz_gui_panel_ex(
+    DvzGui* gui, DvzAppWindow* source, const DvzGuiPanelConfig* config)
 {
     ANN(gui);
     ANN(source);
@@ -1112,6 +1212,11 @@ DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source)
     panel->gui = gui;
     panel->source = source;
     panel->canvas = canvas;
+    panel->config = config != NULL ? *config : dvz_gui_panel_config();
+    if (panel->config.min_width == 0)
+        panel->config.min_width = DVZ_GUI_PANEL_DEFAULT_MIN_WIDTH;
+    if (panel->config.min_height == 0)
+        panel->config.min_height = DVZ_GUI_PANEL_DEFAULT_MIN_HEIGHT;
     panel->texture_dirty = true;
     if (!_gui_panel_create_sampler(panel))
     {
@@ -1130,6 +1235,20 @@ DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source)
 
     _gui_panel_attach(gui, panel);
     return panel;
+}
+
+
+
+/**
+ * Create a dockable ImGui panel that displays an app window's latest rendered image.
+ *
+ * @param gui the GUI overlay
+ * @param source app window providing the rendered image
+ * @return the GUI panel, or NULL on failure
+ */
+DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source)
+{
+    return dvz_gui_panel_ex(gui, source, NULL);
 }
 
 
@@ -1173,10 +1292,12 @@ bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int
         if (avail.y < 1.0f)
             avail.y = 1.0f;
 
-        uint32_t width = (uint32_t)(avail.x + 0.5f);
-        uint32_t height = (uint32_t)(avail.y + 0.5f);
+        uint32_t width = _gui_panel_dimension(
+            avail.x, panel->config.min_width, panel->config.resize_step);
+        uint32_t height = _gui_panel_dimension(
+            avail.y, panel->config.min_height, panel->config.resize_step);
         if (width > 0 && height > 0)
-            _gui_panel_resize_source(panel, width, height);
+            _gui_panel_request_resize(panel, width, height);
 
         if (_gui_panel_ensure_texture(panel))
         {
@@ -1190,7 +1311,8 @@ bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int
             ImGui::PopID();
             ImGui::GetWindowDrawList()->AddImage(
                 (ImTextureID)panel->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
-            _gui_panel_forward_input(panel, image_min, avail);
+            if ((panel->config.flags & DVZ_GUI_PANEL_FLAGS_FORWARD_INPUT) != 0)
+                _gui_panel_forward_input(panel, image_min, avail);
             shown = true;
         }
         else

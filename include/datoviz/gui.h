@@ -48,6 +48,14 @@ typedef enum DvzGuiFlags
 
 
 
+typedef enum DvzGuiPanelFlags
+{
+    DVZ_GUI_PANEL_FLAGS_NONE = 0,
+    DVZ_GUI_PANEL_FLAGS_FORWARD_INPUT = 1u << 0,
+} DvzGuiPanelFlags;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -59,6 +67,17 @@ typedef struct DvzGuiConfig
     float font_size;
     float mono_font_size;
 } DvzGuiConfig;
+
+
+
+typedef struct DvzGuiPanelConfig
+{
+    uint32_t flags;
+    uint32_t min_width;
+    uint32_t min_height;
+    uint32_t resize_step;
+    uint32_t resize_delay_frames;
+} DvzGuiPanelConfig;
 
 
 
@@ -74,6 +93,15 @@ EXTERN_C_ON
  * @return default GUI configuration
  */
 DVZ_EXPORT DvzGuiConfig dvz_gui_config(void);
+
+
+
+/**
+ * Return the default dockable Datoviz GUI panel configuration.
+ *
+ * @return default GUI panel configuration
+ */
+DVZ_EXPORT DvzGuiPanelConfig dvz_gui_panel_config(void);
 
 
 
@@ -208,6 +236,19 @@ DVZ_EXPORT void dvz_gui_demo(DvzGui* gui, bool* open);
  * @return the GUI panel, or NULL on failure
  */
 DVZ_EXPORT DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source);
+
+
+
+/**
+ * Create a dockable ImGui panel with an explicit configuration.
+ *
+ * @param gui the GUI overlay
+ * @param source app window providing the rendered image
+ * @param config optional panel configuration
+ * @return the GUI panel, or NULL on failure
+ */
+DVZ_EXPORT DvzGuiPanel*
+dvz_gui_panel_ex(DvzGui* gui, DvzAppWindow* source, const DvzGuiPanelConfig* config);
 
 
 
