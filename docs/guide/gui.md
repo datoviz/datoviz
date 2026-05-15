@@ -8,6 +8,29 @@ Datoviz includes a built-in immediate-mode GUI system based on [Dear ImGui](http
 
 ---
 
+## API Layers
+
+The v0.4 C API has two Dear ImGui entry points:
+
+| Header | Purpose |
+| ------ | ------- |
+| `datoviz/gui.h` | Datoviz-owned GUI objects and convenience helpers such as `DvzGui`, `DvzGuiViewport`, `dvz_gui_begin()`, sliders, checkboxes, fonts, and dockable Datoviz viewports. |
+| `datoviz/imgui.h` | Raw generated cimgui bindings with upstream `ig*` names such as `igBegin()`, `igButton()`, and `igShowDemoWindow()`. |
+
+Raw `ig*` calls are intended for advanced C code that needs full Dear ImGui expressiveness beyond
+the curated `dvz_gui_*` helpers. They are valid inside a Datoviz GUI callback, where Datoviz has
+already selected the current ImGui context for the window.
+
+The C examples show the intended split:
+
+| Example | Use |
+| ------- | --- |
+| `hello_gui_glfw` | regular Datoviz GUI helper API |
+| `hello_cimgui_glfw` | raw cimgui calls from `datoviz/imgui.h` |
+| `gui_viewport_glfw` | dockable Datoviz render target inside an ImGui window |
+
+---
+
 ## Enabling GUI
 
 To use GUI elements, the `Figure` must be created with `gui=True`:
