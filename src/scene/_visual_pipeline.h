@@ -80,7 +80,7 @@ typedef struct DvzSceneVisualPipelineDesc
     uint32_t locations[3];
     uint32_t formats[3];
     uint32_t offsets[3];
-    bool needs_mvp_layout;
+    bool needs_common_layout;
     bool needs_image_layout;
     bool needs_shading_layout;
     bool has_depth_state;
@@ -92,8 +92,8 @@ typedef struct DvzSceneVisualPipelineDesc
 
 typedef struct DvzSceneVisualBindDesc
 {
-    bool uses_mvp_set0;
-    bool uses_fixed_mvp;
+    bool uses_common_set0;
+    bool uses_fixed_common;
     bool uses_image_set1;
     uint64_t image_texture_id;
     bool uses_shading_set1;

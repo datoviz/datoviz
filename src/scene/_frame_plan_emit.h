@@ -47,6 +47,7 @@
 #define DRP2_MAX_FIXTURE_RESOURCES 64
 #define DRP2_RUNTIME_TRANSIENT_ID_BASE 10000
 #define DRP2_EMITTER_OBJECT_ID_BASE 5000
+#define DVZ_SCENE_COMMON_CACHE_CAPACITY (2 * DVZ_SCENE_MAX_PANELS)
 
 
 
@@ -57,6 +58,16 @@
 typedef struct ResourceId ResourceId;
 typedef struct ConverterState ConverterState;
 typedef struct SceneRenderStateCache SceneRenderStateCache;
+
+typedef struct DvzSceneViewportUniform
+{
+    float x;
+    float y;
+    float width;
+    float height;
+} DvzSceneViewportUniform;
+
+
 
 struct ResourceId
 {
@@ -103,10 +114,13 @@ struct DvzFramePlanEmitter
     uint64_t next_transient_id;
     bool handshake_sent;
 
-    /* MVP cache: APPLY slots are panel-specific, FIXED uses a shared identity slot. */
-    char mvp_panel_ids[DVZ_SCENE_MAX_PANELS][DVZ_SCENE_LABEL_SIZE];
-    DvzMVP mvp_cache[DVZ_SCENE_MAX_PANELS];
+    /* Common cache: APPLY and FIXED slots are panel-specific once viewport is part of set 0. */
+    char mvp_panel_ids[DVZ_SCENE_COMMON_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];
+    DvzMVP mvp_cache[DVZ_SCENE_COMMON_CACHE_CAPACITY];
     uint32_t mvp_panel_count;
+    char viewport_panel_ids[DVZ_SCENE_COMMON_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];
+    DvzSceneViewportUniform viewport_cache[DVZ_SCENE_COMMON_CACHE_CAPACITY];
+    uint32_t viewport_panel_count;
 };
 
 
@@ -122,6 +136,9 @@ void _state_destroy(ConverterState* state);
 uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter);
 
 DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key);
+
+DvzSceneViewportUniform*
+_emitter_viewport_slot(DvzFramePlanEmitter* emitter, const char* key);
 
 uint64_t _resource_id(ConverterState* state, const char* key);
 

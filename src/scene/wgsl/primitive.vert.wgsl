@@ -6,6 +6,10 @@ struct MVP {
     flags: u32,
 };
 
+struct Viewport {
+    rect: vec4f,
+};
+
 struct VertexIn {
     @location(0) position: vec3f,
     @location(1) color: vec4f,
@@ -17,6 +21,7 @@ struct VertexOut {
 };
 
 @group(0) @binding(0) var<uniform> mvp: MVP;
+@group(0) @binding(1) var<uniform> viewport: Viewport;
 
 fn transform(position: vec3f) -> vec4f {
     return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);

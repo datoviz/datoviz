@@ -66,6 +66,7 @@
 #define DRP2_POINT_VERTEX_GLSL                                                                  \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec4 inColor;\n"                                                      \
     "layout(location=2)in float inSize;\n"                                                      \
@@ -82,6 +83,7 @@
 #define DRP2_POINT_PICK_VERTEX_GLSL                                                             \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=2)in float inSize;\n"                                                      \
     "layout(location=0)flat out uint fragId;\n"                                                 \
@@ -100,6 +102,7 @@
 #define DRP2_PRIMITIVE_VERTEX_GLSL                                                              \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec4 inColor;\n"                                                      \
     "layout(location=0)out vec4 fragColor;\n"                                                   \
@@ -111,9 +114,11 @@
     "void main(){outColor=fragColor;}\n"
 #define DRP2_PRIMITIVE_VERTEX_WGSL                                                              \
     "struct MVP { model: mat4x4f, view: mat4x4f, proj: mat4x4f, time: f32, flags: u32, };\n"   \
+    "struct Viewport { rect: vec4f, };\n"                                                       \
     "struct VertexIn { @location(0) position: vec3f, @location(1) color: vec4f, };\n"           \
     "struct VertexOut { @builtin(position) position: vec4f, @location(0) color: vec4f, };\n"    \
     "@group(0) @binding(0) var<uniform> mvp: MVP;\n"                                            \
+    "@group(0) @binding(1) var<uniform> viewport: Viewport;\n"                                  \
     "fn transform(position: vec3f) -> vec4f {"                                                   \
     "return mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);}\n"                         \
     "@vertex fn main(input: VertexIn) -> VertexOut {"                                           \
@@ -125,6 +130,7 @@
 #define DRP2_PRIMITIVE_LIT_VERTEX_GLSL                                                          \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec4 inColor;\n"                                                      \
     "layout(location=2)in vec3 inNormal;\n"                                                     \
@@ -156,6 +162,7 @@
 #define DRP2_IMAGE_VERTEX_GLSL                                                                  \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
+    "layout(set=0,binding=1)uniform Viewport{vec4 rect;}viewport;\n"                           \
     "layout(location=0)in vec3 inPos;\n"                                                        \
     "layout(location=1)in vec2 inUV;\n"                                                         \
     "layout(location=0)out vec2 fragUV;\n"                                                      \

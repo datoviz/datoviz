@@ -1210,10 +1210,8 @@ int test_scene_controller_mode_fixed_emits_separate_mvp(TstSuite* suite, TstItem
     ANN(json);
 
     /* Two distinct MVP UBOs (size 208 = sizeof(DvzMVP) + std140 padding) must be
-     * created — one keyed by ("_mvp_buf_<panel>_apply") for the APPLY visual and
-     * one keyed by ("_mvp_buf_<panel>_fixed") for the FIXED visual. The cache key
-     * split prevents the FIXED visual's identity MVP from clobbering the APPLY
-     * visual's controller MVP. */
+     * created, one for APPLY and one for FIXED. The common set now also carries a
+     * panel viewport uniform, so FIXED common bind groups are panel-scoped. */
     uint32_t mvp_buffers = 0;
     const char* p = json;
     while ((p = strstr(p, "\"size\": 208, \"usage\": [\"COPY_DST\"")) != NULL)
@@ -1360,7 +1358,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
     AT(pass_count == 1);
     AT(draw_count == 2);
     AT(pipeline_count == 1);
-    AT(bind_group_count == 1);
+    AT(bind_group_count == 2);
     AT(viewport_count == 2);
     AT(scissor_count == 2);
 
@@ -2225,7 +2223,7 @@ int test_scene_image_emit_wgsl(TstSuite* suite, TstItem* item)
 }
 
 
-int test_scene_image_emit_uses_mvp_and_texture_sets(TstSuite* suite, TstItem* item)
+int test_scene_image_emit_uses_common_and_texture_sets(TstSuite* suite, TstItem* item)
 {
     (void)suite;
     (void)item;
@@ -2271,7 +2269,8 @@ int test_scene_image_emit_uses_mvp_and_texture_sets(TstSuite* suite, TstItem* it
     ANN(stream);
 
     bool found_pipeline = false;
-    bool found_mvp_bind = false;
+    bool found_common_layout = false;
+    bool found_common_bind = false;
     bool found_texture_bind = false;
     uint32_t count = dvz_drp2_stream_count(stream);
     for (uint32_t i = 0; i < count; i++)
@@ -2286,16 +2285,30 @@ int test_scene_image_emit_uses_mvp_and_texture_sets(TstSuite* suite, TstItem* it
             AT(cmd->u.create_render_pipeline.bind_group_layout_ids[0] != 0);
             AT(cmd->u.create_render_pipeline.bind_group_layout_ids[1] != 0);
         }
+        else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT)
+        {
+            if (cmd->u.create_bind_group_layout.entry_count == 2 &&
+                cmd->u.create_bind_group_layout.entries[0].binding == 0 &&
+                cmd->u.create_bind_group_layout.entries[1].binding == 1 &&
+                cmd->u.create_bind_group_layout.entries[0].binding_type ==
+                    DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER &&
+                cmd->u.create_bind_group_layout.entries[1].binding_type ==
+                    DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER)
+            {
+                found_common_layout = true;
+            }
+        }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_BIND_GROUP)
         {
             if (cmd->u.set_bind_group.slot == 0)
-                found_mvp_bind = true;
+                found_common_bind = true;
             if (cmd->u.set_bind_group.slot == 1)
                 found_texture_bind = true;
         }
     }
     AT(found_pipeline);
-    AT(found_mvp_bind);
+    AT(found_common_layout);
+    AT(found_common_bind);
     AT(found_texture_bind);
 
     dvz_drp2_stream_destroy(stream);
@@ -2705,7 +2718,8 @@ int test_scene_second_emit_no_uploads_when_not_dirty(TstSuite* suite, TstItem* i
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream2, i);
         if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
-            cmd->u.write_buffer.size != sizeof(DvzMVP))
+            cmd->u.write_buffer.size != sizeof(DvzMVP) &&
+            cmd->u.write_buffer.size != sizeof(DvzSceneViewportUniform))
         {
             wb_count2++;
         }
@@ -3207,7 +3221,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_path_emit);
     TEST_SIMPLE(test_scene_image_emit);
     TEST_SIMPLE(test_scene_image_emit_wgsl);
-    TEST_SIMPLE(test_scene_image_emit_uses_mvp_and_texture_sets);
+    TEST_SIMPLE(test_scene_image_emit_uses_common_and_texture_sets);
     TEST_SIMPLE(test_scene_empty_figure_emit_clear_only);
     TEST_SIMPLE(test_scene_point_emit_has_vertex_layout);
     TEST_SIMPLE(test_scene_indexed_primitive_shading_updates_runtime);

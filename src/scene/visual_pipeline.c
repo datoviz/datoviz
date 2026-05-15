@@ -825,7 +825,7 @@ bool _scene_visual_pipeline_desc(
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = picking ? VK_FORMAT_R32_SFLOAT : VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32_SFLOAT;
-        out->needs_mvp_layout = true;
+        out->needs_common_layout = true;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
@@ -844,7 +844,7 @@ bool _scene_visual_pipeline_desc(
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = VK_FORMAT_R8G8B8A8_UNORM;
         out->formats[2] = VK_FORMAT_R32G32B32_SFLOAT;
-        out->needs_mvp_layout = true;
+        out->needs_common_layout = true;
         out->needs_shading_layout = visual->has_normal;
         if (pass_needs_depth)
         {
@@ -866,7 +866,7 @@ bool _scene_visual_pipeline_desc(
         out->locations[1] = 1;
         out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
         out->formats[1] = VK_FORMAT_R32G32_SFLOAT;
-        out->needs_mvp_layout = true;
+        out->needs_common_layout = true;
         out->needs_image_layout = true;
         return true;
 
@@ -897,20 +897,20 @@ bool _scene_visual_bind_desc(
     switch (visual->kind)
     {
     case DVZ_SCENE_VISUAL_DESC_POINT:
-        out->uses_mvp_set0 = true;
-        out->uses_fixed_mvp = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_common_set0 = true;
+        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_PRIMITIVE:
-        out->uses_mvp_set0 = true;
-        out->uses_fixed_mvp = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_common_set0 = true;
+        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
         out->uses_shading_set1 = visual->has_normal && visual->shading_buffer_id != 0;
         out->shading_buffer_id = visual->shading_buffer_id;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_IMAGE:
-        out->uses_mvp_set0 = true;
-        out->uses_fixed_mvp = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_common_set0 = true;
+        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
         out->uses_image_set1 = true;
         out->image_texture_id = visual->image_texture_id;
         return true;

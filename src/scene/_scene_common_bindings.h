@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene MVP bind group helpers                                                                 */
+/*  Scene common bind group helpers                                                              */
 /*************************************************************************************************/
 
 #pragma once
@@ -29,10 +29,10 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-bool _mvp_bindings_resolve_panel_sets(
+bool _scene_common_bindings_resolve_panel_sets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     uint64_t* out_bgl_id, uint64_t* out_apply_bg_id, uint64_t* out_fixed_bg_id);
 
-bool _mvp_bindings_resolve_single_set(
+bool _scene_common_bindings_resolve_single_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     uint64_t* out_bgl_id, uint64_t* out_bg_id);

@@ -26,7 +26,7 @@
 #include "_frame_plan_emit.h"
 #include "_frame_plan.h"
 #include "_frame_plan_runtime_upload.h"
-#include "_mvp_bindings.h"
+#include "_scene_common_bindings.h"
 #include "_render_pass.h"
 #include "_shader_registry.h"
 #include "_visual_pipeline.h"
@@ -94,11 +94,11 @@ static bool _emitter_prepare_render_multi(
     const char* fmt = _shader_format_tag(cfg);
     bool pass_needs_depth = _scene_render_needs_depth(emitter, render);
 
-    uint64_t mvp_bgl_id = 0;
+    uint64_t common_bgl_id = 0;
     uint64_t apply_bg_id = 0;
     uint64_t fixed_bg_id = 0;
-    if (!_mvp_bindings_resolve_panel_sets(
-            emitter, stream, render, &mvp_bgl_id, &apply_bg_id, &fixed_bg_id))
+    if (!_scene_common_bindings_resolve_panel_sets(
+            emitter, stream, render, &common_bgl_id, &apply_bg_id, &fixed_bg_id))
         return false;
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
@@ -210,13 +210,13 @@ static bool _emitter_prepare_render_multi(
                            pipeline.topology, pipeline.binding_count, pipeline.strides,
                            pipeline.attr_count, pipeline.bindings, pipeline.locations,
                            pipeline.formats, pipeline.offsets);
-            if (ok && pipeline.needs_mvp_layout && mvp_bgl_id != 0)
-                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            if (ok && pipeline.needs_common_layout && common_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
             if (ok && pipeline.needs_image_layout && img_bgl_id != 0 &&
-                !pipeline.needs_mvp_layout)
+                !pipeline.needs_common_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, img_bgl_id);
             if (ok && pipeline.needs_image_layout && img_bgl_id != 0 &&
-                pipeline.needs_mvp_layout)
+                pipeline.needs_common_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, img_bgl_id);
             if (ok && pipeline.needs_shading_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
@@ -234,8 +234,8 @@ static bool _emitter_prepare_render_multi(
             ok = false;
             break;
         }
-        if (bind.uses_mvp_set0)
-            vis_bg_set0 = bind.uses_fixed_mvp ? fixed_bg_id : apply_bg_id;
+        if (bind.uses_common_set0)
+            vis_bg_set0 = bind.uses_fixed_common ? fixed_bg_id : apply_bg_id;
         if (bind.uses_shading_set1)
         {
             bool shading_bgl_new = false;
@@ -585,10 +585,10 @@ static bool _emitter_emit_render(
     uint64_t bgl_id = 0;
     uint64_t bg_id  = 0;
 
-    /* MVP UBO bind group IDs — used for GLSL point/primitive/image and WGSL primitive/image paths. */
-    uint64_t mvp_bgl_id = 0;
-    uint64_t mvp_bg_id  = 0;
-    bool uses_mvp =
+    /* Common bind group IDs used for GLSL/WGSL point, primitive, and image paths. */
+    uint64_t common_bgl_id = 0;
+    uint64_t common_bg_id  = 0;
+    bool uses_common =
         (is_point || is_primitive || is_image) &&
         cfg != NULL &&
         (cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL ||
@@ -703,11 +703,11 @@ static bool _emitter_emit_render(
         dvz_snprintf(fs_key, sizeof(fs_key), "_fs%s", fmt);
     }
 
-    /* MVP UBO infrastructure. */
-    if (uses_mvp)
+    /* Common bind group infrastructure. */
+    if (uses_common)
     {
-        ok = ok && _mvp_bindings_resolve_single_set(
-                       emitter, stream, render, &mvp_bgl_id, &mvp_bg_id);
+        ok = ok && _scene_common_bindings_resolve_single_set(
+                       emitter, stream, render, &common_bgl_id, &common_bg_id);
         if (!ok)
             return false;
     }
@@ -827,8 +827,8 @@ static bool _emitter_emit_render(
                                3, strides,
                                3, bindings, locations, formats, offsets);
             }
-            if (ok && uses_mvp && mvp_bgl_id != 0)
-                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            if (ok && uses_common && common_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
         }
         else if (is_primitive)
         {
@@ -843,12 +843,12 @@ static bool _emitter_emit_render(
                            topology,
                            2, strides,
                            2, bindings, locations, formats, offsets);
-            if (ok && uses_mvp && mvp_bgl_id != 0)
-                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            if (ok && uses_common && common_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
         }
         else if (is_image)
         {
-            /* binding0=position(vec3), binding1=texcoords(vec2); set0=MVP, set1=image */
+            /* binding0=position(vec3), binding1=texcoords(vec2); set0=common, set1=image */
             uint32_t strides[2]   = {3*sizeof(float), 2*sizeof(float)};
             uint32_t bindings[2]  = {0, 1};
             uint32_t locations[2] = {0, 1};
@@ -859,8 +859,8 @@ static bool _emitter_emit_render(
                            topology,
                            2, strides,
                            2, bindings, locations, formats, offsets);
-            if (ok && uses_mvp && mvp_bgl_id != 0)
-                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, mvp_bgl_id);
+            if (ok && uses_common && common_bgl_id != 0)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, common_bgl_id);
             if (ok && bgl_id != 0)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, bgl_id);
         }
@@ -897,8 +897,8 @@ static bool _emitter_emit_render(
              render->u.render.desc.y, render->u.render.desc.width, render->u.render.desc.height,
              clear) &&
          dvz_drp2_stream_set_pipeline(stream, render_pass_id, pipe_id);
-    if (ok && uses_mvp && mvp_bg_id != 0)
-        ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, mvp_bg_id);
+    if (ok && uses_common && common_bg_id != 0)
+        ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, common_bg_id);
     if (ok && is_image && bg_id != 0)
         ok = dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, bg_id);
     for (uint32_t i = 0; ok && i < vertex_buffer_count; i++)

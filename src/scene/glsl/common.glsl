@@ -8,6 +8,7 @@
  *
  * Bind group layout (set 0):
  *   binding 0: MVP { model, view, proj, time, flags }
+ *   binding 1: Viewport { x, y, width, height }
  *
  * Single entry point: transform(pos) returns a Vulkan-correct gl_Position.
  *  - Applies the MVP chain (cglm-built, OpenGL-NDC convention).
@@ -24,6 +25,10 @@ layout(set = 0, binding = 0) uniform MVP {
     float time;
     uint flags;
 } mvp;
+
+layout(set = 0, binding = 1) uniform Viewport {
+    vec4 rect;
+} viewport;
 
 vec4 transform(vec3 pos)
 {
