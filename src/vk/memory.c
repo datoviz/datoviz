@@ -672,6 +672,15 @@ int dvz_allocator_import_buffer(
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
     import_info.handleType = allocator->external;
     import_info.fd = handle;
+    VkMemoryFdPropertiesKHR fd_props = {.sType = VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR};
+    VkResult fd_res = vkGetMemoryFdPropertiesKHR(
+        allocator->device->vk_device, allocator->external, handle, &fd_props);
+    if (fd_res != VK_SUCCESS)
+    {
+        log_error("vkGetMemoryFdPropertiesKHR failed for external buffer import (%d)", fd_res);
+        return -1;
+    }
+    alloc_info.memoryTypeBits = fd_props.memoryTypeBits;
 #elif OS_WINDOWS
     VkImportMemoryWin32HandleInfoKHR import_info = {
         .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
@@ -738,6 +747,15 @@ int dvz_allocator_import_image(
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
     import_info.handleType = allocator->external;
     import_info.fd = handle;
+    VkMemoryFdPropertiesKHR fd_props = {.sType = VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR};
+    VkResult fd_res = vkGetMemoryFdPropertiesKHR(
+        allocator->device->vk_device, allocator->external, handle, &fd_props);
+    if (fd_res != VK_SUCCESS)
+    {
+        log_error("vkGetMemoryFdPropertiesKHR failed for external image import (%d)", fd_res);
+        return -1;
+    }
+    alloc_info.memoryTypeBits = fd_props.memoryTypeBits;
 #elif OS_WINDOWS
     VkImportMemoryWin32HandleInfoKHR import_info = {
         .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
