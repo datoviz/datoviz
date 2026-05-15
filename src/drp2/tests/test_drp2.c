@@ -3964,6 +3964,283 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstSuite* suite, TstItem*
 }
 
 
+/**
+ * Execute a depth-peeling-shaped ping/pong multi-pass stream through vklite.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn("DRP2 depth peeling shape test skipped because GPU context creation failed");
+        return 0;
+    }
+
+    DvzDrp2RuntimeConfig cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+
+    AT(dvz_drp2_stream_create_sampler(stream, 2));
+
+    DvzDrp2BindGroupLayoutEntry sampled_entries[4] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 3,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 3, 4, sampled_entries));
+
+    const char* fullscreen_vs =
+        "#version 450\nvec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
+        "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}";
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 10, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 11, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 color;"
+        "void main(){color=vec4(0.05,0.05,0.05,1.0);}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 0));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, true, VK_COMPARE_OP_LESS_OR_EQUAL));
+
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 20, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 21, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 front_accum;"
+        "layout(location=1)out vec4 back_accum;layout(location=2)out vec4 depth_pair;"
+        "void main(){front_accum=vec4(0.25,0,0,1);back_accum=vec4(0,0.25,0,1);"
+        "depth_pair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0,1);}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 22, 20, 21, 0));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 30, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 31, "FRAGMENT", "glsl",
+        "#version 450\nlayout(set=0,binding=0)uniform sampler2D prev_front;"
+        "layout(set=0,binding=1)uniform sampler2D prev_back;"
+        "layout(set=0,binding=2)uniform sampler2D prev_depth;"
+        "layout(location=0)out vec4 front_accum;layout(location=1)out vec4 back_accum;"
+        "layout(location=2)out vec4 depth_pair;"
+        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);vec4 f=texelFetch(prev_front,uv,0);"
+        "vec4 b=texelFetch(prev_back,uv,0);vec4 d=texelFetch(prev_depth,uv,0);"
+        "front_accum=f+vec4(0.25,0,0,0);back_accum=b+vec4(0,0.25,0,0);"
+        "depth_pair=d+vec4(0.05,0.05,0,0);}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 32, 30, 31, 0, 3));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 1, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 2, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_depth_state(stream, false, VK_COMPARE_OP_LESS_OR_EQUAL));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        stream, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE));
+
+    AT(dvz_drp2_stream_create_shader_module_format(stream, 40, "VERTEX", "glsl", fullscreen_vs));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 41, "FRAGMENT", "glsl",
+        "#version 450\nlayout(set=0,binding=0)uniform sampler2D front_accum;"
+        "layout(set=0,binding=1)uniform sampler2D back_accum;"
+        "layout(set=0,binding=2)uniform sampler2D depth_pair;"
+        "layout(location=0)out vec4 color;"
+        "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);vec4 f=texelFetch(front_accum,uv,0);"
+        "vec4 b=texelFetch(back_accum,uv,0);vec4 d=texelFetch(depth_pair,uv,0);"
+        "color=vec4(f.r,b.g,d.r,1.0);}"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 42, 40, 41, 0, 3));
+
+    uint32_t sampled_attachment =
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 50, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 51, 2, 2, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 52, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 53, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 54, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 55, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 56, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 57, 2, 2, VK_FORMAT_R16G16B16A16_SFLOAT, sampled_attachment));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 70, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+
+    DvzDrp2BindGroupEntry peel_entries[4] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 52,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 53,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 54,
+        },
+        {
+            .binding = 3,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 2,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 60, 3, 4, peel_entries));
+
+    DvzDrp2BindGroupEntry composite_entries[4] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 55,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 56,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 57,
+        },
+        {
+            .binding = 3,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 2,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 61, 3, 4, composite_entries));
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 80));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 81, 80, 50, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 51, 1.0f));
+    AT(dvz_drp2_stream_set_pipeline(stream, 81, 12));
+    AT(dvz_drp2_stream_draw(stream, 81, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 81));
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 82, 80, 52, 0, 0, 0, 0));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(stream, 53, 0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(stream, 54, 0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 51, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
+        stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
+        stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
+    AT(dvz_drp2_stream_set_pipeline(stream, 82, 22));
+    AT(dvz_drp2_stream_draw(stream, 82, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 82));
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 83, 80, 55, 0, 0, 0, 0));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(stream, 56, 0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(stream, 57, 0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 51, 1.0f));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
+        stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
+        stream, DVZ_DRP2_ATTACHMENT_ACCESS_READ));
+    AT(dvz_drp2_stream_set_pipeline(stream, 83, 32));
+    AT(dvz_drp2_stream_set_bind_group(stream, 83, 0, 60));
+    AT(dvz_drp2_stream_draw(stream, 83, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 83));
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 84, 80, 50, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
+        stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_STORE));
+    AT(dvz_drp2_stream_set_pipeline(stream, 84, 42));
+    AT(dvz_drp2_stream_set_bind_group(stream, 84, 0, 61));
+    AT(dvz_drp2_stream_draw(stream, 84, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 84));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 80, 50, 70, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 80, 85));
+    AT(dvz_drp2_stream_queue_submit(stream, 85, 86));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    uint8_t resolved[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 70, 0, 4, resolved));
+    AT(resolved[0] > 0);
+    AT(resolved[1] > 0);
+    AT(resolved[2] > 0);
+    AT(resolved[3] == 255);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
 
 int test_drp2_runtime_vklite_samples_then_copies_texture(TstSuite* suite, TstItem* item)
 {
@@ -5611,6 +5888,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_named_depth_render_pass);
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_multi_color_render_pass);
     TEST_SIMPLE(test_drp2_runtime_vklite_draws_wboit_format_passes);
+    TEST_SIMPLE(test_drp2_runtime_vklite_draws_depth_peeling_shape);
     TEST_SIMPLE(test_drp2_runtime_vklite_samples_3d_texture);
     TEST_SIMPLE(test_drp2_runtime_vklite_samples_then_copies_texture);
 #endif
