@@ -34,6 +34,7 @@ typedef enum
     DVZ_SCENE_VISUAL_DESC_PIXEL,
     DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
     DVZ_SCENE_VISUAL_DESC_IMAGE,
+    DVZ_SCENE_VISUAL_DESC_VOLUME,
 } DvzSceneVisualDescKind;
 
 
@@ -66,6 +67,8 @@ typedef struct DvzSceneVisualDesc
     uint64_t index_buffer_id;
     uint64_t shading_buffer_id;
     uint64_t image_texture_id;
+    uint64_t volume_texture_id;
+    DvzVolumeState volume_state;
     uint32_t vertex_count;
     uint32_t index_count;
     const char* index_format;
@@ -101,6 +104,7 @@ typedef struct DvzSceneVisualPipelineDesc
     uint32_t offsets[3];
     bool needs_common_layout;
     bool needs_image_layout;
+    bool needs_volume_layout;
     bool needs_shading_layout;
     bool has_depth_state;
     bool depth_write_enabled;
@@ -115,6 +119,9 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_fixed_common;
     bool uses_image_set1;
     uint64_t image_texture_id;
+    bool uses_volume_set1;
+    uint64_t volume_texture_id;
+    DvzVolumeState volume_state;
     bool uses_shading_set1;
     uint64_t shading_buffer_id;
 } DvzSceneVisualBindDesc;

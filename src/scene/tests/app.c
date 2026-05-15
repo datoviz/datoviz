@@ -1990,6 +1990,87 @@ int test_app_capture_rejects_undersized_buffer(TstSuite* suite, TstItem* item)
 }
 
 
+/**
+ * Ensure a retained volume visual renders a sampled 3D field into an offscreen app frame.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_volume_slice_renders_field(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* volume = dvz_volume(scene, 0);
+    ANN(volume);
+    DvzSampledField* field = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){
+                   .dim = DVZ_FIELD_DIM_3D,
+                   .format = DVZ_FIELD_FORMAT_R8_UNORM,
+                   .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
+                   .width = 2,
+                   .height = 2,
+                   .depth = 2,
+               });
+    ANN(field);
+    const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
+    AT(dvz_sampled_field_set_data(
+        field, &(DvzFieldDataView){.data = voxels, .bytes_per_row = 2, .rows_per_image = 2}));
+    AT(dvz_visual_set_field(volume, "field", field));
+    AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
+    dvz_panel_set_background_color(panel, 0.0f, 0.0f, 0.0f, 1.0f);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_volume_slice_renders_field skipped: GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    ANN(win);
+    DvzCanvas* canvas = dvz_app_window_canvas(win);
+    ANN(canvas);
+
+    uint32_t white_count = 0;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        dvz_app_run(app, 1);
+
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+        ANN(rgba);
+        white_count = 0;
+        for (uint32_t i = 0; i < width * height; i++)
+        {
+            const uint8_t* px = &rgba[4 * i];
+            if (px[0] > 220 && px[1] > 220 && px[2] > 220)
+                white_count++;
+        }
+        dvz_free(rgba);
+        if (white_count > (width * height) / 2)
+            break;
+    }
+    AT(white_count > 64 * 64 / 2);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 #endif
 
 
@@ -2026,6 +2107,7 @@ int test_scene_app(TstSuite* suite)
     TEST_SIMPLE(test_app_offscreen_image_retained_render_second_frame);
     TEST_SIMPLE(test_app_offscreen_two_panel_points_light_both_halves);
     TEST_SIMPLE(test_app_offscreen_clear_color);
+    TEST_SIMPLE(test_app_offscreen_volume_slice_renders_field);
     TEST_SIMPLE(test_app_capture_rejects_wrong_dimensions);
     TEST_SIMPLE(test_app_capture_rejects_undersized_buffer);
 #endif

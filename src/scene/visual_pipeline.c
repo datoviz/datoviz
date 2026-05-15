@@ -355,6 +355,24 @@ static bool _scene_visual_desc_from_metadata(
         out->image_texture_id = tex_id;
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
     }
+    else if (meta->visual_type == DVZ_VISUAL_TYPE_VOLUME)
+    {
+        uint64_t uvw_id = _resource_lookup_label(&emitter->resources, meta->texcoords_id);
+        uint64_t tex_id = _resource_lookup_label(&emitter->resources, meta->volume_texture_id);
+        if (tex_id == 0)
+            tex_id = _resource_lookup_label(&emitter->resources, meta->texture_id);
+        if (uvw_id == 0 || tex_id == 0)
+        {
+            if (error != NULL)
+                *error = "typed volume metadata missing texcoords/texture resource";
+            return false;
+        }
+        out->kind = DVZ_SCENE_VISUAL_DESC_VOLUME;
+        out->vbuf_ids[out->vbuf_count++] = uvw_id;
+        out->volume_texture_id = tex_id;
+        out->volume_state = meta->volume_state;
+        out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    }
     else
     {
         if (error != NULL)
@@ -883,6 +901,16 @@ bool _scene_visual_shader_desc(
         out->fragment_spirv_key = "image_frag";
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_VOLUME:
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_slice%s", format_tag);
+        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_vol_slice%s", format_tag);
+        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_vol_slice%s", format_tag);
+        out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE, false);
+        out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE, true);
+        out->vertex_spirv_key = "volume_slice_vert";
+        out->fragment_spirv_key = "volume_slice_frag";
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:
         return false;
@@ -983,6 +1011,22 @@ bool _scene_visual_pipeline_desc(
         out->needs_image_layout = true;
         return true;
 
+    case DVZ_SCENE_VISUAL_DESC_VOLUME:
+        out->vertex_buffer_count = 2;
+        out->binding_count = 2;
+        out->attr_count = 2;
+        out->strides[0] = 3 * sizeof(float);
+        out->strides[1] = 3 * sizeof(float);
+        out->bindings[0] = 0;
+        out->bindings[1] = 1;
+        out->locations[0] = 0;
+        out->locations[1] = 1;
+        out->formats[0] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->formats[1] = VK_FORMAT_R32G32B32_SFLOAT;
+        out->needs_common_layout = true;
+        out->needs_volume_layout = true;
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:
         return false;
@@ -1027,6 +1071,14 @@ bool _scene_visual_bind_desc(
         out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
         out->uses_image_set1 = true;
         out->image_texture_id = visual->image_texture_id;
+        return true;
+
+    case DVZ_SCENE_VISUAL_DESC_VOLUME:
+        out->uses_common_set0 = true;
+        out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
+        out->uses_volume_set1 = true;
+        out->volume_texture_id = visual->volume_texture_id;
+        out->volume_state = visual->volume_state;
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_NONE:

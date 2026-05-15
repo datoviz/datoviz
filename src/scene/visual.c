@@ -98,6 +98,10 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
         if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
         if (strcmp(name, "texcoords") == 0) return 2 * sizeof(float);
         break;
+    case DVZ_VISUAL_TYPE_VOLUME:
+        if (strcmp(name, "position") == 0)  return 3 * sizeof(float);
+        if (strcmp(name, "texcoords") == 0) return 3 * sizeof(float);
+        break;
     default:
         break;
     }
@@ -132,7 +136,7 @@ static bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item
     else if (type == DVZ_VISUAL_TYPE_IMAGE)
         expected = "position, texcoords";
     else if (type == DVZ_VISUAL_TYPE_VOLUME)
-        expected = "no vertex attributes; bind a 3D field";
+        expected = "position, texcoords, plus a bound 3D field";
 
     log_error(
         "unsupported %s visual attribute '%s' (expected one of: %s)",
@@ -1763,7 +1767,28 @@ DvzVisual* dvz_image(DvzScene* scene, uint32_t flags)
 DvzVisual* dvz_volume(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
-    return _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VOLUME, flags);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_VOLUME, flags);
+    if (visual == NULL)
+        return NULL;
+
+    static const float positions[4][3] = {
+        {-1.0f, -1.0f, 0.0f},
+        {+1.0f, -1.0f, 0.0f},
+        {-1.0f, +1.0f, 0.0f},
+        {+1.0f, +1.0f, 0.0f},
+    };
+    static const float texcoords[4][3] = {
+        {0.0f, 0.0f, 0.5f},
+        {1.0f, 0.0f, 0.5f},
+        {0.0f, 1.0f, 0.5f},
+        {1.0f, 1.0f, 0.5f},
+    };
+    if (dvz_visual_set_data(visual, "position", positions, 4) != 0 ||
+        dvz_visual_set_data(visual, "texcoords", texcoords, 4) != 0)
+    {
+        log_error("dvz_volume: failed to initialize default slice geometry");
+    }
+    return visual;
 }
 
 

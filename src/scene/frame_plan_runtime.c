@@ -310,6 +310,7 @@ static bool _emitter_prepare_render_multi(
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_id = 0;
+    uint64_t volume_bgl_id = 0, volume_sampler_id = 0;
 
     uint32_t draw_count = 0;
 
@@ -425,6 +426,13 @@ static bool _emitter_prepare_render_multi(
                     ok = ok && dvz_drp2_stream_create_texture_sampler_bind_group_layout(
                                    stream, img_bgl_id);
             }
+            if (pipeline.needs_volume_layout && volume_bgl_id == 0)
+            {
+                volume_bgl_id = _obj_id(emitter, "_bgl_volume", &is_new);
+                if (volume_bgl_id == 0) { ok = false; break; }
+                if (is_new)
+                    ok = ok && _create_volume_bind_group_layout(stream, volume_bgl_id);
+            }
             ok = ok && dvz_drp2_stream_create_render_pipeline_ex(
                            stream, pipe_id, vs_id, fs_id, pipeline.vertex_buffer_count,
                            pipeline.topology, pipeline.binding_count, pipeline.strides,
@@ -438,6 +446,12 @@ static bool _emitter_prepare_render_multi(
             if (ok && pipeline.needs_image_layout && img_bgl_id != 0 &&
                 pipeline.needs_common_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, img_bgl_id);
+            if (ok && pipeline.needs_volume_layout && volume_bgl_id != 0 &&
+                !pipeline.needs_common_layout)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout(stream, volume_bgl_id);
+            if (ok && pipeline.needs_volume_layout && volume_bgl_id != 0 &&
+                pipeline.needs_common_layout)
+                ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, volume_bgl_id);
             if (ok && pipeline.needs_shading_layout)
                 ok = dvz_drp2_stream_pipeline_set_bind_group_layout2(stream, shading_bgl_id);
             if (ok && pipeline.has_depth_state)
@@ -531,6 +545,28 @@ static bool _emitter_prepare_render_multi(
                                stream, img_bg_id, img_bgl_id, bind.image_texture_id,
                                img_sampler_id);
             vis_bg_set1 = img_bg_id;
+        }
+        if (bind.uses_volume_set1)
+        {
+            if (volume_bgl_id == 0)
+            {
+                volume_bgl_id = _obj_id(emitter, "_bgl_volume", &is_new);
+                if (volume_bgl_id == 0) { ok = false; break; }
+                if (is_new)
+                    ok = ok && _create_volume_bind_group_layout(stream, volume_bgl_id);
+            }
+            if (volume_sampler_id == 0)
+            {
+                volume_sampler_id = _obj_id(emitter, "_sampler_volume", &is_new);
+                if (volume_sampler_id == 0) { ok = false; break; }
+                if (ok && is_new)
+                    ok = ok && dvz_drp2_stream_create_sampler(stream, volume_sampler_id);
+            }
+            uint64_t volume_bg_id = 0;
+            ok = ok && _resolve_volume_bind_group(
+                           emitter, stream, volume_bgl_id, volume_sampler_id, &bind,
+                           &volume_bg_id);
+            vis_bg_set1 = volume_bg_id;
         }
 
         if (!ok)

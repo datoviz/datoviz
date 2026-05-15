@@ -862,8 +862,6 @@ void _scene_emit_panel_render(
         DvzVisual* visual = panel->visuals[vi].visual;
         if (visual == NULL || !visual->visible)
             continue;
-        if (visual->type == DVZ_VISUAL_TYPE_VOLUME)
-            continue;
         uint32_t vidx = 0;
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;

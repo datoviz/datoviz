@@ -169,6 +169,31 @@ _emitter_viewport_slot(DvzFramePlanEmitter* emitter, const char* key)
 }
 
 
+/**
+ * Return the volume uniform cache slot for a visual key, creating it when capacity allows.
+ *
+ * @param emitter the persistent emitter
+ * @param key the volume cache key
+ * @return the cached volume uniform slot, or NULL when the cache is full
+ */
+DvzSceneVolumeUniform*
+_emitter_volume_slot(DvzFramePlanEmitter* emitter, const char* key)
+{
+    ANN(emitter);
+    ANN(key);
+    for (uint32_t i = 0; i < emitter->volume_count; i++)
+    {
+        if (strncmp(emitter->volume_ids[i], key, DVZ_SCENE_LABEL_SIZE) == 0)
+            return &emitter->volume_cache[i];
+    }
+    if (emitter->volume_count >= DVZ_SCENE_VOLUME_CACHE_CAPACITY)
+        return NULL;
+    uint32_t slot = emitter->volume_count++;
+    strncpy(emitter->volume_ids[slot], key, DVZ_SCENE_LABEL_SIZE - 1);
+    return &emitter->volume_cache[slot];
+}
+
+
 
 /**
  * Return a deterministic DRP2 id for a scene resource key.

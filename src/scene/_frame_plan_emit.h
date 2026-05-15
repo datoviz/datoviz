@@ -48,6 +48,7 @@
 #define DRP2_RUNTIME_TRANSIENT_ID_BASE 10000
 #define DRP2_EMITTER_OBJECT_ID_BASE 5000
 #define DVZ_SCENE_COMMON_CACHE_CAPACITY (2 * DVZ_SCENE_MAX_PANELS)
+#define DVZ_SCENE_VOLUME_CACHE_CAPACITY DVZ_SCENE_MAX_VISUALS
 
 
 
@@ -58,6 +59,14 @@
 typedef struct ResourceId ResourceId;
 typedef struct ConverterState ConverterState;
 typedef struct SceneRenderStateCache SceneRenderStateCache;
+typedef struct DvzSceneVolumeUniform DvzSceneVolumeUniform;
+
+struct DvzSceneVolumeUniform
+{
+    float clip_min[4];
+    float clip_max[4];
+    float params[4];
+};
 
 struct ResourceId
 {
@@ -115,6 +124,9 @@ struct DvzFramePlanEmitter
     char viewport_panel_ids[DVZ_SCENE_COMMON_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];
     DvzSceneViewportUniform viewport_cache[DVZ_SCENE_COMMON_CACHE_CAPACITY];
     uint32_t viewport_panel_count;
+    char volume_ids[DVZ_SCENE_VOLUME_CACHE_CAPACITY][DVZ_SCENE_LABEL_SIZE];
+    DvzSceneVolumeUniform volume_cache[DVZ_SCENE_VOLUME_CACHE_CAPACITY];
+    uint32_t volume_count;
 };
 
 
@@ -133,6 +145,9 @@ DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key);
 
 DvzSceneViewportUniform*
 _emitter_viewport_slot(DvzFramePlanEmitter* emitter, const char* key);
+
+DvzSceneVolumeUniform*
+_emitter_volume_slot(DvzFramePlanEmitter* emitter, const char* key);
 
 uint64_t _resource_id(ConverterState* state, const char* key);
 

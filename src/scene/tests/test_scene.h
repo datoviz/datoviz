@@ -438,6 +438,8 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstSuite* suite, TstIt
 
 int test_app_offscreen_clear_color(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_volume_slice_renders_field(TstSuite* suite, TstItem* item);
+
 int test_app_capture_rejects_wrong_dimensions(TstSuite* suite, TstItem* item);
 
 int test_app_capture_rejects_undersized_buffer(TstSuite* suite, TstItem* item);
