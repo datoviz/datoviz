@@ -406,6 +406,12 @@ int main(int argc, char** argv)
         dvz_scene_destroy(scene);
         return 1;
     }
+    if (dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) != 0)
+    {
+        dvz_fprintf(stderr, "dvz_visual_set_alpha_mode() failed\n");
+        dvz_scene_destroy(scene);
+        return 1;
+    }
     if (dvz_panel_add_visual(panel, volume, NULL) != 0)
     {
         dvz_fprintf(stderr, "dvz_panel_add_visual() failed\n");
