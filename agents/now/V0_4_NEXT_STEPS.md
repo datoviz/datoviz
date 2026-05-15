@@ -187,6 +187,11 @@ hello_mesh_wboit_glfw -j2`, `./build/testing/dvztest_drp2 test_drp2_stream_debug
 `./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`, and bounded labeled
 trace smoke.
 
+WBOIT visual diagnostic follow-up on `2026-05-15`: `hello_mesh_wboit_glfw` now defaults to a light
+diagnostic background, has a GUI toggle to switch back to the dark background, and uses tuned
+cube/reference colors so face overlap and front-card occlusion are easier to judge during live
+rotation.
+
 
 ## Immediate Task
 
@@ -260,9 +265,8 @@ Deliver the next implementation slices in this order unless the user redirects:
    native 3D and manual-smoke gaps are clearer.
 9. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
-10. WBOIT follow-up slice: use the interactive mesh example sliders to settle better default cube
-    material values, add any missing offscreen WBOIT readback/capture coverage, and tighten DRP2
-    validation around pipeline color-target formats
+10. WBOIT follow-up slice: add any missing offscreen WBOIT readback/capture coverage, and tighten
+    DRP2 validation around pipeline color-target formats
     versus render-pass attachment formats. Use
     [WBOIT_MESH_INTERACTIVE_PLAN.md](/home/cyrille/GIT/Viz/datoviz/agents/now/WBOIT_MESH_INTERACTIVE_PLAN.md)
     as the implementation checklist.

@@ -55,6 +55,7 @@ typedef struct MeshWboitState MeshWboitState;
 struct MeshWboitState
 {
     DvzArcball* arcball;
+    DvzPanel* panel;
     DvzVisual* cube;
     uint32_t cube_vertex_count;
     DvzColor cube_colors[24];
@@ -63,6 +64,7 @@ struct MeshWboitState
     float cube_light_direction[3];
     float cube_ambient;
     float cube_diffuse;
+    bool light_background;
 };
 
 
@@ -142,6 +144,25 @@ static uint8_t _u8_from_unit(float value)
     if (value > 1.0f)
         value = 1.0f;
     return (uint8_t)(255.0f * value + 0.5f);
+}
+
+
+
+/**
+ * Apply the GUI-controlled diagnostic background.
+ *
+ * @param state mesh WBOIT example state
+ */
+static void _mesh_wboit_update_background(MeshWboitState* state)
+{
+    ANN(state);
+    if (state->panel == NULL)
+        return;
+
+    if (state->light_background)
+        dvz_panel_set_background_color(state->panel, 0.96f, 0.97f, 0.98f, 1.0f);
+    else
+        dvz_panel_set_background_color(state->panel, 0.05f, 0.05f, 0.08f, 1.0f);
 }
 
 
@@ -246,8 +267,11 @@ static void _mesh_wboit_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
         return;
 
     bool changed = false;
+    bool background_changed = false;
     if (dvz_gui_begin(gui, "WBOIT cube", NULL, 0))
     {
+        background_changed |=
+            dvz_gui_checkbox(gui, "Light background", &state->light_background);
         changed |= dvz_gui_slider_float(gui, "Red", &state->cube_rgb[0], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Green", &state->cube_rgb[1], 0.0f, 1.0f);
         changed |= dvz_gui_slider_float(gui, "Blue", &state->cube_rgb[2], 0.0f, 1.0f);
@@ -262,22 +286,26 @@ static void _mesh_wboit_gui(DvzGui* gui, DvzAppWindow* win, void* user_data)
             dvz_gui_slider_float(gui, "Light Z", &state->cube_light_direction[2], -1.0f, 1.0f);
         if (dvz_gui_button(gui, "Reset"))
         {
-            state->cube_rgb[0] = 56.0f / 255.0f;
-            state->cube_rgb[1] = 220.0f / 255.0f;
-            state->cube_rgb[2] = 1.0f;
-            state->cube_alpha = 56.0f / 255.0f;
+            state->light_background = true;
+            state->cube_rgb[0] = 36.0f / 255.0f;
+            state->cube_rgb[1] = 150.0f / 255.0f;
+            state->cube_rgb[2] = 185.0f / 255.0f;
+            state->cube_alpha = 82.0f / 255.0f;
             state->cube_light_direction[0] = 0.25f;
             state->cube_light_direction[1] = 0.70f;
             state->cube_light_direction[2] = 0.45f;
             state->cube_ambient = 0.18f;
             state->cube_diffuse = 0.95f;
             changed = true;
+            background_changed = true;
         }
     }
     dvz_gui_end(gui);
 
     if (changed)
         _mesh_wboit_update_cube(state);
+    if (background_changed)
+        _mesh_wboit_update_background(state);
 }
 
 
@@ -357,29 +385,31 @@ int main(int argc, char** argv)
         {255, 230, 80, 255},
         {255, 80, 180, 255},
         {80, 200, 255, 255},
-        {245, 245, 245, 255},
-        {245, 245, 245, 255},
+        {32, 32, 32, 255},
+        {32, 32, 32, 255},
         {120, 255, 150, 255},
-        {245, 245, 245, 255},
+        {32, 32, 32, 255},
         {120, 255, 150, 255},
-        {245, 245, 245, 255},
+        {32, 32, 32, 255},
     };
 
     float positions[24][3] = {0};
     DvzColor colors[24] = {0};
     float normals[24][3] = {0};
     DvzIndex indices[36] = {0};
-    DvzColor cube_color = {56, 220, 255, 56};
+    DvzColor cube_color = {36, 150, 185, 82};
     _build_cube(0.72f, cube_color, positions, colors, normals, indices);
 
     MeshWboitState state = {
+        .panel = panel,
         .cube = cube,
         .cube_vertex_count = 24,
-        .cube_rgb = {56.0f / 255.0f, 220.0f / 255.0f, 1.0f},
-        .cube_alpha = 56.0f / 255.0f,
+        .cube_rgb = {36.0f / 255.0f, 150.0f / 255.0f, 185.0f / 255.0f},
+        .cube_alpha = 82.0f / 255.0f,
         .cube_light_direction = {0.25f, 0.70f, 0.45f},
         .cube_ambient = 0.18f,
         .cube_diffuse = 0.95f,
+        .light_background = true,
     };
     dvz_memcpy(state.cube_colors, sizeof(state.cube_colors), colors, sizeof(colors));
 
@@ -407,7 +437,7 @@ int main(int argc, char** argv)
 
     dvz_panel_add_visual(panel, reference, NULL);
     dvz_panel_add_visual(panel, cube, NULL);
-    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
+    _mesh_wboit_update_background(&state);
 
     DvzApp* app = dvz_app(scene);
     if (app == NULL)
