@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/app.h"
+#include "datoviz/canvas.h"
 #include "datoviz/scene.h"
 #include "helpers.h"
 #include "test_scene.h"
@@ -71,8 +72,10 @@ int test_app_offscreen(TstSuite* suite, TstItem* item)
     DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
     AT(win != NULL);
 
-    /* Run two frames */
-    dvz_app_run(app, 2);
+    /* Exercise host-driven and Datoviz-owned frame paths. */
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_app_render_once(app) == 0);
+    dvz_app_run(app, 1);
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

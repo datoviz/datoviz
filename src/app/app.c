@@ -999,6 +999,31 @@ static bool _app_frame_callback_allowed(DvzAppWindow* win)
 
 
 
+/**
+ * Apply the DVZ_PRESENT_MODE environment override to a present canvas configuration.
+ *
+ * @param ccfg canvas configuration to mutate
+ */
+static void _app_canvas_config_apply_present_mode_env(DvzCanvasConfig* ccfg)
+{
+    ANN(ccfg);
+    /* DVZ_PRESENT_MODE: fifo (default, vsync), mailbox (vsync+latest), immediate (no vsync). */
+    const char* pm_env = getenv("DVZ_PRESENT_MODE");
+    if (pm_env != NULL)
+    {
+        if (strcmp(pm_env, "immediate") == 0)
+            ccfg->present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+        else if (strcmp(pm_env, "mailbox") == 0)
+            ccfg->present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
+        else if (strcmp(pm_env, "fifo") == 0)
+            ccfg->present_mode = VK_PRESENT_MODE_FIFO_KHR;
+        else
+            log_warn("ignoring DVZ_PRESENT_MODE='%s' (expected fifo|mailbox|immediate)", pm_env);
+    }
+}
+
+
+
 static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
     (void)canvas;
@@ -1303,19 +1328,7 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
-    /* DVZ_PRESENT_MODE: fifo (default, vsync), mailbox (vsync+latest), immediate (no vsync). */
-    const char* pm_env = getenv("DVZ_PRESENT_MODE");
-    if (pm_env != NULL)
-    {
-        if (strcmp(pm_env, "immediate") == 0)
-            ccfg.present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-        else if (strcmp(pm_env, "mailbox") == 0)
-            ccfg.present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-        else if (strcmp(pm_env, "fifo") == 0)
-            ccfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
-        else
-            log_warn("ignoring DVZ_PRESENT_MODE='%s' (expected fifo|mailbox|immediate)", pm_env);
-    }
+    _app_canvas_config_apply_present_mode_env(&ccfg);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {
@@ -1344,9 +1357,96 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
 
 
 
+/**
+ * Create an app-window around an externally-owned Vulkan surface.
+ *
+ * @param app app that owns the rendering runtime
+ * @param figure figure rendered into the surface
+ * @param surface external surface description
+ * @return app-window handle, or NULL on failure
+ */
+DvzAppWindow* dvz_app_window_external_surface(
+    DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface)
+{
+    ANN(app);
+    ANN(figure);
+    ANN(surface);
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (app->window_count >= DVZ_APP_MAX_WINDOWS)
+        return NULL;
+
+    DvzWindowConfig wcfg = dvz_window_default_config();
+    wcfg.width = surface->extent.width;
+    wcfg.height = surface->extent.height;
+    DvzWindow* window = dvz_window_create(app->window_host, DVZ_BACKEND_WRAP, &wcfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_WRAP)
+    {
+        if (window != NULL)
+            dvz_window_destroy(window);
+        return NULL;
+    }
+    if (dvz_window_wrap_attach_surface(window, surface) != 0)
+    {
+        dvz_window_destroy(window);
+        return NULL;
+    }
+
+    DvzCanvasConfig ccfg = dvz_canvas_default_config();
+    ccfg.window = window;
+    ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
+    _app_canvas_config_apply_present_mode_env(&ccfg);
+    DvzCanvas* canvas = dvz_canvas_create(&ccfg);
+    if (canvas == NULL)
+    {
+        dvz_window_destroy(window);
+        return NULL;
+    }
+
+    DvzAppWindow* win = &app->windows[app->window_count];
+    win->app        = app;
+    win->figure     = figure;
+    win->window     = window;
+    win->canvas     = canvas;
+    win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    app->window_count++;
+
+    dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    return win;
+#else
+    return NULL;
+#endif
+}
+
+
+
 /*************************************************************************************************/
 /*  Window accessors                                                                             */
 /*************************************************************************************************/
+
+/**
+ * Update the external Vulkan surface associated with a hosted app-window.
+ *
+ * @param win hosted app-window
+ * @param surface external surface description
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_update_external_surface(
+    DvzAppWindow* win, const DvzWindowExternalSurfaceInfo* surface)
+{
+    ANN(win);
+    ANN(surface);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_WRAP)
+        return -1;
+    return dvz_window_wrap_update_surface(win->window, surface);
+#else
+    return -1;
+#endif
+}
+
+
+
 
 struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win)
 {
@@ -1433,6 +1533,61 @@ void dvz_app_window_set_gui_callback(
 /*  Frame loop                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Render one frame for a single app-window.
+ *
+ * @param win app-window to render
+ * @return canvas frame status or negative on error
+ */
+int dvz_app_window_render_once(DvzAppWindow* win)
+{
+    ANN(win);
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas == NULL)
+        return -1;
+    int rc = dvz_canvas_frame(win->canvas);
+    if (rc == DVZ_CANVAS_FRAME_READY)
+    {
+        if (dvz_canvas_submit(win->canvas) != 0)
+            return -1;
+    }
+    return rc;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Render one frame for every app-window without polling events.
+ *
+ * @param app app whose windows should render
+ * @return 0 on success, wait-surface status, or negative on error
+ */
+int dvz_app_render_once(DvzApp* app)
+{
+    ANN(app);
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    int result = 0;
+    for (uint32_t i = 0; i < app->window_count; i++)
+    {
+        int rc = dvz_app_window_render_once(&app->windows[i]);
+        if (rc < 0)
+            result = -1;
+        else if (result == 0 && rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            result = DVZ_CANVAS_FRAME_WAIT_SURFACE;
+    }
+    return result;
+#else
+    return -1;
+#endif
+}
+
+
+
 void dvz_app_run(DvzApp* app, uint32_t frame_count)
 {
     ANN(app);
@@ -1463,9 +1618,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             for (uint32_t i = 0; i < app->window_count; i++)
             {
                 DvzAppWindow* win = &app->windows[i];
-                int rc = dvz_canvas_frame(win->canvas);
-                if (rc == DVZ_CANVAS_FRAME_READY)
-                    dvz_canvas_submit(win->canvas);
+                (void)dvz_app_window_render_once(win);
             }
             if (fps_enabled)
             {
@@ -1492,9 +1645,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             for (uint32_t i = 0; i < app->window_count; i++)
             {
                 DvzAppWindow* win = &app->windows[i];
-                int rc = dvz_canvas_frame(win->canvas);
-                if (rc == DVZ_CANVAS_FRAME_READY)
-                    dvz_canvas_submit(win->canvas);
+                (void)dvz_app_window_render_once(win);
             }
         }
     }

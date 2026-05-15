@@ -31,6 +31,7 @@
 typedef struct DvzApp       DvzApp;
 typedef struct DvzAppConfig DvzAppConfig;
 typedef struct DvzAppWindow DvzAppWindow;
+typedef struct DvzWindowExternalSurfaceInfo DvzWindowExternalSurfaceInfo;
 
 typedef void (*DvzAppFrameCallback)(DvzAppWindow* win, void* user_data);
 
@@ -139,6 +140,37 @@ DVZ_EXPORT DvzAppWindow* dvz_app_window_glfw(
 
 
 /**
+ * Create a hosted present window around an externally-owned Vulkan surface.
+ *
+ * The caller owns the native event loop and must create the Vulkan surface using the instance
+ * extensions passed to dvz_app_with_config().  Datoviz owns only the rendering objects built on
+ * top of the supplied surface unless surface->owned_by_datoviz is true.
+ *
+ * @param app the app
+ * @param figure the figure to render (borrowed)
+ * @param surface external Vulkan surface description
+ * @return the app-window handle, or NULL on failure
+ */
+DVZ_EXPORT DvzAppWindow* dvz_app_window_external_surface(
+    DvzApp* app, DvzFigure* figure, const DvzWindowExternalSurfaceInfo* surface);
+
+
+/**
+ * Update the hosted external surface associated with an app-window.
+ *
+ * Use this when the host toolkit recreates or resizes its native surface.  A NULL surface handle is
+ * accepted to mark the surface temporarily unavailable; rendering then returns
+ * DVZ_CANVAS_FRAME_WAIT_SURFACE until a valid surface is supplied again.
+ *
+ * @param win app-window created with dvz_app_window_external_surface()
+ * @param surface external Vulkan surface description
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_update_external_surface(
+    DvzAppWindow* win, const DvzWindowExternalSurfaceInfo* surface);
+
+
+/**
  * Return the underlying DvzCanvas for a window.
  *
  * Gives access to the full canvas API (capture, video sink, live-image sink, etc.).
@@ -194,6 +226,29 @@ dvz_app_window_set_frame_callback(
 /*************************************************************************************************/
 /*  Frame loop                                                                                   */
 /*************************************************************************************************/
+
+/**
+ * Render one frame for a single app-window without polling any Datoviz-owned event loop.
+ *
+ * This is the primary hosted-loop primitive for Qt, SDL, Tk, IPython, and other integrations where
+ * the caller owns scheduling.  Returns the dvz_canvas_frame() status when no frame was submitted.
+ *
+ * @param win the app-window
+ * @return DVZ_CANVAS_FRAME_READY after a submitted frame, DVZ_CANVAS_FRAME_WAIT_SURFACE while the
+ * surface is unavailable, or a negative error code
+ */
+DVZ_EXPORT int dvz_app_window_render_once(DvzAppWindow* win);
+
+
+/**
+ * Render one frame for every app-window without polling any Datoviz-owned event loop.
+ *
+ * @param app the app
+ * @return 0 on success, DVZ_CANVAS_FRAME_WAIT_SURFACE if any surface is unavailable, or negative on
+ * error
+ */
+DVZ_EXPORT int dvz_app_render_once(DvzApp* app);
+
 
 /**
  * Run the frame loop.
