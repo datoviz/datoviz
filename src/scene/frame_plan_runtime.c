@@ -854,7 +854,7 @@ static bool _stream_apply_graph_depth(
 
 
 /**
- * Resolve or create one WBOIT intermediate texture.
+ * Resolve or create one runtime 2D texture.
  *
  * @param emitter the persistent emitter.
  * @param stream destination DRP2 command stream.
@@ -862,10 +862,11 @@ static bool _stream_apply_graph_depth(
  * @param width texture width in pixels.
  * @param height texture height in pixels.
  * @param format Vulkan texture format.
+ * @param usage DRP2 texture usage flags.
  * @param out_id output texture id.
  * @return whether the texture id is available.
  */
-static bool _wboit_resolve_intermediate_texture(
+static bool _runtime_resolve_texture_2d(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const char* key, uint32_t width,
     uint32_t height, uint32_t format, uint32_t usage, uint64_t* out_id)
 {
@@ -889,6 +890,32 @@ static bool _wboit_resolve_intermediate_texture(
     }
     *out_id = resource->id;
     return true;
+}
+
+
+
+/**
+ * Resolve or create one graph-declared 2D texture resource.
+ *
+ * @param emitter the persistent emitter.
+ * @param stream destination DRP2 command stream.
+ * @param resource graph resource descriptor.
+ * @param width texture width in pixels.
+ * @param height texture height in pixels.
+ * @param fallback_format fallback Vulkan format when the graph format is zero.
+ * @param out_id output texture id.
+ * @return whether the texture id is available.
+ */
+static bool _graph_resolve_texture_2d(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
+    const DvzFrameGraphResource* resource, uint32_t width, uint32_t height,
+    uint32_t fallback_format, uint64_t* out_id)
+{
+    ANN(resource);
+    uint32_t format = resource->format != 0 ? resource->format : fallback_format;
+    uint32_t usage = _graph_texture_usage_to_drp2(resource->usage_flags);
+    return _runtime_resolve_texture_2d(
+        emitter, stream, resource->id, width, height, format, usage, out_id);
 }
 
 
@@ -942,41 +969,29 @@ static bool _emitter_prepare_wboit_targets(
             depth_resource = _graph_resource_by_id(plan, graph_pass->depth_attachment.resource_id);
     }
 
-    const char* accum_resource_id = accum_resource != NULL ? accum_resource->id : accum_key;
-    const char* weight_resource_id = weight_resource != NULL ? weight_resource->id : weight_key;
-    uint32_t accum_format = accum_resource != NULL && accum_resource->format != 0
-                                ? accum_resource->format
-                                : VK_FORMAT_R16G16B16A16_SFLOAT;
-    uint32_t weight_format = weight_resource != NULL && weight_resource->format != 0
-                                 ? weight_resource->format
-                                 : VK_FORMAT_R16_SFLOAT;
-    uint32_t accum_usage = accum_resource != NULL
-                               ? _graph_texture_usage_to_drp2(accum_resource->usage_flags)
-                               : (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                                  DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
-    uint32_t weight_usage = weight_resource != NULL
-                                ? _graph_texture_usage_to_drp2(weight_resource->usage_flags)
-                                : (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                                   DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING);
+    uint32_t fallback_usage =
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
 
-    ok = ok &&
-         _wboit_resolve_intermediate_texture(
-             emitter, stream, accum_resource_id, width, height, accum_format, accum_usage,
-             &out->accum_id);
-    ok = ok &&
-         _wboit_resolve_intermediate_texture(
-             emitter, stream, weight_resource_id, width, height, weight_format, weight_usage,
-             &out->weight_id);
+    ok = ok && (accum_resource != NULL
+                    ? _graph_resolve_texture_2d(
+                          emitter, stream, accum_resource, width, height,
+                          VK_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
+                    : _runtime_resolve_texture_2d(
+                          emitter, stream, accum_key, width, height,
+                          VK_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, &out->accum_id));
+    ok = ok && (weight_resource != NULL
+                    ? _graph_resolve_texture_2d(
+                          emitter, stream, weight_resource, width, height, VK_FORMAT_R16_SFLOAT,
+                          &out->weight_id)
+                    : _runtime_resolve_texture_2d(
+                          emitter, stream, weight_key, width, height, VK_FORMAT_R16_SFLOAT,
+                          fallback_usage, &out->weight_id));
     if (!ok)
         return false;
     if (depth_resource != NULL)
     {
-        uint32_t depth_format = depth_resource->format != 0 ? depth_resource->format :
-                                                             VK_FORMAT_D32_SFLOAT;
-        uint32_t depth_usage = _graph_texture_usage_to_drp2(depth_resource->usage_flags);
-        ok = _wboit_resolve_intermediate_texture(
-            emitter, stream, depth_resource->id, width, height, depth_format, depth_usage,
-            &out->depth_id);
+        ok = _graph_resolve_texture_2d(
+            emitter, stream, depth_resource, width, height, VK_FORMAT_D32_SFLOAT, &out->depth_id);
     }
     if (!ok)
         return false;
