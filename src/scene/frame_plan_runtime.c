@@ -1549,6 +1549,31 @@ static bool _graph_resolve_render_depth(
 
 
 /**
+ * Return a compact fingerprint for a WBOIT resolve bind group dependency set.
+ *
+ * @param accum_id accumulation texture id.
+ * @param weight_id weight texture id.
+ * @param sampler_id sampler id.
+ * @param width target width.
+ * @param height target height.
+ * @return dependency fingerprint.
+ */
+static uint64_t _wboit_bind_group_fingerprint(
+    uint64_t accum_id, uint64_t weight_id, uint64_t sampler_id, uint32_t width,
+    uint32_t height)
+{
+    uint64_t hash = UINT64_C(1469598103934665603);
+    hash = (hash ^ accum_id) * UINT64_C(1099511628211);
+    hash = (hash ^ weight_id) * UINT64_C(1099511628211);
+    hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
+    hash = (hash ^ width) * UINT64_C(1099511628211);
+    hash = (hash ^ height) * UINT64_C(1099511628211);
+    return hash != 0 ? hash : UINT64_C(1);
+}
+
+
+
+/**
  * Prepare WBOIT intermediate targets and resolve pipeline resources for one panel.
  *
  * @param emitter the persistent emitter.
@@ -1679,9 +1704,16 @@ static bool _emitter_prepare_wboit_targets(
     dvz_snprintf(
         bg_key, sizeof(bg_key), "_bg_wboit_%" PRIu64 "_%" PRIu64, out->accum_id,
         out->weight_id);
-    out->resolve_bg_id = _obj_id(emitter, bg_key, &is_new);
-    if (out->resolve_bg_id == 0)
+    ResourceId* bg_resource = _resource_entry(&emitter->objects, bg_key, &is_new);
+    if (bg_resource == NULL || bg_resource->id == 0)
         return false;
+    out->resolve_bg_id = bg_resource->id;
+
+    uint64_t bg_fingerprint = _wboit_bind_group_fingerprint(
+        out->accum_id, out->weight_id, out->sampler_id, width, height);
+    if (!is_new && bg_resource->byte_size != bg_fingerprint)
+        is_new = true;
+    bg_resource->byte_size = bg_fingerprint;
     if (ok && is_new)
     {
         const DvzFrameGraphPass* resolve_graph_pass =

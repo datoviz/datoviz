@@ -4911,6 +4911,115 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(begin_pass_textures[0] == begin_pass_textures[2]);
     AT(begin_pass_textures[1] != begin_pass_textures[0]);
 
+    dvz_diagnostic_report_init(&report);
+    cfg.runtime_resource_scope_id = UINT64_C(0x7c);
+    DvzDrp2CommandStream* scoped_stream = dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(scoped_stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t scoped_accum_texture_id = 0;
+    uint64_t scoped_weight_texture_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        const char* label = dvz_drp2_stream_label(scoped_stream, command->u.create_texture.id);
+        if (label != NULL &&
+            strcmp(label, "fig0_p0.wboit.accum_scope_000000000000007c") == 0)
+            scoped_accum_texture_id = command->u.create_texture.id;
+        else if (
+            label != NULL &&
+            strcmp(label, "fig0_p0.wboit.weight_scope_000000000000007c") == 0)
+            scoped_weight_texture_id = command->u.create_texture.id;
+    }
+    AT(scoped_accum_texture_id != 0);
+    AT(scoped_weight_texture_id != 0);
+
+    bool has_scoped_resolve_bind_group = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP ||
+            command->u.create_bind_group.entry_count != 3)
+            continue;
+        has_scoped_resolve_bind_group =
+            has_scoped_resolve_bind_group ||
+            (command->u.create_bind_group.entries[0].resource_id == scoped_accum_texture_id &&
+             command->u.create_bind_group.entries[1].resource_id == scoped_weight_texture_id);
+    }
+    AT(has_scoped_resolve_bind_group);
+
+    dvz_diagnostic_report_init(&report);
+    cfg.target_width = 96;
+    cfg.target_height = 48;
+    DvzDrp2CommandStream* scoped_resize_stream =
+        dvz_figure_emit_ex(figure, &caps, &report, &cfg);
+    ANN(scoped_resize_stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t resized_accum_texture_id = 0;
+    uint64_t resized_weight_texture_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        const char* label =
+            dvz_drp2_stream_label(scoped_resize_stream, command->u.create_texture.id);
+        if (label != NULL &&
+            strcmp(label, "fig0_p0.wboit.accum_scope_000000000000007c") == 0 &&
+            command->u.create_texture.width == 96 && command->u.create_texture.height == 48)
+            resized_accum_texture_id = command->u.create_texture.id;
+        else if (
+            label != NULL &&
+            strcmp(label, "fig0_p0.wboit.weight_scope_000000000000007c") == 0 &&
+            command->u.create_texture.width == 96 && command->u.create_texture.height == 48)
+            resized_weight_texture_id = command->u.create_texture.id;
+    }
+    AT(resized_accum_texture_id != 0);
+    AT(resized_weight_texture_id != 0);
+
+    bool rebuilt_resolve_bind_group = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP ||
+            command->u.create_bind_group.entry_count != 3)
+            continue;
+        rebuilt_resolve_bind_group =
+            rebuilt_resolve_bind_group ||
+            (command->u.create_bind_group.entries[0].resource_id == resized_accum_texture_id &&
+             command->u.create_bind_group.entries[1].resource_id == resized_weight_texture_id);
+    }
+    AT(rebuilt_resolve_bind_group);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, scoped_stream);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, scoped_resize_stream);
+    if (!result.ok)
+    {
+        const DvzDrp2Command* failed =
+            dvz_drp2_stream_get(scoped_resize_stream, result.command_index);
+        log_error(
+            "WBOIT resize stream failed: code=%d command=%" PRIu32 " type=%d", result.code,
+            result.command_index, failed != NULL ? (int)failed->type : -1);
+        return 1;
+    }
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_stream_destroy(scoped_resize_stream);
+    dvz_drp2_stream_destroy(scoped_stream);
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;
