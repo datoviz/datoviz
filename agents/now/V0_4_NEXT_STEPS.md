@@ -90,6 +90,22 @@ now restores SPIR-V payload sizes for actual Vulkan replay. Focused validation: 
 `./build/testing/dvztest_drp2 drp2_recording` (`4/4`), and
 `./build/testing/dvz_drp2_player --fast build/examples/c/record_scene_dvzr.dvzr`.
 
+Fifth follow-up DVZR slice on 2026-05-15: app windows can now replay app-recorded `.dvzr` streams
+directly into a live GLFW swapchain. Live replay attaches the current borrowed canvas frame under
+the recorded app target id and filters the synthetic target `CreateTexture` command from the setup
+frame, so recorded frame streams execute through the real vklite runtime and present normally.
+`examples/c/replay_dvzr_glfw.c` opens a live replay window with paced, fast, loop, speed, and
+bounded-frame modes. `examples/c/hello_mesh_glfw.c` now accepts `record`, `record=PATH`, or
+`--record PATH`, so the existing rotating interactive cube can be recorded and then replayed.
+Focused validation: `just build`,
+`./build/examples/c/record_scene_dvzr`,
+`./build/examples/c/replay_dvzr_glfw --fast --frames 2 build/examples/c/record_scene_dvzr.dvzr`,
+`./build/examples/c/hello_mesh_glfw 3 record=/tmp/dvz_mesh_live_replay.dvzr`,
+`./build/examples/c/replay_dvzr_glfw --fast --frames 4 /tmp/dvz_mesh_live_replay.dvzr`,
+`./build/testing/dvz_drp2_player --fast /tmp/dvz_mesh_live_replay.dvzr`,
+`./build/testing/dvztest_scene test_app_offscreen_records_dvzr_frames`, and
+`./build/testing/dvztest_drp2 drp2_recording` (`4/4`).
+
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
 1. `just spec-check`: last recorded pass remained `119/119` DRP2 fixtures; `52` fixture-runner
@@ -205,9 +221,9 @@ Deliver the next implementation slices in this order unless the user redirects:
    stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
    bounded live app smoke around request/runtime steady state.
-5. Current DVZR next: decide whether `dvz_drp2_player` should stay a developer executable or become
-   an installed CLI/app-level integration point, add an image-diff regression around the existing
-   offscreen scene recording/replay example if this becomes a CI lane, and broaden portable command
+5. Current DVZR next: decide whether `dvz_drp2_player` and `replay_dvzr_glfw` should stay developer
+   executables or become installed CLI/app-level integration points, add image-diff or bounded
+   live-window replay regression coverage if this becomes a CI lane, and broaden portable command
    coverage beyond the point/primitive/mesh/image baseline whenever a real scene/app stream reports
    raw fallbacks.
 6. CUDA/CuPy external-memory interop priority: treat CUDA/CuPy-owned GPU pointer -> Vulkan import as
