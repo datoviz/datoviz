@@ -27,6 +27,8 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+int test_gui_imgui_public_header(TstSuite* suite, TstItem* item);
+
 int test_gui(TstSuite* suite);
 
 EXTERN_C_OFF

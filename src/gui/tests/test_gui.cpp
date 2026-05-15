@@ -389,6 +389,7 @@ int test_gui(TstSuite* suite)
 {
     ANN(suite);
     const char* tags = "gui";
+    TEST_SIMPLE(test_gui_imgui_public_header);
     TEST_SIMPLE(test_gui_viewport_config_defaults);
     TEST_SIMPLE(test_gui_viewport_resize_hidden_smoke);
     TEST_SIMPLE(test_gui_multi_viewport_input_routers);
