@@ -58,15 +58,17 @@ typedef enum
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 typedef struct
 {
-    uint64_t rt;
-    uint64_t depth;
-    uint64_t front_ping;
-    uint64_t back_ping;
-    uint64_t depth_ping;
-    uint64_t front_pong;
-    uint64_t back_pong;
-    uint64_t depth_pong;
-} SceneDepthPeelResourceIds;
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    uint64_t texture_id;
+} SceneDepthPeelRuntimeTarget;
+
+
+
+typedef struct
+{
+    SceneDepthPeelRuntimeTarget targets[DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY];
+    uint32_t count;
+} SceneDepthPeelRuntimeTargets;
 #endif
 
 
@@ -195,7 +197,7 @@ static bool _add_dvzr_visual(DvzScene* scene, DvzPanel* panel, SceneDvzrVisualKi
  * @param resource_id the FramePlan graph resource id
  * @return the corresponding DRP2 object id, or 0 when unknown
  */
-static uint64_t _depth_peel_resource_id(const char* resource_id)
+static uint64_t _depth_peel_default_resource_id(const char* resource_id)
 {
     ANN(resource_id);
 
@@ -215,6 +217,149 @@ static uint64_t _depth_peel_resource_id(const char* resource_id)
         return 56;
     if (strcmp(resource_id, "panel0.peel.depth_pong") == 0)
         return 57;
+    return 0;
+}
+
+
+
+/**
+ * Add a graph resource to runtime texture mapping to the depth-peeling test table.
+ *
+ * @param targets runtime target table
+ * @param resource_id graph resource id
+ * @param texture_id runtime texture id
+ * @return true when the mapping was added
+ */
+static bool _depth_peel_runtime_targets_add(
+    SceneDepthPeelRuntimeTargets* targets, const char* resource_id, uint64_t texture_id)
+{
+    ANN(targets);
+    ANN(resource_id);
+
+    if (texture_id == 0 || targets->count >= DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY)
+        return false;
+
+    for (uint32_t i = 0; i < targets->count; i++)
+    {
+        if (strcmp(targets->targets[i].resource_id, resource_id) == 0)
+            return false;
+    }
+
+    SceneDepthPeelRuntimeTarget* target = &targets->targets[targets->count++];
+    dvz_strlcpy(target->resource_id, resource_id, sizeof(target->resource_id));
+    target->texture_id = texture_id;
+    return true;
+}
+
+
+
+/**
+ * Resolve a graph resource id to the runtime texture id used by the depth-peeling test.
+ *
+ * @param targets runtime target table
+ * @param resource_id graph resource id
+ * @return runtime texture id, or 0 when not mapped
+ */
+static uint64_t _depth_peel_runtime_targets_get(
+    const SceneDepthPeelRuntimeTargets* targets, const char* resource_id)
+{
+    ANN(targets);
+    ANN(resource_id);
+
+    for (uint32_t i = 0; i < targets->count; i++)
+    {
+        if (strcmp(targets->targets[i].resource_id, resource_id) == 0)
+            return targets->targets[i].texture_id;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Resolve a graph color attachment to the runtime texture id used by the test bridge.
+ *
+ * @param pass graph pass containing color attachments
+ * @param index color attachment index
+ * @param targets runtime target table
+ * @return runtime texture id, or 0 when not resolved
+ */
+static uint64_t _depth_peel_color_attachment_texture_id(
+    const DvzFrameGraphPass* pass, uint32_t index, const SceneDepthPeelRuntimeTargets* targets)
+{
+    ANN(pass);
+    ANN(targets);
+
+    if (index >= pass->color_attachment_count)
+        return 0;
+    return _depth_peel_runtime_targets_get(
+        targets, pass->color_attachments[index].resource_id);
+}
+
+
+
+/**
+ * Resolve a graph sampled read to the runtime texture id used by the test bridge.
+ *
+ * @param pass graph pass containing sampled reads
+ * @param index read index
+ * @param targets runtime target table
+ * @return runtime texture id, or 0 when not resolved
+ */
+static uint64_t _depth_peel_sampled_read_texture_id(
+    const DvzFrameGraphPass* pass, uint32_t index, const SceneDepthPeelRuntimeTargets* targets)
+{
+    ANN(pass);
+    ANN(targets);
+
+    if (index >= pass->read_count)
+        return 0;
+    return _depth_peel_runtime_targets_get(targets, pass->reads[index].resource_id);
+}
+
+
+
+/**
+ * Resolve a graph depth attachment to the runtime texture id used by the test bridge.
+ *
+ * @param pass graph pass containing the depth attachment
+ * @param targets runtime target table
+ * @return runtime texture id, or 0 when not resolved
+ */
+static uint64_t _depth_peel_depth_attachment_texture_id(
+    const DvzFrameGraphPass* pass, const SceneDepthPeelRuntimeTargets* targets)
+{
+    ANN(pass);
+    ANN(targets);
+
+    if (!pass->has_depth_attachment)
+        return 0;
+    return _depth_peel_runtime_targets_get(targets, pass->depth_attachment.resource_id);
+}
+
+
+
+/**
+ * Verify every graph resource has a runtime texture mapping.
+ *
+ * @param plan frame plan whose graph resources must be mapped
+ * @param targets runtime target table
+ * @return 0 on success
+ */
+static int _assert_depth_peel_runtime_targets(
+    const DvzFramePlan* plan, const SceneDepthPeelRuntimeTargets* targets)
+{
+    ANN(plan);
+    ANN(targets);
+
+    uint32_t resource_count = dvz_frame_plan_graph_resource_count(plan);
+    AT(targets->count == resource_count);
+    for (uint32_t i = 0; i < resource_count; i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        ANN(resource);
+        AT(_depth_peel_runtime_targets_get(targets, resource->id) != 0);
+    }
     return 0;
 }
 
@@ -395,17 +540,20 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
  *
  * @param stream the command stream
  * @param plan the frame plan with graph resources
+ * @param targets output runtime target table
  */
-static int _depth_peel_emit_graph_resources(DvzDrp2CommandStream* stream, const DvzFramePlan* plan)
+static int _depth_peel_emit_graph_resources(
+    DvzDrp2CommandStream* stream, const DvzFramePlan* plan, SceneDepthPeelRuntimeTargets* targets)
 {
     ANN(stream);
     ANN(plan);
+    ANN(targets);
 
     for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
     {
         const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
         ANN(resource);
-        uint64_t id = _depth_peel_resource_id(resource->id);
+        uint64_t id = _depth_peel_default_resource_id(resource->id);
         AT(id != 0);
         uint32_t usage = _depth_peel_texture_usage(resource->usage_flags);
         if (strcmp(resource->id, "rt") == 0)
@@ -413,7 +561,9 @@ static int _depth_peel_emit_graph_resources(DvzDrp2CommandStream* stream, const 
 
         AT(dvz_drp2_stream_create_texture_2d_format_usage(
             stream, id, 2, 2, resource->format, usage));
+        AT(_depth_peel_runtime_targets_add(targets, resource->id, id));
     }
+    AT(_assert_depth_peel_runtime_targets(plan, targets) == 0);
     return 0;
 }
 
@@ -532,31 +682,46 @@ static int _depth_peel_emit_pipeline_setup(DvzDrp2CommandStream* stream)
  * Append bind groups that sample graph ping and pong resources.
  *
  * @param stream the command stream
- * @param ids fixed DRP2 ids for graph resources
+ * @param plan the frame plan whose reads define sampled resources
+ * @param targets runtime target table
  */
 static int _depth_peel_emit_bind_groups(
-    DvzDrp2CommandStream* stream, SceneDepthPeelResourceIds ids)
+    DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const SceneDepthPeelRuntimeTargets* targets)
 {
     ANN(stream);
+    ANN(plan);
+    ANN(targets);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
+
+    const DvzFrameGraphPass* iter = dvz_frame_plan_graph_pass_get(plan, 2);
+    ANN(iter);
+    AT(iter->read_count == 3);
+    const uint64_t iter_front = _depth_peel_sampled_read_texture_id(iter, 0, targets);
+    const uint64_t iter_back = _depth_peel_sampled_read_texture_id(iter, 1, targets);
+    const uint64_t iter_depth = _depth_peel_sampled_read_texture_id(iter, 2, targets);
+    AT(iter_front != 0);
+    AT(iter_back != 0);
+    AT(iter_depth != 0);
 
     DvzDrp2BindGroupEntry peel_entries[4] = {
         {
             .binding = 0,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-            .resource_id = ids.front_ping,
+            .resource_id = iter_front,
         },
         {
             .binding = 1,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-            .resource_id = ids.back_ping,
+            .resource_id = iter_back,
         },
         {
             .binding = 2,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-            .resource_id = ids.depth_ping,
+            .resource_id = iter_depth,
         },
         {
             .binding = 3,
@@ -567,24 +732,34 @@ static int _depth_peel_emit_bind_groups(
     };
     AT(dvz_drp2_stream_create_bind_group_entries(stream, 60, 3, 4, peel_entries));
 
+    const DvzFrameGraphPass* composite = dvz_frame_plan_graph_pass_get(plan, 3);
+    ANN(composite);
+    AT(composite->read_count == 3);
+    const uint64_t composite_front = _depth_peel_sampled_read_texture_id(composite, 0, targets);
+    const uint64_t composite_back = _depth_peel_sampled_read_texture_id(composite, 1, targets);
+    const uint64_t composite_depth = _depth_peel_sampled_read_texture_id(composite, 2, targets);
+    AT(composite_front != 0);
+    AT(composite_back != 0);
+    AT(composite_depth != 0);
+
     DvzDrp2BindGroupEntry composite_entries[4] = {
         {
             .binding = 0,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-            .resource_id = ids.front_pong,
+            .resource_id = composite_front,
         },
         {
             .binding = 1,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-            .resource_id = ids.back_pong,
+            .resource_id = composite_back,
         },
         {
             .binding = 2,
             .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-            .resource_id = ids.depth_pong,
+            .resource_id = composite_depth,
         },
         {
             .binding = 3,
@@ -604,13 +779,15 @@ static int _depth_peel_emit_bind_groups(
  *
  * @param stream the command stream
  * @param plan the frame plan whose graph defines pass order and attachments
- * @param ids fixed DRP2 ids for graph resources
+ * @param targets runtime target table
  */
 static int _depth_peel_emit_graph_passes(
-    DvzDrp2CommandStream* stream, const DvzFramePlan* plan, SceneDepthPeelResourceIds ids)
+    DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const SceneDepthPeelRuntimeTargets* targets)
 {
     ANN(stream);
     ANN(plan);
+    ANN(targets);
     AT(dvz_frame_plan_graph_pass_count(plan) == 4);
 
     AT(dvz_drp2_stream_begin_command_encoder(stream, 80));
@@ -618,8 +795,12 @@ static int _depth_peel_emit_graph_passes(
     const DvzFrameGraphPass* opaque = dvz_frame_plan_graph_pass_get(plan, 0);
     ANN(opaque);
     AT(strcmp(opaque->id, "panel0.opaque") == 0);
-    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 81, 80, ids.rt, 0, 0, 0, 1));
-    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, ids.depth, 1.0f));
+    uint64_t rt_id = _depth_peel_color_attachment_texture_id(opaque, 0, targets);
+    uint64_t depth_id = _depth_peel_depth_attachment_texture_id(opaque, targets);
+    AT(rt_id != 0);
+    AT(depth_id != 0);
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 81, 80, rt_id, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, depth_id, 1.0f));
     AT(dvz_drp2_stream_set_pipeline(stream, 81, 12));
     AT(dvz_drp2_stream_draw(stream, 81, 3, 1, 0, 0));
     AT(dvz_drp2_stream_end_render_pass(stream, 81));
@@ -628,16 +809,21 @@ static int _depth_peel_emit_graph_passes(
     ANN(init);
     AT(strcmp(init->id, "panel0.peel.init") == 0);
     AT(init->color_attachment_count == 3);
+    const uint64_t init_front = _depth_peel_color_attachment_texture_id(init, 0, targets);
+    const uint64_t init_back = _depth_peel_color_attachment_texture_id(init, 1, targets);
+    const uint64_t init_depth_pair = _depth_peel_color_attachment_texture_id(init, 2, targets);
+    AT(init_front != 0);
+    AT(init_back != 0);
+    AT(init_depth_pair != 0);
     AT(dvz_drp2_stream_begin_render_pass_clear(
-        stream, 82, 80, _depth_peel_resource_id(init->color_attachments[0].resource_id),
-        0, 0, 0, 0));
+        stream, 82, 80, init_front, 0, 0, 0, 0));
     AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
-        stream, _depth_peel_resource_id(init->color_attachments[1].resource_id),
-        0, 0, 0, 0, true));
+        stream, init_back, 0, 0, 0, 0, true));
     AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
-        stream, _depth_peel_resource_id(init->color_attachments[2].resource_id),
-        0, 0, 0, 0, true));
-    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, ids.depth, 1.0f));
+        stream, init_depth_pair, 0, 0, 0, 0, true));
+    depth_id = _depth_peel_depth_attachment_texture_id(init, targets);
+    AT(depth_id != 0);
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, depth_id, 1.0f));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
         stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
@@ -651,16 +837,21 @@ static int _depth_peel_emit_graph_passes(
     AT(strcmp(iter->id, "panel0.peel.iter.0") == 0);
     AT(iter->color_attachment_count == 3);
     AT(iter->read_count == 3);
+    const uint64_t iter_front = _depth_peel_color_attachment_texture_id(iter, 0, targets);
+    const uint64_t iter_back = _depth_peel_color_attachment_texture_id(iter, 1, targets);
+    const uint64_t iter_depth_pair = _depth_peel_color_attachment_texture_id(iter, 2, targets);
+    AT(iter_front != 0);
+    AT(iter_back != 0);
+    AT(iter_depth_pair != 0);
     AT(dvz_drp2_stream_begin_render_pass_clear(
-        stream, 83, 80, _depth_peel_resource_id(iter->color_attachments[0].resource_id),
-        0, 0, 0, 0));
+        stream, 83, 80, iter_front, 0, 0, 0, 0));
     AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
-        stream, _depth_peel_resource_id(iter->color_attachments[1].resource_id),
-        0, 0, 0, 0, true));
+        stream, iter_back, 0, 0, 0, 0, true));
     AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
-        stream, _depth_peel_resource_id(iter->color_attachments[2].resource_id),
-        0, 0, 0, 0, true));
-    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, ids.depth, 1.0f));
+        stream, iter_depth_pair, 0, 0, 0, 0, true));
+    depth_id = _depth_peel_depth_attachment_texture_id(iter, targets);
+    AT(depth_id != 0);
+    AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, depth_id, 1.0f));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_ops(
         stream, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_access(
@@ -673,14 +864,16 @@ static int _depth_peel_emit_graph_passes(
     const DvzFrameGraphPass* composite = dvz_frame_plan_graph_pass_get(plan, 3);
     ANN(composite);
     AT(strcmp(composite->id, "panel0.peel.composite") == 0);
-    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 84, 80, ids.rt, 0, 0, 0, 1));
+    rt_id = _depth_peel_color_attachment_texture_id(composite, 0, targets);
+    AT(rt_id != 0);
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 84, 80, rt_id, 0, 0, 0, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
         stream, 0, DVZ_DRP2_ATTACHMENT_LOAD_LOAD, DVZ_DRP2_ATTACHMENT_STORE_STORE));
     AT(dvz_drp2_stream_set_pipeline(stream, 84, 42));
     AT(dvz_drp2_stream_set_bind_group(stream, 84, 0, 61));
     AT(dvz_drp2_stream_draw(stream, 84, 3, 1, 0, 0));
     AT(dvz_drp2_stream_end_render_pass(stream, 84));
-    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 80, ids.rt, 70, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 80, rt_id, 70, 0, 1, 1, 4, 1));
     AT(dvz_drp2_stream_finish_command_encoder(stream, 80, 85));
     AT(dvz_drp2_stream_queue_submit(stream, 85, 86));
     return 0;
@@ -693,24 +886,17 @@ static int _depth_peel_emit_graph_passes(
  *
  * @param plan the graph-only frame plan
  * @param out_stream output command stream owned by the caller
+ * @param out_targets optional output runtime target table
  * @return 0 on success
  */
 static int _depth_peel_graph_to_drp2(
-    const DvzFramePlan* plan, DvzDrp2CommandStream** out_stream)
+    const DvzFramePlan* plan, DvzDrp2CommandStream** out_stream,
+    SceneDepthPeelRuntimeTargets* out_targets)
 {
     ANN(plan);
     ANN(out_stream);
 
-    SceneDepthPeelResourceIds ids = {
-        .rt = _depth_peel_resource_id("rt"),
-        .depth = _depth_peel_resource_id("panel0.depth.opaque"),
-        .front_ping = _depth_peel_resource_id("panel0.peel.front_ping"),
-        .back_ping = _depth_peel_resource_id("panel0.peel.back_ping"),
-        .depth_ping = _depth_peel_resource_id("panel0.peel.depth_ping"),
-        .front_pong = _depth_peel_resource_id("panel0.peel.front_pong"),
-        .back_pong = _depth_peel_resource_id("panel0.peel.back_pong"),
-        .depth_pong = _depth_peel_resource_id("panel0.peel.depth_pong"),
-    };
+    SceneDepthPeelRuntimeTargets targets = {0};
 
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
@@ -718,12 +904,73 @@ static int _depth_peel_graph_to_drp2(
     AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
 
     AT(_depth_peel_emit_pipeline_setup(stream) == 0);
-    AT(_depth_peel_emit_graph_resources(stream, plan) == 0);
+    AT(_depth_peel_emit_graph_resources(stream, plan, &targets) == 0);
     AT(dvz_drp2_stream_create_buffer(
         stream, 70, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
-    AT(_depth_peel_emit_bind_groups(stream, ids) == 0);
-    AT(_depth_peel_emit_graph_passes(stream, plan, ids) == 0);
+    AT(_depth_peel_emit_bind_groups(stream, plan, &targets) == 0);
+    AT(_depth_peel_emit_graph_passes(stream, plan, &targets) == 0);
+    if (out_targets != NULL)
+        *out_targets = targets;
     *out_stream = stream;
+    return 0;
+}
+
+
+
+/**
+ * Verify a begin-render-pass command matches graph color attachments.
+ *
+ * @param cmd stream command to inspect
+ * @param pass graph pass defining color attachments
+ * @param targets runtime target table
+ * @return 0 on success
+ */
+static int _assert_depth_peel_pass_color_targets(
+    const DvzDrp2Command* cmd, const DvzFrameGraphPass* pass,
+    const SceneDepthPeelRuntimeTargets* targets)
+{
+    ANN(cmd);
+    ANN(pass);
+    ANN(targets);
+    AT(cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS);
+    AT(cmd->u.begin_render_pass.color_attachment_count == pass->color_attachment_count);
+    for (uint32_t i = 0; i < pass->color_attachment_count; i++)
+    {
+        uint64_t id = _depth_peel_color_attachment_texture_id(pass, i, targets);
+        AT(id != 0);
+        AT(cmd->u.begin_render_pass.color_attachments[i].texture_id == id);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Verify a bind-group command samples graph pass reads.
+ *
+ * @param cmd stream command to inspect
+ * @param bind_group_id expected bind group id
+ * @param pass graph pass defining sampled reads
+ * @param targets runtime target table
+ * @return 0 on success
+ */
+static int _assert_depth_peel_bind_group_reads(
+    const DvzDrp2Command* cmd, uint64_t bind_group_id, const DvzFrameGraphPass* pass,
+    const SceneDepthPeelRuntimeTargets* targets)
+{
+    ANN(cmd);
+    ANN(pass);
+    ANN(targets);
+    AT(cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP);
+    AT(cmd->u.create_bind_group.id == bind_group_id);
+    AT(pass->read_count == 3);
+    AT(cmd->u.create_bind_group.entry_count == 4);
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        uint64_t id = _depth_peel_sampled_read_texture_id(pass, i, targets);
+        AT(id != 0);
+        AT(cmd->u.create_bind_group.entries[i].resource_id == id);
+    }
     return 0;
 }
 
@@ -733,17 +980,39 @@ static int _depth_peel_graph_to_drp2(
  * Verify the lowered stream preserves graph resource ids in passes and bind groups.
  *
  * @param stream the stream to inspect
+ * @param plan graph plan used for lowering
+ * @param targets runtime target table
  * @return 0 on success
  */
-static int _assert_depth_peel_graph_stream_shape(const DvzDrp2CommandStream* stream)
+static int _assert_depth_peel_graph_stream_shape(
+    const DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const SceneDepthPeelRuntimeTargets* targets)
 {
     ANN(stream);
+    ANN(plan);
+    ANN(targets);
+    AT(_assert_depth_peel_runtime_targets(plan, targets) == 0);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
 
     uint32_t named_depth_passes = 0;
     uint32_t three_color_passes = 0;
     uint32_t raster_pipelines = 0;
     bool sampled_ping = false;
     bool sampled_pong = false;
+    bool init_attachments = false;
+    bool iter_attachments = false;
+    bool composite_attachment = false;
+
+    const DvzFrameGraphPass* opaque = dvz_frame_plan_graph_pass_get(plan, 0);
+    const DvzFrameGraphPass* init = dvz_frame_plan_graph_pass_get(plan, 1);
+    const DvzFrameGraphPass* iter = dvz_frame_plan_graph_pass_get(plan, 2);
+    const DvzFrameGraphPass* composite = dvz_frame_plan_graph_pass_get(plan, 3);
+    ANN(opaque);
+    ANN(init);
+    ANN(iter);
+    ANN(composite);
+    uint64_t depth_id = _depth_peel_depth_attachment_texture_id(opaque, targets);
+    AT(depth_id != 0);
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -751,10 +1020,27 @@ static int _assert_depth_peel_graph_stream_shape(const DvzDrp2CommandStream* str
         ANN(cmd);
         if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
-            if (cmd->u.begin_render_pass.depth_texture_id == 51)
+            if (cmd->u.begin_render_pass.depth_texture_id == depth_id)
                 named_depth_passes++;
             if (cmd->u.begin_render_pass.color_attachment_count == 3)
                 three_color_passes++;
+            if (cmd->u.begin_render_pass.id == 82)
+            {
+                AT(_assert_depth_peel_pass_color_targets(cmd, init, targets) == 0);
+                AT(cmd->u.begin_render_pass.depth_texture_id == depth_id);
+                init_attachments = true;
+            }
+            if (cmd->u.begin_render_pass.id == 83)
+            {
+                AT(_assert_depth_peel_pass_color_targets(cmd, iter, targets) == 0);
+                AT(cmd->u.begin_render_pass.depth_texture_id == depth_id);
+                iter_attachments = true;
+            }
+            if (cmd->u.begin_render_pass.id == 84)
+            {
+                AT(_assert_depth_peel_pass_color_targets(cmd, composite, targets) == 0);
+                composite_attachment = true;
+            }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -765,11 +1051,17 @@ static int _assert_depth_peel_graph_stream_shape(const DvzDrp2CommandStream* str
         {
             const DvzDrp2BindGroupEntry* entries = cmd->u.create_bind_group.entries;
             if (cmd->u.create_bind_group.id == 60)
-                sampled_ping = entries[0].resource_id == 52 && entries[1].resource_id == 53 &&
-                               entries[2].resource_id == 54;
+            {
+                AT(entries[3].resource_id == 2);
+                AT(_assert_depth_peel_bind_group_reads(cmd, 60, iter, targets) == 0);
+                sampled_ping = true;
+            }
             if (cmd->u.create_bind_group.id == 61)
-                sampled_pong = entries[0].resource_id == 55 && entries[1].resource_id == 56 &&
-                               entries[2].resource_id == 57;
+            {
+                AT(entries[3].resource_id == 2);
+                AT(_assert_depth_peel_bind_group_reads(cmd, 61, composite, targets) == 0);
+                sampled_pong = true;
+            }
         }
     }
 
@@ -778,6 +1070,9 @@ static int _assert_depth_peel_graph_stream_shape(const DvzDrp2CommandStream* str
     AT(raster_pipelines == 2);
     AT(sampled_ping);
     AT(sampled_pong);
+    AT(init_attachments);
+    AT(iter_attachments);
+    AT(composite_attachment);
     return 0;
 }
 
@@ -1534,9 +1829,10 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstSuite* suite, TstI
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     DvzDrp2CommandStream* stream = NULL;
-    AT(_depth_peel_graph_to_drp2(plan, &stream) == 0);
+    SceneDepthPeelRuntimeTargets targets = {0};
+    AT(_depth_peel_graph_to_drp2(plan, &stream, &targets) == 0);
     ANN(stream);
-    AT(_assert_depth_peel_graph_stream_shape(stream) == 0);
+    AT(_assert_depth_peel_graph_stream_shape(stream, plan, &targets) == 0);
 
     DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
     AT(validation.ok);
