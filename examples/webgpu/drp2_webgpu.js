@@ -332,32 +332,49 @@ function makeDepthStencil(command) {
 
 
 
+function shaderStageVisibility(stages, fallback) {
+  const selected = stages ?? fallback;
+  return selected.reduce((bits, stage) => {
+    switch (stage) {
+      case "VERTEX":
+        return bits | GPUShaderStage.VERTEX;
+      case "FRAGMENT":
+        return bits | GPUShaderStage.FRAGMENT;
+      case "COMPUTE":
+        return bits | GPUShaderStage.COMPUTE;
+      default:
+        throw new Error(`unsupported shader-stage visibility: ${stage}`);
+    }
+  }, 0);
+}
+
+
+
 function makeBindGroupLayoutEntry(entry, storageAccess = "read_write") {
   const binding = required(entry.binding, "bind-group layout entry needs binding");
-  const visibility = GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE;
   switch (entry.binding_type) {
     case "sampled_texture":
       return {
         binding,
-        visibility: GPUShaderStage.FRAGMENT,
+        visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT"]),
         texture: { sampleType: "float" },
       };
     case "sampler":
       return {
         binding,
-        visibility: GPUShaderStage.FRAGMENT,
+        visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT"]),
         sampler: { type: "filtering" },
       };
     case "uniform_buffer":
       return {
         binding,
-        visibility,
+        visibility: shaderStageVisibility(entry.visibility, ["VERTEX", "FRAGMENT", "COMPUTE"]),
         buffer: { type: "uniform" },
       };
     case "storage_buffer":
       return {
         binding,
-        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.COMPUTE,
+        visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT", "COMPUTE"]),
         buffer: { type: storageAccess === "read" ? "read-only-storage" : "storage" },
       };
     default:
@@ -380,7 +397,7 @@ function shaderStorageAccess(shader, binding) {
 function specializeBindGroupLayout(device, layoutRecord, shader) {
   const entries = layoutRecord.entries.map((entry) => {
     const access = entry.binding_type === "storage_buffer"
-      ? shaderStorageAccess(shader, entry.binding)
+      ? (entry.access ?? shaderStorageAccess(shader, entry.binding))
       : "read_write";
     return makeBindGroupLayoutEntry(entry, access);
   });

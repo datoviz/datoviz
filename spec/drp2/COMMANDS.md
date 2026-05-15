@@ -522,6 +522,12 @@ Each layout entry requires:
 Optional fields:
 
 - `has_dynamic_offset`: whether a buffer binding consumes one entry from `SetBindGroup.dynamic_offsets`.
+- `visibility`: shader stages that may access the binding. If omitted, defaults are:
+  - sampled textures and samplers: `FRAGMENT`,
+  - uniform buffers: `VERTEX`, `FRAGMENT`, and `COMPUTE`,
+  - storage buffers and storage textures: `FRAGMENT` and `COMPUTE`.
+- `access`: storage binding access mode, either `read` or `read_write`. It applies only to
+  `storage_buffer` and `storage_texture` entries and defaults to `read_write`.
 - `label`: debug label.
 
 Semantics:
@@ -530,7 +536,11 @@ Semantics:
    binding type only,
 2. binding indices within one layout must be unique,
 3. `has_dynamic_offset` may be set only on `uniform_buffer` or `storage_buffer` bindings,
-4. bind groups created from the layout must provide exactly the declared binding set.
+4. `visibility` must include every shader stage that statically accesses the binding and may not
+   include stages where the backend rejects the declared binding class,
+5. storage bindings declared with `access = read_write` must not be used from shader stages or
+   language declarations that only allow read-only storage,
+6. bind groups created from the layout must provide exactly the declared binding set.
 
 
 ### `DestroyBindGroupLayout`
@@ -655,12 +665,15 @@ Semantics:
 5. if present, `bind_group_layout_ids[slot]` defines the bind-group layout expected by
    `SetBindGroup(slot, ...)`,
 6. if `vertex_buffers` is present, its length must equal `vertex_buffer_slots`; if absent, vertex
-   input layout is unspecified and vertex pulling is assumed,
+   input layout is unspecified and vertex pulling is assumed. Portable producers should provide
+   `vertex_buffers` whenever the vertex shader declares user vertex-input locations,
 7. omitting `topology` is equivalent to `triangle-list`,
 8. omitting `depth_stencil` means no depth or stencil testing is performed; the pipeline must not
    be used in a render pass whose `depth_stencil_attachment` requires depth writes or comparison,
 9. omitting `color_targets` means the pipeline targets one color attachment with no blending and
-   full write mask; format compatibility is the backend's responsibility,
+   full write mask. The default format is backend-selected from the render target: browser WebGPU
+   uses the configured canvas format for canvas targets and `rgba8unorm` for ordinary color
+   textures unless a target format is known from the referenced attachment,
 10. if `color_targets` is present, its length should match the number of color attachments declared
     in the render pass.
 
@@ -943,9 +956,12 @@ Semantics:
 7. `dynamic_offsets` are consumed in the layout entry order declared by `CreateBindGroupLayout`,
 8. each consumed dynamic offset is added to the corresponding bind-group entry's base `offset`
    before validating the referenced buffer range,
-9. if the bind-group layout declares no dynamic buffer bindings, `dynamic_offsets` must be omitted or
+9. each final dynamic buffer offset must satisfy the backend's binding-offset alignment requirement.
+   Backends may materialize an aligned temporary binding when the stream is otherwise valid and the
+   visible range is representable,
+10. if the bind-group layout declares no dynamic buffer bindings, `dynamic_offsets` must be omitted or
    empty,
-10. if a new pipeline is rebound earlier in the same pass, `SetBindGroup` is interpreted against the
+11. if a new pipeline is rebound earlier in the same pass, `SetBindGroup` is interpreted against the
     newly bound pipeline rather than any earlier pipeline.
 
 
@@ -1149,7 +1165,10 @@ Semantics:
 1. the source box must fit inside the selected texture subresource,
 2. `src_mip_level` must select an allocated source subresource,
 3. `bytes_per_row` and `rows_per_image` must be consistent with the copied extent,
-4. the layout fields describe how texel data is packed in the destination buffer.
+4. the layout fields describe how texel data is packed in the destination buffer,
+5. backends whose copy command requires stricter row-pitch alignment may use an aligned temporary
+   copy buffer and compact the requested rows into the destination layout described by
+   `bytes_per_row`.
 
 
 ### `CopyTextureToTexture`

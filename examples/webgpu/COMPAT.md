@@ -97,34 +97,41 @@ The PoC supports the fixture subset of:
 
 ## PoC-Local Adaptations
 
-These are compatibility choices in the browser runner, not stable DRP2 semantics.
+These are compatibility choices in the browser runner where the current fixtures still use compact
+or older command forms.
 
 - `texture_id: 0` means the current browser canvas texture.
 - Pipeline color target format `"canvas"` means `navigator.gpu.getPreferredCanvasFormat()`.
 - Texture dimensions `"canvas"` for width/height mean the current canvas pixel extent.
-- Missing `CreateRenderPipeline.color_targets` defaults to `rgba8unorm`.
-- Missing `vertex_buffers` with a vertex shader using `@location(0)` defaults to one
-  `float32x3` vertex attribute at slot 0.
+- Missing `CreateRenderPipeline.color_targets` follows the DRP2 default: the configured canvas
+  format for canvas targets, otherwise `rgba8unorm` when no attachment format is available.
+- Missing `vertex_buffers` means vertex pulling or builtins in DRP2. The PoC still provides a
+  one-slot compatibility fallback for old smoke streams whose vertex shader declares
+  `@location(0)`.
 - Tight `CopyTextureToBuffer.bytes_per_row` values are adapted through an aligned temporary buffer
   because WebGPU requires copy row pitch to be a multiple of 256 bytes.
 - Buffer binding offsets that are valid in DRP2 but not aligned for WebGPU are bound from offset 0
   in the PoC so fixture command paths can still execute.
-- Storage-buffer layout visibility is narrowed to fragment and compute stages because WebGPU rejects
-  read-write storage buffers visible to the vertex stage.
+- Bind-group layout `visibility` and storage `access` are honored when present. Older fixtures
+  without those fields use DRP2 defaults, and the PoC keeps shader-source inference as a fallback for
+  storage-buffer access until all fixtures declare it explicitly.
 - Destroy commands are accepted as no-op lifecycle markers; the PoC relies on JavaScript object
   lifetime instead of implementing DRP2 object-use lifetime validation.
 
 
 ## DRP2 Contract Gaps Exposed
 
-The WebGPU PoC has exposed several portability-significant questions:
+The first WebGPU pass resolved these DRP2 portability questions in the protocol notes:
 
-- Should `CreateRenderPipeline.color_targets` be required, or should DRP2 define an official default?
-- Should `CreateRenderPipeline.vertex_buffers` be required whenever vertex input locations are used?
-- Should bind group layout entries carry shader-stage visibility?
-- Should storage buffer layout entries distinguish read-only from read-write access?
-- Should DRP2 require WebGPU-compatible row pitch for texture-to-buffer copies, or explicitly allow
-  backend adaptation for tight rows?
-- Should dynamic buffer offsets specify backend alignment requirements, or should runtimes always adapt?
+- `CreateRenderPipeline.color_targets` remains optional with a backend-selected default.
+- `CreateRenderPipeline.vertex_buffers` remains optional, but portable producers should provide it
+  when the vertex shader declares user input locations.
+- bind-group layout entries may now carry `visibility`.
+- storage layout entries may now carry `access` (`read` or `read_write`).
+- tight `CopyTextureToBuffer.bytes_per_row` remains valid DRP2, with backend adaptation allowed when
+  a backend requires stricter row-pitch alignment.
+- dynamic buffer offsets remain DRP2 offsets; backends must validate alignment or adapt by
+  materializing an equivalent aligned binding.
 
-These should be resolved in the DRP2 spec before treating WebGPU as more than a portability probe.
+The next cleanup is fixture hygiene: add explicit `visibility`, `access`, `vertex_buffers`, and
+`color_targets` to committed fixtures so the PoC compatibility fallbacks become unnecessary.

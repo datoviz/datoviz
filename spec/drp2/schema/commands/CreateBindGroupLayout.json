@@ -33,6 +33,21 @@
           },
           "has_dynamic_offset": {
             "type": "boolean"
+          },
+          "visibility": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "../common/ShaderStage.json"
+            }
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "read",
+              "read_write"
+            ]
           }
         },
         "required": [
