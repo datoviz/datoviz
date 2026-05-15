@@ -30,6 +30,7 @@ BYTES_PER_TEXEL = {
     'rgba8unorm': 4,
     'bgra8unorm': 4,
     'rgba8unorm-srgb': 4,
+    'r16float': 2,
     'rgba16float': 8,
     'rgba32float': 16,
     'depth24plus': 4,

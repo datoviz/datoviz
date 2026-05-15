@@ -3459,6 +3459,152 @@ int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item)
 
 
 /**
+ * Verify a WBOIT-shaped accumulation and resolve stream validates and serializes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_drp2_wboit_accumulation_resolve_stream(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 1, 36, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX));
+    AT(dvz_drp2_stream_write_buffer(
+        stream, 1, 0, 36, "AAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAA"));
+    AT(dvz_drp2_stream_create_sampler(stream, 2));
+
+    DvzDrp2BindGroupLayoutEntry layout_entries[3] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+            .access = DVZ_DRP2_BINDING_ACCESS_READ,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_layout_entries(stream, 3, 3, layout_entries));
+
+    AT(dvz_drp2_stream_create_shader_module(
+        stream, 10, "VERTEX", "@vertex fn main() -> @builtin(position) vec4f { return vec4f(); }"));
+    AT(dvz_drp2_stream_create_shader_module(
+        stream, 11, "FRAGMENT",
+        "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 12, 10, 11, 1));
+    AT(dvz_drp2_stream_pipeline_set_color_target(
+        stream, 0, VK_FORMAT_R16G16B16A16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_target(stream, 1, VK_FORMAT_R16_SFLOAT));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        stream, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT));
+    AT(dvz_drp2_stream_pipeline_set_color_blend(
+        stream, 1, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+        VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT));
+
+    AT(dvz_drp2_stream_create_shader_module(
+        stream, 20, "VERTEX", "@vertex fn main() -> @builtin(position) vec4f { return vec4f(); }"));
+    AT(dvz_drp2_stream_create_shader_module(
+        stream, 21, "FRAGMENT",
+        "@group(0) @binding(0) var accum: texture_2d<f32>; "
+        "@group(0) @binding(1) var reveal: texture_2d<f32>; "
+        "@group(0) @binding(2) var samp: sampler; "
+        "@fragment fn main() -> @location(0) vec4f { "
+        "return textureSample(accum, samp, vec2f(0.5)); }"));
+    AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
+        stream, 22, 20, 21, 0, 3));
+
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 30, 4, 4,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 31, 4, 4,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 32, 4, 4, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 33, 4, 4, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+
+    DvzDrp2BindGroupEntry bind_entries[3] = {
+        {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 30,
+        },
+        {
+            .binding = 1,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+            .resource_id = 31,
+        },
+        {
+            .binding = 2,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = 2,
+        },
+    };
+    AT(dvz_drp2_stream_create_bind_group_entries(stream, 34, 3, 3, bind_entries));
+
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 40));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 41, 40, 30, 0, 0, 0, 0));
+    AT(dvz_drp2_stream_begin_render_pass_add_color_attachment(
+        stream, 31, 0, 0, 0, 0, true));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f));
+    AT(dvz_drp2_stream_set_pipeline(stream, 41, 12));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 41, 0, 1, 0));
+    AT(dvz_drp2_stream_draw(stream, 41, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 41));
+
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 42, 40, 32, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 42, 22));
+    AT(dvz_drp2_stream_set_bind_group(stream, 42, 0, 34));
+    AT(dvz_drp2_stream_draw(stream, 42, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 42));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 40, 43));
+    AT(dvz_drp2_stream_queue_submit(stream, 43, 44));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    char* json = dvz_drp2_stream_json(stream, "wboit_accumulation_resolve_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"rgba16float\"") != NULL);
+    AT(strstr(json, "\"format\": \"r16float\"") != NULL);
+    AT(strstr(json, "\"blend\"") != NULL);
+    AT(strstr(json, "\"texture_id\": 30") != NULL);
+    AT(strstr(json, "\"texture_id\": 31") != NULL);
+    AT(strstr(json, "\"cmd\": \"SetBindGroup\"") != NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+/**
  * Ensure a linear DRP2 recording round-trips portable commands and payload blobs.
  *
  * @param suite the active test suite
@@ -3658,6 +3804,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TEST_SIMPLE(test_drp2_render_pipeline_step_modes_json);
     TEST_SIMPLE(test_drp2_render_pipeline_color_targets_json);
+    TEST_SIMPLE(test_drp2_wboit_accumulation_resolve_stream);
     TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
     TEST_SIMPLE(test_drp2_begin_render_pass_clear_color_stored);
     TEST_SIMPLE(test_drp2_begin_render_pass_multi_color_attachments);

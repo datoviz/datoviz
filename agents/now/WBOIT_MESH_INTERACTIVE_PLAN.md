@@ -55,8 +55,11 @@ Current implementation status on `2026-05-15`:
    present. This is still a planning slice: the resolve node does not yet lower to executable DRP2
    WBOIT commands.
 5. DRP2 already has first C support for multiple color attachments and per-target blend state, plus
-   vklite runtime smoke coverage for a multi-color render pass. A WBOIT-specific accumulation +
-   resolve fixture is still missing.
+   vklite runtime smoke coverage for a multi-color render pass.
+6. The DRP2 positive fixture corpus now includes `wboit_accumulation_resolve.json`, which encodes a
+   minimal WBOIT-style accumulation pass with RGBA16F + R16F attachments, additive per-target
+   blending, depth attachment coordination, and a resolve pass that samples both intermediate
+   targets.
 
 ### 1. Public scene transparency API
 
@@ -148,10 +151,10 @@ Likely files:
 
 ### 4. DRP2 multi-attachment and blend support
 
-The DRP2 prose spec already describes multiple color attachments and per-attachment blend state, but
-the current C stream/runtime path is still effectively single-color-target in important places.
+The DRP2 prose spec already describes multiple color attachments and per-attachment blend state, and
+the current C stream/runtime path has first support for the WBOIT-shaped command stream.
 
-Implement or complete C support for:
+Current completed pieces:
 
 1. `BeginRenderPass` with multiple color attachments;
 2. per-attachment load/store/clear semantics;
@@ -160,6 +163,13 @@ Implement or complete C support for:
 5. render target textures that can later be sampled by the resolve pass;
 6. serialization and semantic validation for the above;
 7. DRP2 fixtures that encode a minimal WBOIT-like accumulation + resolve sequence.
+
+Still pending:
+
+1. backend execution that uses real RGBA16F/R16F intermediate texture formats end to end;
+2. scene lowering that emits the WBOIT fixture shape from FramePlan transparent/resolve nodes;
+3. tighter validation that pipeline color target formats match render-pass attachment formats once
+   texture format is represented in the C stream command.
 
 Likely files:
 
@@ -242,9 +252,9 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
    metadata.
 4. Mostly done at the C command/runtime smoke level: DRP2 supports multiple color attachments and
    per-target blend state. Still pending: WBOIT-specific fixture coverage.
-5. Next: update DRP2 semantic validation, JSON serialization, schemas, and fixtures for a minimal
-   WBOIT accumulation + resolve sequence.
-6. Teach vklite DRP2 runtime to execute WBOIT accumulation, intermediate texture transitions, and
+5. Done: add DRP2 semantic/schema/fixture coverage for a minimal WBOIT accumulation + resolve
+   sequence.
+6. Next: teach vklite DRP2 runtime to execute WBOIT accumulation, intermediate texture transitions, and
    resolve.
 7. Add scene WBOIT accumulation and resolve shaders.
 8. Lower scene WBOIT FramePlan nodes to explicit DRP2 command streams.

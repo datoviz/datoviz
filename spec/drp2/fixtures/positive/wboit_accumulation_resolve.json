@@ -1,0 +1,318 @@
+{
+  "name": "wboit_accumulation_resolve",
+  "description": "Encodes a minimal weighted blended OIT accumulation pass followed by a resolve pass.",
+  "reason": "The accumulation pass writes blended transparent fragments to two floating-point color attachments, and the resolve pass samples both intermediate attachments before writing the final color target.",
+  "notes": "This fixture is a contract-pressure slice for scene WBOIT lowering. It validates explicit DRP2 multi-attachment render passes, per-target blend state, depth coordination, intermediate render-target sampling, and pass sequencing without requiring scene-owned WBOIT shaders yet.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "positive",
+    "wboit",
+    "transparency",
+    "render_pass",
+    "multi_attachment",
+    "blend",
+    "texture_sampling",
+    "depth",
+    "draw",
+    "queue"
+  ],
+  "capabilities": {
+    "max_buffer_size": 134217728,
+    "max_texture_dimension_1d": 8192,
+    "max_texture_dimension_2d": 8192,
+    "max_texture_dimension_3d": 2048,
+    "supported_texture_formats": ["rgba8unorm", "r16float", "rgba16float", "depth32float"],
+    "supported_sample_counts": [1],
+    "supported_shader_formats": ["wgsl"],
+    "supports_fp64": false
+  },
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": { "major": 2, "minor": 0 },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": { "major": 2, "minor": 0 },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateBuffer",
+      "id": 1,
+      "size": 36,
+      "usage": ["VERTEX"]
+    },
+    {
+      "cmd": "CreateSampler",
+      "id": 2,
+      "label": "wboit_resolve_sampler",
+      "mag_filter": "nearest",
+      "min_filter": "nearest",
+      "mipmap_filter": "nearest",
+      "address_mode_u": "clamp-to-edge",
+      "address_mode_v": "clamp-to-edge"
+    },
+    {
+      "cmd": "CreateBindGroupLayout",
+      "id": 3,
+      "label": "wboit_resolve_bindings",
+      "entries": [
+        { "binding": 0, "binding_type": "sampled_texture", "visibility": ["FRAGMENT"] },
+        { "binding": 1, "binding_type": "sampled_texture", "visibility": ["FRAGMENT"] },
+        { "binding": 2, "binding_type": "sampler", "visibility": ["FRAGMENT"] }
+      ]
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@location(0) position: vec3f) -> @builtin(position) vec4f { return vec4f(position, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "struct Out { @location(0) accum: vec4f, @location(1) reveal: f32 }; @fragment fn main() -> Out { var out: Out; out.accum = vec4f(0.2, 0.4, 0.8, 0.5); out.reveal = 0.5; return out; }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 12,
+      "label": "wboit_accumulation_pipeline",
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 1,
+      "vertex_buffers": [
+        {
+          "array_stride": 12,
+          "attributes": [
+            { "format": "float32x3", "offset": 0, "shader_location": 0 }
+          ]
+        }
+      ],
+      "depth_stencil": {
+        "format": "depth32float",
+        "depth_write_enabled": false,
+        "depth_compare": "less-equal"
+      },
+      "color_targets": [
+        {
+          "format": "rgba16float",
+          "blend": {
+            "color": { "src_factor": "one", "dst_factor": "one", "operation": "add" },
+            "alpha": { "src_factor": "one", "dst_factor": "one", "operation": "add" }
+          },
+          "write_mask": ["red", "green", "blue", "alpha"]
+        },
+        {
+          "format": "r16float",
+          "blend": {
+            "color": { "src_factor": "one", "dst_factor": "one", "operation": "add" },
+            "alpha": { "src_factor": "one", "dst_factor": "one", "operation": "add" }
+          },
+          "write_mask": ["red"]
+        }
+      ]
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 20,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4f { var pos = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return vec4f(pos[idx], 0.0, 1.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 21,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@group(0) @binding(0) var accum: texture_2d<f32>; @group(0) @binding(1) var reveal: texture_2d<f32>; @group(0) @binding(2) var samp: sampler; @fragment fn main() -> @location(0) vec4f { let a = textureSample(accum, samp, vec2f(0.5, 0.5)); let r = textureSample(reveal, samp, vec2f(0.5, 0.5)).r; return vec4f(a.rgb / max(a.a, 0.0001), 1.0 - r); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 22,
+      "label": "wboit_resolve_pipeline",
+      "vertex_shader_module_id": 20,
+      "fragment_shader_module_id": 21,
+      "vertex_buffer_slots": 0,
+      "vertex_buffers": [],
+      "bind_group_layout_ids": [3],
+      "color_targets": [{ "format": "rgba8unorm", "write_mask": ["red", "green", "blue", "alpha"] }]
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 30,
+      "label": "wboit_accum_color",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba16float",
+      "usage": ["RENDER_ATTACHMENT", "TEXTURE_BINDING"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 31,
+      "label": "wboit_accum_reveal",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "r16float",
+      "usage": ["RENDER_ATTACHMENT", "TEXTURE_BINDING"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 32,
+      "label": "wboit_resolved_color",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "rgba8unorm",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateTexture",
+      "id": 33,
+      "label": "wboit_depth",
+      "dimension": "2d",
+      "width": 4,
+      "height": 4,
+      "depth": 1,
+      "format": "depth32float",
+      "usage": ["RENDER_ATTACHMENT"],
+      "mip_level_count": 1,
+      "sample_count": 1
+    },
+    {
+      "cmd": "CreateBindGroup",
+      "id": 34,
+      "label": "wboit_resolve_bind_group",
+      "bind_group_layout_id": 3,
+      "entries": [
+        { "binding": 0, "binding_type": "sampled_texture", "resource_kind": "texture", "resource_id": 30 },
+        { "binding": 1, "binding_type": "sampled_texture", "resource_kind": "texture", "resource_id": 31 },
+        { "binding": 2, "binding_type": "sampler", "resource_kind": "sampler", "resource_id": 2 }
+      ]
+    },
+    {
+      "cmd": "BeginCommandEncoder",
+      "id": 40
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 41,
+      "encoder_id": 40,
+      "color_attachments": [
+        {
+          "texture_id": 30,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0 }
+        },
+        {
+          "texture_id": 31,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.0 }
+        }
+      ],
+      "depth_stencil_attachment": {
+        "texture_id": 33,
+        "depth_load_op": "clear",
+        "depth_store_op": "store",
+        "depth_clear_value": 1.0
+      }
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 41,
+      "pipeline_id": 12
+    },
+    {
+      "cmd": "SetVertexBuffer",
+      "pass_id": 41,
+      "slot": 0,
+      "buffer_id": 1,
+      "offset": 0
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 41,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 41
+    },
+    {
+      "cmd": "BeginRenderPass",
+      "id": 42,
+      "encoder_id": 40,
+      "color_attachments": [
+        {
+          "texture_id": 32,
+          "load_op": "clear",
+          "store_op": "store",
+          "clear_value": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+        }
+      ]
+    },
+    {
+      "cmd": "SetPipeline",
+      "pass_id": 42,
+      "pipeline_id": 22
+    },
+    {
+      "cmd": "SetBindGroup",
+      "pass_id": 42,
+      "slot": 0,
+      "bind_group_id": 34
+    },
+    {
+      "cmd": "Draw",
+      "pass_id": 42,
+      "vertex_count": 3,
+      "instance_count": 1,
+      "first_vertex": 0,
+      "first_instance": 0
+    },
+    {
+      "cmd": "EndRenderPass",
+      "pass_id": 42
+    },
+    {
+      "cmd": "FinishCommandEncoder",
+      "encoder_id": 40,
+      "command_buffer_id": 43
+    },
+    {
+      "cmd": "QueueSubmit",
+      "command_buffer_ids": [43],
+      "submission_id": 44
+    }
+  ],
+  "expected": {
+    "outcome": "success"
+  }
+}

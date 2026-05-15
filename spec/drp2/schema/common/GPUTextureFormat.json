@@ -6,6 +6,7 @@
   "enum": [
     "rgba8unorm",
     "bgra8unorm",
+    "r16float",
     "rgba16float",
     "rgba32float",
     "depth24plus",
