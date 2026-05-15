@@ -27,6 +27,7 @@
 #include "datoviz/drp2.h"
 #include "datoviz/math/_cglm.h"
 #include "datoviz/scene.h"
+#include "datoviz/vklite/buffers.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "helpers.h"
 #include "test_scene.h"
@@ -1921,6 +1922,119 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstSuite* suite, T
 
     dvz_drp2_stream_destroy(stream);
     dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_point_external_position_buffer_executes(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        log_warn(
+            "test_scene_point_external_position_buffer_executes skipped: GPU context creation "
+            "failed");
+        return 0;
+    }
+
+    vec3 positions[3] = {
+        {-0.5f, -0.5f, 0.0f},
+        {+0.5f, -0.5f, 0.0f},
+        { 0.0f, +0.5f, 0.0f},
+    };
+    uint64_t position_bytes = sizeof(positions);
+
+    DvzBuffer* runtime_position = dvz_buffer_create_wrapper();
+    ANN(runtime_position);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), runtime_position);
+    dvz_buffer_size(runtime_position, position_bytes);
+    dvz_buffer_usage(runtime_position, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    dvz_buffer_flags(runtime_position, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    AT(dvz_buffer_create(runtime_position) == 0);
+    dvz_buffer_upload(runtime_position, 0, position_bytes, positions);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* visual = dvz_point(scene, 0);
+    ANN(visual);
+
+    DvzSceneBufferDesc desc = {
+        .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
+        .stride = sizeof(vec3),
+        .byte_size = position_bytes,
+    };
+    DvzSceneBuffer* scene_position = dvz_scene_buffer(scene, &desc);
+    ANN(scene_position);
+    AT(dvz_visual_set_attr_buffer(visual, "position", scene_position, 0, 3));
+
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+    float sizes[3] = {8.0f, 8.0f, 8.0f};
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint64_t position_buffer_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        ANN(cmd);
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+            cmd->u.set_vertex_buffer.slot == 0)
+        {
+            position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
+        }
+    }
+    AT(position_buffer_id != 0);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ExternalBufferDesc external = {
+        .buffer = runtime_position,
+        .size = position_bytes,
+        .usage = DVZ_DRP2_BUFFER_USAGE_VERTEX,
+    };
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, position_buffer_id, &external));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(stream);
+    dvz_buffer_destroy(runtime_position);
+    dvz_buffer_free(runtime_position);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(ctx);
     return 0;
 }
 
@@ -3864,6 +3978,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_visual_alpha_mode);
     TEST_SIMPLE(test_scene_visual_attr_source_and_mutability_metadata);
     TEST_SIMPLE(test_scene_point_external_position_buffer_emits_no_upload);
+    TEST_SIMPLE(test_scene_point_external_position_buffer_executes);
     TEST_SIMPLE(test_scene_point_rejects_texcoords_attribute);
     TEST_SIMPLE(test_scene_primitive_rejects_size_attribute);
     TEST_SIMPLE(test_scene_path_rejects_size_attribute);
