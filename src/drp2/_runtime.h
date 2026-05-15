@@ -71,6 +71,17 @@ typedef enum
 } Drp2ObjectKind;
 
 
+typedef enum
+{
+    DRP2_TEXTURE_ACCESS_NONE,
+    DRP2_TEXTURE_ACCESS_TRANSFER_READ,
+    DRP2_TEXTURE_ACCESS_TRANSFER_WRITE,
+    DRP2_TEXTURE_ACCESS_SAMPLED_READ,
+    DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT,
+    DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT,
+} Drp2TextureAccess;
+
+
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
@@ -271,9 +282,9 @@ DvzCommands* _vklite_borrowed_frame_commands_create(
 void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
 DvzDrp2ValidationResult _vklite_owned_commands_end_submit(
     DvzCommands* cmds, uint32_t command_index);
-void _vklite_transition_image(
-    DvzCommands* cmds, Drp2VkliteObject* object, VkImageLayout layout,
-    VkPipelineStageFlags2 dst_stage, VkAccessFlags2 dst_access);
+VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access);
+void _vklite_transition_image_access(
+    DvzCommands* cmds, Drp2VkliteObject* object, Drp2TextureAccess access);
 bool _vklite_compile_glsl(
     const char* stage, const char* code, uint32_t** spv, uint64_t* spv_size);
 DvzDrp2ValidationResult _vklite_create_shader_module(

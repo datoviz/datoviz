@@ -524,9 +524,7 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
     if (cmds == NULL)
         return false;
 
-    _vklite_transition_image(
-        cmds, source, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_ACCESS_2_TRANSFER_READ_BIT);
+    _vklite_transition_image_access(cmds, source, DRP2_TEXTURE_ACCESS_TRANSFER_READ);
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
@@ -547,8 +545,9 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
         return false;
     }
     dvz_cmd_copy_source(
-        copy, dvz_image_handle(source->images, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 0, 0, 0,
-        width, height, 1);
+        copy, dvz_image_handle(source->images, 0),
+        _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_READ), 0, 0, 0, width,
+        height, 1);
     dvz_cmd_copy_destination(
         copy, frame->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, 0, 0);
     dvz_cmd_copy_image(cmds, copy);

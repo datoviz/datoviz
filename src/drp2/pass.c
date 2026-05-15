@@ -168,57 +168,6 @@ static VkAttachmentStoreOp _vklite_attachment_store_op(DvzDrp2AttachmentStoreOp 
 
 
 /**
- * Transition a named depth texture object for use as a depth attachment.
- *
- * @param cmds command buffer wrapper
- * @param object named depth texture object
- */
-static void _vklite_transition_depth_attachment(DvzCommands* cmds, Drp2VkliteObject* object)
-{
-    ANN(cmds);
-    ANN(object);
-    ANN(object->images);
-    if (object->image_layout == VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL)
-        return;
-
-    VkPipelineStageFlags2 src_stage = VK_PIPELINE_STAGE_2_NONE;
-    VkAccessFlags2 src_access = 0;
-    if (object->image_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-        src_access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
-    }
-    else if (object->image_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        src_access = VK_ACCESS_2_TRANSFER_READ_BIT;
-    }
-    else if (object->image_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        src_access = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-    }
-
-    DvzBarriers barriers = {0};
-    dvz_barriers(&barriers);
-    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(object->images, 0));
-    ANN(bimg);
-    dvz_barrier_image_stage(
-        bimg, src_stage,
-        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-            VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-    dvz_barrier_image_access(
-        bimg, src_access,
-        VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-    dvz_barrier_image_layout(bimg, object->image_layout, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-    dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
-    dvz_cmd_barriers(cmds, &barriers);
-    object->image_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
-}
-
-
-/**
  * Begin a vklite dynamic-rendering pass for a DRP2 BeginRenderPass command.
  *
  * @param state vklite runtime state
@@ -485,24 +434,20 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             object->views != NULL && !object->borrowed_frame_target &&
             (object->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0)
         {
-            _vklite_transition_image(
-                cmds, object, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+            _vklite_transition_image_access(cmds, object, DRP2_TEXTURE_ACCESS_SAMPLED_READ);
         }
     }
     for (uint32_t i = 0; i < color_count; i++)
     {
         if (!targets[i]->borrowed_frame_target)
         {
-            _vklite_transition_image(
-                cmds, targets[i], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+            _vklite_transition_image_access(
+                cmds, targets[i], DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT);
         }
     }
     if (named_depth != NULL)
     {
-        _vklite_transition_depth_attachment(cmds, named_depth);
+        _vklite_transition_image_access(cmds, named_depth, DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT);
     }
     else if (pass->depth_images != NULL)
     {
@@ -958,9 +903,8 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
             continue;
         if ((target->usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) == 0)
             continue;
-        _vklite_transition_image(
-            pass->commands, target, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
+        _vklite_transition_image_access(
+            pass->commands, target, DRP2_TEXTURE_ACCESS_SAMPLED_READ);
     }
     if (!pass->borrowed_commands)
     {

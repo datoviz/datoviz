@@ -53,38 +53,166 @@ static void _vklite_region_offset(
 }
 
 
-void _vklite_transition_image(
-    DvzCommands* cmds, Drp2VkliteObject* object, VkImageLayout layout,
-    VkPipelineStageFlags2 dst_stage, VkAccessFlags2 dst_access)
+/**
+ * Return whether a texture format contains a depth component.
+ *
+ * @param format Vulkan image format
+ * @return whether the format has depth
+ */
+static bool _vklite_format_has_depth(uint32_t format)
+{
+    switch ((VkFormat)format)
+    {
+    case VK_FORMAT_D16_UNORM:
+    case VK_FORMAT_X8_D24_UNORM_PACK32:
+    case VK_FORMAT_D32_SFLOAT:
+    case VK_FORMAT_D16_UNORM_S8_UINT:
+    case VK_FORMAT_D24_UNORM_S8_UINT:
+    case VK_FORMAT_D32_SFLOAT_S8_UINT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+/**
+ * Return the image aspect mask for a texture object.
+ *
+ * @param object vklite texture object
+ * @return Vulkan image aspect mask
+ */
+static VkImageAspectFlags _vklite_texture_aspect(const Drp2VkliteObject* object)
+{
+    ANN(object);
+    return _vklite_format_has_depth(object->format) ? VK_IMAGE_ASPECT_DEPTH_BIT :
+                                                      VK_IMAGE_ASPECT_COLOR_BIT;
+}
+
+
+/**
+ * Return the Vulkan layout implied by one DRP2 texture access.
+ *
+ * @param access DRP2 texture access
+ * @return Vulkan image layout
+ */
+VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access)
+{
+    switch (access)
+    {
+    case DRP2_TEXTURE_ACCESS_TRANSFER_READ:
+        return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    case DRP2_TEXTURE_ACCESS_TRANSFER_WRITE:
+        return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    case DRP2_TEXTURE_ACCESS_SAMPLED_READ:
+        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT:
+        return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT:
+        return VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+    default:
+        return VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+}
+
+
+/**
+ * Return pipeline stage and access masks implied by one DRP2 texture access.
+ *
+ * @param access DRP2 texture access
+ * @param stage output Vulkan pipeline stage mask
+ * @param access_mask output Vulkan access mask
+ */
+static void _vklite_texture_access_scope(
+    Drp2TextureAccess access, VkPipelineStageFlags2* stage, VkAccessFlags2* access_mask)
+{
+    ANN(stage);
+    ANN(access_mask);
+    switch (access)
+    {
+    case DRP2_TEXTURE_ACCESS_TRANSFER_READ:
+        *stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        *access_mask = VK_ACCESS_2_TRANSFER_READ_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_TRANSFER_WRITE:
+        *stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        *access_mask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_SAMPLED_READ:
+        *stage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        *access_mask = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT:
+        *stage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        *access_mask =
+            VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        break;
+    case DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT:
+        *stage = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        *access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                       VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        break;
+    default:
+        *stage = VK_PIPELINE_STAGE_2_NONE;
+        *access_mask = 0;
+        break;
+    }
+}
+
+
+/**
+ * Infer the previous access class from a tracked Vulkan image layout.
+ *
+ * @param object vklite texture object
+ * @return inferred DRP2 texture access
+ */
+static Drp2TextureAccess _vklite_texture_access_from_layout(const Drp2VkliteObject* object)
+{
+    ANN(object);
+    switch (object->image_layout)
+    {
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return DRP2_TEXTURE_ACCESS_TRANSFER_READ;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        return DRP2_TEXTURE_ACCESS_TRANSFER_WRITE;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return DRP2_TEXTURE_ACCESS_SAMPLED_READ;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT;
+    case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+        return _vklite_format_has_depth(object->format) ? DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT :
+                                                          DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT;
+    default:
+        return DRP2_TEXTURE_ACCESS_NONE;
+    }
+}
+
+
+/**
+ * Transition a vklite texture object to the layout required for one DRP2 access.
+ *
+ * @param cmds command buffer wrapper
+ * @param object vklite texture object
+ * @param access requested DRP2 texture access
+ */
+void _vklite_transition_image_access(
+    DvzCommands* cmds, Drp2VkliteObject* object, Drp2TextureAccess access)
 {
     ANN(cmds);
     ANN(object);
     ANN(object->images);
+    VkImageLayout layout = _vklite_texture_access_layout(access);
     if (object->image_layout == layout)
         return;
 
     VkPipelineStageFlags2 src_stage = VK_PIPELINE_STAGE_2_NONE;
     VkAccessFlags2 src_access = 0;
-    if (object->image_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        src_access = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-    }
-    else if (object->image_layout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        src_access = VK_ACCESS_2_TRANSFER_READ_BIT;
-    }
-    else if (object->image_layout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-        src_access = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-    }
-    else if (object->image_layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    {
-        src_stage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-        src_access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
-    }
+    VkPipelineStageFlags2 dst_stage = VK_PIPELINE_STAGE_2_NONE;
+    VkAccessFlags2 dst_access = 0;
+    _vklite_texture_access_scope(
+        _vklite_texture_access_from_layout(object), &src_stage, &src_access);
+    _vklite_texture_access_scope(access, &dst_stage, &dst_access);
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
@@ -93,6 +221,7 @@ void _vklite_transition_image(
     dvz_barrier_image_stage(bimg, src_stage, dst_stage);
     dvz_barrier_image_access(bimg, src_access, dst_access);
     dvz_barrier_image_layout(bimg, object->image_layout, layout);
+    dvz_barrier_image_aspect(bimg, _vklite_texture_aspect(object));
     dvz_cmd_barriers(cmds, &barriers);
     object->image_layout = layout;
 }
@@ -221,12 +350,10 @@ DvzDrp2ValidationResult _vklite_write_texture(
         dvz_buffer_free(staging);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
-    _vklite_transition_image(
-        cmds, texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT);
+    _vklite_transition_image_access(cmds, texture, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
     dvz_cmd_copy_buffer_to_image(
         cmds, dvz_buffer_handle(staging), 0, dvz_image_handle(texture->images, 0),
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
+        _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_WRITE), &region);
     DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
     if (!result.ok)
     {
@@ -311,12 +438,11 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
-    _vklite_transition_image(
-        cmds, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT);
+    _vklite_transition_image_access(cmds, dst, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
     dvz_cmd_copy_buffer_to_image(
         cmds, dvz_buffer_handle(src->buffer), command->u.copy_buffer_to_texture.src_offset,
-        dvz_image_handle(dst->images, 0), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
+        dvz_image_handle(dst->images, 0),
+        _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_WRITE), &region);
     DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
     if (!result.ok)
     {
@@ -355,11 +481,10 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
-    _vklite_transition_image(
-        cmds, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_ACCESS_2_TRANSFER_READ_BIT);
+    _vklite_transition_image_access(cmds, src, DRP2_TEXTURE_ACCESS_TRANSFER_READ);
     dvz_cmd_copy_image_to_buffer(
-        cmds, dvz_image_handle(src->images, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, &region,
+        cmds, dvz_image_handle(src->images, 0),
+        _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_READ), &region,
         dvz_buffer_handle(dst->buffer), command->u.copy_texture_to_buffer.dst_offset);
     DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
     if (!result.ok)
@@ -394,14 +519,16 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     dvz_cmd_copy_source(
-        copy, dvz_image_handle(src->images, 0), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        copy, dvz_image_handle(src->images, 0),
+        _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_READ),
         (int32_t)command->u.copy_texture_to_texture.src_origin_x,
         (int32_t)command->u.copy_texture_to_texture.src_origin_y,
         (int32_t)command->u.copy_texture_to_texture.src_origin_z,
         command->u.copy_texture_to_texture.width, command->u.copy_texture_to_texture.height,
         command->u.copy_texture_to_texture.depth);
     dvz_cmd_copy_destination(
-        copy, dvz_image_handle(dst->images, 0), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        copy, dvz_image_handle(dst->images, 0),
+        _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_WRITE),
         (int32_t)command->u.copy_texture_to_texture.dst_origin_x,
         (int32_t)command->u.copy_texture_to_texture.dst_origin_y,
         (int32_t)command->u.copy_texture_to_texture.dst_origin_z);
@@ -412,12 +539,8 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
-    _vklite_transition_image(
-        cmds, src, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_ACCESS_2_TRANSFER_READ_BIT);
-    _vklite_transition_image(
-        cmds, dst, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
-        VK_ACCESS_2_TRANSFER_WRITE_BIT);
+    _vklite_transition_image_access(cmds, src, DRP2_TEXTURE_ACCESS_TRANSFER_READ);
+    _vklite_transition_image_access(cmds, dst, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
     dvz_cmd_copy_image(cmds, copy);
     DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
     if (!result.ok)
