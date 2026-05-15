@@ -37,6 +37,7 @@
 #include "datoviz/canvas.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/stream.h"
+#include "datoviz/input/keyboard.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene/frame_plan.h"
@@ -1449,6 +1450,29 @@ DvzAppWindow* dvz_app_window_external_surface(
 /*************************************************************************************************/
 
 /**
+ * Return the content scale currently cached for an app-window.
+ *
+ * @param win app-window to query
+ * @return horizontal content scale, or 1 when unavailable
+ */
+static float _app_window_content_scale(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window == NULL)
+        return 1.0f;
+    const DvzWindowSurface* surface = dvz_window_surface(win->window);
+    if (surface == NULL || surface->scale_x <= 0.0f)
+        return 1.0f;
+    return surface->scale_x;
+#else
+    return 1.0f;
+#endif
+}
+
+
+
+/**
  * Update the external Vulkan surface associated with a hosted app-window.
  *
  * @param win hosted app-window
@@ -1464,6 +1488,137 @@ int dvz_app_window_update_external_surface(
     if (win->window == NULL || dvz_window_backend_type(win->window) != DVZ_BACKEND_WRAP)
         return -1;
     return dvz_window_wrap_update_surface(win->window, surface);
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Emit a hosted resize event for an app-window.
+ *
+ * @param win app-window receiving the event
+ * @param framebuffer_width framebuffer width in physical pixels
+ * @param framebuffer_height framebuffer height in physical pixels
+ * @param window_width logical host-window width
+ * @param window_height logical host-window height
+ * @param content_scale_x horizontal content scale
+ * @param content_scale_y vertical content scale
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_emit_resize(
+    DvzAppWindow* win, uint32_t framebuffer_width, uint32_t framebuffer_height,
+    uint32_t window_width, uint32_t window_height, float content_scale_x, float content_scale_y)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->window == NULL)
+        return -1;
+    dvz_window_backend_emit_resize(
+        win->window, framebuffer_width, framebuffer_height, window_width, window_height,
+        content_scale_x, content_scale_y);
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Emit a hosted pointer position/button event for an app-window.
+ *
+ * @param win app-window receiving the event
+ * @param type pointer event type
+ * @param x pointer x position in logical host-window coordinates
+ * @param y pointer y position in logical host-window coordinates
+ * @param window_width logical host-window width
+ * @param window_height logical host-window height
+ * @param button pointer button
+ * @param mods keyboard modifier bit mask
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_emit_pointer(
+    DvzAppWindow* win, DvzPointerEventType type, float x, float y, float window_width,
+    float window_height, DvzPointerButton button, int mods)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas == NULL)
+        return -1;
+    DvzInputRouter* router = dvz_canvas_input(win->canvas);
+    if (router == NULL)
+        return -1;
+    dvz_pointer_emit_position(
+        router, type, x, y, window_width, window_height, button, mods,
+        _app_window_content_scale(win), dvz_input_timestamp_ns(),
+        win->window != NULL ? dvz_window_user_data(win->window) : NULL);
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Emit a hosted pointer wheel event for an app-window.
+ *
+ * @param win app-window receiving the event
+ * @param x pointer x position in logical host-window coordinates
+ * @param y pointer y position in logical host-window coordinates
+ * @param window_width logical host-window width
+ * @param window_height logical host-window height
+ * @param dx horizontal wheel delta
+ * @param dy vertical wheel delta
+ * @param mods keyboard modifier bit mask
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_emit_wheel(
+    DvzAppWindow* win, float x, float y, float window_width, float window_height, float dx,
+    float dy, int mods)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas == NULL)
+        return -1;
+    DvzInputRouter* router = dvz_canvas_input(win->canvas);
+    if (router == NULL)
+        return -1;
+    dvz_pointer_emit_wheel(
+        router, x, y, window_width, window_height, dx, dy, mods, _app_window_content_scale(win),
+        dvz_input_timestamp_ns(), win->window != NULL ? dvz_window_user_data(win->window) : NULL);
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Emit a hosted keyboard event for an app-window.
+ *
+ * @param win app-window receiving the event
+ * @param type keyboard event type
+ * @param key Datoviz key code
+ * @param mods keyboard modifier bit mask
+ * @return 0 on success, negative on error
+ */
+int
+dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode key, int mods)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas == NULL)
+        return -1;
+    DvzInputRouter* router = dvz_canvas_input(win->canvas);
+    if (router == NULL)
+        return -1;
+    dvz_keyboard_emit(
+        router, type, key, mods, win->window != NULL ? dvz_window_user_data(win->window) : NULL);
+    return 0;
 #else
     return -1;
 #endif

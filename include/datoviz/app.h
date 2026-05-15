@@ -22,6 +22,8 @@
 #include <vulkan/vulkan_core.h>
 
 #include "datoviz/common/macros.h"
+#include "datoviz/input/enums.h"
+#include "datoviz/input/keycodes.h"
 #include "datoviz/scene/types.h"
 
 
@@ -182,6 +184,75 @@ DVZ_EXPORT DvzAppWindow* dvz_app_window_external_surface(
  */
 DVZ_EXPORT int dvz_app_window_update_external_surface(
     DvzAppWindow* win, const DvzWindowExternalSurfaceInfo* surface);
+
+
+/**
+ * Emit a hosted resize event for an app-window.
+ *
+ * External UI adapters call this after host resize notifications so Datoviz controllers and figure
+ * sizing see the host's logical and framebuffer dimensions.
+ *
+ * @param win the app-window
+ * @param framebuffer_width framebuffer width in physical pixels
+ * @param framebuffer_height framebuffer height in physical pixels
+ * @param window_width logical host-window width
+ * @param window_height logical host-window height
+ * @param content_scale_x horizontal content scale
+ * @param content_scale_y vertical content scale
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_emit_resize(
+    DvzAppWindow* win, uint32_t framebuffer_width, uint32_t framebuffer_height,
+    uint32_t window_width, uint32_t window_height, float content_scale_x, float content_scale_y);
+
+
+/**
+ * Emit a hosted pointer position/button event for an app-window.
+ *
+ * @param win the app-window
+ * @param type pointer event type
+ * @param x pointer x position in host-window coordinates
+ * @param y pointer y position in host-window coordinates
+ * @param window_width logical host-window width
+ * @param window_height logical host-window height
+ * @param button pointer button, or DVZ_POINTER_BUTTON_NONE
+ * @param mods keyboard modifier bit mask
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_emit_pointer(
+    DvzAppWindow* win, DvzPointerEventType type, float x, float y, float window_width,
+    float window_height, DvzPointerButton button, int mods);
+
+
+/**
+ * Emit a hosted pointer wheel event for an app-window.
+ *
+ * @param win the app-window
+ * @param x pointer x position in host-window coordinates
+ * @param y pointer y position in host-window coordinates
+ * @param window_width logical host-window width
+ * @param window_height logical host-window height
+ * @param dx horizontal wheel delta
+ * @param dy vertical wheel delta
+ * @param mods keyboard modifier bit mask
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_emit_wheel(
+    DvzAppWindow* win, float x, float y, float window_width, float window_height, float dx,
+    float dy, int mods);
+
+
+/**
+ * Emit a hosted keyboard event for an app-window.
+ *
+ * @param win the app-window
+ * @param type keyboard event type
+ * @param key Datoviz key code
+ * @param mods keyboard modifier bit mask
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int
+dvz_app_window_emit_key(DvzAppWindow* win, DvzKeyboardEventType type, DvzKeyCode key, int mods);
 
 
 /**

@@ -24,8 +24,203 @@
 
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"
 #include "datoviz/window/backend.h"
+
+
+
+typedef struct
+{
+    DvzAppWindow* app_window;
+} HostedGlfwState;
+
+
+
+/**
+ * Emit the current host framebuffer/logical size to Datoviz.
+ *
+ * @param window GLFW window owned by the host
+ * @param app_window Datoviz hosted app-window
+ */
+static void _emit_resize(GLFWwindow* window, DvzAppWindow* app_window)
+{
+    if (window == NULL || app_window == NULL)
+        return;
+
+    int fb_width = 0;
+    int fb_height = 0;
+    int win_width = 0;
+    int win_height = 0;
+    float scale_x = 1.0f;
+    float scale_y = 1.0f;
+    glfwGetFramebufferSize(window, &fb_width, &fb_height);
+    glfwGetWindowSize(window, &win_width, &win_height);
+    glfwGetWindowContentScale(window, &scale_x, &scale_y);
+    if (scale_x <= 0.0f)
+        scale_x = 1.0f;
+    if (scale_y <= 0.0f)
+        scale_y = 1.0f;
+
+    (void)dvz_app_window_emit_resize(
+        app_window, fb_width > 0 ? (uint32_t)fb_width : 0,
+        fb_height > 0 ? (uint32_t)fb_height : 0, win_width > 0 ? (uint32_t)win_width : 0,
+        win_height > 0 ? (uint32_t)win_height : 0, scale_x, scale_y);
+}
+
+
+
+/**
+ * Return the hosted Datoviz app-window associated with a GLFW host window.
+ *
+ * @param window GLFW window owned by the host
+ * @return hosted app-window, or NULL when unavailable
+ */
+static DvzAppWindow* _hosted_app_window(GLFWwindow* window)
+{
+    if (window == NULL)
+        return NULL;
+    HostedGlfwState* state = (HostedGlfwState*)glfwGetWindowUserPointer(window);
+    return state != NULL ? state->app_window : NULL;
+}
+
+
+
+/**
+ * Forward GLFW cursor movement to Datoviz through the hosted input API.
+ *
+ * @param window GLFW window owned by the host
+ * @param xpos pointer x position
+ * @param ypos pointer y position
+ */
+static void _cursor_pos_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    DvzAppWindow* app_window = _hosted_app_window(window);
+    if (app_window == NULL)
+        return;
+    int win_width = 0;
+    int win_height = 0;
+    glfwGetWindowSize(window, &win_width, &win_height);
+    (void)dvz_app_window_emit_pointer(
+        app_window, DVZ_POINTER_EVENT_MOVE, (float)xpos, (float)ypos, (float)win_width,
+        (float)win_height, DVZ_POINTER_BUTTON_NONE, 0);
+}
+
+
+
+/**
+ * Forward GLFW mouse-button events to Datoviz through the hosted input API.
+ *
+ * @param window GLFW window owned by the host
+ * @param button GLFW mouse button
+ * @param action GLFW button action
+ * @param mods keyboard modifier bit mask
+ */
+static void _mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    DvzAppWindow* app_window = _hosted_app_window(window);
+    if (app_window == NULL)
+        return;
+    double xpos = 0.0;
+    double ypos = 0.0;
+    int win_width = 0;
+    int win_height = 0;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    glfwGetWindowSize(window, &win_width, &win_height);
+    DvzPointerEventType type =
+        action == GLFW_PRESS ? DVZ_POINTER_EVENT_PRESS : DVZ_POINTER_EVENT_RELEASE;
+    (void)dvz_app_window_emit_pointer(
+        app_window, type, (float)xpos, (float)ypos, (float)win_width, (float)win_height,
+        dvz_pointer_button_from_glfw(button), mods);
+}
+
+
+
+/**
+ * Forward GLFW scroll events to Datoviz through the hosted input API.
+ *
+ * @param window GLFW window owned by the host
+ * @param dx horizontal wheel delta
+ * @param dy vertical wheel delta
+ */
+static void _scroll_callback(GLFWwindow* window, double dx, double dy)
+{
+    DvzAppWindow* app_window = _hosted_app_window(window);
+    if (app_window == NULL)
+        return;
+    double xpos = 0.0;
+    double ypos = 0.0;
+    int win_width = 0;
+    int win_height = 0;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    glfwGetWindowSize(window, &win_width, &win_height);
+#if defined(__APPLE__)
+    dy = -dy;
+#endif
+    (void)dvz_app_window_emit_wheel(
+        app_window, (float)xpos, (float)ypos, (float)win_width, (float)win_height, (float)dx,
+        (float)dy, 0);
+}
+
+
+
+/**
+ * Forward GLFW key events to Datoviz through the hosted input API.
+ *
+ * @param window GLFW window owned by the host
+ * @param key GLFW key code
+ * @param scancode platform scancode
+ * @param action GLFW key action
+ * @param mods keyboard modifier bit mask
+ */
+static void _key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    (void)scancode;
+    DvzAppWindow* app_window = _hosted_app_window(window);
+    if (app_window == NULL)
+        return;
+    DvzKeyboardEventType type = DVZ_KEYBOARD_EVENT_NONE;
+    if (action == GLFW_PRESS)
+        type = DVZ_KEYBOARD_EVENT_PRESS;
+    else if (action == GLFW_REPEAT)
+        type = DVZ_KEYBOARD_EVENT_REPEAT;
+    else if (action == GLFW_RELEASE)
+        type = DVZ_KEYBOARD_EVENT_RELEASE;
+    if (type != DVZ_KEYBOARD_EVENT_NONE)
+        (void)dvz_app_window_emit_key(app_window, type, (DvzKeyCode)key, mods);
+}
+
+
+
+/**
+ * Forward GLFW framebuffer resize events to Datoviz through the hosted input API.
+ *
+ * @param window GLFW window owned by the host
+ * @param width framebuffer width
+ * @param height framebuffer height
+ */
+static void _framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    (void)width;
+    (void)height;
+    _emit_resize(window, _hosted_app_window(window));
+}
+
+
+
+/**
+ * Forward GLFW content-scale changes to Datoviz through the hosted input API.
+ *
+ * @param window GLFW window owned by the host
+ * @param scale_x horizontal content scale
+ * @param scale_y vertical content scale
+ */
+static void _content_scale_callback(GLFWwindow* window, float scale_x, float scale_y)
+{
+    (void)scale_x;
+    (void)scale_y;
+    _emit_resize(window, _hosted_app_window(window));
+}
 
 
 
@@ -60,7 +255,7 @@ _surface_info(GLFWwindow* window, VkInstance instance, VkSurfaceKHR surface, boo
 
 
 
-static DvzScene* _make_scene(DvzFigure** out_figure)
+static DvzScene* _make_scene(DvzFigure** out_figure, DvzPanel** out_panel)
 {
     DvzScene* scene = dvz_scene();
     if (scene == NULL)
@@ -101,6 +296,8 @@ static DvzScene* _make_scene(DvzFigure** out_figure)
 
     if (out_figure != NULL)
         *out_figure = figure;
+    if (out_panel != NULL)
+        *out_panel = panel;
     return scene;
 }
 
@@ -128,8 +325,9 @@ int main(int argc, char** argv)
     }
 
     DvzFigure* figure = NULL;
-    DvzScene* scene = _make_scene(&figure);
-    if (scene == NULL || figure == NULL)
+    DvzPanel* panel = NULL;
+    DvzScene* scene = _make_scene(&figure, &panel);
+    if (scene == NULL || figure == NULL || panel == NULL)
     {
         fprintf(stderr, "hosted_glfw_smoke: failed to create scene\n");
         glfwTerminate();
@@ -199,6 +397,17 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    HostedGlfwState host_state = {.app_window = app_window};
+    glfwSetWindowUserPointer(window, &host_state);
+    glfwSetCursorPosCallback(window, _cursor_pos_callback);
+    glfwSetMouseButtonCallback(window, _mouse_button_callback);
+    glfwSetScrollCallback(window, _scroll_callback);
+    glfwSetKeyCallback(window, _key_callback);
+    glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
+    glfwSetWindowContentScaleCallback(window, _content_scale_callback);
+    _emit_resize(window, app_window);
+    dvz_panel_set_panzoom(panel, dvz_app_window_input(app_window), 0);
+
     uint32_t frame = 0;
     while (!glfwWindowShouldClose(window) && (max_frames == 0 || frame < max_frames))
     {
@@ -211,6 +420,7 @@ int main(int argc, char** argv)
             break;
         }
 
+        _emit_resize(window, app_window);
         int rc = dvz_app_window_render_once(app_window);
         if (rc < 0)
         {
