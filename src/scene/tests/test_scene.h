@@ -138,6 +138,8 @@ int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item);
 
+int test_scene_pixel_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item);
+
 int test_scene_primitive_triangle_list_glsl_executes(TstSuite* suite, TstItem* item);
 
 int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item);

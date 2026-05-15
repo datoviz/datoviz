@@ -31,6 +31,7 @@ typedef enum
 {
     DVZ_SCENE_VISUAL_DESC_NONE = 0,
     DVZ_SCENE_VISUAL_DESC_POINT,
+    DVZ_SCENE_VISUAL_DESC_PIXEL,
     DVZ_SCENE_VISUAL_DESC_PRIMITIVE,
     DVZ_SCENE_VISUAL_DESC_IMAGE,
 } DvzSceneVisualDescKind;
@@ -57,6 +58,7 @@ typedef enum
 typedef struct DvzSceneVisualDesc
 {
     DvzSceneVisualDescKind kind;
+    DvzScenePointLikeKind point_like_kind;
     bool has_normal;
     uint32_t topology;
     uint64_t vbuf_ids[DVZ_SCENE_MAX_NODE_RESOURCES];

@@ -437,6 +437,19 @@ DVZ_EXPORT DvzVisual* dvz_point(DvzScene* scene, uint32_t flags);
 
 
 /**
+ * Create a pixel visual.
+ *
+ * Renders screen-space square sprites with `position` (vec3), `color` (RGBA8), and
+ * `size` (float, in pixels). WGSL/WebGPU emission lowers each item to an instanced quad.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags);
+
+
+/**
  * Create a primitive visual.
  *
  * Renders raw GPU primitives (point lists, line lists/strips, triangle lists/strips) with

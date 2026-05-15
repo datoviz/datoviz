@@ -45,6 +45,28 @@
     "@group(0) @binding(0) var<storage, read> input: array<f32>; @group(0) @binding(1) "        \
     "var<storage, read_write> output: array<f32>; @compute @workgroup_size(9) fn main("        \
     "@builtin(global_invocation_id) id: vec3u) { output[id.x] = input[id.x]; }"
+#define DRP2_PIXEL_VERTEX_WGSL                                                                  \
+    "struct MVP { model: mat4x4f, view: mat4x4f, proj: mat4x4f, time: f32, flags: u32, }\n"    \
+    "struct Viewport { rect: vec4f, }\n"                                                        \
+    "struct VertexIn { @location(0) position: vec3f, @location(1) color: vec4f, "               \
+    "@location(2) size: f32, }\n"                                                               \
+    "struct VertexOut { @builtin(position) position: vec4f, @location(0) color: vec4f, }\n"     \
+    "@group(0) @binding(0) var<uniform> mvp: MVP;\n"                                            \
+    "@group(0) @binding(1) var<uniform> viewport: Viewport;\n"                                  \
+    "fn quad_corner(vertex_id: u32) -> vec2f {"                                                  \
+    "let corners = array<vec2f, 6>(vec2f(-1.0, -1.0), vec2f(1.0, -1.0), "                      \
+    "vec2f(-1.0, 1.0), vec2f(-1.0, 1.0), vec2f(1.0, -1.0), vec2f(1.0, 1.0));"                 \
+    "return corners[vertex_id];}\n"                                                            \
+    "@vertex fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {"    \
+    "let corner = quad_corner(vertex_id);"                                                      \
+    "let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);"                \
+    "let radius = vec2f(input.size / viewport.rect.z, input.size / viewport.rect.w);"           \
+    "var output: VertexOut;"                                                                    \
+    "output.position = vec4f(center.xy + corner * radius * center.w, center.zw);"               \
+    "output.color = input.color; return output;}\n"
+#define DRP2_PIXEL_FRAGMENT_WGSL                                                                \
+    "struct FragmentIn { @location(0) color: vec4f, }\n"                                       \
+    "@fragment fn main(input: FragmentIn) -> @location(0) vec4f { return input.color; }\n"
 
 #define DRP2_VERTEX_GLSL                                                                        \
     "#version 450\nvoid main(){gl_Position=vec4(0.0,0.0,0.0,1.0);}"
@@ -80,6 +102,8 @@
     "layout(location=0)in vec4 fragColor;\n"                                                    \
     "layout(location=0)out vec4 outColor;\n"                                                    \
     "void main(){outColor=fragColor;}\n"
+#define DRP2_PIXEL_VERTEX_GLSL DRP2_POINT_VERTEX_GLSL
+#define DRP2_PIXEL_FRAGMENT_GLSL DRP2_POINT_FRAGMENT_GLSL
 #define DRP2_POINT_PICK_VERTEX_GLSL                                                             \
     "#version 450\n"                                                                            \
     "layout(set=0,binding=0)uniform MVP{mat4 model;mat4 view;mat4 proj;float time;uint flags;}mvp;\n" \
@@ -320,6 +344,8 @@ const char* _builtin_shader_glsl(DvzSceneBuiltinShader shader, bool fragment)
         return fragment ? NULL : DRP2_COMPUTE_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_POINT:
         return fragment ? DRP2_POINT_FRAGMENT_GLSL : DRP2_POINT_VERTEX_GLSL;
+    case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
+        return fragment ? DRP2_PIXEL_FRAGMENT_GLSL : DRP2_PIXEL_VERTEX_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_POINT_PICK:
         return fragment ? DRP2_POINT_PICK_FRAGMENT_GLSL : DRP2_POINT_PICK_VERTEX_GLSL;
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
@@ -356,6 +382,17 @@ const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment)
     }
 #endif
         return NULL;
+    case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
+#if DVZ_HAS_WGSL_SHADERS
+    {
+        unsigned long size = 0;
+        const char* key = fragment ? "pixel_frag" : "pixel_vert";
+        const char* source = dvz_resource_wgsl(key, &size);
+        if (source != NULL && size > 0)
+            return source;
+    }
+#endif
+        return fragment ? DRP2_PIXEL_FRAGMENT_WGSL : DRP2_PIXEL_VERTEX_WGSL;
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
 #if DVZ_HAS_WGSL_SHADERS
     {

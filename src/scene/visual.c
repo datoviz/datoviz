@@ -69,6 +69,8 @@ static uint32_t _attr_item_size(DvzVisualType type, const char* name)
     switch (type)
     {
     case DVZ_VISUAL_TYPE_POINT:
+    case DVZ_VISUAL_TYPE_PIXEL:
+    case DVZ_VISUAL_TYPE_MARKER:
         if (strcmp(name, "position") == 0) return 3 * sizeof(float);
         if (strcmp(name, "color") == 0)    return 4 * sizeof(uint8_t);
         if (strcmp(name, "size") == 0)     return sizeof(float);
@@ -1023,6 +1025,24 @@ DvzVisual* dvz_point(DvzScene* scene, uint32_t flags)
 {
     ANN(scene);
     DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_POINT, flags);
+    if (visual == NULL)
+        return NULL;
+    return visual;
+}
+
+
+
+/**
+ * Create a pixel visual.
+ *
+ * @param scene the scene
+ * @param flags variant flags
+ * @return the visual, or NULL on allocation failure
+ */
+DvzVisual* dvz_pixel(DvzScene* scene, uint32_t flags)
+{
+    ANN(scene);
+    DvzVisual* visual = _scene_alloc_visual(scene, DVZ_VISUAL_TYPE_PIXEL, flags);
     if (visual == NULL)
         return NULL;
     return visual;

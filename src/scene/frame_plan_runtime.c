@@ -567,12 +567,19 @@ static bool _emitter_emit_render(
     bool is_new = false;
     const char* fmt = _shader_format_tag(cfg);
 
-    /* Detect DvzPoint visual (position + color + size attributes). */
+    uint32_t visual_type = DVZ_VISUAL_TYPE_NONE;
+    if (render->u.render.visual_count == 1 &&
+        render->u.render.visual_metadata[0].has_metadata)
+        visual_type = render->u.render.visual_metadata[0].visual_type;
+
+    /* Detect point-like visual data (position + color + size attributes). */
     bool is_point = _is_point_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+    bool is_pixel = is_point && visual_type == DVZ_VISUAL_TYPE_PIXEL;
+    bool is_point_like = is_point;
     bool is_primitive =
-        !is_point && _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
+        !is_point_like && _is_primitive_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count);
     uint64_t image_pos = 0, image_uv = 0, image_tex = 0;
-    bool is_image = !is_point && !is_primitive &&
+    bool is_image = !is_point_like && !is_primitive &&
                     _is_image_visual(&emitter->resources, vertex_buffer_ids, vertex_buffer_count,
                                      &image_pos, &image_uv, &image_tex);
 
@@ -612,15 +619,18 @@ static bool _emitter_emit_render(
     char fs_key[16];
     char pipe_key[48];
 
-    if (is_point)
+    if (is_point_like)
     {
-        /* Point visual: native points for GLSL, instanced quads for WGSL. */
-        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_point%s", fmt);
-        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_point%s", fmt);
-        vs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
-        fs_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
-        vs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, false);
-        fs_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_POINT, true);
+        /* Point-like visuals: native points for GLSL, instanced quads for WGSL. */
+        DvzSceneBuiltinShader shader =
+            is_pixel ? DVZ_SCENE_BUILTIN_SHADER_PIXEL : DVZ_SCENE_BUILTIN_SHADER_POINT;
+        const char* key = is_pixel ? "pixel" : "point";
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_%s%s", key, fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_%s%s", key, fmt);
+        vs_glsl = _builtin_shader_glsl(shader, false);
+        fs_glsl = _builtin_shader_glsl(shader, true);
+        vs_wgsl = _builtin_shader_wgsl(shader, false);
+        fs_wgsl = _builtin_shader_wgsl(shader, true);
 
         uint64_t pos_id = _scene_visual_resource_by_role(
             &emitter->resources, vertex_buffer_ids, vertex_buffer_count,
@@ -634,7 +644,8 @@ static bool _emitter_emit_render(
         DvzSceneShaderFormat shader_format =
             cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
         has_point_like_lowering = _scene_point_like_lowering_desc(
-            DVZ_SCENE_POINT_LIKE_POINT, shader_format, vertex_count, &point_like_lowering);
+            is_pixel ? DVZ_SCENE_POINT_LIKE_PIXEL : DVZ_SCENE_POINT_LIKE_POINT,
+            shader_format, vertex_count, &point_like_lowering);
         if (!has_point_like_lowering)
             return false;
         topology = point_like_lowering.topology;
@@ -721,10 +732,10 @@ static bool _emitter_emit_render(
     /* SPIR-V resource names (stem of .vert.spv / .frag.spv after embed_resources key mangling). */
     const char* vs_spirv_key = NULL;
     const char* fs_spirv_key = NULL;
-    if (is_point)
+    if (is_point_like)
     {
-        vs_spirv_key = "point_vert";
-        fs_spirv_key = "point_frag";
+        vs_spirv_key = is_pixel ? "pixel_vert" : "point_vert";
+        fs_spirv_key = is_pixel ? "pixel_frag" : "point_frag";
     }
     else if (is_primitive)
     {
@@ -789,8 +800,8 @@ static bool _emitter_emit_render(
         }
     }
 
-    if (is_point)
-        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_point%s", fmt);
+    if (is_point_like)
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_%s%s", is_pixel ? "pixel" : "point", fmt);
     else if (is_primitive)
         dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_prim_t%u%s", topology, fmt);
     else if (is_image)
@@ -803,7 +814,7 @@ static bool _emitter_emit_render(
         return false;
     if (ok && is_new)
     {
-        if (is_point)
+        if (is_point_like)
         {
             /* Explicit vertex layout: binding0=position(vec3), binding1=color(u8vec4), binding2=size(float) */
             uint32_t strides[3]   = {3*sizeof(float), 4*sizeof(uint8_t), sizeof(float)};
@@ -912,7 +923,7 @@ static bool _emitter_emit_render(
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     uint32_t draw_vertex_count = vertex_count;
     uint32_t draw_instance_count = 1;
-    if (is_point && has_point_like_lowering)
+    if (is_point_like && has_point_like_lowering)
     {
         draw_vertex_count = point_like_lowering.draw_vertex_count;
         draw_instance_count = point_like_lowering.draw_instance_count;

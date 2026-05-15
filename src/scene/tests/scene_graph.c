@@ -628,6 +628,96 @@ int test_scene_point_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
 }
 
 
+int test_scene_pixel_emit_wgsl_instanced_quads(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_pixel(scene, 0);
+    AT(visual != NULL);
+
+    float positions[3][3] = {
+        {-0.5f, -0.4f, 0.0f},
+        { 0.0f,  0.4f, 0.0f},
+        { 0.5f, -0.4f, 0.0f},
+    };
+    DvzColor colors[3] = {{255, 0, 0, 255}, {0, 180, 255, 255}, {255, 255, 255, 255}};
+    float sizes[3] = {8.0f, 14.0f, 20.0f};
+
+    AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
+    AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
+    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzCapabilitySnapshot caps;
+    dvz_capability_snapshot_default(&caps);
+    caps.shader_format_wgsl = true;
+    caps.shader_format_glsl = false;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_figure_emit_ex(figure, &caps, &report, &emit_cfg);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    bool found_pipeline = false;
+    bool found_draw = false;
+    const uint32_t count = dvz_drp2_stream_count(stream);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            found_pipeline = true;
+            AT(command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            AT(command->u.create_render_pipeline.binding_count == 3);
+            AT(command->u.create_render_pipeline.binding_step_modes[0] ==
+               DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+            AT(command->u.create_render_pipeline.binding_step_modes[1] ==
+               DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+            AT(command->u.create_render_pipeline.binding_step_modes[2] ==
+               DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            found_draw = true;
+            AT(command->u.draw.vertex_count == 6);
+            AT(command->u.draw.instance_count == 3);
+        }
+    }
+    AT(found_pipeline);
+    AT(found_draw);
+
+    char* json = dvz_drp2_stream_json(stream, "scene_pixel_wgsl_from_c");
+    ANN(json);
+    AT(strstr(json, "\"format\": \"wgsl\"") != NULL);
+    AT(strstr(json, "\"topology\": \"triangle-list\"") != NULL);
+    AT(strstr(json, "\"step_mode\": \"instance\"") != NULL);
+    AT(strstr(json, "\"vertex_count\": 6") != NULL);
+    AT(strstr(json, "\"instance_count\": 3") != NULL);
+    AT(strstr(json, "quad_corner") != NULL);
+    AT(strstr(json, "dot(input.corner") == NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_primitive_line_strip_glsl_executes(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3600,6 +3690,7 @@ int test_scene_graph(TstSuite* suite)
     TEST_SIMPLE(test_scene_point_like_lowering_policy);
     TEST_SIMPLE(test_scene_point_emit_glsl_native_points);
     TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);
+    TEST_SIMPLE(test_scene_pixel_emit_wgsl_instanced_quads);
     TEST_SIMPLE(test_scene_primitive_triangle_list_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_line_strip_glsl_executes);
     TEST_SIMPLE(test_scene_primitive_triangle_list_emit_wgsl);

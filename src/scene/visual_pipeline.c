@@ -93,6 +93,34 @@ static bool _visual_meta_is_primitive(uint32_t visual_type)
 
 
 /**
+ * Return the point-like family represented by a retained visual type.
+ *
+ * @param visual_type the retained visual type
+ * @param out the output point-like family
+ * @return whether the visual type is point-like
+ */
+static bool _visual_meta_point_like_kind(uint32_t visual_type, DvzScenePointLikeKind* out)
+{
+    ANN(out);
+    switch (visual_type)
+    {
+    case DVZ_VISUAL_TYPE_POINT:
+        *out = DVZ_SCENE_POINT_LIKE_POINT;
+        return true;
+    case DVZ_VISUAL_TYPE_PIXEL:
+        *out = DVZ_SCENE_POINT_LIKE_PIXEL;
+        return true;
+    case DVZ_VISUAL_TYPE_MARKER:
+        *out = DVZ_SCENE_POINT_LIKE_MARKER;
+        return true;
+    default:
+        return false;
+    }
+}
+
+
+
+/**
  * Resolve the backend-specific point-like visual lowering policy.
  *
  * @param kind the point-like visual family
@@ -258,17 +286,25 @@ static bool _scene_visual_desc_from_metadata(
     }
     out->vertex_count = (uint32_t)vertex_count;
 
-    if (meta->visual_type == DVZ_VISUAL_TYPE_POINT)
+    DvzScenePointLikeKind point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+    if (_visual_meta_point_like_kind(meta->visual_type, &point_like_kind))
     {
         uint64_t color_id = _resource_lookup_label(&emitter->resources, meta->color_id);
         uint64_t size_id = _resource_lookup_label(&emitter->resources, meta->size_id);
         if (color_id == 0 || size_id == 0)
         {
             if (error != NULL)
-                *error = "typed point metadata missing color/size resource";
+            {
+                *error = point_like_kind == DVZ_SCENE_POINT_LIKE_POINT
+                             ? "typed point metadata missing color/size resource"
+                             : "typed point-like metadata missing color/size resource";
+            }
             return false;
         }
-        out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
+        out->kind = point_like_kind == DVZ_SCENE_POINT_LIKE_PIXEL
+                        ? DVZ_SCENE_VISUAL_DESC_PIXEL
+                        : DVZ_SCENE_VISUAL_DESC_POINT;
+        out->point_like_kind = point_like_kind;
         out->vbuf_ids[out->vbuf_count++] = color_id;
         out->vbuf_ids[out->vbuf_count++] = size_id;
         out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
@@ -692,7 +728,10 @@ bool _scene_visual_desc_from_render(
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 
     if (is_point)
+    {
         out->kind = DVZ_SCENE_VISUAL_DESC_POINT;
+        out->point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+    }
     else if (is_primitive)
         out->kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
     else
@@ -744,6 +783,18 @@ bool _scene_visual_shader_desc(
 
     switch (visual->kind)
     {
+    case DVZ_SCENE_VISUAL_DESC_PIXEL:
+        dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_pixel%s", format_tag);
+        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_pixel%s", format_tag);
+        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_pixel%s", format_tag);
+        out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, false);
+        out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, true);
+        out->vertex_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, false);
+        out->fragment_wgsl = _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_PIXEL, true);
+        out->vertex_spirv_key = "pixel_vert";
+        out->fragment_spirv_key = "pixel_frag";
+        return true;
+
     case DVZ_SCENE_VISUAL_DESC_POINT:
         if (picking)
         {
@@ -848,6 +899,7 @@ bool _scene_visual_pipeline_desc(
 
     switch (visual->kind)
     {
+    case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
         out->vertex_buffer_count = 3;
         out->binding_count = 3;
@@ -935,6 +987,7 @@ bool _scene_visual_bind_desc(
 
     switch (visual->kind)
     {
+    case DVZ_SCENE_VISUAL_DESC_PIXEL:
     case DVZ_SCENE_VISUAL_DESC_POINT:
         out->uses_common_set0 = true;
         out->uses_fixed_common = controller_mode == DVZ_CONTROLLER_FIXED;
