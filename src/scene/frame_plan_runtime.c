@@ -797,11 +797,108 @@ static uint32_t _graph_texture_usage_to_drp2(uint32_t usage_flags)
         out |= DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
     if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED) != 0)
         out |= DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_STORAGE) != 0)
+        out |= DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING;
     if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC) != 0)
         out |= DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
     if ((usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_DST) != 0)
         out |= DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
     return out != 0 ? out : DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+}
+
+
+
+/**
+ * Convert one declared graph access into DRP2 texture usage flags.
+ *
+ * @param usage graph pass access usage.
+ * @return DRP2 texture usage flags.
+ */
+static uint32_t _graph_access_usage_to_drp2(DvzFrameGraphAccessUsage usage)
+{
+    switch (usage)
+    {
+    case DVZ_FRAME_GRAPH_ACCESS_SAMPLED:
+        return DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
+    case DVZ_FRAME_GRAPH_ACCESS_STORAGE_READ:
+    case DVZ_FRAME_GRAPH_ACCESS_STORAGE_WRITE:
+        return DVZ_DRP2_TEXTURE_USAGE_STORAGE_BINDING;
+    case DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT:
+    case DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ:
+    case DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE:
+        return DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT;
+    case DVZ_FRAME_GRAPH_ACCESS_COPY_SRC:
+        return DVZ_DRP2_TEXTURE_USAGE_COPY_SRC;
+    case DVZ_FRAME_GRAPH_ACCESS_COPY_DST:
+        return DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+    default:
+        return 0;
+    }
+}
+
+
+
+/**
+ * Return the graph access implied by a depth attachment declaration.
+ *
+ * @param attachment graph attachment descriptor.
+ * @return graph access usage.
+ */
+static DvzFrameGraphAccessUsage
+_graph_depth_attachment_usage(const DvzFrameGraphAttachment* attachment)
+{
+    ANN(attachment);
+    if (attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
+        return DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_READ;
+    if (attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_NONE)
+        return DVZ_FRAME_GRAPH_ACCESS_NONE;
+    return DVZ_FRAME_GRAPH_ACCESS_DEPTH_ATTACHMENT_WRITE;
+}
+
+
+
+/**
+ * Compute DRP2 texture usage from all graph pass access declarations for a resource.
+ *
+ * @param plan the FramePlan.
+ * @param resource_id graph resource id.
+ * @return DRP2 texture usage flags implied by graph passes.
+ */
+static uint32_t
+_graph_declared_texture_usage_to_drp2(const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    uint32_t usage = 0;
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        if (pass == NULL)
+            continue;
+        for (uint32_t j = 0; j < pass->read_count; j++)
+        {
+            if (strcmp(pass->reads[j].resource_id, resource_id) == 0)
+                usage |= _graph_access_usage_to_drp2(pass->reads[j].usage);
+        }
+        for (uint32_t j = 0; j < pass->write_count; j++)
+        {
+            if (strcmp(pass->writes[j].resource_id, resource_id) == 0)
+                usage |= _graph_access_usage_to_drp2(pass->writes[j].usage);
+        }
+        for (uint32_t j = 0; j < pass->color_attachment_count; j++)
+        {
+            if (strcmp(pass->color_attachments[j].resource_id, resource_id) == 0)
+                usage |= _graph_access_usage_to_drp2(
+                    DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT);
+        }
+        if (pass->has_depth_attachment &&
+            strcmp(pass->depth_attachment.resource_id, resource_id) == 0)
+        {
+            usage |= _graph_access_usage_to_drp2(
+                _graph_depth_attachment_usage(&pass->depth_attachment));
+        }
+    }
+    return usage;
 }
 
 
@@ -946,6 +1043,7 @@ static bool _runtime_resolve_texture_2d(
  *
  * @param emitter the persistent emitter.
  * @param stream destination DRP2 command stream.
+ * @param plan the FramePlan carrying access declarations.
  * @param resource graph resource descriptor.
  * @param width texture width in pixels.
  * @param height texture height in pixels.
@@ -954,13 +1052,15 @@ static bool _runtime_resolve_texture_2d(
  * @return whether the texture id is available.
  */
 static bool _graph_resolve_texture_2d(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFrameGraphResource* resource, uint32_t width, uint32_t height,
     uint32_t fallback_format, uint64_t* out_id)
 {
     ANN(resource);
     uint32_t format = resource->format != 0 ? resource->format : fallback_format;
     uint32_t usage = _graph_texture_usage_to_drp2(resource->usage_flags);
+    if (plan != NULL)
+        usage |= _graph_declared_texture_usage_to_drp2(plan, resource->id);
     return _runtime_resolve_texture_2d(
         emitter, stream, resource->id, width, height, format, usage, out_id);
 }
@@ -1005,7 +1105,7 @@ static bool _graph_resolve_render_depth(
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);
     return _graph_resolve_texture_2d(
-        emitter, stream, depth_resource, width, height, VK_FORMAT_D32_SFLOAT, out_depth_id);
+        emitter, stream, plan, depth_resource, width, height, VK_FORMAT_D32_SFLOAT, out_depth_id);
 }
 
 
@@ -1063,15 +1163,15 @@ static bool _emitter_prepare_wboit_targets(
 
     ok = ok && (accum_resource != NULL
                     ? _graph_resolve_texture_2d(
-                          emitter, stream, accum_resource, width, height,
+                          emitter, stream, plan, accum_resource, width, height,
                           VK_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
                     : _runtime_resolve_texture_2d(
                           emitter, stream, accum_key, width, height,
                           VK_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, &out->accum_id));
     ok = ok && (weight_resource != NULL
                     ? _graph_resolve_texture_2d(
-                          emitter, stream, weight_resource, width, height, VK_FORMAT_R16_SFLOAT,
-                          &out->weight_id)
+                          emitter, stream, plan, weight_resource, width, height,
+                          VK_FORMAT_R16_SFLOAT, &out->weight_id)
                     : _runtime_resolve_texture_2d(
                           emitter, stream, weight_key, width, height, VK_FORMAT_R16_SFLOAT,
                           fallback_usage, &out->weight_id));
@@ -1080,7 +1180,8 @@ static bool _emitter_prepare_wboit_targets(
     if (depth_resource != NULL)
     {
         ok = _graph_resolve_texture_2d(
-            emitter, stream, depth_resource, width, height, VK_FORMAT_D32_SFLOAT, &out->depth_id);
+            emitter, stream, plan, depth_resource, width, height, VK_FORMAT_D32_SFLOAT,
+            &out->depth_id);
     }
     if (!ok)
         return false;

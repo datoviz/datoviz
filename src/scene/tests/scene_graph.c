@@ -926,6 +926,7 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
     bool found_depth_pass = false;
     bool found_named_depth_pass = false;
     bool found_named_depth_texture = false;
+    bool found_named_depth_usage = false;
     bool found_depth_pipeline = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -937,6 +938,10 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
                 found_named_depth_texture ||
                 (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
                  cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+            found_named_depth_usage =
+                found_named_depth_usage ||
+                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                 (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0);
         }
         if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -956,6 +961,7 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
     AT(found_depth_pass);
     AT(found_named_depth_pass);
     AT(found_named_depth_texture);
+    AT(found_named_depth_usage);
     AT(found_depth_pipeline);
 
     dvz_drp2_stream_destroy(stream);
@@ -4357,6 +4363,9 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     bool has_named_depth_texture = false;
     bool has_graph_accum_texture = false;
     bool has_graph_weight_texture = false;
+    bool has_graph_accum_usage = false;
+    bool has_graph_weight_usage = false;
+    bool has_graph_depth_usage = false;
     bool has_accum_pipeline = false;
     bool has_resolve_pipeline = false;
     bool has_opaque_depth_pipeline = false;
@@ -4394,6 +4403,27 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
             has_graph_weight_texture =
                 has_graph_weight_texture ||
                 (label != NULL && strcmp(label, "fig0_p0.wboit.weight") == 0);
+            has_graph_accum_usage =
+                has_graph_accum_usage ||
+                (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0 &&
+                 (command->u.create_texture.usage &
+                  (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                   DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING)) ==
+                     (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                      DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+            has_graph_weight_usage =
+                has_graph_weight_usage ||
+                (label != NULL && strcmp(label, "fig0_p0.wboit.weight") == 0 &&
+                 (command->u.create_texture.usage &
+                  (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                   DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING)) ==
+                     (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                      DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
+            has_graph_depth_usage =
+                has_graph_depth_usage ||
+                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                 (command->u.create_texture.usage &
+                  DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -4460,6 +4490,9 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(has_named_depth_texture);
     AT(has_graph_accum_texture);
     AT(has_graph_weight_texture);
+    AT(has_graph_accum_usage);
+    AT(has_graph_weight_usage);
+    AT(has_graph_depth_usage);
     AT(has_accum_pipeline);
     AT(has_resolve_pipeline);
     AT(has_opaque_depth_pipeline);
