@@ -443,6 +443,8 @@ DvzFramePlanEmitConfig dvz_frame_plan_emit_config(void)
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
     cfg.external_color_target = false;
     cfg.color_target_id = DRP2_ID_COLOR_TARGET;
+    cfg.target_width = 4;
+    cfg.target_height = 4;
     cfg.fullscreen_triangle = false;
     /* Default clear: opaque black. */
     cfg.clear_color[0] = 0.0f;

@@ -1061,6 +1061,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.shader_format         = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.external_color_target = true;
     cfg.color_target_id       = win->target_id;
+    cfg.target_width          = frame->extent.width;
+    cfg.target_height         = frame->extent.height;
     cfg.clear_color[0]        = 0.05f;
     cfg.clear_color[1]        = 0.05f;
     cfg.clear_color[2]        = 0.08f;
