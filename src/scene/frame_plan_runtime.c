@@ -69,6 +69,9 @@ struct SceneWboitTargets
     uint64_t accum_id;
     uint64_t weight_id;
     uint64_t depth_id;
+    char accum_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char weight_resource_id[DVZ_SCENE_LABEL_SIZE];
+    char depth_resource_id[DVZ_SCENE_LABEL_SIZE];
     uint64_t sampler_id;
     uint64_t resolve_bgl_id;
     uint64_t resolve_bg_id;
@@ -1120,12 +1123,46 @@ static bool _stream_apply_graph_depth(
 
 
 /**
+ * Return the runtime texture id for one graph resource id.
+ *
+ * @param resource_id graph resource id.
+ * @param final_color_id runtime id of the final render target.
+ * @param targets optional runtime targets for the panel.
+ * @param fallback_id fallback runtime id when no graph declaration is available.
+ * @return runtime texture id for the graph resource.
+ */
+static uint64_t _graph_runtime_texture_id_for_resource(
+    const char* resource_id, uint64_t final_color_id, const SceneWboitTargets* targets,
+    uint64_t fallback_id)
+{
+    if (resource_id == NULL || resource_id[0] == '\0')
+        return fallback_id;
+    if (strcmp(resource_id, "rt") == 0)
+        return final_color_id;
+    if (targets != NULL)
+    {
+        if (targets->accum_resource_id[0] != '\0' &&
+            strcmp(resource_id, targets->accum_resource_id) == 0)
+            return targets->accum_id;
+        if (targets->weight_resource_id[0] != '\0' &&
+            strcmp(resource_id, targets->weight_resource_id) == 0)
+            return targets->weight_id;
+        if (targets->depth_resource_id[0] != '\0' &&
+            strcmp(resource_id, targets->depth_resource_id) == 0)
+            return targets->depth_id;
+    }
+    return fallback_id;
+}
+
+
+
+/**
  * Return the runtime texture id declared by one graph color attachment.
  *
  * @param pass graph pass descriptor, or NULL.
  * @param attachment_index color attachment index.
  * @param final_color_id runtime id of the final render target.
- * @param targets optional WBOIT runtime targets for the panel.
+ * @param targets optional runtime targets for the panel.
  * @param fallback_id fallback runtime id when no graph declaration is available.
  * @return runtime texture id for the graph color attachment.
  */
@@ -1136,17 +1173,32 @@ static uint64_t _graph_color_attachment_texture_id(
     if (pass == NULL || attachment_index >= pass->color_attachment_count)
         return fallback_id;
 
-    const char* resource_id = pass->color_attachments[attachment_index].resource_id;
-    if (strcmp(resource_id, "rt") == 0)
-        return final_color_id;
-    if (targets != NULL)
-    {
-        if (strstr(resource_id, ".wboit.accum") != NULL)
-            return targets->accum_id;
-        if (strstr(resource_id, ".wboit.weight") != NULL)
-            return targets->weight_id;
-    }
-    return fallback_id;
+    return _graph_runtime_texture_id_for_resource(
+        pass->color_attachments[attachment_index].resource_id, final_color_id, targets,
+        fallback_id);
+}
+
+
+
+/**
+ * Return the runtime texture id declared by one graph sampled read.
+ *
+ * @param pass graph pass descriptor, or NULL.
+ * @param read_index sampled read index.
+ * @param final_color_id runtime id of the final render target.
+ * @param targets optional runtime targets for the panel.
+ * @param fallback_id fallback runtime id when no graph declaration is available.
+ * @return runtime texture id for the graph sampled read.
+ */
+static uint64_t _graph_sampled_read_texture_id(
+    const DvzFrameGraphPass* pass, uint32_t read_index, uint64_t final_color_id,
+    const SceneWboitTargets* targets, uint64_t fallback_id)
+{
+    if (pass == NULL || read_index >= pass->read_count)
+        return fallback_id;
+
+    return _graph_runtime_texture_id_for_resource(
+        pass->reads[read_index].resource_id, final_color_id, targets, fallback_id);
 }
 
 
@@ -1339,6 +1391,12 @@ static bool _emitter_prepare_wboit_targets(
     }
     if (!ok)
         return false;
+    if (accum_resource != NULL)
+        dvz_strlcpy(out->accum_resource_id, accum_resource->id, sizeof(out->accum_resource_id));
+    if (weight_resource != NULL)
+        dvz_strlcpy(out->weight_resource_id, weight_resource->id, sizeof(out->weight_resource_id));
+    if (depth_resource != NULL)
+        dvz_strlcpy(out->depth_resource_id, depth_resource->id, sizeof(out->depth_resource_id));
 
     out->sampler_id = _obj_id(emitter, "_sampler_wboit", &is_new);
     if (out->sampler_id == 0)
@@ -1387,17 +1445,10 @@ static bool _emitter_prepare_wboit_targets(
     {
         const DvzFrameGraphPass* resolve_graph_pass =
             _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_resolve");
-        uint64_t accum_id = out->accum_id;
-        uint64_t weight_id = out->weight_id;
-        if (resolve_graph_pass != NULL && resolve_graph_pass->read_count >= 2)
-        {
-            const char* read0 = resolve_graph_pass->reads[0].resource_id;
-            const char* read1 = resolve_graph_pass->reads[1].resource_id;
-            if (strstr(read0, ".wboit.weight") != NULL)
-                accum_id = out->weight_id;
-            if (strstr(read1, ".wboit.accum") != NULL)
-                weight_id = out->accum_id;
-        }
+        uint64_t accum_id = _graph_sampled_read_texture_id(
+            resolve_graph_pass, 0, out->color_id, out, out->accum_id);
+        uint64_t weight_id = _graph_sampled_read_texture_id(
+            resolve_graph_pass, 1, out->color_id, out, out->weight_id);
         DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
