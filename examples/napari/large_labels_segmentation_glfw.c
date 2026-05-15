@@ -362,7 +362,9 @@ static void _encode_pick_texture(const uint32_t* labels, uint8_t* rgba)
     {
         for (uint32_t x = 0; x < TEX_W; x++)
         {
-            uint32_t id = labels[y * TEX_W + x];
+            /* Match the displayed image orientation used by the scene image visual. */
+            uint32_t src_y = TEX_H - 1u - y;
+            uint32_t id = labels[src_y * TEX_W + x];
             uint64_t p = 4ull * ((uint64_t)y * TEX_W + x);
             rgba[p + 0] = (uint8_t)(id & 0xffu);
             rgba[p + 1] = (uint8_t)((id >> 8) & 0xffu);
