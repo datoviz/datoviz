@@ -351,8 +351,11 @@ function shaderStageVisibility(stages, fallback) {
 
 
 
-function makeBindGroupLayoutEntry(entry, storageAccess = "read_write") {
+function makeBindGroupLayoutEntry(entry, storageAccess = "read_write", options = {}) {
   const binding = required(entry.binding, "bind-group layout entry needs binding");
+  if (options.requireExplicitBindGroupLayouts && entry.visibility === undefined) {
+    throw new Error(`bind-group layout binding ${binding} needs explicit visibility`);
+  }
   switch (entry.binding_type) {
     case "sampled_texture":
       return {
@@ -373,6 +376,9 @@ function makeBindGroupLayoutEntry(entry, storageAccess = "read_write") {
         buffer: { type: "uniform" },
       };
     case "storage_buffer":
+      if (options.requireExplicitBindGroupLayouts && entry.access === undefined) {
+        throw new Error(`storage buffer layout binding ${binding} needs explicit access`);
+      }
       return {
         binding,
         visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT", "COMPUTE"]),
@@ -395,12 +401,12 @@ function shaderStorageAccess(shader, binding) {
 
 
 
-function specializeBindGroupLayout(device, layoutRecord, shader) {
+function specializeBindGroupLayout(device, layoutRecord, shader, options = {}) {
   const entries = layoutRecord.entries.map((entry) => {
     const access = entry.binding_type === "storage_buffer"
       ? (entry.access ?? shaderStorageAccess(shader, entry.binding))
       : "read_write";
-    return makeBindGroupLayoutEntry(entry, access);
+    return makeBindGroupLayoutEntry(entry, access, options);
   });
   return {
     entries: layoutRecord.entries,
@@ -588,7 +594,7 @@ export async function initWebGPU() {
 
 
 
-function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) {
+function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, options = {}) {
   const vertexShader = required(
     shaders.get(command.vertex_shader_module_id),
     `unknown vertex shader module ${command.vertex_shader_module_id}`,
@@ -640,7 +646,7 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command) 
 
 
 
-function makeComputePipeline(device, shaders, bindGroupLayouts, command) {
+function makeComputePipeline(device, shaders, bindGroupLayouts, command, options = {}) {
   const shader = required(
     shaders.get(command.compute_shader_module_id),
     `unknown compute shader module ${command.compute_shader_module_id}`,
@@ -651,6 +657,7 @@ function makeComputePipeline(device, shaders, bindGroupLayouts, command) {
       device,
       required(bindGroupLayouts.get(id), `unknown bind-group layout ${id}`),
       shader,
+      options,
     ),
   );
   const layout = pipelineBindGroupLayouts.length > 0
@@ -728,7 +735,7 @@ function beginRenderPass(context, textures, encoders, command) {
 
 
 
-export async function executeDrp2Stream(device, context, canvasFormat, stream) {
+export async function executeDrp2Stream(device, context, canvasFormat, stream, options = {}) {
   const buffers = new Map();
   const textures = new Map();
   const textureViews = new Map();
@@ -857,7 +864,8 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
             entries: required(command.entries, "CreateBindGroupLayout needs entries"),
             layout: device.createBindGroupLayout({
               label: command.label,
-              entries: command.entries.map((entry) => makeBindGroupLayoutEntry(entry)),
+              entries: command.entries.map((entry) =>
+                makeBindGroupLayoutEntry(entry, "read_write", options)),
             }),
           },
         );
@@ -912,12 +920,15 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
       case "CreateRenderPipeline":
         pipelines.set(
           command.id,
-          makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command),
+          makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, options),
         );
         break;
 
       case "CreateComputePipeline":
-        pipelines.set(command.id, makeComputePipeline(device, shaders, bindGroupLayouts, command));
+        pipelines.set(
+          command.id,
+          makeComputePipeline(device, shaders, bindGroupLayouts, command, options),
+        );
         break;
 
       case "BeginCommandEncoder":
@@ -1285,7 +1296,13 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream) {
 
 
 
-export async function executeDrp2StreamChecked(device, context, canvasFormat, stream) {
+export async function executeDrp2StreamChecked(
+  device,
+  context,
+  canvasFormat,
+  stream,
+  options = {},
+) {
   const scopes = ["validation", "out-of-memory", "internal"];
   for (const scope of scopes) {
     device.pushErrorScope(scope);
@@ -1294,7 +1311,7 @@ export async function executeDrp2StreamChecked(device, context, canvasFormat, st
   let result = null;
   let thrown = null;
   try {
-    result = await executeDrp2Stream(device, context, canvasFormat, stream);
+    result = await executeDrp2Stream(device, context, canvasFormat, stream, options);
   } catch (error) {
     thrown = error;
   }

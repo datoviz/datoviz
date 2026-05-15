@@ -65,6 +65,7 @@ async function runFixture(fixture) {
       runtime.context,
       runtime.format,
       stream,
+      { requireExplicitBindGroupLayouts: true },
     );
     const detail = result.readbacks.length > 0
       ? `readbacks=${result.readbacks.length}, nonzero=${result.readbacks[0].summary.nonzero}`
