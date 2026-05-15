@@ -23,6 +23,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_status.h"
+#include "_time_utils.h"
 #include "_trace.h"
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
@@ -35,6 +36,7 @@
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include "datoviz/canvas.h"
+#include "datoviz/drp2/recording.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/input/keyboard.h"
@@ -94,6 +96,9 @@ struct DvzAppWindow
     void* request_frame_user_data;
     DvzAppTraceSnapshot last_trace_snapshot;
     bool has_last_trace_snapshot;
+    DvzDrp2Recorder* recorder;
+    DvzClock recording_clock;
+    bool recording_target_created;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     DvzGui* gui;
 #endif
@@ -1004,6 +1009,61 @@ static bool _app_frame_callback_allowed(DvzAppWindow* win)
 
 
 /**
+ * Append one emitted app stream to the active DVZR recorder.
+ *
+ * @param win app window owning the recorder
+ * @param frame borrowed stream frame for target dimensions
+ * @param stream emitted scene stream
+ */
+static void _app_record_stream(
+    DvzAppWindow* win, const DvzStreamFrame* frame, const DvzDrp2CommandStream* stream)
+{
+    ANN(win);
+    ANN(frame);
+    ANN(stream);
+    if (win->recorder == NULL)
+        return;
+
+    double t_present = dvz_clock_get(&win->recording_clock);
+    if (!win->recording_target_created)
+    {
+        DvzDrp2CommandStream* setup = dvz_drp2_stream();
+        if (setup == NULL ||
+            !dvz_drp2_stream_hello_renderer(setup, "app-recording") ||
+            !dvz_drp2_stream_renderer_hello_reply(setup, "datoviz-drp2-runtime") ||
+            !dvz_drp2_stream_create_texture_2d_format_usage(
+                setup, win->target_id, frame->extent.width, frame->extent.height,
+                VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) ||
+            !dvz_drp2_recorder_write_stream(win->recorder, t_present, setup))
+        {
+            log_error("_app_draw failed to append DVZR target setup stream");
+            dvz_drp2_stream_destroy(setup);
+            return;
+        }
+        dvz_drp2_stream_destroy(setup);
+        win->recording_target_created = true;
+    }
+
+    const DvzDrp2CommandStream* recorded = stream;
+    DvzDrp2CommandStream filtered = {0};
+    if (dvz_drp2_stream_count(stream) >= 2 &&
+        dvz_drp2_command_type(dvz_drp2_stream_get(stream, 0)) ==
+            DVZ_DRP2_COMMAND_HELLO_RENDERER &&
+        dvz_drp2_command_type(dvz_drp2_stream_get(stream, 1)) ==
+            DVZ_DRP2_COMMAND_RENDERER_HELLO_REPLY)
+    {
+        filtered.count = dvz_drp2_stream_count(stream) - 2;
+        filtered.commands = &stream->commands[2];
+        recorded = &filtered;
+    }
+
+    if (!dvz_drp2_recorder_write_stream(win->recorder, t_present, recorded))
+        log_error("_app_draw failed to append DRP2 stream to DVZR recording");
+}
+
+
+
+/**
  * Apply the DVZ_PRESENT_MODE environment override to a present canvas configuration.
  *
  * @param ccfg canvas configuration to mutate
@@ -1091,6 +1151,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         _app_log_runtime_failure("_app_draw runtime execution failed", stream, result);
     else
         (void)dvz_figure_process_requests(win->figure, app->runtime, &caps);
+
+    if (result.ok)
+        _app_record_stream(win, frame, stream);
     dvz_drp2_stream_destroy(stream);
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
@@ -1252,6 +1315,11 @@ void dvz_app_destroy(DvzApp* app)
         {
             dvz_canvas_destroy(win->canvas);
             win->canvas = NULL;
+        }
+        if (win->recorder != NULL)
+        {
+            (void)dvz_drp2_recorder_close(win->recorder);
+            win->recorder = NULL;
         }
         if (win->window != NULL)
         {
@@ -1708,6 +1776,63 @@ int dvz_app_window_capture_png(DvzAppWindow* win, const char* path)
     return -1;
 #endif
 }
+
+
+/**
+ * Start app-window DVZR recording.
+ *
+ * @param win the app-window
+ * @param path output recording directory path
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_record_start(DvzAppWindow* win, const char* path)
+{
+    ANN(win);
+    ANN(path);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->recorder != NULL)
+        return -1;
+    DvzDrp2RecordingInfo info = {
+        .width = 0,
+        .height = 0,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "app",
+    };
+    win->recorder = dvz_drp2_recorder_open(path, &info);
+    if (win->recorder == NULL)
+        return -1;
+    win->recording_clock = dvz_clock();
+    win->recording_target_created = false;
+    return 0;
+#else
+    return -1;
+#endif
+}
+
+
+
+/**
+ * Stop app-window DVZR recording.
+ *
+ * @param win the app-window
+ * @return 0 on success, negative on error
+ */
+int dvz_app_window_record_stop(DvzAppWindow* win)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->recorder == NULL)
+        return -1;
+    bool ok = dvz_drp2_recorder_close(win->recorder);
+    win->recorder = NULL;
+    win->recording_target_created = false;
+    return ok ? 0 : -1;
+#else
+    return -1;
+#endif
+}
+
 
 
 /**

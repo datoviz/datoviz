@@ -251,6 +251,8 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
 
 int test_app_offscreen_panel_three_visuals_all_drawn(TstSuite* suite, TstItem* item);
 
+int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item);
+
 int test_scene_background_color_creates_fixed_quad(TstSuite* suite, TstItem* item);
 
 int test_scene_scale_colormap_colorbar_core(TstSuite* suite, TstItem* item);

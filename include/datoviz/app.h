@@ -306,6 +306,29 @@ DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
 
 
 /**
+ * Start recording emitted scene DRP2 frame streams for an app-window.
+ *
+ * The recording is a `.dvzr` directory written by the DRP2 linear recorder. Frames are appended
+ * from the app draw path after successful runtime execution. Call
+ * dvz_app_window_record_stop() to close the recording before replaying it.
+ *
+ * @param win the app-window
+ * @param path output recording directory path
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_record_start(DvzAppWindow* win, const char* path);
+
+
+/**
+ * Stop recording emitted scene DRP2 frame streams for an app-window.
+ *
+ * @param win the app-window
+ * @return 0 on success, negative on error
+ */
+DVZ_EXPORT int dvz_app_window_record_stop(DvzAppWindow* win);
+
+
+/**
  * Resize an app-window's logical and framebuffer extent.
  *
  * Intended for offscreen or externally-hosted windows whose size is controlled by another UI

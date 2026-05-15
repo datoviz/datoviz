@@ -26,6 +26,7 @@
 #include "_assertions.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
+#include "datoviz/drp2.h"
 #include "datoviz/scene.h"
 #include "datoviz/window/backend.h"
 #include "helpers.h"
@@ -620,6 +621,70 @@ int test_app_offscreen_has_nonblank_pixels(TstSuite* suite, TstItem* item)
     AT(yellow_count > 0);
 
     dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_app_offscreen_records_dvzr_frames(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_scene_vklite_runtime_available())
+        return 0;
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    AT(panel != NULL);
+    DvzVisual* visual = dvz_point(scene, 0);
+    AT(visual != NULL);
+
+    float position[3] = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 0, 255};
+    float size = 24.0f;
+    AT(dvz_visual_set_data(visual, "position", position, 1) == 0);
+    AT(dvz_visual_set_data(visual, "color", &color, 1) == 0);
+    AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
+
+    DvzApp* app = dvz_app(scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_records_dvzr_frames skipped: GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppWindow* win = dvz_app_window(app, figure, 64, 64);
+    AT(win != NULL);
+
+    const char* path = "/tmp/dvz_app_offscreen_recording.dvzr";
+    AT(dvz_app_window_record_start(win, path) == 0);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_app_window_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_app_window_record_stop(win) == 0);
+
+    DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
+    ANN(recording);
+    AT(dvz_drp2_recording_frame_count(recording) == 3);
+    AT(dvz_drp2_recording_raw_fallback_count(recording) == 0);
+    const DvzDrp2CommandStream* stream = dvz_drp2_recording_stream(recording);
+    ANN(stream);
+    AT(dvz_drp2_stream_count(stream) > 0);
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_recording_execute_all(recording, runtime);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+
+    dvz_drp2_recording_close(recording);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
@@ -1949,6 +2014,7 @@ int test_scene_app(TstSuite* suite)
 #endif
     TEST_SIMPLE(test_app_offscreen_panel_three_visuals_all_drawn);
     TEST_SIMPLE(test_app_offscreen_has_nonblank_pixels);
+    TEST_SIMPLE(test_app_offscreen_records_dvzr_frames);
     TEST_SIMPLE(test_app_offscreen_image_has_nonblank_pixels);
     TEST_SIMPLE(test_app_offscreen_image_field_partial_update_changes_region);
     TEST_SIMPLE(test_app_offscreen_lit_primitive_depth_orders_overlap);
