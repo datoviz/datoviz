@@ -51,7 +51,11 @@ typedef enum DvzGuiFlags
 typedef enum DvzGuiViewportFlags
 {
     DVZ_GUI_VIEWPORT_FLAGS_NONE = 0,
+
+    /* Forward mouse input from the ImGui image item to the viewport's source input router. */
     DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = 1u << 0,
+
+    /* Keep rendering the source figure even while the ImGui viewport window is hidden. */
     DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 1u << 1,
 } DvzGuiViewportFlags;
 
@@ -74,10 +78,16 @@ typedef struct DvzGuiConfig
 typedef struct DvzGuiViewportConfig
 {
     uint32_t flags;
+
+    /* Initial size of the owned offscreen source window created by dvz_gui_viewport(). */
     uint32_t initial_width;
     uint32_t initial_height;
+
+    /* Minimum source size after the ImGui content region is resized. */
     uint32_t min_width;
     uint32_t min_height;
+
+    /* Resize quantization and debounce policy for the source offscreen window. */
     uint32_t resize_step;
     uint32_t resize_delay_frames;
 } DvzGuiViewportConfig;
@@ -234,6 +244,11 @@ DVZ_EXPORT void dvz_gui_demo(DvzGui* gui, bool* open);
 /**
  * Create a dockable ImGui viewport that renders a figure into an owned offscreen window.
  *
+ * A GUI viewport is an ImGui-hosted Datoviz render target. It is not a scene DvzPanel. The
+ * supplied figure may contain any scene panels and visuals; the viewport creates and manages the
+ * offscreen app-window used to render that figure, then displays the latest source image in an
+ * ImGui window created by dvz_gui_viewport_window().
+ *
  * @param gui the GUI overlay
  * @param figure figure to render inside the GUI viewport
  * @param config optional viewport configuration
@@ -246,6 +261,10 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
 
 /**
  * Create a dockable ImGui viewport from an existing offscreen app window.
+ *
+ * This is the advanced path for callers that already own the source app-window. Most users should
+ * prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
+ * must use offscreen canvas rendering.
  *
  * @param gui the GUI overlay
  * @param source app window providing the rendered image
@@ -282,6 +301,10 @@ DVZ_EXPORT void dvz_gui_viewport_destroy(DvzGuiViewport* viewport);
 
 /**
  * Show a dockable ImGui window containing a Datoviz-rendered viewport image.
+ *
+ * Hidden or collapsed viewport windows stop rendering their source figure by default after the
+ * first image is available. Set DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN to keep the source
+ * rendering continuously.
  *
  * @param viewport the GUI viewport
  * @param title the ImGui window title
