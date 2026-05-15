@@ -968,6 +968,49 @@ static bool _graph_resolve_texture_2d(
 
 
 /**
+ * Resolve the named graph depth texture for a render node.
+ *
+ * @param emitter the persistent emitter.
+ * @param stream destination DRP2 command stream.
+ * @param plan the FramePlan.
+ * @param render render node.
+ * @param cfg optional frame-plan emit configuration.
+ * @param graph_pass output graph pass descriptor, or NULL.
+ * @param out_depth_id output depth texture id, or zero when no graph depth exists.
+ * @return whether graph depth resolution succeeded.
+ */
+static bool _graph_resolve_render_depth(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
+    const DvzFrameGraphPass** graph_pass, uint64_t* out_depth_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(plan);
+    ANN(render);
+    ANN(graph_pass);
+    ANN(out_depth_id);
+
+    *graph_pass = _graph_pass_for_render(plan, render);
+    *out_depth_id = 0;
+    if (*graph_pass == NULL || !(*graph_pass)->has_depth_attachment)
+        return true;
+
+    const DvzFrameGraphResource* depth_resource =
+        _graph_resource_by_id(plan, (*graph_pass)->depth_attachment.resource_id);
+    if (depth_resource == NULL)
+        return true;
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    _emit_target_extent(cfg, &width, &height);
+    return _graph_resolve_texture_2d(
+        emitter, stream, depth_resource, width, height, VK_FORMAT_D32_SFLOAT, out_depth_id);
+}
+
+
+
+/**
  * Prepare WBOIT intermediate targets and resolve pipeline resources for one panel.
  *
  * @param emitter the persistent emitter.
@@ -1217,12 +1260,13 @@ static bool _emitter_emit_wboit_resolve(
 
 /* Scene render path: one BeginRenderPass per panel, one Draw per visual inside it. */
 static bool _emitter_emit_render_multi(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
-    SceneRenderStateCache* cache, DvzDiagnosticReport* report)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, const DvzFramePlanNode* readback, bool clear,
+    const DvzFramePlanEmitConfig* cfg, SceneRenderStateCache* cache, DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
+    ANN(plan);
     ANN(render);
 
     uint64_t color_id = 0;
@@ -1247,6 +1291,11 @@ static bool _emitter_emit_render_multi(
     float cb = cfg ? cfg->clear_color[2] : 0.0f;
     float ca = cfg ? cfg->clear_color[3] : 1.0f;
     bool needs_depth = _scene_render_needs_depth(emitter, render);
+    const DvzFrameGraphPass* graph_pass = NULL;
+    uint64_t graph_depth_id = 0;
+    if (!_graph_resolve_render_depth(
+            emitter, stream, plan, render, cfg, &graph_pass, &graph_depth_id))
+        return false;
 
     SceneRenderDraw draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
@@ -1259,7 +1308,9 @@ static bool _emitter_emit_render_multi(
          dvz_drp2_stream_begin_render_pass_region_clear(
              stream, render_pass_id, encoder_id, color_id, cr, cg, cb, ca, 0.0f, 0.0f, 1.0f,
              1.0f, clear);
-    if (ok && needs_depth)
+    ok = ok && _stream_apply_graph_color_ops(stream, graph_pass);
+    ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
+    if (ok && needs_depth && graph_depth_id == 0)
         ok = dvz_drp2_stream_begin_render_pass_set_depth(stream, 1.0f);
     ok = ok &&
          _emitter_emit_render_multi_draws(
@@ -1586,20 +1637,21 @@ static bool _emitter_emit_scene_wboit_renders(
  * @return whether the commands were emitted
  */
 static bool _emitter_emit_render(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const uint64_t* vertex_buffer_ids, uint32_t vertex_buffer_count,
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, const uint64_t* vertex_buffer_ids, uint32_t vertex_buffer_count,
     const DvzFramePlanNode* readback, bool clear, const DvzFramePlanEmitConfig* cfg,
     SceneRenderStateCache* cache, DvzDiagnosticReport* report)
 {
     ANN(emitter);
     ANN(stream);
+    ANN(plan);
     ANN(render);
 
     /* Scene render node: per-visual multi-draw in a single pass. */
     if (vertex_buffer_count == 0 && render->u.render.visual_count > 0 &&
         cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         return _emitter_emit_render_multi(
-            emitter, stream, render, readback, clear, cfg, cache, report);
+            emitter, stream, plan, render, readback, clear, cfg, cache, report);
 
     /* Generic single-draw path (non-scene nodes, WGSL, or fallback). */
     ANN(vertex_buffer_ids);
@@ -2071,7 +2123,7 @@ static bool _emitter_emit_plain_renders(
         if (ok)
         {
             ok = _emitter_emit_render(
-                emitter, stream, render, vertex_buffer_ids, vertex_buffer_count,
+                emitter, stream, plan, render, vertex_buffer_ids, vertex_buffer_count,
                 render_count == 0 ? readback : NULL, render_count == 0, cfg,
                 is_scene_node ? &scene_cache : NULL, report);
         }

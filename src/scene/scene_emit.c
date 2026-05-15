@@ -740,6 +740,72 @@ static bool _scene_emit_wboit_frame_graph(
 
 
 /**
+ * Emit graph descriptors for one ordinary opaque panel render pass.
+ *
+ * @param plan the frame plan
+ * @param panel_id the panel id
+ * @param needs_depth whether the opaque pass writes depth
+ * @return whether graph descriptors were emitted
+ */
+static bool
+_scene_emit_opaque_frame_graph(DvzFramePlan* plan, const char* panel_id, bool needs_depth)
+{
+    ANN(plan);
+    ANN(panel_id);
+
+    char depth_id[DVZ_SCENE_LABEL_SIZE];
+    char opaque_pass_id[DVZ_SCENE_LABEL_SIZE];
+    dvz_snprintf(depth_id, sizeof(depth_id), "%s.depth", panel_id);
+    dvz_snprintf(opaque_pass_id, sizeof(opaque_pass_id), "%s.opaque", panel_id);
+
+    DvzFrameGraphResource rt = {0};
+    dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
+    rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    rt.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+    if (!_scene_frame_graph_resource_once(plan, &rt))
+        return false;
+
+    if (needs_depth)
+    {
+        DvzFrameGraphResource depth = {0};
+        dvz_strlcpy(depth.id, depth_id, sizeof(depth.id));
+        depth.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+        depth.format = VK_FORMAT_D32_SFLOAT;
+        depth.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        depth.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT;
+        depth.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+        if (!_scene_frame_graph_resource_once(plan, &depth))
+            return false;
+    }
+
+    DvzFrameGraphAttachment color = {0};
+    DvzFrameGraphAttachment depth = {0};
+    DvzFrameGraphPass opaque = {0};
+    dvz_strlcpy(opaque.id, opaque_pass_id, sizeof(opaque.id));
+    dvz_strlcpy(opaque.panel_id, panel_id, sizeof(opaque.panel_id));
+    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
+    opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    _scene_frame_graph_color_attachment(
+        &color, "rt", DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
+    if (!dvz_frame_graph_pass_color_attachment(&opaque, &color))
+        return false;
+    if (needs_depth)
+    {
+        _scene_frame_graph_depth_attachment(
+            &depth, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR,
+            DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE);
+        if (!dvz_frame_graph_pass_depth_attachment(&opaque, &depth))
+            return false;
+    }
+    return dvz_frame_plan_graph_pass(plan, &opaque);
+}
+
+
+
+/**
  * Configure common panel transform metadata on a render node.
  *
  * @param node the render node
@@ -977,5 +1043,10 @@ void _scene_emit_panel_render(
         if (!_scene_emit_wboit_frame_graph(
                 plan, panel_id, opaque_needs_depth, transparent_needs_depth))
             log_error("failed to emit WBOIT FramePlan graph for panel %s", panel_id);
+    }
+    else if (opaque_node != NULL && opaque_needs_depth)
+    {
+        if (!_scene_emit_opaque_frame_graph(plan, panel_id, opaque_needs_depth))
+            log_error("failed to emit opaque FramePlan graph for panel %s", panel_id);
     }
 }

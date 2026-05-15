@@ -924,12 +924,26 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
     ANN(stream);
 
     bool found_depth_pass = false;
+    bool found_named_depth_pass = false;
+    bool found_named_depth_texture = false;
     bool found_depth_pipeline = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
+            found_named_depth_texture =
+                found_named_depth_texture ||
+                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                 cmd->u.create_texture.format == VK_FORMAT_D32_SFLOAT);
+        }
         if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
+        {
             found_depth_pass = found_depth_pass || cmd->u.begin_render_pass.has_depth_attachment;
+            found_named_depth_pass =
+                found_named_depth_pass || cmd->u.begin_render_pass.depth_texture_id != 0;
+        }
         if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             found_depth_pipeline =
@@ -940,6 +954,8 @@ int test_scene_mesh_emits_depth_attachment(TstSuite* suite, TstItem* item)
         }
     }
     AT(found_depth_pass);
+    AT(found_named_depth_pass);
+    AT(found_named_depth_texture);
     AT(found_depth_pipeline);
 
     dvz_drp2_stream_destroy(stream);
