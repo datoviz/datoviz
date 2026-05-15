@@ -3245,7 +3245,30 @@ int test_drp2_recording_linear_roundtrip(TstSuite* suite, TstItem* item)
     AT(frame1->t_present > 0.015 && frame1->t_present < 0.017);
     AT(frame1->first_command == 3);
     AT(frame1->command_count == 3);
+    DvzDrp2CommandStream* replay_setup_frame = dvz_drp2_recording_frame_stream(recording, 0);
+    DvzDrp2CommandStream* replay_update_frame = dvz_drp2_recording_frame_stream(recording, 1);
     dvz_drp2_recording_close(recording);
+    ANN(replay_setup_frame);
+    ANN(replay_update_frame);
+    AT(dvz_drp2_stream_count(replay_setup_frame) == 3);
+    AT(dvz_drp2_stream_count(replay_update_frame) == 3);
+
+    const DvzDrp2Command* frame_write_buffer = dvz_drp2_stream_get(replay_update_frame, 0);
+    ANN(frame_write_buffer);
+    AT(frame_write_buffer->u.write_buffer.data_raw != NULL);
+    AT(memcmp(
+           frame_write_buffer->u.write_buffer.data_raw, buffer_payload,
+           sizeof(buffer_payload)) == 0);
+
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    result = dvz_drp2_runtime_execute(runtime, replay_setup_frame);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, replay_update_frame);
+    AT(result.ok);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_drp2_stream_destroy(replay_update_frame);
+    dvz_drp2_stream_destroy(replay_setup_frame);
 
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
     ANN(replay);

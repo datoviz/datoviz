@@ -224,6 +224,52 @@ static bool _recording_owner_add(DvzDrp2RecordingOwner* owner, void* blob)
 
 
 /**
+ * Copy a payload into recording-owned stream storage.
+ *
+ * @param owner recording owner
+ * @param data source bytes
+ * @param size byte size
+ * @return owned byte copy, or NULL on error
+ */
+static void* _recording_owner_copy(DvzDrp2RecordingOwner* owner, const void* data, uint64_t size)
+{
+    ANN(owner);
+    if (size == 0)
+        return NULL;
+    if (data == NULL || size > SIZE_MAX)
+        return NULL;
+    void* copy = dvz_calloc((size_t)size, 1);
+    if (copy == NULL)
+        return NULL;
+    dvz_memcpy(copy, (size_t)size, data, (size_t)size);
+    if (_recording_owner_add(owner, copy))
+        return copy;
+    dvz_free(copy);
+    return NULL;
+}
+
+
+
+/**
+ * Copy a NUL-terminated string for stream-owned command fields.
+ *
+ * @param str source string
+ * @return owned string copy, or NULL on error
+ */
+static char* _recording_strdup(const char* str)
+{
+    ANN(str);
+    size_t len = strlen(str) + 1;
+    char* copy = (char*)dvz_calloc(len, 1);
+    if (copy == NULL)
+        return NULL;
+    dvz_memcpy(copy, len, str, len);
+    return copy;
+}
+
+
+
+/**
  * Release all recording-owned stream blobs.
  *
  * @param ptr recording owner pointer
@@ -353,6 +399,96 @@ static bool _recording_texture_payload_size(const DvzDrp2Command* command, uint6
             command->u.write_texture.depth, command->u.write_texture.rows_per_image, &rows))
         return false;
     return !_dvz_mul_u64_overflows(rows, command->u.write_texture.bytes_per_row, out_size);
+}
+
+
+
+/**
+ * Release directly owned command fields after a failed frame-stream append.
+ *
+ * @param command command whose direct fields should be released
+ */
+static void _recording_command_release_direct(DvzDrp2Command* command)
+{
+    ANN(command);
+    if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        dvz_free(command->u.write_buffer.data_base64);
+    else if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+        dvz_free(command->u.write_texture.data_base64);
+    else if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+        dvz_free(command->u.create_shader_module.code);
+}
+
+
+
+/**
+ * Copy command payload pointers so one frame stream can outlive its source recording.
+ *
+ * @param owner destination stream owner
+ * @param command copied command to patch
+ * @param source source command
+ * @return whether payload fields were copied
+ */
+static bool _recording_command_copy_payloads(
+    DvzDrp2RecordingOwner* owner, DvzDrp2Command* command, const DvzDrp2Command* source)
+{
+    ANN(owner);
+    ANN(command);
+    ANN(source);
+    if (source->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+    {
+        command->u.write_buffer.data_raw = NULL;
+        command->u.write_buffer.data_base64 = NULL;
+        if (source->u.write_buffer.data_base64 != NULL)
+        {
+            command->u.write_buffer.data_base64 = _recording_strdup(
+                source->u.write_buffer.data_base64);
+            return command->u.write_buffer.data_base64 != NULL;
+        }
+        if (source->u.write_buffer.data_raw == NULL || source->u.write_buffer.size == 0)
+            return true;
+        command->u.write_buffer.data_raw = _recording_owner_copy(
+            owner, source->u.write_buffer.data_raw, source->u.write_buffer.size);
+        return command->u.write_buffer.data_raw != NULL;
+    }
+    if (source->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE)
+    {
+        command->u.write_texture.data_raw = NULL;
+        command->u.write_texture.data_base64 = NULL;
+        if (source->u.write_texture.data_base64 != NULL)
+        {
+            command->u.write_texture.data_base64 = _recording_strdup(
+                source->u.write_texture.data_base64);
+            return command->u.write_texture.data_base64 != NULL;
+        }
+        uint64_t payload_size = 0;
+        if (!_recording_texture_payload_size(source, &payload_size))
+            return false;
+        if (source->u.write_texture.data_raw == NULL || payload_size == 0)
+            return true;
+        command->u.write_texture.data_raw = _recording_owner_copy(
+            owner, source->u.write_texture.data_raw, payload_size);
+        return command->u.write_texture.data_raw != NULL;
+    }
+    if (source->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
+    {
+        command->u.create_shader_module.code = NULL;
+        command->u.create_shader_module.spirv = NULL;
+        if (source->u.create_shader_module.code != NULL)
+        {
+            command->u.create_shader_module.code = _recording_strdup(
+                source->u.create_shader_module.code);
+            return command->u.create_shader_module.code != NULL;
+        }
+        if (source->u.create_shader_module.spirv == NULL ||
+            source->u.create_shader_module.spirv_size == 0)
+            return true;
+        command->u.create_shader_module.spirv = (const unsigned char*)_recording_owner_copy(
+            owner, source->u.create_shader_module.spirv,
+            source->u.create_shader_module.spirv_size);
+        return command->u.create_shader_module.spirv != NULL;
+    }
+    return true;
 }
 
 
@@ -1348,6 +1484,49 @@ const DvzDrp2RecordedFrame* dvz_drp2_recording_frame(
     if (recording == NULL || frame_index >= recording->frame_count)
         return NULL;
     return &recording->frames[frame_index];
+}
+
+
+
+/**
+ * Return a newly allocated command stream for one recorded frame.
+ *
+ * @param recording loaded recording
+ * @param frame_index frame index
+ * @return a newly allocated frame command stream, or NULL
+ */
+DvzDrp2CommandStream* dvz_drp2_recording_frame_stream(
+    const DvzDrp2Recording* recording, uint32_t frame_index)
+{
+    const DvzDrp2RecordedFrame* frame = dvz_drp2_recording_frame(recording, frame_index);
+    if (frame == NULL || recording->stream == NULL)
+        return NULL;
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    DvzDrp2RecordingOwner* owner =
+        (DvzDrp2RecordingOwner*)dvz_calloc(1, sizeof(DvzDrp2RecordingOwner));
+    if (stream == NULL || owner == NULL)
+    {
+        dvz_drp2_stream_destroy(stream);
+        dvz_free(owner);
+        return NULL;
+    }
+    stream->owner = owner;
+    stream->owner_release = _recording_owner_release;
+
+    for (uint32_t i = 0; i < frame->command_count; i++)
+    {
+        const DvzDrp2Command* source =
+            &recording->stream->commands[frame->first_command + i];
+        DvzDrp2Command command = *source;
+        if (!_recording_command_copy_payloads(owner, &command, source) ||
+            !_recording_stream_append(stream, &command))
+        {
+            _recording_command_release_direct(&command);
+            dvz_drp2_stream_destroy(stream);
+            return NULL;
+        }
+    }
+    return stream;
 }
 
 

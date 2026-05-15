@@ -153,6 +153,19 @@ dvz_drp2_recording_frame(const DvzDrp2Recording* recording, uint32_t frame_index
 
 
 /**
+ * Return a newly allocated command stream for one recorded frame.
+ *
+ * Payload bytes in the returned stream are copied and remain valid after the recording is closed.
+ *
+ * @param recording loaded recording
+ * @param frame_index frame index
+ * @return a newly allocated frame command stream, or NULL
+ */
+DVZ_EXPORT DvzDrp2CommandStream*
+dvz_drp2_recording_frame_stream(const DvzDrp2Recording* recording, uint32_t frame_index);
+
+
+/**
  * Read a linear DRP2 recording directory.
  *
  * @param path recording directory path
