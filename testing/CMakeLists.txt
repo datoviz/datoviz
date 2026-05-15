@@ -190,6 +190,9 @@ list(FILTER DVZ_TEST_VK_SOURCES EXCLUDE REGEX "/src/vklite/tests/test_vklite\\.c
 set(DVZ_TEST_CANVAS_SOURCES ${DVZ_MODULE_TEST_SOURCES})
 list(FILTER DVZ_TEST_CANVAS_SOURCES INCLUDE REGEX "/src/(input|window|stream|video|canvas)/tests/")
 
+set(DVZ_TEST_GUI_SOURCES ${DVZ_MODULE_TEST_SOURCES})
+list(FILTER DVZ_TEST_GUI_SOURCES INCLUDE REGEX "/src/gui/tests/")
+
 if(_dvz_has_core)
     add_executable(dvztest_core
         ${DVZ_TEST_CORE_SOURCES}
@@ -489,6 +492,69 @@ else()
 endif()
 
 if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
+    if(_dvz_has_drp2 AND _dvz_has_scene AND _dvz_has_app AND TARGET datoviz_gui)
+        add_executable(dvztest_gui
+            ${DVZ_TEST_GUI_SOURCES}
+            components/dvztest_gui.c
+        )
+
+        target_link_libraries(dvztest_gui
+            PRIVATE
+            datoviz_common
+            datoviz_ds
+            datoviz_fileio
+            datoviz_math
+            datoviz_thread
+            datoviz_input
+            datoviz_window
+            datoviz_canvas
+            datoviz_stream
+            datoviz_video
+            datoviz_vk
+            datoviz_vklite
+            datoviz_volk
+            datoviz_drp2
+            datoviz_scene
+            datoviz_app
+            datoviz_gui
+            testing
+        )
+
+        if(DVZ_THREADING_TARGET)
+            target_link_libraries(dvztest_gui PRIVATE ${DVZ_THREADING_TARGET})
+        endif()
+
+        if(DVZ_WITH_MIMALLOC)
+            target_link_libraries(dvztest_gui PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
+        endif()
+
+        target_include_directories(dvztest_gui
+            PRIVATE
+            ${PROJECT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${PROJECT_SOURCE_DIR}/src/common
+            ${PROJECT_SOURCE_DIR}/src/canvas
+            ${PROJECT_SOURCE_DIR}/external/volk
+        )
+
+        if(_dvz_compile_definitions)
+            target_compile_definitions(dvztest_gui PRIVATE ${_dvz_compile_definitions})
+        endif()
+
+        target_compile_definitions(dvztest_gui PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
+
+        if(APPLE)
+            set_target_properties(dvztest_gui PROPERTIES
+                BUILD_RPATH "${_dvz_runtime_rpath}"
+                INSTALL_RPATH "${_dvz_runtime_rpath}"
+            )
+        endif()
+
+        add_test(NAME dvztest_gui COMMAND dvztest_gui)
+    else()
+        message(STATUS "Skipping dvztest_gui: GUI target set is not enabled.")
+    endif()
+
     set(DVZ_INTEGRATION_SOURCES
         ${DVZ_MODULE_TEST_SOURCES}
         components/dvztest_integration.c
