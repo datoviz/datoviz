@@ -634,8 +634,8 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzScene* scene, uint32_t flags);
  * Create a volume visual.
  *
  * First-slice scope: volume visuals retain a 3D sampled field bound through
- * `dvz_visual_set_field(volume, "field", field)`. GPU ray-marched rendering is deferred; the
- * retained scene can still realize the bound field as a runtime 3D texture upload.
+ * `dvz_visual_set_field(volume, "field", field)`. The native runtime supports slice and MIP
+ * rendering for scalar 3D fields.
  *
  * @param scene the scene
  * @param flags variant flags
@@ -663,6 +663,26 @@ DVZ_EXPORT int dvz_volume_set_opacity(DvzVisual* visual, float opacity);
  */
 DVZ_EXPORT int
 dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling);
+
+
+/**
+ * Set the volume render mode.
+ *
+ * @param visual the volume visual
+ * @param mode the render mode
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode);
+
+
+/**
+ * Set the volume raymarch step count used by MIP rendering.
+ *
+ * @param visual the volume visual
+ * @param step_count number of raymarch samples
+ * @return 0 on success, -1 on error
+ */
+DVZ_EXPORT int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count);
 
 
 /**

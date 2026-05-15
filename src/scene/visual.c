@@ -628,6 +628,8 @@ static void _volume_state_default(DvzVolumeState* state)
     dvz_memset(state, sizeof(DvzVolumeState), 0, sizeof(DvzVolumeState));
     state->opacity = 1.0f;
     state->sampling = DVZ_VOLUME_SAMPLING_LINEAR;
+    state->render_mode = DVZ_VOLUME_RENDER_SLICE;
+    state->step_count = 64;
     state->clip_min[0] = 0.0;
     state->clip_min[1] = 0.0;
     state->clip_min[2] = 0.0;
@@ -1844,6 +1846,62 @@ int dvz_volume_set_sampling(DvzVisual* visual, DvzVolumeSamplingMode sampling)
     if (!_scene_visual_mutation_allowed(visual->scene, "set volume sampling"))
         return -1;
     visual->volume.sampling = sampling;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set the volume render mode.
+ *
+ * @param visual the volume visual
+ * @param mode the render mode
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_render_mode(DvzVisual* visual, DvzVolumeRenderMode mode)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_render_mode requires a volume visual");
+        return -1;
+    }
+    if (mode != DVZ_VOLUME_RENDER_SLICE && mode != DVZ_VOLUME_RENDER_MIP)
+    {
+        log_error("unsupported volume render mode %d", (int)mode);
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume render mode"))
+        return -1;
+    visual->volume.render_mode = mode;
+    _visual_bump_version(&visual->volume.version);
+    return 0;
+}
+
+
+/**
+ * Set the volume raymarch step count used by MIP rendering.
+ *
+ * @param visual the volume visual
+ * @param step_count number of raymarch samples
+ * @return 0 on success, -1 on error
+ */
+int dvz_volume_set_step_count(DvzVisual* visual, uint32_t step_count)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_VOLUME)
+    {
+        log_error("dvz_volume_set_step_count requires a volume visual");
+        return -1;
+    }
+    if (step_count == 0 || step_count > 1024)
+    {
+        log_error("volume step count must be in [1, 1024]");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "set volume step count"))
+        return -1;
+    visual->volume.step_count = step_count;
     _visual_bump_version(&visual->volume.version);
     return 0;
 }

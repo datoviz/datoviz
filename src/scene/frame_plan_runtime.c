@@ -149,6 +149,8 @@ static void _volume_uniform_from_state(
     out->clip_max[3] = 1.0f;
     out->params[0] = state->opacity;
     out->params[1] = state->clipping_enabled ? 1.0f : 0.0f;
+    out->params[2] = (float)state->step_count;
+    out->params[3] = (float)state->render_mode;
 }
 
 

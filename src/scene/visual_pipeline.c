@@ -902,14 +902,25 @@ bool _scene_visual_shader_desc(
         return true;
 
     case DVZ_SCENE_VISUAL_DESC_VOLUME:
+    {
+        bool mip = visual->volume_state.render_mode == DVZ_VOLUME_RENDER_MIP;
         dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_vol_slice%s", format_tag);
-        dvz_snprintf(out->fragment_key, sizeof(out->fragment_key), "_fs_vol_slice%s", format_tag);
-        dvz_snprintf(out->pipeline_key, sizeof(out->pipeline_key), "_pipe_vol_slice%s", format_tag);
-        out->vertex_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE, false);
-        out->fragment_glsl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE, true);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), mip ? "_fs_vol_mip%s" :
+                                                                "_fs_vol_slice%s",
+            format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), mip ? "_pipe_vol_mip%s" :
+                                                                "_pipe_vol_slice%s",
+            format_tag);
+        DvzSceneBuiltinShader shader =
+            mip ? DVZ_SCENE_BUILTIN_SHADER_VOLUME_MIP : DVZ_SCENE_BUILTIN_SHADER_VOLUME_SLICE;
+        out->vertex_glsl = _builtin_shader_glsl(shader, false);
+        out->fragment_glsl = _builtin_shader_glsl(shader, true);
         out->vertex_spirv_key = "volume_slice_vert";
-        out->fragment_spirv_key = "volume_slice_frag";
+        out->fragment_spirv_key = mip ? "volume_mip_frag" : "volume_slice_frag";
         return true;
+    }
 
     case DVZ_SCENE_VISUAL_DESC_NONE:
     default:

@@ -820,6 +820,8 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     ANN(state);
     AT(state->opacity == 1.0f);
     AT(state->sampling == DVZ_VOLUME_SAMPLING_LINEAR);
+    AT(state->render_mode == DVZ_VOLUME_RENDER_SLICE);
+    AT(state->step_count == 64);
     AT(!state->clipping_enabled);
     AT(state->clip_min[0] == 0.0);
     AT(state->clip_max[2] == 1.0);
@@ -833,6 +835,16 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(dvz_volume_set_sampling(volume, DVZ_VOLUME_SAMPLING_NEAREST) == 0);
     AT(dvz_volume_state(volume)->sampling == DVZ_VOLUME_SAMPLING_NEAREST);
     AT(dvz_volume_state(volume)->version != version1);
+    uint64_t version2 = dvz_volume_state(volume)->version;
+
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
+    AT(dvz_volume_state(volume)->render_mode == DVZ_VOLUME_RENDER_MIP);
+    AT(dvz_volume_state(volume)->version != version2);
+    uint64_t version3 = dvz_volume_state(volume)->version;
+
+    AT(dvz_volume_set_step_count(volume, 32) == 0);
+    AT(dvz_volume_state(volume)->step_count == 32);
+    AT(dvz_volume_state(volume)->version != version3);
 
     double clip_min[3] = {0.1, 0.2, 0.3};
     double clip_max[3] = {0.9, 0.8, 0.7};
@@ -868,6 +880,10 @@ int test_scene_volume_retained_controls(TstSuite* suite, TstItem* item)
     AT(dvz_volume_state(image) == NULL);
     AT(dvz_volume_set_sampling(image, DVZ_VOLUME_SAMPLING_LINEAR) != 0);
     AT(_captured_log_contains(suite, "requires a volume visual"));
+    AT(dvz_volume_set_render_mode(image, DVZ_VOLUME_RENDER_SLICE) != 0);
+    AT(_captured_log_contains(suite, "requires a volume visual"));
+    AT(dvz_volume_set_step_count(volume, 0) != 0);
+    AT(_captured_log_contains(suite, "volume step count must be in"));
 
     dvz_scene_destroy(scene);
     return 0;

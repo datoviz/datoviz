@@ -114,6 +114,13 @@ typedef enum
 } DvzVolumeSamplingMode;
 
 
+typedef enum
+{
+    DVZ_VOLUME_RENDER_SLICE = 0,
+    DVZ_VOLUME_RENDER_MIP,
+} DvzVolumeRenderMode;
+
+
 
 typedef enum
 {

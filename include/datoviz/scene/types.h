@@ -138,9 +138,11 @@ struct DvzVolumeState
 {
     float opacity;
     DvzVolumeSamplingMode sampling;
+    DvzVolumeRenderMode render_mode;
     bool clipping_enabled;
     double clip_min[3];
     double clip_max[3];
+    uint32_t step_count;
     uint64_t version;
 };
 typedef struct DvzVolumeState DvzVolumeState;
