@@ -1566,6 +1566,29 @@ int test_drp2_runtime_reuses_submitted_transient_ids(TstSuite* suite, TstItem* i
         dvz_drp2_stream_destroy(frame);
     }
 
+    DvzDrp2CommandStream* resize = dvz_drp2_stream();
+    ANN(resize);
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        resize, 4, 4, 3, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    result = dvz_drp2_runtime_execute(runtime, resize);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    DvzDrp2CommandStream* resized_frame = dvz_drp2_stream();
+    ANN(resized_frame);
+    AT(dvz_drp2_stream_begin_command_encoder(resized_frame, 10));
+    AT(dvz_drp2_stream_begin_render_pass(resized_frame, 11, 10, 4));
+    AT(dvz_drp2_stream_set_pipeline(resized_frame, 11, 3));
+    AT(dvz_drp2_stream_draw(resized_frame, 11, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(resized_frame, 11));
+    AT(dvz_drp2_stream_finish_command_encoder(resized_frame, 10, 12));
+    AT(dvz_drp2_stream_queue_submit(resized_frame, 12, 13));
+    result = dvz_drp2_runtime_execute(runtime, resized_frame);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    dvz_drp2_stream_destroy(resized_frame);
+    dvz_drp2_stream_destroy(resize);
     dvz_drp2_stream_destroy(setup);
     dvz_drp2_runtime_destroy(runtime);
     return 0;

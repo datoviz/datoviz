@@ -1409,17 +1409,31 @@ static bool _runtime_resolve_texture_2d(
     ResourceId* resource = _resource_entry(&emitter->resources, key, &is_new);
     if (resource == NULL)
         return false;
-    uint64_t old_id = resource->id;
-    bool had_texture =
-        !is_new && resource->texture_width != 0 && resource->texture_height != 0;
-    if (!_resource_ensure_texture_2d(&emitter->resources, resource, width, height, &is_new))
+    if (width == 0 || height == 0)
         return false;
+    if (
+        is_new || resource->texture_width == 0 || resource->texture_height == 0 ||
+        resource->texture_depth == 0)
+    {
+        resource->texture_width = width;
+        resource->texture_height = height;
+        resource->texture_depth = 1;
+        resource->texture_format = format;
+        is_new = true;
+    }
+    else if (
+        width != resource->texture_width || height != resource->texture_height ||
+        resource->texture_depth != 1 || format != resource->texture_format)
+    {
+        resource->texture_width = width;
+        resource->texture_height = height;
+        resource->texture_depth = 1;
+        resource->texture_format = format;
+        is_new = true;
+    }
 
     if (is_new)
     {
-        if (had_texture && old_id != 0 && old_id != resource->id &&
-            !dvz_drp2_stream_destroy_texture(stream, old_id))
-            return false;
         if (!dvz_drp2_stream_create_texture_2d_format_usage(
                 stream, resource->id, width, height, format, usage))
             return false;
@@ -1754,16 +1768,21 @@ static bool _emitter_prepare_wboit_targets(
  * @param back_id back accumulation texture id.
  * @param depth_id depth pair texture id.
  * @param sampler_id sampler id.
+ * @param width target width.
+ * @param height target height.
  * @return dependency fingerprint.
  */
 static uint64_t _depth_peel_bind_group_fingerprint(
-    uint64_t front_id, uint64_t back_id, uint64_t depth_id, uint64_t sampler_id)
+    uint64_t front_id, uint64_t back_id, uint64_t depth_id, uint64_t sampler_id, uint32_t width,
+    uint32_t height)
 {
     uint64_t hash = UINT64_C(1469598103934665603);
     hash = (hash ^ front_id) * UINT64_C(1099511628211);
     hash = (hash ^ back_id) * UINT64_C(1099511628211);
     hash = (hash ^ depth_id) * UINT64_C(1099511628211);
     hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
+    hash = (hash ^ width) * UINT64_C(1099511628211);
+    hash = (hash ^ height) * UINT64_C(1099511628211);
     return hash != 0 ? hash : UINT64_C(1);
 }
 
@@ -1779,13 +1798,15 @@ static uint64_t _depth_peel_bind_group_fingerprint(
  * @param key bind group cache key.
  * @param bgl_id sampled bind group layout id.
  * @param sampler_id sampler id.
+ * @param width target width.
+ * @param height target height.
  * @param out_bg_id output bind group id.
  * @return whether the bind group is available.
  */
 static bool _depth_peel_resolve_sampled_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass,
     const SceneGraphRuntimeTargets* targets, const char* key, uint64_t bgl_id,
-    uint64_t sampler_id, uint64_t* out_bg_id)
+    uint64_t sampler_id, uint32_t width, uint32_t height, uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -1808,17 +1829,9 @@ static bool _depth_peel_resolve_sampled_bind_group(
         return false;
     uint64_t bg_id = resource->id;
     uint64_t fingerprint =
-        _depth_peel_bind_group_fingerprint(front_id, back_id, depth_id, sampler_id);
+        _depth_peel_bind_group_fingerprint(front_id, back_id, depth_id, sampler_id, width, height);
     if (!is_new && resource->byte_size != fingerprint)
-    {
-        if (emitter->objects.next_id == UINT64_MAX)
-            return false;
-        if (!dvz_drp2_stream_destroy_bind_group(stream, bg_id))
-            return false;
-        resource->id = emitter->objects.next_id++;
-        bg_id = resource->id;
         is_new = true;
-    }
     resource->byte_size = fingerprint;
     if (is_new)
     {
@@ -1962,7 +1975,7 @@ static bool _emitter_prepare_depth_peel_targets(
             cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
             emitter, stream, composite_pass, &out->graph, composite_bg_key,
-            out->sampled_bgl_id, out->sampler_id, &out->composite_bg_id);
+            out->sampled_bgl_id, out->sampler_id, width, height, &out->composite_bg_id);
     }
 
     const char* fmt = _shader_format_tag(cfg);

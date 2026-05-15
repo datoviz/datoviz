@@ -4533,8 +4533,6 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
 
     bool resized_front_ping = false;
     bool rebuilt_composite_bind_group = false;
-    bool destroyed_resized_texture = false;
-    bool destroyed_composite_bind_group = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
@@ -4550,8 +4548,6 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
                  command->u.create_texture.width == 96 &&
                  command->u.create_texture.height == 48);
         }
-        else if (command->type == DVZ_DRP2_COMMAND_DESTROY_TEXTURE)
-            destroyed_resized_texture = true;
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
             const char* label =
@@ -4562,13 +4558,29 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstSuite* suite, TstItem*
                  strcmp(label, "_bg_depth_peel_composite_scope_000000000000007b") == 0 &&
                  command->u.create_bind_group.id != 0);
         }
-        else if (command->type == DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP)
-            destroyed_composite_bind_group = true;
     }
     AT(resized_front_ping);
-    AT(destroyed_resized_texture);
-    AT(destroyed_composite_bind_group);
     AT(rebuilt_composite_bind_group);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, scoped_stream);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, scoped_resize_stream);
+    if (!result.ok)
+    {
+        const DvzDrp2Command* failed =
+            dvz_drp2_stream_get(scoped_resize_stream, result.command_index);
+        log_error(
+            "depth peel resize stream failed: code=%d command=%" PRIu32 " type=%d", result.code,
+            result.command_index, failed != NULL ? (int)failed->type : -1);
+        return 1;
+    }
+    dvz_drp2_runtime_destroy(runtime);
 
     dvz_drp2_stream_destroy(scoped_resize_stream);
     dvz_drp2_stream_destroy(scoped_stream);

@@ -1108,8 +1108,32 @@ static void _app_log_runtime_failure(
     if (failed != NULL)
         type = dvz_drp2_command_type(failed);
     uint64_t id = 0;
-    if (failed != NULL && type == DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER)
-        id = failed->u.begin_command_encoder.id;
+    if (failed != NULL)
+    {
+        switch (type)
+        {
+        case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+            id = failed->u.create_texture.id;
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+            id = failed->u.destroy_texture.texture_id;
+            break;
+        case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+            id = failed->u.create_bind_group.id;
+            break;
+        case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
+            id = failed->u.destroy_bind_group.bind_group_id;
+            break;
+        case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
+            id = failed->u.begin_command_encoder.id;
+            break;
+        case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+            id = failed->u.begin_render_pass.id;
+            break;
+        default:
+            break;
+        }
+    }
     log_error(
         "%s: code=%d command=%" PRIu32 " type=%d (%s) id=%" PRIu64, prefix,
         (int)result.code, result.command_index, (int)type, _trace_command_name(type), id);

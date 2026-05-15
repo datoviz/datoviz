@@ -625,11 +625,19 @@ static DvzDrp2ValidationResult _validate_create_texture(
     uint32_t bytes_per_texel = 0;
     if (!_drp2_texture_format_bytes_per_texel(command->u.create_texture.format, &bytes_per_texel))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
-    if (_drp2_find_any_object(state, id) != NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    Drp2Object* object = _drp2_add_object(state, id, DRP2_OBJECT_TEXTURE);
-    if (object == NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2Object* object = _drp2_find_any_object(state, id);
+    if (object != NULL)
+    {
+        if (object->destroyed || object->kind != DRP2_OBJECT_TEXTURE ||
+            !object->referenced_by_work)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    else
+    {
+        object = _drp2_add_object(state, id, DRP2_OBJECT_TEXTURE);
+        if (object == NULL)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     object->width  = command->u.create_texture.width;
     object->height = command->u.create_texture.height;
     object->depth  = command->u.create_texture.depth > 1 ? command->u.create_texture.depth : 1;
@@ -906,8 +914,6 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
     if (!_bind_group_entry_bindings_unique(
             command->u.create_bind_group.entries, command->u.create_bind_group.entry_count))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
-    if (_drp2_find_any_object(state, id) != NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (!_has_object_kind(
             state, command->u.create_bind_group.bind_group_layout_id,
             DRP2_OBJECT_BIND_GROUP_LAYOUT))
@@ -970,9 +976,19 @@ static DvzDrp2ValidationResult _validate_create_bind_group(
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
     }
 
-    Drp2Object* object = _drp2_add_object(state, id, DRP2_OBJECT_BIND_GROUP);
-    if (object == NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    Drp2Object* object = _drp2_find_any_object(state, id);
+    if (object != NULL)
+    {
+        if (object->destroyed || object->kind != DRP2_OBJECT_BIND_GROUP ||
+            !object->referenced_by_work)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    else
+    {
+        object = _drp2_add_object(state, id, DRP2_OBJECT_BIND_GROUP);
+        if (object == NULL)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     object->bind_group_layout_id = command->u.create_bind_group.bind_group_layout_id;
     object->bind_group_entry_count = command->u.create_bind_group.entry_count;
     dvz_memcpy(
