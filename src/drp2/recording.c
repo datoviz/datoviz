@@ -732,7 +732,9 @@ static bool _recording_write_create_render_pipeline(
             ",\"fragment_shader_module_id\":%" PRIu64 ",\"vertex_buffer_slots\":%" PRIu32
             ",\"bind_group_layout_count\":%" PRIu32 ",\"has_depth_attachment\":%u,"
             "\"depth_write_enabled\":%u,\"depth_compare_op\":%" PRIu32
-            ",\"color_target_count\":%" PRIu32 ",\"topology\":%" PRIu32
+            ",\"has_raster_state\":%u,\"cull_mode\":%" PRIu32
+            ",\"front_face\":%" PRIu32 ",\"color_target_count\":%" PRIu32
+            ",\"topology\":%" PRIu32
             ",\"binding_count\":%" PRIu32 ",\"attr_count\":%" PRIu32,
             index, (int)command->type, command->u.create_render_pipeline.id,
             command->u.create_render_pipeline.vertex_shader_module_id,
@@ -742,6 +744,9 @@ static bool _recording_write_create_render_pipeline(
             command->u.create_render_pipeline.has_depth_attachment ? 1u : 0u,
             command->u.create_render_pipeline.depth_write_enabled ? 1u : 0u,
             command->u.create_render_pipeline.depth_compare_op,
+            command->u.create_render_pipeline.has_raster_state ? 1u : 0u,
+            command->u.create_render_pipeline.cull_mode,
+            command->u.create_render_pipeline.front_face,
             command->u.create_render_pipeline.color_target_count,
             command->u.create_render_pipeline.topology,
             command->u.create_render_pipeline.binding_count,
@@ -1869,6 +1874,9 @@ static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Comm
     ANN(line);
     ANN(command);
     command->type = DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE;
+    command->u.create_render_pipeline.has_raster_state = false;
+    command->u.create_render_pipeline.cull_mode = VK_CULL_MODE_NONE;
+    command->u.create_render_pipeline.front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     if (!_recording_line_u64(line, "\"id\":", &command->u.create_render_pipeline.id) ||
         !_recording_line_u64(
             line, "\"vertex_shader_module_id\":",
@@ -1899,6 +1907,11 @@ static bool _recording_read_create_render_pipeline(const char* line, DvzDrp2Comm
             line, "\"binding_count\":", &command->u.create_render_pipeline.binding_count) ||
         !_recording_line_u32(line, "\"attr_count\":", &command->u.create_render_pipeline.attr_count))
         return false;
+    (void)_recording_line_bool(
+        line, "\"has_raster_state\":", &command->u.create_render_pipeline.has_raster_state);
+    (void)_recording_line_u32(line, "\"cull_mode\":", &command->u.create_render_pipeline.cull_mode);
+    (void)_recording_line_u32(
+        line, "\"front_face\":", &command->u.create_render_pipeline.front_face);
 
     for (uint32_t i = 0; i < DVZ_DRP2_MAX_BIND_GROUPS; i++)
     {

@@ -4786,6 +4786,91 @@ int test_drp2_render_pipeline_color_targets_json(TstSuite* suite, TstItem* item)
 }
 
 
+int test_drp2_render_pipeline_raster_state(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 10, 9000, 9001, 0));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE));
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->u.create_render_pipeline.has_raster_state);
+    AT(cmd->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT);
+    AT(cmd->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE);
+
+    char* json = dvz_drp2_stream_json(stream, "pipeline_raster_state");
+    ANN(json);
+    AT(strstr(json, "\"cull_mode\": \"back\"") != NULL);
+    AT(strstr(json, "\"front_face\": \"clockwise\"") != NULL);
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(
+        stream, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_CLOCKWISE));
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    DvzDrp2RecordingInfo info = {
+        .width = 8,
+        .height = 8,
+        .duration_s = 0.0,
+        .t_present = 0.0,
+        .backend_hint = "semantic",
+    };
+    const char* path = "/tmp/dvz_drp2_recording_raster_state.dvzr";
+    AT(dvz_drp2_recording_write_stream(path, stream, &info));
+    DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
+    ANN(replay);
+    const DvzDrp2Command* replay_pipeline = dvz_drp2_stream_get(replay, 4);
+    ANN(replay_pipeline);
+    AT(replay_pipeline->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE);
+    AT(replay_pipeline->u.create_render_pipeline.has_raster_state);
+    AT(replay_pipeline->u.create_render_pipeline.cull_mode == VK_CULL_MODE_BACK_BIT);
+    AT(replay_pipeline->u.create_render_pipeline.front_face == VK_FRONT_FACE_CLOCKWISE);
+    dvz_drp2_stream_destroy(replay);
+    dvz_drp2_stream_destroy(stream);
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(stream, 0x80000000u, VK_FRONT_FACE_CLOCKWISE));
+    result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    dvz_drp2_stream_destroy(stream);
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 1, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 2, "fragment", "@fragment fn main() {}"));
+    AT(dvz_drp2_stream_create_render_pipeline(stream, 3, 1, 2, 0));
+    AT(dvz_drp2_stream_pipeline_set_raster_state(stream, VK_CULL_MODE_BACK_BIT, 99));
+    result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 /**
  * Verify a WBOIT-shaped accumulation and resolve stream validates and serializes.
  *
@@ -5433,6 +5518,7 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_write_buffer_bytes_large_json_roundtrip);
     TEST_SIMPLE(test_drp2_render_pipeline_step_modes_json);
     TEST_SIMPLE(test_drp2_render_pipeline_color_targets_json);
+    TEST_SIMPLE(test_drp2_render_pipeline_raster_state);
     TEST_SIMPLE(test_drp2_wboit_accumulation_resolve_stream);
     TEST_SIMPLE(test_drp2_recording_linear_roundtrip);
     TEST_SIMPLE(test_drp2_recording_render_jsonl_no_raw_fallback);

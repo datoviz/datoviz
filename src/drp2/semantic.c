@@ -231,6 +231,35 @@ static uint32_t _dynamic_binding_count(const Drp2Object* layout)
 
 
 /**
+ * Return whether the cull mode is a supported Vulkan cull-mode flag combination.
+ *
+ * @param cull_mode VkCullModeFlags value
+ * @return whether the value is supported
+ */
+static bool _raster_cull_mode_valid(uint32_t cull_mode)
+{
+    return cull_mode == VK_CULL_MODE_NONE || cull_mode == VK_CULL_MODE_FRONT_BIT ||
+           cull_mode == VK_CULL_MODE_BACK_BIT ||
+           cull_mode == (VK_CULL_MODE_FRONT_BIT | VK_CULL_MODE_BACK_BIT);
+}
+
+
+
+/**
+ * Return whether the front-face value is a supported Vulkan front-face enum.
+ *
+ * @param front_face VkFrontFace value
+ * @return whether the value is supported
+ */
+static bool _raster_front_face_valid(uint32_t front_face)
+{
+    return front_face == VK_FRONT_FACE_COUNTER_CLOCKWISE ||
+           front_face == VK_FRONT_FACE_CLOCKWISE;
+}
+
+
+
+/**
  * Return the byte size implied by a texture transfer layout.
  *
  * @param depth texture region depth
@@ -666,6 +695,10 @@ static DvzDrp2ValidationResult _validate_create_render_pipeline(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (command->u.create_render_pipeline.color_target_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (command->u.create_render_pipeline.has_raster_state &&
+        (!_raster_cull_mode_valid(command->u.create_render_pipeline.cull_mode) ||
+         !_raster_front_face_valid(command->u.create_render_pipeline.front_face)))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     for (uint32_t i = 0; i < command->u.create_render_pipeline.bind_group_layout_count; i++)
     {
         if (!_has_object_kind(

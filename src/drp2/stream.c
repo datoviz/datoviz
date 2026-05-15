@@ -704,6 +704,31 @@ bool dvz_drp2_stream_pipeline_set_depth_state(
 }
 
 
+/**
+ * Attach raster state to the most recent CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param cull_mode the VkCullModeFlags value
+ * @param front_face the VkFrontFace value
+ * @return whether the most recent command was updated
+ */
+bool dvz_drp2_stream_pipeline_set_raster_state(
+    DvzDrp2CommandStream* stream, uint32_t cull_mode, uint32_t front_face)
+{
+    ANN(stream);
+    if (stream->count == 0)
+        return false;
+    DvzDrp2Command* command = &stream->commands[stream->count - 1];
+    if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        return false;
+    command->u.create_render_pipeline.has_raster_state = true;
+    command->u.create_render_pipeline.cull_mode = cull_mode;
+    command->u.create_render_pipeline.front_face = front_face;
+    return true;
+}
+
+
+
 bool dvz_drp2_stream_pipeline_set_color_target(
     DvzDrp2CommandStream* stream, uint32_t idx, uint32_t format)
 {
@@ -786,6 +811,9 @@ bool dvz_drp2_stream_create_render_pipeline_ex2(
     command->u.create_render_pipeline.has_depth_attachment = false;
     command->u.create_render_pipeline.depth_write_enabled = false;
     command->u.create_render_pipeline.depth_compare_op = VK_COMPARE_OP_ALWAYS;
+    command->u.create_render_pipeline.has_raster_state = false;
+    command->u.create_render_pipeline.cull_mode = VK_CULL_MODE_NONE;
+    command->u.create_render_pipeline.front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     command->u.create_render_pipeline.topology = topology;
     uint32_t nb = binding_count < 16 ? binding_count : 16;
     command->u.create_render_pipeline.binding_count = nb;

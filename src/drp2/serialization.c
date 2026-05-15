@@ -196,6 +196,38 @@ static const char* _topology_name(uint32_t topology)
 
 
 
+static const char* _cull_mode_name(uint32_t cull_mode)
+{
+    switch (cull_mode)
+    {
+    case VK_CULL_MODE_FRONT_BIT:
+        return "front";
+    case VK_CULL_MODE_BACK_BIT:
+        return "back";
+    case VK_CULL_MODE_FRONT_AND_BACK:
+        return "front-and-back";
+    case VK_CULL_MODE_NONE:
+    default:
+        return "none";
+    }
+}
+
+
+
+static const char* _front_face_name(uint32_t front_face)
+{
+    switch (front_face)
+    {
+    case VK_FRONT_FACE_CLOCKWISE:
+        return "clockwise";
+    case VK_FRONT_FACE_COUNTER_CLOCKWISE:
+    default:
+        return "counter-clockwise";
+    }
+}
+
+
+
 static const char* _step_mode_name(uint32_t step_mode)
 {
     switch (step_mode)
@@ -650,6 +682,14 @@ static void _json_append_command(JsonBuilder* builder, const DvzDrp2Command* com
             _json_append(builder, "]");
         }
         _json_append_vertex_buffers(builder, command);
+        if (command->u.create_render_pipeline.has_raster_state)
+        {
+            _json_append(
+                builder,
+                ", \"raster\": { \"cull_mode\": \"%s\", \"front_face\": \"%s\" }",
+                _cull_mode_name(command->u.create_render_pipeline.cull_mode),
+                _front_face_name(command->u.create_render_pipeline.front_face));
+        }
         _json_append_color_targets(builder, command);
         if (command->u.create_render_pipeline.has_depth_attachment)
         {

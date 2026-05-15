@@ -99,6 +99,9 @@ struct DvzDrp2Command
             bool has_depth_attachment;
             bool depth_write_enabled;
             uint32_t depth_compare_op;      /* VkCompareOp */
+            bool has_raster_state;
+            uint32_t cull_mode;             /* VkCullModeFlags */
+            uint32_t front_face;            /* VkFrontFace */
             uint32_t color_target_count;
             DvzDrp2ColorTarget color_targets[DVZ_DRP2_MAX_COLOR_ATTACHMENTS];
             /* Vertex input layout (binding_count==0 → no vertex attributes). */

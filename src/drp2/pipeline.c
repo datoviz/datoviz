@@ -719,6 +719,15 @@ DvzDrp2ValidationResult _vklite_create_render_pipeline(
             ? (VkPrimitiveTopology)command->u.create_render_pipeline.topology
             : VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     dvz_graphics_primitive(graphics, topology, DVZ_GRAPHICS_FLAGS_FIXED);
+    if (command->u.create_render_pipeline.has_raster_state)
+    {
+        dvz_graphics_cull_mode(
+            graphics, (VkCullModeFlags)command->u.create_render_pipeline.cull_mode,
+            DVZ_GRAPHICS_FLAGS_FIXED);
+        dvz_graphics_front_face(
+            graphics, (VkFrontFace)command->u.create_render_pipeline.front_face,
+            DVZ_GRAPHICS_FLAGS_FIXED);
+    }
     dvz_graphics_viewport(graphics, 0, 0, 1, 1, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(graphics, 0, 0, 1, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 

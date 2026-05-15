@@ -446,6 +446,18 @@ DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_depth_state(
 
 
 /**
+ * Attach raster state to the most recently appended CreateRenderPipeline command.
+ *
+ * @param stream the command stream
+ * @param cull_mode VkCullModeFlags value
+ * @param front_face VkFrontFace value
+ * @return whether the most recent command was a CreateRenderPipeline and was updated
+ */
+DVZ_EXPORT bool dvz_drp2_stream_pipeline_set_raster_state(
+    DvzDrp2CommandStream* stream, uint32_t cull_mode, uint32_t front_face);
+
+
+/**
  * Set one color target format on the most recently appended CreateRenderPipeline command.
  *
  * @param stream the command stream
