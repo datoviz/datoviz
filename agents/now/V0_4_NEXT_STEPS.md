@@ -169,7 +169,7 @@ alpha path and `DVZ_ALPHA_WBOIT` is the explicit weighted blended OIT path. Scen
 WBOIT accumulation/resolve DRP2 shape with scene-owned shaders, vklite records all passes into the
 active borrowed frame command buffer, and transient depth/color transitions are synchronized for the
 multi-pass app path. `examples/c/hello_mesh_wboit_glfw.c` now exercises an arcball mesh scene with
-a single lit WBOIT transparent cube over an opaque reference card. The example also has a GUI panel
+a single lit WBOIT transparent cube between opaque reference cards. The example also has a GUI panel
 for live cube RGB/alpha,
 ambient/diffuse, and light-direction tuning. Validation before this simplification: `just build`,
 `./build/testing/dvztest_scene test_scene_visual_alpha_mode` (`6/6`),

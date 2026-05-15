@@ -26,7 +26,7 @@ Low-level Vulkan/vklite proof material already exists in:
 
 Add a native interactive C example, likely `examples/c/hello_mesh_wboit_glfw.c`, that renders an
 arcball-controlled 3D scene with at least one transparent mesh visual. The current example uses one
-WBOIT cube over an opaque reference card and includes a GUI overlay for tuning cube RGB, alpha,
+WBOIT cube between opaque reference cards and includes a GUI overlay for tuning cube RGB, alpha,
 ambient/diffuse strength, and light direction at runtime.
 
 The example must exercise the active architecture:

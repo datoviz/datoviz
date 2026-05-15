@@ -6,7 +6,7 @@
 
 /* hello_mesh_wboit_glfw — transparent mesh via scene WBOIT + app/GLFW.
  *
- * Opens a GLFW window showing one transparent WBOIT cube over an opaque reference card. A GUI
+ * Opens a GLFW window showing one transparent WBOIT cube between opaque reference cards. A GUI
  * overlay exposes live color, alpha, ambient/diffuse, and light-direction sliders. The visual
  * alpha-mode opt-in exercises scene planning, DRP2 WBOIT accumulation/resolve, and the vklite
  * runtime while retaining the normal app/canvas presentation path.
@@ -336,21 +336,33 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    float reference_positions[6][3] = {
+    float reference_positions[12][3] = {
         {-0.95f, -0.95f, -1.05f},
         {+0.95f, -0.95f, -1.05f},
         {+0.95f, +0.95f, -1.05f},
         {-0.95f, -0.95f, -1.05f},
         {+0.95f, +0.95f, -1.05f},
         {-0.95f, +0.95f, -1.05f},
+        {-0.16f, -0.86f, +1.05f},
+        {+0.16f, -0.86f, +1.05f},
+        {+0.16f, +0.86f, +1.05f},
+        {-0.16f, -0.86f, +1.05f},
+        {+0.16f, +0.86f, +1.05f},
+        {-0.16f, +0.86f, +1.05f},
     };
-    DvzColor reference_colors[6] = {
+    DvzColor reference_colors[12] = {
         {255, 230, 80, 255},
         {255, 230, 80, 255},
         {255, 80, 180, 255},
         {255, 230, 80, 255},
         {255, 80, 180, 255},
         {80, 200, 255, 255},
+        {245, 245, 245, 255},
+        {245, 245, 245, 255},
+        {120, 255, 150, 255},
+        {245, 245, 245, 255},
+        {120, 255, 150, 255},
+        {245, 245, 245, 255},
     };
 
     float positions[24][3] = {0};
@@ -384,8 +396,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    dvz_visual_set_data(reference, "position", reference_positions, 6);
-    dvz_visual_set_data(reference, "color", reference_colors, 6);
+    dvz_visual_set_data(reference, "position", reference_positions, 12);
+    dvz_visual_set_data(reference, "color", reference_colors, 12);
 
     dvz_visual_set_data(cube, "position", positions, 24);
     dvz_visual_set_data(cube, "normal", normals, 24);
