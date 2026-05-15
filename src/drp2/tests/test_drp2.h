@@ -172,6 +172,11 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstSuite* suite, TstItem* it
 
 int test_drp2_runtime_vklite_uses_external_buffer(TstSuite* suite, TstItem* item);
 
+#if DVZ_HAS_CUDA
+int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(
+    TstSuite* suite, TstItem* item);
+#endif
+
 int test_drp2_runtime_vklite_writes_texture_contents(TstSuite* suite, TstItem* item);
 
 int test_drp2_runtime_vklite_copies_buffer_to_texture(TstSuite* suite, TstItem* item);

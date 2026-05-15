@@ -17,6 +17,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#if !OS_WINDOWS
+#include <unistd.h>
+#endif
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -28,12 +31,23 @@
 #if DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
 #include "../_runtime.h"
+#include "../../vklite/_buffers.h"
+#include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz/vk/memory_interop.h"
+#include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
+#include "datoviz/vklite/commands.h"
+#include "datoviz/vklite/sync.h"
 
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data);
+#endif
+
+#if DVZ_DRP2_HAS_VKLITE && DVZ_HAS_CUDA
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 #endif
 
 
@@ -77,6 +91,160 @@ static bool _drp2_vklite_runtime_available(void)
     return true;
 }
 #endif
+
+
+
+#if DVZ_DRP2_HAS_VKLITE && DVZ_HAS_CUDA
+/**
+ * Report CUDA driver errors with a readable label.
+ *
+ * @param res CUDA driver result code
+ * @param label operation label used in the diagnostic
+ * @return 0 on success, 1 on CUDA error
+ */
+static int _drp2_cuda_check(CUresult res, const char* label)
+{
+    if (res != CUDA_SUCCESS)
+    {
+        const char* name = NULL;
+        const char* desc = NULL;
+        cuGetErrorName(res, &name);
+        cuGetErrorString(res, &desc);
+        log_error(
+            "%s failed: %s (%s)", label, (name != NULL) ? name : "CUDA_ERROR",
+            (desc != NULL) ? desc : "no description");
+        return 1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Find the Vulkan physical device that matches a CUDA device UUID.
+ *
+ * @param instance Vulkan instance used to enumerate physical devices
+ * @param cu_device CUDA device whose UUID should be matched
+ * @param[out] out_gpu_index matched Vulkan GPU index
+ * @return true when a matching Vulkan device was found
+ */
+static bool _drp2_cuda_find_vulkan_gpu(
+    DvzInstance* instance, CUdevice cu_device, uint32_t* out_gpu_index)
+{
+    ANN(instance);
+    ANN(out_gpu_index);
+    *out_gpu_index = UINT32_MAX;
+
+    CUuuid cu_uuid = {0};
+    if (_drp2_cuda_check(cuDeviceGetUuid(&cu_uuid, cu_device), "cuDeviceGetUuid"))
+        return false;
+
+    uint32_t gpu_count = dvz_instance_gpu_count(instance);
+    for (uint32_t i = 0; i < gpu_count; i++)
+    {
+        VkPhysicalDevice pdevice = VK_NULL_HANDLE;
+        if (!dvz_instance_gpu_handle(instance, i, &pdevice) || pdevice == VK_NULL_HANDLE)
+            continue;
+
+        VkPhysicalDeviceIDProperties id = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES};
+        VkPhysicalDeviceProperties2 props = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, .pNext = &id};
+        vkGetPhysicalDeviceProperties2(pdevice, &props);
+
+        if (memcmp(id.deviceUUID, cu_uuid.bytes, VK_UUID_SIZE) == 0)
+        {
+            *out_gpu_index = i;
+            log_info("matched CUDA device to Vulkan GPU %u (%s)", i, props.properties.deviceName);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
+/**
+ * Wait for a CUDA signal and make its writes visible to Vulkan vertex input.
+ *
+ * @param device logical Vulkan device owning the main queue
+ * @param buffer buffer whose contents were written by CUDA
+ * @param size byte size of the synchronized buffer range
+ * @param wait_semaphore timeline semaphore to wait on
+ * @param wait_value timeline value signaled by CUDA
+ * @return true on success
+ */
+static bool _drp2_cuda_wait_vertex_buffer(
+    DvzDevice* device, DvzBuffer* buffer, VkDeviceSize size, VkSemaphore wait_semaphore,
+    uint64_t wait_value)
+{
+    ANN(device);
+    ANN(buffer);
+    ASSERT(size > 0);
+    ASSERT(wait_semaphore != VK_NULL_HANDLE);
+
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    if (queue == NULL)
+    {
+        log_error("main Vulkan queue unavailable for CUDA vertex-buffer wait");
+        return false;
+    }
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    if (dvz_commands_count(cmds) == 0)
+    {
+        log_error("failed to allocate command buffer for CUDA vertex-buffer wait");
+        dvz_commands_free(cmds);
+        return false;
+    }
+
+    bool ok = false;
+    if (dvz_cmd_begin_result(cmds) == 0)
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierBuffer* bbuf =
+            dvz_barriers_buffer(&barriers, dvz_buffer_handle(buffer), 0, size);
+        dvz_barrier_buffer_stage(
+            bbuf, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT);
+        dvz_barrier_buffer_access(
+            bbuf, VK_ACCESS_2_MEMORY_WRITE_BIT, VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT);
+        dvz_cmd_barriers(cmds, &barriers);
+
+        if (dvz_cmd_end_result(cmds) == 0)
+        {
+            DvzSubmit* submit = dvz_submit_create_wrapper();
+            ANN(submit);
+            dvz_submit(submit);
+            dvz_submit_wait(
+                submit, wait_semaphore, wait_value,
+                VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT);
+            dvz_submit_command(submit, dvz_commands_handle(cmds));
+            VkResult res = (VkResult)dvz_submit_send(
+                submit, dvz_queue_handle(queue), VK_NULL_HANDLE);
+            if (res == VK_SUCCESS)
+            {
+                dvz_queue_wait(queue);
+                ok = true;
+            }
+            else
+            {
+                log_error("Vulkan CUDA vertex-buffer wait submit failed (%d)", res);
+            }
+            dvz_submit_free(submit);
+        }
+    }
+
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
+    return ok;
+}
+#endif
+
+
 
 static DvzDrp2CommandStream* _valid_render_stream(void)
 {
@@ -2291,6 +2459,325 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstSuite* suite, TstItem* item
 
 
 
+#if DVZ_HAS_CUDA
+int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+#if !OS_UNIX
+    log_warn("DRP2 CUDA external vertex-buffer test skipped: opaque FD path is Unix-only");
+    return 0;
+#else
+    if (!_drp2_vklite_runtime_available())
+        return 0;
+
+    cudaError_t cerr;
+    CUdevice cu_device = 0;
+    int device_count = 0;
+    cerr = cudaGetDeviceCount(&device_count);
+    if (cerr != cudaSuccess || device_count == 0)
+    {
+        log_warn(
+            "DRP2 CUDA external vertex-buffer test skipped: no CUDA devices found (%s)",
+            cudaGetErrorString(cerr));
+        return 0;
+    }
+    if (_drp2_cuda_check(cuInit(0), "cuInit"))
+        return 1;
+    if (_drp2_cuda_check(cuDeviceGet(&cu_device, 0), "cuDeviceGet"))
+        return 1;
+
+    typedef struct DvzDrp2CudaVertex
+    {
+        float pos[2];
+    } DvzDrp2CudaVertex;
+
+    const DvzDrp2CudaVertex vertices[3] = {
+        {{-1.0f, -1.0f}},
+        {{3.0f, -1.0f}},
+        {{-1.0f, 3.0f}},
+    };
+    const uint64_t vertex_size = sizeof(vertices);
+
+    int out = 0;
+    int memory_fd = -1;
+    int semaphore_fd = -1;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzVma* allocator = NULL;
+    DvzBuffer* external = NULL;
+    DvzDrp2Runtime* runtime = NULL;
+    DvzDrp2CommandStream* stream = NULL;
+    DvzSemaphore* interop_semaphore = NULL;
+    cudaExternalMemory_t cuda_mem = NULL;
+    cudaExternalSemaphore_t cuda_semaphore = NULL;
+    void* cuda_ptr = NULL;
+
+    DvzInstanceConfig icfg = dvz_instance_default_config();
+    icfg.flags = 0;
+    dvz_instance_config_request_extension(
+        &icfg, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+    instance = dvz_instance_create(&icfg);
+    if (instance == NULL)
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    uint32_t vk_gpu_index = UINT32_MAX;
+    if (!_drp2_cuda_find_vulkan_gpu(instance, cu_device, &vk_gpu_index))
+    {
+        log_warn(
+            "DRP2 CUDA external vertex-buffer test skipped: no Vulkan GPU matches CUDA device 0");
+        goto cleanup;
+    }
+
+    DvzQueueCaps qc = {0};
+    AT(dvz_instance_gpu_queue_caps(instance, vk_gpu_index, &qc));
+    DvzQueues queues = {0};
+    dvz_queues(&qc, &queues);
+
+    DvzDeviceConfig dcfg = dvz_device_default_config(instance);
+    dvz_device_config_set_gpu_index(&dcfg, vk_gpu_index);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    dvz_device_config_set_features12(&dcfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_device_config_set_features13(&dcfg, &features13);
+    for (uint32_t i = 0; i < queues.queue_count; i++)
+    {
+        DvzQueue* queue = &queues.queues[i];
+        dvz_device_config_request_queue(&dcfg, queue->family_idx, 1);
+    }
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
+    dvz_device_config_request_extension(&dcfg, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+    device = dvz_device_create(&dcfg);
+    if (device == NULL)
+    {
+        out = 1;
+        goto cleanup;
+    }
+    if (!dvz_device_has_extension(device, VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME))
+    {
+        log_warn("DRP2 CUDA external vertex-buffer test skipped: external semaphore FD missing");
+        goto cleanup;
+    }
+
+    allocator = dvz_allocator_create();
+    ANN(allocator);
+    if (dvz_device_allocator(
+            device, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT, allocator) != 0)
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    external = dvz_buffer_create_wrapper();
+    ANN(external);
+    dvz_buffer(device, allocator, external);
+    dvz_buffer_size(external, vertex_size);
+    dvz_buffer_usage(external, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    dvz_buffer_flags(external, DVZ_ALLOC_DEDICATED_MEMORY);
+    if (dvz_buffer_create(external) != 0)
+    {
+        log_error("failed to create exportable DRP2 CUDA vertex buffer");
+        out = 1;
+        goto cleanup;
+    }
+
+    interop_semaphore = dvz_semaphore_create_wrapper();
+    ANN(interop_semaphore);
+    dvz_semaphore_timeline(
+        device, 0, interop_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    semaphore_fd =
+        dvz_semaphore_export_fd(interop_semaphore, VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT);
+    if (semaphore_fd < 0)
+    {
+        log_error("failed to export DRP2 CUDA timeline semaphore FD");
+        out = 1;
+        goto cleanup;
+    }
+
+    struct cudaExternalSemaphoreHandleDesc sem_desc = {0};
+    sem_desc.type = cudaExternalSemaphoreHandleTypeTimelineSemaphoreFd;
+    sem_desc.handle.fd = semaphore_fd;
+    cerr = cudaImportExternalSemaphore(&cuda_semaphore, &sem_desc);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaImportExternalSemaphore failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup;
+    }
+    semaphore_fd = -1;
+
+    dvz_allocator_export(allocator, external->alloc, &memory_fd);
+    if (memory_fd < 0)
+    {
+        log_error("failed to export DRP2 CUDA vertex-buffer memory FD");
+        out = 1;
+        goto cleanup;
+    }
+
+    struct cudaExternalMemoryHandleDesc mem_desc = {0};
+    mem_desc.type = cudaExternalMemoryHandleTypeOpaqueFd;
+    mem_desc.handle.fd = memory_fd;
+    mem_desc.size = dvz_buffer_allocated_size(external);
+    cerr = cudaImportExternalMemory(&cuda_mem, &mem_desc);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaImportExternalMemory failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup;
+    }
+    memory_fd = -1;
+
+    struct cudaExternalMemoryBufferDesc buffer_desc = {0};
+    buffer_desc.offset = 0;
+    buffer_desc.size = vertex_size;
+    cerr = cudaExternalMemoryGetMappedBuffer(&cuda_ptr, cuda_mem, &buffer_desc);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaExternalMemoryGetMappedBuffer failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup;
+    }
+
+    cerr = cudaMemcpy(cuda_ptr, vertices, vertex_size, cudaMemcpyHostToDevice);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaMemcpy to external vertex buffer failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup;
+    }
+    struct cudaExternalSemaphoreSignalParams signal_params = {0};
+    signal_params.params.fence.value = 1;
+    cerr = cudaSignalExternalSemaphoresAsync(&cuda_semaphore, &signal_params, 1, 0);
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaSignalExternalSemaphoresAsync failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup;
+    }
+    cerr = cudaDeviceSynchronize();
+    if (cerr != cudaSuccess)
+    {
+        log_error("cudaDeviceSynchronize failed: %s", cudaGetErrorString(cerr));
+        out = 1;
+        goto cleanup;
+    }
+    if (!_drp2_cuda_wait_vertex_buffer(
+            device, external, vertex_size, dvz_semaphore_handle(interop_semaphore), 1))
+    {
+        out = 1;
+        goto cleanup;
+    }
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(device, allocator);
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2ExternalBufferDesc desc = {
+        .buffer = external,
+        .size = vertex_size,
+        .usage = DVZ_DRP2_BUFFER_USAGE_VERTEX,
+    };
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, 1, &desc));
+
+    uint32_t binding_stride = sizeof(DvzDrp2CudaVertex);
+    uint32_t binding_step = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
+    uint32_t attr_binding = 0;
+    uint32_t attr_location = 0;
+    uint32_t attr_format = VK_FORMAT_R32G32_SFLOAT;
+    uint32_t attr_offset = 0;
+
+    stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 2, "VERTEX", "glsl",
+        "#version 450\nlayout(location=0)in vec2 pos;"
+        "void main(){gl_Position=vec4(pos,0,1);}"));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        stream, 3, "FRAGMENT", "glsl",
+        "#version 450\nlayout(location=0)out vec4 color;"
+        "void main(){color=vec4(1,0,0,1);}"));
+    AT(dvz_drp2_stream_create_render_pipeline_ex2(
+        stream, 4, 2, 3, 1, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 1, &binding_stride,
+        &binding_step, 1, &attr_binding, &attr_location, &attr_format, &attr_offset));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 5, 2, 2,
+        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(
+        stream, 6, 4, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 10));
+    AT(dvz_drp2_stream_begin_render_pass_clear(stream, 11, 10, 5, 0, 0, 0, 1));
+    AT(dvz_drp2_stream_set_pipeline(stream, 11, 4));
+    AT(dvz_drp2_stream_set_vertex_buffer(stream, 11, 0, 1, 0));
+    AT(dvz_drp2_stream_draw(stream, 11, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 11));
+    AT(dvz_drp2_stream_copy_texture_to_buffer(stream, 10, 5, 6, 0, 1, 1, 4, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 10, 12));
+    AT(dvz_drp2_stream_queue_submit(stream, 12, 13));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+
+    uint8_t downloaded[4] = {0};
+    AT(_dvz_drp2_runtime_vklite_download_buffer(runtime, 6, 0, 4, downloaded));
+    AT(downloaded[0] == 255);
+    AT(downloaded[1] == 0);
+    AT(downloaded[2] == 0);
+    AT(downloaded[3] == 255);
+
+cleanup:
+    if (stream != NULL)
+        dvz_drp2_stream_destroy(stream);
+    if (runtime != NULL)
+        dvz_drp2_runtime_destroy(runtime);
+    if (cuda_ptr != NULL)
+        cudaFree(cuda_ptr);
+    if (cuda_mem != NULL)
+        cudaDestroyExternalMemory(cuda_mem);
+    if (cuda_semaphore != NULL)
+        cudaDestroyExternalSemaphore(cuda_semaphore);
+    if (memory_fd >= 0)
+        close(memory_fd);
+    if (semaphore_fd >= 0)
+        close(semaphore_fd);
+    if (interop_semaphore != NULL)
+    {
+        dvz_semaphore_destroy(interop_semaphore);
+        dvz_semaphore_free(interop_semaphore);
+    }
+    if (external != NULL)
+    {
+        dvz_buffer_destroy(external);
+        dvz_buffer_free(external);
+    }
+    if (allocator != NULL)
+    {
+        dvz_allocator_destroy(allocator);
+        dvz_allocator_free(allocator);
+    }
+    if (device != NULL)
+        dvz_device_destroy(device);
+    if (instance != NULL)
+        dvz_instance_destroy(instance);
+    return out;
+#endif
+}
+#endif
+
+
+
 int test_drp2_runtime_download_buffer_rejects_out_of_range(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -3534,16 +4021,23 @@ int test_drp2_wboit_accumulation_resolve_stream(TstSuite* suite, TstItem* item)
     AT(dvz_drp2_stream_create_render_pipeline_with_bind_group_layout(
         stream, 22, 20, 21, 0, 3));
 
-    AT(dvz_drp2_stream_create_texture_2d_usage(
-        stream, 30, 4, 4,
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 30, 4, 4, VK_FORMAT_R16G16B16A16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_create_texture_2d_usage(
-        stream, 31, 4, 4,
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 31, 4, 4, VK_FORMAT_R16_SFLOAT,
         DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
-    AT(dvz_drp2_stream_create_texture_2d_usage(
-        stream, 32, 4, 4, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
-    AT(dvz_drp2_stream_create_texture_2d_usage(
-        stream, 33, 4, 4, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 32, 4, 4, VK_FORMAT_R8G8B8A8_UNORM, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_stream_create_texture_2d_format_usage(
+        stream, 33, 4, 4, VK_FORMAT_D32_SFLOAT, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+
+    const DvzDrp2Command* accum_texture = dvz_drp2_stream_get(stream, 12);
+    const DvzDrp2Command* reveal_texture = dvz_drp2_stream_get(stream, 13);
+    ANN(accum_texture);
+    ANN(reveal_texture);
+    AT(accum_texture->u.create_texture.format == VK_FORMAT_R16G16B16A16_SFLOAT);
+    AT(reveal_texture->u.create_texture.format == VK_FORMAT_R16_SFLOAT);
 
     DvzDrp2BindGroupEntry bind_entries[3] = {
         {
@@ -3869,6 +4363,9 @@ int test_drp2(TstSuite* suite)
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_buffer_contents);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_contents);
     TEST_SIMPLE(test_drp2_runtime_vklite_uses_external_buffer);
+#if DVZ_HAS_CUDA
+    TEST_SIMPLE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
+#endif
     TEST_SIMPLE(test_drp2_runtime_vklite_writes_texture_contents);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_buffer_to_texture);
     TEST_SIMPLE(test_drp2_runtime_vklite_copies_texture_to_texture);

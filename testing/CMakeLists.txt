@@ -261,6 +261,13 @@ if(_dvz_has_core AND _dvz_has_drp2)
         target_link_libraries(dvztest_drp2 PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
     endif()
 
+    if(DVZ_HAS_CUDA)
+        target_include_directories(dvztest_drp2 PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+        target_include_directories(dvztest_drp2 PRIVATE ${PROJECT_SOURCE_DIR}/external)
+        target_link_libraries(dvztest_drp2 PRIVATE CUDA::cudart CUDA::cuda_driver)
+        target_link_libraries(dvztest_drp2 PRIVATE cuda)
+    endif()
+
     if(DVZ_WITH_MIMALLOC)
         target_link_libraries(dvztest_drp2 PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
     endif()
@@ -270,6 +277,7 @@ if(_dvz_has_core AND _dvz_has_drp2)
         ${PROJECT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
+        ${PROJECT_SOURCE_DIR}/src/vklite
     )
 
     if(_dvz_compile_definitions)
