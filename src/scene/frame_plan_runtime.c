@@ -45,6 +45,7 @@
 typedef struct SceneRenderDraw SceneRenderDraw;
 typedef struct SceneRenderBatch SceneRenderBatch;
 typedef struct SceneGraphRuntimeTarget SceneGraphRuntimeTarget;
+typedef struct SceneGraphRuntimeTargets SceneGraphRuntimeTargets;
 typedef struct SceneWboitTargets SceneWboitTargets;
 
 struct SceneRenderDraw
@@ -71,14 +72,20 @@ struct SceneGraphRuntimeTarget
 };
 
 
+struct SceneGraphRuntimeTargets
+{
+    SceneGraphRuntimeTarget targets[DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY];
+    uint32_t count;
+};
+
+
 struct SceneWboitTargets
 {
     uint64_t color_id;
     uint64_t accum_id;
     uint64_t weight_id;
     uint64_t depth_id;
-    SceneGraphRuntimeTarget graph_targets[DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY];
-    uint32_t graph_target_count;
+    SceneGraphRuntimeTargets graph;
     uint64_t sampler_id;
     uint64_t resolve_bgl_id;
     uint64_t resolve_bg_id;
@@ -1138,25 +1145,25 @@ static bool _stream_apply_graph_depth(
  * @return whether the mapping was registered.
  */
 static bool _graph_runtime_targets_add(
-    SceneWboitTargets* targets, const char* resource_id, uint64_t texture_id)
+    SceneGraphRuntimeTargets* targets, const char* resource_id, uint64_t texture_id)
 {
     ANN(targets);
     ANN(resource_id);
 
     if (resource_id[0] == '\0' || texture_id == 0)
         return true;
-    for (uint32_t i = 0; i < targets->graph_target_count; i++)
+    for (uint32_t i = 0; i < targets->count; i++)
     {
-        if (strcmp(targets->graph_targets[i].resource_id, resource_id) == 0)
+        if (strcmp(targets->targets[i].resource_id, resource_id) == 0)
         {
-            targets->graph_targets[i].texture_id = texture_id;
+            targets->targets[i].texture_id = texture_id;
             return true;
         }
     }
-    if (targets->graph_target_count >= DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY)
+    if (targets->count >= DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY)
         return false;
 
-    SceneGraphRuntimeTarget* target = &targets->graph_targets[targets->graph_target_count++];
+    SceneGraphRuntimeTarget* target = &targets->targets[targets->count++];
     dvz_strlcpy(target->resource_id, resource_id, sizeof(target->resource_id));
     target->texture_id = texture_id;
     return true;
@@ -1172,14 +1179,14 @@ static bool _graph_runtime_targets_add(
  * @return runtime texture id, or zero when no mapping exists.
  */
 static uint64_t
-_graph_runtime_targets_get(const SceneWboitTargets* targets, const char* resource_id)
+_graph_runtime_targets_get(const SceneGraphRuntimeTargets* targets, const char* resource_id)
 {
     if (targets == NULL || resource_id == NULL || resource_id[0] == '\0')
         return 0;
-    for (uint32_t i = 0; i < targets->graph_target_count; i++)
+    for (uint32_t i = 0; i < targets->count; i++)
     {
-        if (strcmp(targets->graph_targets[i].resource_id, resource_id) == 0)
-            return targets->graph_targets[i].texture_id;
+        if (strcmp(targets->targets[i].resource_id, resource_id) == 0)
+            return targets->targets[i].texture_id;
     }
     return 0;
 }
@@ -1196,7 +1203,7 @@ _graph_runtime_targets_get(const SceneWboitTargets* targets, const char* resourc
  * @return runtime texture id for the graph resource.
  */
 static uint64_t _graph_runtime_texture_id_for_resource(
-    const char* resource_id, uint64_t final_color_id, const SceneWboitTargets* targets,
+    const char* resource_id, uint64_t final_color_id, const SceneGraphRuntimeTargets* targets,
     uint64_t fallback_id)
 {
     if (resource_id == NULL || resource_id[0] == '\0')
@@ -1226,7 +1233,7 @@ static uint64_t _graph_runtime_texture_id_for_resource(
  */
 static uint64_t _graph_color_attachment_texture_id(
     const DvzFrameGraphPass* pass, uint32_t attachment_index, uint64_t final_color_id,
-    const SceneWboitTargets* targets, uint64_t fallback_id)
+    const SceneGraphRuntimeTargets* targets, uint64_t fallback_id)
 {
     if (pass == NULL || attachment_index >= pass->color_attachment_count)
         return fallback_id;
@@ -1250,7 +1257,7 @@ static uint64_t _graph_color_attachment_texture_id(
  */
 static uint64_t _graph_sampled_read_texture_id(
     const DvzFrameGraphPass* pass, uint32_t read_index, uint64_t final_color_id,
-    const SceneWboitTargets* targets, uint64_t fallback_id)
+    const SceneGraphRuntimeTargets* targets, uint64_t fallback_id)
 {
     if (pass == NULL || read_index >= pass->read_count)
         return fallback_id;
@@ -1451,13 +1458,13 @@ static bool _emitter_prepare_wboit_targets(
         return false;
     ok = ok &&
          (accum_resource == NULL ||
-          _graph_runtime_targets_add(out, accum_resource->id, out->accum_id));
+          _graph_runtime_targets_add(&out->graph, accum_resource->id, out->accum_id));
     ok = ok &&
          (weight_resource == NULL ||
-          _graph_runtime_targets_add(out, weight_resource->id, out->weight_id));
+          _graph_runtime_targets_add(&out->graph, weight_resource->id, out->weight_id));
     ok = ok &&
          (depth_resource == NULL ||
-          _graph_runtime_targets_add(out, depth_resource->id, out->depth_id));
+          _graph_runtime_targets_add(&out->graph, depth_resource->id, out->depth_id));
     if (!ok)
         return false;
 
@@ -1509,9 +1516,9 @@ static bool _emitter_prepare_wboit_targets(
         const DvzFrameGraphPass* resolve_graph_pass =
             _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_resolve");
         uint64_t accum_id = _graph_sampled_read_texture_id(
-            resolve_graph_pass, 0, out->color_id, out, out->accum_id);
+            resolve_graph_pass, 0, out->color_id, &out->graph, out->accum_id);
         uint64_t weight_id = _graph_sampled_read_texture_id(
-            resolve_graph_pass, 1, out->color_id, out, out->weight_id);
+            resolve_graph_pass, 1, out->color_id, &out->graph, out->weight_id);
         DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
@@ -1990,7 +1997,9 @@ static bool _emitter_emit_scene_wboit_renders(
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
             uint64_t target_id =
-                _graph_color_attachment_texture_id(graph_pass, 0, color_id, targets, color_id);
+                _graph_color_attachment_texture_id(
+                    graph_pass, 0, color_id, targets != NULL ? &targets->graph : NULL,
+                    color_id);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
@@ -2025,9 +2034,9 @@ static bool _emitter_emit_scene_wboit_renders(
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
             uint64_t accum_id = _graph_color_attachment_texture_id(
-                graph_pass, 0, color_id, targets, targets->accum_id);
+                graph_pass, 0, color_id, &targets->graph, targets->accum_id);
             uint64_t weight_id = _graph_color_attachment_texture_id(
-                graph_pass, 1, color_id, targets, targets->weight_id);
+                graph_pass, 1, color_id, &targets->graph, targets->weight_id);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, accum_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
@@ -2063,7 +2072,7 @@ static bool _emitter_emit_scene_wboit_renders(
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
             uint64_t target_id =
-                _graph_color_attachment_texture_id(graph_pass, 0, color_id, targets, color_id);
+                _graph_color_attachment_texture_id(graph_pass, 0, color_id, &targets->graph, color_id);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                 stream, pass_id, encoder_id, target_id, cr, cg, cb, ca,
                 render->u.render.desc.x, render->u.render.desc.y, render->u.render.desc.width,
@@ -2096,7 +2105,7 @@ static bool _emitter_emit_scene_wboit_renders(
             const DvzFrameGraphPass* graph_pass =
                 ordered_graph_pass != NULL ? ordered_graph_pass : _graph_pass_for_render(plan, render);
             uint64_t target_id =
-                _graph_color_attachment_texture_id(graph_pass, 0, color_id, targets, color_id);
+                _graph_color_attachment_texture_id(graph_pass, 0, color_id, &targets->graph, color_id);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, target_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
