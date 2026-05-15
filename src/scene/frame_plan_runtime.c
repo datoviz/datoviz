@@ -737,6 +737,53 @@ static const DvzFrameGraphPass* _graph_pass_by_panel_work(
 
 
 /**
+ * Return the graph work label used for a render pass role.
+ *
+ * @param role the FramePlan render pass role.
+ * @return the graph work label.
+ */
+static const char* _graph_work_label_for_render_role(DvzFramePlanRenderPassRole role)
+{
+    switch (role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+        return "opaque";
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        return "wboit_accum";
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+        return "wboit_resolve";
+    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
+        return "picking";
+    default:
+        return "";
+    }
+}
+
+
+
+/**
+ * Return the graph pass associated with a render node.
+ *
+ * @param plan the FramePlan.
+ * @param render render node.
+ * @return the graph pass descriptor, or NULL when absent.
+ */
+static const DvzFrameGraphPass*
+_graph_pass_for_render(const DvzFramePlan* plan, const DvzFramePlanNode* render)
+{
+    ANN(plan);
+    ANN(render);
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+        return NULL;
+    const char* work_label = _graph_work_label_for_render_role(render->u.render.pass_role);
+    if (work_label[0] == '\0')
+        return NULL;
+    return _graph_pass_by_panel_work(plan, render->u.render.panel_id, work_label);
+}
+
+
+
+/**
  * Convert graph texture usage flags to DRP2 texture usage flags.
  *
  * @param usage_flags graph resource usage flags.
@@ -954,8 +1001,7 @@ static bool _emitter_prepare_wboit_targets(
     dvz_snprintf(accum_key, sizeof(accum_key), "_wboit_accum_%s", render->u.render.panel_id);
     dvz_snprintf(weight_key, sizeof(weight_key), "_wboit_weight_%s", render->u.render.panel_id);
 
-    const DvzFrameGraphPass* graph_pass =
-        _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_accum");
+    const DvzFrameGraphPass* graph_pass = _graph_pass_for_render(plan, render);
     const DvzFrameGraphResource* accum_resource = NULL;
     const DvzFrameGraphResource* weight_resource = NULL;
     const DvzFrameGraphResource* depth_resource = NULL;
@@ -1437,8 +1483,7 @@ static bool _emitter_emit_scene_wboit_renders(
             const SceneWboitTargets* targets =
                 _wboit_targets_for_panel(
                     wboit_targets, wboit_renders, target_count, render->u.render.panel_id);
-            const DvzFrameGraphPass* graph_pass =
-                _graph_pass_by_panel_work(plan, render->u.render.panel_id, "opaque");
+            const DvzFrameGraphPass* graph_pass = _graph_pass_for_render(plan, render);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             bool has_draws = batch_index < batch_count && batches[batch_index].render == render;
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
@@ -1471,8 +1516,7 @@ static bool _emitter_emit_scene_wboit_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
-            const DvzFrameGraphPass* graph_pass =
-                _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_accum");
+            const DvzFrameGraphPass* graph_pass = _graph_pass_for_render(plan, render);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, targets->accum_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
@@ -1506,8 +1550,7 @@ static bool _emitter_emit_scene_wboit_renders(
                 break;
             }
             uint64_t pass_id = _emitter_next_transient_id(emitter);
-            const DvzFrameGraphPass* graph_pass =
-                _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_resolve");
+            const DvzFrameGraphPass* graph_pass = _graph_pass_for_render(plan, render);
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                      stream, pass_id, encoder_id, color_id, 0.0f, 0.0f, 0.0f, 0.0f,
                      render->u.render.desc.x, render->u.render.desc.y,
