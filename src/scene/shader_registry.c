@@ -215,7 +215,8 @@
     "layout(location=3)in vec3 fragCameraPos;\n"                                                \
     "layout(location=0)out vec4 outAccum;\n"                                                     \
     "layout(location=1)out float outWeight;\n"                                                   \
-    "void main(){vec3 n=normalize(fragNormal);vec3 l=normalize(shading.lightDir.xyz);"         \
+    "void main(){vec3 n=normalize(fragNormal);if(!gl_FrontFacing)n=-n;"                        \
+    "vec3 l=normalize(shading.lightDir.xyz);"                                                   \
     "vec3 v=normalize(fragCameraPos-fragWorldPos);vec3 h=normalize(l+v);"                      \
     "float lambert=max(dot(n,l),0.0);float spec=pow(max(dot(n,h),0.0),32.0);"                  \
     "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+vec3(0.18*spec);"     \
