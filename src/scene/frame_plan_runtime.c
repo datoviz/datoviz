@@ -108,118 +108,6 @@ struct SceneDepthPeelTargets
 
 
 /*************************************************************************************************/
-/*  Depth peeling shaders                                                                        */
-/*************************************************************************************************/
-
-/**
- * Return the unlit depth-peeling fragment shader for one shell pass.
- *
- * @param back_pass whether the shader writes the back-shell accumulation.
- * @return GLSL source.
- */
-static const char* _depth_peel_unlit_fragment_glsl(bool back_pass)
-{
-    if (back_pass)
-    {
-        return "#version 450\n"
-               "layout(location=0)in vec4 fragColor;"
-               "layout(location=0)out vec4 frontAccum;"
-               "layout(location=1)out vec4 backAccum;"
-               "layout(location=2)out vec4 depthPair;"
-               "void main(){"
-               "float a=clamp(fragColor.a,0.0,1.0);"
-               "frontAccum=vec4(0.0);"
-               "backAccum=vec4(fragColor.rgb*a,a);"
-               "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
-               "}";
-    }
-
-    return "#version 450\n"
-           "layout(location=0)in vec4 fragColor;"
-           "layout(location=0)out vec4 frontAccum;"
-           "layout(location=1)out vec4 backAccum;"
-           "layout(location=2)out vec4 depthPair;"
-           "void main(){"
-           "float a=clamp(fragColor.a,0.0,1.0);"
-           "frontAccum=vec4(fragColor.rgb*a,a);"
-           "backAccum=vec4(0.0);"
-           "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
-           "}";
-}
-
-
-
-/**
- * Return the lit depth-peeling fragment shader for one shell pass.
- *
- * @param back_pass whether the shader writes the back-shell accumulation.
- * @return GLSL source.
- */
-static const char* _depth_peel_lit_fragment_glsl(bool back_pass)
-{
-    if (back_pass)
-    {
-        return "#version 450\n"
-               "layout(set=1,binding=0)uniform PrimitiveShading{"
-               "vec4 lightDir;vec4 params;}shading;"
-               "layout(location=0)in vec4 fragColor;"
-               "layout(location=1)in vec3 fragNormal;"
-               "layout(location=2)in vec3 fragWorldPos;"
-               "layout(location=3)in vec3 fragCameraPos;"
-               "layout(location=0)out vec4 frontAccum;"
-               "layout(location=1)out vec4 backAccum;"
-               "layout(location=2)out vec4 depthPair;"
-               "vec4 shade(){"
-               "vec3 n=normalize(fragNormal);"
-               "vec3 l=normalize(shading.lightDir.xyz);"
-               "vec3 v=normalize(fragCameraPos-fragWorldPos);"
-               "vec3 h=normalize(l+v);"
-               "float lambert=max(dot(n,l),0.0);"
-               "float spec=pow(max(dot(n,h),0.0),32.0);"
-               "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+"
-               "vec3(0.18*spec);"
-               "return vec4(clamp(rgb,0.0,1.0),fragColor.a);"
-               "}"
-               "void main(){"
-               "vec4 c=shade();float a=clamp(c.a,0.0,1.0);"
-               "frontAccum=vec4(0.0);"
-               "backAccum=vec4(c.rgb*a,a);"
-               "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
-               "}";
-    }
-
-    return "#version 450\n"
-           "layout(set=1,binding=0)uniform PrimitiveShading{"
-           "vec4 lightDir;vec4 params;}shading;"
-           "layout(location=0)in vec4 fragColor;"
-           "layout(location=1)in vec3 fragNormal;"
-           "layout(location=2)in vec3 fragWorldPos;"
-           "layout(location=3)in vec3 fragCameraPos;"
-           "layout(location=0)out vec4 frontAccum;"
-           "layout(location=1)out vec4 backAccum;"
-           "layout(location=2)out vec4 depthPair;"
-           "vec4 shade(){"
-           "vec3 n=normalize(fragNormal);"
-           "vec3 l=normalize(shading.lightDir.xyz);"
-           "vec3 v=normalize(fragCameraPos-fragWorldPos);"
-           "vec3 h=normalize(l+v);"
-           "float lambert=max(dot(n,l),0.0);"
-           "float spec=pow(max(dot(n,h),0.0),32.0);"
-           "vec3 rgb=fragColor.rgb*(shading.params.x+shading.params.y*lambert)+"
-           "vec3(0.18*spec);"
-           "return vec4(clamp(rgb,0.0,1.0),fragColor.a);"
-           "}"
-           "void main(){"
-           "vec4 c=shade();float a=clamp(c.a,0.0,1.0);"
-           "frontAccum=vec4(c.rgb*a,a);"
-           "backAccum=vec4(0.0);"
-           "depthPair=vec4(gl_FragCoord.z,1.0-gl_FragCoord.z,0.0,1.0);"
-           "}";
-}
-
-
-
-/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
@@ -244,6 +132,49 @@ static bool _alpha_mode_is_standard_blend(DvzAlphaMode mode)
 static bool _alpha_mode_is_depth_peel(DvzAlphaMode mode)
 {
     return mode == DVZ_ALPHA_DEPTH_PEEL;
+}
+
+
+/**
+ * Select the depth-peeling fragment shader variant.
+ *
+ * @param lit whether the visual carries normals and uses lit shading.
+ * @param back_pass whether the pass writes the back-shell accumulation.
+ * @return the built-in shader key.
+ */
+static DvzSceneBuiltinShader _depth_peel_fragment_shader(bool lit, bool back_pass)
+{
+    if (lit)
+    {
+        return back_pass ? DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK_LIT :
+                           DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT_LIT;
+    }
+    return back_pass ? DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK :
+                       DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT;
+}
+
+
+/**
+ * Return the SPIR-V resource key for one depth-peeling fragment shader.
+ *
+ * @param shader the built-in shader key.
+ * @return the embedded SPIR-V key, or NULL when unsupported.
+ */
+static const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader)
+{
+    switch (shader)
+    {
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT:
+        return "depth_peel_front_frag";
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK:
+        return "depth_peel_back_frag";
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT_LIT:
+        return "depth_peel_front_lit_frag";
+    case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK_LIT:
+        return "depth_peel_back_lit_frag";
+    default:
+        return NULL;
+    }
 }
 
 
@@ -576,14 +507,12 @@ static bool _emitter_prepare_render_multi(
                 render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT
                     ? "_peel_init"
                     : "_peel_iter");
-            shader.fragment_glsl = desc.has_normal
-                                       ? _depth_peel_lit_fragment_glsl(
-                                             render->u.render.pass_role ==
-                                             DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
-                                       : _depth_peel_unlit_fragment_glsl(
-                                             render->u.render.pass_role ==
-                                             DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
-            shader.fragment_spirv_key = NULL;
+            bool back_pass =
+                render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+            DvzSceneBuiltinShader peel_shader =
+                _depth_peel_fragment_shader(desc.has_normal, back_pass);
+            shader.fragment_glsl = _builtin_shader_glsl(peel_shader, true);
+            shader.fragment_spirv_key = _depth_peel_fragment_spirv_key(peel_shader);
         }
         if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
         {
@@ -1776,41 +1705,6 @@ static bool _emitter_prepare_wboit_targets(
 
 
 /**
- * Return the depth-peeling fullscreen composite vertex shader.
- *
- * @return GLSL source
- */
-static const char* _depth_peel_composite_vertex_glsl(void)
-{
-    return "#version 450\n"
-           "vec2 p[3]=vec2[](vec2(-1,-1),vec2(3,-1),vec2(-1,3));"
-           "void main(){gl_Position=vec4(p[gl_VertexIndex],0,1);}";
-}
-
-
-/**
- * Return the depth-peeling fullscreen composite fragment shader.
- *
- * @return GLSL source
- */
-static const char* _depth_peel_composite_fragment_glsl(void)
-{
-    return "#version 450\n"
-           "layout(set=0,binding=0)uniform texture2D front_accum;"
-           "layout(set=0,binding=1)uniform texture2D back_accum;"
-           "layout(set=0,binding=2)uniform texture2D depth_pair;"
-           "layout(set=0,binding=3)uniform sampler samp;"
-           "layout(location=0)out vec4 color;"
-           "void main(){ivec2 uv=ivec2(gl_FragCoord.xy);"
-           "vec4 f=texelFetch(sampler2D(front_accum,samp),uv,0);"
-           "vec4 b=texelFetch(sampler2D(back_accum,samp),uv,0);"
-           "float a=clamp(f.a+b.a*(1.0-f.a),0.0,1.0);"
-           "vec3 premul=f.rgb+b.rgb*(1.0-f.a);"
-           "color=a>0.0?vec4(premul/a,a):vec4(0.0);}";
-}
-
-
-/**
  * Resolve one sampled bind group for a depth-peeling graph pass.
  *
  * @param emitter the persistent emitter.
@@ -1996,16 +1890,19 @@ static bool _emitter_prepare_depth_peel_targets(
     if (vs_id == 0)
         return false;
     if (ok && is_new)
-        ok = ok && _emit_shader(
-                       stream, vs_id, "VERTEX", NULL, _depth_peel_composite_vertex_glsl(), cfg);
+        ok = ok && _emit_shader_spirv(
+                       stream, vs_id, "VERTEX", "fullscreen_vert",
+                       _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_COMPOSITE, false),
+                       cfg);
 
     uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
     if (fs_id == 0)
         return false;
     if (ok && is_new)
-        ok = ok && _emit_shader(
-                       stream, fs_id, "FRAGMENT", NULL,
-                       _depth_peel_composite_fragment_glsl(), cfg);
+        ok = ok && _emit_shader_spirv(
+                       stream, fs_id, "FRAGMENT", "depth_peel_composite_frag",
+                       _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_COMPOSITE, true),
+                       cfg);
 
     out->composite_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
     if (out->composite_pipeline_id == 0)
