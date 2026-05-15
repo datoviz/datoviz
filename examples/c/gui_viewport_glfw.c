@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* gui_panel_glfw - dockable Dear ImGui window containing a live Datoviz render target.
+/* gui_viewport_glfw - dockable Dear ImGui window containing a live Datoviz render target.
  *
- * Build:  just example-c gui_panel_glfw
- * Run:    ./build/examples/c/gui_panel_glfw
+ * Build:  just example-c gui_viewport_glfw
+ * Run:    ./build/examples/c/gui_viewport_glfw
  */
 
 #include <stdbool.h>
@@ -21,15 +21,15 @@
 
 
 
-typedef struct GuiPanelState
+typedef struct GuiViewportState
 {
-    DvzGuiPanel* gui_panel;
+    DvzGuiViewport* gui_viewport;
     DvzVisual* visual;
     float sizes[5];
     float point_size;
     bool show_points;
     bool show_demo;
-} GuiPanelState;
+} GuiViewportState;
 
 
 
@@ -38,7 +38,7 @@ typedef struct GuiPanelState
  *
  * @param state example state
  */
-static void update_visual(GuiPanelState* state)
+static void update_visual(GuiViewportState* state)
 {
     float size = state->show_points ? state->point_size : 0.0f;
     for (uint32_t i = 0; i < 5; i++)
@@ -58,9 +58,9 @@ static void update_visual(GuiPanelState* state)
 static void gui_callback(DvzGui* gui, DvzAppWindow* win, void* user_data)
 {
     (void)win;
-    GuiPanelState* state = (GuiPanelState*)user_data;
+    GuiViewportState* state = (GuiViewportState*)user_data;
 
-    (void)dvz_gui_panel_window(state->gui_panel, "Datoviz panel", NULL, 0);
+    (void)dvz_gui_viewport_window(state->gui_viewport, "Datoviz viewport", NULL, 0);
 
     bool changed = false;
     if (dvz_gui_begin(gui, "Controls", NULL, 0))
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
         {245, 200,  80, 255},
         {210, 110, 240, 255},
     };
-    GuiPanelState state = {
+    GuiViewportState state = {
         .visual = visual,
         .point_size = 30.0f,
         .show_points = true,
@@ -177,18 +177,8 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    DvzAppWindow* source_win = dvz_app_window(app, source_figure, 640, 480);
-    if (source_win == NULL)
-    {
-        fprintf(stderr, "dvz_app_window() failed\n");
-        dvz_app_destroy(app);
-        dvz_scene_destroy(scene);
-        return 1;
-    }
-    dvz_panel_set_panzoom(source_panel, dvz_app_window_input(source_win), 0);
-
     DvzAppWindow* host_win =
-        dvz_app_window_glfw(app, host_figure, 1000, 700, "gui_panel_glfw");
+        dvz_app_window_glfw(app, host_figure, 1000, 700, "gui_viewport_glfw");
     if (host_win == NULL)
     {
         fprintf(stderr, "dvz_app_window_glfw() failed (GLFW unavailable?)\n");
@@ -207,19 +197,20 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    state.gui_panel = dvz_gui_panel(gui, source_win);
-    if (state.gui_panel == NULL)
+    state.gui_viewport = dvz_gui_viewport(gui, source_figure, NULL);
+    if (state.gui_viewport == NULL)
     {
-        fprintf(stderr, "dvz_gui_panel() failed\n");
+        fprintf(stderr, "dvz_gui_viewport() failed\n");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
         return 1;
     }
+    dvz_panel_set_panzoom(source_panel, dvz_gui_viewport_input(state.gui_viewport), 0);
     dvz_app_window_set_gui_callback(host_win, gui_callback, &state);
 
     dvz_app_run(app, frame_count(argc, argv));
 
-    dvz_gui_panel_destroy(state.gui_panel);
+    dvz_gui_viewport_destroy(state.gui_viewport);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;

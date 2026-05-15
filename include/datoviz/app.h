@@ -268,10 +268,10 @@ DVZ_EXPORT struct DvzCanvas* dvz_app_window_canvas(DvzAppWindow* win);
 
 
 /**
- * Return the input router for a GLFW app-window.
+ * Return the input router for an app-window.
  *
  * Pass the returned router to dvz_panel_set_panzoom() or dvz_panel_set_arcball() to attach
- * interactive controllers.  Returns NULL for offscreen windows or when GPU support is absent.
+ * interactive controllers. Returns NULL when GPU support is absent.
  *
  * @param win the app-window
  * @return the input router, or NULL
@@ -304,6 +304,27 @@ DVZ_EXPORT int dvz_app_window_capture_png(DvzAppWindow* win, const char* path);
  * @return 0 on success, negative on error
  */
 DVZ_EXPORT int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height);
+
+
+/**
+ * Enable or disable rendering for an app-window.
+ *
+ * Disabled windows remain owned by the app but dvz_app_window_render_once() skips them. This is
+ * intended for hosted/offscreen integrations such as hidden dock tabs.
+ *
+ * @param win the app-window
+ * @param enabled whether rendering should be enabled
+ */
+DVZ_EXPORT void dvz_app_window_set_render_enabled(DvzAppWindow* win, bool enabled);
+
+
+/**
+ * Return whether rendering is enabled for an app-window.
+ *
+ * @param win the app-window
+ * @return whether rendering is enabled
+ */
+DVZ_EXPORT bool dvz_app_window_render_enabled(const DvzAppWindow* win);
 
 
 /**

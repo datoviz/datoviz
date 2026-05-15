@@ -86,6 +86,7 @@ struct DvzAppWindow
 #endif
     uint64_t target_id;
     bool is_interactive;
+    bool render_enabled;
     uint64_t frame_index;
     DvzAppFrameCallback frame_callback;
     void* frame_user_data;
@@ -1311,6 +1312,7 @@ dvz_app_window(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height)
     win->window        = window;
     win->canvas        = canvas;
     win->target_id     = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    win->render_enabled = true;
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
@@ -1370,6 +1372,7 @@ dvz_app_window_glfw(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t hei
     win->canvas         = canvas;
     win->target_id      = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
     win->is_interactive = true;
+    win->render_enabled = true;
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
@@ -1436,6 +1439,7 @@ DvzAppWindow* dvz_app_window_external_surface(
     win->window     = window;
     win->canvas     = canvas;
     win->target_id  = DVZ_APP_CANVAS_TARGET_BASE + (uint64_t)app->window_count;
+    win->render_enabled = true;
     app->window_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
@@ -1696,6 +1700,33 @@ int dvz_app_window_resize(DvzAppWindow* win, uint32_t width, uint32_t height)
 }
 
 
+/**
+ * Enable or disable rendering for an app-window.
+ *
+ * @param win app-window to update
+ * @param enabled whether rendering should be enabled
+ */
+void dvz_app_window_set_render_enabled(DvzAppWindow* win, bool enabled)
+{
+    ANN(win);
+    win->render_enabled = enabled;
+}
+
+
+
+/**
+ * Return whether rendering is enabled for an app-window.
+ *
+ * @param win app-window to query
+ * @return whether rendering is enabled
+ */
+bool dvz_app_window_render_enabled(const DvzAppWindow* win)
+{
+    ANN(win);
+    return win->render_enabled;
+}
+
+
 
 /**
  * Request that the host schedules another frame for an app-window.
@@ -1754,7 +1785,7 @@ DvzGui* dvz_app_window_gui(DvzAppWindow* win, const DvzGuiConfig* config)
         return win->gui;
     if (win->app == NULL || win->app->gpu_ctx == NULL || win->window == NULL)
         return NULL;
-    win->gui = _dvz_gui_create(win->app->gpu_ctx, win->window, config);
+    win->gui = _dvz_gui_create(win->app, win->app->gpu_ctx, win->window, config);
     return win->gui;
 #else
     (void)config;
@@ -1794,6 +1825,8 @@ int dvz_app_window_render_once(DvzAppWindow* win)
     ANN(win);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (!win->render_enabled)
+        return 0;
     if (win->canvas == NULL)
         return -1;
     int rc = dvz_canvas_frame(win->canvas);

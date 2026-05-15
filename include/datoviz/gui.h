@@ -29,7 +29,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzGui DvzGui;
-typedef struct DvzGuiPanel DvzGuiPanel;
+typedef struct DvzGuiViewport DvzGuiViewport;
 
 typedef void (*DvzGuiCallback)(DvzGui* gui, DvzAppWindow* win, void* user_data);
 
@@ -48,11 +48,12 @@ typedef enum DvzGuiFlags
 
 
 
-typedef enum DvzGuiPanelFlags
+typedef enum DvzGuiViewportFlags
 {
-    DVZ_GUI_PANEL_FLAGS_NONE = 0,
-    DVZ_GUI_PANEL_FLAGS_FORWARD_INPUT = 1u << 0,
-} DvzGuiPanelFlags;
+    DVZ_GUI_VIEWPORT_FLAGS_NONE = 0,
+    DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = 1u << 0,
+    DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 1u << 1,
+} DvzGuiViewportFlags;
 
 
 
@@ -70,14 +71,16 @@ typedef struct DvzGuiConfig
 
 
 
-typedef struct DvzGuiPanelConfig
+typedef struct DvzGuiViewportConfig
 {
     uint32_t flags;
+    uint32_t initial_width;
+    uint32_t initial_height;
     uint32_t min_width;
     uint32_t min_height;
     uint32_t resize_step;
     uint32_t resize_delay_frames;
-} DvzGuiPanelConfig;
+} DvzGuiViewportConfig;
 
 
 
@@ -97,11 +100,11 @@ DVZ_EXPORT DvzGuiConfig dvz_gui_config(void);
 
 
 /**
- * Return the default dockable Datoviz GUI panel configuration.
+ * Return the default dockable Datoviz GUI viewport configuration.
  *
- * @return default GUI panel configuration
+ * @return default GUI viewport configuration
  */
-DVZ_EXPORT DvzGuiPanelConfig dvz_gui_panel_config(void);
+DVZ_EXPORT DvzGuiViewportConfig dvz_gui_viewport_config(void);
 
 
 
@@ -229,49 +232,65 @@ DVZ_EXPORT void dvz_gui_demo(DvzGui* gui, bool* open);
 
 
 /**
- * Create a dockable ImGui panel that displays an app window's latest rendered image.
+ * Create a dockable ImGui viewport that renders a figure into an owned offscreen window.
+ *
+ * @param gui the GUI overlay
+ * @param figure figure to render inside the GUI viewport
+ * @param config optional viewport configuration
+ * @return the GUI viewport, or NULL on failure
+ */
+DVZ_EXPORT DvzGuiViewport*
+dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* config);
+
+
+
+/**
+ * Create a dockable ImGui viewport from an existing offscreen app window.
  *
  * @param gui the GUI overlay
  * @param source app window providing the rendered image
- * @return the GUI panel, or NULL on failure
+ * @param config optional viewport configuration
+ * @return the GUI viewport, or NULL on failure
  */
-DVZ_EXPORT DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source);
+DVZ_EXPORT DvzGuiViewport*
+dvz_gui_viewport_from_window(
+    DvzGui* gui, DvzAppWindow* source, const DvzGuiViewportConfig* config);
 
 
 
 /**
- * Create a dockable ImGui panel with an explicit configuration.
+ * Return the input router used by a GUI viewport's offscreen app window.
  *
- * @param gui the GUI overlay
- * @param source app window providing the rendered image
- * @param config optional panel configuration
- * @return the GUI panel, or NULL on failure
+ * Pass the returned router to dvz_panel_set_panzoom() or dvz_panel_set_arcball() to attach
+ * controllers to scene panels rendered in the GUI viewport.
+ *
+ * @param viewport the GUI viewport
+ * @return the input router, or NULL
  */
-DVZ_EXPORT DvzGuiPanel*
-dvz_gui_panel_ex(DvzGui* gui, DvzAppWindow* source, const DvzGuiPanelConfig* config);
+DVZ_EXPORT struct DvzInputRouter* dvz_gui_viewport_input(DvzGuiViewport* viewport);
 
 
 
 /**
- * Destroy a dockable ImGui panel.
+ * Destroy a dockable ImGui viewport.
  *
- * @param panel the GUI panel
+ * @param viewport the GUI viewport
  */
-DVZ_EXPORT void dvz_gui_panel_destroy(DvzGuiPanel* panel);
+DVZ_EXPORT void dvz_gui_viewport_destroy(DvzGuiViewport* viewport);
 
 
 
 /**
- * Show a dockable ImGui window containing a Datoviz-rendered panel image.
+ * Show a dockable ImGui window containing a Datoviz-rendered viewport image.
  *
- * @param panel the GUI panel
+ * @param viewport the GUI viewport
  * @param title the ImGui window title
  * @param open optional open flag, or NULL
  * @param flags Dear ImGui window flags
  * @return whether the Datoviz image was visible this frame
  */
 DVZ_EXPORT bool
-dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int flags);
+dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* open, int flags);
 
 
 

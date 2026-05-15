@@ -45,10 +45,12 @@
 
 #define DVZ_GUI_DEFAULT_FONT_SIZE 16.0f
 #define DVZ_GUI_DEFAULT_MONO_FONT_SIZE 16.0f
-#define DVZ_GUI_PANEL_DEFAULT_MIN_WIDTH 32u
-#define DVZ_GUI_PANEL_DEFAULT_MIN_HEIGHT 32u
-#define DVZ_GUI_PANEL_DEFAULT_RESIZE_STEP 8u
-#define DVZ_GUI_PANEL_DEFAULT_RESIZE_DELAY_FRAMES 2u
+#define DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_WIDTH 640u
+#define DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_HEIGHT 480u
+#define DVZ_GUI_VIEWPORT_DEFAULT_MIN_WIDTH 32u
+#define DVZ_GUI_VIEWPORT_DEFAULT_MIN_HEIGHT 32u
+#define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP 8u
+#define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES 2u
 
 
 
@@ -90,6 +92,7 @@ VkQueue dvz_queue_handle(DvzQueue* queue);
 
 struct DvzGui
 {
+    DvzApp* app;
     DvzGpuCtx* gpu_ctx;
     DvzDevice* device;
     DvzQueue* queue;
@@ -99,7 +102,7 @@ struct DvzGui
     DvzGuiConfig config;
     DvzGuiCallback callback;
     void* callback_user_data;
-    DvzGuiPanel* panels;
+    DvzGuiViewport* viewports;
     ImFont* font_regular;
     ImFont* font_mono;
     VkFormat color_format;
@@ -109,12 +112,13 @@ struct DvzGui
 };
 
 
-struct DvzGuiPanel
+struct DvzGuiViewport
 {
     DvzGui* gui;
+    DvzFigure* figure;
     DvzAppWindow* source;
     DvzCanvas* canvas;
-    DvzGuiPanelConfig config;
+    DvzGuiViewportConfig config;
     VkSampler sampler;
     VkDescriptorSet texture;
     VkImage image;
@@ -125,12 +129,14 @@ struct DvzGuiPanel
     uint32_t pending_width;
     uint32_t pending_height;
     uint32_t pending_stable_frames;
+    bool owns_source;
+    bool visible;
     bool has_frame;
     bool texture_dirty;
     bool input_capturing;
     int input_button;
     DvzPointerButton input_dvz_button;
-    DvzGuiPanel* next;
+    DvzGuiViewport* next;
 };
 
 
@@ -181,14 +187,14 @@ static float _gui_font_size(float size, float fallback)
 
 
 /**
- * Return a resize dimension snapped to panel policy.
+ * Return a resize dimension snapped to viewport policy.
  *
  * @param value requested floating-point size
  * @param minimum minimum accepted size
  * @param step resize quantization step
  * @return snapped non-zero size
  */
-static uint32_t _gui_panel_dimension(float value, uint32_t minimum, uint32_t step)
+static uint32_t _gui_viewport_dimension(float value, uint32_t minimum, uint32_t step)
 {
     uint32_t out = value > 0 ? (uint32_t)(value + 0.5f) : minimum;
     if (out < minimum)
@@ -200,6 +206,50 @@ static uint32_t _gui_panel_dimension(float value, uint32_t minimum, uint32_t ste
             out = minimum;
     }
     return out;
+}
+
+
+/**
+ * Return a GUI viewport configuration with zero fields replaced by defaults.
+ *
+ * @param config optional user configuration
+ * @return normalized viewport configuration
+ */
+static DvzGuiViewportConfig _gui_viewport_config_normalize(const DvzGuiViewportConfig* config)
+{
+    DvzGuiViewportConfig out = config != NULL ? *config : dvz_gui_viewport_config();
+    if (out.initial_width == 0)
+        out.initial_width = DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_WIDTH;
+    if (out.initial_height == 0)
+        out.initial_height = DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_HEIGHT;
+    if (out.min_width == 0)
+        out.min_width = DVZ_GUI_VIEWPORT_DEFAULT_MIN_WIDTH;
+    if (out.min_height == 0)
+        out.min_height = DVZ_GUI_VIEWPORT_DEFAULT_MIN_HEIGHT;
+    if (out.resize_step == 0)
+        out.resize_step = DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP;
+    return out;
+}
+
+
+
+/**
+ * Update whether the source app-window should render.
+ *
+ * @param viewport GUI viewport
+ * @param visible whether the viewport image was visible this frame
+ */
+static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
+{
+    ANN(viewport);
+    viewport->visible = visible;
+    if (viewport->source == NULL)
+        return;
+
+    const bool render_hidden =
+        (viewport->config.flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
+    const bool enabled = visible || !viewport->has_frame || render_hidden;
+    dvz_app_window_set_render_enabled(viewport->source, enabled);
 }
 
 
@@ -249,42 +299,42 @@ static void _gui_load_fonts(DvzGui* gui)
 
 
 /**
- * Attach a GUI panel to the overlay-owned list.
+ * Attach a GUI viewport to the overlay-owned list.
  *
  * @param gui the GUI overlay
- * @param panel the panel to attach
+ * @param viewport the viewport to attach
  */
-static void _gui_panel_attach(DvzGui* gui, DvzGuiPanel* panel)
+static void _gui_viewport_attach(DvzGui* gui, DvzGuiViewport* viewport)
 {
     ANN(gui);
-    ANN(panel);
-    panel->next = gui->panels;
-    gui->panels = panel;
+    ANN(viewport);
+    viewport->next = gui->viewports;
+    gui->viewports = viewport;
 }
 
 
 
 /**
- * Detach a GUI panel from the overlay-owned list.
+ * Detach a GUI viewport from the overlay-owned list.
  *
  * @param gui the GUI overlay
- * @param panel the panel to detach
+ * @param viewport the viewport to detach
  */
-static void _gui_panel_detach(DvzGui* gui, DvzGuiPanel* panel)
+static void _gui_viewport_detach(DvzGui* gui, DvzGuiViewport* viewport)
 {
     ANN(gui);
-    ANN(panel);
-    DvzGuiPanel* prev = NULL;
-    DvzGuiPanel* cur = gui->panels;
+    ANN(viewport);
+    DvzGuiViewport* prev = NULL;
+    DvzGuiViewport* cur = gui->viewports;
     while (cur != NULL)
     {
-        if (cur == panel)
+        if (cur == viewport)
         {
             if (prev != NULL)
                 prev->next = cur->next;
             else
-                gui->panels = cur->next;
-            panel->next = NULL;
+                gui->viewports = cur->next;
+            viewport->next = NULL;
             return;
         }
         prev = cur;
@@ -297,14 +347,14 @@ static void _gui_panel_detach(DvzGui* gui, DvzGuiPanel* panel)
 /**
  * Create the sampler used when displaying Datoviz images through ImGui.
  *
- * @param panel GUI panel receiving the sampler
+ * @param viewport GUI viewport receiving the sampler
  * @return whether the sampler was created
  */
-static bool _gui_panel_create_sampler(DvzGuiPanel* panel)
+static bool _gui_viewport_create_sampler(DvzGuiViewport* viewport)
 {
-    ANN(panel);
-    ANN(panel->gui);
-    VkDevice device = dvz_device_handle(panel->gui->device);
+    ANN(viewport);
+    ANN(viewport->gui);
+    VkDevice device = dvz_device_handle(viewport->gui->device);
     if (device == VK_NULL_HANDLE)
         return false;
 
@@ -319,11 +369,11 @@ static bool _gui_panel_create_sampler(DvzGuiPanel* panel)
     info.minLod = 0.0f;
     info.maxLod = 0.0f;
     info.maxAnisotropy = 1.0f;
-    VkResult res = vkCreateSampler(device, &info, NULL, &panel->sampler);
+    VkResult res = vkCreateSampler(device, &info, NULL, &viewport->sampler);
     if (res != VK_SUCCESS)
     {
-        log_error("Dear ImGui Datoviz panel sampler creation failed: %d", (int)res);
-        panel->sampler = VK_NULL_HANDLE;
+        log_error("Dear ImGui Datoviz viewport sampler creation failed: %d", (int)res);
+        viewport->sampler = VK_NULL_HANDLE;
         return false;
     }
     return true;
@@ -332,21 +382,21 @@ static bool _gui_panel_create_sampler(DvzGuiPanel* panel)
 
 
 /**
- * Remove the ImGui descriptor for a panel image.
+ * Remove the ImGui descriptor for a viewport image.
  *
- * @param panel GUI panel
+ * @param viewport GUI viewport
  */
-static void _gui_panel_remove_texture(DvzGuiPanel* panel)
+static void _gui_viewport_remove_texture(DvzGuiViewport* viewport)
 {
-    ANN(panel);
-    if (panel->texture == VK_NULL_HANDLE)
+    ANN(viewport);
+    if (viewport->texture == VK_NULL_HANDLE)
         return;
-    if (panel->gui != NULL && panel->gui->vulkan_initialized)
+    if (viewport->gui != NULL && viewport->gui->vulkan_initialized)
     {
-        _gui_set_current(panel->gui);
-        ImGui_ImplVulkan_RemoveTexture(panel->texture);
+        _gui_set_current(viewport->gui);
+        ImGui_ImplVulkan_RemoveTexture(viewport->texture);
     }
-    panel->texture = VK_NULL_HANDLE;
+    viewport->texture = VK_NULL_HANDLE;
 }
 
 
@@ -354,28 +404,28 @@ static void _gui_panel_remove_texture(DvzGuiPanel* panel)
 /**
  * Ensure the ImGui descriptor points at the current Datoviz source image view.
  *
- * @param panel GUI panel
+ * @param viewport GUI viewport
  * @return whether a texture descriptor is ready
  */
-static bool _gui_panel_ensure_texture(DvzGuiPanel* panel)
+static bool _gui_viewport_ensure_texture(DvzGuiViewport* viewport)
 {
-    ANN(panel);
-    DvzGui* gui = panel->gui;
+    ANN(viewport);
+    DvzGui* gui = viewport->gui;
     ANN(gui);
-    if (!gui->vulkan_initialized || panel->image_view == VK_NULL_HANDLE ||
-        panel->sampler == VK_NULL_HANDLE)
+    if (!gui->vulkan_initialized || viewport->image_view == VK_NULL_HANDLE ||
+        viewport->sampler == VK_NULL_HANDLE)
     {
         return false;
     }
-    if (!panel->texture_dirty && panel->texture != VK_NULL_HANDLE)
+    if (!viewport->texture_dirty && viewport->texture != VK_NULL_HANDLE)
         return true;
 
-    _gui_panel_remove_texture(panel);
+    _gui_viewport_remove_texture(viewport);
     _gui_set_current(gui);
-    panel->texture = ImGui_ImplVulkan_AddTexture(
-        panel->sampler, panel->image_view, VK_IMAGE_LAYOUT_GENERAL);
-    panel->texture_dirty = panel->texture == VK_NULL_HANDLE;
-    return panel->texture != VK_NULL_HANDLE;
+    viewport->texture = ImGui_ImplVulkan_AddTexture(
+        viewport->sampler, viewport->image_view, VK_IMAGE_LAYOUT_GENERAL);
+    viewport->texture_dirty = viewport->texture == VK_NULL_HANDLE;
+    return viewport->texture != VK_NULL_HANDLE;
 }
 
 
@@ -384,57 +434,57 @@ static bool _gui_panel_ensure_texture(DvzGuiPanel* panel)
  * Receive a live source-canvas image after submission.
  *
  * @param frame live image metadata
- * @param user_data GUI panel
+ * @param user_data GUI viewport
  * @return 0 on success
  */
-static int _gui_panel_live_image_callback(
+static int _gui_viewport_live_image_callback(
     const DvzCanvasLiveImageFrame* frame, void* user_data)
 {
     ANN(frame);
-    DvzGuiPanel* panel = (DvzGuiPanel*)user_data;
-    ANN(panel);
+    DvzGuiViewport* viewport = (DvzGuiViewport*)user_data;
+    ANN(viewport);
     if (frame->image_view == VK_NULL_HANDLE || frame->extent.width == 0 ||
         frame->extent.height == 0)
     {
         return 0;
     }
-    if (panel->image_view != frame->image_view)
+    if (viewport->image_view != frame->image_view)
     {
-        panel->texture_dirty = true;
-        panel->image_view = frame->image_view;
-        panel->image = frame->image;
+        viewport->texture_dirty = true;
+        viewport->image_view = frame->image_view;
+        viewport->image = frame->image;
     }
-    panel->extent = frame->extent;
-    panel->has_frame = true;
+    viewport->extent = frame->extent;
+    viewport->has_frame = true;
     return 0;
 }
 
 
 
 /**
- * Rebuild the source live-image stream after a panel resize.
+ * Rebuild the source live-image stream after a viewport resize.
  *
- * @param panel GUI panel
+ * @param viewport GUI viewport
  * @param width new source width
  * @param height new source height
  */
-static void _gui_panel_resize_source(DvzGuiPanel* panel, uint32_t width, uint32_t height)
+static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width, uint32_t height)
 {
-    ANN(panel);
-    if (panel->requested_width == width && panel->requested_height == height)
+    ANN(viewport);
+    if (viewport->requested_width == width && viewport->requested_height == height)
         return;
-    if (dvz_app_window_resize(panel->source, width, height) != 0)
+    if (dvz_app_window_resize(viewport->source, width, height) != 0)
         return;
-    panel->requested_width = width;
-    panel->requested_height = height;
-    if (panel->canvas != NULL)
+    viewport->requested_width = width;
+    viewport->requested_height = height;
+    if (viewport->canvas != NULL)
     {
         DvzCanvasLiveImageSinkConfig cfg = {};
-        cfg.callback = _gui_panel_live_image_callback;
-        cfg.user_data = panel;
-        (void)dvz_canvas_configure_live_image_sink(panel->canvas, false, NULL);
-        if (dvz_canvas_configure_live_image_sink(panel->canvas, true, &cfg) != 0)
-            log_error("failed to rebuild Datoviz GUI panel live-image sink after resize");
+        cfg.callback = _gui_viewport_live_image_callback;
+        cfg.user_data = viewport;
+        (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
+        if (dvz_canvas_configure_live_image_sink(viewport->canvas, true, &cfg) != 0)
+            log_error("failed to rebuild Datoviz GUI viewport live-image sink after resize");
     }
 }
 
@@ -443,46 +493,46 @@ static void _gui_panel_resize_source(DvzGuiPanel* panel, uint32_t width, uint32_
 /**
  * Request a source resize after the docked content size has stabilized.
  *
- * @param panel GUI panel
+ * @param viewport GUI viewport
  * @param width new source width
  * @param height new source height
  */
-static void _gui_panel_request_resize(DvzGuiPanel* panel, uint32_t width, uint32_t height)
+static void _gui_viewport_request_resize(DvzGuiViewport* viewport, uint32_t width, uint32_t height)
 {
-    ANN(panel);
-    if (panel->requested_width == width && panel->requested_height == height)
+    ANN(viewport);
+    if (viewport->requested_width == width && viewport->requested_height == height)
     {
-        panel->pending_width = 0;
-        panel->pending_height = 0;
-        panel->pending_stable_frames = 0;
+        viewport->pending_width = 0;
+        viewport->pending_height = 0;
+        viewport->pending_stable_frames = 0;
         return;
     }
 
-    if (panel->requested_width == 0 || panel->requested_height == 0 ||
-        panel->config.resize_delay_frames == 0)
+    if (viewport->requested_width == 0 || viewport->requested_height == 0 ||
+        viewport->config.resize_delay_frames == 0)
     {
-        _gui_panel_resize_source(panel, width, height);
-        panel->pending_width = 0;
-        panel->pending_height = 0;
-        panel->pending_stable_frames = 0;
+        _gui_viewport_resize_source(viewport, width, height);
+        viewport->pending_width = 0;
+        viewport->pending_height = 0;
+        viewport->pending_stable_frames = 0;
         return;
     }
 
-    if (panel->pending_width != width || panel->pending_height != height)
+    if (viewport->pending_width != width || viewport->pending_height != height)
     {
-        panel->pending_width = width;
-        panel->pending_height = height;
-        panel->pending_stable_frames = 0;
+        viewport->pending_width = width;
+        viewport->pending_height = height;
+        viewport->pending_stable_frames = 0;
         return;
     }
 
-    panel->pending_stable_frames++;
-    if (panel->pending_stable_frames >= panel->config.resize_delay_frames)
+    viewport->pending_stable_frames++;
+    if (viewport->pending_stable_frames >= viewport->config.resize_delay_frames)
     {
-        _gui_panel_resize_source(panel, width, height);
-        panel->pending_width = 0;
-        panel->pending_height = 0;
-        panel->pending_stable_frames = 0;
+        _gui_viewport_resize_source(viewport, width, height);
+        viewport->pending_width = 0;
+        viewport->pending_height = 0;
+        viewport->pending_stable_frames = 0;
     }
 }
 
@@ -491,15 +541,15 @@ static void _gui_panel_request_resize(DvzGuiPanel* panel, uint32_t width, uint32
 /**
  * Forward ImGui item input to the source app-window router.
  *
- * @param panel GUI panel
+ * @param viewport GUI viewport
  * @param image_min top-left image position in ImGui coordinates
  * @param size displayed image size
  */
-static void _gui_panel_forward_input(
-    DvzGuiPanel* panel, ImVec2 image_min, ImVec2 size)
+static void _gui_viewport_forward_input(
+    DvzGuiViewport* viewport, ImVec2 image_min, ImVec2 size)
 {
-    ANN(panel);
-    DvzInputRouter* router = dvz_app_window_input(panel->source);
+    ANN(viewport);
+    DvzInputRouter* router = dvz_app_window_input(viewport->source);
     if (router == NULL || size.x <= 0 || size.y <= 0)
         return;
 
@@ -522,16 +572,16 @@ static void _gui_panel_forward_input(
     {
         if (ImGui::IsMouseClicked(i) && hovered)
         {
-            panel->input_capturing = true;
-            panel->input_button = i;
-            panel->input_dvz_button = buttons[i];
+            viewport->input_capturing = true;
+            viewport->input_button = i;
+            viewport->input_dvz_button = buttons[i];
             dvz_pointer_emit_position(
                 router, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i], mods,
                 1.0f, now, NULL);
         }
     }
 
-    if (!hovered && !panel->input_capturing)
+    if (!hovered && !viewport->input_capturing)
         return;
 
     dvz_pointer_emit_position(
@@ -545,50 +595,52 @@ static void _gui_panel_forward_input(
     }
 
     if (
-        panel->input_capturing &&
-        (ImGui::IsMouseReleased(panel->input_button) || !io.MouseDown[panel->input_button]))
+        viewport->input_capturing &&
+        (ImGui::IsMouseReleased(viewport->input_button) || !io.MouseDown[viewport->input_button]))
     {
         dvz_pointer_emit_position(
             router, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
-            panel->input_dvz_button, mods, 1.0f, now, NULL);
-        panel->input_capturing = false;
-        panel->input_button = 0;
-        panel->input_dvz_button = DVZ_POINTER_BUTTON_NONE;
+            viewport->input_dvz_button, mods, 1.0f, now, NULL);
+        viewport->input_capturing = false;
+        viewport->input_button = 0;
+        viewport->input_dvz_button = DVZ_POINTER_BUTTON_NONE;
     }
 }
 
 
 
 /**
- * Destroy a GUI panel, optionally unlinking it from the owning overlay.
+ * Destroy a GUI viewport, optionally unlinking it from the owning overlay.
  *
- * @param panel GUI panel
+ * @param viewport GUI viewport
  * @param detach whether to detach from the overlay-owned list
  */
-static void _gui_panel_destroy(DvzGuiPanel* panel, bool detach)
+static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
 {
-    if (panel == NULL)
+    if (viewport == NULL)
         return;
-    DvzGui* gui = panel->gui;
+    DvzGui* gui = viewport->gui;
     if (gui != NULL)
     {
         _gui_set_current(gui);
         if (detach)
-            _gui_panel_detach(gui, panel);
+            _gui_viewport_detach(gui, viewport);
     }
-    if (panel->canvas != NULL)
-        (void)dvz_canvas_configure_live_image_sink(panel->canvas, false, NULL);
-    _gui_panel_remove_texture(panel);
-    if (gui != NULL && panel->sampler != VK_NULL_HANDLE)
+    if (viewport->canvas != NULL)
+        (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
+    if (viewport->source != NULL && viewport->owns_source)
+        dvz_app_window_set_render_enabled(viewport->source, false);
+    _gui_viewport_remove_texture(viewport);
+    if (gui != NULL && viewport->sampler != VK_NULL_HANDLE)
     {
         VkDevice device = dvz_device_handle(gui->device);
         if (device != VK_NULL_HANDLE)
         {
             vkDeviceWaitIdle(device);
-            vkDestroySampler(device, panel->sampler, NULL);
+            vkDestroySampler(device, viewport->sampler, NULL);
         }
     }
-    dvz_free(panel);
+    dvz_free(viewport);
 }
 
 
@@ -825,13 +877,16 @@ static void _gui_submit_dockspace(DvzGui* gui)
 /**
  * Create an ImGui overlay.
  *
+ * @param app app that owns any GUI-hosted offscreen windows
  * @param gpu_ctx GPU context borrowed from the app
  * @param window GLFW window borrowed from the app window
  * @param config optional GUI configuration
  * @return created GUI overlay, or NULL
  */
-DvzGui* _dvz_gui_create(DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGuiConfig* config)
+DvzGui*
+_dvz_gui_create(DvzApp* app, DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGuiConfig* config)
 {
+    ANN(app);
     ANN(gpu_ctx);
     ANN(window);
 
@@ -846,6 +901,7 @@ DvzGui* _dvz_gui_create(DvzGpuCtx* gpu_ctx, DvzWindow* window, const DvzGuiConfi
     if (gui == NULL)
         return NULL;
 
+    gui->app = app;
     gui->gpu_ctx = gpu_ctx;
     gui->device = dvz_gpu_ctx_device(gpu_ctx);
     gui->queue = dvz_gpu_ctx_queue(gpu_ctx, DVZ_QUEUE_MAIN);
@@ -901,8 +957,8 @@ void _dvz_gui_destroy(DvzGui* gui)
 
     dvz_window_glfw_set_input_callbacks(gui->window, NULL, NULL);
     _gui_set_current(gui);
-    while (gui->panels != NULL)
-        _gui_panel_destroy(gui->panels, true);
+    while (gui->viewports != NULL)
+        _gui_viewport_destroy(gui->viewports, true);
     if (gui->vulkan_initialized)
         ImGui_ImplVulkan_Shutdown();
     if (gui->glfw_initialized)
@@ -1014,18 +1070,20 @@ DvzGuiConfig dvz_gui_config(void)
 
 
 /**
- * Return the default dockable Datoviz GUI panel configuration.
+ * Return the default dockable Datoviz GUI viewport configuration.
  *
- * @return default GUI panel configuration
+ * @return default GUI viewport configuration
  */
-DvzGuiPanelConfig dvz_gui_panel_config(void)
+DvzGuiViewportConfig dvz_gui_viewport_config(void)
 {
-    DvzGuiPanelConfig config = {};
-    config.flags = DVZ_GUI_PANEL_FLAGS_FORWARD_INPUT;
-    config.min_width = DVZ_GUI_PANEL_DEFAULT_MIN_WIDTH;
-    config.min_height = DVZ_GUI_PANEL_DEFAULT_MIN_HEIGHT;
-    config.resize_step = DVZ_GUI_PANEL_DEFAULT_RESIZE_STEP;
-    config.resize_delay_frames = DVZ_GUI_PANEL_DEFAULT_RESIZE_DELAY_FRAMES;
+    DvzGuiViewportConfig config = {};
+    config.flags = DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT;
+    config.initial_width = DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_WIDTH;
+    config.initial_height = DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_HEIGHT;
+    config.min_width = DVZ_GUI_VIEWPORT_DEFAULT_MIN_WIDTH;
+    config.min_height = DVZ_GUI_VIEWPORT_DEFAULT_MIN_HEIGHT;
+    config.resize_step = DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP;
+    config.resize_delay_frames = DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES;
     return config;
 }
 
@@ -1185,15 +1243,16 @@ void dvz_gui_demo(DvzGui* gui, bool* open)
 
 
 /**
- * Create a dockable ImGui panel with an explicit configuration.
+ * Create a dockable ImGui viewport from an offscreen source app-window.
  *
  * @param gui the GUI overlay
  * @param source app window providing the rendered image
- * @param config optional panel configuration
- * @return the GUI panel, or NULL on failure
+ * @param config optional viewport configuration
+ * @param owns_source whether the viewport owns the source app-window lifecycle policy
+ * @return the GUI viewport, or NULL on failure
  */
-DvzGuiPanel* dvz_gui_panel_ex(
-    DvzGui* gui, DvzAppWindow* source, const DvzGuiPanelConfig* config)
+static DvzGuiViewport* _gui_viewport_from_window(
+    DvzGui* gui, DvzAppWindow* source, const DvzGuiViewportConfig* config, bool owns_source)
 {
     ANN(gui);
     ANN(source);
@@ -1202,83 +1261,132 @@ DvzGuiPanel* dvz_gui_panel_ex(
         return NULL;
     if (dvz_canvas_render_mode(canvas) != DVZ_CANVAS_RENDER_MODE_OFFSCREEN)
     {
-        log_error("Datoviz GUI panels require an offscreen source app-window");
+        log_error("Datoviz GUI viewports require an offscreen source app-window");
         return NULL;
     }
 
-    DvzGuiPanel* panel = (DvzGuiPanel*)dvz_calloc(1, sizeof(DvzGuiPanel));
-    if (panel == NULL)
+    DvzGuiViewport* viewport = (DvzGuiViewport*)dvz_calloc(1, sizeof(DvzGuiViewport));
+    if (viewport == NULL)
         return NULL;
-    panel->gui = gui;
-    panel->source = source;
-    panel->canvas = canvas;
-    panel->config = config != NULL ? *config : dvz_gui_panel_config();
-    if (panel->config.min_width == 0)
-        panel->config.min_width = DVZ_GUI_PANEL_DEFAULT_MIN_WIDTH;
-    if (panel->config.min_height == 0)
-        panel->config.min_height = DVZ_GUI_PANEL_DEFAULT_MIN_HEIGHT;
-    panel->texture_dirty = true;
-    if (!_gui_panel_create_sampler(panel))
+    viewport->gui = gui;
+    viewport->source = source;
+    viewport->canvas = canvas;
+    viewport->config = _gui_viewport_config_normalize(config);
+    viewport->owns_source = owns_source;
+    viewport->texture_dirty = true;
+    if (!_gui_viewport_create_sampler(viewport))
     {
-        dvz_free(panel);
+        dvz_free(viewport);
         return NULL;
     }
 
     DvzCanvasLiveImageSinkConfig cfg = {};
-    cfg.callback = _gui_panel_live_image_callback;
-    cfg.user_data = panel;
+    cfg.callback = _gui_viewport_live_image_callback;
+    cfg.user_data = viewport;
     if (dvz_canvas_configure_live_image_sink(canvas, true, &cfg) != 0)
     {
-        _gui_panel_destroy(panel, false);
+        _gui_viewport_destroy(viewport, false);
         return NULL;
     }
 
-    _gui_panel_attach(gui, panel);
-    return panel;
+    _gui_viewport_attach(gui, viewport);
+    return viewport;
 }
 
 
 
 /**
- * Create a dockable ImGui panel that displays an app window's latest rendered image.
+ * Create a dockable ImGui viewport that renders a figure into an owned offscreen window.
+ *
+ * @param gui the GUI overlay
+ * @param figure figure to render inside the GUI viewport
+ * @param config optional viewport configuration
+ * @return the GUI viewport, or NULL on failure
+ */
+DvzGuiViewport*
+dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* config)
+{
+    ANN(gui);
+    ANN(figure);
+    if (gui->app == NULL)
+        return NULL;
+
+    DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
+    DvzAppWindow* source =
+        dvz_app_window(gui->app, figure, cfg.initial_width, cfg.initial_height);
+    if (source == NULL)
+        return NULL;
+
+    DvzGuiViewport* viewport = _gui_viewport_from_window(gui, source, &cfg, true);
+    if (viewport == NULL)
+    {
+        dvz_app_window_set_render_enabled(source, false);
+        return NULL;
+    }
+    viewport->figure = figure;
+    return viewport;
+}
+
+
+
+/**
+ * Create a dockable ImGui viewport from an existing offscreen app window.
  *
  * @param gui the GUI overlay
  * @param source app window providing the rendered image
- * @return the GUI panel, or NULL on failure
+ * @param config optional viewport configuration
+ * @return the GUI viewport, or NULL on failure
  */
-DvzGuiPanel* dvz_gui_panel(DvzGui* gui, DvzAppWindow* source)
+DvzGuiViewport* dvz_gui_viewport_from_window(
+    DvzGui* gui, DvzAppWindow* source, const DvzGuiViewportConfig* config)
 {
-    return dvz_gui_panel_ex(gui, source, NULL);
+    return _gui_viewport_from_window(gui, source, config, false);
 }
 
 
 
 /**
- * Destroy a dockable ImGui panel.
+ * Return the input router used by a GUI viewport's offscreen app window.
  *
- * @param panel the GUI panel
+ * @param viewport the GUI viewport
+ * @return the input router, or NULL
  */
-void dvz_gui_panel_destroy(DvzGuiPanel* panel)
+DvzInputRouter* dvz_gui_viewport_input(DvzGuiViewport* viewport)
 {
-    _gui_panel_destroy(panel, true);
+    ANN(viewport);
+    if (viewport->source == NULL)
+        return NULL;
+    return dvz_app_window_input(viewport->source);
 }
 
 
 
 /**
- * Show a dockable ImGui window containing a Datoviz-rendered panel image.
+ * Destroy a dockable ImGui viewport.
  *
- * @param panel the GUI panel
+ * @param viewport the GUI viewport
+ */
+void dvz_gui_viewport_destroy(DvzGuiViewport* viewport)
+{
+    _gui_viewport_destroy(viewport, true);
+}
+
+
+
+/**
+ * Show a dockable ImGui window containing a Datoviz-rendered viewport image.
+ *
+ * @param viewport the GUI viewport
  * @param title the ImGui window title
  * @param open optional open flag, or NULL
  * @param flags Dear ImGui window flags
  * @return whether the Datoviz image was visible this frame
  */
-bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int flags)
+bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* open, int flags)
 {
-    ANN(panel);
+    ANN(viewport);
     ANN(title);
-    DvzGui* gui = panel->gui;
+    DvzGui* gui = viewport->gui;
     ANN(gui);
     _gui_set_current(gui);
 
@@ -1292,27 +1400,27 @@ bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int
         if (avail.y < 1.0f)
             avail.y = 1.0f;
 
-        uint32_t width = _gui_panel_dimension(
-            avail.x, panel->config.min_width, panel->config.resize_step);
-        uint32_t height = _gui_panel_dimension(
-            avail.y, panel->config.min_height, panel->config.resize_step);
+        uint32_t width = _gui_viewport_dimension(
+            avail.x, viewport->config.min_width, viewport->config.resize_step);
+        uint32_t height = _gui_viewport_dimension(
+            avail.y, viewport->config.min_height, viewport->config.resize_step);
         if (width > 0 && height > 0)
-            _gui_panel_request_resize(panel, width, height);
+            _gui_viewport_request_resize(viewport, width, height);
 
-        if (_gui_panel_ensure_texture(panel))
+        if (_gui_viewport_ensure_texture(viewport))
         {
             ImVec2 image_min = ImGui::GetCursorScreenPos();
             ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);
-            ImGui::PushID(panel);
+            ImGui::PushID(viewport);
             ImGui::InvisibleButton(
                 "image", avail,
                 ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
                     ImGuiButtonFlags_MouseButtonMiddle);
             ImGui::PopID();
             ImGui::GetWindowDrawList()->AddImage(
-                (ImTextureID)panel->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
-            if ((panel->config.flags & DVZ_GUI_PANEL_FLAGS_FORWARD_INPUT) != 0)
-                _gui_panel_forward_input(panel, image_min, avail);
+                (ImTextureID)viewport->texture, image_min, image_max, ImVec2(0, 0), ImVec2(1, 1));
+            if ((viewport->config.flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
+                _gui_viewport_forward_input(viewport, image_min, avail);
             shown = true;
         }
         else
@@ -1321,5 +1429,6 @@ bool dvz_gui_panel_window(DvzGuiPanel* panel, const char* title, bool* open, int
         }
     }
     ImGui::End();
+    _gui_viewport_set_visible(viewport, shown);
     return shown;
 }
