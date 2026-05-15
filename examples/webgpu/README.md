@@ -85,8 +85,8 @@ Manual checks:
 - Depth stream: the smaller green triangle must appear in front of the larger red triangle where
   they overlap.
 - Scene points stream: the canvas should show five circular points emitted as instanced quads.
-- Scene points pan/zoom stream: left-drag the canvas to pan, right-drag or use the wheel to zoom
-  around the cursor/press point, and double-click to reset the view.
+- Scene points pan/zoom stream: left-drag the canvas to pan, right-drag for anisotropic X/Y zoom,
+  use the wheel for isotropic zoom around the cursor, and double-click to reset the view.
 - Offscreen readback stream: the status line should include `readback nonzero=` with a nonzero value.
 - No-buffer and vertex-buffer streams should still render a single RGB triangle.
 

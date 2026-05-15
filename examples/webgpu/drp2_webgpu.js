@@ -611,10 +611,10 @@ function identityMat4() {
 
 
 
-function panzoomProjMat4(scale, offsetX, offsetY) {
+function panzoomProjMat4(zoomX, zoomY, offsetX, offsetY) {
   const mat = identityMat4();
-  mat[0] = scale;
-  mat[5] = scale;
+  mat[0] = zoomX;
+  mat[5] = zoomY;
   mat[12] = offsetX;
   mat[13] = offsetY;
   return mat;
@@ -622,12 +622,12 @@ function panzoomProjMat4(scale, offsetX, offsetY) {
 
 
 
-function mvpUniformBytes(scale, offsetX, offsetY) {
+function mvpUniformBytes(zoomX, zoomY, offsetX, offsetY) {
   const buffer = new ArrayBuffer(208);
   const f32 = new Float32Array(buffer);
   f32.set(identityMat4(), 0);
   f32.set(identityMat4(), 16);
-  f32.set(panzoomProjMat4(scale, offsetX, offsetY), 32);
+  f32.set(panzoomProjMat4(zoomX, zoomY, offsetX, offsetY), 32);
   return new Uint8Array(buffer);
 }
 
@@ -658,7 +658,8 @@ class PanzoomInteraction {
   constructor(config, requestRender) {
     this.config = config;
     this.requestRender = requestRender;
-    this.scale = 1;
+    this.zoomX = 1;
+    this.zoomY = 1;
     this.offsetX = 0;
     this.offsetY = 0;
     this.dragging = false;
@@ -669,7 +670,8 @@ class PanzoomInteraction {
     this.pressY = 0;
     this.pressNdcX = 0;
     this.pressNdcY = 0;
-    this.pressScale = 1;
+    this.pressZoomX = 1;
+    this.pressZoomY = 1;
     this.pressOffsetX = 0;
     this.pressOffsetY = 0;
 
@@ -700,7 +702,8 @@ class PanzoomInteraction {
   }
 
   reset() {
-    this.scale = 1;
+    this.zoomX = 1;
+    this.zoomY = 1;
     this.offsetX = 0;
     this.offsetY = 0;
     this.requestRender();
@@ -719,7 +722,8 @@ class PanzoomInteraction {
     const ndc = eventNdc(event);
     this.pressNdcX = ndc.x;
     this.pressNdcY = ndc.y;
-    this.pressScale = this.scale;
+    this.pressZoomX = this.zoomX;
+    this.pressZoomY = this.zoomY;
     this.pressOffsetX = this.offsetX;
     this.pressOffsetY = this.offsetY;
     canvas.setPointerCapture(event.pointerId);
@@ -738,12 +742,16 @@ class PanzoomInteraction {
       this.offsetX += (2 * dx) / Math.max(1, rect.width);
       this.offsetY -= (2 * dy) / Math.max(1, rect.height);
     } else if (this.dragButton === 2) {
+      const shiftX = 2 * (event.clientX - this.pressX) / Math.max(1, rect.width);
       const shiftY = -2 * (event.clientY - this.pressY) / Math.max(1, rect.height);
-      const factor = Math.exp(2.5 * shiftY);
-      this.scale = clamp(this.pressScale * factor, 0.05, 100);
-      const ratio = this.scale / this.pressScale;
-      this.offsetX = this.pressNdcX - (this.pressNdcX - this.pressOffsetX) * ratio;
-      this.offsetY = this.pressNdcY - (this.pressNdcY - this.pressOffsetY) * ratio;
+      const factorX = Math.exp(2.5 * shiftX);
+      const factorY = Math.exp(2.5 * shiftY);
+      this.zoomX = clamp(this.pressZoomX * factorX, 0.05, 100);
+      this.zoomY = clamp(this.pressZoomY * factorY, 0.05, 100);
+      const ratioX = this.zoomX / this.pressZoomX;
+      const ratioY = this.zoomY / this.pressZoomY;
+      this.offsetX = this.pressNdcX - (this.pressNdcX - this.pressOffsetX) * ratioX;
+      this.offsetY = this.pressNdcY - (this.pressNdcY - this.pressOffsetY) * ratioY;
     }
     this.requestRender();
   }
@@ -762,12 +770,15 @@ class PanzoomInteraction {
   onWheel(event) {
     event.preventDefault();
     const ndc = eventNdc(event);
-    const oldScale = this.scale;
+    const oldZoomX = this.zoomX;
+    const oldZoomY = this.zoomY;
     const factor = Math.exp(-event.deltaY * 0.0015);
-    this.scale = clamp(this.scale * factor, 0.05, 100);
-    const ratio = this.scale / oldScale;
-    this.offsetX = ndc.x - (ndc.x - this.offsetX) * ratio;
-    this.offsetY = ndc.y - (ndc.y - this.offsetY) * ratio;
+    this.zoomX = clamp(this.zoomX * factor, 0.05, 100);
+    this.zoomY = clamp(this.zoomY * factor, 0.05, 100);
+    const ratioX = this.zoomX / oldZoomX;
+    const ratioY = this.zoomY / oldZoomY;
+    this.offsetX = ndc.x - (ndc.x - this.offsetX) * ratioX;
+    this.offsetY = ndc.y - (ndc.y - this.offsetY) * ratioY;
     this.requestRender();
   }
 
@@ -783,7 +794,7 @@ class PanzoomInteraction {
     runtime.writeBuffer(
       this.config.mvpBufferId,
       0,
-      mvpUniformBytes(this.scale, this.offsetX, this.offsetY),
+      mvpUniformBytes(this.zoomX, this.zoomY, this.offsetX, this.offsetY),
     );
     runtime.writeBuffer(this.config.viewportBufferId, 0, viewportUniformBytes());
   }
