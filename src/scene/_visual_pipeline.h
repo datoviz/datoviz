@@ -39,9 +39,18 @@ typedef enum
 
 typedef enum
 {
-    DVZ_SCENE_POINT_LOWERING_NATIVE_POINTS = 0,
-    DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS,
-} DvzScenePointLowering;
+    DVZ_SCENE_POINT_LIKE_POINT = 0,
+    DVZ_SCENE_POINT_LIKE_PIXEL,
+    DVZ_SCENE_POINT_LIKE_MARKER,
+} DvzScenePointLikeKind;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_POINT_LIKE_LOWERING_NATIVE_POINTS = 0,
+    DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS,
+} DvzScenePointLikeLowering;
 
 
 
@@ -112,12 +121,13 @@ typedef struct DvzSceneVisualBindDesc
 
 typedef struct DvzScenePointLoweringDesc
 {
-    DvzScenePointLowering lowering;
+    DvzScenePointLikeKind kind;
+    DvzScenePointLikeLowering lowering;
     uint32_t topology;
     uint32_t vertex_step_mode;
     uint32_t draw_vertex_count;
     uint32_t draw_instance_count;
-} DvzScenePointLoweringDesc;
+} DvzScenePointLikeLoweringDesc;
 
 
 
@@ -156,8 +166,8 @@ bool _scene_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,
     DvzSceneVisualBindDesc* out);
 
-bool _scene_point_lowering_desc(
-    DvzSceneShaderFormat shader_format, uint32_t point_count,
-    DvzScenePointLoweringDesc* out);
+bool _scene_point_like_lowering_desc(
+    DvzScenePointLikeKind kind, DvzSceneShaderFormat shader_format, uint32_t item_count,
+    DvzScenePointLikeLoweringDesc* out);
 
 bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render);

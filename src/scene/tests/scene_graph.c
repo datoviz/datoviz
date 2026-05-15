@@ -197,21 +197,25 @@ int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item)
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_point_lowering_policy(TstSuite* suite, TstItem* item)
+int test_scene_point_like_lowering_policy(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
     (void)item;
 
-    DvzScenePointLoweringDesc lowering = {0};
-    AT(_scene_point_lowering_desc(DVZ_SCENE_SHADER_FORMAT_GLSL, 3, &lowering));
-    AT(lowering.lowering == DVZ_SCENE_POINT_LOWERING_NATIVE_POINTS);
+    DvzScenePointLikeLoweringDesc lowering = {0};
+    AT(_scene_point_like_lowering_desc(
+        DVZ_SCENE_POINT_LIKE_POINT, DVZ_SCENE_SHADER_FORMAT_GLSL, 3, &lowering));
+    AT(lowering.kind == DVZ_SCENE_POINT_LIKE_POINT);
+    AT(lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_NATIVE_POINTS);
     AT(lowering.topology == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
     AT(lowering.vertex_step_mode == DVZ_DRP2_VERTEX_STEP_MODE_VERTEX);
     AT(lowering.draw_vertex_count == 3);
     AT(lowering.draw_instance_count == 1);
 
-    AT(_scene_point_lowering_desc(DVZ_SCENE_SHADER_FORMAT_WGSL, 3, &lowering));
-    AT(lowering.lowering == DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS);
+    AT(_scene_point_like_lowering_desc(
+        DVZ_SCENE_POINT_LIKE_PIXEL, DVZ_SCENE_SHADER_FORMAT_WGSL, 3, &lowering));
+    AT(lowering.kind == DVZ_SCENE_POINT_LIKE_PIXEL);
+    AT(lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS);
     AT(lowering.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     AT(lowering.vertex_step_mode == DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
     AT(lowering.draw_vertex_count == 6);
@@ -3593,7 +3597,7 @@ int test_scene_graph(TstSuite* suite)
     const char* tags = "scene";
 
     TEST_SIMPLE(test_scene_point_emit_glsl_executes);
-    TEST_SIMPLE(test_scene_point_lowering_policy);
+    TEST_SIMPLE(test_scene_point_like_lowering_policy);
     TEST_SIMPLE(test_scene_point_emit_glsl_native_points);
     TEST_SIMPLE(test_scene_point_emit_wgsl_instanced_quads);
     TEST_SIMPLE(test_scene_primitive_triangle_list_glsl_executes);

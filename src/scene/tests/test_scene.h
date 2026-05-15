@@ -132,7 +132,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_executes(TstSuite* suite, TstItem* item);
 
-int test_scene_point_lowering_policy(TstSuite* suite, TstItem* item);
+int test_scene_point_like_lowering_policy(TstSuite* suite, TstItem* item);
 
 int test_scene_point_emit_glsl_native_points(TstSuite* suite, TstItem* item);
 

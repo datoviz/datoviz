@@ -93,34 +93,37 @@ static bool _visual_meta_is_primitive(uint32_t visual_type)
 
 
 /**
- * Resolve the backend-specific point visual lowering policy.
+ * Resolve the backend-specific point-like visual lowering policy.
  *
+ * @param kind the point-like visual family
  * @param shader_format the target shader format
- * @param point_count number of logical points in the visual
+ * @param item_count number of logical items in the visual
  * @param out the output lowering descriptor
  * @return whether the lowering descriptor was resolved
  */
-bool _scene_point_lowering_desc(
-    DvzSceneShaderFormat shader_format, uint32_t point_count,
-    DvzScenePointLoweringDesc* out)
+bool _scene_point_like_lowering_desc(
+    DvzScenePointLikeKind kind, DvzSceneShaderFormat shader_format, uint32_t item_count,
+    DvzScenePointLikeLoweringDesc* out)
 {
     ANN(out);
-    dvz_memset(out, sizeof(DvzScenePointLoweringDesc), 0, sizeof(DvzScenePointLoweringDesc));
+    dvz_memset(
+        out, sizeof(DvzScenePointLikeLoweringDesc), 0, sizeof(DvzScenePointLikeLoweringDesc));
+    out->kind = kind;
 
     if (shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
     {
-        out->lowering = DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS;
+        out->lowering = DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;
         out->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         out->vertex_step_mode = DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
         out->draw_vertex_count = 6;
-        out->draw_instance_count = point_count;
+        out->draw_instance_count = item_count;
         return true;
     }
 
-    out->lowering = DVZ_SCENE_POINT_LOWERING_NATIVE_POINTS;
+    out->lowering = DVZ_SCENE_POINT_LIKE_LOWERING_NATIVE_POINTS;
     out->topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     out->vertex_step_mode = DVZ_DRP2_VERTEX_STEP_MODE_VERTEX;
-    out->draw_vertex_count = point_count;
+    out->draw_vertex_count = item_count;
     out->draw_instance_count = 1;
     return true;
 }

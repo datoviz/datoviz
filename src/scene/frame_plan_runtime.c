@@ -584,8 +584,8 @@ static bool _emitter_emit_render(
     uint32_t vertex_count = 3; /* default for stub / non-point path */
     uint64_t bgl_id = 0;
     uint64_t bg_id  = 0;
-    DvzScenePointLoweringDesc point_lowering = {0};
-    bool has_point_lowering = false;
+    DvzScenePointLikeLoweringDesc point_like_lowering = {0};
+    bool has_point_like_lowering = false;
 
     /* Common bind group IDs used for GLSL/WGSL point, primitive, and image paths. */
     uint64_t common_bgl_id = 0;
@@ -633,11 +633,11 @@ static bool _emitter_emit_render(
         }
         DvzSceneShaderFormat shader_format =
             cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
-        has_point_lowering =
-            _scene_point_lowering_desc(shader_format, vertex_count, &point_lowering);
-        if (!has_point_lowering)
+        has_point_like_lowering = _scene_point_like_lowering_desc(
+            DVZ_SCENE_POINT_LIKE_POINT, shader_format, vertex_count, &point_like_lowering);
+        if (!has_point_like_lowering)
             return false;
-        topology = point_lowering.topology;
+        topology = point_like_lowering.topology;
     }
     else if (is_primitive)
     {
@@ -813,12 +813,13 @@ static bool _emitter_emit_render(
                                      VK_FORMAT_R8G8B8A8_UNORM,
                                      VK_FORMAT_R32_SFLOAT};
             uint32_t offsets[3]   = {0, 0, 0};
-            if (point_lowering.lowering == DVZ_SCENE_POINT_LOWERING_INSTANCED_QUADS)
+            if (point_like_lowering.lowering ==
+                DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS)
             {
                 uint32_t step_modes[3] = {
-                    point_lowering.vertex_step_mode,
-                    point_lowering.vertex_step_mode,
-                    point_lowering.vertex_step_mode,
+                    point_like_lowering.vertex_step_mode,
+                    point_like_lowering.vertex_step_mode,
+                    point_like_lowering.vertex_step_mode,
                 };
                 ok = ok && dvz_drp2_stream_create_render_pipeline_ex2(
                                stream, pipe_id, vs_id, fs_id, vertex_buffer_count,
@@ -911,10 +912,10 @@ static bool _emitter_emit_render(
         ok = dvz_drp2_stream_set_vertex_buffer(stream, render_pass_id, i, vertex_buffer_ids[i], 0);
     uint32_t draw_vertex_count = vertex_count;
     uint32_t draw_instance_count = 1;
-    if (is_point && has_point_lowering)
+    if (is_point && has_point_like_lowering)
     {
-        draw_vertex_count = point_lowering.draw_vertex_count;
-        draw_instance_count = point_lowering.draw_instance_count;
+        draw_vertex_count = point_like_lowering.draw_vertex_count;
+        draw_instance_count = point_like_lowering.draw_instance_count;
     }
     ok = ok && dvz_drp2_stream_draw(
                    stream, render_pass_id, draw_vertex_count, draw_instance_count, 0, 0) &&
