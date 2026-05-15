@@ -2,7 +2,20 @@
 
 ## Status
 
-Draft design document for a future Datoviz DRP2 trace recorder/player.
+Design document plus implementation notes for the Datoviz DRP2 trace recorder/player.
+
+As of 2026-05-15, the first DRP2-level DVZR slice exists in `drp2`:
+
+- `manifest.json`, `stream.jsonl`, and external `blobs/` directory output,
+- incremental timestamped stream recording,
+- portable JSON command records for the initial MVP subset,
+- ABI-local raw command blobs as a development fallback for unsupported commands,
+- indexed recording loading with frame timestamps and command ranges,
+- per-frame command-stream extraction with copied payload ownership,
+- runtime-level linear replay helpers for one frame or all frames.
+
+This is still not a full player application. It has no pacing loop, GUI, export path, keyframes,
+template interning, content-addressed blobs, or broad portable command coverage yet.
 
 This document describes a recording and playback system that stores timestamped DRP2 command streams rather than framebuffer images. The goal is to support compact, replayable, portable visualization recordings.
 
@@ -52,9 +65,10 @@ Persistent object commands and repeated frame command skeletons are deduplicated
 Dynamic data uploads and presentation timestamps are always preserved.
 ```
 
-MVP note: the first useful implementation should be a raw linear DRP2 replay path before template
-interning or aggressive deduplication. The format should be designed so those optimizations can be
-added later without changing the meaning of existing recordings.
+MVP note: the first useful implementation is a linear DRP2 replay path before template interning or
+aggressive deduplication. The current implementation stores supported MVP commands as portable JSON
+records and keeps raw ABI-local command blobs as a temporary fallback. The format should be designed
+so later optimizations can be added without changing the meaning of existing recordings.
 
 ---
 
@@ -1119,45 +1133,63 @@ This requires the recorded DRP2 subset to be WebGPU-portable.
 
 ---
 
-## Suggested Recorder API
+## Current DRP2 Recording API
 
-Possible C API:
+The current C API is intentionally DRP2-level. It does not depend on scene or app objects.
 
-```c
-typedef struct DvzDrpRecorder DvzDrpRecorder;
-
-DvzDrpRecorder* dvz_drp_recorder_create(const char* path);
-
-void dvz_drp_recorder_write_commands(
-    DvzDrpRecorder* rec,
-    double timestamp,
-    const DvzDrpCommand* commands,
-    uint32_t command_count);
-
-void dvz_drp_recorder_present(
-    DvzDrpRecorder* rec,
-    double timestamp);
-
-void dvz_drp_recorder_close(DvzDrpRecorder* rec);
-```
-
-Blob API:
+Recorder API:
 
 ```c
-typedef struct DvzDrpBlobRef
-{
-    char path[256];
-    uint64_t size;
-    uint8_t sha256[32];
-} DvzDrpBlobRef;
+typedef struct DvzDrp2Recorder DvzDrp2Recorder;
+typedef struct DvzDrp2RecordingInfo DvzDrp2RecordingInfo;
 
-DvzDrpBlobRef dvz_drp_recorder_write_blob(
-    DvzDrpRecorder* rec,
-    const void* data,
-    uint64_t size);
+DvzDrp2Recorder* dvz_drp2_recorder_open(
+    const char* path,
+    const DvzDrp2RecordingInfo* info);
+
+bool dvz_drp2_recorder_write_stream(
+    DvzDrp2Recorder* recorder,
+    double t_present,
+    const DvzDrp2CommandStream* stream);
+
+bool dvz_drp2_recorder_close(DvzDrp2Recorder* recorder);
+
+bool dvz_drp2_recording_write_stream(
+    const char* path,
+    const DvzDrp2CommandStream* stream,
+    const DvzDrp2RecordingInfo* info);
 ```
 
-Higher-level app API:
+Loaded recording and replay API:
+
+```c
+typedef struct DvzDrp2Recording DvzDrp2Recording;
+typedef struct DvzDrp2RecordedFrame DvzDrp2RecordedFrame;
+
+DvzDrp2Recording* dvz_drp2_recording_open(const char* path);
+void dvz_drp2_recording_close(DvzDrp2Recording* recording);
+
+const DvzDrp2CommandStream*
+dvz_drp2_recording_stream(const DvzDrp2Recording* recording);
+
+uint32_t dvz_drp2_recording_frame_count(const DvzDrp2Recording* recording);
+
+const DvzDrp2RecordedFrame*
+dvz_drp2_recording_frame(const DvzDrp2Recording* recording, uint32_t frame_index);
+
+DvzDrp2CommandStream*
+dvz_drp2_recording_frame_stream(const DvzDrp2Recording* recording, uint32_t frame_index);
+
+DvzDrp2ValidationResult dvz_drp2_recording_execute_frame(
+    const DvzDrp2Recording* recording,
+    DvzDrp2Runtime* runtime,
+    uint32_t frame_index);
+
+DvzDrp2ValidationResult
+dvz_drp2_recording_execute_all(const DvzDrp2Recording* recording, DvzDrp2Runtime* runtime);
+```
+
+Future app-level and Python APIs may wrap this lower-level API:
 
 ```c
 void dvz_app_record_start(DvzApp* app, const char* path);
@@ -1185,7 +1217,7 @@ with dvz.record("recording.dvzr"):
 
 ---
 
-## Suggested Player API
+## Future Player API
 
 C API:
 
@@ -1340,17 +1372,29 @@ If there is no `end`, the player should warn but attempt replay.
 
 ### Phase 1: Linear Trace Replay
 
-Implement:
+Implemented core pieces:
 
 ```text
 manifest.json
 stream.jsonl
 external blobs
-raw DRP2 command records in emission order
+portable JSON command records for the first MVP subset
+ABI-local raw command records as fallback for unsupported commands
 large payloads stored as blobs
 presentation timestamps
-paced 1x replay
+indexed frame records
+per-frame command-stream extraction
+runtime-level linear replay helpers
+flattened full-stream reconstruction
+```
+
+Still needed before calling Phase 1 complete:
+
+```text
+broader portable command coverage for real scene frames
+paced 1x replay loop
 as-fast-as-possible replay mode
+minimal player entry point or app-level integration
 ```
 
 No arbitrary seeking beyond restart from beginning.

@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE DEVELOPMENT GUIDE`
-> - **Updated on:** `2026-05-14`
+> - **Updated on:** `2026-05-15`
 > - **Purpose:** give future agents the practical next steps after the first scene -> DRP2 ->
 >   vklite/canvas slice.
 
@@ -42,6 +42,16 @@ The active higher layer exists:
    reporting, and figure-size synchronization before frame emission.
 10. Scene runtime DRP2 emission now prepares resources before opening command encoders/render
     passes. Render-pass scopes should contain only pass-local state and draw commands.
+11. The first DRP2-level DVZR recording/replay slice is active: incremental timestamped recording
+    writes `manifest.json`, `stream.jsonl`, and external payload blobs; the initial portable JSON
+    command subset covers hello, buffer/texture creation, and buffer/texture writes; unsupported
+    commands still fall back to ABI-local raw command blobs. Loaded recordings expose indexed frame
+    records, owned per-frame command streams, and runtime-level linear replay helpers.
+
+Recent focused DVZR validation on 2026-05-15: clean detached `dvztest_drp2
+drp2_recording_linear_roundtrip` passed, and full clean detached `dvztest_drp2 drp2` passed
+`77/77` after the portable-command, frame-indexing, frame-stream, and runtime replay-helper
+commits.
 
 Focused validation recorded before the latest `2026-05-13` follow-up commits:
 
@@ -133,11 +143,14 @@ Deliver the next implementation slices in this order unless the user redirects:
    stale result-slot cleanup, scene warning readiness, and DRP2 vklite transient object table
    trimming. Remaining review areas are trace/status hashing and string-buffer safety, plus a
    bounded live app smoke around request/runtime steady state.
-5. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
+5. Current DVZR next: broaden portable command coverage beyond the initial resource-write subset so
+   real scene-emitted setup and frame streams can replay without the raw ABI-local fallback; then add
+   a tiny paced/fast playback loop over `dvz_drp2_recording_execute_frame()`.
+6. Early WebGPU feasibility spike: replay a tiny DRP2 subset for clear, static point/primitive/image,
    then depth. Keep it contract-pressure only; do not fork scene semantics.
-6. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
+7. Rendered colorbar/text/annotation realization, reusing the current scene -> DRP2 path after the
    native 3D and manual-smoke gaps are clearer.
-7. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
+8. Picking payload widening after the hardened slice: richer ids, mesh targets, and less ad-hoc RGBA
    payload encoding.
 
 Implementation-level checklists for these lanes are recorded in
