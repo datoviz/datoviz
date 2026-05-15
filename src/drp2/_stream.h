@@ -35,6 +35,12 @@
 
 typedef void (*DvzDrp2StreamOwnerRelease)(void* owner);
 
+typedef struct DvzDrp2DebugLabel
+{
+    uint64_t id;
+    char label[DVZ_DRP2_LABEL_SIZE];
+} DvzDrp2DebugLabel;
+
 
 
 struct DvzDrp2Command
@@ -338,6 +344,9 @@ struct DvzDrp2CommandStream
     uint32_t capacity;
     uint32_t count;
     DvzDrp2Command* commands;
+    uint32_t label_capacity;
+    uint32_t label_count;
+    DvzDrp2DebugLabel* labels;
     void* owner;
     DvzDrp2StreamOwnerRelease owner_release;
     bool owner_released;

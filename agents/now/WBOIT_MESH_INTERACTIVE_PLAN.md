@@ -258,7 +258,11 @@ area. On macOS, use `direnv exec .` for Vulkan-path tests.
 9. Done: add focused scene/vklite WBOIT regression tests.
 10. Done: add `examples/c/hello_mesh_wboit_glfw.c`.
 11. Done: add live GUI controls for WBOIT cube color, alpha, ambient/diffuse, and light direction.
-12. Next: use the live controls to choose better defaults and add offscreen/capture coverage for
+12. Done: add opaque rear/front reference cards and labeled DRP2 trace metadata so the live example
+    can diagnose whether opaque geometry writes depth before WBOIT accumulation. The expected stream
+    shape is opaque `rt` pass with depth writes, `_wboit_accum_*` pass with depth test/no depth
+    writes, and final `rt` resolve pass with no depth.
+13. Next: use the live controls to choose better defaults and add offscreen/capture coverage for
     WBOIT if needed.
 
 

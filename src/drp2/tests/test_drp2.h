@@ -28,6 +28,8 @@ int test_drp2_stream_empty(TstSuite* suite, TstItem* item);
 
 int test_drp2_stream_append(TstSuite* suite, TstItem* item);
 
+int test_drp2_stream_debug_labels(TstSuite* suite, TstItem* item);
+
 int test_drp2_stream_json(TstSuite* suite, TstItem* item);
 
 int test_drp2_stream_growth_json(TstSuite* suite, TstItem* item);

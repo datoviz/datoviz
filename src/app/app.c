@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -438,17 +439,45 @@ static const char* _trace_command_color(DvzDrp2CommandType type)
 
 
 /**
+ * Format a DRP2 id with an optional stream debug label.
+ *
+ * @param stream command stream carrying optional labels
+ * @param id numeric DRP2 id
+ * @param out output string buffer
+ * @param out_size output buffer size
+ */
+static void _trace_format_id(
+    const DvzDrp2CommandStream* stream, uint64_t id, char* out, size_t out_size)
+{
+    ANN(out);
+    if (out_size == 0)
+        return;
+    const char* label = dvz_drp2_stream_label(stream, id);
+    if (label != NULL)
+        dvz_snprintf(out, out_size, "%" PRIu64 "(%s)", id, label);
+    else
+        dvz_snprintf(out, out_size, "%" PRIu64, id);
+}
+
+
+/**
  * Print one detailed command line when the command carries useful trace payload.
  *
+ * @param stream command stream carrying optional labels
  * @param command command to print
  * @param index command index
  * @param include_transient_ids whether to include per-stream pass ids
  * @return true if a line was printed
  */
 static bool _app_trace_print_command_detail(
-    const DvzDrp2Command* command, uint32_t index, bool include_transient_ids)
+    const DvzDrp2CommandStream* stream, const DvzDrp2Command* command, uint32_t index,
+    bool include_transient_ids)
 {
     ANN(command);
+#define TRACE_ID(name, value)                                                                       \
+    char name[DVZ_DRP2_LABEL_SIZE + 64];                                                            \
+    _trace_format_id(stream, (value), name, sizeof(name))
+
     DvzDrp2CommandType type = command->type;
     switch (type)
     {
@@ -461,53 +490,69 @@ static bool _app_trace_print_command_detail(
             stderr, "  %03u = RendererHelloReply name=%s\n", index, command->u.handshake.name);
         return true;
     case DVZ_DRP2_COMMAND_CREATE_BUFFER:
+    {
+        TRACE_ID(id, command->u.create_buffer.id);
         dvz_fprintf(
-            stderr, "  %03u + CreateBuffer id=%" PRIu64 " size=%" PRIu64
-                    " usage=0x%" PRIx32 "\n",
-            index, command->u.create_buffer.id, command->u.create_buffer.size,
+            stderr, "  %03u + CreateBuffer id=%s size=%" PRIu64 " usage=0x%" PRIx32 "\n",
+            index, id, command->u.create_buffer.size,
             command->u.create_buffer.usage);
         return true;
+    }
     case DVZ_DRP2_COMMAND_DESTROY_BUFFER:
+    {
+        TRACE_ID(id, command->u.destroy_buffer.buffer_id);
         dvz_fprintf(
-            stderr, "  %03u - DestroyBuffer id=%" PRIu64 "\n", index,
-            command->u.destroy_buffer.buffer_id);
+            stderr, "  %03u - DestroyBuffer id=%s\n", index, id);
         return true;
+    }
     case DVZ_DRP2_COMMAND_CREATE_TEXTURE:
+    {
+        TRACE_ID(id, command->u.create_texture.id);
         dvz_fprintf(
-            stderr, "  %03u + CreateTexture id=%" PRIu64 " size=(%" PRIu32 ",%" PRIu32
+            stderr, "  %03u + CreateTexture id=%s size=(%" PRIu32 ",%" PRIu32
                     ",%" PRIu32 ") usage=0x%" PRIx32 "\n",
-            index, command->u.create_texture.id, command->u.create_texture.width,
+            index, id, command->u.create_texture.width,
             command->u.create_texture.height, command->u.create_texture.depth,
             command->u.create_texture.usage);
         return true;
+    }
     case DVZ_DRP2_COMMAND_DESTROY_TEXTURE:
+    {
+        TRACE_ID(id, command->u.destroy_texture.texture_id);
         dvz_fprintf(
-            stderr, "  %03u - DestroyTexture id=%" PRIu64 "\n", index,
-            command->u.destroy_texture.texture_id);
+            stderr, "  %03u - DestroyTexture id=%s\n", index, id);
         return true;
+    }
     case DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE:
+    {
+        TRACE_ID(id, command->u.create_shader_module.id);
         dvz_fprintf(
-            stderr, "  %03u + CreateShaderModule id=%" PRIu64 " stage=%s format=%s"
+            stderr, "  %03u + CreateShaderModule id=%s stage=%s format=%s"
                     " code=%s spirv_size=%" PRIu64 "\n",
-            index, command->u.create_shader_module.id, command->u.create_shader_module.stage,
+            index, id, command->u.create_shader_module.stage,
             command->u.create_shader_module.format,
             command->u.create_shader_module.code != NULL ? "yes" : "no",
             command->u.create_shader_module.spirv_size);
         return true;
+    }
     case DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE:
+    {
+        TRACE_ID(id, command->u.destroy_shader_module.shader_module_id);
         dvz_fprintf(
-            stderr, "  %03u - DestroyShaderModule id=%" PRIu64 "\n", index,
-            command->u.destroy_shader_module.shader_module_id);
+            stderr, "  %03u - DestroyShaderModule id=%s\n", index, id);
         return true;
+    }
     case DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE:
+    {
+        TRACE_ID(id, command->u.create_render_pipeline.id);
+        TRACE_ID(vs, command->u.create_render_pipeline.vertex_shader_module_id);
+        TRACE_ID(fs, command->u.create_render_pipeline.fragment_shader_module_id);
         dvz_fprintf(
-            stderr, "  %03u + CreateRenderPipeline id=%" PRIu64 " vs=%" PRIu64
-                    " fs=%" PRIu64 " vslots=%" PRIu32 " bgls=%" PRIu32
+            stderr, "  %03u + CreateRenderPipeline id=%s vs=%s fs=%s"
+                    " vslots=%" PRIu32 " bgls=%" PRIu32
                     " depth=%s write=%s compare=%" PRIu32 " topology=%" PRIu32
                     " bindings=%" PRIu32 " attrs=%" PRIu32 "\n",
-            index, command->u.create_render_pipeline.id,
-            command->u.create_render_pipeline.vertex_shader_module_id,
-            command->u.create_render_pipeline.fragment_shader_module_id,
+            index, id, vs, fs,
             command->u.create_render_pipeline.vertex_buffer_slots,
             command->u.create_render_pipeline.bind_group_layout_count,
             command->u.create_render_pipeline.has_depth_attachment ? "yes" : "no",
@@ -517,11 +562,14 @@ static bool _app_trace_print_command_detail(
             command->u.create_render_pipeline.binding_count,
             command->u.create_render_pipeline.attr_count);
         return true;
+    }
     case DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE:
+    {
+        TRACE_ID(id, command->u.destroy_render_pipeline.render_pipeline_id);
         dvz_fprintf(
-            stderr, "  %03u - DestroyRenderPipeline id=%" PRIu64 "\n", index,
-            command->u.destroy_render_pipeline.render_pipeline_id);
+            stderr, "  %03u - DestroyRenderPipeline id=%s\n", index, id);
         return true;
+    }
     case DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE:
         dvz_fprintf(
             stderr, "  %03u + CreateComputePipeline id=%" PRIu64 " shader=%" PRIu64
@@ -536,24 +584,31 @@ static bool _app_trace_print_command_detail(
             command->u.destroy_compute_pipeline.compute_pipeline_id);
         return true;
     case DVZ_DRP2_COMMAND_CREATE_SAMPLER:
+    {
+        TRACE_ID(id, command->u.create_sampler.id);
         dvz_fprintf(
-            stderr, "  %03u + CreateSampler id=%" PRIu64 "\n", index,
-            command->u.create_sampler.id);
+            stderr, "  %03u + CreateSampler id=%s\n", index, id);
         return true;
+    }
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP_LAYOUT:
+    {
+        TRACE_ID(id, command->u.create_bind_group_layout.id);
         dvz_fprintf(
-            stderr, "  %03u + CreateBindGroupLayout id=%" PRIu64 " entries=%" PRIu32 "\n",
-            index, command->u.create_bind_group_layout.id,
+            stderr, "  %03u + CreateBindGroupLayout id=%s entries=%" PRIu32 "\n",
+            index, id,
             command->u.create_bind_group_layout.entry_count);
         return true;
+    }
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
+    {
+        TRACE_ID(id, command->u.create_bind_group.id);
+        TRACE_ID(layout, command->u.create_bind_group.bind_group_layout_id);
         dvz_fprintf(
-            stderr, "  %03u + CreateBindGroup id=%" PRIu64 " layout=%" PRIu64
-                    " entries=%" PRIu32 "\n",
-            index, command->u.create_bind_group.id,
-            command->u.create_bind_group.bind_group_layout_id,
+            stderr, "  %03u + CreateBindGroup id=%s layout=%s entries=%" PRIu32 "\n",
+            index, id, layout,
             command->u.create_bind_group.entry_count);
         return true;
+    }
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP_LAYOUT:
         dvz_fprintf(
             stderr, "  %03u - DestroyBindGroupLayout id=%" PRIu64 "\n", index,
@@ -565,34 +620,43 @@ static bool _app_trace_print_command_detail(
             command->u.destroy_bind_group.bind_group_id);
         return true;
     case DVZ_DRP2_COMMAND_WRITE_BUFFER:
+    {
+        TRACE_ID(buffer, command->u.write_buffer.buffer_id);
         dvz_fprintf(
-            stderr, "  %03u ~ WriteBuffer buffer=%" PRIu64 " offset=%" PRIu64
+            stderr, "  %03u ~ WriteBuffer buffer=%s offset=%" PRIu64
                     " size=%" PRIu64 "\n",
-            index, command->u.write_buffer.buffer_id, command->u.write_buffer.offset,
+            index, buffer, command->u.write_buffer.offset,
             command->u.write_buffer.size);
         return true;
+    }
     case DVZ_DRP2_COMMAND_WRITE_TEXTURE:
+    {
+        TRACE_ID(texture, command->u.write_texture.texture_id);
         dvz_fprintf(
-            stderr, "  %03u ~ WriteTexture texture=%" PRIu64 " origin=(%" PRIu32
+            stderr, "  %03u ~ WriteTexture texture=%s origin=(%" PRIu32
                     ",%" PRIu32 ",%" PRIu32 ") size=(%" PRIu32 ",%" PRIu32 ",%" PRIu32
                     ") bytes_per_row=%" PRIu32 "\n",
-            index, command->u.write_texture.texture_id, command->u.write_texture.origin_x,
+            index, texture, command->u.write_texture.origin_x,
             command->u.write_texture.origin_y, command->u.write_texture.origin_z,
             command->u.write_texture.width, command->u.write_texture.height,
             command->u.write_texture.depth, command->u.write_texture.bytes_per_row);
         return true;
+    }
     case DVZ_DRP2_COMMAND_BEGIN_COMMAND_ENCODER:
         dvz_fprintf(
             stderr, "  %03u = BeginCommandEncoder id=%" PRIu64 "\n", index,
             command->u.begin_command_encoder.id);
         return true;
     case DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS:
+    {
+        TRACE_ID(id, command->u.begin_render_pass.id);
+        TRACE_ID(encoder, command->u.begin_render_pass.encoder_id);
+        TRACE_ID(target, command->u.begin_render_pass.texture_id);
         dvz_fprintf(
-            stderr, "  %03u = BeginRenderPass id=%" PRIu64 " encoder=%" PRIu64
-                    " target=%" PRIu64 " clear=%s depth=%s clear_depth=%.3g"
+            stderr, "  %03u = BeginRenderPass id=%s encoder=%s"
+                    " target=%s clear=%s depth=%s clear_depth=%.3g"
                     " viewport=(%.3g,%.3g %.3gx%.3g)\n",
-            index, command->u.begin_render_pass.id, command->u.begin_render_pass.encoder_id,
-            command->u.begin_render_pass.texture_id,
+            index, id, encoder, target,
             command->u.begin_render_pass.clear ? "yes" : "load",
             command->u.begin_render_pass.has_depth_attachment ? "yes" : "no",
             (double)command->u.begin_render_pass.clear_depth,
@@ -601,6 +665,7 @@ static bool _app_trace_print_command_detail(
             (double)command->u.begin_render_pass.viewport[2],
             (double)command->u.begin_render_pass.viewport[3]);
         return true;
+    }
     case DVZ_DRP2_COMMAND_BEGIN_COMPUTE_PASS:
         dvz_fprintf(
             stderr, "  %03u = BeginComputePass id=%" PRIu64 " encoder=%" PRIu64 "\n",
@@ -708,45 +773,79 @@ static bool _app_trace_print_command_detail(
             command->u.copy_texture_to_texture.depth);
         return true;
     case DVZ_DRP2_COMMAND_SET_PIPELINE:
+    {
+        TRACE_ID(pipeline, command->u.set_pipeline.pipeline_id);
         if (include_transient_ids)
+        {
+            TRACE_ID(pass, command->u.set_pipeline.pass_id);
             dvz_fprintf(
-                stderr, "  %03u = SetPipeline pass=%" PRIu64 " pipeline=%" PRIu64 "\n",
-                index, command->u.set_pipeline.pass_id, command->u.set_pipeline.pipeline_id);
+                stderr, "  %03u = SetPipeline pass=%s pipeline=%s\n", index, pass, pipeline);
+        }
         else
             dvz_fprintf(
-                stderr, "  %03u = SetPipeline pipeline=%" PRIu64 "\n", index,
-                command->u.set_pipeline.pipeline_id);
+                stderr, "  %03u = SetPipeline pipeline=%s\n", index, pipeline);
         return true;
-    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+    }
+    case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
+    {
+        TRACE_ID(bind_group, command->u.set_bind_group.bind_group_id);
         if (include_transient_ids)
+        {
+            TRACE_ID(pass, command->u.set_bind_group.pass_id);
             dvz_fprintf(
-                stderr, "  %03u = SetVertexBuffer pass=%" PRIu64 " slot=%" PRIu32
-                        " buffer=%" PRIu64 " offset=%" PRIu64 "\n",
-                index, command->u.set_vertex_buffer.pass_id, command->u.set_vertex_buffer.slot,
-                command->u.set_vertex_buffer.buffer_id, command->u.set_vertex_buffer.offset);
+                stderr, "  %03u = SetBindGroup pass=%s slot=%" PRIu32
+                        " bind_group=%s offsets=%" PRIu32 "\n",
+                index, pass, command->u.set_bind_group.slot, bind_group,
+                command->u.set_bind_group.dynamic_offset_count);
+        }
+        else
+            dvz_fprintf(
+                stderr, "  %03u = SetBindGroup slot=%" PRIu32 " bind_group=%s offsets=%" PRIu32
+                        "\n",
+                index, command->u.set_bind_group.slot, bind_group,
+                command->u.set_bind_group.dynamic_offset_count);
+        return true;
+    }
+    case DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER:
+    {
+        TRACE_ID(buffer, command->u.set_vertex_buffer.buffer_id);
+        if (include_transient_ids)
+        {
+            TRACE_ID(pass, command->u.set_vertex_buffer.pass_id);
+            dvz_fprintf(
+                stderr, "  %03u = SetVertexBuffer pass=%s slot=%" PRIu32
+                        " buffer=%s offset=%" PRIu64 "\n",
+                index, pass, command->u.set_vertex_buffer.slot, buffer,
+                command->u.set_vertex_buffer.offset);
+        }
         else
             dvz_fprintf(
                 stderr, "  %03u = SetVertexBuffer slot=%" PRIu32
-                        " buffer=%" PRIu64 " offset=%" PRIu64 "\n",
-                index, command->u.set_vertex_buffer.slot, command->u.set_vertex_buffer.buffer_id,
+                        " buffer=%s offset=%" PRIu64 "\n",
+                index, command->u.set_vertex_buffer.slot, buffer,
                 command->u.set_vertex_buffer.offset);
         return true;
+    }
     case DVZ_DRP2_COMMAND_SET_INDEX_BUFFER:
+    {
+        TRACE_ID(buffer, command->u.set_index_buffer.buffer_id);
         if (include_transient_ids)
+        {
+            TRACE_ID(pass, command->u.set_index_buffer.pass_id);
             dvz_fprintf(
-                stderr, "  %03u = SetIndexBuffer pass=%" PRIu64
-                        " buffer=%" PRIu64 " format=%s offset=%" PRIu64 "\n",
-                index, command->u.set_index_buffer.pass_id,
-                command->u.set_index_buffer.buffer_id, command->u.set_index_buffer.index_format,
+                stderr, "  %03u = SetIndexBuffer pass=%s"
+                        " buffer=%s format=%s offset=%" PRIu64 "\n",
+                index, pass, buffer, command->u.set_index_buffer.index_format,
                 command->u.set_index_buffer.offset);
+        }
         else
             dvz_fprintf(
-                stderr, "  %03u = SetIndexBuffer buffer=%" PRIu64
+                stderr, "  %03u = SetIndexBuffer buffer=%s"
                         " format=%s offset=%" PRIu64 "\n",
-                index, command->u.set_index_buffer.buffer_id,
-                command->u.set_index_buffer.index_format,
+                index, buffer, command->u.set_index_buffer.index_format,
                 command->u.set_index_buffer.offset);
         return true;
+    }
     case DVZ_DRP2_COMMAND_DRAW:
         if (include_transient_ids)
             dvz_fprintf(
@@ -828,6 +927,7 @@ static bool _app_trace_print_command_detail(
     default:
         break;
     }
+#undef TRACE_ID
     return false;
 }
 
@@ -858,7 +958,7 @@ static void _app_trace_stream_full(
         DvzDrp2CommandType type = dvz_drp2_command_type(command);
         if (use_color)
             dvz_fprintf(stderr, "%s", _trace_command_color(type));
-        if (!_app_trace_print_command_detail(command, i, true))
+        if (!_app_trace_print_command_detail(stream, command, i, true))
         {
             dvz_fprintf(
                 stderr, "  %03u %c %s\n", i, _trace_command_prefix(type),

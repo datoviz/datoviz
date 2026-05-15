@@ -94,6 +94,40 @@ static bool _alpha_mode_is_standard_blend(DvzAlphaMode mode)
 
 
 /**
+ * Attach scene/runtime labels to ids in an emitted DRP2 stream.
+ *
+ * @param emitter frame-plan emitter carrying scene/resource id maps
+ * @param stream emitted DRP2 command stream
+ * @param cfg optional emission configuration with borrowed target id
+ */
+static void _emitter_label_stream_ids(
+    const DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
+    const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(stream);
+
+    for (uint32_t i = 0; i < emitter->resources.count; i++)
+    {
+        const ResourceId* resource = &emitter->resources.resources[i];
+        if (resource->id != 0 && resource->key[0] != '\0')
+            dvz_drp2_stream_set_label(stream, resource->id, resource->key);
+    }
+
+    for (uint32_t i = 0; i < emitter->objects.count; i++)
+    {
+        const ResourceId* object = &emitter->objects.resources[i];
+        if (object->id != 0 && object->key[0] != '\0')
+            dvz_drp2_stream_set_label(stream, object->id, object->key);
+    }
+
+    if (cfg != NULL && cfg->color_target_id != 0)
+        dvz_drp2_stream_set_label(stream, cfg->color_target_id, "rt");
+}
+
+
+
+/**
  * Prepare resources for one panel's draws before opening the render pass.
  *
  * @param emitter frame-plan emitter carrying scene/runtime state.
@@ -165,6 +199,12 @@ static bool _emitter_prepare_render_multi(
             dvz_snprintf(
                 shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_blend");
         }
+        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
+        {
+            size_t key_len = strlen(shader.pipeline_key);
+            dvz_snprintf(
+                shader.pipeline_key + key_len, sizeof(shader.pipeline_key) - key_len, "_fixed");
+        }
 
         /* Shaders (cached). */
         uint64_t vs_id = _obj_id(emitter, shader.vertex_key, &is_new);
@@ -218,7 +258,7 @@ static bool _emitter_prepare_render_multi(
             DvzSceneVisualPipelineDesc pipeline = {0};
             if (!_scene_visual_pipeline_desc(
                     &desc, render->u.render.picking, pass_needs_depth, wboit_accumulation,
-                    alpha_mode, &pipeline))
+                    alpha_mode, render->u.render.controller_modes[i], &pipeline))
             {
                 ok = false;
                 break;
@@ -1972,5 +2012,6 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         dvz_drp2_stream_destroy(stream);
         return NULL;
     }
+    _emitter_label_stream_ids(emitter, stream, cfg);
     return stream;
 }

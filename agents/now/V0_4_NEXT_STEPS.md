@@ -176,6 +176,17 @@ ambient/diffuse, and light-direction tuning. Validation before this simplificati
 `./build/testing/dvztest_drp2 test_drp2` (`86/86`), and
 `./build/examples/c/hello_mesh_wboit_glfw 2` passed without validation output.
 
+Follow-up WBOIT/depth diagnostic slice on `2026-05-15`: DRP2 streams now carry non-executable debug
+labels for scene resource/object ids, and app full trace prints ids as `id(label)` where available.
+This makes `DVZ_DRP2_TRACE=full DVZ_DRP2_TRACE_COLOR=0 ./build/examples/c/hello_mesh_wboit_glfw 2`
+usable for comparing scene intent to DRP2 commands. The WBOIT example/regression now verifies that
+fixed background primitives do not write depth, opaque unlit reference primitives do write depth,
+WBOIT accumulation depth-tests without writing, and the resolve pass composites into `rt` without a
+depth attachment. Focused validation: `cmake --build build --target dvztest_drp2 dvztest_scene
+hello_mesh_wboit_glfw -j2`, `./build/testing/dvztest_drp2 test_drp2_stream_debug_labels`,
+`./build/testing/dvztest_scene test_scene_visual_alpha_mode_emits_wboit_drp2`, and bounded labeled
+trace smoke.
+
 
 ## Immediate Task
 

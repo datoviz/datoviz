@@ -397,6 +397,28 @@ int test_drp2_stream_append(TstSuite* suite, TstItem* item)
 
 
 
+int test_drp2_stream_debug_labels(TstSuite* suite, TstItem* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_label(stream, 1) == NULL);
+    AT(dvz_drp2_stream_set_label(stream, 1, "visual.0.position"));
+    AT(strcmp(dvz_drp2_stream_label(stream, 1), "visual.0.position") == 0);
+    AT(dvz_drp2_stream_set_label(stream, 1, "visual.0.color"));
+    AT(strcmp(dvz_drp2_stream_label(stream, 1), "visual.0.color") == 0);
+    AT(!dvz_drp2_stream_set_label(NULL, 1, "ignored"));
+    AT(!dvz_drp2_stream_set_label(stream, 0, "ignored"));
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_stream_json(TstSuite* suite, TstItem* item)
 {
     ANN(suite);
@@ -4756,6 +4778,7 @@ int test_drp2(TstSuite* suite)
 
     TEST_SIMPLE(test_drp2_stream_empty);
     TEST_SIMPLE(test_drp2_stream_append);
+    TEST_SIMPLE(test_drp2_stream_debug_labels);
     TEST_SIMPLE(test_drp2_stream_json);
     TEST_SIMPLE(test_drp2_stream_growth_json);
     TEST_SIMPLE(test_drp2_write_buffer_bytes_uses_data_raw);

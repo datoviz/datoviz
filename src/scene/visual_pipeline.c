@@ -897,12 +897,13 @@ bool _scene_visual_shader_desc(
  * @param visual the visual descriptor
  * @param picking whether the render pass is a picking pass
  * @param pass_needs_depth whether the containing render pass has a depth attachment
+ * @param controller_mode controller attachment mode for the visual
  * @param out the output pipeline descriptor
  * @return whether a pipeline descriptor was resolved
  */
 bool _scene_visual_pipeline_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode,
+    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
     DvzSceneVisualPipelineDesc* out)
 {
     ANN(visual);
@@ -959,11 +960,10 @@ bool _scene_visual_pipeline_desc(
         out->needs_shading_layout = visual->has_normal;
         if (pass_needs_depth)
         {
+            bool fixed = controller_mode == DVZ_CONTROLLER_FIXED;
             out->depth_write_enabled =
-                visual->has_normal && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
-            out->depth_compare_op =
-                (visual->has_normal || wboit_accumulation) ? VK_COMPARE_OP_LESS_OR_EQUAL :
-                                                             VK_COMPARE_OP_ALWAYS;
+                !fixed && !wboit_accumulation && alpha_mode != DVZ_ALPHA_BLENDED;
+            out->depth_compare_op = fixed ? VK_COMPARE_OP_ALWAYS : VK_COMPARE_OP_LESS_OR_EQUAL;
         }
         return true;
 
@@ -1053,6 +1053,9 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
 
     for (uint32_t i = 0; i < render->u.render.visual_count; i++)
     {
+        if (render->u.render.controller_modes[i] == DVZ_CONTROLLER_FIXED)
+            continue;
+
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (meta->has_metadata)
         {
@@ -1064,8 +1067,7 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
             bool has_topology = _resource_topology(&emitter->resources, pos_buf) != UINT32_MAX ||
                                 meta->topology != UINT32_MAX;
             bool has_color = _resource_lookup_label(&emitter->resources, meta->color_id) != 0;
-            bool has_normal = _resource_lookup_label(&emitter->resources, meta->normal_id) != 0;
-            if (has_color && has_topology && has_normal)
+            if (has_color && has_topology)
                 return true;
             continue;
         }
@@ -1079,10 +1081,7 @@ bool _scene_render_needs_depth(DvzFramePlanEmitter* emitter, const DvzFramePlanN
         bool has_color =
             _render_visual_resource_id(
                 emitter, render->u.render.visuals[i], DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR) != 0;
-        bool has_normal =
-            _render_visual_resource_id(
-                emitter, render->u.render.visuals[i], DVZ_FRAME_PLAN_RESOURCE_ROLE_NORMAL) != 0;
-        if (has_color && has_topology && has_normal)
+        if (has_color && has_topology)
             return true;
     }
 

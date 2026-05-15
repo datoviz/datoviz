@@ -101,6 +101,17 @@ flat solid color. A GUI overlay named `WBOIT cube` exposes live Red, Green, Blue
 Diffuse, and Light X/Y/Z sliders for visual tuning. Idle rotation advances through the scene clock,
 arcball drag remains interactive, and Vulkan validation stays quiet for the bounded smoke.
 
+For command inspection, run the bounded smoke with full labeled DRP2 trace:
+
+```bash
+DVZ_DRP2_TRACE=full DVZ_DRP2_TRACE_COLOR=0 ./build/examples/c/hello_mesh_wboit_glfw 2
+```
+
+The trace should show scene labels on ids. The opaque pass targets `rt` with `depth=yes`; the fixed
+background pipeline has `write=no compare=7` (`ALWAYS`); the opaque reference pipeline has
+`write=yes compare=3` (`LESS_OR_EQUAL`); the WBOIT accumulation pass targets `_wboit_accum_*` with
+`depth=yes write=no`; and the resolve pass targets `rt` with `depth=no`.
+
 Automated coverage: `test_scene_visual_alpha_mode_standard_blend`,
 `test_scene_visual_alpha_mode_emits_wboit_drp2`,
 `test_scene_visual_alpha_mode_wboit_glsl_executes`,

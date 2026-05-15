@@ -82,6 +82,44 @@ static DvzDrp2Command* _append_command(DvzDrp2CommandStream* stream, DvzDrp2Comm
 
 
 
+/**
+ * Ensure the command stream has room for debug labels.
+ *
+ * @param stream the command stream
+ * @return whether the label array can accept another item
+ */
+static bool _ensure_label_capacity(DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    if (stream->labels == NULL || stream->label_capacity == 0)
+    {
+        stream->label_capacity = 64;
+        stream->labels =
+            (DvzDrp2DebugLabel*)dvz_calloc(stream->label_capacity, sizeof(DvzDrp2DebugLabel));
+        return stream->labels != NULL;
+    }
+
+    if (stream->label_count < stream->label_capacity)
+        return true;
+
+    if (stream->label_capacity > UINT32_MAX / 2)
+        return false;
+    uint32_t capacity = stream->label_capacity * 2;
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(DvzDrp2DebugLabel), &bytes))
+        return false;
+
+    DvzDrp2DebugLabel* labels = (DvzDrp2DebugLabel*)dvz_realloc(stream->labels, bytes);
+    if (labels == NULL)
+        return false;
+
+    stream->label_capacity = capacity;
+    stream->labels = labels;
+    return true;
+}
+
+
+
 static void _copy_label(char* dst, uint64_t dst_size, const char* src)
 {
     ANN(dst);
@@ -143,6 +181,7 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
             dvz_free(cmd->u.create_shader_module.code);
     }
     dvz_free(stream->commands);
+    dvz_free(stream->labels);
     dvz_free(stream);
 }
 
@@ -175,6 +214,61 @@ const DvzDrp2Command* dvz_drp2_stream_get(const DvzDrp2CommandStream* stream, ui
     if (stream == NULL || index >= stream->count)
         return NULL;
     return &stream->commands[index];
+}
+
+
+
+/**
+ * Attach a debug label to a numeric DRP2 id in a command stream.
+ *
+ * @param stream the command stream
+ * @param id the DRP2 object or transient id
+ * @param label the debug label, or NULL
+ * @return whether the label was recorded
+ */
+bool dvz_drp2_stream_set_label(DvzDrp2CommandStream* stream, uint64_t id, const char* label)
+{
+    if (stream == NULL || id == 0)
+        return false;
+
+    for (uint32_t i = 0; i < stream->label_count; i++)
+    {
+        if (stream->labels[i].id == id)
+        {
+            _copy_label(stream->labels[i].label, DVZ_DRP2_LABEL_SIZE, label ? label : "");
+            return true;
+        }
+    }
+
+    if (!_ensure_label_capacity(stream))
+        return false;
+
+    DvzDrp2DebugLabel* entry = &stream->labels[stream->label_count++];
+    entry->id = id;
+    _copy_label(entry->label, DVZ_DRP2_LABEL_SIZE, label ? label : "");
+    return true;
+}
+
+
+
+/**
+ * Return a debug label attached to a numeric DRP2 id.
+ *
+ * @param stream the command stream
+ * @param id the DRP2 object or transient id
+ * @return the label, or NULL when none exists
+ */
+const char* dvz_drp2_stream_label(const DvzDrp2CommandStream* stream, uint64_t id)
+{
+    if (stream == NULL || id == 0)
+        return NULL;
+
+    for (uint32_t i = 0; i < stream->label_count; i++)
+    {
+        if (stream->labels[i].id == id)
+            return stream->labels[i].label[0] != '\0' ? stream->labels[i].label : NULL;
+    }
+    return NULL;
 }
 
 

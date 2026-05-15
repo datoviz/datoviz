@@ -71,6 +71,33 @@ dvz_drp2_stream_get(const DvzDrp2CommandStream* stream, uint32_t index);
 
 
 /**
+ * Attach a debug label to a numeric DRP2 id in a command stream.
+ *
+ * Labels are diagnostic metadata only: runtimes ignore them and they are not executable commands.
+ *
+ * @param stream the command stream
+ * @param id the DRP2 object or transient id
+ * @param label the debug label, or NULL to clear it to an empty string
+ * @return whether the label was recorded
+ */
+DVZ_EXPORT bool
+dvz_drp2_stream_set_label(DvzDrp2CommandStream* stream, uint64_t id, const char* label);
+
+
+
+/**
+ * Return a debug label attached to a numeric DRP2 id.
+ *
+ * @param stream the command stream
+ * @param id the DRP2 object or transient id
+ * @return the label, or NULL when the stream has no label for the id
+ */
+DVZ_EXPORT const char*
+dvz_drp2_stream_label(const DvzDrp2CommandStream* stream, uint64_t id);
+
+
+
+/**
  * Return a command type.
  *
  * @param command the command

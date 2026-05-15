@@ -4234,6 +4234,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+    dvz_panel_set_background_color(panel, 0.05f, 0.05f, 0.08f, 1.0f);
 
     DvzCapabilitySnapshot caps;
     dvz_capability_snapshot_default(&caps);
@@ -4260,12 +4261,15 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     bool has_weight_texture = false;
     bool has_accum_pipeline = false;
     bool has_resolve_pipeline = false;
+    bool has_opaque_depth_pipeline = false;
+    bool has_fixed_background_depth_pipeline = false;
     bool has_accum_pass = false;
     bool has_resolve_bind_group = false;
     uint32_t begin_pass_count = 0;
     uint64_t begin_pass_textures[3] = {0};
     uint32_t begin_pass_color_counts[3] = {0};
     bool begin_pass_clears[3] = {0};
+    bool begin_pass_depths[3] = {0};
     bool begin_pass_second_attachment_clears[3] = {0};
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
@@ -4293,6 +4297,20 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
                  command->u.create_render_pipeline.color_targets[0].blend_enabled &&
                  command->u.create_render_pipeline.color_targets[0].src_color_blend_factor ==
                      VK_BLEND_FACTOR_SRC_ALPHA);
+            has_opaque_depth_pipeline =
+                has_opaque_depth_pipeline ||
+                (command->u.create_render_pipeline.has_depth_attachment &&
+                 command->u.create_render_pipeline.depth_write_enabled &&
+                 command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_LESS_OR_EQUAL &&
+                 command->u.create_render_pipeline.vertex_buffer_slots == 2 &&
+                 command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+            has_fixed_background_depth_pipeline =
+                has_fixed_background_depth_pipeline ||
+                (command->u.create_render_pipeline.has_depth_attachment &&
+                 !command->u.create_render_pipeline.depth_write_enabled &&
+                 command->u.create_render_pipeline.depth_compare_op == VK_COMPARE_OP_ALWAYS &&
+                 command->u.create_render_pipeline.vertex_buffer_slots == 2 &&
+                 command->u.create_render_pipeline.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
         }
         else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -4303,6 +4321,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
                 begin_pass_color_counts[begin_pass_count] =
                     command->u.begin_render_pass.color_attachment_count;
                 begin_pass_clears[begin_pass_count] = command->u.begin_render_pass.clear;
+                begin_pass_depths[begin_pass_count] =
+                    command->u.begin_render_pass.has_depth_attachment;
                 if (command->u.begin_render_pass.color_attachment_count > 1)
                 {
                     begin_pass_second_attachment_clears[begin_pass_count] =
@@ -4324,6 +4344,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(has_weight_texture);
     AT(has_accum_pipeline);
     AT(has_resolve_pipeline);
+    AT(has_opaque_depth_pipeline);
+    AT(has_fixed_background_depth_pipeline);
     AT(has_accum_pass);
     AT(has_resolve_bind_group);
     AT(begin_pass_count == 3);
@@ -4332,6 +4354,9 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstSuite* suite, TstItem* item
     AT(begin_pass_color_counts[2] == 1);
     AT(begin_pass_clears[0]);
     AT(begin_pass_clears[1]);
+    AT(begin_pass_depths[0]);
+    AT(begin_pass_depths[1]);
+    AT(!begin_pass_depths[2]);
     AT(begin_pass_second_attachment_clears[1]);
     AT(!begin_pass_clears[2]);
     AT(begin_pass_textures[0] != 0);
